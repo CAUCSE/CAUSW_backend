@@ -71,6 +71,15 @@ public class User extends BaseEntity {
             Boolean isCertified,
             Boolean isBlocked
     ) {
-        return new User(email, name, password, admissionYear, role, profileImage, isCertified, isBlocked);
+        return new User(
+                email,
+                name,
+                password,
+                admissionYear,
+                role,
+                profileImage,
+                isCertified,
+                isBlocked
+        );
     }
 }

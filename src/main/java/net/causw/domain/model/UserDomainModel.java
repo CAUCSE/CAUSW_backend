@@ -39,8 +39,16 @@ public class UserDomainModel {
     }
 
     public static UserDomainModel of(User user) {
-        return new UserDomainModel(user.getId(), user.getEmail(), user.getName(), user.getPassword(),
-                user.getAdmissionYear(), user.getRole(), user.getProfileImage(),
-                user.getIsCertified(), user.getIsBlocked());
+        return new UserDomainModel(
+                user.getId(),
+                user.getEmail(),
+                user.getName(),
+                user.getPassword(),
+                user.getAdmissionYear(),
+                user.getRole(),
+                user.getProfileImage(),
+                user.getIsCertified(),
+                user.getIsBlocked()
+        );
     }
 }
