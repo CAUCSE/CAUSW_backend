@@ -8,3 +8,6 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create
+    show-sql: true
+  jwt:
+    secret: jwtsecretkey
