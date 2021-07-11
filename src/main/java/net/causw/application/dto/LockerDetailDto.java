@@ -2,15 +2,14 @@ package net.causw.application.dto;
 
 import lombok.Getter;
 import net.causw.domain.model.LockerDomainModel;
-import net.causw.infra.User;
 
 @Getter
 public class LockerDetailDto {
     private String id;
     private Long lockerNumber;
-    private User user;
+    private UserDetailDto user;
 
-    private LockerDetailDto(String id, Long lockerNumber, User user){
+    private LockerDetailDto(String id, Long lockerNumber, UserDetailDto user){
         this.id = id;
         this.lockerNumber = lockerNumber;
         this.user = user;
@@ -20,7 +19,7 @@ public class LockerDetailDto {
         return new LockerDetailDto(
                 locker.getId(),
                 locker.getLockerNumber(),
-                locker.getUser()
+                UserDetailDto.of(locker.getUser())
         );
     }
 }
