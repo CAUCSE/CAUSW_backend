@@ -3,11 +3,7 @@ package net.causw.infra;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Getter
 @Entity
@@ -38,6 +34,10 @@ public class User extends BaseEntity {
 
     // TODO: Add Foreign Key
 
+    @OneToOne
+    @JoinColumn(name = "locker_id", nullable = true)
+    private Locker locker;
+
     private User(
             String email,
             String name,
@@ -45,7 +45,8 @@ public class User extends BaseEntity {
             Integer admissionYear,
             Role role,
             String profileImage,
-            Boolean isBlocked
+            Boolean isBlocked,
+            Locker locker
     ) {
         this.email = email;
         this.name = name;
@@ -54,6 +55,7 @@ public class User extends BaseEntity {
         this.role = role;
         this.profileImage = profileImage;
         this.isBlocked = isBlocked;
+        this.locker = locker;
     }
 
     public static User of(
@@ -63,7 +65,8 @@ public class User extends BaseEntity {
             Integer admissionYear,
             Role role,
             String profileImage,
-            Boolean isBlocked
+            Boolean isBlocked,
+            Locker locker
     ) {
         return new User(
                 email,
@@ -72,7 +75,8 @@ public class User extends BaseEntity {
                 admissionYear,
                 role,
                 profileImage,
-                isBlocked
+                isBlocked,
+                locker
         );
     }
 }
