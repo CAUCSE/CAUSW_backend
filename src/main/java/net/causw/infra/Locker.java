@@ -16,8 +16,6 @@ public class Locker extends BaseEntity {
     @Column(name = "locker_number", unique = true)
     private Long lockerNumber;
 
-    // Foreign Key
-
     @OneToOne(mappedBy = "locker")
     private User user;
 
