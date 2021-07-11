@@ -10,27 +10,23 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Table(name = "TB_LOCKER")
 public class LockerLog extends BaseEntity {
+    @Column(name = "locker_number")
+    private Long lockerNumber;
+
+    @Column(name = "user_email")
+    private String userEmail;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "locker_type")
     private LockerType lockerType;
 
-    // Foreign Key
-
-    @ManyToOne
-    @JoinColumn(name = "locker_id", insertable = false, updatable = false)
-    private Locker locker;
-
-    @ManyToOne
-    @JoinColumn(name = "user_id", insertable = false, updatable = false)
-    private User user;
-
-    private LockerLog(LockerType lockerType, Locker locker, User user) {
+    private LockerLog(Long lockerNumber, String userEmail, LockerType lockerType) {
+        this.lockerNumber = lockerNumber;
+        this.userEmail = userEmail;
         this.lockerType = lockerType;
-        this.locker = locker;
-        this.user = user;
     }
 
-    public static LockerLog of(LockerType lockerType, Locker locker, User user) {
-        return new LockerLog(lockerType, locker, user);
+    public static LockerLog of(Long lockerNumber, String userEmail, LockerType lockerType) {
+        return new LockerLog(lockerNumber, userEmail, lockerType);
     }
 }

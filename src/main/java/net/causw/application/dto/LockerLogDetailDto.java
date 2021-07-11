@@ -7,28 +7,28 @@ import net.causw.infra.LockerType;
 @Getter
 public class LockerLogDetailDto {
     String id;
+    Long lockerNumber;
+    String userEmail;
     LockerType type;
-    LockerDetailDto locker;
-    UserDetailDto user;
 
     private LockerLogDetailDto(
             String id,
-            LockerType type,
-            LockerDetailDto locker,
-            UserDetailDto user
+            Long lockerNumber,
+            String userEmail,
+            LockerType type
     ) {
         this.id = id;
+        this.lockerNumber = lockerNumber;
+        this.userEmail = userEmail;
         this.type = type;
-        this.locker = locker;
-        this.user = user;
     }
 
     public static LockerLogDetailDto of(LockerLogDomainModel model) {
         return new LockerLogDetailDto(
                 model.getId(),
-                model.getType(),
-                LockerDetailDto.of(model.getLocker()),
-                UserDetailDto.of(model.getUser())
+                model.getLockerNumber(),
+                model.getUserEmail(),
+                model.getType()
         );
     }
 }
