@@ -14,7 +14,7 @@ import javax.persistence.Table;
 @Entity
 @NoArgsConstructor
 @Table(name = "TB_USER_AUTH_LOG")
-public class UserAuthLog extends BaseEntity {
+public class UserAuth extends BaseEntity {
     @Column(name = "image")
     private String image;
 
@@ -22,12 +22,12 @@ public class UserAuthLog extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
-    private UserAuthLog(String image, User user) {
+    private UserAuth(String image, User user) {
         this.image = image;
         this.user = user;
     }
 
-    public static UserAuthLog of(String image, User user) {
-        return new UserAuthLog(image, user);
+    public static UserAuth of(String image, User user) {
+        return new UserAuth(image, user);
     }
 }
