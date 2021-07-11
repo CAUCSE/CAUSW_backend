@@ -10,7 +10,6 @@ public class UserDetailDto {
     private Integer admissionYear;
     private Role role;
     private String profileImage;
-    private Boolean isCertified;
     private Boolean isBlocked;
 
     private UserDetailDto(
@@ -20,7 +19,6 @@ public class UserDetailDto {
             Integer admissionYear,
             Role role,
             String profileImage,
-            Boolean isCertified,
             Boolean isBlocked
     ) {
         this.id = id;
@@ -29,7 +27,6 @@ public class UserDetailDto {
         this.admissionYear = admissionYear;
         this.role = role;
         this.profileImage = profileImage;
-        this.isCertified = isCertified;
         this.isBlocked = isBlocked;
     }
 
@@ -41,7 +38,6 @@ public class UserDetailDto {
                 user.getAdmissionYear(),
                 user.getRole(),
                 user.getProfileImage(),
-                user.getIsCertified(),
                 user.getIsBlocked()
         );
     }

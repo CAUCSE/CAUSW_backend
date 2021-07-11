@@ -33,9 +33,6 @@ public class User extends BaseEntity {
     @Column(name = "profile_image", nullable = true)
     private String profileImage;
 
-    @Column(name = "is_certified")
-    private Boolean isCertified;
-
     @Column(name = "is_blocked")
     private Boolean isBlocked;
 
@@ -48,7 +45,6 @@ public class User extends BaseEntity {
             Integer admissionYear,
             Role role,
             String profileImage,
-            Boolean isCertified,
             Boolean isBlocked
     ) {
         this.email = email;
@@ -57,7 +53,6 @@ public class User extends BaseEntity {
         this.admissionYear = admissionYear;
         this.role = role;
         this.profileImage = profileImage;
-        this.isCertified = isCertified;
         this.isBlocked = isBlocked;
     }
 
@@ -68,7 +63,6 @@ public class User extends BaseEntity {
             Integer admissionYear,
             Role role,
             String profileImage,
-            Boolean isCertified,
             Boolean isBlocked
     ) {
         return new User(
@@ -78,7 +72,6 @@ public class User extends BaseEntity {
                 admissionYear,
                 role,
                 profileImage,
-                isCertified,
                 isBlocked
         );
     }

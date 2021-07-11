@@ -11,6 +11,7 @@ public enum Role {
     LEADER_CIRCLE("leader_circle"),
     LEADER_ALUMNI("leader_alumni"),
     COMMON("common"),
+    VISITOR("visitor"),
     PROFESSOR("professor");
 
     private String value;
