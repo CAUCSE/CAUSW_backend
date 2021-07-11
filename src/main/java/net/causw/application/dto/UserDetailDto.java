@@ -1,8 +1,12 @@
 package net.causw.application.dto;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.infra.Role;
 
+@Getter
+@NoArgsConstructor
 public class UserDetailDto {
     private String id;
     private String email;
