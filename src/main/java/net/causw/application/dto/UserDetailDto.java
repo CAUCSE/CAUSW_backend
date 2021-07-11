@@ -16,7 +16,7 @@ public class UserDetailDto {
     private Role role;
     private String profileImage;
     private Boolean isBlocked;
-    private Locker locker;
+    private LockerDetailDto locker;
 
     private UserDetailDto(
             String id,
@@ -26,7 +26,7 @@ public class UserDetailDto {
             Role role,
             String profileImage,
             Boolean isBlocked,
-            Locker locker
+            LockerDetailDto locker
     ) {
         this.id = id;
         this.email = email;
@@ -47,7 +47,7 @@ public class UserDetailDto {
                 user.getRole(),
                 user.getProfileImage(),
                 user.getIsBlocked(),
-                user.getLocker()
+                LockerDetailDto.of(user.getLocker())
         );
     }
 }

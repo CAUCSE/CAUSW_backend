@@ -1,7 +1,6 @@
 package net.causw.domain.model;
 
 import lombok.Getter;
-import net.causw.infra.Locker;
 import net.causw.infra.Role;
 import net.causw.infra.User;
 
@@ -15,7 +14,7 @@ public class UserDomainModel {
     private Role role;
     private String profileImage;
     private Boolean isBlocked;
-    private Locker locker;
+    private LockerDomainModel locker;
 
     private UserDomainModel(
             String id,
@@ -26,7 +25,7 @@ public class UserDomainModel {
             Role role,
             String profileImage,
             Boolean isBlocked,
-            Locker locker
+            LockerDomainModel locker
     ) {
         this.id = id;
         this.email = email;
@@ -49,7 +48,7 @@ public class UserDomainModel {
                 user.getRole(),
                 user.getProfileImage(),
                 user.getIsBlocked(),
-                user.getLocker()
+                LockerDomainModel.of(user.getLocker())
         );
     }
 }
