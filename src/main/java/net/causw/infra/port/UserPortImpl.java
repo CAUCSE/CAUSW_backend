@@ -17,7 +17,6 @@ public class UserPortImpl implements UserPort {
 
     @Override
     public UserDomainModel findById(String id) {
-        // TODO: Throw specific exception
         return UserDomainModel.of(this.userRepository.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
