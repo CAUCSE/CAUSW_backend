@@ -1,5 +1,7 @@
 package net.causw.infra.port;
 
+import net.causw.domain.exceptions.BadRequestException;
+import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.spi.UserPort;
 import net.causw.infra.UserRepository;
@@ -16,6 +18,11 @@ public class UserPortImpl implements UserPort {
     @Override
     public UserDomainModel findById(String id) {
         // TODO: Throw specific exception
-        return UserDomainModel.of(userRepository.findById(id).orElseThrow());
+        return UserDomainModel.of(this.userRepository.findById(id).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid user id"
+                )
+        ));
     }
 }
