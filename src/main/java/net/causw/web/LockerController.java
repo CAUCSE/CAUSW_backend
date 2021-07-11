@@ -18,7 +18,7 @@ public class LockerController {
         this.lockerService = lockerService;
     }
 
-    @GetMapping(value = "/{id}")
+    @GetMapping(value = "/{locker_number}")
     @ResponseStatus(value = HttpStatus.OK)
     public LockerDetailDto findByLockerNumber(@PathVariable Long lockerNumber) {
         return this.lockerService.findByLockerNumber(lockerNumber);

@@ -30,7 +30,7 @@ public class LockerPortImpl implements LockerPort {
         return LockerDomainModel.of(lockerRepository.findByLockerNumber(lockerNumber).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid locker id"
+                        "Invalid locker number"
                 )
         ));
     }
