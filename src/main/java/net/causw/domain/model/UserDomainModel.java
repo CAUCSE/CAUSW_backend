@@ -13,7 +13,6 @@ public class UserDomainModel {
     private Integer admissionYear;
     private Role role;
     private String profileImage;
-    private Boolean isCertified;
     private Boolean isBlocked;
 
     private UserDomainModel(
@@ -24,7 +23,6 @@ public class UserDomainModel {
             Integer admissionYear,
             Role role,
             String profileImage,
-            Boolean isCertified,
             Boolean isBlocked
     ) {
         this.id = id;
@@ -34,7 +32,6 @@ public class UserDomainModel {
         this.admissionYear = admissionYear;
         this.role = role;
         this.profileImage = profileImage;
-        this.isCertified = isCertified;
         this.isBlocked = isBlocked;
     }
 
@@ -47,7 +44,6 @@ public class UserDomainModel {
                 user.getAdmissionYear(),
                 user.getRole(),
                 user.getProfileImage(),
-                user.getIsCertified(),
                 user.getIsBlocked()
         );
     }
