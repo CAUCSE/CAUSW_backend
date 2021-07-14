@@ -9,7 +9,11 @@ public class LockerDetailDto {
     private Long lockerNumber;
     private UserDetailDto user;
 
-    private LockerDetailDto(String id, Long lockerNumber, UserDetailDto user){
+    private LockerDetailDto(
+            String id,
+            Long lockerNumber,
+            UserDetailDto user
+    ){
         this.id = id;
         this.lockerNumber = lockerNumber;
         this.user = user;
