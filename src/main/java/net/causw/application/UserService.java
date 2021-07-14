@@ -1,6 +1,7 @@
 package net.causw.application;
 
 import net.causw.application.dto.UserDetailDto;
+import net.causw.application.dto.UserSaveRequestDto;
 import net.causw.domain.spi.UserPort;
 import org.springframework.stereotype.Service;
 
@@ -14,5 +15,9 @@ public class UserService {
 
     public UserDetailDto findById(String id) {
         return UserDetailDto.of(this.userPort.findById(id));
+    }
+
+    public String save(UserSaveRequestDto requestDto) {
+        return this.userPort.save(requestDto.toEntity()).getId();
     }
 }

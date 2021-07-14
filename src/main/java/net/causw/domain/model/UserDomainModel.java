@@ -51,4 +51,5 @@ public class UserDomainModel {
                 LockerDomainModel.of(user.getLocker())
         );
     }
+
 }

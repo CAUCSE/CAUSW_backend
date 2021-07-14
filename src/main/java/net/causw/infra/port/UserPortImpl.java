@@ -4,6 +4,7 @@ import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.spi.UserPort;
+import net.causw.infra.User;
 import net.causw.infra.UserRepository;
 import org.springframework.stereotype.Component;
 
@@ -23,5 +24,10 @@ public class UserPortImpl implements UserPort {
                         "Invalid user id"
                 )
         ));
+    }
+
+    @Override
+    public UserDomainModel save(User user) {
+        return UserDomainModel.of(this.userRepository.save(user));
     }
 }

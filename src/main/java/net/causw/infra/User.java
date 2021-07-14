@@ -39,8 +39,6 @@ public class User extends BaseEntity {
     @Column(name = "is_blocked")
     private Boolean isBlocked;
 
-    // TODO: Add Foreign Key
-
     @OneToOne
     @JoinColumn(name = "locker_id", nullable = true)
     private Locker locker;
