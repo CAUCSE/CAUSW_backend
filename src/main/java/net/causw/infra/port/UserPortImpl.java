@@ -1,9 +1,12 @@
 package net.causw.infra.port;
 
+import net.causw.application.dto.UserCreateRequestDto;
+import net.causw.application.dto.UserDetailDto;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
-import net.causw.domain.model.UserDomainModel;
-import net.causw.domain.spi.UserPort;
+import net.causw.application.spi.UserPort;
+import net.causw.infra.Role;
+import net.causw.infra.User;
 import net.causw.infra.UserRepository;
 import org.springframework.stereotype.Component;
 
@@ -16,12 +19,24 @@ public class UserPortImpl implements UserPort {
     }
 
     @Override
-    public UserDomainModel findById(String id) {
-        return UserDomainModel.of(this.userRepository.findById(id).orElseThrow(
+    public UserDetailDto findById(String id) {
+        return UserDetailDto.from(this.userRepository.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "Invalid user id"
                 )
         ));
+    }
+
+    @Override
+    public UserDetailDto create(UserCreateRequestDto user) {
+        return UserDetailDto.from(this.userRepository.save(User.of(
+                user.getEmail(),
+                user.getName(),
+                user.getPassword(),
+                user.getAdmissionYear(),
+                Role.VISITOR,
+                false
+        )));
     }
 }

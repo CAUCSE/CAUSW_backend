@@ -1,10 +1,6 @@
 package net.causw.domain.model;
 
 import lombok.Getter;
-import net.causw.infra.Board;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Getter
@@ -32,14 +28,21 @@ public class BoardDomainModel {
         this.readRoleList = readRoleList;
     }
 
-    public static BoardDomainModel of(Board board) {
+    public static BoardDomainModel of(
+            String id,
+            String name,
+            String description,
+            List<String> createRoleList,
+            List<String> modifyRoleList,
+            List<String> readRoleList
+    ) {
         return new BoardDomainModel(
-                board.getId(),
-                board.getName(),
-                board.getDescription(),
-                new ArrayList<>(Arrays.asList(board.getCreateRoles().split(","))),
-                new ArrayList<>(Arrays.asList(board.getModifyRoles().split(","))),
-                new ArrayList<>(Arrays.asList(board.getReadRoles().split(",")))
+                id,
+                name,
+                description,
+                createRoleList,
+                modifyRoleList,
+                readRoleList
         );
     }
 }

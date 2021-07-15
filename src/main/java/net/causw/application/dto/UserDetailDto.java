@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.infra.Role;
+import net.causw.infra.User;
 
 @Getter
 @NoArgsConstructor
@@ -34,7 +35,7 @@ public class UserDetailDto {
         this.isBlocked = isBlocked;
     }
 
-    public static UserDetailDto of(UserDomainModel user) {
+    public static UserDetailDto from(User user) {
         return new UserDetailDto(
                 user.getId(),
                 user.getEmail(),

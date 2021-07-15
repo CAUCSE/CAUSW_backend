@@ -2,7 +2,6 @@ package net.causw.application.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.causw.domain.model.UserDomainModel;
 import net.causw.infra.UserAuth;
 
 import java.time.LocalDateTime;
@@ -30,14 +29,14 @@ public class UserAuthDto {
         this.user = user;
     }
 
-    public static UserAuthDto of(UserAuth userAuth) {
+    public static UserAuthDto from(UserAuth userAuth) {
         return new UserAuthDto(
                 userAuth.getId(),
                 userAuth.getImage(),
                 userAuth.getCreatedAt(),
                 userAuth.getUpdatedAt(),
-                UserDetailDto.of(
-                        UserDomainModel.of(userAuth.getUser())
+                UserDetailDto.from(
+                        userAuth.getUser()
                 )
         );
     }

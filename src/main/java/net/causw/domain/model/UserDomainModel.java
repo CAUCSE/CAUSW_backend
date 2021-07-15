@@ -1,17 +1,14 @@
 package net.causw.domain.model;
 
 import lombok.Getter;
-import net.causw.infra.Role;
-import net.causw.infra.User;
 
 @Getter
 public class UserDomainModel {
     private String id;
     private String email;
     private String name;
-    private String password;
     private Integer admissionYear;
-    private Role role;
+    private String role;
     private String profileImage;
     private Boolean isBlocked;
 
@@ -19,32 +16,37 @@ public class UserDomainModel {
             String id,
             String email,
             String name,
-            String password,
             Integer admissionYear,
-            Role role,
+            String role,
             String profileImage,
             Boolean isBlocked
     ) {
         this.id = id;
         this.email = email;
         this.name = name;
-        this.password = password;
         this.admissionYear = admissionYear;
         this.role = role;
         this.profileImage = profileImage;
         this.isBlocked = isBlocked;
     }
 
-    public static UserDomainModel of(User user) {
+    public static UserDomainModel of(
+            String id,
+            String email,
+            String name,
+            Integer admissionYear,
+            String role,
+            String profileImage,
+            Boolean isBlocked
+    ) {
         return new UserDomainModel(
-                user.getId(),
-                user.getEmail(),
-                user.getName(),
-                user.getPassword(),
-                user.getAdmissionYear(),
-                user.getRole(),
-                user.getProfileImage(),
-                user.getIsBlocked()
+                id,
+                email,
+                name,
+                admissionYear,
+                role,
+                profileImage,
+                isBlocked
         );
     }
 }

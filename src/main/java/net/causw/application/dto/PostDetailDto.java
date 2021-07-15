@@ -2,7 +2,7 @@ package net.causw.application.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.causw.domain.model.PostDomainModel;
+import net.causw.infra.Post;
 
 import java.time.LocalDateTime;
 
@@ -35,7 +35,7 @@ public class PostDetailDto {
         this.board = board;
     }
 
-    public static PostDetailDto of(PostDomainModel post) {
+    public static PostDetailDto from(Post post) {
         return new PostDetailDto(
                 post.getId(),
                 post.getTitle(),
@@ -43,7 +43,7 @@ public class PostDetailDto {
                 post.getIsDeleted(),
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
-                BoardDetailDto.of(post.getBoard())
+                BoardDetailDto.from(post.getBoard())
         );
     }
 }
