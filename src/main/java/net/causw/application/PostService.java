@@ -1,7 +1,7 @@
 package net.causw.application;
 
 import net.causw.application.dto.PostDetailDto;
-import net.causw.domain.spi.PostPort;
+import net.causw.application.spi.PostPort;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,6 +13,6 @@ public class PostService {
     }
 
     public PostDetailDto findById(String id) {
-        return PostDetailDto.of(this.postPort.findById(id));
+        return this.postPort.findById(id);
     }
 }

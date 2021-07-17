@@ -1,7 +1,6 @@
 package net.causw.domain.model;
 
 import lombok.Getter;
-import net.causw.infra.Post;
 
 import java.time.LocalDateTime;
 
@@ -32,15 +31,23 @@ public class PostDomainModel {
         this.board = board;
     }
 
-    public static PostDomainModel of(Post post) {
+    public static PostDomainModel of(
+            String id,
+            String title,
+            String content,
+            Boolean isDeleted,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt,
+            BoardDomainModel board
+    ) {
         return new PostDomainModel(
-                post.getId(),
-                post.getTitle(),
-                post.getContent(),
-                post.getIsDeleted(),
-                post.getCreatedAt(),
-                post.getUpdatedAt(),
-                BoardDomainModel.of(post.getBoard())
+                id,
+                title,
+                content,
+                isDeleted,
+                createdAt,
+                updatedAt,
+                board
         );
     }
 }

@@ -1,7 +1,7 @@
 package net.causw.application;
 
 import net.causw.application.dto.BoardDetailDto;
-import net.causw.domain.spi.BoardPort;
+import net.causw.application.spi.BoardPort;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,6 +13,6 @@ public class BoardService {
     }
 
     public BoardDetailDto findById(String id) {
-        return BoardDetailDto.of(this.boardPort.findById(id));
+        return this.boardPort.findById(id);
     }
 }

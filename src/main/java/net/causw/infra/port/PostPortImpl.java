@@ -1,9 +1,9 @@
 package net.causw.infra.port;
 
+import net.causw.application.dto.PostDetailDto;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
-import net.causw.domain.model.PostDomainModel;
-import net.causw.domain.spi.PostPort;
+import net.causw.application.spi.PostPort;
 import net.causw.infra.PostRepository;
 import org.springframework.stereotype.Component;
 
@@ -16,8 +16,8 @@ public class PostPortImpl implements PostPort {
     }
 
     @Override
-    public PostDomainModel findById(String id) {
-        return PostDomainModel.of(this.postRepository.findById(id).orElseThrow(
+    public PostDetailDto findById(String id) {
+        return PostDetailDto.from(this.postRepository.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "Invalid post id"

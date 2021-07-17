@@ -2,8 +2,10 @@ package net.causw.application.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.causw.domain.model.BoardDomainModel;
+import net.causw.infra.Board;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Getter
@@ -32,14 +34,14 @@ public class BoardDetailDto {
         this.readRoleList = readRoleList;
     }
 
-    public static BoardDetailDto of(BoardDomainModel board) {
+    public static BoardDetailDto from(Board board) {
         return new BoardDetailDto(
                 board.getId(),
                 board.getName(),
                 board.getDescription(),
-                board.getCreateRoleList(),
-                board.getModifyRoleList(),
-                board.getReadRoleList()
+                new ArrayList<>(Arrays.asList(board.getCreateRoles().split(","))),
+                new ArrayList<>(Arrays.asList(board.getModifyRoles().split(","))),
+                new ArrayList<>(Arrays.asList(board.getReadRoles().split(",")))
         );
     }
 }

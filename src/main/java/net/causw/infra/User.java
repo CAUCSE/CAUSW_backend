@@ -36,15 +36,13 @@ public class User extends BaseEntity {
     @Column(name = "is_blocked")
     private Boolean isBlocked;
 
-    // TODO: Add Foreign Key
-
     private User(
             String email,
             String name,
             String password,
             Integer admissionYear,
             Role role,
-            String profileImage,
+            // TODO: String profileImage,
             Boolean isBlocked
     ) {
         this.email = email;
@@ -52,7 +50,6 @@ public class User extends BaseEntity {
         this.password = password;
         this.admissionYear = admissionYear;
         this.role = role;
-        this.profileImage = profileImage;
         this.isBlocked = isBlocked;
     }
 
@@ -62,7 +59,7 @@ public class User extends BaseEntity {
             String password,
             Integer admissionYear,
             Role role,
-            String profileImage,
+            // TODO: String profileImage,
             Boolean isBlocked
     ) {
         return new User(
@@ -71,7 +68,6 @@ public class User extends BaseEntity {
                 password,
                 admissionYear,
                 role,
-                profileImage,
                 isBlocked
         );
     }

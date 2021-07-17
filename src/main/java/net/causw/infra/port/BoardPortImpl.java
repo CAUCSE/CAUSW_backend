@@ -1,9 +1,9 @@
 package net.causw.infra.port;
 
+import net.causw.application.dto.BoardDetailDto;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
-import net.causw.domain.model.BoardDomainModel;
-import net.causw.domain.spi.BoardPort;
+import net.causw.application.spi.BoardPort;
 import net.causw.infra.BoardRepository;
 import org.springframework.stereotype.Component;
 
@@ -14,8 +14,8 @@ public class BoardPortImpl implements BoardPort {
     public BoardPortImpl(BoardRepository boardRepository) { this.boardRepository = boardRepository; }
 
     @Override
-    public BoardDomainModel findById(String id) {
-        return BoardDomainModel.of(this.boardRepository.findById(id).orElseThrow(
+    public BoardDetailDto findById(String id) {
+        return BoardDetailDto.from(this.boardRepository.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "Invalid board id"
