@@ -8,6 +8,8 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Table;
+import javax.persistence.OneToOne;
+import javax.persistence.JoinColumn;
 
 @Getter
 @Entity
@@ -35,6 +37,10 @@ public class User extends BaseEntity {
 
     @Column(name = "is_blocked")
     private Boolean isBlocked;
+
+    @OneToOne
+    @JoinColumn(name = "circle_id", nullable = true)
+    private Circle managingCircle;
 
     private User(
             String email,
