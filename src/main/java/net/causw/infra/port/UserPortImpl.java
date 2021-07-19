@@ -10,6 +10,7 @@ import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.infra.Role;
 import net.causw.infra.User;
 import net.causw.infra.UserRepository;
+import net.causw.infra.UserState;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -47,8 +48,8 @@ public class UserPortImpl implements UserPort {
                 user.getName(),
                 user.getPassword(),
                 user.getAdmissionYear(),
-                Role.VISITOR,
-                false
+                Role.NONE,
+                UserState.WAIT
         )));
     }
 }

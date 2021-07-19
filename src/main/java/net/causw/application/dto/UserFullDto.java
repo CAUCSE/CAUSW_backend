@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.causw.infra.Role;
 import net.causw.infra.User;
+import net.causw.infra.UserState;
 
 import java.time.LocalDateTime;
 
@@ -17,7 +18,7 @@ public class UserFullDto {
     private Integer admissionYear;
     private Role role;
     private String profileImage;
-    private Boolean isBlocked;
+    private UserState state;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -29,7 +30,7 @@ public class UserFullDto {
             Integer admissionYear,
             Role role,
             String profileImage,
-            Boolean isBlocked,
+            UserState state,
             LocalDateTime createdAt,
             LocalDateTime updatedAt
     ) {
@@ -40,7 +41,7 @@ public class UserFullDto {
         this.admissionYear = admissionYear;
         this.role = role;
         this.profileImage = profileImage;
-        this.isBlocked = isBlocked;
+        this.state = state;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -54,7 +55,7 @@ public class UserFullDto {
                 user.getAdmissionYear(),
                 user.getRole(),
                 user.getProfileImage(),
-                user.getIsBlocked(),
+                user.getState(),
                 user.getCreatedAt(),
                 user.getUpdatedAt()
         );

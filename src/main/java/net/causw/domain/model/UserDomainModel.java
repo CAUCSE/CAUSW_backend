@@ -11,7 +11,7 @@ public class UserDomainModel {
     private Integer admissionYear;
     private String role;
     private String profileImage;
-    private Boolean isBlocked;
+    private String state;
 
     private UserDomainModel(
             String id,
@@ -21,7 +21,7 @@ public class UserDomainModel {
             Integer admissionYear,
             String role,
             String profileImage,
-            Boolean isBlocked
+            String state
     ) {
         this.id = id;
         this.email = email;
@@ -30,7 +30,7 @@ public class UserDomainModel {
         this.admissionYear = admissionYear;
         this.role = role;
         this.profileImage = profileImage;
-        this.isBlocked = isBlocked;
+        this.state = state;
     }
 
     public static UserDomainModel of(
@@ -41,7 +41,7 @@ public class UserDomainModel {
             Integer admissionYear,
             String role,
             String profileImage,
-            Boolean isBlocked
+            String state
     ) {
         return new UserDomainModel(
                 id,
@@ -51,7 +51,7 @@ public class UserDomainModel {
                 admissionYear,
                 role,
                 profileImage,
-                isBlocked
+                state
         );
     }
 

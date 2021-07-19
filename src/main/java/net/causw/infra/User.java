@@ -35,8 +35,9 @@ public class User extends BaseEntity {
     @Column(name = "profile_image", nullable = true)
     private String profileImage;
 
-    @Column(name = "is_blocked")
-    private Boolean isBlocked;
+    @Column(name = "state")
+    @Enumerated(EnumType.STRING)
+    private UserState state;
 
     @OneToOne
     @JoinColumn(name = "circle_id", nullable = true)
@@ -49,14 +50,14 @@ public class User extends BaseEntity {
             Integer admissionYear,
             Role role,
             // TODO: String profileImage,
-            Boolean isBlocked
+            UserState state
     ) {
         this.email = email;
         this.name = name;
         this.password = password;
         this.admissionYear = admissionYear;
         this.role = role;
-        this.isBlocked = isBlocked;
+        this.state = state;
     }
 
     public static User of(
@@ -66,7 +67,7 @@ public class User extends BaseEntity {
             Integer admissionYear,
             Role role,
             // TODO: String profileImage,
-            Boolean isBlocked
+            UserState state
     ) {
         return new User(
                 email,
@@ -74,7 +75,7 @@ public class User extends BaseEntity {
                 password,
                 admissionYear,
                 role,
-                isBlocked
+                state
         );
     }
 }
