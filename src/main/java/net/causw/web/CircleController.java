@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
-@RequestMapping("/api/v1/circle")
+@RequestMapping("/api/v1/circles")
 public class CircleController {
     private final CircleService circleService;
 
