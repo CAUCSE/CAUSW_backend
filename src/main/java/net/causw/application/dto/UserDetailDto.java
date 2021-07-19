@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.infra.User;
+import net.causw.infra.UserState;
 
 @Getter
 @NoArgsConstructor
@@ -14,7 +15,7 @@ public class UserDetailDto {
     private Integer admissionYear;
     private String role;
     private String profileImage;
-    private Boolean isBlocked;
+    private UserState state;
 
     private UserDetailDto(
             String id,
@@ -23,7 +24,7 @@ public class UserDetailDto {
             Integer admissionYear,
             String role,
             String profileImage,
-            Boolean isBlocked
+            UserState state
     ) {
         this.id = id;
         this.email = email;
@@ -31,7 +32,7 @@ public class UserDetailDto {
         this.admissionYear = admissionYear;
         this.role = role;
         this.profileImage = profileImage;
-        this.isBlocked = isBlocked;
+        this.state = state;
     }
 
     public static UserDetailDto from(User user) {
@@ -42,7 +43,7 @@ public class UserDetailDto {
                 user.getAdmissionYear(),
                 user.getRole().getValue(),
                 user.getProfileImage(),
-                user.getIsBlocked()
+                user.getState()
         );
     }
 
@@ -54,7 +55,7 @@ public class UserDetailDto {
                 user.getAdmissionYear(),
                 user.getRole(),
                 user.getProfileImage(),
-                user.getIsBlocked()
+                UserState.valueOf(user.getState().toUpperCase())
         );
     }
 }

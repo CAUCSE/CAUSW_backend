@@ -36,7 +36,7 @@ public class UserService {
                 userFullDto.getAdmissionYear(),
                 userFullDto.getRole().getValue(),
                 userFullDto.getProfileImage(),
-                userFullDto.getIsBlocked()
+                userFullDto.getState().getValue()
         );
 
         if (!userDomainModel.validateSignInPassword(user.getPassword())) {
@@ -46,10 +46,17 @@ public class UserService {
             );
         }
 
-        if (userDomainModel.getIsBlocked()) {
+        if (userDomainModel.getState().equalsIgnoreCase("blocked")) {
             throw new UnauthorizedException(
                     ErrorCode.BLOCKED_USER,
                     "Blocked user"
+            );
+        }
+
+        if (userDomainModel.getState().equalsIgnoreCase("inactive")) {
+            throw new UnauthorizedException(
+                    ErrorCode.INACTIVE_USER,
+                    "Inactive user"
             );
         }
 
