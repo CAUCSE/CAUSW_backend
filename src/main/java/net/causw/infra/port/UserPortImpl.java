@@ -2,9 +2,11 @@ package net.causw.infra.port;
 
 import net.causw.application.dto.UserCreateRequestDto;
 import net.causw.application.dto.UserDetailDto;
+import net.causw.application.dto.UserFullDto;
+import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
-import net.causw.application.spi.UserPort;
+import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.infra.Role;
 import net.causw.infra.User;
 import net.causw.infra.UserRepository;
@@ -24,6 +26,16 @@ public class UserPortImpl implements UserPort {
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "Invalid user id"
+                )
+        ));
+    }
+
+    @Override
+    public UserFullDto findByEmail(String email) {
+        return UserFullDto.from(this.userRepository.findByEmail(email).orElseThrow(
+                () -> new UnauthorizedException(
+                        ErrorCode.INVALID_SIGNIN,
+                        "Invalid sign in data"
                 )
         ));
     }

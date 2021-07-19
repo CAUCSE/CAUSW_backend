@@ -2,59 +2,61 @@ package net.causw.application.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.causw.domain.model.UserDomainModel;
+import net.causw.infra.Role;
 import net.causw.infra.User;
+
+import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor
-public class UserDetailDto {
+public class UserFullDto {
     private String id;
     private String email;
     private String name;
+    private String password;
     private Integer admissionYear;
-    private String role;
+    private Role role;
     private String profileImage;
     private Boolean isBlocked;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
-    private UserDetailDto(
+    private UserFullDto(
             String id,
             String email,
             String name,
+            String password,
             Integer admissionYear,
-            String role,
+            Role role,
             String profileImage,
-            Boolean isBlocked
+            Boolean isBlocked,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt
     ) {
         this.id = id;
         this.email = email;
         this.name = name;
+        this.password = password;
         this.admissionYear = admissionYear;
         this.role = role;
         this.profileImage = profileImage;
         this.isBlocked = isBlocked;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
-    public static UserDetailDto from(User user) {
-        return new UserDetailDto(
+    public static UserFullDto from(User user) {
+        return new UserFullDto(
                 user.getId(),
                 user.getEmail(),
                 user.getName(),
-                user.getAdmissionYear(),
-                user.getRole().getValue(),
-                user.getProfileImage(),
-                user.getIsBlocked()
-        );
-    }
-
-    public static UserDetailDto from(UserDomainModel user) {
-        return new UserDetailDto(
-                user.getId(),
-                user.getEmail(),
-                user.getName(),
+                user.getPassword(),
                 user.getAdmissionYear(),
                 user.getRole(),
                 user.getProfileImage(),
-                user.getIsBlocked()
+                user.getIsBlocked(),
+                user.getCreatedAt(),
+                user.getUpdatedAt()
         );
     }
 }

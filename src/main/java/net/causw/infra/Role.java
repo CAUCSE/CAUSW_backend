@@ -1,5 +1,8 @@
 package net.causw.infra;
 
+import lombok.Getter;
+
+@Getter
 public enum Role {
     ADMIN("admin"),
     PRESIDENT("president"),

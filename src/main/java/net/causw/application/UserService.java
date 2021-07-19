@@ -2,7 +2,12 @@ package net.causw.application;
 
 import net.causw.application.dto.UserCreateRequestDto;
 import net.causw.application.dto.UserDetailDto;
+import net.causw.application.dto.UserFullDto;
+import net.causw.application.dto.UserSignInRequestDto;
 import net.causw.application.spi.UserPort;
+import net.causw.domain.exceptions.ErrorCode;
+import net.causw.domain.exceptions.UnauthorizedException;
+import net.causw.domain.model.UserDomainModel;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -19,5 +24,35 @@ public class UserService {
 
     public UserDetailDto create(UserCreateRequestDto user) {
         return this.userPort.create(user);
+    }
+
+    public UserDetailDto signIn(UserSignInRequestDto user) {
+        UserFullDto userFullDto = this.userPort.findByEmail(user.getEmail());
+        UserDomainModel userDomainModel = UserDomainModel.of(
+                userFullDto.getId(),
+                userFullDto.getEmail(),
+                userFullDto.getName(),
+                userFullDto.getPassword(),
+                userFullDto.getAdmissionYear(),
+                userFullDto.getRole().getValue(),
+                userFullDto.getProfileImage(),
+                userFullDto.getIsBlocked()
+        );
+
+        if (!userDomainModel.validateSignInPassword(user.getPassword())) {
+            throw new UnauthorizedException(
+                    ErrorCode.INVALID_SIGNIN,
+                    "Invalid sign in data"
+            );
+        }
+
+        if (userDomainModel.getIsBlocked()) {
+            throw new UnauthorizedException(
+                    ErrorCode.BLOCKED_USER,
+                    "Blocked user"
+            );
+        }
+
+        return UserDetailDto.from(userDomainModel);
     }
 }

@@ -7,6 +7,7 @@ public class UserDomainModel {
     private String id;
     private String email;
     private String name;
+    private String password;
     private Integer admissionYear;
     private String role;
     private String profileImage;
@@ -16,6 +17,7 @@ public class UserDomainModel {
             String id,
             String email,
             String name,
+            String password,
             Integer admissionYear,
             String role,
             String profileImage,
@@ -24,6 +26,7 @@ public class UserDomainModel {
         this.id = id;
         this.email = email;
         this.name = name;
+        this.password = password;
         this.admissionYear = admissionYear;
         this.role = role;
         this.profileImage = profileImage;
@@ -34,6 +37,7 @@ public class UserDomainModel {
             String id,
             String email,
             String name,
+            String password,
             Integer admissionYear,
             String role,
             String profileImage,
@@ -43,10 +47,15 @@ public class UserDomainModel {
                 id,
                 email,
                 name,
+                password,
                 admissionYear,
                 role,
                 profileImage,
                 isBlocked
         );
+    }
+
+    public boolean validateSignInPassword(String inputPassword) {
+        return this.password.equals(inputPassword);
     }
 }
