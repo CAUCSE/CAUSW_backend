@@ -1,7 +1,9 @@
-package net.causw.infra;
+package net.causw.adapter.db;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.causw.domain.model.Role;
+import net.causw.domain.model.UserState;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

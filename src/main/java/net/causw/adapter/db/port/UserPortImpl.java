@@ -1,4 +1,4 @@
-package net.causw.infra.port;
+package net.causw.adapter.db.port;
 
 import net.causw.application.dto.UserCreateRequestDto;
 import net.causw.application.dto.UserDetailDto;
@@ -7,10 +7,10 @@ import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
-import net.causw.infra.Role;
-import net.causw.infra.User;
-import net.causw.infra.UserRepository;
-import net.causw.infra.UserState;
+import net.causw.domain.model.Role;
+import net.causw.adapter.db.User;
+import net.causw.adapter.db.UserRepository;
+import net.causw.domain.model.UserState;
 import org.springframework.stereotype.Component;
 
 @Component

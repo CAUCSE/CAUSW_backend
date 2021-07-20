@@ -2,9 +2,9 @@ package net.causw.application.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.causw.infra.Role;
-import net.causw.infra.User;
-import net.causw.infra.UserState;
+import net.causw.domain.model.Role;
+import net.causw.adapter.db.User;
+import net.causw.domain.model.UserState;
 
 import java.time.LocalDateTime;
 

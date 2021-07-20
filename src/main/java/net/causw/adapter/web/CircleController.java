@@ -1,4 +1,4 @@
-package net.causw.web;
+package net.causw.adapter.web;
 
 import net.causw.application.CircleService;
 import net.causw.application.dto.CircleDto;

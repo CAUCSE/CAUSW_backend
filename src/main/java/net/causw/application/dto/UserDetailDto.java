@@ -2,9 +2,10 @@ package net.causw.application.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
-import net.causw.infra.User;
-import net.causw.infra.UserState;
+import net.causw.adapter.db.User;
+import net.causw.domain.model.UserState;
 
 @Getter
 @NoArgsConstructor
@@ -13,7 +14,7 @@ public class UserDetailDto {
     private String email;
     private String name;
     private Integer admissionYear;
-    private String role;
+    private Role role;
     private String profileImage;
     private UserState state;
 
@@ -22,7 +23,7 @@ public class UserDetailDto {
             String email,
             String name,
             Integer admissionYear,
-            String role,
+            Role role,
             String profileImage,
             UserState state
     ) {
@@ -41,7 +42,7 @@ public class UserDetailDto {
                 user.getEmail(),
                 user.getName(),
                 user.getAdmissionYear(),
-                user.getRole().getValue(),
+                user.getRole(),
                 user.getProfileImage(),
                 user.getState()
         );
@@ -55,7 +56,7 @@ public class UserDetailDto {
                 user.getAdmissionYear(),
                 user.getRole(),
                 user.getProfileImage(),
-                UserState.valueOf(user.getState().toUpperCase())
+                user.getState()
         );
     }
 }

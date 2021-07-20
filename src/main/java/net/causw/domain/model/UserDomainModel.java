@@ -9,9 +9,9 @@ public class UserDomainModel {
     private String name;
     private String password;
     private Integer admissionYear;
-    private String role;
+    private Role role;
     private String profileImage;
-    private String state;
+    private UserState state;
 
     private UserDomainModel(
             String id,
@@ -19,9 +19,9 @@ public class UserDomainModel {
             String name,
             String password,
             Integer admissionYear,
-            String role,
+            Role role,
             String profileImage,
-            String state
+            UserState state
     ) {
         this.id = id;
         this.email = email;
@@ -39,9 +39,9 @@ public class UserDomainModel {
             String name,
             String password,
             Integer admissionYear,
-            String role,
+            Role role,
             String profileImage,
-            String state
+            UserState state
     ) {
         return new UserDomainModel(
                 id,
