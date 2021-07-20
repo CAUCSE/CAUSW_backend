@@ -7,7 +7,9 @@ import net.causw.application.dto.UserFullDto;
 import java.util.Optional;
 
 public interface UserPort {
-    UserDetailDto findById(String id);
+    Optional<UserDetailDto> findById(String id);
+
+    Optional<UserDetailDto> findByName(String name);
 
     Optional<UserFullDto> findByEmail(String email);
 
