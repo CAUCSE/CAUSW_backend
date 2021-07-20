@@ -13,7 +13,7 @@ import javax.persistence.Table;
 @Entity
 @NoArgsConstructor
 @Table(name = "TB_CIRCLE")
-public class Circle extends BaseEntity{
+public class Circle extends BaseEntity {
     @Column(name = "name")
     private String name;
 
@@ -26,7 +26,7 @@ public class Circle extends BaseEntity{
     @Column(name = "is_deleted")
     private String isDeleted;
 
-    @OneToOne(mappedBy = "circle")
+    @OneToOne(mappedBy = "managingCircle")
     private User manager;
 
     private Circle(

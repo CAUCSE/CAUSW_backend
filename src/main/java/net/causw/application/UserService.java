@@ -5,10 +5,10 @@ import net.causw.application.dto.UserDetailDto;
 import net.causw.application.dto.UserFullDto;
 import net.causw.application.dto.UserSignInRequestDto;
 import net.causw.application.spi.UserPort;
-import net.causw.domain.model.UserState;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.UserDomainModel;
+import net.causw.domain.model.UserState;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -28,7 +28,13 @@ public class UserService {
     }
 
     public UserDetailDto signIn(UserSignInRequestDto user) {
-        UserFullDto userFullDto = this.userPort.findByEmail(user.getEmail());
+        UserFullDto userFullDto = this.userPort.findByEmail(user.getEmail()).orElseThrow(
+                () -> new UnauthorizedException(
+                        ErrorCode.INVALID_SIGNIN,
+                        "Invalid sign in data"
+                )
+        );
+
         UserDomainModel userDomainModel = UserDomainModel.of(
                 userFullDto.getId(),
                 userFullDto.getEmail(),
