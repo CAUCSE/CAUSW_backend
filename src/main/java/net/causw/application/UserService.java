@@ -5,6 +5,7 @@ import net.causw.application.dto.UserDetailDto;
 import net.causw.application.dto.UserFullDto;
 import net.causw.application.dto.UserSignInRequestDto;
 import net.causw.application.spi.UserPort;
+import net.causw.domain.model.UserState;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.UserDomainModel;
@@ -34,9 +35,9 @@ public class UserService {
                 userFullDto.getName(),
                 userFullDto.getPassword(),
                 userFullDto.getAdmissionYear(),
-                userFullDto.getRole().getValue(),
+                userFullDto.getRole(),
                 userFullDto.getProfileImage(),
-                userFullDto.getState().getValue()
+                userFullDto.getState()
         );
 
         if (!userDomainModel.validateSignInPassword(user.getPassword())) {
@@ -46,14 +47,14 @@ public class UserService {
             );
         }
 
-        if (userDomainModel.getState().equalsIgnoreCase("blocked")) {
+        if (userDomainModel.getState() == UserState.BLOCKED) {
             throw new UnauthorizedException(
                     ErrorCode.BLOCKED_USER,
                     "Blocked user"
             );
         }
 
-        if (userDomainModel.getState().equalsIgnoreCase("inactive")) {
+        if (userDomainModel.getState() == UserState.INACTIVE) {
             throw new UnauthorizedException(
                     ErrorCode.INACTIVE_USER,
                     "Inactive user"

@@ -1,4 +1,4 @@
-package net.causw.infra;
+package net.causw.domain.model;
 
 import lombok.Getter;
 

@@ -1,4 +1,4 @@
-package net.causw.web;
+package net.causw.adapter.web;
 
 import lombok.extern.slf4j.Slf4j;
 import net.causw.application.dto.ExceptionDto;

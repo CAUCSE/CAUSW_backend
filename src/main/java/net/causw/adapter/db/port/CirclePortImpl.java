@@ -1,10 +1,10 @@
-package net.causw.infra.port;
+package net.causw.adapter.db.port;
 
 import net.causw.application.dto.CircleDto;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.application.spi.CirclePort;
-import net.causw.infra.CircleRepository;
+import net.causw.adapter.db.CircleRepository;
 import org.springframework.stereotype.Component;
 
 @Component
