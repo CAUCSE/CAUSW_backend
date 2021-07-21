@@ -31,6 +31,9 @@ public class Board extends BaseEntity {
     @Column(name = "read_role_list")
     private String readRoles;
 
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
+
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "post_id")
     private Set<Post> postSet;
@@ -40,13 +43,15 @@ public class Board extends BaseEntity {
             String description,
             String createRoles,
             String modifyRoles,
-            String readRoles
+            String readRoles,
+            Boolean isDeleted
     ) {
         this.name = name;
         this.description = description;
         this.createRoles = createRoles;
         this.modifyRoles = modifyRoles;
         this.readRoles = readRoles;
+        this.isDeleted = isDeleted;
     }
 
     public static Board of (
@@ -54,14 +59,16 @@ public class Board extends BaseEntity {
             String description,
             String createRoles,
             String modifyRoles,
-            String readRoles
+            String readRoles,
+            Boolean isDeleted
     ) {
         return new Board(
                 name,
                 description,
                 createRoles,
                 modifyRoles,
-                readRoles
+                readRoles,
+                isDeleted
         );
     }
 }

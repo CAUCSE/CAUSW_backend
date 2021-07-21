@@ -17,6 +17,7 @@ public class BoardDetailDto {
     private List<String> createRoleList;
     private List<String> modifyRoleList;
     private List<String> readRoleList;
+    private Boolean isDeleted;
 
     private BoardDetailDto(
             String id,
@@ -24,7 +25,8 @@ public class BoardDetailDto {
             String description,
             List<String> createRoleList,
             List<String> modifyRoleList,
-            List<String> readRoleList
+            List<String> readRoleList,
+            Boolean isDeleted
     ) {
         this.id = id;
         this.name = name;
@@ -32,6 +34,7 @@ public class BoardDetailDto {
         this.createRoleList = createRoleList;
         this.modifyRoleList = modifyRoleList;
         this.readRoleList = readRoleList;
+        this.isDeleted = isDeleted;
     }
 
     public static BoardDetailDto from(Board board) {
@@ -41,7 +44,8 @@ public class BoardDetailDto {
                 board.getDescription(),
                 new ArrayList<>(Arrays.asList(board.getCreateRoles().split(","))),
                 new ArrayList<>(Arrays.asList(board.getModifyRoles().split(","))),
-                new ArrayList<>(Arrays.asList(board.getReadRoles().split(",")))
+                new ArrayList<>(Arrays.asList(board.getReadRoles().split(","))),
+                board.getIsDeleted()
         );
     }
 }
