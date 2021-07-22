@@ -1,6 +1,6 @@
 package net.causw.application.dto;
 
-import net.causw.adapter.db.Circle;
+import net.causw.adapter.persistence.Circle;
 
 public class CircleDto {
     private String id;

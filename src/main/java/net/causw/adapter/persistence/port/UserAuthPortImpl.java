@@ -1,10 +1,10 @@
-package net.causw.adapter.db.port;
+package net.causw.adapter.persistence.port;
 
 import net.causw.application.dto.UserAuthDto;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.application.spi.UserAuthPort;
-import net.causw.adapter.db.UserAuthRepository;
+import net.causw.adapter.persistence.UserAuthRepository;
 import org.springframework.stereotype.Component;
 
 @Component

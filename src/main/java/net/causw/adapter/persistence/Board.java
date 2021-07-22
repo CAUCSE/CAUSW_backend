@@ -1,4 +1,4 @@
-package net.causw.adapter.db;
+package net.causw.adapter.persistence;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

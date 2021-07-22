@@ -1,4 +1,4 @@
-package net.causw.adapter.db;
+package net.causw.adapter.persistence;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,6 +27,9 @@ public class User extends BaseEntity {
     @Column(name = "password")
     private String password;
 
+    @Column(name = "student_id", nullable = true)
+    private String studentId;
+
     @Column(name = "admission_year")
     private Integer admissionYear;
 
@@ -49,6 +52,7 @@ public class User extends BaseEntity {
             String email,
             String name,
             String password,
+            String studentId,
             Integer admissionYear,
             Role role,
             // TODO: String profileImage,
@@ -57,6 +61,7 @@ public class User extends BaseEntity {
         this.email = email;
         this.name = name;
         this.password = password;
+        this.studentId = studentId;
         this.admissionYear = admissionYear;
         this.role = role;
         this.state = state;
@@ -66,6 +71,7 @@ public class User extends BaseEntity {
             String email,
             String name,
             String password,
+            String studentId,
             Integer admissionYear,
             Role role,
             // TODO: String profileImage,
@@ -75,6 +81,7 @@ public class User extends BaseEntity {
                 email,
                 name,
                 password,
+                studentId,
                 admissionYear,
                 role,
                 state
