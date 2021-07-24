@@ -43,7 +43,7 @@ public class UserController {
     @PostMapping(value = "/sign-up")
     @ResponseStatus(value = HttpStatus.CREATED)
     public UserDetailDto signUp(@RequestBody UserCreateRequestDto userCreateDto) {
-        return this.userService.create(userCreateDto);
+        return this.userService.signUp(userCreateDto);
     }
 
     // TODO : JWT 반영
