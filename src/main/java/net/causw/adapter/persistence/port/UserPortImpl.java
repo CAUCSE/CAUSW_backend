@@ -4,8 +4,6 @@ import net.causw.application.dto.UserCreateRequestDto;
 import net.causw.application.dto.UserDetailDto;
 import net.causw.application.dto.UserFullDto;
 import net.causw.application.spi.UserPort;
-import net.causw.domain.exceptions.BadRequestException;
-import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.Role;
 import net.causw.adapter.persistence.User;
 import net.causw.adapter.persistence.UserRepository;
@@ -23,13 +21,13 @@ public class UserPortImpl implements UserPort {
     }
 
     @Override
-    public UserDetailDto findById(String id) {
-        return UserDetailDto.from(this.userRepository.findById(id).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid user id"
-                )
-        ));
+    public Optional<UserDetailDto> findById(String id) {
+        return this.userRepository.findById(id).map(UserDetailDto::from);
+    }
+
+    @Override
+    public Optional<UserDetailDto> findByName(String name) {
+        return this.userRepository.findByName(name).map(UserDetailDto::from);
     }
 
     @Override
