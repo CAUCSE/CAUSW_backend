@@ -48,6 +48,10 @@ public class User extends BaseEntity {
     @JoinColumn(name = "circle_id", nullable = true)
     private Circle managingCircle;
 
+    @OneToOne
+    @JoinColumn(name = "locker_id", nullable = true)
+    private Locker locker;
+
     private User(
             String email,
             String name,

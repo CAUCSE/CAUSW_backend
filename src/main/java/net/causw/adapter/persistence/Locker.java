@@ -1,4 +1,4 @@
-package net.causw.infra;
+package net.causw.adapter.persistence;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,15 +16,19 @@ public class Locker extends BaseEntity {
     @Column(name = "locker_number", unique = true)
     private Long lockerNumber;
 
+    @Column(name = "is_active")
+    private Boolean isActive;
+
     @OneToOne(mappedBy = "locker")
     private User user;
 
-    private Locker(Long lockerNumber, User user) {
+    private Locker(Long lockerNumber, Boolean isActive ,User user) {
         this.lockerNumber = lockerNumber;
+        this.isActive = isActive;
         this.user = user;
     }
 
-    public static Locker of(Long lockerNumber, User user) {
-        return new Locker(lockerNumber, user);
+    public static Locker of(Long lockerNumber, Boolean isActive, User user) {
+        return new Locker(lockerNumber, isActive, user);
     }
 }
