@@ -9,6 +9,7 @@ import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
+import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.model.UserState;
 import org.springframework.stereotype.Service;
@@ -39,7 +40,40 @@ public class UserService {
         );
     }
 
-    public UserDetailDto create(UserCreateRequestDto user) {
+    public UserDetailDto signUp(UserCreateRequestDto user) {
+        if (this.userPort.findByEmail(user.getEmail()).isPresent()){
+            throw new UnauthorizedException(
+                    ErrorCode.ROW_ALREADY_EXIST,
+                    "This email already exist"
+            );
+        }
+
+        UserDomainModel userDomainModel = UserDomainModel.of(
+                null,
+                user.getEmail(),
+                user.getName(),
+                user.getPassword(),
+                user.getStudentId(),
+                user.getAdmissionYear(),
+                Role.NONE,
+                null,
+                UserState.WAIT
+        );
+
+        if (!userDomainModel.validateSignUpPassword()) {
+            throw new UnauthorizedException(
+                    ErrorCode.INVALID_SIGNUP,
+                    "Invalid sign up data: password format"
+            );
+        }
+
+        if (!userDomainModel.validateSignUpAdmissionYear()) {
+            throw new UnauthorizedException(
+                    ErrorCode.INVALID_SIGNUP,
+                    "Invalid sign up data: admission year"
+            );
+        }
+
         return this.userPort.create(user);
     }
 
@@ -47,7 +81,7 @@ public class UserService {
         UserFullDto userFullDto = this.userPort.findByEmail(user.getEmail()).orElseThrow(
                 () -> new UnauthorizedException(
                         ErrorCode.INVALID_SIGNIN,
-                        "Invalid sign in data"
+                        "This email does not exist"
                 )
         );
 

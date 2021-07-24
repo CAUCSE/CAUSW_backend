@@ -2,6 +2,10 @@ package net.causw.domain.model;
 
 import lombok.Getter;
 
+import java.util.Calendar;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 @Getter
 public class UserDomainModel {
     private String id;
@@ -62,5 +66,22 @@ public class UserDomainModel {
 
     public boolean validateSignInPassword(String inputPassword) {
         return this.password.equals(inputPassword);
+    }
+
+    public boolean validateSignUpPassword() {
+        String passwordPolicy = "((?=.*[a-z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,})";
+
+        Pattern pattern_password = Pattern.compile(passwordPolicy);
+        Matcher matcher_password = pattern_password.matcher(this.password);
+
+        return matcher_password.matches();
+    }
+
+    public boolean validateSignUpAdmissionYear() {
+        if (this.admissionYear < 1972) { return false; }
+
+        Calendar cal = Calendar.getInstance();
+        int presentYear = cal.get(Calendar.YEAR);
+        return this.admissionYear <= presentYear;
     }
 }
