@@ -40,6 +40,7 @@ public class UserService {
                 userFullDto.getEmail(),
                 userFullDto.getName(),
                 userFullDto.getPassword(),
+                userFullDto.getStudentId(),
                 userFullDto.getAdmissionYear(),
                 userFullDto.getRole(),
                 userFullDto.getProfileImage(),

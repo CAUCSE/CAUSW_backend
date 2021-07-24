@@ -2,7 +2,7 @@ package net.causw.application.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.causw.adapter.db.Board;
+import net.causw.adapter.persistence.Board;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -1,10 +1,10 @@
-package net.causw.adapter.db.port;
+package net.causw.adapter.persistence.port;
 
 import net.causw.application.dto.PostDetailDto;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.application.spi.PostPort;
-import net.causw.adapter.db.PostRepository;
+import net.causw.adapter.persistence.PostRepository;
 import org.springframework.stereotype.Component;
 
 @Component

@@ -2,7 +2,7 @@ package net.causw.application.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.causw.adapter.db.UserAuth;
+import net.causw.adapter.persistence.UserAuth;
 
 import java.time.LocalDateTime;
 
