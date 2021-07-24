@@ -13,6 +13,7 @@ import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.model.UserState;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService {
@@ -22,6 +23,7 @@ public class UserService {
         this.userPort = userPort;
     }
 
+    @Transactional(readOnly = true)
     public UserDetailDto findById(String id) {
         return this.userPort.findById(id).orElseThrow(
                 () -> new BadRequestException(
@@ -31,6 +33,7 @@ public class UserService {
         );
     }
 
+    @Transactional(readOnly = true)
     public UserDetailDto findByName(String name) {
         return this.userPort.findByName(name).orElseThrow(
                 () -> new BadRequestException(
@@ -40,9 +43,10 @@ public class UserService {
         );
     }
 
+    @Transactional
     public UserDetailDto signUp(UserCreateRequestDto user) {
-        if (this.userPort.findByEmail(user.getEmail()).isPresent()){
-            throw new UnauthorizedException(
+        if (this.userPort.findByEmail(user.getEmail()).isPresent()) {
+            throw new BadRequestException(
                     ErrorCode.ROW_ALREADY_EXIST,
                     "This email already exist"
             );
@@ -61,14 +65,14 @@ public class UserService {
         );
 
         if (!userDomainModel.validateSignUpPassword()) {
-            throw new UnauthorizedException(
+            throw new BadRequestException(
                     ErrorCode.INVALID_SIGNUP,
                     "Invalid sign up data: password format"
             );
         }
 
         if (!userDomainModel.validateSignUpAdmissionYear()) {
-            throw new UnauthorizedException(
+            throw new BadRequestException(
                     ErrorCode.INVALID_SIGNUP,
                     "Invalid sign up data: admission year"
             );
@@ -77,11 +81,12 @@ public class UserService {
         return this.userPort.create(user);
     }
 
+    @Transactional(readOnly = true)
     public UserDetailDto signIn(UserSignInRequestDto user) {
         UserFullDto userFullDto = this.userPort.findByEmail(user.getEmail()).orElseThrow(
                 () -> new UnauthorizedException(
                         ErrorCode.INVALID_SIGNIN,
-                        "This email does not exist"
+                        "Invalid sign in data"
                 )
         );
 
@@ -121,6 +126,7 @@ public class UserService {
         return UserDetailDto.from(userDomainModel);
     }
 
+    @Transactional(readOnly = true)
     public EmailDuplicatedCheckDto isDuplicatedEmail(String email) {
         return EmailDuplicatedCheckDto.of(this.userPort.findByEmail(email).isPresent());
     }

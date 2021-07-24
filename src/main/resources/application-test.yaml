@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5433/causwtest
+    username: causwtestuser
+    password: causwtestpw
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+  jwt:
+    secret: jwtsecretkey
