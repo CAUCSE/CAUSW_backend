@@ -1,17 +1,18 @@
 package net.causw.adapter.db.port;
 
+import net.causw.adapter.db.User;
+import net.causw.adapter.db.UserRepository;
 import net.causw.application.dto.UserCreateRequestDto;
 import net.causw.application.dto.UserDetailDto;
 import net.causw.application.dto.UserFullDto;
 import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
-import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.Role;
-import net.causw.adapter.db.User;
-import net.causw.adapter.db.UserRepository;
 import net.causw.domain.model.UserState;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 @Component
 public class UserPortImpl implements UserPort {
@@ -32,13 +33,8 @@ public class UserPortImpl implements UserPort {
     }
 
     @Override
-    public UserFullDto findByEmail(String email) {
-        return UserFullDto.from(this.userRepository.findByEmail(email).orElseThrow(
-                () -> new UnauthorizedException(
-                        ErrorCode.INVALID_SIGNIN,
-                        "Invalid sign in data"
-                )
-        ));
+    public Optional<UserFullDto> findByEmail(String email) {
+        return this.userRepository.findByEmail(email).map(UserFullDto::from);
     }
 
     @Override

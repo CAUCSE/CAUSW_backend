@@ -24,6 +24,13 @@ public class GlobalExceptionHandler {
         return new ExceptionDto(exception.getErrorCode(), exception.getMessage());
     }
 
+    @ExceptionHandler(value = {IllegalArgumentException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ExceptionDto handleIllegalArgumentException(IllegalArgumentException exception) {
+        GlobalExceptionHandler.log.error("error message", exception);
+        return new ExceptionDto(ErrorCode.INVALID_PARAMETER, exception.getMessage());
+    }
+
     @ExceptionHandler(value = {UnauthorizedException.class})
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ExceptionDto handleUnauthorizedException(UnauthorizedException exception) {

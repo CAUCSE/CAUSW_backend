@@ -13,7 +13,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 @Configuration
 public class SwaggerConfig {
-
     private static final String API_NAME = "CAU_SW API";
     private static final String API_VERSION = "0.0.1";
     private static final String API_DESCRIPTION = "중앙대학교 소프트웨어학부 동문네트워크 API";
@@ -25,10 +24,10 @@ public class SwaggerConfig {
                 .apis(RequestHandlerSelectors.basePackage("net.causw"))
                 .paths(PathSelectors.any())
                 .build()
-                .apiInfo(apiInfo());
+                .apiInfo(this.apiInfo());
     }
 
-    public ApiInfo apiInfo() {
+    private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
                 .title(API_NAME)
                 .version(API_VERSION)
