@@ -15,20 +15,20 @@ import javax.persistence.Table;
 @NoArgsConstructor
 @Table(name = "TB_LOCKER_LOG")
 public class LockerLog extends BaseEntity{
-    @Column(name = "locker_number")
+    @Column(name = "locker_number", nullable = false)
     private Long lockerNumber;
 
-    @Column(name = "user_email", nullable = true)
+    @Column(name = "user_email")
     private String userEmail;
 
-    @Column(name = "user_name", nullable = true)
+    @Column(name = "user_name")
     private String userName;
 
-    @Column(name = "action")
+    @Column(name = "action", nullable = false)
     @Enumerated(EnumType.STRING)
     private LockerLogAction action;
 
-    @Column(name = "message", nullable = true)
+    @Column(name = "message")
     private String message;
 
 
