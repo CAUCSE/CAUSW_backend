@@ -2,6 +2,7 @@ package net.causw.adapter.persistence;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserState;
 
@@ -14,6 +15,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.JoinColumn;
 
 @Getter
+@Setter
 @Entity
 @NoArgsConstructor
 @Table(name = "TB_USER")

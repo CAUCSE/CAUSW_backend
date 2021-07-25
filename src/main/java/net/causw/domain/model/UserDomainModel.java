@@ -68,7 +68,7 @@ public class UserDomainModel {
         return this.password.equals(inputPassword);
     }
 
-    public boolean validateSignUpPassword() {
+    public boolean validatePassword() {
         String passwordPolicy = "((?=.*[a-z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,})";
 
         Pattern pattern_password = Pattern.compile(passwordPolicy);
@@ -77,7 +77,7 @@ public class UserDomainModel {
         return matcher_password.matches();
     }
 
-    public boolean validateSignUpAdmissionYear() {
+    public boolean validateAdmissionYear() {
         if (this.admissionYear < 1972) { return false; }
 
         Calendar cal = Calendar.getInstance();
