@@ -2,6 +2,7 @@ package net.causw.adapter.persistence;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -16,22 +17,23 @@ import java.util.Set;
 @NoArgsConstructor
 @Table(name = "TB_BOARD")
 public class Board extends BaseEntity {
-    @Column(name = "name")
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "description")
+    @Column(name = "description", nullable = true)
     private String description;
 
-    @Column(name = "create_role_list")
+    @Column(name = "create_role_list", nullable = false)
     private String createRoles;
 
-    @Column(name = "modify_role_list")
+    @Column(name = "modify_role_list", nullable = false)
     private String modifyRoles;
 
-    @Column(name = "read_role_list")
+    @Column(name = "read_role_list", nullable = false)
     private String readRoles;
 
     @Column(name = "is_deleted")
+    @ColumnDefault("false")
     private Boolean isDeleted;
 
     @OneToMany(cascade = CascadeType.ALL)

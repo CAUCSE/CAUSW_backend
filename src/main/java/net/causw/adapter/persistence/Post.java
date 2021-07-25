@@ -2,6 +2,7 @@ package net.causw.adapter.persistence;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,17 +15,18 @@ import javax.persistence.Table;
 @NoArgsConstructor
 @Table(name = "TB_POST")
 public class Post extends BaseEntity {
-    @Column(name = "title")
+    @Column(name = "title", nullable = false)
     private String title;
 
-    @Column(columnDefinition = "TEXT", name = "content")
+    @Column(columnDefinition = "TEXT", name = "content", nullable = false)
     private String content;
 
     @Column(name = "is_deleted")
+    @ColumnDefault("false")
     private Boolean isDeleted;
 
     @ManyToOne(targetEntity = Board.class)
-    @JoinColumn(name = "board_id")
+    @JoinColumn(name = "board_id", nullable = false)
     private Board board;
 
     private Post(String title, String content, Boolean isDeleted) {

@@ -18,29 +18,29 @@ import javax.persistence.JoinColumn;
 @NoArgsConstructor
 @Table(name = "TB_USER")
 public class User extends BaseEntity {
-    @Column(name = "email", unique = true)
+    @Column(name = "email", unique = true, nullable = false)
     private String email;
 
-    @Column(name = "name")
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "password")
+    @Column(name = "password", nullable = false)
     private String password;
 
     @Column(name = "student_id", nullable = true)
     private String studentId;
 
-    @Column(name = "admission_year")
+    @Column(name = "admission_year", nullable = false)
     private Integer admissionYear;
 
-    @Column(name = "role")
+    @Column(name = "role", nullable = false)
     @Enumerated(EnumType.STRING)
     private Role role;
 
     @Column(name = "profile_image", nullable = true)
     private String profileImage;
 
-    @Column(name = "state")
+    @Column(name = "state", nullable = false)
     @Enumerated(EnumType.STRING)
     private UserState state;
 

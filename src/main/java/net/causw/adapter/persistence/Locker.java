@@ -2,6 +2,7 @@ package net.causw.adapter.persistence;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -13,10 +14,11 @@ import javax.persistence.Table;
 @NoArgsConstructor
 @Table(name = "TB_LOCKER")
 public class Locker extends BaseEntity {
-    @Column(name = "locker_number", unique = true)
+    @Column(name = "locker_number", unique = true, nullable = false)
     private Long lockerNumber;
 
     @Column(name = "is_active")
+    @ColumnDefault("true")
     private Boolean isActive;
 
     @OneToOne(mappedBy = "locker")
