@@ -18,20 +18,18 @@ public class LockerLog extends BaseEntity{
     @Column(name = "locker_number", nullable = false)
     private Long lockerNumber;
 
-    @Column(name = "user_email")
+    @Column(name = "user_email", nullable = true)
     private String userEmail;
 
-    @Column(name = "user_name")
+    @Column(name = "user_name", nullable = true)
     private String userName;
 
     @Column(name = "action", nullable = false)
     @Enumerated(EnumType.STRING)
     private LockerLogAction action;
 
-    @Column(name = "message")
+    @Column(name = "message", nullable = true)
     private String message;
-
-
 
     private LockerLog(
             Long lockerNumber,
