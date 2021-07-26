@@ -2,6 +2,7 @@ package net.causw.adapter.persistence;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,16 +15,17 @@ import javax.persistence.Table;
 @NoArgsConstructor
 @Table(name = "TB_CIRCLE")
 public class Circle extends BaseEntity {
-    @Column(name = "name")
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "main_image")
+    @Column(name = "main_image", nullable = true)
     private String mainImage;
 
-    @Column(name = "description")
+    @Column(name = "description", nullable = true)
     private String description;
 
     @Column(name = "is_deleted")
+    @ColumnDefault("false")
     private String isDeleted;
 
     @OneToOne(mappedBy = "managingCircle")

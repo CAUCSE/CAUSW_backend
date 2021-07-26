@@ -15,11 +15,11 @@ import javax.persistence.Table;
 @NoArgsConstructor
 @Table(name = "TB_USER_AUTH_LOG")
 public class UserAuth extends BaseEntity {
-    @Column(name = "image")
+    @Column(name = "image", nullable = false)
     private String image;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     private UserAuth(String image, User user) {
