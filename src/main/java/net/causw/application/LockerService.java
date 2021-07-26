@@ -5,6 +5,7 @@ import net.causw.application.spi.LockerPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -16,6 +17,7 @@ public class LockerService {
         this.lockerPort = lockerPort;
     }
 
+    @Transactional(readOnly = true)
     public LockerDetailDto findById(String id) {
         return this.lockerPort.findById(id).orElseThrow(
                 () -> new BadRequestException(
@@ -25,6 +27,7 @@ public class LockerService {
         );
     }
 
+    @Transactional(readOnly = true)
     public List<LockerDetailDto> findAll() {
         return this.lockerPort.findAll();
     }
