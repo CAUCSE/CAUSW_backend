@@ -19,6 +19,8 @@ public class UserDetailDto {
     private String profileImage;
     private UserState state;
 
+    private String token;
+
     private UserDetailDto(
             String id,
             String email,
@@ -37,6 +39,28 @@ public class UserDetailDto {
         this.role = role;
         this.profileImage = profileImage;
         this.state = state;
+    }
+
+    private UserDetailDto(
+            String id,
+            String email,
+            String name,
+            String studentId,
+            Integer admissionYear,
+            Role role,
+            String profileImage,
+            UserState state,
+            String token
+    ) {
+        this.id = id;
+        this.email = email;
+        this.name = name;
+        this.studentId = studentId;
+        this.admissionYear = admissionYear;
+        this.role = role;
+        this.profileImage = profileImage;
+        this.state = state;
+        this.token = token;
     }
 
     public static UserDetailDto from(User user) {
@@ -62,6 +86,20 @@ public class UserDetailDto {
                 user.getRole(),
                 user.getProfileImage(),
                 user.getState()
+        );
+    }
+
+    public static UserDetailDto from (UserDomainModel user, String token) {
+        return new UserDetailDto(
+                user.getId(),
+                user.getEmail(),
+                user.getName(),
+                user.getStudentId(),
+                user.getAdmissionYear(),
+                user.getRole(),
+                user.getProfileImage(),
+                user.getState(),
+                token
         );
     }
 }

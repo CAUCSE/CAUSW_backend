@@ -6,6 +6,7 @@ import net.causw.application.dto.UserDetailDto;
 import net.causw.application.dto.UserFullDto;
 import net.causw.application.dto.UserSignInRequestDto;
 import net.causw.application.spi.UserPort;
+import net.causw.config.JwtTokenProvider;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
@@ -18,9 +19,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class UserService {
     private final UserPort userPort;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    public UserService(UserPort userPort) {
+    public UserService(UserPort userPort, JwtTokenProvider jwtTokenProvider) {
         this.userPort = userPort;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     @Transactional(readOnly = true)
@@ -123,7 +126,9 @@ public class UserService {
             );
         }
 
-        return UserDetailDto.from(userDomainModel);
+        String jwtToken = this.jwtTokenProvider.createToken(userFullDto.getId(), userFullDto.getRole().getValue());
+
+        return UserDetailDto.from(userDomainModel, jwtToken);
     }
 
     @Transactional(readOnly = true)

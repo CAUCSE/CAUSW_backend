@@ -46,7 +46,6 @@ public class UserController {
         return this.userService.signUp(userCreateDto);
     }
 
-    // TODO : JWT 반영
     @PostMapping(value = "/sign-in")
     @ResponseStatus(value = HttpStatus.OK)
     public UserDetailDto signIn(@RequestBody UserSignInRequestDto userSignInRequestDto) {
