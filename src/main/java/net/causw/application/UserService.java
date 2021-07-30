@@ -14,6 +14,11 @@ import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.model.UserState;
+import net.causw.domain.validation.AdmissionYearValidator;
+import net.causw.domain.validation.DuplicatedEmailValidator;
+import net.causw.domain.validation.PasswordCorrectValidator;
+import net.causw.domain.validation.PasswordFormatValidator;
+import net.causw.domain.validation.UserStateValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,12 +55,8 @@ public class UserService {
 
     @Transactional
     public UserDetailDto signUp(UserCreateRequestDto userCreateRequestDto) {
-        if (this.userPort.findByEmail(userCreateRequestDto.getEmail()).isPresent()) {
-            throw new BadRequestException(
-                    ErrorCode.ROW_ALREADY_EXIST,
-                    "This email already exist"
-            );
-        }
+        DuplicatedEmailValidator.of(this.userPort, userCreateRequestDto.getEmail())
+                .validate();
 
         UserDomainModel userDomainModel = UserDomainModel.of(
                 null,
@@ -69,19 +70,9 @@ public class UserService {
                 UserState.WAIT
         );
 
-        if (!userDomainModel.validatePassword()) {
-            throw new BadRequestException(
-                    ErrorCode.INVALID_SIGNUP,
-                    "Invalid sign up data: password format"
-            );
-        }
-
-        if (!userDomainModel.validateAdmissionYear()) {
-            throw new BadRequestException(
-                    ErrorCode.INVALID_SIGNUP,
-                    "Invalid sign up data: admission year"
-            );
-        }
+        PasswordFormatValidator.of(userDomainModel.getPassword())
+                .linkWith(AdmissionYearValidator.of(userDomainModel.getAdmissionYear()))
+                .validate();
 
         return this.userPort.create(userCreateRequestDto);
     }
@@ -107,26 +98,9 @@ public class UserService {
                 userFullDto.getState()
         );
 
-        if (!userDomainModel.validateSignInPassword(userSignInRequestDto.getPassword())) {
-            throw new BadRequestException(
-                    ErrorCode.INVALID_SIGNIN,
-                    "Invalid sign in data"
-            );
-        }
-
-        if (userDomainModel.getState() == UserState.BLOCKED) {
-            throw new UnauthorizedException(
-                    ErrorCode.BLOCKED_USER,
-                    "Blocked user"
-            );
-        }
-
-        if (userDomainModel.getState() == UserState.INACTIVE) {
-            throw new UnauthorizedException(
-                    ErrorCode.INACTIVE_USER,
-                    "Inactive user"
-            );
-        }
+        PasswordCorrectValidator.of(userDomainModel, userSignInRequestDto.getPassword())
+                .linkWith(UserStateValidator.of(userDomainModel))
+                .validate();
 
         String jwtToken = this.jwtTokenProvider.createToken(userFullDto.getId(), userFullDto.getRole().getValue());
 
