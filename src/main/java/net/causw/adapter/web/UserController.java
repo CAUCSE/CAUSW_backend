@@ -7,10 +7,12 @@ import net.causw.application.dto.UserAuthDto;
 import net.causw.application.dto.UserCreateRequestDto;
 import net.causw.application.dto.UserDetailDto;
 import net.causw.application.dto.UserSignInRequestDto;
+import net.causw.application.dto.UserUpdateRequestDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -63,5 +65,11 @@ public class UserController {
     @ResponseStatus(value = HttpStatus.OK)
     public UserAuthDto findAuthById(@PathVariable String id) {
         return this.userAuthService.findById(id);
+    }
+
+    @PutMapping(value = "/{id}")
+    @ResponseStatus(value = HttpStatus.OK)
+    public UserDetailDto update(@PathVariable String id, @RequestBody UserUpdateRequestDto userUpdateDto) {
+        return this.userService.update(id, userUpdateDto);
     }
 }

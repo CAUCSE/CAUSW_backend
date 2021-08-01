@@ -3,6 +3,7 @@ package net.causw.adapter.persistence.port;
 import net.causw.application.dto.UserCreateRequestDto;
 import net.causw.application.dto.UserDetailDto;
 import net.causw.application.dto.UserFullDto;
+import net.causw.application.dto.UserUpdateRequestDto;
 import net.causw.application.spi.UserPort;
 import net.causw.domain.model.Role;
 import net.causw.adapter.persistence.User;
@@ -36,15 +37,30 @@ public class UserPortImpl implements UserPort {
     }
 
     @Override
-    public UserDetailDto create(UserCreateRequestDto user) {
+    public UserDetailDto create(UserCreateRequestDto userCreateRequestDto) {
         return UserDetailDto.from(this.userRepository.save(User.of(
-                user.getEmail(),
-                user.getName(),
-                user.getPassword(),
-                user.getStudentId(),
-                user.getAdmissionYear(),
+                userCreateRequestDto.getEmail(),
+                userCreateRequestDto.getName(),
+                userCreateRequestDto.getPassword(),
+                userCreateRequestDto.getStudentId(),
+                userCreateRequestDto.getAdmissionYear(),
                 Role.NONE,
                 UserState.WAIT
         )));
+    }
+
+    @Override
+    public Optional<UserDetailDto> update(String id, UserUpdateRequestDto userUpdateRequestDto) {
+        return this.userRepository.findById(id).map(
+                srcUser -> {
+                    srcUser.setEmail(userUpdateRequestDto.getEmail());
+                    srcUser.setName(userUpdateRequestDto.getName());
+                    srcUser.setPassword(userUpdateRequestDto.getPassword());
+                    srcUser.setStudentId(userUpdateRequestDto.getStudentId());
+                    srcUser.setAdmissionYear(userUpdateRequestDto.getAdmissionYear());
+
+                    return UserDetailDto.from(this.userRepository.save(srcUser));
+                }
+        );
     }
 }
