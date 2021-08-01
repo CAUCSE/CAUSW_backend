@@ -21,7 +21,7 @@ public class DuplicatedEmailValidator extends AbstractValidator {
 
     @Override
     public void validate() {
-        if (this.userPort.findByEmail(email).isPresent()) {
+        if (this.userPort.findByEmail(this.email).isPresent()) {
             throw new BadRequestException(
                     ErrorCode.ROW_ALREADY_EXIST,
                     "This email already exist"

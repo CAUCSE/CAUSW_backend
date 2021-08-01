@@ -26,9 +26,10 @@ public class PasswordFormatValidator extends AbstractValidator {
                     "Invalid sign up data: password format"
             );
         }
+
         if (this.hasNext()) {
             this.next.validate();
-        };
+        }
     }
 
     public boolean validatePassword() {

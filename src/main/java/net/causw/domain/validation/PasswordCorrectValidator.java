@@ -27,8 +27,9 @@ public class PasswordCorrectValidator extends AbstractValidator {
                     "Invalid sign in data"
             );
         }
+
         if (this.hasNext()) {
             this.next.validate();
-        };
+        }
     }
 }

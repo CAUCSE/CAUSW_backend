@@ -7,13 +7,13 @@ import java.util.Calendar;
 
 public class AdmissionYearValidator extends AbstractValidator {
 
-    private final int admissionYear;
+    private final Integer admissionYear;
 
-    private AdmissionYearValidator(int admissionYear) {
+    private AdmissionYearValidator(Integer admissionYear) {
         this.admissionYear = admissionYear;
     }
 
-    public static AdmissionYearValidator of(int admissionYear) {
+    public static AdmissionYearValidator of(Integer admissionYear) {
         return new AdmissionYearValidator(admissionYear);
     }
 
@@ -25,9 +25,10 @@ public class AdmissionYearValidator extends AbstractValidator {
                     "Invalid sign up data: admission year"
             );
         }
+
         if (this.hasNext()) {
             this.next.validate();
-        };
+        }
     }
 
     public boolean validateAdmissionYear() {

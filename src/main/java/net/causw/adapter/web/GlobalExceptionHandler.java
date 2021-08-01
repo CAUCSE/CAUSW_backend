@@ -1,6 +1,7 @@
 package net.causw.adapter.web;
 
 import lombok.extern.slf4j.Slf4j;
+import net.causw.application.dto.ConstraintExceptionDto;
 import net.causw.application.dto.ExceptionDto;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import javax.validation.ConstraintViolationException;
 import java.nio.file.AccessDeniedException;
 
 @Component
@@ -22,6 +24,13 @@ public class GlobalExceptionHandler {
     public ExceptionDto handleBadRequestException(BadRequestException exception) {
         GlobalExceptionHandler.log.error("error message", exception);
         return new ExceptionDto(exception.getErrorCode(), exception.getMessage());
+    }
+
+    @ExceptionHandler(value = {ConstraintViolationException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ConstraintExceptionDto handleConstraintViolationException(ConstraintViolationException exception) {
+        GlobalExceptionHandler.log.error("error message", exception);
+        return new ConstraintExceptionDto(ErrorCode.INVALID_PARAMETER, exception.getMessage(), exception.getConstraintViolations());
     }
 
     @ExceptionHandler(value = {IllegalArgumentException.class})
