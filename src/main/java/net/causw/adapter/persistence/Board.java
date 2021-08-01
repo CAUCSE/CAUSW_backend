@@ -7,7 +7,6 @@ import org.hibernate.annotations.ColumnDefault;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.util.Set;
@@ -36,8 +35,7 @@ public class Board extends BaseEntity {
     @ColumnDefault("false")
     private Boolean isDeleted;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "post_id")
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private Set<Post> postSet;
 
     private Board(
