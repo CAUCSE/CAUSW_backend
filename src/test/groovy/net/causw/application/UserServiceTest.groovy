@@ -6,23 +6,33 @@ import net.causw.application.dto.UserDetailDto
 import net.causw.application.dto.UserFullDto
 import net.causw.application.dto.UserUpdateRequestDto
 import net.causw.application.spi.UserPort
+import net.causw.config.JwtTokenProvider
 import net.causw.domain.exceptions.BadRequestException
 import net.causw.domain.model.Role
 import net.causw.domain.model.UserState
 import org.junit.Test
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import spock.lang.Specification
+
+import javax.validation.ConstraintViolationException
+import javax.validation.Validation
+import javax.validation.Validator
+import javax.validation.ValidatorFactory
 
 @ActiveProfiles(value = "test")
 class UserServiceTest extends Specification {
 
     private UserPort userPort
     private UserService userService
+    private JwtTokenProvider jwtTokenProvider
+    private Validator validator
 
     def setup() {
         this.userPort = Mock(UserPort.class)
-        this.userService = new UserService(this.userPort)
+        this.jwtTokenProvider = Mock(JwtTokenProvider.class)
+        ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory()
+        validator = validatorFactory.getValidator()
+        this.userService = new UserService(this.userPort, this.jwtTokenProvider, this.validator)
     }
 
     /**
@@ -68,7 +78,7 @@ class UserServiceTest extends Specification {
         )
 
         this.userPort.findById(id) >> Optional.of(mockUserDetailDto)
-        this.userPort.update(id, userUpdateRequestDto) >> mockUpdatedUserDetailDto
+        this.userPort.update(id, userUpdateRequestDto) >> Optional.of(mockUpdatedUserDetailDto)
         this.userPort.findByEmail("update@cau.ac.kr") >> Optional.ofNullable(null)
 
         when:
@@ -119,7 +129,7 @@ class UserServiceTest extends Specification {
         )
 
         this.userPort.findById(id) >> Optional.of(mockUserDetailDto)
-        this.userPort.update(id, userUpdateRequestDto) >> mockUpdatedUserDetailDto
+        this.userPort.update(id, userUpdateRequestDto) >> Optional.of(mockUpdatedUserDetailDto)
         this.userPort.findByEmail("update@cau.ac.kr") >> Optional.ofNullable(null)
 
         when: "password with short length"
@@ -198,7 +208,7 @@ class UserServiceTest extends Specification {
         )
 
         this.userPort.findById(id) >> Optional.of(mockUserDetailDto)
-        this.userPort.update(id, userUpdateRequestDto) >> mockUpdatedUserDetailDto
+        this.userPort.update(id, userUpdateRequestDto) >> Optional.of(mockUpdatedUserDetailDto)
         this.userPort.findByEmail("update@cau.ac.kr") >> Optional.ofNullable(null)
 
         when: "admission year with future day"
@@ -439,4 +449,65 @@ class UserServiceTest extends Specification {
         thrown(BadRequestException)
     }
 
+    def "User sign-up invalid parameter"() {
+        given:
+        def email = "test-normal-mail@cau.ac.kr"
+        def name = "test-name"
+        def password = "test1234!"
+        def studentId = "20210000"
+        def admissionYear = 2021
+
+        def mockUser = User.of(
+                email,
+                name,
+                password,
+                studentId,
+                admissionYear,
+                Role.NONE,
+                UserState.WAIT
+        )
+
+        def userCreateRequestDto = new UserCreateRequestDto(
+                email,
+                name,
+                password,
+                studentId,
+                admissionYear
+        )
+
+        this.userPort.create(userCreateRequestDto) >> UserDetailDto.from(mockUser)
+        this.userPort.findByEmail(email) >> Optional.ofNullable(null)
+
+        when: "Invalid email"
+        userCreateRequestDto.setEmail("invalid-email")
+        this.userPort.findByEmail("invalid-email") >> Optional.ofNullable(null)
+        this.userService.signUp(userCreateRequestDto)
+
+        then:
+        thrown(ConstraintViolationException)
+
+        when: "Null email"
+        userCreateRequestDto.setEmail(null)
+        this.userPort.findByEmail(null) >> Optional.ofNullable(null)
+        this.userService.signUp(userCreateRequestDto)
+
+        then:
+        thrown(ConstraintViolationException)
+
+        when: "Blank name"
+        userCreateRequestDto.setEmail(email)
+        userCreateRequestDto.setName("")
+        this.userService.signUp(userCreateRequestDto)
+
+        then:
+        thrown(ConstraintViolationException)
+
+        when: "Null admission year"
+        userCreateRequestDto.setName("test-name")
+        userCreateRequestDto.setAdmissionYear(null)
+        this.userService.signUp(userCreateRequestDto)
+
+        then:
+        thrown(ConstraintViolationException)
+    }
 }
