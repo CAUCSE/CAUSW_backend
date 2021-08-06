@@ -12,13 +12,13 @@ public class UserCircleDto {
     private String id;
     private UserCircleStatus status;
     private CircleDto circle;
-    private UserDetailDto user;
+    private UserResponseDto user;
 
     private UserCircleDto(
             String id,
             UserCircleStatus status,
             CircleDto circle,
-            UserDetailDto user
+            UserResponseDto user
     ){
         this.id = id;
         this.status = status;
@@ -33,7 +33,7 @@ public class UserCircleDto {
                 CircleDto.from(
                         userCircle.getCircle()
                 ),
-                UserDetailDto.from(
+                UserResponseDto.from(
                         userCircle.getUser()
                 )
         );

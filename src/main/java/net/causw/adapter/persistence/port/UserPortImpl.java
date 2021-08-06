@@ -1,7 +1,6 @@
 package net.causw.adapter.persistence.port;
 
 import net.causw.application.dto.UserCreateRequestDto;
-import net.causw.application.dto.UserDetailDto;
 import net.causw.application.dto.UserFullDto;
 import net.causw.application.dto.UserUpdateRequestDto;
 import net.causw.application.spi.UserPort;
@@ -11,7 +10,9 @@ import net.causw.adapter.persistence.UserRepository;
 import net.causw.domain.model.UserState;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 public class UserPortImpl implements UserPort {
@@ -22,13 +23,13 @@ public class UserPortImpl implements UserPort {
     }
 
     @Override
-    public Optional<UserDetailDto> findById(String id) {
-        return this.userRepository.findById(id).map(UserDetailDto::from);
+    public Optional<UserFullDto> findById(String id) {
+        return this.userRepository.findById(id).map(UserFullDto::from);
     }
 
     @Override
-    public Optional<UserDetailDto> findByName(String name) {
-        return this.userRepository.findByName(name).map(UserDetailDto::from);
+    public Optional<UserFullDto> findByName(String name) {
+        return this.userRepository.findByName(name).map(UserFullDto::from);
     }
 
     @Override
@@ -37,8 +38,8 @@ public class UserPortImpl implements UserPort {
     }
 
     @Override
-    public UserDetailDto create(UserCreateRequestDto userCreateRequestDto) {
-        return UserDetailDto.from(this.userRepository.save(User.of(
+    public UserFullDto create(UserCreateRequestDto userCreateRequestDto) {
+        return UserFullDto.from(this.userRepository.save(User.of(
                 userCreateRequestDto.getEmail(),
                 userCreateRequestDto.getName(),
                 userCreateRequestDto.getPassword(),
@@ -50,7 +51,7 @@ public class UserPortImpl implements UserPort {
     }
 
     @Override
-    public Optional<UserDetailDto> update(String id, UserUpdateRequestDto userUpdateRequestDto) {
+    public Optional<UserFullDto> update(String id, UserUpdateRequestDto userUpdateRequestDto) {
         return this.userRepository.findById(id).map(
                 srcUser -> {
                     srcUser.setEmail(userUpdateRequestDto.getEmail());
@@ -59,8 +60,24 @@ public class UserPortImpl implements UserPort {
                     srcUser.setStudentId(userUpdateRequestDto.getStudentId());
                     srcUser.setAdmissionYear(userUpdateRequestDto.getAdmissionYear());
 
-                    return UserDetailDto.from(this.userRepository.save(srcUser));
+                    return UserFullDto.from(this.userRepository.save(srcUser));
                 }
         );
+    }
+
+    @Override
+    public Optional<UserFullDto> updateRole(String id, Role role) {
+        return this.userRepository.findById(id).map(
+                srcUser -> {
+                    srcUser.setRole(role);
+
+                    return UserFullDto.from(this.userRepository.save(srcUser));
+                }
+        );
+    }
+
+    @Override
+    public List<UserFullDto> findByRole(Role role) {
+        return this.userRepository.findByRole(role).stream().map(UserFullDto::from).collect(Collectors.toList());
     }
 }

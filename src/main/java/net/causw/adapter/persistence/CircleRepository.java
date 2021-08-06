@@ -1,8 +1,13 @@
 package net.causw.adapter.persistence;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
 
 @Repository
 public interface CircleRepository extends JpaRepository<Circle, String> {
+    @Query(value = "SELECT * from TB_CIRCLE where TB_CIRCLE.leader_id = ?1", nativeQuery = true)
+    Optional<Circle> findByLeaderId(String leader_id);
 }

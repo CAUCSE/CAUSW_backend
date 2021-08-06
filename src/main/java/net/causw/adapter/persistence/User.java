@@ -49,10 +49,6 @@ public class User extends BaseEntity {
     private UserState state;
 
     @OneToOne
-    @JoinColumn(name = "circle_id", nullable = true)
-    private Circle managingCircle;
-
-    @OneToOne
     @JoinColumn(name = "locker_id", nullable = true)
     private Locker locker;
 
@@ -79,6 +75,27 @@ public class User extends BaseEntity {
         this.state = state;
     }
 
+    private User(
+            String id,
+            String email,
+            String name,
+            String password,
+            String studentId,
+            Integer admissionYear,
+            Role role,
+            // TODO: String profileImage,
+            UserState state
+    ) {
+        super(id);
+        this.email = email;
+        this.name = name;
+        this.password = password;
+        this.studentId = studentId;
+        this.admissionYear = admissionYear;
+        this.role = role;
+        this.state = state;
+    }
+
     public static User of(
             String email,
             String name,
@@ -90,6 +107,29 @@ public class User extends BaseEntity {
             UserState state
     ) {
         return new User(
+                email,
+                name,
+                password,
+                studentId,
+                admissionYear,
+                role,
+                state
+        );
+    }
+
+    public static User of(
+            String id,
+            String email,
+            String name,
+            String password,
+            String studentId,
+            Integer admissionYear,
+            Role role,
+            // TODO: String profileImage,
+            UserState state
+    ) {
+        return new User(
+                id,
                 email,
                 name,
                 password,

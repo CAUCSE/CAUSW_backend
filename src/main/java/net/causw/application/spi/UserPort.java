@@ -1,20 +1,25 @@
 package net.causw.application.spi;
 
 import net.causw.application.dto.UserCreateRequestDto;
-import net.causw.application.dto.UserDetailDto;
 import net.causw.application.dto.UserFullDto;
 import net.causw.application.dto.UserUpdateRequestDto;
+import net.causw.domain.model.Role;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserPort {
-    Optional<UserDetailDto> findById(String id);
+    Optional<UserFullDto> findById(String id);
 
-    Optional<UserDetailDto> findByName(String name);
+    Optional<UserFullDto> findByName(String name);
 
     Optional<UserFullDto> findByEmail(String email);
 
-    UserDetailDto create(UserCreateRequestDto userCreateRequestDto);
+    UserFullDto create(UserCreateRequestDto userCreateRequestDto);
 
-    Optional<UserDetailDto> update(String id, UserUpdateRequestDto userUpdateRequestDto);
+    Optional<UserFullDto> update(String id, UserUpdateRequestDto userUpdateRequestDto);
+
+    Optional<UserFullDto> updateRole(String id, Role role);
+
+    List<UserFullDto> findByRole(Role role);
 }

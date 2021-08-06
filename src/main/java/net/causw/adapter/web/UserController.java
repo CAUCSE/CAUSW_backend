@@ -5,10 +5,12 @@ import net.causw.application.UserService;
 import net.causw.application.dto.EmailDuplicatedCheckDto;
 import net.causw.application.dto.UserAuthDto;
 import net.causw.application.dto.UserCreateRequestDto;
-import net.causw.application.dto.UserDetailDto;
+import net.causw.application.dto.UserResponseDto;
 import net.causw.application.dto.UserSignInRequestDto;
 import net.causw.application.dto.UserUpdateRequestDto;
+import net.causw.application.dto.UserUpdateRoleRequestDto;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,25 +34,25 @@ public class UserController {
 
     @GetMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
-    public UserDetailDto findById(@PathVariable String id) {
+    public UserResponseDto findById(@PathVariable String id) {
         return this.userService.findById(id);
     }
 
     @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
-    public UserDetailDto findByName(@RequestParam String name) {
+    public UserResponseDto findByName(@RequestParam String name) {
         return this.userService.findByName(name);
     }
 
     @PostMapping(value = "/sign-up")
     @ResponseStatus(value = HttpStatus.CREATED)
-    public UserDetailDto signUp(@RequestBody UserCreateRequestDto userCreateDto) {
+    public UserResponseDto signUp(@RequestBody UserCreateRequestDto userCreateDto) {
         return this.userService.signUp(userCreateDto);
     }
 
     @PostMapping(value = "/sign-in")
     @ResponseStatus(value = HttpStatus.OK)
-    public UserDetailDto signIn(@RequestBody UserSignInRequestDto userSignInRequestDto) {
+    public String signIn(@RequestBody UserSignInRequestDto userSignInRequestDto) {
         return this.userService.signIn(userSignInRequestDto);
     }
 
@@ -68,7 +70,15 @@ public class UserController {
 
     @PutMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
-    public UserDetailDto update(@PathVariable String id, @RequestBody UserUpdateRequestDto userUpdateDto) {
+    public UserResponseDto update(@PathVariable String id, @RequestBody UserUpdateRequestDto userUpdateDto) {
         return this.userService.update(id, userUpdateDto);
+    }
+
+    @PutMapping(value = "/{granteeId}/role")
+    @ResponseStatus(value = HttpStatus.OK)
+    public UserResponseDto updateRole(@AuthenticationPrincipal String grantorId,
+                                      @PathVariable String granteeId,
+                                      @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto) {
+        return this.userService.updateUserRole(grantorId, granteeId, userUpdateRoleRequestDto);
     }
 }

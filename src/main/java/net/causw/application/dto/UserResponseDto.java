@@ -2,14 +2,16 @@ package net.causw.application.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.adapter.persistence.User;
 import net.causw.domain.model.UserState;
 
 @Getter
+@Setter
 @NoArgsConstructor
-public class UserDetailDto {
+public class UserResponseDto {
     private String id;
     private String email;
     private String name;
@@ -19,9 +21,7 @@ public class UserDetailDto {
     private String profileImage;
     private UserState state;
 
-    private String token;
-
-    private UserDetailDto(
+    private UserResponseDto(
             String id,
             String email,
             String name,
@@ -41,30 +41,8 @@ public class UserDetailDto {
         this.state = state;
     }
 
-    private UserDetailDto(
-            String id,
-            String email,
-            String name,
-            String studentId,
-            Integer admissionYear,
-            Role role,
-            String profileImage,
-            UserState state,
-            String token
-    ) {
-        this.id = id;
-        this.email = email;
-        this.name = name;
-        this.studentId = studentId;
-        this.admissionYear = admissionYear;
-        this.role = role;
-        this.profileImage = profileImage;
-        this.state = state;
-        this.token = token;
-    }
-
-    public static UserDetailDto from(User user) {
-        return new UserDetailDto(
+    public static UserResponseDto from(User user) {
+        return new UserResponseDto(
                 user.getId(),
                 user.getEmail(),
                 user.getName(),
@@ -76,8 +54,8 @@ public class UserDetailDto {
         );
     }
 
-    public static UserDetailDto from(UserDomainModel user) {
-        return new UserDetailDto(
+    public static UserResponseDto from(UserDomainModel user) {
+        return new UserResponseDto(
                 user.getId(),
                 user.getEmail(),
                 user.getName(),
@@ -89,8 +67,8 @@ public class UserDetailDto {
         );
     }
 
-    public static UserDetailDto from (UserDomainModel user, String token) {
-        return new UserDetailDto(
+    public static UserResponseDto from(UserFullDto user) {
+        return new UserResponseDto(
                 user.getId(),
                 user.getEmail(),
                 user.getName(),
@@ -98,8 +76,7 @@ public class UserDetailDto {
                 user.getAdmissionYear(),
                 user.getRole(),
                 user.getProfileImage(),
-                user.getState(),
-                token
+                user.getState()
         );
     }
 }
