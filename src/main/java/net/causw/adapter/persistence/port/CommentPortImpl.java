@@ -3,9 +3,9 @@ package net.causw.adapter.persistence.port;
 import net.causw.adapter.persistence.CommentRepository;
 import net.causw.application.dto.CommentDetailDto;
 import net.causw.application.spi.CommentPort;
-import net.causw.domain.exceptions.BadRequestException;
-import net.causw.domain.exceptions.ErrorCode;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 @Component
 public class CommentPortImpl implements CommentPort {
@@ -16,12 +16,7 @@ public class CommentPortImpl implements CommentPort {
     }
 
     @Override
-    public CommentDetailDto findById(String id) {
-        return CommentDetailDto.from(this.commentRepository.findById(id).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid comment id"
-                )
-        ));
+    public Optional<CommentDetailDto> findById(String id) {
+        return this.commentRepository.findById(id).map(CommentDetailDto::from);
     }
 }
