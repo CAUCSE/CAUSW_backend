@@ -13,14 +13,14 @@ public class UserAuthDto {
     private String image;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private UserDetailDto user;
+    private UserResponseDto user;
 
     private UserAuthDto(
             String id,
             String image,
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
-            UserDetailDto user
+            UserResponseDto user
     ) {
         this.id = id;
         this.image = image;
@@ -35,7 +35,7 @@ public class UserAuthDto {
                 userAuth.getImage(),
                 userAuth.getCreatedAt(),
                 userAuth.getUpdatedAt(),
-                UserDetailDto.from(
+                UserResponseDto.from(
                         userAuth.getUser()
                 )
         );

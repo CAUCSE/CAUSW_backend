@@ -2,6 +2,7 @@ package net.causw.application.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import net.causw.domain.model.Role;
 import net.causw.adapter.persistence.User;
 import net.causw.domain.model.UserState;
@@ -9,6 +10,7 @@ import net.causw.domain.model.UserState;
 import java.time.LocalDateTime;
 
 @Getter
+@Setter
 @NoArgsConstructor
 public class UserFullDto {
     private String id;

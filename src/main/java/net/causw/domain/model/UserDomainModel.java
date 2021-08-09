@@ -80,25 +80,4 @@ public class UserDomainModel {
                 state
         );
     }
-
-    public boolean validateSignInPassword(String inputPassword) {
-        return this.password.equals(inputPassword);
-    }
-
-    public boolean validatePassword() {
-        String passwordPolicy = "((?=.*[a-z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,})";
-
-        Pattern pattern_password = Pattern.compile(passwordPolicy);
-        Matcher matcher_password = pattern_password.matcher(this.password);
-
-        return matcher_password.matches();
-    }
-
-    public boolean validateAdmissionYear() {
-        if (this.admissionYear < 1972) { return false; }
-
-        Calendar cal = Calendar.getInstance();
-        int presentYear = cal.get(Calendar.YEAR);
-        return this.admissionYear <= presentYear;
-    }
 }

@@ -1,22 +1,26 @@
 package net.causw.application.dto;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import net.causw.adapter.persistence.Circle;
 
+@Getter
+@NoArgsConstructor
 public class CircleDto {
     private String id;
     private String name;
     private String mainImage;
     private String description;
-    private String isDeleted;
-    private UserDetailDto manager;
+    private Boolean isDeleted;
+    private UserResponseDto manager;
 
     private CircleDto(
             String id,
             String name,
             String mainImage,
             String description,
-            String isDeleted,
-            UserDetailDto manager
+            Boolean isDeleted,
+            UserResponseDto manager
     ) {
         this.id = id;
         this.name = name;
@@ -33,8 +37,8 @@ public class CircleDto {
                 circle.getMainImage(),
                 circle.getDescription(),
                 circle.getIsDeleted(),
-                UserDetailDto.from(
-                        circle.getManager()
+                UserResponseDto.from(
+                        circle.getLeader()
                 )
         );
     }

@@ -2,10 +2,12 @@ package net.causw.adapter.persistence;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.OneToMany;
@@ -14,6 +16,7 @@ import java.util.List;
 
 
 @Getter
+@Setter
 @Entity
 @NoArgsConstructor
 @Table(name = "TB_CIRCLE")
@@ -29,10 +32,11 @@ public class Circle extends BaseEntity {
 
     @Column(name = "is_deleted")
     @ColumnDefault("false")
-    private String isDeleted;
+    private Boolean isDeleted;
 
-    @OneToOne(mappedBy = "managingCircle")
-    private User manager;
+    @OneToOne
+    @JoinColumn(name = "leader_id")
+    private User leader;
 
     @OneToMany
     @JoinColumn(name = "user_circle_id")
@@ -42,29 +46,29 @@ public class Circle extends BaseEntity {
             String name,
             String mainImage,
             String description,
-            String isDeleted,
-            User manager
+            Boolean isDeleted,
+            User leader
     ) {
         this.name = name;
         this.mainImage = mainImage;
         this.description = description;
         this.isDeleted = isDeleted;
-        this.manager = manager;
+        this.leader = leader;
     }
 
     public static Circle of(
             String name,
             String mainImage,
             String description,
-            String isDeleted,
-            User manager
+            Boolean isDeleted,
+            User leader
     ) {
         return new Circle(
                 name,
                 mainImage,
                 description,
                 isDeleted,
-                manager
+                leader
         );
     }
 }

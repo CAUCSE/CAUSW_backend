@@ -11,14 +11,14 @@ public class LockerDetailDto {
     private Long lockerNumber;
     private Boolean isActive;
     private LocalDateTime updatedAt;
-    private UserDetailDto user;
+    private UserResponseDto user;
 
     private LockerDetailDto(
             String id,
             Long lockerNumber,
             Boolean isActive,
             LocalDateTime updateAt,
-            UserDetailDto user
+            UserResponseDto user
     ){
         this.id = id;
         this.lockerNumber = lockerNumber;
@@ -33,7 +33,7 @@ public class LockerDetailDto {
                 locker.getLockerNumber(),
                 locker.getIsActive(),
                 locker.getUpdatedAt(),
-                UserDetailDto.from(locker.getUser())
+                UserResponseDto.from(locker.getUser())
         );
     }
 }
