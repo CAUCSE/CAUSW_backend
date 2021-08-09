@@ -1,11 +1,13 @@
 package net.causw.adapter.persistence.port;
 
+import net.causw.adapter.persistence.UserCircleRepository;
 import net.causw.application.dto.UserCircleDto;
 import net.causw.application.spi.UserCirclePort;
-import net.causw.adapter.persistence.UserCircleRepository;
+import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
+@Component
 public class UserCirclePortImpl implements UserCirclePort {
     private final UserCircleRepository userCircleRepository;
 

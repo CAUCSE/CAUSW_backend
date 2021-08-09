@@ -3,7 +3,6 @@ package net.causw.adapter.web;
 import net.causw.application.UserAuthService;
 import net.causw.application.UserService;
 import net.causw.application.dto.EmailDuplicatedCheckDto;
-import net.causw.application.dto.UserAuthDto;
 import net.causw.application.dto.UserCreateRequestDto;
 import net.causw.application.dto.UserResponseDto;
 import net.causw.application.dto.UserSignInRequestDto;
@@ -62,11 +61,13 @@ public class UserController {
         return this.userService.isDuplicatedEmail(email);
     }
 
+    /* TODO : Refactoring & Implementation
     @GetMapping(value = "/auth/{id}")
     @ResponseStatus(value = HttpStatus.OK)
     public UserAuthDto findAuthById(@PathVariable String id) {
         return this.userAuthService.findById(id);
     }
+    */
 
     @PutMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)

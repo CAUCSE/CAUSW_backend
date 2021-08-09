@@ -4,18 +4,27 @@ import lombok.Getter;
 
 @Getter
 public enum ErrorCode {
+    /**
+     * 400 Bad Request
+     */
     ROW_DOES_NOT_EXIST(4000),
     ROW_ALREADY_EXIST(4001),
-    INVALID_PARAMETER(4002),
+    INVALID_PARAMETER(4002),            // Parameter format error
+    INVALID_USER_DATA_REQUEST(4003),    // User signup & update validation error
 
-    INVALID_SIGNIN(4100),
-    INVALID_SIGNUP(4101),
-    INVALID_UPDATE_USER(4102),
-    BLOCKED_USER(4103),
-    INACTIVE_USER(4104),
+    /**
+     * 401 Unauthorized
+     */
+    API_NOT_ACCESSIBLE(4100),
+    INVALID_SIGNIN(4101),
+    BLOCKED_USER(4102),
+    INACTIVE_USER(4103),
+    AWAITING_USER(4104),
     EXPIRED_JWT(4105),
-    API_NOT_ACCESSIBLE(4106),
 
+    /**
+     * 500 Internal Server Error
+     */
     INTERNAL_SERVER(5000);
 
     private int code;

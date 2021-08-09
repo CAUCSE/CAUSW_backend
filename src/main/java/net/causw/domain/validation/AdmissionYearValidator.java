@@ -21,8 +21,8 @@ public class AdmissionYearValidator extends AbstractValidator {
     public void validate() {
         if (!this.validateAdmissionYear()) {
             throw new BadRequestException(
-                    ErrorCode.INVALID_SIGNUP,
-                    "Invalid sign up data: admission year"
+                    ErrorCode.INVALID_USER_DATA_REQUEST,
+                    "Invalid user data request: admission year"
             );
         }
 
@@ -32,7 +32,9 @@ public class AdmissionYearValidator extends AbstractValidator {
     }
 
     public boolean validateAdmissionYear() {
-        if (this.admissionYear < 1972) { return false; }
+        if (this.admissionYear < 1972) {
+            return false;
+        }
 
         Calendar cal = Calendar.getInstance();
         int presentYear = cal.get(Calendar.YEAR);

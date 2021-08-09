@@ -33,6 +33,13 @@ public class UserStateValidator extends AbstractValidator {
             );
         }
 
+        if (this.userDomainModel.getState() == UserState.WAIT) {
+            throw new UnauthorizedException(
+                    ErrorCode.AWAITING_USER,
+                    "Awaiting user"
+            );
+        }
+
         if (this.hasNext()) {
             this.next.validate();
         }
