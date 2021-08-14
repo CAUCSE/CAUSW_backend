@@ -22,8 +22,8 @@ public class PasswordFormatValidator extends AbstractValidator {
     public void validate() {
         if (!this.validatePassword()) {
             throw new BadRequestException(
-                    ErrorCode.INVALID_SIGNUP,
-                    "Invalid sign up data: password format"
+                    ErrorCode.INVALID_USER_DATA_REQUEST,
+                    "Invalid user data request: password format"
             );
         }
 

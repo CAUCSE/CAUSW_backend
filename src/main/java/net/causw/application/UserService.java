@@ -2,8 +2,8 @@ package net.causw.application;
 
 import net.causw.application.dto.EmailDuplicatedCheckDto;
 import net.causw.application.dto.UserCreateRequestDto;
-import net.causw.application.dto.UserResponseDto;
 import net.causw.application.dto.UserFullDto;
+import net.causw.application.dto.UserResponseDto;
 import net.causw.application.dto.UserSignInRequestDto;
 import net.causw.application.dto.UserUpdateRequestDto;
 import net.causw.application.dto.UserUpdateRoleRequestDto;
@@ -21,8 +21,8 @@ import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.DuplicatedEmailValidator;
 import net.causw.domain.validation.PasswordCorrectValidator;
 import net.causw.domain.validation.PasswordFormatValidator;
-import net.causw.domain.validation.UpdatableGranteeRoleValidator;
 import net.causw.domain.validation.UpdatableGrantedRoleValidator;
+import net.causw.domain.validation.UpdatableGranteeRoleValidator;
 import net.causw.domain.validation.UserStateValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,10 +36,12 @@ public class UserService {
     private final JwtTokenProvider jwtTokenProvider;
     private final Validator validator;
 
-    public UserService(UserPort userPort,
-                       CirclePort circlePort,
-                       JwtTokenProvider jwtTokenProvider,
-                       Validator validator) {
+    public UserService(
+            UserPort userPort,
+            CirclePort circlePort,
+            JwtTokenProvider jwtTokenProvider,
+            Validator validator
+    ) {
         this.userPort = userPort;
         this.circlePort = circlePort;
         this.jwtTokenProvider = jwtTokenProvider;
@@ -140,7 +142,7 @@ public class UserService {
                 id,
                 userUpdateRequestDto.getEmail(),
                 userUpdateRequestDto.getName(),
-                userUpdateRequestDto.getPassword(),
+                userFullDto.getPassword(),
                 userUpdateRequestDto.getStudentId(),
                 userUpdateRequestDto.getAdmissionYear(),
                 userFullDto.getRole(),
@@ -149,8 +151,7 @@ public class UserService {
         );
 
         ConstraintValidator.of(userDomainModel, this.validator)
-                .linkWith(PasswordFormatValidator.of(userDomainModel.getPassword())
-                        .linkWith(AdmissionYearValidator.of(userDomainModel.getAdmissionYear())))
+                .linkWith(AdmissionYearValidator.of(userDomainModel.getAdmissionYear()))
                 .validate();
 
         return UserResponseDto.from(this.userPort.update(id, userUpdateRequestDto).orElseThrow(

@@ -1,12 +1,12 @@
 package net.causw.adapter.persistence.port;
 
+import net.causw.adapter.persistence.User;
+import net.causw.adapter.persistence.UserRepository;
 import net.causw.application.dto.UserCreateRequestDto;
 import net.causw.application.dto.UserFullDto;
 import net.causw.application.dto.UserUpdateRequestDto;
 import net.causw.application.spi.UserPort;
 import net.causw.domain.model.Role;
-import net.causw.adapter.persistence.User;
-import net.causw.adapter.persistence.UserRepository;
 import net.causw.domain.model.UserState;
 import org.springframework.stereotype.Component;
 
@@ -56,7 +56,6 @@ public class UserPortImpl implements UserPort {
                 srcUser -> {
                     srcUser.setEmail(userUpdateRequestDto.getEmail());
                     srcUser.setName(userUpdateRequestDto.getName());
-                    srcUser.setPassword(userUpdateRequestDto.getPassword());
                     srcUser.setStudentId(userUpdateRequestDto.getStudentId());
                     srcUser.setAdmissionYear(userUpdateRequestDto.getAdmissionYear());
 
