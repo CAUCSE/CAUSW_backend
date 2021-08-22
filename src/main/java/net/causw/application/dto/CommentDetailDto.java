@@ -15,7 +15,7 @@ public class CommentDetailDto {
     private String content;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private UserDetailDto writer;
+    private UserResponseDto writer;
     private List<CommentDetailDto> childCommentList;
 
     private CommentDetailDto(
@@ -23,7 +23,7 @@ public class CommentDetailDto {
             String content,
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
-            UserDetailDto writer,
+            UserResponseDto writer,
             List<CommentDetailDto> childCommentList
     ) {
         this.id = id;
@@ -40,7 +40,7 @@ public class CommentDetailDto {
                 comment.getContent(),
                 comment.getCreatedAt(),
                 comment.getUpdatedAt(),
-                UserDetailDto.from(
+                UserResponseDto.from(
                         comment.getWriter()
                 ),
                 comment.getChildCommentList()
