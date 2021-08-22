@@ -21,6 +21,8 @@ public enum ErrorCode {
     INACTIVE_USER(4103),
     AWAITING_USER(4104),
     EXPIRED_JWT(4105),
+    GRANT_ROLE_NOT_ALLOWED(4106),
+    GRANTEE_ROLE_NOT_ACCEPTABLE(4107),
 
     /**
      * 500 Internal Server Error

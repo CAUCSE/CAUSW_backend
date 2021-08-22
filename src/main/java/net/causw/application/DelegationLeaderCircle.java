@@ -8,6 +8,11 @@ import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.Role;
 
+/**
+ * The delegation process for the leader of the circle.
+ * The leader of the circle entity is updated.
+ * The user who is leader become COMMON state in this process.
+ */
 public class DelegationLeaderCircle implements Delegation {
 
     private final UserPort userPort;

@@ -8,6 +8,11 @@ import net.causw.domain.model.Role;
 
 import java.util.List;
 
+/**
+ * The delegation process for the student president.
+ * The users who have council role become COMMON state in this process.
+ * The user who is student president become COMMON state in this process.
+ */
 public class DelegationPresident implements Delegation {
 
     private final UserPort userPort;
