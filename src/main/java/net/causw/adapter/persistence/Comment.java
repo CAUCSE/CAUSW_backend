@@ -42,19 +42,65 @@ public class Comment extends BaseEntity {
 
     private Comment(
             String content,
-            Boolean isDeleted
+            Boolean isDeleted,
+            User writer,
+            Post post,
+            Comment parentComment
     ) {
         this.content = content;
         this.isDeleted = isDeleted;
+        this.writer = writer;
+        this.post = post;
+        this.parentComment = parentComment;
+    }
+
+    private Comment(
+            String id,
+            String content,
+            Boolean isDeleted,
+            User writer,
+            Post post,
+            Comment parentComment
+    ) {
+        super(id);
+        this.content = content;
+        this.isDeleted = isDeleted;
+        this.writer = writer;
+        this.post = post;
+        this.parentComment = parentComment;
     }
 
     public static Comment of(
             String content,
-            Boolean isDeleted
+            Boolean isDeleted,
+            User writer,
+            Post post,
+            Comment parentComment
     ) {
         return new Comment(
                 content,
-                isDeleted
+                isDeleted,
+                writer,
+                post,
+                parentComment
+        );
+    }
+
+    public static Comment of(
+            String id,
+            String content,
+            Boolean isDeleted,
+            User writer,
+            Post post,
+            Comment parentComment
+    ) {
+        return new Comment(
+                id,
+                content,
+                isDeleted,
+                writer,
+                post,
+                parentComment
         );
     }
 }

@@ -15,6 +15,8 @@ public class CommentDetailDto {
     private String content;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Boolean isDeleted;
+    private PostDetailDto post;
     private UserResponseDto writer;
     private List<CommentDetailDto> childCommentList;
 
@@ -23,6 +25,8 @@ public class CommentDetailDto {
             String content,
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
+            Boolean isDeleted,
+            PostDetailDto post,
             UserResponseDto writer,
             List<CommentDetailDto> childCommentList
     ) {
@@ -30,6 +34,8 @@ public class CommentDetailDto {
         this.content = content;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.isDeleted = isDeleted;
+        this.post = post;
         this.writer = writer;
         this.childCommentList = childCommentList;
     }
@@ -40,6 +46,10 @@ public class CommentDetailDto {
                 comment.getContent(),
                 comment.getCreatedAt(),
                 comment.getUpdatedAt(),
+                comment.getIsDeleted(),
+                PostDetailDto.from(
+                        comment.getPost()
+                ),
                 UserResponseDto.from(
                         comment.getWriter()
                 ),
