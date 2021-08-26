@@ -83,9 +83,11 @@ public class UserController {
 
     @PutMapping(value = "/{granteeId}/role")
     @ResponseStatus(value = HttpStatus.OK)
-    public UserResponseDto updateRole(@AuthenticationPrincipal String grantorId,
-                                      @PathVariable String granteeId,
-                                      @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto) {
+    public UserResponseDto updateRole(
+            @AuthenticationPrincipal String grantorId,
+            @PathVariable String granteeId,
+            @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto
+    ) {
         return this.userService.updateUserRole(grantorId, granteeId, userUpdateRoleRequestDto);
     }
 }

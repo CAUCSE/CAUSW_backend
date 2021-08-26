@@ -1,6 +1,6 @@
 package net.causw.application;
 
-import net.causw.application.dto.CircleDto;
+import net.causw.application.dto.CircleFullDto;
 import net.causw.application.dto.UserFullDto;
 import net.causw.application.spi.CirclePort;
 import net.causw.application.spi.UserPort;
@@ -26,7 +26,7 @@ public class DelegationLeaderCircle implements Delegation {
 
     @Override
     public void delegate(String currentId, String targetId) {
-        CircleDto circleDto = this.circlePort.findByLeaderId(currentId).orElseThrow(
+        CircleFullDto circleFullDto = this.circlePort.findByLeaderId(currentId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "Invalid leader id"
@@ -40,7 +40,7 @@ public class DelegationLeaderCircle implements Delegation {
                 )
         );
 
-        this.circlePort.updateLeader(circleDto.getId(), newLeader).orElseThrow(
+        this.circlePort.updateLeader(circleFullDto.getId(), newLeader).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "Invalid circle id"

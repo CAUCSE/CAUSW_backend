@@ -39,14 +39,20 @@ public class UserPortImpl implements UserPort {
 
     @Override
     public UserFullDto create(UserCreateRequestDto userCreateRequestDto) {
+        // TODO : Remove following -> Default로 Role.NONE 지정
+        Role role = Role.NONE;
+        if (userCreateRequestDto.getEmail().equals("admin@gmail.com")) {
+            role = Role.ADMIN;
+        }
+
         return UserFullDto.from(this.userRepository.save(User.of(
                 userCreateRequestDto.getEmail(),
                 userCreateRequestDto.getName(),
                 userCreateRequestDto.getPassword(),
                 userCreateRequestDto.getStudentId(),
                 userCreateRequestDto.getAdmissionYear(),
-                Role.NONE,
-                UserState.WAIT
+                role,
+                UserState.ACTIVE  // TODO : User Auth 개발 후 UserState.WAIT 으로 바꿀 것!!!
         )));
     }
 

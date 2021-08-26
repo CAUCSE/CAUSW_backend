@@ -1,11 +1,12 @@
 package net.causw.adapter.persistence.port;
 
+import net.causw.adapter.persistence.Circle;
+import net.causw.adapter.persistence.CircleRepository;
 import net.causw.adapter.persistence.User;
-import net.causw.adapter.persistence.UserRepository;
-import net.causw.application.dto.CircleDto;
+import net.causw.application.dto.CircleCreateRequestDto;
+import net.causw.application.dto.CircleFullDto;
 import net.causw.application.dto.UserFullDto;
 import net.causw.application.spi.CirclePort;
-import net.causw.adapter.persistence.CircleRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -19,31 +20,38 @@ public class CirclePortImpl implements CirclePort {
     }
 
     @Override
-    public Optional<CircleDto> findById(String id) {
-        return this.circleRepository.findById(id).map(CircleDto::from);
+    public Optional<CircleFullDto> findById(String id) {
+        return this.circleRepository.findById(id).map(CircleFullDto::from);
     }
 
     @Override
-    public Optional<CircleDto> findByLeaderId(String leaderId) {
-        return this.circleRepository.findByLeaderId(leaderId).map(CircleDto::from);
+    public Optional<CircleFullDto> findByLeaderId(String leaderId) {
+        return this.circleRepository.findByLeaderId(leaderId).map(CircleFullDto::from);
     }
 
     @Override
-    public Optional<CircleDto> updateLeader(String id, UserFullDto newLeader) {
+    public Optional<CircleFullDto> findByName(String name) {
+        return this.circleRepository.findByName(name).map(CircleFullDto::from);
+    }
+
+    @Override
+    public CircleFullDto create(CircleCreateRequestDto circleCreateRequestDto, UserFullDto leader) {
+        return CircleFullDto.from(this.circleRepository.save(Circle.of(
+                circleCreateRequestDto.getName(),
+                circleCreateRequestDto.getMainImage(),
+                circleCreateRequestDto.getDescription(),
+                false,
+                User.from(leader)
+        )));
+    }
+
+    @Override
+    public Optional<CircleFullDto> updateLeader(String id, UserFullDto newLeader) {
         return this.circleRepository.findById(id).map(
                 srcCircle -> {
-                    srcCircle.setLeader(User.of(
-                            newLeader.getId(),
-                            newLeader.getEmail(),
-                            newLeader.getName(),
-                            newLeader.getPassword(),
-                            newLeader.getStudentId(),
-                            newLeader.getAdmissionYear(),
-                            newLeader.getRole(),
-                            newLeader.getState()
-                    ));
+                    srcCircle.setLeader(User.from(newLeader));
 
-                    return CircleDto.from(this.circleRepository.save(srcCircle));
+                    return CircleFullDto.from(this.circleRepository.save(srcCircle));
                 }
         );
     }

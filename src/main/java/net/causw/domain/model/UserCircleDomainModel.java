@@ -1,7 +1,6 @@
 package net.causw.domain.model;
 
 import lombok.Getter;
-import net.causw.adapter.persistence.UserCircleStatus;
 
 @Getter
 public class UserCircleDomainModel {
@@ -15,7 +14,7 @@ public class UserCircleDomainModel {
             UserCircleStatus status,
             CircleDomainModel circle,
             UserDomainModel user
-    ){
+    ) {
         this.id = id;
         this.status = status;
         this.circle = circle;

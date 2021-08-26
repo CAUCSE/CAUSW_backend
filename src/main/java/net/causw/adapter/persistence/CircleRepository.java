@@ -10,4 +10,6 @@ import java.util.Optional;
 public interface CircleRepository extends JpaRepository<Circle, String> {
     @Query(value = "SELECT * from TB_CIRCLE where TB_CIRCLE.leader_id = ?1", nativeQuery = true)
     Optional<Circle> findByLeaderId(String leader_id);
+
+    Optional<Circle> findByName(String name);
 }
