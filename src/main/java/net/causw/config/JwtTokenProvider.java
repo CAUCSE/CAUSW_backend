@@ -23,7 +23,7 @@ public class JwtTokenProvider {
     @Value("spring.jwt.secret")
     private String secretKey;
 
-    private static long TOKEN_VALID_TIME = 1000L * 60 * 60 * 24 * 7;
+    private static final long TOKEN_VALID_TIME = 1000L * 60 * 60 * 24 * 7;
 
     @PostConstruct
     protected void init() {
@@ -42,7 +42,7 @@ public class JwtTokenProvider {
     }
 
     public Authentication getAuthentication(String token) {
-        String userPk = Jwts.parser().setSigningKey(this.secretKey).parseClaimsJws(token).getBody().getId();
+        String userPk = Jwts.parser().setSigningKey(this.secretKey).parseClaimsJws(token).getBody().getSubject();
         return new UsernamePasswordAuthenticationToken(userPk, null, new ArrayList<>());
     }
 
