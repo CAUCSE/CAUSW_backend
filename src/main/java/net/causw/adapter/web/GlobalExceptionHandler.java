@@ -30,7 +30,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ConstraintExceptionDto handleConstraintViolationException(ConstraintViolationException exception) {
         GlobalExceptionHandler.log.error("error message", exception);
-        return new ConstraintExceptionDto(ErrorCode.INVALID_PARAMETER, exception.getMessage(), exception.getConstraintViolations());
+        return new ConstraintExceptionDto(ErrorCode.INVALID_PARAMETER, exception.getMessage(), exception);
     }
 
     @ExceptionHandler(value = {IllegalArgumentException.class})
