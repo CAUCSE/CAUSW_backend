@@ -1,6 +1,6 @@
 package net.causw.application;
 
-import net.causw.application.dto.PostFullDto;
+import net.causw.application.dto.PostResponseDto;
 import net.causw.application.spi.PostPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -16,12 +16,12 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public PostFullDto findById(String id) {
-        return this.postPort.findById(id).orElseThrow(
+    public PostResponseDto findById(String id) {
+        return PostResponseDto.from(this.postPort.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "Invalid post id"
                 )
-        );
+        ));
     }
 }

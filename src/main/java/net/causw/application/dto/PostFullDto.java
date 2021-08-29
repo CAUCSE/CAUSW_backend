@@ -15,6 +15,7 @@ public class PostFullDto {
     private Boolean isDeleted;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private UserFullDto writer;
     private BoardDetailDto board;
 
     private PostFullDto(
@@ -24,6 +25,7 @@ public class PostFullDto {
             Boolean isDeleted,
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
+            UserFullDto writer,
             BoardDetailDto board
     ) {
         this.id = id;
@@ -32,6 +34,7 @@ public class PostFullDto {
         this.isDeleted = isDeleted;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.writer = writer;
         this.board = board;
     }
 
@@ -43,6 +46,7 @@ public class PostFullDto {
                 post.getIsDeleted(),
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
+                UserFullDto.from(post.getWriter()),
                 BoardDetailDto.from(post.getBoard())
         );
     }
