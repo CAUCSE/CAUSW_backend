@@ -51,8 +51,8 @@ public class UpdatableGrantedRoleValidator extends AbstractValidator {
         }
 
         throw new UnauthorizedException(
-                ErrorCode.API_NOT_ACCESSIBLE,
-                "You don't have access."
+                ErrorCode.GRANT_ROLE_NOT_ALLOWED,
+                "Grant role not allowed"
         );
     }
 

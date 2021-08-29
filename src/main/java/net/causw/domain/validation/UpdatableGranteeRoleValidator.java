@@ -22,18 +22,16 @@ public class UpdatableGranteeRoleValidator extends AbstractValidator {
     @Override
     public void validate() {
         /* When role of grantor is Leader_Circle, validate role of grantee
-         * Role of grantee should be Common or None
+         * Role of grantee should be Common only
          */
-        if (this.grantorRole == Role.LEADER_CIRCLE &&
-                (this.granteeRole == Role.COMMON || this.granteeRole == Role.NONE)) {
+        if (this.grantorRole == Role.LEADER_CIRCLE && this.granteeRole == Role.COMMON) {
             this.pass();
             return;
         }
         /* When role of grantor is Leader_Alumni, validate role of grantee
-         * Role of grantee should be Common or None
+         * Role of grantee should be Common only
          */
-        if (this.grantorRole == Role.LEADER_ALUMNI &&
-                (this.granteeRole == Role.COMMON || this.granteeRole == Role.NONE)) {
+        if (this.grantorRole == Role.LEADER_ALUMNI && this.granteeRole == Role.COMMON) {
             this.pass();
             return;
         }
@@ -54,8 +52,8 @@ public class UpdatableGranteeRoleValidator extends AbstractValidator {
         }
 
         throw new UnauthorizedException(
-                ErrorCode.API_NOT_ACCESSIBLE,
-                "You don't have access."
+                ErrorCode.GRANTEE_ROLE_NOT_ACCEPTABLE,
+                "Grantee role not acceptable"
         );
     }
 

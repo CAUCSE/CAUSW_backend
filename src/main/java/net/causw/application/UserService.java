@@ -70,6 +70,7 @@ public class UserService {
 
     @Transactional
     public UserResponseDto signUp(UserCreateRequestDto userCreateRequestDto) {
+        // Make domain model for generalized data model and validate the format of request parameter
         UserDomainModel userDomainModel = UserDomainModel.of(
                 null,
                 userCreateRequestDto.getEmail(),
@@ -82,6 +83,7 @@ public class UserService {
                 UserState.WAIT
         );
 
+        // Validate password format, admission year range, and whether the email is duplicate or not
         ConstraintValidator.of(userDomainModel, this.validator)
                 .linkWith(PasswordFormatValidator.of(userDomainModel.getPassword())
                         .linkWith(AdmissionYearValidator.of(userDomainModel.getAdmissionYear())
@@ -112,6 +114,9 @@ public class UserService {
                 userFullDto.getState()
         );
 
+        /* Validate the input password and user state
+         * The sign-in process is rejected if the user is in BLOCKED, WAIT, or INACTIVE state.
+         */
         PasswordCorrectValidator.of(userDomainModel, userSignInRequestDto.getPassword())
                 .linkWith(UserStateValidator.of(userDomainModel))
                 .validate();
@@ -126,6 +131,7 @@ public class UserService {
 
     @Transactional
     public UserResponseDto update(String id, UserUpdateRequestDto userUpdateRequestDto) {
+        // First, load the user data from input user id
         UserFullDto userFullDto = this.userPort.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -133,11 +139,15 @@ public class UserService {
                 )
         );
 
+        /* The user requested changing the email if the request email is different from the original one
+         * Then, validate it whether the requested email is duplicated or not
+         */
         if (!userFullDto.getEmail().equals(userUpdateRequestDto.getEmail())) {
             DuplicatedEmailValidator.of(this.userPort, userUpdateRequestDto.getEmail())
                     .validate();
         }
 
+        // Validate the requested parameters format from making the domain model
         UserDomainModel userDomainModel = UserDomainModel.of(
                 id,
                 userUpdateRequestDto.getEmail(),
@@ -150,6 +160,7 @@ public class UserService {
                 userFullDto.getState()
         );
 
+        // Validate the admission year range
         ConstraintValidator.of(userDomainModel, this.validator)
                 .linkWith(AdmissionYearValidator.of(userDomainModel.getAdmissionYear()))
                 .validate();
@@ -166,7 +177,9 @@ public class UserService {
     public UserResponseDto updateUserRole(
             String grantorId,
             String granteeId,
-            UserUpdateRoleRequestDto userUpdateRoleRequestDto) {
+            UserUpdateRoleRequestDto userUpdateRoleRequestDto
+    ) {
+        // Load the user data from input grantor and grantee ids.
         UserFullDto grantor = this.userPort.findById(grantorId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -180,18 +193,28 @@ public class UserService {
                 )
         );
 
-        // Validate
+        /* Validate the role
+         * 1) Combination of grantor role and the role to be granted must be acceptable
+         * 2) Combination of grantor role and the grantee role must be acceptable
+         */
         UpdatableGrantedRoleValidator.of(grantor.getRole(), userUpdateRoleRequestDto.getRole())
                 .linkWith(UpdatableGranteeRoleValidator.of(grantor.getRole(), grantee.getRole()))
                 .validate();
 
-        // Delegate
+        /* Delegate the role
+         * 1) Check if the grantor's role is same
+         * 2) If yes, it is delegating process (The grantor may lose the role)
+         * 3) Then, the DelegationFactory match the instance for the delegation considering the role -> Then processed
+         */
         if (grantor.getRole() == userUpdateRoleRequestDto.getRole()) {
             DelegationFactory.create(grantor.getRole(), this.userPort, this.circlePort)
                     .delegate(grantorId, granteeId);
         }
 
-        // Grant
+        /* Grant the role
+         * The linked updating process is performed on previous delegation process
+         * Therefore, the updating for the grantee is performed in this process
+         */
         return UserResponseDto.from(this.userPort.updateRole(granteeId, userUpdateRoleRequestDto.getRole()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
