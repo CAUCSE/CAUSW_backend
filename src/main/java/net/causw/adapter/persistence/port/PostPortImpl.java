@@ -1,11 +1,11 @@
 package net.causw.adapter.persistence.port;
 
-import net.causw.application.dto.PostDetailDto;
-import net.causw.domain.exceptions.BadRequestException;
-import net.causw.domain.exceptions.ErrorCode;
-import net.causw.application.spi.PostPort;
 import net.causw.adapter.persistence.PostRepository;
+import net.causw.application.dto.PostDetailDto;
+import net.causw.application.spi.PostPort;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 @Component
 public class PostPortImpl implements PostPort {
@@ -16,12 +16,7 @@ public class PostPortImpl implements PostPort {
     }
 
     @Override
-    public PostDetailDto findById(String id) {
-        return PostDetailDto.from(this.postRepository.findById(id).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid post id"
-                )
-        ));
+    public Optional<PostDetailDto> findById(String id) {
+        return this.postRepository.findById(id).map(PostDetailDto::from);
     }
 }

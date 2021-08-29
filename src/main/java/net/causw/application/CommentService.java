@@ -48,7 +48,12 @@ public class CommentService {
                 )
         );
 
-        PostDetailDto postDto = this.postPort.findById(commentCreateDto.getPostId());
+        PostDetailDto postDto = this.postPort.findById(commentCreateDto.getPostId()).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid post id"
+                )
+        );;
 
         if (commentCreateDto.getParentCommentId().isEmpty()) {
             return this.commentPort.create(

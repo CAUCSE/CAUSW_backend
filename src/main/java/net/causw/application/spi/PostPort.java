@@ -2,6 +2,8 @@ package net.causw.application.spi;
 
 import net.causw.application.dto.PostDetailDto;
 
+import java.util.Optional;
+
 public interface PostPort {
-    PostDetailDto findById(String id);
+    Optional<PostDetailDto> findById(String id);
 }
