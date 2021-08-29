@@ -121,7 +121,11 @@ public class UserService {
                 .linkWith(UserStateValidator.of(userDomainModel))
                 .validate();
 
-        return this.jwtTokenProvider.createToken(userFullDto.getId());
+        return this.jwtTokenProvider.createToken(
+                userFullDto.getId(),
+                userFullDto.getRole(),
+                userFullDto.getState()
+        );
     }
 
     @Transactional(readOnly = true)
