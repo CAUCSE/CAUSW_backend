@@ -3,7 +3,7 @@ package net.causw.application.spi;
 import net.causw.application.dto.CommentCreateRequestDto;
 import net.causw.application.dto.CommentFullDto;
 import net.causw.application.dto.CommentResponseDto;
-import net.causw.application.dto.PostDetailDto;
+import net.causw.application.dto.PostFullDto;
 import net.causw.application.dto.UserFullDto;
 
 import java.util.Optional;
@@ -14,13 +14,13 @@ public interface CommentPort {
     CommentResponseDto create(
             CommentCreateRequestDto commentCreateDto,
             UserFullDto writer,
-            PostDetailDto post
+            PostFullDto post
     );
 
     CommentResponseDto create(
             CommentCreateRequestDto commentCreateDto,
             UserFullDto writer,
-            PostDetailDto post,
+            PostFullDto post,
             CommentFullDto parentComment
     );
 }

@@ -7,7 +7,7 @@ import net.causw.adapter.persistence.User;
 import net.causw.application.dto.CommentCreateRequestDto;
 import net.causw.application.dto.CommentFullDto;
 import net.causw.application.dto.CommentResponseDto;
-import net.causw.application.dto.PostDetailDto;
+import net.causw.application.dto.PostFullDto;
 import net.causw.application.dto.UserFullDto;
 import net.causw.application.spi.CommentPort;
 import org.springframework.stereotype.Component;
@@ -30,15 +30,15 @@ public class CommentPortImpl implements CommentPort {
     @Override
     public CommentResponseDto create(
             CommentCreateRequestDto commentCreateDto,
-            UserFullDto writer,
-            PostDetailDto post
+            UserFullDto writerDto,
+            PostFullDto postDto
     ) {
         return CommentResponseDto.from(
                 this.commentRepository.save(Comment.of(
                         commentCreateDto.getContent(),
                         false,
-                        User.from(writer),
-                        Post.from(post),
+                        User.from(writerDto),
+                        Post.from(postDto),
                         null
                 ))
         );
@@ -47,16 +47,16 @@ public class CommentPortImpl implements CommentPort {
     @Override
     public CommentResponseDto create(
             CommentCreateRequestDto commentCreateDto,
-            UserFullDto writer,
-            PostDetailDto post,
+            UserFullDto writerDto,
+            PostFullDto postDto,
             CommentFullDto parentCommentDto
     ) {
         return CommentResponseDto.from(
                 this.commentRepository.save(Comment.of(
                     commentCreateDto.getContent(),
                     false,
-                    User.from(writer),
-                    Post.from(post),
+                    User.from(writerDto),
+                    Post.from(postDto),
                     Comment.from(parentCommentDto)
                 ))
         );

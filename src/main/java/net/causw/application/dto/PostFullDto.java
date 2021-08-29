@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor
-public class PostDetailDto {
+public class PostFullDto {
     private String id;
     private String title;
     private String content;
@@ -17,7 +17,7 @@ public class PostDetailDto {
     private LocalDateTime updatedAt;
     private BoardDetailDto board;
 
-    private PostDetailDto(
+    private PostFullDto(
             String id,
             String title,
             String content,
@@ -35,8 +35,8 @@ public class PostDetailDto {
         this.board = board;
     }
 
-    public static PostDetailDto from(Post post) {
-        return new PostDetailDto(
+    public static PostFullDto from(Post post) {
+        return new PostFullDto(
                 post.getId(),
                 post.getTitle(),
                 post.getContent(),

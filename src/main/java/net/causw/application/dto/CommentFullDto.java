@@ -16,7 +16,7 @@ public class CommentFullDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Boolean isDeleted;
-    private PostDetailDto post;
+    private PostFullDto post;
     private UserFullDto writer;
     private List<CommentFullDto> childCommentList;
 
@@ -26,7 +26,7 @@ public class CommentFullDto {
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
             Boolean isDeleted,
-            PostDetailDto post,
+            PostFullDto post,
             UserFullDto writer,
             List<CommentFullDto> childCommentList
     ) {
@@ -47,7 +47,7 @@ public class CommentFullDto {
                 comment.getCreatedAt(),
                 comment.getUpdatedAt(),
                 comment.getIsDeleted(),
-                PostDetailDto.from(
+                PostFullDto.from(
                         comment.getPost()
                 ),
                 UserFullDto.from(

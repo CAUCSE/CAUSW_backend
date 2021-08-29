@@ -3,7 +3,7 @@ package net.causw.application;
 import net.causw.application.dto.CommentCreateRequestDto;
 import net.causw.application.dto.CommentFullDto;
 import net.causw.application.dto.CommentResponseDto;
-import net.causw.application.dto.PostDetailDto;
+import net.causw.application.dto.PostFullDto;
 import net.causw.application.dto.UserFullDto;
 import net.causw.application.spi.CommentPort;
 import net.causw.application.spi.PostPort;
@@ -48,7 +48,7 @@ public class CommentService {
                 )
         );
 
-        PostDetailDto postDto = this.postPort.findById(commentCreateDto.getPostId()).orElseThrow(
+        PostFullDto postDto = this.postPort.findById(commentCreateDto.getPostId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "Invalid post id"

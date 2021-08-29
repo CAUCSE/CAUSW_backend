@@ -16,7 +16,7 @@ public class CommentResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Boolean isDeleted;
-    private PostDetailDto post;
+    private PostFullDto post;
     private String writerId;
     private String writerName;
     private List<CommentResponseDto> childCommentList;
@@ -27,7 +27,7 @@ public class CommentResponseDto {
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
             Boolean isDeleted,
-            PostDetailDto post,
+            PostFullDto post,
             String writerId,
             String writerName,
             List<CommentResponseDto> childCommentList
@@ -50,7 +50,7 @@ public class CommentResponseDto {
                 comment.getCreatedAt(),
                 comment.getUpdatedAt(),
                 comment.getIsDeleted(),
-                PostDetailDto.from(
+                PostFullDto.from(
                         comment.getPost()
                 ),
                 comment.getWriter().getId(),
