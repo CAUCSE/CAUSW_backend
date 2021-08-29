@@ -153,7 +153,7 @@ class UserServiceTest extends Specification {
                 password,
                 studentId,
                 admissionYear,
-                Role.NONE,
+                Role.COMMON,
                 UserState.WAIT
         )
 
@@ -392,7 +392,6 @@ class UserServiceTest extends Specification {
         def userUpdateRequestDto = new UserUpdateRequestDto(
                 "update@cau.ac.kr",
                 name,
-                password,
                 studentId,
                 admissionYear
         )
@@ -402,86 +401,6 @@ class UserServiceTest extends Specification {
         this.userPort.findByEmail("update@cau.ac.kr") >> Optional.ofNullable(null)
 
         when:
-        def userDetailDto = this.userService.update(id, userUpdateRequestDto)
-
-        then:
-        userDetailDto instanceof UserResponseDto
-        userDetailDto.getEmail() == "update@cau.ac.kr"
-    }
-
-    @Test
-    def "User update invalid password case"() {
-        given:
-        def id = "test"
-        def email = "test-password-mail@cau.ac.kr"
-        def name = "test-name"
-        def password = ""
-        def studentId = "20210000"
-        def admissionYear = 2021
-
-        def mockUser = User.of(
-                email,
-                name,
-                password,
-                studentId,
-                admissionYear,
-                Role.NONE,
-                UserState.WAIT
-        )
-
-        def mockUserFullDto = UserFullDto.from(mockUser)
-        def mockUpdatedUserFullDto = UserFullDto.from(
-                User.of("update@cau.ac.kr",
-                        name,
-                        password,
-                        studentId,
-                        admissionYear,
-                        Role.NONE,
-                        UserState.WAIT)
-        )
-
-        def userUpdateRequestDto = new UserUpdateRequestDto(
-                "update@cau.ac.kr",
-                name,
-                password,
-                studentId,
-                admissionYear
-        )
-
-        this.userPort.findById(id) >> Optional.of(mockUserFullDto)
-        this.userPort.update(id, userUpdateRequestDto) >> Optional.of(mockUpdatedUserFullDto)
-        this.userPort.findByEmail("update@cau.ac.kr") >> Optional.ofNullable(null)
-
-        when: "password with short length"
-        userUpdateRequestDto.setPassword("test12!")
-        this.userService.update(id, userUpdateRequestDto)
-
-        then:
-        thrown(BadRequestException)
-
-        when: "password with invalid format: without special character"
-        userUpdateRequestDto.setPassword("test1234")
-        this.userService.update(id, userUpdateRequestDto)
-
-        then:
-        thrown(BadRequestException)
-
-        when: "password with invalid format: without number"
-        userUpdateRequestDto.setPassword("test!!!!")
-        this.userService.update(id, userUpdateRequestDto)
-
-        then:
-        thrown(BadRequestException)
-
-        when: "password with invalid format: without english"
-        userUpdateRequestDto.setPassword("1234567!")
-        this.userService.update(id, userUpdateRequestDto)
-
-        then:
-        thrown(BadRequestException)
-
-        when: "finally: test for success"
-        userUpdateRequestDto.setPassword("test123!")
         def userDetailDto = this.userService.update(id, userUpdateRequestDto)
 
         then:
@@ -522,7 +441,6 @@ class UserServiceTest extends Specification {
         def userUpdateRequestDto = new UserUpdateRequestDto(
                 "update@cau.ac.kr",
                 name,
-                password,
                 studentId,
                 admissionYear
         )
