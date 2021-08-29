@@ -3,6 +3,7 @@ package net.causw.adapter.persistence;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import net.causw.application.dto.UserFullDto;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserState;
 
@@ -10,10 +11,10 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.Table;
-import javax.persistence.OneToOne;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import java.util.List;
 
 @Getter
@@ -137,6 +138,19 @@ public class User extends BaseEntity {
                 admissionYear,
                 role,
                 state
+        );
+    }
+
+    public static User from(UserFullDto userFullDto) {
+        return new User(
+                userFullDto.getId(),
+                userFullDto.getEmail(),
+                userFullDto.getName(),
+                userFullDto.getPassword(),
+                userFullDto.getStudentId(),
+                userFullDto.getAdmissionYear(),
+                userFullDto.getRole(),
+                userFullDto.getState()
         );
     }
 }
