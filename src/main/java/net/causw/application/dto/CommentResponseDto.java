@@ -10,25 +10,27 @@ import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor
-public class CommentDetailDto {
+public class CommentResponseDto {
     private String id;
     private String content;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Boolean isDeleted;
     private PostDetailDto post;
-    private UserResponseDto writer;
-    private List<CommentDetailDto> childCommentList;
+    private String writerId;
+    private String writerName;
+    private List<CommentResponseDto> childCommentList;
 
-    private CommentDetailDto(
+    private CommentResponseDto(
             String id,
             String content,
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
             Boolean isDeleted,
             PostDetailDto post,
-            UserResponseDto writer,
-            List<CommentDetailDto> childCommentList
+            String writerId,
+            String writerName,
+            List<CommentResponseDto> childCommentList
     ) {
         this.id = id;
         this.content = content;
@@ -36,12 +38,13 @@ public class CommentDetailDto {
         this.updatedAt = updatedAt;
         this.isDeleted = isDeleted;
         this.post = post;
-        this.writer = writer;
+        this.writerId = writerId;
+        this.writerName = writerName;
         this.childCommentList = childCommentList;
     }
 
-    public static CommentDetailDto from(Comment comment) {
-        return new CommentDetailDto(
+    public static CommentResponseDto from(Comment comment) {
+        return new CommentResponseDto(
                 comment.getId(),
                 comment.getContent(),
                 comment.getCreatedAt(),
@@ -50,12 +53,11 @@ public class CommentDetailDto {
                 PostDetailDto.from(
                         comment.getPost()
                 ),
-                UserResponseDto.from(
-                        comment.getWriter()
-                ),
+                comment.getWriter().getId(),
+                comment.getWriter().getName(),
                 comment.getChildCommentList()
                         .stream()
-                        .map(CommentDetailDto::from)
+                        .map(CommentResponseDto::from)
                         .collect(Collectors.toList())
         );
     }
