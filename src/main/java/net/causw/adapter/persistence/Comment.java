@@ -2,6 +2,7 @@ package net.causw.adapter.persistence;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.causw.application.dto.CommentFullDto;
 import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.CascadeType;
@@ -101,6 +102,28 @@ public class Comment extends BaseEntity {
                 writer,
                 post,
                 parentComment
+        );
+    }
+
+    public static Comment from(CommentFullDto commentFullDto) {
+        return new Comment(
+                commentFullDto.getId(),
+                commentFullDto.getContent(),
+                commentFullDto.getIsDeleted(),
+                User.from(commentFullDto.getWriter()),
+                Post.from(commentFullDto.getPost()),
+                null
+        );
+    }
+
+    public static Comment from(CommentFullDto commentFullDto, CommentFullDto parentCommentFullDto) {
+        return new Comment(
+                commentFullDto.getId(),
+                commentFullDto.getContent(),
+                commentFullDto.getIsDeleted(),
+                User.from(commentFullDto.getWriter()),
+                Post.from(commentFullDto.getPost()),
+                Comment.from(parentCommentFullDto)
         );
     }
 }

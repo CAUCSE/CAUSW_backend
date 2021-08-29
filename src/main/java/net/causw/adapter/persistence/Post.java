@@ -2,6 +2,7 @@ package net.causw.adapter.persistence;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.causw.application.dto.PostDetailDto;
 import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.CascadeType;
@@ -41,7 +42,23 @@ public class Post extends BaseEntity {
         this.isDeleted = isDeleted;
     }
 
+    private Post(String id, String title, String content, Boolean isDeleted) {
+        super(id);
+        this.title = title;
+        this.content = content;
+        this.isDeleted = isDeleted;
+    }
+
     public static Post of(String title, String content, Boolean isDeleted) {
         return new Post(title, content, isDeleted);
+    }
+
+    public static Post from(PostDetailDto postDetailDto) {
+        return new Post(
+                postDetailDto.getId(),
+                postDetailDto.getTitle(),
+                postDetailDto.getContent(),
+                postDetailDto.getIsDeleted()
+        );
     }
 }
