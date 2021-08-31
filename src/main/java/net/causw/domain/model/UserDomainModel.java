@@ -3,12 +3,8 @@ package net.causw.domain.model;
 import lombok.Getter;
 
 import javax.validation.constraints.Email;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.util.Calendar;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Getter
 public class UserDomainModel {
