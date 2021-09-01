@@ -3,6 +3,7 @@ package net.causw.application;
 import net.causw.application.dto.CircleCreateRequestDto;
 import net.causw.application.dto.CircleFullDto;
 import net.causw.application.dto.CircleResponseDto;
+import net.causw.application.dto.DuplicatedCheckDto;
 import net.causw.application.dto.UserCircleDto;
 import net.causw.application.dto.UserFullDto;
 import net.causw.application.spi.CirclePort;
@@ -110,5 +111,10 @@ public class CircleService {
                 .validate();
 
         return this.userCirclePort.create(user, circle);
+    }
+
+    @Transactional(readOnly = true)
+    public DuplicatedCheckDto isDuplicatedName(String name) {
+        return DuplicatedCheckDto.of(this.circlePort.findByName(name).isPresent());
     }
 }

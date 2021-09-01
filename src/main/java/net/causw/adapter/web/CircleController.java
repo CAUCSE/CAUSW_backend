@@ -3,6 +3,7 @@ package net.causw.adapter.web;
 import net.causw.application.CircleService;
 import net.causw.application.dto.CircleCreateRequestDto;
 import net.causw.application.dto.CircleResponseDto;
+import net.causw.application.dto.DuplicatedCheckDto;
 import net.causw.application.dto.UserCircleDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -40,5 +41,11 @@ public class CircleController {
     @ResponseStatus(value = HttpStatus.CREATED)
     public UserCircleDto userApply(@AuthenticationPrincipal String userId, @PathVariable String circleId) {
         return this.circleService.userApply(userId, circleId);
+    }
+
+    @GetMapping(value = "/{name}/is-duplicated")
+    @ResponseStatus(value = HttpStatus.OK)
+    public DuplicatedCheckDto isDuplicatedName(@PathVariable String name) {
+        return this.circleService.isDuplicatedName(name);
     }
 }

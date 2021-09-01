@@ -2,7 +2,7 @@ package net.causw.adapter.web;
 
 import net.causw.application.UserAuthService;
 import net.causw.application.UserService;
-import net.causw.application.dto.EmailDuplicatedCheckDto;
+import net.causw.application.dto.DuplicatedCheckDto;
 import net.causw.application.dto.UserCreateRequestDto;
 import net.causw.application.dto.UserResponseDto;
 import net.causw.application.dto.UserSignInRequestDto;
@@ -58,7 +58,7 @@ public class UserController {
 
     @GetMapping(value = "/{email}/is-duplicated")
     @ResponseStatus(value = HttpStatus.OK)
-    public EmailDuplicatedCheckDto isDuplicatedEmail(@PathVariable String email) {
+    public DuplicatedCheckDto isDuplicatedEmail(@PathVariable String email) {
         return this.userService.isDuplicatedEmail(email);
     }
 
