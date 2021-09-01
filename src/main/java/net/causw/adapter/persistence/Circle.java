@@ -14,7 +14,6 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import java.util.List;
 
-
 @Getter
 @Setter
 @Entity

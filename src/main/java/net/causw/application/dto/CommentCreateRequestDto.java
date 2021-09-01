@@ -1,6 +1,5 @@
 package net.causw.application.dto;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
