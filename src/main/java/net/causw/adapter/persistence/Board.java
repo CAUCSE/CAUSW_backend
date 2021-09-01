@@ -7,6 +7,8 @@ import org.hibernate.annotations.ColumnDefault;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.util.Set;
@@ -35,6 +37,10 @@ public class Board extends BaseEntity {
     @ColumnDefault("false")
     private Boolean isDeleted;
 
+    @ManyToOne
+    @JoinColumn(name = "circle_id")
+    private Circle circle;
+
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private Set<Post> postSet;
 
@@ -44,7 +50,8 @@ public class Board extends BaseEntity {
             String createRoles,
             String modifyRoles,
             String readRoles,
-            Boolean isDeleted
+            Boolean isDeleted,
+            Circle circle
     ) {
         this.name = name;
         this.description = description;
@@ -52,15 +59,17 @@ public class Board extends BaseEntity {
         this.modifyRoles = modifyRoles;
         this.readRoles = readRoles;
         this.isDeleted = isDeleted;
+        this.circle = circle;
     }
 
-    public static Board of (
+    public static Board of(
             String name,
             String description,
             String createRoles,
             String modifyRoles,
             String readRoles,
-            Boolean isDeleted
+            Boolean isDeleted,
+            Circle circle
     ) {
         return new Board(
                 name,
@@ -68,7 +77,8 @@ public class Board extends BaseEntity {
                 createRoles,
                 modifyRoles,
                 readRoles,
-                isDeleted
+                isDeleted,
+                circle
         );
     }
 }

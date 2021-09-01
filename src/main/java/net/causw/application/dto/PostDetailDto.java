@@ -15,7 +15,7 @@ public class PostDetailDto {
     private Boolean isDeleted;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private BoardDetailDto board;
+    private BoardResponseDto board;
 
     private PostDetailDto(
             String id,
@@ -24,7 +24,7 @@ public class PostDetailDto {
             Boolean isDeleted,
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
-            BoardDetailDto board
+            BoardResponseDto board
     ) {
         this.id = id;
         this.title = title;
@@ -43,7 +43,7 @@ public class PostDetailDto {
                 post.getIsDeleted(),
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
-                BoardDetailDto.from(post.getBoard())
+                BoardResponseDto.from(post.getBoard())
         );
     }
 }
