@@ -8,7 +8,7 @@ import net.causw.domain.model.Role;
 
 public class DelegationFactory {
     public static Delegation create(Role role, UserPort userPort, CirclePort circlePort) {
-        switch (role){
+        switch (role) {
             case PRESIDENT:
                 return new DelegationPresident(userPort);
             case LEADER_CIRCLE:
@@ -17,7 +17,7 @@ public class DelegationFactory {
                 return new DelegationLeaderAlumni(userPort);
             default:
                 throw new UnauthorizedException(
-                        ErrorCode.API_NOT_ACCESSIBLE,
+                        ErrorCode.API_NOT_ALLOWED,
                         "You don't have access."
                 );
         }

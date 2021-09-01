@@ -118,7 +118,7 @@ public class UserService {
          * The sign-in process is rejected if the user is in BLOCKED, WAIT, or INACTIVE state.
          */
         PasswordCorrectValidator.of(userDomainModel, userSignInRequestDto.getPassword())
-                .linkWith(UserStateValidator.of(userDomainModel))
+                .linkWith(UserStateValidator.of(userDomainModel.getState()))
                 .validate();
 
         return this.jwtTokenProvider.createToken(

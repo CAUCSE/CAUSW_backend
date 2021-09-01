@@ -2,16 +2,19 @@ package net.causw.adapter.persistence;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import net.causw.domain.model.UserCircleStatus;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Enumerated;
-import javax.persistence.Table;
 import javax.persistence.EnumType;
-import javax.persistence.ManyToOne;
+import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 @Getter
+@Setter
 @Entity
 @NoArgsConstructor
 @Table(name = "TB_USERCIRCLE")

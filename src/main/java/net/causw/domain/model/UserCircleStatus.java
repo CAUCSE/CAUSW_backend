@@ -1,4 +1,4 @@
-package net.causw.adapter.persistence;
+package net.causw.domain.model;
 
 public enum UserCircleStatus {
     AWAIT("await"),

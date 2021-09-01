@@ -6,21 +6,21 @@ import net.causw.adapter.persistence.Circle;
 
 @Getter
 @NoArgsConstructor
-public class CircleDto {
+public class CircleFullDto {
     private String id;
     private String name;
     private String mainImage;
     private String description;
     private Boolean isDeleted;
-    private UserResponseDto manager;
+    private UserFullDto manager;
 
-    private CircleDto(
+    private CircleFullDto(
             String id,
             String name,
             String mainImage,
             String description,
             Boolean isDeleted,
-            UserResponseDto manager
+            UserFullDto manager
     ) {
         this.id = id;
         this.name = name;
@@ -30,14 +30,14 @@ public class CircleDto {
         this.manager = manager;
     }
 
-    public static CircleDto from(Circle circle) {
-        return new CircleDto(
+    public static CircleFullDto from(Circle circle) {
+        return new CircleFullDto(
                 circle.getId(),
                 circle.getName(),
                 circle.getMainImage(),
                 circle.getDescription(),
                 circle.getIsDeleted(),
-                UserResponseDto.from(
+                UserFullDto.from(
                         circle.getLeader()
                 )
         );

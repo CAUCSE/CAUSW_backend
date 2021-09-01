@@ -11,6 +11,7 @@ public enum ErrorCode {
     ROW_ALREADY_EXIST(4001),
     INVALID_PARAMETER(4002),            // Parameter format error
     INVALID_USER_DATA_REQUEST(4003),    // User signup & update validation error
+    TARGET_DELETED(4004),
 
     /**
      * 401 Unauthorized
@@ -23,6 +24,7 @@ public enum ErrorCode {
     INVALID_JWT(4105),
     GRANT_ROLE_NOT_ALLOWED(4106),
     GRANTEE_ROLE_NOT_ACCEPTABLE(4107),
+    API_NOT_ALLOWED(4108),
 
     /**
      * 500 Internal Server Error
