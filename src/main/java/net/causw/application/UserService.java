@@ -1,6 +1,6 @@
 package net.causw.application;
 
-import net.causw.application.dto.EmailDuplicatedCheckDto;
+import net.causw.application.dto.DuplicatedCheckDto;
 import net.causw.application.dto.UserCreateRequestDto;
 import net.causw.application.dto.UserFullDto;
 import net.causw.application.dto.UserResponseDto;
@@ -129,8 +129,8 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public EmailDuplicatedCheckDto isDuplicatedEmail(String email) {
-        return EmailDuplicatedCheckDto.of(this.userPort.findByEmail(email).isPresent());
+    public DuplicatedCheckDto isDuplicatedEmail(String email) {
+        return DuplicatedCheckDto.of(this.userPort.findByEmail(email).isPresent());
     }
 
     @Transactional
