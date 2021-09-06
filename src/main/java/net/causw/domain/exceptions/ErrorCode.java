@@ -12,6 +12,7 @@ public enum ErrorCode {
     INVALID_PARAMETER(4002),            // Parameter format error
     INVALID_USER_DATA_REQUEST(4003),    // User signup & update validation error
     TARGET_DELETED(4004),
+    INVALID_HTTP_METHOD(4005),
 
     /**
      * 401 Unauthorized
