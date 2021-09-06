@@ -11,11 +11,15 @@ import net.causw.application.spi.UserCirclePort;
 import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
+import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.model.Role;
+import net.causw.domain.model.UserCircleStatus;
 import net.causw.domain.validation.CircleStateValidator;
 import net.causw.domain.validation.DuplicatedCircleNameValidator;
 import net.causw.domain.validation.UpdatableGranteeRoleValidator;
+import net.causw.domain.validation.UserCircleStateAwaitValidator;
 import net.causw.domain.validation.UserCircleStateLeaveValidator;
+import net.causw.domain.validation.UserEqualValidator;
 import net.causw.domain.validation.UserRoleAdminOrPresidentValidator;
 import net.causw.domain.validation.UserStateValidator;
 import org.springframework.stereotype.Service;
@@ -84,8 +88,13 @@ public class CircleService {
         CircleFullDto newCircle = this.circlePort.create(circleCreateRequestDto, leader);
 
         // Apply the leader automatically to the circle
-        this.userCirclePort.create(leader, newCircle);
-        this.userCirclePort.accept(leader.getId(), newCircle.getId());
+        UserCircleDto userCircleDto = this.userCirclePort.create(leader, newCircle);
+        this.userCirclePort.updateStatus(userCircleDto.getId(), UserCircleStatus.MEMBER).orElseThrow(
+                () -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "Application id immediately used, but exception occurred"
+                )
+        );
 
         return CircleResponseDto.from(newCircle);
     }
@@ -116,5 +125,49 @@ public class CircleService {
     @Transactional(readOnly = true)
     public DuplicatedCheckDto isDuplicatedName(String name) {
         return DuplicatedCheckDto.of(this.circlePort.findByName(name).isPresent());
+    }
+
+    @Transactional
+    public UserCircleDto acceptUser(String requestUserId, String applicationId) {
+        return this.updateStatus(
+                requestUserId,
+                applicationId,
+                UserCircleStatus.MEMBER
+        );
+    }
+
+    @Transactional
+    public UserCircleDto rejectUser(String requestUserId, String applicationId) {
+        return this.updateStatus(
+                requestUserId,
+                applicationId,
+                UserCircleStatus.REJECT
+        );
+    }
+
+    private UserCircleDto updateStatus(
+            String requestUserId,
+            String applicationId,
+            UserCircleStatus targetStatus
+    ) {
+        UserCircleDto userCircleDto = this.userCirclePort.findById(applicationId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid application id"
+                )
+        );
+
+        // TODO : Request User가 ADMIN인 경우 허용
+        UserEqualValidator.of(requestUserId, userCircleDto.getCircle().getManager().getId())
+                .linkWith(CircleStateValidator.of(userCircleDto.getCircle().getIsDeleted())
+                        .linkWith(UserCircleStateAwaitValidator.of(userCircleDto.getStatus())))
+                .validate();
+
+        return this.userCirclePort.updateStatus(applicationId, targetStatus).orElseThrow(
+                () -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "Application id checked, but exception occurred"
+                )
+        );
     }
 }

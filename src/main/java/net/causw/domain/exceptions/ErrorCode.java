@@ -13,6 +13,7 @@ public enum ErrorCode {
     INVALID_USER_DATA_REQUEST(4003),    // User signup & update validation error
     TARGET_DELETED(4004),
     INVALID_HTTP_METHOD(4005),
+    APPLY_NOT_EXIST(4006),
 
     /**
      * 401 Unauthorized

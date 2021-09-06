@@ -101,18 +101,26 @@ class CircleServiceTest extends Specification {
                 mockLeaderUser
         )
 
+        def userCircleId = "Test Circle Create UserCircle Id"
+
         def mockUserCircle = UserCircle.of(
+                userCircleId,
                 UserCircleStatus.AWAIT,
                 mockCircle,
                 mockLeaderUser
         )
 
-        this.circlePort.create(mockCircleCreateRequestDto, mockLeaderUserFullDto) >> CircleFullDto.from(mockCircle)
+        def mockUserCircleDto = UserCircleDto.from(mockUserCircle)
+        def mockCircleFullDto = CircleFullDto.from(mockCircle)
 
-        this.userCirclePort.create(UserFullDto.from(mockLeaderUser), CircleFullDto.from(mockCircle)) >> UserCircleDto.from(mockUserCircle)
+        this.circlePort.create(mockCircleCreateRequestDto, mockLeaderUserFullDto) >> mockCircleFullDto
+
+        this.userCirclePort.create(mockLeaderUserFullDto, mockCircleFullDto) >> mockUserCircleDto
 
         mockUserCircle.setStatus(UserCircleStatus.MEMBER)
-        this.userCirclePort.accept(UserFullDto.from(mockLeaderUser), CircleFullDto.from(mockCircle)) >> UserCircleDto.from(mockUserCircle)
+        mockUserCircleDto = UserCircleDto.from(mockUserCircle)
+
+        this.userCirclePort.updateStatus(userCircleId, UserCircleStatus.MEMBER) >> Optional.of(mockUserCircleDto)
 
         when:
         def newCircle = this.circleService.create(apiCallUserId, mockCircleCreateRequestDto)
@@ -523,7 +531,7 @@ class CircleServiceTest extends Specification {
         this.circlePort.findById(circleId) >> Optional.of(mockCircleFullDto)
         this.userPort.findById(userId) >> Optional.of(mockUserFullDto)
 
-        this.userCirclePort.loadUserCircleStatus(mockUserFullDto, mockCircleFullDto) >> Optional.ofNullable(null)
+        this.userCirclePort.loadUserCircleStatus(userId, circleId) >> Optional.ofNullable(null)
 
         def mockUserCircle = UserCircle.of(
                 UserCircleStatus.AWAIT,
@@ -675,7 +683,7 @@ class CircleServiceTest extends Specification {
         )
         def mockUserCircleDto = UserCircleDto.from(mockUserCircle)
 
-        this.userCirclePort.loadUserCircleStatus(mockUserFullDto, mockCircleFullDto) >> Optional.of(mockUserCircle.getStatus())
+        this.userCirclePort.loadUserCircleStatus(userId, circleId) >> Optional.of(mockUserCircle.getStatus())
         this.userCirclePort.create(mockUserFullDto, mockCircleFullDto) >> mockUserCircleDto
 
         when:
@@ -683,5 +691,201 @@ class CircleServiceTest extends Specification {
 
         then:
         thrown(BadRequestException)
+    }
+
+
+    /**
+     * Test cases for accept & reject user
+     */
+    @Test
+    def "Accept & Reject user normal case"() {
+        given:
+        def leaderUserId = "Test Leader Id"
+        def leaderUserEmail = "test-leader-email@cau.ac.kr"
+        def leaderUserName = "Test Leader Name"
+        def password = "qwer1234!"
+        def studentId = "20210000"
+        def admissionYear = 2021
+
+        def applyUserId = "Test Apply User Id"
+        def applyUserEmail = "test-apply-email@cau.ac.kr"
+        def applyUserName = "Test Apply User Name"
+
+        def mockLeaderUser = User.of(
+                leaderUserId,
+                leaderUserEmail,
+                leaderUserName,
+                password,
+                studentId,
+                admissionYear,
+                Role.PRESIDENT,
+                UserState.ACTIVE
+        )
+
+        def mockApplyUser = User.of(
+                applyUserId,
+                applyUserEmail,
+                applyUserName,
+                password,
+                studentId,
+                admissionYear,
+                Role.PRESIDENT,
+                UserState.ACTIVE
+        )
+
+        def circleId = "Test Circle Id"
+        def circleName = "Test Circle Name"
+        def description = "Testing accept user"
+        def mainImage = "something/test/circle/image"
+
+        def mockCircle = Circle.of(
+                circleId,
+                circleName,
+                description,
+                mainImage,
+                false,
+                mockLeaderUser
+        )
+
+        def userCircleId = "Test UserCircle Id"
+
+        def mockUserCircle = UserCircle.of(
+                userCircleId,
+                UserCircleStatus.AWAIT,
+                mockCircle,
+                mockApplyUser
+        )
+
+        def mockUserCircleDto = UserCircleDto.from(mockUserCircle)
+
+        this.userCirclePort.findById(userCircleId) >> Optional.of(mockUserCircleDto)
+
+        mockUserCircle.setStatus(UserCircleStatus.MEMBER)
+        mockUserCircleDto = UserCircleDto.from(mockUserCircle)
+
+        this.userCirclePort.updateStatus(userCircleId, UserCircleStatus.MEMBER) >> Optional.of(mockUserCircleDto)
+
+
+        mockUserCircle.setStatus(UserCircleStatus.REJECT)
+        mockUserCircleDto = UserCircleDto.from(mockUserCircle)
+
+        this.userCirclePort.updateStatus(userCircleId, UserCircleStatus.REJECT) >> Optional.of(mockUserCircleDto)
+
+        when: "Accept user"
+        def acceptUser = this.circleService.acceptUser(leaderUserId, userCircleId)
+
+        then:
+        acceptUser instanceof UserCircleDto
+        acceptUser.getStatus() == UserCircleStatus.MEMBER
+
+        when: "Reject user"
+        def rejectUser = this.circleService.rejectUser(leaderUserId, userCircleId)
+
+        then:
+        rejectUser instanceof UserCircleDto
+        rejectUser.getStatus() == UserCircleStatus.REJECT
+    }
+
+    @Test
+    def "Accept & Reject user not authenticated case"() {
+        given:
+        def leaderUserId = "Test Leader Id"
+        def leaderUserEmail = "test-leader-email@cau.ac.kr"
+        def leaderUserName = "Test Leader Name"
+        def password = "qwer1234!"
+        def studentId = "20210000"
+        def admissionYear = 2021
+
+        def applyUserId = "Test Apply User Id"
+        def applyUserEmail = "test-apply-email@cau.ac.kr"
+        def applyUserName = "Test Apply User Name"
+
+        def notAllowedUserId = "Test Not a Leader Id"
+
+        def mockLeaderUser = User.of(
+                leaderUserId,
+                leaderUserEmail,
+                leaderUserName,
+                password,
+                studentId,
+                admissionYear,
+                Role.PRESIDENT,
+                UserState.ACTIVE
+        )
+
+        def mockApplyUser = User.of(
+                applyUserId,
+                applyUserEmail,
+                applyUserName,
+                password,
+                studentId,
+                admissionYear,
+                Role.PRESIDENT,
+                UserState.ACTIVE
+        )
+
+        def circleId = "Test Circle Id"
+        def circleName = "Test Circle Name"
+        def description = "Testing accept user"
+        def mainImage = "something/test/circle/image"
+
+        def mockCircle = Circle.of(
+                circleId,
+                circleName,
+                description,
+                mainImage,
+                false,
+                mockLeaderUser
+        )
+
+        def userCircleId = "Test UserCircle Id"
+
+        def mockUserCircle = UserCircle.of(
+                userCircleId,
+                UserCircleStatus.AWAIT,
+                mockCircle,
+                mockApplyUser
+        )
+
+        def mockUserCircleDto = UserCircleDto.from(mockUserCircle)
+
+        this.userCirclePort.findById(userCircleId) >> Optional.of(mockUserCircleDto)
+
+        mockUserCircle.setStatus(UserCircleStatus.MEMBER)
+        mockUserCircleDto = UserCircleDto.from(mockUserCircle)
+
+        this.userCirclePort.updateStatus(userCircleId, UserCircleStatus.MEMBER) >> Optional.of(mockUserCircleDto)
+
+
+        mockUserCircle.setStatus(UserCircleStatus.REJECT)
+        mockUserCircleDto = UserCircleDto.from(mockUserCircle)
+
+        this.userCirclePort.updateStatus(userCircleId, UserCircleStatus.REJECT) >> Optional.of(mockUserCircleDto)
+
+        when: "Accept user with user id who is not a leader"
+        this.circleService.acceptUser(notAllowedUserId, userCircleId)
+
+        then:
+        thrown(UnauthorizedException)
+
+        when: "Successful accept case"
+        def acceptUser = this.circleService.acceptUser(leaderUserId, userCircleId)
+
+        then:
+        acceptUser instanceof UserCircleDto
+        acceptUser.getStatus() == UserCircleStatus.MEMBER
+
+        when: "Reject user with user id who is not a leader"
+        this.circleService.rejectUser(notAllowedUserId, userCircleId)
+
+        then:
+        thrown(UnauthorizedException)
+
+        when: "Successful reject case"
+        def rejectUser = this.circleService.rejectUser(leaderUserId, userCircleId)
+
+        then:
+        rejectUser instanceof UserCircleDto
+        rejectUser.getStatus() == UserCircleStatus.REJECT
     }
 }

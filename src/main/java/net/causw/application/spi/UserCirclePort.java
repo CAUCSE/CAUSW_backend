@@ -14,5 +14,5 @@ public interface UserCirclePort {
 
     UserCircleDto create(UserFullDto userFullDto, CircleFullDto circleFullDto);
 
-    Optional<UserCircleDto> accept(String userId, String circleId);
+    Optional<UserCircleDto> updateStatus(String applicationId, UserCircleStatus targetStatus);
 }

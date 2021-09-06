@@ -32,6 +32,18 @@ public class UserCircle extends BaseEntity {
     private User user;
 
     private UserCircle(
+            String id,
+            UserCircleStatus status,
+            Circle circle,
+            User user
+    ) {
+        super(id);
+        this.status = status;
+        this.circle = circle;
+        this.user = user;
+    }
+
+    private UserCircle(
             UserCircleStatus status,
             Circle circle,
             User user
@@ -39,6 +51,20 @@ public class UserCircle extends BaseEntity {
         this.status = status;
         this.circle = circle;
         this.user = user;
+    }
+
+    public static UserCircle of(
+            String id,
+            UserCircleStatus status,
+            Circle circle,
+            User user
+    ) {
+        return new UserCircle(
+                id,
+                status,
+                circle,
+                user
+        );
     }
 
     public static UserCircle of(
