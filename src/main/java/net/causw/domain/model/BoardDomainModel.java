@@ -1,15 +1,26 @@
 package net.causw.domain.model;
 
 import lombok.Getter;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Getter
 public class BoardDomainModel {
     private String id;
-    private String name;
     private String description;
+
+    @NotBlank(message = "Name is blank")
+    private String name;
+
+    @NotNull(message = "Create role is null")
     private List<String> createRoleList;
+
+    @NotNull(message = "Modify role is null")
     private List<String> modifyRoleList;
+
+    @NotNull(message = "Read role is null")
     private List<String> readRoleList;
 
     private BoardDomainModel(

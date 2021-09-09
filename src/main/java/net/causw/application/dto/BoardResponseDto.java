@@ -10,7 +10,7 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
-public class BoardDetailDto {
+public class BoardResponseDto {
     private String id;
     private String name;
     private String description;
@@ -19,7 +19,7 @@ public class BoardDetailDto {
     private List<String> readRoleList;
     private Boolean isDeleted;
 
-    private BoardDetailDto(
+    private BoardResponseDto(
             String id,
             String name,
             String description,
@@ -37,8 +37,8 @@ public class BoardDetailDto {
         this.isDeleted = isDeleted;
     }
 
-    public static BoardDetailDto from(Board board) {
-        return new BoardDetailDto(
+    public static BoardResponseDto from(Board board) {
+        return new BoardResponseDto(
                 board.getId(),
                 board.getName(),
                 board.getDescription(),

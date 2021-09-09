@@ -27,6 +27,7 @@ public class CirclePortImpl implements CirclePort {
     @Override
     public Optional<CircleFullDto> findByLeaderId(String leaderId) {
         return this.circleRepository.findByLeaderId(leaderId).map(CircleFullDto::from);
+
     }
 
     @Override

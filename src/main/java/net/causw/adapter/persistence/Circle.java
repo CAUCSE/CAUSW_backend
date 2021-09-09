@@ -72,7 +72,6 @@ public class Circle extends BaseEntity {
     }
 
     public static Circle of(
-            String id,
             String name,
             String mainImage,
             String description,
@@ -80,7 +79,6 @@ public class Circle extends BaseEntity {
             User leader
     ) {
         return new Circle(
-                id,
                 name,
                 mainImage,
                 description,
@@ -90,6 +88,7 @@ public class Circle extends BaseEntity {
     }
 
     public static Circle of(
+            String id,
             String name,
             String mainImage,
             String description,
@@ -97,6 +96,7 @@ public class Circle extends BaseEntity {
             User leader
     ) {
         return new Circle(
+                id,
                 name,
                 mainImage,
                 description,
