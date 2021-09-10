@@ -23,9 +23,5 @@ public class CircleStateValidator extends AbstractValidator {
                     "The circle is deleted"
             );
         }
-
-        if (this.hasNext()) {
-            this.next.validate();
-        }
     }
 }

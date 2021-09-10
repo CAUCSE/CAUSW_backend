@@ -38,9 +38,5 @@ public class UserStateValidator extends AbstractValidator {
                     "Awaiting user"
             );
         }
-
-        if (this.hasNext()) {
-            this.next.validate();
-        }
     }
 }

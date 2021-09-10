@@ -25,28 +25,24 @@ public class UpdatableGrantedRoleValidator extends AbstractValidator {
          * Granted role should not be Admin
          */
         if (this.grantorRole == Role.ADMIN && this.grantedRole != Role.ADMIN) {
-            this.pass();
             return;
         }
         /* When role of grantor is President, validate granted role
          * Granted role should not be Admin
          */
         if (this.grantorRole == Role.PRESIDENT && this.grantedRole != Role.ADMIN) {
-            this.pass();
             return;
         }
         /* When role of grantor is Leader_Circle, validate granted role
          * Granted role should be Leader_Circle
          */
         if (this.grantorRole == Role.LEADER_CIRCLE && this.grantedRole == Role.LEADER_CIRCLE) {
-            this.pass();
             return;
         }
         /* When role of grantor is Leader_Alumni, validate granted role
          * Granted role should be Leader_Alumni
          */
         if (this.grantorRole == Role.LEADER_ALUMNI && this.grantedRole == Role.LEADER_ALUMNI) {
-            this.pass();
             return;
         }
 
@@ -54,11 +50,5 @@ public class UpdatableGrantedRoleValidator extends AbstractValidator {
                 ErrorCode.GRANT_ROLE_NOT_ALLOWED,
                 "Grant role not allowed"
         );
-    }
-
-    public void pass() {
-        if (this.hasNext()) {
-            this.next.validate();
-        }
     }
 }

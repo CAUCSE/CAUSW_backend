@@ -5,6 +5,8 @@ import net.causw.application.dto.BoardCreateRequestDto;
 import net.causw.application.dto.BoardResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,13 +22,11 @@ public class BoardController {
         this.boardService = boardService;
     }
 
-    /* TODO : Refactoring & Implementation
     @GetMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
     public BoardResponseDto findById(@PathVariable String id) {
         return this.boardService.findById(id);
     }
-     */
 
     @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)

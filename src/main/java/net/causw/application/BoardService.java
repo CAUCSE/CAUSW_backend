@@ -10,13 +10,16 @@ import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.BoardDomainModel;
+import net.causw.domain.model.Role;
 import net.causw.domain.validation.ConstraintValidator;
-import net.causw.domain.validation.BoardRoleValidator;
-import net.causw.domain.validation.CorrectCircleLeaderValidator;
+import net.causw.domain.validation.UserEqualValidator;
+import net.causw.domain.validation.UserRoleValidator;
+import net.causw.domain.validation.ValidatorBucket;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -45,6 +48,8 @@ public class BoardService {
 
     @Transactional
     public BoardResponseDto create(String creatorId, BoardCreateRequestDto boardCreateRequestDto) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
         UserFullDto creatorFullDto = this.userPort.findById(creatorId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -60,6 +65,12 @@ public class BoardService {
                             "Invalid circle id"
                     )
             );
+            validatorBucket
+                    .consistOf(UserEqualValidator.of(circleFullDto.getManager().getId(), creatorId))
+                    .consistOf(UserRoleValidator.of(creatorFullDto.getRole(), List.of(Role.LEADER_CIRCLE)));
+        } else {
+            validatorBucket
+                    .consistOf(UserRoleValidator.of(creatorFullDto.getRole(), List.of(Role.PRESIDENT)));
         }
 
         BoardDomainModel boardDomainModel = BoardDomainModel.of(
@@ -71,9 +82,8 @@ public class BoardService {
                 boardCreateRequestDto.getReadRoleList()
         );
 
-        ConstraintValidator.of(boardDomainModel, this.validator)
-                .linkWith(BoardRoleValidator.of(creatorFullDto.getRole(), boardCreateRequestDto.getCircleId())
-                        .linkWith(CorrectCircleLeaderValidator.of(circleFullDto, creatorId)))
+        validatorBucket
+                .consistOf(ConstraintValidator.of(boardDomainModel, this.validator))
                 .validate();
 
         return this.boardPort.create(boardCreateRequestDto, Optional.ofNullable(circleFullDto));

@@ -25,10 +25,6 @@ public class AdmissionYearValidator extends AbstractValidator {
                     "Invalid user data request: admission year"
             );
         }
-
-        if (this.hasNext()) {
-            this.next.validate();
-        }
     }
 
     public boolean validateAdmissionYear() {

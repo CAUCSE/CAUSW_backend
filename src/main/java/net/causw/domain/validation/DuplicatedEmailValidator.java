@@ -27,8 +27,5 @@ public class DuplicatedEmailValidator extends AbstractValidator {
                     "This email already exist"
             );
         }
-        if (this.hasNext()) {
-            this.next.validate();
-        };
     }
 }

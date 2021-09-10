@@ -35,9 +35,5 @@ public class ConstraintValidator <T> extends AbstractValidator {
 
             throw new ConstraintViolationException(sb.toString(), violations);
         }
-
-        if (this.hasNext()) {
-            this.next.validate();
-        }
     }
 }
