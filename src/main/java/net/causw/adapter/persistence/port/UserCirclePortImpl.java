@@ -41,22 +41,10 @@ public class UserCirclePortImpl implements UserCirclePort {
     }
 
     @Override
-    public Optional<UserCircleDto> accept(String userId, String circleId) {
-        return this.setStatus(
-                userId,
-                circleId,
-                UserCircleStatus.MEMBER
-        );
-    }
-
-    private Optional<UserCircleDto> setStatus(
-            String userId,
-            String circleId,
-            UserCircleStatus status
-    ) {
-        return this.userCircleRepository.findByUser_IdAndCircle_Id(userId, circleId).map(
+    public Optional<UserCircleDto> updateStatus(String applicationId, UserCircleStatus targetStatus) {
+        return this.userCircleRepository.findById(applicationId).map(
                 userCircle -> {
-                    userCircle.setStatus(status);
+                    userCircle.setStatus(targetStatus);
 
                     return UserCircleDto.from(this.userCircleRepository.save(userCircle));
                 }

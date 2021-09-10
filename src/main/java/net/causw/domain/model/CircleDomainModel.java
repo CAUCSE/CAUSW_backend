@@ -8,7 +8,7 @@ public class CircleDomainModel {
     private String name;
     private String mainImage;
     private String description;
-    private String isDeleted;
+    private Boolean isDeleted;
     private UserDomainModel manager;
 
     private CircleDomainModel(
@@ -16,7 +16,7 @@ public class CircleDomainModel {
             String name,
             String mainImage,
             String description,
-            String isDeleted,
+            Boolean isDeleted,
             UserDomainModel manager
     ) {
         this.id = id;
@@ -32,7 +32,7 @@ public class CircleDomainModel {
             String name,
             String mainImage,
             String description,
-            String isDeleted,
+            Boolean isDeleted,
             UserDomainModel manager
     ) {
         return new CircleDomainModel(
