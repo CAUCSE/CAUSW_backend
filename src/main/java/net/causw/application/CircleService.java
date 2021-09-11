@@ -17,13 +17,15 @@ import net.causw.domain.model.UserCircleStatus;
 import net.causw.domain.validation.CircleStateValidator;
 import net.causw.domain.validation.DuplicatedCircleNameValidator;
 import net.causw.domain.validation.UpdatableGranteeRoleValidator;
-import net.causw.domain.validation.UserCircleStateAwaitValidator;
-import net.causw.domain.validation.UserCircleStateLeaveValidator;
+import net.causw.domain.validation.UserCircleStateValidator;
 import net.causw.domain.validation.UserEqualValidator;
-import net.causw.domain.validation.UserRoleAdminOrPresidentValidator;
+import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.UserStateValidator;
+import net.causw.domain.validation.ValidatorBucket;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 public class CircleService {
@@ -53,6 +55,8 @@ public class CircleService {
 
     @Transactional
     public CircleResponseDto create(String userId, CircleCreateRequestDto circleCreateRequestDto) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
         UserFullDto requestUser = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -70,10 +74,11 @@ public class CircleService {
         /* Check if the request user is president or admin
          * Then, validate the circle name whether it is duplicated or not
          */
-        UserRoleAdminOrPresidentValidator.of(requestUser.getRole())
-                .linkWith(DuplicatedCircleNameValidator.of(this.circlePort, circleCreateRequestDto.getName())
-                        .linkWith(UpdatableGranteeRoleValidator.of(Role.LEADER_CIRCLE, leader.getRole())
-                                .linkWith(UserStateValidator.of(leader.getState()))))
+        validatorBucket
+                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT, Role.ADMIN)))
+                .consistOf(DuplicatedCircleNameValidator.of(this.circlePort, circleCreateRequestDto.getName()))
+                .consistOf(UpdatableGranteeRoleValidator.of(Role.LEADER_CIRCLE, leader.getRole()))
+                .consistOf(UserStateValidator.of(leader.getState()))
                 .validate();
 
         // Grant role to the LEADER
@@ -101,6 +106,8 @@ public class CircleService {
 
     @Transactional
     public UserCircleDto userApply(String userId, String circleId) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
         CircleFullDto circle = this.circlePort.findById(circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -115,8 +122,17 @@ public class CircleService {
                 )
         );
 
-        CircleStateValidator.of(circle.getIsDeleted())
-                .linkWith(UserCircleStateLeaveValidator.of(this.userCirclePort, user.getId(), circle.getId()))
+        this.userCirclePort.loadUserCircleStatus(user.getId(), circle.getId()).ifPresent(
+                status -> validatorBucket.consistOf(
+                        UserCircleStateValidator.of(
+                                status,
+                                List.of(UserCircleStatus.MEMBER, UserCircleStatus.DROP, UserCircleStatus.AWAIT)
+                        )
+                )
+        );
+
+        validatorBucket
+                .consistOf(CircleStateValidator.of(circle.getIsDeleted()))
                 .validate();
 
         return this.userCirclePort.create(user, circle);
@@ -150,6 +166,7 @@ public class CircleService {
             String applicationId,
             UserCircleStatus targetStatus
     ) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
         UserCircleDto userCircleDto = this.userCirclePort.findById(applicationId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -158,9 +175,12 @@ public class CircleService {
         );
 
         // TODO : Request User가 ADMIN인 경우 허용
-        UserEqualValidator.of(requestUserId, userCircleDto.getCircle().getManager().getId())
-                .linkWith(CircleStateValidator.of(userCircleDto.getCircle().getIsDeleted())
-                        .linkWith(UserCircleStateAwaitValidator.of(userCircleDto.getStatus())))
+        validatorBucket
+                .consistOf(UserEqualValidator.of(requestUserId, userCircleDto.getCircle().getManager().getId()))
+                .consistOf(CircleStateValidator.of(userCircleDto.getCircle().getIsDeleted()))
+                .consistOf(UserCircleStateValidator.of(
+                        userCircleDto.getStatus(),
+                        List.of(UserCircleStatus.MEMBER, UserCircleStatus.DROP, UserCircleStatus.LEAVE)))
                 .validate();
 
         return this.userCirclePort.updateStatus(applicationId, targetStatus).orElseThrow(

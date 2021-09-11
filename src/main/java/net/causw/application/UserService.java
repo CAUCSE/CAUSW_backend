@@ -24,6 +24,7 @@ import net.causw.domain.validation.PasswordFormatValidator;
 import net.causw.domain.validation.UpdatableGrantedRoleValidator;
 import net.causw.domain.validation.UpdatableGranteeRoleValidator;
 import net.causw.domain.validation.UserStateValidator;
+import net.causw.domain.validation.ValidatorBucket;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,6 +71,8 @@ public class UserService {
 
     @Transactional
     public UserResponseDto signUp(UserCreateRequestDto userCreateRequestDto) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
         // Make domain model for generalized data model and validate the format of request parameter
         UserDomainModel userDomainModel = UserDomainModel.of(
                 null,
@@ -84,10 +87,11 @@ public class UserService {
         );
 
         // Validate password format, admission year range, and whether the email is duplicate or not
-        ConstraintValidator.of(userDomainModel, this.validator)
-                .linkWith(PasswordFormatValidator.of(userDomainModel.getPassword())
-                        .linkWith(AdmissionYearValidator.of(userDomainModel.getAdmissionYear())
-                                .linkWith(DuplicatedEmailValidator.of(this.userPort, userCreateRequestDto.getEmail()))))
+        validatorBucket
+                .consistOf(ConstraintValidator.of(userDomainModel, this.validator))
+                .consistOf(PasswordFormatValidator.of(userDomainModel.getPassword()))
+                .consistOf(AdmissionYearValidator.of(userDomainModel.getAdmissionYear()))
+                .consistOf(DuplicatedEmailValidator.of(this.userPort, userCreateRequestDto.getEmail()))
                 .validate();
 
         return UserResponseDto.from(this.userPort.create(userCreateRequestDto));
@@ -95,6 +99,8 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public String signIn(UserSignInRequestDto userSignInRequestDto) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
         UserFullDto userFullDto = this.userPort.findByEmail(userSignInRequestDto.getEmail()).orElseThrow(
                 () -> new UnauthorizedException(
                         ErrorCode.INVALID_SIGNIN,
@@ -117,8 +123,9 @@ public class UserService {
         /* Validate the input password and user state
          * The sign-in process is rejected if the user is in BLOCKED, WAIT, or INACTIVE state.
          */
-        PasswordCorrectValidator.of(userDomainModel, userSignInRequestDto.getPassword())
-                .linkWith(UserStateValidator.of(userDomainModel.getState()))
+        validatorBucket
+                .consistOf(PasswordCorrectValidator.of(userDomainModel, userSignInRequestDto.getPassword()))
+                .consistOf(UserStateValidator.of(userDomainModel.getState()))
                 .validate();
 
         return this.jwtTokenProvider.createToken(
@@ -135,6 +142,8 @@ public class UserService {
 
     @Transactional
     public UserResponseDto update(String id, UserUpdateRequestDto userUpdateRequestDto) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
         // First, load the user data from input user id
         UserFullDto userFullDto = this.userPort.findById(id).orElseThrow(
                 () -> new BadRequestException(
@@ -147,8 +156,7 @@ public class UserService {
          * Then, validate it whether the requested email is duplicated or not
          */
         if (!userFullDto.getEmail().equals(userUpdateRequestDto.getEmail())) {
-            DuplicatedEmailValidator.of(this.userPort, userUpdateRequestDto.getEmail())
-                    .validate();
+            validatorBucket.consistOf(DuplicatedEmailValidator.of(this.userPort, userUpdateRequestDto.getEmail()));
         }
 
         // Validate the requested parameters format from making the domain model
@@ -165,8 +173,9 @@ public class UserService {
         );
 
         // Validate the admission year range
-        ConstraintValidator.of(userDomainModel, this.validator)
-                .linkWith(AdmissionYearValidator.of(userDomainModel.getAdmissionYear()))
+        validatorBucket
+                .consistOf(ConstraintValidator.of(userDomainModel, this.validator))
+                .consistOf(AdmissionYearValidator.of(userDomainModel.getAdmissionYear()))
                 .validate();
 
         return UserResponseDto.from(this.userPort.update(id, userUpdateRequestDto).orElseThrow(
@@ -183,6 +192,8 @@ public class UserService {
             String granteeId,
             UserUpdateRoleRequestDto userUpdateRoleRequestDto
     ) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
         // Load the user data from input grantor and grantee ids.
         UserFullDto grantor = this.userPort.findById(grantorId).orElseThrow(
                 () -> new BadRequestException(
@@ -201,8 +212,9 @@ public class UserService {
          * 1) Combination of grantor role and the role to be granted must be acceptable
          * 2) Combination of grantor role and the grantee role must be acceptable
          */
-        UpdatableGrantedRoleValidator.of(grantor.getRole(), userUpdateRoleRequestDto.getRole())
-                .linkWith(UpdatableGranteeRoleValidator.of(grantor.getRole(), grantee.getRole()))
+        validatorBucket
+                .consistOf(UpdatableGrantedRoleValidator.of(grantor.getRole(), userUpdateRoleRequestDto.getRole()))
+                .consistOf(UpdatableGranteeRoleValidator.of(grantor.getRole(), grantee.getRole()))
                 .validate();
 
         /* Delegate the role
@@ -211,7 +223,8 @@ public class UserService {
          * 3) Then, the DelegationFactory match the instance for the delegation considering the role -> Then processed
          */
         if (grantor.getRole() == userUpdateRoleRequestDto.getRole()) {
-            DelegationFactory.create(grantor.getRole(), this.userPort, this.circlePort)
+            DelegationFactory
+                    .create(grantor.getRole(), this.userPort, this.circlePort)
                     .delegate(grantorId, granteeId);
         }
 

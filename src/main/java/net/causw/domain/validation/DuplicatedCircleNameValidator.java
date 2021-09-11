@@ -27,9 +27,5 @@ public class DuplicatedCircleNameValidator extends AbstractValidator {
                     "Duplicated circle name"
             );
         }
-
-        if (this.hasNext()) {
-            this.next.validate();
-        }
     }
 }

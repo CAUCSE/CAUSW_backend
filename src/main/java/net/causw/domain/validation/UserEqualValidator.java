@@ -26,9 +26,5 @@ public class UserEqualValidator extends AbstractValidator {
                     "You don't have access"
             );
         }
-
-        if (this.hasNext()) {
-            this.next.validate();
-        }
     }
 }

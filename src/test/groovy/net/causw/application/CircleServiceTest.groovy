@@ -531,7 +531,7 @@ class CircleServiceTest extends Specification {
         this.circlePort.findById(circleId) >> Optional.of(mockCircleFullDto)
         this.userPort.findById(userId) >> Optional.of(mockUserFullDto)
 
-        this.userCirclePort.loadUserCircleStatus(userId, circleId) >> Optional.ofNullable(null)
+        this.userCirclePort.loadUserCircleStatus(mockUserFullDto.getId(), mockCircleFullDto.getId()) >> Optional.ofNullable(null)
 
         def mockUserCircle = UserCircle.of(
                 UserCircleStatus.AWAIT,
@@ -605,7 +605,7 @@ class CircleServiceTest extends Specification {
         this.circlePort.findById(circleId) >> Optional.of(mockCircleFullDto)
         this.userPort.findById(userId) >> Optional.of(mockUserFullDto)
 
-        this.userCirclePort.loadUserCircleStatus(mockUserFullDto, mockCircleFullDto) >> Optional.ofNullable(null)
+        this.userCirclePort.loadUserCircleStatus(mockUserFullDto.getId(), mockCircleFullDto.getId()) >> Optional.ofNullable(null)
 
         def mockUserCircle = UserCircle.of(
                 UserCircleStatus.AWAIT,
@@ -683,7 +683,7 @@ class CircleServiceTest extends Specification {
         )
         def mockUserCircleDto = UserCircleDto.from(mockUserCircle)
 
-        this.userCirclePort.loadUserCircleStatus(userId, circleId) >> Optional.of(mockUserCircle.getStatus())
+        this.userCirclePort.loadUserCircleStatus(mockUserFullDto.getId(), mockCircleFullDto.getId()) >> Optional.of(mockUserCircle.getStatus())
         this.userCirclePort.create(mockUserFullDto, mockCircleFullDto) >> mockUserCircleDto
 
         when:
