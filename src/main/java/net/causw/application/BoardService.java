@@ -1,7 +1,9 @@
 package net.causw.application;
 
 import net.causw.application.dto.BoardCreateRequestDto;
+import net.causw.application.dto.BoardFullDto;
 import net.causw.application.dto.BoardResponseDto;
+import net.causw.application.dto.BoardUpdateRequestDto;
 import net.causw.application.dto.CircleFullDto;
 import net.causw.application.dto.UserFullDto;
 import net.causw.application.spi.BoardPort;
@@ -12,6 +14,7 @@ import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.BoardDomainModel;
 import net.causw.domain.model.Role;
 import net.causw.domain.validation.ConstraintValidator;
+import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.UserEqualValidator;
 import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.ValidatorBucket;
@@ -43,7 +46,12 @@ public class BoardService {
 
     @Transactional(readOnly = true)
     public BoardResponseDto findById(String id) {
-        return this.boardPort.findById(id);
+        return BoardResponseDto.from(this.boardPort.findById(id).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid board id"
+                )
+        ));
     }
 
     @Transactional
@@ -87,5 +95,64 @@ public class BoardService {
                 .validate();
 
         return this.boardPort.create(boardCreateRequestDto, Optional.ofNullable(circleFullDto));
+    }
+
+    @Transactional
+    public BoardResponseDto update(
+            String updaterId,
+            String boardId,
+            BoardUpdateRequestDto boardUpdateRequestDto
+    ) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
+        UserFullDto updaterFullDto = this.userPort.findById(updaterId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid user id"
+                )
+        );
+
+        BoardFullDto boardFullDto = this.boardPort.findById(boardId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid board id"
+                )
+        );
+
+        if (boardUpdateRequestDto.getCircleId() != null) {
+            CircleFullDto circleFullDto = this.circlePort.findById(boardUpdateRequestDto.getCircleId()).orElseThrow(
+                    () -> new BadRequestException(
+                            ErrorCode.ROW_DOES_NOT_EXIST,
+                            "Invalid circle id"
+                    )
+            );
+            validatorBucket
+                    .consistOf(UserEqualValidator.of(circleFullDto.getManager().getId(), updaterId))
+                    .consistOf(UserRoleValidator.of(updaterFullDto.getRole(), List.of(Role.LEADER_CIRCLE)));
+        } else {
+            validatorBucket
+                    .consistOf(UserRoleValidator.of(updaterFullDto.getRole(), List.of(Role.PRESIDENT)));
+        }
+
+        BoardDomainModel boardDomainModel = BoardDomainModel.of(
+                null,
+                boardUpdateRequestDto.getName(),
+                boardUpdateRequestDto.getDescription(),
+                boardUpdateRequestDto.getCreateRoleList(),
+                boardUpdateRequestDto.getModifyRoleList(),
+                boardUpdateRequestDto.getReadRoleList()
+        );
+
+        validatorBucket
+                .consistOf(TargetIsDeletedValidator.of(boardFullDto.getIsDeleted()))
+                .consistOf(ConstraintValidator.of(boardDomainModel, this.validator))
+                .validate();
+
+        return this.boardPort.update(boardId, boardUpdateRequestDto).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid board id"
+                )
+        );
     }
 }

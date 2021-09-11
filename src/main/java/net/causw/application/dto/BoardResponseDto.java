@@ -2,6 +2,7 @@ package net.causw.application.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import net.causw.adapter.persistence.Board;
 
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Getter
+@Setter
 @NoArgsConstructor
 public class BoardResponseDto {
     private String id;
@@ -19,6 +21,8 @@ public class BoardResponseDto {
     private List<String> readRoleList;
     private Boolean isDeleted;
 
+    private String circleId;
+
     private BoardResponseDto(
             String id,
             String name,
@@ -26,7 +30,8 @@ public class BoardResponseDto {
             List<String> createRoleList,
             List<String> modifyRoleList,
             List<String> readRoleList,
-            Boolean isDeleted
+            Boolean isDeleted,
+            String circleId
     ) {
         this.id = id;
         this.name = name;
@@ -35,9 +40,12 @@ public class BoardResponseDto {
         this.modifyRoleList = modifyRoleList;
         this.readRoleList = readRoleList;
         this.isDeleted = isDeleted;
+        this.circleId = circleId;
     }
 
     public static BoardResponseDto from(Board board) {
+        String circleId = null;
+        if (board.getCircle() != null) { circleId = board.getCircle().getId(); }
         return new BoardResponseDto(
                 board.getId(),
                 board.getName(),
@@ -45,7 +53,23 @@ public class BoardResponseDto {
                 new ArrayList<>(Arrays.asList(board.getCreateRoles().split(","))),
                 new ArrayList<>(Arrays.asList(board.getModifyRoles().split(","))),
                 new ArrayList<>(Arrays.asList(board.getReadRoles().split(","))),
-                board.getIsDeleted()
+                board.getIsDeleted(),
+                circleId
+        );
+    }
+
+    public static BoardResponseDto from(BoardFullDto boardFullDto) {
+        String circleId = null;
+        if (boardFullDto.getCircle() != null) { circleId = boardFullDto.getCircle().getId(); }
+        return new BoardResponseDto(
+                boardFullDto.getId(),
+                boardFullDto.getName(),
+                boardFullDto.getDescription(),
+                boardFullDto.getCreateRoleList(),
+                boardFullDto.getModifyRoleList(),
+                boardFullDto.getReadRoleList(),
+                boardFullDto.getIsDeleted(),
+                circleId
         );
     }
 }
