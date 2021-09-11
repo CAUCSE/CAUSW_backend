@@ -3,15 +3,15 @@ package net.causw.domain.model;
 import lombok.Getter;
 
 @Getter
-public class UserCircleDomainModel {
+public class CircleMemberDomainModel {
     private String id;
-    private UserCircleStatus status;
+    private CircleMemberStatus status;
     private CircleDomainModel circle;
     private UserDomainModel user;
 
-    private UserCircleDomainModel(
+    private CircleMemberDomainModel(
             String id,
-            UserCircleStatus status,
+            CircleMemberStatus status,
             CircleDomainModel circle,
             UserDomainModel user
     ) {
@@ -21,13 +21,13 @@ public class UserCircleDomainModel {
         this.user = user;
     }
 
-    public UserCircleDomainModel of(
+    public CircleMemberDomainModel of(
             String id,
-            UserCircleStatus status,
+            CircleMemberStatus status,
             CircleDomainModel circle,
             UserDomainModel user
     ) {
-        return new UserCircleDomainModel(
+        return new CircleMemberDomainModel(
                 id,
                 status,
                 circle,

@@ -3,7 +3,7 @@ package net.causw.adapter.persistence;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.causw.domain.model.UserCircleStatus;
+import net.causw.domain.model.CircleMemberStatus;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -17,11 +17,11 @@ import javax.persistence.Table;
 @Setter
 @Entity
 @NoArgsConstructor
-@Table(name = "TB_USERCIRCLE")
-public class UserCircle extends BaseEntity {
+@Table(name = "TB_CIRCLE_MEMBER")
+public class CircleMember extends BaseEntity {
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
-    private UserCircleStatus status;
+    private CircleMemberStatus status;
 
     @ManyToOne
     @JoinColumn(name = "circle_id", nullable = false)
@@ -31,9 +31,9 @@ public class UserCircle extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    private UserCircle(
+    private CircleMember(
             String id,
-            UserCircleStatus status,
+            CircleMemberStatus status,
             Circle circle,
             User user
     ) {
@@ -43,8 +43,8 @@ public class UserCircle extends BaseEntity {
         this.user = user;
     }
 
-    private UserCircle(
-            UserCircleStatus status,
+    private CircleMember(
+            CircleMemberStatus status,
             Circle circle,
             User user
     ) {
@@ -53,13 +53,13 @@ public class UserCircle extends BaseEntity {
         this.user = user;
     }
 
-    public static UserCircle of(
+    public static CircleMember of(
             String id,
-            UserCircleStatus status,
+            CircleMemberStatus status,
             Circle circle,
             User user
     ) {
-        return new UserCircle(
+        return new CircleMember(
                 id,
                 status,
                 circle,
@@ -67,12 +67,12 @@ public class UserCircle extends BaseEntity {
         );
     }
 
-    public static UserCircle of(
-            UserCircleStatus status,
+    public static CircleMember of(
+            CircleMemberStatus status,
             Circle circle,
             User user
     ) {
-        return new UserCircle(
+        return new CircleMember(
                 status,
                 circle,
                 user

@@ -1,6 +1,6 @@
 package net.causw.domain.model;
 
-public enum UserCircleStatus {
+public enum CircleMemberStatus {
     AWAIT("await"),
     MEMBER("member"),
     LEAVE("leave"),
@@ -9,7 +9,7 @@ public enum UserCircleStatus {
 
     private String value;
 
-    UserCircleStatus(String value) {
+    CircleMemberStatus(String value) {
         this.value = value;
     }
 }

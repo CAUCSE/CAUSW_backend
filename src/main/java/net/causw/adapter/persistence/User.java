@@ -55,7 +55,7 @@ public class User extends BaseEntity {
 
     @OneToMany
     @JoinColumn(name = "user_circle_id", nullable = true)
-    private List<UserCircle> userCircleList;
+    private List<CircleMember> circleMemberList;
 
     private User(
             String email,
