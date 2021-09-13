@@ -2,20 +2,20 @@ package net.causw.application.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.causw.adapter.persistence.UserCircle;
-import net.causw.domain.model.UserCircleStatus;
+import net.causw.adapter.persistence.CircleMember;
+import net.causw.domain.model.CircleMemberStatus;
 
 @Getter
 @NoArgsConstructor
-public class UserCircleDto {
+public class CircleMemberDto {
     private String id;
-    private UserCircleStatus status;
+    private CircleMemberStatus status;
     private CircleFullDto circle;
     private UserResponseDto user;
 
-    private UserCircleDto(
+    private CircleMemberDto(
             String id,
-            UserCircleStatus status,
+            CircleMemberStatus status,
             CircleFullDto circle,
             UserResponseDto user
     ) {
@@ -25,15 +25,15 @@ public class UserCircleDto {
         this.user = user;
     }
 
-    public static UserCircleDto from(UserCircle userCircle) {
-        return new UserCircleDto(
-                userCircle.getId(),
-                userCircle.getStatus(),
+    public static CircleMemberDto from(CircleMember circleMember) {
+        return new CircleMemberDto(
+                circleMember.getId(),
+                circleMember.getStatus(),
                 CircleFullDto.from(
-                        userCircle.getCircle()
+                        circleMember.getCircle()
                 ),
                 UserResponseDto.from(
-                        userCircle.getUser()
+                        circleMember.getUser()
                 )
         );
     }

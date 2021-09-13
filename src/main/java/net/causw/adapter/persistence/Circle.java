@@ -39,7 +39,7 @@ public class Circle extends BaseEntity {
 
     @OneToMany
     @JoinColumn(name = "user_circle_id")
-    private List<UserCircle> userCircleList;
+    private List<CircleMember> circleMemberList;
 
     private Circle(
             String id,

@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface UserCircleRepository extends JpaRepository<UserCircle, String> {
-    Optional<UserCircle> findByUser_IdAndCircle_Id(String userId, String circleId);
+public interface CircleMemberRepository extends JpaRepository<CircleMember, String> {
+    Optional<CircleMember> findByUser_IdAndCircle_Id(String userId, String circleId);
 }

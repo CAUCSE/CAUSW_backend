@@ -14,6 +14,8 @@ public enum ErrorCode {
     TARGET_DELETED(4004),
     INVALID_HTTP_METHOD(4005),
     APPLY_NOT_EXIST(4006),
+    CANNOT_PERFORMED(4007),
+    AWAITING_STATUS(4008),
 
     /**
      * 401 Unauthorized
