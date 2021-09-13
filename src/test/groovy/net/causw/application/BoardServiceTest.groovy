@@ -4,12 +4,15 @@ import net.causw.adapter.persistence.Board
 import net.causw.adapter.persistence.Circle
 import net.causw.adapter.persistence.User
 import net.causw.application.dto.BoardCreateRequestDto
+import net.causw.application.dto.BoardFullDto
 import net.causw.application.dto.BoardResponseDto
+import net.causw.application.dto.BoardUpdateRequestDto
 import net.causw.application.dto.CircleFullDto
 import net.causw.application.dto.UserFullDto
 import net.causw.application.spi.BoardPort
 import net.causw.application.spi.CirclePort
 import net.causw.application.spi.UserPort
+import net.causw.domain.exceptions.BadRequestException
 import net.causw.domain.exceptions.UnauthorizedException
 import net.causw.domain.model.Role
 import net.causw.domain.model.UserState
@@ -249,4 +252,258 @@ class BoardServiceTest extends Specification {
         thrown(UnauthorizedException)
     }
 
+    @Test
+    def "Board update normal case"() {
+        given:
+        def mockBoardUpdateRequestDto = new BoardUpdateRequestDto(
+                "test_update",
+                "test_description",
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                null
+        )
+
+        def mockBoardResponseDto = BoardResponseDto.from((Board)mockBoard)
+        def mockBoardFullDto = BoardFullDto.from((Board)mockBoard)
+        mockBoardResponseDto.setName("test_update")
+
+        def updater = User.of(
+                "test",
+                "test@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.PRESIDENT,
+                UserState.WAIT
+        )
+        def mockUpdaterFullDto = UserFullDto.from(updater)
+
+        def mockCircleFullDto = CircleFullDto.from(Circle.of(
+                "test",
+                "test",
+                null,
+                "test_description",
+                false,
+                updater
+        ))
+
+        this.userPort.findById((String)id) >> Optional.of(mockUpdaterFullDto)
+        this.circlePort.findById((String)id) >> Optional.of(mockCircleFullDto)
+        this.boardPort.findById((String)id) >> Optional.of(mockBoardFullDto)
+        this.boardPort.update("test", mockBoardUpdateRequestDto) >> Optional.of(mockBoardResponseDto)
+
+        when: "update board without circle"
+        def boardResponseDto = this.boardService.update("test", (String)id, mockBoardUpdateRequestDto)
+
+        then:
+        boardResponseDto instanceof BoardResponseDto
+        with(boardResponseDto) {
+            getName() == "test_update"
+            getDescription() == "test_description"
+        }
+
+        when: "update board with circle"
+        mockBoardUpdateRequestDto.setCircleId("test")
+        mockUpdaterFullDto.setRole(Role.LEADER_CIRCLE)
+        boardResponseDto = this.boardService.update("test", (String)id, mockBoardUpdateRequestDto)
+
+        then:
+        boardResponseDto instanceof BoardResponseDto
+        with(boardResponseDto) {
+            getName() == "test_update"
+            getDescription() == "test_description"
+        }
+    }
+
+    @Test
+    def "Board update already deleted"() {
+        given:
+        def mockBoardUpdateRequestDto = new BoardUpdateRequestDto(
+                "test_update",
+                "test_description",
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                null
+        )
+
+        def mockBoardResponseDto = BoardResponseDto.from((Board)mockBoard)
+        def mockBoardFullDto = BoardFullDto.from((Board)mockBoard)
+
+        def updater = User.of(
+                "test",
+                "test@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.PRESIDENT,
+                UserState.WAIT
+        )
+        def mockUpdaterFullDto = UserFullDto.from(updater)
+
+        this.userPort.findById((String)id) >> Optional.of(mockUpdaterFullDto)
+        this.boardPort.findById((String)id) >> Optional.of(mockBoardFullDto)
+        this.boardPort.update("test", mockBoardUpdateRequestDto) >> Optional.of(mockBoardResponseDto)
+
+        when: "board already delete"
+        mockBoardFullDto.setIsDeleted(true)
+        this.boardService.update("test", (String)id, mockBoardUpdateRequestDto)
+
+        then:
+        thrown(BadRequestException)
+    }
+
+    @Test
+    def "Board update invalid data"() {
+        given:
+        def mockBoardUpdateRequestDto = new BoardUpdateRequestDto(
+                "test_update",
+                "test_description",
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                null
+        )
+
+        def mockBoardResponseDto = BoardResponseDto.from((Board)mockBoard)
+        def mockBoardFullDto = BoardFullDto.from((Board)mockBoard)
+
+        def updater = User.of(
+                "test",
+                "test@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.PRESIDENT,
+                UserState.WAIT
+        )
+        def mockUpdaterFullDto = UserFullDto.from(updater)
+
+        this.userPort.findById((String)id) >> Optional.of(mockUpdaterFullDto)
+        this.boardPort.findById((String)id) >> Optional.of(mockBoardFullDto)
+        this.boardPort.update("test", mockBoardUpdateRequestDto) >> Optional.of(mockBoardResponseDto)
+
+        when: "name is blank"
+        mockBoardUpdateRequestDto.setName("")
+        this.boardService.update("test", (String)id, mockBoardUpdateRequestDto)
+
+        then:
+        thrown(ConstraintViolationException)
+
+        when: "create role is null"
+        mockBoardUpdateRequestDto.setName("test")
+        mockBoardUpdateRequestDto.setCreateRoleList(null)
+        this.boardService.update("test", (String)id, mockBoardUpdateRequestDto)
+
+        then:
+        thrown(ConstraintViolationException)
+
+        when: "modify role is null"
+        mockBoardUpdateRequestDto.setCreateRoleList(Arrays.asList("PRESIDENT", "COUNCIL"))
+        mockBoardUpdateRequestDto.setModifyRoleList(null)
+        this.boardService.update("test", (String)id, mockBoardUpdateRequestDto)
+
+        then:
+        thrown(ConstraintViolationException)
+
+        when: "read role is null"
+        mockBoardUpdateRequestDto.setModifyRoleList(Arrays.asList("PRESIDENT", "COUNCIL"))
+        mockBoardUpdateRequestDto.setReadRoleList(null)
+        this.boardService.update("test", (String)id, mockBoardUpdateRequestDto)
+
+        then:
+        thrown(ConstraintViolationException)
+    }
+
+    @Test
+    def "Board update invalid role"() {
+        given:
+        def mockBoardUpdateRequestDto = new BoardUpdateRequestDto(
+                "test_update",
+                "test_description",
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                null
+        )
+
+        def mockBoardResponseDto = BoardResponseDto.from((Board)mockBoard)
+        def mockBoardFullDto = BoardFullDto.from((Board)mockBoard)
+
+        def updater = User.of(
+                "test",
+                "test@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.PRESIDENT,
+                UserState.WAIT
+        )
+        def mockUpdaterFullDto = UserFullDto.from(updater)
+
+        this.userPort.findById((String)id) >> Optional.of(mockUpdaterFullDto)
+        this.boardPort.findById((String)id) >> Optional.of(mockBoardFullDto)
+        this.boardPort.update("test", mockBoardUpdateRequestDto) >> Optional.of(mockBoardResponseDto)
+
+        when: "invalid creator role"
+        mockUpdaterFullDto.setRole(Role.NONE)
+        this.boardService.update("test", (String)id, mockBoardUpdateRequestDto)
+
+        then:
+        thrown(UnauthorizedException)
+    }
+
+    @Test
+    def "Board update invalid leader"() {
+        given:
+        def mockBoardUpdateRequestDto = new BoardUpdateRequestDto(
+                "test_update",
+                "test_description",
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                "test"
+        )
+
+        def mockBoardResponseDto = BoardResponseDto.from((Board)mockBoard)
+        def mockBoardFullDto = BoardFullDto.from((Board)mockBoard)
+
+        def updater = User.of(
+                "test",
+                "test@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.PRESIDENT,
+                UserState.WAIT
+        )
+        def mockUpdaterFullDto = UserFullDto.from(updater)
+
+        def mockCircleFullDto = CircleFullDto.from(Circle.of(
+                "test",
+                "test",
+                null,
+                "test_description",
+                false,
+                updater
+        ))
+
+        this.userPort.findById((String)id) >> Optional.of(mockUpdaterFullDto)
+        this.circlePort.findById((String)id) >> Optional.of(mockCircleFullDto)
+        this.boardPort.findById((String)id) >> Optional.of(mockBoardFullDto)
+        this.boardPort.update("test", mockBoardUpdateRequestDto) >> Optional.of(mockBoardResponseDto)
+
+        when: "invalid leader id"
+        mockUpdaterFullDto.setId("invalid_test")
+        this.boardService.update("test", (String)id, mockBoardUpdateRequestDto)
+
+        then:
+        thrown(UnauthorizedException)
+    }
 }

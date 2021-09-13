@@ -15,7 +15,7 @@ import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.model.CircleMemberStatus;
 import net.causw.domain.model.Role;
 import net.causw.domain.validation.CircleMemberInvalidStatusValidator;
-import net.causw.domain.validation.CircleStateValidator;
+import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.DuplicatedCircleNameValidator;
 import net.causw.domain.validation.UpdatableGranteeRoleValidator;
 import net.causw.domain.validation.UserEqualValidator;
@@ -124,7 +124,7 @@ public class CircleService {
                 )
         );
 
-        validatorBucket.consistOf(CircleStateValidator.of(circle.getIsDeleted()));
+        validatorBucket.consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted()));
 
         Optional<CircleMemberDto> circleMemberDto = this.circleMemberPort.findByUserIdAndCircleId(user.getId(), circle.getId());
         if (circleMemberDto.isPresent()) {
@@ -165,7 +165,7 @@ public class CircleService {
         );
 
         validatorBucket
-                .consistOf(CircleStateValidator.of(circleMemberDto.getCircle().getIsDeleted()))
+                .consistOf(TargetIsDeletedValidator.of(circleMemberDto.getCircle().getIsDeleted()))
                 .consistOf(CircleMemberInvalidStatusValidator.of(
                         circleMemberDto.getStatus(),
                         List.of(CircleMemberStatus.AWAIT, CircleMemberStatus.DROP, CircleMemberStatus.LEAVE)
@@ -197,7 +197,7 @@ public class CircleService {
 
         // TODO : Request User가 ADMIN인 경우 허용
         validatorBucket
-                .consistOf(CircleStateValidator.of(circleMemberDto.getCircle().getIsDeleted()))
+                .consistOf(TargetIsDeletedValidator.of(circleMemberDto.getCircle().getIsDeleted()))
                 .consistOf(UserEqualValidator.of(requestUserId, circleMemberDto.getCircle().getManager().getId()))
                 .consistOf(CircleMemberInvalidStatusValidator.of(
                         circleMemberDto.getStatus(),
@@ -247,7 +247,7 @@ public class CircleService {
 
         // TODO : Request User가 ADMIN인 경우 허용
         validatorBucket
-                .consistOf(CircleStateValidator.of(circleMemberDto.getCircle().getIsDeleted()))
+                .consistOf(TargetIsDeletedValidator.of(circleMemberDto.getCircle().getIsDeleted()))
                 .consistOf(UserEqualValidator.of(requestUserId, circleMemberDto.getCircle().getManager().getId()))
                 .consistOf(CircleMemberInvalidStatusValidator.of(
                         circleMemberDto.getStatus(),
