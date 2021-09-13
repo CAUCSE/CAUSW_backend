@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.Optional;
 
 @Getter
 @Setter
@@ -19,4 +20,8 @@ public class BoardCreateRequestDto {
     private List<String> readRoleList;
 
     private String circleId;
+
+    public Optional<String> getCircleId() {
+        return Optional.ofNullable(this.circleId);
+    }
 }
