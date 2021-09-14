@@ -1,6 +1,7 @@
 package net.causw.adapter.persistence.port;
 
 import net.causw.adapter.persistence.Board;
+import net.causw.adapter.persistence.BoardRepository;
 import net.causw.adapter.persistence.Circle;
 import net.causw.application.dto.BoardCreateRequestDto;
 import net.causw.application.dto.BoardFullDto;
@@ -8,7 +9,6 @@ import net.causw.application.dto.BoardResponseDto;
 import net.causw.application.dto.BoardUpdateRequestDto;
 import net.causw.application.dto.CircleFullDto;
 import net.causw.application.spi.BoardPort;
-import net.causw.adapter.persistence.BoardRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -18,7 +18,9 @@ import java.util.stream.Collectors;
 public class BoardPortImpl implements BoardPort {
     private final BoardRepository boardRepository;
 
-    public BoardPortImpl(BoardRepository boardRepository) { this.boardRepository = boardRepository; }
+    public BoardPortImpl(BoardRepository boardRepository) {
+        this.boardRepository = boardRepository;
+    }
 
     @Override
     public Optional<BoardFullDto> findById(String id) {
@@ -27,7 +29,7 @@ public class BoardPortImpl implements BoardPort {
 
     @Override
     public BoardResponseDto create(BoardCreateRequestDto boardCreateRequestDto, Optional<CircleFullDto> circleFullDto) {
-        Circle circle = circleFullDto.map(Circle::from).orElseGet(() -> { return null; });
+        Circle circle = circleFullDto.map(Circle::from).orElse(null);
 
         return BoardResponseDto.from(this.boardRepository.save(Board.of(
                 boardCreateRequestDto.getName(),

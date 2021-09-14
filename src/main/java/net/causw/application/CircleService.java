@@ -27,7 +27,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class CircleService {
@@ -126,27 +125,30 @@ public class CircleService {
 
         validatorBucket.consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted()));
 
-        Optional<CircleMemberDto> circleMemberDto = this.circleMemberPort.findByUserIdAndCircleId(user.getId(), circle.getId());
-        if (circleMemberDto.isPresent()) {
-            validatorBucket
-                    .consistOf(
-                            CircleMemberInvalidStatusValidator.of(
-                                    circleMemberDto.get().getStatus(),
-                                    List.of(CircleMemberStatus.MEMBER, CircleMemberStatus.DROP, CircleMemberStatus.AWAIT)
+        return this.circleMemberPort.findByUserIdAndCircleId(user.getId(), circle.getId()).map(
+                circleMember -> {
+                    validatorBucket
+                            .consistOf(
+                                    CircleMemberInvalidStatusValidator.of(
+                                            circleMember.getStatus(),
+                                            List.of(CircleMemberStatus.MEMBER, CircleMemberStatus.DROP, CircleMemberStatus.AWAIT)
+                                    )
                             )
-                    )
-                    .validate();
+                            .validate();
 
-            return this.circleMemberPort.updateStatus(circleMemberDto.get().getId(), CircleMemberStatus.AWAIT).orElseThrow(
-                    () -> new InternalServerException(
-                            ErrorCode.INTERNAL_SERVER,
-                            "Application id checked, but exception occurred"
-                    )
-            );
-        }
-
-        validatorBucket.validate();
-        return this.circleMemberPort.create(user, circle);
+                    return this.circleMemberPort.updateStatus(circleMember.getId(), CircleMemberStatus.AWAIT).orElseThrow(
+                            () -> new InternalServerException(
+                                    ErrorCode.INTERNAL_SERVER,
+                                    "Application id checked, but exception occurred"
+                            )
+                    );
+                }
+        ).orElseGet(
+                () -> {
+                    validatorBucket.validate();
+                    return this.circleMemberPort.create(user, circle);
+                }
+        );
     }
 
     @Transactional(readOnly = true)

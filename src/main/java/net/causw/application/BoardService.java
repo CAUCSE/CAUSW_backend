@@ -65,21 +65,28 @@ public class BoardService {
                 )
         );
 
-        CircleFullDto circleFullDto = null;
-        if (boardCreateRequestDto.getCircleId() != null) {
-            circleFullDto = this.circlePort.findById(boardCreateRequestDto.getCircleId()).orElseThrow(
-                    () -> new BadRequestException(
-                            ErrorCode.ROW_DOES_NOT_EXIST,
-                            "Invalid circle id"
-                    )
-            );
-            validatorBucket
-                    .consistOf(UserEqualValidator.of(circleFullDto.getManager().getId(), creatorId))
-                    .consistOf(UserRoleValidator.of(creatorFullDto.getRole(), List.of(Role.LEADER_CIRCLE)));
-        } else {
-            validatorBucket
-                    .consistOf(UserRoleValidator.of(creatorFullDto.getRole(), List.of(Role.PRESIDENT)));
-        }
+        Optional<CircleFullDto> circleFullDto = Optional.ofNullable(boardCreateRequestDto.getCircleId().map(
+                circleId -> {
+                    CircleFullDto circle = this.circlePort.findById(circleId).orElseThrow(
+                            () -> new BadRequestException(
+                                    ErrorCode.ROW_DOES_NOT_EXIST,
+                                    "Invalid circle id"
+                            )
+                    );
+                    validatorBucket
+                            .consistOf(UserEqualValidator.of(circle.getManager().getId(), creatorId))
+                            .consistOf(UserRoleValidator.of(creatorFullDto.getRole(), List.of(Role.LEADER_CIRCLE)));
+
+                    return circle;
+                }
+        ).orElseGet(
+                () -> {
+                    validatorBucket
+                            .consistOf(UserRoleValidator.of(creatorFullDto.getRole(), List.of(Role.PRESIDENT)));
+
+                    return null;
+                }
+        ));
 
         BoardDomainModel boardDomainModel = BoardDomainModel.of(
                 null,
@@ -94,7 +101,7 @@ public class BoardService {
                 .consistOf(ConstraintValidator.of(boardDomainModel, this.validator))
                 .validate();
 
-        return this.boardPort.create(boardCreateRequestDto, Optional.ofNullable(circleFullDto));
+        return this.boardPort.create(boardCreateRequestDto, circleFullDto);
     }
 
     @Transactional
@@ -119,20 +126,23 @@ public class BoardService {
                 )
         );
 
-        if (boardUpdateRequestDto.getCircleId() != null) {
-            CircleFullDto circleFullDto = this.circlePort.findById(boardUpdateRequestDto.getCircleId()).orElseThrow(
-                    () -> new BadRequestException(
-                            ErrorCode.ROW_DOES_NOT_EXIST,
-                            "Invalid circle id"
-                    )
-            );
-            validatorBucket
-                    .consistOf(UserEqualValidator.of(circleFullDto.getManager().getId(), updaterId))
-                    .consistOf(UserRoleValidator.of(updaterFullDto.getRole(), List.of(Role.LEADER_CIRCLE)));
-        } else {
-            validatorBucket
-                    .consistOf(UserRoleValidator.of(updaterFullDto.getRole(), List.of(Role.PRESIDENT)));
-        }
+        boardUpdateRequestDto.getCircleId().ifPresentOrElse(
+                circleId -> {
+                    CircleFullDto circleFullDto = this.circlePort.findById(circleId).orElseThrow(
+                            () -> new BadRequestException(
+                                    ErrorCode.ROW_DOES_NOT_EXIST,
+                                    "Invalid circle id"
+                            )
+                    );
+                    validatorBucket
+                            .consistOf(UserEqualValidator.of(circleFullDto.getManager().getId(), updaterId))
+                            .consistOf(UserRoleValidator.of(updaterFullDto.getRole(), List.of(Role.LEADER_CIRCLE)));
+                },
+                () -> {
+                    validatorBucket
+                            .consistOf(UserRoleValidator.of(updaterFullDto.getRole(), List.of(Role.PRESIDENT)));
+                }
+        );
 
         BoardDomainModel boardDomainModel = BoardDomainModel.of(
                 null,
