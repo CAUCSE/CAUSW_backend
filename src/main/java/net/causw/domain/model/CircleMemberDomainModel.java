@@ -1,8 +1,10 @@
 package net.causw.domain.model;
 
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 public class CircleMemberDomainModel {
     private String id;
     private CircleMemberStatus status;
