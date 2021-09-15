@@ -1,10 +1,10 @@
 package net.causw.application;
 
-import net.causw.application.dto.UserFullDto;
 import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.Role;
+import net.causw.domain.model.UserDomainModel;
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ public class DelegationPresident implements Delegation {
 
     @Override
     public void delegate(String currentId, String targetId) {
-        List<UserFullDto> councilList = this.userPort.findByRole(Role.COUNCIL);
+        List<UserDomainModel> councilList = this.userPort.findByRole(Role.COUNCIL);
         if (councilList != null) {
             councilList.forEach(
                     user -> this.userPort.updateRole(user.getId(), Role.COMMON)

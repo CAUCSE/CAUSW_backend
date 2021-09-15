@@ -3,10 +3,9 @@ package net.causw.adapter.persistence.port;
 import net.causw.adapter.persistence.Circle;
 import net.causw.adapter.persistence.CircleRepository;
 import net.causw.adapter.persistence.User;
-import net.causw.application.dto.CircleCreateRequestDto;
-import net.causw.application.dto.CircleFullDto;
-import net.causw.application.dto.UserFullDto;
 import net.causw.application.spi.CirclePort;
+import net.causw.domain.model.CircleDomainModel;
+import net.causw.domain.model.UserDomainModel;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -20,40 +19,65 @@ public class CirclePortImpl implements CirclePort {
     }
 
     @Override
-    public Optional<CircleFullDto> findById(String id) {
-        return this.circleRepository.findById(id).map(CircleFullDto::from);
+    public Optional<CircleDomainModel> findById(String id) {
+        return this.circleRepository.findById(id).map(this::entityToDomainModel);
     }
 
     @Override
-    public Optional<CircleFullDto> findByLeaderId(String leaderId) {
-        return this.circleRepository.findByLeaderId(leaderId).map(CircleFullDto::from);
+    public Optional<CircleDomainModel> findByLeaderId(String leaderId) {
+        return this.circleRepository.findByLeaderId(leaderId).map(this::entityToDomainModel);
 
     }
 
     @Override
-    public Optional<CircleFullDto> findByName(String name) {
-        return this.circleRepository.findByName(name).map(CircleFullDto::from);
+    public Optional<CircleDomainModel> findByName(String name) {
+        return this.circleRepository.findByName(name).map(this::entityToDomainModel);
     }
 
     @Override
-    public CircleFullDto create(CircleCreateRequestDto circleCreateRequestDto, UserFullDto leader) {
-        return CircleFullDto.from(this.circleRepository.save(Circle.of(
-                circleCreateRequestDto.getName(),
-                circleCreateRequestDto.getMainImage(),
-                circleCreateRequestDto.getDescription(),
+    public CircleDomainModel create(CircleDomainModel circleDomainModel, UserDomainModel leader) {
+        return this.entityToDomainModel(this.circleRepository.save(Circle.of(
+                circleDomainModel.getName(),
+                circleDomainModel.getMainImage(),
+                circleDomainModel.getDescription(),
                 false,
                 User.from(leader)
         )));
     }
 
     @Override
-    public Optional<CircleFullDto> updateLeader(String id, UserFullDto newLeader) {
+    public Optional<CircleDomainModel> updateLeader(String id, UserDomainModel newLeader) {
         return this.circleRepository.findById(id).map(
                 srcCircle -> {
                     srcCircle.setLeader(User.from(newLeader));
 
-                    return CircleFullDto.from(this.circleRepository.save(srcCircle));
+                    return this.entityToDomainModel(this.circleRepository.save(srcCircle));
                 }
+        );
+    }
+
+    private CircleDomainModel entityToDomainModel(Circle circle) {
+        return CircleDomainModel.of(
+                circle.getId(),
+                circle.getName(),
+                circle.getMainImage(),
+                circle.getDescription(),
+                circle.getIsDeleted(),
+                this.entityToDomainModel(circle.getLeader())
+        );
+    }
+
+    private UserDomainModel entityToDomainModel(User user) {
+        return UserDomainModel.of(
+                user.getId(),
+                user.getEmail(),
+                user.getName(),
+                user.getPassword(),
+                user.getStudentId(),
+                user.getAdmissionYear(),
+                user.getRole(),
+                user.getProfileImage(),
+                user.getState()
         );
     }
 }

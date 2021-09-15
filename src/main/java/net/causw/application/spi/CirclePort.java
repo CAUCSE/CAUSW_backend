@@ -1,19 +1,18 @@
 package net.causw.application.spi;
 
-import net.causw.application.dto.CircleCreateRequestDto;
-import net.causw.application.dto.CircleFullDto;
-import net.causw.application.dto.UserFullDto;
+import net.causw.domain.model.CircleDomainModel;
+import net.causw.domain.model.UserDomainModel;
 
 import java.util.Optional;
 
 public interface CirclePort {
-    Optional<CircleFullDto> findById(String id);
+    Optional<CircleDomainModel> findById(String id);
 
-    Optional<CircleFullDto> findByLeaderId(String leaderId);
+    Optional<CircleDomainModel> findByLeaderId(String leaderId);
 
-    Optional<CircleFullDto> findByName(String name);
+    Optional<CircleDomainModel> findByName(String name);
 
-    CircleFullDto create(CircleCreateRequestDto circleCreateRequestDto, UserFullDto leader);
+    CircleDomainModel create(CircleDomainModel circleDomainModel, UserDomainModel leader);
 
-    Optional<CircleFullDto> updateLeader(String id, UserFullDto newLeader);
+    Optional<CircleDomainModel> updateLeader(String id, UserDomainModel newLeader);
 }

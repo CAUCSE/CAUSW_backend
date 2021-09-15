@@ -66,17 +66,4 @@ public class UserResponseDto {
                 user.getState()
         );
     }
-
-    public static UserResponseDto from(UserFullDto user) {
-        return new UserResponseDto(
-                user.getId(),
-                user.getEmail(),
-                user.getName(),
-                user.getStudentId(),
-                user.getAdmissionYear(),
-                user.getRole(),
-                user.getProfileImage(),
-                user.getState()
-        );
-    }
 }

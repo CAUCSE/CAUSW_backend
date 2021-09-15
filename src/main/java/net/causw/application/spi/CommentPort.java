@@ -1,26 +1,24 @@
 package net.causw.application.spi;
 
-import net.causw.application.dto.CommentCreateRequestDto;
-import net.causw.application.dto.CommentFullDto;
-import net.causw.application.dto.CommentResponseDto;
-import net.causw.application.dto.PostDetailDto;
-import net.causw.application.dto.UserFullDto;
+import net.causw.domain.model.CommentDomainModel;
+import net.causw.domain.model.PostDomainModel;
+import net.causw.domain.model.UserDomainModel;
 
 import java.util.Optional;
 
 public interface CommentPort {
-    Optional<CommentFullDto> findById(String id);
+    Optional<CommentDomainModel> findById(String id);
 
-    CommentResponseDto create(
-            CommentCreateRequestDto commentCreateDto,
-            UserFullDto writer,
-            PostDetailDto post
+    CommentDomainModel create(
+            CommentDomainModel commentDomainModel,
+            UserDomainModel writer,
+            PostDomainModel post
     );
 
-    CommentResponseDto create(
-            CommentCreateRequestDto commentCreateDto,
-            UserFullDto writer,
-            PostDetailDto post,
-            CommentFullDto parentComment
+    CommentDomainModel create(
+            CommentDomainModel commentDomainModel,
+            UserDomainModel writer,
+            PostDomainModel post,
+            CommentDomainModel parentComment
     );
 }

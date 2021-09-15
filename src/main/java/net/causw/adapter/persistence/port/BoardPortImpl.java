@@ -3,14 +3,13 @@ package net.causw.adapter.persistence.port;
 import net.causw.adapter.persistence.Board;
 import net.causw.adapter.persistence.BoardRepository;
 import net.causw.adapter.persistence.Circle;
-import net.causw.application.dto.BoardCreateRequestDto;
-import net.causw.application.dto.BoardFullDto;
-import net.causw.application.dto.BoardResponseDto;
-import net.causw.application.dto.BoardUpdateRequestDto;
-import net.causw.application.dto.CircleFullDto;
 import net.causw.application.spi.BoardPort;
+import net.causw.domain.model.BoardDomainModel;
+import net.causw.domain.model.CircleDomainModel;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -23,37 +22,50 @@ public class BoardPortImpl implements BoardPort {
     }
 
     @Override
-    public Optional<BoardFullDto> findById(String id) {
-        return this.boardRepository.findById(id).map(BoardFullDto::from);
+    public Optional<BoardDomainModel> findById(String id) {
+        return this.boardRepository.findById(id).map(this::entityToDomainModel);
     }
 
     @Override
-    public BoardResponseDto create(BoardCreateRequestDto boardCreateRequestDto, Optional<CircleFullDto> circleFullDto) {
-        Circle circle = circleFullDto.map(Circle::from).orElse(null);
+    public BoardDomainModel create(BoardDomainModel boardDomainModel, Optional<CircleDomainModel> circleDomainModel) {
+        Circle circle = circleDomainModel.map(Circle::from).orElse(null);
 
-        return BoardResponseDto.from(this.boardRepository.save(Board.of(
-                boardCreateRequestDto.getName(),
-                boardCreateRequestDto.getDescription(),
-                boardCreateRequestDto.getCreateRoleList().stream().map(Object::toString).collect(Collectors.joining(",")),
-                boardCreateRequestDto.getModifyRoleList().stream().map(Object::toString).collect(Collectors.joining(",")),
-                boardCreateRequestDto.getReadRoleList().stream().map(Object::toString).collect(Collectors.joining(",")),
+        return this.entityToDomainModel(this.boardRepository.save(Board.of(
+                boardDomainModel.getName(),
+                boardDomainModel.getDescription(),
+                boardDomainModel.getCreateRoleList().stream().map(Object::toString).collect(Collectors.joining(",")),
+                boardDomainModel.getModifyRoleList().stream().map(Object::toString).collect(Collectors.joining(",")),
+                boardDomainModel.getReadRoleList().stream().map(Object::toString).collect(Collectors.joining(",")),
                 false,
                 circle
         )));
     }
 
     @Override
-    public Optional<BoardResponseDto> update(String id, BoardUpdateRequestDto boardUpdateRequestDto) {
+    public Optional<BoardDomainModel> update(String id, BoardDomainModel boardDomainModel) {
         return this.boardRepository.findById(id).map(
                 srcBoard -> {
-                    srcBoard.setName(boardUpdateRequestDto.getName());
-                    srcBoard.setDescription(boardUpdateRequestDto.getDescription());
-                    srcBoard.setCreateRoles(boardUpdateRequestDto.getCreateRoleList().stream().map(Object::toString).collect(Collectors.joining(",")));
-                    srcBoard.setModifyRoles(boardUpdateRequestDto.getModifyRoleList().stream().map(Object::toString).collect(Collectors.joining(",")));
-                    srcBoard.setReadRoles(boardUpdateRequestDto.getReadRoleList().stream().map(Object::toString).collect(Collectors.joining(",")));
+                    srcBoard.setName(boardDomainModel.getName());
+                    srcBoard.setDescription(boardDomainModel.getDescription());
+                    srcBoard.setCreateRoles(boardDomainModel.getCreateRoleList().stream().map(Object::toString).collect(Collectors.joining(",")));
+                    srcBoard.setModifyRoles(boardDomainModel.getModifyRoleList().stream().map(Object::toString).collect(Collectors.joining(",")));
+                    srcBoard.setReadRoles(boardDomainModel.getReadRoleList().stream().map(Object::toString).collect(Collectors.joining(",")));
 
-                    return BoardResponseDto.from(this.boardRepository.save(srcBoard));
+                    return this.entityToDomainModel(this.boardRepository.save(srcBoard));
                 }
+        );
+    }
+
+    private BoardDomainModel entityToDomainModel(Board board) {
+        return BoardDomainModel.of(
+                board.getId(),
+                board.getName(),
+                board.getDescription(),
+                new ArrayList<>(Arrays.asList(board.getCreateRoles().split(","))),
+                new ArrayList<>(Arrays.asList(board.getModifyRoles().split(","))),
+                new ArrayList<>(Arrays.asList(board.getReadRoles().split(","))),
+                board.getIsDeleted(),
+                board.getCircle().getId()
         );
     }
 }

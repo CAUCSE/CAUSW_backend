@@ -1,15 +1,12 @@
 package net.causw.application.spi;
 
-import net.causw.application.dto.BoardCreateRequestDto;
-import net.causw.application.dto.BoardFullDto;
-import net.causw.application.dto.BoardResponseDto;
-import net.causw.application.dto.BoardUpdateRequestDto;
-import net.causw.application.dto.CircleFullDto;
+import net.causw.domain.model.BoardDomainModel;
+import net.causw.domain.model.CircleDomainModel;
 
 import java.util.Optional;
 
 public interface BoardPort {
-    Optional<BoardFullDto> findById(String id);
-    BoardResponseDto create(BoardCreateRequestDto boardCreateRequestDto, Optional<CircleFullDto> circleFullDto);
-    Optional<BoardResponseDto> update(String id, BoardUpdateRequestDto boardUpdateRequestDto);
+    Optional<BoardDomainModel> findById(String id);
+    BoardDomainModel create(BoardDomainModel boardDomainModel, Optional<CircleDomainModel> circleDomainModel);
+    Optional<BoardDomainModel> update(String id, BoardDomainModel boardDomainModel);
 }

@@ -2,7 +2,7 @@ package net.causw.application.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.causw.adapter.persistence.Comment;
+import net.causw.domain.model.CommentDomainModel;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,7 +16,7 @@ public class CommentResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Boolean isDeleted;
-    private PostDetailDto post;
+    private PostResponseDto post;
     private String writerId;
     private String writerName;
     private List<CommentResponseDto> childCommentList;
@@ -27,7 +27,7 @@ public class CommentResponseDto {
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
             Boolean isDeleted,
-            PostDetailDto post,
+            PostResponseDto post,
             String writerId,
             String writerName,
             List<CommentResponseDto> childCommentList
@@ -43,14 +43,14 @@ public class CommentResponseDto {
         this.childCommentList = childCommentList;
     }
 
-    public static CommentResponseDto from(Comment comment) {
+    public static CommentResponseDto from(CommentDomainModel comment) {
         return new CommentResponseDto(
                 comment.getId(),
                 comment.getContent(),
                 comment.getCreatedAt(),
                 comment.getUpdatedAt(),
                 comment.getIsDeleted(),
-                PostDetailDto.from(
+                PostResponseDto.from(
                         comment.getPost()
                 ),
                 comment.getWriter().getId(),

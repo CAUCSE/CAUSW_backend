@@ -1,7 +1,7 @@
 package net.causw.adapter.web;
 
 import net.causw.application.LockerService;
-import net.causw.application.dto.LockerDetailDto;
+import net.causw.application.dto.LockerResponseDto;
 import net.causw.application.dto.LockerLogDetailDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,13 +23,13 @@ public class LockerController {
 
     @GetMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
-    public LockerDetailDto findById(@PathVariable String id) {
+    public LockerResponseDto findById(@PathVariable String id) {
         return this.lockerService.findById(id);
     }
 
     @GetMapping(value = "/")
     @ResponseStatus(value = HttpStatus.OK)
-    public List<LockerDetailDto> findAll() {
+    public List<LockerResponseDto> findAll() {
         return this.lockerService.findAll();
     }
 

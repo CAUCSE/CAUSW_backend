@@ -3,8 +3,8 @@ package net.causw.adapter.persistence;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.causw.application.dto.UserFullDto;
 import net.causw.domain.model.Role;
+import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.model.UserState;
 
 import javax.persistence.Column;
@@ -141,16 +141,16 @@ public class User extends BaseEntity {
         );
     }
 
-    public static User from(UserFullDto userFullDto) {
+    public static User from(UserDomainModel userDomainModel) {
         return new User(
-                userFullDto.getId(),
-                userFullDto.getEmail(),
-                userFullDto.getName(),
-                userFullDto.getPassword(),
-                userFullDto.getStudentId(),
-                userFullDto.getAdmissionYear(),
-                userFullDto.getRole(),
-                userFullDto.getState()
+                userDomainModel.getId(),
+                userDomainModel.getEmail(),
+                userDomainModel.getName(),
+                userDomainModel.getPassword(),
+                userDomainModel.getStudentId(),
+                userDomainModel.getAdmissionYear(),
+                userDomainModel.getRole(),
+                userDomainModel.getState()
         );
     }
 }
