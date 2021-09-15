@@ -110,7 +110,7 @@ class CircleServiceTest extends Specification {
                 mockLeaderUser
         )
 
-        def mockCircleMemberDto = CircleMemberDto.from(mockCircleMember)
+        def mockCircleMemberDto = CircleMemberResponseDto.from(mockCircleMember)
         def mockCircleFullDto = CircleFullDto.from(mockCircle)
 
         this.circlePort.create(mockCircleCreateRequestDto, mockLeaderUserFullDto) >> mockCircleFullDto
@@ -118,7 +118,7 @@ class CircleServiceTest extends Specification {
         this.circleMemberPort.create(mockLeaderUserFullDto, mockCircleFullDto) >> mockCircleMemberDto
 
         mockCircleMember.setStatus(CircleMemberStatus.MEMBER)
-        mockCircleMemberDto = CircleMemberDto.from(mockCircleMember)
+        mockCircleMemberDto = CircleMemberResponseDto.from(mockCircleMember)
 
         this.circleMemberPort.updateStatus(circleMemberId, CircleMemberStatus.MEMBER) >> Optional.of(mockCircleMemberDto)
 
@@ -208,10 +208,10 @@ class CircleServiceTest extends Specification {
         this.circlePort.findByName(name) >> Optional.of(mockCircle)
         this.circlePort.create(mockCircleCreateRequestDto, mockLeaderUserFullDto) >> CircleFullDto.from(mockCircle)
 
-        this.circleMemberPort.create(UserFullDto.from(mockLeaderUser), CircleFullDto.from(mockCircle)) >> CircleMemberDto.from(mockCircleMember)
+        this.circleMemberPort.create(UserFullDto.from(mockLeaderUser), CircleFullDto.from(mockCircle)) >> CircleMemberResponseDto.from(mockCircleMember)
 
         mockCircleMember.setStatus(CircleMemberStatus.MEMBER)
-        this.circleMemberPort.accept(UserFullDto.from(mockLeaderUser), CircleFullDto.from(mockCircle)) >> CircleMemberDto.from(mockCircleMember)
+        this.circleMemberPort.accept(UserFullDto.from(mockLeaderUser), CircleFullDto.from(mockCircle)) >> CircleMemberResponseDto.from(mockCircleMember)
 
         when: "Fail for create: caused by duplicated name"
         def newCircle = this.circleService.create(apiCallUserId, mockCircleCreateRequestDto)
@@ -293,10 +293,10 @@ class CircleServiceTest extends Specification {
 
         this.circlePort.create(mockCircleCreateRequestDto, mockLeaderUserFullDto) >> CircleFullDto.from(mockCircle)
 
-        this.circleMemberPort.create(UserFullDto.from(mockLeaderUser), CircleFullDto.from(mockCircle)) >> CircleMemberDto.from(mockCircleMember)
+        this.circleMemberPort.create(UserFullDto.from(mockLeaderUser), CircleFullDto.from(mockCircle)) >> CircleMemberResponseDto.from(mockCircleMember)
 
         mockCircleMember.setStatus(CircleMemberStatus.MEMBER)
-        this.circleMemberPort.accept(UserFullDto.from(mockLeaderUser), CircleFullDto.from(mockCircle)) >> CircleMemberDto.from(mockCircleMember)
+        this.circleMemberPort.accept(UserFullDto.from(mockLeaderUser), CircleFullDto.from(mockCircle)) >> CircleMemberResponseDto.from(mockCircleMember)
 
         when:
         this.circleService.create(apiCallUserId, mockCircleCreateRequestDto)
@@ -378,10 +378,10 @@ class CircleServiceTest extends Specification {
 
         this.circlePort.create(mockCircleCreateRequestDto, mockLeaderUserFullDto) >> CircleFullDto.from(mockCircle)
 
-        this.circleMemberPort.create(UserFullDto.from(mockLeaderUser), CircleFullDto.from(mockCircle)) >> CircleMemberDto.from(mockCircleMember)
+        this.circleMemberPort.create(UserFullDto.from(mockLeaderUser), CircleFullDto.from(mockCircle)) >> CircleMemberResponseDto.from(mockCircleMember)
 
         mockCircleMember.setStatus(CircleMemberStatus.MEMBER)
-        this.circleMemberPort.accept(UserFullDto.from(mockLeaderUser), CircleFullDto.from(mockCircle)) >> CircleMemberDto.from(mockCircleMember)
+        this.circleMemberPort.accept(UserFullDto.from(mockLeaderUser), CircleFullDto.from(mockCircle)) >> CircleMemberResponseDto.from(mockCircleMember)
 
         when:
         this.circleService.create(apiCallUserId, mockCircleCreateRequestDto)
@@ -463,10 +463,10 @@ class CircleServiceTest extends Specification {
 
         this.circlePort.create(mockCircleCreateRequestDto, mockLeaderUserFullDto) >> CircleFullDto.from(mockCircle)
 
-        this.circleMemberPort.create(UserFullDto.from(mockLeaderUser), CircleFullDto.from(mockCircle)) >> CircleMemberDto.from(mockCircleMember)
+        this.circleMemberPort.create(UserFullDto.from(mockLeaderUser), CircleFullDto.from(mockCircle)) >> CircleMemberResponseDto.from(mockCircleMember)
 
         mockCircleMember.setStatus(CircleMemberStatus.MEMBER)
-        this.circleMemberPort.accept(UserFullDto.from(mockLeaderUser), CircleFullDto.from(mockCircle)) >> CircleMemberDto.from(mockCircleMember)
+        this.circleMemberPort.accept(UserFullDto.from(mockLeaderUser), CircleFullDto.from(mockCircle)) >> CircleMemberResponseDto.from(mockCircleMember)
 
         when:
         this.circleService.create(apiCallUserId, mockCircleCreateRequestDto)
@@ -538,7 +538,7 @@ class CircleServiceTest extends Specification {
                 mockCircle,
                 mockUser
         )
-        def mockCircleMemberDto = CircleMemberDto.from(mockCircleMember)
+        def mockCircleMemberDto = CircleMemberResponseDto.from(mockCircleMember)
 
         this.circleMemberPort.create(mockUserFullDto, mockCircleFullDto) >> mockCircleMemberDto
 
@@ -546,7 +546,7 @@ class CircleServiceTest extends Specification {
         def applyUser = this.circleService.userApply(userId, circleId)
 
         then:
-        applyUser instanceof CircleMemberDto
+        applyUser instanceof CircleMemberResponseDto
         applyUser.getStatus() == CircleMemberStatus.AWAIT
         applyUser.getUser().getId() == userId
         applyUser.getCircle().getId() == circleId
@@ -612,7 +612,7 @@ class CircleServiceTest extends Specification {
                 mockCircle,
                 mockUser
         )
-        def mockCircleMemberDto = CircleMemberDto.from(mockCircleMember)
+        def mockCircleMemberDto = CircleMemberResponseDto.from(mockCircleMember)
 
         this.circleMemberPort.create(mockUserFullDto, mockCircleFullDto) >> mockCircleMemberDto
 
@@ -681,7 +681,7 @@ class CircleServiceTest extends Specification {
                 mockCircle,
                 mockUser
         )
-        def mockCircleMemberDto = CircleMemberDto.from(mockCircleMember)
+        def mockCircleMemberDto = CircleMemberResponseDto.from(mockCircleMember)
 
         this.circleMemberPort.findByUserIdAndCircleId(mockUserFullDto.getId(), mockCircleFullDto.getId()) >> Optional.of(mockCircleMemberDto)
         this.circleMemberPort.create(mockUserFullDto, mockCircleFullDto) >> mockCircleMemberDto
@@ -756,18 +756,18 @@ class CircleServiceTest extends Specification {
                 mockApplyUser
         )
 
-        def mockCircleMemberDto = CircleMemberDto.from(mockCircleMember)
+        def mockCircleMemberDto = CircleMemberResponseDto.from(mockCircleMember)
 
         this.circleMemberPort.findById(circleMemberId) >> Optional.of(mockCircleMemberDto)
 
         mockCircleMember.setStatus(CircleMemberStatus.MEMBER)
-        mockCircleMemberDto = CircleMemberDto.from(mockCircleMember)
+        mockCircleMemberDto = CircleMemberResponseDto.from(mockCircleMember)
 
         this.circleMemberPort.updateStatus(circleMemberId, CircleMemberStatus.MEMBER) >> Optional.of(mockCircleMemberDto)
 
 
         mockCircleMember.setStatus(CircleMemberStatus.REJECT)
-        mockCircleMemberDto = CircleMemberDto.from(mockCircleMember)
+        mockCircleMemberDto = CircleMemberResponseDto.from(mockCircleMember)
 
         this.circleMemberPort.updateStatus(circleMemberId, CircleMemberStatus.REJECT) >> Optional.of(mockCircleMemberDto)
 
@@ -775,14 +775,14 @@ class CircleServiceTest extends Specification {
         def acceptUser = this.circleService.acceptUser(leaderUserId, circleMemberId)
 
         then:
-        acceptUser instanceof CircleMemberDto
+        acceptUser instanceof CircleMemberResponseDto
         acceptUser.getStatus() == CircleMemberStatus.MEMBER
 
         when: "Reject user"
         def rejectUser = this.circleService.rejectUser(leaderUserId, circleMemberId)
 
         then:
-        rejectUser instanceof CircleMemberDto
+        rejectUser instanceof CircleMemberResponseDto
         rejectUser.getStatus() == CircleMemberStatus.REJECT
     }
 
@@ -847,18 +847,18 @@ class CircleServiceTest extends Specification {
                 mockApplyUser
         )
 
-        def mockCircleMemberDto = CircleMemberDto.from(mockCircleMember)
+        def mockCircleMemberDto = CircleMemberResponseDto.from(mockCircleMember)
 
         this.circleMemberPort.findById(circleMemberId) >> Optional.of(mockCircleMemberDto)
 
         mockCircleMember.setStatus(CircleMemberStatus.MEMBER)
-        mockCircleMemberDto = CircleMemberDto.from(mockCircleMember)
+        mockCircleMemberDto = CircleMemberResponseDto.from(mockCircleMember)
 
         this.circleMemberPort.updateStatus(circleMemberId, CircleMemberStatus.MEMBER) >> Optional.of(mockCircleMemberDto)
 
 
         mockCircleMember.setStatus(CircleMemberStatus.REJECT)
-        mockCircleMemberDto = CircleMemberDto.from(mockCircleMember)
+        mockCircleMemberDto = CircleMemberResponseDto.from(mockCircleMember)
 
         this.circleMemberPort.updateStatus(circleMemberId, CircleMemberStatus.REJECT) >> Optional.of(mockCircleMemberDto)
 
@@ -872,7 +872,7 @@ class CircleServiceTest extends Specification {
         def acceptUser = this.circleService.acceptUser(leaderUserId, circleMemberId)
 
         then:
-        acceptUser instanceof CircleMemberDto
+        acceptUser instanceof CircleMemberResponseDto
         acceptUser.getStatus() == CircleMemberStatus.MEMBER
 
         when: "Reject user with user id who is not a leader"
@@ -885,7 +885,7 @@ class CircleServiceTest extends Specification {
         def rejectUser = this.circleService.rejectUser(leaderUserId, circleMemberId)
 
         then:
-        rejectUser instanceof CircleMemberDto
+        rejectUser instanceof CircleMemberResponseDto
         rejectUser.getStatus() == CircleMemberStatus.REJECT
     }
 
@@ -951,12 +951,12 @@ class CircleServiceTest extends Specification {
                 mockLeaveUser
         )
 
-        def mockCircleMemberDto = CircleMemberDto.from(mockCircleMember)
+        def mockCircleMemberDto = CircleMemberResponseDto.from(mockCircleMember)
 
         this.circleMemberPort.findByUserIdAndCircleId(leaveUserId, circleId) >> Optional.of(mockCircleMemberDto)
 
         mockCircleMember.setStatus(CircleMemberStatus.LEAVE)
-        mockCircleMemberDto = CircleMemberDto.from(mockCircleMember)
+        mockCircleMemberDto = CircleMemberResponseDto.from(mockCircleMember)
 
         this.circleMemberPort.updateStatus(circleMemberId, CircleMemberStatus.LEAVE) >> Optional.of(mockCircleMemberDto)
 
@@ -964,7 +964,7 @@ class CircleServiceTest extends Specification {
         def leaveUser = this.circleService.leaveUser(leaveUserId, circleId)
 
         then:
-        leaveUser instanceof CircleMemberDto
+        leaveUser instanceof CircleMemberResponseDto
         leaveUser.getStatus() == CircleMemberStatus.LEAVE
     }
 
@@ -1026,7 +1026,7 @@ class CircleServiceTest extends Specification {
                 mockLeaveUser
         )
 
-        def mockCircleMemberDto = CircleMemberDto.from(mockCircleMember)
+        def mockCircleMemberDto = CircleMemberResponseDto.from(mockCircleMember)
         this.circleMemberPort.findByUserIdAndCircleId(leaveUserId, circleId) >> Optional.of(mockCircleMemberDto)
 
 
@@ -1038,7 +1038,7 @@ class CircleServiceTest extends Specification {
                 mockLeaderUser
         )
 
-        def mockLeaderCircleMemberDto = CircleMemberDto.from(mockLeaderCircleMember)
+        def mockLeaderCircleMemberDto = CircleMemberResponseDto.from(mockLeaderCircleMember)
         this.circleMemberPort.findByUserIdAndCircleId(leaderUserId, circleId) >> Optional.of(mockLeaderCircleMemberDto)
 
         when: "Test with invalid user circle status case"
@@ -1113,12 +1113,12 @@ class CircleServiceTest extends Specification {
                 mockDropUser
         )
 
-        def mockCircleMemberDto = CircleMemberDto.from(mockCircleMember)
+        def mockCircleMemberDto = CircleMemberResponseDto.from(mockCircleMember)
 
         this.circleMemberPort.findByUserIdAndCircleId(dropUserId, circleId) >> Optional.of(mockCircleMemberDto)
 
         mockCircleMember.setStatus(CircleMemberStatus.DROP)
-        mockCircleMemberDto = CircleMemberDto.from(mockCircleMember)
+        mockCircleMemberDto = CircleMemberResponseDto.from(mockCircleMember)
 
         this.circleMemberPort.updateStatus(circleMemberId, CircleMemberStatus.DROP) >> Optional.of(mockCircleMemberDto)
 
@@ -1126,7 +1126,7 @@ class CircleServiceTest extends Specification {
         def dropUser = this.circleService.dropUser(leaderUserId, dropUserId, circleId)
 
         then:
-        dropUser instanceof CircleMemberDto
+        dropUser instanceof CircleMemberResponseDto
         dropUser.getStatus() == CircleMemberStatus.DROP
     }
 
@@ -1188,7 +1188,7 @@ class CircleServiceTest extends Specification {
                 mockDropUser
         )
 
-        def mockCircleMemberDto = CircleMemberDto.from(mockCircleMember)
+        def mockCircleMemberDto = CircleMemberResponseDto.from(mockCircleMember)
         this.circleMemberPort.findByUserIdAndCircleId(dropUserId, circleId) >> Optional.of(mockCircleMemberDto)
 
         def leaderCircleMemberId = "Test Leader User Circle Id"
@@ -1199,7 +1199,7 @@ class CircleServiceTest extends Specification {
                 mockLeaderUser
         )
 
-        def mockLeaderCircleMemberDto = CircleMemberDto.from(mockCircleMember)
+        def mockLeaderCircleMemberDto = CircleMemberResponseDto.from(mockCircleMember)
         this.circleMemberPort.findByUserIdAndCircleId(leaderUserId, circleId) >> Optional.of(mockLeaderCircleMemberDto)
 
         when: "Test without leader user id at request user id"

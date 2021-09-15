@@ -2,7 +2,6 @@ package net.causw.application;
 
 import net.causw.application.dto.DuplicatedCheckDto;
 import net.causw.application.dto.UserCreateRequestDto;
-import net.causw.application.dto.UserFullDto;
 import net.causw.application.dto.UserResponseDto;
 import net.causw.application.dto.UserSignInRequestDto;
 import net.causw.application.dto.UserUpdateRequestDto;
@@ -89,35 +88,23 @@ public class UserService {
         // Validate password format, admission year range, and whether the email is duplicate or not
         validatorBucket
                 .consistOf(ConstraintValidator.of(userDomainModel, this.validator))
-                .consistOf(PasswordFormatValidator.of(userDomainModel.getPassword()))
-                .consistOf(AdmissionYearValidator.of(userDomainModel.getAdmissionYear()))
+                .consistOf(PasswordFormatValidator.of(userCreateRequestDto.getPassword()))
+                .consistOf(AdmissionYearValidator.of(userCreateRequestDto.getAdmissionYear()))
                 .consistOf(DuplicatedEmailValidator.of(this.userPort, userCreateRequestDto.getEmail()))
                 .validate();
 
-        return UserResponseDto.from(this.userPort.create(userCreateRequestDto));
+        return UserResponseDto.from(this.userPort.create(userDomainModel));
     }
 
     @Transactional(readOnly = true)
     public String signIn(UserSignInRequestDto userSignInRequestDto) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserFullDto userFullDto = this.userPort.findByEmail(userSignInRequestDto.getEmail()).orElseThrow(
+        UserDomainModel userDomainModel = this.userPort.findByEmail(userSignInRequestDto.getEmail()).orElseThrow(
                 () -> new UnauthorizedException(
                         ErrorCode.INVALID_SIGNIN,
                         "Invalid sign in data"
                 )
-        );
-
-        UserDomainModel userDomainModel = UserDomainModel.of(
-                userFullDto.getId(),
-                userFullDto.getEmail(),
-                userFullDto.getName(),
-                userFullDto.getPassword(),
-                userFullDto.getStudentId(),
-                userFullDto.getAdmissionYear(),
-                userFullDto.getRole(),
-                userFullDto.getProfileImage(),
-                userFullDto.getState()
         );
 
         /* Validate the input password and user state
@@ -129,9 +116,9 @@ public class UserService {
                 .validate();
 
         return this.jwtTokenProvider.createToken(
-                userFullDto.getId(),
-                userFullDto.getRole(),
-                userFullDto.getState()
+                userDomainModel.getId(),
+                userDomainModel.getRole(),
+                userDomainModel.getState()
         );
     }
 
@@ -145,7 +132,7 @@ public class UserService {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         // First, load the user data from input user id
-        UserFullDto userFullDto = this.userPort.findById(id).orElseThrow(
+        UserDomainModel userDomainModel = this.userPort.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "Invalid user id"
@@ -155,30 +142,31 @@ public class UserService {
         /* The user requested changing the email if the request email is different from the original one
          * Then, validate it whether the requested email is duplicated or not
          */
-        if (!userFullDto.getEmail().equals(userUpdateRequestDto.getEmail())) {
+        if (!userDomainModel.getEmail().equals(userUpdateRequestDto.getEmail())) {
             validatorBucket.consistOf(DuplicatedEmailValidator.of(this.userPort, userUpdateRequestDto.getEmail()));
         }
 
         // Validate the requested parameters format from making the domain model
-        UserDomainModel userDomainModel = UserDomainModel.of(
+        userDomainModel = UserDomainModel.of(
                 id,
                 userUpdateRequestDto.getEmail(),
                 userUpdateRequestDto.getName(),
-                userFullDto.getPassword(),
+                userDomainModel.getPassword(),
                 userUpdateRequestDto.getStudentId(),
                 userUpdateRequestDto.getAdmissionYear(),
-                userFullDto.getRole(),
-                userFullDto.getProfileImage(),
-                userFullDto.getState()
+                userDomainModel.getRole(),
+                userDomainModel.getProfileImage(),
+                userDomainModel.getState()
         );
+        System.out.println(userDomainModel);
 
         // Validate the admission year range
         validatorBucket
                 .consistOf(ConstraintValidator.of(userDomainModel, this.validator))
-                .consistOf(AdmissionYearValidator.of(userDomainModel.getAdmissionYear()))
+                .consistOf(AdmissionYearValidator.of(userUpdateRequestDto.getAdmissionYear()))
                 .validate();
 
-        return UserResponseDto.from(this.userPort.update(id, userUpdateRequestDto).orElseThrow(
+        return UserResponseDto.from(this.userPort.update(id, userDomainModel).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "Invalid user id"
@@ -195,13 +183,13 @@ public class UserService {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         // Load the user data from input grantor and grantee ids.
-        UserFullDto grantor = this.userPort.findById(grantorId).orElseThrow(
+        UserDomainModel grantor = this.userPort.findById(grantorId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "Invalid login user id"
                 )
         );
-        UserFullDto grantee = this.userPort.findById(granteeId).orElseThrow(
+        UserDomainModel grantee = this.userPort.findById(granteeId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "Invalid user id"

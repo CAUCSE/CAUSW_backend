@@ -1,22 +1,26 @@
 package net.causw.application
 
-import net.causw.adapter.persistence.Board
-import net.causw.adapter.persistence.Circle
-import net.causw.adapter.persistence.User
 import net.causw.application.dto.BoardCreateRequestDto
-import net.causw.application.dto.BoardFullDto
 import net.causw.application.dto.BoardResponseDto
 import net.causw.application.dto.BoardUpdateRequestDto
-import net.causw.application.dto.CircleFullDto
-import net.causw.application.dto.UserFullDto
+
 import net.causw.application.spi.BoardPort
 import net.causw.application.spi.CirclePort
 import net.causw.application.spi.UserPort
 import net.causw.domain.exceptions.BadRequestException
 import net.causw.domain.exceptions.UnauthorizedException
+import net.causw.domain.model.BoardDomainModel
+import net.causw.domain.model.CircleDomainModel
 import net.causw.domain.model.Role
+import net.causw.domain.model.UserDomainModel
 import net.causw.domain.model.UserState
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.powermock.api.mockito.PowerMockito
+import org.powermock.core.classloader.annotations.PrepareForTest
+import org.powermock.modules.junit4.PowerMockRunner
+import org.powermock.modules.junit4.PowerMockRunnerDelegate
+import org.spockframework.runtime.Sputnik
 import org.springframework.test.context.ActiveProfiles
 import spock.lang.Specification
 
@@ -25,6 +29,9 @@ import javax.validation.Validation
 import javax.validation.Validator
 
 @ActiveProfiles(value = "test")
+@RunWith(PowerMockRunner.class)
+@PowerMockRunnerDelegate(Sputnik.class)
+@PrepareForTest([BoardDomainModel.class])
 class BoardServiceTest extends Specification {
     private BoardPort boardPort = Mock(BoardPort.class)
     private UserPort userPort = Mock(UserPort.class)
@@ -32,17 +39,16 @@ class BoardServiceTest extends Specification {
     private Validator validator = Validation.buildDefaultValidatorFactory().getValidator()
     private BoardService boardService = new BoardService(this.boardPort, this.userPort, this.circlePort, this.validator)
 
-    def id
-    def mockBoard
+    def mockBoardDomainModel
 
     def setup() {
-        id = "test"
-        mockBoard = Board.of(
+        this.mockBoardDomainModel = BoardDomainModel.of(
+                "test",
                 "test",
                 "test_description",
-                "PRESIDENT,COUNCIL",
-                "PRESIDENT,COUNCIL",
-                "PRESIDENT,COUNCIL",
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                Arrays.asList("PRESIDENT", "COUNCIL"),
                 false,
                 null
         )
@@ -60,9 +66,7 @@ class BoardServiceTest extends Specification {
                 null
         )
 
-        def mockBoardResponseDto = BoardResponseDto.from((Board)mockBoard)
-
-        def creator = User.of(
+        def creatorUserDomainModel = UserDomainModel.of(
                 "test",
                 "test@cau.ac.kr",
                 "test",
@@ -70,25 +74,36 @@ class BoardServiceTest extends Specification {
                 "20210000",
                 2021,
                 Role.PRESIDENT,
+                null,
                 UserState.WAIT
         )
-        def mockCreatorFullDto = UserFullDto.from(creator)
 
-        def mockCircleFullDto = CircleFullDto.from(Circle.of(
+        def circleDomainModel = CircleDomainModel.of(
                 "test",
                 "test",
                 null,
                 "test_description",
                 false,
-                creator
-        ))
+                creatorUserDomainModel
+        )
 
-        this.userPort.findById((String)id) >> Optional.of(mockCreatorFullDto)
-        this.circlePort.findById((String)id) >> Optional.of(mockCircleFullDto)
-        this.boardPort.create(mockBoardCreateRequestDto, Optional.ofNullable(null)) >> mockBoardResponseDto
-        this.boardPort.create(mockBoardCreateRequestDto, Optional.ofNullable(mockCircleFullDto)) >> mockBoardResponseDto
+        this.userPort.findById("test") >> Optional.of(creatorUserDomainModel)
+        this.circlePort.findById("test") >> Optional.of(circleDomainModel)
+        this.boardPort.create((BoardDomainModel)this.mockBoardDomainModel, Optional.ofNullable(null)) >> this.mockBoardDomainModel
+        this.boardPort.create((BoardDomainModel)this.mockBoardDomainModel, Optional.ofNullable(circleDomainModel)) >> this.mockBoardDomainModel
 
         when: "create board without circle"
+        PowerMockito.mockStatic(BoardDomainModel.class)
+        PowerMockito.when(BoardDomainModel.of(
+                null,
+                "test",
+                "test_description",
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                false,
+                null
+        )).thenReturn((BoardDomainModel)this.mockBoardDomainModel)
         def boardResponseDto = this.boardService.create("test", mockBoardCreateRequestDto)
 
         then:
@@ -100,7 +115,19 @@ class BoardServiceTest extends Specification {
 
         when: "create board with circle"
         mockBoardCreateRequestDto.setCircleId("test")
-        mockCreatorFullDto.setRole(Role.LEADER_CIRCLE)
+        creatorUserDomainModel.setRole(Role.LEADER_CIRCLE)
+        (BoardDomainModel)this.mockBoardDomainModel.setCircleId("test")
+        PowerMockito.mockStatic(BoardDomainModel.class)
+        PowerMockito.when(BoardDomainModel.of(
+                null,
+                "test",
+                "test_description",
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                false,
+                "test"
+        )).thenReturn((BoardDomainModel)this.mockBoardDomainModel)
         boardResponseDto = this.boardService.create("test", mockBoardCreateRequestDto)
 
         then:
@@ -122,9 +149,8 @@ class BoardServiceTest extends Specification {
                 Arrays.asList("PRESIDENT", "COUNCIL"),
                 null
         )
-        def mockBoardResponseDto = BoardResponseDto.from((Board)mockBoard)
 
-        def mockCreatorFullDto = UserFullDto.from(User.of(
+        def mockCreatorDomainModel = UserDomainModel.of(
                 "test",
                 "test@cau.ac.kr",
                 "test",
@@ -132,14 +158,27 @@ class BoardServiceTest extends Specification {
                 "20210000",
                 2021,
                 Role.PRESIDENT,
+                null,
                 UserState.WAIT
-        ))
+        )
 
-        this.userPort.findById((String)id) >> Optional.of(mockCreatorFullDto)
-        this.boardPort.create(mockBoardCreateRequestDto, null) >> mockBoardResponseDto
+        this.userPort.findById("test") >> Optional.of(mockCreatorDomainModel)
+        this.boardPort.create((BoardDomainModel)this.mockBoardDomainModel, null) >> this.mockBoardDomainModel
 
         when: "name is blank"
         mockBoardCreateRequestDto.setName("")
+        this.mockBoardDomainModel.setName("")
+        PowerMockito.mockStatic(BoardDomainModel.class)
+        PowerMockito.when(BoardDomainModel.of(
+                null,
+                "",
+                "test_description",
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                false,
+                null
+        )).thenReturn((BoardDomainModel)this.mockBoardDomainModel)
         this.boardService.create("test", mockBoardCreateRequestDto)
 
         then:
@@ -147,7 +186,20 @@ class BoardServiceTest extends Specification {
 
         when: "create role is null"
         mockBoardCreateRequestDto.setName("test")
+        this.mockBoardDomainModel.setName("test")
         mockBoardCreateRequestDto.setCreateRoleList(null)
+        this.mockBoardDomainModel.setCreateRoleList(null)
+        PowerMockito.mockStatic(BoardDomainModel.class)
+        PowerMockito.when(BoardDomainModel.of(
+                null,
+                "test",
+                "test_description",
+                null,
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                false,
+                null
+        )).thenReturn((BoardDomainModel)this.mockBoardDomainModel)
         this.boardService.create("test", mockBoardCreateRequestDto)
 
         then:
@@ -155,7 +207,20 @@ class BoardServiceTest extends Specification {
 
         when: "modify role is null"
         mockBoardCreateRequestDto.setCreateRoleList(Arrays.asList("PRESIDENT", "COUNCIL"))
+        this.mockBoardDomainModel.setCreateRoleList(Arrays.asList("PRESIDENT", "COUNCIL"))
         mockBoardCreateRequestDto.setModifyRoleList(null)
+        this.mockBoardDomainModel.setModifyRoleList(null)
+        PowerMockito.mockStatic(BoardDomainModel.class)
+        PowerMockito.when(BoardDomainModel.of(
+                null,
+                "test",
+                "test_description",
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                null,
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                false,
+                null
+        )).thenReturn((BoardDomainModel)this.mockBoardDomainModel)
         this.boardService.create("test", mockBoardCreateRequestDto)
 
         then:
@@ -163,7 +228,20 @@ class BoardServiceTest extends Specification {
 
         when: "read role is null"
         mockBoardCreateRequestDto.setModifyRoleList(Arrays.asList("PRESIDENT", "COUNCIL"))
+        this.mockBoardDomainModel.setModifyRoleList(Arrays.asList("PRESIDENT", "COUNCIL"))
         mockBoardCreateRequestDto.setReadRoleList(null)
+        this.mockBoardDomainModel.setReadRoleList(null)
+        PowerMockito.mockStatic(BoardDomainModel.class)
+        PowerMockito.when(BoardDomainModel.of(
+                null,
+                "test",
+                "test_description",
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                null,
+                false,
+                null
+        )).thenReturn((BoardDomainModel)this.mockBoardDomainModel)
         this.boardService.create("test", mockBoardCreateRequestDto)
 
         then:
@@ -181,9 +259,8 @@ class BoardServiceTest extends Specification {
                 Arrays.asList("PRESIDENT", "COUNCIL"),
                 null
         )
-        def mockBoardResponseDto = BoardResponseDto.from((Board)mockBoard)
 
-        def mockCreatorFullDto = UserFullDto.from(User.of(
+        def mockCreatorDomainModel = UserDomainModel.of(
                 "test",
                 "test@cau.ac.kr",
                 "test",
@@ -191,14 +268,15 @@ class BoardServiceTest extends Specification {
                 "20210000",
                 2021,
                 Role.PRESIDENT,
+                null,
                 UserState.WAIT
-        ))
+        )
 
-        this.userPort.findById((String)id) >> Optional.of(mockCreatorFullDto)
-        this.boardPort.create(mockBoardCreateRequestDto, null) >> mockBoardResponseDto
+        this.userPort.findById("test") >> Optional.of(mockCreatorDomainModel)
+        this.boardPort.create((BoardDomainModel)this.mockBoardDomainModel, null) >> this.mockBoardDomainModel
 
         when: "invalid creator role"
-        mockCreatorFullDto.setRole(Role.NONE)
+        mockCreatorDomainModel.setRole(Role.NONE)
         this.boardService.create("test", mockBoardCreateRequestDto)
 
         then:
@@ -217,9 +295,7 @@ class BoardServiceTest extends Specification {
                 "test"
         )
 
-        def mockBoardResponseDto = BoardResponseDto.from((Board)mockBoard)
-
-        def creator = User.of(
+        def creator = UserDomainModel.of(
                 "test",
                 "test@cau.ac.kr",
                 "test",
@@ -227,25 +303,25 @@ class BoardServiceTest extends Specification {
                 "20210000",
                 2021,
                 Role.PRESIDENT,
+                null,
                 UserState.WAIT
         )
-        def mockCreatorFullDto = UserFullDto.from(creator)
 
-        def mockCircleFullDto = CircleFullDto.from(Circle.of(
+        def mockCircleDomainModel = CircleDomainModel.of(
                 "test",
                 "test",
                 null,
                 "test_description",
                 false,
                 creator
-        ))
+        )
 
-        this.userPort.findById((String)id) >> Optional.of(mockCreatorFullDto)
-        this.circlePort.findById((String)id) >> Optional.of(mockCircleFullDto)
-        this.boardPort.create(mockBoardCreateRequestDto, Optional.ofNullable(mockCircleFullDto)) >> mockBoardResponseDto
+        this.userPort.findById("test") >> Optional.of(creator)
+        this.circlePort.findById("test") >> Optional.of(mockCircleDomainModel)
+        this.boardPort.create((BoardDomainModel)this.mockBoardDomainModel, Optional.ofNullable(mockCircleDomainModel)) >> this.mockBoardDomainModel
 
         when: "invalid leader id"
-        mockCreatorFullDto.setId("invalid_test")
+        creator.setId("invalid_test")
         this.boardService.create("test", mockBoardCreateRequestDto)
 
         then:
@@ -264,11 +340,7 @@ class BoardServiceTest extends Specification {
                 null
         )
 
-        def mockBoardResponseDto = BoardResponseDto.from((Board)mockBoard)
-        def mockBoardFullDto = BoardFullDto.from((Board)mockBoard)
-        mockBoardResponseDto.setName("test_update")
-
-        def updater = User.of(
+        def updater = UserDomainModel.of(
                 "test",
                 "test@cau.ac.kr",
                 "test",
@@ -276,26 +348,48 @@ class BoardServiceTest extends Specification {
                 "20210000",
                 2021,
                 Role.PRESIDENT,
+                null,
                 UserState.WAIT
         )
-        def mockUpdaterFullDto = UserFullDto.from(updater)
 
-        def mockCircleFullDto = CircleFullDto.from(Circle.of(
+        def mockCircleDomainModel = CircleDomainModel.of(
                 "test",
                 "test",
                 null,
                 "test_description",
                 false,
                 updater
-        ))
+        )
 
-        this.userPort.findById((String)id) >> Optional.of(mockUpdaterFullDto)
-        this.circlePort.findById((String)id) >> Optional.of(mockCircleFullDto)
-        this.boardPort.findById((String)id) >> Optional.of(mockBoardFullDto)
-        this.boardPort.update("test", mockBoardUpdateRequestDto) >> Optional.of(mockBoardResponseDto)
+        def mockUpdatedBoardDomainModel = BoardDomainModel.of(
+                "test",
+                mockBoardUpdateRequestDto.getName(),
+                mockBoardUpdateRequestDto.getDescription(),
+                mockBoardUpdateRequestDto.getCreateRoleList(),
+                mockBoardUpdateRequestDto.getModifyRoleList(),
+                mockBoardUpdateRequestDto.getReadRoleList(),
+                false,
+                null
+        )
+
+        this.userPort.findById("test") >> Optional.of(updater)
+        this.circlePort.findById("test") >> Optional.of(mockCircleDomainModel)
+        this.boardPort.findById("test") >> Optional.of(this.mockBoardDomainModel)
+        this.boardPort.update("test", mockUpdatedBoardDomainModel) >> Optional.of(mockUpdatedBoardDomainModel)
 
         when: "update board without circle"
-        def boardResponseDto = this.boardService.update("test", (String)id, mockBoardUpdateRequestDto)
+        PowerMockito.mockStatic(BoardDomainModel.class)
+        PowerMockito.when(BoardDomainModel.of(
+                "test",
+                mockBoardUpdateRequestDto.getName(),
+                mockBoardUpdateRequestDto.getDescription(),
+                mockBoardUpdateRequestDto.getCreateRoleList(),
+                mockBoardUpdateRequestDto.getModifyRoleList(),
+                mockBoardUpdateRequestDto.getReadRoleList(),
+                false,
+                null
+        )).thenReturn(mockUpdatedBoardDomainModel)
+        def boardResponseDto = this.boardService.update("test", "test", mockBoardUpdateRequestDto)
 
         then:
         boardResponseDto instanceof BoardResponseDto
@@ -306,8 +400,21 @@ class BoardServiceTest extends Specification {
 
         when: "update board with circle"
         mockBoardUpdateRequestDto.setCircleId("test")
-        mockUpdaterFullDto.setRole(Role.LEADER_CIRCLE)
-        boardResponseDto = this.boardService.update("test", (String)id, mockBoardUpdateRequestDto)
+        this.mockBoardDomainModel.setCircleId("test")
+        mockUpdatedBoardDomainModel.setCircleId("test")
+        updater.setRole(Role.LEADER_CIRCLE)
+        PowerMockito.mockStatic(BoardDomainModel.class)
+        PowerMockito.when(BoardDomainModel.of(
+                "test",
+                mockBoardUpdateRequestDto.getName(),
+                mockBoardUpdateRequestDto.getDescription(),
+                mockBoardUpdateRequestDto.getCreateRoleList(),
+                mockBoardUpdateRequestDto.getModifyRoleList(),
+                mockBoardUpdateRequestDto.getReadRoleList(),
+                false,
+                "test"
+        )).thenReturn(mockUpdatedBoardDomainModel)
+        boardResponseDto = this.boardService.update("test", "test", mockBoardUpdateRequestDto)
 
         then:
         boardResponseDto instanceof BoardResponseDto
@@ -329,10 +436,7 @@ class BoardServiceTest extends Specification {
                 null
         )
 
-        def mockBoardResponseDto = BoardResponseDto.from((Board)mockBoard)
-        def mockBoardFullDto = BoardFullDto.from((Board)mockBoard)
-
-        def updater = User.of(
+        def updater = UserDomainModel.of(
                 "test",
                 "test@cau.ac.kr",
                 "test",
@@ -340,17 +444,16 @@ class BoardServiceTest extends Specification {
                 "20210000",
                 2021,
                 Role.PRESIDENT,
+                null,
                 UserState.WAIT
         )
-        def mockUpdaterFullDto = UserFullDto.from(updater)
 
-        this.userPort.findById((String)id) >> Optional.of(mockUpdaterFullDto)
-        this.boardPort.findById((String)id) >> Optional.of(mockBoardFullDto)
-        this.boardPort.update("test", mockBoardUpdateRequestDto) >> Optional.of(mockBoardResponseDto)
+        this.userPort.findById("test") >> Optional.of(updater)
+        this.boardPort.findById("test") >> Optional.of(this.mockBoardDomainModel)
 
         when: "board already delete"
-        mockBoardFullDto.setIsDeleted(true)
-        this.boardService.update("test", (String)id, mockBoardUpdateRequestDto)
+        this.mockBoardDomainModel.setIsDeleted(true)
+        this.boardService.update("test", "test", mockBoardUpdateRequestDto)
 
         then:
         thrown(BadRequestException)
@@ -368,10 +471,7 @@ class BoardServiceTest extends Specification {
                 null
         )
 
-        def mockBoardResponseDto = BoardResponseDto.from((Board)mockBoard)
-        def mockBoardFullDto = BoardFullDto.from((Board)mockBoard)
-
-        def updater = User.of(
+        def updater = UserDomainModel.of(
                 "test",
                 "test@cau.ac.kr",
                 "test",
@@ -379,41 +479,91 @@ class BoardServiceTest extends Specification {
                 "20210000",
                 2021,
                 Role.PRESIDENT,
+                null,
                 UserState.WAIT
         )
-        def mockUpdaterFullDto = UserFullDto.from(updater)
 
-        this.userPort.findById((String)id) >> Optional.of(mockUpdaterFullDto)
-        this.boardPort.findById((String)id) >> Optional.of(mockBoardFullDto)
-        this.boardPort.update("test", mockBoardUpdateRequestDto) >> Optional.of(mockBoardResponseDto)
+        this.userPort.findById("test") >> Optional.of(updater)
+        this.boardPort.findById("test") >> Optional.of(this.mockBoardDomainModel)
 
         when: "name is blank"
         mockBoardUpdateRequestDto.setName("")
-        this.boardService.update("test", (String)id, mockBoardUpdateRequestDto)
+        this.mockBoardDomainModel.setName("")
+        PowerMockito.mockStatic(BoardDomainModel.class)
+        PowerMockito.when(BoardDomainModel.of(
+                "test",
+                mockBoardUpdateRequestDto.getName(),
+                mockBoardUpdateRequestDto.getDescription(),
+                mockBoardUpdateRequestDto.getCreateRoleList(),
+                mockBoardUpdateRequestDto.getModifyRoleList(),
+                mockBoardUpdateRequestDto.getReadRoleList(),
+                false,
+                null
+        )).thenReturn((BoardDomainModel)this.mockBoardDomainModel)
+        this.boardService.update("test", "test", mockBoardUpdateRequestDto)
 
         then:
         thrown(ConstraintViolationException)
 
         when: "create role is null"
         mockBoardUpdateRequestDto.setName("test")
+        this.mockBoardDomainModel.setName("test")
         mockBoardUpdateRequestDto.setCreateRoleList(null)
-        this.boardService.update("test", (String)id, mockBoardUpdateRequestDto)
+        this.mockBoardDomainModel.setCreateRoleList(null)
+        PowerMockito.mockStatic(BoardDomainModel.class)
+        PowerMockito.when(BoardDomainModel.of(
+                "test",
+                mockBoardUpdateRequestDto.getName(),
+                mockBoardUpdateRequestDto.getDescription(),
+                mockBoardUpdateRequestDto.getCreateRoleList(),
+                mockBoardUpdateRequestDto.getModifyRoleList(),
+                mockBoardUpdateRequestDto.getReadRoleList(),
+                false,
+                null
+        )).thenReturn((BoardDomainModel)this.mockBoardDomainModel)
+        this.boardService.update("test", "test", mockBoardUpdateRequestDto)
 
         then:
         thrown(ConstraintViolationException)
 
         when: "modify role is null"
         mockBoardUpdateRequestDto.setCreateRoleList(Arrays.asList("PRESIDENT", "COUNCIL"))
+        this.mockBoardDomainModel.setCreateRoleList(Arrays.asList("PRESIDENT", "COUNCIL"))
         mockBoardUpdateRequestDto.setModifyRoleList(null)
-        this.boardService.update("test", (String)id, mockBoardUpdateRequestDto)
+        this.mockBoardDomainModel.setModifyRoleList(null)
+        PowerMockito.mockStatic(BoardDomainModel.class)
+        PowerMockito.when(BoardDomainModel.of(
+                "test",
+                mockBoardUpdateRequestDto.getName(),
+                mockBoardUpdateRequestDto.getDescription(),
+                mockBoardUpdateRequestDto.getCreateRoleList(),
+                mockBoardUpdateRequestDto.getModifyRoleList(),
+                mockBoardUpdateRequestDto.getReadRoleList(),
+                false,
+                null
+        )).thenReturn((BoardDomainModel)this.mockBoardDomainModel)
+        this.boardService.update("test", "test", mockBoardUpdateRequestDto)
 
         then:
         thrown(ConstraintViolationException)
 
         when: "read role is null"
         mockBoardUpdateRequestDto.setModifyRoleList(Arrays.asList("PRESIDENT", "COUNCIL"))
+        this.mockBoardDomainModel.setModifyRoleList(Arrays.asList("PRESIDENT", "COUNCIL"))
         mockBoardUpdateRequestDto.setReadRoleList(null)
-        this.boardService.update("test", (String)id, mockBoardUpdateRequestDto)
+        this.mockBoardDomainModel.setReadRoleList(null)
+        PowerMockito.mockStatic(BoardDomainModel.class)
+        PowerMockito.when(BoardDomainModel.of(
+                "test",
+                mockBoardUpdateRequestDto.getName(),
+                mockBoardUpdateRequestDto.getDescription(),
+                mockBoardUpdateRequestDto.getCreateRoleList(),
+                mockBoardUpdateRequestDto.getModifyRoleList(),
+                mockBoardUpdateRequestDto.getReadRoleList(),
+                false,
+                null
+        )).thenReturn((BoardDomainModel)this.mockBoardDomainModel)
+        this.boardService.update("test", "test", mockBoardUpdateRequestDto)
 
         then:
         thrown(ConstraintViolationException)
@@ -431,10 +581,7 @@ class BoardServiceTest extends Specification {
                 null
         )
 
-        def mockBoardResponseDto = BoardResponseDto.from((Board)mockBoard)
-        def mockBoardFullDto = BoardFullDto.from((Board)mockBoard)
-
-        def updater = User.of(
+        def updater = UserDomainModel.of(
                 "test",
                 "test@cau.ac.kr",
                 "test",
@@ -442,17 +589,16 @@ class BoardServiceTest extends Specification {
                 "20210000",
                 2021,
                 Role.PRESIDENT,
+                null,
                 UserState.WAIT
         )
-        def mockUpdaterFullDto = UserFullDto.from(updater)
 
-        this.userPort.findById((String)id) >> Optional.of(mockUpdaterFullDto)
-        this.boardPort.findById((String)id) >> Optional.of(mockBoardFullDto)
-        this.boardPort.update("test", mockBoardUpdateRequestDto) >> Optional.of(mockBoardResponseDto)
+        this.userPort.findById("test") >> Optional.of(updater)
+        this.boardPort.findById("test") >> Optional.of(this.mockBoardDomainModel)
 
         when: "invalid creator role"
-        mockUpdaterFullDto.setRole(Role.NONE)
-        this.boardService.update("test", (String)id, mockBoardUpdateRequestDto)
+        updater.setRole(Role.NONE)
+        this.boardService.update("test", "test", mockBoardUpdateRequestDto)
 
         then:
         thrown(UnauthorizedException)
@@ -470,10 +616,7 @@ class BoardServiceTest extends Specification {
                 "test"
         )
 
-        def mockBoardResponseDto = BoardResponseDto.from((Board)mockBoard)
-        def mockBoardFullDto = BoardFullDto.from((Board)mockBoard)
-
-        def updater = User.of(
+        def updater = UserDomainModel.of(
                 "test",
                 "test@cau.ac.kr",
                 "test",
@@ -481,27 +624,26 @@ class BoardServiceTest extends Specification {
                 "20210000",
                 2021,
                 Role.PRESIDENT,
+                null,
                 UserState.WAIT
         )
-        def mockUpdaterFullDto = UserFullDto.from(updater)
 
-        def mockCircleFullDto = CircleFullDto.from(Circle.of(
+        def mockCircleFullDto = CircleDomainModel.of(
                 "test",
                 "test",
                 null,
                 "test_description",
                 false,
                 updater
-        ))
+        )
 
-        this.userPort.findById((String)id) >> Optional.of(mockUpdaterFullDto)
-        this.circlePort.findById((String)id) >> Optional.of(mockCircleFullDto)
-        this.boardPort.findById((String)id) >> Optional.of(mockBoardFullDto)
-        this.boardPort.update("test", mockBoardUpdateRequestDto) >> Optional.of(mockBoardResponseDto)
+        this.userPort.findById("test") >> Optional.of(updater)
+        this.circlePort.findById("test") >> Optional.of(mockCircleFullDto)
+        this.boardPort.findById("test") >> Optional.of(this.mockBoardDomainModel)
 
         when: "invalid leader id"
-        mockUpdaterFullDto.setId("invalid_test")
-        this.boardService.update("test", (String)id, mockBoardUpdateRequestDto)
+        updater.setId("invalid_test")
+        this.boardService.update("test", "test", mockBoardUpdateRequestDto)
 
         then:
         thrown(UnauthorizedException)

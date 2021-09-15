@@ -1,7 +1,7 @@
 package net.causw.application.spi;
 
-import net.causw.application.dto.PostDetailDto;
+import net.causw.domain.model.PostDomainModel;
 
 public interface PostPort {
-    PostDetailDto findById(String id);
+    PostDomainModel findById(String id);
 }

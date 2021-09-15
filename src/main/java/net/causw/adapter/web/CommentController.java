@@ -2,7 +2,6 @@ package net.causw.adapter.web;
 
 import net.causw.application.CommentService;
 import net.causw.application.dto.CommentCreateRequestDto;
-import net.causw.application.dto.CommentFullDto;
 import net.causw.application.dto.CommentResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +23,7 @@ public class CommentController {
 
     @GetMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public CommentFullDto findById(@PathVariable String id) {
+    public CommentResponseDto findById(@PathVariable String id) {
         return this.commentService.findById(id);
     }
 

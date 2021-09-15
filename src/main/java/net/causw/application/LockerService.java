@@ -1,15 +1,17 @@
 package net.causw.application;
 
-import net.causw.application.dto.LockerDetailDto;
+import net.causw.application.dto.LockerResponseDto;
 import net.causw.application.dto.LockerLogDetailDto;
 import net.causw.application.spi.LockerLogPort;
 import net.causw.application.spi.LockerPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
+import net.causw.domain.model.LockerDomainModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class LockerService {
@@ -22,22 +24,22 @@ public class LockerService {
     }
 
     @Transactional(readOnly = true)
-    public LockerDetailDto findById(String id) {
-        return this.lockerPort.findById(id).orElseThrow(
+    public LockerResponseDto findById(String id) {
+        return LockerResponseDto.from(this.lockerPort.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "Invalid locker id"
                 )
-        );
+        ));
     }
 
     @Transactional(readOnly = true)
-    public List<LockerDetailDto> findAll() {
-        return this.lockerPort.findAll();
+    public List<LockerResponseDto> findAll() {
+        return this.lockerPort.findAll().stream().map(LockerResponseDto::from).collect(Collectors.toList());
     }
 
     public List<LockerLogDetailDto> findLog(String id) {
-        LockerDetailDto locker = this.lockerPort.findById(id).orElseThrow(
+        LockerDomainModel locker = this.lockerPort.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "Invalid locker id"

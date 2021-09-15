@@ -3,28 +3,29 @@ package net.causw.application.dto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.causw.adapter.persistence.Post;
+import net.causw.domain.model.PostDomainModel;
 
 import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor
-public class PostDetailDto {
+public class PostResponseDto {
     private String id;
     private String title;
     private String content;
     private Boolean isDeleted;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private BoardResponseDto board;
+    private String boardId;
 
-    private PostDetailDto(
+    private PostResponseDto(
             String id,
             String title,
             String content,
             Boolean isDeleted,
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
-            BoardResponseDto board
+            String boardId
     ) {
         this.id = id;
         this.title = title;
@@ -32,18 +33,18 @@ public class PostDetailDto {
         this.isDeleted = isDeleted;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.board = board;
+        this.boardId = boardId;
     }
 
-    public static PostDetailDto from(Post post) {
-        return new PostDetailDto(
+    public static PostResponseDto from(PostDomainModel post) {
+        return new PostResponseDto(
                 post.getId(),
                 post.getTitle(),
                 post.getContent(),
                 post.getIsDeleted(),
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
-                BoardResponseDto.from(post.getBoard())
+                post.getBoardId()
         );
     }
 }

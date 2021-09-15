@@ -7,31 +7,36 @@ public class CircleMemberDomainModel {
     private String id;
     private CircleMemberStatus status;
     private CircleDomainModel circle;
-    private UserDomainModel user;
+    private String userId;
+    private String userName;
 
     private CircleMemberDomainModel(
             String id,
             CircleMemberStatus status,
             CircleDomainModel circle,
-            UserDomainModel user
+            String userId,
+            String userName
     ) {
         this.id = id;
         this.status = status;
         this.circle = circle;
-        this.user = user;
+        this.userId = userId;
+        this.userName = userName;
     }
 
-    public CircleMemberDomainModel of(
+    public static CircleMemberDomainModel of(
             String id,
             CircleMemberStatus status,
             CircleDomainModel circle,
-            UserDomainModel user
+            String userId,
+            String userName
     ) {
         return new CircleMemberDomainModel(
                 id,
                 status,
                 circle,
-                user
+                userId,
+                userName
         );
     }
 

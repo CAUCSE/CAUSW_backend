@@ -3,16 +3,14 @@ package net.causw.adapter.persistence;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.causw.application.dto.CircleFullDto;
+import net.causw.domain.model.CircleDomainModel;
 import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import java.util.List;
 
 @Getter
 @Setter
@@ -36,10 +34,6 @@ public class Circle extends BaseEntity {
     @OneToOne
     @JoinColumn(name = "leader_id")
     private User leader;
-
-    @OneToMany
-    @JoinColumn(name = "user_circle_id")
-    private List<CircleMember> circleMemberList;
 
     private Circle(
             String id,
@@ -105,14 +99,14 @@ public class Circle extends BaseEntity {
         );
     }
 
-    public static Circle from(CircleFullDto circleFullDto) {
+    public static Circle from(CircleDomainModel circleDomainModel) {
         return new Circle(
-                circleFullDto.getId(),
-                circleFullDto.getName(),
-                circleFullDto.getMainImage(),
-                circleFullDto.getDescription(),
-                circleFullDto.getIsDeleted(),
-                User.from(circleFullDto.getManager())
+                circleDomainModel.getId(),
+                circleDomainModel.getName(),
+                circleDomainModel.getMainImage(),
+                circleDomainModel.getDescription(),
+                circleDomainModel.getIsDeleted(),
+                User.from(circleDomainModel.getLeader())
         );
     }
 }

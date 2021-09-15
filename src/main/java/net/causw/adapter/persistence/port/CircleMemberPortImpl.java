@@ -4,11 +4,11 @@ import net.causw.adapter.persistence.Circle;
 import net.causw.adapter.persistence.CircleMember;
 import net.causw.adapter.persistence.CircleMemberRepository;
 import net.causw.adapter.persistence.User;
-import net.causw.application.dto.CircleFullDto;
-import net.causw.application.dto.CircleMemberDto;
-import net.causw.application.dto.UserFullDto;
 import net.causw.application.spi.CircleMemberPort;
+import net.causw.domain.model.CircleDomainModel;
+import net.causw.domain.model.CircleMemberDomainModel;
 import net.causw.domain.model.CircleMemberStatus;
+import net.causw.domain.model.UserDomainModel;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -22,32 +22,67 @@ public class CircleMemberPortImpl implements CircleMemberPort {
     }
 
     @Override
-    public Optional<CircleMemberDto> findById(String id) {
-        return this.circleMemberRepository.findById(id).map(CircleMemberDto::from);
+    public Optional<CircleMemberDomainModel> findById(String id) {
+        return this.circleMemberRepository.findById(id).map(this::entityToDomainModel);
     }
 
     @Override
-    public Optional<CircleMemberDto> findByUserIdAndCircleId(String userId, String circleId) {
-        return this.circleMemberRepository.findByUser_IdAndCircle_Id(userId, circleId).map(CircleMemberDto::from);
+    public Optional<CircleMemberDomainModel> findByUserIdAndCircleId(String userId, String circleId) {
+        return this.circleMemberRepository.findByUser_IdAndCircle_Id(userId, circleId).map(this::entityToDomainModel);
     }
 
     @Override
-    public CircleMemberDto create(UserFullDto userFullDto, CircleFullDto circleFullDto) {
-        return CircleMemberDto.from(this.circleMemberRepository.save(CircleMember.of(
+    public CircleMemberDomainModel create(UserDomainModel userDomainModel, CircleDomainModel circleDomainModel) {
+        return this.entityToDomainModel(this.circleMemberRepository.save(CircleMember.of(
                 CircleMemberStatus.AWAIT,
-                Circle.from(circleFullDto),
-                User.from(userFullDto)
+                Circle.from(circleDomainModel),
+                User.from(userDomainModel)
         )));
     }
 
     @Override
-    public Optional<CircleMemberDto> updateStatus(String applicationId, CircleMemberStatus targetStatus) {
+    public Optional<CircleMemberDomainModel> updateStatus(String applicationId, CircleMemberStatus targetStatus) {
         return this.circleMemberRepository.findById(applicationId).map(
                 circleMember -> {
                     circleMember.setStatus(targetStatus);
 
-                    return CircleMemberDto.from(this.circleMemberRepository.save(circleMember));
+                    return this.entityToDomainModel(this.circleMemberRepository.save(circleMember));
                 }
+        );
+    }
+
+    private CircleMemberDomainModel entityToDomainModel(CircleMember circleMember) {
+        return CircleMemberDomainModel.of(
+                circleMember.getId(),
+                circleMember.getStatus(),
+                this.entityToDomainModel(circleMember.getCircle()),
+                circleMember.getUser().getId(),
+                circleMember.getUser().getName()
+        );
+    }
+
+    private CircleDomainModel entityToDomainModel(Circle circle) {
+        return CircleDomainModel.of(
+                circle.getId(),
+                circle.getName(),
+                circle.getMainImage(),
+                circle.getDescription(),
+                circle.getIsDeleted(),
+                this.entityToDomainModel(circle.getLeader())
+        );
+    }
+
+    private UserDomainModel entityToDomainModel(User user) {
+        return UserDomainModel.of(
+                user.getId(),
+                user.getEmail(),
+                user.getName(),
+                user.getPassword(),
+                user.getStudentId(),
+                user.getAdmissionYear(),
+                user.getRole(),
+                user.getProfileImage(),
+                user.getState()
         );
     }
 }

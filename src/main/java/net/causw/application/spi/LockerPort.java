@@ -1,12 +1,12 @@
 package net.causw.application.spi;
 
-import net.causw.application.dto.LockerDetailDto;
+import net.causw.domain.model.LockerDomainModel;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface LockerPort {
-    Optional<LockerDetailDto> findById(String id);
+    Optional<LockerDomainModel> findById(String id);
 
-    List<LockerDetailDto> findAll();
+    List<LockerDomainModel> findAll();
 }

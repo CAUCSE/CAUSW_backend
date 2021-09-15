@@ -1,8 +1,9 @@
 package net.causw.adapter.persistence.port;
 
+import net.causw.adapter.persistence.Locker;
 import net.causw.adapter.persistence.LockerRepository;
-import net.causw.application.dto.LockerDetailDto;
 import net.causw.application.spi.LockerPort;
+import net.causw.domain.model.LockerDomainModel;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -18,16 +19,26 @@ public class LockerPortImpl implements LockerPort {
     }
 
     @Override
-    public Optional<LockerDetailDto> findById(String id) {
-        return this.lockerRepository.findById(id).map(LockerDetailDto::from);
+    public Optional<LockerDomainModel> findById(String id) {
+        return this.lockerRepository.findById(id).map(this::entityToDomainModel);
     }
 
-
     @Override
-    public List<LockerDetailDto> findAll() {
+    public List<LockerDomainModel> findAll() {
         return this.lockerRepository.findAll()
                 .stream()
-                .map(LockerDetailDto::from)
+                .map(this::entityToDomainModel)
                 .collect(Collectors.toList());
+    }
+
+    private LockerDomainModel entityToDomainModel(Locker locker) {
+        return LockerDomainModel.of(
+                locker.getId(),
+                locker.getLockerNumber(),
+                locker.getIsActive(),
+                locker.getUpdatedAt(),
+                locker.getUser().getId(),
+                locker.getUser().getName()
+        );
     }
 }

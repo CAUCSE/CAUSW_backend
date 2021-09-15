@@ -4,15 +4,14 @@ import net.causw.adapter.persistence.Comment;
 import net.causw.adapter.persistence.CommentRepository;
 import net.causw.adapter.persistence.Post;
 import net.causw.adapter.persistence.User;
-import net.causw.application.dto.CommentCreateRequestDto;
-import net.causw.application.dto.CommentFullDto;
-import net.causw.application.dto.CommentResponseDto;
-import net.causw.application.dto.PostDetailDto;
-import net.causw.application.dto.UserFullDto;
 import net.causw.application.spi.CommentPort;
+import net.causw.domain.model.CommentDomainModel;
+import net.causw.domain.model.PostDomainModel;
+import net.causw.domain.model.UserDomainModel;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 public class CommentPortImpl implements CommentPort {
@@ -23,19 +22,19 @@ public class CommentPortImpl implements CommentPort {
     }
 
     @Override
-    public Optional<CommentFullDto> findById(String id) {
-        return this.commentRepository.findById(id).map(CommentFullDto::from);
+    public Optional<CommentDomainModel> findById(String id) {
+        return this.commentRepository.findById(id).map(this::entityToDomainModelWithChildren);
     }
 
     @Override
-    public CommentResponseDto create(
-            CommentCreateRequestDto commentCreateDto,
-            UserFullDto writer,
-            PostDetailDto post
+    public CommentDomainModel create(
+            CommentDomainModel commentDomainModel,
+            UserDomainModel writer,
+            PostDomainModel post
     ) {
-        return CommentResponseDto.from(
+        return this.entityToDomainModelWithParent(
                 this.commentRepository.save(Comment.of(
-                        commentCreateDto.getContent(),
+                        commentDomainModel.getContent(),
                         false,
                         User.from(writer),
                         Post.from(post),
@@ -45,20 +44,84 @@ public class CommentPortImpl implements CommentPort {
     }
 
     @Override
-    public CommentResponseDto create(
-            CommentCreateRequestDto commentCreateDto,
-            UserFullDto writer,
-            PostDetailDto post,
-            CommentFullDto parentCommentDto
+    public CommentDomainModel create(
+            CommentDomainModel commentDomainModel,
+            UserDomainModel writer,
+            PostDomainModel post,
+            CommentDomainModel parentComment
     ) {
-        return CommentResponseDto.from(
+        return this.entityToDomainModelWithParent(
                 this.commentRepository.save(Comment.of(
-                    commentCreateDto.getContent(),
+                    commentDomainModel.getContent(),
                     false,
                     User.from(writer),
                     Post.from(post),
-                    Comment.from(parentCommentDto)
+                    Comment.from(parentComment)
                 ))
+        );
+    }
+
+    private CommentDomainModel entityToDomainModelWithParent(Comment comment) {
+        return CommentDomainModel.of(
+                comment.getId(),
+                comment.getContent(),
+                comment.getIsDeleted(),
+                comment.getCreatedAt(),
+                comment.getUpdatedAt(),
+                this.entityToDomainModel(comment.getWriter()),
+                this.entityToDomainModel(comment.getPost()),
+                this.entityToDomainModel(comment.getParentComment())
+        );
+    }
+
+    private CommentDomainModel entityToDomainModelWithChildren(Comment comment) {
+        return CommentDomainModel.of(
+                comment.getId(),
+                comment.getContent(),
+                comment.getIsDeleted(),
+                comment.getCreatedAt(),
+                comment.getUpdatedAt(),
+                this.entityToDomainModel(comment.getWriter()),
+                this.entityToDomainModel(comment.getPost()),
+                comment.getChildCommentList().stream().map(this::entityToDomainModel).collect(Collectors.toList())
+        );
+    }
+
+    private CommentDomainModel entityToDomainModel(Comment comment) {
+        return CommentDomainModel.of(
+                comment.getId(),
+                comment.getContent(),
+                comment.getIsDeleted(),
+                comment.getCreatedAt(),
+                comment.getUpdatedAt(),
+                this.entityToDomainModel(comment.getWriter()),
+                this.entityToDomainModel(comment.getPost())
+        );
+    }
+
+    private UserDomainModel entityToDomainModel(User user) {
+        return UserDomainModel.of(
+                user.getId(),
+                user.getEmail(),
+                user.getName(),
+                user.getPassword(),
+                user.getStudentId(),
+                user.getAdmissionYear(),
+                user.getRole(),
+                user.getProfileImage(),
+                user.getState()
+        );
+    }
+
+    private PostDomainModel entityToDomainModel(Post post) {
+        return PostDomainModel.of(
+                post.getId(),
+                post.getTitle(),
+                post.getContent(),
+                post.getIsDeleted(),
+                post.getCreatedAt(),
+                post.getUpdatedAt(),
+                post.getBoard().getId()
         );
     }
 }

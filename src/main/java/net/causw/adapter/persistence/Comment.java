@@ -2,7 +2,7 @@ package net.causw.adapter.persistence;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.causw.application.dto.CommentFullDto;
+import net.causw.domain.model.CommentDomainModel;
 import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.CascadeType;
@@ -105,25 +105,28 @@ public class Comment extends BaseEntity {
         );
     }
 
-    public static Comment from(CommentFullDto commentFullDto) {
+    public static Comment from(CommentDomainModel commentDomainModel) {
         return new Comment(
-                commentFullDto.getId(),
-                commentFullDto.getContent(),
-                commentFullDto.getIsDeleted(),
-                User.from(commentFullDto.getWriter()),
-                Post.from(commentFullDto.getPost()),
+                commentDomainModel.getId(),
+                commentDomainModel.getContent(),
+                commentDomainModel.getIsDeleted(),
+                User.from(commentDomainModel.getWriter()),
+                Post.from(commentDomainModel.getPost()),
                 null
         );
     }
 
-    public static Comment from(CommentFullDto commentFullDto, CommentFullDto parentCommentFullDto) {
+    public static Comment from(
+            CommentDomainModel commentDomainModel,
+            CommentDomainModel parentCommentDomainModel
+    ) {
         return new Comment(
-                commentFullDto.getId(),
-                commentFullDto.getContent(),
-                commentFullDto.getIsDeleted(),
-                User.from(commentFullDto.getWriter()),
-                Post.from(commentFullDto.getPost()),
-                Comment.from(parentCommentFullDto)
+                commentDomainModel.getId(),
+                commentDomainModel.getContent(),
+                commentDomainModel.getIsDeleted(),
+                User.from(commentDomainModel.getWriter()),
+                Post.from(commentDomainModel.getPost()),
+                Comment.from(parentCommentDomainModel)
         );
     }
 }

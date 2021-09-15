@@ -9,7 +9,7 @@ public class CircleDomainModel {
     private String mainImage;
     private String description;
     private Boolean isDeleted;
-    private UserDomainModel manager;
+    private UserDomainModel leader;
 
     private CircleDomainModel(
             String id,
@@ -17,14 +17,14 @@ public class CircleDomainModel {
             String mainImage,
             String description,
             Boolean isDeleted,
-            UserDomainModel manager
+            UserDomainModel leader
     ) {
         this.id = id;
         this.name = name;
         this.mainImage = mainImage;
         this.description = description;
         this.isDeleted = isDeleted;
-        this.manager = manager;
+        this.leader = leader;
     }
 
     public static CircleDomainModel of(
@@ -33,7 +33,7 @@ public class CircleDomainModel {
             String mainImage,
             String description,
             Boolean isDeleted,
-            UserDomainModel manager
+            UserDomainModel leader
     ) {
         return new CircleDomainModel(
                 id,
@@ -41,7 +41,7 @@ public class CircleDomainModel {
                 mainImage,
                 description,
                 isDeleted,
-                manager
+                leader
         );
     }
 }

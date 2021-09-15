@@ -3,6 +3,7 @@ package net.causw.domain.model;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 public class PostDomainModel {
@@ -12,7 +13,8 @@ public class PostDomainModel {
     private Boolean isDeleted;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private BoardDomainModel board;
+    private String boardId;
+    private List<CommentDomainModel> commentList;
 
     private PostDomainModel(
             String id,
@@ -21,14 +23,34 @@ public class PostDomainModel {
             Boolean isDeleted,
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
-            BoardDomainModel board) {
+            String boardId
+    ) {
         this.id = id;
         this.title = title;
         this.content = content;
         this.isDeleted = isDeleted;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.board = board;
+        this.boardId = boardId;
+    }
+
+    private PostDomainModel(
+            String id,
+            String title,
+            String content,
+            Boolean isDeleted,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt,
+            String boardId,
+            List<CommentDomainModel> commentList) {
+        this.id = id;
+        this.title = title;
+        this.content = content;
+        this.isDeleted = isDeleted;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.boardId = boardId;
+        this.commentList = commentList;
     }
 
     public static PostDomainModel of(
@@ -38,7 +60,7 @@ public class PostDomainModel {
             Boolean isDeleted,
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
-            BoardDomainModel board
+            String boardId
     ) {
         return new PostDomainModel(
                 id,
@@ -47,7 +69,29 @@ public class PostDomainModel {
                 isDeleted,
                 createdAt,
                 updatedAt,
-                board
+                boardId
+        );
+    }
+
+    public static PostDomainModel of(
+            String id,
+            String title,
+            String content,
+            Boolean isDeleted,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt,
+            String boardId,
+            List<CommentDomainModel> commentList
+    ) {
+        return new PostDomainModel(
+                id,
+                title,
+                content,
+                isDeleted,
+                createdAt,
+                updatedAt,
+                boardId,
+                commentList
         );
     }
 }

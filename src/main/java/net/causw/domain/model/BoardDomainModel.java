@@ -1,12 +1,14 @@
 package net.causw.domain.model;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Getter
+@Setter
 public class BoardDomainModel {
     private String id;
     private String description;
@@ -23,13 +25,19 @@ public class BoardDomainModel {
     @NotNull(message = "Read role is null")
     private List<String> readRoleList;
 
+    private Boolean isDeleted;
+
+    private String circleId;
+
     private BoardDomainModel(
             String id,
             String name,
             String description,
             List<String> createRoleList,
             List<String> modifyRoleList,
-            List<String> readRoleList
+            List<String> readRoleList,
+            Boolean isDeleted,
+            String circleId
     ) {
         this.id = id;
         this.name = name;
@@ -37,6 +45,8 @@ public class BoardDomainModel {
         this.createRoleList = createRoleList;
         this.modifyRoleList = modifyRoleList;
         this.readRoleList = readRoleList;
+        this.isDeleted = isDeleted;
+        this.circleId = circleId;
     }
 
     public static BoardDomainModel of(
@@ -45,7 +55,9 @@ public class BoardDomainModel {
             String description,
             List<String> createRoleList,
             List<String> modifyRoleList,
-            List<String> readRoleList
+            List<String> readRoleList,
+            Boolean isDeleted,
+            String circleId
     ) {
         return new BoardDomainModel(
                 id,
@@ -53,7 +65,9 @@ public class BoardDomainModel {
                 description,
                 createRoleList,
                 modifyRoleList,
-                readRoleList
+                readRoleList,
+                isDeleted,
+                circleId
         );
     }
 }

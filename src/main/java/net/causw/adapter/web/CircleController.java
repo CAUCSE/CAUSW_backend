@@ -2,7 +2,7 @@ package net.causw.adapter.web;
 
 import net.causw.application.CircleService;
 import net.causw.application.dto.CircleCreateRequestDto;
-import net.causw.application.dto.CircleMemberDto;
+import net.causw.application.dto.CircleMemberResponseDto;
 import net.causw.application.dto.CircleResponseDto;
 import net.causw.application.dto.DuplicatedCheckDto;
 import org.springframework.http.HttpStatus;
@@ -40,7 +40,7 @@ public class CircleController {
 
     @GetMapping(value = "/{circleId}/applications")
     @ResponseStatus(value = HttpStatus.CREATED)
-    public CircleMemberDto userApply(@AuthenticationPrincipal String userId, @PathVariable String circleId) {
+    public CircleMemberResponseDto userApply(@AuthenticationPrincipal String userId, @PathVariable String circleId) {
         return this.circleService.userApply(userId, circleId);
     }
 
@@ -52,13 +52,13 @@ public class CircleController {
 
     @PutMapping(value = "/{circleId}/users/leave")
     @ResponseStatus(value = HttpStatus.OK)
-    public CircleMemberDto leaveUser(@AuthenticationPrincipal String userId, @PathVariable String circleId) {
+    public CircleMemberResponseDto leaveUser(@AuthenticationPrincipal String userId, @PathVariable String circleId) {
         return this.circleService.leaveUser(userId, circleId);
     }
 
     @PutMapping(value = "/{circleId}/users/{userId}/drop")
     @ResponseStatus(value = HttpStatus.OK)
-    public CircleMemberDto dropUser(
+    public CircleMemberResponseDto dropUser(
             @AuthenticationPrincipal String requestUserId,
             @PathVariable String userId,
             @PathVariable String circleId
@@ -72,13 +72,13 @@ public class CircleController {
 
     @PutMapping(value = "/applications/{applicationId}/accept")
     @ResponseStatus(value = HttpStatus.OK)
-    public CircleMemberDto acceptUser(@AuthenticationPrincipal String requestUserId, @PathVariable String applicationId) {
+    public CircleMemberResponseDto acceptUser(@AuthenticationPrincipal String requestUserId, @PathVariable String applicationId) {
         return this.circleService.acceptUser(requestUserId, applicationId);
     }
 
     @PutMapping(value = "/applications/{applicationId}/reject")
     @ResponseStatus(value = HttpStatus.OK)
-    public CircleMemberDto rejectUser(@AuthenticationPrincipal String requestUserId, @PathVariable String applicationId) {
+    public CircleMemberResponseDto rejectUser(@AuthenticationPrincipal String requestUserId, @PathVariable String applicationId) {
         return this.circleService.rejectUser(requestUserId, applicationId);
     }
 }

@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.causw.adapter.persistence.Board;
+import net.causw.domain.model.BoardDomainModel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,18 +59,16 @@ public class BoardResponseDto {
         );
     }
 
-    public static BoardResponseDto from(BoardFullDto boardFullDto) {
-        String circleId = null;
-        if (boardFullDto.getCircle() != null) { circleId = boardFullDto.getCircle().getId(); }
+    public static BoardResponseDto from(BoardDomainModel boardDomainModel) {
         return new BoardResponseDto(
-                boardFullDto.getId(),
-                boardFullDto.getName(),
-                boardFullDto.getDescription(),
-                boardFullDto.getCreateRoleList(),
-                boardFullDto.getModifyRoleList(),
-                boardFullDto.getReadRoleList(),
-                boardFullDto.getIsDeleted(),
-                circleId
+                boardDomainModel.getId(),
+                boardDomainModel.getName(),
+                boardDomainModel.getDescription(),
+                boardDomainModel.getCreateRoleList(),
+                boardDomainModel.getModifyRoleList(),
+                boardDomainModel.getReadRoleList(),
+                boardDomainModel.getIsDeleted(),
+                boardDomainModel.getCircleId()
         );
     }
 }
