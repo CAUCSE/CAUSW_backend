@@ -32,10 +32,10 @@ public class UserController {
         this.userAuthService = userAuthService;
     }
 
-    @GetMapping(value = "/{id}")
+    @GetMapping(value = "/me")
     @ResponseStatus(value = HttpStatus.OK)
-    public UserResponseDto findById(@PathVariable String id) {
-        return this.userService.findById(id);
+    public UserResponseDto findCurrentUser(@AuthenticationPrincipal String currentUserId) {
+        return this.userService.findById(currentUserId);
     }
 
     @GetMapping
