@@ -8,6 +8,7 @@ import net.causw.application.spi.CirclePort;
 import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
+import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.model.BoardDomainModel;
 import net.causw.domain.model.CircleDomainModel;
 import net.causw.domain.model.Role;
@@ -126,7 +127,7 @@ public class BoardService {
         );
         validatorBucket.consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted()));
 
-        boardUpdateRequestDto.getCircleId().ifPresentOrElse(
+        boardDomainModel.getOptionalCircleId().ifPresentOrElse(
                 circleId -> {
                     CircleDomainModel circleDomainModel = this.circlePort.findById(circleId).orElseThrow(
                             () -> new BadRequestException(
@@ -138,10 +139,8 @@ public class BoardService {
                             .consistOf(UserEqualValidator.of(circleDomainModel.getLeader().getId(), updaterId))
                             .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.LEADER_CIRCLE)));
                 },
-                () -> {
-                    validatorBucket
-                            .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.PRESIDENT)));
-                }
+                () -> validatorBucket
+                            .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.PRESIDENT)))
         );
 
         boardDomainModel = BoardDomainModel.of(
@@ -160,9 +159,57 @@ public class BoardService {
                 .validate();
 
         return BoardResponseDto.from(this.boardPort.update(boardId, boardDomainModel).orElseThrow(
+                () -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "Application id checked, but exception occurred"
+                )
+        ));
+    }
+
+    @Transactional
+    public BoardResponseDto delete(
+            String deleterId,
+            String boardId
+    ) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
+        UserDomainModel deleterDomainModel = this.userPort.findById(deleterId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid user id"
+                )
+        );
+
+        BoardDomainModel boardDomainModel = this.boardPort.findById(boardId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "Invalid board id"
+                )
+        );
+        validatorBucket.consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted()));
+
+        boardDomainModel.getOptionalCircleId().ifPresentOrElse(
+                circleId -> {
+                    CircleDomainModel circleDomainModel = this.circlePort.findById(circleId).orElseThrow(
+                            () -> new BadRequestException(
+                                    ErrorCode.ROW_DOES_NOT_EXIST,
+                                    "Invalid circle id"
+                            )
+                    );
+                    validatorBucket
+                            .consistOf(UserEqualValidator.of(circleDomainModel.getLeader().getId(), deleterId))
+                            .consistOf(UserRoleValidator.of(deleterDomainModel.getRole(), List.of(Role.LEADER_CIRCLE)))
+                            .validate();
+                },
+                () -> validatorBucket
+                            .consistOf(UserRoleValidator.of(deleterDomainModel.getRole(), List.of(Role.PRESIDENT)))
+                            .validate()
+        );
+
+        return BoardResponseDto.from(this.boardPort.delete(boardId).orElseThrow(
+                () -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "Application id checked, but exception occurred"
                 )
         ));
     }

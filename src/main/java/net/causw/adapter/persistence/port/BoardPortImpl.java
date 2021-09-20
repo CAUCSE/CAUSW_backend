@@ -56,6 +56,17 @@ public class BoardPortImpl implements BoardPort {
         );
     }
 
+    @Override
+    public Optional<BoardDomainModel> delete(String id) {
+        return this.boardRepository.findById(id).map(
+                srcBoard -> {
+                    srcBoard.setIsDeleted(true);
+
+                    return this.entityToDomainModel(this.boardRepository.save(srcBoard));
+                }
+        );
+    }
+
     private BoardDomainModel entityToDomainModel(Board board) {
         return BoardDomainModel.of(
                 board.getId(),

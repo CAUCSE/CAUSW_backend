@@ -6,6 +6,7 @@ import net.causw.application.dto.BoardResponseDto;
 import net.causw.application.dto.BoardUpdateRequestDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,5 +44,12 @@ public class BoardController {
                                    @PathVariable String id,
                                    @RequestBody BoardUpdateRequestDto boardUpdateRequestDto) {
         return this.boardService.update(updaterId, id, boardUpdateRequestDto);
+    }
+
+    @DeleteMapping(value = "/{id}")
+    @ResponseStatus(value = HttpStatus.OK)
+    public BoardResponseDto delete(@AuthenticationPrincipal String deleterId,
+                                   @PathVariable String id) {
+        return this.boardService.delete(deleterId, id);
     }
 }

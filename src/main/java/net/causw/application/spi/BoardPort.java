@@ -9,4 +9,5 @@ public interface BoardPort {
     Optional<BoardDomainModel> findById(String id);
     BoardDomainModel create(BoardDomainModel boardDomainModel, Optional<CircleDomainModel> circleDomainModel);
     Optional<BoardDomainModel> update(String id, BoardDomainModel boardDomainModel);
+    Optional<BoardDomainModel> delete(String id);
 }

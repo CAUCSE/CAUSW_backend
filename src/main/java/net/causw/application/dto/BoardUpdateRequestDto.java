@@ -20,8 +20,4 @@ public class BoardUpdateRequestDto {
     private List<String> readRoleList;
 
     private String circleId;
-
-    public Optional<String> getCircleId() {
-        return Optional.ofNullable(this.circleId);
-    }
 }
