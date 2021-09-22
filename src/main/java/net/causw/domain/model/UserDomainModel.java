@@ -78,4 +78,31 @@ public class UserDomainModel {
                 state
         );
     }
+
+    public static UserDomainModel of(
+            String email,
+            String name,
+            String password,
+            String studentId,
+            Integer admissionYear,
+            String profileImage
+    ) {
+        // TODO : Remove following -> Default로 Role.NONE 지정
+        Role localRole = Role.NONE;
+        if (email.equals("admin@gmail.com")) {
+            localRole = Role.ADMIN;
+        }
+
+        return new UserDomainModel(
+                null,
+                email,
+                name,
+                password,
+                studentId,
+                admissionYear,
+                localRole,
+                profileImage,
+                UserState.ACTIVE // TODO : User Auth 개발 후 UserState.WAIT 으로 바꿀 것!!!
+        );
+    }
 }
