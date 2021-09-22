@@ -88,13 +88,11 @@ public class BoardService {
         ));
 
         BoardDomainModel boardDomainModel = BoardDomainModel.of(
-                null,
                 boardCreateRequestDto.getName(),
                 boardCreateRequestDto.getDescription(),
                 boardCreateRequestDto.getCreateRoleList(),
                 boardCreateRequestDto.getModifyRoleList(),
                 boardCreateRequestDto.getReadRoleList(),
-                false,
                 boardCreateRequestDto.getCircleId().orElse(null)
         );
 

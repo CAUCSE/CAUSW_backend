@@ -35,14 +35,8 @@ public class CirclePortImpl implements CirclePort {
     }
 
     @Override
-    public CircleDomainModel create(CircleDomainModel circleDomainModel, UserDomainModel leader) {
-        return this.entityToDomainModel(this.circleRepository.save(Circle.of(
-                circleDomainModel.getName(),
-                circleDomainModel.getMainImage(),
-                circleDomainModel.getDescription(),
-                false,
-                User.from(leader)
-        )));
+    public CircleDomainModel create(CircleDomainModel circleDomainModel) {
+        return this.entityToDomainModel(this.circleRepository.save(Circle.from(circleDomainModel)));
     }
 
     @Override

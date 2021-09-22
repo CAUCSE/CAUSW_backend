@@ -3,17 +3,12 @@ package net.causw.application
 import net.causw.application.dto.BoardCreateRequestDto
 import net.causw.application.dto.BoardResponseDto
 import net.causw.application.dto.BoardUpdateRequestDto
-
 import net.causw.application.spi.BoardPort
 import net.causw.application.spi.CirclePort
 import net.causw.application.spi.UserPort
 import net.causw.domain.exceptions.BadRequestException
 import net.causw.domain.exceptions.UnauthorizedException
-import net.causw.domain.model.BoardDomainModel
-import net.causw.domain.model.CircleDomainModel
-import net.causw.domain.model.Role
-import net.causw.domain.model.UserDomainModel
-import net.causw.domain.model.UserState
+import net.causw.domain.model.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.powermock.api.mockito.PowerMockito
@@ -89,21 +84,19 @@ class BoardServiceTest extends Specification {
 
         this.userPort.findById("test") >> Optional.of(creatorUserDomainModel)
         this.circlePort.findById("test") >> Optional.of(circleDomainModel)
-        this.boardPort.create((BoardDomainModel)this.mockBoardDomainModel, Optional.ofNullable(null)) >> this.mockBoardDomainModel
-        this.boardPort.create((BoardDomainModel)this.mockBoardDomainModel, Optional.ofNullable(circleDomainModel)) >> this.mockBoardDomainModel
+        this.boardPort.create((BoardDomainModel) this.mockBoardDomainModel, Optional.ofNullable(null)) >> this.mockBoardDomainModel
+        this.boardPort.create((BoardDomainModel) this.mockBoardDomainModel, Optional.ofNullable(circleDomainModel)) >> this.mockBoardDomainModel
 
         when: "create board without circle"
         PowerMockito.mockStatic(BoardDomainModel.class)
         PowerMockito.when(BoardDomainModel.of(
-                null,
                 "test",
                 "test_description",
                 Arrays.asList("PRESIDENT", "COUNCIL"),
                 Arrays.asList("PRESIDENT", "COUNCIL"),
                 Arrays.asList("PRESIDENT", "COUNCIL"),
-                false,
                 null
-        )).thenReturn((BoardDomainModel)this.mockBoardDomainModel)
+        )).thenReturn((BoardDomainModel) this.mockBoardDomainModel)
         def boardResponseDto = this.boardService.create("test", mockBoardCreateRequestDto)
 
         then:
@@ -116,18 +109,16 @@ class BoardServiceTest extends Specification {
         when: "create board with circle"
         mockBoardCreateRequestDto.setCircleId("test")
         creatorUserDomainModel.setRole(Role.LEADER_CIRCLE)
-        (BoardDomainModel)this.mockBoardDomainModel.setCircleId("test")
+        (BoardDomainModel) this.mockBoardDomainModel.setCircleId("test")
         PowerMockito.mockStatic(BoardDomainModel.class)
         PowerMockito.when(BoardDomainModel.of(
-                null,
                 "test",
                 "test_description",
                 Arrays.asList("PRESIDENT", "COUNCIL"),
                 Arrays.asList("PRESIDENT", "COUNCIL"),
                 Arrays.asList("PRESIDENT", "COUNCIL"),
-                false,
                 "test"
-        )).thenReturn((BoardDomainModel)this.mockBoardDomainModel)
+        )).thenReturn((BoardDomainModel) this.mockBoardDomainModel)
         boardResponseDto = this.boardService.create("test", mockBoardCreateRequestDto)
 
         then:
@@ -163,22 +154,20 @@ class BoardServiceTest extends Specification {
         )
 
         this.userPort.findById("test") >> Optional.of(mockCreatorDomainModel)
-        this.boardPort.create((BoardDomainModel)this.mockBoardDomainModel, null) >> this.mockBoardDomainModel
+        this.boardPort.create((BoardDomainModel) this.mockBoardDomainModel, null) >> this.mockBoardDomainModel
 
         when: "name is blank"
         mockBoardCreateRequestDto.setName("")
         this.mockBoardDomainModel.setName("")
         PowerMockito.mockStatic(BoardDomainModel.class)
         PowerMockito.when(BoardDomainModel.of(
-                null,
                 "",
                 "test_description",
                 Arrays.asList("PRESIDENT", "COUNCIL"),
                 Arrays.asList("PRESIDENT", "COUNCIL"),
                 Arrays.asList("PRESIDENT", "COUNCIL"),
-                false,
                 null
-        )).thenReturn((BoardDomainModel)this.mockBoardDomainModel)
+        )).thenReturn((BoardDomainModel) this.mockBoardDomainModel)
         this.boardService.create("test", mockBoardCreateRequestDto)
 
         then:
@@ -191,15 +180,13 @@ class BoardServiceTest extends Specification {
         this.mockBoardDomainModel.setCreateRoleList(null)
         PowerMockito.mockStatic(BoardDomainModel.class)
         PowerMockito.when(BoardDomainModel.of(
-                null,
                 "test",
                 "test_description",
                 null,
                 Arrays.asList("PRESIDENT", "COUNCIL"),
                 Arrays.asList("PRESIDENT", "COUNCIL"),
-                false,
                 null
-        )).thenReturn((BoardDomainModel)this.mockBoardDomainModel)
+        )).thenReturn((BoardDomainModel) this.mockBoardDomainModel)
         this.boardService.create("test", mockBoardCreateRequestDto)
 
         then:
@@ -212,15 +199,13 @@ class BoardServiceTest extends Specification {
         this.mockBoardDomainModel.setModifyRoleList(null)
         PowerMockito.mockStatic(BoardDomainModel.class)
         PowerMockito.when(BoardDomainModel.of(
-                null,
                 "test",
                 "test_description",
                 Arrays.asList("PRESIDENT", "COUNCIL"),
                 null,
                 Arrays.asList("PRESIDENT", "COUNCIL"),
-                false,
                 null
-        )).thenReturn((BoardDomainModel)this.mockBoardDomainModel)
+        )).thenReturn((BoardDomainModel) this.mockBoardDomainModel)
         this.boardService.create("test", mockBoardCreateRequestDto)
 
         then:
@@ -233,15 +218,13 @@ class BoardServiceTest extends Specification {
         this.mockBoardDomainModel.setReadRoleList(null)
         PowerMockito.mockStatic(BoardDomainModel.class)
         PowerMockito.when(BoardDomainModel.of(
-                null,
                 "test",
                 "test_description",
                 Arrays.asList("PRESIDENT", "COUNCIL"),
                 Arrays.asList("PRESIDENT", "COUNCIL"),
                 null,
-                false,
                 null
-        )).thenReturn((BoardDomainModel)this.mockBoardDomainModel)
+        )).thenReturn((BoardDomainModel) this.mockBoardDomainModel)
         this.boardService.create("test", mockBoardCreateRequestDto)
 
         then:
@@ -273,7 +256,7 @@ class BoardServiceTest extends Specification {
         )
 
         this.userPort.findById("test") >> Optional.of(mockCreatorDomainModel)
-        this.boardPort.create((BoardDomainModel)this.mockBoardDomainModel, null) >> this.mockBoardDomainModel
+        this.boardPort.create((BoardDomainModel) this.mockBoardDomainModel, null) >> this.mockBoardDomainModel
 
         when: "invalid creator role"
         mockCreatorDomainModel.setRole(Role.NONE)
@@ -318,7 +301,7 @@ class BoardServiceTest extends Specification {
 
         this.userPort.findById("test") >> Optional.of(creator)
         this.circlePort.findById("test") >> Optional.of(mockCircleDomainModel)
-        this.boardPort.create((BoardDomainModel)this.mockBoardDomainModel, Optional.ofNullable(mockCircleDomainModel)) >> this.mockBoardDomainModel
+        this.boardPort.create((BoardDomainModel) this.mockBoardDomainModel, Optional.ofNullable(mockCircleDomainModel)) >> this.mockBoardDomainModel
 
         when: "invalid leader id"
         creator.setId("invalid_test")
@@ -499,7 +482,7 @@ class BoardServiceTest extends Specification {
                 mockBoardUpdateRequestDto.getReadRoleList(),
                 false,
                 null
-        )).thenReturn((BoardDomainModel)this.mockBoardDomainModel)
+        )).thenReturn((BoardDomainModel) this.mockBoardDomainModel)
         this.boardService.update("test", "test", mockBoardUpdateRequestDto)
 
         then:
@@ -520,7 +503,7 @@ class BoardServiceTest extends Specification {
                 mockBoardUpdateRequestDto.getReadRoleList(),
                 false,
                 null
-        )).thenReturn((BoardDomainModel)this.mockBoardDomainModel)
+        )).thenReturn((BoardDomainModel) this.mockBoardDomainModel)
         this.boardService.update("test", "test", mockBoardUpdateRequestDto)
 
         then:
@@ -541,7 +524,7 @@ class BoardServiceTest extends Specification {
                 mockBoardUpdateRequestDto.getReadRoleList(),
                 false,
                 null
-        )).thenReturn((BoardDomainModel)this.mockBoardDomainModel)
+        )).thenReturn((BoardDomainModel) this.mockBoardDomainModel)
         this.boardService.update("test", "test", mockBoardUpdateRequestDto)
 
         then:
@@ -562,7 +545,7 @@ class BoardServiceTest extends Specification {
                 mockBoardUpdateRequestDto.getReadRoleList(),
                 false,
                 null
-        )).thenReturn((BoardDomainModel)this.mockBoardDomainModel)
+        )).thenReturn((BoardDomainModel) this.mockBoardDomainModel)
         this.boardService.update("test", "test", mockBoardUpdateRequestDto)
 
         then:
