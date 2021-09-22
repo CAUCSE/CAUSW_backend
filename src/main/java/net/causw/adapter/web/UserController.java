@@ -4,6 +4,7 @@ import net.causw.application.UserAuthService;
 import net.causw.application.UserService;
 import net.causw.application.dto.DuplicatedCheckDto;
 import net.causw.application.dto.UserCreateRequestDto;
+import net.causw.application.dto.UserPasswordUpdateRequestDto;
 import net.causw.application.dto.UserResponseDto;
 import net.causw.application.dto.UserSignInRequestDto;
 import net.causw.application.dto.UserUpdateRequestDto;
@@ -70,9 +71,12 @@ public class UserController {
     }
     */
 
-    @PutMapping(value = "/{id}")
+    @PutMapping
     @ResponseStatus(value = HttpStatus.OK)
-    public UserResponseDto update(@PathVariable String id, @RequestBody UserUpdateRequestDto userUpdateDto) {
+    public UserResponseDto update(
+            @AuthenticationPrincipal String id,
+            @RequestBody UserUpdateRequestDto userUpdateDto
+    ) {
         return this.userService.update(id, userUpdateDto);
     }
 
@@ -84,5 +88,14 @@ public class UserController {
             @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto
     ) {
         return this.userService.updateUserRole(grantorId, granteeId, userUpdateRoleRequestDto);
+    }
+
+    @PutMapping(value = "/password")
+    @ResponseStatus(value = HttpStatus.OK)
+    public UserResponseDto updatePassword(
+            @AuthenticationPrincipal String id,
+            @RequestBody UserPasswordUpdateRequestDto userPasswordUpdateRequestDto
+    ) {
+        return this.userService.updatePassword(id, userPasswordUpdateRequestDto);
     }
 }

@@ -2,6 +2,7 @@ package net.causw.application;
 
 import net.causw.application.dto.DuplicatedCheckDto;
 import net.causw.application.dto.UserCreateRequestDto;
+import net.causw.application.dto.UserPasswordUpdateRequestDto;
 import net.causw.application.dto.UserResponseDto;
 import net.causw.application.dto.UserSignInRequestDto;
 import net.causw.application.dto.UserUpdateRequestDto;
@@ -11,6 +12,7 @@ import net.causw.application.spi.UserPort;
 import net.causw.config.JwtTokenProvider;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
+import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
@@ -28,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
+import java.util.List;
 
 @Service
 public class UserService {
@@ -158,7 +161,6 @@ public class UserService {
                 userDomainModel.getProfileImage(),
                 userDomainModel.getState()
         );
-        System.out.println(userDomainModel);
 
         // Validate the admission year range
         validatorBucket
@@ -167,9 +169,9 @@ public class UserService {
                 .validate();
 
         return UserResponseDto.from(this.userPort.update(id, userDomainModel).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid user id"
+                () -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "Application id checked, but exception occurred"
                 )
         ));
     }
@@ -221,9 +223,36 @@ public class UserService {
          * Therefore, the updating for the grantee is performed in this process
          */
         return UserResponseDto.from(this.userPort.updateRole(granteeId, userUpdateRoleRequestDto.getRole()).orElseThrow(
+                () -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "Application id checked, but exception occurred"
+                )
+        ));
+    }
+
+    @Transactional
+    public UserResponseDto updatePassword(
+            String id,
+            UserPasswordUpdateRequestDto userPasswordUpdateRequestDto
+    ) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
+        UserDomainModel user = this.userPort.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid user id"
+                        "Invalid login user id"
+                )
+        );
+
+        validatorBucket
+                .consistOf(PasswordCorrectValidator.of(user, userPasswordUpdateRequestDto.getOriginPassword()))
+                .consistOf(PasswordFormatValidator.of(userPasswordUpdateRequestDto.getUpdatedPassword()))
+                .validate();
+
+        return UserResponseDto.from(this.userPort.updatePassword(id, userPasswordUpdateRequestDto.getUpdatedPassword()).orElseThrow(
+                () -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "Application id checked, but exception occurred"
                 )
         ));
     }

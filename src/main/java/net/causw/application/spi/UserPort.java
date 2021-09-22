@@ -20,4 +20,6 @@ public interface UserPort {
     Optional<UserDomainModel> updateRole(String id, Role role);
 
     List<UserDomainModel> findByRole(Role role);
+
+    Optional<UserDomainModel> updatePassword(String id, String password);
 }

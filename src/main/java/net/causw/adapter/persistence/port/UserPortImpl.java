@@ -84,6 +84,17 @@ public class UserPortImpl implements UserPort {
         return this.userRepository.findByRole(role).stream().map(this::entityToDomainModel).collect(Collectors.toList());
     }
 
+    @Override
+    public Optional<UserDomainModel> updatePassword(String id, String password) {
+        return this.userRepository.findById(id).map(
+                srcUser -> {
+                    srcUser.setPassword(password);
+
+                    return this. entityToDomainModel(this.userRepository.save(srcUser));
+                }
+        );
+    }
+
     private UserDomainModel entityToDomainModel(User user) {
         return UserDomainModel.of(
                 user.getId(),

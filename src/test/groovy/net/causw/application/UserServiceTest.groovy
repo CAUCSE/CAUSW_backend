@@ -1,6 +1,7 @@
 package net.causw.application
 
 import net.causw.application.dto.UserCreateRequestDto
+import net.causw.application.dto.UserPasswordUpdateRequestDto
 import net.causw.application.dto.UserResponseDto
 import net.causw.application.dto.UserUpdateRequestDto
 import net.causw.application.dto.UserUpdateRoleRequestDto
@@ -738,5 +739,95 @@ class UserServiceTest extends Specification {
 
         then:
         thrown(ConstraintViolationException)
+    }
+
+    /**
+     * Test cases for user password update
+     */
+
+    @Test
+    def "User password update normal case"() {
+        given:
+        def userPasswordUpdateRequestDto = new UserPasswordUpdateRequestDto(
+                "test1234!",
+                "test12345!"
+        )
+
+        def mockUpdatedUserDomainModel = UserDomainModel.of(
+                (String)this.mockUserDomainModel.getId(),
+                (String)this.mockUserDomainModel.getEmail(),
+                (String)this.mockUserDomainModel.getName(),
+                "test12345!",
+                (String)this.mockUserDomainModel.getStudentId(),
+                (Integer)this.mockUserDomainModel.getAdmissionYear(),
+                Role.PRESIDENT,
+                null,
+                UserState.WAIT
+        )
+
+        this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
+        this.userPort.updatePassword("test", "test12345!") >> Optional.of(mockUpdatedUserDomainModel)
+
+        when:
+        def userResponseDto = this.userService.updatePassword("test", userPasswordUpdateRequestDto)
+
+        then:
+        userResponseDto instanceof UserResponseDto
+    }
+
+    @Test
+    def "User password update invalid origin password"() {
+        given:
+        def userPasswordUpdateRequestDto = new UserPasswordUpdateRequestDto(
+                "test12345!",
+                "test12345!"
+        )
+
+        this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
+
+        when:
+        this.userService.updatePassword("test", userPasswordUpdateRequestDto)
+
+        then:
+        thrown(UnauthorizedException)
+    }
+
+    @Test
+    def "User password update invalid password format"() {
+        given:
+        def userPasswordUpdateRequestDto = new UserPasswordUpdateRequestDto(
+                "test1234!",
+                "test12345!"
+        )
+
+        this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
+
+        when: "password with short length"
+        userPasswordUpdateRequestDto.setUpdatedPassword("test12!")
+        this.userService.updatePassword("test", userPasswordUpdateRequestDto)
+
+        then:
+        thrown(BadRequestException)
+
+        when: "password with invalid format: without special character"
+        userPasswordUpdateRequestDto.setUpdatedPassword("test1234")
+        this.userService.updatePassword("test", userPasswordUpdateRequestDto)
+
+        then:
+        thrown(BadRequestException)
+
+        when: "password with invalid format: without number"
+        userPasswordUpdateRequestDto.setUpdatedPassword("test!!!!")
+        this.userService.updatePassword("test", userPasswordUpdateRequestDto)
+
+        then:
+        thrown(BadRequestException)
+
+        when: "password with invalid format: without english"
+        userPasswordUpdateRequestDto.setUpdatedPassword("1234567!")
+        this.userService.updatePassword("test", userPasswordUpdateRequestDto)
+
+        then:
+        thrown(BadRequestException)
     }
 }
