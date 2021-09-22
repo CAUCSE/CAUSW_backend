@@ -12,7 +12,7 @@ public interface CirclePort {
 
     Optional<CircleDomainModel> findByName(String name);
 
-    CircleDomainModel create(CircleDomainModel circleDomainModel, UserDomainModel leader);
+    CircleDomainModel create(CircleDomainModel circleDomainModel);
 
     Optional<CircleDomainModel> updateLeader(String id, UserDomainModel newLeader);
 }

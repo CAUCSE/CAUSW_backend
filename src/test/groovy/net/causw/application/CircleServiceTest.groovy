@@ -1,21 +1,15 @@
 package net.causw.application
 
-import net.causw.adapter.persistence.Circle
-import net.causw.adapter.persistence.CircleMember
-import net.causw.adapter.persistence.User
-import net.causw.application.dto.*
+
+import net.causw.application.dto.CircleCreateRequestDto
+import net.causw.application.dto.CircleMemberResponseDto
+import net.causw.application.dto.CircleResponseDto
 import net.causw.application.spi.CircleMemberPort
 import net.causw.application.spi.CirclePort
 import net.causw.application.spi.UserPort
-import net.causw.config.JwtTokenProvider
 import net.causw.domain.exceptions.BadRequestException
 import net.causw.domain.exceptions.UnauthorizedException
-import net.causw.domain.model.CircleDomainModel
-import net.causw.domain.model.CircleMemberDomainModel
-import net.causw.domain.model.CircleMemberStatus
-import net.causw.domain.model.Role
-import net.causw.domain.model.UserDomainModel
-import net.causw.domain.model.UserState
+import net.causw.domain.model.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.powermock.api.mockito.PowerMockito
@@ -26,6 +20,9 @@ import org.spockframework.runtime.Sputnik
 import org.springframework.test.context.ActiveProfiles
 import spock.lang.Specification
 
+import javax.validation.Validation
+import javax.validation.Validator
+
 @ActiveProfiles(value = "test")
 @RunWith(PowerMockRunner.class)
 @PowerMockRunnerDelegate(Sputnik.class)
@@ -34,12 +31,13 @@ class CircleServiceTest extends Specification {
     private UserPort userPort = Mock(UserPort.class)
     private CirclePort circlePort = Mock(CirclePort.class)
     private CircleMemberPort circleMemberPort = Mock(CircleMemberPort.class)
-    private JwtTokenProvider jwtTokenProvider = Mock(JwtTokenProvider.class)
+    private Validator validator = Validation.buildDefaultValidatorFactory().getValidator()
 
     private CircleService circleService = new CircleService(
             this.circlePort,
             this.userPort,
-            this.circleMemberPort
+            this.circleMemberPort,
+            this.validator
     )
 
     def leader
@@ -65,13 +63,13 @@ class CircleServiceTest extends Specification {
                 null,
                 "test_description",
                 false,
-                (UserDomainModel)this.leader
+                (UserDomainModel) this.leader
         )
 
         this.mockCircleMemberDomainModel = CircleMemberDomainModel.of(
                 "test",
                 CircleMemberStatus.MEMBER,
-                (CircleDomainModel)this.mockCircleDomainModel,
+                (CircleDomainModel) this.mockCircleDomainModel,
                 "test1",
                 "test"
         )
@@ -87,7 +85,7 @@ class CircleServiceTest extends Specification {
                 "test",
                 null,
                 "test_description",
-                (String)this.leader.getId()
+                (String) this.leader.getId()
         )
 
         def mockApiCallUser = UserDomainModel.of(
@@ -104,13 +102,11 @@ class CircleServiceTest extends Specification {
 
         PowerMockito.mockStatic(CircleDomainModel.class)
         PowerMockito.when(CircleDomainModel.of(
-                null,
                 mockCircleCreateRequestDto.getName(),
                 mockCircleCreateRequestDto.getMainImage(),
                 mockCircleCreateRequestDto.getDescription(),
-                false,
-                (UserDomainModel)this.leader
-        )).thenReturn((CircleDomainModel)this.mockCircleDomainModel)
+                (UserDomainModel) this.leader
+        )).thenReturn((CircleDomainModel) this.mockCircleDomainModel)
 
         this.leader.setRole(Role.COMMON)
         this.userPort.findById("test2") >> Optional.of(mockApiCallUser)
@@ -118,8 +114,8 @@ class CircleServiceTest extends Specification {
         this.circlePort.findByName("test") >> Optional.ofNullable(null)
 
         this.userPort.updateRole("test", Role.LEADER_CIRCLE) >> Optional.of(this.leader)
-        this.circlePort.create((CircleDomainModel)this.mockCircleDomainModel, (UserDomainModel)this.leader) >> this.mockCircleDomainModel
-        this.circleMemberPort.create((UserDomainModel)this.leader, (CircleDomainModel)this.mockCircleDomainModel) >> this.mockCircleMemberDomainModel
+        this.circlePort.create((CircleDomainModel) this.mockCircleDomainModel, (UserDomainModel) this.leader) >> this.mockCircleDomainModel
+        this.circleMemberPort.create((UserDomainModel) this.leader, (CircleDomainModel) this.mockCircleDomainModel) >> this.mockCircleMemberDomainModel
         this.circleMemberPort.updateStatus("test", CircleMemberStatus.MEMBER) >> Optional.of(this.mockCircleMemberDomainModel)
 
         when:
@@ -143,7 +139,7 @@ class CircleServiceTest extends Specification {
                 "test",
                 null,
                 "test_description",
-                (String)this.leader.getId()
+                (String) this.leader.getId()
         )
 
         def mockApiCallUser = UserDomainModel.of(
@@ -164,8 +160,8 @@ class CircleServiceTest extends Specification {
         this.circlePort.findByName("test") >> Optional.of(this.mockCircleDomainModel)
 
         this.userPort.updateRole("test", Role.LEADER_CIRCLE) >> Optional.of(this.leader)
-        this.circlePort.create((CircleDomainModel)this.mockCircleDomainModel, (UserDomainModel)this.leader) >> this.mockCircleDomainModel
-        this.circleMemberPort.create((UserDomainModel)this.leader, (CircleDomainModel)this.mockCircleDomainModel) >> this.mockCircleMemberDomainModel
+        this.circlePort.create((CircleDomainModel) this.mockCircleDomainModel, (UserDomainModel) this.leader) >> this.mockCircleDomainModel
+        this.circleMemberPort.create((UserDomainModel) this.leader, (CircleDomainModel) this.mockCircleDomainModel) >> this.mockCircleMemberDomainModel
         this.circleMemberPort.updateStatus("test", CircleMemberStatus.MEMBER) >> Optional.of(this.mockCircleMemberDomainModel)
 
         when: "Fail for create: caused by duplicated name"
@@ -182,7 +178,7 @@ class CircleServiceTest extends Specification {
                 "test",
                 null,
                 "test_description",
-                (String)this.leader.getId()
+                (String) this.leader.getId()
         )
 
         def mockApiCallUser = UserDomainModel.of(
@@ -204,8 +200,8 @@ class CircleServiceTest extends Specification {
 
         this.leader.setRole(Role.LEADER_CIRCLE)
         this.userPort.updateRole("test", Role.LEADER_CIRCLE) >> Optional.of(this.leader)
-        this.circlePort.create((CircleDomainModel)this.mockCircleDomainModel, (UserDomainModel)this.leader) >> this.mockCircleDomainModel
-        this.circleMemberPort.create((UserDomainModel)this.leader, (CircleDomainModel)this.mockCircleDomainModel) >> this.mockCircleMemberDomainModel
+        this.circlePort.create((CircleDomainModel) this.mockCircleDomainModel, (UserDomainModel) this.leader) >> this.mockCircleDomainModel
+        this.circleMemberPort.create((UserDomainModel) this.leader, (CircleDomainModel) this.mockCircleDomainModel) >> this.mockCircleMemberDomainModel
         this.circleMemberPort.updateStatus("test", CircleMemberStatus.MEMBER) >> Optional.of(this.mockCircleMemberDomainModel)
 
         when:
@@ -222,7 +218,7 @@ class CircleServiceTest extends Specification {
                 "test",
                 null,
                 "test_description",
-                (String)this.leader.getId()
+                (String) this.leader.getId()
         )
 
         def mockApiCallUser = UserDomainModel.of(
@@ -242,8 +238,8 @@ class CircleServiceTest extends Specification {
         this.circlePort.findByName("test") >> Optional.ofNullable(null)
 
         this.userPort.updateRole("test", Role.LEADER_CIRCLE) >> Optional.of(this.leader)
-        this.circlePort.create((CircleDomainModel)this.mockCircleDomainModel, (UserDomainModel)this.leader) >> this.mockCircleDomainModel
-        this.circleMemberPort.create((UserDomainModel)this.leader, (CircleDomainModel)this.mockCircleDomainModel) >> this.mockCircleMemberDomainModel
+        this.circlePort.create((CircleDomainModel) this.mockCircleDomainModel, (UserDomainModel) this.leader) >> this.mockCircleDomainModel
+        this.circleMemberPort.create((UserDomainModel) this.leader, (CircleDomainModel) this.mockCircleDomainModel) >> this.mockCircleMemberDomainModel
         this.circleMemberPort.updateStatus("test", CircleMemberStatus.MEMBER) >> Optional.of(this.mockCircleMemberDomainModel)
 
         when:
@@ -260,7 +256,7 @@ class CircleServiceTest extends Specification {
                 "test",
                 null,
                 "test_description",
-                (String)this.leader.getId()
+                (String) this.leader.getId()
         )
 
         def mockApiCallUser = UserDomainModel.of(
@@ -283,8 +279,8 @@ class CircleServiceTest extends Specification {
 
         this.leader.setRole(Role.LEADER_CIRCLE)
         this.userPort.updateRole("test", Role.LEADER_CIRCLE) >> Optional.of(this.leader)
-        this.circlePort.create((CircleDomainModel)this.mockCircleDomainModel, (UserDomainModel)this.leader) >> this.mockCircleDomainModel
-        this.circleMemberPort.create((UserDomainModel)this.leader, (CircleDomainModel)this.mockCircleDomainModel) >> this.mockCircleMemberDomainModel
+        this.circlePort.create((CircleDomainModel) this.mockCircleDomainModel, (UserDomainModel) this.leader) >> this.mockCircleDomainModel
+        this.circleMemberPort.create((UserDomainModel) this.leader, (CircleDomainModel) this.mockCircleDomainModel) >> this.mockCircleMemberDomainModel
         this.circleMemberPort.updateStatus("test", CircleMemberStatus.MEMBER) >> Optional.of(this.mockCircleMemberDomainModel)
 
         when:
@@ -301,19 +297,19 @@ class CircleServiceTest extends Specification {
     def "User circle apply normal case"() {
         given:
         this.circlePort.findById("test") >> Optional.of(this.mockCircleDomainModel)
-        this.userPort.findById("test") >> Optional.of(this.leader)
+        this.userPort.findById("test1") >> Optional.of(this.leader)
         this.circleMemberPort.findByUserIdAndCircleId("test", "test") >> Optional.ofNullable(null)
         this.mockCircleMemberDomainModel.setStatus(CircleMemberStatus.AWAIT)
-        this.circleMemberPort.create((UserDomainModel)this.leader, (CircleDomainModel)this.mockCircleDomainModel) >> this.mockCircleMemberDomainModel
+        this.circleMemberPort.create((UserDomainModel) this.leader, (CircleDomainModel) this.mockCircleDomainModel) >> this.mockCircleMemberDomainModel
 
         when:
-        def applyUser = this.circleService.userApply("test", "test")
+        def applyUser = this.circleService.userApply("test1", "test")
 
         then:
         applyUser instanceof CircleMemberResponseDto
         with(applyUser) {
             getStatus() == CircleMemberStatus.AWAIT
-            getUserId() == "test"
+            getUserId() == "test1"
             getCircle().getId() == "test"
         }
     }
@@ -326,7 +322,7 @@ class CircleServiceTest extends Specification {
         this.userPort.findById("test") >> Optional.of(this.leader)
         this.circleMemberPort.findByUserIdAndCircleId("test", "test") >> Optional.ofNullable(null)
         this.mockCircleMemberDomainModel.setStatus(CircleMemberStatus.AWAIT)
-        this.circleMemberPort.create((UserDomainModel)this.leader, (CircleDomainModel)this.mockCircleDomainModel) >> this.mockCircleMemberDomainModel
+        this.circleMemberPort.create((UserDomainModel) this.leader, (CircleDomainModel) this.mockCircleDomainModel) >> this.mockCircleMemberDomainModel
 
         when:
         this.circleService.userApply("test", "test")
@@ -342,7 +338,7 @@ class CircleServiceTest extends Specification {
         this.userPort.findById("test") >> Optional.of(this.leader)
         this.circleMemberPort.findByUserIdAndCircleId("test", "test") >> Optional.of(this.mockCircleMemberDomainModel)
         this.mockCircleMemberDomainModel.setStatus(CircleMemberStatus.AWAIT)
-        this.circleMemberPort.create((UserDomainModel)this.leader, (CircleDomainModel)this.mockCircleDomainModel) >> this.mockCircleMemberDomainModel
+        this.circleMemberPort.create((UserDomainModel) this.leader, (CircleDomainModel) this.mockCircleDomainModel) >> this.mockCircleMemberDomainModel
 
         when:
         this.circleService.userApply("test", "test")
@@ -361,7 +357,7 @@ class CircleServiceTest extends Specification {
         CircleMemberDomainModel updatedCircleMemberDomainModel = CircleMemberDomainModel.of(
                 "test",
                 CircleMemberStatus.MEMBER,
-                (CircleDomainModel)this.mockCircleDomainModel,
+                (CircleDomainModel) this.mockCircleDomainModel,
                 "test",
                 "test"
         )
@@ -395,7 +391,7 @@ class CircleServiceTest extends Specification {
         CircleMemberDomainModel updatedCircleMemberDomainModel = CircleMemberDomainModel.of(
                 "test",
                 CircleMemberStatus.MEMBER,
-                (CircleDomainModel)this.mockCircleDomainModel,
+                (CircleDomainModel) this.mockCircleDomainModel,
                 "test",
                 "test"
         )
@@ -431,7 +427,7 @@ class CircleServiceTest extends Specification {
         CircleMemberDomainModel updatedCircleMemberDomainModel = CircleMemberDomainModel.of(
                 "test",
                 CircleMemberStatus.LEAVE,
-                (CircleDomainModel)this.mockCircleDomainModel,
+                (CircleDomainModel) this.mockCircleDomainModel,
                 "test1",
                 "test"
         )
@@ -453,7 +449,7 @@ class CircleServiceTest extends Specification {
         CircleMemberDomainModel updatedCircleMemberDomainModel = CircleMemberDomainModel.of(
                 "test",
                 CircleMemberStatus.LEAVE,
-                (CircleDomainModel)this.mockCircleDomainModel,
+                (CircleDomainModel) this.mockCircleDomainModel,
                 "test1",
                 "test"
         )
@@ -483,7 +479,7 @@ class CircleServiceTest extends Specification {
         CircleMemberDomainModel updatedCircleMemberDomainModel = CircleMemberDomainModel.of(
                 "test",
                 CircleMemberStatus.DROP,
-                (CircleDomainModel)this.mockCircleDomainModel,
+                (CircleDomainModel) this.mockCircleDomainModel,
                 "test1",
                 "test"
         )
@@ -505,7 +501,7 @@ class CircleServiceTest extends Specification {
         CircleMemberDomainModel updatedCircleMemberDomainModel = CircleMemberDomainModel.of(
                 "test",
                 CircleMemberStatus.DROP,
-                (CircleDomainModel)this.mockCircleDomainModel,
+                (CircleDomainModel) this.mockCircleDomainModel,
                 "test1",
                 "test"
         )

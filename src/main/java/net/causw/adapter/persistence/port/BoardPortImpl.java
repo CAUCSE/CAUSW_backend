@@ -36,7 +36,7 @@ public class BoardPortImpl implements BoardPort {
                 boardDomainModel.getCreateRoleList().stream().map(Object::toString).collect(Collectors.joining(",")),
                 boardDomainModel.getModifyRoleList().stream().map(Object::toString).collect(Collectors.joining(",")),
                 boardDomainModel.getReadRoleList().stream().map(Object::toString).collect(Collectors.joining(",")),
-                false,
+                boardDomainModel.getIsDeleted(),
                 circle
         )));
     }

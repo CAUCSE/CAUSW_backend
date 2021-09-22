@@ -3,14 +3,23 @@ package net.causw.domain.model;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
 @Getter
 @Setter
 public class CircleDomainModel {
     private String id;
-    private String name;
     private String mainImage;
     private String description;
+
+    @NotBlank(message = "Name is blank")
+    private String name;
+
+    @NotNull(message = "Circle state is null")
     private Boolean isDeleted;
+
+    @NotNull(message = "Circle leader is null")
     private UserDomainModel leader;
 
     private CircleDomainModel(
@@ -43,6 +52,22 @@ public class CircleDomainModel {
                 mainImage,
                 description,
                 isDeleted,
+                leader
+        );
+    }
+
+    public static CircleDomainModel of(
+            String name,
+            String mainImage,
+            String description,
+            UserDomainModel leader
+    ) {
+        return new CircleDomainModel(
+                null,
+                name,
+                mainImage,
+                description,
+                false,
                 leader
         );
     }

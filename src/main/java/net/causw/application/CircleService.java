@@ -16,8 +16,9 @@ import net.causw.domain.model.CircleMemberStatus;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.validation.CircleMemberInvalidStatusValidator;
-import net.causw.domain.validation.TargetIsDeletedValidator;
+import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.DuplicatedCircleNameValidator;
+import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.UpdatableGranteeRoleValidator;
 import net.causw.domain.validation.UserEqualValidator;
 import net.causw.domain.validation.UserNotEqualValidator;
@@ -27,6 +28,7 @@ import net.causw.domain.validation.ValidatorBucket;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.Validator;
 import java.util.List;
 
 @Service
@@ -34,15 +36,18 @@ public class CircleService {
     private final CirclePort circlePort;
     private final UserPort userPort;
     private final CircleMemberPort circleMemberPort;
+    private final Validator validator;
 
     public CircleService(
             CirclePort circlePort,
             UserPort userPort,
-            CircleMemberPort circleMemberPort
+            CircleMemberPort circleMemberPort,
+            Validator validator
     ) {
         this.circlePort = circlePort;
         this.userPort = userPort;
         this.circleMemberPort = circleMemberPort;
+        this.validator = validator;
     }
 
     @Transactional(readOnly = true)
@@ -74,11 +79,9 @@ public class CircleService {
         );
 
         CircleDomainModel circleDomainModel = CircleDomainModel.of(
-                null,
                 circleCreateRequestDto.getName(),
                 circleCreateRequestDto.getMainImage(),
                 circleCreateRequestDto.getDescription(),
-                false,
                 leader
         );
 
@@ -86,6 +89,7 @@ public class CircleService {
          * Then, validate the circle name whether it is duplicated or not
          */
         validatorBucket
+                .consistOf(ConstraintValidator.of(circleDomainModel, this.validator))
                 .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT, Role.ADMIN)))
                 .consistOf(DuplicatedCircleNameValidator.of(this.circlePort, circleCreateRequestDto.getName()))
                 .consistOf(UpdatableGranteeRoleValidator.of(Role.LEADER_CIRCLE, leader.getRole()))
@@ -95,13 +99,13 @@ public class CircleService {
         // Grant role to the LEADER
         leader = this.userPort.updateRole(circleCreateRequestDto.getLeaderId(), Role.LEADER_CIRCLE).orElseThrow(
                 () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid leader id"
+                        ErrorCode.INTERNAL_SERVER,
+                        "Leader id checked, but exception occurred"
                 )
         );
 
         // Create circle
-        CircleDomainModel newCircle = this.circlePort.create(circleDomainModel, leader);
+        CircleDomainModel newCircle = this.circlePort.create(circleDomainModel);
 
         // Apply the leader automatically to the circle
         CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.create(leader, newCircle);

@@ -25,6 +25,7 @@ public class BoardDomainModel {
     @NotNull(message = "Read role is null")
     private List<String> readRoleList;
 
+    @NotNull(message = "Board state is null")
     private Boolean isDeleted;
 
     private String circleId;
@@ -67,6 +68,26 @@ public class BoardDomainModel {
                 modifyRoleList,
                 readRoleList,
                 isDeleted,
+                circleId
+        );
+    }
+
+    public static BoardDomainModel of(
+            String name,
+            String description,
+            List<String> createRoleList,
+            List<String> modifyRoleList,
+            List<String> readRoleList,
+            String circleId
+    ) {
+        return new BoardDomainModel(
+                null,
+                name,
+                description,
+                createRoleList,
+                modifyRoleList,
+                readRoleList,
+                false,
                 circleId
         );
     }
