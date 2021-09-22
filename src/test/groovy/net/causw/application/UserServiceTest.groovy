@@ -466,15 +466,12 @@ class UserServiceTest extends Specification {
 
         PowerMockito.mockStatic(UserDomainModel.class)
         PowerMockito.when(UserDomainModel.of(
-                null,
                 "test@cau.ac.kr",
                 "test",
                 "test1234!",
                 "20210000",
                 2021,
-                Role.NONE,
                 null,
-                UserState.WAIT
         )).thenReturn((UserDomainModel)this.mockUserDomainModel)
 
         this.userPort.create((UserDomainModel)this.mockUserDomainModel) >> this.mockUserDomainModel
@@ -507,15 +504,12 @@ class UserServiceTest extends Specification {
         )
 
         def mockCreatedUserDomainModel = UserDomainModel.of(
-                null,
                 userCreateRequestDto.getEmail(),
                 userCreateRequestDto.getName(),
                 userCreateRequestDto.getPassword(),
                 userCreateRequestDto.getStudentId(),
                 userCreateRequestDto.getAdmissionYear(),
-                Role.NONE,
                 null,
-                UserState.WAIT
         )
 
         this.userPort.create(mockCreatedUserDomainModel) >> mockCreatedUserDomainModel
@@ -566,15 +560,12 @@ class UserServiceTest extends Specification {
         )
 
         def mockCreatedUserDomainModel = UserDomainModel.of(
-                null,
                 userCreateRequestDto.getEmail(),
                 userCreateRequestDto.getName(),
                 userCreateRequestDto.getPassword(),
                 userCreateRequestDto.getStudentId(),
                 userCreateRequestDto.getAdmissionYear(),
-                Role.NONE,
-                null,
-                UserState.WAIT
+                null
         )
 
         this.userPort.create(mockCreatedUserDomainModel) >> mockCreatedUserDomainModel
@@ -609,15 +600,12 @@ class UserServiceTest extends Specification {
         )
 
         def mockCreatedUserDomainModel = UserDomainModel.of(
-                null,
                 userCreateRequestDto.getEmail(),
                 userCreateRequestDto.getName(),
                 userCreateRequestDto.getPassword(),
                 userCreateRequestDto.getStudentId(),
                 userCreateRequestDto.getAdmissionYear(),
-                Role.NONE,
                 null,
-                UserState.WAIT
         )
 
         this.userPort.create(mockCreatedUserDomainModel) >> mockCreatedUserDomainModel
@@ -642,15 +630,12 @@ class UserServiceTest extends Specification {
         )
 
         def mockCreatedUserDomainModel = UserDomainModel.of(
-                null,
                 userCreateRequestDto.getEmail(),
                 userCreateRequestDto.getName(),
                 userCreateRequestDto.getPassword(),
                 userCreateRequestDto.getStudentId(),
                 userCreateRequestDto.getAdmissionYear(),
-                Role.NONE,
-                null,
-                UserState.WAIT
+                null
         )
 
         this.userPort.create(mockCreatedUserDomainModel) >> mockCreatedUserDomainModel
@@ -661,15 +646,12 @@ class UserServiceTest extends Specification {
         mockCreatedUserDomainModel.setEmail("invalid-email")
         PowerMockito.mockStatic(UserDomainModel.class)
         PowerMockito.when(UserDomainModel.of(
-                null,
                 userCreateRequestDto.getEmail(),
                 userCreateRequestDto.getName(),
                 userCreateRequestDto.getPassword(),
                 userCreateRequestDto.getStudentId(),
                 userCreateRequestDto.getAdmissionYear(),
-                Role.NONE,
                 null,
-                UserState.WAIT
         )).thenReturn(mockCreatedUserDomainModel)
         this.userService.signUp(userCreateRequestDto)
 
@@ -681,15 +663,12 @@ class UserServiceTest extends Specification {
         mockCreatedUserDomainModel.setEmail(null)
         PowerMockito.mockStatic(UserDomainModel.class)
         PowerMockito.when(UserDomainModel.of(
-                null,
                 userCreateRequestDto.getEmail(),
                 userCreateRequestDto.getName(),
                 userCreateRequestDto.getPassword(),
                 userCreateRequestDto.getStudentId(),
                 userCreateRequestDto.getAdmissionYear(),
-                Role.NONE,
-                null,
-                UserState.WAIT
+                null
         )).thenReturn(mockCreatedUserDomainModel)
         this.userService.signUp(userCreateRequestDto)
 
@@ -703,15 +682,12 @@ class UserServiceTest extends Specification {
         mockCreatedUserDomainModel.setName("")
         PowerMockito.mockStatic(UserDomainModel.class)
         PowerMockito.when(UserDomainModel.of(
-                null,
                 userCreateRequestDto.getEmail(),
                 userCreateRequestDto.getName(),
                 userCreateRequestDto.getPassword(),
                 userCreateRequestDto.getStudentId(),
                 userCreateRequestDto.getAdmissionYear(),
-                Role.NONE,
-                null,
-                UserState.WAIT
+                null
         )).thenReturn(mockCreatedUserDomainModel)
         this.userService.signUp(userCreateRequestDto)
 
@@ -725,15 +701,12 @@ class UserServiceTest extends Specification {
         mockCreatedUserDomainModel.setAdmissionYear(null)
         PowerMockito.mockStatic(UserDomainModel.class)
         PowerMockito.when(UserDomainModel.of(
-                null,
                 userCreateRequestDto.getEmail(),
                 userCreateRequestDto.getName(),
                 userCreateRequestDto.getPassword(),
                 userCreateRequestDto.getStudentId(),
                 userCreateRequestDto.getAdmissionYear(),
-                Role.NONE,
-                null,
-                UserState.WAIT
+                null
         )).thenReturn(mockCreatedUserDomainModel)
         this.userService.signUp(userCreateRequestDto)
 

@@ -16,7 +16,6 @@ import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
-import net.causw.domain.model.UserState;
 import net.causw.domain.validation.AdmissionYearValidator;
 import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.DuplicatedEmailValidator;
@@ -24,6 +23,7 @@ import net.causw.domain.validation.PasswordCorrectValidator;
 import net.causw.domain.validation.PasswordFormatValidator;
 import net.causw.domain.validation.UpdatableGrantedRoleValidator;
 import net.causw.domain.validation.UpdatableGranteeRoleValidator;
+import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
 import org.springframework.stereotype.Service;
@@ -53,12 +53,20 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserResponseDto findById(String id) {
-        return UserResponseDto.from(this.userPort.findById(id).orElseThrow(
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
+        UserDomainModel user = this.userPort.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "Invalid user id"
                 )
-        ));
+        );
+
+        validatorBucket
+                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT, Role.ADMIN)))
+                .validate();
+
+        return UserResponseDto.from(user);
     }
 
     @Transactional(readOnly = true)
@@ -77,15 +85,12 @@ public class UserService {
 
         // Make domain model for generalized data model and validate the format of request parameter
         UserDomainModel userDomainModel = UserDomainModel.of(
-                null,
                 userCreateRequestDto.getEmail(),
                 userCreateRequestDto.getName(),
                 userCreateRequestDto.getPassword(),
                 userCreateRequestDto.getStudentId(),
                 userCreateRequestDto.getAdmissionYear(),
-                Role.NONE,
-                null,
-                UserState.WAIT
+                null
         );
 
         // Validate password format, admission year range, and whether the email is duplicate or not

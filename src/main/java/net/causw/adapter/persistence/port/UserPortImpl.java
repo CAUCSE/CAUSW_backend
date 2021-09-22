@@ -5,7 +5,6 @@ import net.causw.adapter.persistence.UserRepository;
 import net.causw.application.spi.UserPort;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
-import net.causw.domain.model.UserState;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -37,21 +36,7 @@ public class UserPortImpl implements UserPort {
 
     @Override
     public UserDomainModel create(UserDomainModel userDomainModel) {
-        // TODO : Remove following -> Default로 Role.NONE 지정
-        Role role = Role.NONE;
-        if (userDomainModel.getEmail().equals("admin@gmail.com")) {
-            role = Role.ADMIN;
-        }
-
-        return this.entityToDomainModel(this.userRepository.save(User.of(
-                userDomainModel.getEmail(),
-                userDomainModel.getName(),
-                userDomainModel.getPassword(),
-                userDomainModel.getStudentId(),
-                userDomainModel.getAdmissionYear(),
-                role,
-                UserState.ACTIVE  // TODO : User Auth 개발 후 UserState.WAIT 으로 바꿀 것!!!
-        )));
+        return this.entityToDomainModel(this.userRepository.save(User.from(userDomainModel)));
     }
 
     @Override
