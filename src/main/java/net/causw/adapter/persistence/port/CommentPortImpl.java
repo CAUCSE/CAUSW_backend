@@ -2,7 +2,6 @@ package net.causw.adapter.persistence.port;
 
 import net.causw.adapter.persistence.Comment;
 import net.causw.adapter.persistence.CommentRepository;
-import net.causw.adapter.persistence.Post;
 import net.causw.adapter.persistence.User;
 import net.causw.application.spi.CommentPort;
 import net.causw.domain.model.CommentDomainModel;
@@ -23,58 +22,33 @@ public class CommentPortImpl implements CommentPort {
 
     @Override
     public Optional<CommentDomainModel> findById(String id) {
-        return this.commentRepository.findById(id).map(this::entityToDomainModelWithChildren);
+        return this.commentRepository.findById(id).map(this::entityToDomainModelWithChild);
     }
 
     @Override
-    public CommentDomainModel create(
-            CommentDomainModel commentDomainModel,
-            UserDomainModel writer,
-            PostDomainModel post
-    ) {
-        return this.entityToDomainModelWithParent(
-                this.commentRepository.save(Comment.of(
-                        commentDomainModel.getContent(),
-                        false,
-                        User.from(writer),
-                        Post.from(post),
-                        null
-                ))
-        );
+    public CommentDomainModel create(CommentDomainModel commentDomainModel, PostDomainModel postDomainModel) {
+        return this.entityToDomainModelWithParent(this.commentRepository.save(Comment.from(commentDomainModel, postDomainModel)));
     }
 
-    @Override
-    public CommentDomainModel create(
-            CommentDomainModel commentDomainModel,
-            UserDomainModel writer,
-            PostDomainModel post,
-            CommentDomainModel parentComment
-    ) {
-        return this.entityToDomainModelWithParent(
-                this.commentRepository.save(Comment.of(
-                    commentDomainModel.getContent(),
-                    false,
-                    User.from(writer),
-                    Post.from(post),
-                    Comment.from(parentComment)
-                ))
+    private CommentDomainModel entityToDomainModelWithChild(Comment comment) {
+        return CommentDomainModel.of(
+                comment.getId(),
+                comment.getContent(),
+                comment.getIsDeleted(),
+                comment.getCreatedAt(),
+                comment.getUpdatedAt(),
+                this.entityToDomainModel(comment.getWriter()),
+                comment.getPost().getId(),
+                comment.getChildCommentList().stream().map(this::entityToDomainModel).collect(Collectors.toList())
         );
     }
 
     private CommentDomainModel entityToDomainModelWithParent(Comment comment) {
-        return CommentDomainModel.of(
-                comment.getId(),
-                comment.getContent(),
-                comment.getIsDeleted(),
-                comment.getCreatedAt(),
-                comment.getUpdatedAt(),
-                this.entityToDomainModel(comment.getWriter()),
-                this.entityToDomainModel(comment.getPost()),
-                this.entityToDomainModel(comment.getParentComment())
-        );
-    }
+        CommentDomainModel parentCommentDomainModel = null;
+        if (comment.getParentComment() != null) {
+            parentCommentDomainModel = this.entityToDomainModel(comment.getParentComment());
+        }
 
-    private CommentDomainModel entityToDomainModelWithChildren(Comment comment) {
         return CommentDomainModel.of(
                 comment.getId(),
                 comment.getContent(),
@@ -82,8 +56,8 @@ public class CommentPortImpl implements CommentPort {
                 comment.getCreatedAt(),
                 comment.getUpdatedAt(),
                 this.entityToDomainModel(comment.getWriter()),
-                this.entityToDomainModel(comment.getPost()),
-                comment.getChildCommentList().stream().map(this::entityToDomainModel).collect(Collectors.toList())
+                comment.getPost().getId(),
+                parentCommentDomainModel
         );
     }
 
@@ -95,7 +69,7 @@ public class CommentPortImpl implements CommentPort {
                 comment.getCreatedAt(),
                 comment.getUpdatedAt(),
                 this.entityToDomainModel(comment.getWriter()),
-                this.entityToDomainModel(comment.getPost())
+                comment.getPost().getId()
         );
     }
 
@@ -110,18 +84,6 @@ public class CommentPortImpl implements CommentPort {
                 user.getRole(),
                 user.getProfileImage(),
                 user.getState()
-        );
-    }
-
-    private PostDomainModel entityToDomainModel(Post post) {
-        return PostDomainModel.of(
-                post.getId(),
-                post.getTitle(),
-                post.getContent(),
-                post.getIsDeleted(),
-                post.getCreatedAt(),
-                post.getUpdatedAt(),
-                post.getBoard().getId()
         );
     }
 }

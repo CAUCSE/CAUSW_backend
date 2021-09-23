@@ -40,46 +40,49 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentResponseDto create(CommentCreateRequestDto commentCreateDto) {
-        UserDomainModel userDomainModel = this.userPort.findById(commentCreateDto.getWriterId()).orElseThrow(
+    public CommentResponseDto create(String creatorId, CommentCreateRequestDto commentCreateDto) {
+        UserDomainModel creatorDomainModel = this.userPort.findById(creatorId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "Invalid writer id"
                 )
         );
 
-        PostDomainModel postDomainModel = this.postPort.findById(commentCreateDto.getPostId());
-
-        CommentDomainModel commentDomainModel = CommentDomainModel.of(
-                null,
-                commentCreateDto.getContent(),
-                false,
-                null,
-                null,
-                userDomainModel,
-                postDomainModel
-        );
-
-        if (commentCreateDto.getParentCommentId().isEmpty()) {
-            return CommentResponseDto.from(this.commentPort.create(
-                    commentDomainModel,
-                    userDomainModel,
-                    postDomainModel
-            ));
-        }
-
-        CommentDomainModel parentCommentDomainModel = this.commentPort.findById(commentCreateDto.getParentCommentId()).orElseThrow(
+        PostDomainModel postDomainModel = this.postPort.findById(commentCreateDto.getPostId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid parent comment id"
+                        "Invalid post id"
                 )
         );
 
-        return CommentResponseDto.from(this.commentPort.create(
-                commentDomainModel,
-                userDomainModel,
-                postDomainModel,
+        // TODO : GHJANG : Creator user have at least read role for this board
+
+        CommentDomainModel parentCommentDomainModel = commentCreateDto.getParentCommentId().map(
+                parentCommentId -> {
+                    CommentDomainModel parentComment = this.commentPort.findById(parentCommentId).orElseThrow(
+                            () -> new BadRequestException(
+                                    ErrorCode.ROW_DOES_NOT_EXIST,
+                                    "Invalid parent comment id"
+                            )
+                    );
+                    // TODO : GHJANG : Impl Validation
+
+                    return parentComment;
+                }
+        ).orElseGet(
+                () -> {
+                    // TODO : GHJANG : Impl Validation
+                    return null;
+                }
+        );
+
+        CommentDomainModel commentDomainModel = CommentDomainModel.of(
+                commentCreateDto.getContent(),
+                creatorDomainModel,
+                postDomainModel.getId(),
                 parentCommentDomainModel
-        ));
+        );
+
+        return CommentResponseDto.from(this.commentPort.create(commentDomainModel, postDomainModel));
     }
 }

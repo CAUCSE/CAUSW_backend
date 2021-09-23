@@ -29,7 +29,7 @@ public class BoardDomainModel {
     @NotNull(message = "Board state is null")
     private Boolean isDeleted;
 
-    private String circleId;
+    private CircleDomainModel circle;
 
     private BoardDomainModel(
             String id,
@@ -39,7 +39,7 @@ public class BoardDomainModel {
             List<String> modifyRoleList,
             List<String> readRoleList,
             Boolean isDeleted,
-            String circleId
+            CircleDomainModel circle
     ) {
         this.id = id;
         this.name = name;
@@ -48,7 +48,7 @@ public class BoardDomainModel {
         this.modifyRoleList = modifyRoleList;
         this.readRoleList = readRoleList;
         this.isDeleted = isDeleted;
-        this.circleId = circleId;
+        this.circle = circle;
     }
 
     public static BoardDomainModel of(
@@ -59,7 +59,7 @@ public class BoardDomainModel {
             List<String> modifyRoleList,
             List<String> readRoleList,
             Boolean isDeleted,
-            String circleId
+            CircleDomainModel circle
     ) {
         return new BoardDomainModel(
                 id,
@@ -69,7 +69,7 @@ public class BoardDomainModel {
                 modifyRoleList,
                 readRoleList,
                 isDeleted,
-                circleId
+                circle
         );
     }
 
@@ -79,7 +79,7 @@ public class BoardDomainModel {
             List<String> createRoleList,
             List<String> modifyRoleList,
             List<String> readRoleList,
-            String circleId
+            CircleDomainModel circle
     ) {
         return new BoardDomainModel(
                 null,
@@ -89,11 +89,11 @@ public class BoardDomainModel {
                 modifyRoleList,
                 readRoleList,
                 false,
-                circleId
+                circle
         );
     }
 
-    public Optional<String> getOptionalCircleId() {
-        return Optional.ofNullable(this.circleId);
+    public Optional<CircleDomainModel> getCircle() {
+        return Optional.ofNullable(this.circle);
     }
 }

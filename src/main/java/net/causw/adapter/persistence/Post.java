@@ -5,14 +5,11 @@ import lombok.NoArgsConstructor;
 import net.causw.domain.model.PostDomainModel;
 import org.hibernate.annotations.ColumnDefault;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import java.util.List;
 
 @Getter
 @Entity
@@ -25,6 +22,10 @@ public class Post extends BaseEntity {
     @Column(columnDefinition = "TEXT", name = "content", nullable = false)
     private String content;
 
+    @ManyToOne(targetEntity = User.class)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User writer;
+
     @Column(name = "is_deleted")
     @ColumnDefault("false")
     private Boolean isDeleted;
@@ -33,24 +34,68 @@ public class Post extends BaseEntity {
     @JoinColumn(name = "board_id", nullable = false)
     private Board board;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
-    private List<Comment> commentList;
-
-    private Post(String title, String content, Boolean isDeleted) {
+    private Post(
+            String title,
+            String content,
+            User writer,
+            Boolean isDeleted,
+            Board board
+    ) {
         this.title = title;
         this.content = content;
+        this.writer = writer;
         this.isDeleted = isDeleted;
+        this.board = board;
     }
 
-    private Post(String id, String title, String content, Boolean isDeleted) {
+    private Post(
+            String id,
+            String title,
+            String content,
+            User writer,
+            Boolean isDeleted,
+            Board board
+    ) {
         super(id);
         this.title = title;
         this.content = content;
+        this.writer = writer;
         this.isDeleted = isDeleted;
+        this.board = board;
     }
 
-    public static Post of(String title, String content, Boolean isDeleted) {
-        return new Post(title, content, isDeleted);
+    public static Post of(
+            String title,
+            String content,
+            User writer,
+            Boolean isDeleted,
+            Board board
+    ) {
+        return new Post(
+                title,
+                content,
+                writer,
+                isDeleted,
+                board
+        );
+    }
+
+    public static Post of(
+            String id,
+            String title,
+            String content,
+            User writer,
+            Boolean isDeleted,
+            Board board
+    ) {
+        return new Post(
+                id,
+                title,
+                content,
+                writer,
+                isDeleted,
+                board
+        );
     }
 
     public static Post from(PostDomainModel postDomainModel) {
@@ -58,7 +103,9 @@ public class Post extends BaseEntity {
                 postDomainModel.getId(),
                 postDomainModel.getTitle(),
                 postDomainModel.getContent(),
-                postDomainModel.getIsDeleted()
+                User.from(postDomainModel.getWriter()),
+                postDomainModel.getIsDeleted(),
+                Board.from(postDomainModel.getBoard())
         );
     }
 }

@@ -3,6 +3,7 @@ package net.causw.adapter.persistence;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import net.causw.domain.model.BoardDomainModel;
 import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.CascadeType;
@@ -13,6 +14,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -47,6 +49,26 @@ public class Board extends BaseEntity {
     private Set<Post> postSet;
 
     private Board(
+            String id,
+            String name,
+            String description,
+            String createRoles,
+            String modifyRoles,
+            String readRoles,
+            Boolean isDeleted,
+            Circle circle
+    ) {
+        super(id);
+        this.name = name;
+        this.description = description;
+        this.createRoles = createRoles;
+        this.modifyRoles = modifyRoles;
+        this.readRoles = readRoles;
+        this.isDeleted = isDeleted;
+        this.circle = circle;
+    }
+
+    private Board(
             String name,
             String description,
             String createRoles,
@@ -65,6 +87,28 @@ public class Board extends BaseEntity {
     }
 
     public static Board of(
+            String id,
+            String name,
+            String description,
+            String createRoles,
+            String modifyRoles,
+            String readRoles,
+            Boolean isDeleted,
+            Circle circle
+    ) {
+        return new Board(
+                id,
+                name,
+                description,
+                createRoles,
+                modifyRoles,
+                readRoles,
+                isDeleted,
+                circle
+        );
+    }
+
+    public static Board of(
             String name,
             String description,
             String createRoles,
@@ -80,6 +124,21 @@ public class Board extends BaseEntity {
                 modifyRoles,
                 readRoles,
                 isDeleted,
+                circle
+        );
+    }
+
+    public static Board from(BoardDomainModel boardDomainModel) {
+        Circle circle = boardDomainModel.getCircle().map(Circle::from).orElse(null);
+
+        return new Board(
+                boardDomainModel.getId(),
+                boardDomainModel.getName(),
+                boardDomainModel.getDescription(),
+                boardDomainModel.getCreateRoleList().stream().map(Object::toString).collect(Collectors.joining(",")),
+                boardDomainModel.getModifyRoleList().stream().map(Object::toString).collect(Collectors.joining(",")),
+                boardDomainModel.getReadRoleList().stream().map(Object::toString).collect(Collectors.joining(",")),
+                boardDomainModel.getIsDeleted(),
                 circle
         );
     }

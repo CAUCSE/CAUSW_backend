@@ -2,10 +2,11 @@ package net.causw.application.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.causw.adapter.persistence.Post;
 import net.causw.domain.model.PostDomainModel;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -14,37 +15,59 @@ public class PostResponseDto {
     private String title;
     private String content;
     private Boolean isDeleted;
+    private BoardResponseDto board;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private String boardId;
+    private List<CommentResponseDto> commentList;
 
     private PostResponseDto(
             String id,
             String title,
             String content,
             Boolean isDeleted,
+            BoardResponseDto board,
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
-            String boardId
+            List<CommentResponseDto> commentList
     ) {
         this.id = id;
         this.title = title;
         this.content = content;
         this.isDeleted = isDeleted;
+        this.board = board;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.boardId = boardId;
+        this.commentList = commentList;
     }
 
-    public static PostResponseDto from(PostDomainModel post) {
+    public static PostResponseDto from(
+            PostDomainModel post
+    ) {
         return new PostResponseDto(
                 post.getId(),
                 post.getTitle(),
                 post.getContent(),
                 post.getIsDeleted(),
+                BoardResponseDto.from(post.getBoard()),
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
-                post.getBoardId()
+                new ArrayList<>()
+        );
+    }
+
+    public static PostResponseDto from(
+            PostDomainModel post,
+            List<CommentResponseDto> commentList
+    ) {
+        return new PostResponseDto(
+                post.getId(),
+                post.getTitle(),
+                post.getContent(),
+                post.getIsDeleted(),
+                BoardResponseDto.from(post.getBoard()),
+                post.getCreatedAt(),
+                post.getUpdatedAt(),
+                commentList
         );
     }
 }

@@ -114,7 +114,7 @@ class CircleServiceTest extends Specification {
         this.circlePort.findByName("test") >> Optional.ofNullable(null)
 
         this.userPort.updateRole("test", Role.LEADER_CIRCLE) >> Optional.of(this.leader)
-        this.circlePort.create((CircleDomainModel) this.mockCircleDomainModel, (UserDomainModel) this.leader) >> this.mockCircleDomainModel
+        this.circlePort.create((CircleDomainModel) this.mockCircleDomainModel) >> this.mockCircleDomainModel
         this.circleMemberPort.create((UserDomainModel) this.leader, (CircleDomainModel) this.mockCircleDomainModel) >> this.mockCircleMemberDomainModel
         this.circleMemberPort.updateStatus("test", CircleMemberStatus.MEMBER) >> Optional.of(this.mockCircleMemberDomainModel)
 

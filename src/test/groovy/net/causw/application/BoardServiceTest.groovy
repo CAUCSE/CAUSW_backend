@@ -84,8 +84,8 @@ class BoardServiceTest extends Specification {
 
         this.userPort.findById("test") >> Optional.of(creatorUserDomainModel)
         this.circlePort.findById("test") >> Optional.of(circleDomainModel)
-        this.boardPort.create((BoardDomainModel) this.mockBoardDomainModel, Optional.ofNullable(null)) >> this.mockBoardDomainModel
-        this.boardPort.create((BoardDomainModel) this.mockBoardDomainModel, Optional.ofNullable(circleDomainModel)) >> this.mockBoardDomainModel
+        this.boardPort.create((BoardDomainModel) this.mockBoardDomainModel) >> this.mockBoardDomainModel
+        this.boardPort.create((BoardDomainModel) this.mockBoardDomainModel) >> this.mockBoardDomainModel
 
         when: "create board without circle"
         PowerMockito.mockStatic(BoardDomainModel.class)
@@ -109,7 +109,6 @@ class BoardServiceTest extends Specification {
         when: "create board with circle"
         mockBoardCreateRequestDto.setCircleId("test")
         creatorUserDomainModel.setRole(Role.LEADER_CIRCLE)
-        (BoardDomainModel) this.mockBoardDomainModel.setCircleId("test")
         PowerMockito.mockStatic(BoardDomainModel.class)
         PowerMockito.when(BoardDomainModel.of(
                 "test",
@@ -117,7 +116,7 @@ class BoardServiceTest extends Specification {
                 Arrays.asList("PRESIDENT", "COUNCIL"),
                 Arrays.asList("PRESIDENT", "COUNCIL"),
                 Arrays.asList("PRESIDENT", "COUNCIL"),
-                "test"
+                circleDomainModel
         )).thenReturn((BoardDomainModel) this.mockBoardDomainModel)
         boardResponseDto = this.boardService.create("test", mockBoardCreateRequestDto)
 
@@ -301,7 +300,7 @@ class BoardServiceTest extends Specification {
 
         this.userPort.findById("test") >> Optional.of(creator)
         this.circlePort.findById("test") >> Optional.of(mockCircleDomainModel)
-        this.boardPort.create((BoardDomainModel) this.mockBoardDomainModel, Optional.ofNullable(mockCircleDomainModel)) >> this.mockBoardDomainModel
+        this.boardPort.create((BoardDomainModel) this.mockBoardDomainModel) >> this.mockBoardDomainModel
 
         when: "invalid leader id"
         creator.setId("invalid_test")
@@ -319,8 +318,7 @@ class BoardServiceTest extends Specification {
                 "test_description",
                 Arrays.asList("PRESIDENT", "COUNCIL"),
                 Arrays.asList("PRESIDENT", "COUNCIL"),
-                Arrays.asList("PRESIDENT", "COUNCIL"),
-                null
+                Arrays.asList("PRESIDENT", "COUNCIL")
         )
 
         def updater = UserDomainModel.of(
@@ -382,9 +380,8 @@ class BoardServiceTest extends Specification {
         }
 
         when: "update board with circle"
-        mockBoardUpdateRequestDto.setCircleId("test")
-        this.mockBoardDomainModel.setCircleId("test")
-        mockUpdatedBoardDomainModel.setCircleId("test")
+        this.mockBoardDomainModel.setCircle(mockCircleDomainModel)
+        mockUpdatedBoardDomainModel.setCircle(mockCircleDomainModel)
         updater.setRole(Role.LEADER_CIRCLE)
         PowerMockito.mockStatic(BoardDomainModel.class)
         PowerMockito.when(BoardDomainModel.of(
@@ -395,7 +392,7 @@ class BoardServiceTest extends Specification {
                 mockBoardUpdateRequestDto.getModifyRoleList(),
                 mockBoardUpdateRequestDto.getReadRoleList(),
                 false,
-                "test"
+                mockCircleDomainModel
         )).thenReturn(mockUpdatedBoardDomainModel)
         boardResponseDto = this.boardService.update("test", "test", mockBoardUpdateRequestDto)
 
@@ -415,8 +412,7 @@ class BoardServiceTest extends Specification {
                 "test_description",
                 Arrays.asList("PRESIDENT", "COUNCIL"),
                 Arrays.asList("PRESIDENT", "COUNCIL"),
-                Arrays.asList("PRESIDENT", "COUNCIL"),
-                null
+                Arrays.asList("PRESIDENT", "COUNCIL")
         )
 
         def updater = UserDomainModel.of(
@@ -450,8 +446,7 @@ class BoardServiceTest extends Specification {
                 "test_description",
                 Arrays.asList("PRESIDENT", "COUNCIL"),
                 Arrays.asList("PRESIDENT", "COUNCIL"),
-                Arrays.asList("PRESIDENT", "COUNCIL"),
-                null
+                Arrays.asList("PRESIDENT", "COUNCIL")
         )
 
         def updater = UserDomainModel.of(
@@ -560,8 +555,7 @@ class BoardServiceTest extends Specification {
                 "test_description",
                 Arrays.asList("PRESIDENT", "COUNCIL"),
                 Arrays.asList("PRESIDENT", "COUNCIL"),
-                Arrays.asList("PRESIDENT", "COUNCIL"),
-                null
+                Arrays.asList("PRESIDENT", "COUNCIL")
         )
 
         def updater = UserDomainModel.of(
@@ -595,8 +589,7 @@ class BoardServiceTest extends Specification {
                 "test_description",
                 Arrays.asList("PRESIDENT", "COUNCIL"),
                 Arrays.asList("PRESIDENT", "COUNCIL"),
-                Arrays.asList("PRESIDENT", "COUNCIL"),
-                "test"
+                Arrays.asList("PRESIDENT", "COUNCIL")
         )
 
         def updater = UserDomainModel.of(
@@ -611,7 +604,7 @@ class BoardServiceTest extends Specification {
                 UserState.WAIT
         )
 
-        def mockCircleFullDto = CircleDomainModel.of(
+        def mockCircleDomainModel = CircleDomainModel.of(
                 "test",
                 "test",
                 null,
@@ -620,9 +613,9 @@ class BoardServiceTest extends Specification {
                 updater
         )
 
-        this.mockBoardDomainModel.setCircleId("test")
+        this.mockBoardDomainModel.setCircle(mockCircleDomainModel)
         this.userPort.findById("test") >> Optional.of(updater)
-        this.circlePort.findById("test") >> Optional.of(mockCircleFullDto)
+        this.circlePort.findById("test") >> Optional.of(mockCircleDomainModel)
         this.boardPort.findById("test") >> Optional.of(this.mockBoardDomainModel)
 
         when: "invalid leader id"
@@ -658,14 +651,14 @@ class BoardServiceTest extends Specification {
         )
 
         def mockDeletedBoardDomainModel = BoardDomainModel.of(
-                (String)this.mockBoardDomainModel.getId(),
-                (String)this.mockBoardDomainModel.getName(),
-                (String)this.mockBoardDomainModel.getDescription(),
-                (List<String>)this.mockBoardDomainModel.getCreateRoleList(),
-                (List<String>)this.mockBoardDomainModel.getModifyRoleList(),
-                (List<String>)this.mockBoardDomainModel.getReadRoleList(),
+                (String) this.mockBoardDomainModel.getId(),
+                (String) this.mockBoardDomainModel.getName(),
+                (String) this.mockBoardDomainModel.getDescription(),
+                (List<String>) this.mockBoardDomainModel.getCreateRoleList(),
+                (List<String>) this.mockBoardDomainModel.getModifyRoleList(),
+                (List<String>) this.mockBoardDomainModel.getReadRoleList(),
                 true,
-                (String)this.mockBoardDomainModel.getCircleId()
+                mockCircleDomainModel
         )
 
         this.userPort.findById("test") >> Optional.of(deleter)
@@ -683,8 +676,8 @@ class BoardServiceTest extends Specification {
         }
 
         when: "update board with circle"
-        this.mockBoardDomainModel.setCircleId("test")
-        mockDeletedBoardDomainModel.setCircleId("test")
+        this.mockBoardDomainModel.setCircle(mockCircleDomainModel)
+        mockDeletedBoardDomainModel.setCircle(mockCircleDomainModel)
         deleter.setRole(Role.LEADER_CIRCLE)
         boardResponseDto = this.boardService.delete("test", "test")
 
@@ -771,7 +764,7 @@ class BoardServiceTest extends Specification {
                 deleter
         )
 
-        this.mockBoardDomainModel.setCircleId("test")
+        this.mockBoardDomainModel.setCircle(mockCircleDomainModel)
         this.userPort.findById("test") >> Optional.of(deleter)
         this.circlePort.findById("test") >> Optional.of(mockCircleDomainModel)
         this.boardPort.findById("test") >> Optional.of(this.mockBoardDomainModel)

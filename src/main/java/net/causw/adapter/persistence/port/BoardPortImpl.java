@@ -3,9 +3,11 @@ package net.causw.adapter.persistence.port;
 import net.causw.adapter.persistence.Board;
 import net.causw.adapter.persistence.BoardRepository;
 import net.causw.adapter.persistence.Circle;
+import net.causw.adapter.persistence.User;
 import net.causw.application.spi.BoardPort;
 import net.causw.domain.model.BoardDomainModel;
 import net.causw.domain.model.CircleDomainModel;
+import net.causw.domain.model.UserDomainModel;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -27,18 +29,8 @@ public class BoardPortImpl implements BoardPort {
     }
 
     @Override
-    public BoardDomainModel create(BoardDomainModel boardDomainModel, Optional<CircleDomainModel> circleDomainModel) {
-        Circle circle = circleDomainModel.map(Circle::from).orElse(null);
-
-        return this.entityToDomainModel(this.boardRepository.save(Board.of(
-                boardDomainModel.getName(),
-                boardDomainModel.getDescription(),
-                boardDomainModel.getCreateRoleList().stream().map(Object::toString).collect(Collectors.joining(",")),
-                boardDomainModel.getModifyRoleList().stream().map(Object::toString).collect(Collectors.joining(",")),
-                boardDomainModel.getReadRoleList().stream().map(Object::toString).collect(Collectors.joining(",")),
-                boardDomainModel.getIsDeleted(),
-                circle
-        )));
+    public BoardDomainModel create(BoardDomainModel boardDomainModel) {
+        return this.entityToDomainModel(this.boardRepository.save(Board.from(boardDomainModel)));
     }
 
     @Override
@@ -68,6 +60,11 @@ public class BoardPortImpl implements BoardPort {
     }
 
     private BoardDomainModel entityToDomainModel(Board board) {
+        CircleDomainModel circleDomainModel = null;
+        if (board.getCircle() != null) {
+            circleDomainModel = this.entityToDomainModel(board.getCircle());
+        }
+
         return BoardDomainModel.of(
                 board.getId(),
                 board.getName(),
@@ -76,7 +73,32 @@ public class BoardPortImpl implements BoardPort {
                 new ArrayList<>(Arrays.asList(board.getModifyRoles().split(","))),
                 new ArrayList<>(Arrays.asList(board.getReadRoles().split(","))),
                 board.getIsDeleted(),
-                board.getCircle().getId()
+                circleDomainModel
+        );
+    }
+
+    private CircleDomainModel entityToDomainModel(Circle circle) {
+        return CircleDomainModel.of(
+                circle.getId(),
+                circle.getName(),
+                circle.getMainImage(),
+                circle.getDescription(),
+                circle.getIsDeleted(),
+                this.entityToDomainModel(circle.getLeader())
+        );
+    }
+
+    private UserDomainModel entityToDomainModel(User user) {
+        return UserDomainModel.of(
+                user.getId(),
+                user.getEmail(),
+                user.getName(),
+                user.getPassword(),
+                user.getStudentId(),
+                user.getAdmissionYear(),
+                user.getRole(),
+                user.getProfileImage(),
+                user.getState()
         );
     }
 }

@@ -3,6 +3,7 @@ package net.causw.adapter.persistence;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.causw.domain.model.CommentDomainModel;
+import net.causw.domain.model.PostDomainModel;
 import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.CascadeType;
@@ -105,28 +106,19 @@ public class Comment extends BaseEntity {
         );
     }
 
-    public static Comment from(CommentDomainModel commentDomainModel) {
-        return new Comment(
-                commentDomainModel.getId(),
-                commentDomainModel.getContent(),
-                commentDomainModel.getIsDeleted(),
-                User.from(commentDomainModel.getWriter()),
-                Post.from(commentDomainModel.getPost()),
-                null
-        );
-    }
+    public static Comment from(CommentDomainModel commentDomainModel, PostDomainModel postDomainModel) {
+        Comment parentComment = null;
+        if (commentDomainModel.getParentComment() != null) {
+            parentComment = Comment.from(commentDomainModel.getParentComment(), postDomainModel);
+        }
 
-    public static Comment from(
-            CommentDomainModel commentDomainModel,
-            CommentDomainModel parentCommentDomainModel
-    ) {
         return new Comment(
                 commentDomainModel.getId(),
                 commentDomainModel.getContent(),
                 commentDomainModel.getIsDeleted(),
                 User.from(commentDomainModel.getWriter()),
-                Post.from(commentDomainModel.getPost()),
-                Comment.from(parentCommentDomainModel)
+                Post.from(postDomainModel),
+                parentComment
         );
     }
 }

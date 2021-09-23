@@ -16,9 +16,10 @@ public class CommentResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Boolean isDeleted;
-    private PostResponseDto post;
+    private String postId;
     private String writerId;
     private String writerName;
+    private String parentCommentId;
     private List<CommentResponseDto> childCommentList;
 
     private CommentResponseDto(
@@ -27,9 +28,10 @@ public class CommentResponseDto {
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
             Boolean isDeleted,
-            PostResponseDto post,
+            String postId,
             String writerId,
             String writerName,
+            String parentCommentId,
             List<CommentResponseDto> childCommentList
     ) {
         this.id = id;
@@ -37,24 +39,29 @@ public class CommentResponseDto {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.isDeleted = isDeleted;
-        this.post = post;
+        this.postId = postId;
         this.writerId = writerId;
         this.writerName = writerName;
+        this.parentCommentId = parentCommentId;
         this.childCommentList = childCommentList;
     }
 
     public static CommentResponseDto from(CommentDomainModel comment) {
+        String parentCommentId = null;
+        if (comment.getParentComment() != null) {
+            parentCommentId = comment.getParentComment().getId();
+        }
+
         return new CommentResponseDto(
                 comment.getId(),
                 comment.getContent(),
                 comment.getCreatedAt(),
                 comment.getUpdatedAt(),
                 comment.getIsDeleted(),
-                PostResponseDto.from(
-                        comment.getPost()
-                ),
+                comment.getPostId(),
                 comment.getWriter().getId(),
                 comment.getWriter().getName(),
+                parentCommentId,
                 comment.getChildCommentList()
                         .stream()
                         .map(CommentResponseDto::from)
