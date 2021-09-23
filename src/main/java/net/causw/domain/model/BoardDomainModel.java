@@ -6,6 +6,7 @@ import lombok.Setter;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Optional;
 
 @Getter
 @Setter
@@ -90,5 +91,9 @@ public class BoardDomainModel {
                 false,
                 circleId
         );
+    }
+
+    public Optional<String> getOptionalCircleId() {
+        return Optional.ofNullable(this.circleId);
     }
 }

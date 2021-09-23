@@ -620,6 +620,7 @@ class BoardServiceTest extends Specification {
                 updater
         )
 
+        this.mockBoardDomainModel.setCircleId("test")
         this.userPort.findById("test") >> Optional.of(updater)
         this.circlePort.findById("test") >> Optional.of(mockCircleFullDto)
         this.boardPort.findById("test") >> Optional.of(this.mockBoardDomainModel)
@@ -627,6 +628,157 @@ class BoardServiceTest extends Specification {
         when: "invalid leader id"
         updater.setId("invalid_test")
         this.boardService.update("test", "test", mockBoardUpdateRequestDto)
+
+        then:
+        thrown(UnauthorizedException)
+    }
+
+    @Test
+    def "Board delete normal case"() {
+        given:
+        def deleter = UserDomainModel.of(
+                "test",
+                "test@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.PRESIDENT,
+                null,
+                UserState.WAIT
+        )
+
+        def mockCircleDomainModel = CircleDomainModel.of(
+                "test",
+                "test",
+                null,
+                "test_description",
+                false,
+                deleter
+        )
+
+        def mockDeletedBoardDomainModel = BoardDomainModel.of(
+                (String)this.mockBoardDomainModel.getId(),
+                (String)this.mockBoardDomainModel.getName(),
+                (String)this.mockBoardDomainModel.getDescription(),
+                (List<String>)this.mockBoardDomainModel.getCreateRoleList(),
+                (List<String>)this.mockBoardDomainModel.getModifyRoleList(),
+                (List<String>)this.mockBoardDomainModel.getReadRoleList(),
+                true,
+                (String)this.mockBoardDomainModel.getCircleId()
+        )
+
+        this.userPort.findById("test") >> Optional.of(deleter)
+        this.circlePort.findById("test") >> Optional.of(mockCircleDomainModel)
+        this.boardPort.findById("test") >> Optional.of(this.mockBoardDomainModel)
+        this.boardPort.delete("test") >> Optional.of(mockDeletedBoardDomainModel)
+
+        when: "update board without circle"
+        def boardResponseDto = this.boardService.delete("test", "test")
+
+        then:
+        boardResponseDto instanceof BoardResponseDto
+        with(boardResponseDto) {
+            getIsDeleted()
+        }
+
+        when: "update board with circle"
+        this.mockBoardDomainModel.setCircleId("test")
+        mockDeletedBoardDomainModel.setCircleId("test")
+        deleter.setRole(Role.LEADER_CIRCLE)
+        boardResponseDto = this.boardService.delete("test", "test")
+
+        then:
+        boardResponseDto instanceof BoardResponseDto
+        with(boardResponseDto) {
+            getIsDeleted()
+        }
+    }
+
+    @Test
+    def "Board delete already deleted"() {
+        given:
+        def deleter = UserDomainModel.of(
+                "test",
+                "test@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.PRESIDENT,
+                null,
+                UserState.WAIT
+        )
+
+        this.userPort.findById("test") >> Optional.of(deleter)
+        this.boardPort.findById("test") >> Optional.of(this.mockBoardDomainModel)
+
+        when: "board already delete"
+        this.mockBoardDomainModel.setIsDeleted(true)
+        this.boardService.delete("test", "test")
+
+        then:
+        thrown(BadRequestException)
+    }
+
+    @Test
+    def "Board delete invalid role"() {
+        given:
+        def deleter = UserDomainModel.of(
+                "test",
+                "test@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.PRESIDENT,
+                null,
+                UserState.WAIT
+        )
+
+        this.userPort.findById("test") >> Optional.of(deleter)
+        this.boardPort.findById("test") >> Optional.of(this.mockBoardDomainModel)
+
+        when: "invalid creator role"
+        deleter.setRole(Role.NONE)
+        this.boardService.delete("test", "test")
+
+        then:
+        thrown(UnauthorizedException)
+    }
+
+    @Test
+    def "Board delete invalid leader"() {
+        given:
+        def deleter = UserDomainModel.of(
+                "test",
+                "test@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.PRESIDENT,
+                null,
+                UserState.WAIT
+        )
+
+        def mockCircleDomainModel = CircleDomainModel.of(
+                "test",
+                "test",
+                null,
+                "test_description",
+                false,
+                deleter
+        )
+
+        this.mockBoardDomainModel.setCircleId("test")
+        this.userPort.findById("test") >> Optional.of(deleter)
+        this.circlePort.findById("test") >> Optional.of(mockCircleDomainModel)
+        this.boardPort.findById("test") >> Optional.of(this.mockBoardDomainModel)
+
+        when: "invalid leader id"
+        deleter.setId("invalid_test")
+        this.boardService.delete("test", "test")
 
         then:
         thrown(UnauthorizedException)
