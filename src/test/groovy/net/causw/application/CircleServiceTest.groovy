@@ -4,6 +4,7 @@ package net.causw.application
 import net.causw.application.dto.CircleCreateRequestDto
 import net.causw.application.dto.CircleMemberResponseDto
 import net.causw.application.dto.CircleResponseDto
+import net.causw.application.dto.CircleUpdateRequestDto
 import net.causw.application.spi.CircleMemberPort
 import net.causw.application.spi.CirclePort
 import net.causw.application.spi.UserPort
@@ -20,6 +21,7 @@ import org.spockframework.runtime.Sputnik
 import org.springframework.test.context.ActiveProfiles
 import spock.lang.Specification
 
+import javax.validation.ConstraintViolationException
 import javax.validation.Validation
 import javax.validation.Validator
 
@@ -114,7 +116,7 @@ class CircleServiceTest extends Specification {
         this.circlePort.findByName("test") >> Optional.ofNullable(null)
 
         this.userPort.updateRole("test", Role.LEADER_CIRCLE) >> Optional.of(this.leader)
-        this.circlePort.create((CircleDomainModel) this.mockCircleDomainModel, (UserDomainModel) this.leader) >> this.mockCircleDomainModel
+        this.circlePort.create((CircleDomainModel) this.mockCircleDomainModel) >> this.mockCircleDomainModel
         this.circleMemberPort.create((UserDomainModel) this.leader, (CircleDomainModel) this.mockCircleDomainModel) >> this.mockCircleMemberDomainModel
         this.circleMemberPort.updateStatus("test", CircleMemberStatus.MEMBER) >> Optional.of(this.mockCircleMemberDomainModel)
 
@@ -160,7 +162,7 @@ class CircleServiceTest extends Specification {
         this.circlePort.findByName("test") >> Optional.of(this.mockCircleDomainModel)
 
         this.userPort.updateRole("test", Role.LEADER_CIRCLE) >> Optional.of(this.leader)
-        this.circlePort.create((CircleDomainModel) this.mockCircleDomainModel, (UserDomainModel) this.leader) >> this.mockCircleDomainModel
+        this.circlePort.create((CircleDomainModel) this.mockCircleDomainModel) >> this.mockCircleDomainModel
         this.circleMemberPort.create((UserDomainModel) this.leader, (CircleDomainModel) this.mockCircleDomainModel) >> this.mockCircleMemberDomainModel
         this.circleMemberPort.updateStatus("test", CircleMemberStatus.MEMBER) >> Optional.of(this.mockCircleMemberDomainModel)
 
@@ -200,7 +202,7 @@ class CircleServiceTest extends Specification {
 
         this.leader.setRole(Role.LEADER_CIRCLE)
         this.userPort.updateRole("test", Role.LEADER_CIRCLE) >> Optional.of(this.leader)
-        this.circlePort.create((CircleDomainModel) this.mockCircleDomainModel, (UserDomainModel) this.leader) >> this.mockCircleDomainModel
+        this.circlePort.create((CircleDomainModel) this.mockCircleDomainModel) >> this.mockCircleDomainModel
         this.circleMemberPort.create((UserDomainModel) this.leader, (CircleDomainModel) this.mockCircleDomainModel) >> this.mockCircleMemberDomainModel
         this.circleMemberPort.updateStatus("test", CircleMemberStatus.MEMBER) >> Optional.of(this.mockCircleMemberDomainModel)
 
@@ -238,7 +240,7 @@ class CircleServiceTest extends Specification {
         this.circlePort.findByName("test") >> Optional.ofNullable(null)
 
         this.userPort.updateRole("test", Role.LEADER_CIRCLE) >> Optional.of(this.leader)
-        this.circlePort.create((CircleDomainModel) this.mockCircleDomainModel, (UserDomainModel) this.leader) >> this.mockCircleDomainModel
+        this.circlePort.create((CircleDomainModel) this.mockCircleDomainModel) >> this.mockCircleDomainModel
         this.circleMemberPort.create((UserDomainModel) this.leader, (CircleDomainModel) this.mockCircleDomainModel) >> this.mockCircleMemberDomainModel
         this.circleMemberPort.updateStatus("test", CircleMemberStatus.MEMBER) >> Optional.of(this.mockCircleMemberDomainModel)
 
@@ -279,7 +281,7 @@ class CircleServiceTest extends Specification {
 
         this.leader.setRole(Role.LEADER_CIRCLE)
         this.userPort.updateRole("test", Role.LEADER_CIRCLE) >> Optional.of(this.leader)
-        this.circlePort.create((CircleDomainModel) this.mockCircleDomainModel, (UserDomainModel) this.leader) >> this.mockCircleDomainModel
+        this.circlePort.create((CircleDomainModel) this.mockCircleDomainModel) >> this.mockCircleDomainModel
         this.circleMemberPort.create((UserDomainModel) this.leader, (CircleDomainModel) this.mockCircleDomainModel) >> this.mockCircleMemberDomainModel
         this.circleMemberPort.updateStatus("test", CircleMemberStatus.MEMBER) >> Optional.of(this.mockCircleMemberDomainModel)
 
@@ -288,6 +290,238 @@ class CircleServiceTest extends Specification {
 
         then:
         thrown(UnauthorizedException)
+    }
+
+    /**
+     * Test cases for circle update
+     */
+    @Test
+    def "Circle update normal case"() {
+        given:
+        def mockCircleUpdateRequestDto = new CircleUpdateRequestDto(
+                "test2",
+                null,
+                "test_update_description"
+        )
+
+        def mockUpdatedCircleDomainModel = CircleDomainModel.of(
+                (String)this.mockCircleDomainModel.getId(),
+                mockCircleUpdateRequestDto.getName(),
+                mockCircleUpdateRequestDto.getMainImage(),
+                mockCircleUpdateRequestDto.getDescription(),
+                (Boolean)this.mockCircleDomainModel.getIsDeleted(),
+                (UserDomainModel)this.mockCircleDomainModel.getLeader()
+        )
+
+        PowerMockito.mockStatic(CircleDomainModel.class)
+        PowerMockito.when(CircleDomainModel.of(
+                (String)this.mockCircleDomainModel.getId(),
+                mockCircleUpdateRequestDto.getName(),
+                mockCircleUpdateRequestDto.getMainImage(),
+                mockCircleUpdateRequestDto.getDescription(),
+                (Boolean)this.mockCircleDomainModel.getIsDeleted(),
+                (UserDomainModel)this.mockCircleDomainModel.getLeader()
+        )).thenReturn(mockUpdatedCircleDomainModel)
+
+        this.userPort.findById("test") >> Optional.of(this.leader)
+        this.circlePort.findById("test") >> Optional.of(this.mockCircleDomainModel)
+        this.circlePort.findByName("test2") >> Optional.ofNullable(null)
+        this.circlePort.update("test", mockUpdatedCircleDomainModel) >> Optional.of(mockUpdatedCircleDomainModel)
+
+        when:
+        def circleResponseDto = this.circleService.update("test", "test", mockCircleUpdateRequestDto)
+
+        then:
+        circleResponseDto instanceof CircleResponseDto
+        with(circleResponseDto) {
+            getName() == "test2"
+            getDescription() == "test_update_description"
+        }
+    }
+
+    @Test
+    def "Circle update duplicate name"() {
+        given:
+        def mockCircleUpdateRequestDto = new CircleUpdateRequestDto(
+                "test2",
+                null,
+                "test_update_description"
+        )
+
+        def mockUpdatedCircleDomainModel = CircleDomainModel.of(
+                (String)this.mockCircleDomainModel.getId(),
+                mockCircleUpdateRequestDto.getName(),
+                mockCircleUpdateRequestDto.getMainImage(),
+                mockCircleUpdateRequestDto.getDescription(),
+                (Boolean)this.mockCircleDomainModel.getIsDeleted(),
+                (UserDomainModel)this.mockCircleDomainModel.getLeader()
+        )
+
+        this.userPort.findById("test") >> Optional.of(this.leader)
+        this.circlePort.findById("test") >> Optional.of(this.mockCircleDomainModel)
+        this.circlePort.findByName("test2") >> Optional.ofNullable(mockUpdatedCircleDomainModel)
+        this.circlePort.update("test", mockUpdatedCircleDomainModel) >> Optional.of(mockUpdatedCircleDomainModel)
+
+        when:
+        this.circleService.update("test", "test", mockCircleUpdateRequestDto)
+
+        then:
+        thrown(BadRequestException)
+    }
+
+    @Test
+    def "Circle update unauthorized api call"() {
+        given:
+        def mockCircleUpdateRequestDto = new CircleUpdateRequestDto(
+                "test2",
+                null,
+                "test_update_description"
+        )
+
+        def mockApiCallUser = UserDomainModel.of(
+                "test",
+                "test1@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.LEADER_CIRCLE,
+                null,
+                UserState.ACTIVE
+        )
+
+        def mockUpdatedCircleDomainModel = CircleDomainModel.of(
+                (String)this.mockCircleDomainModel.getId(),
+                mockCircleUpdateRequestDto.getName(),
+                mockCircleUpdateRequestDto.getMainImage(),
+                mockCircleUpdateRequestDto.getDescription(),
+                (Boolean)this.mockCircleDomainModel.getIsDeleted(),
+                (UserDomainModel)this.mockCircleDomainModel.getLeader()
+        )
+
+        PowerMockito.mockStatic(CircleDomainModel.class)
+        PowerMockito.when(CircleDomainModel.of(
+                (String)this.mockCircleDomainModel.getId(),
+                mockCircleUpdateRequestDto.getName(),
+                mockCircleUpdateRequestDto.getMainImage(),
+                mockCircleUpdateRequestDto.getDescription(),
+                (Boolean)this.mockCircleDomainModel.getIsDeleted(),
+                (UserDomainModel)this.mockCircleDomainModel.getLeader()
+        )).thenReturn(mockUpdatedCircleDomainModel)
+
+        this.userPort.findById("test") >> Optional.of(mockApiCallUser)
+        this.userPort.findById("test1") >> Optional.of(mockApiCallUser)
+        this.circlePort.findById("test") >> Optional.of(this.mockCircleDomainModel)
+        this.circlePort.findByName("test2") >> Optional.ofNullable(null)
+        this.circlePort.update("test", mockUpdatedCircleDomainModel) >> Optional.of(mockUpdatedCircleDomainModel)
+
+        when: "not leader"
+        mockApiCallUser.setId("test1")
+        this.circleService.update("test1", "test", mockCircleUpdateRequestDto)
+
+        then:
+        thrown(UnauthorizedException)
+
+        when: "unauthorized role"
+        mockApiCallUser.setId("test")
+        mockApiCallUser.setRole(Role.COMMON)
+        this.circleService.update("test", "test", mockCircleUpdateRequestDto)
+
+        then:
+        thrown(UnauthorizedException)
+
+        when: "call user is not active"
+        mockApiCallUser.setRole(Role.LEADER_CIRCLE)
+        mockApiCallUser.setState(UserState.INACTIVE)
+        this.circleService.update("test", "test", mockCircleUpdateRequestDto)
+
+        then:
+        thrown(UnauthorizedException)
+    }
+
+    @Test
+    def "Circle update already deleted"() {
+        given:
+        def mockCircleUpdateRequestDto = new CircleUpdateRequestDto(
+                "test2",
+                null,
+                "test_update_description"
+        )
+
+        def mockUpdatedCircleDomainModel = CircleDomainModel.of(
+                (String)this.mockCircleDomainModel.getId(),
+                mockCircleUpdateRequestDto.getName(),
+                mockCircleUpdateRequestDto.getMainImage(),
+                mockCircleUpdateRequestDto.getDescription(),
+                (Boolean)this.mockCircleDomainModel.getIsDeleted(),
+                (UserDomainModel)this.mockCircleDomainModel.getLeader()
+        )
+
+        PowerMockito.mockStatic(CircleDomainModel.class)
+        PowerMockito.when(CircleDomainModel.of(
+                (String)this.mockCircleDomainModel.getId(),
+                mockCircleUpdateRequestDto.getName(),
+                mockCircleUpdateRequestDto.getMainImage(),
+                mockCircleUpdateRequestDto.getDescription(),
+                (Boolean)this.mockCircleDomainModel.getIsDeleted(),
+                (UserDomainModel)this.mockCircleDomainModel.getLeader()
+        )).thenReturn(mockUpdatedCircleDomainModel)
+
+        this.userPort.findById("test") >> Optional.of(this.leader)
+        this.circlePort.findById("test") >> Optional.of(this.mockCircleDomainModel)
+        this.circlePort.findByName("test2") >> Optional.ofNullable(null)
+        this.circlePort.update("test", mockUpdatedCircleDomainModel) >> Optional.of(mockUpdatedCircleDomainModel)
+
+        when:
+        mockUpdatedCircleDomainModel.setIsDeleted(true)
+        this.circleService.update("test", "test", mockCircleUpdateRequestDto)
+
+        then:
+        thrown(BadRequestException)
+    }
+
+    @Test
+    def "Circle update invalid parameter"() {
+        given:
+        def mockCircleUpdateRequestDto = new CircleUpdateRequestDto(
+                "test2",
+                null,
+                "test_update_description"
+        )
+
+        def mockUpdatedCircleDomainModel = CircleDomainModel.of(
+                (String)this.mockCircleDomainModel.getId(),
+                mockCircleUpdateRequestDto.getName(),
+                mockCircleUpdateRequestDto.getMainImage(),
+                mockCircleUpdateRequestDto.getDescription(),
+                (Boolean)this.mockCircleDomainModel.getIsDeleted(),
+                (UserDomainModel)this.mockCircleDomainModel.getLeader()
+        )
+
+        this.userPort.findById("test") >> Optional.of(this.leader)
+        this.circlePort.findById("test") >> Optional.of(this.mockCircleDomainModel)
+        this.circlePort.findByName("") >> Optional.ofNullable(null)
+        this.circlePort.findByName("test2") >> Optional.ofNullable(null)
+        this.circlePort.update("test", mockUpdatedCircleDomainModel) >> Optional.of(mockUpdatedCircleDomainModel)
+
+        when: "name is blank"
+        mockCircleUpdateRequestDto.setName("")
+        mockUpdatedCircleDomainModel.setName("")
+
+        PowerMockito.mockStatic(CircleDomainModel.class)
+        PowerMockito.when(CircleDomainModel.of(
+                (String)this.mockCircleDomainModel.getId(),
+                mockCircleUpdateRequestDto.getName(),
+                mockCircleUpdateRequestDto.getMainImage(),
+                mockCircleUpdateRequestDto.getDescription(),
+                (Boolean)this.mockCircleDomainModel.getIsDeleted(),
+                (UserDomainModel)this.mockCircleDomainModel.getLeader()
+        )).thenReturn(mockUpdatedCircleDomainModel)
+
+        this.circleService.update("test", "test", mockCircleUpdateRequestDto)
+
+        then:
+        thrown(ConstraintViolationException)
     }
 
     /**

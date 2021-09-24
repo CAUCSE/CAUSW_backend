@@ -40,6 +40,19 @@ public class CirclePortImpl implements CirclePort {
     }
 
     @Override
+    public Optional<CircleDomainModel> update(String id, CircleDomainModel circleDomainModel) {
+        return this.circleRepository.findById(id).map(
+                srcCircle -> {
+                    srcCircle.setDescription(circleDomainModel.getDescription());
+                    srcCircle.setName(circleDomainModel.getName());
+                    srcCircle.setMainImage(circleDomainModel.getMainImage());
+
+                    return this.entityToDomainModel(this.circleRepository.save(srcCircle));
+                }
+        );
+    }
+
+    @Override
     public Optional<CircleDomainModel> updateLeader(String id, UserDomainModel newLeader) {
         return this.circleRepository.findById(id).map(
                 srcCircle -> {

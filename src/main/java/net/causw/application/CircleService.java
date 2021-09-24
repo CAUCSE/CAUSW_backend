@@ -3,6 +3,7 @@ package net.causw.application;
 import net.causw.application.dto.CircleCreateRequestDto;
 import net.causw.application.dto.CircleMemberResponseDto;
 import net.causw.application.dto.CircleResponseDto;
+import net.causw.application.dto.CircleUpdateRequestDto;
 import net.causw.application.dto.DuplicatedCheckDto;
 import net.causw.application.spi.CircleMemberPort;
 import net.causw.application.spi.CirclePort;
@@ -112,11 +113,62 @@ public class CircleService {
         this.circleMemberPort.updateStatus(circleMemberDomainModel.getId(), CircleMemberStatus.MEMBER).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        "Application id immediately used, but exception occurred"
+                        "Circle id immediately used, but exception occurred"
                 )
         );
 
         return CircleResponseDto.from(newCircle);
+    }
+
+    @Transactional
+    public CircleResponseDto update(
+            String userId,
+            String circleId,
+            CircleUpdateRequestDto circleUpdateRequestDto
+    ) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
+        CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid circle id"
+                )
+        );
+
+        if (!circle.getName().equals(circleUpdateRequestDto.getName())) {
+            validatorBucket.consistOf(DuplicatedCircleNameValidator.of(this.circlePort, circleUpdateRequestDto.getName()));
+        }
+
+        UserDomainModel user = this.userPort.findById(userId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid user id"
+                )
+        );
+
+        CircleDomainModel circleDomainModel = CircleDomainModel.of(
+                circle.getId(),
+                circleUpdateRequestDto.getName(),
+                circleUpdateRequestDto.getMainImage(),
+                circleUpdateRequestDto.getDescription(),
+                circle.getIsDeleted(),
+                circle.getLeader()
+        );
+
+        validatorBucket
+                .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted()))
+                .consistOf(ConstraintValidator.of(circleDomainModel, this.validator))
+                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT, Role.ADMIN, Role.LEADER_CIRCLE)))
+                .consistOf(UserEqualValidator.of(circleDomainModel.getLeader().getId(), user.getId()))
+                .consistOf(UserStateValidator.of(user.getState()))
+                .validate();
+
+        return CircleResponseDto.from(this.circlePort.update(circleId, circleDomainModel).orElseThrow(
+                () -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "Circle id checked, but exception occurred"
+                )
+        ));
     }
 
     @Transactional
