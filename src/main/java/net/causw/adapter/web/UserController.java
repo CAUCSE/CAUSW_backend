@@ -42,8 +42,11 @@ public class UserController {
 
     @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
-    public UserResponseDto findByName(@RequestParam String name) {
-        return this.userService.findByName(name);
+    public UserResponseDto findByName(
+            @AuthenticationPrincipal String currentUserId,
+            @RequestParam String name
+    ) {
+        return this.userService.findByName(currentUserId, name);
     }
 
     @PostMapping(value = "/sign-up")

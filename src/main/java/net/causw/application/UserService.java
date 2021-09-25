@@ -59,9 +59,19 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserResponseDto findById(String id) {
+        return UserResponseDto.from(this.userPort.findById(id).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid user id"
+                )
+        ));
+    }
+
+    @Transactional(readOnly = true)
+    public UserResponseDto findByName(String currentUserId, String name) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel user = this.userPort.findById(id).orElseThrow(
+        UserDomainModel user = this.userPort.findById(currentUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "Invalid user id"
@@ -72,11 +82,6 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT, Role.ADMIN)))
                 .validate();
 
-        return UserResponseDto.from(user);
-    }
-
-    @Transactional(readOnly = true)
-    public UserResponseDto findByName(String name) {
         return UserResponseDto.from(this.userPort.findByName(name).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
