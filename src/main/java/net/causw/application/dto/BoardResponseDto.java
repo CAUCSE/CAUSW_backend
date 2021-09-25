@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.causw.adapter.persistence.Board;
 import net.causw.domain.model.BoardDomainModel;
+import net.causw.domain.model.CircleDomainModel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,6 +24,7 @@ public class BoardResponseDto {
     private Boolean isDeleted;
 
     private String circleId;
+    private String circleName;
 
     private BoardResponseDto(
             String id,
@@ -32,7 +34,8 @@ public class BoardResponseDto {
             List<String> modifyRoleList,
             List<String> readRoleList,
             Boolean isDeleted,
-            String circleId
+            String circleId,
+            String circleName
     ) {
         this.id = id;
         this.name = name;
@@ -42,11 +45,16 @@ public class BoardResponseDto {
         this.readRoleList = readRoleList;
         this.isDeleted = isDeleted;
         this.circleId = circleId;
+        this.circleName = circleName;
     }
 
     public static BoardResponseDto from(Board board) {
         String circleId = null;
-        if (board.getCircle() != null) { circleId = board.getCircle().getId(); }
+        String circleName = null;
+        if (board.getCircle() != null) {
+            circleId = board.getCircle().getId();
+            circleName = board.getCircle().getName();
+        }
         return new BoardResponseDto(
                 board.getId(),
                 board.getName(),
@@ -55,11 +63,15 @@ public class BoardResponseDto {
                 new ArrayList<>(Arrays.asList(board.getModifyRoles().split(","))),
                 new ArrayList<>(Arrays.asList(board.getReadRoles().split(","))),
                 board.getIsDeleted(),
-                circleId
+                circleId,
+                circleName
         );
     }
 
     public static BoardResponseDto from(BoardDomainModel boardDomainModel) {
+        String circleId = boardDomainModel.getCircle().map(CircleDomainModel::getId).orElse(null);
+        String circleName = boardDomainModel.getCircle().map(CircleDomainModel::getName).orElse(null);
+
         return new BoardResponseDto(
                 boardDomainModel.getId(),
                 boardDomainModel.getName(),
@@ -68,7 +80,8 @@ public class BoardResponseDto {
                 boardDomainModel.getModifyRoleList(),
                 boardDomainModel.getReadRoleList(),
                 boardDomainModel.getIsDeleted(),
-                boardDomainModel.getCircleId()
+                circleId,
+                circleName
         );
     }
 }

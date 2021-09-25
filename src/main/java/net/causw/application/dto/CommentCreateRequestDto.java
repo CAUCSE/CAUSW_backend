@@ -5,13 +5,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Optional;
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class CommentCreateRequestDto {
     private String content;
-    private String postId; // -> post
-    private String writerId; // -> writer
-    private String parentCommentId; // -> parent comment
+    private String postId;
+    private String parentCommentId;
+
+    public Optional<String> getParentCommentId() {
+        return Optional.ofNullable(this.parentCommentId);
+    }
 }

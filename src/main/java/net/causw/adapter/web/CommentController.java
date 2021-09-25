@@ -4,6 +4,7 @@ import net.causw.application.CommentService;
 import net.causw.application.dto.CommentCreateRequestDto;
 import net.causw.application.dto.CommentResponseDto;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,9 +28,12 @@ public class CommentController {
         return this.commentService.findById(id);
     }
 
-    @PostMapping(value = "/")
+    @PostMapping
     @ResponseStatus(HttpStatus.OK)
-    public CommentResponseDto create(@RequestBody CommentCreateRequestDto commentCreateDto) {
-        return this.commentService.create(commentCreateDto);
+    public CommentResponseDto create(
+            @AuthenticationPrincipal String creatorId,
+            @RequestBody CommentCreateRequestDto commentCreateRequestDto
+    ) {
+        return this.commentService.create(creatorId, commentCreateRequestDto);
     }
 }

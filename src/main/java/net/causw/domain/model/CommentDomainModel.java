@@ -3,6 +3,7 @@ package net.causw.domain.model;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -13,9 +14,9 @@ public class CommentDomainModel {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private UserDomainModel writer;
-    private PostDomainModel post;
-    private CommentDomainModel parentComment; // 생성
-    private List<CommentDomainModel> childCommentList; // 조회
+    private String postId;
+    private CommentDomainModel parentComment;           // Write
+    private List<CommentDomainModel> childCommentList;  // Read
 
     private CommentDomainModel(
             String id,
@@ -24,45 +25,8 @@ public class CommentDomainModel {
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
             UserDomainModel writer,
-            PostDomainModel post,
-            CommentDomainModel parentComment
-    ) {
-        this.id = id;
-        this.content = content;
-        this.isDeleted = isDeleted;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.writer = writer;
-        this.post = post;
-        this.parentComment = parentComment;
-    }
-
-    private CommentDomainModel(
-            String id,
-            String content,
-            Boolean isDeleted,
-            LocalDateTime createdAt,
-            LocalDateTime updatedAt,
-            UserDomainModel writer,
-            PostDomainModel post
-    ) {
-        this.id = id;
-        this.content = content;
-        this.isDeleted = isDeleted;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.writer = writer;
-        this.post = post;
-    }
-
-    private CommentDomainModel(
-            String id,
-            String content,
-            Boolean isDeleted,
-            LocalDateTime createdAt,
-            LocalDateTime updatedAt,
-            UserDomainModel writer,
-            PostDomainModel post,
+            String postId,
+            CommentDomainModel parentComment,
             List<CommentDomainModel> childCommentList
     ) {
         this.id = id;
@@ -71,10 +35,32 @@ public class CommentDomainModel {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.writer = writer;
-        this.post = post;
+        this.postId = postId;
+        this.parentComment = parentComment;
         this.childCommentList = childCommentList;
     }
 
+    // Constructor with parent comment, without id (Used for write)
+    public static CommentDomainModel of(
+            String content,
+            UserDomainModel writer,
+            String postId,
+            CommentDomainModel parentComment
+    ) {
+        return new CommentDomainModel(
+                null,
+                content,
+                false,
+                null,
+                null,
+                writer,
+                postId,
+                parentComment,
+                new ArrayList<>()
+        );
+    }
+
+    // Constructor with parent comment and id (Used for read single comment)
     public static CommentDomainModel of(
             String id,
             String content,
@@ -82,7 +68,7 @@ public class CommentDomainModel {
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
             UserDomainModel writer,
-            PostDomainModel post,
+            String postId,
             CommentDomainModel parentComment
     ) {
         return new CommentDomainModel(
@@ -92,11 +78,13 @@ public class CommentDomainModel {
                 createdAt,
                 updatedAt,
                 writer,
-                post,
-                parentComment
+                postId,
+                parentComment,
+                new ArrayList<>()
         );
     }
 
+    // Constructor without related comments (Used for read leaf comment)
     public static CommentDomainModel of(
             String id,
             String content,
@@ -104,7 +92,7 @@ public class CommentDomainModel {
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
             UserDomainModel writer,
-            PostDomainModel post
+            String postId
     ) {
         return new CommentDomainModel(
                 id,
@@ -113,10 +101,13 @@ public class CommentDomainModel {
                 createdAt,
                 updatedAt,
                 writer,
-                post
+                postId,
+                null,
+                new ArrayList<>()
         );
     }
 
+    // Constructor with child comments (Used for read parent comment)
     public static CommentDomainModel of(
             String id,
             String content,
@@ -124,7 +115,7 @@ public class CommentDomainModel {
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
             UserDomainModel writer,
-            PostDomainModel post,
+            String postId,
             List<CommentDomainModel> childCommentList
     ) {
         return new CommentDomainModel(
@@ -134,7 +125,8 @@ public class CommentDomainModel {
                 createdAt,
                 updatedAt,
                 writer,
-                post,
+                postId,
+                null,
                 childCommentList
         );
     }

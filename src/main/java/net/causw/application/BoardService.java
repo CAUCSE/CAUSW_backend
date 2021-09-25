@@ -23,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class BoardService {
@@ -61,11 +60,11 @@ public class BoardService {
         UserDomainModel creatorDomainModel = this.userPort.findById(creatorId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid user id"
+                        "Invalid request user id"
                 )
         );
 
-        Optional<CircleDomainModel> circleDomainModel = Optional.ofNullable(boardCreateRequestDto.getCircleId().map(
+        CircleDomainModel circleDomainModel = boardCreateRequestDto.getCircleId().map(
                 circleId -> {
                     CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
                             () -> new BadRequestException(
@@ -75,18 +74,18 @@ public class BoardService {
                     );
                     validatorBucket
                             .consistOf(UserEqualValidator.of(circle.getLeader().getId(), creatorId))
-                            .consistOf(UserRoleValidator.of(creatorDomainModel.getRole(), List.of(Role.LEADER_CIRCLE)));
+                            .consistOf(UserRoleValidator.of(creatorDomainModel.getRole(), List.of(Role.LEADER_CIRCLE, Role.ADMIN)));
 
                     return circle;
                 }
         ).orElseGet(
                 () -> {
                     validatorBucket
-                            .consistOf(UserRoleValidator.of(creatorDomainModel.getRole(), List.of(Role.PRESIDENT)));
+                            .consistOf(UserRoleValidator.of(creatorDomainModel.getRole(), List.of(Role.PRESIDENT, Role.ADMIN)));
 
                     return null;
                 }
-        ));
+        );
 
         BoardDomainModel boardDomainModel = BoardDomainModel.of(
                 boardCreateRequestDto.getName(),
@@ -94,14 +93,14 @@ public class BoardService {
                 boardCreateRequestDto.getCreateRoleList(),
                 boardCreateRequestDto.getModifyRoleList(),
                 boardCreateRequestDto.getReadRoleList(),
-                boardCreateRequestDto.getCircleId().orElse(null)
+                circleDomainModel
         );
 
         validatorBucket
                 .consistOf(ConstraintValidator.of(boardDomainModel, this.validator))
                 .validate();
 
-        return BoardResponseDto.from(this.boardPort.create(boardDomainModel, circleDomainModel));
+        return BoardResponseDto.from(this.boardPort.create(boardDomainModel));
     }
 
     @Transactional
@@ -127,20 +126,15 @@ public class BoardService {
         );
         validatorBucket.consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted()));
 
-        boardDomainModel.getOptionalCircleId().ifPresentOrElse(
-                circleId -> {
-                    CircleDomainModel circleDomainModel = this.circlePort.findById(circleId).orElseThrow(
-                            () -> new BadRequestException(
-                                    ErrorCode.ROW_DOES_NOT_EXIST,
-                                    "Invalid circle id"
-                            )
-                    );
+
+        boardDomainModel.getCircle().ifPresentOrElse(
+                circleDomainModel -> {
                     validatorBucket
                             .consistOf(UserEqualValidator.of(circleDomainModel.getLeader().getId(), updaterId))
                             .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.LEADER_CIRCLE)));
                 },
                 () -> validatorBucket
-                            .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.PRESIDENT)))
+                        .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.PRESIDENT)))
         );
 
         boardDomainModel = BoardDomainModel.of(
@@ -151,7 +145,7 @@ public class BoardService {
                 boardUpdateRequestDto.getModifyRoleList(),
                 boardUpdateRequestDto.getReadRoleList(),
                 boardDomainModel.getIsDeleted(),
-                boardDomainModel.getCircleId()
+                boardDomainModel.getCircle().orElse(null)
         );
 
         validatorBucket
@@ -188,22 +182,16 @@ public class BoardService {
         );
         validatorBucket.consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted()));
 
-        boardDomainModel.getOptionalCircleId().ifPresentOrElse(
-                circleId -> {
-                    CircleDomainModel circleDomainModel = this.circlePort.findById(circleId).orElseThrow(
-                            () -> new BadRequestException(
-                                    ErrorCode.ROW_DOES_NOT_EXIST,
-                                    "Invalid circle id"
-                            )
-                    );
-                    validatorBucket
-                            .consistOf(UserEqualValidator.of(circleDomainModel.getLeader().getId(), deleterId))
-                            .consistOf(UserRoleValidator.of(deleterDomainModel.getRole(), List.of(Role.LEADER_CIRCLE)))
-                            .validate();
-                },
-                () -> validatorBucket
-                            .consistOf(UserRoleValidator.of(deleterDomainModel.getRole(), List.of(Role.PRESIDENT)))
-                            .validate()
+        boardDomainModel.getCircle().ifPresentOrElse(
+                circleDomainModel ->
+                        validatorBucket
+                                .consistOf(UserEqualValidator.of(circleDomainModel.getLeader().getId(), deleterId))
+                                .consistOf(UserRoleValidator.of(deleterDomainModel.getRole(), List.of(Role.LEADER_CIRCLE)))
+                                .validate(),
+                () ->
+                        validatorBucket
+                                .consistOf(UserRoleValidator.of(deleterDomainModel.getRole(), List.of(Role.PRESIDENT)))
+                                .validate()
         );
 
         return BoardResponseDto.from(this.boardPort.delete(boardId).orElseThrow(
