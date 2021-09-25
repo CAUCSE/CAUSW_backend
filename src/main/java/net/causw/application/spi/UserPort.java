@@ -2,6 +2,7 @@ package net.causw.application.spi;
 
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
+import net.causw.domain.model.UserState;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,4 +23,6 @@ public interface UserPort {
     List<UserDomainModel> findByRole(Role role);
 
     Optional<UserDomainModel> updatePassword(String id, String password);
+
+    Optional<UserDomainModel> updateState(String id, UserState state);
 }
