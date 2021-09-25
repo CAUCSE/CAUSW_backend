@@ -14,5 +14,7 @@ public interface CirclePort {
 
     CircleDomainModel create(CircleDomainModel circleDomainModel);
 
+    Optional<CircleDomainModel> update(String id, CircleDomainModel circleDomainModel);
+
     Optional<CircleDomainModel> updateLeader(String id, UserDomainModel newLeader);
 }

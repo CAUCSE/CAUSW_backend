@@ -4,6 +4,7 @@ import net.causw.application.CircleService;
 import net.causw.application.dto.CircleCreateRequestDto;
 import net.causw.application.dto.CircleMemberResponseDto;
 import net.causw.application.dto.CircleResponseDto;
+import net.causw.application.dto.CircleUpdateRequestDto;
 import net.causw.application.dto.DuplicatedCheckDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -34,8 +35,21 @@ public class CircleController {
 
     @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)
-    public CircleResponseDto create(@AuthenticationPrincipal String userId, @RequestBody CircleCreateRequestDto circleCreateRequestDto) {
+    public CircleResponseDto create(
+            @AuthenticationPrincipal String userId,
+            @RequestBody CircleCreateRequestDto circleCreateRequestDto
+    ) {
         return this.circleService.create(userId, circleCreateRequestDto);
+    }
+
+    @PutMapping(value = "/{circleId}")
+    @ResponseStatus(value = HttpStatus.OK)
+    public CircleResponseDto update(
+            @AuthenticationPrincipal String userId,
+            @PathVariable String circleId,
+            @RequestBody CircleUpdateRequestDto circleUpdateRequestDto
+    ) {
+        return this.circleService.update(userId, circleId, circleUpdateRequestDto);
     }
 
     @GetMapping(value = "/{circleId}/applications")

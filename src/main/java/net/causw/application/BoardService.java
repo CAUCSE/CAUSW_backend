@@ -155,7 +155,7 @@ public class BoardService {
         return BoardResponseDto.from(this.boardPort.update(boardId, boardDomainModel).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        "Application id checked, but exception occurred"
+                        "Board id checked, but exception occurred"
                 )
         ));
     }
