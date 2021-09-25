@@ -11,6 +11,7 @@ import net.causw.application.dto.UserUpdateRequestDto;
 import net.causw.application.dto.UserUpdateRoleRequestDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,8 +42,11 @@ public class UserController {
 
     @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
-    public UserResponseDto findByName(@RequestParam String name) {
-        return this.userService.findByName(name);
+    public UserResponseDto findByName(
+            @AuthenticationPrincipal String currentUserId,
+            @RequestParam String name
+    ) {
+        return this.userService.findByName(currentUserId, name);
     }
 
     @PostMapping(value = "/sign-up")
@@ -97,5 +101,11 @@ public class UserController {
             @RequestBody UserPasswordUpdateRequestDto userPasswordUpdateRequestDto
     ) {
         return this.userService.updatePassword(id, userPasswordUpdateRequestDto);
+    }
+
+    @DeleteMapping
+    @ResponseStatus(value = HttpStatus.OK)
+    public UserResponseDto leave(@AuthenticationPrincipal String id) {
+        return this.userService.leave(id);
     }
 }

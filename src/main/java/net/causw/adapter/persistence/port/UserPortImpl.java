@@ -5,6 +5,7 @@ import net.causw.adapter.persistence.UserRepository;
 import net.causw.application.spi.UserPort;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
+import net.causw.domain.model.UserState;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -76,6 +77,17 @@ public class UserPortImpl implements UserPort {
                     srcUser.setPassword(password);
 
                     return this. entityToDomainModel(this.userRepository.save(srcUser));
+                }
+        );
+    }
+
+    @Override
+    public Optional<UserDomainModel> updateState(String id, UserState state) {
+        return this.userRepository.findById(id).map(
+                srcUser -> {
+                    srcUser.setState(state);
+
+                    return this.entityToDomainModel(this.userRepository.save(srcUser));
                 }
         );
     }

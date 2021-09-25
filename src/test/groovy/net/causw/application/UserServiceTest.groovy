@@ -5,11 +5,15 @@ import net.causw.application.dto.UserPasswordUpdateRequestDto
 import net.causw.application.dto.UserResponseDto
 import net.causw.application.dto.UserUpdateRequestDto
 import net.causw.application.dto.UserUpdateRoleRequestDto
+import net.causw.application.spi.CircleMemberPort
 import net.causw.application.spi.CirclePort
 import net.causw.application.spi.UserPort
 import net.causw.config.JwtTokenProvider
 import net.causw.domain.exceptions.BadRequestException
 import net.causw.domain.exceptions.UnauthorizedException
+import net.causw.domain.model.CircleDomainModel
+import net.causw.domain.model.CircleMemberDomainModel
+import net.causw.domain.model.CircleMemberStatus
 import net.causw.domain.model.Role
 import net.causw.domain.model.UserDomainModel
 import net.causw.domain.model.UserState
@@ -34,11 +38,13 @@ import javax.validation.Validator
 class UserServiceTest extends Specification {
     private UserPort userPort = Mock(UserPort.class)
     private CirclePort circlePort = Mock(CirclePort.class)
+    private CircleMemberPort circleMemberPort = Mock(CircleMemberPort.class)
     private JwtTokenProvider jwtTokenProvider = Mock(JwtTokenProvider.class)
     private Validator validator = Validation.buildDefaultValidatorFactory().getValidator()
     private UserService userService = new UserService(
             this.userPort,
             this.circlePort,
+            this.circleMemberPort,
             this.jwtTokenProvider,
             this.validator
     )
@@ -802,5 +808,157 @@ class UserServiceTest extends Specification {
 
         then:
         thrown(BadRequestException)
+    }
+
+    /**
+     * Test cases for user leave
+     */
+
+    @Test
+    def "User leave normal case"() {
+        given:
+        this.mockUserDomainModel.setRole(Role.COMMON)
+        this.mockUserDomainModel.setState(UserState.ACTIVE)
+
+        def mockUpdatedUserDomainModel = UserDomainModel.of(
+                (String)this.mockUserDomainModel.getId(),
+                (String)this.mockUserDomainModel.getEmail(),
+                (String)this.mockUserDomainModel.getName(),
+                "test12345!",
+                (String)this.mockUserDomainModel.getStudentId(),
+                (Integer)this.mockUserDomainModel.getAdmissionYear(),
+                Role.NONE,
+                null,
+                UserState.INACTIVE
+        )
+
+        def leader = UserDomainModel.of(
+                "test1",
+                "test1@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.LEADER_CIRCLE,
+                null,
+                UserState.ACTIVE
+        )
+
+        def circle = CircleDomainModel.of(
+                "test",
+                "test",
+                null,
+                "test_description",
+                false,
+                leader
+        )
+
+        def circleMember = CircleMemberDomainModel.of(
+                "test",
+                CircleMemberStatus.MEMBER,
+                circle,
+                "test",
+                "test"
+        )
+
+        this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
+        this.userPort.updateRole("test", Role.NONE) >> Optional.of(mockUpdatedUserDomainModel)
+        this.circleMemberPort.findByUserId("test") >> List.of(circleMember)
+        circleMember.setStatus(CircleMemberStatus.LEAVE)
+        this.circleMemberPort.updateStatus("test", CircleMemberStatus.LEAVE) >> Optional.of(circleMember)
+        this.userPort.updateState("test", UserState.INACTIVE) >> Optional.of(mockUpdatedUserDomainModel)
+
+        when:
+        def userResponseDto = this.userService.leave("test")
+
+        then:
+        userResponseDto instanceof UserResponseDto
+        with(userResponseDto) {
+            getState() == UserState.INACTIVE
+        }
+    }
+
+    @Test
+    def "User leave invalid user role"() {
+        given:
+        this.mockUserDomainModel.setState(UserState.ACTIVE)
+
+        def mockUpdatedUserDomainModel = UserDomainModel.of(
+                (String)this.mockUserDomainModel.getId(),
+                (String)this.mockUserDomainModel.getEmail(),
+                (String)this.mockUserDomainModel.getName(),
+                "test12345!",
+                (String)this.mockUserDomainModel.getStudentId(),
+                (Integer)this.mockUserDomainModel.getAdmissionYear(),
+                Role.PRESIDENT,
+                null,
+                UserState.INACTIVE
+        )
+
+        this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
+        this.userPort.updateState("test", UserState.INACTIVE) >> Optional.of(mockUpdatedUserDomainModel)
+
+        when: "User Role is president"
+        this.mockUserDomainModel.setRole(Role.PRESIDENT)
+        this.userService.leave("test")
+
+        then:
+        thrown(UnauthorizedException)
+
+        when: "User Role is leader of circle"
+        this.mockUserDomainModel.setRole(Role.LEADER_CIRCLE)
+        this.userService.leave("test")
+
+        then:
+        thrown(UnauthorizedException)
+
+        when: "User Role is leader of alumni"
+        this.mockUserDomainModel.setRole(Role.LEADER_ALUMNI)
+        this.userService.leave("test")
+
+        then:
+        thrown(UnauthorizedException)
+    }
+
+    @Test
+    def "User leave invalid user state"() {
+        given:
+        this.mockUserDomainModel.setState(UserState.ACTIVE)
+
+        def mockUpdatedUserDomainModel = UserDomainModel.of(
+                (String)this.mockUserDomainModel.getId(),
+                (String)this.mockUserDomainModel.getEmail(),
+                (String)this.mockUserDomainModel.getName(),
+                "test12345!",
+                (String)this.mockUserDomainModel.getStudentId(),
+                (Integer)this.mockUserDomainModel.getAdmissionYear(),
+                Role.PRESIDENT,
+                null,
+                UserState.INACTIVE
+        )
+
+        this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
+        this.userPort.updateState("test", UserState.INACTIVE) >> Optional.of(mockUpdatedUserDomainModel)
+
+        when: "User state is inactive"
+        this.mockUserDomainModel.setState(UserState.INACTIVE)
+        this.userService.leave("test")
+
+        then:
+        thrown(UnauthorizedException)
+
+        when: "User state is blocked"
+        this.mockUserDomainModel.setState(UserState.BLOCKED)
+        this.userService.leave("test")
+
+        then:
+        thrown(UnauthorizedException)
+
+        when: "User state is wait"
+        this.mockUserDomainModel.setState(UserState.WAIT)
+        this.userService.leave("test")
+
+        then:
+        thrown(UnauthorizedException)
     }
 }

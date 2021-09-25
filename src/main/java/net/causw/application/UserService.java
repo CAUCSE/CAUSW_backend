@@ -7,6 +7,7 @@ import net.causw.application.dto.UserResponseDto;
 import net.causw.application.dto.UserSignInRequestDto;
 import net.causw.application.dto.UserUpdateRequestDto;
 import net.causw.application.dto.UserUpdateRoleRequestDto;
+import net.causw.application.spi.CircleMemberPort;
 import net.causw.application.spi.CirclePort;
 import net.causw.application.spi.UserPort;
 import net.causw.config.JwtTokenProvider;
@@ -14,8 +15,10 @@ import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
+import net.causw.domain.model.CircleMemberStatus;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
+import net.causw.domain.model.UserState;
 import net.causw.domain.validation.AdmissionYearValidator;
 import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.DuplicatedEmailValidator;
@@ -36,26 +39,39 @@ import java.util.List;
 public class UserService {
     private final UserPort userPort;
     private final CirclePort circlePort;
+    private final CircleMemberPort circleMemberPort;
     private final JwtTokenProvider jwtTokenProvider;
     private final Validator validator;
 
     public UserService(
             UserPort userPort,
             CirclePort circlePort,
+            CircleMemberPort circleMemberPort,
             JwtTokenProvider jwtTokenProvider,
             Validator validator
     ) {
         this.userPort = userPort;
         this.circlePort = circlePort;
+        this.circleMemberPort = circleMemberPort;
         this.jwtTokenProvider = jwtTokenProvider;
         this.validator = validator;
     }
 
     @Transactional(readOnly = true)
     public UserResponseDto findById(String id) {
+        return UserResponseDto.from(this.userPort.findById(id).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid user id"
+                )
+        ));
+    }
+
+    @Transactional(readOnly = true)
+    public UserResponseDto findByName(String currentUserId, String name) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel user = this.userPort.findById(id).orElseThrow(
+        UserDomainModel user = this.userPort.findById(currentUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "Invalid user id"
@@ -66,11 +82,6 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT, Role.ADMIN)))
                 .validate();
 
-        return UserResponseDto.from(user);
-    }
-
-    @Transactional(readOnly = true)
-    public UserResponseDto findByName(String name) {
         return UserResponseDto.from(this.userPort.findByName(name).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -258,6 +269,47 @@ public class UserService {
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         "Application id checked, but exception occurred"
+                )
+        ));
+    }
+
+    @Transactional
+    public UserResponseDto leave(String id) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
+        UserDomainModel user = this.userPort.findById(id).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid login user id"
+                )
+        );
+
+        validatorBucket
+                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.COMMON, Role.PROFESSOR)))
+                .consistOf(UserStateValidator.of(user.getState()))
+                .validate();
+
+        // TODO: When we use session, should implement delete JWT
+        // TODO: Should implement return locker and add log of locker
+
+        // Change user role to NONE
+        this.userPort.updateRole(id, Role.NONE).orElseThrow(
+                () -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "User id checked, but exception occurred"
+                )
+        );
+
+        // Leave from circle where user joined
+        this.circleMemberPort.findByUserId(id).forEach(
+                circleMemberDomainModel ->
+                        this.circleMemberPort.updateStatus(circleMemberDomainModel.getId(), CircleMemberStatus.LEAVE)
+        );
+
+        return UserResponseDto.from(this.userPort.updateState(id, UserState.INACTIVE).orElseThrow(
+                () -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "User id checked, but exception occurred"
                 )
         ));
     }
