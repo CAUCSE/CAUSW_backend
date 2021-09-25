@@ -158,8 +158,17 @@ public class CircleService {
         validatorBucket
                 .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted()))
                 .consistOf(ConstraintValidator.of(circleDomainModel, this.validator))
-                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT, Role.ADMIN, Role.LEADER_CIRCLE)))
-                .consistOf(UserEqualValidator.of(circleDomainModel.getLeader().getId(), user.getId()))
+                .consistOf(UserRoleValidator.of(
+                        user.getRole(),
+                        List.of(Role.PRESIDENT, Role.ADMIN, Role.LEADER_CIRCLE)
+                ));
+
+        if (user.getRole().equals(Role.LEADER_CIRCLE)) {
+            validatorBucket
+                    .consistOf(UserEqualValidator.of(circleDomainModel.getLeader().getId(), user.getId()));
+        }
+
+        validatorBucket
                 .consistOf(UserStateValidator.of(user.getState()))
                 .validate();
 
