@@ -1,5 +1,6 @@
 package net.causw.application
 
+import net.causw.application.dto.CircleResponseDto
 import net.causw.application.dto.UserCreateRequestDto
 import net.causw.application.dto.UserPasswordUpdateRequestDto
 import net.causw.application.dto.UserResponseDto
@@ -68,7 +69,6 @@ class UserServiceTest extends Specification {
     /**
      * Test cases for user role update
      */
-
     @Test
     def "User role grant normal case"() {
         given:
@@ -357,7 +357,6 @@ class UserServiceTest extends Specification {
     /**
      * Test cases for user update
      */
-
     @Test
     def "User update normal case"() {
         given:
@@ -458,7 +457,6 @@ class UserServiceTest extends Specification {
     /**
      * Test cases for user sign-up
      */
-
     @Test
     def "User sign-up normal case"() {
         given:
@@ -723,7 +721,6 @@ class UserServiceTest extends Specification {
     /**
      * Test cases for user password update
      */
-
     @Test
     def "User password update normal case"() {
         given:
@@ -813,7 +810,6 @@ class UserServiceTest extends Specification {
     /**
      * Test cases for user leave
      */
-
     @Test
     def "User leave normal case"() {
         given:
@@ -918,5 +914,44 @@ class UserServiceTest extends Specification {
 
         then:
         thrown(UnauthorizedException)
+    }
+
+    /**
+     * Test cases for get circle list
+     */
+    @Test
+    def "User get circle list normal case"() {
+        given:
+        this.mockUserDomainModel.setRole(Role.LEADER_CIRCLE)
+        this.mockUserDomainModel.setState(UserState.ACTIVE)
+        def circle = CircleDomainModel.of(
+                "test",
+                "test",
+                null,
+                "test_description",
+                false,
+                (UserDomainModel) this.mockUserDomainModel
+        )
+
+        def circleMember = CircleMemberDomainModel.of(
+                "test",
+                CircleMemberStatus.MEMBER,
+                circle,
+                "test",
+                "test"
+        )
+
+        this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
+        this.circleMemberPort.getCircleListByUserId("test") >> List.of(circle)
+
+        when:
+        def circleResponseDtoList = this.userService.getCircleList("test")
+
+        then:
+        circleResponseDtoList instanceof List<CircleResponseDto>
+        with(circleResponseDtoList) {
+            get(0).getId() == "test"
+            get(0).getName() == "test"
+        }
     }
 }
