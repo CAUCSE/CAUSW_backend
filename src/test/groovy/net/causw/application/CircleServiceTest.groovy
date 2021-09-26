@@ -429,14 +429,6 @@ class CircleServiceTest extends Specification {
 
         then:
         thrown(UnauthorizedException)
-
-        when: "call user is not active"
-        mockApiCallUser.setRole(Role.LEADER_CIRCLE)
-        mockApiCallUser.setState(UserState.INACTIVE)
-        this.circleService.update("test", "test", mockCircleUpdateRequestDto)
-
-        then:
-        thrown(UnauthorizedException)
     }
 
     @Test
@@ -598,6 +590,7 @@ class CircleServiceTest extends Specification {
         this.mockCircleMemberDomainModel.setUserId("test1")
         this.mockCircleMemberDomainModel.setStatus(CircleMemberStatus.AWAIT)
         this.circleMemberPort.findById("test") >> Optional.of(this.mockCircleMemberDomainModel)
+        this.userPort.findById("test") >> Optional.of(this.leader)
 
         this.circleMemberPort.updateStatus("test", CircleMemberStatus.MEMBER) >> Optional.of(updatedCircleMemberDomainModel)
         this.circleMemberPort.updateStatus("test", CircleMemberStatus.REJECT) >> Optional.of(updatedCircleMemberDomainModel)
@@ -632,6 +625,7 @@ class CircleServiceTest extends Specification {
         this.mockCircleMemberDomainModel.setUserId("test1")
         this.mockCircleMemberDomainModel.setStatus(CircleMemberStatus.AWAIT)
         this.circleMemberPort.findById("test") >> Optional.of(this.mockCircleMemberDomainModel)
+        this.userPort.findById("invalid-test") >> Optional.of(this.leader)
 
         this.circleMemberPort.updateStatus("test", CircleMemberStatus.MEMBER) >> Optional.of(updatedCircleMemberDomainModel)
         this.circleMemberPort.updateStatus("test", CircleMemberStatus.REJECT) >> Optional.of(updatedCircleMemberDomainModel)
@@ -718,6 +712,7 @@ class CircleServiceTest extends Specification {
                 "test"
         )
 
+        this.userPort.findById("test") >> Optional.of(this.leader)
         this.circleMemberPort.findByUserIdAndCircleId("test1", "test") >> Optional.of(this.mockCircleMemberDomainModel)
         this.circleMemberPort.updateStatus("test", CircleMemberStatus.DROP) >> Optional.of(updatedCircleMemberDomainModel)
 
@@ -740,6 +735,8 @@ class CircleServiceTest extends Specification {
                 "test"
         )
 
+        this.userPort.findById("test") >> Optional.of(this.leader)
+        this.userPort.findById("test1") >> Optional.of(this.leader)
         this.circleMemberPort.findByUserIdAndCircleId("test1", "test") >> Optional.of(this.mockCircleMemberDomainModel)
         this.circleMemberPort.findByUserIdAndCircleId("test", "test") >> Optional.of(this.mockCircleMemberDomainModel)
         this.circleMemberPort.updateStatus("test", CircleMemberStatus.DROP) >> Optional.of(updatedCircleMemberDomainModel)

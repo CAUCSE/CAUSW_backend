@@ -24,36 +24,38 @@ public class CircleMemberInvalidStatusValidator extends AbstractValidator {
 
     @Override
     public void validate() {
-        for (CircleMemberStatus invalidStatus : this.invalidStatusList) {
-            if (this.status.equals(invalidStatus)) {
-                if (invalidStatus == CircleMemberStatus.MEMBER) {
-                    throw new BadRequestException(
-                            ErrorCode.ROW_ALREADY_EXIST,
-                            "The user is already member of the circle"
-                    );
-                }
+        this.invalidStatusList.forEach(
+            invalidStatus -> {
+                if (this.status.equals(invalidStatus)) {
+                    if (invalidStatus == CircleMemberStatus.MEMBER) {
+                        throw new BadRequestException(
+                                ErrorCode.ROW_ALREADY_EXIST,
+                                "The user is already member of the circle"
+                        );
+                    }
 
-                if (invalidStatus == CircleMemberStatus.LEAVE) {
-                    throw new BadRequestException(
-                            ErrorCode.APPLY_NOT_EXIST,
-                            "The user did not applied to the circle"
-                    );
-                }
+                    if (invalidStatus == CircleMemberStatus.LEAVE) {
+                        throw new BadRequestException(
+                                ErrorCode.APPLY_NOT_EXIST,
+                                "The user did not applied to the circle"
+                        );
+                    }
 
-                if (invalidStatus == CircleMemberStatus.AWAIT) {
-                    throw new BadRequestException(
-                            ErrorCode.AWAITING_STATUS,
-                            "The user is awaiting the approval from the circle"
-                    );
-                }
+                    if (invalidStatus == CircleMemberStatus.AWAIT) {
+                        throw new BadRequestException(
+                                ErrorCode.AWAITING_STATUS,
+                                "The user is awaiting the approval from the circle"
+                        );
+                    }
 
-                if (invalidStatus == CircleMemberStatus.DROP) {
-                    throw new UnauthorizedException(
-                            ErrorCode.BLOCKED_USER,
-                            "The user is blocked from the circle"
-                    );
+                    if (invalidStatus == CircleMemberStatus.DROP) {
+                        throw new UnauthorizedException(
+                                ErrorCode.BLOCKED_USER,
+                                "The user is blocked from the circle"
+                        );
+                    }
                 }
             }
-        }
+        );
     }
 }

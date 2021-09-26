@@ -24,7 +24,7 @@ public class UserRoleValidator extends AbstractValidator {
     @Override
     public void validate() {
         for (Role targetRole : this.targetRoleList) {
-            if (this.requestUserRole.equals(targetRole)) {
+            if (this.requestUserRole.equals(targetRole) || this.requestUserRole.equals(Role.ADMIN)) {
                 return;
             }
         }
