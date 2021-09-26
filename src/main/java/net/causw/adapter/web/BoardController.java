@@ -13,8 +13,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/boards")
@@ -29,6 +32,13 @@ public class BoardController {
     @ResponseStatus(value = HttpStatus.OK)
     public BoardResponseDto findById(@PathVariable String id) {
         return this.boardService.findById(id);
+    }
+
+    @GetMapping
+    @ResponseStatus(value = HttpStatus.OK)
+    public List<BoardResponseDto> findByCircleId(@AuthenticationPrincipal String currentUserId,
+                                                 @RequestParam String circleId) {
+        return this.boardService.findByCircleId(currentUserId, circleId);
     }
 
     @PostMapping

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -26,6 +27,14 @@ public class BoardPortImpl implements BoardPort {
     @Override
     public Optional<BoardDomainModel> findById(String id) {
         return this.boardRepository.findById(id).map(this::entityToDomainModel);
+    }
+
+    @Override
+    public List<BoardDomainModel> findByCircleId(String circleId) {
+        return this.boardRepository.findByCircle_IdAndIsDeletedIsFalse(circleId)
+                .stream()
+                .map(this::entityToDomainModel)
+                .collect(Collectors.toList());
     }
 
     @Override
