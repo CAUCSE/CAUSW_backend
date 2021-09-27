@@ -761,4 +761,55 @@ class CircleServiceTest extends Specification {
         thrown(BadRequestException)
     }
 
+    /**
+     * Test cases for get user list
+     */
+    @Test
+    def "Get user list normal case"() {
+        given:
+        this.userPort.findById("test") >> Optional.of(this.leader)
+        this.circlePort.findById("test") >> Optional.of(this.mockCircleDomainModel)
+        this.circleMemberPort.findByCircleId("test", CircleMemberStatus.MEMBER) >> List.of(this.mockCircleMemberDomainModel)
+
+        when:
+        this.mockCircleMemberDomainModel.setUserId("test")
+        def circleMemberResponseDtoList = this.circleService.getUserList("test", "test", CircleMemberStatus.MEMBER)
+
+        then:
+        circleMemberResponseDtoList instanceof List<CircleMemberResponseDto>
+        with(circleMemberResponseDtoList) {
+            get(0).getUserId() == "test"
+            get(0).getStatus() == CircleMemberStatus.MEMBER
+        }
+    }
+
+    @Test
+    def "Get user list of circle already deleted"() {
+        given:
+        this.userPort.findById("test") >> Optional.of(this.leader)
+        this.circlePort.findById("test") >> Optional.of(this.mockCircleDomainModel)
+        this.circleMemberPort.findByCircleId("test", CircleMemberStatus.MEMBER) >> List.of(this.mockCircleMemberDomainModel)
+
+        when:
+        this.mockCircleDomainModel.setIsDeleted(true)
+        this.circleService.getUserList("test", "test", CircleMemberStatus.MEMBER)
+
+        then:
+        thrown(BadRequestException)
+    }
+
+    @Test
+    def "Get user list invalid role of request user"() {
+        given:
+        this.userPort.findById("test") >> Optional.of(this.leader)
+        this.circlePort.findById("test") >> Optional.of(this.mockCircleDomainModel)
+        this.circleMemberPort.findByCircleId("test", CircleMemberStatus.MEMBER) >> List.of(this.mockCircleMemberDomainModel)
+
+        when:
+        this.leader.setRole(Role.COMMON)
+        this.circleService.getUserList("test", "test", CircleMemberStatus.MEMBER)
+
+        then:
+        thrown(UnauthorizedException)
+    }
 }

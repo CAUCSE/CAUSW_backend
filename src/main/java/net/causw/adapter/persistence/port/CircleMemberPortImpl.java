@@ -46,6 +46,15 @@ public class CircleMemberPortImpl implements CircleMemberPort {
     }
 
     @Override
+    public List<CircleMemberDomainModel> findByCircleId(String circleId, CircleMemberStatus status) {
+        return this.circleMemberRepository.findByCircle_Id(circleId)
+                .stream()
+                .filter(circleMember -> circleMember.getStatus() == status)
+                .map(this::entityToDomainModel)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public Optional<CircleMemberDomainModel> findByUserIdAndCircleId(String userId, String circleId) {
         return this.circleMemberRepository.findByUser_IdAndCircle_Id(userId, circleId).map(this::entityToDomainModel);
     }

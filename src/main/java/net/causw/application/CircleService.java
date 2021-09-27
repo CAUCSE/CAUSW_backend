@@ -30,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CircleService {
@@ -66,6 +67,39 @@ public class CircleService {
                 .validate();
 
         return CircleResponseDto.from(circle);
+    }
+
+    @Transactional(readOnly = true)
+    public List<CircleMemberResponseDto> getUserList(
+            String currentUserId,
+            String circleId,
+            CircleMemberStatus status
+    ) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
+        UserDomainModel user = this.userPort.findById(currentUserId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid user id"
+                )
+        );
+
+        CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid circle id"
+                )
+        );
+
+        validatorBucket
+                .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted()))
+                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.LEADER_CIRCLE, Role.PRESIDENT)))
+                .validate();
+
+        return this.circleMemberPort.findByCircleId(circleId, status)
+                .stream()
+                .map(CircleMemberResponseDto::from)
+                .collect(Collectors.toList());
     }
 
     @Transactional

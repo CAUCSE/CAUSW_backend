@@ -6,6 +6,7 @@ import net.causw.application.dto.CircleMemberResponseDto;
 import net.causw.application.dto.CircleResponseDto;
 import net.causw.application.dto.CircleUpdateRequestDto;
 import net.causw.application.dto.DuplicatedCheckDto;
+import net.causw.domain.model.CircleMemberStatus;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,8 +15,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 
 @RestController
@@ -31,6 +35,20 @@ public class CircleController {
     @ResponseStatus(value = HttpStatus.OK)
     public CircleResponseDto findById(@PathVariable String id) {
         return this.circleService.findById(id);
+    }
+
+    @GetMapping(value = "/{id}/users")
+    @ResponseStatus(value = HttpStatus.OK)
+    public List<CircleMemberResponseDto> getUserList(
+            @AuthenticationPrincipal String currentUserId,
+            @PathVariable String id,
+            @RequestParam CircleMemberStatus status
+    ) {
+        return this.circleService.getUserList(
+                currentUserId,
+                id,
+                status
+        );
     }
 
     @PostMapping
