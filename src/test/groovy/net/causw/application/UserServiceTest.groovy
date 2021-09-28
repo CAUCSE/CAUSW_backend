@@ -919,46 +919,4 @@ class UserServiceTest extends Specification {
         then:
         thrown(UnauthorizedException)
     }
-
-    @Test
-    def "User leave invalid user state"() {
-        given:
-        this.mockUserDomainModel.setState(UserState.ACTIVE)
-
-        def mockUpdatedUserDomainModel = UserDomainModel.of(
-                (String)this.mockUserDomainModel.getId(),
-                (String)this.mockUserDomainModel.getEmail(),
-                (String)this.mockUserDomainModel.getName(),
-                "test12345!",
-                (String)this.mockUserDomainModel.getStudentId(),
-                (Integer)this.mockUserDomainModel.getAdmissionYear(),
-                Role.PRESIDENT,
-                null,
-                UserState.INACTIVE
-        )
-
-        this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
-        this.userPort.updateState("test", UserState.INACTIVE) >> Optional.of(mockUpdatedUserDomainModel)
-
-        when: "User state is inactive"
-        this.mockUserDomainModel.setState(UserState.INACTIVE)
-        this.userService.leave("test")
-
-        then:
-        thrown(UnauthorizedException)
-
-        when: "User state is blocked"
-        this.mockUserDomainModel.setState(UserState.BLOCKED)
-        this.userService.leave("test")
-
-        then:
-        thrown(UnauthorizedException)
-
-        when: "User state is wait"
-        this.mockUserDomainModel.setState(UserState.WAIT)
-        this.userService.leave("test")
-
-        then:
-        thrown(UnauthorizedException)
-    }
 }

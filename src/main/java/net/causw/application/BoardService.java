@@ -45,12 +45,20 @@ public class BoardService {
 
     @Transactional(readOnly = true)
     public BoardResponseDto findById(String id) {
-        return BoardResponseDto.from(this.boardPort.findById(id).orElseThrow(
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
+        BoardDomainModel board = this.boardPort.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "Invalid board id"
                 )
-        ));
+        );
+
+        validatorBucket
+                .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted()))
+                .validate();
+
+        return BoardResponseDto.from(board);
     }
 
     @Transactional
@@ -73,15 +81,19 @@ public class BoardService {
                             )
                     );
                     validatorBucket
-                            .consistOf(UserEqualValidator.of(circle.getLeader().getId(), creatorId))
-                            .consistOf(UserRoleValidator.of(creatorDomainModel.getRole(), List.of(Role.LEADER_CIRCLE, Role.ADMIN)));
+                            .consistOf(UserRoleValidator.of(creatorDomainModel.getRole(), List.of(Role.LEADER_CIRCLE)));
+
+                    if (creatorDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
+                        validatorBucket
+                                .consistOf(UserEqualValidator.of(circle.getLeader().getId(), creatorId));
+                    }
 
                     return circle;
                 }
         ).orElseGet(
                 () -> {
                     validatorBucket
-                            .consistOf(UserRoleValidator.of(creatorDomainModel.getRole(), List.of(Role.PRESIDENT, Role.ADMIN)));
+                            .consistOf(UserRoleValidator.of(creatorDomainModel.getRole(), List.of(Role.PRESIDENT)));
 
                     return null;
                 }
@@ -124,14 +136,19 @@ public class BoardService {
                         "Invalid board id"
                 )
         );
-        validatorBucket.consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted()));
+        validatorBucket
+                .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted()));
 
 
         boardDomainModel.getCircle().ifPresentOrElse(
                 circleDomainModel -> {
                     validatorBucket
-                            .consistOf(UserEqualValidator.of(circleDomainModel.getLeader().getId(), updaterId))
                             .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.LEADER_CIRCLE)));
+
+                    if (updaterDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
+                        validatorBucket
+                                .consistOf(UserEqualValidator.of(circleDomainModel.getLeader().getId(), updaterId));
+                    }
                 },
                 () -> validatorBucket
                         .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.PRESIDENT)))
@@ -180,19 +197,26 @@ public class BoardService {
                         "Invalid board id"
                 )
         );
-        validatorBucket.consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted()));
+        validatorBucket
+                .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted()));
 
         boardDomainModel.getCircle().ifPresentOrElse(
-                circleDomainModel ->
+                circleDomainModel -> {
+                    validatorBucket
+                            .consistOf(UserRoleValidator.of(deleterDomainModel.getRole(), List.of(Role.LEADER_CIRCLE)));
+
+                    if (deleterDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
                         validatorBucket
-                                .consistOf(UserEqualValidator.of(circleDomainModel.getLeader().getId(), deleterId))
-                                .consistOf(UserRoleValidator.of(deleterDomainModel.getRole(), List.of(Role.LEADER_CIRCLE)))
-                                .validate(),
+                                .consistOf(UserEqualValidator.of(circleDomainModel.getLeader().getId(), deleterId));
+                    }
+                },
                 () ->
                         validatorBucket
                                 .consistOf(UserRoleValidator.of(deleterDomainModel.getRole(), List.of(Role.PRESIDENT)))
-                                .validate()
         );
+
+        validatorBucket
+                .validate();
 
         return BoardResponseDto.from(this.boardPort.delete(boardId).orElseThrow(
                 () -> new InternalServerException(

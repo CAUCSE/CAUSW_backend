@@ -19,12 +19,11 @@ import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.validation.CircleMemberInvalidStatusValidator;
 import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.DuplicatedCircleNameValidator;
+import net.causw.domain.validation.GrantableRoleValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
-import net.causw.domain.validation.UpdatableGranteeRoleValidator;
 import net.causw.domain.validation.UserEqualValidator;
 import net.causw.domain.validation.UserNotEqualValidator;
 import net.causw.domain.validation.UserRoleValidator;
-import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,12 +52,20 @@ public class CircleService {
 
     @Transactional(readOnly = true)
     public CircleResponseDto findById(String id) {
-        return CircleResponseDto.from(this.circlePort.findById(id).orElseThrow(
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
+        CircleDomainModel circle = this.circlePort.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "Invalid circle id"
                 )
-        ));
+        );
+
+        validatorBucket
+                .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted()))
+                .validate();
+
+        return CircleResponseDto.from(circle);
     }
 
     @Transactional
@@ -91,10 +98,9 @@ public class CircleService {
          */
         validatorBucket
                 .consistOf(ConstraintValidator.of(circleDomainModel, this.validator))
-                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT, Role.ADMIN)))
+                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT)))
                 .consistOf(DuplicatedCircleNameValidator.of(this.circlePort, circleCreateRequestDto.getName()))
-                .consistOf(UpdatableGranteeRoleValidator.of(Role.LEADER_CIRCLE, leader.getRole()))
-                .consistOf(UserStateValidator.of(leader.getState()))
+                .consistOf(GrantableRoleValidator.of(requestUser.getRole(), Role.LEADER_CIRCLE, leader.getRole()))
                 .validate();
 
         // Grant role to the LEADER
@@ -160,7 +166,7 @@ public class CircleService {
                 .consistOf(ConstraintValidator.of(circleDomainModel, this.validator))
                 .consistOf(UserRoleValidator.of(
                         user.getRole(),
-                        List.of(Role.PRESIDENT, Role.ADMIN, Role.LEADER_CIRCLE)
+                        List.of(Role.PRESIDENT, Role.LEADER_CIRCLE)
                 ));
 
         if (user.getRole().equals(Role.LEADER_CIRCLE)) {
@@ -169,7 +175,6 @@ public class CircleService {
         }
 
         validatorBucket
-                .consistOf(UserStateValidator.of(user.getState()))
                 .validate();
 
         return CircleResponseDto.from(this.circlePort.update(circleId, circleDomainModel).orElseThrow(
@@ -265,6 +270,14 @@ public class CircleService {
             String circleId
     ) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
+
+        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid request user id"
+                )
+        );
+
         CircleMemberDomainModel circleMember = this.circleMemberPort.findByUserIdAndCircleId(userId, circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -272,10 +285,16 @@ public class CircleService {
                 )
         );
 
-        // TODO : Request User가 ADMIN인 경우 허용
         validatorBucket
                 .consistOf(TargetIsDeletedValidator.of(circleMember.getCircle().getIsDeleted()))
-                .consistOf(UserEqualValidator.of(requestUserId, circleMember.getCircle().getLeader().getId()))
+                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.LEADER_CIRCLE)));
+
+        if (requestUser.getRole().equals(Role.LEADER_CIRCLE)) {
+            validatorBucket
+                    .consistOf(UserEqualValidator.of(requestUserId, circleMember.getCircle().getLeader().getId()));
+        }
+
+        validatorBucket
                 .consistOf(CircleMemberInvalidStatusValidator.of(
                         circleMember.getStatus(),
                         List.of(CircleMemberStatus.AWAIT, CircleMemberStatus.DROP, CircleMemberStatus.LEAVE)
@@ -315,6 +334,14 @@ public class CircleService {
             CircleMemberStatus targetStatus
     ) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
+
+        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid request user id"
+                )
+        );
+
         CircleMemberDomainModel circleMember = this.circleMemberPort.findById(applicationId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -322,10 +349,16 @@ public class CircleService {
                 )
         );
 
-        // TODO : Request User가 ADMIN인 경우 허용
         validatorBucket
                 .consistOf(TargetIsDeletedValidator.of(circleMember.getCircle().getIsDeleted()))
-                .consistOf(UserEqualValidator.of(requestUserId, circleMember.getCircle().getLeader().getId()))
+                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.LEADER_CIRCLE)));
+
+        if (requestUser.getRole().equals(Role.LEADER_CIRCLE)) {
+            validatorBucket
+                    .consistOf(UserEqualValidator.of(requestUserId, circleMember.getCircle().getLeader().getId()));
+        }
+
+        validatorBucket
                 .consistOf(CircleMemberInvalidStatusValidator.of(
                         circleMember.getStatus(),
                         List.of(CircleMemberStatus.MEMBER, CircleMemberStatus.DROP, CircleMemberStatus.LEAVE)

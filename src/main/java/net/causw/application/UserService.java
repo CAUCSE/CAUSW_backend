@@ -22,10 +22,9 @@ import net.causw.domain.model.UserState;
 import net.causw.domain.validation.AdmissionYearValidator;
 import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.DuplicatedEmailValidator;
+import net.causw.domain.validation.GrantableRoleValidator;
 import net.causw.domain.validation.PasswordCorrectValidator;
 import net.causw.domain.validation.PasswordFormatValidator;
-import net.causw.domain.validation.UpdatableGrantedRoleValidator;
-import net.causw.domain.validation.UpdatableGranteeRoleValidator;
 import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
@@ -79,7 +78,7 @@ public class UserService {
         );
 
         validatorBucket
-                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT, Role.ADMIN)))
+                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
                 .validate();
 
         return UserResponseDto.from(this.userPort.findByName(name).orElseThrow(
@@ -219,8 +218,11 @@ public class UserService {
          * 2) Combination of grantor role and the grantee role must be acceptable
          */
         validatorBucket
-                .consistOf(UpdatableGrantedRoleValidator.of(grantor.getRole(), userUpdateRoleRequestDto.getRole()))
-                .consistOf(UpdatableGranteeRoleValidator.of(grantor.getRole(), grantee.getRole()))
+                .consistOf(GrantableRoleValidator.of(
+                        grantor.getRole(),
+                        userUpdateRoleRequestDto.getRole(),
+                        grantee.getRole()
+                ))
                 .validate();
 
         /* Delegate the role
@@ -286,7 +288,6 @@ public class UserService {
 
         validatorBucket
                 .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.COMMON, Role.PROFESSOR)))
-                .consistOf(UserStateValidator.of(user.getState()))
                 .validate();
 
         // TODO: When we use session, should implement delete JWT
