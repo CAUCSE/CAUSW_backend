@@ -44,8 +44,6 @@ class BoardServiceTest extends Specification {
                 "test",
                 "test_description",
                 Arrays.asList("PRESIDENT", "COUNCIL"),
-                Arrays.asList("PRESIDENT", "COUNCIL"),
-                Arrays.asList("PRESIDENT", "COUNCIL"),
                 false,
                 null
         )
@@ -83,7 +81,9 @@ class BoardServiceTest extends Specification {
                 CircleMemberStatus.MEMBER,
                 circle,
                 "test",
-                "test"
+                "test",
+                null,
+                null
         )
         this.mockBoardDomainModel.setCircle(circle)
 
@@ -131,7 +131,9 @@ class BoardServiceTest extends Specification {
                 CircleMemberStatus.MEMBER,
                 circle,
                 "test",
-                "test"
+                "test",
+                null,
+                null
         )
         this.mockBoardDomainModel.setCircle(circle)
 
@@ -176,7 +178,9 @@ class BoardServiceTest extends Specification {
                 CircleMemberStatus.MEMBER,
                 circle,
                 "test",
-                "test"
+                "test",
+                null,
+                null
         )
         this.mockBoardDomainModel.setCircle(circle)
 
@@ -261,8 +265,6 @@ class BoardServiceTest extends Specification {
                 "test",
                 "test_description",
                 Arrays.asList("PRESIDENT", "COUNCIL"),
-                Arrays.asList("PRESIDENT", "COUNCIL"),
-                Arrays.asList("PRESIDENT", "COUNCIL"),
                 null
         )).thenReturn((BoardDomainModel) this.mockBoardDomainModel)
         def boardResponseDto = this.boardService.create("test", mockBoardCreateRequestDto)
@@ -281,8 +283,6 @@ class BoardServiceTest extends Specification {
         PowerMockito.when(BoardDomainModel.of(
                 "test",
                 "test_description",
-                Arrays.asList("PRESIDENT", "COUNCIL"),
-                Arrays.asList("PRESIDENT", "COUNCIL"),
                 Arrays.asList("PRESIDENT", "COUNCIL"),
                 circleDomainModel
         )).thenReturn((BoardDomainModel) this.mockBoardDomainModel)
@@ -331,8 +331,6 @@ class BoardServiceTest extends Specification {
                 "",
                 "test_description",
                 Arrays.asList("PRESIDENT", "COUNCIL"),
-                Arrays.asList("PRESIDENT", "COUNCIL"),
-                Arrays.asList("PRESIDENT", "COUNCIL"),
                 null
         )).thenReturn((BoardDomainModel) this.mockBoardDomainModel)
         this.boardService.create("test", mockBoardCreateRequestDto)
@@ -349,46 +347,6 @@ class BoardServiceTest extends Specification {
         PowerMockito.when(BoardDomainModel.of(
                 "test",
                 "test_description",
-                null,
-                Arrays.asList("PRESIDENT", "COUNCIL"),
-                Arrays.asList("PRESIDENT", "COUNCIL"),
-                null
-        )).thenReturn((BoardDomainModel) this.mockBoardDomainModel)
-        this.boardService.create("test", mockBoardCreateRequestDto)
-
-        then:
-        thrown(ConstraintViolationException)
-
-        when: "modify role is null"
-        mockBoardCreateRequestDto.setCreateRoleList(Arrays.asList("PRESIDENT", "COUNCIL"))
-        this.mockBoardDomainModel.setCreateRoleList(Arrays.asList("PRESIDENT", "COUNCIL"))
-        mockBoardCreateRequestDto.setModifyRoleList(null)
-        this.mockBoardDomainModel.setModifyRoleList(null)
-        PowerMockito.mockStatic(BoardDomainModel.class)
-        PowerMockito.when(BoardDomainModel.of(
-                "test",
-                "test_description",
-                Arrays.asList("PRESIDENT", "COUNCIL"),
-                null,
-                Arrays.asList("PRESIDENT", "COUNCIL"),
-                null
-        )).thenReturn((BoardDomainModel) this.mockBoardDomainModel)
-        this.boardService.create("test", mockBoardCreateRequestDto)
-
-        then:
-        thrown(ConstraintViolationException)
-
-        when: "read role is null"
-        mockBoardCreateRequestDto.setModifyRoleList(Arrays.asList("PRESIDENT", "COUNCIL"))
-        this.mockBoardDomainModel.setModifyRoleList(Arrays.asList("PRESIDENT", "COUNCIL"))
-        mockBoardCreateRequestDto.setReadRoleList(null)
-        this.mockBoardDomainModel.setReadRoleList(null)
-        PowerMockito.mockStatic(BoardDomainModel.class)
-        PowerMockito.when(BoardDomainModel.of(
-                "test",
-                "test_description",
-                Arrays.asList("PRESIDENT", "COUNCIL"),
-                Arrays.asList("PRESIDENT", "COUNCIL"),
                 null,
                 null
         )).thenReturn((BoardDomainModel) this.mockBoardDomainModel)
@@ -518,8 +476,6 @@ class BoardServiceTest extends Specification {
                 mockBoardUpdateRequestDto.getName(),
                 mockBoardUpdateRequestDto.getDescription(),
                 mockBoardUpdateRequestDto.getCreateRoleList(),
-                mockBoardUpdateRequestDto.getModifyRoleList(),
-                mockBoardUpdateRequestDto.getReadRoleList(),
                 false,
                 null
         )
@@ -536,8 +492,6 @@ class BoardServiceTest extends Specification {
                 mockBoardUpdateRequestDto.getName(),
                 mockBoardUpdateRequestDto.getDescription(),
                 mockBoardUpdateRequestDto.getCreateRoleList(),
-                mockBoardUpdateRequestDto.getModifyRoleList(),
-                mockBoardUpdateRequestDto.getReadRoleList(),
                 false,
                 null
         )).thenReturn(mockUpdatedBoardDomainModel)
@@ -560,8 +514,6 @@ class BoardServiceTest extends Specification {
                 mockBoardUpdateRequestDto.getName(),
                 mockBoardUpdateRequestDto.getDescription(),
                 mockBoardUpdateRequestDto.getCreateRoleList(),
-                mockBoardUpdateRequestDto.getModifyRoleList(),
-                mockBoardUpdateRequestDto.getReadRoleList(),
                 false,
                 mockCircleDomainModel
         )).thenReturn(mockUpdatedBoardDomainModel)
@@ -644,8 +596,6 @@ class BoardServiceTest extends Specification {
                 mockBoardUpdateRequestDto.getName(),
                 mockBoardUpdateRequestDto.getDescription(),
                 mockBoardUpdateRequestDto.getCreateRoleList(),
-                mockBoardUpdateRequestDto.getModifyRoleList(),
-                mockBoardUpdateRequestDto.getReadRoleList(),
                 false,
                 null
         )).thenReturn((BoardDomainModel) this.mockBoardDomainModel)
@@ -665,50 +615,6 @@ class BoardServiceTest extends Specification {
                 mockBoardUpdateRequestDto.getName(),
                 mockBoardUpdateRequestDto.getDescription(),
                 mockBoardUpdateRequestDto.getCreateRoleList(),
-                mockBoardUpdateRequestDto.getModifyRoleList(),
-                mockBoardUpdateRequestDto.getReadRoleList(),
-                false,
-                null
-        )).thenReturn((BoardDomainModel) this.mockBoardDomainModel)
-        this.boardService.update("test", "test", mockBoardUpdateRequestDto)
-
-        then:
-        thrown(ConstraintViolationException)
-
-        when: "modify role is null"
-        mockBoardUpdateRequestDto.setCreateRoleList(Arrays.asList("PRESIDENT", "COUNCIL"))
-        this.mockBoardDomainModel.setCreateRoleList(Arrays.asList("PRESIDENT", "COUNCIL"))
-        mockBoardUpdateRequestDto.setModifyRoleList(null)
-        this.mockBoardDomainModel.setModifyRoleList(null)
-        PowerMockito.mockStatic(BoardDomainModel.class)
-        PowerMockito.when(BoardDomainModel.of(
-                "test",
-                mockBoardUpdateRequestDto.getName(),
-                mockBoardUpdateRequestDto.getDescription(),
-                mockBoardUpdateRequestDto.getCreateRoleList(),
-                mockBoardUpdateRequestDto.getModifyRoleList(),
-                mockBoardUpdateRequestDto.getReadRoleList(),
-                false,
-                null
-        )).thenReturn((BoardDomainModel) this.mockBoardDomainModel)
-        this.boardService.update("test", "test", mockBoardUpdateRequestDto)
-
-        then:
-        thrown(ConstraintViolationException)
-
-        when: "read role is null"
-        mockBoardUpdateRequestDto.setModifyRoleList(Arrays.asList("PRESIDENT", "COUNCIL"))
-        this.mockBoardDomainModel.setModifyRoleList(Arrays.asList("PRESIDENT", "COUNCIL"))
-        mockBoardUpdateRequestDto.setReadRoleList(null)
-        this.mockBoardDomainModel.setReadRoleList(null)
-        PowerMockito.mockStatic(BoardDomainModel.class)
-        PowerMockito.when(BoardDomainModel.of(
-                "test",
-                mockBoardUpdateRequestDto.getName(),
-                mockBoardUpdateRequestDto.getDescription(),
-                mockBoardUpdateRequestDto.getCreateRoleList(),
-                mockBoardUpdateRequestDto.getModifyRoleList(),
-                mockBoardUpdateRequestDto.getReadRoleList(),
                 false,
                 null
         )).thenReturn((BoardDomainModel) this.mockBoardDomainModel)
@@ -829,8 +735,6 @@ class BoardServiceTest extends Specification {
                 (String) this.mockBoardDomainModel.getName(),
                 (String) this.mockBoardDomainModel.getDescription(),
                 (List<String>) this.mockBoardDomainModel.getCreateRoleList(),
-                (List<String>) this.mockBoardDomainModel.getModifyRoleList(),
-                (List<String>) this.mockBoardDomainModel.getReadRoleList(),
                 true,
                 mockCircleDomainModel
         )

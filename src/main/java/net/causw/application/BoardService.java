@@ -10,13 +10,14 @@ import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
+import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.BoardDomainModel;
 import net.causw.domain.model.CircleDomainModel;
 import net.causw.domain.model.CircleMemberDomainModel;
 import net.causw.domain.model.CircleMemberStatus;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
-import net.causw.domain.validation.CircleMemberInvalidStatusValidator;
+import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.UserEqualValidator;
@@ -52,19 +53,41 @@ public class BoardService {
     }
 
     @Transactional(readOnly = true)
-    public BoardResponseDto findById(String id) {
-        BoardDomainModel board = this.boardPort.findById(id).orElseThrow(
+    public BoardResponseDto findById(String userId, String id) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
+        BoardDomainModel boardDomainModel = this.boardPort.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "Invalid board id"
                 )
         );
 
-        ValidatorBucket.of()
-                .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted()))
+        validatorBucket
+                .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted()));
+
+        boardDomainModel.getCircle().ifPresent(
+                circleDomainModel -> {
+                    CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(userId, circleDomainModel.getId()).orElseThrow(
+                            () -> new UnauthorizedException(
+                                    ErrorCode.NOT_MEMBER,
+                                    "The user is not a member of circle"
+                            )
+                    );
+
+                    validatorBucket
+                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted()))
+                            .consistOf(CircleMemberStatusValidator.of(
+                                    circleMemberDomainModel.getStatus(),
+                                    List.of(CircleMemberStatus.MEMBER)
+                            ));
+                }
+        );
+
+        validatorBucket
                 .validate();
 
-        return BoardResponseDto.from(board);
+        return BoardResponseDto.from(boardDomainModel);
     }
 
     @Transactional(readOnly = true)
@@ -72,13 +95,6 @@ public class BoardService {
             String currentUserId,
             String circleId
     ) {
-        UserDomainModel user = this.userPort.findById(currentUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid request user id"
-                )
-        );
-
         CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -86,7 +102,7 @@ public class BoardService {
                 )
         );
 
-        CircleMemberDomainModel circleMember = this.circleMemberPort.findByUserIdAndCircleId(user.getId(), circle.getId()).orElseThrow(
+        CircleMemberDomainModel circleMember = this.circleMemberPort.findByUserIdAndCircleId(currentUserId, circle.getId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "Invalid application information"
@@ -95,9 +111,9 @@ public class BoardService {
 
         ValidatorBucket.of()
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted()))
-                .consistOf(CircleMemberInvalidStatusValidator.of(
+                .consistOf(CircleMemberStatusValidator.of(
                         circleMember.getStatus(),
-                        List.of(CircleMemberStatus.AWAIT, CircleMemberStatus.DROP, CircleMemberStatus.LEAVE, CircleMemberStatus.REJECT)
+                        List.of(CircleMemberStatus.MEMBER)
                 ))
                 .validate();
 
@@ -146,8 +162,6 @@ public class BoardService {
                 boardCreateRequestDto.getName(),
                 boardCreateRequestDto.getDescription(),
                 boardCreateRequestDto.getCreateRoleList(),
-                boardCreateRequestDto.getModifyRoleList(),
-                boardCreateRequestDto.getReadRoleList(),
                 circleDomainModel
         );
 
@@ -187,6 +201,7 @@ public class BoardService {
         boardDomainModel.getCircle().ifPresentOrElse(
                 circleDomainModel -> {
                     validatorBucket
+                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted()))
                             .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.LEADER_CIRCLE)));
 
                     if (updaterDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
@@ -203,8 +218,6 @@ public class BoardService {
                 boardUpdateRequestDto.getName(),
                 boardUpdateRequestDto.getDescription(),
                 boardUpdateRequestDto.getCreateRoleList(),
-                boardUpdateRequestDto.getModifyRoleList(),
-                boardUpdateRequestDto.getReadRoleList(),
                 boardDomainModel.getIsDeleted(),
                 boardDomainModel.getCircle().orElse(null)
         );

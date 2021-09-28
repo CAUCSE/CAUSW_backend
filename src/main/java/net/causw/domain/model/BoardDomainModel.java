@@ -20,12 +20,6 @@ public class BoardDomainModel {
     @NotNull(message = "Create role is null")
     private List<String> createRoleList;
 
-    @NotNull(message = "Modify role is null")
-    private List<String> modifyRoleList;
-
-    @NotNull(message = "Read role is null")
-    private List<String> readRoleList;
-
     @NotNull(message = "Board state is null")
     private Boolean isDeleted;
 
@@ -36,8 +30,6 @@ public class BoardDomainModel {
             String name,
             String description,
             List<String> createRoleList,
-            List<String> modifyRoleList,
-            List<String> readRoleList,
             Boolean isDeleted,
             CircleDomainModel circle
     ) {
@@ -45,8 +37,6 @@ public class BoardDomainModel {
         this.name = name;
         this.description = description;
         this.createRoleList = createRoleList;
-        this.modifyRoleList = modifyRoleList;
-        this.readRoleList = readRoleList;
         this.isDeleted = isDeleted;
         this.circle = circle;
     }
@@ -56,8 +46,6 @@ public class BoardDomainModel {
             String name,
             String description,
             List<String> createRoleList,
-            List<String> modifyRoleList,
-            List<String> readRoleList,
             Boolean isDeleted,
             CircleDomainModel circle
     ) {
@@ -66,8 +54,6 @@ public class BoardDomainModel {
                 name,
                 description,
                 createRoleList,
-                modifyRoleList,
-                readRoleList,
                 isDeleted,
                 circle
         );
@@ -77,8 +63,6 @@ public class BoardDomainModel {
             String name,
             String description,
             List<String> createRoleList,
-            List<String> modifyRoleList,
-            List<String> readRoleList,
             CircleDomainModel circle
     ) {
         return new BoardDomainModel(
@@ -86,8 +70,6 @@ public class BoardDomainModel {
                 name,
                 description,
                 createRoleList,
-                modifyRoleList,
-                readRoleList,
                 false,
                 circle
         );

@@ -58,8 +58,6 @@ public class PostPortImpl implements PostPort {
                 board.getName(),
                 board.getDescription(),
                 new ArrayList<>(Arrays.asList(board.getCreateRoles().split(","))),
-                new ArrayList<>(Arrays.asList(board.getModifyRoles().split(","))),
-                new ArrayList<>(Arrays.asList(board.getReadRoles().split(","))),
                 board.getIsDeleted(),
                 circleDomainModel
         );
