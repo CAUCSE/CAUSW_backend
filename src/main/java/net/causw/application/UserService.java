@@ -1,5 +1,6 @@
 package net.causw.application;
 
+import net.causw.application.dto.CircleResponseDto;
 import net.causw.application.dto.DuplicatedCheckDto;
 import net.causw.application.dto.UserCreateRequestDto;
 import net.causw.application.dto.UserPasswordUpdateRequestDto;
@@ -33,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -87,6 +89,21 @@ public class UserService {
                         "Invalid user name"
                 )
         ));
+    }
+
+    @Transactional(readOnly = true)
+    public List<CircleResponseDto> getCircleList(String currentUserId) {
+        UserDomainModel user = this.userPort.findById(currentUserId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid user id"
+                )
+        );
+
+        return this.circleMemberPort.getCircleListByUserId(user.getId())
+                .stream()
+                .map(CircleResponseDto::from)
+                .collect(Collectors.toList());
     }
 
     @Transactional

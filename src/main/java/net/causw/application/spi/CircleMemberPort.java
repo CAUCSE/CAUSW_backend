@@ -13,6 +13,8 @@ public interface CircleMemberPort {
 
     List<CircleMemberDomainModel> findByUserId(String userId);
 
+    List<CircleDomainModel> getCircleListByUserId(String userId);
+
     Optional<CircleMemberDomainModel> findByUserIdAndCircleId(String userId, String circleId);
 
     CircleMemberDomainModel create(UserDomainModel userDomainModel, CircleDomainModel circleDomainModel);

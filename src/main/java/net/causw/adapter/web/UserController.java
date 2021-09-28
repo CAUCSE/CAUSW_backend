@@ -2,6 +2,7 @@ package net.causw.adapter.web;
 
 import net.causw.application.UserAuthService;
 import net.causw.application.UserService;
+import net.causw.application.dto.CircleResponseDto;
 import net.causw.application.dto.DuplicatedCheckDto;
 import net.causw.application.dto.UserCreateRequestDto;
 import net.causw.application.dto.UserPasswordUpdateRequestDto;
@@ -21,6 +22,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 
 @RestController
@@ -107,5 +110,11 @@ public class UserController {
     @ResponseStatus(value = HttpStatus.OK)
     public UserResponseDto leave(@AuthenticationPrincipal String id) {
         return this.userService.leave(id);
+    }
+
+    @GetMapping(value = "/circles")
+    @ResponseStatus(value = HttpStatus.OK)
+    public List<CircleResponseDto> getCircleList(@AuthenticationPrincipal String currentUserId) {
+        return this.userService.getCircleList(currentUserId);
     }
 }
