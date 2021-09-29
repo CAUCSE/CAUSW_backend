@@ -22,7 +22,6 @@ import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.model.UserState;
 import net.causw.domain.validation.AdmissionYearValidator;
 import net.causw.domain.validation.ConstraintValidator;
-import net.causw.domain.validation.DuplicatedEmailValidator;
 import net.causw.domain.validation.GrantableRoleValidator;
 import net.causw.domain.validation.PasswordCorrectValidator;
 import net.causw.domain.validation.PasswordFormatValidator;
@@ -120,12 +119,20 @@ public class UserService {
                 null
         );
 
+        this.userPort.findByEmail(userDomainModel.getEmail()).ifPresent(
+            email -> {
+                throw new BadRequestException(
+                    ErrorCode.ROW_ALREADY_EXIST,
+                    "This email already exist"
+                );
+            }
+        );
+
         // Validate password format, admission year range, and whether the email is duplicate or not
         validatorBucket
                 .consistOf(ConstraintValidator.of(userDomainModel, this.validator))
                 .consistOf(PasswordFormatValidator.of(userCreateRequestDto.getPassword()))
                 .consistOf(AdmissionYearValidator.of(userCreateRequestDto.getAdmissionYear()))
-                .consistOf(DuplicatedEmailValidator.of(this.userPort, userCreateRequestDto.getEmail()))
                 .validate();
 
         return UserResponseDto.from(this.userPort.create(userDomainModel));
@@ -178,7 +185,14 @@ public class UserService {
          * Then, validate it whether the requested email is duplicated or not
          */
         if (!userDomainModel.getEmail().equals(userUpdateRequestDto.getEmail())) {
-            validatorBucket.consistOf(DuplicatedEmailValidator.of(this.userPort, userUpdateRequestDto.getEmail()));
+            this.userPort.findByEmail(userUpdateRequestDto.getEmail()).ifPresent(
+                    email -> {
+                        throw new BadRequestException(
+                                ErrorCode.ROW_ALREADY_EXIST,
+                                "This email already exist"
+                        );
+                    }
+            );
         }
 
         // Validate the requested parameters format from making the domain model
