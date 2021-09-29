@@ -48,6 +48,13 @@ public class CircleMemberInvalidStatusValidator extends AbstractValidator {
                         );
                     }
 
+                    if (invalidStatus == CircleMemberStatus.REJECT) {
+                        throw new UnauthorizedException(
+                                ErrorCode.BLOCKED_USER,
+                                "The user is rejected from the circle"
+                        );
+                    }
+
                     if (invalidStatus == CircleMemberStatus.DROP) {
                         throw new UnauthorizedException(
                                 ErrorCode.BLOCKED_USER,

@@ -4,6 +4,7 @@ import net.causw.application.dto.BoardCreateRequestDto
 import net.causw.application.dto.BoardResponseDto
 import net.causw.application.dto.BoardUpdateRequestDto
 import net.causw.application.spi.BoardPort
+import net.causw.application.spi.CircleMemberPort
 import net.causw.application.spi.CirclePort
 import net.causw.application.spi.UserPort
 import net.causw.domain.exceptions.BadRequestException
@@ -31,8 +32,9 @@ class BoardServiceTest extends Specification {
     private BoardPort boardPort = Mock(BoardPort.class)
     private UserPort userPort = Mock(UserPort.class)
     private CirclePort circlePort = Mock(CirclePort.class)
+    private CircleMemberPort circleMemberPort = Mock(CircleMemberPort.class)
     private Validator validator = Validation.buildDefaultValidatorFactory().getValidator()
-    private BoardService boardService = new BoardService(this.boardPort, this.userPort, this.circlePort, this.validator)
+    private BoardService boardService = new BoardService(this.boardPort, this.userPort, this.circlePort, this.circleMemberPort, this.validator)
 
     def mockBoardDomainModel
 
@@ -49,6 +51,172 @@ class BoardServiceTest extends Specification {
         )
     }
 
+    /**
+     * Test cases for board of circle find all
+     */
+    @Test
+    def "Board find by circle normal case"() {
+        given:
+        def leader = UserDomainModel.of(
+                "test",
+                "test@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.LEADER_CIRCLE,
+                null,
+                UserState.ACTIVE
+        )
+
+        def circle = CircleDomainModel.of(
+                "test",
+                "test",
+                null,
+                "test_description",
+                false,
+                leader
+        )
+
+        def circleMember = CircleMemberDomainModel.of(
+                "test",
+                CircleMemberStatus.MEMBER,
+                circle,
+                "test",
+                "test"
+        )
+        this.mockBoardDomainModel.setCircle(circle)
+
+        this.userPort.findById("test") >> Optional.of(leader)
+        this.circlePort.findById("test") >> Optional.of(circle)
+        this.circleMemberPort.findByUserIdAndCircleId("test", "test") >> Optional.of(circleMember)
+        this.boardPort.findByCircleId("test") >> List.of(this.mockBoardDomainModel)
+
+        when:
+        def boardResponseDtoList = this.boardService.findByCircleId("test", "test")
+
+        then:
+        boardResponseDtoList instanceof List<BoardResponseDto>
+        with(boardResponseDtoList) {
+            get(0).getCircleId() == "test"
+        }
+    }
+
+    @Test
+    def "Board find by circle circle already deleted"() {
+        given:
+        def leader = UserDomainModel.of(
+                "test",
+                "test@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.LEADER_CIRCLE,
+                null,
+                UserState.ACTIVE
+        )
+
+        def circle = CircleDomainModel.of(
+                "test",
+                "test",
+                null,
+                "test_description",
+                true,
+                leader
+        )
+
+        def circleMember = CircleMemberDomainModel.of(
+                "test",
+                CircleMemberStatus.MEMBER,
+                circle,
+                "test",
+                "test"
+        )
+        this.mockBoardDomainModel.setCircle(circle)
+
+        this.userPort.findById("test") >> Optional.of(leader)
+        this.circlePort.findById("test") >> Optional.of(circle)
+        this.circleMemberPort.findByUserIdAndCircleId("test", "test") >> Optional.of(circleMember)
+        this.boardPort.findByCircleId("test") >> List.of(this.mockBoardDomainModel)
+
+        when:
+        this.boardService.findByCircleId("test", "test")
+
+        then:
+        thrown(BadRequestException)
+    }
+
+    @Test
+    def "Board find by circle invalid circle member state"() {
+        given:
+        def leader = UserDomainModel.of(
+                "test",
+                "test@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.LEADER_CIRCLE,
+                null,
+                UserState.ACTIVE
+        )
+
+        def circle = CircleDomainModel.of(
+                "test",
+                "test",
+                null,
+                "test_description",
+                false,
+                leader
+        )
+
+        def circleMember = CircleMemberDomainModel.of(
+                "test",
+                CircleMemberStatus.MEMBER,
+                circle,
+                "test",
+                "test"
+        )
+        this.mockBoardDomainModel.setCircle(circle)
+
+        this.userPort.findById("test") >> Optional.of(leader)
+        this.circlePort.findById("test") >> Optional.of(circle)
+        this.circleMemberPort.findByUserIdAndCircleId("test", "test") >> Optional.of(circleMember)
+        this.boardPort.findByCircleId("test") >> List.of(this.mockBoardDomainModel)
+
+        when: "Circle member is await"
+        circleMember.setStatus(CircleMemberStatus.AWAIT)
+        this.boardService.findByCircleId("test", "test")
+
+        then:
+        thrown(BadRequestException)
+
+        when: "Circle member is drop"
+        circleMember.setStatus(CircleMemberStatus.DROP)
+        this.boardService.findByCircleId("test", "test")
+
+        then:
+        thrown(UnauthorizedException)
+
+        when: "Circle member is leave"
+        circleMember.setStatus(CircleMemberStatus.LEAVE)
+        this.boardService.findByCircleId("test", "test")
+
+        then:
+        thrown(BadRequestException)
+
+        when: "Circle member is reject"
+        circleMember.setStatus(CircleMemberStatus.REJECT)
+        this.boardService.findByCircleId("test", "test")
+
+        then:
+        thrown(UnauthorizedException)
+    }
+
+    /**
+     * Test cases for board create
+     */
     @Test
     def "Board create normal case"() {
         given:
@@ -153,7 +321,7 @@ class BoardServiceTest extends Specification {
         )
 
         this.userPort.findById("test") >> Optional.of(mockCreatorDomainModel)
-        this.boardPort.create((BoardDomainModel) this.mockBoardDomainModel, null) >> this.mockBoardDomainModel
+        this.boardPort.create((BoardDomainModel) this.mockBoardDomainModel) >> this.mockBoardDomainModel
 
         when: "name is blank"
         mockBoardCreateRequestDto.setName("")
@@ -255,7 +423,7 @@ class BoardServiceTest extends Specification {
         )
 
         this.userPort.findById("test") >> Optional.of(mockCreatorDomainModel)
-        this.boardPort.create((BoardDomainModel) this.mockBoardDomainModel, null) >> this.mockBoardDomainModel
+        this.boardPort.create((BoardDomainModel) this.mockBoardDomainModel) >> this.mockBoardDomainModel
 
         when: "invalid creator role"
         mockCreatorDomainModel.setRole(Role.NONE)
@@ -310,6 +478,9 @@ class BoardServiceTest extends Specification {
         thrown(UnauthorizedException)
     }
 
+    /**
+     * Test cases for board update
+     */
     @Test
     def "Board update normal case"() {
         given:
@@ -626,6 +797,9 @@ class BoardServiceTest extends Specification {
         thrown(UnauthorizedException)
     }
 
+    /**
+     * Test cases for board delete
+     */
     @Test
     def "Board delete normal case"() {
         given:
