@@ -26,8 +26,11 @@ public class UserPortImpl implements UserPort {
     }
 
     @Override
-    public Optional<UserDomainModel> findByName(String name) {
-        return this.userRepository.findByName(name).map(this::entityToDomainModel);
+    public List<UserDomainModel> findByName(String name) {
+        return this.userRepository.findByName(name)
+                .stream()
+                .map(this::entityToDomainModel)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -67,7 +70,10 @@ public class UserPortImpl implements UserPort {
 
     @Override
     public List<UserDomainModel> findByRole(Role role) {
-        return this.userRepository.findByRole(role).stream().map(this::entityToDomainModel).collect(Collectors.toList());
+        return this.userRepository.findByRole(role)
+                .stream()
+                .map(this::entityToDomainModel)
+                .collect(Collectors.toList());
     }
 
     @Override

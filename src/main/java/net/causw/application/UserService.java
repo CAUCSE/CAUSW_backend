@@ -69,7 +69,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserResponseDto findByName(String currentUserId, String name) {
+    public List<UserResponseDto> findByName(String currentUserId, String name) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         UserDomainModel user = this.userPort.findById(currentUserId).orElseThrow(
@@ -83,12 +83,31 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
                 .validate();
 
-        return UserResponseDto.from(this.userPort.findByName(name).orElseThrow(
+        return this.userPort.findByName(name)
+                .stream()
+                .map(UserResponseDto::from)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserResponseDto> findByRole(String currentUserId, Role role) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
+        UserDomainModel user = this.userPort.findById(currentUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid user name"
+                        "Invalid user id"
                 )
-        ));
+        );
+
+        validatorBucket
+                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
+                .validate();
+
+        return this.userPort.findByRole(role)
+                .stream()
+                .map(UserResponseDto::from)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
