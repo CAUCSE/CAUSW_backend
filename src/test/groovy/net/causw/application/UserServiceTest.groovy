@@ -956,4 +956,94 @@ class UserServiceTest extends Specification {
             get(0).getName() == "test"
         }
     }
+
+    /**
+     * Test cases for find by name
+     */
+    @Test
+    def "User find by name normal case"() {
+        given:
+        this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
+        this.userPort.findByName("test") >> List.of(this.mockUserDomainModel)
+
+        when:
+        def userResponseDtoList = this.userService.findByName("test", "test")
+
+        then:
+        userResponseDtoList instanceof List<UserResponseDto>
+        with(userResponseDtoList) {
+            get(0).getId() == "test"
+            get(0).getName() == "test"
+        }
+    }
+
+    @Test
+    def "User find by name invalid api call user role"() {
+        given:
+        def mockApiCallUser = UserDomainModel.of(
+                "test1",
+                "test1@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.COMMON,
+                null,
+                UserState.WAIT
+        )
+
+        this.userPort.findById("test1") >> Optional.of(mockApiCallUser)
+        this.userPort.findByName("test") >> List.of((UserDomainModel)this.mockUserDomainModel, mockApiCallUser)
+
+        when:
+        this.userService.findByName("test1", "test")
+
+        then:
+        thrown(UnauthorizedException)
+    }
+
+    /**
+     * Test cases for find by role
+     */
+    @Test
+    def "User find by role normal case"() {
+        given:
+        this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
+        this.userPort.findByRole(Role.PRESIDENT) >> List.of(this.mockUserDomainModel)
+
+        when:
+        def userResponseDtoList = this.userService.findByRole("test", Role.PRESIDENT)
+
+        then:
+        userResponseDtoList instanceof List<UserResponseDto>
+        with(userResponseDtoList) {
+            get(0).getId() == "test"
+            get(0).getName() == "test"
+        }
+    }
+
+    @Test
+    def "User find by role invalid api call user role"() {
+        given:
+        def mockApiCallUser = UserDomainModel.of(
+                "test1",
+                "test1@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.COMMON,
+                null,
+                UserState.WAIT
+        )
+
+        this.userPort.findById("test1") >> Optional.of(mockApiCallUser)
+        this.userPort.findByRole(Role.PRESIDENT) >> List.of((UserDomainModel)this.mockUserDomainModel, mockApiCallUser)
+
+        when:
+        this.userService.findByRole("test1", Role.PRESIDENT)
+
+        then:
+        thrown(UnauthorizedException)
+    }
 }

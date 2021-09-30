@@ -10,6 +10,7 @@ import net.causw.application.dto.UserResponseDto;
 import net.causw.application.dto.UserSignInRequestDto;
 import net.causw.application.dto.UserUpdateRequestDto;
 import net.causw.application.dto.UserUpdateRoleRequestDto;
+import net.causw.domain.model.Role;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -45,11 +46,20 @@ public class UserController {
 
     @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
-    public UserResponseDto findByName(
+    public List<UserResponseDto> findByName(
             @AuthenticationPrincipal String currentUserId,
             @RequestParam String name
     ) {
         return this.userService.findByName(currentUserId, name);
+    }
+
+    @GetMapping
+    @ResponseStatus(value = HttpStatus.OK)
+    public List<UserResponseDto> findByRole(
+            @AuthenticationPrincipal String currentUserId,
+            @RequestParam Role role
+    ) {
+        return this.userService.findByRole(currentUserId, role);
     }
 
     @PostMapping(value = "/sign-up")
