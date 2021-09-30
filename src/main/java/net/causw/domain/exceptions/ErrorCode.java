@@ -16,6 +16,7 @@ public enum ErrorCode {
     APPLY_NOT_EXIST(4006),
     CANNOT_PERFORMED(4007),
     AWAITING_STATUS(4008),
+    INVALID_STUDENT_ID(4009),
 
     /**
      * 401 Unauthorized
