@@ -644,6 +644,8 @@ class UserServiceTest extends Specification {
 
         this.userPort.create(mockCreatedUserDomainModel) >> mockCreatedUserDomainModel
         this.userPort.findByEmail("test@cau.ac.kr") >> Optional.ofNullable(null)
+        this.userPort.findByEmail("invalid-email") >> Optional.ofNullable(null)
+        this.userPort.findByEmail(null) >> Optional.ofNullable(null)
 
         when: "Invalid email"
         userCreateRequestDto.setEmail("invalid-email")

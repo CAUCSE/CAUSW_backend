@@ -18,7 +18,6 @@ import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.validation.CircleMemberInvalidStatusValidator;
 import net.causw.domain.validation.ConstraintValidator;
-import net.causw.domain.validation.DuplicatedCircleNameValidator;
 import net.causw.domain.validation.GrantableRoleValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.UserEqualValidator;
@@ -130,10 +129,18 @@ public class CircleService {
         /* Check if the request user is president or admin
          * Then, validate the circle name whether it is duplicated or not
          */
+        this.circlePort.findByName(circleDomainModel.getName()).ifPresent(
+                name -> {
+                    throw new BadRequestException(
+                            ErrorCode.ROW_ALREADY_EXIST,
+                            "Duplicated circle name"
+                    );
+                }
+        );
+
         validatorBucket
                 .consistOf(ConstraintValidator.of(circleDomainModel, this.validator))
                 .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT)))
-                .consistOf(DuplicatedCircleNameValidator.of(this.circlePort, circleCreateRequestDto.getName()))
                 .consistOf(GrantableRoleValidator.of(requestUser.getRole(), Role.LEADER_CIRCLE, leader.getRole()))
                 .validate();
 
@@ -176,7 +183,14 @@ public class CircleService {
         );
 
         if (!circle.getName().equals(circleUpdateRequestDto.getName())) {
-            validatorBucket.consistOf(DuplicatedCircleNameValidator.of(this.circlePort, circleUpdateRequestDto.getName()));
+            this.circlePort.findByName(circleUpdateRequestDto.getName()).ifPresent(
+                    name -> {
+                        throw new BadRequestException(
+                                ErrorCode.ROW_ALREADY_EXIST,
+                                "Duplicated circle name"
+                        );
+                    }
+            );
         }
 
         UserDomainModel user = this.userPort.findById(userId).orElseThrow(
