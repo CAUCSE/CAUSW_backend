@@ -65,7 +65,22 @@ public class CircleService {
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted()))
                 .validate();
 
-        return CircleResponseDto.from(circle);
+        return CircleResponseDto.from(
+                circle,
+                this.circleMemberPort.getNumMember(id)
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public Long getNumMember(String id) {
+        this.circlePort.findById(id).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid circle id"
+                )
+        );
+
+        return this.circleMemberPort.getNumMember(id);
     }
 
     @Transactional(readOnly = true)

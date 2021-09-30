@@ -1,6 +1,8 @@
 package net.causw.adapter.persistence;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -13,4 +15,9 @@ public interface CircleMemberRepository extends JpaRepository<CircleMember, Stri
     List<CircleMember> findByUser_Id(String userId);
 
     List<CircleMember> findByCircle_Id(String circleId);
+
+    @Query(value = "SELECT COUNT(*) " +
+            "FROM TB_CIRCLE_MEMBER " +
+            "WHERE TB_CIRCLE_MEMBER.circle_id = :id AND TB_CIRCLE_MEMBER.status = 'MEMBER'", nativeQuery = true)
+    long getNumMember(@Param("id") String id);
 }

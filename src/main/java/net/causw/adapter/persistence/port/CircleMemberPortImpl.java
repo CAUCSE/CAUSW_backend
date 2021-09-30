@@ -60,6 +60,11 @@ public class CircleMemberPortImpl implements CircleMemberPort {
     }
 
     @Override
+    public Long getNumMember(String id) {
+        return this.circleMemberRepository.getNumMember(id);
+    }
+
+    @Override
     public CircleMemberDomainModel create(UserDomainModel userDomainModel, CircleDomainModel circleDomainModel) {
         return this.entityToDomainModel(this.circleMemberRepository.save(CircleMember.of(
                 CircleMemberStatus.AWAIT,

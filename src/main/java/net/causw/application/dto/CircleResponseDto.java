@@ -2,7 +2,6 @@ package net.causw.application.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.causw.adapter.persistence.Circle;
 import net.causw.domain.model.CircleDomainModel;
 
 @Getter
@@ -15,6 +14,7 @@ public class CircleResponseDto {
     private Boolean isDeleted;
     private String leaderId;
     private String leaderName;
+    private Long numMember;
 
     private CircleResponseDto(
             String id,
@@ -34,16 +34,24 @@ public class CircleResponseDto {
         this.leaderName = leaderName;
     }
 
-    public static CircleResponseDto from(Circle circle) {
-        return new CircleResponseDto(
-                circle.getId(),
-                circle.getName(),
-                circle.getMainImage(),
-                circle.getDescription(),
-                circle.getIsDeleted(),
-                circle.getLeader().getId(),
-                circle.getLeader().getName()
-        );
+    private CircleResponseDto(
+            String id,
+            String name,
+            String mainImage,
+            String description,
+            Boolean isDeleted,
+            String leaderId,
+            String leaderName,
+            Long numMember
+    ) {
+        this.id = id;
+        this.name = name;
+        this.mainImage = mainImage;
+        this.description = description;
+        this.isDeleted = isDeleted;
+        this.leaderId = leaderId;
+        this.leaderName = leaderName;
+        this.numMember = numMember;
     }
 
     public static CircleResponseDto from(CircleDomainModel circle) {
@@ -55,6 +63,19 @@ public class CircleResponseDto {
                 circle.getIsDeleted(),
                 circle.getLeader().getId(),
                 circle.getLeader().getName()
+        );
+    }
+
+    public static CircleResponseDto from(CircleDomainModel circle, Long numMember) {
+        return new CircleResponseDto(
+                circle.getId(),
+                circle.getName(),
+                circle.getMainImage(),
+                circle.getDescription(),
+                circle.getIsDeleted(),
+                circle.getLeader().getId(),
+                circle.getLeader().getName(),
+                numMember
         );
     }
 }
