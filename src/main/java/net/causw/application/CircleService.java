@@ -19,6 +19,7 @@ import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.validation.CircleMemberInvalidStatusValidator;
 import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.GrantableRoleValidator;
+import net.causw.domain.validation.TargetIsNullValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.UserEqualValidator;
 import net.causw.domain.validation.UserNotEqualValidator;
@@ -251,7 +252,9 @@ public class CircleService {
                 )
         );
 
-        validatorBucket.consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted()));
+        validatorBucket
+                .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted()))
+                .consistOf(TargetIsNullValidator.of(user.getStudentId()));
 
         return CircleMemberResponseDto.from(this.circleMemberPort.findByUserIdAndCircleId(user.getId(), circle.getId()).map(
                 circleMember -> {

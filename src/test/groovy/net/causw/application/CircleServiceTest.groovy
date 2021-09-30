@@ -558,6 +558,35 @@ class CircleServiceTest extends Specification {
     }
 
     @Test
+    def "User circle apply invalid user student id"() {
+        given:
+        def mockApiCallUser = UserDomainModel.of(
+                "test1",
+                "test1@cau.ac.kr",
+                "test",
+                "test1234!",
+                null,
+                2021,
+                Role.LEADER_CIRCLE,
+                null,
+                UserState.ACTIVE
+        )
+
+        this.circlePort.findById("test") >> Optional.of(this.mockCircleDomainModel)
+        this.userPort.findById("test") >> Optional.of(this.leader)
+        this.userPort.findById("test1") >> Optional.of(mockApiCallUser)
+        this.circleMemberPort.findByUserIdAndCircleId("test1", "test") >> Optional.ofNullable(null)
+        this.mockCircleMemberDomainModel.setStatus(CircleMemberStatus.AWAIT)
+        this.circleMemberPort.create((UserDomainModel) this.leader, (CircleDomainModel) this.mockCircleDomainModel) >> this.mockCircleMemberDomainModel
+
+        when:
+        this.circleService.userApply("test1", "test")
+
+        then:
+        thrown(BadRequestException)
+    }
+
+    @Test
     def "User circle apply user already member case"() {
         given:
         this.circlePort.findById("test") >> Optional.of(this.mockCircleDomainModel)
