@@ -1,12 +1,20 @@
 package net.causw.application;
 
+import net.causw.application.spi.CircleMemberPort;
 import net.causw.application.spi.CirclePort;
 import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.CircleDomainModel;
+import net.causw.domain.model.CircleMemberDomainModel;
+import net.causw.domain.model.CircleMemberStatus;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
+import net.causw.domain.validation.CircleMemberInvalidStatusValidator;
+import net.causw.domain.validation.CircleMemberStatusValidator;
+import net.causw.domain.validation.ValidatorBucket;
+
+import java.util.List;
 
 /**
  * The delegation process for the leader of the circle.
@@ -19,9 +27,16 @@ public class DelegationLeaderCircle implements Delegation {
 
     private final CirclePort circlePort;
 
-    public DelegationLeaderCircle(UserPort userPort, CirclePort circlePort) {
+    private final CircleMemberPort circleMemberPort;
+
+    public DelegationLeaderCircle(
+            UserPort userPort,
+            CirclePort circlePort,
+            CircleMemberPort circleMemberPort
+    ) {
         this.userPort = userPort;
         this.circlePort = circlePort;
+        this.circleMemberPort = circleMemberPort;
     }
 
     @Override
@@ -39,6 +54,20 @@ public class DelegationLeaderCircle implements Delegation {
                         "Invalid user id"
                 )
         );
+
+        CircleMemberDomainModel circleMember = this.circleMemberPort.findByUserIdAndCircleId(targetId, circle.getId()).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid application id"
+                )
+        );
+
+        ValidatorBucket.of()
+                .consistOf(CircleMemberStatusValidator.of(
+                        circleMember.getStatus(),
+                        List.of(CircleMemberStatus.MEMBER)
+                ))
+                .validate();
 
         this.circlePort.updateLeader(circle.getId(), newLeader).orElseThrow(
                 () -> new BadRequestException(

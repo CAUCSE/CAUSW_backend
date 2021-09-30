@@ -176,15 +176,35 @@ class UserServiceTest extends Specification {
                 UserState.WAIT
         )
 
+        def mockCircleDomainModel = CircleDomainModel.of(
+                "test",
+                "test",
+                null,
+                "test_description",
+                false,
+                (UserDomainModel) this.mockUserDomainModel
+        )
+
+        def mockCircleMemberDomainModel = CircleMemberDomainModel.of(
+                "test",
+                CircleMemberStatus.MEMBER,
+                mockCircleDomainModel,
+                "test1",
+                "test"
+        )
+
         def userUpdateRoleRequestDto = new UserUpdateRoleRequestDto(Role.COUNCIL)
 
         this.userPort.findById(currentId) >> Optional.of(this.mockUserDomainModel)
         this.userPort.findById(targetId) >> Optional.of(mockTargetUserDomainModel)
+        this.circlePort.findByLeaderId(currentId) >> Optional.of(mockCircleDomainModel)
+        this.circleMemberPort.findByUserIdAndCircleId(targetId, currentId) >> Optional.of(mockCircleMemberDomainModel)
 
         this.userPort.updateRole(targetId, Role.PRESIDENT) >> Optional.of(mockUpadtedUserDomainModel)
         this.userPort.updateRole(targetId, Role.LEADER_CIRCLE) >> Optional.of(mockUpadtedUserDomainModel)
         this.userPort.updateRole(targetId, Role.LEADER_ALUMNI) >> Optional.of(mockUpadtedUserDomainModel)
         this.userPort.updateRole(currentId, Role.COMMON) >> Optional.of(mockUpadtedUserDomainModel)
+        this.circlePort.updateLeader(currentId, mockTargetUserDomainModel) >> Optional.of(mockCircleDomainModel)
 
         when: "President -> Delegate President"
         this.mockUserDomainModel.setRole(Role.PRESIDENT)
@@ -205,6 +225,16 @@ class UserServiceTest extends Specification {
         then:
         userResponseDto instanceof UserResponseDto
         userResponseDto.getRole() == Role.LEADER_ALUMNI
+
+        when: "Leader Circle -> Delegate Circle"
+        this.mockUserDomainModel.setRole(Role.LEADER_CIRCLE)
+        userUpdateRoleRequestDto.setRole(Role.LEADER_CIRCLE)
+        mockUpadtedUserDomainModel.setRole(Role.LEADER_CIRCLE)
+        userResponseDto = this.userService.updateUserRole(currentId, targetId, userUpdateRoleRequestDto)
+
+        then:
+        userResponseDto instanceof UserResponseDto
+        userResponseDto.getRole() == Role.LEADER_CIRCLE
     }
 
     @Test
