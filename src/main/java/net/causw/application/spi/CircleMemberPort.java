@@ -19,6 +19,8 @@ public interface CircleMemberPort {
 
     Optional<CircleMemberDomainModel> findByUserIdAndCircleId(String userId, String circleId);
 
+    Long getNumMember(String id);
+
     CircleMemberDomainModel create(UserDomainModel userDomainModel, CircleDomainModel circleDomainModel);
 
     Optional<CircleMemberDomainModel> updateStatus(String applicationId, CircleMemberStatus targetStatus);

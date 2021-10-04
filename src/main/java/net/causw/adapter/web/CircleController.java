@@ -37,6 +37,12 @@ public class CircleController {
         return this.circleService.findById(id);
     }
 
+    @GetMapping(value = "/{id}/num-member")
+    @ResponseStatus(value = HttpStatus.OK)
+    public Long getNumMember(@PathVariable String id) {
+        return this.circleService.getNumMember(id);
+    }
+
     @GetMapping(value = "/{id}/users")
     @ResponseStatus(value = HttpStatus.OK)
     public List<CircleMemberResponseDto> getUserList(
