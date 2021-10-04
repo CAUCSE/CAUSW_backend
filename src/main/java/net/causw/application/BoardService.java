@@ -21,7 +21,6 @@ import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.UserEqualValidator;
 import net.causw.domain.validation.UserRoleValidator;
-import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,8 +53,6 @@ public class BoardService {
 
     @Transactional(readOnly = true)
     public BoardResponseDto findById(String id) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
         BoardDomainModel board = this.boardPort.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -63,7 +60,7 @@ public class BoardService {
                 )
         );
 
-        validatorBucket
+        ValidatorBucket.of()
                 .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted()))
                 .validate();
 
@@ -75,8 +72,6 @@ public class BoardService {
             String currentUserId,
             String circleId
     ) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
         UserDomainModel user = this.userPort.findById(currentUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -98,7 +93,7 @@ public class BoardService {
                 )
         );
 
-        validatorBucket
+        ValidatorBucket.of()
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted()))
                 .consistOf(CircleMemberInvalidStatusValidator.of(
                         circleMember.getStatus(),
@@ -184,6 +179,7 @@ public class BoardService {
                         "Invalid board id"
                 )
         );
+
         validatorBucket
                 .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted()));
 
@@ -245,6 +241,7 @@ public class BoardService {
                         "Invalid board id"
                 )
         );
+
         validatorBucket
                 .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted()));
 

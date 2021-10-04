@@ -53,8 +53,6 @@ public class CircleService {
 
     @Transactional(readOnly = true)
     public CircleResponseDto findById(String id) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
         CircleDomainModel circle = this.circlePort.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -62,7 +60,7 @@ public class CircleService {
                 )
         );
 
-        validatorBucket
+        ValidatorBucket.of()
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted()))
                 .validate();
 
@@ -75,8 +73,6 @@ public class CircleService {
             String circleId,
             CircleMemberStatus status
     ) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
         UserDomainModel user = this.userPort.findById(currentUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -91,7 +87,7 @@ public class CircleService {
                 )
         );
 
-        validatorBucket
+        ValidatorBucket.of()
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted()))
                 .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.LEADER_CIRCLE, Role.PRESIDENT)))
                 .validate();
@@ -104,8 +100,6 @@ public class CircleService {
 
     @Transactional
     public CircleResponseDto create(String userId, CircleCreateRequestDto circleCreateRequestDto) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
         UserDomainModel requestUser = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -139,7 +133,7 @@ public class CircleService {
                 }
         );
 
-        validatorBucket
+        ValidatorBucket.of()
                 .consistOf(ConstraintValidator.of(circleDomainModel, this.validator))
                 .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT)))
                 .consistOf(GrantableRoleValidator.of(requestUser.getRole(), Role.LEADER_CIRCLE, leader.getRole()))
@@ -289,7 +283,6 @@ public class CircleService {
 
     @Transactional
     public CircleMemberResponseDto leaveUser(String userId, String circleId) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
         CircleMemberDomainModel circleMember = this.circleMemberPort.findByUserIdAndCircleId(userId, circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -297,7 +290,7 @@ public class CircleService {
                 )
         );
 
-        validatorBucket
+        ValidatorBucket.of()
                 .consistOf(TargetIsDeletedValidator.of(circleMember.getCircle().getIsDeleted()))
                 .consistOf(CircleMemberInvalidStatusValidator.of(
                         circleMember.getStatus(),

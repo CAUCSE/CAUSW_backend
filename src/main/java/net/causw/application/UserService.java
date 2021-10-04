@@ -69,8 +69,6 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public List<UserResponseDto> findByName(String currentUserId, String name) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
         UserDomainModel user = this.userPort.findById(currentUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -78,7 +76,7 @@ public class UserService {
                 )
         );
 
-        validatorBucket
+        ValidatorBucket.of()
                 .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
                 .validate();
 
@@ -90,8 +88,6 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public List<UserResponseDto> findByRole(String currentUserId, Role role) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
         UserDomainModel user = this.userPort.findById(currentUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -99,7 +95,7 @@ public class UserService {
                 )
         );
 
-        validatorBucket
+        ValidatorBucket.of()
                 .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
                 .validate();
 
@@ -126,8 +122,6 @@ public class UserService {
 
     @Transactional
     public UserResponseDto signUp(UserCreateRequestDto userCreateRequestDto) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
         // Make domain model for generalized data model and validate the format of request parameter
         UserDomainModel userDomainModel = UserDomainModel.of(
                 userCreateRequestDto.getEmail(),
@@ -148,7 +142,7 @@ public class UserService {
         );
 
         // Validate password format, admission year range, and whether the email is duplicate or not
-        validatorBucket
+        ValidatorBucket.of()
                 .consistOf(ConstraintValidator.of(userDomainModel, this.validator))
                 .consistOf(PasswordFormatValidator.of(userCreateRequestDto.getPassword()))
                 .consistOf(AdmissionYearValidator.of(userCreateRequestDto.getAdmissionYear()))
@@ -159,8 +153,6 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public String signIn(UserSignInRequestDto userSignInRequestDto) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
         UserDomainModel userDomainModel = this.userPort.findByEmail(userSignInRequestDto.getEmail()).orElseThrow(
                 () -> new UnauthorizedException(
                         ErrorCode.INVALID_SIGNIN,
@@ -171,7 +163,7 @@ public class UserService {
         /* Validate the input password and user state
          * The sign-in process is rejected if the user is in BLOCKED, WAIT, or INACTIVE state.
          */
-        validatorBucket
+        ValidatorBucket.of()
                 .consistOf(PasswordCorrectValidator.of(userDomainModel, userSignInRequestDto.getPassword()))
                 .consistOf(UserStateValidator.of(userDomainModel.getState()))
                 .validate();
@@ -190,8 +182,6 @@ public class UserService {
 
     @Transactional
     public UserResponseDto update(String id, UserUpdateRequestDto userUpdateRequestDto) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
         // First, load the user data from input user id
         UserDomainModel userDomainModel = this.userPort.findById(id).orElseThrow(
                 () -> new BadRequestException(
@@ -228,7 +218,7 @@ public class UserService {
         );
 
         // Validate the admission year range
-        validatorBucket
+        ValidatorBucket.of()
                 .consistOf(ConstraintValidator.of(userDomainModel, this.validator))
                 .consistOf(AdmissionYearValidator.of(userUpdateRequestDto.getAdmissionYear()))
                 .validate();
@@ -247,8 +237,6 @@ public class UserService {
             String granteeId,
             UserUpdateRoleRequestDto userUpdateRoleRequestDto
     ) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
         // Load the user data from input grantor and grantee ids.
         UserDomainModel grantor = this.userPort.findById(grantorId).orElseThrow(
                 () -> new BadRequestException(
@@ -267,7 +255,7 @@ public class UserService {
          * 1) Combination of grantor role and the role to be granted must be acceptable
          * 2) Combination of grantor role and the grantee role must be acceptable
          */
-        validatorBucket
+        ValidatorBucket.of()
                 .consistOf(GrantableRoleValidator.of(
                         grantor.getRole(),
                         userUpdateRoleRequestDto.getRole(),
@@ -282,7 +270,7 @@ public class UserService {
          */
         if (grantor.getRole() == userUpdateRoleRequestDto.getRole()) {
             DelegationFactory
-                    .create(grantor.getRole(), this.userPort, this.circlePort)
+                    .create(grantor.getRole(), this.userPort, this.circlePort, this.circleMemberPort)
                     .delegate(grantorId, granteeId);
         }
 
@@ -303,8 +291,6 @@ public class UserService {
             String id,
             UserPasswordUpdateRequestDto userPasswordUpdateRequestDto
     ) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
         UserDomainModel user = this.userPort.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -312,7 +298,7 @@ public class UserService {
                 )
         );
 
-        validatorBucket
+        ValidatorBucket.of()
                 .consistOf(PasswordCorrectValidator.of(user, userPasswordUpdateRequestDto.getOriginPassword()))
                 .consistOf(PasswordFormatValidator.of(userPasswordUpdateRequestDto.getUpdatedPassword()))
                 .validate();
@@ -327,8 +313,6 @@ public class UserService {
 
     @Transactional
     public UserResponseDto leave(String id) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
         UserDomainModel user = this.userPort.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -336,7 +320,7 @@ public class UserService {
                 )
         );
 
-        validatorBucket
+        ValidatorBucket.of()
                 .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.COMMON, Role.PROFESSOR)))
                 .validate();
 
