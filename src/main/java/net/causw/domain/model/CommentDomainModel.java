@@ -1,19 +1,29 @@
 package net.causw.domain.model;
 
 import lombok.Getter;
+import lombok.Setter;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
+@Setter
 public class CommentDomainModel {
     private String id;
+
+    @NotBlank(message = "Content is blank")
     private String content;
     private Boolean isDeleted;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    @NotNull(message = "Writer is null")
     private UserDomainModel writer;
+
+    @NotNull(message = "Post id is null")
     private String postId;
     private CommentDomainModel parentComment;           // Write
     private List<CommentDomainModel> childCommentList;  // Read

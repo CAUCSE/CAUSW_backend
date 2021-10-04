@@ -24,8 +24,8 @@ public class PostController {
 
     @GetMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
-    public PostResponseDto findById(@PathVariable String id) {
-        return this.postService.findById(id);
+    public PostResponseDto findById(@AuthenticationPrincipal String userId, @PathVariable String id) {
+        return this.postService.findById(userId, id);
     }
 
     @PostMapping

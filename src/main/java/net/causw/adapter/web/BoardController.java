@@ -30,8 +30,8 @@ public class BoardController {
 
     @GetMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
-    public BoardResponseDto findById(@PathVariable String id) {
-        return this.boardService.findById(id);
+    public BoardResponseDto findById(@AuthenticationPrincipal String userId, @PathVariable String id) {
+        return this.boardService.findById(userId, id);
     }
 
     @GetMapping

@@ -16,11 +16,12 @@ import net.causw.domain.model.CircleMemberDomainModel;
 import net.causw.domain.model.CircleMemberStatus;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
-import net.causw.domain.validation.CircleMemberInvalidStatusValidator;
+import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.GrantableRoleValidator;
-import net.causw.domain.validation.TargetIsNullValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
+import net.causw.domain.validation.TargetIsNullValidator;
+import net.causw.domain.validation.TimePassedValidator;
 import net.causw.domain.validation.UserEqualValidator;
 import net.causw.domain.validation.UserNotEqualValidator;
 import net.causw.domain.validation.UserRoleValidator;
@@ -254,11 +255,12 @@ public class CircleService {
                 circleMember -> {
                     validatorBucket
                             .consistOf(
-                                    CircleMemberInvalidStatusValidator.of(
+                                    CircleMemberStatusValidator.of(
                                             circleMember.getStatus(),
-                                            List.of(CircleMemberStatus.MEMBER, CircleMemberStatus.DROP, CircleMemberStatus.AWAIT)
+                                            List.of(CircleMemberStatus.LEAVE, CircleMemberStatus.REJECT)
                                     )
                             )
+                            .consistOf(TimePassedValidator.of(circleMember.getUpdatedAt()))
                             .validate();
 
                     return this.circleMemberPort.updateStatus(circleMember.getId(), CircleMemberStatus.AWAIT).orElseThrow(
@@ -292,9 +294,9 @@ public class CircleService {
 
         ValidatorBucket.of()
                 .consistOf(TargetIsDeletedValidator.of(circleMember.getCircle().getIsDeleted()))
-                .consistOf(CircleMemberInvalidStatusValidator.of(
+                .consistOf(CircleMemberStatusValidator.of(
                         circleMember.getStatus(),
-                        List.of(CircleMemberStatus.AWAIT, CircleMemberStatus.DROP, CircleMemberStatus.LEAVE)
+                        List.of(CircleMemberStatus.MEMBER)
                 ))
                 .consistOf(UserNotEqualValidator.of(userId, circleMember.getCircle().getLeader().getId()))
                 .validate();
@@ -339,9 +341,9 @@ public class CircleService {
         }
 
         validatorBucket
-                .consistOf(CircleMemberInvalidStatusValidator.of(
+                .consistOf(CircleMemberStatusValidator.of(
                         circleMember.getStatus(),
-                        List.of(CircleMemberStatus.AWAIT, CircleMemberStatus.DROP, CircleMemberStatus.LEAVE)
+                        List.of(CircleMemberStatus.MEMBER)
                 ))
                 .consistOf(UserNotEqualValidator.of(userId, circleMember.getCircle().getLeader().getId()))
                 .validate();
@@ -403,9 +405,9 @@ public class CircleService {
         }
 
         validatorBucket
-                .consistOf(CircleMemberInvalidStatusValidator.of(
+                .consistOf(CircleMemberStatusValidator.of(
                         circleMember.getStatus(),
-                        List.of(CircleMemberStatus.MEMBER, CircleMemberStatus.DROP, CircleMemberStatus.LEAVE)
+                        List.of(CircleMemberStatus.AWAIT)
                 ))
                 .validate();
 

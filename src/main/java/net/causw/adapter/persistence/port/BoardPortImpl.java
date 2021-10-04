@@ -48,9 +48,7 @@ public class BoardPortImpl implements BoardPort {
                 srcBoard -> {
                     srcBoard.setName(boardDomainModel.getName());
                     srcBoard.setDescription(boardDomainModel.getDescription());
-                    srcBoard.setCreateRoles(boardDomainModel.getCreateRoleList().stream().map(Object::toString).collect(Collectors.joining(",")));
-                    srcBoard.setModifyRoles(boardDomainModel.getModifyRoleList().stream().map(Object::toString).collect(Collectors.joining(",")));
-                    srcBoard.setReadRoles(boardDomainModel.getReadRoleList().stream().map(Object::toString).collect(Collectors.joining(",")));
+                    srcBoard.setCreateRoles(String.join(",", boardDomainModel.getCreateRoleList()));
 
                     return this.entityToDomainModel(this.boardRepository.save(srcBoard));
                 }
@@ -79,8 +77,6 @@ public class BoardPortImpl implements BoardPort {
                 board.getName(),
                 board.getDescription(),
                 new ArrayList<>(Arrays.asList(board.getCreateRoles().split(","))),
-                new ArrayList<>(Arrays.asList(board.getModifyRoles().split(","))),
-                new ArrayList<>(Arrays.asList(board.getReadRoles().split(","))),
                 board.getIsDeleted(),
                 circleDomainModel
         );

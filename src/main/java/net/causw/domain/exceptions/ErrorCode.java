@@ -17,6 +17,7 @@ public enum ErrorCode {
     CANNOT_PERFORMED(4007),
     AWAITING_STATUS(4008),
     INVALID_STUDENT_ID(4009),
+    TIME_NOT_PASSED(4010),
 
     /**
      * 401 Unauthorized
@@ -29,6 +30,7 @@ public enum ErrorCode {
     INVALID_JWT(4105),
     GRANT_ROLE_NOT_ALLOWED(4106),
     API_NOT_ALLOWED(4107),
+    NOT_MEMBER(4108),
 
     /**
      * 500 Internal Server Error

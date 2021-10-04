@@ -82,7 +82,7 @@ public class UserPortImpl implements UserPort {
                 srcUser -> {
                     srcUser.setPassword(password);
 
-                    return this. entityToDomainModel(this.userRepository.save(srcUser));
+                    return this.entityToDomainModel(this.userRepository.save(srcUser));
                 }
         );
     }

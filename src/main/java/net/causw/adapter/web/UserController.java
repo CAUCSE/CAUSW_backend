@@ -44,7 +44,7 @@ public class UserController {
         return this.userService.findById(currentUserId);
     }
 
-    @GetMapping
+    @GetMapping(params = "name")
     @ResponseStatus(value = HttpStatus.OK)
     public List<UserResponseDto> findByName(
             @AuthenticationPrincipal String currentUserId,
@@ -53,7 +53,7 @@ public class UserController {
         return this.userService.findByName(currentUserId, name);
     }
 
-    @GetMapping
+    @GetMapping(params = "role")
     @ResponseStatus(value = HttpStatus.OK)
     public List<UserResponseDto> findByRole(
             @AuthenticationPrincipal String currentUserId,

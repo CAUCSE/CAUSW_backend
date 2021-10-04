@@ -9,6 +9,7 @@ import net.causw.domain.model.PostDomainModel;
 import net.causw.domain.model.UserDomainModel;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -26,6 +27,14 @@ public class CommentPortImpl implements CommentPort {
     }
 
     @Override
+    public List<CommentDomainModel> findByPostId(String postId) {
+        return this.commentRepository.findByPostId(postId)
+                .stream()
+                .map(this::entityToDomainModelWithChild)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public CommentDomainModel create(CommentDomainModel commentDomainModel, PostDomainModel postDomainModel) {
         return this.entityToDomainModelWithParent(this.commentRepository.save(Comment.from(commentDomainModel, postDomainModel)));
     }
@@ -39,7 +48,10 @@ public class CommentPortImpl implements CommentPort {
                 comment.getUpdatedAt(),
                 this.entityToDomainModel(comment.getWriter()),
                 comment.getPost().getId(),
-                comment.getChildCommentList().stream().map(this::entityToDomainModel).collect(Collectors.toList())
+                comment.getChildCommentList()
+                        .stream()
+                        .map(this::entityToDomainModel)
+                        .collect(Collectors.toList())
         );
     }
 

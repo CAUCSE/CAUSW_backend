@@ -1,7 +1,7 @@
 package net.causw.application;
 
-import net.causw.application.dto.LockerResponseDto;
 import net.causw.application.dto.LockerLogDetailDto;
+import net.causw.application.dto.LockerResponseDto;
 import net.causw.application.spi.LockerLogPort;
 import net.causw.application.spi.LockerPort;
 import net.causw.domain.exceptions.BadRequestException;
@@ -35,7 +35,10 @@ public class LockerService {
 
     @Transactional(readOnly = true)
     public List<LockerResponseDto> findAll() {
-        return this.lockerPort.findAll().stream().map(LockerResponseDto::from).collect(Collectors.toList());
+        return this.lockerPort.findAll()
+                .stream()
+                .map(LockerResponseDto::from)
+                .collect(Collectors.toList());
     }
 
     public List<LockerLogDetailDto> findLog(String id) {

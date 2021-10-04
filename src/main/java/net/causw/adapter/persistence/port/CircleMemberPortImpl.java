@@ -85,7 +85,9 @@ public class CircleMemberPortImpl implements CircleMemberPort {
                 circleMember.getStatus(),
                 this.entityToDomainModel(circleMember.getCircle()),
                 circleMember.getUser().getId(),
-                circleMember.getUser().getName()
+                circleMember.getUser().getName(),
+                circleMember.getCreatedAt(),
+                circleMember.getUpdatedAt()
         );
     }
 

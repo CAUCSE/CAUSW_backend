@@ -10,7 +10,6 @@ import net.causw.domain.model.CircleMemberDomainModel;
 import net.causw.domain.model.CircleMemberStatus;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
-import net.causw.domain.validation.CircleMemberInvalidStatusValidator;
 import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.ValidatorBucket;
 

@@ -14,7 +14,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -30,12 +29,6 @@ public class Board extends BaseEntity {
 
     @Column(name = "create_role_list", nullable = false)
     private String createRoles;
-
-    @Column(name = "modify_role_list", nullable = false)
-    private String modifyRoles;
-
-    @Column(name = "read_role_list", nullable = false)
-    private String readRoles;
 
     @Column(name = "is_deleted")
     @ColumnDefault("false")
@@ -53,8 +46,6 @@ public class Board extends BaseEntity {
             String name,
             String description,
             String createRoles,
-            String modifyRoles,
-            String readRoles,
             Boolean isDeleted,
             Circle circle
     ) {
@@ -62,8 +53,6 @@ public class Board extends BaseEntity {
         this.name = name;
         this.description = description;
         this.createRoles = createRoles;
-        this.modifyRoles = modifyRoles;
-        this.readRoles = readRoles;
         this.isDeleted = isDeleted;
         this.circle = circle;
     }
@@ -72,16 +61,12 @@ public class Board extends BaseEntity {
             String name,
             String description,
             String createRoles,
-            String modifyRoles,
-            String readRoles,
             Boolean isDeleted,
             Circle circle
     ) {
         this.name = name;
         this.description = description;
         this.createRoles = createRoles;
-        this.modifyRoles = modifyRoles;
-        this.readRoles = readRoles;
         this.isDeleted = isDeleted;
         this.circle = circle;
     }
@@ -91,8 +76,6 @@ public class Board extends BaseEntity {
             String name,
             String description,
             String createRoles,
-            String modifyRoles,
-            String readRoles,
             Boolean isDeleted,
             Circle circle
     ) {
@@ -101,8 +84,6 @@ public class Board extends BaseEntity {
                 name,
                 description,
                 createRoles,
-                modifyRoles,
-                readRoles,
                 isDeleted,
                 circle
         );
@@ -112,8 +93,6 @@ public class Board extends BaseEntity {
             String name,
             String description,
             String createRoles,
-            String modifyRoles,
-            String readRoles,
             Boolean isDeleted,
             Circle circle
     ) {
@@ -121,8 +100,6 @@ public class Board extends BaseEntity {
                 name,
                 description,
                 createRoles,
-                modifyRoles,
-                readRoles,
                 isDeleted,
                 circle
         );
@@ -135,9 +112,7 @@ public class Board extends BaseEntity {
                 boardDomainModel.getId(),
                 boardDomainModel.getName(),
                 boardDomainModel.getDescription(),
-                boardDomainModel.getCreateRoleList().stream().map(Object::toString).collect(Collectors.joining(",")),
-                boardDomainModel.getModifyRoleList().stream().map(Object::toString).collect(Collectors.joining(",")),
-                boardDomainModel.getReadRoleList().stream().map(Object::toString).collect(Collectors.joining(",")),
+                String.join(",", boardDomainModel.getCreateRoleList()),
                 boardDomainModel.getIsDeleted(),
                 circle
         );
