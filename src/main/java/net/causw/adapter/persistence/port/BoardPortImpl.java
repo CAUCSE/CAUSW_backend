@@ -85,6 +85,7 @@ public class BoardPortImpl implements BoardPort {
                 board.getName(),
                 board.getDescription(),
                 new ArrayList<>(Arrays.asList(board.getCreateRoles().split(","))),
+                board.getCategory(),
                 board.getIsDeleted(),
                 circleDomainModel
         );

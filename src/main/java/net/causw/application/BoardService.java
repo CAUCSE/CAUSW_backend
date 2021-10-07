@@ -173,6 +173,7 @@ public class BoardService {
                 boardCreateRequestDto.getName(),
                 boardCreateRequestDto.getDescription(),
                 boardCreateRequestDto.getCreateRoleList(),
+                boardCreateRequestDto.getCategory(),
                 circleDomainModel
         );
 
@@ -229,6 +230,7 @@ public class BoardService {
                 boardUpdateRequestDto.getName(),
                 boardUpdateRequestDto.getDescription(),
                 boardUpdateRequestDto.getCreateRoleList(),
+                boardUpdateRequestDto.getCategory(),
                 boardDomainModel.getIsDeleted(),
                 boardDomainModel.getCircle().orElse(null)
         );

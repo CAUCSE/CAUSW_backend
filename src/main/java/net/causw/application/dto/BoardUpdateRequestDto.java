@@ -15,4 +15,5 @@ public class BoardUpdateRequestDto {
     private String name;
     private String description;
     private List<String> createRoleList;
+    private String category;
 }

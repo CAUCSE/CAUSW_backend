@@ -30,6 +30,9 @@ public class Board extends BaseEntity {
     @Column(name = "create_role_list", nullable = false)
     private String createRoles;
 
+    @Column(name = "category", nullable = false)
+    private String category;
+
     @Column(name = "is_deleted")
     @ColumnDefault("false")
     private Boolean isDeleted;
@@ -46,6 +49,7 @@ public class Board extends BaseEntity {
             String name,
             String description,
             String createRoles,
+            String category,
             Boolean isDeleted,
             Circle circle
     ) {
@@ -53,6 +57,7 @@ public class Board extends BaseEntity {
         this.name = name;
         this.description = description;
         this.createRoles = createRoles;
+        this.category = category;
         this.isDeleted = isDeleted;
         this.circle = circle;
     }
@@ -61,12 +66,14 @@ public class Board extends BaseEntity {
             String name,
             String description,
             String createRoles,
+            String category,
             Boolean isDeleted,
             Circle circle
     ) {
         this.name = name;
         this.description = description;
         this.createRoles = createRoles;
+        this.category = category;
         this.isDeleted = isDeleted;
         this.circle = circle;
     }
@@ -76,6 +83,7 @@ public class Board extends BaseEntity {
             String name,
             String description,
             String createRoles,
+            String category,
             Boolean isDeleted,
             Circle circle
     ) {
@@ -84,6 +92,7 @@ public class Board extends BaseEntity {
                 name,
                 description,
                 createRoles,
+                category,
                 isDeleted,
                 circle
         );
@@ -93,6 +102,7 @@ public class Board extends BaseEntity {
             String name,
             String description,
             String createRoles,
+            String category,
             Boolean isDeleted,
             Circle circle
     ) {
@@ -100,6 +110,7 @@ public class Board extends BaseEntity {
                 name,
                 description,
                 createRoles,
+                category,
                 isDeleted,
                 circle
         );
@@ -113,6 +124,7 @@ public class Board extends BaseEntity {
                 boardDomainModel.getName(),
                 boardDomainModel.getDescription(),
                 String.join(",", boardDomainModel.getCreateRoleList()),
+                boardDomainModel.getCategory(),
                 boardDomainModel.getIsDeleted(),
                 circle
         );

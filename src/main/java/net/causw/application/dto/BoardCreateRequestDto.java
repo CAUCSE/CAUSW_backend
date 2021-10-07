@@ -16,6 +16,7 @@ public class BoardCreateRequestDto {
     private String name;
     private String description;
     private List<String> createRoleList;
+    private String category;
 
     private String circleId;
 
