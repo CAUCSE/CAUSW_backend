@@ -36,8 +36,16 @@ public class BoardController {
 
     @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
-    public List<BoardResponseDto> findByCircleId(@AuthenticationPrincipal String currentUserId,
-                                                 @RequestParam String circleId) {
+    public List<BoardResponseDto> findAll() {
+        return this.boardService.findAll();
+    }
+
+    @GetMapping(params = "circleId")
+    @ResponseStatus(value = HttpStatus.OK)
+    public List<BoardResponseDto> findByCircleId(
+            @AuthenticationPrincipal String currentUserId,
+            @RequestParam String circleId
+    ) {
         return this.boardService.findByCircleId(currentUserId, circleId);
     }
 

@@ -228,8 +228,6 @@ class BoardServiceTest extends Specification {
                 "test",
                 "test_description",
                 Arrays.asList("PRESIDENT", "COUNCIL"),
-                Arrays.asList("PRESIDENT", "COUNCIL"),
-                Arrays.asList("PRESIDENT", "COUNCIL"),
                 null
         )
 
@@ -303,8 +301,6 @@ class BoardServiceTest extends Specification {
                 "test",
                 "test_description",
                 Arrays.asList("PRESIDENT", "COUNCIL"),
-                Arrays.asList("PRESIDENT", "COUNCIL"),
-                Arrays.asList("PRESIDENT", "COUNCIL"),
                 null
         )
 
@@ -363,8 +359,6 @@ class BoardServiceTest extends Specification {
                 "test",
                 "test_description",
                 Arrays.asList("PRESIDENT", "COUNCIL"),
-                Arrays.asList("PRESIDENT", "COUNCIL"),
-                Arrays.asList("PRESIDENT", "COUNCIL"),
                 null
         )
 
@@ -397,8 +391,6 @@ class BoardServiceTest extends Specification {
         def mockBoardCreateRequestDto = new BoardCreateRequestDto(
                 "test",
                 "test_description",
-                Arrays.asList("PRESIDENT", "COUNCIL"),
-                Arrays.asList("PRESIDENT", "COUNCIL"),
                 Arrays.asList("PRESIDENT", "COUNCIL"),
                 "test"
         )
@@ -445,8 +437,6 @@ class BoardServiceTest extends Specification {
         def mockBoardUpdateRequestDto = new BoardUpdateRequestDto(
                 "test_update",
                 "test_description",
-                Arrays.asList("PRESIDENT", "COUNCIL"),
-                Arrays.asList("PRESIDENT", "COUNCIL"),
                 Arrays.asList("PRESIDENT", "COUNCIL")
         )
 
@@ -533,8 +523,6 @@ class BoardServiceTest extends Specification {
         def mockBoardUpdateRequestDto = new BoardUpdateRequestDto(
                 "test_update",
                 "test_description",
-                Arrays.asList("PRESIDENT", "COUNCIL"),
-                Arrays.asList("PRESIDENT", "COUNCIL"),
                 Arrays.asList("PRESIDENT", "COUNCIL")
         )
 
@@ -567,8 +555,6 @@ class BoardServiceTest extends Specification {
         def mockBoardUpdateRequestDto = new BoardUpdateRequestDto(
                 "test_update",
                 "test_description",
-                Arrays.asList("PRESIDENT", "COUNCIL"),
-                Arrays.asList("PRESIDENT", "COUNCIL"),
                 Arrays.asList("PRESIDENT", "COUNCIL")
         )
 
@@ -630,8 +616,6 @@ class BoardServiceTest extends Specification {
         def mockBoardUpdateRequestDto = new BoardUpdateRequestDto(
                 "test_update",
                 "test_description",
-                Arrays.asList("PRESIDENT", "COUNCIL"),
-                Arrays.asList("PRESIDENT", "COUNCIL"),
                 Arrays.asList("PRESIDENT", "COUNCIL")
         )
 
@@ -664,8 +648,6 @@ class BoardServiceTest extends Specification {
         def mockBoardUpdateRequestDto = new BoardUpdateRequestDto(
                 "test_update",
                 "test_description",
-                Arrays.asList("PRESIDENT", "COUNCIL"),
-                Arrays.asList("PRESIDENT", "COUNCIL"),
                 Arrays.asList("PRESIDENT", "COUNCIL")
         )
 

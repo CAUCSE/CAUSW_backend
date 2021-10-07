@@ -8,4 +8,6 @@ import java.util.List;
 @Repository
 public interface BoardRepository extends JpaRepository<Board, String> {
     List<Board> findByCircle_IdAndIsDeletedIsFalse(String circleId);
+
+    List<Board> findByCircle_IdIsNullAndIsDeletedIsFalse();
 }

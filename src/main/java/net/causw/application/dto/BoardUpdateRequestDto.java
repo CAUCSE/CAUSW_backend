@@ -15,6 +15,4 @@ public class BoardUpdateRequestDto {
     private String name;
     private String description;
     private List<String> createRoleList;
-    private List<String> modifyRoleList;
-    private List<String> readRoleList;
 }
