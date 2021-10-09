@@ -28,12 +28,6 @@ public class BoardController {
         this.boardService = boardService;
     }
 
-    @GetMapping(value = "/{id}")
-    @ResponseStatus(value = HttpStatus.OK)
-    public BoardResponseDto findById(@AuthenticationPrincipal String userId, @PathVariable String id) {
-        return this.boardService.findById(userId, id);
-    }
-
     @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
     public List<BoardResponseDto> findAll() {

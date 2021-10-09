@@ -35,6 +35,11 @@ public class CommentPortImpl implements CommentPort {
     }
 
     @Override
+    public Long countByPostId(String postId) {
+        return this.commentRepository.countByPost_Id(postId);
+    }
+
+    @Override
     public CommentDomainModel create(CommentDomainModel commentDomainModel, PostDomainModel postDomainModel) {
         return this.entityToDomainModelWithParent(this.commentRepository.save(Comment.from(commentDomainModel, postDomainModel)));
     }

@@ -10,7 +10,6 @@ import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
-import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.BoardDomainModel;
 import net.causw.domain.model.CircleDomainModel;
 import net.causw.domain.model.CircleMemberDomainModel;
@@ -50,44 +49,6 @@ public class BoardService {
         this.circlePort = circlePort;
         this.circleMemberPort = circleMemberPort;
         this.validator = validator;
-    }
-
-    @Transactional(readOnly = true)
-    public BoardResponseDto findById(String userId, String id) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
-        BoardDomainModel boardDomainModel = this.boardPort.findById(id).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid board id"
-                )
-        );
-
-        validatorBucket
-                .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted()));
-
-        boardDomainModel.getCircle().ifPresent(
-                circleDomainModel -> {
-                    CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(userId, circleDomainModel.getId()).orElseThrow(
-                            () -> new UnauthorizedException(
-                                    ErrorCode.NOT_MEMBER,
-                                    "The user is not a member of circle"
-                            )
-                    );
-
-                    validatorBucket
-                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted()))
-                            .consistOf(CircleMemberStatusValidator.of(
-                                    circleMemberDomainModel.getStatus(),
-                                    List.of(CircleMemberStatus.MEMBER)
-                            ));
-                }
-        );
-
-        validatorBucket
-                .validate();
-
-        return BoardResponseDto.from(boardDomainModel);
     }
 
     @Transactional(readOnly = true)

@@ -12,5 +12,7 @@ public interface CommentPort {
     // TODO : GHJANG : Pagination
     List<CommentDomainModel> findByPostId(String postId);
 
+    Long countByPostId(String postId);
+
     CommentDomainModel create(CommentDomainModel commentDomainModel, PostDomainModel postDomainModel);
 }
