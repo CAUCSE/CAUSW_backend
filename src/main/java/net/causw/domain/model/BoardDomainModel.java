@@ -5,8 +5,10 @@ import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -73,6 +75,25 @@ public class BoardDomainModel {
             String category,
             CircleDomainModel circle
     ) {
+        if (createRoleList != null) {
+            if (createRoleList.isEmpty()) {
+                createRoleList.addAll(
+                        Arrays.stream(Role.values())
+                                .map(Role::getValue)
+                                .collect(Collectors.toList())
+                );
+                createRoleList.remove(Role.NONE.getValue());
+            } else {
+                createRoleList = createRoleList
+                        .stream()
+                        .map(Role::of)
+                        .map(Role::getValue)
+                        .collect(Collectors.toList());
+
+                createRoleList.add(Role.ADMIN.getValue());
+            }
+        }
+
         return new BoardDomainModel(
                 null,
                 name,

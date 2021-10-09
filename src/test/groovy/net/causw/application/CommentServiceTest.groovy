@@ -52,6 +52,7 @@ class CommentServiceTest extends Specification {
                 "test board id",
                 "test board description",
                 Arrays.asList("PRESIDENT"),
+                "test category",
                 false,
                 null
         )
