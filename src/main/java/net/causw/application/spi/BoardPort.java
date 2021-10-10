@@ -8,6 +8,8 @@ import java.util.Optional;
 public interface BoardPort {
     Optional<BoardDomainModel> findById(String id);
 
+    List<BoardDomainModel> findAll();
+
     List<BoardDomainModel> findByCircleId(String circleId);
 
     BoardDomainModel create(BoardDomainModel boardDomainModel);

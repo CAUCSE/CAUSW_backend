@@ -91,6 +91,14 @@ public class BoardService {
     }
 
     @Transactional(readOnly = true)
+    public List<BoardResponseDto> findAll() {
+        return this.boardPort.findAll()
+                .stream()
+                .map(BoardResponseDto::from)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public List<BoardResponseDto> findByCircleId(
             String currentUserId,
             String circleId
@@ -104,8 +112,8 @@ public class BoardService {
 
         CircleMemberDomainModel circleMember = this.circleMemberPort.findByUserIdAndCircleId(currentUserId, circle.getId()).orElseThrow(
                 () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid application information"
+                        ErrorCode.NOT_MEMBER,
+                        "The user is not a member of circle"
                 )
         );
 
@@ -117,7 +125,10 @@ public class BoardService {
                 ))
                 .validate();
 
-        return this.boardPort.findByCircleId(circleId).stream().map(BoardResponseDto::from).collect(Collectors.toList());
+        return this.boardPort.findByCircleId(circleId)
+                .stream()
+                .map(BoardResponseDto::from)
+                .collect(Collectors.toList());
     }
 
     @Transactional

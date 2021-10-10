@@ -30,6 +30,14 @@ public class BoardPortImpl implements BoardPort {
     }
 
     @Override
+    public List<BoardDomainModel> findAll() {
+        return this.boardRepository.findByCircle_IdIsNullAndIsDeletedIsFalse()
+                .stream()
+                .map(this::entityToDomainModel)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public List<BoardDomainModel> findByCircleId(String circleId) {
         return this.boardRepository.findByCircle_IdAndIsDeletedIsFalse(circleId)
                 .stream()
