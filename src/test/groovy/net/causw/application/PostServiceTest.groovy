@@ -146,6 +146,140 @@ class PostServiceTest extends Specification {
     }
 
     /**
+     * Test cases for post find all by board id
+     */
+    @Test
+    def "Post find all normal case"() {
+        def requestUserDomainModel = UserDomainModel.of(
+                "test user id",
+                "test@cau.ac.kr",
+                "test user name",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.PRESIDENT,
+                null,
+                UserState.ACTIVE
+        )
+
+        def circleMemberDomainModel = CircleMemberDomainModel.of(
+                "test circle member id",
+                CircleMemberStatus.MEMBER,
+                (CircleDomainModel) this.mockCircleDomainModel,
+                requestUserDomainModel.getId(),
+                requestUserDomainModel.getName(),
+                null,
+                null
+        )
+
+        ((PostDomainModel) this.mockPostDomainModel).setWriter(requestUserDomainModel)
+
+        this.userPort.findById(requestUserDomainModel.getId()) >> Optional.of(requestUserDomainModel)
+        this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(this.mockPostDomainModel)
+        this.boardPort.findById(((BoardDomainModel) this.mockBoardDomainModel).getId()) >> Optional.of(this.mockBoardDomainModel)
+        this.circleMemberPort.findByUserIdAndCircleId(requestUserDomainModel.getId(), ((CircleDomainModel) this.mockCircleDomainModel).getId()) >> Optional.of(circleMemberDomainModel)
+        this.postPort.findAll(((BoardDomainModel) this.mockBoardDomainModel).getId()) >> List.of(this.mockPostDomainModel)
+
+        when: "post findById without circle"
+        def postFind = this.postService.findAll("test user id", "test board id")
+
+        then:
+        postFind instanceof List<PostResponseDto>
+        with(postFind) {
+            get(0).getTitle() == "test post title"
+            get(0).getContent() == "test post content"
+        }
+
+        when: "post findById with circle"
+        ((BoardDomainModel) this.mockBoardDomainModel).setCircle((CircleDomainModel) this.mockCircleDomainModel)
+        postFind = this.postService.findAll("test user id", "test board id")
+
+        then:
+        postFind instanceof List<PostResponseDto>
+        with(postFind) {
+            get(0).getTitle() == "test post title"
+            get(0).getContent() == "test post content"
+        }
+    }
+
+    @Test
+    def "Post find all in deleted board"() {
+        def requestUserDomainModel = UserDomainModel.of(
+                "test user id",
+                "test@cau.ac.kr",
+                "test user name",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.PRESIDENT,
+                null,
+                UserState.ACTIVE
+        )
+
+        ((PostDomainModel) this.mockPostDomainModel).setWriter(requestUserDomainModel)
+
+        this.userPort.findById(requestUserDomainModel.getId()) >> Optional.of(requestUserDomainModel)
+        this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(this.mockPostDomainModel)
+        this.boardPort.findById(((BoardDomainModel) this.mockBoardDomainModel).getId()) >> Optional.of(this.mockBoardDomainModel)
+        this.postPort.findAll(((BoardDomainModel) this.mockBoardDomainModel).getId()) >> List.of(this.mockPostDomainModel)
+
+        when:
+        this.mockBoardDomainModel.setIsDeleted(true)
+        this.postService.findAll("test user id", "test board id")
+
+        then:
+        thrown(BadRequestException)
+    }
+
+    @Test
+    def "Post find all unauthorized case"() {
+        def requestUserDomainModel = UserDomainModel.of(
+                "test user id",
+                "test@cau.ac.kr",
+                "test user name",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.PRESIDENT,
+                null,
+                UserState.ACTIVE
+        )
+
+        def circleMemberDomainModel = CircleMemberDomainModel.of(
+                "test circle member id",
+                CircleMemberStatus.LEAVE,
+                (CircleDomainModel) this.mockCircleDomainModel,
+                requestUserDomainModel.getId(),
+                requestUserDomainModel.getName(),
+                null,
+                null
+        )
+
+        ((PostDomainModel) this.mockPostDomainModel).setWriter(requestUserDomainModel)
+
+        this.userPort.findById(requestUserDomainModel.getId()) >> Optional.of(requestUserDomainModel)
+        this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(this.mockPostDomainModel)
+        this.boardPort.findById(((BoardDomainModel) this.mockBoardDomainModel).getId()) >> Optional.of(this.mockBoardDomainModel)
+        this.circleMemberPort.findByUserIdAndCircleId(requestUserDomainModel.getId(), ((CircleDomainModel) this.mockCircleDomainModel).getId()) >> Optional.of(circleMemberDomainModel)
+        this.postPort.findAll(((BoardDomainModel) this.mockBoardDomainModel).getId()) >> List.of(this.mockPostDomainModel)
+
+        when: "bad request case - leave"
+        ((BoardDomainModel) this.mockBoardDomainModel).setCircle((CircleDomainModel) this.mockCircleDomainModel)
+        this.postService.findAll("test user id", "test board id")
+
+        then:
+        thrown(BadRequestException)
+
+        when: "unauthorized case - drop"
+        circleMemberDomainModel.setStatus(CircleMemberStatus.DROP)
+        ((BoardDomainModel) this.mockBoardDomainModel).setCircle((CircleDomainModel) this.mockCircleDomainModel)
+        this.postService.findAll("test user id", "test board id")
+
+        then:
+        thrown(UnauthorizedException)
+    }
+
+    /**
      * Test cases for post create
      */
     @Test
