@@ -20,6 +20,9 @@ public class BoardDomainModel {
     @NotNull(message = "Create role is null")
     private List<String> createRoleList;
 
+    @NotBlank(message = "Category is blank")
+    private String category;
+
     @NotNull(message = "Board state is null")
     private Boolean isDeleted;
 
@@ -30,6 +33,7 @@ public class BoardDomainModel {
             String name,
             String description,
             List<String> createRoleList,
+            String category,
             Boolean isDeleted,
             CircleDomainModel circle
     ) {
@@ -37,6 +41,7 @@ public class BoardDomainModel {
         this.name = name;
         this.description = description;
         this.createRoleList = createRoleList;
+        this.category = category;
         this.isDeleted = isDeleted;
         this.circle = circle;
     }
@@ -46,6 +51,7 @@ public class BoardDomainModel {
             String name,
             String description,
             List<String> createRoleList,
+            String category,
             Boolean isDeleted,
             CircleDomainModel circle
     ) {
@@ -54,6 +60,7 @@ public class BoardDomainModel {
                 name,
                 description,
                 createRoleList,
+                category,
                 isDeleted,
                 circle
         );
@@ -63,6 +70,7 @@ public class BoardDomainModel {
             String name,
             String description,
             List<String> createRoleList,
+            String category,
             CircleDomainModel circle
     ) {
         return new BoardDomainModel(
@@ -70,6 +78,7 @@ public class BoardDomainModel {
                 name,
                 description,
                 createRoleList,
+                category,
                 false,
                 circle
         );

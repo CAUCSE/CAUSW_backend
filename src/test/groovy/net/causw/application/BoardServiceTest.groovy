@@ -44,6 +44,7 @@ class BoardServiceTest extends Specification {
                 "test",
                 "test_description",
                 Arrays.asList("PRESIDENT", "COUNCIL"),
+                "test category",
                 false,
                 null
         )
@@ -228,6 +229,7 @@ class BoardServiceTest extends Specification {
                 "test",
                 "test_description",
                 Arrays.asList("PRESIDENT", "COUNCIL"),
+                "test category",
                 null
         )
 
@@ -263,6 +265,7 @@ class BoardServiceTest extends Specification {
                 "test",
                 "test_description",
                 Arrays.asList("PRESIDENT", "COUNCIL"),
+                "test category",
                 null
         )).thenReturn((BoardDomainModel) this.mockBoardDomainModel)
         def boardResponseDto = this.boardService.create("test", mockBoardCreateRequestDto)
@@ -282,6 +285,7 @@ class BoardServiceTest extends Specification {
                 "test",
                 "test_description",
                 Arrays.asList("PRESIDENT", "COUNCIL"),
+                "test category",
                 circleDomainModel
         )).thenReturn((BoardDomainModel) this.mockBoardDomainModel)
         boardResponseDto = this.boardService.create("test", mockBoardCreateRequestDto)
@@ -301,6 +305,7 @@ class BoardServiceTest extends Specification {
                 "test",
                 "test_description",
                 Arrays.asList("PRESIDENT", "COUNCIL"),
+                "test category",
                 null
         )
 
@@ -327,6 +332,7 @@ class BoardServiceTest extends Specification {
                 "",
                 "test_description",
                 Arrays.asList("PRESIDENT", "COUNCIL"),
+                "test category",
                 null
         )).thenReturn((BoardDomainModel) this.mockBoardDomainModel)
         this.boardService.create("test", mockBoardCreateRequestDto)
@@ -344,6 +350,7 @@ class BoardServiceTest extends Specification {
                 "test",
                 "test_description",
                 null,
+                "test category",
                 null
         )).thenReturn((BoardDomainModel) this.mockBoardDomainModel)
         this.boardService.create("test", mockBoardCreateRequestDto)
@@ -359,6 +366,7 @@ class BoardServiceTest extends Specification {
                 "test",
                 "test_description",
                 Arrays.asList("PRESIDENT", "COUNCIL"),
+                "test category",
                 null
         )
 
@@ -392,6 +400,7 @@ class BoardServiceTest extends Specification {
                 "test",
                 "test_description",
                 Arrays.asList("PRESIDENT", "COUNCIL"),
+                "test category",
                 "test"
         )
 
@@ -437,7 +446,8 @@ class BoardServiceTest extends Specification {
         def mockBoardUpdateRequestDto = new BoardUpdateRequestDto(
                 "test_update",
                 "test_description",
-                Arrays.asList("PRESIDENT", "COUNCIL")
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                "test category"
         )
 
         def updater = UserDomainModel.of(
@@ -466,6 +476,7 @@ class BoardServiceTest extends Specification {
                 mockBoardUpdateRequestDto.getName(),
                 mockBoardUpdateRequestDto.getDescription(),
                 mockBoardUpdateRequestDto.getCreateRoleList(),
+                "test category",
                 false,
                 null
         )
@@ -482,6 +493,7 @@ class BoardServiceTest extends Specification {
                 mockBoardUpdateRequestDto.getName(),
                 mockBoardUpdateRequestDto.getDescription(),
                 mockBoardUpdateRequestDto.getCreateRoleList(),
+                "test category",
                 false,
                 null
         )).thenReturn(mockUpdatedBoardDomainModel)
@@ -504,6 +516,7 @@ class BoardServiceTest extends Specification {
                 mockBoardUpdateRequestDto.getName(),
                 mockBoardUpdateRequestDto.getDescription(),
                 mockBoardUpdateRequestDto.getCreateRoleList(),
+                "test category",
                 false,
                 mockCircleDomainModel
         )).thenReturn(mockUpdatedBoardDomainModel)
@@ -523,7 +536,8 @@ class BoardServiceTest extends Specification {
         def mockBoardUpdateRequestDto = new BoardUpdateRequestDto(
                 "test_update",
                 "test_description",
-                Arrays.asList("PRESIDENT", "COUNCIL")
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                "test category"
         )
 
         def updater = UserDomainModel.of(
@@ -555,7 +569,8 @@ class BoardServiceTest extends Specification {
         def mockBoardUpdateRequestDto = new BoardUpdateRequestDto(
                 "test_update",
                 "test_description",
-                Arrays.asList("PRESIDENT", "COUNCIL")
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                "test category"
         )
 
         def updater = UserDomainModel.of(
@@ -582,6 +597,7 @@ class BoardServiceTest extends Specification {
                 mockBoardUpdateRequestDto.getName(),
                 mockBoardUpdateRequestDto.getDescription(),
                 mockBoardUpdateRequestDto.getCreateRoleList(),
+                "test category",
                 false,
                 null
         )).thenReturn((BoardDomainModel) this.mockBoardDomainModel)
@@ -601,6 +617,7 @@ class BoardServiceTest extends Specification {
                 mockBoardUpdateRequestDto.getName(),
                 mockBoardUpdateRequestDto.getDescription(),
                 mockBoardUpdateRequestDto.getCreateRoleList(),
+                "test category",
                 false,
                 null
         )).thenReturn((BoardDomainModel) this.mockBoardDomainModel)
@@ -616,7 +633,8 @@ class BoardServiceTest extends Specification {
         def mockBoardUpdateRequestDto = new BoardUpdateRequestDto(
                 "test_update",
                 "test_description",
-                Arrays.asList("PRESIDENT", "COUNCIL")
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                "test category"
         )
 
         def updater = UserDomainModel.of(
@@ -648,7 +666,8 @@ class BoardServiceTest extends Specification {
         def mockBoardUpdateRequestDto = new BoardUpdateRequestDto(
                 "test_update",
                 "test_description",
-                Arrays.asList("PRESIDENT", "COUNCIL")
+                Arrays.asList("PRESIDENT", "COUNCIL"),
+                "test category"
         )
 
         def updater = UserDomainModel.of(
@@ -717,6 +736,7 @@ class BoardServiceTest extends Specification {
                 (String) this.mockBoardDomainModel.getName(),
                 (String) this.mockBoardDomainModel.getDescription(),
                 (List<String>) this.mockBoardDomainModel.getCreateRoleList(),
+                "test category",
                 true,
                 mockCircleDomainModel
         )
