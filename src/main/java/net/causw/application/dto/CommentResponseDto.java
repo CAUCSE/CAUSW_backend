@@ -19,6 +19,7 @@ public class CommentResponseDto {
     private String postId;
     private String writerId;
     private String writerName;
+    private String writerProfileImage;
     private String parentCommentId;
     private List<CommentResponseDto> childCommentList;
 
@@ -31,6 +32,7 @@ public class CommentResponseDto {
             String postId,
             String writerId,
             String writerName,
+            String writerProfileImage,
             String parentCommentId,
             List<CommentResponseDto> childCommentList
     ) {
@@ -42,6 +44,7 @@ public class CommentResponseDto {
         this.postId = postId;
         this.writerId = writerId;
         this.writerName = writerName;
+        this.writerProfileImage = writerProfileImage;
         this.parentCommentId = parentCommentId;
         this.childCommentList = childCommentList;
     }
@@ -61,6 +64,7 @@ public class CommentResponseDto {
                 comment.getPostId(),
                 comment.getWriter().getId(),
                 comment.getWriter().getName(),
+                comment.getWriter().getProfileImage(),
                 parentCommentId,
                 comment.getChildCommentList()
                         .stream()

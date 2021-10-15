@@ -171,7 +171,7 @@ public class CircleService {
         this.circleMemberPort.updateStatus(circleMemberDomainModel.getId(), CircleMemberStatus.MEMBER).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        "Circle id immediately used, but exception occurred"
+                        "Circle id immediately can be used, but exception occurred"
                 )
         );
 
@@ -193,6 +193,13 @@ public class CircleService {
                 )
         );
 
+        UserDomainModel user = this.userPort.findById(userId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid user id"
+                )
+        );
+
         if (!circle.getName().equals(circleUpdateRequestDto.getName())) {
             this.circlePort.findByName(circleUpdateRequestDto.getName()).ifPresent(
                     name -> {
@@ -203,13 +210,6 @@ public class CircleService {
                     }
             );
         }
-
-        UserDomainModel user = this.userPort.findById(userId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid user id"
-                )
-        );
 
         CircleDomainModel circleDomainModel = CircleDomainModel.of(
                 circle.getId(),
@@ -300,10 +300,24 @@ public class CircleService {
 
     @Transactional
     public CircleMemberResponseDto leaveUser(String userId, String circleId) {
-        CircleMemberDomainModel circleMember = this.circleMemberPort.findByUserIdAndCircleId(userId, circleId).orElseThrow(
+        UserDomainModel user = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid application information"
+                        "Invalid user id"
+                )
+        );
+
+        CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid circle id"
+                )
+        );
+
+        CircleMemberDomainModel circleMember = this.circleMemberPort.findByUserIdAndCircleId(user.getId(), circle.getId()).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "The user is not a member of circle"
                 )
         );
 
@@ -339,10 +353,17 @@ public class CircleService {
                 )
         );
 
+        CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid circle id"
+                )
+        );
+
         CircleMemberDomainModel circleMember = this.circleMemberPort.findByUserIdAndCircleId(userId, circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid application information"
+                        "The user is not a member of circle"
                 )
         );
 

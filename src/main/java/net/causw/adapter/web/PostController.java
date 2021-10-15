@@ -28,20 +28,28 @@ public class PostController {
 
     @GetMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
-    public PostResponseDto findById(@AuthenticationPrincipal String userId, @PathVariable String id) {
+    public PostResponseDto findById(
+            @AuthenticationPrincipal String userId,
+            @PathVariable String id
+    ) {
         return this.postService.findById(userId, id);
     }
 
     @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
-    public List<PostAllResponseDto> findAll(@AuthenticationPrincipal String userId,
-                                            @RequestParam String boardId) {
+    public List<PostAllResponseDto> findAll(
+            @AuthenticationPrincipal String userId,
+            @RequestParam String boardId
+    ) {
         return this.postService.findAll(userId, boardId);
     }
 
     @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)
-    public PostResponseDto create(@AuthenticationPrincipal String creatorId, @RequestBody PostCreateRequestDto postCreateRequestDto) {
+    public PostResponseDto create(
+            @AuthenticationPrincipal String creatorId,
+            @RequestBody PostCreateRequestDto postCreateRequestDto
+    ) {
         return this.postService.create(creatorId, postCreateRequestDto);
     }
 }

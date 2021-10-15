@@ -5,6 +5,8 @@ import net.causw.application.spi.CirclePort;
 import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
+import net.causw.domain.exceptions.InternalServerException;
+import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.CircleDomainModel;
 import net.causw.domain.model.CircleMemberDomainModel;
 import net.causw.domain.model.CircleMemberStatus;
@@ -41,8 +43,8 @@ public class DelegationLeaderCircle implements Delegation {
     @Override
     public void delegate(String currentId, String targetId) {
         CircleDomainModel circle = this.circlePort.findByLeaderId(currentId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
+                () -> new UnauthorizedException(
+                        ErrorCode.API_NOT_ALLOWED,
                         "Invalid leader id"
                 )
         );
@@ -69,16 +71,16 @@ public class DelegationLeaderCircle implements Delegation {
                 .validate();
 
         this.circlePort.updateLeader(circle.getId(), newLeader).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid circle id"
+                () -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "Circle id and Leader id checked, but exception occurred"
                 )
         );
 
         this.userPort.updateRole(currentId, Role.COMMON).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid login user id"
+                () -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "User id checked, but exception occurred"
                 )
         );
     }

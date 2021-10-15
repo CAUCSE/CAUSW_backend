@@ -306,7 +306,7 @@ public class UserService {
         return UserResponseDto.from(this.userPort.updatePassword(id, userPasswordUpdateRequestDto.getUpdatedPassword()).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        "Application id checked, but exception occurred"
+                        "User id checked, but exception occurred"
                 )
         ));
     }

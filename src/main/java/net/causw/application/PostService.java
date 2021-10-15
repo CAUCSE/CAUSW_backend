@@ -59,17 +59,17 @@ public class PostService {
     public PostResponseDto findById(String userId, String id) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
+        UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid request user id"
+                )
+        );
+
         PostDomainModel postDomainModel = this.postPort.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "Invalid post id"
-                )
-        );
-
-        UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid user id"
                 )
         );
 
@@ -78,11 +78,12 @@ public class PostService {
 
         postDomainModel.getBoard().getCircle().ifPresent(
                 circleDomainModel -> {
-                    CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(userId, circleDomainModel.getId()).orElseThrow(
-                            () -> new UnauthorizedException(
-                                    ErrorCode.NOT_MEMBER,
-                                    "The user is not a member of circle"
-                            )
+                    CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(userDomainModel.getId(), circleDomainModel.getId())
+                            .orElseThrow(
+                                () -> new UnauthorizedException(
+                                        ErrorCode.NOT_MEMBER,
+                                        "The user is not a member of circle"
+                                )
                     );
 
                     validatorBucket
@@ -112,6 +113,13 @@ public class PostService {
     public List<PostAllResponseDto> findAll(String userId, String boardId) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
+        UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid request user id"
+                )
+        );
+
         BoardDomainModel boardDomainModel = this.boardPort.findById(boardId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -121,14 +129,16 @@ public class PostService {
 
         boardDomainModel.getCircle().ifPresent(
                 circleDomainModel -> {
-                    CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(userId, circleDomainModel.getId()).orElseThrow(
-                            () -> new UnauthorizedException(
-                                    ErrorCode.NOT_MEMBER,
-                                    "The user is not a member of circle"
-                            )
+                    CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(userDomainModel.getId(), circleDomainModel.getId())
+                            .orElseThrow(
+                                () -> new UnauthorizedException(
+                                        ErrorCode.NOT_MEMBER,
+                                        "The user is not a member of circle"
+                                )
                     );
 
                     validatorBucket
+                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted()))
                             .consistOf(CircleMemberStatusValidator.of(
                                     circleMemberDomainModel.getStatus(),
                                     List.of(CircleMemberStatus.MEMBER)
