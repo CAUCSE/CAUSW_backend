@@ -1,9 +1,9 @@
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/causw
-    username: ${CAUSW_DB_USERNAME}
-    password: ${CAUSW_DB_PASSWORD}
+    url: ${PROD_CAUSW_DB_URL}
+    username: ${PROD_CAUSW_DB_USERNAME}
+    password: ${PROD_CAUSW_DB_PASSWORD}
 
   jpa:
     hibernate:
