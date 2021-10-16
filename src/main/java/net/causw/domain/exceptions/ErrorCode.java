@@ -18,6 +18,7 @@ public enum ErrorCode {
     AWAITING_STATUS(4008),
     INVALID_STUDENT_ID(4009),
     TIME_NOT_PASSED(4010),
+    INVALID_REQUEST_ROLE(4011),
 
     /**
      * 401 Unauthorized

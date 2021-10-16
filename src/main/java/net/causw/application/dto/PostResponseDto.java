@@ -3,6 +3,7 @@ package net.causw.application.dto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.causw.domain.model.PostDomainModel;
+import net.causw.domain.model.UserDomainModel;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -41,14 +42,15 @@ public class PostResponseDto {
     }
 
     public static PostResponseDto from(
-            PostDomainModel post
+            PostDomainModel post,
+            UserDomainModel user
     ) {
         return new PostResponseDto(
                 post.getId(),
                 post.getTitle(),
                 post.getContent(),
                 post.getIsDeleted(),
-                BoardResponseDto.from(post.getBoard()),
+                BoardResponseDto.from(post.getBoard(), user.getRole()),
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
                 new ArrayList<>()
@@ -57,6 +59,7 @@ public class PostResponseDto {
 
     public static PostResponseDto from(
             PostDomainModel post,
+            UserDomainModel user,
             List<CommentResponseDto> commentList
     ) {
         return new PostResponseDto(
@@ -64,7 +67,7 @@ public class PostResponseDto {
                 post.getTitle(),
                 post.getContent(),
                 post.getIsDeleted(),
-                BoardResponseDto.from(post.getBoard()),
+                BoardResponseDto.from(post.getBoard(), user.getRole()),
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
                 commentList

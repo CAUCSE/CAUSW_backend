@@ -1,23 +1,13 @@
 package net.causw.application
 
-import net.causw.application.dto.CircleResponseDto
-import net.causw.application.dto.UserCreateRequestDto
-import net.causw.application.dto.UserPasswordUpdateRequestDto
-import net.causw.application.dto.UserResponseDto
-import net.causw.application.dto.UserUpdateRequestDto
-import net.causw.application.dto.UserUpdateRoleRequestDto
+import net.causw.application.dto.*
 import net.causw.application.spi.CircleMemberPort
 import net.causw.application.spi.CirclePort
 import net.causw.application.spi.UserPort
 import net.causw.config.JwtTokenProvider
 import net.causw.domain.exceptions.BadRequestException
 import net.causw.domain.exceptions.UnauthorizedException
-import net.causw.domain.model.CircleDomainModel
-import net.causw.domain.model.CircleMemberDomainModel
-import net.causw.domain.model.CircleMemberStatus
-import net.causw.domain.model.Role
-import net.causw.domain.model.UserDomainModel
-import net.causw.domain.model.UserState
+import net.causw.domain.model.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.powermock.api.mockito.PowerMockito
@@ -190,7 +180,9 @@ class UserServiceTest extends Specification {
                 CircleMemberStatus.MEMBER,
                 mockCircleDomainModel,
                 "test1",
-                "test"
+                "test",
+                null,
+                null
         )
 
         def userUpdateRoleRequestDto = new UserUpdateRoleRequestDto(Role.COUNCIL)
@@ -406,12 +398,12 @@ class UserServiceTest extends Specification {
                 id,
                 userUpdateRequestDto.getEmail(),
                 userUpdateRequestDto.getName(),
-                (String)this.mockUserDomainModel.getPassword(),
+                (String) this.mockUserDomainModel.getPassword(),
                 userUpdateRequestDto.getStudentId(),
                 userUpdateRequestDto.getAdmissionYear(),
-                (Role)this.mockUserDomainModel.getRole(),
-                (String)this.mockUserDomainModel.getProfileImage(),
-                (UserState)this.mockUserDomainModel.getState()
+                (Role) this.mockUserDomainModel.getRole(),
+                (String) this.mockUserDomainModel.getProfileImage(),
+                (UserState) this.mockUserDomainModel.getState()
         )
 
         PowerMockito.mockStatic(UserDomainModel.class)
@@ -419,12 +411,12 @@ class UserServiceTest extends Specification {
                 id,
                 userUpdateRequestDto.getEmail(),
                 userUpdateRequestDto.getName(),
-                (String)this.mockUserDomainModel.getPassword(),
+                (String) this.mockUserDomainModel.getPassword(),
                 userUpdateRequestDto.getStudentId(),
                 userUpdateRequestDto.getAdmissionYear(),
-                (Role)this.mockUserDomainModel.getRole(),
-                (String)this.mockUserDomainModel.getProfileImage(),
-                (UserState)this.mockUserDomainModel.getState()
+                (Role) this.mockUserDomainModel.getRole(),
+                (String) this.mockUserDomainModel.getProfileImage(),
+                (UserState) this.mockUserDomainModel.getState()
         )).thenReturn(mockUpdatedUserDomainModel)
 
         this.userPort.findById(id) >> Optional.of(this.mockUserDomainModel)
@@ -458,12 +450,12 @@ class UserServiceTest extends Specification {
                 id,
                 userUpdateRequestDto.getEmail(),
                 userUpdateRequestDto.getName(),
-                (String)this.mockUserDomainModel.getPassword(),
+                (String) this.mockUserDomainModel.getPassword(),
                 userUpdateRequestDto.getStudentId(),
                 userUpdateRequestDto.getAdmissionYear(),
-                (Role)this.mockUserDomainModel.getRole(),
-                (String)this.mockUserDomainModel.getProfileImage(),
-                (UserState)this.mockUserDomainModel.getState()
+                (Role) this.mockUserDomainModel.getRole(),
+                (String) this.mockUserDomainModel.getProfileImage(),
+                (UserState) this.mockUserDomainModel.getState()
         )
 
         this.userPort.findById(id) >> Optional.of(this.mockUserDomainModel)
@@ -506,9 +498,9 @@ class UserServiceTest extends Specification {
                 "20210000",
                 2021,
                 null,
-        )).thenReturn((UserDomainModel)this.mockUserDomainModel)
+        )).thenReturn((UserDomainModel) this.mockUserDomainModel)
 
-        this.userPort.create((UserDomainModel)this.mockUserDomainModel) >> this.mockUserDomainModel
+        this.userPort.create((UserDomainModel) this.mockUserDomainModel) >> this.mockUserDomainModel
         this.userPort.findByEmail("test@cau.ac.kr") >> Optional.ofNullable(null)
 
         when:
@@ -516,7 +508,7 @@ class UserServiceTest extends Specification {
 
         then:
         userResponseDto instanceof UserResponseDto
-        with (userResponseDto) {
+        with(userResponseDto) {
             getEmail() == this.mockUserDomainModel.getEmail()
             getName() == this.mockUserDomainModel.getName()
             getStudentId() == this.mockUserDomainModel.getStudentId()
@@ -762,12 +754,12 @@ class UserServiceTest extends Specification {
         )
 
         def mockUpdatedUserDomainModel = UserDomainModel.of(
-                (String)this.mockUserDomainModel.getId(),
-                (String)this.mockUserDomainModel.getEmail(),
-                (String)this.mockUserDomainModel.getName(),
+                (String) this.mockUserDomainModel.getId(),
+                (String) this.mockUserDomainModel.getEmail(),
+                (String) this.mockUserDomainModel.getName(),
                 "test12345!",
-                (String)this.mockUserDomainModel.getStudentId(),
-                (Integer)this.mockUserDomainModel.getAdmissionYear(),
+                (String) this.mockUserDomainModel.getStudentId(),
+                (Integer) this.mockUserDomainModel.getAdmissionYear(),
                 Role.PRESIDENT,
                 null,
                 UserState.WAIT
@@ -849,12 +841,12 @@ class UserServiceTest extends Specification {
         this.mockUserDomainModel.setState(UserState.ACTIVE)
 
         def mockUpdatedUserDomainModel = UserDomainModel.of(
-                (String)this.mockUserDomainModel.getId(),
-                (String)this.mockUserDomainModel.getEmail(),
-                (String)this.mockUserDomainModel.getName(),
+                (String) this.mockUserDomainModel.getId(),
+                (String) this.mockUserDomainModel.getEmail(),
+                (String) this.mockUserDomainModel.getName(),
                 "test12345!",
-                (String)this.mockUserDomainModel.getStudentId(),
-                (Integer)this.mockUserDomainModel.getAdmissionYear(),
+                (String) this.mockUserDomainModel.getStudentId(),
+                (Integer) this.mockUserDomainModel.getAdmissionYear(),
                 Role.NONE,
                 null,
                 UserState.INACTIVE
@@ -886,7 +878,9 @@ class UserServiceTest extends Specification {
                 CircleMemberStatus.MEMBER,
                 circle,
                 "test",
-                "test"
+                "test",
+                null,
+                null
         )
 
         this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
@@ -912,12 +906,12 @@ class UserServiceTest extends Specification {
         this.mockUserDomainModel.setState(UserState.ACTIVE)
 
         def mockUpdatedUserDomainModel = UserDomainModel.of(
-                (String)this.mockUserDomainModel.getId(),
-                (String)this.mockUserDomainModel.getEmail(),
-                (String)this.mockUserDomainModel.getName(),
+                (String) this.mockUserDomainModel.getId(),
+                (String) this.mockUserDomainModel.getEmail(),
+                (String) this.mockUserDomainModel.getName(),
                 "test12345!",
-                (String)this.mockUserDomainModel.getStudentId(),
-                (Integer)this.mockUserDomainModel.getAdmissionYear(),
+                (String) this.mockUserDomainModel.getStudentId(),
+                (Integer) this.mockUserDomainModel.getAdmissionYear(),
                 Role.PRESIDENT,
                 null,
                 UserState.INACTIVE
@@ -970,7 +964,9 @@ class UserServiceTest extends Specification {
                 CircleMemberStatus.MEMBER,
                 circle,
                 "test",
-                "test"
+                "test",
+                null,
+                null
         )
 
         this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
@@ -1023,7 +1019,7 @@ class UserServiceTest extends Specification {
         )
 
         this.userPort.findById("test1") >> Optional.of(mockApiCallUser)
-        this.userPort.findByName("test") >> List.of((UserDomainModel)this.mockUserDomainModel, mockApiCallUser)
+        this.userPort.findByName("test") >> List.of((UserDomainModel) this.mockUserDomainModel, mockApiCallUser)
 
         when:
         this.userService.findByName("test1", "test")
@@ -1068,7 +1064,7 @@ class UserServiceTest extends Specification {
         )
 
         this.userPort.findById("test1") >> Optional.of(mockApiCallUser)
-        this.userPort.findByRole(Role.PRESIDENT) >> List.of((UserDomainModel)this.mockUserDomainModel, mockApiCallUser)
+        this.userPort.findByRole(Role.PRESIDENT) >> List.of((UserDomainModel) this.mockUserDomainModel, mockApiCallUser)
 
         when:
         this.userService.findByRole("test1", Role.PRESIDENT)

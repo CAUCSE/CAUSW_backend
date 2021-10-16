@@ -66,6 +66,13 @@ public class PostService {
                 )
         );
 
+        UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid user id"
+                )
+        );
+
         validatorBucket
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted()));
 
@@ -93,6 +100,7 @@ public class PostService {
         // TODO : GHJANG : PostResponseDto에 댓글 갯수 포함 필요
         return PostResponseDto.from(
                 postDomainModel,
+                userDomainModel,
                 this.commentPort.findByPostId(id)
                         .stream()
                         .map(CommentResponseDto::from)
@@ -173,7 +181,7 @@ public class PostService {
                         creatorDomainModel.getRole(),
                         boardDomainModel.getCreateRoleList()
                                 .stream()
-                                .map(Role::valueOf)
+                                .map(Role::of)
                                 .collect(Collectors.toList())
                 ));
 
@@ -199,6 +207,6 @@ public class PostService {
                 .consistOf(ConstraintValidator.of(postDomainModel, this.validator))
                 .validate();
 
-        return PostResponseDto.from(this.postPort.create(postDomainModel));
+        return PostResponseDto.from(this.postPort.create(postDomainModel), creatorDomainModel);
     }
 }
