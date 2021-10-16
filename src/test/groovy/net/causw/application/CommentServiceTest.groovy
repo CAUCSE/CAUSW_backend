@@ -45,6 +45,11 @@ class CommentServiceTest extends Specification {
     def mockCommentDomainModel
     def mockParentCommentWriterUserDomainModel
     def mockParentCommentDomainModel
+    /* for find all test case */
+    def mockCommentWriterUserDomainModel2
+    def mockCommentWriterUserDomainModel3
+    def mockCommentDomainModel2
+    def mockCommentDomainModel3
 
     def setup() {
         this.mockBoardDomainModel = BoardDomainModel.of(
@@ -52,6 +57,7 @@ class CommentServiceTest extends Specification {
                 "test board id",
                 "test board description",
                 Arrays.asList("PRESIDENT"),
+                "test category",
                 false,
                 null
         )
@@ -91,6 +97,30 @@ class CommentServiceTest extends Specification {
                 UserState.ACTIVE
         )
 
+        this.mockCommentWriterUserDomainModel2 = UserDomainModel.of(
+                "test comment writer 2 user id",
+                "test-comment-writer2@cau.ac.kr",
+                "test comment writer 2 user name",
+                "test1234!",
+                "20210002",
+                2021,
+                Role.COMMON,
+                null,
+                UserState.ACTIVE
+        )
+
+        this.mockCommentWriterUserDomainModel3 = UserDomainModel.of(
+                "test comment writer 3 user id",
+                "test-comment-writer3@cau.ac.kr",
+                "test comment writer 3 user name",
+                "test1234!",
+                "20210003",
+                2021,
+                Role.COMMON,
+                null,
+                UserState.ACTIVE
+        )
+
         this.mockCommentDomainModel = CommentDomainModel.of(
                 "test comment id",
                 "test comment content",
@@ -99,6 +129,26 @@ class CommentServiceTest extends Specification {
                 null,
                 (UserDomainModel) this.mockCommentWriterUserDomainModel,
                 ((PostDomainModel) this.mockPostDomainModel).getId()
+        )
+
+        this.mockCommentDomainModel2 = CommentDomainModel.of(
+                "test comment 2 id",
+                "test comment 2 content",
+                false,
+                null,
+                null,
+                (UserDomainModel) this.mockCommentWriterUserDomainModel2,
+                ((PostDomainModel) this.mockPostDomainModel).getId(),
+        )
+
+        this.mockCommentDomainModel3 = CommentDomainModel.of(
+                "test comment 3 id",
+                "test comment 3 content",
+                false,
+                null,
+                null,
+                (UserDomainModel) this.mockCommentWriterUserDomainModel3,
+                ((PostDomainModel) this.mockPostDomainModel).getId(),
         )
 
         this.mockParentCommentWriterUserDomainModel = UserDomainModel.of(
@@ -204,5 +254,82 @@ class CommentServiceTest extends Specification {
 
         then:
         thrown(BadRequestException)
+
+        /* TODO when: "Parent comment is deleted" */
+    }
+
+    def "Comment find all normal case"() {
+        given: "Create multiple comments"
+        def mockCommentCreateRequestDto = new CommentCreateRequestDto(
+                ((CommentDomainModel) this.mockCommentDomainModel).getContent(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getPostId(),
+                null
+        )
+
+        def mockCommentCreateRequestDto2 = new CommentCreateRequestDto(
+                ((CommentDomainModel) this.mockCommentDomainModel2).getContent(),
+                ((CommentDomainModel) this.mockCommentDomainModel2).getPostId(),
+                ((CommentDomainModel) this.mockParentCommentDomainModel).getId()
+        )
+
+        def mockCommentCreateRequestDto3 = new CommentCreateRequestDto(
+                ((CommentDomainModel) this.mockCommentDomainModel3).getContent(),
+                ((CommentDomainModel) this.mockCommentDomainModel3).getPostId(),
+                ((CommentDomainModel) this.mockParentCommentDomainModel).getId()
+        )
+
+        this.userPort.findById(((UserDomainModel) this.mockCommentWriterUserDomainModel).getId()) >> Optional.of((UserDomainModel) this.mockCommentWriterUserDomainModel)
+        this.userPort.findById(((UserDomainModel) this.mockCommentWriterUserDomainModel2).getId()) >> Optional.of((UserDomainModel) this.mockCommentWriterUserDomainModel2)
+        this.userPort.findById(((UserDomainModel) this.mockCommentWriterUserDomainModel3).getId()) >> Optional.of((UserDomainModel) this.mockCommentWriterUserDomainModel3)
+        this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of((PostDomainModel) this.mockPostDomainModel)
+        this.commentPort.findById(((CommentDomainModel) this.mockParentCommentDomainModel).getId()) >> Optional.of(((CommentDomainModel) this.mockParentCommentDomainModel))
+        this.commentPort.findByPostId(((PostDomainModel) this.mockPostDomainModel).getId()) >> List.of((CommentDomainModel) this.mockCommentDomainModel, (CommentDomainModel) this.mockCommentDomainModel2, (CommentDomainModel) this.mockCommentDomainModel3)
+        this.commentPort.create((CommentDomainModel) this.mockCommentDomainModel, (PostDomainModel) this.mockPostDomainModel) >> (CommentDomainModel) this.mockCommentDomainModel
+        this.commentPort.create((CommentDomainModel) this.mockCommentDomainModel2, (PostDomainModel) this.mockPostDomainModel) >> (CommentDomainModel) this.mockCommentDomainModel2
+        this.commentPort.create((CommentDomainModel) this.mockCommentDomainModel3, (PostDomainModel) this.mockPostDomainModel) >> (CommentDomainModel) this.mockCommentDomainModel3
+
+        ((CommentDomainModel) this.mockCommentDomainModel2).setParentComment(((CommentDomainModel) this.mockParentCommentDomainModel))
+        ((CommentDomainModel) this.mockCommentDomainModel3).setParentComment(((CommentDomainModel) this.mockParentCommentDomainModel))
+        mockCommentCreateRequestDto2.setParentCommentId(((CommentDomainModel) this.mockParentCommentDomainModel).getId())
+        mockCommentCreateRequestDto3.setParentCommentId(((CommentDomainModel) this.mockParentCommentDomainModel).getId())
+
+        PowerMockito.mockStatic(CommentDomainModel.class)
+        PowerMockito.when(CommentDomainModel.of(
+                mockCommentCreateRequestDto.getContent(),
+                (UserDomainModel) this.mockCommentWriterUserDomainModel,
+                ((PostDomainModel) this.mockPostDomainModel).getId(),
+                null
+        )).thenReturn((CommentDomainModel) this.mockCommentDomainModel)
+
+        PowerMockito.when(CommentDomainModel.of(
+                mockCommentCreateRequestDto2.getContent(),
+                (UserDomainModel) this.mockCommentWriterUserDomainModel2,
+                ((PostDomainModel) this.mockPostDomainModel).getId(),
+                (CommentDomainModel) this.mockParentCommentDomainModel
+        )).thenReturn((CommentDomainModel) this.mockCommentDomainModel2)
+
+        PowerMockito.when(CommentDomainModel.of(
+                mockCommentCreateRequestDto3.getContent(),
+                (UserDomainModel) this.mockCommentWriterUserDomainModel3,
+                ((PostDomainModel) this.mockPostDomainModel).getId(),
+                (CommentDomainModel) this.mockParentCommentDomainModel
+        )).thenReturn((CommentDomainModel) this.mockCommentDomainModel3)
+
+        this.commentService.create("test comment writer user id", mockCommentCreateRequestDto)
+        this.commentService.create("test comment writer 2 user id", mockCommentCreateRequestDto2)
+        this.commentService.create("test comment writer 3 user id", mockCommentCreateRequestDto3)
+
+        when:
+        def commentList = this.commentService.findAll(((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(), ((PostDomainModel) this.mockPostDomainModel).getId())
+
+        then:
+        commentList instanceof List<CommentResponseDto>
+        commentList.size() == 3
+        commentList.get(0).getContent() == "test comment content"
+        commentList.get(1).getContent() == "test comment 2 content"
+        commentList.get(2).getContent() == "test comment 3 content"
+        commentList.get(0).getParentCommentId() == null
+        commentList.get(1).getParentCommentId() == "test parent comment id"
+        commentList.get(2).getParentCommentId() == "test parent comment id"
     }
 }
