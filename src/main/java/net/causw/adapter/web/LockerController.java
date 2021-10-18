@@ -40,6 +40,12 @@ public class LockerController {
         return this.lockerService.findAllLocation();
     }
 
+    @GetMapping(value = "/location/{id}")
+    @ResponseStatus(value = HttpStatus.OK)
+    public List<LockerResponseDto> findByLocation(@PathVariable String locationId) {
+        return this.lockerService.findByLocation(locationId);
+    }
+
     @GetMapping(value="/{id}/log")
     @ResponseStatus(value = HttpStatus.OK)
     public List<LockerLogDetailDto> findLog(@PathVariable String id) {

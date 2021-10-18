@@ -9,6 +9,7 @@ import net.causw.application.spi.LockerPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.LockerDomainModel;
+import net.causw.domain.model.LockerLocationDomainModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +41,21 @@ public class LockerService {
     @Transactional(readOnly = true)
     public List<LockerResponseDto> findAll() {
         return this.lockerPort.findAll()
+                .stream()
+                .map(LockerResponseDto::from)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<LockerResponseDto> findByLocation(String locationId) {
+        LockerLocationDomainModel lockerLocation = this.lockerLocationPort.findById(locationId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid locker location id"
+                )
+        );
+
+        return this.lockerPort.findByLocationId(lockerLocation.getId())
                 .stream()
                 .map(LockerResponseDto::from)
                 .collect(Collectors.toList());

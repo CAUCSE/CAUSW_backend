@@ -31,6 +31,15 @@ public class LockerPortImpl implements LockerPort {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<LockerDomainModel> findByLocationId(String locationId) {
+        return this.lockerRepository.findByLocation_Id(locationId)
+                .stream()
+                .map(this::entityToDomainModel)
+                .collect(Collectors.toList());
+    }
+
+
     private LockerDomainModel entityToDomainModel(Locker locker) {
         return LockerDomainModel.of(
                 locker.getId(),

@@ -9,4 +9,6 @@ public interface LockerPort {
     Optional<LockerDomainModel> findById(String id);
 
     List<LockerDomainModel> findAll();
+
+    List<LockerDomainModel> findByLocationId(String locationId);
 }
