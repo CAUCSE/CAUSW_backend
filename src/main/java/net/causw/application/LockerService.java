@@ -22,7 +22,11 @@ public class LockerService {
     private final LockerLocationPort lockerLocationPort;
     private final LockerLogPort lockerLogPort;
 
-    public LockerService(LockerPort lockerPort, LockerLocationPort lockerLocationPort,LockerLogPort lockerLogPort) {
+    public LockerService(
+            LockerPort lockerPort,
+            LockerLocationPort lockerLocationPort,
+            LockerLogPort lockerLogPort
+    ) {
         this.lockerPort = lockerPort;
         this.lockerLocationPort = lockerLocationPort;
         this.lockerLogPort = lockerLogPort;
