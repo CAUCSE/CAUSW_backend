@@ -1,7 +1,9 @@
 package net.causw.application;
 
+import net.causw.application.dto.LockerLocationResponseDto;
 import net.causw.application.dto.LockerLogDetailDto;
 import net.causw.application.dto.LockerResponseDto;
+import net.causw.application.spi.LockerLocationPort;
 import net.causw.application.spi.LockerLogPort;
 import net.causw.application.spi.LockerPort;
 import net.causw.domain.exceptions.BadRequestException;
@@ -16,10 +18,12 @@ import java.util.stream.Collectors;
 @Service
 public class LockerService {
     private final LockerPort lockerPort;
+    private final LockerLocationPort lockerLocationPort;
     private final LockerLogPort lockerLogPort;
 
-    public LockerService(LockerPort lockerPort, LockerLogPort lockerLogPort) {
+    public LockerService(LockerPort lockerPort, LockerLocationPort lockerLocationPort,LockerLogPort lockerLogPort) {
         this.lockerPort = lockerPort;
+        this.lockerLocationPort = lockerLocationPort;
         this.lockerLogPort = lockerLogPort;
     }
 
@@ -38,6 +42,14 @@ public class LockerService {
         return this.lockerPort.findAll()
                 .stream()
                 .map(LockerResponseDto::from)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<LockerLocationResponseDto> findAllLocation() {
+        return this.lockerLocationPort.findAll()
+                .stream()
+                .map(LockerLocationResponseDto::from)
                 .collect(Collectors.toList());
     }
 
