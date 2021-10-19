@@ -38,7 +38,7 @@ public class PostPortImpl implements PostPort {
 
     @Override
     public List<PostDomainModel> findAll(String boardId) {
-        return this.postRepository.findAllByBoard_IdAndIsDeletedIsFalse(boardId)
+        return this.postRepository.findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(boardId)
                 .stream()
                 .map(this::entityToDomainModel)
                 .collect(Collectors.toList());

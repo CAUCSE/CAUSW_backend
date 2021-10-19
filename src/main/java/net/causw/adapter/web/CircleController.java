@@ -78,7 +78,10 @@ public class CircleController {
 
     @GetMapping(value = "/{circleId}/applications")
     @ResponseStatus(value = HttpStatus.CREATED)
-    public CircleMemberResponseDto userApply(@AuthenticationPrincipal String userId, @PathVariable String circleId) {
+    public CircleMemberResponseDto userApply(
+            @AuthenticationPrincipal String userId,
+            @PathVariable String circleId
+    ) {
         return this.circleService.userApply(userId, circleId);
     }
 
@@ -90,7 +93,10 @@ public class CircleController {
 
     @PutMapping(value = "/{circleId}/users/leave")
     @ResponseStatus(value = HttpStatus.OK)
-    public CircleMemberResponseDto leaveUser(@AuthenticationPrincipal String userId, @PathVariable String circleId) {
+    public CircleMemberResponseDto leaveUser(
+            @AuthenticationPrincipal String userId,
+            @PathVariable String circleId
+    ) {
         return this.circleService.leaveUser(userId, circleId);
     }
 
@@ -110,13 +116,19 @@ public class CircleController {
 
     @PutMapping(value = "/applications/{applicationId}/accept")
     @ResponseStatus(value = HttpStatus.OK)
-    public CircleMemberResponseDto acceptUser(@AuthenticationPrincipal String requestUserId, @PathVariable String applicationId) {
+    public CircleMemberResponseDto acceptUser(
+            @AuthenticationPrincipal String requestUserId,
+            @PathVariable String applicationId
+    ) {
         return this.circleService.acceptUser(requestUserId, applicationId);
     }
 
     @PutMapping(value = "/applications/{applicationId}/reject")
     @ResponseStatus(value = HttpStatus.OK)
-    public CircleMemberResponseDto rejectUser(@AuthenticationPrincipal String requestUserId, @PathVariable String applicationId) {
+    public CircleMemberResponseDto rejectUser(
+            @AuthenticationPrincipal String requestUserId,
+            @PathVariable String applicationId
+    ) {
         return this.circleService.rejectUser(requestUserId, applicationId);
     }
 }

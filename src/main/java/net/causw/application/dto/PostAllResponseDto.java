@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 public class PostAllResponseDto {
     private String id;
     private String title;
-    private String content;
     private String writerName;
     private Long numComment;
     private LocalDateTime createdAt;
@@ -20,7 +19,6 @@ public class PostAllResponseDto {
     private PostAllResponseDto(
             String id,
             String title,
-            String content,
             String writerName,
             Long numComment,
             LocalDateTime createdAt,
@@ -28,7 +26,6 @@ public class PostAllResponseDto {
     ) {
         this.id = id;
         this.title = title;
-        this.content = content;
         this.writerName = writerName;
         this.numComment = numComment;
         this.createdAt = createdAt;
@@ -42,7 +39,6 @@ public class PostAllResponseDto {
         return new PostAllResponseDto(
                 post.getId(),
                 post.getTitle(),
-                post.getContent(),
                 post.getWriter().getName(),
                 numComment,
                 post.getCreatedAt(),
