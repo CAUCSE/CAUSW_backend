@@ -5,6 +5,7 @@ import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -22,13 +23,18 @@ public class CircleDomainModel {
     @NotNull(message = "Circle leader is null")
     private UserDomainModel leader;
 
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
     private CircleDomainModel(
             String id,
             String name,
             String mainImage,
             String description,
             Boolean isDeleted,
-            UserDomainModel leader
+            UserDomainModel leader,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt
     ) {
         this.id = id;
         this.name = name;
@@ -36,6 +42,30 @@ public class CircleDomainModel {
         this.description = description;
         this.isDeleted = isDeleted;
         this.leader = leader;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
+
+    public static CircleDomainModel of(
+            String id,
+            String name,
+            String mainImage,
+            String description,
+            Boolean isDeleted,
+            UserDomainModel leader,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt
+    ) {
+        return new CircleDomainModel(
+                id,
+                name,
+                mainImage,
+                description,
+                isDeleted,
+                leader,
+                createdAt,
+                updatedAt
+        );
     }
 
     public static CircleDomainModel of(
@@ -52,7 +82,9 @@ public class CircleDomainModel {
                 mainImage,
                 description,
                 isDeleted,
-                leader
+                leader,
+                null,
+                null
         );
     }
 
@@ -68,7 +100,9 @@ public class CircleDomainModel {
                 mainImage,
                 description,
                 false,
-                leader
+                leader,
+                null,
+                null
         );
     }
 }

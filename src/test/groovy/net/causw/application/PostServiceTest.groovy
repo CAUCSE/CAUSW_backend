@@ -1,6 +1,6 @@
 package net.causw.application
 
-
+import net.causw.application.dto.PostAllResponseDto
 import net.causw.application.dto.PostCreateRequestDto
 import net.causw.application.dto.PostResponseDto
 import net.causw.application.spi.*
@@ -49,9 +49,10 @@ class PostServiceTest extends Specification {
     def setup() {
         this.mockBoardDomainModel = BoardDomainModel.of(
                 "test board id",
-                "test board id",
+                "test board name",
                 "test board description",
                 Arrays.asList("PRESIDENT"),
+                "category",
                 false,
                 null
         )
@@ -184,10 +185,9 @@ class PostServiceTest extends Specification {
         def postFind = this.postService.findAll("test user id", "test board id")
 
         then:
-        postFind instanceof List<PostResponseDto>
+        postFind instanceof List<PostAllResponseDto>
         with(postFind) {
             get(0).getTitle() == "test post title"
-            get(0).getContent() == "test post content"
         }
 
         when: "post findById with circle"
@@ -195,10 +195,9 @@ class PostServiceTest extends Specification {
         postFind = this.postService.findAll("test user id", "test board id")
 
         then:
-        postFind instanceof List<PostResponseDto>
+        postFind instanceof List<PostAllResponseDto>
         with(postFind) {
             get(0).getTitle() == "test post title"
-            get(0).getContent() == "test post content"
         }
     }
 

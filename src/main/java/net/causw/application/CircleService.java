@@ -1,5 +1,6 @@
 package net.causw.application;
 
+import net.causw.application.dto.CircleAllResponseDto;
 import net.causw.application.dto.CircleCreateRequestDto;
 import net.causw.application.dto.CircleMemberResponseDto;
 import net.causw.application.dto.CircleResponseDto;
@@ -31,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -69,6 +71,38 @@ public class CircleService {
                 circle,
                 this.circleMemberPort.getNumMember(id)
         );
+    }
+
+    @Transactional(readOnly = true)
+    public List<CircleAllResponseDto> findAll(String userId) {
+        UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid request user id"
+                )
+        );
+
+        Map<String, CircleMemberDomainModel> joinedCircleMap = this.circleMemberPort.findCircleByUserId(userDomainModel.getId());
+
+        return this.circlePort.findAll()
+                .stream()
+                .map(
+                    circleDomainModel -> {
+                        if (joinedCircleMap.containsKey(circleDomainModel.getId())) {
+                            return CircleAllResponseDto.from(
+                                    circleDomainModel,
+                                    this.circleMemberPort.getNumMember(circleDomainModel.getId()),
+                                    joinedCircleMap.get(circleDomainModel.getId()).getUpdatedAt()
+                            );
+                        } else {
+                            return CircleAllResponseDto.from(
+                                    circleDomainModel,
+                                    this.circleMemberPort.getNumMember(circleDomainModel.getId())
+                            );
+                        }
+                    }
+                )
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)

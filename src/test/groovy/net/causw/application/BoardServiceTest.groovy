@@ -94,7 +94,7 @@ class BoardServiceTest extends Specification {
         this.boardPort.findByCircleId("test") >> List.of(this.mockBoardDomainModel)
 
         when:
-        def boardResponseDtoList = this.boardService.findByCircleId("test", "test")
+        def boardResponseDtoList = this.boardService.findAllByCircleId("test", "test")
 
         then:
         boardResponseDtoList instanceof List<BoardResponseDto>
@@ -144,7 +144,7 @@ class BoardServiceTest extends Specification {
         this.boardPort.findByCircleId("test") >> List.of(this.mockBoardDomainModel)
 
         when:
-        this.boardService.findByCircleId("test", "test")
+        this.boardService.findAllByCircleId("test", "test")
 
         then:
         thrown(BadRequestException)
@@ -192,28 +192,28 @@ class BoardServiceTest extends Specification {
 
         when: "Circle member is await"
         circleMember.setStatus(CircleMemberStatus.AWAIT)
-        this.boardService.findByCircleId("test", "test")
+        this.boardService.findAllByCircleId("test", "test")
 
         then:
         thrown(BadRequestException)
 
         when: "Circle member is drop"
         circleMember.setStatus(CircleMemberStatus.DROP)
-        this.boardService.findByCircleId("test", "test")
+        this.boardService.findAllByCircleId("test", "test")
 
         then:
         thrown(UnauthorizedException)
 
         when: "Circle member is leave"
         circleMember.setStatus(CircleMemberStatus.LEAVE)
-        this.boardService.findByCircleId("test", "test")
+        this.boardService.findAllByCircleId("test", "test")
 
         then:
         thrown(BadRequestException)
 
         when: "Circle member is reject"
         circleMember.setStatus(CircleMemberStatus.REJECT)
-        this.boardService.findByCircleId("test", "test")
+        this.boardService.findAllByCircleId("test", "test")
 
         then:
         thrown(UnauthorizedException)

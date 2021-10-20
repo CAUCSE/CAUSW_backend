@@ -1,6 +1,7 @@
 package net.causw.adapter.web;
 
 import net.causw.application.CircleService;
+import net.causw.application.dto.CircleAllResponseDto;
 import net.causw.application.dto.CircleCreateRequestDto;
 import net.causw.application.dto.CircleMemberResponseDto;
 import net.causw.application.dto.CircleResponseDto;
@@ -35,6 +36,12 @@ public class CircleController {
     @ResponseStatus(value = HttpStatus.OK)
     public CircleResponseDto findById(@PathVariable String id) {
         return this.circleService.findById(id);
+    }
+
+    @GetMapping
+    @ResponseStatus(value = HttpStatus.OK)
+    public List<CircleAllResponseDto> findAll(@AuthenticationPrincipal String userId) {
+        return this.circleService.findAll(userId);
     }
 
     @GetMapping(value = "/{id}/num-member")

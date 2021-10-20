@@ -697,6 +697,20 @@ class CircleServiceTest extends Specification {
                 null
         )
 
+        def mockApiCallUser = UserDomainModel.of(
+                "test1",
+                "test@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.COMMON,
+                null,
+                UserState.ACTIVE
+        )
+
+        this.userPort.findById("test1") >> Optional.of(mockApiCallUser)
+        this.circlePort.findById("test") >> Optional.of(this.mockCircleDomainModel)
         this.circleMemberPort.findByUserIdAndCircleId("test1", "test") >> Optional.of(this.mockCircleMemberDomainModel)
         this.circleMemberPort.updateStatus("test", CircleMemberStatus.LEAVE) >> Optional.of(updatedCircleMemberDomainModel)
 
@@ -721,6 +735,21 @@ class CircleServiceTest extends Specification {
                 null
         )
 
+        def mockApiCallUser = UserDomainModel.of(
+                "test1",
+                "test@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.COMMON,
+                null,
+                UserState.ACTIVE
+        )
+
+        this.userPort.findById("test1") >> Optional.of(mockApiCallUser)
+        this.userPort.findById("test") >> Optional.of(this.leader)
+        this.circlePort.findById("test") >> Optional.of(this.mockCircleDomainModel)
         this.circleMemberPort.findByUserIdAndCircleId("test1", "test") >> Optional.of(this.mockCircleMemberDomainModel)
         this.circleMemberPort.findByUserIdAndCircleId("test", "test") >> Optional.of(this.mockCircleMemberDomainModel)
         this.circleMemberPort.updateStatus("test", CircleMemberStatus.LEAVE) >> Optional.of(updatedCircleMemberDomainModel)
@@ -753,6 +782,20 @@ class CircleServiceTest extends Specification {
                 null
         )
 
+        def mockApiCallUser = UserDomainModel.of(
+                "test1",
+                "test@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.COMMON,
+                null,
+                UserState.ACTIVE
+        )
+
+        this.userPort.findById("test1") >> Optional.of(mockApiCallUser)
+        this.circlePort.findById("test") >> Optional.of(this.mockCircleDomainModel)
         this.userPort.findById("test") >> Optional.of(this.leader)
         this.circleMemberPort.findByUserIdAndCircleId("test1", "test") >> Optional.of(this.mockCircleMemberDomainModel)
         this.circleMemberPort.updateStatus("test", CircleMemberStatus.DROP) >> Optional.of(updatedCircleMemberDomainModel)
@@ -778,8 +821,21 @@ class CircleServiceTest extends Specification {
                 null
         )
 
+        def mockApiCallUser = UserDomainModel.of(
+                "test1",
+                "test@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.COMMON,
+                null,
+                UserState.ACTIVE
+        )
+
+        this.userPort.findById("test1") >> Optional.of(mockApiCallUser)
         this.userPort.findById("test") >> Optional.of(this.leader)
-        this.userPort.findById("test1") >> Optional.of(this.leader)
+        this.circlePort.findById("test") >> Optional.of(this.mockCircleDomainModel)
         this.circleMemberPort.findByUserIdAndCircleId("test1", "test") >> Optional.of(this.mockCircleMemberDomainModel)
         this.circleMemberPort.findByUserIdAndCircleId("test", "test") >> Optional.of(this.mockCircleMemberDomainModel)
         this.circleMemberPort.updateStatus("test", CircleMemberStatus.DROP) >> Optional.of(updatedCircleMemberDomainModel)
