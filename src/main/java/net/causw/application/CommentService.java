@@ -152,6 +152,8 @@ public class CommentService {
         validatorBucket
                 .validate();
 
+        /* TODO - Pagination */
+
         return this.commentPort.findByPostId(postId)
                 .stream()
                 .map(CommentResponseDto::from)
