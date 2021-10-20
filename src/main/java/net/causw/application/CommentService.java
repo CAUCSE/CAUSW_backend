@@ -8,7 +8,9 @@ import net.causw.application.spi.PostPort;
 import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
+import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
+import net.causw.domain.model.BoardDomainModel;
 import net.causw.domain.model.CircleMemberDomainModel;
 import net.causw.domain.model.CircleMemberStatus;
 import net.causw.domain.model.CommentDomainModel;
@@ -198,5 +200,69 @@ public class CommentService {
                 .stream()
                 .map(CommentResponseDto::from)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public CommentResponseDto delete(String deleterId, String commentId) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
+        UserDomainModel deleterDomainModel = this.userPort.findById(deleterId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid user id"
+                )
+        );
+
+        CommentDomainModel commentDomainModel = this.commentPort.findById(commentId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid comment id"
+                )
+        );
+
+        PostDomainModel postDomainModel = this.postPort.findById(commentDomainModel.getPostId()).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid post id "
+                )
+        );
+
+        validatorBucket
+                .consistOf(TargetIsDeletedValidator.of(commentDomainModel.getIsDeleted()))
+                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted()))
+                .consistOf(ContentAdminValidator.of(
+                        deleterDomainModel.getRole(),
+                        deleterId,
+                        commentDomainModel.getWriter().getId(),
+                        List.of()
+                ));
+
+        postDomainModel.getBoard().getCircle().ifPresent(
+                circleDomainModel -> {
+                    CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(deleterId, circleDomainModel.getId()).orElseThrow(
+                            () -> new UnauthorizedException(
+                                    ErrorCode.NOT_MEMBER,
+                                    "The user is not a member of circle"
+                            )
+                    );
+
+                    validatorBucket
+                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted()))
+                            .consistOf(CircleMemberStatusValidator.of(
+                                    circleMemberDomainModel.getStatus(),
+                                    List.of(CircleMemberStatus.MEMBER)
+                            ));
+                }
+        );
+
+        return CommentResponseDto.from(
+                this.commentPort.delete(commentId).orElseThrow(
+                        () -> new InternalServerException(
+                                ErrorCode.INTERNAL_SERVER,
+                                "Comment id checked, but exception occurred"
+                        )
+                )
+        );
+
     }
 }

@@ -42,4 +42,13 @@ public class CommentController {
     ) {
         return this.commentService.findAll(userId, postId, pageNum);
     }
+
+    @DeleteMapping(value = "/{id}")
+    @ResponseStatus(value = HttpStatus.OK)
+    public CommentResponseDto delete(
+            @AuthenticationPrincipal String userId,
+            @PathVariable String commentId
+    ) {
+        return this.commentService.delete(userId, commentId);
+    }
 }

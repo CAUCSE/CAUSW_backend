@@ -49,6 +49,17 @@ public class CommentPortImpl implements CommentPort {
         return this.entityToDomainModelWithParent(this.commentRepository.save(Comment.from(commentDomainModel, postDomainModel)));
     }
 
+    @Override
+    public Optional<CommentDomainModel> delete(String commentId) {
+        return this.commentRepository.findById(commentId).map(
+                comment -> {
+                    comment.setIsDeleted(true);
+
+                    return this.entityToDomainModel(this.commentRepository.save(comment));
+                }
+        );
+    }
+
     private CommentDomainModel entityToDomainModelWithChild(Comment comment) {
         return CommentDomainModel.of(
                 comment.getId(),
