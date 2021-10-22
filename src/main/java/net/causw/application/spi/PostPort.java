@@ -11,4 +11,6 @@ public interface PostPort {
     PostDomainModel create(PostDomainModel postDomainModel);
 
     Page<PostDomainModel> findAll(String boardId, Integer page);
+
+    Optional<PostDomainModel> findLatest(String boardId);
 }

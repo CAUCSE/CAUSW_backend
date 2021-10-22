@@ -18,7 +18,7 @@ public class BoardResponseDto {
     private String description;
     private List<String> createRoleList;
     private String category;
-    private boolean writable;
+    private Boolean writable;
     private Boolean isDeleted;
 
     private String circleId;
@@ -30,7 +30,7 @@ public class BoardResponseDto {
             String description,
             List<String> createRoleList,
             String category,
-            boolean writable,
+            Boolean writable,
             Boolean isDeleted,
             String circleId,
             String circleName

@@ -127,7 +127,7 @@ class PostServiceTest extends Specification {
         this.commentPort.findByPostId(((PostDomainModel) this.mockPostDomainModel).getId(), 0) >> new PageImpl<CommentDomainModel>(List.of())
 
         when: "post findById without circle"
-        def postFind = this.postService.findById("test user id", ((PostDomainModel) this.mockPostDomainModel).getId(), 0)
+        def postFind = this.postService.findById("test user id", ((PostDomainModel) this.mockPostDomainModel).getId())
 
         then:
         postFind instanceof PostResponseDto
@@ -138,7 +138,7 @@ class PostServiceTest extends Specification {
 
         when: "post findById with circle"
         ((BoardDomainModel) this.mockBoardDomainModel).setCircle((CircleDomainModel) this.mockCircleDomainModel)
-        postFind = this.postService.findById("test user id", ((PostDomainModel) this.mockPostDomainModel).getId(), 0)
+        postFind = this.postService.findById("test user id", ((PostDomainModel) this.mockPostDomainModel).getId())
 
         then:
         postFind instanceof PostResponseDto
@@ -187,9 +187,9 @@ class PostServiceTest extends Specification {
         def postFind = this.postService.findAll("test user id", "test board id", 0)
 
         then:
-        postFind instanceof List<PostAllResponseDto>
+        postFind instanceof Page<PostAllResponseDto>
         with(postFind) {
-            get(0).getTitle() == "test post title"
+            getContent().get(0).getTitle() == "test post title"
         }
 
         when: "post findById with circle"
@@ -197,9 +197,9 @@ class PostServiceTest extends Specification {
         postFind = this.postService.findAll("test user id", "test board id", 0)
 
         then:
-        postFind instanceof List<PostAllResponseDto>
+        postFind instanceof Page<PostAllResponseDto>
         with(postFind) {
-            get(0).getTitle() == "test post title"
+            getContent().get(0).getTitle() == "test post title"
         }
     }
 

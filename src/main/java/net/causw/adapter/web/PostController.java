@@ -4,6 +4,7 @@ import net.causw.application.PostService;
 import net.causw.application.dto.PostAllResponseDto;
 import net.causw.application.dto.PostCreateRequestDto;
 import net.causw.application.dto.PostResponseDto;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,15 +31,14 @@ public class PostController {
     @ResponseStatus(value = HttpStatus.OK)
     public PostResponseDto findById(
             @AuthenticationPrincipal String userId,
-            @PathVariable String id,
-            @RequestParam(defaultValue = "0") Integer pageNum
+            @PathVariable String id
     ) {
-        return this.postService.findById(userId, id, pageNum);
+        return this.postService.findById(userId, id);
     }
 
     @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
-    public List<PostAllResponseDto> findAll(
+    public Page<PostAllResponseDto> findAll(
             @AuthenticationPrincipal String userId,
             @RequestParam String boardId,
             @RequestParam(defaultValue = "0") Integer pageNum

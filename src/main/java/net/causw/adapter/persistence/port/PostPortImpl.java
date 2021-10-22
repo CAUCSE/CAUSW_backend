@@ -49,6 +49,12 @@ public class PostPortImpl implements PostPort {
                 .map(this::entityToDomainModel);
     }
 
+    @Override
+    public Optional<PostDomainModel> findLatest(String boardId) {
+        return this.postRepository.findTop1ByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(boardId)
+                .map(this::entityToDomainModel);
+    }
+
     private PostDomainModel entityToDomainModel(Post post) {
         return PostDomainModel.of(
                 post.getId(),

@@ -2,6 +2,7 @@ package net.causw.adapter.web;
 
 import net.causw.application.BoardService;
 import net.causw.application.dto.BoardCreateRequestDto;
+import net.causw.application.dto.BoardOfCircleResponseDto;
 import net.causw.application.dto.BoardResponseDto;
 import net.causw.application.dto.BoardUpdateRequestDto;
 import org.springframework.http.HttpStatus;
@@ -36,7 +37,7 @@ public class BoardController {
 
     @GetMapping(params = "circleId")
     @ResponseStatus(value = HttpStatus.OK)
-    public List<BoardResponseDto> findAllByCircleId(
+    public List<BoardOfCircleResponseDto> findAllByCircleId(
             @AuthenticationPrincipal String currentUserId,
             @RequestParam String circleId
     ) {
