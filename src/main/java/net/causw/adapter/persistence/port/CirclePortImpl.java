@@ -8,7 +8,9 @@ import net.causw.domain.model.CircleDomainModel;
 import net.causw.domain.model.UserDomainModel;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 public class CirclePortImpl implements CirclePort {
@@ -27,6 +29,14 @@ public class CirclePortImpl implements CirclePort {
     public Optional<CircleDomainModel> findByLeaderId(String leaderId) {
         return this.circleRepository.findByLeaderId(leaderId).map(this::entityToDomainModel);
 
+    }
+
+    @Override
+    public List<CircleDomainModel> findAll() {
+        return this.circleRepository.findAllByIsDeletedIsFalse()
+                .stream()
+                .map(this::entityToDomainModel)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -70,7 +80,9 @@ public class CirclePortImpl implements CirclePort {
                 circle.getMainImage(),
                 circle.getDescription(),
                 circle.getIsDeleted(),
-                this.entityToDomainModel(circle.getLeader())
+                this.entityToDomainModel(circle.getLeader()),
+                circle.getCreatedAt(),
+                circle.getUpdatedAt()
         );
     }
 

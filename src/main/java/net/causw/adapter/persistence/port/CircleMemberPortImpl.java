@@ -12,6 +12,7 @@ import net.causw.domain.model.UserDomainModel;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -34,6 +35,17 @@ public class CircleMemberPortImpl implements CircleMemberPort {
                 .stream()
                 .map(this::entityToDomainModel)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Map<String, CircleMemberDomainModel> findCircleByUserId(String userId) {
+        return this.circleMemberRepository.findByUser_Id(userId)
+                .stream()
+                .map(this::entityToDomainModel)
+                .collect(Collectors.toMap(
+                        circleMemberDomainModel -> circleMemberDomainModel.getCircle().getId(),
+                        circleMemberDomainModel -> circleMemberDomainModel
+                ));
     }
 
     @Override
@@ -103,7 +115,9 @@ public class CircleMemberPortImpl implements CircleMemberPort {
                 circle.getMainImage(),
                 circle.getDescription(),
                 circle.getIsDeleted(),
-                this.entityToDomainModel(circle.getLeader())
+                this.entityToDomainModel(circle.getLeader()),
+                circle.getCreatedAt(),
+                circle.getUpdatedAt()
         );
     }
 

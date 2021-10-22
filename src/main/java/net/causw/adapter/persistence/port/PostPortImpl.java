@@ -81,7 +81,9 @@ public class PostPortImpl implements PostPort {
                 circle.getMainImage(),
                 circle.getDescription(),
                 circle.getIsDeleted(),
-                this.entityToDomainModel(circle.getLeader())
+                this.entityToDomainModel(circle.getLeader()),
+                circle.getCreatedAt(),
+                circle.getUpdatedAt()
         );
     }
 
