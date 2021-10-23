@@ -27,20 +27,14 @@ public class LockerController {
     public LockerResponseDto findById(@PathVariable String id) {
         return this.lockerService.findById(id);
     }
-
-    @GetMapping(value = "/")
-    @ResponseStatus(value = HttpStatus.OK)
-    public List<LockerResponseDto> findAll() {
-        return this.lockerService.findAll();
-    }
-
-    @GetMapping(value = "/location")
+    
+    @GetMapping(value = "/locations")
     @ResponseStatus(value = HttpStatus.OK)
     public List<LockerLocationResponseDto> findAllLocation() {
         return this.lockerService.findAllLocation();
     }
 
-    @GetMapping(value = "/location/{locationId}")
+    @GetMapping(value = "/locations/{locationId}")
     @ResponseStatus(value = HttpStatus.OK)
     public List<LockerResponseDto> findByLocation(@PathVariable String locationId) {
         return this.lockerService.findByLocation(locationId);
