@@ -4,24 +4,36 @@ import net.causw.domain.model.LockerLocationDomainModel;
 
 public class LockerLocationResponseDto {
     private String id;
-    private String location;
-    private String locationDesc;
+    private String name;
+    private String description;
+    private Long enableLockerCount;
+    private Long totalLockerCount;
 
     private LockerLocationResponseDto(
             String id,
-            String location,
-            String locationDesc
+            String name,
+            String description,
+            Long enableLockerCount,
+            Long totalLockerCount
     ) {
         this.id = id;
-        this.location = location;
-        this.locationDesc = locationDesc;
+        this.name = name;
+        this.description = description;
+        this.enableLockerCount = enableLockerCount;
+        this.totalLockerCount = totalLockerCount;
     }
 
-    public static LockerLocationResponseDto from(LockerLocationDomainModel lockerLocation) {
+    public static LockerLocationResponseDto from(
+            LockerLocationDomainModel lockerLocation,
+            Long enableLockerCount,
+            Long totalLockerCount
+    ) {
         return new LockerLocationResponseDto(
                 lockerLocation.getId(),
-                lockerLocation.getLocation(),
-                lockerLocation.getLocationDesc()
+                lockerLocation.getName(),
+                lockerLocation.getDescription(),
+                enableLockerCount,
+                totalLockerCount
         );
     }
 

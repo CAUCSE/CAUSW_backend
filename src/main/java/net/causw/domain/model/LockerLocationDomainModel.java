@@ -5,28 +5,28 @@ import lombok.Getter;
 @Getter
 public class LockerLocationDomainModel {
     private String id;
-    private String location;
-    private String locationDesc;
+    private String name;
+    private String description;
 
     private LockerLocationDomainModel(
             String id,
-            String location,
-            String locationDesc
+            String name,
+            String description
     ) {
         this.id = id;
-        this.location = location;
-        this.locationDesc = locationDesc;
+        this.name = name;
+        this.description = description;
     }
 
     public static LockerLocationDomainModel of(
             String id,
-            String location,
-            String locationDesc
+            String name,
+            String description
     ) {
         return new LockerLocationDomainModel(
                 id,
-                location,
-                locationDesc
+                name,
+                description
         );
     }
 }

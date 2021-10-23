@@ -43,14 +43,6 @@ public class LockerService {
     }
 
     @Transactional(readOnly = true)
-    public List<LockerResponseDto> findAll() {
-        return this.lockerPort.findAll()
-                .stream()
-                .map(LockerResponseDto::from)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
     public List<LockerResponseDto> findByLocation(String locationId) {
         LockerLocationDomainModel lockerLocation = this.lockerLocationPort.findById(locationId).orElseThrow(
                 () -> new BadRequestException(
@@ -69,7 +61,13 @@ public class LockerService {
     public List<LockerLocationResponseDto> findAllLocation() {
         return this.lockerLocationPort.findAll()
                 .stream()
-                .map(LockerLocationResponseDto::from)
+                .map(
+                        (lockerLocationDomainModel) -> LockerLocationResponseDto.from(
+                                lockerLocationDomainModel,
+                                this.lockerPort.getEnableLockerCountByLocation(lockerLocationDomainModel.getId()),
+                                this.lockerPort.getLockerCountByLocation(lockerLocationDomainModel.getId())
+                        )
+                )
                 .collect(Collectors.toList());
     }
 

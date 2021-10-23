@@ -34,8 +34,8 @@ public class LockerLocationPortImpl implements LockerLocationPort {
     private LockerLocationDomainModel entityToDomainModel(LockerLocation lockerLocation) {
         return LockerLocationDomainModel.of(
                 lockerLocation.getId(),
-                lockerLocation.getLocation(),
-                lockerLocation.getLocationDesc()
+                lockerLocation.getName(),
+                lockerLocation.getDescription()
         );
     }
 }
