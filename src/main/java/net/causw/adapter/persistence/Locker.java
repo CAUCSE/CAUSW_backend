@@ -30,14 +30,29 @@ public class Locker extends BaseEntity {
     @JoinColumn(name = "location_id", nullable = false)
     private LockerLocation location;
 
-    private Locker(Long lockerNumber, Boolean isActive, User user, LockerLocation location) {
+    private Locker(
+            Long lockerNumber,
+            Boolean isActive,
+            User user,
+            LockerLocation location
+    ) {
         this.lockerNumber = lockerNumber;
         this.isActive = isActive;
         this.user = user;
         this.location = location;
     }
 
-    public static Locker of(Long lockerNumber, Boolean isActive, User user, LockerLocation location) {
-        return new Locker(lockerNumber, isActive, user, location);
+    public static Locker of(
+            Long lockerNumber,
+            Boolean isActive,
+            User user,
+            LockerLocation location
+    ) {
+        return new Locker(
+                lockerNumber,
+                isActive,
+                user,
+                location
+        );
     }
 }

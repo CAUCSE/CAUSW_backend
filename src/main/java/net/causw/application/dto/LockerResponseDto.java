@@ -14,6 +14,7 @@ public class LockerResponseDto {
     private LocalDateTime updatedAt;
     private String userId;
     private String userName;
+    private String lockerLocationName;
 
     private LockerResponseDto(
             String id,
@@ -21,7 +22,8 @@ public class LockerResponseDto {
             Boolean isActive,
             LocalDateTime updateAt,
             String userId,
-            String userName
+            String userName,
+            String lockerLocationName
     ){
         this.id = id;
         this.lockerNumber = lockerNumber;
@@ -29,6 +31,7 @@ public class LockerResponseDto {
         this.updatedAt = updateAt;
         this.userId = userId;
         this.userName = userName;
+        this.lockerLocationName = lockerLocationName;
     }
 
     public static LockerResponseDto from(Locker locker) {
@@ -38,7 +41,8 @@ public class LockerResponseDto {
                 locker.getIsActive(),
                 locker.getUpdatedAt(),
                 locker.getUser().getId(),
-                locker.getUser().getName()
+                locker.getUser().getName(),
+                locker.getLocation().getName()
         );
     }
 
@@ -49,7 +53,8 @@ public class LockerResponseDto {
                 locker.getIsActive(),
                 locker.getUpdatedAt(),
                 locker.getUserId(),
-                locker.getUserName()
+                locker.getUserName(),
+                locker.getLockerLocation().getName()
         );
     }
 }
