@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CommentService {
@@ -115,5 +116,47 @@ public class CommentService {
                 .validate();
 
         return CommentResponseDto.from(this.commentPort.create(commentDomainModel, postDomainModel));
+    }
+
+    @Transactional(readOnly = true)
+    public List<CommentResponseDto> findAll(String userId, String postId) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
+        PostDomainModel postDomainModel = this.postPort.findById(postId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid post id"
+                )
+        );
+
+        validatorBucket
+                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted()));
+
+        postDomainModel.getBoard().getCircle().ifPresent(
+                circleDomainModel -> {
+                    CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(userId, circleDomainModel.getId()).orElseThrow(
+                            () -> new UnauthorizedException(
+                                    ErrorCode.NOT_MEMBER,
+                                    "The user is not a member of circle"
+                            )
+                    );
+
+                    validatorBucket
+                            .consistOf(CircleMemberStatusValidator.of(
+                                    circleMemberDomainModel.getStatus(),
+                                    List.of(CircleMemberStatus.MEMBER)
+                            ));
+                }
+        );
+
+        validatorBucket
+                .validate();
+
+        /* TODO - Pagination */
+
+        return this.commentPort.findByPostId(postId)
+                .stream()
+                .map(CommentResponseDto::from)
+                .collect(Collectors.toList());
     }
 }
