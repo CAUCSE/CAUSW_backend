@@ -14,7 +14,7 @@ public class LockerResponseDto {
     private LocalDateTime updatedAt;
     private String userId;
     private String userName;
-    private String lockerLocationName;
+    private String lockerLocationName; // TODO : 추후 locker 디자인 확정 이후 유지/삭제 결정
 
     private LockerResponseDto(
             String id,

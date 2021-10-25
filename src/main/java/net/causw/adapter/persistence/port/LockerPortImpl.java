@@ -1,6 +1,7 @@
 package net.causw.adapter.persistence.port;
 
 import net.causw.adapter.persistence.Locker;
+import net.causw.adapter.persistence.LockerLocation;
 import net.causw.adapter.persistence.LockerRepository;
 import net.causw.application.spi.LockerPort;
 import net.causw.domain.model.LockerDomainModel;
@@ -44,11 +45,6 @@ public class LockerPortImpl implements LockerPort {
 
 
     private LockerDomainModel entityToDomainModel(Locker locker) {
-        LockerLocationDomainModel lockerLocation = LockerLocationDomainModel.of(
-                locker.getLocation().getId(),
-                locker.getLocation().getName(),
-                locker.getLocation().getDescription()
-        );
         return LockerDomainModel.of(
                 locker.getId(),
                 locker.getLockerNumber(),
@@ -56,7 +52,15 @@ public class LockerPortImpl implements LockerPort {
                 locker.getUpdatedAt(),
                 locker.getUser().getId(),
                 locker.getUser().getName(),
-                lockerLocation
+                this.entityToDomainModel(locker.getLocation())
+        );
+    }
+
+    private LockerLocationDomainModel entityToDomainModel(LockerLocation lockerLocation) {
+        return LockerLocationDomainModel.of(
+                lockerLocation.getId(),
+                lockerLocation.getName(),
+                lockerLocation.getDescription()
         );
     }
 }
