@@ -12,6 +12,7 @@ public class LockerDomainModel {
     private LocalDateTime updatedAt;
     private String userId;
     private String userName;
+    private LockerLocationDomainModel lockerLocation;
 
     private LockerDomainModel(
             String id,
@@ -19,7 +20,8 @@ public class LockerDomainModel {
             Boolean isActive,
             LocalDateTime updatedAt,
             String userId,
-            String userName
+            String userName,
+            LockerLocationDomainModel lockerLocation
     ) {
         this.id = id;
         this.lockerNumber = lockerNumber;
@@ -27,6 +29,7 @@ public class LockerDomainModel {
         this.updatedAt = updatedAt;
         this.userId = userId;
         this.userName = userName;
+        this.lockerLocation = lockerLocation;
     }
 
     public static LockerDomainModel of(
@@ -35,7 +38,8 @@ public class LockerDomainModel {
             Boolean isActive,
             LocalDateTime updatedAt,
             String userId,
-            String userName
+            String userName,
+            LockerLocationDomainModel lockerLocation
     ) {
         return new LockerDomainModel(
                 id,
@@ -43,7 +47,8 @@ public class LockerDomainModel {
                 isActive,
                 updatedAt,
                 userId,
-                userName
+                userName,
+                lockerLocation
         );
     }
 }
