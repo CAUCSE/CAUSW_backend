@@ -1,9 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend-app-deployment
+  name: backend-app
   labels:
-    app: backend-app-deployment
+    app: backend-app
 spec:
   replicas: 1
   selector:
@@ -21,7 +21,6 @@ spec:
           # TODO
           #          readinessProbe:
           #            httpGet:
-          #              path: /healthy
           #              port: 8080
           ports:
             - containerPort: 8080
@@ -37,4 +36,32 @@ spec:
       port: 80
       targetPort: 8080
   selector:
-    app: easydeep
+    app: backend-app
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: load-balancer
+spec:
+  selector:
+    app: backend-app
+  ports:
+    - name: backend-app
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+  type: LoadBalancer
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: backend-ingress
+  namespace: default
+spec:
+  defaultBackend:
+    service:
+      name: backend-app-nodeport-service
+      port:
+        number: 80
