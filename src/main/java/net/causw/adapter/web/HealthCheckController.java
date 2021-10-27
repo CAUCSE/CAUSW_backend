@@ -10,15 +10,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 /*
-* Health check controller for k8s readiness probe
-* */
+ * Health check controller for k8s readiness probe
+ * */
 @RestController
-@RequestMapping("/health")
+@RequestMapping("/healthy")
 public class HealthCheckController {
 
     @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
-    public Map<String, String> healthCheck(){
+    public Map<String, String> healthCheck() {
         HashMap<String, String> map = new HashMap<>();
         map.put("status", "OK");
         return map;

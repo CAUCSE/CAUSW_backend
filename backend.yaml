@@ -18,10 +18,10 @@ spec:
         - name: backend
           image: gcr.io/causw-dev/backend-app
           imagePullPolicy: Always
-          # TODO
-          #          readinessProbe:
-          #            httpGet:
-          #              port: 8080
+          readinessProbe:
+            httpGet:
+              path: /healthy
+              port: 8080
           ports:
             - containerPort: 8080
 ---
