@@ -29,4 +29,15 @@ public class LockerLocationDomainModel {
                 description
         );
     }
+
+    public static LockerLocationDomainModel of(
+            String name,
+            String description
+    ) {
+        return new LockerLocationDomainModel(
+                null,
+                name,
+                description
+        );
+    }
 }
