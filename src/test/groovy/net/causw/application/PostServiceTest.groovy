@@ -14,6 +14,8 @@ import org.powermock.core.classloader.annotations.PrepareForTest
 import org.powermock.modules.junit4.PowerMockRunner
 import org.powermock.modules.junit4.PowerMockRunnerDelegate
 import org.spockframework.runtime.Sputnik
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.test.context.ActiveProfiles
 import spock.lang.Specification
 
@@ -122,10 +124,10 @@ class PostServiceTest extends Specification {
         this.userPort.findById(requestUserDomainModel.getId()) >> Optional.of(requestUserDomainModel)
         this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(this.mockPostDomainModel)
         this.circleMemberPort.findByUserIdAndCircleId(requestUserDomainModel.getId(), ((CircleDomainModel) this.mockCircleDomainModel).getId()) >> Optional.of(circleMemberDomainModel)
-        this.commentPort.findByPostId(((PostDomainModel) this.mockPostDomainModel).getId()) >> new ArrayList<CommentDomainModel>()
+        this.commentPort.findByPostId(((PostDomainModel) this.mockPostDomainModel).getId(), 0) >> new PageImpl<CommentDomainModel>(List.of())
 
         when: "post findById without circle"
-        def postFind = this.postService.findById("test user id", ((PostDomainModel) this.mockPostDomainModel).getId())
+        def postFind = this.postService.findById("test user id", ((PostDomainModel) this.mockPostDomainModel).getId(), 0)
 
         then:
         postFind instanceof PostResponseDto
@@ -136,7 +138,7 @@ class PostServiceTest extends Specification {
 
         when: "post findById with circle"
         ((BoardDomainModel) this.mockBoardDomainModel).setCircle((CircleDomainModel) this.mockCircleDomainModel)
-        postFind = this.postService.findById("test user id", ((PostDomainModel) this.mockPostDomainModel).getId())
+        postFind = this.postService.findById("test user id", ((PostDomainModel) this.mockPostDomainModel).getId(), 0)
 
         then:
         postFind instanceof PostResponseDto
@@ -179,10 +181,10 @@ class PostServiceTest extends Specification {
         this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(this.mockPostDomainModel)
         this.boardPort.findById(((BoardDomainModel) this.mockBoardDomainModel).getId()) >> Optional.of(this.mockBoardDomainModel)
         this.circleMemberPort.findByUserIdAndCircleId(requestUserDomainModel.getId(), ((CircleDomainModel) this.mockCircleDomainModel).getId()) >> Optional.of(circleMemberDomainModel)
-        this.postPort.findAll(((BoardDomainModel) this.mockBoardDomainModel).getId()) >> List.of(this.mockPostDomainModel)
+        this.postPort.findAll(((BoardDomainModel) this.mockBoardDomainModel).getId(), 0) >> new PageImpl<PostDomainModel>(List.of(this.mockPostDomainModel))
 
         when: "post findById without circle"
-        def postFind = this.postService.findAll("test user id", "test board id")
+        def postFind = this.postService.findAll("test user id", "test board id", 0)
 
         then:
         postFind instanceof List<PostAllResponseDto>
@@ -192,7 +194,7 @@ class PostServiceTest extends Specification {
 
         when: "post findById with circle"
         ((BoardDomainModel) this.mockBoardDomainModel).setCircle((CircleDomainModel) this.mockCircleDomainModel)
-        postFind = this.postService.findAll("test user id", "test board id")
+        postFind = this.postService.findAll("test user id", "test board id", 0)
 
         then:
         postFind instanceof List<PostAllResponseDto>
@@ -220,11 +222,11 @@ class PostServiceTest extends Specification {
         this.userPort.findById(requestUserDomainModel.getId()) >> Optional.of(requestUserDomainModel)
         this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(this.mockPostDomainModel)
         this.boardPort.findById(((BoardDomainModel) this.mockBoardDomainModel).getId()) >> Optional.of(this.mockBoardDomainModel)
-        this.postPort.findAll(((BoardDomainModel) this.mockBoardDomainModel).getId()) >> List.of(this.mockPostDomainModel)
+        this.postPort.findAll(((BoardDomainModel) this.mockBoardDomainModel).getId(), 0) >> new PageImpl<PostDomainModel>(List.of(this.mockPostDomainModel))
 
         when:
         this.mockBoardDomainModel.setIsDeleted(true)
-        this.postService.findAll("test user id", "test board id")
+        this.postService.findAll("test user id", "test board id", 0)
 
         then:
         thrown(BadRequestException)
@@ -260,11 +262,11 @@ class PostServiceTest extends Specification {
         this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(this.mockPostDomainModel)
         this.boardPort.findById(((BoardDomainModel) this.mockBoardDomainModel).getId()) >> Optional.of(this.mockBoardDomainModel)
         this.circleMemberPort.findByUserIdAndCircleId(requestUserDomainModel.getId(), ((CircleDomainModel) this.mockCircleDomainModel).getId()) >> Optional.of(circleMemberDomainModel)
-        this.postPort.findAll(((BoardDomainModel) this.mockBoardDomainModel).getId()) >> List.of(this.mockPostDomainModel)
+        this.postPort.findAll(((BoardDomainModel) this.mockBoardDomainModel).getId(), 0) >> Page.of(this.mockPostDomainModel)
 
         when: "bad request case - leave"
         ((BoardDomainModel) this.mockBoardDomainModel).setCircle((CircleDomainModel) this.mockCircleDomainModel)
-        this.postService.findAll("test user id", "test board id")
+        this.postService.findAll("test user id", "test board id", 0)
 
         then:
         thrown(BadRequestException)
@@ -272,7 +274,7 @@ class PostServiceTest extends Specification {
         when: "unauthorized case - drop"
         circleMemberDomainModel.setStatus(CircleMemberStatus.DROP)
         ((BoardDomainModel) this.mockBoardDomainModel).setCircle((CircleDomainModel) this.mockCircleDomainModel)
-        this.postService.findAll("test user id", "test board id")
+        this.postService.findAll("test user id", "test board id", 0)
 
         then:
         thrown(UnauthorizedException)

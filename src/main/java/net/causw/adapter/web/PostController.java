@@ -30,18 +30,20 @@ public class PostController {
     @ResponseStatus(value = HttpStatus.OK)
     public PostResponseDto findById(
             @AuthenticationPrincipal String userId,
-            @PathVariable String id
+            @PathVariable String id,
+            @RequestParam(defaultValue = "0") Integer pageNum
     ) {
-        return this.postService.findById(userId, id);
+        return this.postService.findById(userId, id, pageNum);
     }
 
     @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
     public List<PostAllResponseDto> findAll(
             @AuthenticationPrincipal String userId,
-            @RequestParam String boardId
+            @RequestParam String boardId,
+            @RequestParam(defaultValue = "0") Integer pageNum
     ) {
-        return this.postService.findAll(userId, boardId);
+        return this.postService.findAll(userId, boardId, pageNum);
     }
 
     @PostMapping

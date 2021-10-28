@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.causw.domain.model.PostDomainModel;
 import net.causw.domain.model.UserDomainModel;
+import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -20,7 +21,7 @@ public class PostResponseDto {
     private BoardResponseDto board;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private List<CommentResponseDto> commentList;
+    private Page<CommentResponseDto> commentList;
 
     private PostResponseDto(
             String id,
@@ -31,7 +32,7 @@ public class PostResponseDto {
             BoardResponseDto board,
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
-            List<CommentResponseDto> commentList
+            Page<CommentResponseDto> commentList
     ) {
         this.id = id;
         this.title = title;
@@ -57,14 +58,14 @@ public class PostResponseDto {
                 BoardResponseDto.from(post.getBoard(), user.getRole()),
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
-                new ArrayList<>()
+                null
         );
     }
 
     public static PostResponseDto from(
             PostDomainModel post,
             UserDomainModel user,
-            List<CommentResponseDto> commentList
+            Page<CommentResponseDto> commentList
     ) {
         return new PostResponseDto(
                 post.getId(),

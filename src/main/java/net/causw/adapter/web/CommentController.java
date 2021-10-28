@@ -3,6 +3,7 @@ package net.causw.adapter.web;
 import net.causw.application.CommentService;
 import net.causw.application.dto.CommentCreateRequestDto;
 import net.causw.application.dto.CommentResponseDto;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,8 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/comments")
@@ -42,10 +41,11 @@ public class CommentController {
 
     @GetMapping(params = "postId")
     @ResponseStatus(value = HttpStatus.OK)
-    public List<CommentResponseDto> findAll(
+    public Page<CommentResponseDto> findAll(
             @AuthenticationPrincipal String userId,
-            @RequestParam String postId
+            @RequestParam String postId,
+            @RequestParam(defaultValue = "0") Integer postNum
     ) {
-        return this.commentService.findAll(userId, postId);
+        return this.commentService.findAll(userId, postId, postNum);
     }
 }

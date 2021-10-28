@@ -2,6 +2,7 @@ package net.causw.adapter.persistence.port;
 
 import net.causw.adapter.persistence.Board;
 import net.causw.adapter.persistence.Circle;
+import net.causw.adapter.persistence.PageableFactory;
 import net.causw.adapter.persistence.Post;
 import net.causw.adapter.persistence.PostRepository;
 import net.causw.adapter.persistence.User;
@@ -10,6 +11,7 @@ import net.causw.domain.model.BoardDomainModel;
 import net.causw.domain.model.CircleDomainModel;
 import net.causw.domain.model.PostDomainModel;
 import net.causw.domain.model.UserDomainModel;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -21,9 +23,14 @@ import java.util.stream.Collectors;
 @Component
 public class PostPortImpl implements PostPort {
     private final PostRepository postRepository;
+    private final PageableFactory pageableFactory;
 
-    public PostPortImpl(PostRepository postRepository) {
+    public PostPortImpl(
+            PostRepository postRepository,
+            PageableFactory pageableFactory
+    ) {
         this.postRepository = postRepository;
+        this.pageableFactory = pageableFactory;
     }
 
     @Override
@@ -37,11 +44,9 @@ public class PostPortImpl implements PostPort {
     }
 
     @Override
-    public List<PostDomainModel> findAll(String boardId) {
-        return this.postRepository.findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(boardId)
-                .stream()
-                .map(this::entityToDomainModel)
-                .collect(Collectors.toList());
+    public Page<PostDomainModel> findAll(String boardId, Integer page) {
+        return this.postRepository.findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(boardId, this.pageableFactory.create(page))
+                .map(this::entityToDomainModel);
     }
 
     private PostDomainModel entityToDomainModel(Post post) {

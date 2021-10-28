@@ -14,6 +14,8 @@ import org.powermock.core.classloader.annotations.PrepareForTest
 import org.powermock.modules.junit4.PowerMockRunner
 import org.powermock.modules.junit4.PowerMockRunnerDelegate
 import org.spockframework.runtime.Sputnik
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.test.context.ActiveProfiles
 import spock.lang.Specification
 
@@ -283,7 +285,7 @@ class CommentServiceTest extends Specification {
         this.userPort.findById(((UserDomainModel) this.mockCommentWriterUserDomainModel3).getId()) >> Optional.of((UserDomainModel) this.mockCommentWriterUserDomainModel3)
         this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of((PostDomainModel) this.mockPostDomainModel)
         this.commentPort.findById(((CommentDomainModel) this.mockParentCommentDomainModel).getId()) >> Optional.of(((CommentDomainModel) this.mockParentCommentDomainModel))
-        this.commentPort.findByPostId(((PostDomainModel) this.mockPostDomainModel).getId()) >> List.of((CommentDomainModel) this.mockCommentDomainModel, (CommentDomainModel) this.mockCommentDomainModel2, (CommentDomainModel) this.mockCommentDomainModel3)
+        this.commentPort.findByPostId(((PostDomainModel) this.mockPostDomainModel).getId(), 0) >> new PageImpl<CommentDomainModel>(List.of((CommentDomainModel) this.mockCommentDomainModel, (CommentDomainModel) this.mockCommentDomainModel2, (CommentDomainModel) this.mockCommentDomainModel3))
         this.commentPort.create((CommentDomainModel) this.mockCommentDomainModel, (PostDomainModel) this.mockPostDomainModel) >> (CommentDomainModel) this.mockCommentDomainModel
         this.commentPort.create((CommentDomainModel) this.mockCommentDomainModel2, (PostDomainModel) this.mockPostDomainModel) >> (CommentDomainModel) this.mockCommentDomainModel2
         this.commentPort.create((CommentDomainModel) this.mockCommentDomainModel3, (PostDomainModel) this.mockPostDomainModel) >> (CommentDomainModel) this.mockCommentDomainModel3
@@ -320,16 +322,16 @@ class CommentServiceTest extends Specification {
         this.commentService.create("test comment writer 3 user id", mockCommentCreateRequestDto3)
 
         when:
-        def commentList = this.commentService.findAll(((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(), ((PostDomainModel) this.mockPostDomainModel).getId())
+        def commentList = this.commentService.findAll(((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(), ((PostDomainModel) this.mockPostDomainModel).getId(), 0)
 
         then:
-        commentList instanceof List<CommentResponseDto>
+        commentList instanceof Page<CommentResponseDto>
         commentList.size() == 3
-        commentList.get(0).getContent() == "test comment content"
-        commentList.get(1).getContent() == "test comment 2 content"
-        commentList.get(2).getContent() == "test comment 3 content"
-        commentList.get(0).getParentCommentId() == null
-        commentList.get(1).getParentCommentId() == "test parent comment id"
-        commentList.get(2).getParentCommentId() == "test parent comment id"
+        commentList.getContent().get(0).getContent() == "test comment content"
+        commentList.getContent().get(1).getContent() == "test comment 2 content"
+        commentList.getContent().get(2).getContent() == "test comment 3 content"
+        commentList.getContent().get(0).getParentCommentId() == null
+        commentList.getContent().get(1).getParentCommentId() == "test parent comment id"
+        commentList.getContent().get(2).getParentCommentId() == "test parent comment id"
     }
 }

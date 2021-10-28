@@ -1,8 +1,8 @@
 package net.causw.application.spi;
 
 import net.causw.domain.model.PostDomainModel;
+import org.springframework.data.domain.Page;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface PostPort {
@@ -10,5 +10,5 @@ public interface PostPort {
 
     PostDomainModel create(PostDomainModel postDomainModel);
 
-    List<PostDomainModel> findAll(String boardId);
+    Page<PostDomainModel> findAll(String boardId, Integer page);
 }

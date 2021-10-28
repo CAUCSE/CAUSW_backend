@@ -2,11 +2,13 @@ package net.causw.adapter.persistence.port;
 
 import net.causw.adapter.persistence.Comment;
 import net.causw.adapter.persistence.CommentRepository;
+import net.causw.adapter.persistence.PageableFactory;
 import net.causw.adapter.persistence.User;
 import net.causw.application.spi.CommentPort;
 import net.causw.domain.model.CommentDomainModel;
 import net.causw.domain.model.PostDomainModel;
 import net.causw.domain.model.UserDomainModel;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -16,9 +18,14 @@ import java.util.stream.Collectors;
 @Component
 public class CommentPortImpl implements CommentPort {
     private final CommentRepository commentRepository;
+    private final PageableFactory pageableFactory;
 
-    public CommentPortImpl(CommentRepository commentRepository) {
+    public CommentPortImpl(
+            CommentRepository commentRepository,
+            PageableFactory pageableFactory
+    ) {
         this.commentRepository = commentRepository;
+        this.pageableFactory = pageableFactory;
     }
 
     @Override
@@ -27,11 +34,9 @@ public class CommentPortImpl implements CommentPort {
     }
 
     @Override
-    public List<CommentDomainModel> findByPostId(String postId) {
-        return this.commentRepository.findByPostId(postId)
-                .stream()
-                .map(this::entityToDomainModelWithChild)
-                .collect(Collectors.toList());
+    public Page<CommentDomainModel> findByPostId(String postId, Integer pageNum) {
+        return this.commentRepository.findByPost_IdAndParentCommentIsNullOrderByCreatedAtDesc(postId, pageableFactory.create(pageNum))
+                .map(this::entityToDomainModelWithChild);
     }
 
     @Override

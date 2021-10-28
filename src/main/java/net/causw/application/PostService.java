@@ -56,7 +56,7 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public PostResponseDto findById(String userId, String id) {
+    public PostResponseDto findById(String userId, String id, Integer pageNum) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
@@ -97,20 +97,15 @@ public class PostService {
         validatorBucket
                 .validate();
 
-        // TODO : GHJANG : Pagination 고려
-        // TODO : GHJANG : PostResponseDto에 댓글 갯수 포함 필요
         return PostResponseDto.from(
                 postDomainModel,
                 userDomainModel,
-                this.commentPort.findByPostId(id)
-                        .stream()
-                        .map(CommentResponseDto::from)
-                        .collect(Collectors.toList())
+                this.commentPort.findByPostId(id, pageNum).map(CommentResponseDto::from)
         );
     }
 
     @Transactional(readOnly = true)
-    public List<PostAllResponseDto> findAll(String userId, String boardId) {
+    public List<PostAllResponseDto> findAll(String userId, String boardId, Integer pageNum) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
@@ -150,8 +145,7 @@ public class PostService {
                 .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted()))
                 .validate();
 
-        // TODO: Pagination
-        return this.postPort.findAll(boardId)
+        return this.postPort.findAll(boardId, pageNum)
                 .stream()
                 .map(postDomainModel -> PostAllResponseDto.from(
                         postDomainModel,

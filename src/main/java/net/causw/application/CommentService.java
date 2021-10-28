@@ -18,6 +18,7 @@ import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.ValidatorBucket;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -119,7 +120,7 @@ public class CommentService {
     }
 
     @Transactional(readOnly = true)
-    public List<CommentResponseDto> findAll(String userId, String postId) {
+    public Page<CommentResponseDto> findAll(String userId, String postId, Integer pageNum) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         PostDomainModel postDomainModel = this.postPort.findById(postId).orElseThrow(
@@ -152,11 +153,7 @@ public class CommentService {
         validatorBucket
                 .validate();
 
-        /* TODO - Pagination */
-
-        return this.commentPort.findByPostId(postId)
-                .stream()
-                .map(CommentResponseDto::from)
-                .collect(Collectors.toList());
+        return this.commentPort.findByPostId(postId, pageNum)
+                .map(CommentResponseDto::from);
     }
 }
