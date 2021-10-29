@@ -2,6 +2,7 @@ package net.causw.application.spi;
 
 import net.causw.domain.model.CommentDomainModel;
 import net.causw.domain.model.PostDomainModel;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 import java.util.Optional;
@@ -9,8 +10,7 @@ import java.util.Optional;
 public interface CommentPort {
     Optional<CommentDomainModel> findById(String id);
 
-    // TODO : GHJANG : Pagination
-    List<CommentDomainModel> findByPostId(String postId);
+    Page<CommentDomainModel> findByPostId(String postId, Integer pageNum);
 
     Long countByPostId(String postId);
 
