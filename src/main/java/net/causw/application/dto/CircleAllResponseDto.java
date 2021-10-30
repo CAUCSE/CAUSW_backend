@@ -3,6 +3,7 @@ package net.causw.application.dto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.causw.domain.model.CircleDomainModel;
+import net.causw.domain.model.UserDomainModel;
 
 import java.time.LocalDateTime;
 
@@ -51,8 +52,8 @@ public class CircleAllResponseDto {
                 circleDomainModel.getName(),
                 circleDomainModel.getMainImage(),
                 circleDomainModel.getDescription(),
-                circleDomainModel.getLeader().getId(),
-                circleDomainModel.getLeader().getName(),
+                circleDomainModel.getLeader().map(UserDomainModel::getId).orElse(null),
+                circleDomainModel.getLeader().map(UserDomainModel::getName).orElse(null),
                 numMember,
                 false,
                 circleDomainModel.getCreatedAt(),
@@ -70,8 +71,8 @@ public class CircleAllResponseDto {
                 circleDomainModel.getName(),
                 circleDomainModel.getMainImage(),
                 circleDomainModel.getDescription(),
-                circleDomainModel.getLeader().getId(),
-                circleDomainModel.getLeader().getName(),
+                circleDomainModel.getLeader().map(UserDomainModel::getId).orElse(null),
+                circleDomainModel.getLeader().map(UserDomainModel::getName).orElse(null),
                 numMember,
                 true,
                 circleDomainModel.getCreatedAt(),

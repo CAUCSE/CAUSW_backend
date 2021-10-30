@@ -3,9 +3,11 @@ package net.causw.domain.model;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.swing.text.html.Option;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Getter
 @Setter
@@ -104,5 +106,9 @@ public class CircleDomainModel {
                 null,
                 null
         );
+    }
+
+    public Optional<UserDomainModel> getLeader() {
+        return Optional.of(this.leader);
     }
 }

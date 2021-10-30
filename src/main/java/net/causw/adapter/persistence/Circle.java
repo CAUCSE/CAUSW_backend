@@ -106,7 +106,7 @@ public class Circle extends BaseEntity {
                 circleDomainModel.getMainImage(),
                 circleDomainModel.getDescription(),
                 circleDomainModel.getIsDeleted(),
-                User.from(circleDomainModel.getLeader())
+                circleDomainModel.getLeader().map(User::from).orElse(null)
         );
     }
 }
