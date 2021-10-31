@@ -23,6 +23,7 @@ import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.ValidatorBucket;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,7 +57,7 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public PostResponseDto findById(String userId, String id, Integer pageNum) {
+    public PostResponseDto findById(String userId, String id) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
@@ -100,12 +101,12 @@ public class PostService {
         return PostResponseDto.from(
                 postDomainModel,
                 userDomainModel,
-                this.commentPort.findByPostId(id, pageNum).map(CommentResponseDto::from)
+                this.commentPort.findByPostId(id, 0).map(CommentResponseDto::from)
         );
     }
 
     @Transactional(readOnly = true)
-    public List<PostAllResponseDto> findAll(String userId, String boardId, Integer pageNum) {
+    public Page<PostAllResponseDto> findAll(String userId, String boardId, Integer pageNum) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
@@ -146,12 +147,10 @@ public class PostService {
                 .validate();
 
         return this.postPort.findAll(boardId, pageNum)
-                .stream()
                 .map(postDomainModel -> PostAllResponseDto.from(
                         postDomainModel,
                         this.commentPort.countByPostId(postDomainModel.getId())
-                ))
-                .collect(Collectors.toList());
+                ));
     }
 
     @Transactional

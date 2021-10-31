@@ -6,6 +6,8 @@ import net.causw.application.dto.BoardUpdateRequestDto
 import net.causw.application.spi.BoardPort
 import net.causw.application.spi.CircleMemberPort
 import net.causw.application.spi.CirclePort
+import net.causw.application.spi.CommentPort
+import net.causw.application.spi.PostPort
 import net.causw.application.spi.UserPort
 import net.causw.domain.exceptions.BadRequestException
 import net.causw.domain.exceptions.UnauthorizedException
@@ -31,10 +33,20 @@ import javax.validation.Validator
 class BoardServiceTest extends Specification {
     private BoardPort boardPort = Mock(BoardPort.class)
     private UserPort userPort = Mock(UserPort.class)
+    private PostPort postPort = Mock(PostPort.class)
     private CirclePort circlePort = Mock(CirclePort.class)
     private CircleMemberPort circleMemberPort = Mock(CircleMemberPort.class)
+    private CommentPort commentPort = Mock(CommentPort.class)
     private Validator validator = Validation.buildDefaultValidatorFactory().getValidator()
-    private BoardService boardService = new BoardService(this.boardPort, this.userPort, this.circlePort, this.circleMemberPort, this.validator)
+    private BoardService boardService = new BoardService(
+            this.boardPort,
+            this.userPort,
+            this.postPort,
+            this.circlePort,
+            this.circleMemberPort,
+            this.commentPort,
+            this.validator
+    )
 
     def mockBoardDomainModel
 
@@ -88,8 +100,21 @@ class BoardServiceTest extends Specification {
         )
         this.mockBoardDomainModel.setCircle(circle)
 
+        def mockPostDomainModel = PostDomainModel.of(
+                "test post id",
+                "test post title",
+                "test post content",
+                leader,
+                false,
+                (BoardDomainModel) this.mockBoardDomainModel,
+                null,
+                null
+        )
+
         this.userPort.findById("test") >> Optional.of(leader)
         this.circlePort.findById("test") >> Optional.of(circle)
+        this.postPort.findLatest("test") >> Optional.of(mockPostDomainModel)
+        this.commentPort.countByPostId("test post id") >> 0
         this.circleMemberPort.findByUserIdAndCircleId("test", "test") >> Optional.of(circleMember)
         this.boardPort.findByCircleId("test") >> List.of(this.mockBoardDomainModel)
 

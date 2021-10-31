@@ -44,8 +44,8 @@ public class CommentController {
     public Page<CommentResponseDto> findAll(
             @AuthenticationPrincipal String userId,
             @RequestParam String postId,
-            @RequestParam(defaultValue = "0") Integer postNum
+            @RequestParam(defaultValue = "0") Integer pageNum
     ) {
-        return this.commentService.findAll(userId, postId, postNum);
+        return this.commentService.findAll(userId, postId, pageNum);
     }
 }

@@ -1,11 +1,14 @@
 package net.causw.application;
 
 import net.causw.application.dto.BoardCreateRequestDto;
+import net.causw.application.dto.BoardOfCircleResponseDto;
 import net.causw.application.dto.BoardResponseDto;
 import net.causw.application.dto.BoardUpdateRequestDto;
 import net.causw.application.spi.BoardPort;
 import net.causw.application.spi.CircleMemberPort;
 import net.causw.application.spi.CirclePort;
+import net.causw.application.spi.CommentPort;
+import net.causw.application.spi.PostPort;
 import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -14,6 +17,7 @@ import net.causw.domain.model.BoardDomainModel;
 import net.causw.domain.model.CircleDomainModel;
 import net.causw.domain.model.CircleMemberDomainModel;
 import net.causw.domain.model.CircleMemberStatus;
+import net.causw.domain.model.PostDomainModel;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.validation.CircleMemberStatusValidator;
@@ -33,21 +37,27 @@ import java.util.stream.Collectors;
 public class BoardService {
     private final BoardPort boardPort;
     private final UserPort userPort;
+    private final PostPort postPort;
     private final CirclePort circlePort;
     private final CircleMemberPort circleMemberPort;
+    private final CommentPort commentPort;
     private final Validator validator;
 
     public BoardService(
             BoardPort boardPort,
             UserPort userPort,
+            PostPort postPort,
             CirclePort circlePort,
             CircleMemberPort circleMemberPort,
+            CommentPort commentPort,
             Validator validator
     ) {
         this.boardPort = boardPort;
         this.userPort = userPort;
+        this.postPort = postPort;
         this.circlePort = circlePort;
         this.circleMemberPort = circleMemberPort;
+        this.commentPort = commentPort;
         this.validator = validator;
     }
 
@@ -67,7 +77,7 @@ public class BoardService {
     }
 
     @Transactional(readOnly = true)
-    public List<BoardResponseDto> findAllByCircleId(
+    public List<BoardOfCircleResponseDto> findAllByCircleId(
             String currentUserId,
             String circleId
     ) {
@@ -102,7 +112,19 @@ public class BoardService {
 
         return this.boardPort.findByCircleId(circleId)
                 .stream()
-                .map(boardDomainModel -> BoardResponseDto.from(boardDomainModel, userDomainModel.getRole()))
+                .map(boardDomainModel -> this.postPort.findLatest(boardDomainModel.getId()).map(
+                        postDomainModel -> BoardOfCircleResponseDto.from(
+                                boardDomainModel,
+                                userDomainModel.getRole(),
+                                postDomainModel,
+                                this.commentPort.countByPostId(postDomainModel.getId())
+                        )
+                ).orElse(
+                        BoardOfCircleResponseDto.from(
+                                boardDomainModel,
+                                userDomainModel.getRole()
+                        )
+                ))
                 .collect(Collectors.toList());
     }
 
