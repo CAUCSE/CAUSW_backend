@@ -2,6 +2,9 @@ package net.causw.application;
 
 import net.causw.application.dto.CircleResponseDto;
 import net.causw.application.dto.DuplicatedCheckDto;
+import net.causw.application.dto.UserAdmissionAllResponseDto;
+import net.causw.application.dto.UserAdmissionCreateRequestDto;
+import net.causw.application.dto.UserAdmissionResponseDto;
 import net.causw.application.dto.UserCreateRequestDto;
 import net.causw.application.dto.UserPasswordUpdateRequestDto;
 import net.causw.application.dto.UserResponseDto;
@@ -10,6 +13,7 @@ import net.causw.application.dto.UserUpdateRequestDto;
 import net.causw.application.dto.UserUpdateRoleRequestDto;
 import net.causw.application.spi.CircleMemberPort;
 import net.causw.application.spi.CirclePort;
+import net.causw.application.spi.UserAdmissionPort;
 import net.causw.application.spi.UserPort;
 import net.causw.config.JwtTokenProvider;
 import net.causw.domain.exceptions.BadRequestException;
@@ -18,6 +22,7 @@ import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.CircleMemberStatus;
 import net.causw.domain.model.Role;
+import net.causw.domain.model.UserAdmissionDomainModel;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.model.UserState;
 import net.causw.domain.validation.AdmissionYearValidator;
@@ -28,6 +33,7 @@ import net.causw.domain.validation.PasswordFormatValidator;
 import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +44,7 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
     private final UserPort userPort;
+    private final UserAdmissionPort userAdmissionPort;
     private final CirclePort circlePort;
     private final CircleMemberPort circleMemberPort;
     private final JwtTokenProvider jwtTokenProvider;
@@ -45,12 +52,14 @@ public class UserService {
 
     public UserService(
             UserPort userPort,
+            UserAdmissionPort userAdmissionPort,
             CirclePort circlePort,
             CircleMemberPort circleMemberPort,
             JwtTokenProvider jwtTokenProvider,
             Validator validator
     ) {
         this.userPort = userPort;
+        this.userAdmissionPort = userAdmissionPort;
         this.circlePort = circlePort;
         this.circleMemberPort = circleMemberPort;
         this.jwtTokenProvider = jwtTokenProvider;
@@ -134,12 +143,12 @@ public class UserService {
         );
 
         this.userPort.findByEmail(userDomainModel.getEmail()).ifPresent(
-            email -> {
-                throw new BadRequestException(
-                    ErrorCode.ROW_ALREADY_EXIST,
-                    "This email already exist"
-                );
-            }
+                email -> {
+                    throw new BadRequestException(
+                            ErrorCode.ROW_ALREADY_EXIST,
+                            "This email already exist"
+                    );
+                }
         );
 
         // Validate password format, admission year range, and whether the email is duplicate or not
@@ -348,5 +357,72 @@ public class UserService {
                         "User id checked, but exception occurred"
                 )
         ));
+    }
+
+    @Transactional(readOnly = true)
+    public UserAdmissionResponseDto findAdmissionById(String requestUserId, String admissionId) {
+        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid request user id"
+                )
+        );
+
+        ValidatorBucket.of()
+                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT)))
+                .validate();
+
+        return UserAdmissionResponseDto.from(this.userAdmissionPort.findById(admissionId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid admission id"
+                )
+        ));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<UserAdmissionAllResponseDto> findAllAdmissions(
+            String requestUserId,
+            UserState userState,
+            Integer pageNum
+    ) {
+        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid request user id"
+                )
+        );
+
+        ValidatorBucket.of()
+                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT)))
+                .validate();
+
+        return this.userAdmissionPort.findAll(userState, pageNum)
+                .map(UserAdmissionAllResponseDto::from);
+    }
+
+    @Transactional
+    public UserAdmissionResponseDto create(
+            String requestUserId,
+            UserAdmissionCreateRequestDto userAdmissionCreateRequestDto
+    ) {
+        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid request user id"
+                )
+        );
+
+        UserAdmissionDomainModel userAdmissionDomainModel = UserAdmissionDomainModel.of(
+                requestUser,
+                userAdmissionCreateRequestDto.getAttachImage(),
+                userAdmissionCreateRequestDto.getDescription()
+        );
+
+        ValidatorBucket.of()
+                .consistOf(ConstraintValidator.of(userAdmissionDomainModel, this.validator))
+                .validate();
+
+        return UserAdmissionResponseDto.from(this.userAdmissionPort.create(userAdmissionDomainModel));
     }
 }

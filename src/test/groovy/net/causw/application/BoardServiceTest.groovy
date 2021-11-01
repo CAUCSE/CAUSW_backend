@@ -3,12 +3,7 @@ package net.causw.application
 import net.causw.application.dto.BoardCreateRequestDto
 import net.causw.application.dto.BoardResponseDto
 import net.causw.application.dto.BoardUpdateRequestDto
-import net.causw.application.spi.BoardPort
-import net.causw.application.spi.CircleMemberPort
-import net.causw.application.spi.CirclePort
-import net.causw.application.spi.CommentPort
-import net.causw.application.spi.PostPort
-import net.causw.application.spi.UserPort
+import net.causw.application.spi.*
 import net.causw.domain.exceptions.BadRequestException
 import net.causw.domain.exceptions.UnauthorizedException
 import net.causw.domain.model.*
@@ -267,7 +262,7 @@ class BoardServiceTest extends Specification {
                 2021,
                 Role.PRESIDENT,
                 null,
-                UserState.WAIT
+                UserState.AWAIT
         )
 
         def circleDomainModel = CircleDomainModel.of(
@@ -343,7 +338,7 @@ class BoardServiceTest extends Specification {
                 2021,
                 Role.PRESIDENT,
                 null,
-                UserState.WAIT
+                UserState.AWAIT
         )
 
         this.userPort.findById("test") >> Optional.of(mockCreatorDomainModel)
@@ -404,7 +399,7 @@ class BoardServiceTest extends Specification {
                 2021,
                 Role.PRESIDENT,
                 null,
-                UserState.WAIT
+                UserState.AWAIT
         )
 
         this.userPort.findById("test") >> Optional.of(mockCreatorDomainModel)
@@ -438,7 +433,7 @@ class BoardServiceTest extends Specification {
                 2021,
                 Role.PRESIDENT,
                 null,
-                UserState.WAIT
+                UserState.AWAIT
         )
 
         def mockCircleDomainModel = CircleDomainModel.of(
@@ -484,7 +479,7 @@ class BoardServiceTest extends Specification {
                 2021,
                 Role.PRESIDENT,
                 null,
-                UserState.WAIT
+                UserState.AWAIT
         )
 
         def mockCircleDomainModel = CircleDomainModel.of(
@@ -574,7 +569,7 @@ class BoardServiceTest extends Specification {
                 2021,
                 Role.PRESIDENT,
                 null,
-                UserState.WAIT
+                UserState.AWAIT
         )
 
         this.userPort.findById("test") >> Optional.of(updater)
@@ -607,7 +602,7 @@ class BoardServiceTest extends Specification {
                 2021,
                 Role.PRESIDENT,
                 null,
-                UserState.WAIT
+                UserState.AWAIT
         )
 
         this.userPort.findById("test") >> Optional.of(updater)
@@ -671,7 +666,7 @@ class BoardServiceTest extends Specification {
                 2021,
                 Role.PRESIDENT,
                 null,
-                UserState.WAIT
+                UserState.AWAIT
         )
 
         this.userPort.findById("test") >> Optional.of(updater)
@@ -704,7 +699,7 @@ class BoardServiceTest extends Specification {
                 2021,
                 Role.PRESIDENT,
                 null,
-                UserState.WAIT
+                UserState.AWAIT
         )
 
         def mockCircleDomainModel = CircleDomainModel.of(
@@ -744,7 +739,7 @@ class BoardServiceTest extends Specification {
                 2021,
                 Role.PRESIDENT,
                 null,
-                UserState.WAIT
+                UserState.AWAIT
         )
 
         def mockCircleDomainModel = CircleDomainModel.of(
@@ -805,7 +800,7 @@ class BoardServiceTest extends Specification {
                 2021,
                 Role.PRESIDENT,
                 null,
-                UserState.WAIT
+                UserState.AWAIT
         )
 
         this.userPort.findById("test") >> Optional.of(deleter)
@@ -831,7 +826,7 @@ class BoardServiceTest extends Specification {
                 2021,
                 Role.PRESIDENT,
                 null,
-                UserState.WAIT
+                UserState.AWAIT
         )
 
         this.userPort.findById("test") >> Optional.of(deleter)
@@ -857,7 +852,7 @@ class BoardServiceTest extends Specification {
                 2021,
                 Role.PRESIDENT,
                 null,
-                UserState.WAIT
+                UserState.AWAIT
         )
 
         def mockCircleDomainModel = CircleDomainModel.of(

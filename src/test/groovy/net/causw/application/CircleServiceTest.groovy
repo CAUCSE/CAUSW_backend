@@ -275,7 +275,7 @@ class CircleServiceTest extends Specification {
                 UserState.ACTIVE
         )
 
-        this.leader.setState(UserState.WAIT)
+        this.leader.setState(UserState.AWAIT)
         this.leader.setRole(Role.COMMON)
         this.userPort.findById("test2") >> Optional.of(mockApiCallUser)
         this.userPort.findById("test") >> Optional.of(this.leader)

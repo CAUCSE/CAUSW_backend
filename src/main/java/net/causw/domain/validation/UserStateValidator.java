@@ -18,10 +18,10 @@ public class UserStateValidator extends AbstractValidator {
 
     @Override
     public void validate() {
-        if (this.userState == UserState.BLOCKED) {
+        if (this.userState == UserState.DROP) {
             throw new UnauthorizedException(
                     ErrorCode.BLOCKED_USER,
-                    "Blocked user"
+                    "Dropped user"
             );
         }
 
@@ -32,7 +32,7 @@ public class UserStateValidator extends AbstractValidator {
             );
         }
 
-        if (this.userState == UserState.WAIT) {
+        if (this.userState == UserState.AWAIT) {
             throw new UnauthorizedException(
                     ErrorCode.AWAITING_USER,
                     "Awaiting user"

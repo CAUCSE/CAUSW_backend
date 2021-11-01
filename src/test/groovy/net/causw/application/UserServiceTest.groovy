@@ -52,7 +52,7 @@ class UserServiceTest extends Specification {
                 2021,
                 Role.PRESIDENT,
                 null,
-                UserState.WAIT
+                UserState.AWAIT
         )
     }
 
@@ -74,7 +74,7 @@ class UserServiceTest extends Specification {
                 2021,
                 Role.NONE,
                 null,
-                UserState.WAIT
+                UserState.AWAIT
         )
 
         def mockUpadtedUserDomainModel = UserDomainModel.of(
@@ -86,7 +86,7 @@ class UserServiceTest extends Specification {
                 2021,
                 Role.COMMON,
                 null,
-                UserState.WAIT
+                UserState.AWAIT
         )
 
         def userUpdateRoleRequestDto = new UserUpdateRoleRequestDto(Role.COUNCIL)
@@ -151,7 +151,7 @@ class UserServiceTest extends Specification {
                 2021,
                 Role.COMMON,
                 null,
-                UserState.WAIT
+                UserState.AWAIT
         )
 
         def mockUpadtedUserDomainModel = UserDomainModel.of(
@@ -163,7 +163,7 @@ class UserServiceTest extends Specification {
                 2021,
                 Role.COMMON,
                 null,
-                UserState.WAIT
+                UserState.AWAIT
         )
 
         def mockCircleDomainModel = CircleDomainModel.of(
@@ -244,7 +244,7 @@ class UserServiceTest extends Specification {
                 2021,
                 Role.NONE,
                 null,
-                UserState.WAIT
+                UserState.AWAIT
         )
 
         def mockUpadtedUserDomainModel = UserDomainModel.of(
@@ -256,7 +256,7 @@ class UserServiceTest extends Specification {
                 2021,
                 Role.COMMON,
                 null,
-                UserState.WAIT
+                UserState.AWAIT
         )
 
         def userUpdateRoleRequestDto = new UserUpdateRoleRequestDto(Role.COMMON)
@@ -309,7 +309,7 @@ class UserServiceTest extends Specification {
                 2021,
                 Role.NONE,
                 null,
-                UserState.WAIT
+                UserState.AWAIT
         )
 
         def mockUpadtedUserDomainModel = UserDomainModel.of(
@@ -321,7 +321,7 @@ class UserServiceTest extends Specification {
                 2021,
                 Role.COMMON,
                 null,
-                UserState.WAIT
+                UserState.AWAIT
         )
 
         def userUpdateRoleRequestDto = new UserUpdateRoleRequestDto(Role.COMMON)
@@ -762,7 +762,7 @@ class UserServiceTest extends Specification {
                 (Integer) this.mockUserDomainModel.getAdmissionYear(),
                 Role.PRESIDENT,
                 null,
-                UserState.WAIT
+                UserState.AWAIT
         )
 
         this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
@@ -1015,7 +1015,7 @@ class UserServiceTest extends Specification {
                 2021,
                 Role.COMMON,
                 null,
-                UserState.WAIT
+                UserState.AWAIT
         )
 
         this.userPort.findById("test1") >> Optional.of(mockApiCallUser)
@@ -1060,7 +1060,7 @@ class UserServiceTest extends Specification {
                 2021,
                 Role.COMMON,
                 null,
-                UserState.WAIT
+                UserState.AWAIT
         )
 
         this.userPort.findById("test1") >> Optional.of(mockApiCallUser)
