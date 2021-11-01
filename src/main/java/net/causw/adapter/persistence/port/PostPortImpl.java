@@ -44,10 +44,22 @@ public class PostPortImpl implements PostPort {
     @Override
     public Optional<PostDomainModel> delete(String id) {
         return this.postRepository.findById(id).map(
-                post -> {
-                    post.setIsDeleted(true);
+                srcPost -> {
+                    srcPost.setIsDeleted(true);
 
-                    return this.entityToDomainModel(this.postRepository.save(post));
+                    return this.entityToDomainModel(this.postRepository.save(srcPost));
+                }
+        );
+    }
+
+    @Override
+    public Optional<PostDomainModel> update(String id, PostDomainModel postDomainModel) {
+        return this.postRepository.findById(id).map(
+                srcPost -> {
+                    srcPost.setTitle(postDomainModel.getTitle());
+                    srcPost.setContent(postDomainModel.getContent());
+
+                    return this.entityToDomainModel(this.postRepository.save(srcPost));
                 }
         );
     }

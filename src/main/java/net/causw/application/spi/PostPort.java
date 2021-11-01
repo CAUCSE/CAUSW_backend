@@ -12,6 +12,8 @@ public interface PostPort {
 
     Optional<PostDomainModel> delete(String id);
 
+    Optional<PostDomainModel> update(String id, PostDomainModel postDomainModel);
+
     Page<PostDomainModel> findAll(String boardId, Integer page);
 
     Optional<PostDomainModel> findLatest(String boardId);
