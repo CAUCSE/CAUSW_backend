@@ -49,6 +49,17 @@ public class CommentPortImpl implements CommentPort {
         return this.entityToDomainModelWithParent(this.commentRepository.save(Comment.from(commentDomainModel, postDomainModel)));
     }
 
+    @Override
+    public Optional<CommentDomainModel> update(String commentId, CommentDomainModel commentDomainModel) {
+        return this.commentRepository.findById(commentId).map(
+                srcComment -> {
+                    srcComment.setContent(commentDomainModel.getContent());
+
+                    return this.entityToDomainModel(this.commentRepository.save(srcComment));
+                }
+        );
+    }
+
     private CommentDomainModel entityToDomainModelWithChild(Comment comment) {
         return CommentDomainModel.of(
                 comment.getId(),

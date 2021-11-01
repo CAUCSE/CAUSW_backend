@@ -2,12 +2,14 @@ package net.causw.application;
 
 import net.causw.application.dto.CommentCreateRequestDto;
 import net.causw.application.dto.CommentResponseDto;
+import net.causw.application.dto.CommentUpdateRequestDto;
 import net.causw.application.spi.CircleMemberPort;
 import net.causw.application.spi.CommentPort;
 import net.causw.application.spi.PostPort;
 import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
+import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.CircleMemberDomainModel;
 import net.causw.domain.model.CircleMemberStatus;
@@ -157,5 +159,87 @@ public class CommentService {
                 .map(commentDomainModel ->
                         CommentResponseDto.from(commentDomainModel, userDomainModel, postDomainModel.getBoard())
                 );
+    }
+
+    @Transactional
+    public CommentResponseDto update(
+            String requestUserId,
+            String commentId,
+            CommentUpdateRequestDto commentUpdateRequestDto
+    ) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
+        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid request user id"
+                )
+        );
+
+        CommentDomainModel commentDomainModel = this.commentPort.findById(commentId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid comment id"
+                )
+        );
+
+        PostDomainModel postDomainModel = this.postPort.findById(commentDomainModel.getPostId()).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid post id"
+                )
+        );
+
+        validatorBucket
+                .consistOf(TargetIsDeletedValidator.of(commentDomainModel.getIsDeleted()))
+                .consistOf(ContentsAdminValidator.of(
+                        requestUser.getRole(),
+                        requestUserId,
+                        commentDomainModel.getWriter().getId(),
+                        List.of()
+                ));
+
+
+
+        postDomainModel.getBoard().getCircle().ifPresent(
+                circleDomainModel -> {
+                    CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(requestUserId, circleDomainModel.getId()).orElseThrow(
+                            () -> new UnauthorizedException(
+                                    ErrorCode.NOT_MEMBER,
+                                    "The user is not a member of circle"
+                            )
+                    );
+
+                    validatorBucket
+                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted()))
+                            .consistOf(CircleMemberStatusValidator.of(
+                                    circleMemberDomainModel.getStatus(),
+                                    List.of(CircleMemberStatus.MEMBER)
+                            ));
+                }
+        );
+
+        commentDomainModel = CommentDomainModel.of(
+                commentDomainModel.getId(),
+                commentUpdateRequestDto.getContent(),
+                commentDomainModel.getIsDeleted(),
+                commentDomainModel.getCreatedAt(),
+                commentDomainModel.getUpdatedAt(),
+                commentDomainModel.getWriter(),
+                commentDomainModel.getPostId()
+        );
+
+        validatorBucket
+                .consistOf(ConstraintValidator.of(commentDomainModel, this.validator))
+                .validate();
+
+        return CommentResponseDto.from(
+                this.commentPort.update(commentId, commentDomainModel).orElseThrow(
+                        () -> new InternalServerException(
+                                ErrorCode.INTERNAL_SERVER,
+                                "Comment id checked, but exception occurred"
+                        )
+                )
+        );
     }
 }
