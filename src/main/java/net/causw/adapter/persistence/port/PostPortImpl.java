@@ -16,9 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Component
 public class PostPortImpl implements PostPort {
@@ -41,6 +39,17 @@ public class PostPortImpl implements PostPort {
     @Override
     public PostDomainModel create(PostDomainModel postDomainModel) {
         return this.entityToDomainModel(this.postRepository.save(Post.from(postDomainModel)));
+    }
+
+    @Override
+    public Optional<PostDomainModel> delete(String id) {
+        return this.postRepository.findById(id).map(
+                post -> {
+                    post.setIsDeleted(true);
+
+                    return this.entityToDomainModel(this.postRepository.save(post));
+                }
+        );
     }
 
     @Override

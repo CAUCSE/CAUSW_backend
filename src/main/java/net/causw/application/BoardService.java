@@ -17,7 +17,6 @@ import net.causw.domain.model.BoardDomainModel;
 import net.causw.domain.model.CircleDomainModel;
 import net.causw.domain.model.CircleMemberDomainModel;
 import net.causw.domain.model.CircleMemberStatus;
-import net.causw.domain.model.PostDomainModel;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.validation.CircleMemberStatusValidator;
@@ -293,7 +292,7 @@ public class BoardService {
                 this.boardPort.delete(boardId).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
-                                "Application id checked, but exception occurred"
+                                "Board id checked, but exception occurred"
                         )
                 ),
                 deleterDomainModel.getRole()
