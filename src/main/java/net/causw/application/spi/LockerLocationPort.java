@@ -8,5 +8,11 @@ import java.util.Optional;
 public interface LockerLocationPort {
     Optional<LockerLocationDomainModel> findById(String id);
 
+    Optional<LockerLocationDomainModel> findByName(String name);
+
     List<LockerLocationDomainModel> findAll();
+
+    LockerLocationDomainModel create(LockerLocationDomainModel lockerLocationDomainModel);
+
+    Optional<LockerLocationDomainModel> update(String id, LockerLocationDomainModel lockerLocationDomainModel);
 }

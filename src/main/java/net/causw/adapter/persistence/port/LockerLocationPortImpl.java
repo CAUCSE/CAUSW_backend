@@ -24,11 +24,35 @@ public class LockerLocationPortImpl implements LockerLocationPort {
     }
 
     @Override
+    public Optional<LockerLocationDomainModel> findByName(String name) {
+        return this.lockerLocationRepository.findByName(name).map(this::entityToDomainModel);
+    }
+
+    @Override
     public List<LockerLocationDomainModel> findAll() {
         return this.lockerLocationRepository.findAll()
                 .stream()
                 .map(this::entityToDomainModel)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public LockerLocationDomainModel create(LockerLocationDomainModel lockerLocationDomainModel) {
+        return this.entityToDomainModel(
+                this.lockerLocationRepository.save(LockerLocation.from(lockerLocationDomainModel))
+        );
+    }
+
+    @Override
+    public Optional<LockerLocationDomainModel> update(String id, LockerLocationDomainModel lockerLocationDomainModel) {
+        return this.lockerLocationRepository.findById(id).map(
+                srcLockerLocation -> {
+                    srcLockerLocation.setName(lockerLocationDomainModel.getName());
+                    srcLockerLocation.setDescription(lockerLocationDomainModel.getDescription());
+
+                    return this.entityToDomainModel(this.lockerLocationRepository.save(srcLockerLocation));
+                }
+        );
     }
 
     private LockerLocationDomainModel entityToDomainModel(LockerLocation lockerLocation) {

@@ -1,7 +1,11 @@
 package net.causw.application.dto;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import net.causw.domain.model.LockerLocationDomainModel;
 
+@Getter
+@NoArgsConstructor
 public class LockerLocationResponseDto {
     private String id;
     private String name;
