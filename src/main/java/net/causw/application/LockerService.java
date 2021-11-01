@@ -1,5 +1,6 @@
 package net.causw.application;
 
+import net.causw.application.dto.LockerCreateRequestDto;
 import net.causw.application.dto.LockerLocationCreateRequestDto;
 import net.causw.application.dto.LockerLocationResponseDto;
 import net.causw.application.dto.LockerLocationUpdateRequestDto;
@@ -14,6 +15,7 @@ import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.model.LockerDomainModel;
 import net.causw.domain.model.LockerLocationDomainModel;
+import net.causw.domain.model.LockerLogAction;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.validation.ConstraintValidator;
@@ -56,6 +58,64 @@ public class LockerService {
                         "Invalid locker id"
                 )
         ));
+    }
+
+    @Transactional(readOnly = false)
+    public LockerResponseDto create(
+            String creatorId,
+            LockerCreateRequestDto lockerCreateRequestDto
+    ) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
+        UserDomainModel creatorDomainModel = this.userPort.findById(creatorId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid request user id"
+                )
+        );
+
+        validatorBucket
+                .consistOf(UserRoleValidator.of(creatorDomainModel.getRole(), List.of(Role.PRESIDENT)));
+
+
+
+        LockerLocationDomainModel lockerLocationDomainModel = this.lockerLocationPort
+                .findById(lockerCreateRequestDto.getLockerLocationId())
+                .orElseThrow(
+                    () -> new BadRequestException(
+                            ErrorCode.ROW_DOES_NOT_EXIST,
+                            "Invalid locker location id"
+                    )
+                );
+
+        LockerDomainModel lockerDomainModel = LockerDomainModel.of(
+                lockerCreateRequestDto.getLockerNumber(),
+                lockerLocationDomainModel
+        );
+
+        this.lockerPort.findByLockerNumber(lockerDomainModel.getLockerNumber()).ifPresent(
+                name -> {
+                    throw new BadRequestException(
+                            ErrorCode.ROW_ALREADY_EXIST,
+                            "Duplicated locker number"
+                    );
+                }
+        );
+
+        validatorBucket
+                .consistOf(ConstraintValidator.of(lockerDomainModel, this.validator))
+                .validate();
+
+        LockerResponseDto responseDto = LockerResponseDto.from(this.lockerPort.create(lockerDomainModel));
+
+        this.lockerLogPort.create(
+                lockerDomainModel.getLockerNumber(),
+                creatorDomainModel,
+                LockerLogAction.ENABLE,
+                "사물함 최초 생성"
+        );
+
+        return responseDto;
     }
 
     @Transactional(readOnly = true)

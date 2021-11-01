@@ -1,5 +1,6 @@
 package net.causw.adapter.persistence.port;
 
+import net.causw.adapter.persistence.Locker;
 import net.causw.adapter.persistence.LockerRepository;
 import net.causw.application.spi.LockerPort;
 import net.causw.domain.model.LockerDomainModel;
@@ -20,6 +21,16 @@ public class LockerPortImpl extends DomainModelMapper implements LockerPort {
     @Override
     public Optional<LockerDomainModel> findById(String id) {
         return this.lockerRepository.findById(id).map(this::entityToDomainModel);
+    }
+
+    @Override
+    public Optional<LockerDomainModel> findByLockerNumber(Long lockerNumber) {
+        return this.lockerRepository.findByLockerNumber(lockerNumber).map(this::entityToDomainModel);
+    }
+
+    @Override
+    public LockerDomainModel create(LockerDomainModel lockerDomainModel) {
+        return this.entityToDomainModel(this.lockerRepository.save(Locker.from(lockerDomainModel)));
     }
 
     @Override

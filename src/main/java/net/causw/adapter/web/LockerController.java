@@ -1,6 +1,7 @@
 package net.causw.adapter.web;
 
 import net.causw.application.LockerService;
+import net.causw.application.dto.LockerCreateRequestDto;
 import net.causw.application.dto.LockerLocationCreateRequestDto;
 import net.causw.application.dto.LockerLocationResponseDto;
 import net.causw.application.dto.LockerLocationUpdateRequestDto;
@@ -32,6 +33,15 @@ public class LockerController {
     @ResponseStatus(value = HttpStatus.OK)
     public LockerResponseDto findById(@PathVariable String id) {
         return this.lockerService.findById(id);
+    }
+
+    @PostMapping(value = "/")
+    @ResponseStatus(value = HttpStatus.CREATED)
+    public LockerResponseDto create(
+            @AuthenticationPrincipal String creatorId,
+            @RequestBody LockerCreateRequestDto locker
+    ) {
+        return this.lockerService.create(creatorId, locker);
     }
     
     @GetMapping(value = "/locations")

@@ -2,6 +2,7 @@ package net.causw.adapter.persistence;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.causw.domain.model.LockerDomainModel;
 import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.Column;
@@ -31,6 +32,20 @@ public class Locker extends BaseEntity {
     private LockerLocation location;
 
     private Locker(
+            String id,
+            Long lockerNumber,
+            Boolean isActive,
+            User user,
+            LockerLocation location
+    ) {
+        super(id);
+        this.lockerNumber = lockerNumber;
+        this.isActive = isActive;
+        this.user = user;
+        this.location = location;
+    }
+
+    private Locker(
             Long lockerNumber,
             Boolean isActive,
             User user,
@@ -53,6 +68,16 @@ public class Locker extends BaseEntity {
                 isActive,
                 user,
                 location
+        );
+    }
+
+    public static Locker from(LockerDomainModel lockerDomainModel) {
+        return new Locker(
+                lockerDomainModel.getId(),
+                lockerDomainModel.getLockerNumber(),
+                lockerDomainModel.getIsActive(),
+                User.from(lockerDomainModel.getUser()),
+                LockerLocation.from(lockerDomainModel.getLockerLocation())
         );
     }
 }

@@ -52,8 +52,8 @@ public class LockerResponseDto {
                 locker.getLockerNumber(),
                 locker.getIsActive(),
                 locker.getUpdatedAt(),
-                locker.getUserId(),
-                locker.getUserName(),
+                locker.getUser().getId(),
+                locker.getUser().getName(),
                 locker.getLockerLocation().getName()
         );
     }

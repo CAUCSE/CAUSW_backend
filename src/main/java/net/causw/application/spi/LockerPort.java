@@ -8,6 +8,10 @@ import java.util.Optional;
 public interface LockerPort {
     Optional<LockerDomainModel> findById(String id);
 
+    Optional<LockerDomainModel> findByLockerNumber(Long lockerNumber);
+
+    LockerDomainModel create(LockerDomainModel lockerDomainModel);
+
     List<LockerDomainModel> findByLocationId(String locationId);
 
     Long getEnableLockerCountByLocation(String locationId);

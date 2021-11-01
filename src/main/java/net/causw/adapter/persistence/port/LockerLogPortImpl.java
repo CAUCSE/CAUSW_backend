@@ -1,8 +1,11 @@
 package net.causw.adapter.persistence.port;
 
+import net.causw.adapter.persistence.LockerLog;
 import net.causw.adapter.persistence.LockerLogRepository;
 import net.causw.application.dto.LockerLogDetailDto;
 import net.causw.application.spi.LockerLogPort;
+import net.causw.domain.model.LockerLogAction;
+import net.causw.domain.model.UserDomainModel;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -22,5 +25,21 @@ public class LockerLogPortImpl extends DomainModelMapper implements LockerLogPor
                 .stream()
                 .map(LockerLogDetailDto::from)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public void create(
+            Long lockerNumber,
+            UserDomainModel user,
+            LockerLogAction action,
+            String message
+    ) {
+        this.lockerLogRepository.save(LockerLog.of(
+                lockerNumber,
+                user.getEmail(),
+                user.getName(),
+                action,
+                message
+        ));
     }
 }
