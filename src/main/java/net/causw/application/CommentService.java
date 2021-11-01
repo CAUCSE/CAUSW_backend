@@ -18,6 +18,7 @@ import net.causw.domain.model.PostDomainModel;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.ConstraintValidator;
+import net.causw.domain.validation.ContentsAdminValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.ValidatorBucket;
 import org.springframework.data.domain.Page;
@@ -230,7 +231,7 @@ public class CommentService {
         validatorBucket
                 .consistOf(TargetIsDeletedValidator.of(commentDomainModel.getIsDeleted()))
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted()))
-                .consistOf(ContentAdminValidator.of(
+                .consistOf(ContentsAdminValidator.of(
                         deleterDomainModel.getRole(),
                         deleterId,
                         commentDomainModel.getWriter().getId(),
