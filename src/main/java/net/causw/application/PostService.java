@@ -4,6 +4,7 @@ import net.causw.application.dto.CommentResponseDto;
 import net.causw.application.dto.PostAllResponseDto;
 import net.causw.application.dto.PostCreateRequestDto;
 import net.causw.application.dto.PostResponseDto;
+import net.causw.application.dto.PostUpdateRequestDto;
 import net.causw.application.spi.BoardPort;
 import net.causw.application.spi.CircleMemberPort;
 import net.causw.application.spi.CommentPort;
@@ -227,7 +228,7 @@ public class PostService {
         UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid user id"
+                        "Invalid request user id"
                 )
         );
 
@@ -243,8 +244,20 @@ public class PostService {
 
         postDomainModel.getBoard().getCircle().ifPresentOrElse(
                 circleDomainModel -> {
+                    CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(requestUser.getId(), circleDomainModel.getId())
+                            .orElseThrow(
+                                    () -> new UnauthorizedException(
+                                            ErrorCode.NOT_MEMBER,
+                                            "The user is not a member of circle"
+                                    )
+                            );
+
                     validatorBucket
                             .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted()))
+                            .consistOf(CircleMemberStatusValidator.of(
+                                    circleMemberDomainModel.getStatus(),
+                                    List.of(CircleMemberStatus.MEMBER)
+                            ))
                             .consistOf(ContentsAdminValidator.of(
                                     requestUser.getRole(),
                                     requestUserId,
@@ -254,7 +267,15 @@ public class PostService {
 
                     if (requestUser.getRole().equals(Role.LEADER_CIRCLE)) {
                         validatorBucket
-                                .consistOf(UserEqualValidator.of(circleDomainModel.getLeader().getId(), requestUserId));
+                                .consistOf(UserEqualValidator.of(
+                                        circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
+                                                () -> new InternalServerException(
+                                                        ErrorCode.INTERNAL_SERVER,
+                                                        "The board has circle without circle leader"
+                                                )
+                                        ),
+                                        requestUserId
+                                ));
                     }
                 },
                 () -> validatorBucket
@@ -277,6 +298,82 @@ public class PostService {
                         )
                 )
                 , requestUser
+        );
+    }
+
+    @Transactional
+    public PostResponseDto update(
+            String requestUserId,
+            String postId,
+            PostUpdateRequestDto postUpdateRequestDto
+    ) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
+        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid request user id"
+                )
+        );
+
+        PostDomainModel postDomainModel = this.postPort.findById(postId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid post id"
+                )
+        );
+
+        validatorBucket
+                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted()));
+
+        postDomainModel.getBoard().getCircle().ifPresent(
+                circleDomainModel -> {
+                    CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(requestUserId, circleDomainModel.getId()).orElseThrow(
+                            () -> new UnauthorizedException(
+                                    ErrorCode.NOT_MEMBER,
+                                    "The user is not a member of circle"
+                            )
+                    );
+
+                    validatorBucket
+                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted()))
+                            .consistOf(CircleMemberStatusValidator.of(
+                                    circleMemberDomainModel.getStatus(),
+                                    List.of(CircleMemberStatus.MEMBER)
+                            ));
+                }
+        );
+
+        postDomainModel = PostDomainModel.of(
+                postDomainModel.getId(),
+                postUpdateRequestDto.getTitle(),
+                postUpdateRequestDto.getContent(),
+                postDomainModel.getWriter(),
+                postDomainModel.getIsDeleted(),
+                postDomainModel.getBoard(),
+                postDomainModel.getCreatedAt(),
+                postDomainModel.getUpdatedAt()
+        );
+
+        validatorBucket
+                .consistOf(ContentsAdminValidator.of(
+                        requestUser.getRole(),
+                        requestUserId,
+                        postDomainModel.getWriter().getId(),
+                        List.of()
+                ))
+                .consistOf(ConstraintValidator.of(postDomainModel, this.validator))
+                .validate();
+
+        return PostResponseDto.from(
+                this.postPort.update(postId, postDomainModel).orElseThrow(
+                        () -> new InternalServerException(
+                                ErrorCode.INTERNAL_SERVER,
+                                "Post id checked, but exception occurred"
+                        )
+                ),
+                requestUser,
+                this.commentPort.findByPostId(postId, 0).map(CommentResponseDto::from)
         );
     }
 }

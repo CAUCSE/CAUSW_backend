@@ -53,8 +53,12 @@ public class ContentsAdminValidator extends AbstractValidator {
             return;
         }
 
+        if (this.requestUserRole.equals(Role.ADMIN)) {
+            return;
+        }
+
         for (Role adminRole : this.adminRoleList) {
-            if (this.requestUserRole.equals(adminRole) || this.requestUserRole.equals(Role.ADMIN)) {
+            if (this.requestUserRole.equals(adminRole)) {
                 return;
             }
         }

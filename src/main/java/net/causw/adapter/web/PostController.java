@@ -4,6 +4,7 @@ import net.causw.application.PostService;
 import net.causw.application.dto.PostAllResponseDto;
 import net.causw.application.dto.PostCreateRequestDto;
 import net.causw.application.dto.PostResponseDto;
+import net.causw.application.dto.PostUpdateRequestDto;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -61,5 +63,19 @@ public class PostController {
             @PathVariable String id
     ) {
         return this.postService.delete(requestUserId, id);
+    }
+
+    @PutMapping(value = "/{id}")
+    @ResponseStatus(value = HttpStatus.OK)
+    public PostResponseDto update(
+            @AuthenticationPrincipal String requestUserId,
+            @PathVariable String id,
+            @RequestBody PostUpdateRequestDto postUpdateRequestDto
+    ) {
+        return this.postService.update(
+                requestUserId,
+                id,
+                postUpdateRequestDto
+        );
     }
 }
