@@ -2,6 +2,7 @@ package net.causw.adapter.persistence;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import net.causw.domain.model.PostDomainModel;
 import org.hibernate.annotations.ColumnDefault;
 
@@ -12,6 +13,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Getter
+@Setter
 @Entity
 @NoArgsConstructor
 @Table(name = "TB_POST")
