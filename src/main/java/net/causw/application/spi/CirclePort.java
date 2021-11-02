@@ -20,4 +20,6 @@ public interface CirclePort {
     Optional<CircleDomainModel> update(String id, CircleDomainModel circleDomainModel);
 
     Optional<CircleDomainModel> updateLeader(String id, UserDomainModel newLeader);
+
+    Optional<CircleDomainModel> delete(String id);
 }

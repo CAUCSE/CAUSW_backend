@@ -251,7 +251,7 @@ public class CircleService {
                 circleUpdateRequestDto.getMainImage(),
                 circleUpdateRequestDto.getDescription(),
                 circle.getIsDeleted(),
-                circle.getLeader()
+                circle.getLeader().orElse(null)
         );
 
         validatorBucket
@@ -264,13 +264,72 @@ public class CircleService {
 
         if (user.getRole().equals(Role.LEADER_CIRCLE)) {
             validatorBucket
-                    .consistOf(UserEqualValidator.of(circleDomainModel.getLeader().getId(), user.getId()));
+                    .consistOf(UserEqualValidator.of(user.getId(), circleDomainModel.getLeader().map(UserDomainModel::getId).orElse(null)));
         }
 
         validatorBucket
                 .validate();
 
         return CircleResponseDto.from(this.circlePort.update(circleId, circleDomainModel).orElseThrow(
+                () -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "Circle id checked, but exception occurred"
+                )
+        ));
+    }
+
+    @Transactional
+    public CircleResponseDto delete(
+            String requestUserId,
+            String circleId
+    ) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
+        CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid circle id"
+                )
+        );
+
+        UserDomainModel user = this.userPort.findById(requestUserId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid user id"
+                )
+        );
+
+        validatorBucket
+                .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted()))
+                .consistOf(UserRoleValidator.of(
+                        user.getRole(),
+                        List.of(Role.PRESIDENT, Role.LEADER_CIRCLE)
+                ));
+
+        if (user.getRole().equals(Role.LEADER_CIRCLE)) {
+            validatorBucket
+                    .consistOf(UserEqualValidator.of(user.getId(), circle.getLeader().map(UserDomainModel::getId).orElse(null)));
+        }
+
+        validatorBucket
+                .validate();
+
+        // Change leader role to COMMON
+        String leaderId = circle.getLeader().map(UserDomainModel::getId).orElseThrow(
+                () -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "Leader id of this circle is null"
+                )
+        );
+
+        this.userPort.updateRole(leaderId, Role.COMMON).orElseThrow(
+                () -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "Leader id checked, but exception occurred"
+                )
+        );
+
+        return CircleResponseDto.from(this.circlePort.delete(circleId).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         "Circle id checked, but exception occurred"
@@ -361,7 +420,7 @@ public class CircleService {
                         circleMember.getStatus(),
                         List.of(CircleMemberStatus.MEMBER)
                 ))
-                .consistOf(UserNotEqualValidator.of(userId, circleMember.getCircle().getLeader().getId()))
+                .consistOf(UserNotEqualValidator.of(userId, circleMember.getCircle().getLeader().map(UserDomainModel::getId).orElse(null)))
                 .validate();
 
         return CircleMemberResponseDto.from(this.circleMemberPort.updateStatus(circleMember.getId(), CircleMemberStatus.LEAVE).orElseThrow(
@@ -387,7 +446,7 @@ public class CircleService {
                 )
         );
 
-        CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
+        this.circlePort.findById(circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "Invalid circle id"
@@ -407,7 +466,7 @@ public class CircleService {
 
         if (requestUser.getRole().equals(Role.LEADER_CIRCLE)) {
             validatorBucket
-                    .consistOf(UserEqualValidator.of(requestUserId, circleMember.getCircle().getLeader().getId()));
+                    .consistOf(UserEqualValidator.of(requestUserId, circleMember.getCircle().getLeader().map(UserDomainModel::getId).orElse(null)));
         }
 
         validatorBucket
@@ -415,7 +474,7 @@ public class CircleService {
                         circleMember.getStatus(),
                         List.of(CircleMemberStatus.MEMBER)
                 ))
-                .consistOf(UserNotEqualValidator.of(userId, circleMember.getCircle().getLeader().getId()))
+                .consistOf(UserNotEqualValidator.of(userId, circleMember.getCircle().getLeader().map(UserDomainModel::getId).orElse(null)))
                 .validate();
 
         return CircleMemberResponseDto.from(this.circleMemberPort.updateStatus(circleMember.getId(), CircleMemberStatus.DROP).orElseThrow(
@@ -471,7 +530,7 @@ public class CircleService {
 
         if (requestUser.getRole().equals(Role.LEADER_CIRCLE)) {
             validatorBucket
-                    .consistOf(UserEqualValidator.of(requestUserId, circleMember.getCircle().getLeader().getId()));
+                    .consistOf(UserEqualValidator.of(requestUserId, circleMember.getCircle().getLeader().map(UserDomainModel::getId).orElse(null)));
         }
 
         validatorBucket

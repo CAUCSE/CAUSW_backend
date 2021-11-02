@@ -3,6 +3,7 @@ package net.causw.application.dto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.causw.domain.model.CircleDomainModel;
+import net.causw.domain.model.UserDomainModel;
 
 @Getter
 @NoArgsConstructor
@@ -61,8 +62,8 @@ public class CircleResponseDto {
                 circle.getMainImage(),
                 circle.getDescription(),
                 circle.getIsDeleted(),
-                circle.getLeader().getId(),
-                circle.getLeader().getName()
+                circle.getLeader().map(UserDomainModel::getId).orElse(null),
+                circle.getLeader().map(UserDomainModel::getName).orElse(null)
         );
     }
 
@@ -73,8 +74,8 @@ public class CircleResponseDto {
                 circle.getMainImage(),
                 circle.getDescription(),
                 circle.getIsDeleted(),
-                circle.getLeader().getId(),
-                circle.getLeader().getName(),
+                circle.getLeader().map(UserDomainModel::getId).orElse(null),
+                circle.getLeader().map(UserDomainModel::getName).orElse(null),
                 numMember
         );
     }

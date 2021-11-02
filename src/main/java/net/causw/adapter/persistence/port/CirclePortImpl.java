@@ -73,6 +73,18 @@ public class CirclePortImpl implements CirclePort {
         );
     }
 
+    @Override
+    public Optional<CircleDomainModel> delete(String id) {
+        return this.circleRepository.findById(id).map(
+                srcCircle -> {
+                    srcCircle.setIsDeleted(true);
+                    srcCircle.setLeader(null);
+
+                    return this.entityToDomainModel(this.circleRepository.save(srcCircle));
+                }
+        );
+    }
+
     private CircleDomainModel entityToDomainModel(Circle circle) {
         return CircleDomainModel.of(
                 circle.getId(),

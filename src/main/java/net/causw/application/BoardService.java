@@ -152,7 +152,7 @@ public class BoardService {
 
                     if (creatorDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
                         validatorBucket
-                                .consistOf(UserEqualValidator.of(circle.getLeader().getId(), creatorId));
+                                .consistOf(UserEqualValidator.of(creatorId, circle.getLeader().map(UserDomainModel::getId).orElse(null)));
                     }
 
                     return circle;
@@ -215,7 +215,7 @@ public class BoardService {
 
                     if (updaterDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
                         validatorBucket
-                                .consistOf(UserEqualValidator.of(circleDomainModel.getLeader().getId(), updaterId));
+                                .consistOf(UserEqualValidator.of(updaterId, circleDomainModel.getLeader().map(UserDomainModel::getId).orElse(null)));
                     }
                 },
                 () -> validatorBucket
@@ -278,7 +278,7 @@ public class BoardService {
 
                     if (deleterDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
                         validatorBucket
-                                .consistOf(UserEqualValidator.of(circleDomainModel.getLeader().getId(), deleterId));
+                                .consistOf(UserEqualValidator.of(deleterId, circleDomainModel.getLeader().map(UserDomainModel::getId).orElse(null)));
                     }
                 },
                 () ->

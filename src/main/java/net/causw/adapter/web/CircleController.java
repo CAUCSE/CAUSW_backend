@@ -10,6 +10,7 @@ import net.causw.application.dto.DuplicatedCheckDto;
 import net.causw.domain.model.CircleMemberStatus;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -137,5 +138,14 @@ public class CircleController {
             @PathVariable String applicationId
     ) {
         return this.circleService.rejectUser(requestUserId, applicationId);
+    }
+
+    @DeleteMapping(value = "/{id}")
+    @ResponseStatus(value = HttpStatus.OK)
+    public CircleResponseDto delete(
+            @AuthenticationPrincipal String requestUserId,
+            @PathVariable String id
+    ) {
+        return this.circleService.delete(requestUserId, id);
     }
 }

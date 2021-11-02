@@ -312,7 +312,7 @@ class CircleServiceTest extends Specification {
                 mockCircleUpdateRequestDto.getMainImage(),
                 mockCircleUpdateRequestDto.getDescription(),
                 (Boolean) this.mockCircleDomainModel.getIsDeleted(),
-                (UserDomainModel) this.mockCircleDomainModel.getLeader()
+                (UserDomainModel) this.mockCircleDomainModel.getLeader().orElse(null)
         )
 
         PowerMockito.mockStatic(CircleDomainModel.class)
@@ -322,7 +322,7 @@ class CircleServiceTest extends Specification {
                 mockCircleUpdateRequestDto.getMainImage(),
                 mockCircleUpdateRequestDto.getDescription(),
                 (Boolean) this.mockCircleDomainModel.getIsDeleted(),
-                (UserDomainModel) this.mockCircleDomainModel.getLeader()
+                (UserDomainModel) this.mockCircleDomainModel.getLeader().orElse(null)
         )).thenReturn(mockUpdatedCircleDomainModel)
 
         this.userPort.findById("test") >> Optional.of(this.leader)
@@ -356,7 +356,7 @@ class CircleServiceTest extends Specification {
                 mockCircleUpdateRequestDto.getMainImage(),
                 mockCircleUpdateRequestDto.getDescription(),
                 (Boolean) this.mockCircleDomainModel.getIsDeleted(),
-                (UserDomainModel) this.mockCircleDomainModel.getLeader()
+                (UserDomainModel) this.mockCircleDomainModel.getLeader().orElse(null)
         )
 
         this.userPort.findById("test") >> Optional.of(this.leader)
@@ -398,7 +398,7 @@ class CircleServiceTest extends Specification {
                 mockCircleUpdateRequestDto.getMainImage(),
                 mockCircleUpdateRequestDto.getDescription(),
                 (Boolean) this.mockCircleDomainModel.getIsDeleted(),
-                (UserDomainModel) this.mockCircleDomainModel.getLeader()
+                (UserDomainModel) this.mockCircleDomainModel.getLeader().orElse(null)
         )
 
         PowerMockito.mockStatic(CircleDomainModel.class)
@@ -408,7 +408,7 @@ class CircleServiceTest extends Specification {
                 mockCircleUpdateRequestDto.getMainImage(),
                 mockCircleUpdateRequestDto.getDescription(),
                 (Boolean) this.mockCircleDomainModel.getIsDeleted(),
-                (UserDomainModel) this.mockCircleDomainModel.getLeader()
+                (UserDomainModel) this.mockCircleDomainModel.getLeader().orElse(null)
         )).thenReturn(mockUpdatedCircleDomainModel)
 
         this.userPort.findById("test") >> Optional.of(mockApiCallUser)
@@ -448,7 +448,7 @@ class CircleServiceTest extends Specification {
                 mockCircleUpdateRequestDto.getMainImage(),
                 mockCircleUpdateRequestDto.getDescription(),
                 (Boolean) this.mockCircleDomainModel.getIsDeleted(),
-                (UserDomainModel) this.mockCircleDomainModel.getLeader()
+                (UserDomainModel) this.mockCircleDomainModel.getLeader().orElse(null)
         )
 
         PowerMockito.mockStatic(CircleDomainModel.class)
@@ -458,7 +458,7 @@ class CircleServiceTest extends Specification {
                 mockCircleUpdateRequestDto.getMainImage(),
                 mockCircleUpdateRequestDto.getDescription(),
                 (Boolean) this.mockCircleDomainModel.getIsDeleted(),
-                (UserDomainModel) this.mockCircleDomainModel.getLeader()
+                (UserDomainModel) this.mockCircleDomainModel.getLeader().orElse(null)
         )).thenReturn(mockUpdatedCircleDomainModel)
 
         this.userPort.findById("test") >> Optional.of(this.leader)
@@ -489,7 +489,7 @@ class CircleServiceTest extends Specification {
                 mockCircleUpdateRequestDto.getMainImage(),
                 mockCircleUpdateRequestDto.getDescription(),
                 (Boolean) this.mockCircleDomainModel.getIsDeleted(),
-                (UserDomainModel) this.mockCircleDomainModel.getLeader()
+                (UserDomainModel) this.mockCircleDomainModel.getLeader().orElse(null)
         )
 
         this.userPort.findById("test") >> Optional.of(this.leader)
@@ -509,13 +509,102 @@ class CircleServiceTest extends Specification {
                 mockCircleUpdateRequestDto.getMainImage(),
                 mockCircleUpdateRequestDto.getDescription(),
                 (Boolean) this.mockCircleDomainModel.getIsDeleted(),
-                (UserDomainModel) this.mockCircleDomainModel.getLeader()
+                (UserDomainModel) this.mockCircleDomainModel.getLeader().orElse(null)
         )).thenReturn(mockUpdatedCircleDomainModel)
 
         this.circleService.update("test", "test", mockCircleUpdateRequestDto)
 
         then:
         thrown(ConstraintViolationException)
+    }
+
+    /**
+     * Test cases for circle delete
+     */
+    @Test
+    def "Circle delete normal case"() {
+        given:
+        def mockDeletedCircleDomainModel = CircleDomainModel.of(
+                (String) this.mockCircleDomainModel.getId(),
+                (String) this.mockCircleDomainModel.getName(),
+                (String) this.mockCircleDomainModel.getMainImage(),
+                (String) this.mockCircleDomainModel.getDescription(),
+                true,
+                (UserDomainModel) this.mockCircleDomainModel.getLeader().orElse(null)
+        )
+
+        this.userPort.findById("test") >> Optional.of(this.leader)
+        this.userPort.updateRole(((UserDomainModel)this.leader).getId(), Role.COMMON) >> Optional.of(this.leader)
+        this.circlePort.findById("test") >> Optional.of(this.mockCircleDomainModel)
+        this.circlePort.delete("test") >> Optional.of(mockDeletedCircleDomainModel)
+
+        when:
+        def circleResponseDto = this.circleService.delete("test", "test")
+
+        then:
+        circleResponseDto instanceof CircleResponseDto
+        with(circleResponseDto) {
+            getIsDeleted()
+        }
+    }
+
+    @Test
+    def "Circle delete unauthorized api call"() {
+        given:
+        def mockApiCallUser = UserDomainModel.of(
+                "test",
+                "test1@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.LEADER_CIRCLE,
+                null,
+                UserState.ACTIVE
+        )
+
+        def mockDeletedCircleDomainModel = CircleDomainModel.of(
+                (String) this.mockCircleDomainModel.getId(),
+                (String) this.mockCircleDomainModel.getName(),
+                (String) this.mockCircleDomainModel.getMainImage(),
+                (String) this.mockCircleDomainModel.getDescription(),
+                true,
+                (UserDomainModel) this.mockCircleDomainModel.getLeader().orElse(null)
+        )
+
+        this.userPort.findById("test") >> Optional.of(mockApiCallUser)
+        this.userPort.findById("test1") >> Optional.of(mockApiCallUser)
+        this.circlePort.findById("test") >> Optional.of(this.mockCircleDomainModel)
+        this.circlePort.delete("test") >> Optional.of(mockDeletedCircleDomainModel)
+
+        when: "not leader"
+        mockApiCallUser.setId("test1")
+        this.circleService.delete("test1", "test")
+
+        then:
+        thrown(UnauthorizedException)
+
+        when: "unauthorized role"
+        mockApiCallUser.setId("test")
+        mockApiCallUser.setRole(Role.COMMON)
+        this.circleService.delete("test", "test")
+
+        then:
+        thrown(UnauthorizedException)
+    }
+
+    @Test
+    def "Circle delete already deleted"() {
+        given:
+        this.userPort.findById("test") >> Optional.of(this.leader)
+        this.circlePort.findById("test") >> Optional.of(this.mockCircleDomainModel)
+
+        when:
+        this.mockCircleDomainModel.setIsDeleted(true)
+        this.circleService.delete("test", "test")
+
+        then:
+        thrown(BadRequestException)
     }
 
     /**

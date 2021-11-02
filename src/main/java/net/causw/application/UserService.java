@@ -116,6 +116,7 @@ public class UserService {
 
         return this.circleMemberPort.getCircleListByUserId(user.getId())
                 .stream()
+                .filter(circle -> !circle.getIsDeleted())
                 .map(CircleResponseDto::from)
                 .collect(Collectors.toList());
     }
