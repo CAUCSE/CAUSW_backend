@@ -1,9 +1,11 @@
 package net.causw.adapter.web;
 
-import net.causw.application.UserAuthService;
 import net.causw.application.UserService;
 import net.causw.application.dto.CircleResponseDto;
 import net.causw.application.dto.DuplicatedCheckDto;
+import net.causw.application.dto.UserAdmissionAllResponseDto;
+import net.causw.application.dto.UserAdmissionCreateRequestDto;
+import net.causw.application.dto.UserAdmissionResponseDto;
 import net.causw.application.dto.UserCreateRequestDto;
 import net.causw.application.dto.UserPasswordUpdateRequestDto;
 import net.causw.application.dto.UserResponseDto;
@@ -11,6 +13,8 @@ import net.causw.application.dto.UserSignInRequestDto;
 import net.causw.application.dto.UserUpdateRequestDto;
 import net.causw.application.dto.UserUpdateRoleRequestDto;
 import net.causw.domain.model.Role;
+import net.causw.domain.model.UserState;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -31,11 +35,9 @@ import java.util.List;
 @RequestMapping("/api/v1/users")
 public class UserController {
     private final UserService userService;
-    private final UserAuthService userAuthService;
 
-    public UserController(UserService userService, UserAuthService userAuthService) {
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.userAuthService = userAuthService;
     }
 
     @GetMapping(value = "/me")
@@ -80,14 +82,6 @@ public class UserController {
         return this.userService.isDuplicatedEmail(email);
     }
 
-    /* TODO : Refactoring & Implementation
-    @GetMapping(value = "/auth/{id}")
-    @ResponseStatus(value = HttpStatus.OK)
-    public UserAuthDto findAuthById(@PathVariable String id) {
-        return this.userAuthService.findById(id);
-    }
-    */
-
     @PutMapping
     @ResponseStatus(value = HttpStatus.OK)
     public UserResponseDto update(
@@ -126,5 +120,40 @@ public class UserController {
     @ResponseStatus(value = HttpStatus.OK)
     public List<CircleResponseDto> getCircleList(@AuthenticationPrincipal String currentUserId) {
         return this.userService.getCircleList(currentUserId);
+    }
+
+    @GetMapping(value = "/admissions/{id}")
+    @ResponseStatus(value = HttpStatus.OK)
+    public UserAdmissionResponseDto findAdmissionById(
+            @AuthenticationPrincipal String requestUserId,
+            @PathVariable String id
+    ) {
+        return this.userService.findAdmissionById(requestUserId, id);
+    }
+
+    @GetMapping(value = "/admissions")
+    @ResponseStatus(value = HttpStatus.OK)
+    public Page<UserAdmissionAllResponseDto> findAllAdmissions(
+            @AuthenticationPrincipal String requestUserId,
+            @RequestParam UserState userState,
+            @RequestParam(defaultValue = "0") Integer pageNum
+    ) {
+        return this.userService.findAllAdmissions(
+                requestUserId,
+                userState,
+                pageNum
+        );
+    }
+
+    @PostMapping(value = "/admissions/apply")
+    @ResponseStatus(value = HttpStatus.CREATED)
+    public UserAdmissionResponseDto create(
+            @AuthenticationPrincipal String requestUserId,
+            @RequestBody UserAdmissionCreateRequestDto userAdmissionCreateRequestDto
+    ) {
+        return this.userService.create(
+                requestUserId,
+                userAdmissionCreateRequestDto
+        );
     }
 }
