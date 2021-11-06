@@ -106,7 +106,11 @@ public class PostService {
         return PostResponseDto.from(
                 postDomainModel,
                 userDomainModel,
-                this.commentPort.findByPostId(postId, 0).map(CommentResponseDto::from)
+                this.commentPort.findByPostId(postId, 0)
+                        .map(
+                                commentDomainModel -> CommentResponseDto.from(
+                                        commentDomainModel, userDomainModel, postDomainModel.getBoard())
+                        )
         );
     }
 
@@ -159,10 +163,10 @@ public class PostService {
                 boardDomainModel,
                 userDomainModel.getRole(),
                 this.postPort.findAll(boardId, pageNum)
-                    .map(postDomainModel -> PostAllResponseDto.from(
-                            postDomainModel,
-                            this.commentPort.countByPostId(postDomainModel.getId())
-                    ))
+                        .map(postDomainModel -> PostAllResponseDto.from(
+                                postDomainModel,
+                                this.commentPort.countByPostId(postDomainModel.getId())
+                        ))
         );
     }
 
@@ -370,15 +374,21 @@ public class PostService {
                 .consistOf(ConstraintValidator.of(postDomainModel, this.validator))
                 .validate();
 
+        PostDomainModel updatedPostDomainModel = this.postPort.update(postId, postDomainModel).orElseThrow(
+                () -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "Post id checked, but exception occurred"
+                )
+        );
+
         return PostResponseDto.from(
-                this.postPort.update(postId, postDomainModel).orElseThrow(
-                        () -> new InternalServerException(
-                                ErrorCode.INTERNAL_SERVER,
-                                "Post id checked, but exception occurred"
-                        )
-                ),
+                postDomainModel,
                 requestUser,
-                this.commentPort.findByPostId(postId, 0).map(CommentResponseDto::from)
+                this.commentPort.findByPostId(postId, 0)
+                        .map(
+                                commentDomainModel -> CommentResponseDto.from(
+                                        commentDomainModel, requestUser, updatedPostDomainModel.getBoard())
+                        )
         );
     }
 }

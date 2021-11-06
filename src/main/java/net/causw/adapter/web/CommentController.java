@@ -24,12 +24,6 @@ public class CommentController {
         this.commentService = commentService;
     }
 
-    @GetMapping(value = "/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public CommentResponseDto findById(@PathVariable String id) {
-        return this.commentService.findById(id);
-    }
-
     @PostMapping
     @ResponseStatus(HttpStatus.OK)
     public CommentResponseDto create(

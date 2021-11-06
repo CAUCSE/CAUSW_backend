@@ -2,7 +2,10 @@ package net.causw.application.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.causw.domain.model.BoardDomainModel;
 import net.causw.domain.model.CommentDomainModel;
+import net.causw.domain.model.Role;
+import net.causw.domain.model.UserDomainModel;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,6 +23,8 @@ public class CommentResponseDto {
     private String writerId;
     private String writerName;
     private String writerProfileImage;
+    private Boolean updatable;
+    private Boolean deletable;
     private String parentCommentId;
     private List<CommentResponseDto> childCommentList;
 
@@ -33,6 +38,8 @@ public class CommentResponseDto {
             String writerId,
             String writerName,
             String writerProfileImage,
+            Boolean updatable,
+            Boolean deletable,
             String parentCommentId,
             List<CommentResponseDto> childCommentList
     ) {
@@ -45,14 +52,45 @@ public class CommentResponseDto {
         this.writerId = writerId;
         this.writerName = writerName;
         this.writerProfileImage = writerProfileImage;
+        this.updatable = updatable;
+        this.deletable = deletable;
         this.parentCommentId = parentCommentId;
         this.childCommentList = childCommentList;
     }
 
-    public static CommentResponseDto from(CommentDomainModel comment) {
+    public static CommentResponseDto from(
+            CommentDomainModel comment,
+            UserDomainModel user,
+            BoardDomainModel board
+    ) {
         String parentCommentId = null;
         if (comment.getParentComment() != null) {
             parentCommentId = comment.getParentComment().getId();
+        }
+
+        boolean updatable = false;
+        boolean deletable = false;
+
+        if (user.getRole() == Role.ADMIN) {
+            updatable = true;
+            deletable = true;
+        } else if (comment.getWriter().getId().equals(user.getId())) {
+            updatable = true;
+            deletable = true;
+        } else {
+            if (board.getCircle().isPresent()) {
+                boolean isLeader = user.getRole() == Role.LEADER_CIRCLE
+                        && board.getCircle().get().getLeader()
+                        .map(leader -> leader.getId().equals(user.getId()))
+                        .orElse(false);
+                if (isLeader) {
+                    deletable = true;
+                }
+            } else {
+                if (user.getRole() == Role.PRESIDENT) {
+                    deletable = true;
+                }
+            }
         }
 
         return new CommentResponseDto(
@@ -65,10 +103,12 @@ public class CommentResponseDto {
                 comment.getWriter().getId(),
                 comment.getWriter().getName(),
                 comment.getWriter().getProfileImage(),
+                updatable,
+                deletable,
                 parentCommentId,
                 comment.getChildCommentList()
                         .stream()
-                        .map(CommentResponseDto::from)
+                        .map(commentDomainModel -> CommentResponseDto.from(commentDomainModel, user, board))
                         .collect(Collectors.toList())
         );
     }
