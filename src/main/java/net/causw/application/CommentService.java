@@ -24,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class CommentService {
@@ -46,16 +45,6 @@ public class CommentService {
         this.postPort = postPort;
         this.circleMemberPort = circleMemberPort;
         this.validator = validator;
-    }
-
-    @Transactional(readOnly = true)
-    public CommentResponseDto findById(String id) {
-        return CommentResponseDto.from(this.commentPort.findById(id).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid comment id"
-                )
-        ));
     }
 
     @Transactional
@@ -116,12 +105,23 @@ public class CommentService {
                 .consistOf(ConstraintValidator.of(commentDomainModel, this.validator))
                 .validate();
 
-        return CommentResponseDto.from(this.commentPort.create(commentDomainModel, postDomainModel));
+        return CommentResponseDto.from(
+                this.commentPort.create(commentDomainModel, postDomainModel),
+                creatorDomainModel,
+                postDomainModel.getBoard()
+                );
     }
 
     @Transactional(readOnly = true)
     public Page<CommentResponseDto> findAll(String userId, String postId, Integer pageNum) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
+
+        UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid writer id"
+                )
+        );
 
         PostDomainModel postDomainModel = this.postPort.findById(postId).orElseThrow(
                 () -> new BadRequestException(
@@ -154,6 +154,8 @@ public class CommentService {
                 .validate();
 
         return this.commentPort.findByPostId(postId, pageNum)
-                .map(CommentResponseDto::from);
+                .map(commentDomainModel ->
+                        CommentResponseDto.from(commentDomainModel, userDomainModel, postDomainModel.getBoard())
+                );
     }
 }

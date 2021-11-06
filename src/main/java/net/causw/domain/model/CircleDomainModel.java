@@ -109,6 +109,6 @@ public class CircleDomainModel {
     }
 
     public Optional<UserDomainModel> getLeader() {
-        return Optional.of(this.leader);
+        return Optional.ofNullable(this.leader);
     }
 }
