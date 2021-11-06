@@ -1,6 +1,7 @@
 package net.causw.adapter.web;
 
 import net.causw.application.UserService;
+import net.causw.application.dto.BoardResponseDto;
 import net.causw.application.dto.CircleResponseDto;
 import net.causw.application.dto.DuplicatedCheckDto;
 import net.causw.application.dto.UserAdmissionAllResponseDto;
@@ -147,13 +148,25 @@ public class UserController {
 
     @PostMapping(value = "/admissions/apply")
     @ResponseStatus(value = HttpStatus.CREATED)
-    public UserAdmissionResponseDto create(
+    public UserAdmissionResponseDto createAdmission(
             @AuthenticationPrincipal String requestUserId,
             @RequestBody UserAdmissionCreateRequestDto userAdmissionCreateRequestDto
     ) {
         return this.userService.create(
                 requestUserId,
                 userAdmissionCreateRequestDto
+        );
+    }
+
+    @PostMapping(value = "/favorite-boards/{boardId}")
+    @ResponseStatus(value = HttpStatus.CREATED)
+    public BoardResponseDto createFavoriteBoard(
+            @AuthenticationPrincipal String requestUserId,
+            @PathVariable String boardId
+    ) {
+        return this.userService.createFavoriteBoard(
+                requestUserId,
+                boardId
         );
     }
 }

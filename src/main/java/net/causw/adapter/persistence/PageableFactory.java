@@ -11,4 +11,8 @@ public class PageableFactory {
     public Pageable create(Integer pageNumber) {
         return PageRequest.of(pageNumber, PAGE_SIZE);
     }
+
+    public Pageable create(Integer pageNumber, Integer pageSize) {
+        return PageRequest.of(pageNumber, pageSize);
+    }
 }

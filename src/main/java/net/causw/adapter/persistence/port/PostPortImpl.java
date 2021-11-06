@@ -65,8 +65,14 @@ public class PostPortImpl implements PostPort {
     }
 
     @Override
-    public Page<PostDomainModel> findAll(String boardId, Integer page) {
-        return this.postRepository.findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(boardId, this.pageableFactory.create(page))
+    public Page<PostDomainModel> findAll(String boardId, Integer pageNum) {
+        return this.postRepository.findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(boardId, this.pageableFactory.create(pageNum))
+                .map(this::entityToDomainModel);
+    }
+
+    @Override
+    public Page<PostDomainModel> findAll(String boardId, Integer pageNum, Integer pageSize) {
+        return this.postRepository.findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(boardId, this.pageableFactory.create(pageNum, pageSize))
                 .map(this::entityToDomainModel);
     }
 

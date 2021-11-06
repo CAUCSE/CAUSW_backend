@@ -1,5 +1,6 @@
 package net.causw.application;
 
+import net.causw.application.dto.BoardResponseDto;
 import net.causw.application.dto.CircleResponseDto;
 import net.causw.application.dto.DuplicatedCheckDto;
 import net.causw.application.dto.UserAdmissionAllResponseDto;
@@ -11,8 +12,10 @@ import net.causw.application.dto.UserResponseDto;
 import net.causw.application.dto.UserSignInRequestDto;
 import net.causw.application.dto.UserUpdateRequestDto;
 import net.causw.application.dto.UserUpdateRoleRequestDto;
+import net.causw.application.spi.BoardPort;
 import net.causw.application.spi.CircleMemberPort;
 import net.causw.application.spi.CirclePort;
+import net.causw.application.spi.FavoriteBoardPort;
 import net.causw.application.spi.UserAdmissionPort;
 import net.causw.application.spi.UserPort;
 import net.causw.config.JwtTokenProvider;
@@ -20,7 +23,9 @@ import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
+import net.causw.domain.model.BoardDomainModel;
 import net.causw.domain.model.CircleMemberStatus;
+import net.causw.domain.model.FavoriteBoardDomainModel;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserAdmissionDomainModel;
 import net.causw.domain.model.UserDomainModel;
@@ -30,6 +35,7 @@ import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.GrantableRoleValidator;
 import net.causw.domain.validation.PasswordCorrectValidator;
 import net.causw.domain.validation.PasswordFormatValidator;
+import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
@@ -44,24 +50,30 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
     private final UserPort userPort;
+    private final BoardPort boardPort;
     private final UserAdmissionPort userAdmissionPort;
     private final CirclePort circlePort;
     private final CircleMemberPort circleMemberPort;
+    private final FavoriteBoardPort favoriteBoardPort;
     private final JwtTokenProvider jwtTokenProvider;
     private final Validator validator;
 
     public UserService(
             UserPort userPort,
+            BoardPort boardPort,
             UserAdmissionPort userAdmissionPort,
             CirclePort circlePort,
             CircleMemberPort circleMemberPort,
+            FavoriteBoardPort favoriteBoardPort,
             JwtTokenProvider jwtTokenProvider,
             Validator validator
     ) {
         this.userPort = userPort;
+        this.boardPort = boardPort;
         this.userAdmissionPort = userAdmissionPort;
         this.circlePort = circlePort;
         this.circleMemberPort = circleMemberPort;
+        this.favoriteBoardPort = favoriteBoardPort;
         this.jwtTokenProvider = jwtTokenProvider;
         this.validator = validator;
     }
@@ -424,5 +436,40 @@ public class UserService {
                 .validate();
 
         return UserAdmissionResponseDto.from(this.userAdmissionPort.create(userAdmissionDomainModel));
+    }
+
+    @Transactional
+    public BoardResponseDto createFavoriteBoard(
+            String userId,
+            String boardId
+    ) {
+        UserDomainModel user = this.userPort.findById(userId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid request user id"
+                )
+        );
+
+        BoardDomainModel board = this.boardPort.findById(boardId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid board id"
+                )
+        );
+
+        FavoriteBoardDomainModel favoriteBoardDomainModel = FavoriteBoardDomainModel.of(
+                user,
+                board
+        );
+
+        ValidatorBucket.of()
+                .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted()))
+                .consistOf(ConstraintValidator.of(favoriteBoardDomainModel, this.validator))
+                .validate();
+
+        return BoardResponseDto.from(
+                this.favoriteBoardPort.create(favoriteBoardDomainModel).getBoardDomainModel(),
+                user.getRole()
+        );
     }
 }
