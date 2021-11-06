@@ -14,5 +14,5 @@ public class UserUpdateRequestDto {
     private String name;
     private String studentId;
     private Integer admissionYear;
-    // TODO: profile image
+    private String profileImage;
 }

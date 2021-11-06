@@ -64,7 +64,7 @@ public class User extends BaseEntity {
             String studentId,
             Integer admissionYear,
             Role role,
-            // TODO: String profileImage,
+            String profileImage,
             UserState state
     ) {
         this.email = email;
@@ -73,6 +73,7 @@ public class User extends BaseEntity {
         this.studentId = studentId;
         this.admissionYear = admissionYear;
         this.role = role;
+        this.profileImage = profileImage;
         this.state = state;
     }
 
@@ -84,7 +85,7 @@ public class User extends BaseEntity {
             String studentId,
             Integer admissionYear,
             Role role,
-            // TODO: String profileImage,
+            String profileImage,
             UserState state
     ) {
         super(id);
@@ -94,6 +95,7 @@ public class User extends BaseEntity {
         this.studentId = studentId;
         this.admissionYear = admissionYear;
         this.role = role;
+        this.profileImage = profileImage;
         this.state = state;
     }
 
@@ -104,7 +106,7 @@ public class User extends BaseEntity {
             String studentId,
             Integer admissionYear,
             Role role,
-            // TODO: String profileImage,
+            String profileImage,
             UserState state
     ) {
         return new User(
@@ -114,6 +116,7 @@ public class User extends BaseEntity {
                 studentId,
                 admissionYear,
                 role,
+                profileImage,
                 state
         );
     }
@@ -126,7 +129,7 @@ public class User extends BaseEntity {
             String studentId,
             Integer admissionYear,
             Role role,
-            // TODO: String profileImage,
+            String profileImage,
             UserState state
     ) {
         return new User(
@@ -137,6 +140,7 @@ public class User extends BaseEntity {
                 studentId,
                 admissionYear,
                 role,
+                profileImage,
                 state
         );
     }
@@ -150,6 +154,7 @@ public class User extends BaseEntity {
                 userDomainModel.getStudentId(),
                 userDomainModel.getAdmissionYear(),
                 userDomainModel.getRole(),
+                userDomainModel.getProfileImage(),
                 userDomainModel.getState()
         );
     }

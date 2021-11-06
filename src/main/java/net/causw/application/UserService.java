@@ -130,7 +130,7 @@ public class UserService {
                 userCreateRequestDto.getPassword(),
                 userCreateRequestDto.getStudentId(),
                 userCreateRequestDto.getAdmissionYear(),
-                null
+                userCreateRequestDto.getProfileImage()
         );
 
         this.userPort.findByEmail(userDomainModel.getEmail()).ifPresent(
@@ -214,7 +214,7 @@ public class UserService {
                 userUpdateRequestDto.getStudentId(),
                 userUpdateRequestDto.getAdmissionYear(),
                 userDomainModel.getRole(),
-                userDomainModel.getProfileImage(),
+                userUpdateRequestDto.getProfileImage(),
                 userDomainModel.getState()
         );
 

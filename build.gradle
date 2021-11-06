@@ -36,6 +36,10 @@ dependencies {
     implementation "io.springfox:springfox-boot-starter:3.0.0"
     implementation "io.springfox:springfox-swagger-ui:3.0.0"
 
+    // GCP
+    implementation 'org.springframework.cloud:spring-cloud-gcp-starter:1.2.8.RELEASE'
+    implementation 'org.springframework.cloud:spring-cloud-gcp-starter-storage:1.2.8.RELEASE'
+
     // Spock test
     testImplementation "org.spockframework:spock-core:1.2-groovy-2.4"
     testImplementation "org.spockframework:spock-spring:1.2-groovy-2.4"
