@@ -2,6 +2,7 @@ package net.causw.application;
 
 import net.causw.application.dto.CommentResponseDto;
 import net.causw.application.dto.PostAllResponseDto;
+import net.causw.application.dto.PostAllWithBoardResponseDto;
 import net.causw.application.dto.PostCreateRequestDto;
 import net.causw.application.dto.PostResponseDto;
 import net.causw.application.dto.PostUpdateRequestDto;
@@ -110,7 +111,7 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public Page<PostAllResponseDto> findAll(
+    public PostAllWithBoardResponseDto findAll(
             String requestUserId,
             String boardId,
             Integer pageNum
@@ -154,11 +155,15 @@ public class PostService {
                 .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted()))
                 .validate();
 
-        return this.postPort.findAll(boardId, pageNum)
-                .map(postDomainModel -> PostAllResponseDto.from(
-                        postDomainModel,
-                        this.commentPort.countByPostId(postDomainModel.getId())
-                ));
+        return PostAllWithBoardResponseDto.from(
+                boardDomainModel,
+                userDomainModel.getRole(),
+                this.postPort.findAll(boardId, pageNum)
+                    .map(postDomainModel -> PostAllResponseDto.from(
+                            postDomainModel,
+                            this.commentPort.countByPostId(postDomainModel.getId())
+                    ))
+        );
     }
 
     @Transactional
