@@ -12,6 +12,10 @@ public interface LockerPort {
 
     LockerDomainModel create(LockerDomainModel lockerDomainModel);
 
+    Optional<LockerDomainModel> update(String id, LockerDomainModel lockerDomainModel);
+
+    Optional<LockerDomainModel> updateLocation(String id, LockerDomainModel lockerDomainModel);
+
     List<LockerDomainModel> findByLocationId(String locationId);
 
     Long getEnableLockerCountByLocation(String locationId);

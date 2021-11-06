@@ -101,7 +101,7 @@ public abstract class DomainModelMapper {
                 locker.getLockerNumber(),
                 locker.getIsActive(),
                 locker.getUpdatedAt(),
-                this.entityToDomainModel(locker.getUser()),
+                locker.getUser().map(this::entityToDomainModel).orElse(null),
                 this.entityToDomainModel(locker.getLocation())
         );
     }

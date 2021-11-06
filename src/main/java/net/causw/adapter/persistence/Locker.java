@@ -2,6 +2,7 @@ package net.causw.adapter.persistence;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import net.causw.domain.model.LockerDomainModel;
 import org.hibernate.annotations.ColumnDefault;
 
@@ -11,8 +12,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import java.util.Optional;
 
 @Getter
+@Setter
 @Entity
 @NoArgsConstructor
 @Table(name = "TB_LOCKER")
@@ -24,7 +27,8 @@ public class Locker extends BaseEntity {
     @ColumnDefault("true")
     private Boolean isActive;
 
-    @OneToOne(mappedBy = "locker")
+    @OneToOne
+    @JoinColumn(name = "user_id", nullable = true)
     private User user;
 
     @ManyToOne
@@ -76,8 +80,12 @@ public class Locker extends BaseEntity {
                 lockerDomainModel.getId(),
                 lockerDomainModel.getLockerNumber(),
                 lockerDomainModel.getIsActive(),
-                User.from(lockerDomainModel.getUser()),
+                lockerDomainModel.getUser().map(User::from).orElse(null),
                 LockerLocation.from(lockerDomainModel.getLockerLocation())
         );
+    }
+
+    public Optional<User> getUser() {
+        return Optional.ofNullable(this.user);
     }
 }

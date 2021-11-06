@@ -5,7 +5,9 @@ import net.causw.application.dto.LockerLocationCreateRequestDto;
 import net.causw.application.dto.LockerLocationResponseDto;
 import net.causw.application.dto.LockerLocationUpdateRequestDto;
 import net.causw.application.dto.LockerLogDetailDto;
+import net.causw.application.dto.LockerMoveRequestDto;
 import net.causw.application.dto.LockerResponseDto;
+import net.causw.application.dto.LockerUpdateRequestDto;
 import net.causw.application.spi.LockerLocationPort;
 import net.causw.application.spi.LockerLogPort;
 import net.causw.application.spi.LockerPort;
@@ -117,6 +119,193 @@ public class LockerService {
 
         return responseDto;
     }
+
+    @Transactional(readOnly = false)
+    public LockerResponseDto update(
+            String updaterId,
+            String lockerId,
+            LockerUpdateRequestDto lockerUpdateRequestDto
+    ) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
+        UserDomainModel updaterDomainModel = this.userPort.findById(updaterId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid request user id"
+                )
+        );
+
+        LockerDomainModel lockerDomainModel = this.lockerPort.findById(lockerId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid locker id"
+                )
+        );
+
+        UserDomainModel lockerUserDomainModel = lockerDomainModel.getUser().orElse(null);
+
+        switch (lockerUpdateRequestDto.getAction()) {
+            case REGISTER: {
+                if (!lockerDomainModel.getIsActive()) {
+                    throw new BadRequestException(
+                            ErrorCode.CANNOT_PERFORMED,
+                            "This locker is disabled"
+                    );
+                }
+
+                if (lockerUserDomainModel != null) {
+                    throw new BadRequestException(
+                            ErrorCode.CANNOT_PERFORMED,
+                            "This locker is in use"
+                    );
+                }
+
+                lockerDomainModel = LockerDomainModel.of(
+                        lockerId,
+                        lockerDomainModel.getLockerNumber(),
+                        lockerDomainModel.getIsActive(),
+                        null,
+                        updaterDomainModel,
+                        lockerDomainModel.getLockerLocation()
+                );
+                break;
+            }
+            case RETURN: {
+                if (lockerUserDomainModel == null) {
+                    throw new BadRequestException(
+                            ErrorCode.CANNOT_PERFORMED,
+                            "This locker has no user"
+                    );
+                } else if (!lockerUserDomainModel.equals(updaterDomainModel)) {
+                    validatorBucket
+                            .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.PRESIDENT)));
+                }
+
+                lockerDomainModel = LockerDomainModel.of(
+                        lockerId,
+                        lockerDomainModel.getLockerNumber(),
+                        lockerDomainModel.getIsActive(),
+                        null,
+                        null,
+                        lockerDomainModel.getLockerLocation()
+                );
+                break;
+            }
+            case ENABLE: {
+                validatorBucket
+                        .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.PRESIDENT)));
+
+                if (lockerDomainModel.getIsActive()) {
+                    throw new BadRequestException(
+                            ErrorCode.CANNOT_PERFORMED,
+                            "The locker is already enable"
+                    );
+                }
+
+                lockerDomainModel = LockerDomainModel.of(
+                        lockerId,
+                        lockerDomainModel.getLockerNumber(),
+                        true,
+                        null,
+                        lockerDomainModel.getUser().orElse(null),
+                        lockerDomainModel.getLockerLocation()
+                );
+                break;
+            }
+            case DISABLE: {
+                validatorBucket
+                        .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.PRESIDENT)));
+
+                if (!lockerDomainModel.getIsActive()) {
+                    throw new BadRequestException(
+                            ErrorCode.CANNOT_PERFORMED,
+                            "The locker is already disabled"
+                    );
+                }
+
+                lockerDomainModel = LockerDomainModel.of(
+                        lockerId,
+                        lockerDomainModel.getLockerNumber(),
+                        false,
+                        null,
+                        lockerDomainModel.getUser().orElse(null),
+                        lockerDomainModel.getLockerLocation()
+                );
+                break;
+            }
+        }
+
+        validatorBucket
+                .consistOf(ConstraintValidator.of(lockerDomainModel, this.validator))
+                .validate();
+
+        LockerResponseDto lockerResponseDto = LockerResponseDto.from(this.lockerPort.update(lockerId, lockerDomainModel).orElseThrow(
+                        () -> new InternalServerException(
+                                ErrorCode.INTERNAL_SERVER,
+                                "Application id checked, but exception occurred"
+                        )
+        ));
+
+        this.lockerLogPort.create(
+                lockerDomainModel.getLockerNumber(),
+                updaterDomainModel,
+                lockerUpdateRequestDto.getAction(),
+                lockerUpdateRequestDto.getMessage()
+        );
+
+        return lockerResponseDto;
+    }
+
+    @Transactional(readOnly = false)
+    public LockerResponseDto move(
+            String updaterId,
+            String lockerId,
+            LockerMoveRequestDto lockerMoveRequestDto
+    ) {
+        UserDomainModel updaterDomainModel = this.userPort.findById(updaterId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid request user id"
+                )
+        );
+
+        LockerDomainModel lockerDomainModel = this.lockerPort.findById(lockerId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid locker id"
+                )
+        );
+
+        LockerLocationDomainModel lockerLocationDomainModel = this.lockerLocationPort.findById(lockerMoveRequestDto.getLocationId()).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid locker location id"
+                )
+        );
+
+        lockerDomainModel = LockerDomainModel.of(
+                lockerId,
+                lockerDomainModel.getLockerNumber(),
+                false,
+                null,
+                lockerDomainModel.getUser().orElse(null),
+                lockerLocationDomainModel
+        );
+
+        ValidatorBucket.of()
+                .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.PRESIDENT)))
+                .consistOf(ConstraintValidator.of(lockerDomainModel, this.validator))
+                .validate();
+
+        return LockerResponseDto.from(this.lockerPort.updateLocation(lockerId, lockerDomainModel).orElseThrow(
+                () -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "Application id checked, but exception occurred"
+                )
+        ));
+    }
+
+
 
     @Transactional(readOnly = true)
     public List<LockerResponseDto> findByLocation(String locationId) {

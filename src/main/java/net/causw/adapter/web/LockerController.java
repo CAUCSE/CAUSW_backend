@@ -6,7 +6,9 @@ import net.causw.application.dto.LockerLocationCreateRequestDto;
 import net.causw.application.dto.LockerLocationResponseDto;
 import net.causw.application.dto.LockerLocationUpdateRequestDto;
 import net.causw.application.dto.LockerLogDetailDto;
+import net.causw.application.dto.LockerMoveRequestDto;
 import net.causw.application.dto.LockerResponseDto;
+import net.causw.application.dto.LockerUpdateRequestDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,6 +45,26 @@ public class LockerController {
     ) {
         return this.lockerService.create(creatorId, locker);
     }
+
+    @PutMapping(value = "/{id}")
+    @ResponseStatus(value = HttpStatus.OK)
+    public LockerResponseDto update(
+            @AuthenticationPrincipal String updaterId,
+            @PathVariable String id,
+            @RequestBody LockerUpdateRequestDto lockerUpdateRequestDto
+    ) {
+        return this.lockerService.update(updaterId, id, lockerUpdateRequestDto);
+    }
+
+    @PutMapping(value = "/{id}/move")
+    @ResponseStatus(value = HttpStatus.OK)
+    public LockerResponseDto move(
+            @AuthenticationPrincipal String updaterId,
+            @PathVariable String id,
+            @RequestBody LockerMoveRequestDto lockerMoveRequestDto
+    ) {
+        return this.lockerService.move(updaterId, id, lockerMoveRequestDto);
+    }
     
     @GetMapping(value = "/locations")
     @ResponseStatus(value = HttpStatus.OK)
@@ -66,6 +88,7 @@ public class LockerController {
     }
 
     @PutMapping(value = "/locations/{locationId}")
+    @ResponseStatus(value = HttpStatus.OK)
     public LockerLocationResponseDto updateLocation(
             @AuthenticationPrincipal String updaterId,
             @PathVariable String locationId,

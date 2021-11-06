@@ -3,6 +3,7 @@ package net.causw.domain.model;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Getter
 public class LockerDomainModel {
@@ -10,7 +11,7 @@ public class LockerDomainModel {
     private Long lockerNumber;
     private Boolean isActive;
     private LocalDateTime updatedAt;
-   private UserDomainModel user;
+    private UserDomainModel user;
     private LockerLocationDomainModel lockerLocation;
 
     private LockerDomainModel(
@@ -59,5 +60,9 @@ public class LockerDomainModel {
                 user,
                 lockerLocation
         );
+    }
+
+    public Optional<UserDomainModel> getUser() {
+        return Optional.ofNullable(this.user);
     }
 }
