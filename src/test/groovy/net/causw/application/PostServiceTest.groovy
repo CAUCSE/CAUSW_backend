@@ -1,6 +1,7 @@
 package net.causw.application
 
 import net.causw.application.dto.PostAllResponseDto
+import net.causw.application.dto.PostAllWithBoardResponseDto
 import net.causw.application.dto.PostCreateRequestDto
 import net.causw.application.dto.PostResponseDto
 import net.causw.application.spi.*
@@ -187,9 +188,9 @@ class PostServiceTest extends Specification {
         def postFind = this.postService.findAll("test user id", "test board id", 0)
 
         then:
-        postFind instanceof Page<PostAllResponseDto>
+        postFind instanceof PostAllWithBoardResponseDto
         with(postFind) {
-            getContent().get(0).getTitle() == "test post title"
+            getPost().getContent().get(0).getTitle() == "test post title"
         }
 
         when: "post findById with circle"
@@ -197,9 +198,9 @@ class PostServiceTest extends Specification {
         postFind = this.postService.findAll("test user id", "test board id", 0)
 
         then:
-        postFind instanceof Page<PostAllResponseDto>
+        postFind instanceof PostAllWithBoardResponseDto
         with(postFind) {
-            getContent().get(0).getTitle() == "test post title"
+            getPost().getContent().get(0).getTitle() == "test post title"
         }
     }
 

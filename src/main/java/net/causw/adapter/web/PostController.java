@@ -2,6 +2,7 @@ package net.causw.adapter.web;
 
 import net.causw.application.PostService;
 import net.causw.application.dto.PostAllResponseDto;
+import net.causw.application.dto.PostAllWithBoardResponseDto;
 import net.causw.application.dto.PostCreateRequestDto;
 import net.causw.application.dto.PostResponseDto;
 import net.causw.application.dto.PostUpdateRequestDto;
@@ -39,7 +40,7 @@ public class PostController {
 
     @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
-    public Page<PostAllResponseDto> findAll(
+    public PostAllWithBoardResponseDto findAll(
             @AuthenticationPrincipal String requestUserId,
             @RequestParam String boardId,
             @RequestParam(defaultValue = "0") Integer pageNum
