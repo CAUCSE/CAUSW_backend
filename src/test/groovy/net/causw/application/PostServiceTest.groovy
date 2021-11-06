@@ -1,9 +1,10 @@
 package net.causw.application
 
-import net.causw.application.dto.PostAllResponseDto
+
 import net.causw.application.dto.PostAllWithBoardResponseDto
 import net.causw.application.dto.PostCreateRequestDto
 import net.causw.application.dto.PostResponseDto
+import net.causw.application.dto.PostUpdateRequestDto
 import net.causw.application.spi.*
 import net.causw.domain.exceptions.BadRequestException
 import net.causw.domain.exceptions.UnauthorizedException
@@ -553,5 +554,222 @@ class PostServiceTest extends Specification {
 
         then:
         thrown(ConstraintViolationException)
+    }
+
+    /**
+     * Test cases for post update
+     */
+    @Test
+    def "Post update normal case"() {
+        given:
+        def postId = "test-post-id"
+        def currentTitle = "test-title-1"
+        def targetTitle = "test-title-2"
+
+        def writerUserDomainModel = UserDomainModel.of(
+                "test user id",
+                "test@cau.ac.kr",
+                "test user name",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.COMMON,
+                null,
+                UserState.ACTIVE
+        )
+
+        def mockOriginPostDomainModel = PostDomainModel.of(
+                postId,
+                currentTitle,
+                "test",
+                writerUserDomainModel,
+                false,
+                (BoardDomainModel) mockBoardDomainModel,
+                null,
+                null
+        )
+
+        def mockUpdatedPostDomainModel = PostDomainModel.of(
+                postId,
+                targetTitle,
+                "test",
+                writerUserDomainModel,
+                false,
+                (BoardDomainModel) mockBoardDomainModel,
+                null,
+                null
+        )
+
+        def postUpdateRequestDto = new PostUpdateRequestDto(targetTitle, "test")
+
+        this.userPort.findById(writerUserDomainModel.getId()) >> Optional.of(writerUserDomainModel)
+        this.postPort.findById(postId) >> Optional.of(mockOriginPostDomainModel)
+
+        this.postPort.update(postId, mockUpdatedPostDomainModel) >> Optional.of(mockUpdatedPostDomainModel)
+        this.commentPort.findByPostId(postId, 0) >> new PageImpl<CommentDomainModel>(List.of())
+
+        when:
+        PowerMockito.mockStatic(PostDomainModel.class)
+        PowerMockito.when(PostDomainModel.of(
+                mockOriginPostDomainModel.getId(),
+                postUpdateRequestDto.getTitle(),
+                postUpdateRequestDto.getContent(),
+                mockOriginPostDomainModel.getWriter(),
+                mockOriginPostDomainModel.getIsDeleted(),
+                mockOriginPostDomainModel.getBoard(),
+                mockOriginPostDomainModel.getCreatedAt(),
+                mockOriginPostDomainModel.getUpdatedAt()
+        )).thenReturn(mockUpdatedPostDomainModel)
+        def postUpdateResponse = this.postService.update(writerUserDomainModel.getId(), postId, postUpdateRequestDto)
+
+        then:
+        postUpdateResponse instanceof PostResponseDto
+        postUpdateResponse.getTitle() == targetTitle
+    }
+
+    @Test
+    def "Post update invalid role case"() {
+        given:
+        def postId = "test-post-id"
+        def currentTitle = "test-title-1"
+        def targetTitle = "test-title-2"
+
+        def presidentUserDomainModel = UserDomainModel.of(
+                "test president user id",
+                "test-president@cau.ac.kr",
+                "test president user name",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.PRESIDENT,
+                null,
+                UserState.ACTIVE
+        )
+
+        def writerUserDomainModel = UserDomainModel.of(
+                "test user id",
+                "test@cau.ac.kr",
+                "test user name",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.COMMON,
+                null,
+                UserState.ACTIVE
+        )
+
+        def mockOriginPostDomainModel = PostDomainModel.of(
+                postId,
+                currentTitle,
+                "test",
+                writerUserDomainModel,
+                false,
+                (BoardDomainModel) mockBoardDomainModel,
+                null,
+                null
+        )
+
+        def mockUpdatedPostDomainModel = PostDomainModel.of(
+                postId,
+                targetTitle,
+                "test",
+                writerUserDomainModel,
+                false,
+                (BoardDomainModel) mockBoardDomainModel,
+                null,
+                null
+        )
+
+        def postUpdateRequestDto = new PostUpdateRequestDto(targetTitle, "test")
+
+        this.userPort.findById(presidentUserDomainModel.getId()) >> Optional.of(presidentUserDomainModel)
+        this.postPort.findById(postId) >> Optional.of(mockOriginPostDomainModel)
+
+        this.postPort.update(postId, mockUpdatedPostDomainModel) >> Optional.of(mockUpdatedPostDomainModel)
+        this.commentPort.findByPostId(postId, 0) >> new PageImpl<CommentDomainModel>(List.of())
+
+        when:
+        PowerMockito.mockStatic(PostDomainModel.class)
+        PowerMockito.when(PostDomainModel.of(
+                mockOriginPostDomainModel.getId(),
+                postUpdateRequestDto.getTitle(),
+                postUpdateRequestDto.getContent(),
+                mockOriginPostDomainModel.getWriter(),
+                mockOriginPostDomainModel.getIsDeleted(),
+                mockOriginPostDomainModel.getBoard(),
+                mockOriginPostDomainModel.getCreatedAt(),
+                mockOriginPostDomainModel.getUpdatedAt()
+        )).thenReturn(mockUpdatedPostDomainModel)
+        this.postService.update(presidentUserDomainModel.getId(), postId, postUpdateRequestDto)
+
+        then:
+        thrown(UnauthorizedException)
+    }
+
+    @Test
+    def "Post update target deleted case"() {
+        given:
+        def postId = "test-post-id"
+        def currentTitle = "test-title-1"
+        def targetTitle = "test-title-2"
+
+        def writerUserDomainModel = UserDomainModel.of(
+                "test user id",
+                "test@cau.ac.kr",
+                "test user name",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.COMMON,
+                null,
+                UserState.ACTIVE
+        )
+
+        def mockOriginPostDomainModel = PostDomainModel.of(
+                postId,
+                currentTitle,
+                "test",
+                writerUserDomainModel,
+                true,
+                (BoardDomainModel) mockBoardDomainModel,
+                null,
+                null
+        )
+
+        def mockUpdatedPostDomainModel = PostDomainModel.of(
+                postId,
+                targetTitle,
+                "test",
+                writerUserDomainModel,
+                false,
+                (BoardDomainModel) mockBoardDomainModel,
+                null,
+                null
+        )
+
+        def postUpdateRequestDto = new PostUpdateRequestDto(targetTitle, "test")
+
+        this.userPort.findById(writerUserDomainModel.getId()) >> Optional.of(writerUserDomainModel)
+        this.postPort.findById(postId) >> Optional.of(mockOriginPostDomainModel)
+
+        this.postPort.update(postId, mockUpdatedPostDomainModel) >> Optional.of(mockUpdatedPostDomainModel)
+        this.commentPort.findByPostId(postId, 0) >> new PageImpl<CommentDomainModel>(List.of())
+
+        when:
+        PowerMockito.mockStatic(PostDomainModel.class)
+        PowerMockito.when(PostDomainModel.of(
+                mockOriginPostDomainModel.getId(),
+                postUpdateRequestDto.getTitle(),
+                postUpdateRequestDto.getContent(),
+                mockOriginPostDomainModel.getWriter(),
+                mockOriginPostDomainModel.getIsDeleted(),
+                mockOriginPostDomainModel.getBoard(),
+                mockOriginPostDomainModel.getCreatedAt(),
+                mockOriginPostDomainModel.getUpdatedAt()
+        )).thenReturn(mockUpdatedPostDomainModel)
+        this.postService.update(writerUserDomainModel.getId(), postId, postUpdateRequestDto)
+
+        then:
+        thrown(BadRequestException)
     }
 }
