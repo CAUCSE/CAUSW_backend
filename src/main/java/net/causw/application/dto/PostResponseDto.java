@@ -2,6 +2,7 @@ package net.causw.application.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.causw.domain.model.BoardDomainModel;
 import net.causw.domain.model.PostDomainModel;
 import net.causw.domain.model.UserDomainModel;
 import org.springframework.data.domain.Page;
@@ -23,6 +24,9 @@ public class PostResponseDto {
     private LocalDateTime updatedAt;
     private Page<CommentResponseDto> commentList;
 
+    private String boardId;
+    private String boardName;
+
     private PostResponseDto(
             String id,
             String title,
@@ -32,7 +36,9 @@ public class PostResponseDto {
             BoardResponseDto board,
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
-            Page<CommentResponseDto> commentList
+            Page<CommentResponseDto> commentList,
+            String boardId,
+            String boardName
     ) {
         this.id = id;
         this.title = title;
@@ -43,6 +49,8 @@ public class PostResponseDto {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.commentList = commentList;
+        this.boardId = boardId;
+        this.boardName = boardName;
     }
 
     public static PostResponseDto from(
@@ -58,6 +66,8 @@ public class PostResponseDto {
                 BoardResponseDto.from(post.getBoard(), user.getRole()),
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
+                null,
+                null,
                 null
         );
     }
@@ -76,7 +86,9 @@ public class PostResponseDto {
                 BoardResponseDto.from(post.getBoard(), user.getRole()),
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
-                commentList
+                commentList,
+                post.getBoard().getId(),
+                post.getBoard().getName()
         );
     }
 }
