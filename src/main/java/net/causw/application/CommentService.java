@@ -193,6 +193,7 @@ public class CommentService {
 
         validatorBucket
                 .consistOf(TargetIsDeletedValidator.of(commentDomainModel.getIsDeleted()))
+                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted()))
                 .consistOf(ContentsAdminValidator.of(
                         requestUser.getRole(),
                         requestUserId,
@@ -240,7 +241,9 @@ public class CommentService {
                                 ErrorCode.INTERNAL_SERVER,
                                 "Comment id checked, but exception occurred"
                         )
-                )
+                ),
+                requestUser,
+                postDomainModel.getBoard()
         );
     }
 }
