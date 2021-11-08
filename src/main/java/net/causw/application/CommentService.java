@@ -15,6 +15,7 @@ import net.causw.domain.model.CircleMemberDomainModel;
 import net.causw.domain.model.CircleMemberStatus;
 import net.causw.domain.model.CommentDomainModel;
 import net.causw.domain.model.PostDomainModel;
+import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.ConstraintValidator;
@@ -163,46 +164,6 @@ public class CommentService {
                 );
     }
 
-    @Transactional(readOnly = true)
-    public List<CommentResponseDto> findAll(String userId, String postId) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
-        PostDomainModel postDomainModel = this.postPort.findById(postId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid post id"
-                )
-        );
-
-        validatorBucket
-                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted()));
-
-        postDomainModel.getBoard().getCircle().ifPresent(
-                circleDomainModel -> {
-                    CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(userId, circleDomainModel.getId()).orElseThrow(
-                            () -> new UnauthorizedException(
-                                    ErrorCode.NOT_MEMBER,
-                                    "The user is not a member of circle"
-                            )
-                    );
-
-                    validatorBucket
-                            .consistOf(CircleMemberStatusValidator.of(
-                                    circleMemberDomainModel.getStatus(),
-                                    List.of(CircleMemberStatus.MEMBER)
-                            ));
-                }
-        );
-
-        validatorBucket
-                .validate();
-
-        return this.commentPort.findByPostId(postId)
-                .stream()
-                .map(CommentResponseDto::from)
-                .collect(Collectors.toList());
-    }
-
     @Transactional
     public CommentResponseDto delete(String deleterId, String commentId) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
@@ -235,7 +196,7 @@ public class CommentService {
                         deleterDomainModel.getRole(),
                         deleterId,
                         commentDomainModel.getWriter().getId(),
-                        List.of()
+                        List.of(Role.LEADER_CIRCLE)
                 ));
 
         postDomainModel.getBoard().getCircle().ifPresent(
@@ -262,7 +223,9 @@ public class CommentService {
                                 ErrorCode.INTERNAL_SERVER,
                                 "Comment id checked, but exception occurred"
                         )
-                )
+                ),
+                deleterDomainModel,
+                postDomainModel.getBoard()
         );
 
     }
