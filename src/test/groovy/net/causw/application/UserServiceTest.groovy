@@ -97,7 +97,7 @@ class UserServiceTest extends Specification {
                 UserState.AWAIT
         )
 
-        def mockUpadtedUserDomainModel = UserDomainModel.of(
+        def mockUpdatedUserDomainModel = UserDomainModel.of(
                 targetId,
                 "test@cau.ac.kr",
                 "test",
@@ -114,13 +114,13 @@ class UserServiceTest extends Specification {
         this.userPort.findById(currentId) >> Optional.of(this.mockUserDomainModel)
         this.userPort.findById(targetId) >> Optional.of(mockTargetUserDomainModel)
 
-        this.userPort.updateRole(targetId, Role.COUNCIL) >> Optional.of(mockUpadtedUserDomainModel)
-        this.userPort.updateRole(targetId, Role.LEADER_1) >> Optional.of(mockUpadtedUserDomainModel)
-        this.userPort.updateRole(targetId, Role.LEADER_CIRCLE) >> Optional.of(mockUpadtedUserDomainModel)
-        this.userPort.updateRole(targetId, Role.LEADER_ALUMNI) >> Optional.of(mockUpadtedUserDomainModel)
+        this.userPort.updateRole(targetId, Role.COUNCIL) >> Optional.of(mockUpdatedUserDomainModel)
+        this.userPort.updateRole(targetId, Role.LEADER_1) >> Optional.of(mockUpdatedUserDomainModel)
+        this.userPort.updateRole(targetId, Role.LEADER_CIRCLE) >> Optional.of(mockUpdatedUserDomainModel)
+        this.userPort.updateRole(targetId, Role.LEADER_ALUMNI) >> Optional.of(mockUpdatedUserDomainModel)
 
         when: "President -> Grant Council"
-        mockUpadtedUserDomainModel.setRole(Role.COUNCIL)
+        mockUpdatedUserDomainModel.setRole(Role.COUNCIL)
         userUpdateRoleRequestDto.setRole(Role.COUNCIL)
         def userResponseDto = this.userService.updateUserRole(currentId, targetId, userUpdateRoleRequestDto)
 
@@ -129,7 +129,7 @@ class UserServiceTest extends Specification {
         userResponseDto.getRole() == Role.COUNCIL
 
         when: "President -> Grant Leader_1"
-        mockUpadtedUserDomainModel.setRole(Role.LEADER_1)
+        mockUpdatedUserDomainModel.setRole(Role.LEADER_1)
         userUpdateRoleRequestDto.setRole(Role.LEADER_1)
         userResponseDto = this.userService.updateUserRole(currentId, targetId, userUpdateRoleRequestDto)
 
@@ -138,7 +138,7 @@ class UserServiceTest extends Specification {
         userResponseDto.getRole() == Role.LEADER_1
 
         when: "President -> Grant Leader_Circle"
-        mockUpadtedUserDomainModel.setRole(Role.LEADER_CIRCLE)
+        mockUpdatedUserDomainModel.setRole(Role.LEADER_CIRCLE)
         userUpdateRoleRequestDto.setRole(Role.LEADER_CIRCLE)
         userResponseDto = this.userService.updateUserRole(currentId, targetId, userUpdateRoleRequestDto)
 
@@ -147,7 +147,7 @@ class UserServiceTest extends Specification {
         userResponseDto.getRole() == Role.LEADER_CIRCLE
 
         when: "President -> Grant Leader_Alumni"
-        mockUpadtedUserDomainModel.setRole(Role.LEADER_ALUMNI)
+        mockUpdatedUserDomainModel.setRole(Role.LEADER_ALUMNI)
         userUpdateRoleRequestDto.setRole(Role.LEADER_ALUMNI)
         userResponseDto = this.userService.updateUserRole(currentId, targetId, userUpdateRoleRequestDto)
 
@@ -174,7 +174,7 @@ class UserServiceTest extends Specification {
                 UserState.AWAIT
         )
 
-        def mockUpadtedUserDomainModel = UserDomainModel.of(
+        def mockUpdatedUserDomainModel = UserDomainModel.of(
                 targetId,
                 "test@cau.ac.kr",
                 "test",
@@ -212,16 +212,16 @@ class UserServiceTest extends Specification {
         this.circlePort.findByLeaderId(currentId) >> Optional.of(mockCircleDomainModel)
         this.circleMemberPort.findByUserIdAndCircleId(targetId, currentId) >> Optional.of(mockCircleMemberDomainModel)
 
-        this.userPort.updateRole(targetId, Role.PRESIDENT) >> Optional.of(mockUpadtedUserDomainModel)
-        this.userPort.updateRole(targetId, Role.LEADER_CIRCLE) >> Optional.of(mockUpadtedUserDomainModel)
-        this.userPort.updateRole(targetId, Role.LEADER_ALUMNI) >> Optional.of(mockUpadtedUserDomainModel)
-        this.userPort.updateRole(currentId, Role.COMMON) >> Optional.of(mockUpadtedUserDomainModel)
+        this.userPort.updateRole(targetId, Role.PRESIDENT) >> Optional.of(mockUpdatedUserDomainModel)
+        this.userPort.updateRole(targetId, Role.LEADER_CIRCLE) >> Optional.of(mockUpdatedUserDomainModel)
+        this.userPort.updateRole(targetId, Role.LEADER_ALUMNI) >> Optional.of(mockUpdatedUserDomainModel)
+        this.userPort.updateRole(currentId, Role.COMMON) >> Optional.of(mockUpdatedUserDomainModel)
         this.circlePort.updateLeader(currentId, mockTargetUserDomainModel) >> Optional.of(mockCircleDomainModel)
 
         when: "President -> Delegate President"
         this.mockUserDomainModel.setRole(Role.PRESIDENT)
         userUpdateRoleRequestDto.setRole(Role.PRESIDENT)
-        mockUpadtedUserDomainModel.setRole(Role.PRESIDENT)
+        mockUpdatedUserDomainModel.setRole(Role.PRESIDENT)
         def userResponseDto = this.userService.updateUserRole(currentId, targetId, userUpdateRoleRequestDto)
 
         then:
@@ -231,7 +231,7 @@ class UserServiceTest extends Specification {
         when: "Leader Alumni -> Delegate Alumni"
         this.mockUserDomainModel.setRole(Role.LEADER_ALUMNI)
         userUpdateRoleRequestDto.setRole(Role.LEADER_ALUMNI)
-        mockUpadtedUserDomainModel.setRole(Role.LEADER_ALUMNI)
+        mockUpdatedUserDomainModel.setRole(Role.LEADER_ALUMNI)
         userResponseDto = this.userService.updateUserRole(currentId, targetId, userUpdateRoleRequestDto)
 
         then:
@@ -241,7 +241,7 @@ class UserServiceTest extends Specification {
         when: "Leader Circle -> Delegate Circle"
         this.mockUserDomainModel.setRole(Role.LEADER_CIRCLE)
         userUpdateRoleRequestDto.setRole(Role.LEADER_CIRCLE)
-        mockUpadtedUserDomainModel.setRole(Role.LEADER_CIRCLE)
+        mockUpdatedUserDomainModel.setRole(Role.LEADER_CIRCLE)
         userResponseDto = this.userService.updateUserRole(currentId, targetId, userUpdateRoleRequestDto)
 
         then:
@@ -267,7 +267,7 @@ class UserServiceTest extends Specification {
                 UserState.AWAIT
         )
 
-        def mockUpadtedUserDomainModel = UserDomainModel.of(
+        def mockUpdatedUserDomainModel = UserDomainModel.of(
                 targetId,
                 "test@cau.ac.kr",
                 "test",
@@ -284,13 +284,13 @@ class UserServiceTest extends Specification {
         this.userPort.findById(currentId) >> Optional.of(this.mockUserDomainModel)
         this.userPort.findById(targetId) >> Optional.of(mockTargetUserDomainModel)
 
-        this.userPort.updateRole(targetId, Role.COUNCIL) >> Optional.of(mockUpadtedUserDomainModel)
-        this.userPort.updateRole(targetId, Role.LEADER_1) >> Optional.of(mockUpadtedUserDomainModel)
-        this.userPort.updateRole(targetId, Role.LEADER_CIRCLE) >> Optional.of(mockUpadtedUserDomainModel)
-        this.userPort.updateRole(targetId, Role.LEADER_ALUMNI) >> Optional.of(mockUpadtedUserDomainModel)
+        this.userPort.updateRole(targetId, Role.COUNCIL) >> Optional.of(mockUpdatedUserDomainModel)
+        this.userPort.updateRole(targetId, Role.LEADER_1) >> Optional.of(mockUpdatedUserDomainModel)
+        this.userPort.updateRole(targetId, Role.LEADER_CIRCLE) >> Optional.of(mockUpdatedUserDomainModel)
+        this.userPort.updateRole(targetId, Role.LEADER_ALUMNI) >> Optional.of(mockUpdatedUserDomainModel)
 
         when: "Admin -> Grant something to Admin user"
-        mockUpadtedUserDomainModel.setRole(Role.ADMIN)
+        mockUpdatedUserDomainModel.setRole(Role.ADMIN)
         mockTargetUserDomainModel.setRole(Role.ADMIN)
         this.userService.updateUserRole(currentId, targetId, userUpdateRoleRequestDto)
 
@@ -298,7 +298,7 @@ class UserServiceTest extends Specification {
         thrown(UnauthorizedException)
 
         when: "President -> Grant something to President user"
-        mockUpadtedUserDomainModel.setRole(Role.PRESIDENT)
+        mockUpdatedUserDomainModel.setRole(Role.PRESIDENT)
         mockTargetUserDomainModel.setRole(Role.PRESIDENT)
         this.userService.updateUserRole(currentId, targetId, userUpdateRoleRequestDto)
 
@@ -306,7 +306,7 @@ class UserServiceTest extends Specification {
         thrown(UnauthorizedException)
 
         when: "President -> Grant something to Admin user"
-        mockUpadtedUserDomainModel.setRole(Role.PRESIDENT)
+        mockUpdatedUserDomainModel.setRole(Role.PRESIDENT)
         mockTargetUserDomainModel.setRole(Role.ADMIN)
         this.userService.updateUserRole(currentId, targetId, userUpdateRoleRequestDto)
 
@@ -332,7 +332,7 @@ class UserServiceTest extends Specification {
                 UserState.AWAIT
         )
 
-        def mockUpadtedUserDomainModel = UserDomainModel.of(
+        def mockUpdatedUserDomainModel = UserDomainModel.of(
                 targetId,
                 "test@cau.ac.kr",
                 "test",
@@ -350,13 +350,13 @@ class UserServiceTest extends Specification {
         this.userPort.findById(currentId) >> Optional.of(this.mockUserDomainModel)
         this.userPort.findById(targetId) >> Optional.of(mockTargetUserDomainModel)
 
-        this.userPort.updateRole(targetId, Role.COUNCIL) >> Optional.of(mockUpadtedUserDomainModel)
-        this.userPort.updateRole(targetId, Role.LEADER_1) >> Optional.of(mockUpadtedUserDomainModel)
-        this.userPort.updateRole(targetId, Role.LEADER_CIRCLE) >> Optional.of(mockUpadtedUserDomainModel)
-        this.userPort.updateRole(targetId, Role.LEADER_ALUMNI) >> Optional.of(mockUpadtedUserDomainModel)
+        this.userPort.updateRole(targetId, Role.COUNCIL) >> Optional.of(mockUpdatedUserDomainModel)
+        this.userPort.updateRole(targetId, Role.LEADER_1) >> Optional.of(mockUpdatedUserDomainModel)
+        this.userPort.updateRole(targetId, Role.LEADER_CIRCLE) >> Optional.of(mockUpdatedUserDomainModel)
+        this.userPort.updateRole(targetId, Role.LEADER_ALUMNI) >> Optional.of(mockUpdatedUserDomainModel)
 
         when: "Admin -> Grant Admin"
-        mockUpadtedUserDomainModel.setRole(Role.ADMIN)
+        mockUpdatedUserDomainModel.setRole(Role.ADMIN)
         userUpdateRoleRequestDto.setRole(Role.ADMIN)
         this.userService.updateUserRole(currentId, targetId, userUpdateRoleRequestDto)
 
@@ -364,7 +364,7 @@ class UserServiceTest extends Specification {
         thrown(UnauthorizedException)
 
         when: "President -> Grant Admin"
-        mockUpadtedUserDomainModel.setRole(Role.PRESIDENT)
+        mockUpdatedUserDomainModel.setRole(Role.PRESIDENT)
         userUpdateRoleRequestDto.setRole(Role.ADMIN)
         this.userService.updateUserRole(currentId, targetId, userUpdateRoleRequestDto)
 
@@ -372,7 +372,7 @@ class UserServiceTest extends Specification {
         thrown(UnauthorizedException)
 
         when: "President -> Grant Admin"
-        mockUpadtedUserDomainModel.setRole(Role.PRESIDENT)
+        mockUpdatedUserDomainModel.setRole(Role.PRESIDENT)
         userUpdateRoleRequestDto.setRole(Role.ADMIN)
         this.userService.updateUserRole(currentId, targetId, userUpdateRoleRequestDto)
 
@@ -380,7 +380,7 @@ class UserServiceTest extends Specification {
         thrown(UnauthorizedException)
 
         when: "Leader Circle -> Grant Common"
-        mockUpadtedUserDomainModel.setRole(Role.LEADER_CIRCLE)
+        mockUpdatedUserDomainModel.setRole(Role.LEADER_CIRCLE)
         userUpdateRoleRequestDto.setRole(Role.COMMON)
         this.userService.updateUserRole(currentId, targetId, userUpdateRoleRequestDto)
 
@@ -388,7 +388,7 @@ class UserServiceTest extends Specification {
         thrown(UnauthorizedException)
 
         when: "Leader Alumni -> Grant Common"
-        mockUpadtedUserDomainModel.setRole(Role.LEADER_ALUMNI)
+        mockUpdatedUserDomainModel.setRole(Role.LEADER_ALUMNI)
         userUpdateRoleRequestDto.setRole(Role.COMMON)
         this.userService.updateUserRole(currentId, targetId, userUpdateRoleRequestDto)
 
@@ -1094,120 +1094,87 @@ class UserServiceTest extends Specification {
     }
 
     /**
-     * Test cases for admission apply
+     * Test cases for drop user
      */
     @Test
-    def "User admission apply normal case"() {
+    def "User drop normal case"() {
         given:
-        def mockApiCallUser = UserDomainModel.of(
+        def mockDroppedUserDomainModel = UserDomainModel.of(
                 "test1",
-                "test1@cau.ac.kr",
-                "test",
-                "test1234!",
-                "20210000",
-                2021,
-                Role.PRESIDENT,
-                null,
-                UserState.ACTIVE
-        )
-
-        this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
-        this.userPort.findById("test1") >> Optional.of(mockApiCallUser)
-        this.userAdmissionPort.findById("test") >> Optional.of(this.mockUserAdmissionDomainModel)
-        this.userPort.updateRole("test", Role.COMMON) >> Optional.of(this.mockUserDomainModel)
-        this.userPort.updateState("test", UserState.ACTIVE) >> Optional.of(this.mockUserDomainModel)
-
-        when:
-        def userAdmissionResponseDto = this.userService.accept("test1", "test")
-
-        then:
-        userAdmissionResponseDto instanceof UserAdmissionResponseDto
-        with(userAdmissionResponseDto) {
-            getUser().getState() == UserState.ACTIVE
-        }
-    }
-
-    @Test
-    def "User admission apply invalid api call user role"() {
-        given:
-        def mockApiCallUser = UserDomainModel.of(
-                "test1",
-                "test1@cau.ac.kr",
+                "test@cau.ac.kr",
                 "test",
                 "test1234!",
                 "20210000",
                 2021,
                 Role.COMMON,
                 null,
-                UserState.ACTIVE
+                UserState.DROP
         )
 
         this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
-        this.userPort.findById("test1") >> Optional.of(mockApiCallUser)
-        this.userAdmissionPort.findById("test") >> Optional.of(this.mockUserAdmissionDomainModel)
+        this.userPort.findById("test1") >> Optional.of(mockDroppedUserDomainModel)
+        this.userPort.updateRole("test1", Role.NONE) >> Optional.of(mockDroppedUserDomainModel)
+        this.userPort.updateState("test1", UserState.DROP) >> Optional.of(mockDroppedUserDomainModel)
 
         when:
-        this.userService.accept("test1", "test")
+        this.mockUserDomainModel.setRole(Role.PRESIDENT)
+        def userResponseDto = this.userService.dropUser("test", "test1")
+
+        then:
+        userResponseDto instanceof UserResponseDto
+        with(userResponseDto) {
+            getId() == "test1"
+            getState() == UserState.DROP
+        }
+    }
+
+    @Test
+    def "User drop invalid api call user role"() {
+        given:
+        def mockDroppedUserDomainModel = UserDomainModel.of(
+                "test1",
+                "test@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.COMMON,
+                null,
+                UserState.DROP
+        )
+
+        this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
+        this.userPort.findById("test1") >> Optional.of(mockDroppedUserDomainModel)
+
+        when:
+        this.mockUserDomainModel.setRole(Role.COMMON)
+        this.userService.dropUser("test", "test1")
 
         then:
         thrown(UnauthorizedException)
     }
 
-    /**
-     * Test cases for admission reject
-     */
     @Test
-    def "User admission reject normal case"() {
+    def "User drop invalid dropped user role"() {
         given:
-        def mockApiCallUser = UserDomainModel.of(
+        def mockDroppedUserDomainModel = UserDomainModel.of(
                 "test1",
-                "test1@cau.ac.kr",
+                "test@cau.ac.kr",
                 "test",
                 "test1234!",
                 "20210000",
                 2021,
-                Role.PRESIDENT,
+                Role.PROFESSOR,
                 null,
-                UserState.ACTIVE
-        )
-
-        (UserDomainModel) this.mockUserDomainModel.setState(UserState.REJECT)
-        this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
-        this.userPort.findById("test1") >> Optional.of(mockApiCallUser)
-        this.userAdmissionPort.findById("test") >> Optional.of(this.mockUserAdmissionDomainModel)
-        this.userPort.updateState("test", UserState.REJECT) >> Optional.of(this.mockUserDomainModel)
-
-        when:
-        def userAdmissionResponseDto = this.userService.reject("test1", "test")
-
-        then:
-        userAdmissionResponseDto instanceof UserAdmissionResponseDto
-        with(userAdmissionResponseDto) {
-            getUser().getState() == UserState.REJECT
-        }
-    }
-
-    @Test
-    def "User admission reject invalid api call user role"() {
-        given:
-        def mockApiCallUser = UserDomainModel.of(
-                "test1",
-                "test1@cau.ac.kr",
-                "test",
-                "test1234!",
-                "20210000",
-                2021,
-                Role.COMMON,
-                null,
-                UserState.ACTIVE
+                UserState.DROP
         )
 
         this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
-        this.userPort.findById("test1") >> Optional.of(mockApiCallUser)
-        this.userAdmissionPort.findById("test") >> Optional.of(this.mockUserAdmissionDomainModel)
+        this.userPort.findById("test1") >> Optional.of(mockDroppedUserDomainModel)
 
         when:
-        this.userService.reject("test1", "test")
+        this.mockUserDomainModel.setRole(Role.COMMON)
+        this.userService.dropUser("test", "test1")
 
         then:
         thrown(UnauthorizedException)

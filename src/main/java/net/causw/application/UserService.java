@@ -36,6 +36,7 @@ import net.causw.domain.validation.GrantableRoleValidator;
 import net.causw.domain.validation.PasswordCorrectValidator;
 import net.causw.domain.validation.PasswordFormatValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
+import net.causw.domain.validation.UserRoleWithoutAdminValidator;
 import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
@@ -343,7 +344,7 @@ public class UserService {
         );
 
         ValidatorBucket.of()
-                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.COMMON, Role.PROFESSOR)))
+                .consistOf(UserRoleWithoutAdminValidator.of(user.getRole(), List.of(Role.COMMON, Role.PROFESSOR)))
                 .validate();
 
         // TODO: When we use session, should implement delete JWT
@@ -364,6 +365,42 @@ public class UserService {
         );
 
         return UserResponseDto.from(this.userPort.updateState(id, UserState.INACTIVE).orElseThrow(
+                () -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "User id checked, but exception occurred"
+                )
+        ));
+    }
+
+    @Transactional
+    public UserResponseDto dropUser(String requestUserId, String userId) {
+        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid request user id"
+                )
+        );
+
+        UserDomainModel droppedUser = this.userPort.findById(userId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid request user id"
+                )
+        );
+
+        ValidatorBucket.of()
+                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT)))
+                .consistOf(UserRoleWithoutAdminValidator.of(droppedUser.getRole(), List.of(Role.COMMON, Role.PROFESSOR)))
+                .validate();
+
+        this.userPort.updateRole(userId, Role.NONE).orElseThrow(
+                () -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "User id checked, but exception occurred"
+                )
+        );
+
+        return UserResponseDto.from(this.userPort.updateState(userId, UserState.DROP).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         "User id checked, but exception occurred"
