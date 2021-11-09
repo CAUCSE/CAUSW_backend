@@ -144,6 +144,7 @@ public class LockerService {
 
         UserDomainModel lockerUserDomainModel = lockerDomainModel.getUser().orElse(null);
 
+        // TODO: 추후 리팩터링 시 Supplier를 이용하여 Factory 구조를 적용할 것
         switch (lockerUpdateRequestDto.getAction()) {
             case REGISTER: {
                 if (!lockerDomainModel.getIsActive()) {
