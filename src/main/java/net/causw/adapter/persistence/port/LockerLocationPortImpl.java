@@ -11,7 +11,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
-public class LockerLocationPortImpl implements LockerLocationPort {
+public class LockerLocationPortImpl extends DomainModelMapper implements LockerLocationPort {
     private final LockerLocationRepository lockerLocationRepository;
 
     public LockerLocationPortImpl(LockerLocationRepository lockerLocationRepository) {
@@ -52,14 +52,6 @@ public class LockerLocationPortImpl implements LockerLocationPort {
 
                     return this.entityToDomainModel(this.lockerLocationRepository.save(srcLockerLocation));
                 }
-        );
-    }
-
-    private LockerLocationDomainModel entityToDomainModel(LockerLocation lockerLocation) {
-        return LockerLocationDomainModel.of(
-                lockerLocation.getId(),
-                lockerLocation.getName(),
-                lockerLocation.getDescription()
         );
     }
 }
