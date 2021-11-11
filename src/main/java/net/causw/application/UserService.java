@@ -439,6 +439,39 @@ public class UserService {
     }
 
     @Transactional
+    public UserAdmissionResponseDto accept(
+            String requestUserId,
+            String admissionId
+    ) {
+        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid request user id"
+                )
+        );
+
+        UserAdmissionDomainModel userAdmissionDomainModel = this.userAdmissionPort.findById(admissionId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid admission id"
+                )
+        );
+
+        ValidatorBucket.of()
+                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT)))
+                .validate();
+
+        return UserAdmissionResponseDto.from(
+                userAdmissionDomainModel,
+                this.userPort.updateState(userAdmissionDomainModel.getUser().getId(), UserState.ACTIVE).orElseThrow(
+                        () -> new InternalServerException(
+                                ErrorCode.INTERNAL_SERVER,
+                                "User id of the admission checked, but exception occurred"
+                        )
+        ));
+    }
+
+    @Transactional
     public BoardResponseDto createFavoriteBoard(
             String userId,
             String boardId

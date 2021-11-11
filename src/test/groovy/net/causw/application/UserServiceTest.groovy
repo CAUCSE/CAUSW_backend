@@ -1,8 +1,11 @@
 package net.causw.application
 
 import net.causw.application.dto.*
+import net.causw.application.spi.BoardPort
 import net.causw.application.spi.CircleMemberPort
 import net.causw.application.spi.CirclePort
+import net.causw.application.spi.FavoriteBoardPort
+import net.causw.application.spi.UserAdmissionPort
 import net.causw.application.spi.UserPort
 import net.causw.config.JwtTokenProvider
 import net.causw.domain.exceptions.BadRequestException
@@ -21,6 +24,7 @@ import spock.lang.Specification
 import javax.validation.ConstraintViolationException
 import javax.validation.Validation
 import javax.validation.Validator
+import java.time.LocalDateTime
 
 @ActiveProfiles(value = "test")
 @RunWith(PowerMockRunner.class)
@@ -28,19 +32,26 @@ import javax.validation.Validator
 @PrepareForTest([UserDomainModel.class])
 class UserServiceTest extends Specification {
     private UserPort userPort = Mock(UserPort.class)
+    private BoardPort boardPort = Mock(BoardPort.class);
+    private UserAdmissionPort userAdmissionPort = Mock(UserAdmissionPort.class);
     private CirclePort circlePort = Mock(CirclePort.class)
     private CircleMemberPort circleMemberPort = Mock(CircleMemberPort.class)
+    private FavoriteBoardPort favoriteBoardPort = Mock(FavoriteBoardPort.class);
     private JwtTokenProvider jwtTokenProvider = Mock(JwtTokenProvider.class)
     private Validator validator = Validation.buildDefaultValidatorFactory().getValidator()
     private UserService userService = new UserService(
             this.userPort,
+            this.boardPort,
+            this.userAdmissionPort,
             this.circlePort,
             this.circleMemberPort,
+            this.favoriteBoardPort,
             this.jwtTokenProvider,
             this.validator
     )
 
     def mockUserDomainModel
+    def mockUserAdmissionDomainModel
 
     def setup() {
         this.mockUserDomainModel = UserDomainModel.of(
@@ -52,7 +63,16 @@ class UserServiceTest extends Specification {
                 2021,
                 Role.PRESIDENT,
                 null,
-                UserState.AWAIT
+                UserState.ACTIVE
+        )
+
+        this.mockUserAdmissionDomainModel = UserAdmissionDomainModel.of(
+                "test",
+                (UserDomainModel) this.mockUserDomainModel,
+                '/test',
+                'test',
+                LocalDateTime.now(),
+                LocalDateTime.now()
         )
     }
 
@@ -1068,6 +1088,65 @@ class UserServiceTest extends Specification {
 
         when:
         this.userService.findByRole("test1", Role.PRESIDENT)
+
+        then:
+        thrown(UnauthorizedException)
+    }
+
+    /**
+     * Test cases for admission apply
+     */
+    @Test
+    def "User admission apply normal case"() {
+        given:
+        def mockApiCallUser = UserDomainModel.of(
+                "test1",
+                "test1@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.PRESIDENT,
+                null,
+                UserState.ACTIVE
+        )
+
+        this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
+        this.userPort.findById("test1") >> Optional.of(mockApiCallUser)
+        this.userAdmissionPort.findById("test") >> Optional.of(this.mockUserAdmissionDomainModel)
+        this.userPort.updateState("test", UserState.ACTIVE) >> Optional.of(this.mockUserDomainModel)
+
+        when:
+        def userAdmissionResponseDto = this.userService.accept("test1", "test")
+
+        then:
+        userAdmissionResponseDto instanceof UserAdmissionResponseDto
+        with(userAdmissionResponseDto) {
+            getUser().getState() == UserState.ACTIVE
+        }
+    }
+
+    @Test
+    def "User admission apply invalid api call user role"() {
+        given:
+        def mockApiCallUser = UserDomainModel.of(
+                "test1",
+                "test1@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.COMMON,
+                null,
+                UserState.ACTIVE
+        )
+
+        this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
+        this.userPort.findById("test1") >> Optional.of(mockApiCallUser)
+        this.userAdmissionPort.findById("test") >> Optional.of(this.mockUserAdmissionDomainModel)
+
+        when:
+        this.userService.accept("test1", "test")
 
         then:
         thrown(UnauthorizedException)

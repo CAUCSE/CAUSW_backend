@@ -3,6 +3,7 @@ package net.causw.application.dto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.causw.domain.model.UserAdmissionDomainModel;
+import net.causw.domain.model.UserDomainModel;
 
 import java.time.LocalDateTime;
 
@@ -36,6 +37,20 @@ public class UserAdmissionResponseDto {
         return new UserAdmissionResponseDto(
                 userAdmissionDomainModel.getId(),
                 UserResponseDto.from(userAdmissionDomainModel.getUser()),
+                userAdmissionDomainModel.getAttachImage(),
+                userAdmissionDomainModel.getDescription(),
+                userAdmissionDomainModel.getCreatedAt(),
+                userAdmissionDomainModel.getUpdatedAt()
+        );
+    }
+
+    public static UserAdmissionResponseDto from(
+            UserAdmissionDomainModel userAdmissionDomainModel,
+            UserDomainModel user
+    ) {
+        return new UserAdmissionResponseDto(
+                userAdmissionDomainModel.getId(),
+                UserResponseDto.from(user),
                 userAdmissionDomainModel.getAttachImage(),
                 userAdmissionDomainModel.getDescription(),
                 userAdmissionDomainModel.getCreatedAt(),
