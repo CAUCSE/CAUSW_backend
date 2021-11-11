@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -108,16 +109,23 @@ public class LockerService {
                 .consistOf(ConstraintValidator.of(lockerDomainModel, this.validator))
                 .validate();
 
-        LockerResponseDto responseDto = LockerResponseDto.from(this.lockerPort.create(lockerDomainModel));
 
-        this.lockerLogPort.create(
-                lockerDomainModel.getLockerNumber(),
-                creatorDomainModel,
-                LockerLogAction.ENABLE,
-                "사물함 최초 생성"
-        );
 
-        return responseDto;
+        return Optional
+                .of(this.lockerPort.create(lockerDomainModel))
+                .map(resLockerDomainModel -> {
+                    this.lockerLogPort.create(
+                            resLockerDomainModel.getLockerNumber(),
+                            creatorDomainModel,
+                            LockerLogAction.ENABLE,
+                            "사물함 최초 생성"
+                    );
+                    return LockerResponseDto.from(resLockerDomainModel);
+                })
+                .orElseThrow(() -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "Exception occurred when creating locker"
+                ));
     }
 
     @Transactional(readOnly = false)
@@ -240,21 +248,22 @@ public class LockerService {
                 .consistOf(ConstraintValidator.of(lockerDomainModel, this.validator))
                 .validate();
 
-        LockerResponseDto lockerResponseDto = LockerResponseDto.from(this.lockerPort.update(lockerId, lockerDomainModel).orElseThrow(
-                        () -> new InternalServerException(
-                                ErrorCode.INTERNAL_SERVER,
-                                "Application id checked, but exception occurred"
-                        )
-        ));
 
-        this.lockerLogPort.create(
-                lockerDomainModel.getLockerNumber(),
-                updaterDomainModel,
-                lockerUpdateRequestDto.getAction(),
-                lockerUpdateRequestDto.getMessage()
-        );
 
-        return lockerResponseDto;
+        return this.lockerPort.update(lockerId, lockerDomainModel)
+                .map(resLockerDomainModel -> {
+                    this.lockerLogPort.create(
+                            resLockerDomainModel.getLockerNumber(),
+                            updaterDomainModel,
+                            lockerUpdateRequestDto.getAction(),
+                            lockerUpdateRequestDto.getMessage()
+                    );
+                    return LockerResponseDto.from(resLockerDomainModel);
+                })
+                .orElseThrow(() -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "Application id checked, but exception occurred"
+                ));
     }
 
     @Transactional(readOnly = false)
