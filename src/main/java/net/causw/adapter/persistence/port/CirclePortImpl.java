@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
-public class CirclePortImpl implements CirclePort {
+public class CirclePortImpl extends DomainModelMapper implements CirclePort {
     private final CircleRepository circleRepository;
 
     public CirclePortImpl(CircleRepository circleRepository) {
@@ -82,33 +82,6 @@ public class CirclePortImpl implements CirclePort {
 
                     return this.entityToDomainModel(this.circleRepository.save(srcCircle));
                 }
-        );
-    }
-
-    private CircleDomainModel entityToDomainModel(Circle circle) {
-        return CircleDomainModel.of(
-                circle.getId(),
-                circle.getName(),
-                circle.getMainImage(),
-                circle.getDescription(),
-                circle.getIsDeleted(),
-                this.entityToDomainModel(circle.getLeader()),
-                circle.getCreatedAt(),
-                circle.getUpdatedAt()
-        );
-    }
-
-    private UserDomainModel entityToDomainModel(User user) {
-        return UserDomainModel.of(
-                user.getId(),
-                user.getEmail(),
-                user.getName(),
-                user.getPassword(),
-                user.getStudentId(),
-                user.getAdmissionYear(),
-                user.getRole(),
-                user.getProfileImage(),
-                user.getState()
         );
     }
 }

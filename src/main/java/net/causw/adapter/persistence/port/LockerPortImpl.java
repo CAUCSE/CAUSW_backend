@@ -1,11 +1,8 @@
 package net.causw.adapter.persistence.port;
 
-import net.causw.adapter.persistence.Locker;
-import net.causw.adapter.persistence.LockerLocation;
 import net.causw.adapter.persistence.LockerRepository;
 import net.causw.application.spi.LockerPort;
 import net.causw.domain.model.LockerDomainModel;
-import net.causw.domain.model.LockerLocationDomainModel;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -13,7 +10,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
-public class LockerPortImpl implements LockerPort {
+public class LockerPortImpl extends DomainModelMapper implements LockerPort {
     private final LockerRepository lockerRepository;
 
     public LockerPortImpl(LockerRepository lockerRepository) {
@@ -41,26 +38,5 @@ public class LockerPortImpl implements LockerPort {
     @Override
     public Long getLockerCountByLocation(String locationId) {
         return this.lockerRepository.getLockerCountByLocation(locationId);
-    }
-
-
-    private LockerDomainModel entityToDomainModel(Locker locker) {
-        return LockerDomainModel.of(
-                locker.getId(),
-                locker.getLockerNumber(),
-                locker.getIsActive(),
-                locker.getUpdatedAt(),
-                locker.getUser().getId(),
-                locker.getUser().getName(),
-                this.entityToDomainModel(locker.getLocation())
-        );
-    }
-
-    private LockerLocationDomainModel entityToDomainModel(LockerLocation lockerLocation) {
-        return LockerLocationDomainModel.of(
-                lockerLocation.getId(),
-                lockerLocation.getName(),
-                lockerLocation.getDescription()
-        );
     }
 }
