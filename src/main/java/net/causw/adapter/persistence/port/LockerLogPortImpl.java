@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-public class LockerLogPortImpl implements LockerLogPort {
+public class LockerLogPortImpl extends DomainModelMapper implements LockerLogPort {
     private final LockerLogRepository lockerLogRepository;
 
     public LockerLogPortImpl(LockerLogRepository lockerLogRepository) {

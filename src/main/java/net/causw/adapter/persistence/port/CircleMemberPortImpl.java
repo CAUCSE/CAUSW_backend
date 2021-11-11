@@ -17,7 +17,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
-public class CircleMemberPortImpl implements CircleMemberPort {
+public class CircleMemberPortImpl extends DomainModelMapper implements CircleMemberPort {
     private final CircleMemberRepository circleMemberRepository;
 
     public CircleMemberPortImpl(CircleMemberRepository circleMemberRepository) {
@@ -93,45 +93,6 @@ public class CircleMemberPortImpl implements CircleMemberPort {
 
                     return this.entityToDomainModel(this.circleMemberRepository.save(circleMember));
                 }
-        );
-    }
-
-    private CircleMemberDomainModel entityToDomainModel(CircleMember circleMember) {
-        return CircleMemberDomainModel.of(
-                circleMember.getId(),
-                circleMember.getStatus(),
-                this.entityToDomainModel(circleMember.getCircle()),
-                circleMember.getUser().getId(),
-                circleMember.getUser().getName(),
-                circleMember.getCreatedAt(),
-                circleMember.getUpdatedAt()
-        );
-    }
-
-    private CircleDomainModel entityToDomainModel(Circle circle) {
-        return CircleDomainModel.of(
-                circle.getId(),
-                circle.getName(),
-                circle.getMainImage(),
-                circle.getDescription(),
-                circle.getIsDeleted(),
-                this.entityToDomainModel(circle.getLeader()),
-                circle.getCreatedAt(),
-                circle.getUpdatedAt()
-        );
-    }
-
-    private UserDomainModel entityToDomainModel(User user) {
-        return UserDomainModel.of(
-                user.getId(),
-                user.getEmail(),
-                user.getName(),
-                user.getPassword(),
-                user.getStudentId(),
-                user.getAdmissionYear(),
-                user.getRole(),
-                user.getProfileImage(),
-                user.getState()
         );
     }
 }
