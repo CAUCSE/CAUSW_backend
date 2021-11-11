@@ -1114,6 +1114,7 @@ class UserServiceTest extends Specification {
         this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
         this.userPort.findById("test1") >> Optional.of(mockApiCallUser)
         this.userAdmissionPort.findById("test") >> Optional.of(this.mockUserAdmissionDomainModel)
+        this.userPort.updateRole("test", Role.COMMON) >> Optional.of(this.mockUserDomainModel)
         this.userPort.updateState("test", UserState.ACTIVE) >> Optional.of(this.mockUserDomainModel)
 
         when:
@@ -1147,6 +1148,66 @@ class UserServiceTest extends Specification {
 
         when:
         this.userService.accept("test1", "test")
+
+        then:
+        thrown(UnauthorizedException)
+    }
+
+    /**
+     * Test cases for admission reject
+     */
+    @Test
+    def "User admission reject normal case"() {
+        given:
+        def mockApiCallUser = UserDomainModel.of(
+                "test1",
+                "test1@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.PRESIDENT,
+                null,
+                UserState.ACTIVE
+        )
+
+        (UserDomainModel) this.mockUserDomainModel.setState(UserState.REJECT)
+        this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
+        this.userPort.findById("test1") >> Optional.of(mockApiCallUser)
+        this.userAdmissionPort.findById("test") >> Optional.of(this.mockUserAdmissionDomainModel)
+        this.userPort.updateState("test", UserState.REJECT) >> Optional.of(this.mockUserDomainModel)
+
+        when:
+        def userAdmissionResponseDto = this.userService.reject("test1", "test")
+
+        then:
+        userAdmissionResponseDto instanceof UserAdmissionResponseDto
+        with(userAdmissionResponseDto) {
+            getUser().getState() == UserState.REJECT
+        }
+    }
+
+    @Test
+    def "User admission reject invalid api call user role"() {
+        given:
+        def mockApiCallUser = UserDomainModel.of(
+                "test1",
+                "test1@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.COMMON,
+                null,
+                UserState.ACTIVE
+        )
+
+        this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
+        this.userPort.findById("test1") >> Optional.of(mockApiCallUser)
+        this.userAdmissionPort.findById("test") >> Optional.of(this.mockUserAdmissionDomainModel)
+
+        when:
+        this.userService.reject("test1", "test")
 
         then:
         thrown(UnauthorizedException)

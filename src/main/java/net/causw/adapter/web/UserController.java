@@ -169,6 +169,17 @@ public class UserController {
         );
     }
 
+    @PutMapping(value = "/admissions/{id}/reject")
+    public UserAdmissionResponseDto rejectAdmission(
+            @AuthenticationPrincipal String requestUserId,
+            @PathVariable String id
+    ) {
+        return this.userService.reject(
+                requestUserId,
+                id
+        );
+    }
+
     @PostMapping(value = "/favorite-boards/{boardId}")
     @ResponseStatus(value = HttpStatus.CREATED)
     public BoardResponseDto createFavoriteBoard(
