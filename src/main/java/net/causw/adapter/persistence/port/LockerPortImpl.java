@@ -1,6 +1,9 @@
 package net.causw.adapter.persistence.port;
 
+import net.causw.adapter.persistence.Locker;
+import net.causw.adapter.persistence.LockerLocation;
 import net.causw.adapter.persistence.LockerRepository;
+import net.causw.adapter.persistence.User;
 import net.causw.application.spi.LockerPort;
 import net.causw.domain.model.LockerDomainModel;
 import org.springframework.stereotype.Component;
@@ -20,6 +23,39 @@ public class LockerPortImpl extends DomainModelMapper implements LockerPort {
     @Override
     public Optional<LockerDomainModel> findById(String id) {
         return this.lockerRepository.findById(id).map(this::entityToDomainModel);
+    }
+
+    @Override
+    public Optional<LockerDomainModel> findByLockerNumber(Long lockerNumber) {
+        return this.lockerRepository.findByLockerNumber(lockerNumber).map(this::entityToDomainModel);
+    }
+
+    @Override
+    public LockerDomainModel create(LockerDomainModel lockerDomainModel) {
+        return this.entityToDomainModel(this.lockerRepository.save(Locker.from(lockerDomainModel)));
+    }
+
+    @Override
+    public Optional<LockerDomainModel> update(String id, LockerDomainModel lockerDomainModel) {
+        return this.lockerRepository.findById(id).map(
+                locker -> {
+                    locker.setIsActive(lockerDomainModel.getIsActive());
+                    locker.setUser(lockerDomainModel.getUser().map(User::from).orElse(null));
+
+                    return this.entityToDomainModel(this.lockerRepository.save(locker));
+                }
+        );
+    }
+
+    @Override
+    public Optional<LockerDomainModel> updateLocation(String id, LockerDomainModel lockerDomainModel) {
+        return this.lockerRepository.findById(id).map(
+                locker -> {
+                    locker.setLocation(LockerLocation.from(lockerDomainModel.getLockerLocation()));
+
+                    return this.entityToDomainModel(this.lockerRepository.save(locker));
+                }
+        );
     }
 
     @Override

@@ -2,7 +2,9 @@ package net.causw.application.dto;
 
 import lombok.Getter;
 import net.causw.adapter.persistence.Locker;
+import net.causw.adapter.persistence.User;
 import net.causw.domain.model.LockerDomainModel;
+import net.causw.domain.model.UserDomainModel;
 
 import java.time.LocalDateTime;
 
@@ -40,8 +42,8 @@ public class LockerResponseDto {
                 locker.getLockerNumber(),
                 locker.getIsActive(),
                 locker.getUpdatedAt(),
-                locker.getUser().getId(),
-                locker.getUser().getName(),
+                locker.getUser().map(User::getId).orElse(null),
+                locker.getUser().map(User::getName).orElse(null),
                 locker.getLocation().getName()
         );
     }
@@ -52,8 +54,8 @@ public class LockerResponseDto {
                 locker.getLockerNumber(),
                 locker.getIsActive(),
                 locker.getUpdatedAt(),
-                locker.getUserId(),
-                locker.getUserName(),
+                locker.getUser().map(UserDomainModel::getId).orElse(null),
+                locker.getUser().map(UserDomainModel::getName).orElse(null),
                 locker.getLockerLocation().getName()
         );
     }

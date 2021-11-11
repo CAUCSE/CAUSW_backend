@@ -6,9 +6,12 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface LockerRepository extends JpaRepository<Locker, String> {
+    Optional<Locker> findByLockerNumber(Long lockerNumber);
+
     List<Locker> findByLocation_Id(String locationId);
 
     @Query(value = "SELECT COUNT(l.id) " +

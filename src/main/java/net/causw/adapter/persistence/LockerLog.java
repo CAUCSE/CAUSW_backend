@@ -35,25 +35,29 @@ public class LockerLog extends BaseEntity{
             Long lockerNumber,
             String userEmail,
             String userName,
-            LockerLogAction action
+            LockerLogAction action,
+            String message
     ) {
         this.lockerNumber = lockerNumber;
         this.userEmail = userEmail;
         this.userName = userName;
         this.action = action;
+        this.message = message;
     }
 
     public static LockerLog of(
             Long lockerNumber,
             String userEmail,
             String userName,
-            LockerLogAction action
+            LockerLogAction action,
+            String message
     ) {
         return new LockerLog(
                 lockerNumber,
                 userEmail,
                 userName,
-                action
+                action,
+                message
         );
     }
 }
