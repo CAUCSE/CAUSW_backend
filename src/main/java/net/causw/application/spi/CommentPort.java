@@ -17,4 +17,6 @@ public interface CommentPort {
     CommentDomainModel create(CommentDomainModel commentDomainModel, PostDomainModel postDomainModel);
 
     Optional<CommentDomainModel> update(String commentId, CommentDomainModel commentDomainModel);
+
+    Optional<CommentDomainModel> delete(String commentId);
 }

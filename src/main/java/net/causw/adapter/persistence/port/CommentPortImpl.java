@@ -55,4 +55,15 @@ public class CommentPortImpl extends DomainModelMapper implements CommentPort {
                 }
         );
     }
+
+    @Override
+    public Optional<CommentDomainModel> delete(String commentId) {
+        return this.commentRepository.findById(commentId).map(
+                comment -> {
+                    comment.setIsDeleted(true);
+
+                    return this.entityToDomainModel(this.commentRepository.save(comment));
+                }
+        );
+    }
 }
