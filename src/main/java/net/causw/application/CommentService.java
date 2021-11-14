@@ -11,7 +11,6 @@ import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
-import net.causw.domain.model.BoardDomainModel;
 import net.causw.domain.model.CircleMemberDomainModel;
 import net.causw.domain.model.CircleMemberStatus;
 import net.causw.domain.model.CommentDomainModel;
@@ -22,6 +21,7 @@ import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.ContentsAdminValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
+import net.causw.domain.validation.UserEqualValidator;
 import net.causw.domain.validation.ValidatorBucket;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -29,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class CommentService {
@@ -115,7 +114,7 @@ public class CommentService {
                 this.commentPort.create(commentDomainModel, postDomainModel),
                 creatorDomainModel,
                 postDomainModel.getBoard()
-                );
+        );
     }
 
     @Transactional(readOnly = true)
@@ -205,7 +204,6 @@ public class CommentService {
                 ));
 
 
-
         postDomainModel.getBoard().getCircle().ifPresent(
                 circleDomainModel -> {
                     CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(requestUserId, circleDomainModel.getId()).orElseThrow(
@@ -277,15 +275,9 @@ public class CommentService {
 
         validatorBucket
                 .consistOf(TargetIsDeletedValidator.of(commentDomainModel.getIsDeleted()))
-                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted()))
-                .consistOf(ContentsAdminValidator.of(
-                        deleterDomainModel.getRole(),
-                        deleterId,
-                        commentDomainModel.getWriter().getId(),
-                        List.of(Role.LEADER_CIRCLE)
-                ));
+                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted()));
 
-        postDomainModel.getBoard().getCircle().ifPresent(
+        postDomainModel.getBoard().getCircle().ifPresentOrElse(
                 circleDomainModel -> {
                     CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(deleterId, circleDomainModel.getId()).orElseThrow(
                             () -> new UnauthorizedException(
@@ -299,9 +291,39 @@ public class CommentService {
                             .consistOf(CircleMemberStatusValidator.of(
                                     circleMemberDomainModel.getStatus(),
                                     List.of(CircleMemberStatus.MEMBER)
+                            ))
+                            .consistOf(ContentsAdminValidator.of(
+                                    deleterDomainModel.getRole(),
+                                    deleterId,
+                                    commentDomainModel.getWriter().getId(),
+                                    List.of(Role.LEADER_CIRCLE)
                             ));
-                }
+
+                    if (deleterDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
+                        validatorBucket
+                                .consistOf(UserEqualValidator.of(
+                                        circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
+                                                () -> new InternalServerException(
+                                                        ErrorCode.INTERNAL_SERVER,
+                                                        "The board has circle without circle leader"
+                                                )
+                                        ),
+                                        deleterId
+                                ));
+                    }
+                },
+                () -> validatorBucket
+                        .consistOf(ContentsAdminValidator.of(
+                                deleterDomainModel.getRole(),
+                                deleterId,
+                                commentDomainModel.getWriter().getId(),
+                                List.of(Role.PRESIDENT)
+                        ))
+
         );
+
+        validatorBucket
+                .validate();
 
         return CommentResponseDto.from(
                 this.commentPort.delete(commentId).orElseThrow(
