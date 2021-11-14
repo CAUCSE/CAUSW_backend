@@ -15,4 +15,6 @@ public interface LockerLocationPort {
     LockerLocationDomainModel create(LockerLocationDomainModel lockerLocationDomainModel);
 
     Optional<LockerLocationDomainModel> update(String id, LockerLocationDomainModel lockerLocationDomainModel);
+
+    void delete(LockerLocationDomainModel lockerLocationDomainModel);
 }

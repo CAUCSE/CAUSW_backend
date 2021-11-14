@@ -59,6 +59,11 @@ public class LockerPortImpl extends DomainModelMapper implements LockerPort {
     }
 
     @Override
+    public void delete(LockerDomainModel lockerDomainModel) {
+        this.lockerRepository.delete(Locker.from(lockerDomainModel));
+    }
+
+    @Override
     public List<LockerDomainModel> findByLocationId(String locationId) {
         return this.lockerRepository.findByLocation_Id(locationId)
                 .stream()
