@@ -772,4 +772,374 @@ class PostServiceTest extends Specification {
         then:
         thrown(BadRequestException)
     }
+
+    /**
+     * Test cases for post delete
+     */
+    @Test
+    def "Post delete normal without circle case"() {
+        given:
+        def requestPresidentUser = UserDomainModel.of(
+                "test president user id",
+                "test-president-user@cau.ac.kr",
+                "test president user name",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.PRESIDENT,
+                null,
+                UserState.ACTIVE
+        )
+        def writerUser = UserDomainModel.of(
+                "test writer user id",
+                "test-writer-user@cau.ac.kr",
+                "test writer user name",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.COMMON,
+                null,
+                UserState.ACTIVE
+        )
+
+        ((PostDomainModel) this.mockPostDomainModel).setWriter(writerUser)
+
+        def deletedPostDomainModel = PostDomainModel.of(
+                ((PostDomainModel) this.mockPostDomainModel).getId(),
+                ((PostDomainModel) this.mockPostDomainModel).getTitle(),
+                ((PostDomainModel) this.mockPostDomainModel).getContent(),
+                ((PostDomainModel) this.mockPostDomainModel).getWriter(),
+                true,
+                ((PostDomainModel) this.mockPostDomainModel).getBoard(),
+                ((PostDomainModel) this.mockPostDomainModel).getCreatedAt(),
+                ((PostDomainModel) this.mockPostDomainModel).getUpdatedAt()
+        )
+
+
+        this.userPort.findById(requestPresidentUser.getId()) >> Optional.of(requestPresidentUser)
+        this.userPort.findById(writerUser.getId()) >> Optional.of(writerUser)
+        this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(((PostDomainModel) this.mockPostDomainModel))
+
+        this.postPort.delete(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(deletedPostDomainModel)
+
+        when: "delete post with president user"
+        def postResponse = this.postService.delete(requestPresidentUser.getId(), ((PostDomainModel) this.mockPostDomainModel).getId())
+
+        then:
+        postResponse instanceof PostResponseDto
+        with(postResponse) {
+            postResponse.getIsDeleted()
+        }
+
+        when: "delete post with writer user"
+        postResponse = this.postService.delete(writerUser.getId(), ((PostDomainModel) this.mockPostDomainModel).getId())
+
+        then:
+        postResponse instanceof PostResponseDto
+        with(postResponse) {
+            postResponse.getIsDeleted()
+        }
+    }
+
+    @Test
+    def "Post delete normal with circle case"() {
+        given:
+        def writerUser = UserDomainModel.of(
+                "test writer user id",
+                "test-writer-user@cau.ac.kr",
+                "test writer user name",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.COMMON,
+                null,
+                UserState.ACTIVE
+        )
+
+        ((BoardDomainModel) this.mockBoardDomainModel).setCircle((CircleDomainModel) this.mockCircleDomainModel)
+        ((PostDomainModel) this.mockPostDomainModel).setWriter(writerUser)
+
+        def deletedPostDomainModel = PostDomainModel.of(
+                ((PostDomainModel) this.mockPostDomainModel).getId(),
+                ((PostDomainModel) this.mockPostDomainModel).getTitle(),
+                ((PostDomainModel) this.mockPostDomainModel).getContent(),
+                ((PostDomainModel) this.mockPostDomainModel).getWriter(),
+                true,
+                ((PostDomainModel) this.mockPostDomainModel).getBoard(),
+                ((PostDomainModel) this.mockPostDomainModel).getCreatedAt(),
+                ((PostDomainModel) this.mockPostDomainModel).getUpdatedAt()
+        )
+
+        def mockWriterUserCircleMemberDomainModel = CircleMemberDomainModel.of(
+                "test circle member id",
+                CircleMemberStatus.MEMBER,
+                (CircleDomainModel) this.mockCircleDomainModel,
+                writerUser.getId(),
+                writerUser.getName(),
+                null,
+                null
+        )
+
+        def mockCircleLeaderCircleMemberDomainModel = CircleMemberDomainModel.of(
+                "test circle member id",
+                CircleMemberStatus.MEMBER,
+                (CircleDomainModel) this.mockCircleDomainModel,
+                ((UserDomainModel) this.mockCircleLeaderUserDomainModel).getId(),
+                ((UserDomainModel) this.mockCircleLeaderUserDomainModel).getName(),
+                null,
+                null
+        )
+
+        this.userPort.findById(((UserDomainModel) this.mockCircleLeaderUserDomainModel).getId()) >> Optional.of(((UserDomainModel) this.mockCircleLeaderUserDomainModel))
+        this.userPort.findById(writerUser.getId()) >> Optional.of(writerUser)
+        this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(((PostDomainModel) this.mockPostDomainModel))
+
+        this.circleMemberPort.findByUserIdAndCircleId(writerUser.getId(), ((CircleDomainModel) this.mockCircleDomainModel).getId()) >> Optional.of(mockWriterUserCircleMemberDomainModel)
+        this.circleMemberPort.findByUserIdAndCircleId(((UserDomainModel) this.mockCircleLeaderUserDomainModel).getId(), ((CircleDomainModel) this.mockCircleDomainModel).getId()) >> Optional.of(mockCircleLeaderCircleMemberDomainModel)
+
+        this.postPort.delete(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(deletedPostDomainModel)
+
+        when: "delete post with circle leader user"
+        def postResponse = this.postService.delete(((UserDomainModel) this.mockCircleLeaderUserDomainModel).getId(), ((PostDomainModel) this.mockPostDomainModel).getId())
+
+        then:
+        postResponse instanceof PostResponseDto
+        with(postResponse) {
+            postResponse.getIsDeleted()
+        }
+
+        when: "delete post with writer user"
+        postResponse = this.postService.delete(writerUser.getId(), ((PostDomainModel) this.mockPostDomainModel).getId())
+
+        then:
+        postResponse instanceof PostResponseDto
+        with(postResponse) {
+            postResponse.getIsDeleted()
+        }
+    }
+
+    @Test
+    def "Post delete target already deleted case"() {
+        given:
+        def writerUser = UserDomainModel.of(
+                "test writer user id",
+                "test-writer-user@cau.ac.kr",
+                "test writer user name",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.COMMON,
+                null,
+                UserState.ACTIVE
+        )
+
+        ((PostDomainModel) this.mockPostDomainModel).setWriter(writerUser)
+        ((PostDomainModel) this.mockPostDomainModel).setIsDeleted(true)
+
+        def deletedPostDomainModel = PostDomainModel.of(
+                ((PostDomainModel) this.mockPostDomainModel).getId(),
+                ((PostDomainModel) this.mockPostDomainModel).getTitle(),
+                ((PostDomainModel) this.mockPostDomainModel).getContent(),
+                ((PostDomainModel) this.mockPostDomainModel).getWriter(),
+                true,
+                ((PostDomainModel) this.mockPostDomainModel).getBoard(),
+                ((PostDomainModel) this.mockPostDomainModel).getCreatedAt(),
+                ((PostDomainModel) this.mockPostDomainModel).getUpdatedAt()
+        )
+
+
+        this.userPort.findById(writerUser.getId()) >> Optional.of(writerUser)
+        this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(((PostDomainModel) this.mockPostDomainModel))
+
+        this.postPort.delete(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(deletedPostDomainModel)
+
+        when:
+        this.postService.delete(writerUser.getId(), ((PostDomainModel) this.mockPostDomainModel).getId())
+
+        then:
+        thrown(BadRequestException)
+    }
+
+    @Test
+    def "Post delete not circle member case"() {
+        given:
+        def writerUser = UserDomainModel.of(
+                "test writer user id",
+                "test-writer-user@cau.ac.kr",
+                "test writer user name",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.COMMON,
+                null,
+                UserState.ACTIVE
+        )
+
+        ((BoardDomainModel) this.mockBoardDomainModel).setCircle((CircleDomainModel) this.mockCircleDomainModel)
+        ((PostDomainModel) this.mockPostDomainModel).setWriter(writerUser)
+
+        def deletedPostDomainModel = PostDomainModel.of(
+                ((PostDomainModel) this.mockPostDomainModel).getId(),
+                ((PostDomainModel) this.mockPostDomainModel).getTitle(),
+                ((PostDomainModel) this.mockPostDomainModel).getContent(),
+                ((PostDomainModel) this.mockPostDomainModel).getWriter(),
+                true,
+                ((PostDomainModel) this.mockPostDomainModel).getBoard(),
+                ((PostDomainModel) this.mockPostDomainModel).getCreatedAt(),
+                ((PostDomainModel) this.mockPostDomainModel).getUpdatedAt()
+        )
+
+        this.userPort.findById(writerUser.getId()) >> Optional.of(writerUser)
+        this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(((PostDomainModel) this.mockPostDomainModel))
+
+        this.circleMemberPort.findByUserIdAndCircleId(writerUser.getId(), ((CircleDomainModel) this.mockCircleDomainModel).getId()) >> Optional.empty()
+
+        this.postPort.delete(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(deletedPostDomainModel)
+
+        when:
+        this.postService.delete(writerUser.getId(), ((PostDomainModel) this.mockPostDomainModel).getId())
+
+        then:
+        thrown(UnauthorizedException)
+    }
+
+    @Test
+    def "Post delete not circle member status MEMBER case"() {
+        given:
+        def writerUser = UserDomainModel.of(
+                "test writer user id",
+                "test-writer-user@cau.ac.kr",
+                "test writer user name",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.COMMON,
+                null,
+                UserState.ACTIVE
+        )
+
+        ((BoardDomainModel) this.mockBoardDomainModel).setCircle((CircleDomainModel) this.mockCircleDomainModel)
+        ((PostDomainModel) this.mockPostDomainModel).setWriter(writerUser)
+
+        def deletedPostDomainModel = PostDomainModel.of(
+                ((PostDomainModel) this.mockPostDomainModel).getId(),
+                ((PostDomainModel) this.mockPostDomainModel).getTitle(),
+                ((PostDomainModel) this.mockPostDomainModel).getContent(),
+                ((PostDomainModel) this.mockPostDomainModel).getWriter(),
+                true,
+                ((PostDomainModel) this.mockPostDomainModel).getBoard(),
+                ((PostDomainModel) this.mockPostDomainModel).getCreatedAt(),
+                ((PostDomainModel) this.mockPostDomainModel).getUpdatedAt()
+        )
+
+        def mockWriterUserCircleMemberDomainModel = CircleMemberDomainModel.of(
+                "test circle member id",
+                CircleMemberStatus.MEMBER,
+                (CircleDomainModel) this.mockCircleDomainModel,
+                writerUser.getId(),
+                writerUser.getName(),
+                null,
+                null
+        )
+
+        this.userPort.findById(writerUser.getId()) >> Optional.of(writerUser)
+        this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(((PostDomainModel) this.mockPostDomainModel))
+
+        this.circleMemberPort.findByUserIdAndCircleId(writerUser.getId(), ((CircleDomainModel) this.mockCircleDomainModel).getId()) >> Optional.of(mockWriterUserCircleMemberDomainModel)
+
+        this.postPort.delete(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(deletedPostDomainModel)
+
+        when: "Exception case with AWAIT status"
+        mockWriterUserCircleMemberDomainModel.setStatus(CircleMemberStatus.AWAIT)
+        this.postService.delete(writerUser.getId(), ((PostDomainModel) this.mockPostDomainModel).getId())
+
+        then:
+        thrown(BadRequestException)
+
+        when: "Exception case with REJECT status"
+        mockWriterUserCircleMemberDomainModel.setStatus(CircleMemberStatus.REJECT)
+        this.postService.delete(writerUser.getId(), ((PostDomainModel) this.mockPostDomainModel).getId())
+
+        then:
+        thrown(UnauthorizedException)
+
+        when: "Exception case with LEAVE status"
+        mockWriterUserCircleMemberDomainModel.setStatus(CircleMemberStatus.LEAVE)
+        this.postService.delete(writerUser.getId(), ((PostDomainModel) this.mockPostDomainModel).getId())
+
+        then:
+        thrown(BadRequestException)
+
+        when: "Exception case with DROP status"
+        mockWriterUserCircleMemberDomainModel.setStatus(CircleMemberStatus.DROP)
+        this.postService.delete(writerUser.getId(), ((PostDomainModel) this.mockPostDomainModel).getId())
+
+        then:
+        thrown(UnauthorizedException)
+    }
+
+    @Test
+    def "Post delete not circle leader of this circle case"() {
+        given:
+        def requestCircleLeaderUser = UserDomainModel.of(
+                "test request circle leader user id",
+                "test-circle-leader-user@cau.ac.kr",
+                "test circle leader user name",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.LEADER_CIRCLE,
+                null,
+                UserState.ACTIVE
+        )
+
+        def writerUser = UserDomainModel.of(
+                "test writer user id",
+                "test-writer-user@cau.ac.kr",
+                "test writer user name",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.COMMON,
+                null,
+                UserState.ACTIVE
+        )
+
+        ((BoardDomainModel) this.mockBoardDomainModel).setCircle((CircleDomainModel) this.mockCircleDomainModel)
+        ((PostDomainModel) this.mockPostDomainModel).setWriter(writerUser)
+
+        def deletedPostDomainModel = PostDomainModel.of(
+                ((PostDomainModel) this.mockPostDomainModel).getId(),
+                ((PostDomainModel) this.mockPostDomainModel).getTitle(),
+                ((PostDomainModel) this.mockPostDomainModel).getContent(),
+                ((PostDomainModel) this.mockPostDomainModel).getWriter(),
+                true,
+                ((PostDomainModel) this.mockPostDomainModel).getBoard(),
+                ((PostDomainModel) this.mockPostDomainModel).getCreatedAt(),
+                ((PostDomainModel) this.mockPostDomainModel).getUpdatedAt()
+        )
+
+        def mockRequestUserCircleMemberDomainModel = CircleMemberDomainModel.of(
+                "test circle member id",
+                CircleMemberStatus.MEMBER,
+                (CircleDomainModel) this.mockCircleDomainModel,
+                requestCircleLeaderUser.getId(),
+                requestCircleLeaderUser.getName(),
+                null,
+                null
+        )
+
+        this.userPort.findById(requestCircleLeaderUser.getId()) >> Optional.of(requestCircleLeaderUser)
+        this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(((PostDomainModel) this.mockPostDomainModel))
+
+        this.circleMemberPort.findByUserIdAndCircleId(requestCircleLeaderUser.getId(), ((CircleDomainModel) this.mockCircleDomainModel).getId()) >> Optional.of(mockRequestUserCircleMemberDomainModel)
+
+        this.postPort.delete(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(deletedPostDomainModel)
+
+        when:
+        this.postService.delete(requestCircleLeaderUser.getId(), ((PostDomainModel) this.mockPostDomainModel).getId())
+
+        then:
+        thrown(UnauthorizedException)
+    }
 }
