@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
-public class UserPortImpl implements UserPort {
+public class UserPortImpl extends DomainModelMapper implements UserPort {
     private final UserRepository userRepository;
 
     public UserPortImpl(UserRepository userRepository) {
@@ -95,20 +95,6 @@ public class UserPortImpl implements UserPort {
 
                     return this.entityToDomainModel(this.userRepository.save(srcUser));
                 }
-        );
-    }
-
-    private UserDomainModel entityToDomainModel(User user) {
-        return UserDomainModel.of(
-                user.getId(),
-                user.getEmail(),
-                user.getName(),
-                user.getPassword(),
-                user.getStudentId(),
-                user.getAdmissionYear(),
-                user.getRole(),
-                user.getProfileImage(),
-                user.getState()
         );
     }
 }

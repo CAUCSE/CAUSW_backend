@@ -3,6 +3,7 @@ package net.causw.adapter.web;
 import net.causw.application.CommentService;
 import net.causw.application.dto.CommentCreateRequestDto;
 import net.causw.application.dto.CommentResponseDto;
+import net.causw.application.dto.CommentUpdateRequestDto;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -42,6 +44,20 @@ public class CommentController {
             @RequestParam(defaultValue = "0") Integer pageNum
     ) {
         return this.commentService.findAll(userId, postId, pageNum);
+    }
+
+    @PutMapping(value = "/{id}")
+    @ResponseStatus(value = HttpStatus.OK)
+    public CommentResponseDto update(
+            @AuthenticationPrincipal String requestUserId,
+            @PathVariable String id,
+            @RequestParam CommentUpdateRequestDto commentUpdateRequestDto
+    ) {
+        return this.commentService.update(
+                requestUserId,
+                id,
+                commentUpdateRequestDto
+        );
     }
 
     @DeleteMapping(value = "/{id}")
