@@ -117,6 +117,15 @@ public class UserController {
         return this.userService.leave(id);
     }
 
+    @PutMapping(value = "{id}/drop")
+    @ResponseStatus(value = HttpStatus.OK)
+    public UserResponseDto drop(
+            @AuthenticationPrincipal String requestUserId,
+            @PathVariable String id
+    ) {
+        return this.userService.dropUser(requestUserId, id);
+    }
+
     @GetMapping(value = "/circles")
     @ResponseStatus(value = HttpStatus.OK)
     public List<CircleResponseDto> getCircleList(@AuthenticationPrincipal String currentUserId) {
