@@ -15,4 +15,6 @@ public interface CommentPort {
     Long countByPostId(String postId);
 
     CommentDomainModel create(CommentDomainModel commentDomainModel, PostDomainModel postDomainModel);
+
+    Optional<CommentDomainModel> update(String commentId, CommentDomainModel commentDomainModel);
 }
