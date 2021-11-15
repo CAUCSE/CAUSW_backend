@@ -29,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.validation.Validator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Service
@@ -130,8 +131,6 @@ public class LockerService {
             String lockerId,
             LockerUpdateRequestDto lockerUpdateRequestDto
     ) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
         UserDomainModel updaterDomainModel = this.userPort.findById(updaterId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -146,105 +145,20 @@ public class LockerService {
                 )
         );
 
-        UserDomainModel lockerUserDomainModel = lockerDomainModel.getUser().orElse(null);
 
-        // TODO: 추후 리팩터링 시 Supplier를 이용하여 Factory 구조를 적용할 것
-        switch (lockerUpdateRequestDto.getAction()) {
-            case REGISTER: {
-                if (!lockerDomainModel.getIsActive()) {
-                    throw new BadRequestException(
-                            ErrorCode.CANNOT_PERFORMED,
-                            "사물함이 사용 불가능한 상태입니다."
-                    );
-                }
+        Supplier<LockerActionFactory> lockerActionFactory = LockerActionFactory::new;
 
-                if (lockerUserDomainModel != null) {
-                    throw new BadRequestException(
-                            ErrorCode.CANNOT_PERFORMED,
-                            "이미 사용 중인 사물함입니다."
-                    );
-                }
+        return lockerActionFactory
+                .get()
+                .getLockerAction(lockerUpdateRequestDto.getAction())
+                .updateLockerDomainModel(
+                        lockerDomainModel,
+                        lockerDomainModel.getUser().orElse(null),
 
-                lockerDomainModel = LockerDomainModel.of(
-                        lockerId,
-                        lockerDomainModel.getLockerNumber(),
-                        lockerDomainModel.getIsActive(),
-                        null,
                         updaterDomainModel,
-                        lockerDomainModel.getLockerLocation()
-                );
-                break;
-            }
-            case RETURN: {
-                if (lockerUserDomainModel == null) {
-                    throw new BadRequestException(
-                            ErrorCode.CANNOT_PERFORMED,
-                            "사용 중인 사물함이 아닙니다."
-                    );
-                } else if (!lockerUserDomainModel.equals(updaterDomainModel)) {
-                    validatorBucket
-                            .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.PRESIDENT)));
-                }
-
-                lockerDomainModel = LockerDomainModel.of(
-                        lockerId,
-                        lockerDomainModel.getLockerNumber(),
-                        lockerDomainModel.getIsActive(),
-                        null,
-                        null,
-                        lockerDomainModel.getLockerLocation()
-                );
-                break;
-            }
-            case ENABLE: {
-                validatorBucket
-                        .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.PRESIDENT)));
-
-                if (lockerDomainModel.getIsActive()) {
-                    throw new BadRequestException(
-                            ErrorCode.CANNOT_PERFORMED,
-                            "이미 사용 가능한 사물함입니다."
-                    );
-                }
-
-                lockerDomainModel = LockerDomainModel.of(
-                        lockerId,
-                        lockerDomainModel.getLockerNumber(),
-                        true,
-                        null,
-                        lockerDomainModel.getUser().orElse(null),
-                        lockerDomainModel.getLockerLocation()
-                );
-                break;
-            }
-            case DISABLE: {
-                validatorBucket
-                        .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.PRESIDENT)));
-
-                if (!lockerDomainModel.getIsActive()) {
-                    throw new BadRequestException(
-                            ErrorCode.CANNOT_PERFORMED,
-                            "이미 사용 불가능한 사물함입니다."
-                    );
-                }
-
-                lockerDomainModel = LockerDomainModel.of(
-                        lockerId,
-                        lockerDomainModel.getLockerNumber(),
-                        false,
-                        null,
-                        lockerDomainModel.getUser().orElse(null),
-                        lockerDomainModel.getLockerLocation()
-                );
-                break;
-            }
-        }
-
-        validatorBucket
-                .consistOf(ConstraintValidator.of(lockerDomainModel, this.validator))
-                .validate();
-
-        return this.lockerPort.update(lockerId, lockerDomainModel)
+                        this.validator,
+                        this.lockerPort
+                )
                 .map(resLockerDomainModel -> {
                     this.lockerLogPort.create(
                             resLockerDomainModel.getLockerNumber(),
