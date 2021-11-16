@@ -89,8 +89,10 @@ public class UserDomainModel {
     ) {
         // TODO : Remove following -> Default로 Role.NONE 지정
         Role localRole = Role.NONE;
+        UserState localUserState = UserState.AWAIT;
         if (email.equals("admin@gmail.com")) {
             localRole = Role.ADMIN;
+            localUserState = UserState.ACTIVE;
         }
 
         return new UserDomainModel(
@@ -102,7 +104,7 @@ public class UserDomainModel {
                 admissionYear,
                 localRole,
                 profileImage,
-                UserState.ACTIVE // TODO : User Auth 개발 후 UserState.WAIT 으로 바꿀 것!!!
+                localUserState
         );
     }
 }

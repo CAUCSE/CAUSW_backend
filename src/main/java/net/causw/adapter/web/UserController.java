@@ -158,13 +158,9 @@ public class UserController {
     @PostMapping(value = "/admissions/apply")
     @ResponseStatus(value = HttpStatus.CREATED)
     public UserAdmissionResponseDto createAdmission(
-            @AuthenticationPrincipal String requestUserId,
             @RequestBody UserAdmissionCreateRequestDto userAdmissionCreateRequestDto
     ) {
-        return this.userService.create(
-                requestUserId,
-                userAdmissionCreateRequestDto
-        );
+        return this.userService.create(userAdmissionCreateRequestDto);
     }
 
     @PutMapping(value = "/admissions/{id}/accept")

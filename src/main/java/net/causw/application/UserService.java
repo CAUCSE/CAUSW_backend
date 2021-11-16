@@ -36,8 +36,8 @@ import net.causw.domain.validation.GrantableRoleValidator;
 import net.causw.domain.validation.PasswordCorrectValidator;
 import net.causw.domain.validation.PasswordFormatValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
-import net.causw.domain.validation.UserRoleWithoutAdminValidator;
 import net.causw.domain.validation.UserRoleValidator;
+import net.causw.domain.validation.UserRoleWithoutAdminValidator;
 import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
 import org.springframework.data.domain.Page;
@@ -451,11 +451,8 @@ public class UserService {
     }
 
     @Transactional
-    public UserAdmissionResponseDto create(
-            String requestUserId,
-            UserAdmissionCreateRequestDto userAdmissionCreateRequestDto
-    ) {
-        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+    public UserAdmissionResponseDto create(UserAdmissionCreateRequestDto userAdmissionCreateRequestDto) {
+        UserDomainModel requestUser = this.userPort.findByEmail(userAdmissionCreateRequestDto.getEmail()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "Invalid request user id"
@@ -497,6 +494,15 @@ public class UserService {
         ValidatorBucket.of()
                 .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT)))
                 .validate();
+
+        // Create default favorite board
+        this.boardPort.findOldest3Boards()
+                .forEach(boardDomainModel ->
+                        this.favoriteBoardPort.create(FavoriteBoardDomainModel.of(
+                                userAdmissionDomainModel.getUser(),
+                                boardDomainModel
+                        ))
+                );
 
         this.userPort.updateRole(userAdmissionDomainModel.getUser().getId(), Role.COMMON).orElseThrow(
                 () -> new InternalServerException(
