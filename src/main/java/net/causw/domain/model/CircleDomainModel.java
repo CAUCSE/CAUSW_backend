@@ -12,17 +12,18 @@ import java.util.Optional;
 @Getter
 @Setter
 public class CircleDomainModel {
+    private final String DOMAIN = "소모임";
     private String id;
     private String mainImage;
     private String description;
 
-    @NotBlank(message = "Name is blank")
+    @NotBlank(message = "소모임 이름이 입력되지 않았습니다.")
     private String name;
 
-    @NotNull(message = "Circle state is null")
+    @NotNull(message = "소모임 상태가 입력되지 않았습니다.")
     private Boolean isDeleted;
 
-    @NotNull(message = "Circle leader is null")
+    @NotNull(message = "소모임장이 입력되지 않았습니다.")
     private UserDomainModel leader;
 
     private LocalDateTime createdAt;

@@ -31,7 +31,7 @@ public class UserRoleWithoutAdminValidator extends AbstractValidator {
 
         throw new UnauthorizedException(
                 ErrorCode.API_NOT_ALLOWED,
-                "You don't have auth"
+                "접근 권한이 없습니다."
         );
     }
 }

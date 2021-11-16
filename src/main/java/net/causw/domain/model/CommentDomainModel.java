@@ -12,18 +12,21 @@ import java.util.List;
 @Getter
 @Setter
 public class CommentDomainModel {
+    private final String DOMAIN = "댓글";
     private String id;
 
-    @NotBlank(message = "Content is blank")
+    @NotBlank(message = "댓글 내용이 입력되지 않았습니다.")
     private String content;
+
+    @NotNull(message = "댓글 상태가 입력되지 않았습니다.")
     private Boolean isDeleted;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    @NotNull(message = "Writer is null")
+    @NotNull(message = "작성자가 입력되지 않았습니다.")
     private UserDomainModel writer;
 
-    @NotNull(message = "Post id is null")
+    @NotNull(message = "게시글이 입력되지 않았습니다.")
     private String postId;
     private CommentDomainModel parentComment;           // Write
     private List<CommentDomainModel> childCommentList;  // Read

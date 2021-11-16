@@ -14,23 +14,23 @@ public class UserDomainModel {
     private String studentId;
     private String profileImage;
 
-    @NotBlank(message = "Name is blank")
+    @NotBlank(message = "사용자 이름이 입력되지 않았습니다.")
     private String name;
 
-    @Email(message = "Invalid email format")
-    @NotNull(message = "Email is null")
+    @Email(message = "잘못된 이메일 형식입니다.")
+    @NotNull(message = "이메일이 입력되지 않았습니다.")
     private String email;
 
-    @NotBlank(message = "Password is blank")
+    @NotBlank(message = "비밀번호가 입력되지 않았습니다.")
     private String password;
 
-    @NotNull(message = "Admission Year is null")
+    @NotNull(message = "입학년도가 입력되지 않았습니다.")
     private Integer admissionYear;
 
-    @NotNull(message = "Role is null")
+    @NotNull(message = "사용자 권한이 입력되지 않았습니다.")
     private Role role;
 
-    @NotNull(message = "User State is null")
+    @NotNull(message = "사용자 상태가 입력되지 않았습니다.")
     private UserState state;
 
     private UserDomainModel(

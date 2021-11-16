@@ -24,7 +24,7 @@ public class PasswordCorrectValidator extends AbstractValidator {
         if (!this.userDomainModel.getPassword().equals(this.password)) {
             throw new UnauthorizedException(
                     ErrorCode.INVALID_SIGNIN,
-                    "Invalid sign in data"
+                    "비밀번호를 잘못 입력했습니다."
             );
         }
     }
