@@ -11,6 +11,7 @@ import net.causw.application.dto.LockerResponseDto;
 import net.causw.application.dto.LockerUpdateRequestDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -65,6 +66,15 @@ public class LockerController {
     ) {
         return this.lockerService.move(updaterId, id, lockerMoveRequestDto);
     }
+
+    @DeleteMapping(value = "/{id}")
+    @ResponseStatus(value = HttpStatus.OK)
+    public LockerResponseDto delete(
+            @AuthenticationPrincipal String deleterId,
+            @PathVariable String id
+    ) {
+        return this.lockerService.delete(deleterId, id);
+    }
     
     @GetMapping(value = "/locations")
     @ResponseStatus(value = HttpStatus.OK)
@@ -97,6 +107,14 @@ public class LockerController {
         return this.lockerService.updateLocation(updaterId, locationId, lockerLocation);
     }
 
+    @DeleteMapping(value = "/locations/{locationId}")
+    @ResponseStatus(value = HttpStatus.OK)
+    public LockerLocationResponseDto deleteLocation(
+            @AuthenticationPrincipal String deleterId,
+            @PathVariable String locationId
+    ) {
+        return this.lockerService.deleteLocation(deleterId, locationId);
+    }
 
     @GetMapping(value="/{id}/log")
     @ResponseStatus(value = HttpStatus.OK)

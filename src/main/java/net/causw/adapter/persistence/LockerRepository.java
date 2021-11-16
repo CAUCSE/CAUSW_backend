@@ -14,10 +14,9 @@ public interface LockerRepository extends JpaRepository<Locker, String> {
 
     List<Locker> findByLocation_Id(String locationId);
 
-    @Query(value = "SELECT COUNT(l.id) " +
-            "FROM TB_LOCKER AS l " +
-            "LEFT JOIN TB_USER AS u ON l.id = u.locker_id " +
-            "WHERE l.location_id = :location_id AND l.is_active = true AND u.id IS NULL", nativeQuery = true)
+    @Query(value = "SELECT COUNT(*) " +
+            "FROM TB_LOCKER  " +
+            "WHERE location_id = :location_id AND is_active = true AND user_id IS NULL", nativeQuery = true)
     long getEnableLockerCountByLocation(@Param("location_id") String locationId);
 
     @Query(value = "SELECT COUNT(*) " +

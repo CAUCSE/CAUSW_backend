@@ -315,7 +315,44 @@ public class LockerService {
         ));
     }
 
+    @Transactional(readOnly = false)
+    public LockerResponseDto delete(String deleterId, String lockerId) {
+        UserDomainModel deleterDomainModel = this.userPort.findById(deleterId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid requester user id"
+                )
+        );
 
+        LockerDomainModel lockerDomainModel = this.lockerPort.findById(lockerId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid locker id"
+                )
+        );
+
+        ValidatorBucket.of()
+                .consistOf(UserRoleValidator.of(deleterDomainModel.getRole(), List.of(Role.PRESIDENT)))
+                .validate();
+
+        if (lockerDomainModel.getUser().orElse(null) != null) {
+            throw new BadRequestException(
+                    ErrorCode.CANNOT_PERFORMED,
+                    "This locker is in use"
+            );
+        }
+
+        this.lockerPort.delete(lockerDomainModel);
+
+        this.lockerLogPort.create(
+                lockerDomainModel.getLockerNumber(),
+                deleterDomainModel,
+                LockerLogAction.DISABLE,
+                "사물함 삭제"
+        );
+
+        return LockerResponseDto.from(lockerDomainModel);
+    }
 
     @Transactional(readOnly = true)
     public List<LockerResponseDto> findByLocation(String locationId) {
@@ -445,6 +482,38 @@ public class LockerService {
                 this.lockerPort.getEnableLockerCountByLocation(lockerLocationDomainModel.getId()),
                 this.lockerPort.getLockerCountByLocation(lockerLocationDomainModel.getId())
         );
+    }
+
+    @Transactional(readOnly = false)
+    public LockerLocationResponseDto deleteLocation(String deleterId, String lockerLocationId) {
+        UserDomainModel deleterDomainModel = this.userPort.findById(deleterId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid requester user id"
+                )
+        );
+
+        LockerLocationDomainModel lockerLocationDomainModel = this.lockerLocationPort.findById(lockerLocationId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "Invalid locker id"
+                )
+        );
+
+        if (this.lockerPort.getLockerCountByLocation(lockerLocationDomainModel.getId()) != 0L) {
+            throw new BadRequestException(
+                    ErrorCode.CANNOT_PERFORMED,
+                    "This location contains locker"
+            );
+        }
+
+        ValidatorBucket.of()
+                .consistOf(UserRoleValidator.of(deleterDomainModel.getRole(), List.of(Role.PRESIDENT)))
+                .validate();
+
+        this.lockerLocationPort.delete(lockerLocationDomainModel);
+
+        return LockerLocationResponseDto.from(lockerLocationDomainModel, 0L, 0L);
     }
 
     @Transactional(readOnly = true)

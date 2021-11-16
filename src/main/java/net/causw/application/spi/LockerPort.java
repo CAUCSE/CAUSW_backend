@@ -16,6 +16,8 @@ public interface LockerPort {
 
     Optional<LockerDomainModel> updateLocation(String id, LockerDomainModel lockerDomainModel);
 
+    void delete(LockerDomainModel lockerDomainModel);
+
     List<LockerDomainModel> findByLocationId(String locationId);
 
     Long getEnableLockerCountByLocation(String locationId);

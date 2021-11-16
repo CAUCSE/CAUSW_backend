@@ -54,4 +54,9 @@ public class LockerLocationPortImpl extends DomainModelMapper implements LockerL
                 }
         );
     }
+
+    @Override
+    public void delete(LockerLocationDomainModel lockerLocationDomainModel) {
+        this.lockerLocationRepository.delete(LockerLocation.from(lockerLocationDomainModel));
+    }
 }
