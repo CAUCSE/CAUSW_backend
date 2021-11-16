@@ -2,11 +2,13 @@ package net.causw.application
 
 import net.causw.application.dto.CommentCreateRequestDto
 import net.causw.application.dto.CommentResponseDto
+import net.causw.application.dto.CommentUpdateRequestDto
 import net.causw.application.spi.CircleMemberPort
 import net.causw.application.spi.CommentPort
 import net.causw.application.spi.PostPort
 import net.causw.application.spi.UserPort
 import net.causw.domain.exceptions.BadRequestException
+import net.causw.domain.exceptions.UnauthorizedException
 import net.causw.domain.model.*
 import org.junit.runner.RunWith
 import org.powermock.api.mockito.PowerMockito
@@ -52,6 +54,10 @@ class CommentServiceTest extends Specification {
     def mockCommentWriterUserDomainModel3
     def mockCommentDomainModel2
     def mockCommentDomainModel3
+
+    // Circle
+    def mockCircleLeaderUserDomainModel
+    def mockCircleDomainModel
 
     def setup() {
         this.mockBoardDomainModel = BoardDomainModel.of(
@@ -173,6 +179,27 @@ class CommentServiceTest extends Specification {
                 null,
                 (UserDomainModel) this.mockParentCommentWriterUserDomainModel,
                 ((PostDomainModel) this.mockPostDomainModel).getId()
+        )
+
+        this.mockCircleLeaderUserDomainModel = UserDomainModel.of(
+                "test leader user id",
+                "test-leader@cau.ac.kr",
+                "test leader user name",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.LEADER_CIRCLE,
+                null,
+                UserState.ACTIVE
+        )
+
+        this.mockCircleDomainModel = CircleDomainModel.of(
+                "test circle id",
+                "test circle name",
+                null,
+                "test circle description",
+                false,
+                (UserDomainModel) this.mockCircleLeaderUserDomainModel
         )
     }
 
@@ -333,5 +360,679 @@ class CommentServiceTest extends Specification {
         commentList.getContent().get(0).getParentCommentId() == null
         commentList.getContent().get(1).getParentCommentId() == "test parent comment id"
         commentList.getContent().get(2).getParentCommentId() == "test parent comment id"
+    }
+
+    /**
+     * Test case for comment update
+     */
+    def "Comment update normal without circle case"() {
+        given:
+        def targetContent = "Update comment content"
+        def mockUpdatedCommentDomainModel = CommentDomainModel.of(
+                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
+                targetContent,
+                ((CommentDomainModel) this.mockCommentDomainModel).getIsDeleted(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getCreatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getUpdatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getWriter(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getPostId()
+        )
+
+        def commentUpdateRequestDto = new CommentUpdateRequestDto(targetContent)
+
+        this.userPort.findById(((UserDomainModel) this.mockCommentWriterUserDomainModel).getId()) >> Optional.of((UserDomainModel) this.mockCommentWriterUserDomainModel)
+        this.commentPort.findById(((CommentDomainModel) this.mockCommentDomainModel).getId()) >> Optional.of(((CommentDomainModel) this.mockCommentDomainModel))
+        this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(((PostDomainModel) this.mockPostDomainModel))
+
+        this.commentPort.update(((CommentDomainModel) this.mockCommentDomainModel).getId(), mockUpdatedCommentDomainModel) >> Optional.of(mockUpdatedCommentDomainModel)
+
+        when:
+        PowerMockito.mockStatic(CommentDomainModel.class)
+        PowerMockito.when(CommentDomainModel.of(
+                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
+                targetContent,
+                ((CommentDomainModel) this.mockCommentDomainModel).getIsDeleted(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getCreatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getUpdatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getWriter(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getPostId()
+        )).thenReturn(mockUpdatedCommentDomainModel)
+        def commentUpdateResponse = this.commentService.update(
+                ((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
+                commentUpdateRequestDto
+        )
+
+        then:
+        commentUpdateResponse instanceof CommentResponseDto
+        commentUpdateResponse.getContent() == targetContent
+    }
+
+    def "Comment update normal with circle case"() {
+        given:
+        def targetContent = "Update comment content"
+        def mockUpdatedCommentDomainModel = CommentDomainModel.of(
+                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
+                targetContent,
+                ((CommentDomainModel) this.mockCommentDomainModel).getIsDeleted(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getCreatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getUpdatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getWriter(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getPostId()
+        )
+
+        def mockWriterUserCircleMemberDomainModel = CircleMemberDomainModel.of(
+                "test circle member id",
+                CircleMemberStatus.MEMBER,
+                (CircleDomainModel) this.mockCircleDomainModel,
+                ((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(),
+                ((UserDomainModel) this.mockCommentWriterUserDomainModel).getName(),
+                null,
+                null
+        )
+
+        def commentUpdateRequestDto = new CommentUpdateRequestDto(targetContent)
+
+        this.userPort.findById(((UserDomainModel) this.mockCommentWriterUserDomainModel).getId()) >> Optional.of((UserDomainModel) this.mockCommentWriterUserDomainModel)
+        this.commentPort.findById(((CommentDomainModel) this.mockCommentDomainModel).getId()) >> Optional.of(((CommentDomainModel) this.mockCommentDomainModel))
+
+        ((BoardDomainModel) this.mockBoardDomainModel).setCircle((CircleDomainModel) this.mockCircleDomainModel)
+        this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(((PostDomainModel) this.mockPostDomainModel))
+        this.circleMemberPort.findByUserIdAndCircleId(((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(), ((CircleDomainModel) this.mockCircleDomainModel).getId()) >> Optional.of(mockWriterUserCircleMemberDomainModel)
+
+        this.commentPort.update(((CommentDomainModel) this.mockCommentDomainModel).getId(), mockUpdatedCommentDomainModel) >> Optional.of(mockUpdatedCommentDomainModel)
+
+        when:
+        PowerMockito.mockStatic(CommentDomainModel.class)
+        PowerMockito.when(CommentDomainModel.of(
+                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
+                targetContent,
+                ((CommentDomainModel) this.mockCommentDomainModel).getIsDeleted(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getCreatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getUpdatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getWriter(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getPostId()
+        )).thenReturn(mockUpdatedCommentDomainModel)
+        def commentUpdateResponse = this.commentService.update(
+                ((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
+                commentUpdateRequestDto
+        )
+
+        then:
+        commentUpdateResponse instanceof CommentResponseDto
+        commentUpdateResponse.getContent() == targetContent
+    }
+
+    def "Comment update target deleted case"() {
+        given:
+        def targetContent = "Update comment content"
+        def mockUpdatedCommentDomainModel = CommentDomainModel.of(
+                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
+                targetContent,
+                ((CommentDomainModel) this.mockCommentDomainModel).getIsDeleted(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getCreatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getUpdatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getWriter(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getPostId()
+        )
+
+        def commentUpdateRequestDto = new CommentUpdateRequestDto(targetContent)
+
+        this.userPort.findById(((UserDomainModel) this.mockCommentWriterUserDomainModel).getId()) >> Optional.of((UserDomainModel) this.mockCommentWriterUserDomainModel)
+        this.commentPort.findById(((CommentDomainModel) this.mockCommentDomainModel).getId()) >> Optional.of(((CommentDomainModel) this.mockCommentDomainModel))
+        this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(((PostDomainModel) this.mockPostDomainModel))
+
+        this.commentPort.update(((CommentDomainModel) this.mockCommentDomainModel).getId(), mockUpdatedCommentDomainModel) >> Optional.of(mockUpdatedCommentDomainModel)
+
+        when: "Target comment deleted"
+        PowerMockito.mockStatic(CommentDomainModel.class)
+        PowerMockito.when(CommentDomainModel.of(
+                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
+                targetContent,
+                ((CommentDomainModel) this.mockCommentDomainModel).getIsDeleted(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getCreatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getUpdatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getWriter(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getPostId()
+        )).thenReturn(mockUpdatedCommentDomainModel)
+        ((CommentDomainModel) this.mockCommentDomainModel).setIsDeleted(true)
+        ((PostDomainModel) this.mockPostDomainModel).setIsDeleted(false)
+        this.commentService.update(
+                ((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
+                commentUpdateRequestDto
+        )
+
+        then: "Target post deleted"
+        thrown(BadRequestException)
+
+        when:
+        ((CommentDomainModel) this.mockCommentDomainModel).setIsDeleted(false)
+        ((PostDomainModel) this.mockPostDomainModel).setIsDeleted(true)
+        this.commentService.update(
+                ((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
+                commentUpdateRequestDto
+        )
+
+        then:
+        thrown(BadRequestException)
+    }
+
+    def "Comment update request user not writer case"() {
+        given:
+        def targetContent = "Update comment content"
+        def mockUpdatedCommentDomainModel = CommentDomainModel.of(
+                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
+                targetContent,
+                ((CommentDomainModel) this.mockCommentDomainModel).getIsDeleted(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getCreatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getUpdatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getWriter(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getPostId()
+        )
+
+        def requestUser = UserDomainModel.of(
+                "test request user id",
+                "test-request-user@cau.ac.kr",
+                "test request user name",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.PRESIDENT,
+                null,
+                UserState.ACTIVE
+        )
+
+        def commentUpdateRequestDto = new CommentUpdateRequestDto(targetContent)
+
+        this.userPort.findById(requestUser.getId()) >> Optional.of(requestUser)
+        this.commentPort.findById(((CommentDomainModel) this.mockCommentDomainModel).getId()) >> Optional.of(((CommentDomainModel) this.mockCommentDomainModel))
+        this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(((PostDomainModel) this.mockPostDomainModel))
+
+        this.commentPort.update(((CommentDomainModel) this.mockCommentDomainModel).getId(), mockUpdatedCommentDomainModel) >> Optional.of(mockUpdatedCommentDomainModel)
+
+        when:
+        PowerMockito.mockStatic(CommentDomainModel.class)
+        PowerMockito.when(CommentDomainModel.of(
+                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
+                targetContent,
+                ((CommentDomainModel) this.mockCommentDomainModel).getIsDeleted(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getCreatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getUpdatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getWriter(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getPostId()
+        )).thenReturn(mockUpdatedCommentDomainModel)
+        this.commentService.update(
+                requestUser.getId(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
+                commentUpdateRequestDto
+        )
+
+        then:
+        thrown(UnauthorizedException)
+    }
+
+    def "Comment update not circle member case"() {
+        given:
+        def targetContent = "Update comment content"
+        def mockUpdatedCommentDomainModel = CommentDomainModel.of(
+                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
+                targetContent,
+                ((CommentDomainModel) this.mockCommentDomainModel).getIsDeleted(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getCreatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getUpdatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getWriter(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getPostId()
+        )
+
+        def commentUpdateRequestDto = new CommentUpdateRequestDto(targetContent)
+
+        this.userPort.findById(((UserDomainModel) this.mockCommentWriterUserDomainModel).getId()) >> Optional.of((UserDomainModel) this.mockCommentWriterUserDomainModel)
+        this.commentPort.findById(((CommentDomainModel) this.mockCommentDomainModel).getId()) >> Optional.of(((CommentDomainModel) this.mockCommentDomainModel))
+
+        ((BoardDomainModel) this.mockBoardDomainModel).setCircle((CircleDomainModel) this.mockCircleDomainModel)
+        this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(((PostDomainModel) this.mockPostDomainModel))
+        this.circleMemberPort.findByUserIdAndCircleId(((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(), ((CircleDomainModel) this.mockCircleDomainModel).getId()) >> Optional.empty()
+
+        this.commentPort.update(((CommentDomainModel) this.mockCommentDomainModel).getId(), mockUpdatedCommentDomainModel) >> Optional.of(mockUpdatedCommentDomainModel)
+
+        when:
+        PowerMockito.mockStatic(CommentDomainModel.class)
+        PowerMockito.when(CommentDomainModel.of(
+                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
+                targetContent,
+                ((CommentDomainModel) this.mockCommentDomainModel).getIsDeleted(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getCreatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getUpdatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getWriter(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getPostId()
+        )).thenReturn(mockUpdatedCommentDomainModel)
+        this.commentService.update(
+                ((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
+                commentUpdateRequestDto
+        )
+
+        then:
+        thrown(UnauthorizedException)
+    }
+
+    def "Comment update not circle member status MEMBER case"() {
+        given:
+        def targetContent = "Update comment content"
+        def mockUpdatedCommentDomainModel = CommentDomainModel.of(
+                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
+                targetContent,
+                ((CommentDomainModel) this.mockCommentDomainModel).getIsDeleted(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getCreatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getUpdatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getWriter(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getPostId()
+        )
+
+        def mockWriterUserCircleMemberDomainModel = CircleMemberDomainModel.of(
+                "test circle member id",
+                CircleMemberStatus.MEMBER,
+                (CircleDomainModel) this.mockCircleDomainModel,
+                ((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(),
+                ((UserDomainModel) this.mockCommentWriterUserDomainModel).getName(),
+                null,
+                null
+        )
+
+        def commentUpdateRequestDto = new CommentUpdateRequestDto(targetContent)
+
+        this.userPort.findById(((UserDomainModel) this.mockCommentWriterUserDomainModel).getId()) >> Optional.of((UserDomainModel) this.mockCommentWriterUserDomainModel)
+        this.commentPort.findById(((CommentDomainModel) this.mockCommentDomainModel).getId()) >> Optional.of(((CommentDomainModel) this.mockCommentDomainModel))
+
+        ((BoardDomainModel) this.mockBoardDomainModel).setCircle((CircleDomainModel) this.mockCircleDomainModel)
+        this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(((PostDomainModel) this.mockPostDomainModel))
+        this.circleMemberPort.findByUserIdAndCircleId(((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(), ((CircleDomainModel) this.mockCircleDomainModel).getId()) >> Optional.of(mockWriterUserCircleMemberDomainModel)
+
+        this.commentPort.update(((CommentDomainModel) this.mockCommentDomainModel).getId(), mockUpdatedCommentDomainModel) >> Optional.of(mockUpdatedCommentDomainModel)
+
+        when: "Exception case with AWAIT status"
+        PowerMockito.mockStatic(CommentDomainModel.class)
+        PowerMockito.when(CommentDomainModel.of(
+                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
+                targetContent,
+                ((CommentDomainModel) this.mockCommentDomainModel).getIsDeleted(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getCreatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getUpdatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getWriter(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getPostId()
+        )).thenReturn(mockUpdatedCommentDomainModel)
+        mockWriterUserCircleMemberDomainModel.setStatus(CircleMemberStatus.AWAIT)
+        this.commentService.update(
+                ((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
+                commentUpdateRequestDto
+        )
+
+        then:
+        thrown(BadRequestException)
+
+        when: "Exception case with REJECT status"
+        mockWriterUserCircleMemberDomainModel.setStatus(CircleMemberStatus.REJECT)
+        this.commentService.update(
+                ((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
+                commentUpdateRequestDto
+        )
+
+        then:
+        thrown(UnauthorizedException)
+
+        when: "Exception case with LEAVE status"
+        mockWriterUserCircleMemberDomainModel.setStatus(CircleMemberStatus.LEAVE)
+        this.commentService.update(
+                ((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
+                commentUpdateRequestDto
+        )
+
+        then:
+        thrown(BadRequestException)
+
+        when: "Exception case with DROP status"
+        mockWriterUserCircleMemberDomainModel.setStatus(CircleMemberStatus.DROP)
+        this.commentService.update(
+                ((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
+                commentUpdateRequestDto
+        )
+
+        then:
+        thrown(UnauthorizedException)
+    }
+
+    /**
+     * Test case for comment delete
+     */
+    def "Comment delete normal without circle case"() {
+        given:
+        def requestPresidentUser = UserDomainModel.of(
+                "test president user id",
+                "test-president-user@cau.ac.kr",
+                "test president user name",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.PRESIDENT,
+                null,
+                UserState.ACTIVE
+        )
+
+        def mockDeletedCommentDomainModel = CommentDomainModel.of(
+                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getContent(),
+                true,
+                ((CommentDomainModel) this.mockCommentDomainModel).getCreatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getUpdatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getWriter(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getPostId()
+        )
+
+        this.userPort.findById(requestPresidentUser.getId()) >> Optional.of(requestPresidentUser)
+        this.userPort.findById(((UserDomainModel) this.mockCommentWriterUserDomainModel).getId()) >> Optional.of((UserDomainModel) this.mockCommentWriterUserDomainModel)
+        this.commentPort.findById(((CommentDomainModel) this.mockCommentDomainModel).getId()) >> Optional.of(((CommentDomainModel) this.mockCommentDomainModel))
+        this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(((PostDomainModel) this.mockPostDomainModel))
+
+        this.commentPort.delete(((CommentDomainModel) this.mockCommentDomainModel).getId()) >> Optional.of(mockDeletedCommentDomainModel)
+
+        when: "delete comment with president user"
+        def commentDeleteResponse = this.commentService.delete(
+                requestPresidentUser.getId(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getId()
+        )
+
+        then:
+        commentDeleteResponse instanceof CommentResponseDto
+        with(commentDeleteResponse) {
+            commentDeleteResponse.getIsDeleted()
+        }
+
+        when: "delete comment with writer user"
+        commentDeleteResponse = this.commentService.delete(
+                ((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getId()
+        )
+
+        then:
+        commentDeleteResponse instanceof CommentResponseDto
+        with(commentDeleteResponse) {
+            commentDeleteResponse.getIsDeleted()
+        }
+    }
+
+    def "Comment delete normal with circle case"() {
+        given:
+        ((BoardDomainModel) this.mockBoardDomainModel).setCircle((CircleDomainModel) this.mockCircleDomainModel)
+
+        def mockDeletedCommentDomainModel = CommentDomainModel.of(
+                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getContent(),
+                true,
+                ((CommentDomainModel) this.mockCommentDomainModel).getCreatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getUpdatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getWriter(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getPostId()
+        )
+
+        def mockWriterUserCircleMemberDomainModel = CircleMemberDomainModel.of(
+                "test circle member id",
+                CircleMemberStatus.MEMBER,
+                (CircleDomainModel) this.mockCircleDomainModel,
+                ((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(),
+                ((UserDomainModel) this.mockCommentWriterUserDomainModel).getName(),
+                null,
+                null
+        )
+
+        def mockCircleLeaderCircleMemberDomainModel = CircleMemberDomainModel.of(
+                "test circle member id",
+                CircleMemberStatus.MEMBER,
+                (CircleDomainModel) this.mockCircleDomainModel,
+                ((UserDomainModel) this.mockCircleLeaderUserDomainModel).getId(),
+                ((UserDomainModel) this.mockCircleLeaderUserDomainModel).getName(),
+                null,
+                null
+        )
+
+        this.userPort.findById(((UserDomainModel) this.mockCircleLeaderUserDomainModel).getId()) >> Optional.of((UserDomainModel) this.mockCircleLeaderUserDomainModel)
+        this.userPort.findById(((UserDomainModel) this.mockCommentWriterUserDomainModel).getId()) >> Optional.of((UserDomainModel) this.mockCommentWriterUserDomainModel)
+        this.commentPort.findById(((CommentDomainModel) this.mockCommentDomainModel).getId()) >> Optional.of(((CommentDomainModel) this.mockCommentDomainModel))
+        this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(((PostDomainModel) this.mockPostDomainModel))
+
+        this.circleMemberPort.findByUserIdAndCircleId(((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(), ((CircleDomainModel) this.mockCircleDomainModel).getId()) >> Optional.of(mockWriterUserCircleMemberDomainModel)
+        this.circleMemberPort.findByUserIdAndCircleId(((UserDomainModel) this.mockCircleLeaderUserDomainModel).getId(), ((CircleDomainModel) this.mockCircleDomainModel).getId()) >> Optional.of(mockCircleLeaderCircleMemberDomainModel)
+
+        this.commentPort.delete(((CommentDomainModel) this.mockCommentDomainModel).getId()) >> Optional.of(mockDeletedCommentDomainModel)
+
+        when: "delete comment with circle leader user"
+        def commentDeleteResponse = this.commentService.delete(
+                ((UserDomainModel) this.mockCircleLeaderUserDomainModel).getId(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getId()
+        )
+
+        then:
+        commentDeleteResponse instanceof CommentResponseDto
+        with(commentDeleteResponse) {
+            commentDeleteResponse.getIsDeleted()
+        }
+
+        when: "delete comment with writer user"
+        commentDeleteResponse = this.commentService.delete(
+                ((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getId()
+        )
+
+        then:
+        commentDeleteResponse instanceof CommentResponseDto
+        with(commentDeleteResponse) {
+            commentDeleteResponse.getIsDeleted()
+        }
+    }
+
+    def "Comment delete target deleted case"() {
+        given:
+        def mockDeletedCommentDomainModel = CommentDomainModel.of(
+                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getContent(),
+                true,
+                ((CommentDomainModel) this.mockCommentDomainModel).getCreatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getUpdatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getWriter(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getPostId()
+        )
+
+        this.userPort.findById(((UserDomainModel) this.mockCommentWriterUserDomainModel).getId()) >> Optional.of((UserDomainModel) this.mockCommentWriterUserDomainModel)
+        this.commentPort.findById(((CommentDomainModel) this.mockCommentDomainModel).getId()) >> Optional.of(((CommentDomainModel) this.mockCommentDomainModel))
+        this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(((PostDomainModel) this.mockPostDomainModel))
+
+        this.commentPort.delete(((CommentDomainModel) this.mockCommentDomainModel).getId()) >> Optional.of(mockDeletedCommentDomainModel)
+
+        when: "Target comment deleted"
+        ((CommentDomainModel) this.mockCommentDomainModel).setIsDeleted(true)
+        ((PostDomainModel) this.mockPostDomainModel).setIsDeleted(false)
+        this.commentService.delete(
+                ((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getId()
+        )
+
+        then:
+        thrown(BadRequestException)
+
+        when: "Target post deleted"
+        ((CommentDomainModel) this.mockCommentDomainModel).setIsDeleted(false)
+        ((PostDomainModel) this.mockPostDomainModel).setIsDeleted(true)
+        this.commentService.delete(
+                ((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getId()
+        )
+
+        then:
+        thrown(BadRequestException)
+    }
+
+    def "Comment delete not circle member case"() {
+        given:
+        ((BoardDomainModel) this.mockBoardDomainModel).setCircle((CircleDomainModel) this.mockCircleDomainModel)
+
+        def mockDeletedCommentDomainModel = CommentDomainModel.of(
+                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getContent(),
+                true,
+                ((CommentDomainModel) this.mockCommentDomainModel).getCreatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getUpdatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getWriter(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getPostId()
+        )
+
+        this.userPort.findById(((UserDomainModel) this.mockCommentWriterUserDomainModel).getId()) >> Optional.of((UserDomainModel) this.mockCommentWriterUserDomainModel)
+        this.commentPort.findById(((CommentDomainModel) this.mockCommentDomainModel).getId()) >> Optional.of(((CommentDomainModel) this.mockCommentDomainModel))
+        this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(((PostDomainModel) this.mockPostDomainModel))
+
+        this.circleMemberPort.findByUserIdAndCircleId(((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(), ((CircleDomainModel) this.mockCircleDomainModel).getId()) >> Optional.empty()
+
+        this.commentPort.delete(((CommentDomainModel) this.mockCommentDomainModel).getId()) >> Optional.of(mockDeletedCommentDomainModel)
+
+        when:
+        this.commentService.delete(
+                ((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getId()
+        )
+
+        then:
+        thrown(UnauthorizedException)
+    }
+
+    def "Comment delete not circle member status MEMBER case"() {
+        given:
+        ((BoardDomainModel) this.mockBoardDomainModel).setCircle((CircleDomainModel) this.mockCircleDomainModel)
+
+        def mockDeletedCommentDomainModel = CommentDomainModel.of(
+                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getContent(),
+                true,
+                ((CommentDomainModel) this.mockCommentDomainModel).getCreatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getUpdatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getWriter(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getPostId()
+        )
+
+        def mockWriterUserCircleMemberDomainModel = CircleMemberDomainModel.of(
+                "test circle member id",
+                CircleMemberStatus.MEMBER,
+                (CircleDomainModel) this.mockCircleDomainModel,
+                ((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(),
+                ((UserDomainModel) this.mockCommentWriterUserDomainModel).getName(),
+                null,
+                null
+        )
+
+        this.userPort.findById(((UserDomainModel) this.mockCommentWriterUserDomainModel).getId()) >> Optional.of((UserDomainModel) this.mockCommentWriterUserDomainModel)
+        this.commentPort.findById(((CommentDomainModel) this.mockCommentDomainModel).getId()) >> Optional.of(((CommentDomainModel) this.mockCommentDomainModel))
+        this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(((PostDomainModel) this.mockPostDomainModel))
+
+        this.circleMemberPort.findByUserIdAndCircleId(((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(), ((CircleDomainModel) this.mockCircleDomainModel).getId()) >> Optional.of(mockWriterUserCircleMemberDomainModel)
+
+        this.commentPort.delete(((CommentDomainModel) this.mockCommentDomainModel).getId()) >> Optional.of(mockDeletedCommentDomainModel)
+
+        when: "Exception case with AWAIT status"
+        mockWriterUserCircleMemberDomainModel.setStatus(CircleMemberStatus.AWAIT)
+        this.commentService.delete(
+                ((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getId()
+        )
+
+        then:
+        thrown(BadRequestException)
+
+        when: "Exception case with REJECT status"
+        mockWriterUserCircleMemberDomainModel.setStatus(CircleMemberStatus.REJECT)
+        this.commentService.delete(
+                ((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getId()
+        )
+
+        then:
+        thrown(UnauthorizedException)
+
+        when: "Exception case with LEAVE status"
+        mockWriterUserCircleMemberDomainModel.setStatus(CircleMemberStatus.LEAVE)
+        this.commentService.delete(
+                ((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getId()
+        )
+
+        then:
+        thrown(BadRequestException)
+
+        when: "Exception case with DROP status"
+        mockWriterUserCircleMemberDomainModel.setStatus(CircleMemberStatus.DROP)
+        this.commentService.delete(
+                ((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getId()
+        )
+
+        then:
+        thrown(UnauthorizedException)
+    }
+
+    def "Comment delete not circle leader of this circle case"() {
+        given:
+        ((BoardDomainModel) this.mockBoardDomainModel).setCircle((CircleDomainModel) this.mockCircleDomainModel)
+
+        def mockDeletedCommentDomainModel = CommentDomainModel.of(
+                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getContent(),
+                true,
+                ((CommentDomainModel) this.mockCommentDomainModel).getCreatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getUpdatedAt(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getWriter(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getPostId()
+        )
+
+        def requestCircleLeaderUser = UserDomainModel.of(
+                "test request circle leader user id",
+                "test-circle-leader-user@cau.ac.kr",
+                "test circle leader user name",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.LEADER_CIRCLE,
+                null,
+                UserState.ACTIVE
+        )
+
+        def mockRequestCircleLeaderCircleMemberDomainModel = CircleMemberDomainModel.of(
+                "test circle member id",
+                CircleMemberStatus.MEMBER,
+                (CircleDomainModel) this.mockCircleDomainModel,
+                ((UserDomainModel) this.mockCircleLeaderUserDomainModel).getId(),
+                ((UserDomainModel) this.mockCircleLeaderUserDomainModel).getName(),
+                null,
+                null
+        )
+
+        this.userPort.findById(requestCircleLeaderUser.getId()) >> Optional.of(requestCircleLeaderUser)
+        this.commentPort.findById(((CommentDomainModel) this.mockCommentDomainModel).getId()) >> Optional.of(((CommentDomainModel) this.mockCommentDomainModel))
+        this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(((PostDomainModel) this.mockPostDomainModel))
+
+        this.circleMemberPort.findByUserIdAndCircleId(requestCircleLeaderUser.getId(), ((CircleDomainModel) this.mockCircleDomainModel).getId()) >> Optional.of(mockRequestCircleLeaderCircleMemberDomainModel)
+
+        this.commentPort.delete(((CommentDomainModel) this.mockCommentDomainModel).getId()) >> Optional.of(mockDeletedCommentDomainModel)
+
+        when:
+        this.commentService.delete(
+                requestCircleLeaderUser.getId(),
+                ((CommentDomainModel) this.mockCommentDomainModel).getId()
+        )
+
+        then:
+        thrown(UnauthorizedException)
     }
 }
