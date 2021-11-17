@@ -864,17 +864,6 @@ class CommentServiceTest extends Specification {
 
         then:
         thrown(BadRequestException)
-
-        when: "Target post deleted"
-        ((CommentDomainModel) this.mockCommentDomainModel).setIsDeleted(false)
-        ((PostDomainModel) this.mockPostDomainModel).setIsDeleted(true)
-        this.commentService.delete(
-                ((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getId()
-        )
-
-        then:
-        thrown(BadRequestException)
     }
 
     def "Comment delete not circle member case"() {

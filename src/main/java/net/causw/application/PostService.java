@@ -80,6 +80,7 @@ public class PostService {
         );
 
         validatorBucket
+                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getBoard().getIsDeleted(), postDomainModel.getBoard().getDOMAIN()))
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), postDomainModel.getDOMAIN()));
 
         postDomainModel.getBoard().getCircle().ifPresent(
@@ -333,6 +334,7 @@ public class PostService {
         );
 
         validatorBucket
+                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getBoard().getIsDeleted(), postDomainModel.getBoard().getDOMAIN()))
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), postDomainModel.getDOMAIN()));
 
         postDomainModel.getBoard().getCircle().ifPresent(
