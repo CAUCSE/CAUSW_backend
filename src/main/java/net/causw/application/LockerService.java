@@ -228,14 +228,14 @@ public class LockerService {
         UserDomainModel deleterDomainModel = this.userPort.findById(deleterId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid requester user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
         LockerDomainModel lockerDomainModel = this.lockerPort.findById(lockerId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid locker id"
+                        "사물함을 찾을 수 없습니다."
                 )
         );
 
@@ -246,7 +246,7 @@ public class LockerService {
         if (lockerDomainModel.getUser().orElse(null) != null) {
             throw new BadRequestException(
                     ErrorCode.CANNOT_PERFORMED,
-                    "This locker is in use"
+                    "사용 중인 사물함입니다."
             );
         }
 
@@ -397,21 +397,21 @@ public class LockerService {
         UserDomainModel deleterDomainModel = this.userPort.findById(deleterId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid requester user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
         LockerLocationDomainModel lockerLocationDomainModel = this.lockerLocationPort.findById(lockerLocationId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid locker id"
+                        "등록된 사물함 위치가 아닙니다."
                 )
         );
 
         if (this.lockerPort.getLockerCountByLocation(lockerLocationDomainModel.getId()) != 0L) {
             throw new BadRequestException(
                     ErrorCode.CANNOT_PERFORMED,
-                    "This location contains locker"
+                    "사물함 위치에 사물함이 존재합니다."
             );
         }
 
