@@ -29,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.validation.Validator;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,18 +38,21 @@ public class LockerService {
     private final LockerLogPort lockerLogPort;
     private final UserPort userPort;
     private final Validator validator;
+    private final LockerActionFactory lockerActionFactory;
 
     public LockerService(
             LockerPort lockerPort,
             LockerLocationPort lockerLocationPort,
             LockerLogPort lockerLogPort,
             UserPort userPort,
+            LockerActionFactory lockerActionFactory,
             Validator validator
     ) {
         this.lockerPort = lockerPort;
         this.lockerLocationPort = lockerLocationPort;
         this.lockerLogPort = lockerLogPort;
         this.userPort = userPort;
+        this.lockerActionFactory = lockerActionFactory;
         this.validator = validator;
     }
 
@@ -145,11 +147,7 @@ public class LockerService {
                 )
         );
 
-
-        Supplier<LockerActionFactory> lockerActionFactory = LockerActionFactory::new;
-
-        return lockerActionFactory
-                .get()
+        return this.lockerActionFactory
                 .getLockerAction(lockerUpdateRequestDto.getAction())
                 .updateLockerDomainModel(
                         lockerDomainModel,

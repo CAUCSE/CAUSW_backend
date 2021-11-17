@@ -1,32 +1,27 @@
 package net.causw.application;
 
-import lombok.NoArgsConstructor;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.LockerLogAction;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-@NoArgsConstructor
 public class LockerActionFactory {
-    final static Map<LockerLogAction, Supplier<LockerAction>> map = new HashMap<>();
-    static {
-        map.put(LockerLogAction.ENABLE, LockerActionEnable::new);
-        map.put(LockerLogAction.DISABLE, LockerActionDisable::new);
-        map.put(LockerLogAction.REGISTER, LockerActionRegister::new);
-        map.put(LockerLogAction.RETURN, LockerActionReturn::new);
+    private final Map<LockerLogAction, Supplier<LockerAction>> map;
+
+    public LockerActionFactory(Map<LockerLogAction, Supplier<LockerAction>> map) {
+        this.map = map;
     }
 
     public LockerAction getLockerAction(LockerLogAction action) {
         Supplier<LockerAction> updateAction = map.get(action);
-        if(updateAction != null) {
-            return updateAction.get();
+        if(updateAction == null) {
+            throw new BadRequestException(
+                    ErrorCode.INVALID_PARAMETER,
+                    "Invalid action parameter"
+            );
         }
-        throw new BadRequestException(
-                ErrorCode.INVALID_PARAMETER,
-                "Invalid action parameter"
-        );
+        return updateAction.get();
     }
 }
