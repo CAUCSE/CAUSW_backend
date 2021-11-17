@@ -58,12 +58,12 @@ public class LockerService {
         return LockerResponseDto.from(this.lockerPort.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid locker id"
+                        "사물함을 찾을 수 없습니다."
                 )
         ));
     }
 
-    @Transactional(readOnly = false)
+    @Transactional
     public LockerResponseDto create(
             String creatorId,
             LockerCreateRequestDto lockerCreateRequestDto
@@ -73,21 +73,19 @@ public class LockerService {
         UserDomainModel creatorDomainModel = this.userPort.findById(creatorId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid request user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
         validatorBucket
                 .consistOf(UserRoleValidator.of(creatorDomainModel.getRole(), List.of(Role.PRESIDENT)));
 
-
-
         LockerLocationDomainModel lockerLocationDomainModel = this.lockerLocationPort
                 .findById(lockerCreateRequestDto.getLockerLocationId())
                 .orElseThrow(
                     () -> new BadRequestException(
                             ErrorCode.ROW_DOES_NOT_EXIST,
-                            "Invalid locker location id"
+                            "등록된 사물함 위치가 아닙니다."
                     )
                 );
 
@@ -100,7 +98,7 @@ public class LockerService {
                 name -> {
                     throw new BadRequestException(
                             ErrorCode.ROW_ALREADY_EXIST,
-                            "Duplicated locker number"
+                            "중복된 사물함 번호입니다."
                     );
                 }
         );
@@ -108,8 +106,6 @@ public class LockerService {
         validatorBucket
                 .consistOf(ConstraintValidator.of(lockerDomainModel, this.validator))
                 .validate();
-
-
 
         return Optional
                 .of(this.lockerPort.create(lockerDomainModel))
@@ -128,7 +124,7 @@ public class LockerService {
                 ));
     }
 
-    @Transactional(readOnly = false)
+    @Transactional
     public LockerResponseDto update(
             String updaterId,
             String lockerId,
@@ -139,14 +135,14 @@ public class LockerService {
         UserDomainModel updaterDomainModel = this.userPort.findById(updaterId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid request user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
         LockerDomainModel lockerDomainModel = this.lockerPort.findById(lockerId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid locker id"
+                        "사물함을 찾을 수 없습니다."
                 )
         );
 
@@ -158,14 +154,14 @@ public class LockerService {
                 if (!lockerDomainModel.getIsActive()) {
                     throw new BadRequestException(
                             ErrorCode.CANNOT_PERFORMED,
-                            "This locker is disabled"
+                            "사물함이 사용 불가능한 상태입니다."
                     );
                 }
 
                 if (lockerUserDomainModel != null) {
                     throw new BadRequestException(
                             ErrorCode.CANNOT_PERFORMED,
-                            "This locker is in use"
+                            "이미 사용 중인 사물함입니다."
                     );
                 }
 
@@ -183,7 +179,7 @@ public class LockerService {
                 if (lockerUserDomainModel == null) {
                     throw new BadRequestException(
                             ErrorCode.CANNOT_PERFORMED,
-                            "This locker has no user"
+                            "사용 중인 사물함이 아닙니다."
                     );
                 } else if (!lockerUserDomainModel.equals(updaterDomainModel)) {
                     validatorBucket
@@ -207,7 +203,7 @@ public class LockerService {
                 if (lockerDomainModel.getIsActive()) {
                     throw new BadRequestException(
                             ErrorCode.CANNOT_PERFORMED,
-                            "The locker is already enable"
+                            "이미 사용 가능한 사물함입니다."
                     );
                 }
 
@@ -228,7 +224,7 @@ public class LockerService {
                 if (!lockerDomainModel.getIsActive()) {
                     throw new BadRequestException(
                             ErrorCode.CANNOT_PERFORMED,
-                            "The locker is already disabled"
+                            "이미 사용 불가능한 사물함입니다."
                     );
                 }
 
@@ -248,8 +244,6 @@ public class LockerService {
                 .consistOf(ConstraintValidator.of(lockerDomainModel, this.validator))
                 .validate();
 
-
-
         return this.lockerPort.update(lockerId, lockerDomainModel)
                 .map(resLockerDomainModel -> {
                     this.lockerLogPort.create(
@@ -266,7 +260,7 @@ public class LockerService {
                 ));
     }
 
-    @Transactional(readOnly = false)
+    @Transactional
     public LockerResponseDto move(
             String updaterId,
             String lockerId,
@@ -275,21 +269,21 @@ public class LockerService {
         UserDomainModel updaterDomainModel = this.userPort.findById(updaterId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid request user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
         LockerDomainModel lockerDomainModel = this.lockerPort.findById(lockerId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid locker id"
+                        "사물함을 찾을 수 없습니다."
                 )
         );
 
         LockerLocationDomainModel lockerLocationDomainModel = this.lockerLocationPort.findById(lockerMoveRequestDto.getLocationId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid locker location id"
+                        "등록된 사물함 위치가 아닙니다."
                 )
         );
 
@@ -359,7 +353,7 @@ public class LockerService {
         LockerLocationDomainModel lockerLocation = this.lockerLocationPort.findById(locationId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid locker location id"
+                        "등록된 사물함 위치가 아닙니다."
                 )
         );
 
@@ -383,7 +377,7 @@ public class LockerService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = false)
+    @Transactional
     public LockerLocationResponseDto createLocation(
             String creatorId,
             LockerLocationCreateRequestDto lockerLocationCreateRequestDto
@@ -393,7 +387,7 @@ public class LockerService {
         UserDomainModel creatorDomainModel = this.userPort.findById(creatorId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid request user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
@@ -410,7 +404,7 @@ public class LockerService {
                 name -> {
                     throw new BadRequestException(
                             ErrorCode.ROW_ALREADY_EXIST,
-                            "Duplicated locker location name"
+                            "이미 등록된 사물함 위치입니다."
                     );
                 }
         );
@@ -426,7 +420,7 @@ public class LockerService {
         );
     }
 
-    @Transactional(readOnly = false)
+    @Transactional
     public LockerLocationResponseDto updateLocation(
             String updaterId,
             String locationId,
@@ -437,7 +431,7 @@ public class LockerService {
         UserDomainModel creatorDomainModel = this.userPort.findById(updaterId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid request user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
@@ -447,7 +441,7 @@ public class LockerService {
         LockerLocationDomainModel lockerLocation = this.lockerLocationPort.findById(locationId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid locker location id"
+                        "등록된 사물함 위치가 아닙니다."
                 )
         );
 
@@ -456,7 +450,7 @@ public class LockerService {
                     name -> {
                         throw new BadRequestException(
                                 ErrorCode.ROW_ALREADY_EXIST,
-                                "Duplicated locker location name"
+                                "이미 등록된 사물함 위치 입니다."
                         );
                     }
             );
@@ -521,7 +515,7 @@ public class LockerService {
         LockerDomainModel locker = this.lockerPort.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid locker id"
+                        "사물함을 찾을 수 없습니다."
                 )
         );
 

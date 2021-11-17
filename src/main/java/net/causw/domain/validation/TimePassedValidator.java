@@ -27,13 +27,14 @@ public class TimePassedValidator extends AbstractValidator {
         if (duration.getSeconds() < THRESHOLD) {
             LocalDateTime allowedTime = this.updatedAt.plusSeconds(THRESHOLD);
 
-            String message = "You can access after " +
+            String message =
                     allowedTime.getYear() + "-" +
                     allowedTime.getMonthValue() + "-" +
                     allowedTime.getDayOfMonth() + " " +
                     allowedTime.getHour() + ":" +
                     allowedTime.getMinute() + ":" +
-                    allowedTime.getSecond();
+                    allowedTime.getSecond() +
+                    " 이후에 다시 시도해주세요.";
 
             throw new BadRequestException(
                     ErrorCode.TIME_NOT_PASSED,

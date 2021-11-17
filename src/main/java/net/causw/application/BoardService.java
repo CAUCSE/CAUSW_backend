@@ -65,7 +65,7 @@ public class BoardService {
         UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid request user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
@@ -83,26 +83,26 @@ public class BoardService {
         CircleDomainModel circleDomainModel = this.circlePort.findById(circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid circle id"
+                        "소모임을 찾을 수 없습니다."
                 )
         );
 
         UserDomainModel userDomainModel = this.userPort.findById(currentUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid request user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
         CircleMemberDomainModel circleMember = this.circleMemberPort.findByUserIdAndCircleId(currentUserId, circleDomainModel.getId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.NOT_MEMBER,
-                        "The user is not a member of circle"
+                        "로그인된 사용자가 가입 신청한 소모임이 아닙니다."
                 )
         );
 
         ValidatorBucket.of()
-                .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted()))
+                .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), circleDomainModel.getDOMAIN()))
                 .consistOf(CircleMemberStatusValidator.of(
                         circleMember.getStatus(),
                         List.of(CircleMemberStatus.MEMBER)
@@ -134,7 +134,7 @@ public class BoardService {
         UserDomainModel creatorDomainModel = this.userPort.findById(creatorId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid request user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
@@ -143,7 +143,7 @@ public class BoardService {
                     CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
                             () -> new BadRequestException(
                                     ErrorCode.ROW_DOES_NOT_EXIST,
-                                    "Invalid circle id"
+                                    "소모임을 찾을 수 없습니다."
                             )
                     );
                     validatorBucket
@@ -151,7 +151,15 @@ public class BoardService {
 
                     if (creatorDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
                         validatorBucket
-                                .consistOf(UserEqualValidator.of(creatorId, circle.getLeader().map(UserDomainModel::getId).orElse(null)));
+                                .consistOf(UserEqualValidator.of(
+                                        circle.getLeader().map(UserDomainModel::getId).orElseThrow(
+                                                () -> new InternalServerException(
+                                                        ErrorCode.INTERNAL_SERVER,
+                                                        "The board has circle without circle leader"
+                                                )
+                                        ),
+                                        creatorId
+                                ));
                     }
 
                     return circle;
@@ -191,30 +199,38 @@ public class BoardService {
         UserDomainModel updaterDomainModel = this.userPort.findById(updaterId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
         BoardDomainModel boardDomainModel = this.boardPort.findById(boardId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid board id"
+                        "수정할 게시판을 찾을 수 없습니다."
                 )
         );
 
         validatorBucket
-                .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted()));
+                .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted(), boardDomainModel.getDOMAIN()));
 
 
         boardDomainModel.getCircle().ifPresentOrElse(
                 circleDomainModel -> {
                     validatorBucket
-                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted()))
+                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), circleDomainModel.getDOMAIN()))
                             .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.LEADER_CIRCLE)));
 
                     if (updaterDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
                         validatorBucket
-                                .consistOf(UserEqualValidator.of(updaterId, circleDomainModel.getLeader().map(UserDomainModel::getId).orElse(null)));
+                                .consistOf(UserEqualValidator.of(
+                                        circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
+                                                () -> new InternalServerException(
+                                                        ErrorCode.INTERNAL_SERVER,
+                                                        "The board has circle without circle leader"
+                                                )
+                                        ),
+                                        updaterId
+                                ));
                     }
                 },
                 () -> validatorBucket
@@ -256,19 +272,19 @@ public class BoardService {
         UserDomainModel deleterDomainModel = this.userPort.findById(deleterId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
         BoardDomainModel boardDomainModel = this.boardPort.findById(boardId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid board id"
+                        "삭제할 게시판을 찾을 수 없습니다."
                 )
         );
 
         validatorBucket
-                .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted()));
+                .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted(), boardDomainModel.getDOMAIN()));
 
         boardDomainModel.getCircle().ifPresentOrElse(
                 circleDomainModel -> {
@@ -277,7 +293,15 @@ public class BoardService {
 
                     if (deleterDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
                         validatorBucket
-                                .consistOf(UserEqualValidator.of(deleterId, circleDomainModel.getLeader().map(UserDomainModel::getId).orElse(null)));
+                                .consistOf(UserEqualValidator.of(
+                                        circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
+                                                () -> new InternalServerException(
+                                                        ErrorCode.INTERNAL_SERVER,
+                                                        "The board has circle without circle leader"
+                                                )
+                                        ),
+                                        deleterId
+                                ));
                     }
                 },
                 () ->

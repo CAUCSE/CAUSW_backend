@@ -3,6 +3,7 @@ package net.causw.application;
 import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
+import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
 
@@ -31,9 +32,9 @@ public class DelegationPresident implements Delegation {
         }
 
         this.userPort.updateRole(currentId, Role.COMMON).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid login user id"
+                () -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "User id checked, but exception occurred"
                 )
         );
     }

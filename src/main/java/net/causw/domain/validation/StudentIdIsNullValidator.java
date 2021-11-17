@@ -3,16 +3,16 @@ package net.causw.domain.validation;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 
-public class TargetIsNullValidator extends AbstractValidator {
+public class StudentIdIsNullValidator extends AbstractValidator {
 
     private final String studentId;
 
-    private TargetIsNullValidator(String studentId) {
+    private StudentIdIsNullValidator(String studentId) {
         this.studentId = studentId;
     }
 
-    public static TargetIsNullValidator of(String studentId) {
-        return new TargetIsNullValidator(studentId);
+    public static StudentIdIsNullValidator of(String studentId) {
+        return new StudentIdIsNullValidator(studentId);
     }
 
     @Override
@@ -20,7 +20,7 @@ public class TargetIsNullValidator extends AbstractValidator {
         if (this.studentId == null) {
             throw new BadRequestException(
                     ErrorCode.INVALID_STUDENT_ID,
-                    "Student Id of this user is null"
+                    "학번이 입력되지 않았습니다."
             );
         }
     }

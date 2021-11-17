@@ -84,7 +84,7 @@ public class UserService {
         return UserResponseDto.from(this.userPort.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         ));
     }
@@ -94,7 +94,7 @@ public class UserService {
         UserDomainModel user = this.userPort.findById(currentUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
@@ -113,7 +113,7 @@ public class UserService {
         UserDomainModel user = this.userPort.findById(currentUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
@@ -132,7 +132,7 @@ public class UserService {
         UserDomainModel user = this.userPort.findById(currentUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
@@ -159,7 +159,7 @@ public class UserService {
                 email -> {
                     throw new BadRequestException(
                             ErrorCode.ROW_ALREADY_EXIST,
-                            "This email already exist"
+                            "중복된 이메일 입니다."
                     );
                 }
         );
@@ -179,7 +179,7 @@ public class UserService {
         UserDomainModel userDomainModel = this.userPort.findByEmail(userSignInRequestDto.getEmail()).orElseThrow(
                 () -> new UnauthorizedException(
                         ErrorCode.INVALID_SIGNIN,
-                        "Invalid sign in data"
+                        "잘못된 이메일 입니다."
                 )
         );
 
@@ -209,7 +209,7 @@ public class UserService {
         UserDomainModel userDomainModel = this.userPort.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
@@ -221,7 +221,7 @@ public class UserService {
                     email -> {
                         throw new BadRequestException(
                                 ErrorCode.ROW_ALREADY_EXIST,
-                                "This email already exist"
+                                "이미 사용중인 이메일입니다."
                         );
                     }
             );
@@ -264,13 +264,13 @@ public class UserService {
         UserDomainModel grantor = this.userPort.findById(grantorId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid login user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
         UserDomainModel grantee = this.userPort.findById(granteeId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid user id"
+                        "권한을 받을 사용자를 찾을 수 없습니다."
                 )
         );
 
@@ -317,7 +317,7 @@ public class UserService {
         UserDomainModel user = this.userPort.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid login user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
@@ -339,7 +339,7 @@ public class UserService {
         UserDomainModel user = this.userPort.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid login user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
@@ -347,7 +347,6 @@ public class UserService {
                 .consistOf(UserRoleWithoutAdminValidator.of(user.getRole(), List.of(Role.COMMON, Role.PROFESSOR)))
                 .validate();
 
-        // TODO: When we use session, should implement delete JWT
         // TODO: Should implement return locker and add log of locker
 
         // Change user role to NONE
@@ -377,14 +376,14 @@ public class UserService {
         UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid request user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
         UserDomainModel droppedUser = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid request user id"
+                        "내보낼 사용자를 찾을 수 없습니다."
                 )
         );
 
@@ -413,7 +412,7 @@ public class UserService {
         UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid request user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
@@ -424,7 +423,7 @@ public class UserService {
         return UserAdmissionResponseDto.from(this.userAdmissionPort.findById(admissionId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid admission id"
+                        "사용자의 가입 신청을 찾을 수 없습니다."
                 )
         ));
     }
@@ -438,7 +437,7 @@ public class UserService {
         UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid request user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
@@ -458,7 +457,7 @@ public class UserService {
         UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid request user id"
+                        "로그인된 사용자를 찾을 수 있습니다."
                 )
         );
 
@@ -483,14 +482,14 @@ public class UserService {
         UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid request user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
         UserAdmissionDomainModel userAdmissionDomainModel = this.userAdmissionPort.findById(admissionId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid admission id"
+                        "사용자의 가입 신청을 찾을 수 없습니다."
                 )
         );
 
@@ -524,14 +523,14 @@ public class UserService {
         UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid request user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
         UserAdmissionDomainModel userAdmissionDomainModel = this.userAdmissionPort.findById(admissionId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid admission id"
+                        "사용자의 가입 신청을 찾을 수 없습니다."
                 )
         );
 
@@ -557,14 +556,14 @@ public class UserService {
         UserDomainModel user = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid request user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
         BoardDomainModel board = this.boardPort.findById(boardId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid board id"
+                        "게시판을 찾을 수 없습니다."
                 )
         );
 
@@ -574,7 +573,7 @@ public class UserService {
         );
 
         ValidatorBucket.of()
-                .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted()))
+                .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), board.getDOMAIN()))
                 .consistOf(ConstraintValidator.of(favoriteBoardDomainModel, this.validator))
                 .validate();
 

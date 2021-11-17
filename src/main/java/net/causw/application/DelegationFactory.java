@@ -24,7 +24,7 @@ public class DelegationFactory {
             default:
                 throw new UnauthorizedException(
                         ErrorCode.API_NOT_ALLOWED,
-                        "You don't have access."
+                        "위임할 수 있는 권한이 아닙니다."
                 );
         }
     }

@@ -10,10 +10,11 @@ import java.time.LocalDateTime;
 @Setter
 public class UserAdmissionDomainModel {
     private String id;
+
     private String attachImage;
     private String description;
 
-    @NotNull(message = "User is null")
+    @NotNull(message = "사용자가 입력되지 않았습니다.")
     private UserDomainModel user;
 
     private LocalDateTime createdAt;

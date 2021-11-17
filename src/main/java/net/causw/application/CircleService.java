@@ -21,7 +21,7 @@ import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.GrantableRoleValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
-import net.causw.domain.validation.TargetIsNullValidator;
+import net.causw.domain.validation.StudentIdIsNullValidator;
 import net.causw.domain.validation.TimePassedValidator;
 import net.causw.domain.validation.UserEqualValidator;
 import net.causw.domain.validation.UserNotEqualValidator;
@@ -59,12 +59,12 @@ public class CircleService {
         CircleDomainModel circle = this.circlePort.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid circle id"
+                        "소모임을 찾을 수 없습니다."
                 )
         );
 
         ValidatorBucket.of()
-                .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted()))
+                .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), circle.getDOMAIN()))
                 .validate();
 
         return CircleResponseDto.from(
@@ -78,7 +78,7 @@ public class CircleService {
         UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid request user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
@@ -110,7 +110,7 @@ public class CircleService {
         this.circlePort.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid circle id"
+                        "소모임을 찾을 수 없습니다."
                 )
         );
 
@@ -126,19 +126,19 @@ public class CircleService {
         UserDomainModel user = this.userPort.findById(currentUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
         CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid circle id"
+                        "소모임을 찾을 수 없습니다."
                 )
         );
 
         ValidatorBucket.of()
-                .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted()))
+                .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), circle.getDOMAIN()))
                 .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.LEADER_CIRCLE, Role.PRESIDENT)))
                 .validate();
 
@@ -153,14 +153,14 @@ public class CircleService {
         UserDomainModel requestUser = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid request user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
         UserDomainModel leader = this.userPort.findById(circleCreateRequestDto.getLeaderId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid leader id"
+                        "등록할 소모임장을 다시 확인해주세요."
                 )
         );
 
@@ -178,7 +178,7 @@ public class CircleService {
                 name -> {
                     throw new BadRequestException(
                             ErrorCode.ROW_ALREADY_EXIST,
-                            "Duplicated circle name"
+                            "중복된 소모임 이름입니다."
                     );
                 }
         );
@@ -223,14 +223,14 @@ public class CircleService {
         CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid circle id"
+                        "수정할 소모임을 찾을 수 없습니다."
                 )
         );
 
         UserDomainModel user = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
@@ -239,7 +239,7 @@ public class CircleService {
                     name -> {
                         throw new BadRequestException(
                                 ErrorCode.ROW_ALREADY_EXIST,
-                                "Duplicated circle name"
+                                "중복된 소모임 이름입니다."
                         );
                     }
             );
@@ -255,7 +255,7 @@ public class CircleService {
         );
 
         validatorBucket
-                .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted()))
+                .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), circleDomainModel.getDOMAIN()))
                 .consistOf(ConstraintValidator.of(circleDomainModel, this.validator))
                 .consistOf(UserRoleValidator.of(
                         user.getRole(),
@@ -264,7 +264,15 @@ public class CircleService {
 
         if (user.getRole().equals(Role.LEADER_CIRCLE)) {
             validatorBucket
-                    .consistOf(UserEqualValidator.of(user.getId(), circleDomainModel.getLeader().map(UserDomainModel::getId).orElse(null)));
+                    .consistOf(UserEqualValidator.of(
+                            circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
+                                    () -> new InternalServerException(
+                                            ErrorCode.INTERNAL_SERVER,
+                                            "This circle has not circle leader"
+                                    )
+                            ),
+                            userId
+                    ));
         }
 
         validatorBucket
@@ -288,19 +296,19 @@ public class CircleService {
         CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid circle id"
+                        "삭제할 소모임을 찾을 수 없습니다."
                 )
         );
 
         UserDomainModel user = this.userPort.findById(requestUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
         validatorBucket
-                .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted()))
+                .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), circle.getDOMAIN()))
                 .consistOf(UserRoleValidator.of(
                         user.getRole(),
                         List.of(Role.PRESIDENT, Role.LEADER_CIRCLE)
@@ -308,7 +316,15 @@ public class CircleService {
 
         if (user.getRole().equals(Role.LEADER_CIRCLE)) {
             validatorBucket
-                    .consistOf(UserEqualValidator.of(user.getId(), circle.getLeader().map(UserDomainModel::getId).orElse(null)));
+                    .consistOf(UserEqualValidator.of(
+                            circle.getLeader().map(UserDomainModel::getId).orElseThrow(
+                                    () -> new InternalServerException(
+                                            ErrorCode.INTERNAL_SERVER,
+                                            "This circle has not circle leader"
+                                    )
+                            ),
+                            user.getId()
+                    ));
         }
 
         validatorBucket
@@ -344,20 +360,20 @@ public class CircleService {
         CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid circle id"
+                        "신청할 소모임을 찾을 수 없습니다."
                 )
         );
 
         UserDomainModel user = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
         validatorBucket
-                .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted()))
-                .consistOf(TargetIsNullValidator.of(user.getStudentId()));
+                .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), circle.getDOMAIN()))
+                .consistOf(StudentIdIsNullValidator.of(user.getStudentId()));
 
         return CircleMemberResponseDto.from(this.circleMemberPort.findByUserIdAndCircleId(user.getId(), circle.getId()).map(
                 circleMember -> {
@@ -396,31 +412,38 @@ public class CircleService {
         UserDomainModel user = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
         CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid circle id"
+                        "탈퇴할 소모임을 찾을 수 없습니다."
                 )
         );
 
         CircleMemberDomainModel circleMember = this.circleMemberPort.findByUserIdAndCircleId(user.getId(), circle.getId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "The user is not a member of circle"
+                        "가입 신청한 소모임이 아닙니다."
                 )
         );
 
         ValidatorBucket.of()
-                .consistOf(TargetIsDeletedValidator.of(circleMember.getCircle().getIsDeleted()))
+                .consistOf(TargetIsDeletedValidator.of(circleMember.getCircle().getIsDeleted(), circleMember.getCircle().getDOMAIN()))
                 .consistOf(CircleMemberStatusValidator.of(
                         circleMember.getStatus(),
                         List.of(CircleMemberStatus.MEMBER)
                 ))
-                .consistOf(UserNotEqualValidator.of(userId, circleMember.getCircle().getLeader().map(UserDomainModel::getId).orElse(null)))
+                .consistOf(UserNotEqualValidator.of(
+                        circle.getLeader().map(UserDomainModel::getId).orElseThrow(
+                                () -> new InternalServerException(
+                                        ErrorCode.INTERNAL_SERVER,
+                                        "This circle has not circle leader"
+                                )
+                        ),
+                        userId))
                 .validate();
 
         return CircleMemberResponseDto.from(this.circleMemberPort.updateStatus(circleMember.getId(), CircleMemberStatus.LEAVE).orElseThrow(
@@ -442,31 +465,39 @@ public class CircleService {
         UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid request user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
-        this.circlePort.findById(circleId).orElseThrow(
+        CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid circle id"
+                        "소모임을 찾을 수 없습니다."
                 )
         );
 
         CircleMemberDomainModel circleMember = this.circleMemberPort.findByUserIdAndCircleId(userId, circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "The user is not a member of circle"
+                        "추방시킬 사용자가 가입 신청한 소모임이 아닙니다."
                 )
         );
 
         validatorBucket
-                .consistOf(TargetIsDeletedValidator.of(circleMember.getCircle().getIsDeleted()))
+                .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), circle.getDOMAIN()))
                 .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.LEADER_CIRCLE)));
 
         if (requestUser.getRole().equals(Role.LEADER_CIRCLE)) {
             validatorBucket
-                    .consistOf(UserEqualValidator.of(requestUserId, circleMember.getCircle().getLeader().map(UserDomainModel::getId).orElse(null)));
+                    .consistOf(UserEqualValidator.of(
+                            circle.getLeader().map(UserDomainModel::getId).orElseThrow(
+                                    () -> new InternalServerException(
+                                            ErrorCode.INTERNAL_SERVER,
+                                            "This circle has not circle leader"
+                                    )
+                            ),
+                            requestUserId
+                    ));
         }
 
         validatorBucket
@@ -474,7 +505,14 @@ public class CircleService {
                         circleMember.getStatus(),
                         List.of(CircleMemberStatus.MEMBER)
                 ))
-                .consistOf(UserNotEqualValidator.of(userId, circleMember.getCircle().getLeader().map(UserDomainModel::getId).orElse(null)))
+                .consistOf(UserNotEqualValidator.of(
+                        circle.getLeader().map(UserDomainModel::getId).orElseThrow(
+                                () -> new InternalServerException(
+                                        ErrorCode.INTERNAL_SERVER,
+                                        "This circle has not circle leader"
+                                )
+                        ),
+                        userId))
                 .validate();
 
         return CircleMemberResponseDto.from(this.circleMemberPort.updateStatus(circleMember.getId(), CircleMemberStatus.DROP).orElseThrow(
@@ -513,24 +551,31 @@ public class CircleService {
         UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid request user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
         CircleMemberDomainModel circleMember = this.circleMemberPort.findById(applicationId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid application id"
+                        "소모임 가입 신청을 찾을 수 없습니다."
                 )
         );
 
         validatorBucket
-                .consistOf(TargetIsDeletedValidator.of(circleMember.getCircle().getIsDeleted()))
+                .consistOf(TargetIsDeletedValidator.of(circleMember.getCircle().getIsDeleted(), circleMember.getCircle().getDOMAIN()))
                 .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.LEADER_CIRCLE)));
 
         if (requestUser.getRole().equals(Role.LEADER_CIRCLE)) {
             validatorBucket
-                    .consistOf(UserEqualValidator.of(requestUserId, circleMember.getCircle().getLeader().map(UserDomainModel::getId).orElse(null)));
+                    .consistOf(UserEqualValidator.of(
+                            circleMember.getCircle().getLeader().map(UserDomainModel::getId).orElseThrow(
+                                    () -> new InternalServerException(
+                                            ErrorCode.INTERNAL_SERVER,
+                                            "This circle has not circle leader"
+                                    )
+                            ),
+                            requestUserId));
         }
 
         validatorBucket

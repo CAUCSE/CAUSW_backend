@@ -38,7 +38,7 @@ public class HomePageService {
         UserDomainModel user = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid login user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 

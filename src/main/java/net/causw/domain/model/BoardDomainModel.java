@@ -13,19 +13,20 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 public class BoardDomainModel {
+    private final String DOMAIN = "게시판";
     private String id;
     private String description;
 
-    @NotBlank(message = "Name is blank")
+    @NotBlank(message = "게시판 이름이 입력되지 않았습니다.")
     private String name;
 
-    @NotNull(message = "Create role is null")
+    @NotNull(message = "게시글 생성 권한이 입력되지 않았습니다.")
     private List<String> createRoleList;
 
-    @NotBlank(message = "Category is blank")
+    @NotBlank(message = "카테고리가 입력되지 않았습니다.")
     private String category;
 
-    @NotNull(message = "Board state is null")
+    @NotNull(message = "게시판 상태가 입력되지 않았습니다.")
     private Boolean isDeleted;
 
     private CircleDomainModel circle;

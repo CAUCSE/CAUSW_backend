@@ -59,14 +59,14 @@ public class CommentService {
         UserDomainModel creatorDomainModel = this.userPort.findById(creatorId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid writer id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
         PostDomainModel postDomainModel = this.postPort.findById(commentCreateDto.getPostId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid post id"
+                        "게시글을 찾을 수 없습니다."
                 )
         );
 
@@ -75,7 +75,7 @@ public class CommentService {
                 parentCommentId -> this.commentPort.findById(parentCommentId).orElseThrow(
                         () -> new BadRequestException(
                                 ErrorCode.ROW_DOES_NOT_EXIST,
-                                "Invalid parent comment id"
+                                "상위 댓글을 찾을 수 없습니다."
                         )
                 )
         ).orElse(null);
@@ -92,12 +92,12 @@ public class CommentService {
                     CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(creatorId, circleDomainModel.getId()).orElseThrow(
                             () -> new UnauthorizedException(
                                     ErrorCode.NOT_MEMBER,
-                                    "The user is not a member of circle"
+                                    "로그인된 사용자가 가입 신청한 소모임이 아닙니다."
                             )
                     );
 
                     validatorBucket
-                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted()))
+                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), circleDomainModel.getDOMAIN()))
                             .consistOf(CircleMemberStatusValidator.of(
                                     circleMemberDomainModel.getStatus(),
                                     List.of(CircleMemberStatus.MEMBER)
@@ -106,7 +106,7 @@ public class CommentService {
         );
 
         validatorBucket
-                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted()))
+                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), postDomainModel.getDOMAIN()))
                 .consistOf(ConstraintValidator.of(commentDomainModel, this.validator))
                 .validate();
 
@@ -124,26 +124,26 @@ public class CommentService {
         UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid writer id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
         PostDomainModel postDomainModel = this.postPort.findById(postId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid post id"
+                        "게시글을 찾을 수 없습니다."
                 )
         );
 
         validatorBucket
-                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted()));
+                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), postDomainModel.getDOMAIN()));
 
         postDomainModel.getBoard().getCircle().ifPresent(
                 circleDomainModel -> {
                     CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(userId, circleDomainModel.getId()).orElseThrow(
                             () -> new UnauthorizedException(
                                     ErrorCode.NOT_MEMBER,
-                                    "The user is not a member of circle"
+                                    "로그인된 사용자가 가입 신청한 소모임이 아닙니다."
                             )
                     );
 
@@ -175,27 +175,27 @@ public class CommentService {
         UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid request user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
         CommentDomainModel commentDomainModel = this.commentPort.findById(commentId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid comment id"
+                        "수정할 댓글을 찾을 수 없습니다."
                 )
         );
 
         PostDomainModel postDomainModel = this.postPort.findById(commentDomainModel.getPostId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid post id"
+                        "게시글을 찾을 수 없습니다."
                 )
         );
 
         validatorBucket
-                .consistOf(TargetIsDeletedValidator.of(commentDomainModel.getIsDeleted()))
-                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted()))
+                .consistOf(TargetIsDeletedValidator.of(commentDomainModel.getIsDeleted(), commentDomainModel.getDOMAIN()))
+                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), postDomainModel.getDOMAIN()))
                 .consistOf(ContentsAdminValidator.of(
                         requestUser.getRole(),
                         requestUserId,
@@ -209,12 +209,12 @@ public class CommentService {
                     CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(requestUserId, circleDomainModel.getId()).orElseThrow(
                             () -> new UnauthorizedException(
                                     ErrorCode.NOT_MEMBER,
-                                    "The user is not a member of circle"
+                                    "사용자가 가입 신청한 소모임이 아닙니다."
                             )
                     );
 
                     validatorBucket
-                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted()))
+                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), circleDomainModel.getDOMAIN()))
                             .consistOf(CircleMemberStatusValidator.of(
                                     circleMemberDomainModel.getStatus(),
                                     List.of(CircleMemberStatus.MEMBER)
@@ -255,39 +255,39 @@ public class CommentService {
         UserDomainModel deleterDomainModel = this.userPort.findById(deleterId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid user id"
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
         CommentDomainModel commentDomainModel = this.commentPort.findById(commentId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid comment id"
+                        "삭제할 댓글을 찾을 수 없습니다."
                 )
         );
 
         PostDomainModel postDomainModel = this.postPort.findById(commentDomainModel.getPostId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid post id "
+                        "게시글을 찾을 수 없습니다."
                 )
         );
 
         validatorBucket
-                .consistOf(TargetIsDeletedValidator.of(commentDomainModel.getIsDeleted()))
-                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted()));
+                .consistOf(TargetIsDeletedValidator.of(commentDomainModel.getIsDeleted(), commentDomainModel.getDOMAIN()))
+                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), postDomainModel.getDOMAIN()));
 
         postDomainModel.getBoard().getCircle().ifPresentOrElse(
                 circleDomainModel -> {
                     CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(deleterId, circleDomainModel.getId()).orElseThrow(
                             () -> new UnauthorizedException(
                                     ErrorCode.NOT_MEMBER,
-                                    "The user is not a member of circle"
+                                    "로그인된 사용자가 가입 신청한 소모임이 아닙니다."
                             )
                     );
 
                     validatorBucket
-                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted()))
+                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), circleDomainModel.getDOMAIN()))
                             .consistOf(CircleMemberStatusValidator.of(
                                     circleMemberDomainModel.getStatus(),
                                     List.of(CircleMemberStatus.MEMBER)

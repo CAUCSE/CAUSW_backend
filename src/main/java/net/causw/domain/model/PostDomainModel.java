@@ -10,17 +10,20 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class PostDomainModel {
+    private final String DOMAIN = "게시글";
     private String id;
 
-    @NotBlank(message = "Title is blank")
+    @NotBlank(message = "게시글 제목이 입력되지 않았습니다.")
     private String title;
-
-    @NotBlank(message = "Content is blank")
     private String content;
 
-    @NotNull(message = "Writer is null")
+    @NotNull(message = "작성자가 입력되지 않았습니다.")
     private UserDomainModel writer;
+
+    @NotNull(message = "게시글 상태가 입력되지 않았습니다.")
     private Boolean isDeleted;
+
+    @NotNull(message = "게시판이 입력되지 않았습니다.")
     private BoardDomainModel board;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

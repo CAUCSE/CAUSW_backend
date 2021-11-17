@@ -2,13 +2,18 @@ package net.causw.domain.model;
 
 import lombok.Getter;
 
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Getter
 public class LockerDomainModel {
     private String id;
+
+    @NotNull(message = "사물함 번호가 입력되지 않았습니다.")
     private Long lockerNumber;
+
+    @NotNull(message = "사물함 상태가 입력되지 않았습니다.")
     private Boolean isActive;
     private LocalDateTime updatedAt;
     private UserDomainModel user;

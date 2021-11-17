@@ -21,21 +21,21 @@ public class UserStateValidator extends AbstractValidator {
         if (this.userState == UserState.DROP) {
             throw new UnauthorizedException(
                     ErrorCode.BLOCKED_USER,
-                    "Dropped user"
+                    "추방된 사용자 입니다."
             );
         }
 
         if (this.userState == UserState.INACTIVE) {
             throw new UnauthorizedException(
                     ErrorCode.INACTIVE_USER,
-                    "Inactive user"
+                    "비활성화된 사용자 입니다."
             );
         }
 
         if (this.userState == UserState.AWAIT) {
             throw new UnauthorizedException(
                     ErrorCode.AWAITING_USER,
-                    "Awaiting user"
+                    "대기 중인 사용자 입니다."
             );
         }
     }

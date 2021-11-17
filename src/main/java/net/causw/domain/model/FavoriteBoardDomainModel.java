@@ -3,10 +3,14 @@ package net.causw.domain.model;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.constraints.NotNull;
+
 @Getter
 @Setter
 public class FavoriteBoardDomainModel {
     private String id;
+
+    @NotNull(message = "사용자가 입력되지 않았습니다.")
     private UserDomainModel userDomainModel;
     private BoardDomainModel boardDomainModel;
 

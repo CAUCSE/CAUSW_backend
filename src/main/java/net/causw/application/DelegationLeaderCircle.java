@@ -45,21 +45,21 @@ public class DelegationLeaderCircle implements Delegation {
         CircleDomainModel circle = this.circlePort.findByLeaderId(currentId).orElseThrow(
                 () -> new UnauthorizedException(
                         ErrorCode.API_NOT_ALLOWED,
-                        "Invalid leader id"
+                        "권한을 위임할 소모임장의 소모임을 찾을 수 없습니다."
                 )
         );
 
         UserDomainModel newLeader = this.userPort.findById(targetId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid user id"
+                        "피위임자를 찾을 수 없습니다."
                 )
         );
 
         CircleMemberDomainModel circleMember = this.circleMemberPort.findByUserIdAndCircleId(targetId, circle.getId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "Invalid application id"
+                        "피위임자가 가입 신청한 소모임이 아닙니다."
                 )
         );
 
