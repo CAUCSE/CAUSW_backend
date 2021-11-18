@@ -537,23 +537,6 @@ class PostServiceTest extends Specification {
 
         then:
         thrown(ConstraintViolationException)
-
-        when: "content blank"
-        mockPostCreateRequestDto.setTitle("test post title")
-        mockPostCreateRequestDto.setContent("")
-        ((PostDomainModel) this.mockPostDomainModel).setTitle("test post title")
-        ((PostDomainModel) this.mockPostDomainModel).setContent("")
-        PowerMockito.mockStatic(PostDomainModel.class)
-        PowerMockito.when(PostDomainModel.of(
-                mockPostCreateRequestDto.getTitle(),
-                mockPostCreateRequestDto.getContent(),
-                (UserDomainModel) creatorUserDomainModel,
-                (BoardDomainModel) this.mockBoardDomainModel
-        )).thenReturn((PostDomainModel) this.mockPostDomainModel)
-        this.postService.create("test user id", mockPostCreateRequestDto)
-
-        then:
-        thrown(ConstraintViolationException)
     }
 
     /**
