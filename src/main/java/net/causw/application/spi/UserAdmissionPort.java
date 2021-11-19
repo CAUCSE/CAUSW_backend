@@ -9,6 +9,8 @@ import java.util.Optional;
 public interface UserAdmissionPort {
     Optional<UserAdmissionDomainModel> findById(String id);
 
+    Optional<UserAdmissionDomainModel> findByUserId(String id);
+
     Page<UserAdmissionDomainModel> findAll(UserState userState, Integer pageNum);
 
     UserAdmissionDomainModel create(UserAdmissionDomainModel userAdmissionDomainModel);

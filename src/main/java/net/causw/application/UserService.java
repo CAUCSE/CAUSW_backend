@@ -176,6 +176,8 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public String signIn(UserSignInRequestDto userSignInRequestDto) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
         UserDomainModel userDomainModel = this.userPort.findByEmail(userSignInRequestDto.getEmail()).orElseThrow(
                 () -> new UnauthorizedException(
                         ErrorCode.INVALID_SIGNIN,
@@ -186,8 +188,19 @@ public class UserService {
         /* Validate the input password and user state
          * The sign-in process is rejected if the user is in BLOCKED, WAIT, or INACTIVE state.
          */
-        ValidatorBucket.of()
-                .consistOf(PasswordCorrectValidator.of(userDomainModel, userSignInRequestDto.getPassword()))
+        validatorBucket
+                .consistOf(PasswordCorrectValidator.of(userDomainModel, userSignInRequestDto.getPassword()));
+
+        if (userDomainModel.getState() == UserState.AWAIT) {
+            this.userAdmissionPort.findByUserId(userDomainModel.getId()).orElseThrow(
+                    () -> new BadRequestException(
+                            ErrorCode.NO_APPLICATION,
+                            "신청서를 작성하지 않았습니다."
+                    )
+            );
+        }
+
+        validatorBucket
                 .consistOf(UserStateValidator.of(userDomainModel.getState()))
                 .validate();
 

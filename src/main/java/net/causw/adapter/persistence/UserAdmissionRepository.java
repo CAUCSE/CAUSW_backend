@@ -6,7 +6,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Optional;
+
 public interface UserAdmissionRepository extends JpaRepository<UserAdmission, String> {
+    Optional<UserAdmission> findByUser_Id(String userId);
+
     @Query(value = "SELECT * " +
             "FROM TB_USER_ADMISSION AS ua " +
             "LEFT JOIN TB_USER AS u ON ua.user_id = u.id " +
