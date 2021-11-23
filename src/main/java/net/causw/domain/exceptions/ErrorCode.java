@@ -19,6 +19,7 @@ public enum ErrorCode {
     INVALID_STUDENT_ID(4009),
     TIME_NOT_PASSED(4010),
     INVALID_REQUEST_ROLE(4011),
+    NO_APPLICATION(4012),
 
     /**
      * 401 Unauthorized
