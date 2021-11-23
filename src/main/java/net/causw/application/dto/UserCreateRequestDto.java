@@ -15,5 +15,5 @@ public class UserCreateRequestDto {
     private String password;
     private String studentId;
     private Integer admissionYear;
-    // TODO: profile image
+    private String profileImage;
 }

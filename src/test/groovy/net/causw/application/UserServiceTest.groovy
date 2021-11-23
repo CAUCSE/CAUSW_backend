@@ -411,7 +411,8 @@ class UserServiceTest extends Specification {
                 "update@cau.ac.kr",
                 name,
                 studentId,
-                admissionYear
+                admissionYear,
+                "/profile"
         )
 
         def mockUpdatedUserDomainModel = UserDomainModel.of(
@@ -422,7 +423,7 @@ class UserServiceTest extends Specification {
                 userUpdateRequestDto.getStudentId(),
                 userUpdateRequestDto.getAdmissionYear(),
                 (Role) this.mockUserDomainModel.getRole(),
-                (String) this.mockUserDomainModel.getProfileImage(),
+                userUpdateRequestDto.getProfileImage(),
                 (UserState) this.mockUserDomainModel.getState()
         )
 
@@ -435,7 +436,7 @@ class UserServiceTest extends Specification {
                 userUpdateRequestDto.getStudentId(),
                 userUpdateRequestDto.getAdmissionYear(),
                 (Role) this.mockUserDomainModel.getRole(),
-                (String) this.mockUserDomainModel.getProfileImage(),
+                userUpdateRequestDto.getProfileImage(),
                 (UserState) this.mockUserDomainModel.getState()
         )).thenReturn(mockUpdatedUserDomainModel)
 
@@ -463,7 +464,8 @@ class UserServiceTest extends Specification {
                 email,
                 name,
                 studentId,
-                2021
+                2021,
+                "/profile"
         )
 
         def mockUpdatedUserDomainModel = UserDomainModel.of(
@@ -474,7 +476,7 @@ class UserServiceTest extends Specification {
                 userUpdateRequestDto.getStudentId(),
                 userUpdateRequestDto.getAdmissionYear(),
                 (Role) this.mockUserDomainModel.getRole(),
-                (String) this.mockUserDomainModel.getProfileImage(),
+                userUpdateRequestDto.getProfileImage(),
                 (UserState) this.mockUserDomainModel.getState()
         )
 
@@ -507,7 +509,8 @@ class UserServiceTest extends Specification {
                 "test",
                 "test1234!",
                 "20210000",
-                2021
+                2021,
+                "/profile"
         )
 
         PowerMockito.mockStatic(UserDomainModel.class)
@@ -517,7 +520,7 @@ class UserServiceTest extends Specification {
                 "test1234!",
                 "20210000",
                 2021,
-                null,
+                "/profile",
         )).thenReturn((UserDomainModel) this.mockUserDomainModel)
 
         this.userPort.create((UserDomainModel) this.mockUserDomainModel) >> this.mockUserDomainModel
@@ -546,7 +549,8 @@ class UserServiceTest extends Specification {
                 "test",
                 "",
                 "20210000",
-                2021
+                2021,
+                "/profile"
         )
 
         def mockCreatedUserDomainModel = UserDomainModel.of(
@@ -555,7 +559,7 @@ class UserServiceTest extends Specification {
                 userCreateRequestDto.getPassword(),
                 userCreateRequestDto.getStudentId(),
                 userCreateRequestDto.getAdmissionYear(),
-                null,
+                userCreateRequestDto.getProfileImage(),
         )
 
         this.userPort.create(mockCreatedUserDomainModel) >> mockCreatedUserDomainModel
@@ -602,7 +606,8 @@ class UserServiceTest extends Specification {
                 "test",
                 "test123!",
                 "20210000",
-                0
+                0,
+                "/profile"
         )
 
         def mockCreatedUserDomainModel = UserDomainModel.of(
@@ -611,7 +616,7 @@ class UserServiceTest extends Specification {
                 userCreateRequestDto.getPassword(),
                 userCreateRequestDto.getStudentId(),
                 userCreateRequestDto.getAdmissionYear(),
-                null
+                userCreateRequestDto.getProfileImage()
         )
 
         this.userPort.create(mockCreatedUserDomainModel) >> mockCreatedUserDomainModel
@@ -642,7 +647,8 @@ class UserServiceTest extends Specification {
                 "test-name",
                 "test1234!",
                 "20210000",
-                2021
+                2021,
+                "/profile"
         )
 
         def mockCreatedUserDomainModel = UserDomainModel.of(
@@ -651,7 +657,7 @@ class UserServiceTest extends Specification {
                 userCreateRequestDto.getPassword(),
                 userCreateRequestDto.getStudentId(),
                 userCreateRequestDto.getAdmissionYear(),
-                null,
+                userCreateRequestDto.getProfileImage(),
         )
 
         this.userPort.create(mockCreatedUserDomainModel) >> mockCreatedUserDomainModel
@@ -672,7 +678,8 @@ class UserServiceTest extends Specification {
                 "test",
                 "test1234!",
                 "20210000",
-                2021
+                2021,
+                "/profile"
         )
 
         def mockCreatedUserDomainModel = UserDomainModel.of(
@@ -681,7 +688,7 @@ class UserServiceTest extends Specification {
                 userCreateRequestDto.getPassword(),
                 userCreateRequestDto.getStudentId(),
                 userCreateRequestDto.getAdmissionYear(),
-                null
+                userCreateRequestDto.getProfileImage()
         )
 
         this.userPort.create(mockCreatedUserDomainModel) >> mockCreatedUserDomainModel
@@ -699,7 +706,7 @@ class UserServiceTest extends Specification {
                 userCreateRequestDto.getPassword(),
                 userCreateRequestDto.getStudentId(),
                 userCreateRequestDto.getAdmissionYear(),
-                null,
+                userCreateRequestDto.getProfileImage(),
         )).thenReturn(mockCreatedUserDomainModel)
         this.userService.signUp(userCreateRequestDto)
 
@@ -716,7 +723,7 @@ class UserServiceTest extends Specification {
                 userCreateRequestDto.getPassword(),
                 userCreateRequestDto.getStudentId(),
                 userCreateRequestDto.getAdmissionYear(),
-                null
+                userCreateRequestDto.getProfileImage(),
         )).thenReturn(mockCreatedUserDomainModel)
         this.userService.signUp(userCreateRequestDto)
 
@@ -735,7 +742,7 @@ class UserServiceTest extends Specification {
                 userCreateRequestDto.getPassword(),
                 userCreateRequestDto.getStudentId(),
                 userCreateRequestDto.getAdmissionYear(),
-                null
+                userCreateRequestDto.getProfileImage(),
         )).thenReturn(mockCreatedUserDomainModel)
         this.userService.signUp(userCreateRequestDto)
 
@@ -754,7 +761,7 @@ class UserServiceTest extends Specification {
                 userCreateRequestDto.getPassword(),
                 userCreateRequestDto.getStudentId(),
                 userCreateRequestDto.getAdmissionYear(),
-                null
+                userCreateRequestDto.getProfileImage(),
         )).thenReturn(mockCreatedUserDomainModel)
         this.userService.signUp(userCreateRequestDto)
 
