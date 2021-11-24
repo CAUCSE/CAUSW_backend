@@ -17,6 +17,8 @@ public class LockerDomainModel {
     private Boolean isActive;
     private LocalDateTime updatedAt;
     private UserDomainModel user;
+
+    @NotNull(message = "사물함 위치가 입력되지 않았습니다.")
     private LockerLocationDomainModel lockerLocation;
 
     private LockerDomainModel(
