@@ -1,5 +1,6 @@
 package net.causw.config;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -7,12 +8,14 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.CorsUtils;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
-public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements WebMvcConfigurer {
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
@@ -37,6 +40,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements W
 
                 .and()
                 .authorizeRequests()
+                .requestMatchers(CorsUtils::isPreFlightRequest)
+                .permitAll()
+
+                .and()
+                .cors()
+                .configurationSource(this.corsConfigurationSource())
+
+                .and()
+                .authorizeRequests()
                 .antMatchers(
                         "/api/**/users/sign-in",
                         "/api/**/users/sign-up",
@@ -51,12 +63,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements W
                 .addFilterBefore(new JwtAuthenticationFilter(this.jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
     }
 
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        // TODO : 배포 시 Domain으로 변경
-        registry.addMapping("/**")
-                .allowedOrigins("*")
-                .allowedMethods("GET", "POST", "PUT", "DELETE");
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        // TODO : Origin 변경 시 적용 필요
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.addAllowedOrigin("https://dev.causw.net");
+        configuration.addAllowedMethod("*");
+        configuration.addAllowedHeader("*");
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     @Override
