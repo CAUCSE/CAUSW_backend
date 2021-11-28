@@ -12,6 +12,8 @@ public interface BoardPort {
 
     List<BoardDomainModel> findByCircleId(String circleId);
 
+    List<BoardDomainModel> findOldest3Boards();
+
     BoardDomainModel create(BoardDomainModel boardDomainModel);
 
     Optional<BoardDomainModel> update(String id, BoardDomainModel boardDomainModel);

@@ -10,6 +10,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserAdmissionCreateRequestDto {
+    private String email;
     private String attachImage;
     private String description;
 }

@@ -10,4 +10,6 @@ public interface BoardRepository extends JpaRepository<Board, String> {
     List<Board> findByCircle_IdAndIsDeletedIsFalse(String circleId);
 
     List<Board> findByCircle_IdIsNullAndIsDeletedIsFalse();
+
+    List<Board> findTop3ByCircle_IdIsNullAndIsDeletedIsFalseOrderByCreatedAtAsc();
 }
