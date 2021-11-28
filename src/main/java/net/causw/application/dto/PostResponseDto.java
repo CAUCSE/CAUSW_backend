@@ -2,7 +2,6 @@ package net.causw.application.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.causw.domain.model.BoardDomainModel;
 import net.causw.domain.model.PostDomainModel;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
@@ -17,7 +16,10 @@ public class PostResponseDto {
     private String title;
     private String content;
     private Boolean isDeleted;
+    private String writerName;
+    private Integer writerAdmissionYear;
     private String writerProfileImage;
+    private Long numComment;
     private BoardResponseDto board;
     private Boolean updatable;
     private Boolean deletable;
@@ -34,6 +36,9 @@ public class PostResponseDto {
             String content,
             Boolean isDeleted,
             String writerProfileImage,
+            String writerName,
+            Integer writerAdmissionYear,
+            Long numComment,
             BoardResponseDto board,
             Boolean updatable,
             Boolean deletable,
@@ -48,6 +53,9 @@ public class PostResponseDto {
         this.content = content;
         this.isDeleted = isDeleted;
         this.writerProfileImage = writerProfileImage;
+        this.writerName = writerName;
+        this.writerAdmissionYear = writerAdmissionYear;
+        this.numComment = numComment;
         this.board = board;
         this.updatable = updatable;
         this.deletable = deletable;
@@ -61,53 +69,6 @@ public class PostResponseDto {
     public static PostResponseDto from(
             PostDomainModel post,
             UserDomainModel user
-    ) {
-        boolean updatable = false;
-        boolean deletable = false;
-
-        if (user.getRole() == Role.ADMIN) {
-            updatable = true;
-            deletable = true;
-        } else if (post.getWriter().getId().equals(user.getId())) {
-            updatable = true;
-            deletable = true;
-        } else {
-            if (post.getBoard().getCircle().isPresent()) {
-                boolean isLeader = user.getRole() == Role.LEADER_CIRCLE
-                        && post.getBoard().getCircle().get().getLeader()
-                                .map(leader -> leader.getId().equals(user.getId()))
-                                .orElse(false);
-                if (isLeader) {
-                    deletable = true;
-                }
-            } else {
-                if (user.getRole() == Role.PRESIDENT) {
-                    deletable = true;
-                }
-            }
-        }
-
-        return new PostResponseDto(
-                post.getId(),
-                post.getTitle(),
-                post.getContent(),
-                post.getIsDeleted(),
-                post.getWriter().getProfileImage(),
-                BoardResponseDto.from(post.getBoard(), user.getRole()),
-                updatable,
-                deletable,
-                post.getCreatedAt(),
-                post.getUpdatedAt(),
-                null,
-                null,
-                null
-        );
-    }
-
-    public static PostResponseDto from(
-            PostDomainModel post,
-            UserDomainModel user,
-            Page<CommentResponseDto> commentList
     ) {
         boolean updatable = false;
         boolean deletable = false;
@@ -140,6 +101,60 @@ public class PostResponseDto {
                 post.getContent(),
                 post.getIsDeleted(),
                 post.getWriter().getProfileImage(),
+                post.getWriter().getName(),
+                post.getWriter().getAdmissionYear(),
+                0L,
+                BoardResponseDto.from(post.getBoard(), user.getRole()),
+                updatable,
+                deletable,
+                post.getCreatedAt(),
+                post.getUpdatedAt(),
+                null,
+                null,
+                null
+        );
+    }
+
+    public static PostResponseDto from(
+            PostDomainModel post,
+            UserDomainModel user,
+            Page<CommentResponseDto> commentList,
+            Long numComment
+    ) {
+        boolean updatable = false;
+        boolean deletable = false;
+
+        if (user.getRole() == Role.ADMIN) {
+            updatable = true;
+            deletable = true;
+        } else if (post.getWriter().getId().equals(user.getId())) {
+            updatable = true;
+            deletable = true;
+        } else {
+            if (post.getBoard().getCircle().isPresent()) {
+                boolean isLeader = user.getRole() == Role.LEADER_CIRCLE
+                        && post.getBoard().getCircle().get().getLeader()
+                        .map(leader -> leader.getId().equals(user.getId()))
+                        .orElse(false);
+                if (isLeader) {
+                    deletable = true;
+                }
+            } else {
+                if (user.getRole() == Role.PRESIDENT) {
+                    deletable = true;
+                }
+            }
+        }
+
+        return new PostResponseDto(
+                post.getId(),
+                post.getTitle(),
+                post.getContent(),
+                post.getIsDeleted(),
+                post.getWriter().getProfileImage(),
+                post.getWriter().getName(),
+                post.getWriter().getAdmissionYear(),
+                numComment,
                 BoardResponseDto.from(post.getBoard(), user.getRole()),
                 updatable,
                 deletable,

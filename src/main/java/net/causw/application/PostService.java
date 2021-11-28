@@ -28,7 +28,6 @@ import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.UserEqualValidator;
 import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.ValidatorBucket;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -111,7 +110,8 @@ public class PostService {
                         .map(
                                 commentDomainModel -> CommentResponseDto.from(
                                         commentDomainModel, userDomainModel, postDomainModel.getBoard())
-                        )
+                        ),
+                this.commentPort.countByPostId(postDomainModel.getId())
         );
     }
 
@@ -390,7 +390,8 @@ public class PostService {
                         .map(
                                 commentDomainModel -> CommentResponseDto.from(
                                         commentDomainModel, requestUser, updatedPostDomainModel.getBoard())
-                        )
+                        ),
+                this.commentPort.countByPostId(postDomainModel.getId())
         );
     }
 }

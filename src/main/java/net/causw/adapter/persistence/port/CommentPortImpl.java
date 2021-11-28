@@ -31,7 +31,7 @@ public class CommentPortImpl extends DomainModelMapper implements CommentPort {
 
     @Override
     public Page<CommentDomainModel> findByPostId(String postId, Integer pageNum) {
-        return this.commentRepository.findByPost_IdAndParentCommentIsNullOrderByCreatedAtDesc(postId, pageableFactory.create(pageNum))
+        return this.commentRepository.findByPost_IdAndParentCommentIsNullOrderByCreatedAtAsc(postId, this.pageableFactory.create(pageNum))
                 .map(this::entityToDomainModelWithChild);
     }
 
