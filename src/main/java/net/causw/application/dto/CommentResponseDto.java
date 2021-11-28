@@ -20,12 +20,11 @@ public class CommentResponseDto {
     private LocalDateTime updatedAt;
     private Boolean isDeleted;
     private String postId;
-    private String writerId;
     private String writerName;
+    private Integer writerAdmissionYear;
     private String writerProfileImage;
     private Boolean updatable;
     private Boolean deletable;
-    private String parentCommentId;
     private List<CommentResponseDto> childCommentList;
 
     private CommentResponseDto(
@@ -35,12 +34,11 @@ public class CommentResponseDto {
             LocalDateTime updatedAt,
             Boolean isDeleted,
             String postId,
-            String writerId,
             String writerName,
+            Integer writerAdmissionYear,
             String writerProfileImage,
             Boolean updatable,
             Boolean deletable,
-            String parentCommentId,
             List<CommentResponseDto> childCommentList
     ) {
         this.id = id;
@@ -49,12 +47,11 @@ public class CommentResponseDto {
         this.updatedAt = updatedAt;
         this.isDeleted = isDeleted;
         this.postId = postId;
-        this.writerId = writerId;
         this.writerName = writerName;
+        this.writerAdmissionYear = writerAdmissionYear;
         this.writerProfileImage = writerProfileImage;
         this.updatable = updatable;
         this.deletable = deletable;
-        this.parentCommentId = parentCommentId;
         this.childCommentList = childCommentList;
     }
 
@@ -63,11 +60,6 @@ public class CommentResponseDto {
             UserDomainModel user,
             BoardDomainModel board
     ) {
-        String parentCommentId = null;
-        if (comment.getParentComment() != null) {
-            parentCommentId = comment.getParentComment().getId();
-        }
-
         boolean updatable = false;
         boolean deletable = false;
 
@@ -100,12 +92,11 @@ public class CommentResponseDto {
                 comment.getUpdatedAt(),
                 comment.getIsDeleted(),
                 comment.getPostId(),
-                comment.getWriter().getId(),
                 comment.getWriter().getName(),
+                comment.getWriter().getAdmissionYear(),
                 comment.getWriter().getProfileImage(),
                 updatable,
                 deletable,
-                parentCommentId,
                 comment.getChildCommentList()
                         .stream()
                         .map(commentDomainModel -> CommentResponseDto.from(commentDomainModel, user, board))
