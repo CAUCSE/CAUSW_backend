@@ -12,6 +12,7 @@ public class PostAllResponseDto {
     private String id;
     private String title;
     private String writerName;
+    private Integer writerAdmissionYear;
     private Long numComment;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -20,6 +21,7 @@ public class PostAllResponseDto {
             String id,
             String title,
             String writerName,
+            Integer writerAdmissionYear,
             Long numComment,
             LocalDateTime createdAt,
             LocalDateTime updatedAt
@@ -27,6 +29,7 @@ public class PostAllResponseDto {
         this.id = id;
         this.title = title;
         this.writerName = writerName;
+        this.writerAdmissionYear = writerAdmissionYear;
         this.numComment = numComment;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -40,6 +43,7 @@ public class PostAllResponseDto {
                 post.getId(),
                 post.getTitle(),
                 post.getWriter().getName(),
+                post.getWriter().getAdmissionYear(),
                 numComment,
                 post.getCreatedAt(),
                 post.getUpdatedAt()
