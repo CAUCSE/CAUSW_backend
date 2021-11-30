@@ -22,6 +22,8 @@ public interface UserPort {
 
     List<UserDomainModel> findByRole(Role role);
 
+    List<UserDomainModel> findByState(UserState state);
+
     Optional<UserDomainModel> updatePassword(String id, String password);
 
     Optional<UserDomainModel> updateState(String id, UserState state);

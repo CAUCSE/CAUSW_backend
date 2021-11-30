@@ -20,6 +20,7 @@ public enum ErrorCode {
     TIME_NOT_PASSED(4010),
     INVALID_REQUEST_ROLE(4011),
     NO_APPLICATION(4012),
+    INVALID_REQUEST_USER_STATE(4013),
 
     /**
      * 401 Unauthorized

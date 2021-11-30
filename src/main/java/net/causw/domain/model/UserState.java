@@ -27,7 +27,7 @@ public enum UserState {
                 .findFirst()
                 .orElseThrow(
                         () -> new BadRequestException(
-                                ErrorCode.INVALID_REQUEST_ROLE,
+                                ErrorCode.INVALID_REQUEST_USER_STATE,
                                 String.format("'%s' is invalid : not supported", value)
                         )
                 );

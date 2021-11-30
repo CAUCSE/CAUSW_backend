@@ -1,6 +1,7 @@
 package net.causw.adapter.persistence;
 
 import net.causw.domain.model.Role;
+import net.causw.domain.model.UserState;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,4 +15,6 @@ public interface UserRepository extends JpaRepository<User, String> {
     List<User> findByName(String name);
 
     List<User> findByRole(Role role);
+
+    List<User> findByState(UserState state);
 }

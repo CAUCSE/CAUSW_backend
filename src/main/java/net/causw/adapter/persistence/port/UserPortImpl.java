@@ -77,6 +77,14 @@ public class UserPortImpl extends DomainModelMapper implements UserPort {
     }
 
     @Override
+    public List<UserDomainModel> findByState(UserState state) {
+        return this.userRepository.findByState(state)
+                .stream()
+                .map(this::entityToDomainModel)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public Optional<UserDomainModel> updatePassword(String id, String password) {
         return this.userRepository.findById(id).map(
                 srcUser -> {

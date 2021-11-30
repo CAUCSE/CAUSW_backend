@@ -128,6 +128,25 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
+    public List<UserResponseDto> findByState(String currentUserId, String state) {
+        UserDomainModel user = this.userPort.findById(currentUserId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "로그인된 사용자를 찾을 수 없습니다."
+                )
+        );
+
+        ValidatorBucket.of()
+                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
+                .validate();
+
+        return this.userPort.findByState(UserState.of(state))
+                .stream()
+                .map(UserResponseDto::from)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public List<CircleResponseDto> getCircleList(String currentUserId) {
         UserDomainModel user = this.userPort.findById(currentUserId).orElseThrow(
                 () -> new BadRequestException(
