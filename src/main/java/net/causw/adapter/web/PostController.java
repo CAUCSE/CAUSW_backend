@@ -48,6 +48,14 @@ public class PostController {
         return this.postService.findAll(requestUserId, boardId, pageNum);
     }
 
+    @GetMapping("/app/notice")
+    @ResponseStatus(value = HttpStatus.OK)
+    public PostAllWithBoardResponseDto findAllAppNotice(
+            @RequestParam(defaultValue = "0") Integer pageNum
+    ) {
+        return this.postService.findAllAppNotice(pageNum);
+    }
+
     @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)
     public PostResponseDto create(

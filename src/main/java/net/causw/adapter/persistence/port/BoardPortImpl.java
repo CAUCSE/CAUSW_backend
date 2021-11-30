@@ -32,6 +32,11 @@ public class BoardPortImpl extends DomainModelMapper implements BoardPort {
     }
 
     @Override
+    public Optional<BoardDomainModel> findAppNotice() {
+        return this.boardRepository.findAppNotice().map(this::entityToDomainModel);
+    }
+
+    @Override
     public List<BoardDomainModel> findByCircleId(String circleId) {
         return this.boardRepository.findByCircle_IdAndIsDeletedIsFalse(circleId)
                 .stream()
