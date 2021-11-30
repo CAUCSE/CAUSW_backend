@@ -20,7 +20,6 @@ public enum UserState {
         this.value = value;
     }
 
-
     public static UserState of(String value) {
         return Arrays.stream(values())
                 .filter(v -> value.equalsIgnoreCase(v.value))
