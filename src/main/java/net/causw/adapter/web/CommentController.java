@@ -51,7 +51,7 @@ public class CommentController {
     public CommentResponseDto update(
             @AuthenticationPrincipal String requestUserId,
             @PathVariable String id,
-            @RequestParam CommentUpdateRequestDto commentUpdateRequestDto
+            @RequestBody CommentUpdateRequestDto commentUpdateRequestDto
     ) {
         return this.commentService.update(
                 requestUserId,
