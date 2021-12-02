@@ -18,6 +18,7 @@ import net.causw.domain.model.UserState;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -47,22 +48,31 @@ public class UserController {
         return this.userService.findById(currentUserId);
     }
 
-    @GetMapping(params = "name")
+    @GetMapping(value = "/name/{name}")
     @ResponseStatus(value = HttpStatus.OK)
     public List<UserResponseDto> findByName(
             @AuthenticationPrincipal String currentUserId,
-            @RequestParam String name
+            @PathVariable String name
     ) {
         return this.userService.findByName(currentUserId, name);
     }
 
-    @GetMapping(params = "role")
+    @GetMapping(value = "/role/{role}")
     @ResponseStatus(value = HttpStatus.OK)
     public List<UserResponseDto> findByRole(
             @AuthenticationPrincipal String currentUserId,
-            @RequestParam Role role
+            @PathVariable Role role
     ) {
         return this.userService.findByRole(currentUserId, role);
+    }
+
+    @GetMapping(value = "/state/{state}")
+    @ResponseStatus(value = HttpStatus.OK)
+    public List<UserResponseDto> findByState(
+            @AuthenticationPrincipal String currentUserId,
+            @PathVariable String state
+    ) {
+        return this.userService.findByState(currentUserId, state);
     }
 
     @PostMapping(value = "/sign-up")
