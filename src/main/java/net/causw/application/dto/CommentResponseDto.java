@@ -85,6 +85,11 @@ public class CommentResponseDto {
             }
         }
 
+        if (comment.getIsDeleted()) {
+            updatable = false;
+            deletable = false;
+        }
+
         return new CommentResponseDto(
                 comment.getId(),
                 comment.getContent(),
