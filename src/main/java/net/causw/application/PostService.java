@@ -37,6 +37,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class PostService {
+    private static final String APP_NOTICE_BOARD = "APP_NOTICE";
+
     private final PostPort postPort;
     private final UserPort userPort;
     private final BoardPort boardPort;
@@ -171,6 +173,26 @@ public class PostService {
         );
     }
 
+    @Transactional(readOnly = true)
+    public PostAllWithBoardResponseDto findAllAppNotice(Integer pageNum) {
+        BoardDomainModel boardDomainModel = this.boardPort.findAppNotice().orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "앱 공지 게시판을 찾을 수 없습니다."
+                )
+        );
+
+        return PostAllWithBoardResponseDto.from(
+                boardDomainModel,
+                Role.ADMIN,
+                this.postPort.findAll(boardDomainModel.getId(), pageNum)
+                        .map(postDomainModel -> PostAllResponseDto.from(
+                                postDomainModel,
+                                this.commentPort.countByPostId(postDomainModel.getId())
+                        ))
+        );
+    }
+
     @Transactional
     public PostResponseDto create(String requestUserId, PostCreateRequestDto postCreateRequestDto) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
@@ -195,6 +217,14 @@ public class PostService {
                 creatorDomainModel,
                 boardDomainModel
         );
+
+        if (boardDomainModel.getCategory().equals(APP_NOTICE_BOARD)) {
+            validatorBucket
+                    .consistOf(UserRoleValidator.of(
+                            creatorDomainModel.getRole(),
+                            List.of()
+                    ));
+        }
 
         validatorBucket
                 .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted(), boardDomainModel.getDOMAIN()))
@@ -248,6 +278,14 @@ public class PostService {
                         "게시글을 찾을 수 없습니다."
                 )
         );
+
+        if (postDomainModel.getBoard().getCategory().equals(APP_NOTICE_BOARD)) {
+            validatorBucket
+                    .consistOf(UserRoleValidator.of(
+                            requestUser.getRole(),
+                            List.of()
+                    ));
+        }
 
         validatorBucket
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), postDomainModel.getDOMAIN()));
@@ -332,6 +370,14 @@ public class PostService {
                         "게시글을 찾을 수 없습니다."
                 )
         );
+
+        if (postDomainModel.getBoard().getCategory().equals(APP_NOTICE_BOARD)) {
+            validatorBucket
+                    .consistOf(UserRoleValidator.of(
+                            requestUser.getRole(),
+                            List.of()
+                    ));
+        }
 
         validatorBucket
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getBoard().getIsDeleted(), postDomainModel.getBoard().getDOMAIN()))

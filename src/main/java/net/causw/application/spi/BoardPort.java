@@ -10,6 +10,8 @@ public interface BoardPort {
 
     List<BoardDomainModel> findAll();
 
+    Optional<BoardDomainModel> findAppNotice();
+
     List<BoardDomainModel> findByCircleId(String circleId);
 
     List<BoardDomainModel> findOldest3Boards();
