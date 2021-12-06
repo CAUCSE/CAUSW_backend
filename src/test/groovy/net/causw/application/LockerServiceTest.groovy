@@ -1,6 +1,9 @@
 package net.causw.application
 
 import net.causw.application.dto.LockerCreateRequestDto
+import net.causw.application.dto.LockerLocationCreateRequestDto
+import net.causw.application.dto.LockerLocationResponseDto
+import net.causw.application.dto.LockerLocationUpdateRequestDto
 import net.causw.application.dto.LockerMoveRequestDto
 import net.causw.application.dto.LockerResponseDto
 import net.causw.application.dto.LockerUpdateRequestDto
@@ -609,6 +612,7 @@ class LockerServiceTest extends Specification {
         this.lockerPort.findById(((LockerDomainModel) this.mockLockerDomainModel).getId()) >> Optional.of((LockerDomainModel) this.mockLockerDomainModel)
 
         when:
+        ((LockerDomainModel) this.mockLockerDomainModel).setLockerLocation(mockMovedLockerLocationDomainModel)
         PowerMockito.mockStatic(LockerDomainModel.class)
         PowerMockito.when(LockerDomainModel.of(
                 lockerId,
@@ -617,7 +621,7 @@ class LockerServiceTest extends Specification {
                 null,
                 null,
                 mockMovedLockerLocationDomainModel
-        ))
+        )).thenReturn((LockerDomainModel) this.mockLockerDomainModel)
         LockerResponseDto lockerResponseDto = this.lockerService.move("test user id", lockerId, mockLockerMoveRequestDto)
 
         then:
@@ -660,6 +664,7 @@ class LockerServiceTest extends Specification {
         this.lockerPort.findById(((LockerDomainModel) this.mockLockerDomainModel).getId()) >> Optional.of((LockerDomainModel) this.mockLockerDomainModel)
 
         when:
+        ((LockerDomainModel) this.mockLockerDomainModel).setLockerLocation(mockMovedLockerLocationDomainModel)
         PowerMockito.mockStatic(LockerDomainModel.class)
         PowerMockito.when(LockerDomainModel.of(
                 lockerId,
@@ -668,8 +673,266 @@ class LockerServiceTest extends Specification {
                 null,
                 null,
                 mockMovedLockerLocationDomainModel
-        ))
+        )).thenReturn((LockerDomainModel) this.mockLockerDomainModel)
         this.lockerService.move("test user id", lockerId, mockLockerMoveRequestDto)
+
+        then:
+        thrown(UnauthorizedException)
+    }
+
+    /**
+     * Test cases for create locker location
+     */
+    @Test "Locker location create normal case"() {
+        given:
+        def lockerLocationCreateRequestDto = new LockerLocationCreateRequestDto(
+                "test locker location name",
+                "test locker location description",
+        )
+
+        def creatorUserDomainModel = UserDomainModel.of(
+                "test user id",
+                "test@cau.ac.kr",
+                "test user name",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.PRESIDENT,
+                null,
+                UserState.ACTIVE
+        )
+
+        this.userPort.findById(creatorUserDomainModel.getId()) >> Optional.of(creatorUserDomainModel)
+
+        this.lockerLocationPort.create((LockerLocationDomainModel) this.mockLockerLocationDomainModel) >> Optional.of(this.mockLockerLocationDomainModel)
+
+        when:
+        PowerMockito.mockStatic(LockerLocationDomainModel.class)
+        PowerMockito.when(LockerLocationDomainModel.of(
+                lockerLocationCreateRequestDto.getName(),
+                lockerLocationCreateRequestDto.getDescription()
+        )).thenReturn((LockerLocationDomainModel) this.mockLockerLocationDomainModel)
+        def lockerLocationResponseDto = this.lockerService.createLocation("test user id", lockerLocationCreateRequestDto)
+
+        then:
+        lockerLocationResponseDto instanceof LockerLocationResponseDto
+        with(lockerLocationResponseDto) {
+            getName() == "test locker location name"
+            getDescription() == "test locker location description"
+        }
+    }
+
+    @Test "Locker location create invalid data case"() {
+        given:
+        def lockerLocationCreateRequestDto = new LockerLocationCreateRequestDto(
+                "",
+                "",
+        )
+
+        def creatorUserDomainModel = UserDomainModel.of(
+                "test user id",
+                "test@cau.ac.kr",
+                "test user name",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.PRESIDENT,
+                null,
+                UserState.ACTIVE
+        )
+
+        this.userPort.findById(creatorUserDomainModel.getId()) >> Optional.of(creatorUserDomainModel)
+
+        this.lockerLocationPort.create((LockerLocationDomainModel) this.mockLockerLocationDomainModel) >> Optional.of(this.mockLockerLocationDomainModel)
+
+        when:
+        ((LockerLocationDomainModel) this.mockLockerLocationDomainModel).setName("");
+        ((LockerLocationDomainModel) this.mockLockerLocationDomainModel).setDescription("");
+        PowerMockito.mockStatic(LockerLocationDomainModel.class)
+        PowerMockito.when(LockerLocationDomainModel.of(
+                lockerLocationCreateRequestDto.getName(),
+                lockerLocationCreateRequestDto.getDescription()
+        )).thenReturn((LockerLocationDomainModel) this.mockLockerLocationDomainModel)
+        this.lockerService.createLocation("test user id", lockerLocationCreateRequestDto)
+
+        then:
+        thrown(ConstraintViolationException)
+    }
+
+    @Test "Locker location create unauthorized case"() {
+        given:
+        def lockerLocationCreateRequestDto = new LockerLocationCreateRequestDto(
+                "test locker location name",
+                "test locker location description",
+        )
+
+        def creatorUserDomainModel = UserDomainModel.of(
+                "test user id",
+                "test@cau.ac.kr",
+                "test user name",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.COMMON,
+                null,
+                UserState.ACTIVE
+        )
+
+        this.userPort.findById(creatorUserDomainModel.getId()) >> Optional.of(creatorUserDomainModel)
+
+        this.lockerLocationPort.create((LockerLocationDomainModel) this.mockLockerLocationDomainModel) >> Optional.of(this.mockLockerLocationDomainModel)
+
+        when:
+        PowerMockito.mockStatic(LockerLocationDomainModel.class)
+        PowerMockito.when(LockerLocationDomainModel.of(
+                lockerLocationCreateRequestDto.getName(),
+                lockerLocationCreateRequestDto.getDescription()
+        )).thenReturn((LockerLocationDomainModel) this.mockLockerLocationDomainModel)
+        this.lockerService.createLocation("test user id", lockerLocationCreateRequestDto)
+
+        then:
+        thrown(UnauthorizedException)
+    }
+
+    /**
+     * Test cases for update locker location
+     */
+    @Test "Locker location update normal case"() {
+        given:
+        def lockerLocationId = "test locker location id";
+
+        def lockerLocationUpdateRequestDto = new LockerLocationUpdateRequestDto(
+                "test locker location updated name",
+                "test locker location updated description"
+        )
+
+        def updaterUserDomainModel = UserDomainModel.of(
+                "test user id",
+                "test@cau.ac.kr",
+                "test user name",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.PRESIDENT,
+                null,
+                UserState.ACTIVE
+        )
+
+        def updatedLockerLocationDomainModel = LockerLocationDomainModel.of(
+                lockerLocationId,
+                "test locker location updated name",
+                "test locker location updated description"
+        )
+
+        this.userPort.findById(updaterUserDomainModel.getId()) >> Optional.of(updaterUserDomainModel)
+
+        this.lockerLocationPort.findById(lockerLocationId) >> Optional.of(this.mockLockerLocationDomainModel)
+        this.lockerLocationPort.update(lockerLocationId, updatedLockerLocationDomainModel) >> Optional.of(updatedLockerLocationDomainModel)
+
+        when:
+        PowerMockito.mockStatic(LockerLocationDomainModel.class)
+        PowerMockito.when(LockerLocationDomainModel.of(
+                lockerLocationId,
+                lockerLocationUpdateRequestDto.getName(),
+                lockerLocationUpdateRequestDto.getDescription()
+        )).thenReturn(updatedLockerLocationDomainModel)
+        def lockerLocationResponseDto = this.lockerService.updateLocation("test user id", lockerLocationId, lockerLocationUpdateRequestDto)
+
+        then:
+        lockerLocationResponseDto instanceof LockerLocationResponseDto
+        with(lockerLocationResponseDto) {
+            getName() == "test locker location name"
+            getDescription() == "test locker location description"
+        }
+    }
+
+    @Test "Locker location update invalid data case"() {
+        given:
+        def lockerLocationId = "test locker location id";
+
+        def lockerLocationUpdateRequestDto = new LockerLocationUpdateRequestDto(
+                "",
+                ""
+        )
+
+        def updaterUserDomainModel = UserDomainModel.of(
+                "test user id",
+                "test@cau.ac.kr",
+                "test user name",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.PRESIDENT,
+                null,
+                UserState.ACTIVE
+        )
+
+        def updatedLockerLocationDomainModel = LockerLocationDomainModel.of(
+                lockerLocationId,
+                "",
+                ""
+        )
+
+        this.userPort.findById(updaterUserDomainModel.getId()) >> Optional.of(updaterUserDomainModel)
+
+        this.lockerLocationPort.findById(lockerLocationId) >> Optional.of(this.mockLockerLocationDomainModel)
+        this.lockerLocationPort.update(lockerLocationId, updatedLockerLocationDomainModel) >> Optional.of(updatedLockerLocationDomainModel)
+
+        when:
+        ((LockerLocationDomainModel) this.mockLockerLocationDomainModel).setName("");
+        ((LockerLocationDomainModel) this.mockLockerLocationDomainModel).setDescription("");
+        PowerMockito.mockStatic(LockerLocationDomainModel.class)
+        PowerMockito.when(LockerLocationDomainModel.of(
+                lockerLocationId,
+                lockerLocationUpdateRequestDto.getName(),
+                lockerLocationUpdateRequestDto.getDescription()
+        )).thenReturn(updatedLockerLocationDomainModel)
+        this.lockerService.updateLocation("test user id", lockerLocationId, lockerLocationUpdateRequestDto)
+
+        then:
+        thrown(ConstraintViolationException)
+    }
+
+    @Test "Locker location update unauthorized case"() {
+        given:
+        def lockerLocationId = "test locker location id";
+
+        def lockerLocationUpdateRequestDto = new LockerLocationUpdateRequestDto(
+                "test locker location updated name",
+                "test locker location updated description"
+        )
+
+        def updaterUserDomainModel = UserDomainModel.of(
+                "test user id",
+                "test@cau.ac.kr",
+                "test user name",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.COMMON,
+                null,
+                UserState.ACTIVE
+        )
+
+        def updatedLockerLocationDomainModel = LockerLocationDomainModel.of(
+                lockerLocationId,
+                "test locker location updated name",
+                "test locker location updated description"
+        )
+
+        this.userPort.findById(updaterUserDomainModel.getId()) >> Optional.of(updaterUserDomainModel)
+
+        this.lockerLocationPort.findById(lockerLocationId) >> Optional.of(this.mockLockerLocationDomainModel)
+        this.lockerLocationPort.update(lockerLocationId, updatedLockerLocationDomainModel) >> Optional.of(updatedLockerLocationDomainModel)
+
+        when:
+        PowerMockito.mockStatic(LockerLocationDomainModel.class)
+        PowerMockito.when(LockerLocationDomainModel.of(
+                lockerLocationId,
+                lockerLocationUpdateRequestDto.getName(),
+                lockerLocationUpdateRequestDto.getDescription()
+        )).thenReturn(updatedLockerLocationDomainModel)
+        this.lockerService.updateLocation("test user id", lockerLocationId, lockerLocationUpdateRequestDto)
 
         then:
         thrown(UnauthorizedException)
