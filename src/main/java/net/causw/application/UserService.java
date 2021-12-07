@@ -16,6 +16,7 @@ import net.causw.application.spi.BoardPort;
 import net.causw.application.spi.CircleMemberPort;
 import net.causw.application.spi.CirclePort;
 import net.causw.application.spi.FavoriteBoardPort;
+import net.causw.application.spi.UserAdmissionLogPort;
 import net.causw.application.spi.UserAdmissionPort;
 import net.causw.application.spi.UserPort;
 import net.causw.config.JwtTokenProvider;
@@ -28,6 +29,7 @@ import net.causw.domain.model.CircleMemberStatus;
 import net.causw.domain.model.FavoriteBoardDomainModel;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserAdmissionDomainModel;
+import net.causw.domain.model.UserAdmissionLogAction;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.model.UserState;
 import net.causw.domain.validation.AdmissionYearValidator;
@@ -38,6 +40,7 @@ import net.causw.domain.validation.PasswordFormatValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.UserRoleWithoutAdminValidator;
+import net.causw.domain.validation.UserStateIsNotDropAndActiveValidator;
 import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
 import org.springframework.data.domain.Page;
@@ -53,6 +56,7 @@ public class UserService {
     private final UserPort userPort;
     private final BoardPort boardPort;
     private final UserAdmissionPort userAdmissionPort;
+    private final UserAdmissionLogPort userAdmissionLogPort;
     private final CirclePort circlePort;
     private final CircleMemberPort circleMemberPort;
     private final FavoriteBoardPort favoriteBoardPort;
@@ -63,6 +67,7 @@ public class UserService {
             UserPort userPort,
             BoardPort boardPort,
             UserAdmissionPort userAdmissionPort,
+            UserAdmissionLogPort userAdmissionLogPort,
             CirclePort circlePort,
             CircleMemberPort circleMemberPort,
             FavoriteBoardPort favoriteBoardPort,
@@ -72,6 +77,7 @@ public class UserService {
         this.userPort = userPort;
         this.boardPort = boardPort;
         this.userAdmissionPort = userAdmissionPort;
+        this.userAdmissionLogPort = userAdmissionLogPort;
         this.circlePort = circlePort;
         this.circleMemberPort = circleMemberPort;
         this.favoriteBoardPort = favoriteBoardPort;
@@ -463,13 +469,20 @@ public class UserService {
     }
 
     @Transactional
-    public UserAdmissionResponseDto create(UserAdmissionCreateRequestDto userAdmissionCreateRequestDto) {
+    public UserAdmissionResponseDto createAdmission(UserAdmissionCreateRequestDto userAdmissionCreateRequestDto) {
         UserDomainModel requestUser = this.userPort.findByEmail(userAdmissionCreateRequestDto.getEmail()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 있습니다."
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
+
+        if (this.userAdmissionPort.existsByUserId(requestUser.getId())) {
+            throw new BadRequestException(
+                    ErrorCode.ROW_ALREADY_EXIST,
+                    "이미 신청한 사용자 입니다."
+            );
+        }
 
         UserAdmissionDomainModel userAdmissionDomainModel = UserAdmissionDomainModel.of(
                 requestUser,
@@ -478,6 +491,7 @@ public class UserService {
         );
 
         ValidatorBucket.of()
+                .consistOf(UserStateIsNotDropAndActiveValidator.of(requestUser.getState()))
                 .consistOf(ConstraintValidator.of(userAdmissionDomainModel, this.validator))
                 .validate();
 
@@ -523,6 +537,18 @@ public class UserService {
                 )
         );
 
+        this.userAdmissionLogPort.create(
+                userAdmissionDomainModel.getUser().getEmail(),
+                userAdmissionDomainModel.getUser().getName(),
+                requestUser.getEmail(),
+                requestUser.getName(),
+                UserAdmissionLogAction.ACCEPT,
+                userAdmissionDomainModel.getAttachImage(),
+                userAdmissionDomainModel.getDescription()
+        );
+
+        this.userAdmissionPort.delete(userAdmissionDomainModel);
+
         return UserAdmissionResponseDto.from(
                 userAdmissionDomainModel,
                 this.userPort.updateState(userAdmissionDomainModel.getUser().getId(), UserState.ACTIVE).orElseThrow(
@@ -556,6 +582,18 @@ public class UserService {
         ValidatorBucket.of()
                 .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT)))
                 .validate();
+
+        this.userAdmissionLogPort.create(
+                userAdmissionDomainModel.getUser().getEmail(),
+                userAdmissionDomainModel.getUser().getName(),
+                requestUser.getEmail(),
+                requestUser.getName(),
+                UserAdmissionLogAction.REJECT,
+                userAdmissionDomainModel.getAttachImage(),
+                userAdmissionDomainModel.getDescription()
+        );
+
+        this.userAdmissionPort.delete(userAdmissionDomainModel);
 
         return UserAdmissionResponseDto.from(
                 userAdmissionDomainModel,

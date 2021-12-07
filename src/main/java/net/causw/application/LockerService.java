@@ -152,7 +152,6 @@ public class LockerService {
                 .updateLockerDomainModel(
                         lockerDomainModel,
                         lockerDomainModel.getUser().orElse(null),
-
                         updaterDomainModel,
                         this.validator,
                         this.lockerPort

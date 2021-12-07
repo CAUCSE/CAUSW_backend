@@ -25,6 +25,11 @@ public class UserAdmissionPortImpl extends DomainModelMapper implements UserAdmi
     }
 
     @Override
+    public Boolean existsByUserId(String id) {
+        return this.userAdmissionRepository.existsByUser_Id(id);
+    }
+
+    @Override
     public Optional<UserAdmissionDomainModel> findById(String id) {
         return this.userAdmissionRepository.findById(id).map(this::entityToDomainModel);
     }
@@ -45,5 +50,10 @@ public class UserAdmissionPortImpl extends DomainModelMapper implements UserAdmi
         return this.entityToDomainModel(
                 this.userAdmissionRepository.save(UserAdmission.from(userAdmissionDomainModel))
         );
+    }
+
+    @Override
+    public void delete(UserAdmissionDomainModel userAdmissionDomainModel) {
+        this.userAdmissionRepository.delete(UserAdmission.from(userAdmissionDomainModel));
     }
 }

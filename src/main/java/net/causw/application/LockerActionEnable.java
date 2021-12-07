@@ -41,7 +41,6 @@ public class LockerActionEnable implements LockerAction {
                 lockerDomainModel.getLockerLocation()
         );
 
-
         ValidatorBucket.of()
                 .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.PRESIDENT)))
                 .consistOf(ConstraintValidator.of(lockerDomainModel, validator))

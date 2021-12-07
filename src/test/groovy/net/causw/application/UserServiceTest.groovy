@@ -5,6 +5,7 @@ import net.causw.application.spi.BoardPort
 import net.causw.application.spi.CircleMemberPort
 import net.causw.application.spi.CirclePort
 import net.causw.application.spi.FavoriteBoardPort
+import net.causw.application.spi.UserAdmissionLogPort
 import net.causw.application.spi.UserAdmissionPort
 import net.causw.application.spi.UserPort
 import net.causw.config.JwtTokenProvider
@@ -32,17 +33,19 @@ import java.time.LocalDateTime
 @PrepareForTest([UserDomainModel.class])
 class UserServiceTest extends Specification {
     private UserPort userPort = Mock(UserPort.class)
-    private BoardPort boardPort = Mock(BoardPort.class);
-    private UserAdmissionPort userAdmissionPort = Mock(UserAdmissionPort.class);
+    private BoardPort boardPort = Mock(BoardPort.class)
+    private UserAdmissionPort userAdmissionPort = Mock(UserAdmissionPort.class)
+    private UserAdmissionLogPort userAdmissionLogPort = Mock(UserAdmissionLogPort.class)
     private CirclePort circlePort = Mock(CirclePort.class)
     private CircleMemberPort circleMemberPort = Mock(CircleMemberPort.class)
-    private FavoriteBoardPort favoriteBoardPort = Mock(FavoriteBoardPort.class);
+    private FavoriteBoardPort favoriteBoardPort = Mock(FavoriteBoardPort.class)
     private JwtTokenProvider jwtTokenProvider = Mock(JwtTokenProvider.class)
     private Validator validator = Validation.buildDefaultValidatorFactory().getValidator()
     private UserService userService = new UserService(
             this.userPort,
             this.boardPort,
             this.userAdmissionPort,
+            this.userAdmissionLogPort,
             this.circlePort,
             this.circleMemberPort,
             this.favoriteBoardPort,
