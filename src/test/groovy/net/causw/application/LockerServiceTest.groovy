@@ -198,8 +198,8 @@ class LockerServiceTest extends Specification {
                 ''
         )
 
-        def updaterUserDomainModel = UserDomainModel.of(
-                "test user id",
+        def presidentUserDomainModel = UserDomainModel.of(
+                "president test user id",
                 "test@cau.ac.kr",
                 "test user name",
                 "test1234!",
@@ -210,8 +210,8 @@ class LockerServiceTest extends Specification {
                 UserState.ACTIVE
         )
 
-        def updaterUserDomainModel2 = UserDomainModel.of(
-                "test user id2",
+        def ownerUserDomainModel = UserDomainModel.of(
+                "owner test user id",
                 "test2@cau.ac.kr",
                 "test user name2",
                 "test1234!",
@@ -258,8 +258,8 @@ class LockerServiceTest extends Specification {
                 (LockerLocationDomainModel) this.mockLockerLocationDomainModel,
         )
 
-        this.userPort.findById(updaterUserDomainModel.getId()) >> Optional.of(updaterUserDomainModel)
-        this.userPort.findById(updaterUserDomainModel2.getId()) >> Optional.of(updaterUserDomainModel2)
+        this.userPort.findById(presidentUserDomainModel.getId()) >> Optional.of(presidentUserDomainModel)
+        this.userPort.findById(ownerUserDomainModel.getId()) >> Optional.of(ownerUserDomainModel)
 
         this.lockerLocationPort.findById(((LockerLocationDomainModel) this.mockLockerLocationDomainModel).getId()) >> Optional.of((LockerLocationDomainModel) this.mockLockerLocationDomainModel)
 
@@ -282,7 +282,7 @@ class LockerServiceTest extends Specification {
                 null,
                 (LockerLocationDomainModel) this.mockLockerLocationDomainModel
         )).thenReturn(mockEnabledLockerDomainModel)
-        def lockerResponseDto1 = this.lockerService.update("test user id", lockerId, mockLockerUpdateRequestDto)
+        def lockerResponseDto1 = this.lockerService.update("president test user id", lockerId, mockLockerUpdateRequestDto)
 
         then:
         lockerResponseDto1 instanceof LockerResponseDto
@@ -303,7 +303,7 @@ class LockerServiceTest extends Specification {
                 null,
                 (LockerLocationDomainModel) this.mockLockerLocationDomainModel
         )).thenReturn(mockDisabledLockerDomainModel)
-        def lockerResponseDto2 = this.lockerService.update("test user id", lockerId, mockLockerUpdateRequestDto)
+        def lockerResponseDto2 = this.lockerService.update("president test user id", lockerId, mockLockerUpdateRequestDto)
 
         then:
         lockerResponseDto2 instanceof LockerResponseDto
@@ -322,10 +322,10 @@ class LockerServiceTest extends Specification {
                 ((LockerDomainModel) this.mockLockerDomainModel).getLockerNumber(),
                 true,
                 null,
-                updaterUserDomainModel2,
+                ownerUserDomainModel,
                 (LockerLocationDomainModel) this.mockLockerLocationDomainModel
         )).thenReturn(mockRegisteredLockerDomainModel)
-        def lockerResponseDto3 = this.lockerService.update("test user id2", lockerId, mockLockerUpdateRequestDto)
+        def lockerResponseDto3 = this.lockerService.update("owner test user id", lockerId, mockLockerUpdateRequestDto)
 
         then:
         lockerResponseDto3 instanceof LockerResponseDto
@@ -338,7 +338,7 @@ class LockerServiceTest extends Specification {
         when: "Locker return"
         mockLockerUpdateRequestDto.setAction(LockerLogAction.RETURN)
         ((LockerDomainModel) this.mockLockerDomainModel).setIsActive(true)
-        ((LockerDomainModel) this.mockLockerDomainModel).setUser(updaterUserDomainModel2)
+        ((LockerDomainModel) this.mockLockerDomainModel).setUser(ownerUserDomainModel)
         PowerMockito.mockStatic(LockerDomainModel.class)
         PowerMockito.when(LockerDomainModel.of(
                 lockerId,
@@ -348,7 +348,7 @@ class LockerServiceTest extends Specification {
                 null,
                 (LockerLocationDomainModel) this.mockLockerLocationDomainModel
         )).thenReturn(mockReturnedLockerDomainModel)
-        def lockerResponseDto4 = this.lockerService.update("test user id2", lockerId, mockLockerUpdateRequestDto)
+        def lockerResponseDto4 = this.lockerService.update("owner test user id", lockerId, mockLockerUpdateRequestDto)
 
         then:
         lockerResponseDto4 instanceof LockerResponseDto
@@ -361,7 +361,7 @@ class LockerServiceTest extends Specification {
         when: "Locker force return by president"
         mockLockerUpdateRequestDto.setAction(LockerLogAction.RETURN)
         ((LockerDomainModel) this.mockLockerDomainModel).setIsActive(true)
-        ((LockerDomainModel) this.mockLockerDomainModel).setUser(updaterUserDomainModel2)
+        ((LockerDomainModel) this.mockLockerDomainModel).setUser(ownerUserDomainModel)
         PowerMockito.mockStatic(LockerDomainModel.class)
         PowerMockito.when(LockerDomainModel.of(
                 lockerId,
@@ -371,7 +371,7 @@ class LockerServiceTest extends Specification {
                 null,
                 (LockerLocationDomainModel) this.mockLockerLocationDomainModel
         )).thenReturn(mockReturnedLockerDomainModel)
-        def lockerResponseDto5 = this.lockerService.update("test user id", lockerId, mockLockerUpdateRequestDto)
+        def lockerResponseDto5 = this.lockerService.update("president test user id", lockerId, mockLockerUpdateRequestDto)
 
         then:
         lockerResponseDto5 instanceof LockerResponseDto
@@ -448,20 +448,8 @@ class LockerServiceTest extends Specification {
                 ''
         )
 
-        def updaterUserDomainModel = UserDomainModel.of(
-                "test user id",
-                "test@cau.ac.kr",
-                "test user name",
-                "test1234!",
-                "20210000",
-                2021,
-                Role.PRESIDENT,
-                null,
-                UserState.ACTIVE
-        )
-
-        def updaterUserDomainModel2 = UserDomainModel.of(
-                "test user id2",
+        def ownerUserDomainModel = UserDomainModel.of(
+                "owner test user id",
                 "test2@cau.ac.kr",
                 "test user name2",
                 "test1234!",
@@ -472,9 +460,9 @@ class LockerServiceTest extends Specification {
                 UserState.ACTIVE
         )
 
-        def updaterUserDomainModel3 = UserDomainModel.of(
-                "test user id3",
-                "test2@cau.ac.kr",
+        def otherUserDomainModel = UserDomainModel.of(
+                "other test user id",
+                "test3@cau.ac.kr",
                 "test user name3",
                 "test1234!",
                 "20210002",
@@ -511,9 +499,8 @@ class LockerServiceTest extends Specification {
                 (LockerLocationDomainModel) this.mockLockerLocationDomainModel,
         )
 
-        this.userPort.findById(updaterUserDomainModel.getId()) >> Optional.of(updaterUserDomainModel)
-        this.userPort.findById(updaterUserDomainModel2.getId()) >> Optional.of(updaterUserDomainModel2)
-        this.userPort.findById(updaterUserDomainModel3.getId()) >> Optional.of(updaterUserDomainModel3)
+        this.userPort.findById(ownerUserDomainModel.getId()) >> Optional.of(ownerUserDomainModel)
+        this.userPort.findById(otherUserDomainModel.getId()) >> Optional.of(otherUserDomainModel)
 
         this.lockerLocationPort.findById(((LockerLocationDomainModel) this.mockLockerLocationDomainModel).getId()) >> Optional.of((LockerLocationDomainModel) this.mockLockerLocationDomainModel)
 
@@ -535,7 +522,7 @@ class LockerServiceTest extends Specification {
                 null,
                 (LockerLocationDomainModel) this.mockLockerLocationDomainModel
         )).thenReturn(mockEnabledLockerDomainModel)
-        this.lockerService.update("test user id2", lockerId, mockLockerUpdateRequestDto)
+        this.lockerService.update("owner test user id", lockerId, mockLockerUpdateRequestDto)
 
         then:
         thrown(UnauthorizedException)
@@ -552,7 +539,7 @@ class LockerServiceTest extends Specification {
                 null,
                 (LockerLocationDomainModel) this.mockLockerLocationDomainModel
         )).thenReturn(mockDisabledLockerDomainModel)
-        this.lockerService.update("test user id2", lockerId, mockLockerUpdateRequestDto)
+        this.lockerService.update("owner test user id", lockerId, mockLockerUpdateRequestDto)
 
         then:
         thrown(UnauthorizedException)
@@ -560,7 +547,7 @@ class LockerServiceTest extends Specification {
         when: "Locker return by other user"
         mockLockerUpdateRequestDto.setAction(LockerLogAction.RETURN)
         ((LockerDomainModel) this.mockLockerDomainModel).setIsActive(true)
-        ((LockerDomainModel) this.mockLockerDomainModel).setUser(updaterUserDomainModel2)
+        ((LockerDomainModel) this.mockLockerDomainModel).setUser(ownerUserDomainModel)
         PowerMockito.mockStatic(LockerDomainModel.class)
         PowerMockito.when(LockerDomainModel.of(
                 lockerId,
@@ -570,7 +557,7 @@ class LockerServiceTest extends Specification {
                 null,
                 (LockerLocationDomainModel) this.mockLockerLocationDomainModel
         )).thenReturn(mockReturnedLockerDomainModel)
-        this.lockerService.update("test user id3", lockerId, mockLockerUpdateRequestDto)
+        this.lockerService.update("other test user id", lockerId, mockLockerUpdateRequestDto)
 
         then:
         thrown(UnauthorizedException)
