@@ -42,6 +42,7 @@ import net.causw.domain.validation.UserRoleIsNoneValidator;
 import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.UserRoleWithoutAdminValidator;
 import net.causw.domain.validation.UserStateIsNotDropAndActiveValidator;
+import net.causw.domain.validation.UserStateIsDropValidator;
 import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
 import org.springframework.data.domain.Page;
@@ -694,5 +695,44 @@ public class UserService {
                 this.favoriteBoardPort.create(favoriteBoardDomainModel).getBoardDomainModel(),
                 user.getRole()
         );
+    }
+
+    @Transactional
+    public UserResponseDto restore(
+            String requestUserId,
+            String userId
+    ) {
+        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "로그인된 사용자를 찾을 수 없습니다."
+                )
+        );
+
+        UserDomainModel restoredUser = this.userPort.findById(userId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "복구할 사용자를 찾을 수 없습니다."
+                )
+        );
+
+        ValidatorBucket.of()
+                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT)))
+                .consistOf(UserStateIsDropValidator.of(restoredUser.getState()))
+                .validate();
+
+        this.userPort.updateRole(restoredUser.getId(), Role.COMMON).orElseThrow(
+                () -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "User id checked, but exception occurred"
+                )
+        );
+
+        return UserResponseDto.from(this.userPort.updateState(restoredUser.getId(), UserState.ACTIVE).orElseThrow(
+                () -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "User id checked, but exception occurred"
+                )
+        ));
     }
 }

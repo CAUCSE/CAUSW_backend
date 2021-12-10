@@ -989,16 +989,6 @@ class UserServiceTest extends Specification {
                 (UserDomainModel) this.mockUserDomainModel
         )
 
-        def circleMember = CircleMemberDomainModel.of(
-                "test",
-                CircleMemberStatus.MEMBER,
-                circle,
-                "test",
-                "test",
-                null,
-                null
-        )
-
         this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
         this.circleMemberPort.getCircleListByUserId("test") >> List.of(circle)
 
@@ -1189,6 +1179,88 @@ class UserServiceTest extends Specification {
         then:
         thrown(UnauthorizedException)
     }
+
+    /**
+     * Test cases for restore user
+     */
+    @Test
+    def "User restore normal case"() {
+        given:
+        def mockDroppedUserDomainModel = UserDomainModel.of(
+                "test1",
+                "test@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.NONE,
+                null,
+                UserState.DROP
+        )
+
+        def mockRestoredUserDomainModel = UserDomainModel.of(
+                "test1",
+                "test@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.COMMON,
+                null,
+                UserState.ACTIVE
+        )
+
+        this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
+        this.userPort.findById("test1") >> Optional.of(mockDroppedUserDomainModel)
+
+        this.userPort.updateRole("test1", Role.COMMON) >> Optional.of(mockRestoredUserDomainModel)
+        this.userPort.updateState("test1", UserState.ACTIVE) >> Optional.of(mockRestoredUserDomainModel)
+
+        when:
+        def userResponseDto = this.userService.restore("test", "test1")
+
+        then:
+        userResponseDto instanceof UserResponseDto
+        with(userResponseDto) {
+            getId() == "test1"
+            getState() == UserState.ACTIVE
+        }
+    }
+
+    @Test
+    def "User restore unauthorized case"() {
+        given:
+        def userDomainModel = UserDomainModel.of(
+                "test1",
+                "test@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.NONE,
+                null,
+                UserState.DROP
+        )
+
+        this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
+        this.userPort.findById("test1") >> Optional.of(userDomainModel)
+
+        when: "User is not dropped"
+        userDomainModel.setRole(Role.COMMON)
+        userDomainModel.setState(UserState.ACTIVE)
+        this.userService.restore("test", "test1")
+
+        then:
+        thrown(UnauthorizedException)
+
+        when: "Request user is not president or admin"
+        ((UserDomainModel)this.mockUserDomainModel).setRole(Role.COMMON)
+        this.userService.restore("test", "test1")
+
+        then:
+        thrown(UnauthorizedException)
+    }
+
 
     /**
      * Test cases for user admission

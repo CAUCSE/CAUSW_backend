@@ -206,4 +206,16 @@ public class UserController {
                 boardId
         );
     }
+
+    @PutMapping(value = "/restore/{id}")
+    @ResponseStatus(value = HttpStatus.OK)
+    public UserResponseDto restore(
+            @AuthenticationPrincipal String requestUserId,
+            @PathVariable String id
+    ) {
+        return this.userService.restore(
+                requestUserId,
+                id
+        );
+    }
 }
