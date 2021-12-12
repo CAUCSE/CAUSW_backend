@@ -36,14 +36,7 @@ public class LockerActionRegister implements LockerAction {
             );
         }
 
-        lockerDomainModel = LockerDomainModel.of(
-                lockerDomainModel.getId(),
-                lockerDomainModel.getLockerNumber(),
-                lockerDomainModel.getIsActive(),
-                null,
-                updaterDomainModel,
-                lockerDomainModel.getLockerLocation()
-        );
+        lockerDomainModel.setUser(updaterDomainModel);
 
         ValidatorBucket.of()
                 .consistOf(ConstraintValidator.of(lockerDomainModel, validator))

@@ -38,14 +38,7 @@ public class LockerActionReturn implements LockerAction{
                     .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.PRESIDENT)));
         }
 
-        lockerDomainModel = LockerDomainModel.of(
-                lockerDomainModel.getId(),
-                lockerDomainModel.getLockerNumber(),
-                lockerDomainModel.getIsActive(),
-                null,
-                null,
-                lockerDomainModel.getLockerLocation()
-        );
+        lockerDomainModel.setUser(null);
 
         validatorBucket
                 .consistOf(ConstraintValidator.of(lockerDomainModel, validator))

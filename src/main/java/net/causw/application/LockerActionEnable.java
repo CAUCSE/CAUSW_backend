@@ -32,14 +32,7 @@ public class LockerActionEnable implements LockerAction {
             );
         }
 
-        lockerDomainModel = LockerDomainModel.of(
-                lockerDomainModel.getId(),
-                lockerDomainModel.getLockerNumber(),
-                true,
-                null,
-                lockerDomainModel.getUser().orElse(null),
-                lockerDomainModel.getLockerLocation()
-        );
+        lockerDomainModel.setIsActive(true);
 
         ValidatorBucket.of()
                 .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.PRESIDENT)))

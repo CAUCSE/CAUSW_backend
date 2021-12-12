@@ -33,14 +33,7 @@ public class LockerActionDisable implements LockerAction {
             );
         }
 
-        lockerDomainModel = LockerDomainModel.of(
-                lockerDomainModel.getId(),
-                lockerDomainModel.getLockerNumber(),
-                false,
-                null,
-                lockerDomainModel.getUser().orElse(null),
-                lockerDomainModel.getLockerLocation()
-        );
+        lockerDomainModel.setIsActive(false);
 
         ValidatorBucket.of()
                 .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.PRESIDENT)))
