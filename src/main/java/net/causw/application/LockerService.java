@@ -21,7 +21,9 @@ import net.causw.domain.model.LockerLogAction;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.validation.ConstraintValidator;
+import net.causw.domain.validation.UserRoleIsNoneValidator;
 import net.causw.domain.validation.UserRoleValidator;
+import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -81,6 +83,8 @@ public class LockerService {
         );
 
         validatorBucket
+                .consistOf(UserStateValidator.of(creatorDomainModel.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(creatorDomainModel.getRole()))
                 .consistOf(UserRoleValidator.of(creatorDomainModel.getRole(), List.of(Role.PRESIDENT)));
 
         LockerLocationDomainModel lockerLocationDomainModel = this.lockerLocationPort
@@ -147,6 +151,11 @@ public class LockerService {
                 )
         );
 
+        ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(updaterDomainModel.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(updaterDomainModel.getRole()))
+                .validate();
+
         return this.lockerActionFactory
                 .getLockerAction(lockerUpdateRequestDto.getAction())
                 .updateLockerDomainModel(
@@ -209,6 +218,8 @@ public class LockerService {
         );
 
         ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(updaterDomainModel.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(updaterDomainModel.getRole()))
                 .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.PRESIDENT)))
                 .consistOf(ConstraintValidator.of(lockerDomainModel, this.validator))
                 .validate();
@@ -238,6 +249,8 @@ public class LockerService {
         );
 
         ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(deleterDomainModel.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(deleterDomainModel.getRole()))
                 .consistOf(UserRoleValidator.of(deleterDomainModel.getRole(), List.of(Role.PRESIDENT)))
                 .validate();
 
@@ -304,8 +317,9 @@ public class LockerService {
         );
 
         validatorBucket
+                .consistOf(UserStateValidator.of(creatorDomainModel.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(creatorDomainModel.getRole()))
                 .consistOf(UserRoleValidator.of(creatorDomainModel.getRole(), List.of(Role.PRESIDENT)));
-
 
         LockerLocationDomainModel lockerLocationDomainModel = LockerLocationDomainModel.of(
                 lockerLocationCreateRequestDto.getName(),
@@ -348,6 +362,8 @@ public class LockerService {
         );
 
         validatorBucket
+                .consistOf(UserStateValidator.of(creatorDomainModel.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(creatorDomainModel.getRole()))
                 .consistOf(UserRoleValidator.of(creatorDomainModel.getRole(), List.of(Role.PRESIDENT)));
 
         LockerLocationDomainModel lockerLocation = this.lockerLocationPort.findById(locationId).orElseThrow(
@@ -390,7 +406,7 @@ public class LockerService {
         );
     }
 
-    @Transactional(readOnly = false)
+    @Transactional
     public LockerLocationResponseDto deleteLocation(String deleterId, String lockerLocationId) {
         UserDomainModel deleterDomainModel = this.userPort.findById(deleterId).orElseThrow(
                 () -> new BadRequestException(
@@ -414,6 +430,8 @@ public class LockerService {
         }
 
         ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(deleterDomainModel.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(deleterDomainModel.getRole()))
                 .consistOf(UserRoleValidator.of(deleterDomainModel.getRole(), List.of(Role.PRESIDENT)))
                 .validate();
 

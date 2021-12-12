@@ -25,7 +25,9 @@ import net.causw.domain.validation.StudentIdIsNullValidator;
 import net.causw.domain.validation.TimePassedValidator;
 import net.causw.domain.validation.UserEqualValidator;
 import net.causw.domain.validation.UserNotEqualValidator;
+import net.causw.domain.validation.UserRoleIsNoneValidator;
 import net.causw.domain.validation.UserRoleValidator;
+import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -81,6 +83,11 @@ public class CircleService {
                         "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
+
+        ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(userDomainModel.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
+                .validate();
 
         Map<String, CircleMemberDomainModel> joinedCircleMap = this.circleMemberPort.findCircleByUserId(userDomainModel.getId());
 
@@ -138,6 +145,8 @@ public class CircleService {
         );
 
         ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), circle.getDOMAIN()))
                 .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.LEADER_CIRCLE, Role.PRESIDENT)))
                 .validate();
@@ -184,6 +193,8 @@ public class CircleService {
         );
 
         ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(requestUser.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
                 .consistOf(ConstraintValidator.of(circleDomainModel, this.validator))
                 .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT)))
                 .consistOf(GrantableRoleValidator.of(requestUser.getRole(), Role.LEADER_CIRCLE, leader.getRole()))
@@ -255,6 +266,8 @@ public class CircleService {
         );
 
         validatorBucket
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), circleDomainModel.getDOMAIN()))
                 .consistOf(ConstraintValidator.of(circleDomainModel, this.validator))
                 .consistOf(UserRoleValidator.of(
@@ -308,6 +321,8 @@ public class CircleService {
         );
 
         validatorBucket
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), circle.getDOMAIN()))
                 .consistOf(UserRoleValidator.of(
                         user.getRole(),
@@ -372,6 +387,8 @@ public class CircleService {
         );
 
         validatorBucket
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), circle.getDOMAIN()))
                 .consistOf(StudentIdIsNullValidator.of(user.getStudentId()));
 
@@ -431,6 +448,8 @@ public class CircleService {
         );
 
         ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(circleMember.getCircle().getIsDeleted(), circleMember.getCircle().getDOMAIN()))
                 .consistOf(CircleMemberStatusValidator.of(
                         circleMember.getStatus(),
@@ -484,6 +503,8 @@ public class CircleService {
         );
 
         validatorBucket
+                .consistOf(UserStateValidator.of(requestUser.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), circle.getDOMAIN()))
                 .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.LEADER_CIRCLE)));
 
@@ -563,6 +584,8 @@ public class CircleService {
         );
 
         validatorBucket
+                .consistOf(UserStateValidator.of(requestUser.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(circleMember.getCircle().getIsDeleted(), circleMember.getCircle().getDOMAIN()))
                 .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.LEADER_CIRCLE)));
 

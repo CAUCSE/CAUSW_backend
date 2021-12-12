@@ -36,6 +36,7 @@ import net.causw.domain.validation.GrantableRoleValidator;
 import net.causw.domain.validation.PasswordCorrectValidator;
 import net.causw.domain.validation.PasswordFormatValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
+import net.causw.domain.validation.UserRoleIsNoneValidator;
 import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.UserRoleWithoutAdminValidator;
 import net.causw.domain.validation.UserStateValidator;
@@ -81,12 +82,19 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserResponseDto findById(String id) {
-        return UserResponseDto.from(this.userPort.findById(id).orElseThrow(
+        UserDomainModel requestUser = this.userPort.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
                 )
-        ));
+        );
+
+        ValidatorBucket.of()
+                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
+                .consistOf(UserStateValidator.of(requestUser.getState()))
+                .validate();
+
+        return UserResponseDto.from(requestUser);
     }
 
     @Transactional(readOnly = true)
@@ -99,6 +107,8 @@ public class UserService {
         );
 
         ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
                 .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
                 .validate();
 
@@ -118,6 +128,8 @@ public class UserService {
         );
 
         ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
                 .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
                 .validate();
 
@@ -154,6 +166,11 @@ public class UserService {
                         "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
+
+        ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+                .validate();
 
         return this.circleMemberPort.getCircleListByUserId(user.getId())
                 .stream()
@@ -274,6 +291,8 @@ public class UserService {
 
         // Validate the admission year range
         ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(userDomainModel.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
                 .consistOf(ConstraintValidator.of(userDomainModel, this.validator))
                 .consistOf(AdmissionYearValidator.of(userUpdateRequestDto.getAdmissionYear()))
                 .validate();
@@ -311,6 +330,8 @@ public class UserService {
          * 2) Combination of grantor role and the grantee role must be acceptable
          */
         ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(grantor.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(grantor.getRole()))
                 .consistOf(GrantableRoleValidator.of(
                         grantor.getRole(),
                         userUpdateRoleRequestDto.getRole(),
@@ -354,6 +375,8 @@ public class UserService {
         );
 
         ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
                 .consistOf(PasswordCorrectValidator.of(user, userPasswordUpdateRequestDto.getOriginPassword()))
                 .consistOf(PasswordFormatValidator.of(userPasswordUpdateRequestDto.getUpdatedPassword()))
                 .validate();
@@ -376,6 +399,8 @@ public class UserService {
         );
 
         ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
                 .consistOf(UserRoleWithoutAdminValidator.of(user.getRole(), List.of(Role.COMMON, Role.PROFESSOR)))
                 .validate();
 
@@ -420,6 +445,8 @@ public class UserService {
         );
 
         ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(requestUser.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
                 .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT)))
                 .consistOf(UserRoleWithoutAdminValidator.of(droppedUser.getRole(), List.of(Role.COMMON, Role.PROFESSOR)))
                 .validate();
@@ -449,6 +476,8 @@ public class UserService {
         );
 
         ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(requestUser.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
                 .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT)))
                 .validate();
 
@@ -474,6 +503,8 @@ public class UserService {
         );
 
         ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(requestUser.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
                 .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT)))
                 .validate();
 
@@ -482,11 +513,11 @@ public class UserService {
     }
 
     @Transactional
-    public UserAdmissionResponseDto create(UserAdmissionCreateRequestDto userAdmissionCreateRequestDto) {
+    public UserAdmissionResponseDto createAdmission(UserAdmissionCreateRequestDto userAdmissionCreateRequestDto) {
         UserDomainModel requestUser = this.userPort.findByEmail(userAdmissionCreateRequestDto.getEmail()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 있습니다."
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
@@ -523,6 +554,8 @@ public class UserService {
         );
 
         ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(requestUser.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
                 .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT)))
                 .validate();
 
@@ -573,6 +606,8 @@ public class UserService {
         );
 
         ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(requestUser.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
                 .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT)))
                 .validate();
 
@@ -611,6 +646,8 @@ public class UserService {
         );
 
         ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), board.getDOMAIN()))
                 .consistOf(ConstraintValidator.of(favoriteBoardDomainModel, this.validator))
                 .validate();

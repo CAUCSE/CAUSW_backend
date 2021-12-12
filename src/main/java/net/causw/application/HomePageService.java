@@ -10,6 +10,9 @@ import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.UserDomainModel;
+import net.causw.domain.validation.UserRoleIsNoneValidator;
+import net.causw.domain.validation.UserStateValidator;
+import net.causw.domain.validation.ValidatorBucket;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -41,6 +44,11 @@ public class HomePageService {
                         "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
+
+        ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+                .validate();
 
         return this.favoriteBoardPort.findByUserId(userId)
                 .stream()

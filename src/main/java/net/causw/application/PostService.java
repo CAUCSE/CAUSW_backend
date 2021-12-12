@@ -26,7 +26,9 @@ import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.ContentsAdminValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.UserEqualValidator;
+import net.causw.domain.validation.UserRoleIsNoneValidator;
 import net.causw.domain.validation.UserRoleValidator;
+import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -81,6 +83,8 @@ public class PostService {
         );
 
         validatorBucket
+                .consistOf(UserStateValidator.of(userDomainModel.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getBoard().getIsDeleted(), postDomainModel.getBoard().getDOMAIN()))
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), postDomainModel.getDOMAIN()));
 
@@ -131,6 +135,10 @@ public class PostService {
                         "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
+
+        validatorBucket
+                .consistOf(UserStateValidator.of(userDomainModel.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()));
 
         BoardDomainModel boardDomainModel = this.boardPort.findById(boardId).orElseThrow(
                 () -> new BadRequestException(
@@ -227,6 +235,8 @@ public class PostService {
         }
 
         validatorBucket
+                .consistOf(UserStateValidator.of(creatorDomainModel.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(creatorDomainModel.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted(), boardDomainModel.getDOMAIN()))
                 .consistOf(UserRoleValidator.of(
                         creatorDomainModel.getRole(),
@@ -288,6 +298,8 @@ public class PostService {
         }
 
         validatorBucket
+                .consistOf(UserStateValidator.of(requestUser.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), postDomainModel.getDOMAIN()));
 
         postDomainModel.getBoard().getCircle().ifPresentOrElse(
@@ -380,6 +392,8 @@ public class PostService {
         }
 
         validatorBucket
+                .consistOf(UserStateValidator.of(requestUser.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getBoard().getIsDeleted(), postDomainModel.getBoard().getDOMAIN()))
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), postDomainModel.getDOMAIN()));
 

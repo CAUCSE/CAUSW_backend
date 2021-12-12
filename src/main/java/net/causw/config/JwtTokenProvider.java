@@ -67,7 +67,7 @@ public class JwtTokenProvider {
 
             if (claims.getBody().get("role").equals(Role.NONE.getValue()) ||
                     !claims.getBody().get("state").equals(UserState.ACTIVE.getValue())) {
-                request.setAttribute("exception", ErrorCode.API_NOT_ACCESSIBLE);
+                request.setAttribute("exception", ErrorCode.NEED_SIGN_IN);
                 return false;
             }
 

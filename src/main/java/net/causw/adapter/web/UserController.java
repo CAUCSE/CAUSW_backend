@@ -170,7 +170,7 @@ public class UserController {
     public UserAdmissionResponseDto createAdmission(
             @RequestBody UserAdmissionCreateRequestDto userAdmissionCreateRequestDto
     ) {
-        return this.userService.create(userAdmissionCreateRequestDto);
+        return this.userService.createAdmission(userAdmissionCreateRequestDto);
     }
 
     @PutMapping(value = "/admissions/{id}/accept")

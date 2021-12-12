@@ -23,7 +23,9 @@ import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.UserEqualValidator;
+import net.causw.domain.validation.UserRoleIsNoneValidator;
 import net.causw.domain.validation.UserRoleValidator;
+import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -69,6 +71,11 @@ public class BoardService {
                 )
         );
 
+        ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(userDomainModel.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
+                .validate();
+
         return this.boardPort.findAll()
                 .stream()
                 .map(boardDomainModel -> BoardResponseDto.from(boardDomainModel, userDomainModel.getRole()))
@@ -102,6 +109,8 @@ public class BoardService {
         );
 
         ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(userDomainModel.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), circleDomainModel.getDOMAIN()))
                 .consistOf(CircleMemberStatusValidator.of(
                         circleMember.getStatus(),
@@ -137,6 +146,10 @@ public class BoardService {
                         "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
+
+        validatorBucket
+                .consistOf(UserStateValidator.of(creatorDomainModel.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(creatorDomainModel.getRole()));
 
         CircleDomainModel circleDomainModel = boardCreateRequestDto.getCircleId().map(
                 circleId -> {
@@ -211,8 +224,9 @@ public class BoardService {
         );
 
         validatorBucket
+                .consistOf(UserStateValidator.of(updaterDomainModel.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(updaterDomainModel.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted(), boardDomainModel.getDOMAIN()));
-
 
         boardDomainModel.getCircle().ifPresentOrElse(
                 circleDomainModel -> {
@@ -284,6 +298,8 @@ public class BoardService {
         );
 
         validatorBucket
+                .consistOf(UserStateValidator.of(deleterDomainModel.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(deleterDomainModel.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted(), boardDomainModel.getDOMAIN()));
 
         boardDomainModel.getCircle().ifPresentOrElse(

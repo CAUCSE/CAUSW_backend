@@ -22,6 +22,8 @@ import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.ContentsAdminValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.UserEqualValidator;
+import net.causw.domain.validation.UserRoleIsNoneValidator;
+import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -62,6 +64,10 @@ public class CommentService {
                         "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
+
+        validatorBucket
+                .consistOf(UserStateValidator.of(creatorDomainModel.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(creatorDomainModel.getRole()));
 
         PostDomainModel postDomainModel = this.postPort.findById(commentCreateDto.getPostId()).orElseThrow(
                 () -> new BadRequestException(
@@ -137,6 +143,8 @@ public class CommentService {
         );
 
         validatorBucket
+                .consistOf(UserStateValidator.of(userDomainModel.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getBoard().getIsDeleted(), postDomainModel.getBoard().getDOMAIN()))
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), postDomainModel.getDOMAIN()));
 
@@ -196,6 +204,8 @@ public class CommentService {
         );
 
         validatorBucket
+                .consistOf(UserStateValidator.of(requestUser.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getBoard().getIsDeleted(), postDomainModel.getBoard().getDOMAIN()))
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), postDomainModel.getDOMAIN()))
                 .consistOf(TargetIsDeletedValidator.of(commentDomainModel.getIsDeleted(), commentDomainModel.getDOMAIN()))
@@ -277,6 +287,8 @@ public class CommentService {
         );
 
         validatorBucket
+                .consistOf(UserStateValidator.of(deleterDomainModel.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(deleterDomainModel.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(commentDomainModel.getIsDeleted(), commentDomainModel.getDOMAIN()));
 
         postDomainModel.getBoard().getCircle().ifPresentOrElse(
