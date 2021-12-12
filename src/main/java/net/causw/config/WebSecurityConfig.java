@@ -52,7 +52,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(
                         "/api/**/users/sign-in",
                         "/api/**/users/sign-up",
-                        "/api/**/users/me, ",
+                        "/api/**/users/me",
                         "/healthy",
                         "/api/**/users/admissions/apply"
                 )

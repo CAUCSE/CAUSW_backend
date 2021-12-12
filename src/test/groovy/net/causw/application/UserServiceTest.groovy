@@ -5,6 +5,7 @@ import net.causw.application.spi.BoardPort
 import net.causw.application.spi.CircleMemberPort
 import net.causw.application.spi.CirclePort
 import net.causw.application.spi.FavoriteBoardPort
+import net.causw.application.spi.UserAdmissionLogPort
 import net.causw.application.spi.UserAdmissionPort
 import net.causw.application.spi.UserPort
 import net.causw.config.JwtTokenProvider
@@ -29,20 +30,22 @@ import java.time.LocalDateTime
 @ActiveProfiles(value = "test")
 @RunWith(PowerMockRunner.class)
 @PowerMockRunnerDelegate(Sputnik.class)
-@PrepareForTest([UserDomainModel.class])
+@PrepareForTest([UserDomainModel.class, UserAdmissionDomainModel.class])
 class UserServiceTest extends Specification {
     private UserPort userPort = Mock(UserPort.class)
-    private BoardPort boardPort = Mock(BoardPort.class);
-    private UserAdmissionPort userAdmissionPort = Mock(UserAdmissionPort.class);
+    private BoardPort boardPort = Mock(BoardPort.class)
+    private UserAdmissionPort userAdmissionPort = Mock(UserAdmissionPort.class)
+    private UserAdmissionLogPort userAdmissionLogPort = Mock(UserAdmissionLogPort.class)
     private CirclePort circlePort = Mock(CirclePort.class)
     private CircleMemberPort circleMemberPort = Mock(CircleMemberPort.class)
-    private FavoriteBoardPort favoriteBoardPort = Mock(FavoriteBoardPort.class);
+    private FavoriteBoardPort favoriteBoardPort = Mock(FavoriteBoardPort.class)
     private JwtTokenProvider jwtTokenProvider = Mock(JwtTokenProvider.class)
     private Validator validator = Validation.buildDefaultValidatorFactory().getValidator()
     private UserService userService = new UserService(
             this.userPort,
             this.boardPort,
             this.userAdmissionPort,
+            this.userAdmissionLogPort,
             this.circlePort,
             this.circleMemberPort,
             this.favoriteBoardPort,
@@ -1182,6 +1185,264 @@ class UserServiceTest extends Specification {
         when:
         this.mockUserDomainModel.setRole(Role.COMMON)
         this.userService.dropUser("test", "test1")
+
+        then:
+        thrown(UnauthorizedException)
+    }
+
+    /**
+     * Test cases for user admission
+     */
+    @Test
+    def "User create admission normal case"() {
+        given:
+        def userAdmissionCreateRequestDto = new UserAdmissionCreateRequestDto(
+                ((UserDomainModel)this.mockUserDomainModel).getEmail(),
+                "",
+                ""
+        )
+
+        def createdUserAdmissionDomainModel = UserAdmissionDomainModel.of(
+                (UserDomainModel)this.mockUserDomainModel,
+                userAdmissionCreateRequestDto.getAttachImage(),
+                userAdmissionCreateRequestDto.getDescription()
+        )
+
+        this.mockUserDomainModel.setState(UserState.AWAIT)
+        this.userPort.findByEmail("test@cau.ac.kr") >> Optional.of(this.mockUserDomainModel)
+        this.userAdmissionPort.existsByUserId(((UserDomainModel)this.mockUserDomainModel).getId()) >> false
+
+        PowerMockito.mockStatic(UserAdmissionDomainModel.class)
+        PowerMockito.when(UserAdmissionDomainModel.of(
+                (UserDomainModel)this.mockUserDomainModel,
+                userAdmissionCreateRequestDto.getAttachImage(),
+                userAdmissionCreateRequestDto.getDescription()
+        )).thenReturn(createdUserAdmissionDomainModel)
+
+        this.userAdmissionPort.create(createdUserAdmissionDomainModel) >> createdUserAdmissionDomainModel
+
+        when:
+        def userAdmissionResponseDto = this.userService.createAdmission(userAdmissionCreateRequestDto)
+
+        then:
+        userAdmissionResponseDto instanceof UserAdmissionResponseDto
+        with(userAdmissionResponseDto) {
+            getUser().getId() == ((UserDomainModel)this.mockUserDomainModel).getId()
+        }
+    }
+
+    def "User create admission unauthorized case"() {
+        given:
+        def userAdmissionCreateRequestDto = new UserAdmissionCreateRequestDto(
+                ((UserDomainModel)this.mockUserDomainModel).getEmail(),
+                "",
+                ""
+        )
+
+        def createdUserAdmissionDomainModel = UserAdmissionDomainModel.of(
+                (UserDomainModel)this.mockUserDomainModel,
+                userAdmissionCreateRequestDto.getAttachImage(),
+                userAdmissionCreateRequestDto.getDescription()
+        )
+
+        this.userPort.findByEmail("test@cau.ac.kr") >> Optional.of(this.mockUserDomainModel)
+        this.userAdmissionPort.existsByUserId(((UserDomainModel)this.mockUserDomainModel).getId()) >> false
+
+        PowerMockito.mockStatic(UserAdmissionDomainModel.class)
+        PowerMockito.when(UserAdmissionDomainModel.of(
+                (UserDomainModel)this.mockUserDomainModel,
+                userAdmissionCreateRequestDto.getAttachImage(),
+                userAdmissionCreateRequestDto.getDescription()
+        )).thenReturn(createdUserAdmissionDomainModel)
+
+        this.userAdmissionPort.create(createdUserAdmissionDomainModel) >> createdUserAdmissionDomainModel
+
+        when: "User is dropped"
+        this.mockUserDomainModel.setState(UserState.DROP)
+        this.userService.createAdmission(userAdmissionCreateRequestDto)
+
+        then:
+        thrown(UnauthorizedException)
+
+        when: "User is already active"
+        this.mockUserDomainModel.setState(UserState.ACTIVE)
+        this.userService.createAdmission(userAdmissionCreateRequestDto)
+
+        then:
+        thrown(UnauthorizedException)
+    }
+
+    /**
+     * Test cases for user admission accept
+     */
+    @Test
+    def "User accept admission normal case"() {
+        given:
+        def mockRegisterUserDomainModel = UserDomainModel.of(
+                "test1",
+                "test@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.COMMON,
+                null,
+                UserState.ACTIVE
+        )
+
+        def userAdmissionDomainModel = UserAdmissionDomainModel.of(
+                "test",
+                mockRegisterUserDomainModel,
+                "",
+                "",
+                null,
+                null
+        )
+
+        this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
+        this.userAdmissionPort.findById("test") >> Optional.of(userAdmissionDomainModel)
+        this.userPort.updateRole(mockRegisterUserDomainModel.getId(), Role.COMMON) >> Optional.of(this.mockUserDomainModel)
+        this.boardPort.findOldest3Boards() >> List.of()
+        this.userAdmissionLogPort.create(
+                userAdmissionDomainModel.getUser().getEmail(),
+                userAdmissionDomainModel.getUser().getName(),
+                mockRegisterUserDomainModel.getEmail(),
+                mockRegisterUserDomainModel.getName(),
+                UserAdmissionLogAction.ACCEPT,
+                userAdmissionDomainModel.getAttachImage(),
+                userAdmissionDomainModel.getDescription()
+        ) >> null
+        this.userAdmissionPort.delete(userAdmissionDomainModel) >> null
+
+        this.userPort.updateState(userAdmissionDomainModel.getUser().getId(), UserState.ACTIVE) >> Optional.of(mockRegisterUserDomainModel)
+
+        when:
+        def userAdmissionResponseDto = this.userService.accept("test", "test")
+
+        then:
+        userAdmissionResponseDto instanceof UserAdmissionResponseDto
+        with(userAdmissionResponseDto) {
+            getUser().getId() == mockRegisterUserDomainModel.getId()
+        }
+    }
+
+    @Test
+    def "User accept admission unauthorized case"() {
+        given:
+        def mockRegisterUserDomainModel = UserDomainModel.of(
+                "test1",
+                "test@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.COMMON,
+                null,
+                UserState.ACTIVE
+        )
+
+        def userAdmissionDomainModel = UserAdmissionDomainModel.of(
+                "test",
+                mockRegisterUserDomainModel,
+                "",
+                "",
+                null,
+                null
+        )
+
+        this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
+        this.userAdmissionPort.findById("test") >> Optional.of(userAdmissionDomainModel)
+
+        when: "request user is not president and admin"
+        this.mockUserDomainModel.setRole(Role.COMMON)
+        this.userService.accept("test", "test")
+
+        then:
+        thrown(UnauthorizedException)
+    }
+
+    /**
+     * Test cases for user admission reject
+     */
+    @Test
+    def "User reject admission normal case"() {
+        given:
+        def mockRegisterUserDomainModel = UserDomainModel.of(
+                "test1",
+                "test@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.COMMON,
+                null,
+                UserState.ACTIVE
+        )
+
+        def userAdmissionDomainModel = UserAdmissionDomainModel.of(
+                "test",
+                mockRegisterUserDomainModel,
+                "",
+                "",
+                null,
+                null
+        )
+
+        this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
+        this.userAdmissionPort.findById("test") >> Optional.of(userAdmissionDomainModel)
+        this.userAdmissionLogPort.create(
+                userAdmissionDomainModel.getUser().getEmail(),
+                userAdmissionDomainModel.getUser().getName(),
+                mockRegisterUserDomainModel.getEmail(),
+                mockRegisterUserDomainModel.getName(),
+                UserAdmissionLogAction.REJECT,
+                userAdmissionDomainModel.getAttachImage(),
+                userAdmissionDomainModel.getDescription()
+        ) >> null
+        this.userAdmissionPort.delete(userAdmissionDomainModel) >> null
+
+        this.userPort.updateState(userAdmissionDomainModel.getUser().getId(), UserState.REJECT) >> Optional.of(mockRegisterUserDomainModel)
+
+        when:
+        def userAdmissionResponseDto = this.userService.reject("test", "test")
+
+        then:
+        userAdmissionResponseDto instanceof UserAdmissionResponseDto
+        with(userAdmissionResponseDto) {
+            getUser().getId() == mockRegisterUserDomainModel.getId()
+        }
+    }
+
+    @Test
+    def "User reject admission unauthorized case"() {
+        given:
+        def mockRegisterUserDomainModel = UserDomainModel.of(
+                "test1",
+                "test@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.COMMON,
+                null,
+                UserState.ACTIVE
+        )
+
+        def userAdmissionDomainModel = UserAdmissionDomainModel.of(
+                "test",
+                mockRegisterUserDomainModel,
+                "",
+                "",
+                null,
+                null
+        )
+
+        this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
+        this.userAdmissionPort.findById("test") >> Optional.of(userAdmissionDomainModel)
+
+        when: "request user is not president and admin"
+        this.mockUserDomainModel.setRole(Role.COMMON)
+        this.userService.reject("test", "test")
 
         then:
         thrown(UnauthorizedException)

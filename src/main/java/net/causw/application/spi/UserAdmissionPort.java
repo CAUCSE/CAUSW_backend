@@ -7,6 +7,8 @@ import org.springframework.data.domain.Page;
 import java.util.Optional;
 
 public interface UserAdmissionPort {
+    Boolean existsByUserId(String id);
+
     Optional<UserAdmissionDomainModel> findById(String id);
 
     Optional<UserAdmissionDomainModel> findByUserId(String id);
@@ -14,4 +16,6 @@ public interface UserAdmissionPort {
     Page<UserAdmissionDomainModel> findAll(UserState userState, Integer pageNum);
 
     UserAdmissionDomainModel create(UserAdmissionDomainModel userAdmissionDomainModel);
+
+    void delete(UserAdmissionDomainModel userAdmissionDomainModel);
 }

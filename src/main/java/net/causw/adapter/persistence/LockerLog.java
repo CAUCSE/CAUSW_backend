@@ -32,6 +32,22 @@ public class LockerLog extends BaseEntity{
     private String message;
 
     private LockerLog(
+            String id,
+            Long lockerNumber,
+            String userEmail,
+            String userName,
+            LockerLogAction action,
+            String message
+    ) {
+        super(id);
+        this.lockerNumber = lockerNumber;
+        this.userEmail = userEmail;
+        this.userName = userName;
+        this.action = action;
+        this.message = message;
+    }
+
+    private LockerLog(
             Long lockerNumber,
             String userEmail,
             String userName,
