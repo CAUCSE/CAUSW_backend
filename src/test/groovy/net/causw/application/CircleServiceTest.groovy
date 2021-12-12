@@ -62,7 +62,7 @@ class CircleServiceTest extends Specification {
         this.mockCircleDomainModel = CircleDomainModel.of(
                 "test",
                 "test",
-                null,
+                "/test",
                 "test_description",
                 false,
                 (UserDomainModel) this.leader
@@ -87,7 +87,7 @@ class CircleServiceTest extends Specification {
         given:
         def mockCircleCreateRequestDto = new CircleCreateRequestDto(
                 "test",
-                null,
+                "/test",
                 "test_description",
                 (String) this.leader.getId()
         )
@@ -129,7 +129,7 @@ class CircleServiceTest extends Specification {
         newCircle instanceof CircleResponseDto
         with(newCircle) {
             getName() == "test"
-            getMainImage() == null
+            getMainImage() == "/test"
             getDescription() == "test_description"
             !getIsDeleted()
             getLeaderId() == "test"
@@ -141,7 +141,7 @@ class CircleServiceTest extends Specification {
         given:
         def mockCircleCreateRequestDto = new CircleCreateRequestDto(
                 "test",
-                null,
+                "/test",
                 "test_description",
                 (String) this.leader.getId()
         )
@@ -180,7 +180,7 @@ class CircleServiceTest extends Specification {
         given:
         def mockCircleCreateRequestDto = new CircleCreateRequestDto(
                 "test",
-                null,
+                "/test",
                 "test_description",
                 (String) this.leader.getId()
         )
@@ -220,7 +220,7 @@ class CircleServiceTest extends Specification {
         given:
         def mockCircleCreateRequestDto = new CircleCreateRequestDto(
                 "test",
-                null,
+                "/test",
                 "test_description",
                 (String) this.leader.getId()
         )
@@ -258,7 +258,7 @@ class CircleServiceTest extends Specification {
         given:
         def mockCircleCreateRequestDto = new CircleCreateRequestDto(
                 "test",
-                null,
+                "/test",
                 "test_description",
                 (String) this.leader.getId()
         )
@@ -302,7 +302,7 @@ class CircleServiceTest extends Specification {
         given:
         def mockCircleUpdateRequestDto = new CircleUpdateRequestDto(
                 "test2",
-                null,
+                "/test",
                 "test_update_description"
         )
 
@@ -346,7 +346,7 @@ class CircleServiceTest extends Specification {
         given:
         def mockCircleUpdateRequestDto = new CircleUpdateRequestDto(
                 "test2",
-                null,
+                "/test",
                 "test_update_description"
         )
 
@@ -376,7 +376,7 @@ class CircleServiceTest extends Specification {
         given:
         def mockCircleUpdateRequestDto = new CircleUpdateRequestDto(
                 "test2",
-                null,
+                "/test",
                 "test_update_description"
         )
 
@@ -438,7 +438,7 @@ class CircleServiceTest extends Specification {
         given:
         def mockCircleUpdateRequestDto = new CircleUpdateRequestDto(
                 "test2",
-                null,
+                "/test",
                 "test_update_description"
         )
 
@@ -479,7 +479,7 @@ class CircleServiceTest extends Specification {
         given:
         def mockCircleUpdateRequestDto = new CircleUpdateRequestDto(
                 "test2",
-                null,
+                "/test",
                 "test_update_description"
         )
 
