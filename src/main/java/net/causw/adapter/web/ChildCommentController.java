@@ -1,9 +1,9 @@
 package net.causw.adapter.web;
 
-import net.causw.application.CommentService;
-import net.causw.application.dto.CommentCreateRequestDto;
-import net.causw.application.dto.CommentResponseDto;
-import net.causw.application.dto.CommentUpdateRequestDto;
+import net.causw.application.ChildCommentService;
+import net.causw.application.dto.ChildCommentCreateRequestDto;
+import net.causw.application.dto.ChildCommentResponseDto;
+import net.causw.application.dto.ChildCommentUpdateRequestDto;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -19,53 +19,49 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/comments")
-public class CommentController {
-    private final CommentService commentService;
+@RequestMapping("/api/v1/child-comments")
+public class ChildCommentController {
+    private final ChildCommentService childCommentService;
 
-    public CommentController(CommentService commentService) {
-        this.commentService = commentService;
+    public ChildCommentController(ChildCommentService childCommentService) {
+        this.childCommentService = childCommentService;
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CommentResponseDto create(
+    public ChildCommentResponseDto create(
             @AuthenticationPrincipal String creatorId,
-            @RequestBody CommentCreateRequestDto commentCreateRequestDto
+            @RequestBody ChildCommentCreateRequestDto childCommentCreateRequestDto
     ) {
-        return this.commentService.create(creatorId, commentCreateRequestDto);
+        return this.childCommentService.create(creatorId, childCommentCreateRequestDto);
     }
 
-    @GetMapping(params = "postId")
+    @GetMapping(params = "parentCommentId")
     @ResponseStatus(value = HttpStatus.OK)
-    public Page<CommentResponseDto> findAll(
+    public Page<ChildCommentResponseDto> findAll(
             @AuthenticationPrincipal String userId,
-            @RequestParam String postId,
+            @RequestParam String parentCommentId,
             @RequestParam(defaultValue = "0") Integer pageNum
     ) {
-        return this.commentService.findAll(userId, postId, pageNum);
+        return this.childCommentService.findAll(userId, parentCommentId, pageNum);
     }
 
     @PutMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
-    public CommentResponseDto update(
-            @AuthenticationPrincipal String requestUserId,
+    public ChildCommentResponseDto update(
+            @AuthenticationPrincipal String updaterId,
             @PathVariable String id,
-            @RequestBody CommentUpdateRequestDto commentUpdateRequestDto
+            @RequestBody ChildCommentUpdateRequestDto childCommentUpdateRequestDto
     ) {
-        return this.commentService.update(
-                requestUserId,
-                id,
-                commentUpdateRequestDto
-        );
+        return this.childCommentService.update(updaterId, id, childCommentUpdateRequestDto);
     }
 
     @DeleteMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
-    public CommentResponseDto delete(
-            @AuthenticationPrincipal String userId,
+    public ChildCommentResponseDto delete(
+            @AuthenticationPrincipal String deleterId,
             @PathVariable String id
     ) {
-        return this.commentService.delete(userId, id);
+        return this.childCommentService.delete(deleterId, id);
     }
 }

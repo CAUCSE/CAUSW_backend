@@ -1,6 +1,7 @@
 package net.causw.adapter.persistence.port;
 
 import net.causw.adapter.persistence.Board;
+import net.causw.adapter.persistence.ChildComment;
 import net.causw.adapter.persistence.Circle;
 import net.causw.adapter.persistence.CircleMember;
 import net.causw.adapter.persistence.Comment;
@@ -11,6 +12,7 @@ import net.causw.adapter.persistence.Post;
 import net.causw.adapter.persistence.User;
 import net.causw.adapter.persistence.UserAdmission;
 import net.causw.domain.model.BoardDomainModel;
+import net.causw.domain.model.ChildCommentDomainModel;
 import net.causw.domain.model.CircleDomainModel;
 import net.causw.domain.model.CircleMemberDomainModel;
 import net.causw.domain.model.CommentDomainModel;
@@ -122,37 +124,17 @@ public abstract class DomainModelMapper {
         );
     }
 
-    protected CommentDomainModel entityToDomainModelWithChild(Comment comment) {
-        return CommentDomainModel.of(
+    protected ChildCommentDomainModel entityToDomainModel(ChildComment comment) {
+        return ChildCommentDomainModel.of(
                 comment.getId(),
                 comment.getContent(),
                 comment.getIsDeleted(),
-                comment.getCreatedAt(),
-                comment.getUpdatedAt(),
+                comment.getTagUserName(),
+                comment.getRefChildComment(),
                 this.entityToDomainModel(comment.getWriter()),
-                comment.getPost().getId(),
-                comment.getChildCommentList()
-                        .stream()
-                        .map(this::entityToDomainModel)
-                        .collect(Collectors.toList())
-        );
-    }
-
-    protected CommentDomainModel entityToDomainModelWithParent(Comment comment) {
-        CommentDomainModel parentCommentDomainModel = null;
-        if (comment.getParentComment() != null) {
-            parentCommentDomainModel = this.entityToDomainModel(comment.getParentComment());
-        }
-
-        return CommentDomainModel.of(
-                comment.getId(),
-                comment.getContent(),
-                comment.getIsDeleted(),
+                this.entityToDomainModel(comment.getParentComment()),
                 comment.getCreatedAt(),
-                comment.getUpdatedAt(),
-                this.entityToDomainModel(comment.getWriter()),
-                comment.getPost().getId(),
-                parentCommentDomainModel
+                comment.getUpdatedAt()
         );
     }
 

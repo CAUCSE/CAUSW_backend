@@ -7,6 +7,7 @@ import net.causw.application.dto.PostCreateRequestDto;
 import net.causw.application.dto.PostResponseDto;
 import net.causw.application.dto.PostUpdateRequestDto;
 import net.causw.application.spi.BoardPort;
+import net.causw.application.spi.ChildCommentPort;
 import net.causw.application.spi.CircleMemberPort;
 import net.causw.application.spi.CommentPort;
 import net.causw.application.spi.PostPort;
@@ -46,6 +47,7 @@ public class PostService {
     private final BoardPort boardPort;
     private final CircleMemberPort circleMemberPort;
     private final CommentPort commentPort;
+    private final ChildCommentPort childCommentPort;
     private final Validator validator;
 
     public PostService(
@@ -54,6 +56,7 @@ public class PostService {
             BoardPort boardPort,
             CircleMemberPort circleMemberPort,
             CommentPort commentPort,
+            ChildCommentPort childCommentPort,
             Validator validator
     ) {
         this.postPort = postPort;
@@ -61,6 +64,7 @@ public class PostService {
         this.boardPort = boardPort;
         this.circleMemberPort = circleMemberPort;
         this.commentPort = commentPort;
+        this.childCommentPort = childCommentPort;
         this.validator = validator;
     }
 
@@ -115,7 +119,11 @@ public class PostService {
                 this.commentPort.findByPostId(postId, 0)
                         .map(
                                 commentDomainModel -> CommentResponseDto.from(
-                                        commentDomainModel, userDomainModel, postDomainModel.getBoard())
+                                        commentDomainModel,
+                                        userDomainModel,
+                                        postDomainModel.getBoard(),
+                                        this.childCommentPort.countByParentComment(commentDomainModel.getId())
+                                )
                         ),
                 this.commentPort.countByPostId(postDomainModel.getId())
         );
@@ -356,8 +364,8 @@ public class PostService {
                                 ErrorCode.INTERNAL_SERVER,
                                 "Post id checked, but exception occurred"
                         )
-                )
-                , requestUser
+                ),
+                requestUser
         );
     }
 
@@ -449,7 +457,11 @@ public class PostService {
                 this.commentPort.findByPostId(postId, 0)
                         .map(
                                 commentDomainModel -> CommentResponseDto.from(
-                                        commentDomainModel, requestUser, updatedPostDomainModel.getBoard())
+                                        commentDomainModel,
+                                        requestUser,
+                                        updatedPostDomainModel.getBoard(),
+                                        this.childCommentPort.countByParentComment(commentDomainModel.getId())
+                                )
                         ),
                 this.commentPort.countByPostId(postDomainModel.getId())
         );

@@ -1,8 +1,8 @@
 package net.causw.application;
 
-import net.causw.application.dto.CommentCreateRequestDto;
-import net.causw.application.dto.CommentResponseDto;
-import net.causw.application.dto.CommentUpdateRequestDto;
+import net.causw.application.dto.ChildCommentCreateRequestDto;
+import net.causw.application.dto.ChildCommentResponseDto;
+import net.causw.application.dto.ChildCommentUpdateRequestDto;
 import net.causw.application.spi.ChildCommentPort;
 import net.causw.application.spi.CircleMemberPort;
 import net.causw.application.spi.CommentPort;
@@ -12,17 +12,20 @@ import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
+import net.causw.domain.model.ChildCommentDomainModel;
 import net.causw.domain.model.CircleMemberDomainModel;
 import net.causw.domain.model.CircleMemberStatus;
 import net.causw.domain.model.CommentDomainModel;
 import net.causw.domain.model.PostDomainModel;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
+import net.causw.domain.validation.ChildCommentNotEqualValidator;
 import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.ContentsAdminValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.UserEqualValidator;
+import net.causw.domain.validation.UserNameEqualValidator;
 import net.causw.domain.validation.UserRoleIsNoneValidator;
 import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
@@ -32,34 +35,35 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
-public class CommentService {
+public class ChildCommentService {
+    private final ChildCommentPort childCommentPort;
     private final CommentPort commentPort;
     private final UserPort userPort;
-    private final PostPort postPort;
     private final CircleMemberPort circleMemberPort;
-    private final ChildCommentPort childCommentPort;
+    private final PostPort postPort;
     private final Validator validator;
 
-    public CommentService(
+    public ChildCommentService(
+            ChildCommentPort childCommentPort,
             CommentPort commentPort,
             UserPort userPort,
-            PostPort postPort,
             CircleMemberPort circleMemberPort,
-            ChildCommentPort childCommentPort,
+            PostPort postPort,
             Validator validator
     ) {
+        this.childCommentPort = childCommentPort;
         this.commentPort = commentPort;
         this.userPort = userPort;
-        this.postPort = postPort;
         this.circleMemberPort = circleMemberPort;
-        this.childCommentPort = childCommentPort;
+        this.postPort = postPort;
         this.validator = validator;
     }
 
     @Transactional
-    public CommentResponseDto create(String creatorId, CommentCreateRequestDto commentCreateDto) {
+    public ChildCommentResponseDto create(String creatorId, ChildCommentCreateRequestDto childCommentCreateRequestDto) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         UserDomainModel creatorDomainModel = this.userPort.findById(creatorId).orElseThrow(
@@ -73,24 +77,49 @@ public class CommentService {
                 .consistOf(UserStateValidator.of(creatorDomainModel.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(creatorDomainModel.getRole()));
 
-        PostDomainModel postDomainModel = this.postPort.findById(commentCreateDto.getPostId()).orElseThrow(
+        Optional<ChildCommentDomainModel> refChildCommentDomainModel = childCommentCreateRequestDto.getRefChildComment().map(
+                refChildCommentId -> this.childCommentPort.findById(refChildCommentId).orElseThrow(
+                        () -> new BadRequestException(
+                                ErrorCode.ROW_DOES_NOT_EXIST,
+                                "답할 답글을 찾을 수 없습니다."
+                        )
+                )
+        );
+
+        CommentDomainModel parentCommentDomainModel = this.commentPort.findById(childCommentCreateRequestDto.getParentCommentId()).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "상위 댓글을 찾을 수 없습니다."
+                )
+        );
+
+        PostDomainModel postDomainModel = this.postPort.findById(parentCommentDomainModel.getPostId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "게시글을 찾을 수 없습니다."
                 )
         );
 
-        CommentDomainModel commentDomainModel = CommentDomainModel.of(
-                commentCreateDto.getContent(),
+        ChildCommentDomainModel childCommentDomainModel = ChildCommentDomainModel.of(
+                childCommentCreateRequestDto.getContent(),
+                childCommentCreateRequestDto.getTagUserName().orElse(null),
+                childCommentCreateRequestDto.getRefChildComment().orElse(null),
                 creatorDomainModel,
-                postDomainModel.getId()
+                parentCommentDomainModel
         );
 
         validatorBucket
+                .consistOf(UserStateValidator.of(creatorDomainModel.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(creatorDomainModel.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getBoard().getIsDeleted(), postDomainModel.getBoard().getDOMAIN()))
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), postDomainModel.getDOMAIN()))
-                .consistOf(ConstraintValidator.of(commentDomainModel, this.validator))
-                .validate();
+                .consistOf(ConstraintValidator.of(childCommentDomainModel, this.validator));
+
+        refChildCommentDomainModel.ifPresent(
+                refChildComment -> validatorBucket
+                        .consistOf(TargetIsDeletedValidator.of(refChildComment.getIsDeleted(), refChildComment.getDOMAIN()))
+                        .consistOf(UserNameEqualValidator.of(childCommentDomainModel.getTagUserName(), refChildComment.getWriter().getName()))
+        );
 
         postDomainModel.getBoard().getCircle().ifPresent(
                 circleDomainModel -> {
@@ -110,16 +139,18 @@ public class CommentService {
                 }
         );
 
-        return CommentResponseDto.from(
-                this.commentPort.create(commentDomainModel, postDomainModel),
+        validatorBucket
+                .validate();
+
+        return ChildCommentResponseDto.from(
+                this.childCommentPort.create(childCommentDomainModel, postDomainModel),
                 creatorDomainModel,
-                postDomainModel.getBoard(),
-                this.childCommentPort.countByParentComment(commentDomainModel.getId())
+                postDomainModel.getBoard()
         );
     }
 
     @Transactional(readOnly = true)
-    public Page<CommentResponseDto> findAll(String userId, String postId, Integer pageNum) {
+    public Page<ChildCommentResponseDto> findAll(String userId, String parentCommentId, Integer pageNum) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
@@ -129,7 +160,14 @@ public class CommentService {
                 )
         );
 
-        PostDomainModel postDomainModel = this.postPort.findById(postId).orElseThrow(
+        CommentDomainModel parentCommentDomainModel = this.commentPort.findById(parentCommentId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "상위 댓글을 찾을 수 없습니다."
+                )
+        );
+
+        PostDomainModel postDomainModel = this.postPort.findById(parentCommentDomainModel.getPostId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "게시글을 찾을 수 없습니다."
@@ -162,73 +200,86 @@ public class CommentService {
         validatorBucket
                 .validate();
 
-        return this.commentPort.findByPostId(postId, pageNum)
-                .map(commentDomainModel ->
-                        CommentResponseDto.from(
-                                commentDomainModel,
-                                userDomainModel,
-                                postDomainModel.getBoard(),
-                                this.childCommentPort.countByParentComment(commentDomainModel.getId())
-                        )
+        return this.childCommentPort.findByParentComment(parentCommentId, pageNum)
+                .map(childCommentDomainModel ->
+                        ChildCommentResponseDto.from(childCommentDomainModel, userDomainModel, postDomainModel.getBoard())
                 );
     }
 
     @Transactional
-    public CommentResponseDto update(
-            String requestUserId,
-            String commentId,
-            CommentUpdateRequestDto commentUpdateRequestDto
+    public ChildCommentResponseDto update(
+            String updaterId,
+            String childCommentId,
+            ChildCommentUpdateRequestDto childCommentUpdateRequestDto
     ) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+        UserDomainModel updater = this.userPort.findById(updaterId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
-        CommentDomainModel commentDomainModel = this.commentPort.findById(commentId).orElseThrow(
+        ChildCommentDomainModel childCommentDomainModel = this.childCommentPort.findById(childCommentId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "수정할 댓글을 찾을 수 없습니다."
+                        "수정할 답글을 찾을 수 없습니다."
                 )
         );
 
-        PostDomainModel postDomainModel = this.postPort.findById(commentDomainModel.getPostId()).orElseThrow(
+        PostDomainModel postDomainModel = this.postPort.findById(childCommentDomainModel.getParentComment().getPostId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "게시글을 찾을 수 없습니다."
                 )
         );
 
-        commentDomainModel = CommentDomainModel.of(
-                commentDomainModel.getId(),
-                commentUpdateRequestDto.getContent(),
-                commentDomainModel.getIsDeleted(),
-                commentDomainModel.getCreatedAt(),
-                commentDomainModel.getUpdatedAt(),
-                commentDomainModel.getWriter(),
-                commentDomainModel.getPostId()
+        Optional<ChildCommentDomainModel> refChildCommentDomainModel = childCommentUpdateRequestDto.getRefChildComment().map(
+                refChildCommentId -> this.childCommentPort.findById(refChildCommentId).orElseThrow(
+                        () -> new BadRequestException(
+                                ErrorCode.ROW_DOES_NOT_EXIST,
+                                "답할 답글을 찾을 수 없습니다."
+                        )
+                )
+        );
+
+        ChildCommentDomainModel updatedChildCommentDomainModel = ChildCommentDomainModel.of(
+                childCommentDomainModel.getId(),
+                childCommentUpdateRequestDto.getContent(),
+                childCommentDomainModel.getIsDeleted(),
+                childCommentUpdateRequestDto.getTagUserName().orElse(null),
+                childCommentUpdateRequestDto.getRefChildComment().orElse(null),
+                childCommentDomainModel.getWriter(),
+                childCommentDomainModel.getParentComment(),
+                childCommentDomainModel.getCreatedAt(),
+                childCommentDomainModel.getUpdatedAt()
         );
 
         validatorBucket
-                .consistOf(UserStateValidator.of(requestUser.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
+                .consistOf(UserStateValidator.of(updater.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(updater.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getBoard().getIsDeleted(), postDomainModel.getBoard().getDOMAIN()))
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), postDomainModel.getDOMAIN()))
-                .consistOf(TargetIsDeletedValidator.of(commentDomainModel.getIsDeleted(), commentDomainModel.getDOMAIN()))
-                .consistOf(ConstraintValidator.of(commentDomainModel, this.validator))
+                .consistOf(TargetIsDeletedValidator.of(updatedChildCommentDomainModel.getIsDeleted(), updatedChildCommentDomainModel.getDOMAIN()))
+                .consistOf(ConstraintValidator.of(updatedChildCommentDomainModel, this.validator))
                 .consistOf(ContentsAdminValidator.of(
-                        requestUser.getRole(),
-                        requestUserId,
-                        commentDomainModel.getWriter().getId(),
+                        updater.getRole(),
+                        updaterId,
+                        updatedChildCommentDomainModel.getWriter().getId(),
                         List.of()
                 ));
 
+        refChildCommentDomainModel.ifPresent(
+                refChildComment -> validatorBucket
+                        .consistOf(TargetIsDeletedValidator.of(refChildComment.getIsDeleted(), refChildComment.getDOMAIN()))
+                        .consistOf(ChildCommentNotEqualValidator.of(updatedChildCommentDomainModel.getId(), refChildComment.getId()))
+                        .consistOf(UserNameEqualValidator.of(updatedChildCommentDomainModel.getTagUserName(), refChildComment.getWriter().getName()))
+        );
+
         postDomainModel.getBoard().getCircle().ifPresent(
                 circleDomainModel -> {
-                    CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(requestUserId, circleDomainModel.getId()).orElseThrow(
+                    CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(updaterId, circleDomainModel.getId()).orElseThrow(
                             () -> new UnauthorizedException(
                                     ErrorCode.NOT_MEMBER,
                                     "사용자가 가입 신청한 소모임이 아닙니다."
@@ -247,21 +298,20 @@ public class CommentService {
         validatorBucket
                 .validate();
 
-        return CommentResponseDto.from(
-                this.commentPort.update(commentId, commentDomainModel).orElseThrow(
+        return ChildCommentResponseDto.from(
+                this.childCommentPort.update(childCommentId, childCommentDomainModel).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
                                 "Comment id checked, but exception occurred"
                         )
                 ),
-                requestUser,
-                postDomainModel.getBoard(),
-                this.childCommentPort.countByParentComment(commentId)
+                updater,
+                postDomainModel.getBoard()
         );
     }
 
     @Transactional
-    public CommentResponseDto delete(String deleterId, String commentId) {
+    public ChildCommentResponseDto delete(String deleterId, String childCommentId) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         UserDomainModel deleterDomainModel = this.userPort.findById(deleterId).orElseThrow(
@@ -271,14 +321,14 @@ public class CommentService {
                 )
         );
 
-        CommentDomainModel commentDomainModel = this.commentPort.findById(commentId).orElseThrow(
+        ChildCommentDomainModel childCommentDomainModel = this.childCommentPort.findById(childCommentId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "삭제할 댓글을 찾을 수 없습니다."
+                        "삭제할 답글을 찾을 수 없습니다."
                 )
         );
 
-        PostDomainModel postDomainModel = this.postPort.findById(commentDomainModel.getPostId()).orElseThrow(
+        PostDomainModel postDomainModel = this.postPort.findById(childCommentDomainModel.getParentComment().getPostId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "게시글을 찾을 수 없습니다."
@@ -288,7 +338,7 @@ public class CommentService {
         validatorBucket
                 .consistOf(UserStateValidator.of(deleterDomainModel.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(deleterDomainModel.getRole()))
-                .consistOf(TargetIsDeletedValidator.of(commentDomainModel.getIsDeleted(), commentDomainModel.getDOMAIN()));
+                .consistOf(TargetIsDeletedValidator.of(childCommentDomainModel.getIsDeleted(), childCommentDomainModel.getDOMAIN()));
 
         postDomainModel.getBoard().getCircle().ifPresentOrElse(
                 circleDomainModel -> {
@@ -308,7 +358,7 @@ public class CommentService {
                             .consistOf(ContentsAdminValidator.of(
                                     deleterDomainModel.getRole(),
                                     deleterId,
-                                    commentDomainModel.getWriter().getId(),
+                                    childCommentDomainModel.getWriter().getId(),
                                     List.of(Role.LEADER_CIRCLE)
                             ));
 
@@ -329,7 +379,7 @@ public class CommentService {
                         .consistOf(ContentsAdminValidator.of(
                                 deleterDomainModel.getRole(),
                                 deleterId,
-                                commentDomainModel.getWriter().getId(),
+                                childCommentDomainModel.getWriter().getId(),
                                 List.of(Role.PRESIDENT)
                         ))
 
@@ -338,17 +388,15 @@ public class CommentService {
         validatorBucket
                 .validate();
 
-        return CommentResponseDto.from(
-                this.commentPort.delete(commentId).orElseThrow(
+        return ChildCommentResponseDto.from(
+                this.childCommentPort.delete(childCommentId).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
                                 "Comment id checked, but exception occurred"
                         )
                 ),
                 deleterDomainModel,
-                postDomainModel.getBoard(),
-                this.childCommentPort.countByParentComment(commentId)
+                postDomainModel.getBoard()
         );
-
     }
 }

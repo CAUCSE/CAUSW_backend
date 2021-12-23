@@ -28,8 +28,7 @@ public class CommentDomainModel {
 
     @NotNull(message = "게시글이 입력되지 않았습니다.")
     private String postId;
-    private CommentDomainModel parentComment;           // Write
-    private List<CommentDomainModel> childCommentList;  // Read
+    private List<CommentDomainModel> childCommentList;
 
     private CommentDomainModel(
             String id,
@@ -39,7 +38,6 @@ public class CommentDomainModel {
             LocalDateTime updatedAt,
             UserDomainModel writer,
             String postId,
-            CommentDomainModel parentComment,
             List<CommentDomainModel> childCommentList
     ) {
         this.id = id;
@@ -49,16 +47,13 @@ public class CommentDomainModel {
         this.updatedAt = updatedAt;
         this.writer = writer;
         this.postId = postId;
-        this.parentComment = parentComment;
         this.childCommentList = childCommentList;
     }
 
-    // Constructor with parent comment, without id (Used for write)
     public static CommentDomainModel of(
             String content,
             UserDomainModel writer,
-            String postId,
-            CommentDomainModel parentComment
+            String postId
     ) {
         return new CommentDomainModel(
                 null,
@@ -68,36 +63,10 @@ public class CommentDomainModel {
                 null,
                 writer,
                 postId,
-                parentComment,
                 new ArrayList<>()
         );
     }
 
-    // Constructor with parent comment and id (Used for read single comment)
-    public static CommentDomainModel of(
-            String id,
-            String content,
-            Boolean isDeleted,
-            LocalDateTime createdAt,
-            LocalDateTime updatedAt,
-            UserDomainModel writer,
-            String postId,
-            CommentDomainModel parentComment
-    ) {
-        return new CommentDomainModel(
-                id,
-                content,
-                isDeleted,
-                createdAt,
-                updatedAt,
-                writer,
-                postId,
-                parentComment,
-                new ArrayList<>()
-        );
-    }
-
-    // Constructor without related comments (Used for read leaf comment)
     public static CommentDomainModel of(
             String id,
             String content,
@@ -115,12 +84,10 @@ public class CommentDomainModel {
                 updatedAt,
                 writer,
                 postId,
-                null,
                 new ArrayList<>()
         );
     }
 
-    // Constructor with child comments (Used for read parent comment)
     public static CommentDomainModel of(
             String id,
             String content,
@@ -139,7 +106,6 @@ public class CommentDomainModel {
                 updatedAt,
                 writer,
                 postId,
-                null,
                 childCommentList
         );
     }
