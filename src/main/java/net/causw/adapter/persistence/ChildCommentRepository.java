@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ChildCommentRepository extends JpaRepository<ChildComment, String> {
-    Page<ChildComment> findByParentComment_IdOrderByCreatedAtAsc(String parentCommentId, Pageable pageable);
+    Page<ChildComment> findByParentComment_IdOrderByCreatedAtDesc(String parentCommentId, Pageable pageable);
 
     Long countByParentComment_IdAndIsDeletedIsFalse(String parentCommentId);
 }

@@ -9,6 +9,7 @@ import net.causw.domain.model.PostDomainModel;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.Optional;
 
 @Component
@@ -31,7 +32,10 @@ public class ChildCommentPortImpl extends DomainModelMapper implements ChildComm
 
     @Override
     public Page<ChildCommentDomainModel> findByParentComment(String parentCommentId, Integer pageNum) {
-        return this.childCommentRepository.findByParentComment_IdOrderByCreatedAtAsc(parentCommentId, this.pageableFactory.create(pageNum))
+        Page<ChildComment> childComments = this.childCommentRepository.findByParentComment_IdOrderByCreatedAtDesc(parentCommentId, this.pageableFactory.create(pageNum));
+        Collections.reverse(childComments.getContent());
+
+        return childComments
                 .map(this::entityToDomainModel);
     }
 
