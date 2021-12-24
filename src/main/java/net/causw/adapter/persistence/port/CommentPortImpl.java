@@ -9,6 +9,8 @@ import net.causw.domain.model.PostDomainModel;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Optional;
 
 @Component
@@ -26,13 +28,16 @@ public class CommentPortImpl extends DomainModelMapper implements CommentPort {
 
     @Override
     public Optional<CommentDomainModel> findById(String id) {
-        return this.commentRepository.findById(id).map(this::entityToDomainModelWithChild);
+        return this.commentRepository.findById(id).map(this::entityToDomainModel);
     }
 
     @Override
     public Page<CommentDomainModel> findByPostId(String postId, Integer pageNum) {
-        return this.commentRepository.findByPost_IdAndParentCommentIsNullOrderByCreatedAtAsc(postId, this.pageableFactory.create(pageNum))
-                .map(this::entityToDomainModelWithChild);
+        Page<Comment> comments = this.commentRepository.findByPost_IdOrderByCreatedAtDesc(postId, this.pageableFactory.create(pageNum));
+        Collections.reverse(comments.getContent());
+
+        return comments
+                .map(this::entityToDomainModel);
     }
 
     @Override
@@ -42,7 +47,7 @@ public class CommentPortImpl extends DomainModelMapper implements CommentPort {
 
     @Override
     public CommentDomainModel create(CommentDomainModel commentDomainModel, PostDomainModel postDomainModel) {
-        return this.entityToDomainModelWithParent(this.commentRepository.save(Comment.from(commentDomainModel, postDomainModel)));
+        return this.entityToDomainModel(this.commentRepository.save(Comment.from(commentDomainModel, postDomainModel)));
     }
 
     @Override

@@ -262,7 +262,7 @@ class BoardServiceTest extends Specification {
                 2021,
                 Role.PRESIDENT,
                 null,
-                UserState.AWAIT
+                UserState.ACTIVE
         )
 
         def circleDomainModel = CircleDomainModel.of(
@@ -338,7 +338,7 @@ class BoardServiceTest extends Specification {
                 2021,
                 Role.PRESIDENT,
                 null,
-                UserState.AWAIT
+                UserState.ACTIVE
         )
 
         this.userPort.findById("test") >> Optional.of(mockCreatorDomainModel)
@@ -479,7 +479,7 @@ class BoardServiceTest extends Specification {
                 2021,
                 Role.PRESIDENT,
                 null,
-                UserState.AWAIT
+                UserState.ACTIVE
         )
 
         def mockCircleDomainModel = CircleDomainModel.of(
@@ -569,7 +569,7 @@ class BoardServiceTest extends Specification {
                 2021,
                 Role.PRESIDENT,
                 null,
-                UserState.AWAIT
+                UserState.ACTIVE
         )
 
         this.userPort.findById("test") >> Optional.of(updater)
@@ -602,7 +602,7 @@ class BoardServiceTest extends Specification {
                 2021,
                 Role.PRESIDENT,
                 null,
-                UserState.AWAIT
+                UserState.ACTIVE
         )
 
         this.userPort.findById("test") >> Optional.of(updater)
@@ -739,7 +739,7 @@ class BoardServiceTest extends Specification {
                 2021,
                 Role.PRESIDENT,
                 null,
-                UserState.AWAIT
+                UserState.ACTIVE
         )
 
         def mockCircleDomainModel = CircleDomainModel.of(
@@ -800,7 +800,7 @@ class BoardServiceTest extends Specification {
                 2021,
                 Role.PRESIDENT,
                 null,
-                UserState.AWAIT
+                UserState.ACTIVE
         )
 
         this.userPort.findById("test") >> Optional.of(deleter)

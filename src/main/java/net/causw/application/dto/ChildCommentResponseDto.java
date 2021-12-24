@@ -3,63 +3,63 @@ package net.causw.application.dto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.causw.domain.model.BoardDomainModel;
-import net.causw.domain.model.CommentDomainModel;
+import net.causw.domain.model.ChildCommentDomainModel;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor
-public class CommentResponseDto {
+public class ChildCommentResponseDto {
     private String id;
     private String content;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Boolean isDeleted;
-    private String postId;
+    private String tagUserName;
+    private String refChildComment;
     private String writerName;
     private Integer writerAdmissionYear;
     private String writerProfileImage;
     private Boolean updatable;
     private Boolean deletable;
-    private Long numChildComment;
+    private String parentCommentId;
 
-    private CommentResponseDto(
+    private ChildCommentResponseDto(
             String id,
             String content,
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
             Boolean isDeleted,
-            String postId,
+            String tagUserName,
+            String refChildComment,
             String writerName,
             Integer writerAdmissionYear,
             String writerProfileImage,
             Boolean updatable,
             Boolean deletable,
-            Long numChildComment
+            String parentCommentId
     ) {
         this.id = id;
         this.content = content;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.isDeleted = isDeleted;
-        this.postId = postId;
+        this.tagUserName = tagUserName;
+        this.refChildComment = refChildComment;
         this.writerName = writerName;
         this.writerAdmissionYear = writerAdmissionYear;
         this.writerProfileImage = writerProfileImage;
         this.updatable = updatable;
         this.deletable = deletable;
-        this.numChildComment = numChildComment;
+        this.parentCommentId = parentCommentId;
     }
 
-    public static CommentResponseDto from(
-            CommentDomainModel comment,
+    public static ChildCommentResponseDto from(
+            ChildCommentDomainModel comment,
             UserDomainModel user,
-            BoardDomainModel board,
-            Long numChildComment
+            BoardDomainModel board
     ) {
         boolean updatable = false;
         boolean deletable = false;
@@ -91,19 +91,20 @@ public class CommentResponseDto {
             deletable = false;
         }
 
-        return new CommentResponseDto(
+        return new ChildCommentResponseDto(
                 comment.getId(),
                 comment.getContent(),
                 comment.getCreatedAt(),
                 comment.getUpdatedAt(),
                 comment.getIsDeleted(),
-                comment.getPostId(),
+                comment.getTagUserName(),
+                comment.getRefChildComment(),
                 comment.getWriter().getName(),
                 comment.getWriter().getAdmissionYear(),
                 comment.getWriter().getProfileImage(),
                 updatable,
                 deletable,
-                numChildComment
+                comment.getParentComment().getId()
         );
     }
 }

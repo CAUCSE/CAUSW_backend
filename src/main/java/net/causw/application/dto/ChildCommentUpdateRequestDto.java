@@ -11,7 +11,8 @@ import java.util.Optional;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CommentCreateRequestDto {
+public class ChildCommentUpdateRequestDto {
     private String content;
-    private String postId;
+    private Optional<String> tagUserName;
+    private Optional<String> refChildComment;
 }

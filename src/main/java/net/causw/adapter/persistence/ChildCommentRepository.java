@@ -1,0 +1,13 @@
+package net.causw.adapter.persistence;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface ChildCommentRepository extends JpaRepository<ChildComment, String> {
+    Page<ChildComment> findByParentComment_IdOrderByCreatedAtDesc(String parentCommentId, Pageable pageable);
+
+    Long countByParentComment_IdAndIsDeletedIsFalse(String parentCommentId);
+}
