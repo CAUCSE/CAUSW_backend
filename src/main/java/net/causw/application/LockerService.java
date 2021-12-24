@@ -207,14 +207,7 @@ public class LockerService {
                 )
         );
 
-        lockerDomainModel = LockerDomainModel.of(
-                lockerId,
-                lockerDomainModel.getLockerNumber(),
-                false,
-                null,
-                lockerDomainModel.getUser().orElse(null),
-                lockerLocationDomainModel
-        );
+        lockerDomainModel.setLockerLocation(lockerLocationDomainModel);
 
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(updaterDomainModel.getState()))
@@ -365,14 +358,14 @@ public class LockerService {
                 .consistOf(UserRoleIsNoneValidator.of(creatorDomainModel.getRole()))
                 .consistOf(UserRoleValidator.of(creatorDomainModel.getRole(), List.of(Role.PRESIDENT)));
 
-        LockerLocationDomainModel lockerLocation = this.lockerLocationPort.findById(locationId).orElseThrow(
+        LockerLocationDomainModel lockerLocationDomainModel = this.lockerLocationPort.findById(locationId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "등록된 사물함 위치가 아닙니다."
                 )
         );
 
-        if (!lockerLocation.getName().equals(lockerLocationRequestDto.getName())) {
+        if (!lockerLocationDomainModel.getName().equals(lockerLocationRequestDto.getName())) {
             this.lockerLocationPort.findByName(lockerLocationRequestDto.getName()).ifPresent(
                     name -> {
                         throw new BadRequestException(
@@ -383,11 +376,8 @@ public class LockerService {
             );
         }
 
-        LockerLocationDomainModel lockerLocationDomainModel = LockerLocationDomainModel.of(
-                lockerLocation.getId(),
-                lockerLocationRequestDto.getName(),
-                lockerLocationRequestDto.getDescription()
-        );
+        lockerLocationDomainModel.setName(lockerLocationRequestDto.getName());
+        lockerLocationDomainModel.setDescription(lockerLocationRequestDto.getDescription());
 
         validatorBucket
                 .consistOf(ConstraintValidator.of(lockerLocationDomainModel, this.validator))
