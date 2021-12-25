@@ -8,7 +8,7 @@ import net.causw.domain.model.LockerDomainModel;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.validation.ConstraintValidator;
-import net.causw.domain.validation.UserRoleValidator;
+import net.causw.domain.validation.ContentsAdminValidator;
 import net.causw.domain.validation.ValidatorBucket;
 
 import javax.validation.Validator;
@@ -20,30 +20,33 @@ public class LockerActionReturn implements LockerAction{
     @Override
     public Optional<LockerDomainModel> updateLockerDomainModel(
             LockerDomainModel lockerDomainModel,
-            UserDomainModel lockerUserDomainModel,
+            UserDomainModel ownerDomainModel,
             UserDomainModel updaterDomainModel,
             Validator validator,
             LockerPort lockerPort
 
     ) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
-        if (lockerUserDomainModel == null) {
+        if (ownerDomainModel == null) {
             throw new BadRequestException(
                     ErrorCode.CANNOT_PERFORMED,
                     "사용 중인 사물함이 아닙니다."
             );
-        } else if (!lockerUserDomainModel.equals(updaterDomainModel)) {
-            validatorBucket
-                    .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.PRESIDENT)));
         }
 
-        lockerDomainModel.setUser(null);
-
-        validatorBucket
-                .consistOf(ConstraintValidator.of(lockerDomainModel, validator))
+        ValidatorBucket.of()
+                .consistOf(ContentsAdminValidator.of(
+                        updaterDomainModel.getRole(),
+                        updaterDomainModel.getId(),
+                        ownerDomainModel.getId(),
+                        List.of(Role.PRESIDENT)
+                ))
                 .validate();
 
-        return lockerPort.update(lockerDomainModel.getId(), lockerDomainModel);
+        lockerDomainModel.returnLocker();
+
+        return lockerPort.update(
+                lockerDomainModel.getId(),
+                lockerDomainModel
+        );
     }
 }

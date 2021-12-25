@@ -111,6 +111,16 @@ public class CircleDomainModel {
         );
     }
 
+    public void update(
+            String name,
+            String mainImage,
+            String description
+    ) {
+        this.name = name;
+        this.mainImage = mainImage;
+        this.description = description;
+    }
+
     public Optional<UserDomainModel> getLeader() {
         return Optional.ofNullable(this.leader);
     }

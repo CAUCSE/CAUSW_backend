@@ -202,14 +202,8 @@ public class CommentService {
                 )
         );
 
-        commentDomainModel = CommentDomainModel.of(
-                commentDomainModel.getId(),
-                commentUpdateRequestDto.getContent(),
-                commentDomainModel.getIsDeleted(),
-                commentDomainModel.getCreatedAt(),
-                commentDomainModel.getUpdatedAt(),
-                commentDomainModel.getWriter(),
-                commentDomainModel.getPostId()
+        commentDomainModel.update(
+                commentUpdateRequestDto.getContent()
         );
 
         validatorBucket

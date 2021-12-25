@@ -256,20 +256,17 @@ public class CircleService {
             );
         }
 
-        CircleDomainModel circleDomainModel = CircleDomainModel.of(
-                circle.getId(),
+        circle.update(
                 circleUpdateRequestDto.getName(),
                 circleUpdateRequestDto.getMainImage(),
-                circleUpdateRequestDto.getDescription(),
-                circle.getIsDeleted(),
-                circle.getLeader().orElse(null)
+                circleUpdateRequestDto.getDescription()
         );
 
         validatorBucket
                 .consistOf(UserStateValidator.of(user.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
-                .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), circleDomainModel.getDOMAIN()))
-                .consistOf(ConstraintValidator.of(circleDomainModel, this.validator))
+                .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), circle.getDOMAIN()))
+                .consistOf(ConstraintValidator.of(circle, this.validator))
                 .consistOf(UserRoleValidator.of(
                         user.getRole(),
                         List.of(Role.PRESIDENT, Role.LEADER_CIRCLE)
@@ -278,7 +275,7 @@ public class CircleService {
         if (user.getRole().equals(Role.LEADER_CIRCLE)) {
             validatorBucket
                     .consistOf(UserEqualValidator.of(
-                            circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
+                            circle.getLeader().map(UserDomainModel::getId).orElseThrow(
                                     () -> new InternalServerException(
                                             ErrorCode.INTERNAL_SERVER,
                                             "This circle has not circle leader"
@@ -291,7 +288,7 @@ public class CircleService {
         validatorBucket
                 .validate();
 
-        return CircleResponseDto.from(this.circlePort.update(circleId, circleDomainModel).orElseThrow(
+        return CircleResponseDto.from(this.circlePort.update(circleId, circle).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         "Circle id checked, but exception occurred"
@@ -413,7 +410,8 @@ public class CircleService {
                 }
         ).orElseGet(
                 () -> {
-                    validatorBucket.validate();
+                    validatorBucket
+                            .validate();
                     return this.circleMemberPort.create(user, circle);
                 }
         ));

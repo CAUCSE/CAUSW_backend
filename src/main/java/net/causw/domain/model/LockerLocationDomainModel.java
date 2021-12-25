@@ -47,4 +47,12 @@ public class LockerLocationDomainModel {
                 description
         );
     }
+
+    public void update(
+            String name,
+            String description
+    ) {
+        this.name = name;
+        this.description = description;
+    }
 }

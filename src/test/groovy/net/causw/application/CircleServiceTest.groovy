@@ -315,20 +315,10 @@ class CircleServiceTest extends Specification {
                 (UserDomainModel) this.mockCircleDomainModel.getLeader().orElse(null)
         )
 
-        PowerMockito.mockStatic(CircleDomainModel.class)
-        PowerMockito.when(CircleDomainModel.of(
-                (String) this.mockCircleDomainModel.getId(),
-                mockCircleUpdateRequestDto.getName(),
-                mockCircleUpdateRequestDto.getMainImage(),
-                mockCircleUpdateRequestDto.getDescription(),
-                (Boolean) this.mockCircleDomainModel.getIsDeleted(),
-                (UserDomainModel) this.mockCircleDomainModel.getLeader().orElse(null)
-        )).thenReturn(mockUpdatedCircleDomainModel)
-
         this.userPort.findById("test") >> Optional.of(this.leader)
         this.circlePort.findById("test") >> Optional.of(this.mockCircleDomainModel)
         this.circlePort.findByName("test2") >> Optional.ofNullable(null)
-        this.circlePort.update("test", mockUpdatedCircleDomainModel) >> Optional.of(mockUpdatedCircleDomainModel)
+        this.circlePort.update("test", (CircleDomainModel)this.mockCircleDomainModel) >> Optional.of(mockUpdatedCircleDomainModel)
 
         when:
         def circleResponseDto = this.circleService.update("test", "test", mockCircleUpdateRequestDto)
@@ -362,7 +352,6 @@ class CircleServiceTest extends Specification {
         this.userPort.findById("test") >> Optional.of(this.leader)
         this.circlePort.findById("test") >> Optional.of(this.mockCircleDomainModel)
         this.circlePort.findByName("test2") >> Optional.ofNullable(mockUpdatedCircleDomainModel)
-        this.circlePort.update("test", mockUpdatedCircleDomainModel) >> Optional.of(mockUpdatedCircleDomainModel)
 
         when:
         this.circleService.update("test", "test", mockCircleUpdateRequestDto)
@@ -401,21 +390,10 @@ class CircleServiceTest extends Specification {
                 (UserDomainModel) this.mockCircleDomainModel.getLeader().orElse(null)
         )
 
-        PowerMockito.mockStatic(CircleDomainModel.class)
-        PowerMockito.when(CircleDomainModel.of(
-                (String) this.mockCircleDomainModel.getId(),
-                mockCircleUpdateRequestDto.getName(),
-                mockCircleUpdateRequestDto.getMainImage(),
-                mockCircleUpdateRequestDto.getDescription(),
-                (Boolean) this.mockCircleDomainModel.getIsDeleted(),
-                (UserDomainModel) this.mockCircleDomainModel.getLeader().orElse(null)
-        )).thenReturn(mockUpdatedCircleDomainModel)
-
         this.userPort.findById("test") >> Optional.of(mockApiCallUser)
         this.userPort.findById("test1") >> Optional.of(mockApiCallUser)
         this.circlePort.findById("test") >> Optional.of(this.mockCircleDomainModel)
         this.circlePort.findByName("test2") >> Optional.ofNullable(null)
-        this.circlePort.update("test", mockUpdatedCircleDomainModel) >> Optional.of(mockUpdatedCircleDomainModel)
 
         when: "not leader"
         mockApiCallUser.setId("test1")
@@ -451,23 +429,12 @@ class CircleServiceTest extends Specification {
                 (UserDomainModel) this.mockCircleDomainModel.getLeader().orElse(null)
         )
 
-        PowerMockito.mockStatic(CircleDomainModel.class)
-        PowerMockito.when(CircleDomainModel.of(
-                (String) this.mockCircleDomainModel.getId(),
-                mockCircleUpdateRequestDto.getName(),
-                mockCircleUpdateRequestDto.getMainImage(),
-                mockCircleUpdateRequestDto.getDescription(),
-                (Boolean) this.mockCircleDomainModel.getIsDeleted(),
-                (UserDomainModel) this.mockCircleDomainModel.getLeader().orElse(null)
-        )).thenReturn(mockUpdatedCircleDomainModel)
-
         this.userPort.findById("test") >> Optional.of(this.leader)
         this.circlePort.findById("test") >> Optional.of(this.mockCircleDomainModel)
         this.circlePort.findByName("test2") >> Optional.ofNullable(null)
-        this.circlePort.update("test", mockUpdatedCircleDomainModel) >> Optional.of(mockUpdatedCircleDomainModel)
 
         when:
-        mockUpdatedCircleDomainModel.setIsDeleted(true)
+        ((CircleDomainModel)this.mockCircleDomainModel).setIsDeleted(true)
         this.circleService.update("test", "test", mockCircleUpdateRequestDto)
 
         then:

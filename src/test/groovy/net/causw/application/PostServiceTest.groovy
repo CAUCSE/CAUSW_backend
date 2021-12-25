@@ -590,21 +590,10 @@ class PostServiceTest extends Specification {
         this.userPort.findById(writerUserDomainModel.getId()) >> Optional.of(writerUserDomainModel)
         this.postPort.findById(postId) >> Optional.of(mockOriginPostDomainModel)
 
-        this.postPort.update(postId, mockUpdatedPostDomainModel) >> Optional.of(mockUpdatedPostDomainModel)
+        this.postPort.update(postId, mockOriginPostDomainModel) >> Optional.of(mockUpdatedPostDomainModel)
         this.commentPort.findByPostId(postId, 0) >> new PageImpl<CommentDomainModel>(List.of())
 
         when:
-        PowerMockito.mockStatic(PostDomainModel.class)
-        PowerMockito.when(PostDomainModel.of(
-                mockOriginPostDomainModel.getId(),
-                postUpdateRequestDto.getTitle(),
-                postUpdateRequestDto.getContent(),
-                mockOriginPostDomainModel.getWriter(),
-                mockOriginPostDomainModel.getIsDeleted(),
-                mockOriginPostDomainModel.getBoard(),
-                mockOriginPostDomainModel.getCreatedAt(),
-                mockOriginPostDomainModel.getUpdatedAt()
-        )).thenReturn(mockUpdatedPostDomainModel)
         def postUpdateResponse = this.postService.update(writerUserDomainModel.getId(), postId, postUpdateRequestDto)
 
         then:
@@ -670,21 +659,10 @@ class PostServiceTest extends Specification {
         this.userPort.findById(presidentUserDomainModel.getId()) >> Optional.of(presidentUserDomainModel)
         this.postPort.findById(postId) >> Optional.of(mockOriginPostDomainModel)
 
-        this.postPort.update(postId, mockUpdatedPostDomainModel) >> Optional.of(mockUpdatedPostDomainModel)
+        this.postPort.update(postId, mockOriginPostDomainModel) >> Optional.of(mockUpdatedPostDomainModel)
         this.commentPort.findByPostId(postId, 0) >> new PageImpl<CommentDomainModel>(List.of())
 
         when:
-        PowerMockito.mockStatic(PostDomainModel.class)
-        PowerMockito.when(PostDomainModel.of(
-                mockOriginPostDomainModel.getId(),
-                postUpdateRequestDto.getTitle(),
-                postUpdateRequestDto.getContent(),
-                mockOriginPostDomainModel.getWriter(),
-                mockOriginPostDomainModel.getIsDeleted(),
-                mockOriginPostDomainModel.getBoard(),
-                mockOriginPostDomainModel.getCreatedAt(),
-                mockOriginPostDomainModel.getUpdatedAt()
-        )).thenReturn(mockUpdatedPostDomainModel)
         this.postService.update(presidentUserDomainModel.getId(), postId, postUpdateRequestDto)
 
         then:
@@ -737,21 +715,10 @@ class PostServiceTest extends Specification {
         this.userPort.findById(writerUserDomainModel.getId()) >> Optional.of(writerUserDomainModel)
         this.postPort.findById(postId) >> Optional.of(mockOriginPostDomainModel)
 
-        this.postPort.update(postId, mockUpdatedPostDomainModel) >> Optional.of(mockUpdatedPostDomainModel)
+        this.postPort.update(postId, mockOriginPostDomainModel) >> Optional.of(mockUpdatedPostDomainModel)
         this.commentPort.findByPostId(postId, 0) >> new PageImpl<CommentDomainModel>(List.of())
 
         when:
-        PowerMockito.mockStatic(PostDomainModel.class)
-        PowerMockito.when(PostDomainModel.of(
-                mockOriginPostDomainModel.getId(),
-                postUpdateRequestDto.getTitle(),
-                postUpdateRequestDto.getContent(),
-                mockOriginPostDomainModel.getWriter(),
-                mockOriginPostDomainModel.getIsDeleted(),
-                mockOriginPostDomainModel.getBoard(),
-                mockOriginPostDomainModel.getCreatedAt(),
-                mockOriginPostDomainModel.getUpdatedAt()
-        )).thenReturn(mockUpdatedPostDomainModel)
         this.postService.update(writerUserDomainModel.getId(), postId, postUpdateRequestDto)
 
         then:

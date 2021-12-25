@@ -91,16 +91,19 @@ class LockerServiceTest extends Specification {
                 UserState.ACTIVE
         )
 
-        this.userPort.findById(creatorUserDomainModel.getId()) >> Optional.of(creatorUserDomainModel)
-        this.lockerPort.create(((LockerDomainModel) this.mockLockerDomainModel)) >> this.mockLockerDomainModel
-        this.lockerLocationPort.findById(((LockerLocationDomainModel) this.mockLockerLocationDomainModel).getId()) >> Optional.of((LockerLocationDomainModel) this.mockLockerLocationDomainModel)
-
-        when: "create locker"
         PowerMockito.mockStatic(LockerDomainModel.class)
         PowerMockito.when(LockerDomainModel.of(
                 mockLockerCreateRequestDto.getLockerNumber(),
                 (LockerLocationDomainModel) this.mockLockerLocationDomainModel
         )).thenReturn((LockerDomainModel) this.mockLockerDomainModel)
+
+        this.userPort.findById(creatorUserDomainModel.getId()) >> Optional.of(creatorUserDomainModel)
+        this.lockerLocationPort.findById(((LockerLocationDomainModel) this.mockLockerLocationDomainModel).getId()) >> Optional.of((LockerLocationDomainModel) this.mockLockerLocationDomainModel)
+        this.lockerPort.findByLockerNumber(mockLockerCreateRequestDto.getLockerNumber()) >> Optional.ofNullable(null)
+
+        this.lockerPort.create(((LockerDomainModel) this.mockLockerDomainModel)) >> this.mockLockerDomainModel
+
+        when: "create locker"
         def lockerCreate = this.lockerService.create("test user id", mockLockerCreateRequestDto)
 
         then:
@@ -132,22 +135,18 @@ class LockerServiceTest extends Specification {
         )
 
         this.userPort.findById(creatorUserDomainModel.getId()) >> Optional.of(creatorUserDomainModel)
-        this.lockerPort.create(((LockerDomainModel) this.mockLockerDomainModel)) >> this.mockLockerDomainModel
         this.lockerLocationPort.findById(((LockerLocationDomainModel) this.mockLockerLocationDomainModel).getId()) >> Optional.of((LockerLocationDomainModel) this.mockLockerLocationDomainModel)
+        this.lockerPort.findByLockerNumber(mockLockerCreateRequestDto.getLockerNumber()) >> Optional.ofNullable(null)
 
         when: "creator user is COMMON when create role is PRESIDENT"
-        PowerMockito.mockStatic(LockerDomainModel.class)
-        PowerMockito.when(LockerDomainModel.of(
-                mockLockerCreateRequestDto.getLockerNumber(),
-                (LockerLocationDomainModel) this.mockLockerLocationDomainModel
-        )).thenReturn((LockerDomainModel) this.mockLockerDomainModel)
         this.lockerService.create("test user id", mockLockerCreateRequestDto)
 
         then:
         thrown(UnauthorizedException)
     }
 
-    @Test def "Locker create invalid data case"() {
+    @Test
+    def "Locker create invalid data case"() {
         given:
         def mockLockerCreateRequestDto = new LockerCreateRequestDto(
                 1,
@@ -161,16 +160,14 @@ class LockerServiceTest extends Specification {
                 "test1234!",
                 "20210000",
                 2021,
-                Role.COMMON,
+                Role.PRESIDENT,
                 null,
                 UserState.ACTIVE
         )
 
         this.userPort.findById(creatorUserDomainModel.getId()) >> Optional.of(creatorUserDomainModel)
-
         this.lockerLocationPort.findById(((LockerLocationDomainModel) this.mockLockerLocationDomainModel).getId()) >> Optional.of((LockerLocationDomainModel) this.mockLockerLocationDomainModel)
-
-        this.lockerPort.create(((LockerDomainModel) this.mockLockerDomainModel)) >> this.mockLockerDomainModel
+        this.lockerPort.findByLockerNumber(null) >> Optional.ofNullable(null)
 
         when: "Locker number is null"
         mockLockerCreateRequestDto.setLockerNumber(null)
@@ -189,9 +186,13 @@ class LockerServiceTest extends Specification {
     /**
      * Test cases for locker update
      */
-    @Test "Locker update normal case"() {
+    @Test
+    def "Locker update normal case"() {
         given:
-        def lockerId = "test locker id";
+        def lockerEnableId = "test enable locker id"
+        def lockerDisableId = "test disable locker id"
+        def lockerRegisterId = "test register locker id"
+        def lockerReturnId = "test return locker id"
 
         def mockLockerUpdateRequestDto = new LockerUpdateRequestDto(
                 null,
@@ -223,7 +224,7 @@ class LockerServiceTest extends Specification {
         )
 
         def mockEnabledLockerDomainModel = LockerDomainModel.of(
-                lockerId,
+                lockerEnableId,
                 ((LockerDomainModel) this.mockLockerDomainModel).getLockerNumber(),
                 true,
                 ((LockerDomainModel) this.mockLockerDomainModel).getUpdatedAt(),
@@ -232,7 +233,7 @@ class LockerServiceTest extends Specification {
         )
 
         def mockDisabledLockerDomainModel = LockerDomainModel.of(
-                lockerId,
+                lockerDisableId,
                 ((LockerDomainModel) this.mockLockerDomainModel).getLockerNumber(),
                 false,
                 ((LockerDomainModel) this.mockLockerDomainModel).getUpdatedAt(),
@@ -241,7 +242,7 @@ class LockerServiceTest extends Specification {
         )
 
         def mockRegisteredLockerDomainModel = LockerDomainModel.of(
-                lockerId,
+                lockerRegisterId,
                 ((LockerDomainModel) this.mockLockerDomainModel).getLockerNumber(),
                 true,
                 ((LockerDomainModel) this.mockLockerDomainModel).getUpdatedAt(),
@@ -250,7 +251,7 @@ class LockerServiceTest extends Specification {
         )
 
         def mockReturnedLockerDomainModel = LockerDomainModel.of(
-                lockerId,
+                lockerReturnId,
                 ((LockerDomainModel) this.mockLockerDomainModel).getLockerNumber(),
                 true,
                 ((LockerDomainModel) this.mockLockerDomainModel).getUpdatedAt(),
@@ -263,17 +264,21 @@ class LockerServiceTest extends Specification {
 
         this.lockerLocationPort.findById(((LockerLocationDomainModel) this.mockLockerLocationDomainModel).getId()) >> Optional.of((LockerLocationDomainModel) this.mockLockerLocationDomainModel)
 
-        this.lockerPort.findById(((LockerDomainModel) this.mockLockerDomainModel).getId()) >> Optional.of((LockerDomainModel) this.mockLockerDomainModel)
+        this.lockerPort.findById(lockerEnableId) >> Optional.of((LockerDomainModel) this.mockLockerDomainModel)
+        this.lockerPort.findById(lockerDisableId) >> Optional.of((LockerDomainModel) this.mockLockerDomainModel)
+        this.lockerPort.findById(lockerRegisterId) >> Optional.of((LockerDomainModel) this.mockLockerDomainModel)
+        this.lockerPort.findById(lockerReturnId) >> Optional.of((LockerDomainModel) this.mockLockerDomainModel)
 
-        this.lockerPort.update(lockerId, mockEnabledLockerDomainModel) >> Optional.of(mockEnabledLockerDomainModel)
-        this.lockerPort.update(lockerId, mockDisabledLockerDomainModel) >> Optional.of(mockDisabledLockerDomainModel)
-        this.lockerPort.update(lockerId, mockRegisteredLockerDomainModel) >> Optional.of(mockRegisteredLockerDomainModel)
-        this.lockerPort.update(lockerId, mockReturnedLockerDomainModel) >> Optional.of(mockReturnedLockerDomainModel)
+        this.lockerPort.update(lockerEnableId, (LockerDomainModel)this.mockLockerDomainModel) >> Optional.of(mockEnabledLockerDomainModel)
+        this.lockerPort.update(lockerDisableId, (LockerDomainModel)this.mockLockerDomainModel) >> Optional.of(mockDisabledLockerDomainModel)
+        this.lockerPort.update(lockerRegisterId, (LockerDomainModel)this.mockLockerDomainModel) >> Optional.of(mockRegisteredLockerDomainModel)
+        this.lockerPort.update(lockerReturnId, (LockerDomainModel)this.mockLockerDomainModel) >> Optional.of(mockReturnedLockerDomainModel)
 
         when: "Locker enable"
-        mockLockerUpdateRequestDto.setAction(LockerLogAction.ENABLE)
+        mockLockerUpdateRequestDto.setAction(LockerLogAction.ENABLE.toString())
+        ((LockerDomainModel) this.mockLockerDomainModel).setId(lockerEnableId)
         ((LockerDomainModel) this.mockLockerDomainModel).setIsActive(false)
-        def lockerResponseDto1 = this.lockerService.update("president test user id", lockerId, mockLockerUpdateRequestDto)
+        def lockerResponseDto1 = this.lockerService.update("president test user id", lockerEnableId, mockLockerUpdateRequestDto)
 
         then:
         lockerResponseDto1 instanceof LockerResponseDto
@@ -283,9 +288,10 @@ class LockerServiceTest extends Specification {
         }
 
         when: "Locker disable"
-        mockLockerUpdateRequestDto.setAction(LockerLogAction.DISABLE)
+        mockLockerUpdateRequestDto.setAction(LockerLogAction.DISABLE.toString())
+        ((LockerDomainModel) this.mockLockerDomainModel).setId(lockerDisableId)
         ((LockerDomainModel) this.mockLockerDomainModel).setIsActive(true)
-        def lockerResponseDto2 = this.lockerService.update("president test user id", lockerId, mockLockerUpdateRequestDto)
+        def lockerResponseDto2 = this.lockerService.update("president test user id", lockerDisableId, mockLockerUpdateRequestDto)
 
         then:
         lockerResponseDto2 instanceof LockerResponseDto
@@ -295,24 +301,26 @@ class LockerServiceTest extends Specification {
         }
 
         when: "Locker register"
-        mockLockerUpdateRequestDto.setAction(LockerLogAction.REGISTER)
+        mockLockerUpdateRequestDto.setAction(LockerLogAction.REGISTER.toString())
+        ((LockerDomainModel) this.mockLockerDomainModel).setId(lockerRegisterId)
         ((LockerDomainModel) this.mockLockerDomainModel).setIsActive(true)
         ((LockerDomainModel) this.mockLockerDomainModel).setUser(null)
-        def lockerResponseDto3 = this.lockerService.update("owner test user id", lockerId, mockLockerUpdateRequestDto)
+        def lockerResponseDto3 = this.lockerService.update("owner test user id", lockerRegisterId, mockLockerUpdateRequestDto)
 
         then:
         lockerResponseDto3 instanceof LockerResponseDto
         with(lockerResponseDto3) {
             getLockerNumber() == 1
             getIsActive()
-            getUserId() == "test user id2"
+            getUserId() == "owner test user id"
         }
 
         when: "Locker return"
-        mockLockerUpdateRequestDto.setAction(LockerLogAction.RETURN)
+        mockLockerUpdateRequestDto.setAction(LockerLogAction.RETURN.toString())
+        ((LockerDomainModel) this.mockLockerDomainModel).setId(lockerReturnId)
         ((LockerDomainModel) this.mockLockerDomainModel).setIsActive(true)
         ((LockerDomainModel) this.mockLockerDomainModel).setUser(ownerUserDomainModel)
-        def lockerResponseDto4 = this.lockerService.update("owner test user id", lockerId, mockLockerUpdateRequestDto)
+        def lockerResponseDto4 = this.lockerService.update("owner test user id", lockerReturnId, mockLockerUpdateRequestDto)
 
         then:
         lockerResponseDto4 instanceof LockerResponseDto
@@ -323,10 +331,11 @@ class LockerServiceTest extends Specification {
         }
 
         when: "Locker force return by president"
-        mockLockerUpdateRequestDto.setAction(LockerLogAction.RETURN)
+        mockLockerUpdateRequestDto.setAction(LockerLogAction.RETURN.toString())
+        ((LockerDomainModel) this.mockLockerDomainModel).setId(lockerReturnId)
         ((LockerDomainModel) this.mockLockerDomainModel).setIsActive(true)
         ((LockerDomainModel) this.mockLockerDomainModel).setUser(ownerUserDomainModel)
-        def lockerResponseDto5 = this.lockerService.update("president test user id", lockerId, mockLockerUpdateRequestDto)
+        def lockerResponseDto5 = this.lockerService.update("president test user id", lockerReturnId, mockLockerUpdateRequestDto)
 
         then:
         lockerResponseDto5 instanceof LockerResponseDto
@@ -337,9 +346,10 @@ class LockerServiceTest extends Specification {
         }
     }
 
-    @Test "Locker update invalid data case"() {
+    @Test
+    def "Locker update invalid data case"() {
         given:
-        def lockerId = "test locker id";
+        def lockerId = "test locker id"
 
         def mockLockerUpdateRequestDto = new LockerUpdateRequestDto(
                 null,
@@ -358,25 +368,12 @@ class LockerServiceTest extends Specification {
                 UserState.ACTIVE
         )
 
-        def mockDisabledLockerDomainModel = LockerDomainModel.of(
-                lockerId,
-                ((LockerDomainModel) this.mockLockerDomainModel).getLockerNumber(),
-                false,
-                ((LockerDomainModel) this.mockLockerDomainModel).getUpdatedAt(),
-                null,
-                (LockerLocationDomainModel) this.mockLockerLocationDomainModel,
-        )
-
         this.userPort.findById(updaterUserDomainModel.getId()) >> Optional.of(updaterUserDomainModel)
-
         this.lockerLocationPort.findById(((LockerLocationDomainModel) this.mockLockerLocationDomainModel).getId()) >> Optional.of((LockerLocationDomainModel) this.mockLockerLocationDomainModel)
-
         this.lockerPort.findById(((LockerDomainModel) this.mockLockerDomainModel).getId()) >> Optional.of((LockerDomainModel) this.mockLockerDomainModel)
 
-        this.lockerPort.update(lockerId, mockDisabledLockerDomainModel) >> Optional.of(mockDisabledLockerDomainModel)
-
         when: "Locker action is invalid"
-        mockLockerUpdateRequestDto.setAction("ERROR_TYPE" as LockerLogAction)
+        mockLockerUpdateRequestDto.setAction("ERROR_TYPE")
         ((LockerDomainModel) this.mockLockerDomainModel).setIsActive(true)
         this.lockerService.update("test user id", lockerId, mockLockerUpdateRequestDto)
 
@@ -384,7 +381,8 @@ class LockerServiceTest extends Specification {
         thrown(BadRequestException)
     }
 
-    @Test "Locker update unauthorized case"() {
+    @Test
+    def "Locker update unauthorized case"() {
         given:
         def lockerId = "test locker id"
 
@@ -417,46 +415,14 @@ class LockerServiceTest extends Specification {
                 UserState.ACTIVE
         )
 
-        def mockEnabledLockerDomainModel = LockerDomainModel.of(
-                lockerId,
-                ((LockerDomainModel) this.mockLockerDomainModel).getLockerNumber(),
-                true,
-                ((LockerDomainModel) this.mockLockerDomainModel).getUpdatedAt(),
-                null,
-                ((LockerLocationDomainModel) this.mockLockerLocationDomainModel),
-        )
-
-        def mockDisabledLockerDomainModel = LockerDomainModel.of(
-                lockerId,
-                ((LockerDomainModel) this.mockLockerDomainModel).getLockerNumber(),
-                false,
-                ((LockerDomainModel) this.mockLockerDomainModel).getUpdatedAt(),
-                null,
-                (LockerLocationDomainModel) this.mockLockerLocationDomainModel,
-        )
-
-        def mockReturnedLockerDomainModel = LockerDomainModel.of(
-                lockerId,
-                ((LockerDomainModel) this.mockLockerDomainModel).getLockerNumber(),
-                true,
-                ((LockerDomainModel) this.mockLockerDomainModel).getUpdatedAt(),
-                null,
-                (LockerLocationDomainModel) this.mockLockerLocationDomainModel,
-        )
-
         this.userPort.findById(ownerUserDomainModel.getId()) >> Optional.of(ownerUserDomainModel)
         this.userPort.findById(otherUserDomainModel.getId()) >> Optional.of(otherUserDomainModel)
 
         this.lockerLocationPort.findById(((LockerLocationDomainModel) this.mockLockerLocationDomainModel).getId()) >> Optional.of((LockerLocationDomainModel) this.mockLockerLocationDomainModel)
-
         this.lockerPort.findById(((LockerDomainModel) this.mockLockerDomainModel).getId()) >> Optional.of((LockerDomainModel) this.mockLockerDomainModel)
 
-        this.lockerPort.update(lockerId, mockEnabledLockerDomainModel) >> Optional.of(mockEnabledLockerDomainModel)
-        this.lockerPort.update(lockerId, mockDisabledLockerDomainModel) >> Optional.of(mockDisabledLockerDomainModel)
-        this.lockerPort.update(lockerId, mockReturnedLockerDomainModel) >> Optional.of(mockReturnedLockerDomainModel)
-
         when: "Locker enable by common user"
-        mockLockerUpdateRequestDto.setAction(LockerLogAction.ENABLE)
+        mockLockerUpdateRequestDto.setAction(LockerLogAction.ENABLE.toString())
         ((LockerDomainModel) this.mockLockerDomainModel).setIsActive(false)
         this.lockerService.update("owner test user id", lockerId, mockLockerUpdateRequestDto)
 
@@ -464,7 +430,7 @@ class LockerServiceTest extends Specification {
         thrown(UnauthorizedException)
 
         when: "Locker disable by common user"
-        mockLockerUpdateRequestDto.setAction(LockerLogAction.DISABLE)
+        mockLockerUpdateRequestDto.setAction(LockerLogAction.DISABLE.toString())
         ((LockerDomainModel) this.mockLockerDomainModel).setIsActive(true)
         this.lockerService.update("owner test user id", lockerId, mockLockerUpdateRequestDto)
 
@@ -472,7 +438,7 @@ class LockerServiceTest extends Specification {
         thrown(UnauthorizedException)
 
         when: "Locker return by other user"
-        mockLockerUpdateRequestDto.setAction(LockerLogAction.RETURN)
+        mockLockerUpdateRequestDto.setAction(LockerLogAction.RETURN.toString())
         ((LockerDomainModel) this.mockLockerDomainModel).setIsActive(true)
         ((LockerDomainModel) this.mockLockerDomainModel).setUser(ownerUserDomainModel)
         this.lockerService.update("other test user id", lockerId, mockLockerUpdateRequestDto)
@@ -485,7 +451,8 @@ class LockerServiceTest extends Specification {
     /**
      * Test cases for locker move
      */
-    @Test "Locker move normal case"() {
+    @Test
+    def "Locker move normal case"() {
         given:
         def lockerId = "test locker id"
 
@@ -509,15 +476,24 @@ class LockerServiceTest extends Specification {
                 UserState.ACTIVE
         )
 
-        this.userPort.findById(updaterUserDomainModel.getId()) >> Optional.of(updaterUserDomainModel)
+        def mockMovedLockerDomainModel = LockerDomainModel.of(
+                "test locker id",
+                1,
+                true,
+                LocalDateTime.now(),
+                null,
+                mockMovedLockerLocationDomainModel
+        )
 
+        this.userPort.findById(updaterUserDomainModel.getId()) >> Optional.of(updaterUserDomainModel)
         this.lockerLocationPort.findById(((LockerLocationDomainModel) this.mockLockerLocationDomainModel).getId()) >> Optional.of((LockerLocationDomainModel) this.mockLockerLocationDomainModel)
         this.lockerLocationPort.findById(((LockerLocationDomainModel) mockMovedLockerLocationDomainModel).getId()) >> Optional.of((LockerLocationDomainModel) mockMovedLockerLocationDomainModel)
-
         this.lockerPort.findById(((LockerDomainModel) this.mockLockerDomainModel).getId()) >> Optional.of((LockerDomainModel) this.mockLockerDomainModel)
 
+        this.lockerPort.updateLocation(lockerId, (LockerDomainModel)this.mockLockerDomainModel) >> Optional.of(mockMovedLockerDomainModel)
+
         when:
-        LockerResponseDto lockerResponseDto = this.lockerService.move("test user id", lockerId, mockLockerMoveRequestDto)
+        def lockerResponseDto = this.lockerService.move("test user id", lockerId, mockLockerMoveRequestDto)
 
         then:
         lockerResponseDto instanceof LockerResponseDto
@@ -527,7 +503,8 @@ class LockerServiceTest extends Specification {
         }
     }
 
-    @Test "Locker move unauthorized case"() {
+    @Test
+    def "Locker move unauthorized case"() {
         given:
         def lockerId = "test locker id"
 
@@ -568,7 +545,8 @@ class LockerServiceTest extends Specification {
     /**
      * Test cases for create locker location
      */
-    @Test "Locker location create normal case"() {
+    @Test
+    def "Locker location create normal case"() {
         given:
         def lockerLocationCreateRequestDto = new LockerLocationCreateRequestDto(
                 "test locker location name",
@@ -588,8 +566,8 @@ class LockerServiceTest extends Specification {
         )
 
         this.userPort.findById(creatorUserDomainModel.getId()) >> Optional.of(creatorUserDomainModel)
-
-        this.lockerLocationPort.create((LockerLocationDomainModel) this.mockLockerLocationDomainModel) >> Optional.of(this.mockLockerLocationDomainModel)
+        this.lockerLocationPort.findByName(lockerLocationCreateRequestDto.getName()) >> Optional.ofNullable(null)
+        this.lockerLocationPort.create((LockerLocationDomainModel) this.mockLockerLocationDomainModel) >> this.mockLockerLocationDomainModel
 
         when:
         PowerMockito.mockStatic(LockerLocationDomainModel.class)
@@ -607,7 +585,8 @@ class LockerServiceTest extends Specification {
         }
     }
 
-    @Test "Locker location create invalid data case"() {
+    @Test
+    def "Locker location create invalid data case"() {
         given:
         def lockerLocationCreateRequestDto = new LockerLocationCreateRequestDto(
                 "",
@@ -627,12 +606,11 @@ class LockerServiceTest extends Specification {
         )
 
         this.userPort.findById(creatorUserDomainModel.getId()) >> Optional.of(creatorUserDomainModel)
-
-        this.lockerLocationPort.create((LockerLocationDomainModel) this.mockLockerLocationDomainModel) >> Optional.of(this.mockLockerLocationDomainModel)
+        this.lockerLocationPort.findByName(lockerLocationCreateRequestDto.getName()) >> Optional.ofNullable(null)
 
         when:
-        ((LockerLocationDomainModel) this.mockLockerLocationDomainModel).setName("");
-        ((LockerLocationDomainModel) this.mockLockerLocationDomainModel).setDescription("");
+        ((LockerLocationDomainModel) this.mockLockerLocationDomainModel).setName("")
+        ((LockerLocationDomainModel) this.mockLockerLocationDomainModel).setDescription("")
         PowerMockito.mockStatic(LockerLocationDomainModel.class)
         PowerMockito.when(LockerLocationDomainModel.of(
                 lockerLocationCreateRequestDto.getName(),
@@ -644,7 +622,8 @@ class LockerServiceTest extends Specification {
         thrown(ConstraintViolationException)
     }
 
-    @Test "Locker location create unauthorized case"() {
+    @Test
+    def "Locker location create unauthorized case"() {
         given:
         def lockerLocationCreateRequestDto = new LockerLocationCreateRequestDto(
                 "test locker location name",
@@ -664,8 +643,7 @@ class LockerServiceTest extends Specification {
         )
 
         this.userPort.findById(creatorUserDomainModel.getId()) >> Optional.of(creatorUserDomainModel)
-
-        this.lockerLocationPort.create((LockerLocationDomainModel) this.mockLockerLocationDomainModel) >> Optional.of(this.mockLockerLocationDomainModel)
+        this.lockerLocationPort.findByName(lockerLocationCreateRequestDto.getName()) >> Optional.ofNullable(null)
 
         when:
         PowerMockito.mockStatic(LockerLocationDomainModel.class)
@@ -682,9 +660,10 @@ class LockerServiceTest extends Specification {
     /**
      * Test cases for update locker location
      */
-    @Test "Locker location update normal case"() {
+    @Test
+    def "Locker location update normal case"() {
         given:
-        def lockerLocationId = "test locker location id";
+        def lockerLocationId = "test locker location id"
 
         def lockerLocationUpdateRequestDto = new LockerLocationUpdateRequestDto(
                 "test locker location updated name",
@@ -710,9 +689,9 @@ class LockerServiceTest extends Specification {
         )
 
         this.userPort.findById(updaterUserDomainModel.getId()) >> Optional.of(updaterUserDomainModel)
-
+        this.lockerLocationPort.findByName(lockerLocationUpdateRequestDto.getName()) >> Optional.ofNullable(null)
         this.lockerLocationPort.findById(lockerLocationId) >> Optional.of(this.mockLockerLocationDomainModel)
-        this.lockerLocationPort.update(lockerLocationId, updatedLockerLocationDomainModel) >> Optional.of(updatedLockerLocationDomainModel)
+        this.lockerLocationPort.update(lockerLocationId, (LockerLocationDomainModel)this.mockLockerLocationDomainModel) >> Optional.of(updatedLockerLocationDomainModel)
 
         when:
         def lockerLocationResponseDto = this.lockerService.updateLocation("test user id", lockerLocationId, lockerLocationUpdateRequestDto)
@@ -720,14 +699,15 @@ class LockerServiceTest extends Specification {
         then:
         lockerLocationResponseDto instanceof LockerLocationResponseDto
         with(lockerLocationResponseDto) {
-            getName() == "test locker location name"
-            getDescription() == "test locker location description"
+            getName() == "test locker location updated name"
+            getDescription() == "test locker location updated description"
         }
     }
 
-    @Test "Locker location update invalid data case"() {
+    @Test
+    def "Locker location update invalid data case"() {
         given:
-        def lockerLocationId = "test locker location id";
+        def lockerLocationId = "test locker location id"
 
         def lockerLocationUpdateRequestDto = new LockerLocationUpdateRequestDto(
                 "",
@@ -746,16 +726,9 @@ class LockerServiceTest extends Specification {
                 UserState.ACTIVE
         )
 
-        def updatedLockerLocationDomainModel = LockerLocationDomainModel.of(
-                lockerLocationId,
-                "",
-                ""
-        )
-
         this.userPort.findById(updaterUserDomainModel.getId()) >> Optional.of(updaterUserDomainModel)
-
+        this.lockerLocationPort.findByName(lockerLocationUpdateRequestDto.getName()) >> Optional.ofNullable(null)
         this.lockerLocationPort.findById(lockerLocationId) >> Optional.of(this.mockLockerLocationDomainModel)
-        this.lockerLocationPort.update(lockerLocationId, updatedLockerLocationDomainModel) >> Optional.of(updatedLockerLocationDomainModel)
 
         when:
         this.lockerService.updateLocation("test user id", lockerLocationId, lockerLocationUpdateRequestDto)
@@ -764,9 +737,10 @@ class LockerServiceTest extends Specification {
         thrown(ConstraintViolationException)
     }
 
-    @Test "Locker location update unauthorized case"() {
+    @Test
+    def "Locker location update unauthorized case"() {
         given:
-        def lockerLocationId = "test locker location id";
+        def lockerLocationId = "test locker location id"
 
         def lockerLocationUpdateRequestDto = new LockerLocationUpdateRequestDto(
                 "test locker location updated name",
@@ -785,16 +759,9 @@ class LockerServiceTest extends Specification {
                 UserState.ACTIVE
         )
 
-        def updatedLockerLocationDomainModel = LockerLocationDomainModel.of(
-                lockerLocationId,
-                "test locker location updated name",
-                "test locker location updated description"
-        )
-
         this.userPort.findById(updaterUserDomainModel.getId()) >> Optional.of(updaterUserDomainModel)
-
+        this.lockerLocationPort.findByName(lockerLocationUpdateRequestDto.getName()) >> Optional.ofNullable(null)
         this.lockerLocationPort.findById(lockerLocationId) >> Optional.of(this.mockLockerLocationDomainModel)
-        this.lockerLocationPort.update(lockerLocationId, updatedLockerLocationDomainModel) >> Optional.of(updatedLockerLocationDomainModel)
 
         when:
         this.lockerService.updateLocation("test user id", lockerLocationId, lockerLocationUpdateRequestDto)

@@ -71,6 +71,26 @@ public class LockerDomainModel {
         );
     }
 
+    public void register(UserDomainModel user) {
+        this.user = user;
+    }
+
+    public void returnLocker() {
+        this.user = null;
+    }
+
+    public void activate() {
+        this.isActive = true;
+    }
+
+    public void deactivate() {
+        this.isActive = false;
+    }
+
+    public void move(LockerLocationDomainModel lockerLocation) {
+        this.lockerLocation = lockerLocation;
+    }
+
     public Optional<UserDomainModel> getUser() {
         return Optional.ofNullable(this.user);
     }

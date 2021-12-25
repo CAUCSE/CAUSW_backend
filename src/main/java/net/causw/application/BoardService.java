@@ -251,14 +251,11 @@ public class BoardService {
                         .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.PRESIDENT)))
         );
 
-        boardDomainModel = BoardDomainModel.of(
-                boardDomainModel.getId(),
+        boardDomainModel.update(
                 boardUpdateRequestDto.getName(),
                 boardUpdateRequestDto.getDescription(),
                 boardUpdateRequestDto.getCreateRoleList(),
-                boardUpdateRequestDto.getCategory(),
-                boardDomainModel.getIsDeleted(),
-                boardDomainModel.getCircle().orElse(null)
+                boardUpdateRequestDto.getCategory()
         );
 
         validatorBucket

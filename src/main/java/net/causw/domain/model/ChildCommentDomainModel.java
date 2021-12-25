@@ -96,4 +96,14 @@ public class ChildCommentDomainModel {
                 updatedAt
         );
     }
+
+    public void update(
+            String content,
+            String tagUserName,
+            String refChildComment
+    ) {
+        this.content = content;
+        this.tagUserName = tagUserName;
+        this.refChildComment = refChildComment;
+    }
 }

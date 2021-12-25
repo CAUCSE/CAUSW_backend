@@ -244,16 +244,10 @@ public class ChildCommentService {
                 )
         );
 
-        ChildCommentDomainModel updatedChildCommentDomainModel = ChildCommentDomainModel.of(
-                childCommentDomainModel.getId(),
+        childCommentDomainModel.update(
                 childCommentUpdateRequestDto.getContent(),
-                childCommentDomainModel.getIsDeleted(),
                 childCommentUpdateRequestDto.getTagUserName().orElse(null),
-                childCommentUpdateRequestDto.getRefChildComment().orElse(null),
-                childCommentDomainModel.getWriter(),
-                childCommentDomainModel.getParentComment(),
-                childCommentDomainModel.getCreatedAt(),
-                childCommentDomainModel.getUpdatedAt()
+                childCommentUpdateRequestDto.getRefChildComment().orElse(null)
         );
 
         validatorBucket
@@ -261,20 +255,20 @@ public class ChildCommentService {
                 .consistOf(UserRoleIsNoneValidator.of(updater.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getBoard().getIsDeleted(), postDomainModel.getBoard().getDOMAIN()))
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), postDomainModel.getDOMAIN()))
-                .consistOf(TargetIsDeletedValidator.of(updatedChildCommentDomainModel.getIsDeleted(), updatedChildCommentDomainModel.getDOMAIN()))
-                .consistOf(ConstraintValidator.of(updatedChildCommentDomainModel, this.validator))
+                .consistOf(TargetIsDeletedValidator.of(childCommentDomainModel.getIsDeleted(), childCommentDomainModel.getDOMAIN()))
+                .consistOf(ConstraintValidator.of(childCommentDomainModel, this.validator))
                 .consistOf(ContentsAdminValidator.of(
                         updater.getRole(),
                         updaterId,
-                        updatedChildCommentDomainModel.getWriter().getId(),
+                        childCommentDomainModel.getWriter().getId(),
                         List.of()
                 ));
 
         refChildCommentDomainModel.ifPresent(
                 refChildComment -> validatorBucket
                         .consistOf(TargetIsDeletedValidator.of(refChildComment.getIsDeleted(), refChildComment.getDOMAIN()))
-                        .consistOf(ChildCommentNotEqualValidator.of(updatedChildCommentDomainModel.getId(), refChildComment.getId()))
-                        .consistOf(UserNameEqualValidator.of(updatedChildCommentDomainModel.getTagUserName(), refChildComment.getWriter().getName()))
+                        .consistOf(ChildCommentNotEqualValidator.of(childCommentDomainModel.getId(), refChildComment.getId()))
+                        .consistOf(UserNameEqualValidator.of(childCommentDomainModel.getTagUserName(), refChildComment.getWriter().getName()))
         );
 
         postDomainModel.getBoard().getCircle().ifPresent(
