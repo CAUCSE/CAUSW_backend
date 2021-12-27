@@ -49,6 +49,7 @@ public class PostPortImpl extends DomainModelMapper implements PostPort {
                 srcPost -> {
                     srcPost.setTitle(postDomainModel.getTitle());
                     srcPost.setContent(postDomainModel.getContent());
+                    srcPost.setIsDeleted(postDomainModel.getIsDeleted());
 
                     return this.entityToDomainModel(this.postRepository.save(srcPost));
                 }
@@ -64,6 +65,12 @@ public class PostPortImpl extends DomainModelMapper implements PostPort {
     @Override
     public Page<PostDomainModel> findAll(String boardId, Integer pageNum, Integer pageSize) {
         return this.postRepository.findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(boardId, this.pageableFactory.create(pageNum, pageSize))
+                .map(this::entityToDomainModel);
+    }
+
+    @Override
+    public Page<PostDomainModel> findDeleted(String boardId, Integer pageNum) {
+        return this.postRepository.findAllByBoard_IdAndIsDeletedIsTrueOrderByCreatedAtDesc(boardId, this.pageableFactory.create(pageNum))
                 .map(this::entityToDomainModel);
     }
 

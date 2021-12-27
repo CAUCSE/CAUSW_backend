@@ -133,7 +133,8 @@ public class PostService {
     public PostAllWithBoardResponseDto findAll(
             String requestUserId,
             String boardId,
-            Integer pageNum
+            Integer pageNum,
+            Boolean isDeleted
     ) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
@@ -147,6 +148,10 @@ public class PostService {
         validatorBucket
                 .consistOf(UserStateValidator.of(userDomainModel.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()));
+
+        if (isDeleted) {
+            validatorBucket.consistOf(UserRoleValidator.of(userDomainModel.getRole(), List.of(Role.PRESIDENT)));
+        }
 
         BoardDomainModel boardDomainModel = this.boardPort.findById(boardId).orElseThrow(
                 () -> new BadRequestException(
@@ -177,6 +182,18 @@ public class PostService {
         validatorBucket
                 .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted(), boardDomainModel.getDOMAIN()))
                 .validate();
+
+        if (isDeleted) {
+            return PostAllWithBoardResponseDto.from(
+                    boardDomainModel,
+                    userDomainModel.getRole(),
+                    this.postPort.findDeleted(boardId, pageNum)
+                            .map(postDomainModel -> PostAllResponseDto.from(
+                                    postDomainModel,
+                                    this.commentPort.countByPostId(postDomainModel.getId())
+                            ))
+            );
+        }
 
         return PostAllWithBoardResponseDto.from(
                 boardDomainModel,
@@ -464,6 +481,51 @@ public class PostService {
                                 )
                         ),
                 this.commentPort.countByPostId(postDomainModel.getId())
+        );
+    }
+
+    @Transactional
+    public PostResponseDto restore(
+            String requestUserId,
+            String postId
+    ) {
+        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "로그인된 사용자를 찾을 수 없습니다."
+                )
+        );
+
+        PostDomainModel postDomainModel = this.postPort.findById(postId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "복구할 게시물을 찾을 수 없습니다."
+                )
+        );
+
+        ValidatorBucket.of()
+                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT)))
+                .validate();
+
+        if (!postDomainModel.getIsDeleted()) {
+            throw new BadRequestException(
+                    ErrorCode.CANNOT_PERFORMED,
+                    "삭제된 게시물이 아닙니다."
+            );
+        }
+
+        postDomainModel.setIsDeleted(false);
+
+        PostDomainModel updatedPostDomainModel = this.postPort.update(postId, postDomainModel).orElseThrow(
+                () -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "Post id checked, but exception occurred"
+                )
+        );
+
+        return PostResponseDto.from(
+                updatedPostDomainModel,
+                requestUser
         );
     }
 }

@@ -188,7 +188,7 @@ class PostServiceTest extends Specification {
         this.postPort.findAll(((BoardDomainModel) this.mockBoardDomainModel).getId(), 0) >> new PageImpl<PostDomainModel>(List.of((PostDomainModel)this.mockPostDomainModel))
 
         when: "post findById without circle"
-        def postFind = this.postService.findAll("test user id", "test board id", 0)
+        def postFind = this.postService.findAll("test user id", "test board id", 0, false)
 
         then:
         postFind instanceof PostAllWithBoardResponseDto
@@ -198,7 +198,7 @@ class PostServiceTest extends Specification {
 
         when: "post findById with circle"
         ((BoardDomainModel) this.mockBoardDomainModel).setCircle((CircleDomainModel) this.mockCircleDomainModel)
-        postFind = this.postService.findAll("test user id", "test board id", 0)
+        postFind = this.postService.findAll("test user id", "test board id", 0, false)
 
         then:
         postFind instanceof PostAllWithBoardResponseDto
@@ -230,7 +230,7 @@ class PostServiceTest extends Specification {
 
         when:
         this.mockBoardDomainModel.setIsDeleted(true)
-        this.postService.findAll("test user id", "test board id", 0)
+        this.postService.findAll("test user id", "test board id", 0, false)
 
         then:
         thrown(BadRequestException)
@@ -270,7 +270,7 @@ class PostServiceTest extends Specification {
 
         when: "bad request case - leave"
         ((BoardDomainModel) this.mockBoardDomainModel).setCircle((CircleDomainModel) this.mockCircleDomainModel)
-        this.postService.findAll("test user id", "test board id", 0)
+        this.postService.findAll("test user id", "test board id", 0, false)
 
         then:
         thrown(BadRequestException)
@@ -278,7 +278,7 @@ class PostServiceTest extends Specification {
         when: "unauthorized case - drop"
         circleMemberDomainModel.setStatus(CircleMemberStatus.DROP)
         ((BoardDomainModel) this.mockBoardDomainModel).setCircle((CircleDomainModel) this.mockCircleDomainModel)
-        this.postService.findAll("test user id", "test board id", 0)
+        this.postService.findAll("test user id", "test board id", 0, false)
 
         then:
         thrown(UnauthorizedException)

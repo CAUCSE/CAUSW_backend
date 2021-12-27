@@ -18,5 +18,7 @@ public interface PostPort {
 
     Page<PostDomainModel> findAll(String boardId, Integer pageNum, Integer pageSize);
 
+    Page<PostDomainModel> findDeleted(String boardId, Integer pageNum);
+
     Optional<PostDomainModel> findLatest(String boardId);
 }
