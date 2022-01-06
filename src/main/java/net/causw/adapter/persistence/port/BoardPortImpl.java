@@ -54,7 +54,7 @@ public class BoardPortImpl extends DomainModelMapper implements BoardPort {
 
     @Override
     public List<BoardDomainModel> findDeleted() {
-        return this.boardRepository.findAll_IsDeletedIsTrue()
+        return this.boardRepository.findAllByIsDeletedIsTrue()
                 .stream()
                 .map(this::entityToDomainModel)
                 .collect(Collectors.toList());

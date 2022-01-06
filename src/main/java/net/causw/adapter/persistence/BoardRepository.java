@@ -15,7 +15,7 @@ public interface BoardRepository extends JpaRepository<Board, String> {
 
     List<Board> findTop3ByCircle_IdIsNullAndIsDeletedIsFalseOrderByCreatedAtAsc();
 
-    List<Board> findAll_IsDeletedIsTrue();
+    List<Board> findAllByIsDeletedIsTrue();
 
     @Query(value = "SELECT * FROM TB_BOARD where TB_BOARD.category = 'APP_NOTICE'", nativeQuery = true)
     Optional<Board> findAppNotice();
