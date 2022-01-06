@@ -31,8 +31,11 @@ public class BoardController {
 
     @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
-    public List<BoardResponseDto> findAll(@AuthenticationPrincipal String userId) {
-        return this.boardService.findAll(userId);
+    public List<BoardResponseDto> findAll(
+            @AuthenticationPrincipal String userId,
+            @RequestParam(defaultValue = "false") Boolean isDeleted
+    ) {
+        return this.boardService.findAll(userId, isDeleted);
     }
 
     @GetMapping(params = "circleId")
@@ -70,5 +73,14 @@ public class BoardController {
             @PathVariable String id
     ) {
         return this.boardService.delete(deleterId, id);
+    }
+
+    @PutMapping(value = "/restore/{id}")
+    @ResponseStatus(value = HttpStatus.OK)
+    public BoardResponseDto restore(
+            @AuthenticationPrincipal String updaterId,
+            @PathVariable String id
+    ) {
+        return this.boardService.restore(updaterId, id);
     }
 }

@@ -53,6 +53,14 @@ public class BoardPortImpl extends DomainModelMapper implements BoardPort {
     }
 
     @Override
+    public List<BoardDomainModel> findDeleted() {
+        return this.boardRepository.findAll_IsDeletedIsTrue()
+                .stream()
+                .map(this::entityToDomainModel)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public BoardDomainModel create(BoardDomainModel boardDomainModel) {
         return this.entityToDomainModel(this.boardRepository.save(Board.from(boardDomainModel)));
     }
@@ -64,6 +72,7 @@ public class BoardPortImpl extends DomainModelMapper implements BoardPort {
                     srcBoard.setName(boardDomainModel.getName());
                     srcBoard.setDescription(boardDomainModel.getDescription());
                     srcBoard.setCreateRoles(String.join(",", boardDomainModel.getCreateRoleList()));
+                    srcBoard.setIsDeleted(boardDomainModel.getIsDeleted());
 
                     return this.entityToDomainModel(this.boardRepository.save(srcBoard));
                 }

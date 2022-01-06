@@ -16,6 +16,8 @@ public interface BoardPort {
 
     List<BoardDomainModel> findOldest3Boards();
 
+    List<BoardDomainModel> findDeleted();
+
     BoardDomainModel create(BoardDomainModel boardDomainModel);
 
     Optional<BoardDomainModel> update(String id, BoardDomainModel boardDomainModel);

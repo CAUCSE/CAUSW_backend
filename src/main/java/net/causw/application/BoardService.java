@@ -63,7 +63,9 @@ public class BoardService {
     }
 
     @Transactional(readOnly = true)
-    public List<BoardResponseDto> findAll(String userId) {
+    public List<BoardResponseDto> findAll(String userId, Boolean isDeleted) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
         UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -71,10 +73,21 @@ public class BoardService {
                 )
         );
 
-        ValidatorBucket.of()
+        if (isDeleted) {
+            validatorBucket.consistOf(UserRoleValidator.of(userDomainModel.getRole(), List.of(Role.PRESIDENT)));
+        }
+
+        validatorBucket
                 .consistOf(UserStateValidator.of(userDomainModel.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
                 .validate();
+
+        if (isDeleted) {
+            return this.boardPort.findDeleted()
+                    .stream()
+                    .map(boardDomainModel -> BoardResponseDto.from(boardDomainModel, userDomainModel.getRole()))
+                    .collect(Collectors.toList());
+        }
 
         return this.boardPort.findAll()
                 .stream()
@@ -336,6 +349,50 @@ public class BoardService {
                         )
                 ),
                 deleterDomainModel.getRole()
+        );
+    }
+
+    @Transactional
+    public BoardResponseDto restore(
+            String updaterId,
+            String boardId
+    ) {
+        UserDomainModel updaterDomainModel = this.userPort.findById(updaterId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "로그인된 사용자를 찾을 수 없습니다."
+                )
+        );
+
+        BoardDomainModel boardDomainModel = this.boardPort.findById(boardId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "복구할 게시판을 찾을 수 없습니다."
+                )
+        );
+
+        ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(updaterDomainModel.getState()))
+                .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.PRESIDENT)))
+                .validate();
+
+        if (!boardDomainModel.getIsDeleted()) {
+            throw new BadRequestException(
+                    ErrorCode.CANNOT_PERFORMED,
+                    "삭제된 게시판이 아닙니다."
+            );
+        }
+
+        boardDomainModel.setIsDeleted(false);
+
+        return BoardResponseDto.from(
+                this.boardPort.update(boardId, boardDomainModel).orElseThrow(
+                        () -> new InternalServerException(
+                                ErrorCode.INTERNAL_SERVER,
+                                "Board id checked, but exception occurred"
+                        )
+                ),
+                updaterDomainModel.getRole()
         );
     }
 }
