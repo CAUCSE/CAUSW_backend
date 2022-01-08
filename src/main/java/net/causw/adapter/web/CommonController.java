@@ -9,20 +9,34 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/home")
-public class HomePageController {
+@RequestMapping
+public class CommonController {
+
     private final HomePageService homePageService;
 
-    public HomePageController(HomePageService homePageService) {
+    public CommonController(HomePageService homePageService) {
         this.homePageService = homePageService;
     }
 
-    @GetMapping
+    @GetMapping("/api/v1/home")
     @ResponseStatus(value = HttpStatus.OK)
     public List<HomePageResponseDto> getHomePage(@AuthenticationPrincipal String userId) {
         return this.homePageService.getHomePage(userId);
+    }
+
+    /*
+     * Health check for k8s readiness probe
+     * */
+    @GetMapping("/healthy")
+    @ResponseStatus(value = HttpStatus.OK)
+    public Map<String, String> healthCheck() {
+        HashMap<String, String> map = new HashMap<>();
+        map.put("status", "OK");
+        return map;
     }
 }
