@@ -430,22 +430,10 @@ class UserServiceTest extends Specification {
                 (UserState) this.mockUserDomainModel.getState()
         )
 
-        PowerMockito.mockStatic(UserDomainModel.class)
-        PowerMockito.when(UserDomainModel.of(
-                id,
-                userUpdateRequestDto.getEmail(),
-                userUpdateRequestDto.getName(),
-                (String) this.mockUserDomainModel.getPassword(),
-                userUpdateRequestDto.getStudentId(),
-                userUpdateRequestDto.getAdmissionYear(),
-                (Role) this.mockUserDomainModel.getRole(),
-                userUpdateRequestDto.getProfileImage(),
-                (UserState) this.mockUserDomainModel.getState()
-        )).thenReturn(mockUpdatedUserDomainModel)
-
         this.userPort.findById(id) >> Optional.of(this.mockUserDomainModel)
-        this.userPort.update(id, mockUpdatedUserDomainModel) >> Optional.of(mockUpdatedUserDomainModel)
         this.userPort.findByEmail("update@cau.ac.kr") >> Optional.ofNullable(null)
+
+        this.userPort.update(id, (UserDomainModel)this.mockUserDomainModel) >> Optional.of(mockUpdatedUserDomainModel)
 
         when:
         def userResponseDto = this.userService.update(id, userUpdateRequestDto)
@@ -484,7 +472,6 @@ class UserServiceTest extends Specification {
         )
 
         this.userPort.findById(id) >> Optional.of(this.mockUserDomainModel)
-        this.userPort.update(id, mockUpdatedUserDomainModel) >> Optional.of(mockUpdatedUserDomainModel)
 
         when: "admission year with future day"
         userUpdateRequestDto.setAdmissionYear(2100)

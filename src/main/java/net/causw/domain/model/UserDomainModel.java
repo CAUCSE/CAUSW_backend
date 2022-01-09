@@ -108,4 +108,18 @@ public class UserDomainModel {
                 localUserState
         );
     }
+
+    public void update(
+            String email,
+            String name,
+            String studentId,
+            Integer admissionYear,
+            String profileImage
+    ) {
+        this.email = email;
+        this.name = name;
+        this.studentId = studentId;
+        this.admissionYear = admissionYear;
+        this.profileImage = profileImage;
+    }
 }

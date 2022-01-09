@@ -423,15 +423,9 @@ public class PostService {
                 }
         );
 
-        postDomainModel = PostDomainModel.of(
-                postDomainModel.getId(),
+        postDomainModel.update(
                 postUpdateRequestDto.getTitle(),
-                postUpdateRequestDto.getContent(),
-                postDomainModel.getWriter(),
-                postDomainModel.getIsDeleted(),
-                postDomainModel.getBoard(),
-                postDomainModel.getCreatedAt(),
-                postDomainModel.getUpdatedAt()
+                postUpdateRequestDto.getContent()
         );
 
         validatorBucket

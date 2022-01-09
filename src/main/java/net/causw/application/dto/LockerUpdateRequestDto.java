@@ -11,6 +11,6 @@ import net.causw.domain.model.LockerLogAction;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LockerUpdateRequestDto {
-    LockerLogAction action;
+    String action;
     String message;
 }

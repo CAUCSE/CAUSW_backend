@@ -8,6 +8,7 @@ import net.causw.domain.model.LockerDomainModel;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.validation.ConstraintValidator;
+import net.causw.domain.validation.LockerIsDeactivatedValidator;
 import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.ValidatorBucket;
 
@@ -25,21 +26,16 @@ public class LockerActionDisable implements LockerAction {
             Validator validator,
             LockerPort lockerPort
     ) {
-
-        if (!lockerDomainModel.getIsActive()) {
-            throw new BadRequestException(
-                    ErrorCode.CANNOT_PERFORMED,
-                    "이미 사용 불가능한 사물함입니다."
-            );
-        }
-
-        lockerDomainModel.setIsActive(false);
-
         ValidatorBucket.of()
                 .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.PRESIDENT)))
-                .consistOf(ConstraintValidator.of(lockerDomainModel, validator))
+                .consistOf(LockerIsDeactivatedValidator.of(lockerDomainModel.getIsActive()))
                 .validate();
 
-        return lockerPort.update(lockerDomainModel.getId(), lockerDomainModel);
+        lockerDomainModel.deactivate();
+
+        return lockerPort.update(
+                lockerDomainModel.getId(),
+                lockerDomainModel
+        );
     }
 }

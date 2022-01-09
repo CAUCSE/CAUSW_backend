@@ -284,16 +284,12 @@ public class UserService {
         }
 
         // Validate the requested parameters format from making the domain model
-        userDomainModel = UserDomainModel.of(
-                id,
+        userDomainModel.update(
                 userUpdateRequestDto.getEmail(),
                 userUpdateRequestDto.getName(),
-                userDomainModel.getPassword(),
                 userUpdateRequestDto.getStudentId(),
                 userUpdateRequestDto.getAdmissionYear(),
-                userDomainModel.getRole(),
-                userUpdateRequestDto.getProfileImage(),
-                userDomainModel.getState()
+                userUpdateRequestDto.getProfileImage()
         );
 
         // Validate the admission year range
@@ -307,7 +303,7 @@ public class UserService {
         return UserResponseDto.from(this.userPort.update(id, userDomainModel).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        "Application id checked, but exception occurred"
+                        "User id checked, but exception occurred"
                 )
         ));
     }
@@ -364,7 +360,7 @@ public class UserService {
         return UserResponseDto.from(this.userPort.updateRole(granteeId, userUpdateRoleRequestDto.getRole()).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        "Application id checked, but exception occurred"
+                        "User id checked, but exception occurred"
                 )
         ));
     }

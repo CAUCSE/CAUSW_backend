@@ -504,19 +504,9 @@ class BoardServiceTest extends Specification {
         this.userPort.findById("test") >> Optional.of(updater)
         this.circlePort.findById("test") >> Optional.of(mockCircleDomainModel)
         this.boardPort.findById("test") >> Optional.of(this.mockBoardDomainModel)
-        this.boardPort.update("test", mockUpdatedBoardDomainModel) >> Optional.of(mockUpdatedBoardDomainModel)
+        this.boardPort.update("test", (BoardDomainModel)this.mockBoardDomainModel) >> Optional.of(mockUpdatedBoardDomainModel)
 
         when: "update board without circle"
-        PowerMockito.mockStatic(BoardDomainModel.class)
-        PowerMockito.when(BoardDomainModel.of(
-                "test",
-                mockBoardUpdateRequestDto.getName(),
-                mockBoardUpdateRequestDto.getDescription(),
-                mockBoardUpdateRequestDto.getCreateRoleList(),
-                "test category",
-                false,
-                null
-        )).thenReturn(mockUpdatedBoardDomainModel)
         def boardResponseDto = this.boardService.update("test", "test", mockBoardUpdateRequestDto)
 
         then:
@@ -527,19 +517,6 @@ class BoardServiceTest extends Specification {
         }
 
         when: "update board with circle"
-        this.mockBoardDomainModel.setCircle(mockCircleDomainModel)
-        mockUpdatedBoardDomainModel.setCircle(mockCircleDomainModel)
-        updater.setRole(Role.LEADER_CIRCLE)
-        PowerMockito.mockStatic(BoardDomainModel.class)
-        PowerMockito.when(BoardDomainModel.of(
-                "test",
-                mockBoardUpdateRequestDto.getName(),
-                mockBoardUpdateRequestDto.getDescription(),
-                mockBoardUpdateRequestDto.getCreateRoleList(),
-                "test category",
-                false,
-                mockCircleDomainModel
-        )).thenReturn(mockUpdatedBoardDomainModel)
         boardResponseDto = this.boardService.update("test", "test", mockBoardUpdateRequestDto)
 
         then:
@@ -611,16 +588,6 @@ class BoardServiceTest extends Specification {
         when: "name is blank"
         mockBoardUpdateRequestDto.setName("")
         this.mockBoardDomainModel.setName("")
-        PowerMockito.mockStatic(BoardDomainModel.class)
-        PowerMockito.when(BoardDomainModel.of(
-                "test",
-                mockBoardUpdateRequestDto.getName(),
-                mockBoardUpdateRequestDto.getDescription(),
-                mockBoardUpdateRequestDto.getCreateRoleList(),
-                "test category",
-                false,
-                null
-        )).thenReturn((BoardDomainModel) this.mockBoardDomainModel)
         this.boardService.update("test", "test", mockBoardUpdateRequestDto)
 
         then:
@@ -631,16 +598,6 @@ class BoardServiceTest extends Specification {
         this.mockBoardDomainModel.setName("test")
         mockBoardUpdateRequestDto.setCreateRoleList(null)
         this.mockBoardDomainModel.setCreateRoleList(null)
-        PowerMockito.mockStatic(BoardDomainModel.class)
-        PowerMockito.when(BoardDomainModel.of(
-                "test",
-                mockBoardUpdateRequestDto.getName(),
-                mockBoardUpdateRequestDto.getDescription(),
-                mockBoardUpdateRequestDto.getCreateRoleList(),
-                "test category",
-                false,
-                null
-        )).thenReturn((BoardDomainModel) this.mockBoardDomainModel)
         this.boardService.update("test", "test", mockBoardUpdateRequestDto)
 
         then:

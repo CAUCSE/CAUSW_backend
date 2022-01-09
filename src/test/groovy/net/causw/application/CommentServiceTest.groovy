@@ -338,19 +338,9 @@ class CommentServiceTest extends Specification {
         this.commentPort.findById(((CommentDomainModel) this.mockCommentDomainModel).getId()) >> Optional.of(((CommentDomainModel) this.mockCommentDomainModel))
         this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(((PostDomainModel) this.mockPostDomainModel))
 
-        this.commentPort.update(((CommentDomainModel) this.mockCommentDomainModel).getId(), mockUpdatedCommentDomainModel) >> Optional.of(mockUpdatedCommentDomainModel)
+        this.commentPort.update(((CommentDomainModel) this.mockCommentDomainModel).getId(), (CommentDomainModel)this.mockCommentDomainModel) >> Optional.of(mockUpdatedCommentDomainModel)
 
         when:
-        PowerMockito.mockStatic(CommentDomainModel.class)
-        PowerMockito.when(CommentDomainModel.of(
-                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
-                targetContent,
-                ((CommentDomainModel) this.mockCommentDomainModel).getIsDeleted(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getCreatedAt(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getUpdatedAt(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getWriter(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getPostId()
-        )).thenReturn(mockUpdatedCommentDomainModel)
         def commentUpdateResponse = this.commentService.update(
                 ((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(),
                 ((CommentDomainModel) this.mockCommentDomainModel).getId(),
@@ -394,19 +384,9 @@ class CommentServiceTest extends Specification {
         this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(((PostDomainModel) this.mockPostDomainModel))
         this.circleMemberPort.findByUserIdAndCircleId(((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(), ((CircleDomainModel) this.mockCircleDomainModel).getId()) >> Optional.of(mockWriterUserCircleMemberDomainModel)
 
-        this.commentPort.update(((CommentDomainModel) this.mockCommentDomainModel).getId(), mockUpdatedCommentDomainModel) >> Optional.of(mockUpdatedCommentDomainModel)
+        this.commentPort.update(((CommentDomainModel) this.mockCommentDomainModel).getId(), (CommentDomainModel)this.mockCommentDomainModel) >> Optional.of(mockUpdatedCommentDomainModel)
 
         when:
-        PowerMockito.mockStatic(CommentDomainModel.class)
-        PowerMockito.when(CommentDomainModel.of(
-                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
-                targetContent,
-                ((CommentDomainModel) this.mockCommentDomainModel).getIsDeleted(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getCreatedAt(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getUpdatedAt(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getWriter(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getPostId()
-        )).thenReturn(mockUpdatedCommentDomainModel)
         def commentUpdateResponse = this.commentService.update(
                 ((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(),
                 ((CommentDomainModel) this.mockCommentDomainModel).getId(),
@@ -437,22 +417,10 @@ class CommentServiceTest extends Specification {
         this.commentPort.findById(((CommentDomainModel) this.mockCommentDomainModel).getId()) >> Optional.of(((CommentDomainModel) this.mockCommentDomainModel))
         this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(((PostDomainModel) this.mockPostDomainModel))
 
-        this.commentPort.update(((CommentDomainModel) this.mockCommentDomainModel).getId(), mockUpdatedCommentDomainModel) >> Optional.of(mockUpdatedCommentDomainModel)
-
         when: "Target comment deleted"
         ((PostDomainModel) this.mockPostDomainModel).setIsDeleted(false)
         ((CommentDomainModel) this.mockCommentDomainModel).setIsDeleted(true)
         mockUpdatedCommentDomainModel.setIsDeleted(true)
-        PowerMockito.mockStatic(CommentDomainModel.class)
-        PowerMockito.when(CommentDomainModel.of(
-                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
-                commentUpdateRequestDto.getContent(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getIsDeleted(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getCreatedAt(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getUpdatedAt(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getWriter(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getPostId()
-        )).thenReturn(mockUpdatedCommentDomainModel)
         this.commentService.update(
                 ((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(),
                 ((CommentDomainModel) this.mockCommentDomainModel).getId(),
@@ -466,16 +434,6 @@ class CommentServiceTest extends Specification {
         ((CommentDomainModel) this.mockCommentDomainModel).setIsDeleted(false)
         ((PostDomainModel) this.mockPostDomainModel).setIsDeleted(true)
         mockUpdatedCommentDomainModel.setIsDeleted(false)
-        PowerMockito.mockStatic(CommentDomainModel.class)
-        PowerMockito.when(CommentDomainModel.of(
-                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
-                commentUpdateRequestDto.getContent(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getIsDeleted(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getCreatedAt(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getUpdatedAt(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getWriter(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getPostId()
-        )).thenReturn(mockUpdatedCommentDomainModel)
         this.commentService.update(
                 ((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(),
                 ((CommentDomainModel) this.mockCommentDomainModel).getId(),
@@ -489,16 +447,6 @@ class CommentServiceTest extends Specification {
     def "Comment update request user not writer case"() {
         given:
         def targetContent = "Update comment content"
-        def mockUpdatedCommentDomainModel = CommentDomainModel.of(
-                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
-                targetContent,
-                ((CommentDomainModel) this.mockCommentDomainModel).getIsDeleted(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getCreatedAt(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getUpdatedAt(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getWriter(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getPostId()
-        )
-
         def requestUser = UserDomainModel.of(
                 "test request user id",
                 "test-request-user@cau.ac.kr",
@@ -517,19 +465,7 @@ class CommentServiceTest extends Specification {
         this.commentPort.findById(((CommentDomainModel) this.mockCommentDomainModel).getId()) >> Optional.of(((CommentDomainModel) this.mockCommentDomainModel))
         this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(((PostDomainModel) this.mockPostDomainModel))
 
-        this.commentPort.update(((CommentDomainModel) this.mockCommentDomainModel).getId(), mockUpdatedCommentDomainModel) >> Optional.of(mockUpdatedCommentDomainModel)
-
         when:
-        PowerMockito.mockStatic(CommentDomainModel.class)
-        PowerMockito.when(CommentDomainModel.of(
-                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
-                targetContent,
-                ((CommentDomainModel) this.mockCommentDomainModel).getIsDeleted(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getCreatedAt(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getUpdatedAt(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getWriter(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getPostId()
-        )).thenReturn(mockUpdatedCommentDomainModel)
         this.commentService.update(
                 requestUser.getId(),
                 ((CommentDomainModel) this.mockCommentDomainModel).getId(),
@@ -543,16 +479,6 @@ class CommentServiceTest extends Specification {
     def "Comment update not circle member case"() {
         given:
         def targetContent = "Update comment content"
-        def mockUpdatedCommentDomainModel = CommentDomainModel.of(
-                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
-                targetContent,
-                ((CommentDomainModel) this.mockCommentDomainModel).getIsDeleted(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getCreatedAt(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getUpdatedAt(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getWriter(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getPostId()
-        )
-
         def commentUpdateRequestDto = new CommentUpdateRequestDto(targetContent)
 
         this.userPort.findById(((UserDomainModel) this.mockCommentWriterUserDomainModel).getId()) >> Optional.of((UserDomainModel) this.mockCommentWriterUserDomainModel)
@@ -562,19 +488,7 @@ class CommentServiceTest extends Specification {
         this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(((PostDomainModel) this.mockPostDomainModel))
         this.circleMemberPort.findByUserIdAndCircleId(((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(), ((CircleDomainModel) this.mockCircleDomainModel).getId()) >> Optional.empty()
 
-        this.commentPort.update(((CommentDomainModel) this.mockCommentDomainModel).getId(), mockUpdatedCommentDomainModel) >> Optional.of(mockUpdatedCommentDomainModel)
-
         when:
-        PowerMockito.mockStatic(CommentDomainModel.class)
-        PowerMockito.when(CommentDomainModel.of(
-                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
-                targetContent,
-                ((CommentDomainModel) this.mockCommentDomainModel).getIsDeleted(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getCreatedAt(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getUpdatedAt(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getWriter(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getPostId()
-        )).thenReturn(mockUpdatedCommentDomainModel)
         this.commentService.update(
                 ((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(),
                 ((CommentDomainModel) this.mockCommentDomainModel).getId(),
@@ -588,16 +502,6 @@ class CommentServiceTest extends Specification {
     def "Comment update not circle member status MEMBER case"() {
         given:
         def targetContent = "Update comment content"
-        def mockUpdatedCommentDomainModel = CommentDomainModel.of(
-                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
-                targetContent,
-                ((CommentDomainModel) this.mockCommentDomainModel).getIsDeleted(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getCreatedAt(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getUpdatedAt(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getWriter(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getPostId()
-        )
-
         def mockWriterUserCircleMemberDomainModel = CircleMemberDomainModel.of(
                 "test circle member id",
                 CircleMemberStatus.MEMBER,
@@ -617,19 +521,7 @@ class CommentServiceTest extends Specification {
         this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(((PostDomainModel) this.mockPostDomainModel))
         this.circleMemberPort.findByUserIdAndCircleId(((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(), ((CircleDomainModel) this.mockCircleDomainModel).getId()) >> Optional.of(mockWriterUserCircleMemberDomainModel)
 
-        this.commentPort.update(((CommentDomainModel) this.mockCommentDomainModel).getId(), mockUpdatedCommentDomainModel) >> Optional.of(mockUpdatedCommentDomainModel)
-
         when: "Exception case with AWAIT status"
-        PowerMockito.mockStatic(CommentDomainModel.class)
-        PowerMockito.when(CommentDomainModel.of(
-                ((CommentDomainModel) this.mockCommentDomainModel).getId(),
-                targetContent,
-                ((CommentDomainModel) this.mockCommentDomainModel).getIsDeleted(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getCreatedAt(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getUpdatedAt(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getWriter(),
-                ((CommentDomainModel) this.mockCommentDomainModel).getPostId()
-        )).thenReturn(mockUpdatedCommentDomainModel)
         mockWriterUserCircleMemberDomainModel.setStatus(CircleMemberStatus.AWAIT)
         this.commentService.update(
                 ((UserDomainModel) this.mockCommentWriterUserDomainModel).getId(),

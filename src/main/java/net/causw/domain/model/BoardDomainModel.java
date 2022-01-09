@@ -106,6 +106,18 @@ public class BoardDomainModel {
         );
     }
 
+    public void update(
+            String name,
+            String description,
+            List<String> createRoleList,
+            String category
+    ) {
+        this.name = name;
+        this.description = description;
+        this.createRoleList = createRoleList;
+        this.category = category;
+    }
+
     public Optional<CircleDomainModel> getCircle() {
         return Optional.ofNullable(this.circle);
     }

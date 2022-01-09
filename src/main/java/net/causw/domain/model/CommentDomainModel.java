@@ -109,4 +109,10 @@ public class CommentDomainModel {
                 childCommentList
         );
     }
+
+    public void update(
+            String content
+    ) {
+        this.content = content;
+    }
 }
