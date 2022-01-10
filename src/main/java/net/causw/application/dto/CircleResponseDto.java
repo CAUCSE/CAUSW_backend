@@ -5,6 +5,8 @@ import lombok.NoArgsConstructor;
 import net.causw.domain.model.CircleDomainModel;
 import net.causw.domain.model.UserDomainModel;
 
+import java.time.LocalDateTime;
+
 @Getter
 @NoArgsConstructor
 public class CircleResponseDto {
@@ -16,6 +18,7 @@ public class CircleResponseDto {
     private String leaderId;
     private String leaderName;
     private Long numMember;
+    private LocalDateTime createdAt;
 
     private CircleResponseDto(
             String id,
@@ -24,7 +27,8 @@ public class CircleResponseDto {
             String description,
             Boolean isDeleted,
             String leaderId,
-            String leaderName
+            String leaderName,
+            LocalDateTime createdAt
     ) {
         this.id = id;
         this.name = name;
@@ -33,6 +37,7 @@ public class CircleResponseDto {
         this.isDeleted = isDeleted;
         this.leaderId = leaderId;
         this.leaderName = leaderName;
+        this.createdAt = createdAt;
     }
 
     private CircleResponseDto(
@@ -43,7 +48,8 @@ public class CircleResponseDto {
             Boolean isDeleted,
             String leaderId,
             String leaderName,
-            Long numMember
+            Long numMember,
+            LocalDateTime createdAt
     ) {
         this.id = id;
         this.name = name;
@@ -53,6 +59,7 @@ public class CircleResponseDto {
         this.leaderId = leaderId;
         this.leaderName = leaderName;
         this.numMember = numMember;
+        this.createdAt = createdAt;
     }
 
     public static CircleResponseDto from(CircleDomainModel circle) {
@@ -63,7 +70,8 @@ public class CircleResponseDto {
                 circle.getDescription(),
                 circle.getIsDeleted(),
                 circle.getLeader().map(UserDomainModel::getId).orElse(null),
-                circle.getLeader().map(UserDomainModel::getName).orElse(null)
+                circle.getLeader().map(UserDomainModel::getName).orElse(null),
+                circle.getCreatedAt()
         );
     }
 
@@ -76,7 +84,8 @@ public class CircleResponseDto {
                 circle.getIsDeleted(),
                 circle.getLeader().map(UserDomainModel::getId).orElse(null),
                 circle.getLeader().map(UserDomainModel::getName).orElse(null),
-                numMember
+                numMember,
+                circle.getCreatedAt()
         );
     }
 }
