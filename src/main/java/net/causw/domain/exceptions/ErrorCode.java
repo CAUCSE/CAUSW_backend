@@ -39,7 +39,12 @@ public enum ErrorCode {
     /**
      * 500 Internal Server Error
      */
-    INTERNAL_SERVER(5000);
+    INTERNAL_SERVER(5000),
+
+    /**
+     * 503 Service Unavailable Error
+     */
+    SERVICE_UNAVAILABLE(5030);
 
     private int code;
 

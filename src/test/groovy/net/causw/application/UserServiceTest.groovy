@@ -12,6 +12,7 @@ import net.causw.config.JwtTokenProvider
 import net.causw.domain.exceptions.BadRequestException
 import net.causw.domain.exceptions.UnauthorizedException
 import net.causw.domain.model.*
+import net.causw.infrastructure.GoogleMailSender
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.powermock.api.mockito.PowerMockito
@@ -40,6 +41,7 @@ class UserServiceTest extends Specification {
     private CircleMemberPort circleMemberPort = Mock(CircleMemberPort.class)
     private FavoriteBoardPort favoriteBoardPort = Mock(FavoriteBoardPort.class)
     private JwtTokenProvider jwtTokenProvider = Mock(JwtTokenProvider.class)
+    private GoogleMailSender googleMailSender = Mock(GoogleMailSender.class)
     private Validator validator = Validation.buildDefaultValidatorFactory().getValidator()
     private UserService userService = new UserService(
             this.userPort,
@@ -50,6 +52,7 @@ class UserServiceTest extends Specification {
             this.circleMemberPort,
             this.favoriteBoardPort,
             this.jwtTokenProvider,
+            this.googleMailSender,
             this.validator
     )
 
@@ -457,18 +460,6 @@ class UserServiceTest extends Specification {
                 studentId,
                 2021,
                 "/profile"
-        )
-
-        def mockUpdatedUserDomainModel = UserDomainModel.of(
-                id,
-                userUpdateRequestDto.getEmail(),
-                userUpdateRequestDto.getName(),
-                (String) this.mockUserDomainModel.getPassword(),
-                userUpdateRequestDto.getStudentId(),
-                userUpdateRequestDto.getAdmissionYear(),
-                (Role) this.mockUserDomainModel.getRole(),
-                userUpdateRequestDto.getProfileImage(),
-                (UserState) this.mockUserDomainModel.getState()
         )
 
         this.userPort.findById(id) >> Optional.of(this.mockUserDomainModel)

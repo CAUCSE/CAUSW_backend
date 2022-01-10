@@ -15,4 +15,4 @@ spring:
     secret: jwtsecretkey
 
   config:
-    import: classpath:gcs-config.yaml
+    import: classpath:gcs-config.yaml, classpath:email-config.yaml

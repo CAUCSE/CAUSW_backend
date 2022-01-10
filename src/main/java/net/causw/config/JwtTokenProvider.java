@@ -23,7 +23,7 @@ import java.util.Date;
 @Component
 public class JwtTokenProvider {
 
-    @Value("spring.jwt.secret")
+    @Value("${spring.jwt.secret}")
     private String secretKey;
 
     private static final long TOKEN_VALID_TIME = 1000L * 60 * 60 * 24 * 7;
