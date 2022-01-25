@@ -21,6 +21,7 @@ import net.causw.domain.model.CircleMemberDomainModel;
 import net.causw.domain.model.CircleMemberStatus;
 import net.causw.domain.model.PostDomainModel;
 import net.causw.domain.model.Role;
+import net.causw.domain.model.SearchOption;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.ConstraintValidator;
@@ -36,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -182,6 +184,75 @@ public class PostService {
                 boardDomainModel,
                 userDomainModel.getRole(),
                 this.postPort.findAll(boardId, pageNum)
+                        .map(postDomainModel -> PostAllResponseDto.from(
+                                postDomainModel,
+                                this.commentPort.countByPostId(postDomainModel.getId())
+                        ))
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public PostAllWithBoardResponseDto search(
+            String requestUserId,
+            String boardId,
+            String option,
+            String keyword,
+            Integer pageNum
+    ) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
+        UserDomainModel userDomainModel = this.userPort.findById(requestUserId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "로그인된 사용자를 찾을 수 없습니다."
+                )
+        );
+
+        validatorBucket
+                .consistOf(UserStateValidator.of(userDomainModel.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()));
+
+        BoardDomainModel boardDomainModel = this.boardPort.findById(boardId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "게시판을 찾을 수 없습니다."
+                )
+        );
+
+        boardDomainModel.getCircle().ifPresent(
+                circleDomainModel -> {
+                    CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(userDomainModel.getId(), circleDomainModel.getId())
+                            .orElseThrow(
+                                    () -> new UnauthorizedException(
+                                            ErrorCode.NOT_MEMBER,
+                                            "로그인된 사용자가 소모임 멤버가 아닙니다."
+                                    )
+                            );
+
+                    validatorBucket
+                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), circleDomainModel.getDOMAIN()))
+                            .consistOf(CircleMemberStatusValidator.of(
+                                    circleMemberDomainModel.getStatus(),
+                                    List.of(CircleMemberStatus.MEMBER)
+                            ));
+                }
+        );
+
+        validatorBucket
+                .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted(), boardDomainModel.getDOMAIN()))
+                .validate();
+
+        SearchOption searchOption = Optional.ofNullable(SearchOption.of(option)).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.INVALID_PARAMETER,
+                        "잘못된 검색 옵션입니다."
+                )
+        );
+
+        return PostAllWithBoardResponseDto.from(
+                boardDomainModel,
+                userDomainModel.getRole(),
+                this.postPort.search(searchOption, keyword, pageNum)
                         .map(postDomainModel -> PostAllResponseDto.from(
                                 postDomainModel,
                                 this.commentPort.countByPostId(postDomainModel.getId())
