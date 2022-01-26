@@ -22,4 +22,6 @@ public interface PostPort {
     Page<PostDomainModel> search(SearchOption option, String keyword, Integer pageNum);
 
     Optional<PostDomainModel> findLatest(String boardId);
+
+    Page<PostDomainModel> findByUserId(String userId, Integer pageNum);
 }

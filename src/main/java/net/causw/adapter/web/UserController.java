@@ -9,6 +9,7 @@ import net.causw.application.dto.UserAdmissionCreateRequestDto;
 import net.causw.application.dto.UserAdmissionResponseDto;
 import net.causw.application.dto.UserCreateRequestDto;
 import net.causw.application.dto.UserPasswordUpdateRequestDto;
+import net.causw.application.dto.UserPostResponseDto;
 import net.causw.application.dto.UserResponseDto;
 import net.causw.application.dto.UserSignInRequestDto;
 import net.causw.application.dto.UserUpdateRequestDto;
@@ -46,6 +47,15 @@ public class UserController {
     @ResponseStatus(value = HttpStatus.OK)
     public UserResponseDto findCurrentUser(@AuthenticationPrincipal String currentUserId) {
         return this.userService.findById(currentUserId);
+    }
+
+    @GetMapping(value = "/posts")
+    @ResponseStatus(value = HttpStatus.OK)
+    public UserPostResponseDto findPosts(
+            @AuthenticationPrincipal String requestUserId,
+            @RequestParam(defaultValue = "0") Integer pageNum
+    ) {
+        return this.userService.findPosts(requestUserId, pageNum);
     }
 
     @GetMapping(value = "/name/{name}")

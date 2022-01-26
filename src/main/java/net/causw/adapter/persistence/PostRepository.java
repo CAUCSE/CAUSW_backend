@@ -13,6 +13,7 @@ import java.util.Optional;
 public interface PostRepository extends JpaRepository<Post, String> {
     Page<Post> findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(String boardId, Pageable pageable);
     Optional<Post> findTop1ByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(String boardId);
+
     @Query(value = "SELECT * " +
             "FROM TB_POST AS p " +
             "WHERE p.title = %:title% ORDER BY p.created_at DESC", nativeQuery = true)
@@ -22,4 +23,9 @@ public interface PostRepository extends JpaRepository<Post, String> {
             "LEFT JOIN TB_USER AS u ON p.user_id = u.id " +
             "WHERE u.name = %:user_name% ORDER BY p.created_at DESC", nativeQuery = true)
     Page<Post> searchByWriter(@Param("user_name") String userName, Pageable pageable);
+
+    @Query(value = "SELECT * " +
+            "FROM TB_POST AS p " +
+            "WHERE p.user_id = :user_id AND p.is_deleted = false ORDER BY p.created_at DESC", nativeQuery = true)
+    Page<Post> findByUserId(@Param("user_id") String userId, Pageable pageable);
 }

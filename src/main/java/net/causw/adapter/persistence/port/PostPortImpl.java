@@ -85,4 +85,9 @@ public class PostPortImpl extends DomainModelMapper implements PostPort {
         return this.postRepository.findTop1ByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(boardId)
                 .map(this::entityToDomainModel);
     }
+
+    @Override
+    public Page<PostDomainModel> findByUserId(String userId, Integer pageNum) {
+        return this.postRepository.findByUserId(userId, this.pageableFactory.create(pageNum)).map(this::entityToDomainModel);
+    }
 }
