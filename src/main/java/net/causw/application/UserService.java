@@ -2,11 +2,13 @@ package net.causw.application;
 
 import net.causw.application.dto.BoardResponseDto;
 import net.causw.application.dto.CircleResponseDto;
+import net.causw.application.dto.CommentAllForUserResponseDto;
 import net.causw.application.dto.DuplicatedCheckDto;
 import net.causw.application.dto.PostAllForUserResponseDto;
 import net.causw.application.dto.UserAdmissionAllResponseDto;
 import net.causw.application.dto.UserAdmissionCreateRequestDto;
 import net.causw.application.dto.UserAdmissionResponseDto;
+import net.causw.application.dto.UserCommentResponseDto;
 import net.causw.application.dto.UserCreateRequestDto;
 import net.causw.application.dto.UserPasswordUpdateRequestDto;
 import net.causw.application.dto.UserPostResponseDto;
@@ -32,6 +34,7 @@ import net.causw.domain.model.BoardDomainModel;
 import net.causw.domain.model.CircleDomainModel;
 import net.causw.domain.model.CircleMemberStatus;
 import net.causw.domain.model.FavoriteBoardDomainModel;
+import net.causw.domain.model.PostDomainModel;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserAdmissionDomainModel;
 import net.causw.domain.model.UserAdmissionLogAction;
@@ -146,6 +149,55 @@ public class UserService {
                                 postDomainModel.getBoard().getCircle().map(CircleDomainModel::getName).orElse(null),
                                 this.commentPort.countByPostId(postDomainModel.getId())
                         )).collect(Collectors.toList()))
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public UserCommentResponseDto findComments(String requestUserId, Integer pageNum) {
+        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "로그인된 사용자를 찾을 수 없습니다."
+                )
+        );
+
+        ValidatorBucket.of()
+                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
+                .consistOf(UserStateValidator.of(requestUser.getState()))
+                .validate();
+
+        return UserCommentResponseDto.from(
+                requestUser,
+                new PageImpl<>(this.commentPort.findByUserId(requestUserId, pageNum).getContent()
+                        .stream().filter(comment -> {
+                            PostDomainModel post = this.postPort.findById(comment.getPostId()).orElseThrow(
+                                    () -> new BadRequestException(
+                                            ErrorCode.ROW_DOES_NOT_EXIST,
+                                            "게시글을 찾을 수 없습니다."
+                                    )
+                            );
+
+                            return post.getBoard().getCircle().map(
+                                    circle -> this.circleMemberPort.findByUserIdAndCircleId(requestUserId, circle.getId()).map(
+                                            circleMember -> !circle.getIsDeleted() && (circleMember.getStatus() == CircleMemberStatus.MEMBER)
+                                    ).orElse(false)
+                            ).orElse(true);
+                        })
+                        .map(comment -> {
+                            PostDomainModel post = this.postPort.findById(comment.getPostId()).orElseThrow(
+                                    () -> new BadRequestException(
+                                            ErrorCode.ROW_DOES_NOT_EXIST,
+                                            "게시글을 찾을 수 없습니다."
+                                    )
+                            );
+
+                            return CommentAllForUserResponseDto.from(
+                                    comment,
+                                    post.getBoard().getName(),
+                                    post.getTitle(),
+                                    post.getBoard().getCircle().map(CircleDomainModel::getName).orElse(null)
+                            );
+                        }).collect(Collectors.toList()))
         );
     }
 

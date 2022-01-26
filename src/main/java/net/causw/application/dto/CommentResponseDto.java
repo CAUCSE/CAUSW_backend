@@ -8,8 +8,6 @@ import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor

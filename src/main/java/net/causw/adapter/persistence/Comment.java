@@ -7,7 +7,6 @@ import net.causw.domain.model.CommentDomainModel;
 import net.causw.domain.model.PostDomainModel;
 import org.hibernate.annotations.ColumnDefault;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;

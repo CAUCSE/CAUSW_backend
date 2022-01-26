@@ -10,7 +10,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Optional;
 
 @Component
@@ -70,5 +69,10 @@ public class CommentPortImpl extends DomainModelMapper implements CommentPort {
                     return this.entityToDomainModel(this.commentRepository.save(comment));
                 }
         );
+    }
+
+    @Override
+    public Page<CommentDomainModel> findByUserId(String userId, Integer pageNum) {
+        return this.commentRepository.findByUserId(userId, this.pageableFactory.create(pageNum)).map(this::entityToDomainModel);
     }
 }
