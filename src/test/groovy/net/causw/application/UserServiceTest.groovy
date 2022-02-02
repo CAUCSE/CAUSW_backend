@@ -60,6 +60,7 @@ class UserServiceTest extends Specification {
             this.validator
     )
 
+
     def mockUserDomainModel
     def mockUserAdmissionDomainModel
 
@@ -116,13 +117,64 @@ class UserServiceTest extends Specification {
         this.postPort.findByUserId(((UserDomainModel)this.mockUserDomainModel).getId(), 0) >> new PageImpl<PostDomainModel>(List.of(mockPostDomainModel))
 
         when:
-        def userPostResponseDto = this.userService.findPost("test", 0)
+        def userPostResponseDto = this.userService.findPosts("test", 0)
 
         then:
         userPostResponseDto instanceof UserPostResponseDto
         with(userPostResponseDto) {
             getId() == "test"
             getPost().getContent().get(0).getId() == "test post id"
+        }
+    }
+
+    /**
+     * Test cases for user find comment
+     */
+    def "User find comment normal case"() {
+        given:
+        def mockBoardDomainModel = BoardDomainModel.of(
+                "test board id",
+                "test board name",
+                "test board description",
+                Arrays.asList("PRESIDENT"),
+                "category",
+                false,
+                null
+        )
+
+        def mockPostDomainModel = PostDomainModel.of(
+                "test post id",
+                "test post title",
+                "test post content",
+                (UserDomainModel)this.mockUserDomainModel,
+                false,
+                mockBoardDomainModel,
+                null,
+                null
+        )
+
+        def mockCommentDomainModel = CommentDomainModel.of(
+                "test comment id",
+                "test comment content",
+                false,
+                null,
+                null,
+                (UserDomainModel) this.mockUserDomainModel,
+                mockPostDomainModel.getId()
+        )
+
+        this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
+        this.postPort.findById("test post id") >> Optional.of(mockPostDomainModel)
+        this.commentPort.findByUserId(((UserDomainModel)this.mockUserDomainModel).getId(), 0) >> new PageImpl<CommentDomainModel>(List.of(mockCommentDomainModel))
+
+        when:
+        def userCommentResponseDto = this.userService.findComments("test", 0)
+
+        then:
+        userCommentResponseDto instanceof UserCommentResponseDto
+        with(userCommentResponseDto) {
+            getId() == "test"
+            getComment().getContent().get(0).getId() == "test comment id"
         }
     }
 
@@ -504,18 +556,6 @@ class UserServiceTest extends Specification {
                 studentId,
                 2021,
                 "/profile"
-        )
-
-        def mockUpdatedUserDomainModel = UserDomainModel.of(
-                id,
-                userUpdateRequestDto.getEmail(),
-                userUpdateRequestDto.getName(),
-                (String) this.mockUserDomainModel.getPassword(),
-                userUpdateRequestDto.getStudentId(),
-                userUpdateRequestDto.getAdmissionYear(),
-                (Role) this.mockUserDomainModel.getRole(),
-                userUpdateRequestDto.getProfileImage(),
-                (UserState) this.mockUserDomainModel.getState()
         )
 
         this.userPort.findById(id) >> Optional.of(this.mockUserDomainModel)

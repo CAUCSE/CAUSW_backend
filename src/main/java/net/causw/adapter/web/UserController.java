@@ -7,6 +7,7 @@ import net.causw.application.dto.DuplicatedCheckDto;
 import net.causw.application.dto.UserAdmissionAllResponseDto;
 import net.causw.application.dto.UserAdmissionCreateRequestDto;
 import net.causw.application.dto.UserAdmissionResponseDto;
+import net.causw.application.dto.UserCommentResponseDto;
 import net.causw.application.dto.UserCreateRequestDto;
 import net.causw.application.dto.UserPasswordUpdateRequestDto;
 import net.causw.application.dto.UserPostResponseDto;
@@ -19,7 +20,6 @@ import net.causw.domain.model.UserState;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -56,6 +56,15 @@ public class UserController {
             @RequestParam(defaultValue = "0") Integer pageNum
     ) {
         return this.userService.findPosts(requestUserId, pageNum);
+    }
+
+    @GetMapping(value = "/comments")
+    @ResponseStatus(value = HttpStatus.OK)
+    public UserCommentResponseDto findComments(
+            @AuthenticationPrincipal String requestUserId,
+            @RequestParam(defaultValue = "0") Integer pageNum
+    ) {
+        return this.userService.findComments(requestUserId, pageNum);
     }
 
     @GetMapping(value = "/name/{name}")

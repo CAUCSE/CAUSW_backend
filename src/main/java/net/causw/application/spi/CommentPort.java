@@ -4,7 +4,6 @@ import net.causw.domain.model.CommentDomainModel;
 import net.causw.domain.model.PostDomainModel;
 import org.springframework.data.domain.Page;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface CommentPort {
@@ -19,4 +18,6 @@ public interface CommentPort {
     Optional<CommentDomainModel> update(String commentId, CommentDomainModel commentDomainModel);
 
     Optional<CommentDomainModel> delete(String commentId);
+
+    Page<CommentDomainModel> findByUserId(String userId, Integer pageNum);
 }
