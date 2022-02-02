@@ -3,11 +3,13 @@ package net.causw.application;
 import net.causw.application.dto.BoardResponseDto;
 import net.causw.application.dto.CircleResponseDto;
 import net.causw.application.dto.DuplicatedCheckDto;
+import net.causw.application.dto.PostAllForUserResponseDto;
 import net.causw.application.dto.UserAdmissionAllResponseDto;
 import net.causw.application.dto.UserAdmissionCreateRequestDto;
 import net.causw.application.dto.UserAdmissionResponseDto;
 import net.causw.application.dto.UserCreateRequestDto;
 import net.causw.application.dto.UserPasswordUpdateRequestDto;
+import net.causw.application.dto.UserPostResponseDto;
 import net.causw.application.dto.UserResponseDto;
 import net.causw.application.dto.UserSignInRequestDto;
 import net.causw.application.dto.UserUpdateRequestDto;
@@ -15,7 +17,9 @@ import net.causw.application.dto.UserUpdateRoleRequestDto;
 import net.causw.application.spi.BoardPort;
 import net.causw.application.spi.CircleMemberPort;
 import net.causw.application.spi.CirclePort;
+import net.causw.application.spi.CommentPort;
 import net.causw.application.spi.FavoriteBoardPort;
+import net.causw.application.spi.PostPort;
 import net.causw.application.spi.UserAdmissionLogPort;
 import net.causw.application.spi.UserAdmissionPort;
 import net.causw.application.spi.UserPort;
@@ -25,6 +29,7 @@ import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.BoardDomainModel;
+import net.causw.domain.model.CircleDomainModel;
 import net.causw.domain.model.CircleMemberStatus;
 import net.causw.domain.model.FavoriteBoardDomainModel;
 import net.causw.domain.model.Role;
@@ -46,6 +51,7 @@ import net.causw.domain.validation.UserStateIsDropValidator;
 import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,10 +63,12 @@ import java.util.stream.Collectors;
 public class UserService {
     private final UserPort userPort;
     private final BoardPort boardPort;
+    private final PostPort postPort;
     private final UserAdmissionPort userAdmissionPort;
     private final UserAdmissionLogPort userAdmissionLogPort;
     private final CirclePort circlePort;
     private final CircleMemberPort circleMemberPort;
+    private final CommentPort commentPort;
     private final FavoriteBoardPort favoriteBoardPort;
     private final JwtTokenProvider jwtTokenProvider;
     private final Validator validator;
@@ -68,20 +76,24 @@ public class UserService {
     public UserService(
             UserPort userPort,
             BoardPort boardPort,
+            PostPort postPort,
             UserAdmissionPort userAdmissionPort,
             UserAdmissionLogPort userAdmissionLogPort,
             CirclePort circlePort,
             CircleMemberPort circleMemberPort,
+            CommentPort commentPort,
             FavoriteBoardPort favoriteBoardPort,
             JwtTokenProvider jwtTokenProvider,
             Validator validator
     ) {
         this.userPort = userPort;
         this.boardPort = boardPort;
+        this.postPort = postPort;
         this.userAdmissionPort = userAdmissionPort;
         this.userAdmissionLogPort = userAdmissionLogPort;
         this.circlePort = circlePort;
         this.circleMemberPort = circleMemberPort;
+        this.commentPort = commentPort;
         this.favoriteBoardPort = favoriteBoardPort;
         this.jwtTokenProvider = jwtTokenProvider;
         this.validator = validator;
@@ -102,6 +114,39 @@ public class UserService {
                 .validate();
 
         return UserResponseDto.from(requestUser);
+    }
+
+    @Transactional(readOnly = true)
+    public UserPostResponseDto findPosts(String requestUserId, Integer pageNum) {
+        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "로그인된 사용자를 찾을 수 없습니다."
+                )
+        );
+
+        ValidatorBucket.of()
+                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
+                .consistOf(UserStateValidator.of(requestUser.getState()))
+                .validate();
+
+        return UserPostResponseDto.from(
+                requestUser,
+                new PageImpl<>(this.postPort.findByUserId(requestUserId, pageNum).getContent()
+                        .stream().filter(
+                                postDomainModel -> postDomainModel.getBoard().getCircle().map(
+                                        circleDomainModel -> this.circleMemberPort.findByUserIdAndCircleId(requestUserId, circleDomainModel.getId()).map(
+                                                circleMemberDomainModel -> !circleDomainModel.getIsDeleted() && (circleMemberDomainModel.getStatus() == CircleMemberStatus.MEMBER)
+                                        ).orElse(false)
+                                ).orElse(true)
+                        )
+                        .map(postDomainModel -> PostAllForUserResponseDto.from(
+                                postDomainModel,
+                                postDomainModel.getBoard().getName(),
+                                postDomainModel.getBoard().getCircle().map(CircleDomainModel::getName).orElse(null),
+                                this.commentPort.countByPostId(postDomainModel.getId())
+                        )).collect(Collectors.toList()))
+        );
     }
 
     @Transactional(readOnly = true)

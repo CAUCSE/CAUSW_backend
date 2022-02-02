@@ -4,7 +4,9 @@ import net.causw.application.dto.*
 import net.causw.application.spi.BoardPort
 import net.causw.application.spi.CircleMemberPort
 import net.causw.application.spi.CirclePort
+import net.causw.application.spi.CommentPort
 import net.causw.application.spi.FavoriteBoardPort
+import net.causw.application.spi.PostPort
 import net.causw.application.spi.UserAdmissionLogPort
 import net.causw.application.spi.UserAdmissionPort
 import net.causw.application.spi.UserPort
@@ -19,6 +21,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest
 import org.powermock.modules.junit4.PowerMockRunner
 import org.powermock.modules.junit4.PowerMockRunnerDelegate
 import org.spockframework.runtime.Sputnik
+import org.springframework.data.domain.PageImpl
 import org.springframework.test.context.ActiveProfiles
 import spock.lang.Specification
 
@@ -34,20 +37,24 @@ import java.time.LocalDateTime
 class UserServiceTest extends Specification {
     private UserPort userPort = Mock(UserPort.class)
     private BoardPort boardPort = Mock(BoardPort.class)
+    private PostPort postPort = Mock(PostPort.class)
     private UserAdmissionPort userAdmissionPort = Mock(UserAdmissionPort.class)
     private UserAdmissionLogPort userAdmissionLogPort = Mock(UserAdmissionLogPort.class)
     private CirclePort circlePort = Mock(CirclePort.class)
     private CircleMemberPort circleMemberPort = Mock(CircleMemberPort.class)
+    private CommentPort commentPort = Mock(CommentPort.class)
     private FavoriteBoardPort favoriteBoardPort = Mock(FavoriteBoardPort.class)
     private JwtTokenProvider jwtTokenProvider = Mock(JwtTokenProvider.class)
     private Validator validator = Validation.buildDefaultValidatorFactory().getValidator()
     private UserService userService = new UserService(
             this.userPort,
             this.boardPort,
+            this.postPort,
             this.userAdmissionPort,
             this.userAdmissionLogPort,
             this.circlePort,
             this.circleMemberPort,
+            this.commentPort,
             this.favoriteBoardPort,
             this.jwtTokenProvider,
             this.validator
@@ -77,6 +84,46 @@ class UserServiceTest extends Specification {
                 LocalDateTime.now(),
                 LocalDateTime.now()
         )
+    }
+
+    /**
+     * Test cases for user find post
+     */
+    def "User find post normal case"() {
+        given:
+        def mockBoardDomainModel = BoardDomainModel.of(
+                "test board id",
+                "test board name",
+                "test board description",
+                Arrays.asList("PRESIDENT"),
+                "category",
+                false,
+                null
+        )
+
+        def mockPostDomainModel = PostDomainModel.of(
+                "test post id",
+                "test post title",
+                "test post content",
+                (UserDomainModel)this.mockUserDomainModel,
+                false,
+                mockBoardDomainModel,
+                null,
+                null
+        )
+
+        this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
+        this.postPort.findByUserId(((UserDomainModel)this.mockUserDomainModel).getId(), 0) >> new PageImpl<PostDomainModel>(List.of(mockPostDomainModel))
+
+        when:
+        def userPostResponseDto = this.userService.findPost("test", 0)
+
+        then:
+        userPostResponseDto instanceof UserPostResponseDto
+        with(userPostResponseDto) {
+            getId() == "test"
+            getPost().getContent().get(0).getId() == "test post id"
+        }
     }
 
     /**
