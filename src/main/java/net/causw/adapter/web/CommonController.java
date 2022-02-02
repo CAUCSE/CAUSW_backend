@@ -32,7 +32,7 @@ public class CommonController {
     /*
      * Health check for k8s readiness probe
      * */
-    @GetMapping("/healthy")
+    @GetMapping("/api/v1/healthy")
     @ResponseStatus(value = HttpStatus.OK)
     public Map<String, String> healthCheck() {
         HashMap<String, String> map = new HashMap<>();
