@@ -1,12 +1,10 @@
 package net.causw.adapter.web;
 
 import net.causw.application.PostService;
-import net.causw.application.dto.PostAllResponseDto;
 import net.causw.application.dto.PostAllWithBoardResponseDto;
 import net.causw.application.dto.PostCreateRequestDto;
 import net.causw.application.dto.PostResponseDto;
 import net.causw.application.dto.PostUpdateRequestDto;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -46,6 +44,18 @@ public class PostController {
             @RequestParam(defaultValue = "0") Integer pageNum
     ) {
         return this.postService.findAll(requestUserId, boardId, pageNum);
+    }
+
+    @GetMapping("/search")
+    @ResponseStatus(value = HttpStatus.OK)
+    public PostAllWithBoardResponseDto search(
+            @AuthenticationPrincipal String requestUserId,
+            @RequestParam String boardId,
+            @RequestParam(defaultValue = "title") String option,
+            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "0") Integer pageNum
+    ) {
+        return this.postService.search(requestUserId, boardId, option, keyword, pageNum);
     }
 
     @GetMapping("/app/notice")

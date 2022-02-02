@@ -5,6 +5,7 @@ import net.causw.adapter.persistence.Post;
 import net.causw.adapter.persistence.PostRepository;
 import net.causw.application.spi.PostPort;
 import net.causw.domain.model.PostDomainModel;
+import net.causw.domain.model.SearchOption;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 import java.util.Optional;
@@ -65,6 +66,18 @@ public class PostPortImpl extends DomainModelMapper implements PostPort {
     public Page<PostDomainModel> findAll(String boardId, Integer pageNum, Integer pageSize) {
         return this.postRepository.findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(boardId, this.pageableFactory.create(pageNum, pageSize))
                 .map(this::entityToDomainModel);
+    }
+
+    @Override
+    public Page<PostDomainModel> search(SearchOption option, String keyword, Integer pageNum) {
+        switch (option){
+            case TITLE:
+                return this.postRepository.searchByTitle(keyword, this.pageableFactory.create(pageNum)).map(this::entityToDomainModel);
+            case WRITER:
+                return this.postRepository.searchByWriter(keyword, this.pageableFactory.create(pageNum)).map(this::entityToDomainModel);
+            default:
+                return null;
+        }
     }
 
     @Override
