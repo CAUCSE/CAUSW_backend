@@ -1,25 +1,18 @@
 package net.causw.application;
 
 import net.causw.application.dto.BoardCreateRequestDto;
-import net.causw.application.dto.BoardOfCircleResponseDto;
 import net.causw.application.dto.BoardResponseDto;
 import net.causw.application.dto.BoardUpdateRequestDto;
 import net.causw.application.spi.BoardPort;
-import net.causw.application.spi.CircleMemberPort;
 import net.causw.application.spi.CirclePort;
-import net.causw.application.spi.CommentPort;
-import net.causw.application.spi.PostPort;
 import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.model.BoardDomainModel;
 import net.causw.domain.model.CircleDomainModel;
-import net.causw.domain.model.CircleMemberDomainModel;
-import net.causw.domain.model.CircleMemberStatus;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
-import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.UserEqualValidator;
@@ -38,27 +31,18 @@ import java.util.stream.Collectors;
 public class BoardService {
     private final BoardPort boardPort;
     private final UserPort userPort;
-    private final PostPort postPort;
     private final CirclePort circlePort;
-    private final CircleMemberPort circleMemberPort;
-    private final CommentPort commentPort;
     private final Validator validator;
 
     public BoardService(
             BoardPort boardPort,
             UserPort userPort,
-            PostPort postPort,
             CirclePort circlePort,
-            CircleMemberPort circleMemberPort,
-            CommentPort commentPort,
             Validator validator
     ) {
         this.boardPort = boardPort;
         this.userPort = userPort;
-        this.postPort = postPort;
         this.circlePort = circlePort;
-        this.circleMemberPort = circleMemberPort;
-        this.commentPort = commentPort;
         this.validator = validator;
     }
 
@@ -79,60 +63,6 @@ public class BoardService {
         return this.boardPort.findAll()
                 .stream()
                 .map(boardDomainModel -> BoardResponseDto.from(boardDomainModel, userDomainModel.getRole()))
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public List<BoardOfCircleResponseDto> findAllByCircleId(
-            String currentUserId,
-            String circleId
-    ) {
-        CircleDomainModel circleDomainModel = this.circlePort.findById(circleId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "소모임을 찾을 수 없습니다."
-                )
-        );
-
-        UserDomainModel userDomainModel = this.userPort.findById(currentUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
-                )
-        );
-
-        CircleMemberDomainModel circleMember = this.circleMemberPort.findByUserIdAndCircleId(currentUserId, circleDomainModel.getId()).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.NOT_MEMBER,
-                        "로그인된 사용자가 가입 신청한 소모임이 아닙니다."
-                )
-        );
-
-        ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(userDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
-                .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), circleDomainModel.getDOMAIN()))
-                .consistOf(CircleMemberStatusValidator.of(
-                        circleMember.getStatus(),
-                        List.of(CircleMemberStatus.MEMBER)
-                ))
-                .validate();
-
-        return this.boardPort.findByCircleId(circleId)
-                .stream()
-                .map(boardDomainModel -> this.postPort.findLatest(boardDomainModel.getId()).map(
-                        postDomainModel -> BoardOfCircleResponseDto.from(
-                                boardDomainModel,
-                                userDomainModel.getRole(),
-                                postDomainModel,
-                                this.commentPort.countByPostId(postDomainModel.getId())
-                        )
-                ).orElse(
-                        BoardOfCircleResponseDto.from(
-                                boardDomainModel,
-                                userDomainModel.getRole()
-                        )
-                ))
                 .collect(Collectors.toList());
     }
 

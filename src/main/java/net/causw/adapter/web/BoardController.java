@@ -2,7 +2,6 @@ package net.causw.adapter.web;
 
 import net.causw.application.BoardService;
 import net.causw.application.dto.BoardCreateRequestDto;
-import net.causw.application.dto.BoardOfCircleResponseDto;
 import net.causw.application.dto.BoardResponseDto;
 import net.causw.application.dto.BoardUpdateRequestDto;
 import org.springframework.http.HttpStatus;
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -33,15 +31,6 @@ public class BoardController {
     @ResponseStatus(value = HttpStatus.OK)
     public List<BoardResponseDto> findAll(@AuthenticationPrincipal String userId) {
         return this.boardService.findAll(userId);
-    }
-
-    @GetMapping(params = "circleId")
-    @ResponseStatus(value = HttpStatus.OK)
-    public List<BoardOfCircleResponseDto> findAllByCircleId(
-            @AuthenticationPrincipal String currentUserId,
-            @RequestParam String circleId
-    ) {
-        return this.boardService.findAllByCircleId(currentUserId, circleId);
     }
 
     @PostMapping

@@ -6,6 +6,7 @@ import net.causw.application.dto.CircleCreateRequestDto;
 import net.causw.application.dto.CircleMemberResponseDto;
 import net.causw.application.dto.CircleResponseDto;
 import net.causw.application.dto.CircleUpdateRequestDto;
+import net.causw.application.dto.CircleWithBoardsResponseDto;
 import net.causw.application.dto.DuplicatedCheckDto;
 import net.causw.domain.model.CircleMemberStatus;
 import org.springframework.http.HttpStatus;
@@ -43,6 +44,15 @@ public class CircleController {
     @ResponseStatus(value = HttpStatus.OK)
     public List<CircleAllResponseDto> findAll(@AuthenticationPrincipal String userId) {
         return this.circleService.findAll(userId);
+    }
+
+    @GetMapping("/{id}/boards")
+    @ResponseStatus(value = HttpStatus.OK)
+    public CircleWithBoardsResponseDto findBoards(
+            @AuthenticationPrincipal String userId,
+            @PathVariable String id
+    ) {
+        return this.circleService.findBoards(userId, id);
     }
 
     @GetMapping(value = "/{id}/num-member")
