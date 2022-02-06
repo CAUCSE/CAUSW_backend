@@ -14,6 +14,7 @@ import net.causw.config.JwtTokenProvider
 import net.causw.domain.exceptions.BadRequestException
 import net.causw.domain.exceptions.UnauthorizedException
 import net.causw.domain.model.*
+import net.causw.infrastructure.GoogleMailSender
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.powermock.api.mockito.PowerMockito
@@ -45,6 +46,7 @@ class UserServiceTest extends Specification {
     private CommentPort commentPort = Mock(CommentPort.class)
     private FavoriteBoardPort favoriteBoardPort = Mock(FavoriteBoardPort.class)
     private JwtTokenProvider jwtTokenProvider = Mock(JwtTokenProvider.class)
+    private GoogleMailSender googleMailSender = Mock(GoogleMailSender.class)
     private Validator validator = Validation.buildDefaultValidatorFactory().getValidator()
     private UserService userService = new UserService(
             this.userPort,
@@ -57,6 +59,7 @@ class UserServiceTest extends Specification {
             this.commentPort,
             this.favoriteBoardPort,
             this.jwtTokenProvider,
+            this.googleMailSender,
             this.validator
     )
 

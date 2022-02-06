@@ -1,9 +1,5 @@
 package net.causw.domain.model;
 
-import lombok.Getter;
-import net.causw.domain.exceptions.BadRequestException;
-import net.causw.domain.exceptions.ErrorCode;
-
 import java.util.Arrays;
 
 public enum ImageLocation {

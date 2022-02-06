@@ -53,6 +53,7 @@ import net.causw.domain.validation.UserStateIsNotDropAndActiveValidator;
 import net.causw.domain.validation.UserStateIsDropValidator;
 import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
+import net.causw.infrastructure.GoogleMailSender;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
@@ -74,6 +75,7 @@ public class UserService {
     private final CommentPort commentPort;
     private final FavoriteBoardPort favoriteBoardPort;
     private final JwtTokenProvider jwtTokenProvider;
+    private final GoogleMailSender googleMailSender;
     private final Validator validator;
 
     public UserService(
@@ -87,6 +89,7 @@ public class UserService {
             CommentPort commentPort,
             FavoriteBoardPort favoriteBoardPort,
             JwtTokenProvider jwtTokenProvider,
+            GoogleMailSender googleMailSender,
             Validator validator
     ) {
         this.userPort = userPort;
@@ -99,7 +102,14 @@ public class UserService {
         this.commentPort = commentPort;
         this.favoriteBoardPort = favoriteBoardPort;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.googleMailSender = googleMailSender;
         this.validator = validator;
+    }
+
+    // TODO: Delete when issue#239
+    @Transactional(readOnly = true)
+    public void testEmail() {
+        this.googleMailSender.sendMail("als950901@gmail.com", "제목", "테스트");
     }
 
     @Transactional(readOnly = true)
