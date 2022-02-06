@@ -9,7 +9,6 @@ import net.causw.domain.model.PostDomainModel;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
 import java.util.Optional;
 
 @Component
@@ -33,7 +32,6 @@ public class CommentPortImpl extends DomainModelMapper implements CommentPort {
     @Override
     public Page<CommentDomainModel> findByPostId(String postId, Integer pageNum) {
         Page<Comment> comments = this.commentRepository.findByPost_IdOrderByCreatedAtDesc(postId, this.pageableFactory.create(pageNum));
-        Collections.reverse(comments.getContent());
 
         return comments
                 .map(this::entityToDomainModel);
