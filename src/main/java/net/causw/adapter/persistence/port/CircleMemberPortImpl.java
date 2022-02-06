@@ -42,6 +42,7 @@ public class CircleMemberPortImpl extends DomainModelMapper implements CircleMem
         return this.circleMemberRepository.findByUser_Id(userId)
                 .stream()
                 .map(this::entityToDomainModel)
+                .filter(circleMemberDomainModel -> circleMemberDomainModel.getStatus().equals(CircleMemberStatus.MEMBER))
                 .collect(Collectors.toMap(
                         circleMemberDomainModel -> circleMemberDomainModel.getCircle().getId(),
                         circleMemberDomainModel -> circleMemberDomainModel
