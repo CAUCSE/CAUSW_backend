@@ -5,7 +5,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
-import net.causw.adapter.persistence.User;
 import net.causw.domain.model.UserState;
 
 @Getter
@@ -20,6 +19,8 @@ public class UserResponseDto {
     private Role role;
     private String profileImage;
     private UserState state;
+    private String circleIdIfLeader;
+    private String circleNameIfLeader;
 
     private UserResponseDto(
             String id,
@@ -29,7 +30,9 @@ public class UserResponseDto {
             Integer admissionYear,
             Role role,
             String profileImage,
-            UserState state
+            UserState state,
+            String circleIdIfLeader,
+            String circleNameIfLeader
     ) {
         this.id = id;
         this.email = email;
@@ -39,19 +42,8 @@ public class UserResponseDto {
         this.role = role;
         this.profileImage = profileImage;
         this.state = state;
-    }
-
-    public static UserResponseDto from(User user) {
-        return new UserResponseDto(
-                user.getId(),
-                user.getEmail(),
-                user.getName(),
-                user.getStudentId(),
-                user.getAdmissionYear(),
-                user.getRole(),
-                user.getProfileImage(),
-                user.getState()
-        );
+        this.circleIdIfLeader = circleIdIfLeader;
+        this.circleNameIfLeader = circleNameIfLeader;
     }
 
     public static UserResponseDto from(UserDomainModel user) {
@@ -63,7 +55,28 @@ public class UserResponseDto {
                 user.getAdmissionYear(),
                 user.getRole(),
                 user.getProfileImage(),
-                user.getState()
+                user.getState(),
+                null,
+                null
+        );
+    }
+
+    public static UserResponseDto from(
+            UserDomainModel user,
+            String circleId,
+            String circleName
+    ) {
+        return new UserResponseDto(
+                user.getId(),
+                user.getEmail(),
+                user.getName(),
+                user.getStudentId(),
+                user.getAdmissionYear(),
+                user.getRole(),
+                user.getProfileImage(),
+                user.getState(),
+                circleId,
+                circleName
         );
     }
 }

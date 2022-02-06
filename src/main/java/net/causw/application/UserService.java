@@ -49,8 +49,8 @@ import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.UserRoleIsNoneValidator;
 import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.UserRoleWithoutAdminValidator;
-import net.causw.domain.validation.UserStateIsNotDropAndActiveValidator;
 import net.causw.domain.validation.UserStateIsDropValidator;
+import net.causw.domain.validation.UserStateIsNotDropAndActiveValidator;
 import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
 import net.causw.infrastructure.GoogleMailSender;
@@ -125,6 +125,21 @@ public class UserService {
                 .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .validate();
+
+        if (requestUser.getRole().equals(Role.LEADER_CIRCLE)) {
+            CircleDomainModel ownCircle = this.circlePort.findByLeaderId(id).orElseThrow(
+                    () -> new InternalServerException(
+                            ErrorCode.INTERNAL_SERVER,
+                            "소모임장이 아닙니다"
+                    )
+            );
+
+            return UserResponseDto.from(
+                    requestUser,
+                    ownCircle.getId(),
+                    ownCircle.getName()
+            );
+        }
 
         return UserResponseDto.from(requestUser);
     }
