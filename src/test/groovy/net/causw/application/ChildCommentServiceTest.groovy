@@ -1,5 +1,6 @@
 package net.causw.application
 
+import net.causw.application.dto.ChildCommentAllResponseDto
 import net.causw.application.dto.ChildCommentCreateRequestDto
 import net.causw.application.dto.ChildCommentResponseDto
 import net.causw.application.dto.ChildCommentUpdateRequestDto
@@ -161,8 +162,7 @@ class ChildCommentServiceTest extends Specification {
         def childCommentCreateRequestDto = new ChildCommentCreateRequestDto(
                 "test child comment content",
                 ((CommentDomainModel)this.mockCommentDomainModel).getId(),
-                Optional.of("test child comment writer user name"),
-                Optional.of("test ref child comment id")
+                "test ref child comment id"
         )
 
         this.userPort.findById(((UserDomainModel)this.mockChildCommentWriter).getId()) >> Optional.of(this.mockChildCommentWriter)
@@ -173,7 +173,7 @@ class ChildCommentServiceTest extends Specification {
         PowerMockito.mockStatic(ChildCommentDomainModel.class)
         PowerMockito.when(ChildCommentDomainModel.of(
                 childCommentCreateRequestDto.getContent(),
-                childCommentCreateRequestDto.getTagUserName().orElse(null),
+                ((ChildCommentDomainModel) this.mockRefChildCommentDomainModel).getWriter().getName(),
                 childCommentCreateRequestDto.getRefChildComment().orElse(null),
                 (UserDomainModel) this.mockChildCommentWriter,
                 (CommentDomainModel) this.mockCommentDomainModel
@@ -195,8 +195,7 @@ class ChildCommentServiceTest extends Specification {
         def childCommentCreateRequestDto = new ChildCommentCreateRequestDto(
                 "test child comment content",
                 ((CommentDomainModel)this.mockCommentDomainModel).getId(),
-                Optional.of("test child comment writer user name"),
-                Optional.of("test ref child comment id")
+                "test ref child comment id"
         )
 
         this.userPort.findById(((UserDomainModel)this.mockChildCommentWriter).getId()) >> Optional.of(this.mockChildCommentWriter)
@@ -207,7 +206,7 @@ class ChildCommentServiceTest extends Specification {
         PowerMockito.mockStatic(ChildCommentDomainModel.class)
         PowerMockito.when(ChildCommentDomainModel.of(
                 childCommentCreateRequestDto.getContent(),
-                childCommentCreateRequestDto.getTagUserName().orElse(null),
+                ((ChildCommentDomainModel) this.mockRefChildCommentDomainModel).getWriter().getName(),
                 childCommentCreateRequestDto.getRefChildComment().orElse(null),
                 (UserDomainModel) this.mockChildCommentWriter,
                 (CommentDomainModel) this.mockCommentDomainModel
@@ -225,8 +224,7 @@ class ChildCommentServiceTest extends Specification {
         def childCommentCreateRequestDto = new ChildCommentCreateRequestDto(
                 "test child comment content",
                 ((CommentDomainModel)this.mockCommentDomainModel).getId(),
-                Optional.of("test child comment writer user name"),
-                Optional.of("test ref child comment id")
+                "test ref child comment id"
         )
 
         this.userPort.findById(((UserDomainModel)this.mockChildCommentWriter).getId()) >> Optional.of(this.mockChildCommentWriter)
@@ -237,7 +235,7 @@ class ChildCommentServiceTest extends Specification {
         PowerMockito.mockStatic(ChildCommentDomainModel.class)
         PowerMockito.when(ChildCommentDomainModel.of(
                 childCommentCreateRequestDto.getContent(),
-                childCommentCreateRequestDto.getTagUserName().orElse(null),
+                ((ChildCommentDomainModel) this.mockRefChildCommentDomainModel).getWriter().getName(),
                 childCommentCreateRequestDto.getRefChildComment().orElse(null),
                 (UserDomainModel) this.mockChildCommentWriter,
                 (CommentDomainModel) this.mockCommentDomainModel
@@ -265,7 +263,7 @@ class ChildCommentServiceTest extends Specification {
         PowerMockito.mockStatic(ChildCommentDomainModel.class)
         PowerMockito.when(ChildCommentDomainModel.of(
                 childCommentCreateRequestDto.getContent(),
-                childCommentCreateRequestDto.getTagUserName().orElse(null),
+                ((ChildCommentDomainModel) this.mockRefChildCommentDomainModel).getWriter().getName(),
                 childCommentCreateRequestDto.getRefChildComment().orElse(null),
                 (UserDomainModel) this.mockChildCommentWriter,
                 (CommentDomainModel) this.mockCommentDomainModel
@@ -282,19 +280,11 @@ class ChildCommentServiceTest extends Specification {
         PowerMockito.mockStatic(ChildCommentDomainModel.class)
         PowerMockito.when(ChildCommentDomainModel.of(
                 childCommentCreateRequestDto.getContent(),
-                childCommentCreateRequestDto.getTagUserName().orElse(null),
+                ((ChildCommentDomainModel) this.mockRefChildCommentDomainModel).getWriter().getName(),
                 childCommentCreateRequestDto.getRefChildComment().orElse(null),
                 (UserDomainModel) this.mockChildCommentWriter,
                 (CommentDomainModel) this.mockCommentDomainModel
         )).thenReturn((ChildCommentDomainModel) this.mockChildCommentDomainModel)
-        this.childCommentService.create(((UserDomainModel)this.mockChildCommentWriter).getId(), childCommentCreateRequestDto)
-
-        then:
-        thrown(BadRequestException)
-
-        when: "Ref Child comment' writer is not same tag name"
-        ((ChildCommentDomainModel)this.mockRefChildCommentDomainModel).setIsDeleted(false)
-        ((ChildCommentDomainModel)this.mockRefChildCommentDomainModel).getWriter().setName("wrong")
         this.childCommentService.create(((UserDomainModel)this.mockChildCommentWriter).getId(), childCommentCreateRequestDto)
 
         then:
@@ -306,13 +296,10 @@ class ChildCommentServiceTest extends Specification {
      */
     def "Child Comment update normal case"() {
         def childCommentUpdateRequestDto = new ChildCommentUpdateRequestDto(
-                "test child comment content",
-                Optional.of("test child comment writer user name"),
-                Optional.of("test ref child comment id")
+                "test child comment content"
         )
 
         this.userPort.findById(((UserDomainModel)this.mockChildCommentWriter).getId()) >> Optional.of(this.mockChildCommentWriter)
-        this.childCommentPort.findById(((ChildCommentDomainModel)this.mockRefChildCommentDomainModel).getId()) >> Optional.of(this.mockRefChildCommentDomainModel)
         this.postPort.findById(((PostDomainModel)this.mockPostDomainModel).getId()) >> Optional.of(this.mockPostDomainModel)
         this.childCommentPort.findById(((ChildCommentDomainModel)this.mockChildCommentDomainModel).getId()) >> Optional.of(this.mockChildCommentDomainModel)
 
@@ -330,13 +317,10 @@ class ChildCommentServiceTest extends Specification {
 
     def "Child Comment update unauthorized case"() {
         def childCommentUpdateRequestDto = new ChildCommentUpdateRequestDto(
-                "test child comment content",
-                Optional.of("test child comment writer user name"),
-                Optional.of("test ref child comment id")
+                "test child comment content"
         )
 
         this.userPort.findById(((UserDomainModel)this.mockChildCommentWriter).getId()) >> Optional.of(this.mockChildCommentWriter)
-        this.childCommentPort.findById(((ChildCommentDomainModel)this.mockRefChildCommentDomainModel).getId()) >> Optional.of(this.mockRefChildCommentDomainModel)
         this.postPort.findById(((PostDomainModel)this.mockPostDomainModel).getId()) >> Optional.of(this.mockPostDomainModel)
         this.childCommentPort.findById(((ChildCommentDomainModel)this.mockChildCommentDomainModel).getId()) >> Optional.of(this.mockChildCommentDomainModel)
 
@@ -358,13 +342,10 @@ class ChildCommentServiceTest extends Specification {
 
     def "Child Comment update bad request case"() {
         def childCommentUpdateRequestDto = new ChildCommentUpdateRequestDto(
-                "test child comment content",
-                Optional.of("test child comment writer user name"),
-                Optional.of("test ref child comment id")
+                "test child comment content"
         )
 
         this.userPort.findById(((UserDomainModel)this.mockChildCommentWriter).getId()) >> Optional.of(this.mockChildCommentWriter)
-        this.childCommentPort.findById(((ChildCommentDomainModel)this.mockRefChildCommentDomainModel).getId()) >> Optional.of(this.mockRefChildCommentDomainModel)
         this.postPort.findById(((PostDomainModel)this.mockPostDomainModel).getId()) >> Optional.of(this.mockPostDomainModel)
         this.childCommentPort.findById(((ChildCommentDomainModel)this.mockChildCommentDomainModel).getId()) >> Optional.of(this.mockChildCommentDomainModel)
 
@@ -378,14 +359,6 @@ class ChildCommentServiceTest extends Specification {
         when: "Post is deleted"
         ((BoardDomainModel)this.mockBoardDomainModel).setIsDeleted(false)
         ((PostDomainModel)this.mockPostDomainModel).setIsDeleted(true)
-        this.childCommentService.update(((UserDomainModel)this.mockChildCommentWriter).getId(), ((ChildCommentDomainModel)this.mockChildCommentDomainModel).getId(), childCommentUpdateRequestDto)
-
-        then:
-        thrown(BadRequestException)
-
-        when: "Ref Child comment is deleted"
-        ((PostDomainModel)this.mockPostDomainModel).setIsDeleted(false)
-        ((ChildCommentDomainModel)this.mockRefChildCommentDomainModel).setIsDeleted(true)
         this.childCommentService.update(((UserDomainModel)this.mockChildCommentWriter).getId(), ((ChildCommentDomainModel)this.mockChildCommentDomainModel).getId(), childCommentUpdateRequestDto)
 
         then:
@@ -406,21 +379,6 @@ class ChildCommentServiceTest extends Specification {
 
         then:
         thrown(BadRequestException)
-
-        when: "Child comment refers to self"
-        childCommentUpdateRequestDto.setRefChildComment(Optional.of("test child comment id"))
-        this.childCommentService.update(((UserDomainModel)this.mockChildCommentWriter).getId(), ((ChildCommentDomainModel)this.mockChildCommentDomainModel).getId(), childCommentUpdateRequestDto)
-
-        then:
-        thrown(BadRequestException)
-
-        when: "Child comment's content is blank"
-        childCommentUpdateRequestDto.setRefChildComment(Optional.of("test ref child comment id"))
-        childCommentUpdateRequestDto.setContent("")
-        this.childCommentService.update(((UserDomainModel)this.mockChildCommentWriter).getId(), ((ChildCommentDomainModel)this.mockChildCommentDomainModel).getId(), childCommentUpdateRequestDto)
-
-        then:
-        thrown(ConstraintViolationException)
     }
 
     /**
@@ -504,9 +462,9 @@ class ChildCommentServiceTest extends Specification {
         def childCommentResponse = this.childCommentService.findAll(((UserDomainModel)this.mockChildCommentWriter).getId(), ((CommentDomainModel)this.mockCommentDomainModel).getId(), 0)
 
         then:
-        childCommentResponse instanceof Page<ChildCommentResponseDto>
+        childCommentResponse instanceof ChildCommentAllResponseDto
         with (childCommentResponse) {
-            getContent().get(0).getContent() == "test child comment content"
+            getChildComments().getContent().get(0).getContent() == "test child comment content"
         }
     }
 
