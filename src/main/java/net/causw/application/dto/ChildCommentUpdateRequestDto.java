@@ -13,6 +13,14 @@ import java.util.Optional;
 @NoArgsConstructor
 public class ChildCommentUpdateRequestDto {
     private String content;
-    private Optional<String> tagUserName;
-    private Optional<String> refChildComment;
+    private String tagUserName;
+    private String refChildComment;
+
+    public Optional<String> getTagUserName() {
+        return Optional.ofNullable(this.tagUserName);
+    }
+
+    public Optional<String> getRefChildComment() {
+        return Optional.ofNullable(this.refChildComment);
+    }
 }
