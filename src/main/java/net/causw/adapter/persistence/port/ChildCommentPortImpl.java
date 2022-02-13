@@ -31,7 +31,7 @@ public class ChildCommentPortImpl extends DomainModelMapper implements ChildComm
 
     @Override
     public Page<ChildCommentDomainModel> findByParentComment(String parentCommentId, Integer pageNum) {
-        Page<ChildComment> childComments = this.childCommentRepository.findByParentComment_IdOrderByCreatedAtDesc(parentCommentId, this.pageableFactory.create(pageNum));
+        Page<ChildComment> childComments = this.childCommentRepository.findByParentComment_IdOrderByCreatedAtAsc(parentCommentId, this.pageableFactory.create(pageNum));
 
         return childComments
                 .map(this::entityToDomainModel);
