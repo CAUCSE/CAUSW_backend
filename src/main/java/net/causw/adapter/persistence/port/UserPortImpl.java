@@ -1,11 +1,14 @@
 package net.causw.adapter.persistence.port;
 
+import net.causw.adapter.persistence.PageableFactory;
 import net.causw.adapter.persistence.User;
 import net.causw.adapter.persistence.UserRepository;
 import net.causw.application.spi.UserPort;
 import net.causw.domain.model.Role;
+import net.causw.domain.model.StaticValue;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.model.UserState;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -15,9 +18,14 @@ import java.util.stream.Collectors;
 @Component
 public class UserPortImpl extends DomainModelMapper implements UserPort {
     private final UserRepository userRepository;
+    private final PageableFactory pageableFactory;
 
-    public UserPortImpl(UserRepository userRepository) {
+    public UserPortImpl(
+            UserRepository userRepository,
+            PageableFactory pageableFactory
+    ) {
         this.userRepository = userRepository;
+        this.pageableFactory = pageableFactory;
     }
 
     @Override
@@ -77,11 +85,13 @@ public class UserPortImpl extends DomainModelMapper implements UserPort {
     }
 
     @Override
-    public List<UserDomainModel> findByState(UserState state) {
-        return this.userRepository.findByState(state)
-                .stream()
-                .map(this::entityToDomainModel)
-                .collect(Collectors.toList());
+    public Page<UserDomainModel> findByState(UserState state, Integer pageNum) {
+        Page<User> users = this.userRepository.findByStateOrderByCreatedAtAsc(
+                state,
+                this.pageableFactory.create(pageNum, StaticValue.USER_LIST_PAGE_SIZE)
+        );
+        return users
+                .map(this::entityToDomainModel);
     }
 
     @Override
