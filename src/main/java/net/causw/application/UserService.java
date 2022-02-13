@@ -269,7 +269,11 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserResponseDto> findByState(String currentUserId, String state) {
+    public Page<UserResponseDto> findByState(
+            String currentUserId,
+            String state,
+            Integer pageNum
+    ) {
         UserDomainModel user = this.userPort.findById(currentUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -278,13 +282,13 @@ public class UserService {
         );
 
         ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
                 .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
                 .validate();
 
-        return this.userPort.findByState(UserState.of(state))
-                .stream()
-                .map(UserResponseDto::from)
-                .collect(Collectors.toList());
+        return this.userPort.findByState(UserState.of(state), pageNum)
+                .map(UserResponseDto::from);
     }
 
     @Transactional(readOnly = true)

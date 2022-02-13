@@ -87,11 +87,12 @@ public class UserController {
 
     @GetMapping(value = "/state/{state}")
     @ResponseStatus(value = HttpStatus.OK)
-    public List<UserResponseDto> findByState(
+    public Page<UserResponseDto> findByState(
             @AuthenticationPrincipal String currentUserId,
-            @PathVariable String state
+            @PathVariable String state,
+            @RequestParam(defaultValue = "0") Integer pageNum
     ) {
-        return this.userService.findByState(currentUserId, state);
+        return this.userService.findByState(currentUserId, state, pageNum);
     }
 
     @PostMapping(value = "/sign-up")

@@ -3,6 +3,7 @@ package net.causw.application.spi;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.model.UserState;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +23,7 @@ public interface UserPort {
 
     List<UserDomainModel> findByRole(Role role);
 
-    List<UserDomainModel> findByState(UserState state);
+    Page<UserDomainModel> findByState(UserState state, Integer pageNum);
 
     Optional<UserDomainModel> updatePassword(String id, String password);
 
