@@ -11,11 +11,11 @@ import net.causw.application.dto.UserCommentResponseDto;
 import net.causw.application.dto.UserCreateRequestDto;
 import net.causw.application.dto.UserPasswordUpdateRequestDto;
 import net.causw.application.dto.UserPostResponseDto;
+import net.causw.application.dto.UserPrivilegedDto;
 import net.causw.application.dto.UserResponseDto;
 import net.causw.application.dto.UserSignInRequestDto;
 import net.causw.application.dto.UserUpdateRequestDto;
 import net.causw.application.dto.UserUpdateRoleRequestDto;
-import net.causw.domain.model.Role;
 import net.causw.domain.model.UserState;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -76,13 +76,10 @@ public class UserController {
         return this.userService.findByName(currentUserId, name);
     }
 
-    @GetMapping(value = "/role/{role}")
+    @GetMapping(value = "/privileged")
     @ResponseStatus(value = HttpStatus.OK)
-    public List<UserResponseDto> findByRole(
-            @AuthenticationPrincipal String currentUserId,
-            @PathVariable Role role
-    ) {
-        return this.userService.findByRole(currentUserId, role);
+    public UserPrivilegedDto findPrivilegedUsers(@AuthenticationPrincipal String currentUserId) {
+        return this.userService.findPrivilegedUsers(currentUserId);
     }
 
     @GetMapping(value = "/state/{state}")

@@ -12,6 +12,7 @@ import net.causw.application.dto.UserCommentResponseDto;
 import net.causw.application.dto.UserCreateRequestDto;
 import net.causw.application.dto.UserPasswordUpdateRequestDto;
 import net.causw.application.dto.UserPostResponseDto;
+import net.causw.application.dto.UserPrivilegedDto;
 import net.causw.application.dto.UserResponseDto;
 import net.causw.application.dto.UserSignInRequestDto;
 import net.causw.application.dto.UserUpdateRequestDto;
@@ -248,7 +249,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserResponseDto> findByRole(String currentUserId, Role role) {
+    public UserPrivilegedDto findPrivilegedUsers(String currentUserId) {
         UserDomainModel user = this.userPort.findById(currentUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -262,10 +263,36 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
                 .validate();
 
-        return this.userPort.findByRole(role)
-                .stream()
-                .map(UserResponseDto::from)
-                .collect(Collectors.toList());
+        return UserPrivilegedDto.from(
+                this.userPort.findByRole(Role.COUNCIL)
+                        .stream()
+                        .map(UserResponseDto::from)
+                        .collect(Collectors.toList()),
+                this.userPort.findByRole(Role.LEADER_1)
+                        .stream()
+                        .map(UserResponseDto::from)
+                        .collect(Collectors.toList()),
+                this.userPort.findByRole(Role.LEADER_2)
+                        .stream()
+                        .map(UserResponseDto::from)
+                        .collect(Collectors.toList()),
+                this.userPort.findByRole(Role.LEADER_3)
+                        .stream()
+                        .map(UserResponseDto::from)
+                        .collect(Collectors.toList()),
+                this.userPort.findByRole(Role.LEADER_4)
+                        .stream()
+                        .map(UserResponseDto::from)
+                        .collect(Collectors.toList()),
+                this.userPort.findByRole(Role.LEADER_CIRCLE)
+                        .stream()
+                        .map(UserResponseDto::from)
+                        .collect(Collectors.toList()),
+                this.userPort.findByRole(Role.LEADER_ALUMNI)
+                        .stream()
+                        .map(UserResponseDto::from)
+                        .collect(Collectors.toList())
+        );
     }
 
     @Transactional(readOnly = true)
