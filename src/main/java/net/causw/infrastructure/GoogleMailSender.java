@@ -3,6 +3,7 @@ package net.causw.infrastructure;
 import net.causw.config.MailProperties;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.ServiceUnavailableException;
+import net.causw.domain.model.StaticValue;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
@@ -15,14 +16,12 @@ import java.util.Properties;
 
 @Component
 public class GoogleMailSender {
-    private static final String GOOGLE_MAIL = "causwdev2021@gmail.com";
-
     private final MailProperties mailProperties;
     private final JavaMailSender mailSender;
 
     public GoogleMailSender(MailProperties mailProperties) {
         this.mailProperties = mailProperties;
-        this.mailSender = getMailSender();
+        this.mailSender = this.getMailSender();
     }
 
     private JavaMailSender getMailSender() {
@@ -55,7 +54,7 @@ public class GoogleMailSender {
 
             messageHelper.setSubject(title);
             messageHelper.setText(content, true);
-            messageHelper.setFrom(GOOGLE_MAIL);
+            messageHelper.setFrom(StaticValue.GOOGLE_MAIL);
 
             messageHelper.setTo(to);
             this.mailSender.send(message);

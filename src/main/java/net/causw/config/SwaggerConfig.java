@@ -1,5 +1,6 @@
 package net.causw.config;
 
+import net.causw.domain.model.StaticValue;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import springfox.documentation.builders.ApiInfoBuilder;
@@ -13,10 +14,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 @Configuration
 public class SwaggerConfig {
-    private static final String API_NAME = "CAU_SW API";
-    private static final String API_VERSION = "0.0.1";
-    private static final String API_DESCRIPTION = "중앙대학교 소프트웨어학부 동문네트워크 API";
-
     @Bean
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)
@@ -29,9 +26,9 @@ public class SwaggerConfig {
 
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
-                .title(API_NAME)
-                .version(API_VERSION)
-                .description(API_DESCRIPTION)
+                .title(StaticValue.SWAGGER_API_NAME)
+                .version(StaticValue.SWAGGER_API_VERSION)
+                .description(StaticValue.SWAGGER_API_DESCRIPTION)
                 .build();
     }
 }

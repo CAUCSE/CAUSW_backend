@@ -2,6 +2,7 @@ package net.causw.domain.validation;
 
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
+import net.causw.domain.model.StaticValue;
 
 import java.util.Calendar;
 
@@ -28,7 +29,7 @@ public class AdmissionYearValidator extends AbstractValidator {
     }
 
     public boolean validateAdmissionYear() {
-        if (this.admissionYear < 1972) {
+        if (this.admissionYear < StaticValue.CAUSW_CREATED) {
             return false;
         }
 

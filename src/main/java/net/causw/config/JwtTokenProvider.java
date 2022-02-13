@@ -7,6 +7,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.Role;
+import net.causw.domain.model.StaticValue;
 import net.causw.domain.model.UserState;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,8 +27,6 @@ public class JwtTokenProvider {
     @Value("${spring.jwt.secret}")
     private String secretKey;
 
-    private static final long TOKEN_VALID_TIME = 1000L * 60 * 60 * 24 * 7;
-
     @PostConstruct
     protected void init() {
         this.secretKey = Base64.getEncoder().encodeToString(this.secretKey.getBytes());
@@ -42,7 +41,7 @@ public class JwtTokenProvider {
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + TOKEN_VALID_TIME))
+                .setExpiration(new Date(now.getTime() + StaticValue.JWT_TOKEN_VALID_TIME))
                 .signWith(SignatureAlgorithm.HS256, this.secretKey)
                 .compact();
     }
