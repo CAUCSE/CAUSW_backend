@@ -128,6 +128,16 @@ public class UserController {
         return this.userService.updateUserRole(grantorId, granteeId, userUpdateRoleRequestDto);
     }
 
+    @GetMapping(value = "/password")
+    @ResponseStatus(value = HttpStatus.OK)
+    public UserResponseDto findPassword(
+            @RequestParam String email,
+            @RequestParam String name,
+            @RequestParam String studentId
+    ) {
+        return this.userService.findPassword(email, name, studentId);
+    }
+
     @PutMapping(value = "/password")
     @ResponseStatus(value = HttpStatus.OK)
     public UserResponseDto updatePassword(
