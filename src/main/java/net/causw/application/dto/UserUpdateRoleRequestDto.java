@@ -11,5 +11,9 @@ import net.causw.domain.model.Role;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserUpdateRoleRequestDto {
-    private Role role;
+    private String role;
+
+    public Role getRole() {
+        return Role.of(this.role);
+    }
 }
