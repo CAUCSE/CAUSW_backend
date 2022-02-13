@@ -16,7 +16,6 @@ import net.causw.application.dto.UserResponseDto;
 import net.causw.application.dto.UserSignInRequestDto;
 import net.causw.application.dto.UserUpdateRequestDto;
 import net.causw.application.dto.UserUpdateRoleRequestDto;
-import net.causw.domain.model.UserState;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -172,12 +171,10 @@ public class UserController {
     @ResponseStatus(value = HttpStatus.OK)
     public Page<UserAdmissionAllResponseDto> findAllAdmissions(
             @AuthenticationPrincipal String requestUserId,
-            @RequestParam UserState userState,
             @RequestParam(defaultValue = "0") Integer pageNum
     ) {
         return this.userService.findAllAdmissions(
                 requestUserId,
-                userState,
                 pageNum
         );
     }

@@ -648,7 +648,6 @@ public class UserService {
     @Transactional(readOnly = true)
     public Page<UserAdmissionAllResponseDto> findAllAdmissions(
             String requestUserId,
-            UserState userState,
             Integer pageNum
     ) {
         UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
@@ -664,7 +663,7 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT)))
                 .validate();
 
-        return this.userAdmissionPort.findAll(userState, pageNum)
+        return this.userAdmissionPort.findAll(UserState.AWAIT, pageNum)
                 .map(UserAdmissionAllResponseDto::from);
     }
 
