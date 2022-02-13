@@ -1,8 +1,10 @@
 package net.causw.application;
 
+import net.causw.application.dto.ChildCommentAllResponseDto;
 import net.causw.application.dto.ChildCommentCreateRequestDto;
 import net.causw.application.dto.ChildCommentResponseDto;
 import net.causw.application.dto.ChildCommentUpdateRequestDto;
+import net.causw.application.dto.CommentResponseDto;
 import net.causw.application.spi.ChildCommentPort;
 import net.causw.application.spi.CircleMemberPort;
 import net.causw.application.spi.CommentPort;
@@ -29,7 +31,6 @@ import net.causw.domain.validation.UserNameEqualValidator;
 import net.causw.domain.validation.UserRoleIsNoneValidator;
 import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -150,7 +151,7 @@ public class ChildCommentService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ChildCommentResponseDto> findAll(String userId, String parentCommentId, Integer pageNum) {
+    public ChildCommentAllResponseDto findAll(String userId, String parentCommentId, Integer pageNum) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
@@ -200,10 +201,22 @@ public class ChildCommentService {
         validatorBucket
                 .validate();
 
-        return this.childCommentPort.findByParentComment(parentCommentId, pageNum)
-                .map(childCommentDomainModel ->
-                        ChildCommentResponseDto.from(childCommentDomainModel, userDomainModel, postDomainModel.getBoard())
-                );
+        return ChildCommentAllResponseDto.from(
+                CommentResponseDto.from(
+                        parentCommentDomainModel,
+                        userDomainModel,
+                        postDomainModel.getBoard(),
+                        this.childCommentPort.countByParentComment(parentCommentDomainModel.getId())
+                ),
+                this.childCommentPort.findByParentComment(parentCommentId, pageNum)
+                        .map(childCommentDomainModel ->
+                                ChildCommentResponseDto.from(
+                                        childCommentDomainModel,
+                                        userDomainModel,
+                                        postDomainModel.getBoard()
+                                )
+                        )
+        );
     }
 
     @Transactional

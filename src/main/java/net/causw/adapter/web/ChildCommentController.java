@@ -1,10 +1,10 @@
 package net.causw.adapter.web;
 
 import net.causw.application.ChildCommentService;
+import net.causw.application.dto.ChildCommentAllResponseDto;
 import net.causw.application.dto.ChildCommentCreateRequestDto;
 import net.causw.application.dto.ChildCommentResponseDto;
 import net.causw.application.dto.ChildCommentUpdateRequestDto;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -38,7 +38,7 @@ public class ChildCommentController {
 
     @GetMapping(params = "parentCommentId")
     @ResponseStatus(value = HttpStatus.OK)
-    public Page<ChildCommentResponseDto> findAll(
+    public ChildCommentAllResponseDto findAll(
             @AuthenticationPrincipal String userId,
             @RequestParam String parentCommentId,
             @RequestParam(defaultValue = "0") Integer pageNum
