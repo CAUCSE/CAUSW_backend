@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import net.causw.domain.model.BoardDomainModel;
 import net.causw.domain.model.CommentDomainModel;
 import net.causw.domain.model.Role;
+import net.causw.domain.model.StaticValue;
 import net.causw.domain.model.UserDomainModel;
 
 import java.time.LocalDateTime;
@@ -61,6 +62,7 @@ public class CommentResponseDto {
     ) {
         boolean updatable = false;
         boolean deletable = false;
+        String content = comment.getContent();
 
         if (user.getRole() == Role.ADMIN) {
             updatable = true;
@@ -87,11 +89,12 @@ public class CommentResponseDto {
         if (comment.getIsDeleted()) {
             updatable = false;
             deletable = false;
+            content = StaticValue.contentDeletedComment;
         }
 
         return new CommentResponseDto(
                 comment.getId(),
-                comment.getContent(),
+                content,
                 comment.getCreatedAt(),
                 comment.getUpdatedAt(),
                 comment.getIsDeleted(),
