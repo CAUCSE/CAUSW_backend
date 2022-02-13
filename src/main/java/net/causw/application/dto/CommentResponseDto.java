@@ -89,7 +89,7 @@ public class CommentResponseDto {
         if (comment.getIsDeleted()) {
             updatable = false;
             deletable = false;
-            content = StaticValue.contentDeletedComment;
+            content = StaticValue.CONTENT_DELETED_COMMENT;
         }
 
         return new CommentResponseDto(

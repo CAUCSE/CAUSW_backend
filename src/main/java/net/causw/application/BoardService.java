@@ -12,6 +12,7 @@ import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.model.BoardDomainModel;
 import net.causw.domain.model.CircleDomainModel;
 import net.causw.domain.model.Role;
+import net.causw.domain.model.StaticValue;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
@@ -156,12 +157,12 @@ public class BoardService {
         validatorBucket
                 .consistOf(UserStateValidator.of(updaterDomainModel.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(updaterDomainModel.getRole()))
-                .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted(), boardDomainModel.getDOMAIN()));
+                .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted(), StaticValue.DOMAIN_BOARD));
 
         boardDomainModel.getCircle().ifPresentOrElse(
                 circleDomainModel -> {
                     validatorBucket
-                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), circleDomainModel.getDOMAIN()))
+                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                             .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.LEADER_CIRCLE)));
 
                     if (updaterDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
@@ -227,7 +228,7 @@ public class BoardService {
         validatorBucket
                 .consistOf(UserStateValidator.of(deleterDomainModel.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(deleterDomainModel.getRole()))
-                .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted(), boardDomainModel.getDOMAIN()));
+                .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted(), StaticValue.DOMAIN_BOARD));
 
         boardDomainModel.getCircle().ifPresentOrElse(
                 circleDomainModel -> {

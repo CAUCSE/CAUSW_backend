@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 public class BoardDomainModel {
-    private final String DOMAIN = "게시판";
     private String id;
     private String description;
 

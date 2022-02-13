@@ -12,7 +12,6 @@ import java.util.List;
 @Getter
 @Setter
 public class CommentDomainModel {
-    private final String DOMAIN = "댓글";
     private String id;
 
     @NotBlank(message = "댓글 내용이 입력되지 않았습니다.")

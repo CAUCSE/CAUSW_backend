@@ -17,6 +17,7 @@ import net.causw.domain.model.CircleMemberStatus;
 import net.causw.domain.model.CommentDomainModel;
 import net.causw.domain.model.PostDomainModel;
 import net.causw.domain.model.Role;
+import net.causw.domain.model.StaticValue;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.ConstraintValidator;
@@ -87,8 +88,8 @@ public class CommentService {
         );
 
         validatorBucket
-                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getBoard().getIsDeleted(), postDomainModel.getBoard().getDOMAIN()))
-                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), postDomainModel.getDOMAIN()))
+                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
+                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), StaticValue.DOMAIN_POST))
                 .consistOf(ConstraintValidator.of(commentDomainModel, this.validator))
                 .validate();
 
@@ -102,7 +103,7 @@ public class CommentService {
                     );
 
                     validatorBucket
-                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), circleDomainModel.getDOMAIN()))
+                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                             .consistOf(CircleMemberStatusValidator.of(
                                     circleMemberDomainModel.getStatus(),
                                     List.of(CircleMemberStatus.MEMBER)
@@ -139,8 +140,8 @@ public class CommentService {
         validatorBucket
                 .consistOf(UserStateValidator.of(userDomainModel.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
-                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getBoard().getIsDeleted(), postDomainModel.getBoard().getDOMAIN()))
-                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), postDomainModel.getDOMAIN()));
+                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
+                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), StaticValue.DOMAIN_POST));
 
         postDomainModel.getBoard().getCircle().ifPresent(
                 circleDomainModel -> {
@@ -209,9 +210,9 @@ public class CommentService {
         validatorBucket
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
-                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getBoard().getIsDeleted(), postDomainModel.getBoard().getDOMAIN()))
-                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), postDomainModel.getDOMAIN()))
-                .consistOf(TargetIsDeletedValidator.of(commentDomainModel.getIsDeleted(), commentDomainModel.getDOMAIN()))
+                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
+                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), StaticValue.DOMAIN_POST))
+                .consistOf(TargetIsDeletedValidator.of(commentDomainModel.getIsDeleted(), StaticValue.DOMAIN_COMMENT))
                 .consistOf(ConstraintValidator.of(commentDomainModel, this.validator))
                 .consistOf(ContentsAdminValidator.of(
                         requestUser.getRole(),
@@ -230,7 +231,7 @@ public class CommentService {
                     );
 
                     validatorBucket
-                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), circleDomainModel.getDOMAIN()))
+                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                             .consistOf(CircleMemberStatusValidator.of(
                                     circleMemberDomainModel.getStatus(),
                                     List.of(CircleMemberStatus.MEMBER)
@@ -282,7 +283,7 @@ public class CommentService {
         validatorBucket
                 .consistOf(UserStateValidator.of(deleterDomainModel.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(deleterDomainModel.getRole()))
-                .consistOf(TargetIsDeletedValidator.of(commentDomainModel.getIsDeleted(), commentDomainModel.getDOMAIN()));
+                .consistOf(TargetIsDeletedValidator.of(commentDomainModel.getIsDeleted(), StaticValue.DOMAIN_COMMENT));
 
         postDomainModel.getBoard().getCircle().ifPresentOrElse(
                 circleDomainModel -> {
@@ -294,7 +295,7 @@ public class CommentService {
                     );
 
                     validatorBucket
-                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), circleDomainModel.getDOMAIN()))
+                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                             .consistOf(CircleMemberStatusValidator.of(
                                     circleMemberDomainModel.getStatus(),
                                     List.of(CircleMemberStatus.MEMBER)

@@ -9,6 +9,7 @@ import net.causw.application.spi.PostPort;
 import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
+import net.causw.domain.model.StaticValue;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.validation.UserRoleIsNoneValidator;
 import net.causw.domain.validation.UserStateValidator;
@@ -57,7 +58,7 @@ public class HomePageService {
                         this.postPort.findAll(
                                 favoriteBoardDomainModel.getBoardDomainModel().getId(),
                                 0,
-                                3
+                                StaticValue.HOME_POST_PAGE_SIZE
                         )
                                 .map(postDomainModel -> PostAllResponseDto.from(
                                         postDomainModel,

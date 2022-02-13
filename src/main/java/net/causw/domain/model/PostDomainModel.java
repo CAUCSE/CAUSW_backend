@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class PostDomainModel {
-    private final String DOMAIN = "게시글";
     private String id;
 
     @NotBlank(message = "게시글 제목이 입력되지 않았습니다.")

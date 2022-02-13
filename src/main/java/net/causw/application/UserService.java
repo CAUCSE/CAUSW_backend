@@ -36,6 +36,7 @@ import net.causw.domain.model.CircleMemberStatus;
 import net.causw.domain.model.FavoriteBoardDomainModel;
 import net.causw.domain.model.PostDomainModel;
 import net.causw.domain.model.Role;
+import net.causw.domain.model.StaticValue;
 import net.causw.domain.model.UserAdmissionDomainModel;
 import net.causw.domain.model.UserAdmissionLogAction;
 import net.causw.domain.model.UserDomainModel;
@@ -809,7 +810,7 @@ public class UserService {
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
-                .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), board.getDOMAIN()))
+                .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD))
                 .consistOf(ConstraintValidator.of(favoriteBoardDomainModel, this.validator))
                 .validate();
 

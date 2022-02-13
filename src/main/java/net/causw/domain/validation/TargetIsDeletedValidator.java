@@ -2,23 +2,20 @@ package net.causw.domain.validation;
 
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
-import net.causw.domain.exceptions.InternalServerException;
-
-import java.util.Locale;
 
 public class TargetIsDeletedValidator extends AbstractValidator {
 
     private final boolean isDeleted;
 
-    private final String target;
+    private final String domain;
 
-    private TargetIsDeletedValidator(boolean isDeleted, String target) {
+    private TargetIsDeletedValidator(boolean isDeleted, String domain) {
         this.isDeleted = isDeleted;
-        this.target = target;
+        this.domain = domain;
     }
 
-    public static TargetIsDeletedValidator of(boolean isDeleted, String target) {
-        return new TargetIsDeletedValidator(isDeleted, target);
+    public static TargetIsDeletedValidator of(boolean isDeleted, String domain) {
+        return new TargetIsDeletedValidator(isDeleted, domain);
     }
 
     @Override
@@ -26,7 +23,7 @@ public class TargetIsDeletedValidator extends AbstractValidator {
         if (this.isDeleted) {
             throw new BadRequestException(
                     ErrorCode.TARGET_DELETED,
-                    String.format("삭제된 %s 입니다.", this.target)
+                    String.format("삭제된 %s 입니다.", this.domain)
             );
         }
     }

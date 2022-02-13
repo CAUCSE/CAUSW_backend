@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class ChildCommentDomainModel {
-    private final String DOMAIN = "답글";
     private String id;
 
     @NotBlank(message = "댓글 내용이 입력되지 않았습니다.")
