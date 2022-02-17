@@ -172,6 +172,7 @@ public class UserService {
                         )
                         .map(postDomainModel -> PostAllForUserResponseDto.from(
                                 postDomainModel,
+                                postDomainModel.getBoard().getId(),
                                 postDomainModel.getBoard().getName(),
                                 postDomainModel.getBoard().getCircle().map(CircleDomainModel::getName).orElse(null),
                                 this.commentPort.countByPostId(postDomainModel.getId())
