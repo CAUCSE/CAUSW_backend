@@ -97,12 +97,8 @@ public class ChildCommentDomainModel {
     }
 
     public void update(
-            String content,
-            String tagUserName,
-            String refChildComment
+            String content
     ) {
         this.content = content;
-        this.tagUserName = tagUserName;
-        this.refChildComment = refChildComment;
     }
 }

@@ -14,12 +14,7 @@ import java.util.Optional;
 public class ChildCommentCreateRequestDto {
     private String content;
     private String parentCommentId;
-    private String tagUserName;
     private String refChildComment;
-
-    public Optional<String> getTagUserName() {
-        return Optional.ofNullable(this.tagUserName);
-    }
     
     public Optional<String> getRefChildComment() {
         return Optional.ofNullable(this.refChildComment);

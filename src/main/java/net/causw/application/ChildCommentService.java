@@ -22,7 +22,6 @@ import net.causw.domain.model.PostDomainModel;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.StaticValue;
 import net.causw.domain.model.UserDomainModel;
-import net.causw.domain.validation.ChildCommentNotEqualValidator;
 import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.ContentsAdminValidator;
@@ -104,7 +103,7 @@ public class ChildCommentService {
 
         ChildCommentDomainModel childCommentDomainModel = ChildCommentDomainModel.of(
                 childCommentCreateRequestDto.getContent(),
-                childCommentCreateRequestDto.getTagUserName().orElse(null),
+                refChildCommentDomainModel.map(refChildComment -> refChildComment.getWriter().getName()).orElse(null),
                 childCommentCreateRequestDto.getRefChildComment().orElse(null),
                 creatorDomainModel,
                 parentCommentDomainModel
@@ -120,7 +119,6 @@ public class ChildCommentService {
         refChildCommentDomainModel.ifPresent(
                 refChildComment -> validatorBucket
                         .consistOf(TargetIsDeletedValidator.of(refChildComment.getIsDeleted(), StaticValue.DOMAIN_CHILD_COMMENT))
-                        .consistOf(UserNameEqualValidator.of(childCommentDomainModel.getTagUserName(), refChildComment.getWriter().getName()))
         );
 
         postDomainModel.getBoard().getCircle().ifPresent(
@@ -249,19 +247,8 @@ public class ChildCommentService {
                 )
         );
 
-        Optional<ChildCommentDomainModel> refChildCommentDomainModel = childCommentUpdateRequestDto.getRefChildComment().map(
-                refChildCommentId -> this.childCommentPort.findById(refChildCommentId).orElseThrow(
-                        () -> new BadRequestException(
-                                ErrorCode.ROW_DOES_NOT_EXIST,
-                                "답할 답글을 찾을 수 없습니다."
-                        )
-                )
-        );
-
         childCommentDomainModel.update(
-                childCommentUpdateRequestDto.getContent(),
-                childCommentUpdateRequestDto.getTagUserName().orElse(null),
-                childCommentUpdateRequestDto.getRefChildComment().orElse(null)
+                childCommentUpdateRequestDto.getContent()
         );
 
         validatorBucket
@@ -277,13 +264,6 @@ public class ChildCommentService {
                         childCommentDomainModel.getWriter().getId(),
                         List.of()
                 ));
-
-        refChildCommentDomainModel.ifPresent(
-                refChildComment -> validatorBucket
-                        .consistOf(TargetIsDeletedValidator.of(refChildComment.getIsDeleted(), StaticValue.DOMAIN_CHILD_COMMENT))
-                        .consistOf(ChildCommentNotEqualValidator.of(childCommentDomainModel.getId(), refChildComment.getId()))
-                        .consistOf(UserNameEqualValidator.of(childCommentDomainModel.getTagUserName(), refChildComment.getWriter().getName()))
-        );
 
         postDomainModel.getBoard().getCircle().ifPresent(
                 circleDomainModel -> {
