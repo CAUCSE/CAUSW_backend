@@ -108,10 +108,29 @@ public class UserService {
         this.validator = validator;
     }
 
-    // TODO: Delete when issue#239
-    @Transactional(readOnly = true)
-    public void testEmail() {
-        this.googleMailSender.sendMail("als950901@gmail.com", "제목", "테스트");
+    @Transactional
+    public UserResponseDto findPassword(
+            String email,
+            String name,
+            String studentId
+    ) {
+        UserDomainModel requestUser = this.userPort.findForPassword(email, name, studentId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "해당 사용자를 찾을 수 없습니다."
+                )
+        );
+
+        String newPassword = requestUser.updateRandomPassword();
+        this.googleMailSender.sendNewPasswordMail(requestUser.getEmail(), newPassword);
+        this.userPort.updatePassword(requestUser.getId(), newPassword).orElseThrow(
+                () -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "User id checked, but exception occurred"
+                )
+        );
+
+        return UserResponseDto.from(requestUser);
     }
 
     @Transactional(readOnly = true)

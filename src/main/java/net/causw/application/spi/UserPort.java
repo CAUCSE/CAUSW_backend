@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserPort {
+    Optional<UserDomainModel> findForPassword(String email, String name, String studentId);
+
     Optional<UserDomainModel> findById(String id);
 
     List<UserDomainModel> findByName(String name);

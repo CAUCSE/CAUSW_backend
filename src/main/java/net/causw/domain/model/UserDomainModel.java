@@ -6,7 +6,6 @@ import lombok.Setter;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -121,5 +120,10 @@ public class UserDomainModel {
         this.studentId = studentId;
         this.admissionYear = admissionYear;
         this.profileImage = profileImage;
+    }
+
+    public String updateRandomPassword() {
+        this.password = "causw" + (int) Math.floor(Math.random() * 10000000 + 1000000);
+        return this.password;
     }
 }
