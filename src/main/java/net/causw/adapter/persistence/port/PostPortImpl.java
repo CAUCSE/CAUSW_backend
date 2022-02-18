@@ -73,9 +73,11 @@ public class PostPortImpl extends DomainModelMapper implements PostPort {
     public Page<PostDomainModel> search(SearchOption option, String keyword, Integer pageNum) {
         switch (option){
             case TITLE:
-                return this.postRepository.searchByTitle(keyword, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE)).map(this::entityToDomainModel);
+                return this.postRepository.searchByTitle(keyword, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
+                        .map(this::entityToDomainModel);
             case WRITER:
-                return this.postRepository.searchByWriter(keyword, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE)).map(this::entityToDomainModel);
+                return this.postRepository.searchByWriter(keyword, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
+                        .map(this::entityToDomainModel);
             default:
                 return null;
         }
@@ -89,6 +91,7 @@ public class PostPortImpl extends DomainModelMapper implements PostPort {
 
     @Override
     public Page<PostDomainModel> findByUserId(String userId, Integer pageNum) {
-        return this.postRepository.findByUserId(userId, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE)).map(this::entityToDomainModel);
+        return this.postRepository.findByUserId(userId, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
+                .map(this::entityToDomainModel);
     }
 }
