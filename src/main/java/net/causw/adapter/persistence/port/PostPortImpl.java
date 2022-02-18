@@ -6,6 +6,7 @@ import net.causw.adapter.persistence.PostRepository;
 import net.causw.application.spi.PostPort;
 import net.causw.domain.model.PostDomainModel;
 import net.causw.domain.model.SearchOption;
+import net.causw.domain.model.StaticValue;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 import java.util.Optional;
@@ -58,7 +59,7 @@ public class PostPortImpl extends DomainModelMapper implements PostPort {
 
     @Override
     public Page<PostDomainModel> findAll(String boardId, Integer pageNum) {
-        return this.postRepository.findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(boardId, this.pageableFactory.create(pageNum))
+        return this.postRepository.findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(boardId, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
                 .map(this::entityToDomainModel);
     }
 
@@ -72,9 +73,9 @@ public class PostPortImpl extends DomainModelMapper implements PostPort {
     public Page<PostDomainModel> search(SearchOption option, String keyword, Integer pageNum) {
         switch (option){
             case TITLE:
-                return this.postRepository.searchByTitle(keyword, this.pageableFactory.create(pageNum)).map(this::entityToDomainModel);
+                return this.postRepository.searchByTitle(keyword, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE)).map(this::entityToDomainModel);
             case WRITER:
-                return this.postRepository.searchByWriter(keyword, this.pageableFactory.create(pageNum)).map(this::entityToDomainModel);
+                return this.postRepository.searchByWriter(keyword, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE)).map(this::entityToDomainModel);
             default:
                 return null;
         }
@@ -88,6 +89,6 @@ public class PostPortImpl extends DomainModelMapper implements PostPort {
 
     @Override
     public Page<PostDomainModel> findByUserId(String userId, Integer pageNum) {
-        return this.postRepository.findByUserId(userId, this.pageableFactory.create(pageNum)).map(this::entityToDomainModel);
+        return this.postRepository.findByUserId(userId, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE)).map(this::entityToDomainModel);
     }
 }

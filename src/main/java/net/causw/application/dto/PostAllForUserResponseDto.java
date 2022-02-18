@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 public class PostAllForUserResponseDto {
     private String id;
     private String title;
+    private String boardId;
     private String boardName;
     private String circleName;
     private Long numComment;
@@ -20,6 +21,7 @@ public class PostAllForUserResponseDto {
     private PostAllForUserResponseDto(
             String id,
             String title,
+            String boardId,
             String boardName,
             String circleName,
             Long numComment,
@@ -28,6 +30,7 @@ public class PostAllForUserResponseDto {
     ) {
         this.id = id;
         this.title = title;
+        this.boardId = boardId;
         this.boardName = boardName;
         this.circleName = circleName;
         this.numComment = numComment;
@@ -37,6 +40,7 @@ public class PostAllForUserResponseDto {
 
     public static PostAllForUserResponseDto from(
             PostDomainModel post,
+            String boardId,
             String boardName,
             String circleName,
             Long numComment
@@ -44,6 +48,7 @@ public class PostAllForUserResponseDto {
         return new PostAllForUserResponseDto(
                 post.getId(),
                 post.getTitle(),
+                boardId,
                 boardName,
                 circleName,
                 numComment,
