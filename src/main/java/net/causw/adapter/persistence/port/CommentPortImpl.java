@@ -32,10 +32,10 @@ public class CommentPortImpl extends DomainModelMapper implements CommentPort {
 
     @Override
     public Page<CommentDomainModel> findByPostId(String postId, Integer pageNum) {
-        Page<Comment> comments = this.commentRepository.findByPost_IdOrderByCreatedAtDesc(postId, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_COMMENT_PAGE_SIZE));
-
-        return comments
-                .map(this::entityToDomainModel);
+        return this.commentRepository.findByPost_IdOrderByCreatedAtDesc(
+                postId,
+                this.pageableFactory.create(pageNum, StaticValue.DEFAULT_COMMENT_PAGE_SIZE)
+        ).map(this::entityToDomainModel);
     }
 
     @Override
@@ -72,6 +72,7 @@ public class CommentPortImpl extends DomainModelMapper implements CommentPort {
 
     @Override
     public Page<CommentDomainModel> findByUserId(String userId, Integer pageNum) {
-        return this.commentRepository.findByUserId(userId, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_COMMENT_PAGE_SIZE)).map(this::entityToDomainModel);
+        return this.commentRepository.findByUserId(userId, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_COMMENT_PAGE_SIZE))
+                .map(this::entityToDomainModel);
     }
 }

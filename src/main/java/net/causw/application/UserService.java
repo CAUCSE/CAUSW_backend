@@ -57,7 +57,6 @@ import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
 import net.causw.infrastructure.GoogleMailSender;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -181,21 +180,13 @@ public class UserService {
 
         return UserPostResponseDto.from(
                 requestUser,
-                new PageImpl<>(this.postPort.findByUserId(requestUserId, pageNum).getContent()
-                        .stream().filter(
-                                postDomainModel -> postDomainModel.getBoard().getCircle().map(
-                                        circleDomainModel -> this.circleMemberPort.findByUserIdAndCircleId(requestUserId, circleDomainModel.getId()).map(
-                                                circleMemberDomainModel -> !circleDomainModel.getIsDeleted() && (circleMemberDomainModel.getStatus() == CircleMemberStatus.MEMBER)
-                                        ).orElse(false)
-                                ).orElse(true)
-                        )
-                        .map(postDomainModel -> PostAllForUserResponseDto.from(
-                                postDomainModel,
-                                postDomainModel.getBoard().getId(),
-                                postDomainModel.getBoard().getName(),
-                                postDomainModel.getBoard().getCircle().map(CircleDomainModel::getName).orElse(null),
-                                this.commentPort.countByPostId(postDomainModel.getId())
-                        )).collect(Collectors.toList()))
+                this.postPort.findByUserId(requestUserId, pageNum).map(postDomainModel -> PostAllForUserResponseDto.from(
+                        postDomainModel,
+                        postDomainModel.getBoard().getId(),
+                        postDomainModel.getBoard().getName(),
+                        postDomainModel.getBoard().getCircle().map(CircleDomainModel::getName).orElse(null),
+                        this.commentPort.countByPostId(postDomainModel.getId())
+                ))
         );
     }
 
@@ -215,36 +206,21 @@ public class UserService {
 
         return UserCommentResponseDto.from(
                 requestUser,
-                new PageImpl<>(this.commentPort.findByUserId(requestUserId, pageNum).getContent()
-                        .stream().filter(comment -> {
-                            PostDomainModel post = this.postPort.findById(comment.getPostId()).orElseThrow(
-                                    () -> new BadRequestException(
-                                            ErrorCode.ROW_DOES_NOT_EXIST,
-                                            "게시글을 찾을 수 없습니다."
-                                    )
-                            );
+                this.commentPort.findByUserId(requestUserId, pageNum).map(comment -> {
+                    PostDomainModel post = this.postPort.findById(comment.getPostId()).orElseThrow(
+                            () -> new BadRequestException(
+                                    ErrorCode.ROW_DOES_NOT_EXIST,
+                                    "게시글을 찾을 수 없습니다."
+                            )
+                    );
 
-                            return post.getBoard().getCircle().map(
-                                    circle -> this.circleMemberPort.findByUserIdAndCircleId(requestUserId, circle.getId()).map(
-                                            circleMember -> !circle.getIsDeleted() && (circleMember.getStatus() == CircleMemberStatus.MEMBER)
-                                    ).orElse(false)
-                            ).orElse(true);
-                        })
-                        .map(comment -> {
-                            PostDomainModel post = this.postPort.findById(comment.getPostId()).orElseThrow(
-                                    () -> new BadRequestException(
-                                            ErrorCode.ROW_DOES_NOT_EXIST,
-                                            "게시글을 찾을 수 없습니다."
-                                    )
-                            );
-
-                            return CommentAllForUserResponseDto.from(
-                                    comment,
-                                    post.getBoard().getName(),
-                                    post.getTitle(),
-                                    post.getBoard().getCircle().map(CircleDomainModel::getName).orElse(null)
-                            );
-                        }).collect(Collectors.toList()))
+                    return CommentAllForUserResponseDto.from(
+                            comment,
+                            post.getBoard().getName(),
+                            post.getTitle(),
+                            post.getBoard().getCircle().map(CircleDomainModel::getName).orElse(null)
+                    );
+                })
         );
     }
 
