@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -192,7 +193,7 @@ public class UserController {
     @PostMapping(value = "/admissions/apply")
     @ResponseStatus(value = HttpStatus.CREATED)
     public UserAdmissionResponseDto createAdmission(
-            @RequestBody UserAdmissionCreateRequestDto userAdmissionCreateRequestDto
+            @ModelAttribute UserAdmissionCreateRequestDto userAdmissionCreateRequestDto
     ) {
         return this.userService.createAdmission(userAdmissionCreateRequestDto);
     }

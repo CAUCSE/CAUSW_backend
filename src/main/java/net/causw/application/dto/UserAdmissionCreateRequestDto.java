@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Optional;
 
 @Getter
 @Setter
@@ -11,6 +14,10 @@ import lombok.Setter;
 @NoArgsConstructor
 public class UserAdmissionCreateRequestDto {
     private String email;
-    private String attachImage;
     private String description;
+    private MultipartFile attachImage;
+
+    public Optional<MultipartFile> getAttachImage() {
+        return Optional.ofNullable(attachImage);
+    }
 }
