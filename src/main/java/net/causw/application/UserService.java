@@ -35,6 +35,7 @@ import net.causw.domain.model.BoardDomainModel;
 import net.causw.domain.model.CircleDomainModel;
 import net.causw.domain.model.CircleMemberStatus;
 import net.causw.domain.model.FavoriteBoardDomainModel;
+import net.causw.domain.model.ImageLocation;
 import net.causw.domain.model.PostDomainModel;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.StaticValue;
@@ -55,6 +56,7 @@ import net.causw.domain.validation.UserStateIsDropValidator;
 import net.causw.domain.validation.UserStateIsNotDropAndActiveValidator;
 import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
+import net.causw.infrastructure.GcpFileUploader;
 import net.causw.infrastructure.GoogleMailSender;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -76,6 +78,7 @@ public class UserService {
     private final CommentPort commentPort;
     private final FavoriteBoardPort favoriteBoardPort;
     private final JwtTokenProvider jwtTokenProvider;
+    private final GcpFileUploader gcpFileUploader;
     private final GoogleMailSender googleMailSender;
     private final Validator validator;
 
@@ -90,6 +93,7 @@ public class UserService {
             CommentPort commentPort,
             FavoriteBoardPort favoriteBoardPort,
             JwtTokenProvider jwtTokenProvider,
+            GcpFileUploader gcpFileUploader,
             GoogleMailSender googleMailSender,
             Validator validator
     ) {
@@ -103,6 +107,7 @@ public class UserService {
         this.commentPort = commentPort;
         this.favoriteBoardPort = favoriteBoardPort;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.gcpFileUploader = gcpFileUploader;
         this.googleMailSender = googleMailSender;
         this.validator = validator;
     }
@@ -680,9 +685,14 @@ public class UserService {
             );
         }
 
+        String attachImage = userAdmissionCreateRequestDto.getAttachImage()
+                .map(image ->
+                        this.gcpFileUploader.uploadImageToGcp(image, ImageLocation.USER_ADMISSION))
+                .orElse(null);
+
         UserAdmissionDomainModel userAdmissionDomainModel = UserAdmissionDomainModel.of(
                 requestUser,
-                userAdmissionCreateRequestDto.getAttachImage(),
+                attachImage,
                 userAdmissionCreateRequestDto.getDescription()
         );
 

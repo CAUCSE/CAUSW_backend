@@ -14,6 +14,7 @@ import net.causw.config.JwtTokenProvider
 import net.causw.domain.exceptions.BadRequestException
 import net.causw.domain.exceptions.UnauthorizedException
 import net.causw.domain.model.*
+import net.causw.infrastructure.GcpFileUploader
 import net.causw.infrastructure.GoogleMailSender
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -46,6 +47,7 @@ class UserServiceTest extends Specification {
     private CommentPort commentPort = Mock(CommentPort.class)
     private FavoriteBoardPort favoriteBoardPort = Mock(FavoriteBoardPort.class)
     private JwtTokenProvider jwtTokenProvider = Mock(JwtTokenProvider.class)
+    private GcpFileUploader gcpFileUploader = Mock(GcpFileUploader.class)
     private GoogleMailSender googleMailSender = Mock(GoogleMailSender.class)
     private Validator validator = Validation.buildDefaultValidatorFactory().getValidator()
     private UserService userService = new UserService(
@@ -59,6 +61,7 @@ class UserServiceTest extends Specification {
             this.commentPort,
             this.favoriteBoardPort,
             this.jwtTokenProvider,
+            this.gcpFileUploader,
             this.googleMailSender,
             this.validator
     )
@@ -1303,12 +1306,12 @@ class UserServiceTest extends Specification {
         def userAdmissionCreateRequestDto = new UserAdmissionCreateRequestDto(
                 ((UserDomainModel)this.mockUserDomainModel).getEmail(),
                 "",
-                ""
+                null
         )
 
         def createdUserAdmissionDomainModel = UserAdmissionDomainModel.of(
                 (UserDomainModel)this.mockUserDomainModel,
-                userAdmissionCreateRequestDto.getAttachImage(),
+                null,
                 userAdmissionCreateRequestDto.getDescription()
         )
 
@@ -1319,7 +1322,7 @@ class UserServiceTest extends Specification {
         PowerMockito.mockStatic(UserAdmissionDomainModel.class)
         PowerMockito.when(UserAdmissionDomainModel.of(
                 (UserDomainModel)this.mockUserDomainModel,
-                userAdmissionCreateRequestDto.getAttachImage(),
+                null,
                 userAdmissionCreateRequestDto.getDescription()
         )).thenReturn(createdUserAdmissionDomainModel)
 
@@ -1340,12 +1343,12 @@ class UserServiceTest extends Specification {
         def userAdmissionCreateRequestDto = new UserAdmissionCreateRequestDto(
                 ((UserDomainModel)this.mockUserDomainModel).getEmail(),
                 "",
-                ""
+                null
         )
 
         def createdUserAdmissionDomainModel = UserAdmissionDomainModel.of(
                 (UserDomainModel)this.mockUserDomainModel,
-                userAdmissionCreateRequestDto.getAttachImage(),
+                null,
                 userAdmissionCreateRequestDto.getDescription()
         )
 
@@ -1355,7 +1358,7 @@ class UserServiceTest extends Specification {
         PowerMockito.mockStatic(UserAdmissionDomainModel.class)
         PowerMockito.when(UserAdmissionDomainModel.of(
                 (UserDomainModel)this.mockUserDomainModel,
-                userAdmissionCreateRequestDto.getAttachImage(),
+                null,
                 userAdmissionCreateRequestDto.getDescription()
         )).thenReturn(createdUserAdmissionDomainModel)
 
