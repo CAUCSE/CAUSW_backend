@@ -54,7 +54,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         "/api/**/users/sign-up",
                         "/api/**/users/me",
                         "/healthy",
-                        "/api/**/users/admissions/apply"
+                        "/api/**/users/admissions/apply",
+                        "/api/**/users/**/is-duplicated"
                 )
                 .permitAll()
                 .anyRequest().authenticated()
