@@ -122,8 +122,8 @@ public class UserDomainModel {
         this.profileImage = profileImage;
     }
 
-    public String updateRandomPassword() {
-        this.password = "causw" + (int) Math.floor(Math.random() * 10000000 + 1000000);
+    public String updatePassword(String newPassword) {
+        this.password = newPassword;
         return this.password;
     }
 }

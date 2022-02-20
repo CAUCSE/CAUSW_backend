@@ -58,6 +58,7 @@ import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
 import net.causw.infrastructure.GcpFileUploader;
 import net.causw.infrastructure.GoogleMailSender;
+import net.causw.infrastructure.PasswordGenerator;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -80,6 +81,7 @@ public class UserService {
     private final JwtTokenProvider jwtTokenProvider;
     private final GcpFileUploader gcpFileUploader;
     private final GoogleMailSender googleMailSender;
+    private final PasswordGenerator passwordGenerator;
     private final Validator validator;
 
     public UserService(
@@ -95,6 +97,7 @@ public class UserService {
             JwtTokenProvider jwtTokenProvider,
             GcpFileUploader gcpFileUploader,
             GoogleMailSender googleMailSender,
+            PasswordGenerator passwordGenerator,
             Validator validator
     ) {
         this.userPort = userPort;
@@ -109,6 +112,7 @@ public class UserService {
         this.jwtTokenProvider = jwtTokenProvider;
         this.gcpFileUploader = gcpFileUploader;
         this.googleMailSender = googleMailSender;
+        this.passwordGenerator = passwordGenerator;
         this.validator = validator;
     }
 
@@ -125,7 +129,7 @@ public class UserService {
                 )
         );
 
-        String newPassword = requestUser.updateRandomPassword();
+        String newPassword = requestUser.updatePassword(this.passwordGenerator.generate());
         this.googleMailSender.sendNewPasswordMail(requestUser.getEmail(), newPassword);
         this.userPort.updatePassword(requestUser.getId(), newPassword).orElseThrow(
                 () -> new InternalServerException(
@@ -189,6 +193,7 @@ public class UserService {
                         postDomainModel,
                         postDomainModel.getBoard().getId(),
                         postDomainModel.getBoard().getName(),
+                        postDomainModel.getBoard().getCircle().map(CircleDomainModel::getId).orElse(null),
                         postDomainModel.getBoard().getCircle().map(CircleDomainModel::getName).orElse(null),
                         this.commentPort.countByPostId(postDomainModel.getId())
                 ))
@@ -221,8 +226,11 @@ public class UserService {
 
                     return CommentAllForUserResponseDto.from(
                             comment,
+                            post.getBoard().getId(),
                             post.getBoard().getName(),
+                            post.getId(),
                             post.getTitle(),
+                            post.getBoard().getCircle().map(CircleDomainModel::getId).orElse(null),
                             post.getBoard().getCircle().map(CircleDomainModel::getName).orElse(null)
                     );
                 })

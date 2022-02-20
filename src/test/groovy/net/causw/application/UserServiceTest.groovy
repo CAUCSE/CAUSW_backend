@@ -16,6 +16,7 @@ import net.causw.domain.exceptions.UnauthorizedException
 import net.causw.domain.model.*
 import net.causw.infrastructure.GcpFileUploader
 import net.causw.infrastructure.GoogleMailSender
+import net.causw.infrastructure.PasswordGenerator
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.powermock.api.mockito.PowerMockito
@@ -49,6 +50,7 @@ class UserServiceTest extends Specification {
     private JwtTokenProvider jwtTokenProvider = Mock(JwtTokenProvider.class)
     private GcpFileUploader gcpFileUploader = Mock(GcpFileUploader.class)
     private GoogleMailSender googleMailSender = Mock(GoogleMailSender.class)
+    private PasswordGenerator passwordGenerator = Mock(PasswordGenerator.class)
     private Validator validator = Validation.buildDefaultValidatorFactory().getValidator()
     private UserService userService = new UserService(
             this.userPort,
@@ -63,6 +65,7 @@ class UserServiceTest extends Specification {
             this.jwtTokenProvider,
             this.gcpFileUploader,
             this.googleMailSender,
+            this.passwordGenerator,
             this.validator
     )
 

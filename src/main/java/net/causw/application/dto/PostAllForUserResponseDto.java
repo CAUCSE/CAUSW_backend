@@ -13,6 +13,7 @@ public class PostAllForUserResponseDto {
     private String title;
     private String boardId;
     private String boardName;
+    private String circleId;
     private String circleName;
     private Long numComment;
     private LocalDateTime createdAt;
@@ -23,6 +24,7 @@ public class PostAllForUserResponseDto {
             String title,
             String boardId,
             String boardName,
+            String circleId,
             String circleName,
             Long numComment,
             LocalDateTime createdAt,
@@ -32,6 +34,7 @@ public class PostAllForUserResponseDto {
         this.title = title;
         this.boardId = boardId;
         this.boardName = boardName;
+        this.circleId = circleId;
         this.circleName = circleName;
         this.numComment = numComment;
         this.createdAt = createdAt;
@@ -42,6 +45,7 @@ public class PostAllForUserResponseDto {
             PostDomainModel post,
             String boardId,
             String boardName,
+            String circleId,
             String circleName,
             Long numComment
     ) {
@@ -50,6 +54,7 @@ public class PostAllForUserResponseDto {
                 post.getTitle(),
                 boardId,
                 boardName,
+                circleId,
                 circleName,
                 numComment,
                 post.getCreatedAt(),
