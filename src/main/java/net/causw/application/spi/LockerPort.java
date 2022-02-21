@@ -10,6 +10,8 @@ public interface LockerPort {
 
     Optional<LockerDomainModel> findByLockerNumber(Long lockerNumber);
 
+    Optional<LockerDomainModel> findByUserId(String userId);
+
     LockerDomainModel create(LockerDomainModel lockerDomainModel);
 
     Optional<LockerDomainModel> update(String id, LockerDomainModel lockerDomainModel);

@@ -1,5 +1,6 @@
 package net.causw.application;
 
+import net.causw.application.dto.LockerAllLocationResponseDto;
 import net.causw.application.dto.LockerCreateRequestDto;
 import net.causw.application.dto.LockerLocationCreateRequestDto;
 import net.causw.application.dto.LockerLocationResponseDto;
@@ -204,7 +205,7 @@ public class LockerService {
         );
 
         lockerDomainModel.move(lockerLocationDomainModel);
-        
+
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(updaterDomainModel.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(updaterDomainModel.getRole()))
@@ -277,17 +278,20 @@ public class LockerService {
     }
 
     @Transactional(readOnly = true)
-    public List<LockerLocationResponseDto> findAllLocation() {
-        return this.lockerLocationPort.findAll()
-                .stream()
-                .map(
-                        (lockerLocationDomainModel) -> LockerLocationResponseDto.from(
-                                lockerLocationDomainModel,
-                                this.lockerPort.getEnableLockerCountByLocation(lockerLocationDomainModel.getId()),
-                                this.lockerPort.getLockerCountByLocation(lockerLocationDomainModel.getId())
+    public LockerAllLocationResponseDto findAllLocation(String userId) {
+        return LockerAllLocationResponseDto.of(
+                this.lockerLocationPort.findAll()
+                        .stream()
+                        .map(
+                                (lockerLocationDomainModel) -> LockerLocationResponseDto.from(
+                                        lockerLocationDomainModel,
+                                        this.lockerPort.getEnableLockerCountByLocation(lockerLocationDomainModel.getId()),
+                                        this.lockerPort.getLockerCountByLocation(lockerLocationDomainModel.getId())
+                                )
                         )
-                )
-                .collect(Collectors.toList());
+                        .collect(Collectors.toList()),
+                this.lockerPort.findByUserId(userId).map(LockerResponseDto::from).orElse(null)
+        );
     }
 
     @Transactional

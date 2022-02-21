@@ -5,7 +5,6 @@ import net.causw.application.spi.LockerPort;
 import net.causw.domain.model.LockerDomainModel;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
-import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.LockerIsActiveValidator;
 import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.ValidatorBucket;
@@ -30,8 +29,6 @@ public class LockerActionEnable implements LockerAction {
                 .validate();
 
         lockerDomainModel.activate();
-
-        System.out.println(lockerPort.update(lockerDomainModel.getId(), lockerDomainModel));
 
         return lockerPort.update(lockerDomainModel.getId(), lockerDomainModel);
     }

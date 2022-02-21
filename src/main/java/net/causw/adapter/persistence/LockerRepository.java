@@ -12,7 +12,9 @@ import java.util.Optional;
 public interface LockerRepository extends JpaRepository<Locker, String> {
     Optional<Locker> findByLockerNumber(Long lockerNumber);
 
-    List<Locker> findByLocation_Id(String locationId);
+    Optional<Locker> findByUser_Id(String userId);
+
+    List<Locker> findByLocation_IdOrderByLockerNumberAsc(String locationId);
 
     @Query(value = "SELECT COUNT(*) " +
             "FROM TB_LOCKER  " +

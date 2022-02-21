@@ -31,6 +31,11 @@ public class LockerPortImpl extends DomainModelMapper implements LockerPort {
     }
 
     @Override
+    public Optional<LockerDomainModel> findByUserId(String userId) {
+        return this.lockerRepository.findByUser_Id(userId).map(this::entityToDomainModel);
+    }
+
+    @Override
     public LockerDomainModel create(LockerDomainModel lockerDomainModel) {
         return this.entityToDomainModel(this.lockerRepository.save(Locker.from(lockerDomainModel)));
     }
@@ -65,7 +70,7 @@ public class LockerPortImpl extends DomainModelMapper implements LockerPort {
 
     @Override
     public List<LockerDomainModel> findByLocationId(String locationId) {
-        return this.lockerRepository.findByLocation_Id(locationId)
+        return this.lockerRepository.findByLocation_IdOrderByLockerNumberAsc(locationId)
                 .stream()
                 .map(this::entityToDomainModel)
                 .collect(Collectors.toList());

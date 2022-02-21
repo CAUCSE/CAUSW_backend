@@ -1,6 +1,7 @@
 package net.causw.adapter.web;
 
 import net.causw.application.LockerService;
+import net.causw.application.dto.LockerAllLocationResponseDto;
 import net.causw.application.dto.LockerCreateRequestDto;
 import net.causw.application.dto.LockerLocationCreateRequestDto;
 import net.causw.application.dto.LockerLocationResponseDto;
@@ -38,13 +39,13 @@ public class LockerController {
         return this.lockerService.findById(id);
     }
 
-    @PostMapping(value = "/")
+    @PostMapping(value = "")
     @ResponseStatus(value = HttpStatus.CREATED)
     public LockerResponseDto create(
             @AuthenticationPrincipal String creatorId,
-            @RequestBody LockerCreateRequestDto locker
+            @RequestBody LockerCreateRequestDto lockerCreateRequestDto
     ) {
-        return this.lockerService.create(creatorId, locker);
+        return this.lockerService.create(creatorId, lockerCreateRequestDto);
     }
 
     @PutMapping(value = "/{id}")
@@ -75,11 +76,11 @@ public class LockerController {
     ) {
         return this.lockerService.delete(deleterId, id);
     }
-    
+
     @GetMapping(value = "/locations")
     @ResponseStatus(value = HttpStatus.OK)
-    public List<LockerLocationResponseDto> findAllLocation() {
-        return this.lockerService.findAllLocation();
+    public LockerAllLocationResponseDto findAllLocation(@AuthenticationPrincipal String userId) {
+        return this.lockerService.findAllLocation(userId);
     }
 
     @GetMapping(value = "/locations/{locationId}")
@@ -92,9 +93,9 @@ public class LockerController {
     @ResponseStatus(value = HttpStatus.CREATED)
     public LockerLocationResponseDto createLocation(
             @AuthenticationPrincipal String creatorId,
-            @RequestBody LockerLocationCreateRequestDto lockerLocation
+            @RequestBody LockerLocationCreateRequestDto lockerLocationCreateRequestDto
     ) {
-        return this.lockerService.createLocation(creatorId, lockerLocation);
+        return this.lockerService.createLocation(creatorId, lockerLocationCreateRequestDto);
     }
 
     @PutMapping(value = "/locations/{locationId}")
@@ -116,7 +117,7 @@ public class LockerController {
         return this.lockerService.deleteLocation(deleterId, locationId);
     }
 
-    @GetMapping(value="/{id}/log")
+    @GetMapping(value = "/{id}/log")
     @ResponseStatus(value = HttpStatus.OK)
     public List<LockerLogDetailDto> findLog(@PathVariable String id) {
         return this.lockerService.findLog(id);
