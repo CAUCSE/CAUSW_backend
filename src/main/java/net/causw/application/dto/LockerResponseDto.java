@@ -13,6 +13,7 @@ public class LockerResponseDto {
     private String id;
     private Long lockerNumber;
     private Boolean isActive;
+    private Boolean isMine;
     private LocalDateTime updatedAt;
     private String userId;
     private String userName;
@@ -22,25 +23,28 @@ public class LockerResponseDto {
             String id,
             Long lockerNumber,
             Boolean isActive,
+            Boolean isMine,
             LocalDateTime updateAt,
             String userId,
             String userName,
             String lockerLocationName
-    ){
+    ) {
         this.id = id;
         this.lockerNumber = lockerNumber;
         this.isActive = isActive;
+        this.isMine = isMine;
         this.updatedAt = updateAt;
         this.userId = userId;
         this.userName = userName;
         this.lockerLocationName = lockerLocationName;
     }
 
-    public static LockerResponseDto from(Locker locker) {
+    public static LockerResponseDto from(Locker locker, UserDomainModel user) {
         return new LockerResponseDto(
                 locker.getId(),
                 locker.getLockerNumber(),
                 locker.getIsActive(),
+                locker.getUser().map(User::getId).orElse("").equals(user.getId()),
                 locker.getUpdatedAt(),
                 locker.getUser().map(User::getId).orElse(null),
                 locker.getUser().map(User::getName).orElse(null),
@@ -48,11 +52,12 @@ public class LockerResponseDto {
         );
     }
 
-    public static LockerResponseDto from(LockerDomainModel locker) {
+    public static LockerResponseDto from(LockerDomainModel locker, UserDomainModel user) {
         return new LockerResponseDto(
                 locker.getId(),
                 locker.getLockerNumber(),
                 locker.getIsActive(),
+                locker.getUser().map(UserDomainModel::getId).orElse("").equals(user.getId()),
                 locker.getUpdatedAt(),
                 locker.getUser().map(UserDomainModel::getId).orElse(null),
                 locker.getUser().map(UserDomainModel::getName).orElse(null),
