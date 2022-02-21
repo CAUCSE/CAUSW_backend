@@ -35,8 +35,11 @@ public class LockerController {
 
     @GetMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
-    public LockerResponseDto findById(@PathVariable String id) {
-        return this.lockerService.findById(id);
+    public LockerResponseDto findById(
+            @AuthenticationPrincipal String userId,
+            @PathVariable String id
+    ) {
+        return this.lockerService.findById(id, userId);
     }
 
     @PostMapping(value = "")
@@ -85,8 +88,11 @@ public class LockerController {
 
     @GetMapping(value = "/locations/{locationId}")
     @ResponseStatus(value = HttpStatus.OK)
-    public List<LockerResponseDto> findByLocation(@PathVariable String locationId) {
-        return this.lockerService.findByLocation(locationId);
+    public List<LockerResponseDto> findByLocation(
+            @AuthenticationPrincipal String userId,
+            @PathVariable String locationId
+    ) {
+        return this.lockerService.findByLocation(locationId, userId);
     }
 
     @PostMapping(value = "/locations")

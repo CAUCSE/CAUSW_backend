@@ -60,13 +60,21 @@ public class LockerService {
     }
 
     @Transactional(readOnly = true)
-    public LockerResponseDto findById(String id) {
+    public LockerResponseDto findById(String id, String userId) {
+        UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "로그인된 사용자를 찾을 수 없습니다."
+                )
+        );
+
         return LockerResponseDto.from(this.lockerPort.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "사물함을 찾을 수 없습니다."
-                )
-        ));
+                )),
+                userDomainModel
+        );
     }
 
     @Transactional
@@ -120,7 +128,7 @@ public class LockerService {
                             LockerLogAction.ENABLE,
                             "사물함 최초 생성"
                     );
-                    return LockerResponseDto.from(resLockerDomainModel);
+                    return LockerResponseDto.from(resLockerDomainModel, creatorDomainModel);
                 })
                 .orElseThrow(() -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
@@ -169,7 +177,7 @@ public class LockerService {
                             LockerLogAction.of(lockerUpdateRequestDto.getAction()),
                             lockerUpdateRequestDto.getMessage()
                     );
-                    return LockerResponseDto.from(resLockerDomainModel);
+                    return LockerResponseDto.from(resLockerDomainModel, updaterDomainModel);
                 })
                 .orElseThrow(() -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
@@ -217,8 +225,9 @@ public class LockerService {
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         "Locker id checked, but exception occurred"
-                )
-        ));
+                )),
+                updaterDomainModel
+        );
     }
 
     @Transactional
@@ -259,11 +268,18 @@ public class LockerService {
                 "사물함 삭제"
         );
 
-        return LockerResponseDto.from(lockerDomainModel);
+        return LockerResponseDto.from(lockerDomainModel, deleterDomainModel);
     }
 
     @Transactional(readOnly = true)
-    public List<LockerResponseDto> findByLocation(String locationId) {
+    public List<LockerResponseDto> findByLocation(String locationId, String userId) {
+        UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "로그인된 사용자를 찾을 수 없습니다."
+                )
+        );
+
         LockerLocationDomainModel lockerLocation = this.lockerLocationPort.findById(locationId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -273,12 +289,19 @@ public class LockerService {
 
         return this.lockerPort.findByLocationId(lockerLocation.getId())
                 .stream()
-                .map(LockerResponseDto::from)
+                .map(lockerDomainModel -> LockerResponseDto.from(lockerDomainModel, userDomainModel))
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public LockerAllLocationResponseDto findAllLocation(String userId) {
+        UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "로그인된 사용자를 찾을 수 없습니다."
+                )
+        );
+
         return LockerAllLocationResponseDto.of(
                 this.lockerLocationPort.findAll()
                         .stream()
@@ -290,7 +313,9 @@ public class LockerService {
                                 )
                         )
                         .collect(Collectors.toList()),
-                this.lockerPort.findByUserId(userId).map(LockerResponseDto::from).orElse(null)
+                this.lockerPort.findByUserId(userId)
+                        .map(lockerDomainModel -> LockerResponseDto.from(lockerDomainModel, userDomainModel))
+                        .orElse(null)
         );
     }
 
