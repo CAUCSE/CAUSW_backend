@@ -2,6 +2,7 @@ package net.causw.adapter.web;
 
 import net.causw.application.LockerService;
 import net.causw.application.dto.LockerAllLocationResponseDto;
+import net.causw.application.dto.LockerAllResponseDto;
 import net.causw.application.dto.LockerCreateRequestDto;
 import net.causw.application.dto.LockerLocationCreateRequestDto;
 import net.causw.application.dto.LockerLocationResponseDto;
@@ -58,7 +59,11 @@ public class LockerController {
             @PathVariable String id,
             @RequestBody LockerUpdateRequestDto lockerUpdateRequestDto
     ) {
-        return this.lockerService.update(updaterId, id, lockerUpdateRequestDto);
+        return this.lockerService.update(
+                updaterId,
+                id,
+                lockerUpdateRequestDto
+        );
     }
 
     @PutMapping(value = "/{id}/move")
@@ -68,7 +73,11 @@ public class LockerController {
             @PathVariable String id,
             @RequestBody LockerMoveRequestDto lockerMoveRequestDto
     ) {
-        return this.lockerService.move(updaterId, id, lockerMoveRequestDto);
+        return this.lockerService.move(
+                updaterId,
+                id,
+                lockerMoveRequestDto
+        );
     }
 
     @DeleteMapping(value = "/{id}")
@@ -88,7 +97,7 @@ public class LockerController {
 
     @GetMapping(value = "/locations/{locationId}")
     @ResponseStatus(value = HttpStatus.OK)
-    public List<LockerResponseDto> findByLocation(
+    public LockerAllResponseDto findByLocation(
             @AuthenticationPrincipal String userId,
             @PathVariable String locationId
     ) {
@@ -109,9 +118,13 @@ public class LockerController {
     public LockerLocationResponseDto updateLocation(
             @AuthenticationPrincipal String updaterId,
             @PathVariable String locationId,
-            @RequestBody LockerLocationUpdateRequestDto lockerLocation
+            @RequestBody LockerLocationUpdateRequestDto lockerLocationUpdateRequestDto
     ) {
-        return this.lockerService.updateLocation(updaterId, locationId, lockerLocation);
+        return this.lockerService.updateLocation(
+                updaterId,
+                locationId,
+                lockerLocationUpdateRequestDto
+        );
     }
 
     @DeleteMapping(value = "/locations/{locationId}")

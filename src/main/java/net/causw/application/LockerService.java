@@ -1,6 +1,7 @@
 package net.causw.application;
 
 import net.causw.application.dto.LockerAllLocationResponseDto;
+import net.causw.application.dto.LockerAllResponseDto;
 import net.causw.application.dto.LockerCreateRequestDto;
 import net.causw.application.dto.LockerLocationCreateRequestDto;
 import net.causw.application.dto.LockerLocationResponseDto;
@@ -272,7 +273,7 @@ public class LockerService {
     }
 
     @Transactional(readOnly = true)
-    public List<LockerResponseDto> findByLocation(String locationId, String userId) {
+    public LockerAllResponseDto findByLocation(String locationId, String userId) {
         UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -287,10 +288,13 @@ public class LockerService {
                 )
         );
 
-        return this.lockerPort.findByLocationId(lockerLocation.getId())
-                .stream()
-                .map(lockerDomainModel -> LockerResponseDto.from(lockerDomainModel, userDomainModel))
-                .collect(Collectors.toList());
+        return LockerAllResponseDto.of(
+                lockerLocation.getName(),
+                this.lockerPort.findByLocationId(lockerLocation.getId())
+                        .stream()
+                        .map(lockerDomainModel -> LockerResponseDto.from(lockerDomainModel, userDomainModel))
+                        .collect(Collectors.toList())
+        );
     }
 
     @Transactional(readOnly = true)
