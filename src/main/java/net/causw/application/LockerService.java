@@ -166,10 +166,9 @@ public class LockerService {
                 .getLockerAction(LockerLogAction.of(lockerUpdateRequestDto.getAction()))
                 .updateLockerDomainModel(
                         lockerDomainModel,
-                        lockerDomainModel.getUser().orElse(null),
                         updaterDomainModel,
-                        this.validator,
-                        this.lockerPort
+                        this.lockerPort,
+                        this.lockerLogPort
                 )
                 .map(resLockerDomainModel -> {
                     this.lockerLogPort.create(
