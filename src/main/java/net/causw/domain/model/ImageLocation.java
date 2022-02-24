@@ -3,13 +3,13 @@ package net.causw.domain.model;
 import java.util.Arrays;
 
 public enum ImageLocation {
-    USER_PROFILE("user_profile"),
-    USER_ADMISSION("user_admission"),
-    CIRCLE_PROFILE("circle_profile"),
-    POST("post"),
-    ETC("etc");
+    USER_PROFILE("USER_PROFILE"),
+    USER_ADMISSION("USER_ADMISSION"),
+    CIRCLE_PROFILE("CIRCLE_PROFILE"),
+    POST("POST"),
+    ETC("ETC");
 
-    private String value;
+    private final String value;
 
     ImageLocation(String value) {
         this.value = value;

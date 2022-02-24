@@ -3,10 +3,10 @@ package net.causw.domain.model;
 import java.util.Arrays;
 
 public enum SearchOption {
-    TITLE("title"),
-    WRITER("writer");
+    TITLE("TITLE"),
+    WRITER("WRITER");
 
-    private String value;
+    private final String value;
 
     SearchOption(String value) {
         this.value = value;
