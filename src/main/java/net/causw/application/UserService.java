@@ -141,6 +141,48 @@ public class UserService {
         return UserResponseDto.from(requestUser);
     }
 
+    // Find process of another user
+    @Transactional(readOnly = true)
+    public UserResponseDto findById(String targetUserId, String requestUserId) {
+        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "로그인된 사용자를 찾을 수 없습니다."
+                )
+        );
+
+        ValidatorBucket.of()
+                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
+                .consistOf(UserStateValidator.of(requestUser.getState()))
+                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT, Role.LEADER_CIRCLE)))
+                .validate();
+
+        if (requestUser.getRole().equals(Role.LEADER_CIRCLE)) {
+            CircleDomainModel ownCircle = this.circlePort.findByLeaderId(requestUserId).orElseThrow(
+                    () -> new InternalServerException(
+                            ErrorCode.INTERNAL_SERVER,
+                            "소모임장이 아닙니다."
+                    )
+            );
+
+            this.circleMemberPort.findByUserIdAndCircleId(targetUserId, ownCircle.getId()).orElseThrow(
+                    () -> new BadRequestException(
+                            ErrorCode.NOT_MEMBER,
+                            "해당 유저는 소모임 회원이 아닙니다."
+                    )
+            );
+        }
+
+        UserDomainModel findUser = this.userPort.findById(targetUserId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "해당 사용자를 찾을 수 없습니다."
+                )
+        );
+
+        return UserResponseDto.from(findUser);
+    }
+
     @Transactional(readOnly = true)
     public UserResponseDto findById(String id) {
         UserDomainModel requestUser = this.userPort.findById(id).orElseThrow(
@@ -254,7 +296,24 @@ public class UserService {
 
         return this.userPort.findByName(name)
                 .stream()
-                .map(UserResponseDto::from)
+                .map(userDomainModel -> {
+                    if (userDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
+                        CircleDomainModel ownCircle = this.circlePort.findByLeaderId(userDomainModel.getId()).orElseThrow(
+                                () -> new InternalServerException(
+                                        ErrorCode.INTERNAL_SERVER,
+                                        "소모임장이 아닙니다"
+                                )
+                        );
+
+                        return UserResponseDto.from(
+                                userDomainModel,
+                                ownCircle.getId(),
+                                ownCircle.getName()
+                        );
+                    } else {
+                        return UserResponseDto.from(userDomainModel);
+                    }
+                })
                 .collect(Collectors.toList());
     }
 
@@ -296,7 +355,20 @@ public class UserService {
                         .collect(Collectors.toList()),
                 this.userPort.findByRole(Role.LEADER_CIRCLE)
                         .stream()
-                        .map(UserResponseDto::from)
+                        .map(userDomainModel -> {
+                            CircleDomainModel ownCircle = this.circlePort.findByLeaderId(userDomainModel.getId()).orElseThrow(
+                                    () -> new InternalServerException(
+                                            ErrorCode.INTERNAL_SERVER,
+                                            "소모임장이 아닙니다"
+                                    )
+                            );
+
+                            return UserResponseDto.from(
+                                    userDomainModel,
+                                    ownCircle.getId(),
+                                    ownCircle.getName()
+                            );
+                        })
                         .collect(Collectors.toList()),
                 this.userPort.findByRole(Role.LEADER_ALUMNI)
                         .stream()
@@ -325,7 +397,24 @@ public class UserService {
                 .validate();
 
         return this.userPort.findByState(UserState.of(state), pageNum)
-                .map(UserResponseDto::from);
+                .map(userDomainModel -> {
+                    if (userDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
+                        CircleDomainModel ownCircle = this.circlePort.findByLeaderId(userDomainModel.getId()).orElseThrow(
+                                () -> new InternalServerException(
+                                        ErrorCode.INTERNAL_SERVER,
+                                        "소모임장이 아닙니다"
+                                )
+                        );
+
+                        return UserResponseDto.from(
+                                userDomainModel,
+                                ownCircle.getId(),
+                                ownCircle.getName()
+                        );
+                    } else {
+                        return UserResponseDto.from(userDomainModel);
+                    }
+                });
     }
 
     @Transactional(readOnly = true)
