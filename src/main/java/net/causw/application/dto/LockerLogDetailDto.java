@@ -1,12 +1,14 @@
 package net.causw.application.dto;
 
 import lombok.Getter;
+import lombok.Setter;
 import net.causw.adapter.persistence.LockerLog;
 import net.causw.domain.model.LockerLogAction;
 
 import java.time.LocalDateTime;
 
 @Getter
+@Setter
 public class LockerLogDetailDto {
     private Long lockerNumber;
     private String userEmail;
@@ -24,7 +26,7 @@ public class LockerLogDetailDto {
             String message,
             LocalDateTime createdAt,
             LocalDateTime updatedAt
-    ){
+    ) {
         this.lockerNumber = lockerNumber;
         this.userEmail = userEmail;
         this.userName = userName;

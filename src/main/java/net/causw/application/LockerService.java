@@ -176,7 +176,7 @@ public class LockerService {
                             resLockerDomainModel.getLockerNumber(),
                             updaterDomainModel,
                             LockerLogAction.of(lockerUpdateRequestDto.getAction()),
-                            lockerUpdateRequestDto.getMessage()
+                            lockerUpdateRequestDto.getMessage().orElse(lockerUpdateRequestDto.getAction())
                     );
                     return LockerResponseDto.from(resLockerDomainModel, updaterDomainModel);
                 })
@@ -343,8 +343,7 @@ public class LockerService {
         }
 
         LockerLocationDomainModel lockerLocationDomainModel = LockerLocationDomainModel.of(
-                lockerLocationCreateRequestDto.getName(),
-                lockerLocationCreateRequestDto.getDescription()
+                lockerLocationCreateRequestDto.getName()
         );
 
         ValidatorBucket.of()
@@ -391,8 +390,7 @@ public class LockerService {
         }
 
         lockerLocationDomainModel.update(
-                lockerLocationRequestDto.getName(),
-                lockerLocationRequestDto.getDescription()
+                lockerLocationRequestDto.getName()
         );
 
         ValidatorBucket.of()

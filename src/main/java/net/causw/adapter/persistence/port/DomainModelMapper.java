@@ -25,7 +25,6 @@ import net.causw.domain.model.UserDomainModel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.stream.Collectors;
 
 // TODO: Refactoring
 public abstract class DomainModelMapper {
@@ -111,8 +110,7 @@ public abstract class DomainModelMapper {
     protected LockerLocationDomainModel entityToDomainModel(LockerLocation lockerLocation) {
         return LockerLocationDomainModel.of(
                 lockerLocation.getId(),
-                lockerLocation.getName(),
-                lockerLocation.getDescription()
+                lockerLocation.getName()
         );
     }
 

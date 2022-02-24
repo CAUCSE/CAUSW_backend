@@ -18,29 +18,23 @@ public class LockerLocation extends BaseEntity {
     @Column(name = "name", unique = true, nullable = false)
     private String name;
 
-    @Column(name ="description", unique = false, nullable = true)
-    private String description;
-
-    private LockerLocation(String id, String name, String description) {
+    private LockerLocation(String id, String name) {
         super(id);
         this.name = name;
-        this.description = description;
     }
 
-    private LockerLocation(String name, String description) {
+    private LockerLocation(String name) {
         this.name = name;
-        this.description = description;
     }
 
-    public static LockerLocation of(String name, String description) {
-        return new LockerLocation(name, description);
+    public static LockerLocation of(String name) {
+        return new LockerLocation(name);
     }
 
     public static LockerLocation from(LockerLocationDomainModel lockerLocationDomainModel) {
         return new LockerLocation(
                 lockerLocationDomainModel.getId(),
-                lockerLocationDomainModel.getName(),
-                lockerLocationDomainModel.getDescription()
+                lockerLocationDomainModel.getName()
         );
     }
 }
