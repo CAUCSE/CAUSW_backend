@@ -44,6 +44,7 @@ import net.causw.domain.model.UserAdmissionLogAction;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.model.UserState;
 import net.causw.domain.validation.AdmissionYearValidator;
+import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.GrantableRoleValidator;
 import net.causw.domain.validation.PasswordCorrectValidator;
@@ -515,6 +516,46 @@ public class UserService {
                     .create(grantor.getRole(), this.userPort, this.circlePort, this.circleMemberPort)
                     .delegate(grantorId, granteeId);
         }
+        /* Delegate the Circle Leader
+         * 1) Check if the grantor's role is Admin or President
+         * 2) Check if the role to update is Circle Leader
+         */
+        else if ((grantor.getRole() == Role.PRESIDENT || grantor.getRole() == Role.ADMIN)
+                && userUpdateRoleRequestDto.getRole() == Role.LEADER_CIRCLE
+        ) {
+            String circleId = userUpdateRoleRequestDto.getCircleId()
+                    .orElseThrow(() -> new BadRequestException(
+                            ErrorCode.INVALID_PARAMETER,
+                            "소모임장을 위임할 소모임 입력이 필요합니다."
+                    ));
+
+            this.circleMemberPort.findByUserIdAndCircleId(granteeId, circleId)
+                    .ifPresentOrElse(
+                            circleMember ->
+                                    ValidatorBucket.of()
+                                            .consistOf(CircleMemberStatusValidator.of(
+                                                    circleMember.getStatus(),
+                                                    List.of(CircleMemberStatus.MEMBER)
+                                            )).validate(),
+                            () -> {
+                                throw new UnauthorizedException(
+                                        ErrorCode.NOT_MEMBER,
+                                        "사용자가 가입 신청한 소모임이 아닙니다."
+                                );
+                            });
+
+            this.circlePort.findById(circleId)
+                    .ifPresentOrElse(circle -> {
+                        this.circlePort.updateLeader(circle.getId(), grantee);
+                        circle.getLeader().ifPresent(leader -> this.userPort.updateRole(leader.getId(), Role.COMMON));
+                    }, () -> {
+                        throw new BadRequestException(
+                                ErrorCode.ROW_DOES_NOT_EXIST,
+                                "소모임을 찾을 수 없습니다."
+                        );
+                    });
+        }
+
 
         /* Grant the role
          * The linked updating process is performed on previous delegation process

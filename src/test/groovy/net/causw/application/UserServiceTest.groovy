@@ -220,7 +220,26 @@ class UserServiceTest extends Specification {
                 UserState.AWAIT
         )
 
-        def userUpdateRoleRequestDto = new UserUpdateRoleRequestDto(Role.COUNCIL.value)
+        def mockCircleDomainModel = CircleDomainModel.of(
+                "test",
+                "test",
+                null,
+                "test_description",
+                false,
+                (UserDomainModel) this.mockUserDomainModel
+        )
+
+        def mockCircleMemberDomainModel = CircleMemberDomainModel.of(
+                "test",
+                CircleMemberStatus.MEMBER,
+                mockCircleDomainModel,
+                targetId,
+                "test",
+                LocalDateTime.now(),
+                LocalDateTime.now()
+        )
+
+        def userUpdateRoleRequestDto = new UserUpdateRoleRequestDto(Role.COUNCIL.value, null)
 
         this.userPort.findById(currentId) >> Optional.of(this.mockUserDomainModel)
         this.userPort.findById(targetId) >> Optional.of(mockTargetUserDomainModel)
@@ -248,14 +267,6 @@ class UserServiceTest extends Specification {
         userResponseDto instanceof UserResponseDto
         userResponseDto.getRole() == Role.LEADER_1
 
-        when: "President -> Grant Leader_Circle"
-        mockUpdatedUserDomainModel.setRole(Role.LEADER_CIRCLE)
-        userUpdateRoleRequestDto.setRole(Role.LEADER_CIRCLE.value)
-        userResponseDto = this.userService.updateUserRole(currentId, targetId, userUpdateRoleRequestDto)
-
-        then:
-        userResponseDto instanceof UserResponseDto
-        userResponseDto.getRole() == Role.LEADER_CIRCLE
 
         when: "President -> Grant Leader_Alumni"
         mockUpdatedUserDomainModel.setRole(Role.LEADER_ALUMNI)
@@ -265,6 +276,21 @@ class UserServiceTest extends Specification {
         then:
         userResponseDto instanceof UserResponseDto
         userResponseDto.getRole() == Role.LEADER_ALUMNI
+
+        when: "President -> Grant Leader_Circle"
+        userUpdateRoleRequestDto = new UserUpdateRoleRequestDto(Role.COUNCIL.value, "test")
+
+        this.circlePort.findById("test") >> Optional.of(mockCircleDomainModel)
+        this.circleMemberPort.findByUserIdAndCircleId(targetId, "test") >> Optional.of(mockCircleMemberDomainModel)
+        this.circlePort.updateLeader("test", mockTargetUserDomainModel) >> Optional.of(mockCircleDomainModel)
+
+        mockUpdatedUserDomainModel.setRole(Role.LEADER_CIRCLE)
+        userUpdateRoleRequestDto.setRole(Role.LEADER_CIRCLE.value)
+        userResponseDto = this.userService.updateUserRole(currentId, targetId, userUpdateRoleRequestDto)
+
+        then:
+        userResponseDto instanceof UserResponseDto
+        userResponseDto.getRole() == Role.LEADER_CIRCLE
     }
 
     @Test
@@ -316,7 +342,7 @@ class UserServiceTest extends Specification {
                 null
         )
 
-        def userUpdateRoleRequestDto = new UserUpdateRoleRequestDto(Role.COUNCIL.value)
+        def userUpdateRoleRequestDto = new UserUpdateRoleRequestDto(Role.COUNCIL.value, null)
 
         this.userPort.findById(currentId) >> Optional.of(this.mockUserDomainModel)
         this.userPort.findById(targetId) >> Optional.of(mockTargetUserDomainModel)
@@ -329,21 +355,11 @@ class UserServiceTest extends Specification {
         this.userPort.updateRole(currentId, Role.COMMON) >> Optional.of(mockUpdatedUserDomainModel)
         this.circlePort.updateLeader(currentId, mockTargetUserDomainModel) >> Optional.of(mockCircleDomainModel)
 
-        when: "President -> Delegate President"
-        this.mockUserDomainModel.setRole(Role.PRESIDENT)
-        userUpdateRoleRequestDto.setRole(Role.PRESIDENT.value)
-        mockUpdatedUserDomainModel.setRole(Role.PRESIDENT)
-        def userResponseDto = this.userService.updateUserRole(currentId, targetId, userUpdateRoleRequestDto)
-
-        then:
-        userResponseDto instanceof UserResponseDto
-        userResponseDto.getRole() == Role.PRESIDENT
-
         when: "Leader Alumni -> Delegate Alumni"
         this.mockUserDomainModel.setRole(Role.LEADER_ALUMNI)
         userUpdateRoleRequestDto.setRole(Role.LEADER_ALUMNI.value)
         mockUpdatedUserDomainModel.setRole(Role.LEADER_ALUMNI)
-        userResponseDto = this.userService.updateUserRole(currentId, targetId, userUpdateRoleRequestDto)
+        def userResponseDto = this.userService.updateUserRole(currentId, targetId, userUpdateRoleRequestDto)
 
         then:
         userResponseDto instanceof UserResponseDto
@@ -358,6 +374,16 @@ class UserServiceTest extends Specification {
         then:
         userResponseDto instanceof UserResponseDto
         userResponseDto.getRole() == Role.LEADER_CIRCLE
+
+        when: "President -> Delegate President"
+        this.mockUserDomainModel.setRole(Role.PRESIDENT)
+        userUpdateRoleRequestDto.setRole(Role.PRESIDENT.value)
+        mockUpdatedUserDomainModel.setRole(Role.PRESIDENT)
+        userResponseDto = this.userService.updateUserRole(currentId, targetId, userUpdateRoleRequestDto)
+
+        then:
+        userResponseDto instanceof UserResponseDto
+        userResponseDto.getRole() == Role.PRESIDENT
     }
 
     @Test
@@ -390,7 +416,7 @@ class UserServiceTest extends Specification {
                 UserState.AWAIT
         )
 
-        def userUpdateRoleRequestDto = new UserUpdateRoleRequestDto(Role.COMMON.value)
+        def userUpdateRoleRequestDto = new UserUpdateRoleRequestDto(Role.COMMON.value, null)
 
         this.userPort.findById(currentId) >> Optional.of(this.mockUserDomainModel)
         this.userPort.findById(targetId) >> Optional.of(mockTargetUserDomainModel)
@@ -455,7 +481,7 @@ class UserServiceTest extends Specification {
                 UserState.AWAIT
         )
 
-        def userUpdateRoleRequestDto = new UserUpdateRoleRequestDto(Role.COMMON.value)
+        def userUpdateRoleRequestDto = new UserUpdateRoleRequestDto(Role.COMMON.value, null)
 
         this.mockUserDomainModel.setRole(Role.NONE)
         this.userPort.findById(currentId) >> Optional.of(this.mockUserDomainModel)
