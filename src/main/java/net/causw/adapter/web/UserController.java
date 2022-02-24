@@ -43,6 +43,15 @@ public class UserController {
         this.userService = userService;
     }
 
+    @GetMapping(value = "/{id}")
+    @ResponseStatus(value = HttpStatus.OK)
+    public UserResponseDto findById(
+            @AuthenticationPrincipal String requestUserId,
+            @PathVariable String id
+    ) {
+        return this.userService.findById(id, requestUserId);
+    }
+
     @GetMapping(value = "/me")
     @ResponseStatus(value = HttpStatus.OK)
     public UserResponseDto findCurrentUser(@AuthenticationPrincipal String currentUserId) {
@@ -89,7 +98,11 @@ public class UserController {
             @PathVariable String state,
             @RequestParam(defaultValue = "0") Integer pageNum
     ) {
-        return this.userService.findByState(currentUserId, state, pageNum);
+        return this.userService.findByState(
+                currentUserId,
+                state,
+                pageNum
+        );
     }
 
     @PostMapping(value = "/sign-up")
