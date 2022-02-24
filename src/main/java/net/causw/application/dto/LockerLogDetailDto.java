@@ -8,13 +8,13 @@ import java.time.LocalDateTime;
 
 @Getter
 public class LockerLogDetailDto {
-    private Long lockerNumber;
-    private String userEmail;
-    private String userName;
-    private LockerLogAction action;
-    private String message;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private final Long lockerNumber;
+    private final String userEmail;
+    private final String userName;
+    private final LockerLogAction action;
+    private final String message;
+    private final LocalDateTime createdAt;
+    private final LocalDateTime updatedAt;
 
     private LockerLogDetailDto(
             Long lockerNumber,

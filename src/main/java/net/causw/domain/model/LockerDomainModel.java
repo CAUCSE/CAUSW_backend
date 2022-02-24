@@ -85,6 +85,7 @@ public class LockerDomainModel {
 
     public void deactivate() {
         this.isActive = false;
+        this.user = null;
     }
 
     public void move(LockerLocationDomainModel lockerLocation) {

@@ -110,7 +110,6 @@ class LockerServiceTest extends Specification {
         lockerCreate instanceof LockerResponseDto
         with(lockerCreate) {
             getLockerNumber() == 1
-            getLockerLocationName() == "test locker location name"
         }
     }
 
@@ -300,21 +299,6 @@ class LockerServiceTest extends Specification {
             !getIsActive()
         }
 
-        when: "Locker register"
-        mockLockerUpdateRequestDto.setAction(LockerLogAction.REGISTER.toString())
-        ((LockerDomainModel) this.mockLockerDomainModel).setId(lockerRegisterId)
-        ((LockerDomainModel) this.mockLockerDomainModel).setIsActive(true)
-        ((LockerDomainModel) this.mockLockerDomainModel).setUser(null)
-        def lockerResponseDto3 = this.lockerService.update("owner test user id", lockerRegisterId, mockLockerUpdateRequestDto)
-
-        then:
-        lockerResponseDto3 instanceof LockerResponseDto
-        with(lockerResponseDto3) {
-            getLockerNumber() == 1
-            getIsActive()
-            getUserId() == "owner test user id"
-        }
-
         when: "Locker return"
         mockLockerUpdateRequestDto.setAction(LockerLogAction.RETURN.toString())
         ((LockerDomainModel) this.mockLockerDomainModel).setId(lockerReturnId)
@@ -327,7 +311,23 @@ class LockerServiceTest extends Specification {
         with(lockerResponseDto4) {
             getLockerNumber() == 1
             getIsActive()
-            getUserId() == null
+        }
+
+        when: "Locker register"
+        this.lockerPort.findByUserId("owner test user id") >> Optional.ofNullable(null)
+        this.lockerLogPort.whenRegister(ownerUserDomainModel) >> Optional.ofNullable(null)
+
+        mockLockerUpdateRequestDto.setAction(LockerLogAction.REGISTER.toString())
+        ((LockerDomainModel) this.mockLockerDomainModel).setId(lockerRegisterId)
+        ((LockerDomainModel) this.mockLockerDomainModel).setIsActive(true)
+        ((LockerDomainModel) this.mockLockerDomainModel).setUser(null)
+        def lockerResponseDto3 = this.lockerService.update("owner test user id", lockerRegisterId, mockLockerUpdateRequestDto)
+
+        then:
+        lockerResponseDto3 instanceof LockerResponseDto
+        with(lockerResponseDto3) {
+            getLockerNumber() == 1
+            getIsActive()
         }
 
         when: "Locker force return by president"
@@ -342,7 +342,6 @@ class LockerServiceTest extends Specification {
         with(lockerResponseDto5) {
             getLockerNumber() == 1
             getIsActive()
-            getUserId() == null
         }
     }
 
@@ -499,7 +498,6 @@ class LockerServiceTest extends Specification {
         lockerResponseDto instanceof LockerResponseDto
         with(lockerResponseDto) {
             getLockerNumber() == 1
-            getLockerLocationName() == mockMovedLockerLocationDomainModel.getName()
         }
     }
 
