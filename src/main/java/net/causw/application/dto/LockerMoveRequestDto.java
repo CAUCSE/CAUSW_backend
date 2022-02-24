@@ -10,5 +10,5 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LockerMoveRequestDto {
-    String locationId;
+    private String locationId;
 }

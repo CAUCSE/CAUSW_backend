@@ -11,5 +11,4 @@ import lombok.Setter;
 @NoArgsConstructor
 public class LockerLocationCreateRequestDto {
     private String name;
-    private String description;
 }

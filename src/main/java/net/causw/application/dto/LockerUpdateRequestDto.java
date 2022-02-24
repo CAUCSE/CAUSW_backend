@@ -4,13 +4,18 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.causw.domain.model.LockerLogAction;
+
+import java.util.Optional;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class LockerUpdateRequestDto {
-    String action;
-    String message;
+    private String action;
+    private String message;
+
+    public Optional<String> getMessage() {
+        return Optional.ofNullable(this.message);
+    }
 }
