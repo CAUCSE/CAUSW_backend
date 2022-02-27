@@ -10,6 +10,7 @@ import net.causw.application.dto.UserAdmissionCreateRequestDto;
 import net.causw.application.dto.UserAdmissionResponseDto;
 import net.causw.application.dto.UserCommentResponseDto;
 import net.causw.application.dto.UserCreateRequestDto;
+import net.causw.application.dto.UserFindEmailRequestDto;
 import net.causw.application.dto.UserPasswordUpdateRequestDto;
 import net.causw.application.dto.UserPostResponseDto;
 import net.causw.application.dto.UserPrivilegedDto;
@@ -124,6 +125,18 @@ public class UserService {
         this.googleMailSender = googleMailSender;
         this.passwordGenerator = passwordGenerator;
         this.validator = validator;
+    }
+
+    @Transactional(readOnly = true)
+    public String findEmail(
+            UserFindEmailRequestDto userFindEmailRequestDto
+    ) {
+        return this.userPort.findEmail(userFindEmailRequestDto.getEmail(), userFindEmailRequestDto.getStudentId())
+                .map(UserDomainModel::getEmail)
+                .orElseThrow(() -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "가입정보가 존재하지 않습니다."
+                ));
     }
 
     @Transactional
