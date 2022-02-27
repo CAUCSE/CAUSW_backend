@@ -22,6 +22,8 @@ import net.causw.application.spi.CircleMemberPort;
 import net.causw.application.spi.CirclePort;
 import net.causw.application.spi.CommentPort;
 import net.causw.application.spi.FavoriteBoardPort;
+import net.causw.application.spi.LockerLogPort;
+import net.causw.application.spi.LockerPort;
 import net.causw.application.spi.PostPort;
 import net.causw.application.spi.UserAdmissionLogPort;
 import net.causw.application.spi.UserAdmissionPort;
@@ -36,6 +38,7 @@ import net.causw.domain.model.CircleDomainModel;
 import net.causw.domain.model.CircleMemberStatus;
 import net.causw.domain.model.FavoriteBoardDomainModel;
 import net.causw.domain.model.ImageLocation;
+import net.causw.domain.model.LockerLogAction;
 import net.causw.domain.model.PostDomainModel;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.StaticValue;
@@ -79,6 +82,8 @@ public class UserService {
     private final CircleMemberPort circleMemberPort;
     private final CommentPort commentPort;
     private final FavoriteBoardPort favoriteBoardPort;
+    private final LockerPort lockerPort;
+    private final LockerLogPort lockerLogPort;
     private final JwtTokenProvider jwtTokenProvider;
     private final GcpFileUploader gcpFileUploader;
     private final GoogleMailSender googleMailSender;
@@ -95,6 +100,8 @@ public class UserService {
             CircleMemberPort circleMemberPort,
             CommentPort commentPort,
             FavoriteBoardPort favoriteBoardPort,
+            LockerPort lockerPort,
+            LockerLogPort lockerLogPort,
             JwtTokenProvider jwtTokenProvider,
             GcpFileUploader gcpFileUploader,
             GoogleMailSender googleMailSender,
@@ -110,6 +117,8 @@ public class UserService {
         this.circleMemberPort = circleMemberPort;
         this.commentPort = commentPort;
         this.favoriteBoardPort = favoriteBoardPort;
+        this.lockerPort = lockerPort;
+        this.lockerLogPort = lockerLogPort;
         this.jwtTokenProvider = jwtTokenProvider;
         this.gcpFileUploader = gcpFileUploader;
         this.googleMailSender = googleMailSender;
@@ -718,7 +727,18 @@ public class UserService {
                 .consistOf(UserRoleWithoutAdminValidator.of(user.getRole(), List.of(Role.COMMON, Role.PROFESSOR)))
                 .validate();
 
-        // TODO: Should implement return locker and add log of locker
+        this.lockerPort.findByUserId(id)
+                .ifPresent(lockerDomainModel -> {
+                    lockerDomainModel.returnLocker();
+                    this.lockerPort.update(lockerDomainModel.getId(), lockerDomainModel);
+
+                    this.lockerLogPort.create(
+                            lockerDomainModel.getLockerNumber(),
+                            user,
+                            LockerLogAction.RETURN,
+                            "사용자 탈퇴"
+                    );
+                });
 
         // Change user role to NONE
         this.userPort.updateRole(id, Role.NONE).orElseThrow(
@@ -764,6 +784,19 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT)))
                 .consistOf(UserRoleWithoutAdminValidator.of(droppedUser.getRole(), List.of(Role.COMMON, Role.PROFESSOR)))
                 .validate();
+
+        this.lockerPort.findByUserId(userId)
+                .ifPresent(lockerDomainModel -> {
+                    lockerDomainModel.returnLocker();
+                    this.lockerPort.update(lockerDomainModel.getId(), lockerDomainModel);
+
+                    this.lockerLogPort.create(
+                            lockerDomainModel.getLockerNumber(),
+                            requestUser,
+                            LockerLogAction.RETURN,
+                            "사용자 추방"
+                    );
+                });
 
         this.userPort.updateRole(userId, Role.NONE).orElseThrow(
                 () -> new InternalServerException(
