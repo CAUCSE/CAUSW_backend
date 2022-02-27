@@ -9,6 +9,7 @@ import net.causw.application.dto.UserAdmissionCreateRequestDto;
 import net.causw.application.dto.UserAdmissionResponseDto;
 import net.causw.application.dto.UserCommentResponseDto;
 import net.causw.application.dto.UserCreateRequestDto;
+import net.causw.application.dto.UserFindEmailRequestDto;
 import net.causw.application.dto.UserPasswordUpdateRequestDto;
 import net.causw.application.dto.UserPostResponseDto;
 import net.causw.application.dto.UserPrivilegedDto;
@@ -41,6 +42,14 @@ public class UserController {
 
     public UserController(UserService userService) {
         this.userService = userService;
+    }
+
+    @GetMapping(value = "/email")
+    @ResponseStatus(value = HttpStatus.OK)
+    public String findEmail(
+            @RequestBody UserFindEmailRequestDto userFindEmailRequestDto
+            ) {
+        return this.userService.findEmail(userFindEmailRequestDto);
     }
 
     @GetMapping(value = "/{id}")
