@@ -12,6 +12,10 @@ import java.time.LocalDateTime;
 public class UserAdmissionAllResponseDto {
     private String id;
     private String userName;
+    private String userEmail;
+    private Integer userAdmissionYear;
+    private String attachImage;
+    private String description;
     private UserState userState;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -19,12 +23,20 @@ public class UserAdmissionAllResponseDto {
     public UserAdmissionAllResponseDto(
             String id,
             String userName,
+            String userEmail,
+            Integer userAdmissionYear,
+            String attachImage,
+            String description,
             UserState userState,
             LocalDateTime createdAt,
             LocalDateTime updatedAt
     ) {
         this.id = id;
         this.userName = userName;
+        this.userEmail = userEmail;
+        this.userAdmissionYear = userAdmissionYear;
+        this.attachImage = attachImage;
+        this.description = description;
         this.userState = userState;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -34,6 +46,10 @@ public class UserAdmissionAllResponseDto {
         return new UserAdmissionAllResponseDto(
                 userAdmissionDomainModel.getId(),
                 userAdmissionDomainModel.getUser().getName(),
+                userAdmissionDomainModel.getUser().getEmail(),
+                userAdmissionDomainModel.getUser().getAdmissionYear(),
+                userAdmissionDomainModel.getAttachImage(),
+                userAdmissionDomainModel.getDescription(),
                 userAdmissionDomainModel.getUser().getState(),
                 userAdmissionDomainModel.getCreatedAt(),
                 userAdmissionDomainModel.getUpdatedAt()
