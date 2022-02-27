@@ -63,6 +63,7 @@ public class BoardService {
 
         return this.boardPort.findAll()
                 .stream()
+                .filter(boardDomainModel -> !boardDomainModel.getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE))
                 .map(boardDomainModel -> BoardResponseDto.from(boardDomainModel, userDomainModel.getRole()))
                 .collect(Collectors.toList());
     }
