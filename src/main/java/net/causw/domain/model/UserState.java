@@ -8,13 +8,13 @@ import java.util.Arrays;
 
 @Getter
 public enum UserState {
-    AWAIT("await"),
-    ACTIVE("active"),
-    INACTIVE("inactive"),
-    REJECT("reject"),
-    DROP("drop");
+    AWAIT("AWAIT"),
+    ACTIVE("ACTIVE"),
+    INACTIVE("INACTIVE"),
+    REJECT("REJECT"),
+    DROP("DROP");
 
-    private String value;
+    private final String value;
 
     UserState(String value) {
         this.value = value;

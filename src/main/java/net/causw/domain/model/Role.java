@@ -8,20 +8,20 @@ import java.util.Arrays;
 
 @Getter
 public enum Role {
-    ADMIN("admin"),
-    PRESIDENT("president"),
-    COUNCIL("council"),
-    LEADER_1("leader_1"),
-    LEADER_2("leader_2"),
-    LEADER_3("leader_3"),
-    LEADER_4("leader_4"),
-    LEADER_CIRCLE("leader_circle"),
-    LEADER_ALUMNI("leader_alumni"),
-    COMMON("common"),
-    NONE("none"),
-    PROFESSOR("professor");
+    ADMIN("ADMIN"),
+    PRESIDENT("PRESIDENT"),
+    COUNCIL("COUNCIL"),
+    LEADER_1("LEADER_1"),
+    LEADER_2("LEADER_2"),
+    LEADER_3("LEADER_3"),
+    LEADER_4("LEADER_4"),
+    LEADER_CIRCLE("LEADER_CIRCLE"),
+    LEADER_ALUMNI("LEADER_ALUMNI"),
+    COMMON("COMMON"),
+    NONE("NONE"),
+    PROFESSOR("PROFESSOR");
 
-    private String value;
+    private final String value;
 
     Role(String value) {
         this.value = value;

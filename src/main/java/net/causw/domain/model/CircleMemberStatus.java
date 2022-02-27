@@ -1,13 +1,13 @@
 package net.causw.domain.model;
 
 public enum CircleMemberStatus {
-    AWAIT("await"),
-    MEMBER("member"),
-    LEAVE("leave"),
-    DROP("drop"),
-    REJECT("reject");
+    AWAIT("AWAIT"),
+    MEMBER("MEMBER"),
+    LEAVE("LEAVE"),
+    DROP("DROP"),
+    REJECT("REJECT");
 
-    private String value;
+    private final String value;
 
     CircleMemberStatus(String value) {
         this.value = value;

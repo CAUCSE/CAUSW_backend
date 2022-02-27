@@ -6,12 +6,12 @@ import net.causw.domain.exceptions.ErrorCode;
 import java.util.Arrays;
 
 public enum LockerLogAction {
-    ENABLE("enable"),
-    DISABLE("disable"),
-    REGISTER("register"),
-    RETURN("return");
+    ENABLE("ENABLE"),
+    DISABLE("DISABLE"),
+    REGISTER("REGISTER"),
+    RETURN("RETURN");
 
-    private String value;
+    private final String value;
 
     LockerLogAction(String value) {
         this.value = value;
