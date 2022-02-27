@@ -174,14 +174,12 @@ public class UserService {
             );
         }
 
-        UserDomainModel findUser = this.userPort.findById(targetUserId).orElseThrow(
-                () -> new BadRequestException(
+        return this.userPort.findById(targetUserId)
+                .map(UserResponseDto::from)
+                .orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "해당 사용자를 찾을 수 없습니다."
-                )
-        );
-
-        return UserResponseDto.from(findUser);
+                ));
     }
 
     @Transactional(readOnly = true)
@@ -292,19 +290,39 @@ public class UserService {
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
-                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
+                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT, Role.LEADER_CIRCLE)))
                 .validate();
+
+        if (user.getRole().equals(Role.LEADER_CIRCLE)) {
+            CircleDomainModel ownCircle = this.circlePort.findByLeaderId(currentUserId).orElseThrow(
+                    () -> new InternalServerException(
+                            ErrorCode.INTERNAL_SERVER,
+                            "소모임장이 아닙니다"
+                    )
+            );
+
+            return this.userPort.findByName(name)
+                    .stream()
+                    .filter(userDomainModel ->
+                            this.circleMemberPort.findByUserIdAndCircleId(userDomainModel.getId(), ownCircle.getId())
+                                    .map(circleMemberDomainModel ->
+                                            circleMemberDomainModel.getStatus() == CircleMemberStatus.MEMBER)
+                                    .orElse(Boolean.FALSE))
+                    .map(UserResponseDto::from)
+                    .collect(Collectors.toList());
+        }
 
         return this.userPort.findByName(name)
                 .stream()
                 .map(userDomainModel -> {
                     if (userDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
-                        CircleDomainModel ownCircle = this.circlePort.findByLeaderId(userDomainModel.getId()).orElseThrow(
-                                () -> new InternalServerException(
-                                        ErrorCode.INTERNAL_SERVER,
-                                        "소모임장이 아닙니다"
-                                )
-                        );
+                        CircleDomainModel ownCircle = this.circlePort.findByLeaderId(userDomainModel.getId())
+                                .orElseThrow(
+                                        () -> new InternalServerException(
+                                                ErrorCode.INTERNAL_SERVER,
+                                                "소모임장이 아닙니다"
+                                        )
+                                );
 
                         return UserResponseDto.from(
                                 userDomainModel,
