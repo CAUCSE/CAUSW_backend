@@ -6,6 +6,8 @@ import net.causw.application.spi.CircleMemberPort
 import net.causw.application.spi.CirclePort
 import net.causw.application.spi.CommentPort
 import net.causw.application.spi.FavoriteBoardPort
+import net.causw.application.spi.LockerLogPort
+import net.causw.application.spi.LockerPort
 import net.causw.application.spi.PostPort
 import net.causw.application.spi.UserAdmissionLogPort
 import net.causw.application.spi.UserAdmissionPort
@@ -47,6 +49,8 @@ class UserServiceTest extends Specification {
     private CircleMemberPort circleMemberPort = Mock(CircleMemberPort.class)
     private CommentPort commentPort = Mock(CommentPort.class)
     private FavoriteBoardPort favoriteBoardPort = Mock(FavoriteBoardPort.class)
+    private LockerPort lockerPort = Mock(LockerPort.class)
+    private LockerLogPort lockerLogPort = Mock(LockerLogPort.class)
     private JwtTokenProvider jwtTokenProvider = Mock(JwtTokenProvider.class)
     private GcpFileUploader gcpFileUploader = Mock(GcpFileUploader.class)
     private GoogleMailSender googleMailSender = Mock(GoogleMailSender.class)
@@ -62,6 +66,8 @@ class UserServiceTest extends Specification {
             this.circleMemberPort,
             this.commentPort,
             this.favoriteBoardPort,
+            this.lockerPort,
+            this.lockerLogPort,
             this.jwtTokenProvider,
             this.gcpFileUploader,
             this.googleMailSender,
@@ -1028,6 +1034,7 @@ class UserServiceTest extends Specification {
         circleMember.setStatus(CircleMemberStatus.LEAVE)
         this.circleMemberPort.updateStatus("test", CircleMemberStatus.LEAVE) >> Optional.of(circleMember)
         this.userPort.updateState("test", UserState.INACTIVE) >> Optional.of(mockUpdatedUserDomainModel)
+        this.lockerPort.findByUserId("test") >> Optional.empty()
 
         when:
         def userResponseDto = this.userService.leave("test")
@@ -1179,6 +1186,7 @@ class UserServiceTest extends Specification {
         this.userPort.findById("test1") >> Optional.of(mockDroppedUserDomainModel)
         this.userPort.updateRole("test1", Role.NONE) >> Optional.of(mockDroppedUserDomainModel)
         this.userPort.updateState("test1", UserState.DROP) >> Optional.of(mockDroppedUserDomainModel)
+        this.lockerPort.findByUserId("test1") >> Optional.empty()
 
         when:
         this.mockUserDomainModel.setRole(Role.PRESIDENT)

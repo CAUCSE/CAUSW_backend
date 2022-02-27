@@ -13,7 +13,7 @@ public class UserAdmissionAllResponseDto {
     private String id;
     private String userName;
     private String userEmail;
-    private Integer userAdmissionYear;
+    private Integer admissionYear;
     private String attachImage;
     private String description;
     private UserState userState;
@@ -24,7 +24,7 @@ public class UserAdmissionAllResponseDto {
             String id,
             String userName,
             String userEmail,
-            Integer userAdmissionYear,
+            Integer admissionYear,
             String attachImage,
             String description,
             UserState userState,
@@ -34,7 +34,7 @@ public class UserAdmissionAllResponseDto {
         this.id = id;
         this.userName = userName;
         this.userEmail = userEmail;
-        this.userAdmissionYear = userAdmissionYear;
+        this.admissionYear = admissionYear;
         this.attachImage = attachImage;
         this.description = description;
         this.userState = userState;
