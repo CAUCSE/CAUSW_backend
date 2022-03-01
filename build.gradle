@@ -8,6 +8,9 @@ plugins {
 group = 'net.causw'
 version = '0.0.1-SNAPSHOT'
 
+sourceCompatibility = 11
+targetCompatibility = 11
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
@@ -19,8 +22,13 @@ repositories {
 }
 
 dependencies {
+    //Latest version of App Engine API
+    implementation group: 'com.google.cloud.tools', name: 'appengine-gradle-plugin', version: '2.4.2'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation('org.springframework.boot:spring-boot-starter-web') {
+        exclude module: 'spring-boot-starter-tomcat'
+    }
+    implementation('org.springframework.boot:spring-boot-starter-jetty')
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
