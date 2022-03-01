@@ -87,14 +87,6 @@ public class UserDomainModel {
             Integer admissionYear,
             String profileImage
     ) {
-        // TODO : Remove following -> Default로 Role.NONE 지정
-        Role localRole = Role.NONE;
-        UserState localUserState = UserState.AWAIT;
-        if (email.equals("admin@gmail.com")) {
-            localRole = Role.ADMIN;
-            localUserState = UserState.ACTIVE;
-        }
-
         return new UserDomainModel(
                 null,
                 email,
@@ -102,9 +94,9 @@ public class UserDomainModel {
                 password,
                 studentId,
                 admissionYear,
-                localRole,
+                Role.NONE,
                 profileImage,
-                localUserState
+                UserState.AWAIT
         );
     }
 
