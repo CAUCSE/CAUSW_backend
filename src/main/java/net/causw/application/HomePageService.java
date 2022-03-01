@@ -1,8 +1,8 @@
 package net.causw.application;
 
-import net.causw.application.dto.BoardResponseDto;
+import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.HomePageResponseDto;
-import net.causw.application.dto.PostAllResponseDto;
+import net.causw.application.dto.post.PostsResponseDto;
 import net.causw.application.spi.CommentPort;
 import net.causw.application.spi.FavoriteBoardPort;
 import net.causw.application.spi.PostPort;
@@ -60,7 +60,7 @@ public class HomePageService {
                                 0,
                                 StaticValue.HOME_POST_PAGE_SIZE
                         )
-                                .map(postDomainModel -> PostAllResponseDto.from(
+                                .map(postDomainModel -> PostsResponseDto.from(
                                         postDomainModel,
                                         this.commentPort.countByPostId(postDomainModel.getId())
                                 ))

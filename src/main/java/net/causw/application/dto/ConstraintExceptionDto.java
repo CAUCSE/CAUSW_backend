@@ -1,6 +1,7 @@
 package net.causw.application.dto;
 
 import lombok.Getter;
+import lombok.Setter;
 import net.causw.domain.exceptions.ErrorCode;
 
 import javax.validation.ConstraintViolationException;
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
+@Setter
 public class ConstraintExceptionDto {
     private final Integer errorCode;
     private final String message;
@@ -20,10 +22,9 @@ public class ConstraintExceptionDto {
         this.message = message;
 
         List<String> errors = new ArrayList<>();
-        exception.getConstraintViolations().forEach(violation -> {
-            errors.add(violation.getRootBeanClass().getName() + " " +
-                    violation.getPropertyPath() + ": " + violation.getMessage());
-        });
+        exception.getConstraintViolations().forEach(violation ->
+                errors.add(violation.getRootBeanClass().getName() + " " +
+                violation.getPropertyPath() + ": " + violation.getMessage()));
 
         this.violations = errors;
         this.timeStamp = LocalDateTime.now();

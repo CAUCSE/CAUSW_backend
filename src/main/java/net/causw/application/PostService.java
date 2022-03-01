@@ -1,11 +1,11 @@
 package net.causw.application;
 
-import net.causw.application.dto.CommentResponseDto;
-import net.causw.application.dto.PostAllResponseDto;
-import net.causw.application.dto.PostAllWithBoardResponseDto;
-import net.causw.application.dto.PostCreateRequestDto;
-import net.causw.application.dto.PostResponseDto;
-import net.causw.application.dto.PostUpdateRequestDto;
+import net.causw.application.dto.comment.CommentResponseDto;
+import net.causw.application.dto.post.PostsResponseDto;
+import net.causw.application.dto.post.BoardPostsResponseDto;
+import net.causw.application.dto.post.PostCreateRequestDto;
+import net.causw.application.dto.post.PostResponseDto;
+import net.causw.application.dto.post.PostUpdateRequestDto;
 import net.causw.application.spi.BoardPort;
 import net.causw.application.spi.ChildCommentPort;
 import net.causw.application.spi.CircleMemberPort;
@@ -131,7 +131,7 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public PostAllWithBoardResponseDto findAll(
+    public BoardPostsResponseDto findAll(
             String requestUserId,
             String boardId,
             Integer pageNum
@@ -179,11 +179,11 @@ public class PostService {
                 .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted(), StaticValue.DOMAIN_BOARD))
                 .validate();
 
-        return PostAllWithBoardResponseDto.from(
+        return BoardPostsResponseDto.from(
                 boardDomainModel,
                 userDomainModel.getRole(),
                 this.postPort.findAll(boardId, pageNum)
-                        .map(postDomainModel -> PostAllResponseDto.from(
+                        .map(postDomainModel -> PostsResponseDto.from(
                                 postDomainModel,
                                 this.commentPort.countByPostId(postDomainModel.getId())
                         ))
@@ -191,7 +191,7 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public PostAllWithBoardResponseDto search(
+    public BoardPostsResponseDto search(
             String requestUserId,
             String boardId,
             String option,
@@ -248,11 +248,11 @@ public class PostService {
                 )
         );
 
-        return PostAllWithBoardResponseDto.from(
+        return BoardPostsResponseDto.from(
                 boardDomainModel,
                 userDomainModel.getRole(),
                 this.postPort.search(searchOption, keyword, pageNum)
-                        .map(postDomainModel -> PostAllResponseDto.from(
+                        .map(postDomainModel -> PostsResponseDto.from(
                                 postDomainModel,
                                 this.commentPort.countByPostId(postDomainModel.getId())
                         ))
@@ -260,7 +260,7 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public PostAllWithBoardResponseDto findAllAppNotice(Integer pageNum) {
+    public BoardPostsResponseDto findAllAppNotice(Integer pageNum) {
         BoardDomainModel boardDomainModel = this.boardPort.findAppNotice().orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -268,11 +268,11 @@ public class PostService {
                 )
         );
 
-        return PostAllWithBoardResponseDto.from(
+        return BoardPostsResponseDto.from(
                 boardDomainModel,
                 Role.ADMIN,
                 this.postPort.findAll(boardDomainModel.getId(), pageNum)
-                        .map(postDomainModel -> PostAllResponseDto.from(
+                        .map(postDomainModel -> PostsResponseDto.from(
                                 postDomainModel,
                                 this.commentPort.countByPostId(postDomainModel.getId())
                         ))

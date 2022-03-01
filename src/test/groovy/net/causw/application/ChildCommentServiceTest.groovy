@@ -1,9 +1,9 @@
 package net.causw.application
 
-import net.causw.application.dto.ChildCommentAllResponseDto
-import net.causw.application.dto.ChildCommentCreateRequestDto
-import net.causw.application.dto.ChildCommentResponseDto
-import net.causw.application.dto.ChildCommentUpdateRequestDto
+import net.causw.application.dto.comment.ChildCommentsResponseDto
+import net.causw.application.dto.comment.ChildCommentCreateRequestDto
+import net.causw.application.dto.comment.ChildCommentResponseDto
+import net.causw.application.dto.comment.ChildCommentUpdateRequestDto
 import net.causw.application.spi.ChildCommentPort
 import net.causw.application.spi.CircleMemberPort
 import net.causw.application.spi.CommentPort
@@ -24,7 +24,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest
 import org.powermock.modules.junit4.PowerMockRunner
 import org.powermock.modules.junit4.PowerMockRunnerDelegate
 import org.spockframework.runtime.Sputnik
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.test.context.ActiveProfiles
 import spock.lang.Specification
@@ -462,7 +461,7 @@ class ChildCommentServiceTest extends Specification {
         def childCommentResponse = this.childCommentService.findAll(((UserDomainModel)this.mockChildCommentWriter).getId(), ((CommentDomainModel)this.mockCommentDomainModel).getId(), 0)
 
         then:
-        childCommentResponse instanceof ChildCommentAllResponseDto
+        childCommentResponse instanceof ChildCommentsResponseDto
         with (childCommentResponse) {
             getChildComments().getContent().get(0).getContent() == "test child comment content"
         }

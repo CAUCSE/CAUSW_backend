@@ -1,8 +1,8 @@
 package net.causw.application
 
-import net.causw.application.dto.CommentCreateRequestDto
-import net.causw.application.dto.CommentResponseDto
-import net.causw.application.dto.CommentUpdateRequestDto
+import net.causw.application.dto.comment.CommentCreateRequestDto
+import net.causw.application.dto.comment.CommentResponseDto
+import net.causw.application.dto.comment.CommentUpdateRequestDto
 import net.causw.application.spi.ChildCommentPort
 import net.causw.application.spi.CircleMemberPort
 import net.causw.application.spi.CommentPort

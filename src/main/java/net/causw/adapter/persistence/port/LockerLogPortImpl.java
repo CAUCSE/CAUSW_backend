@@ -3,13 +3,12 @@ package net.causw.adapter.persistence.port;
 import net.causw.adapter.persistence.BaseEntity;
 import net.causw.adapter.persistence.LockerLog;
 import net.causw.adapter.persistence.LockerLogRepository;
-import net.causw.application.dto.LockerLogDetailDto;
+import net.causw.application.dto.locker.LockerLogResponseDto;
 import net.causw.application.spi.LockerLogPort;
 import net.causw.domain.model.LockerLogAction;
 import net.causw.domain.model.UserDomainModel;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -24,10 +23,10 @@ public class LockerLogPortImpl extends DomainModelMapper implements LockerLogPor
     }
 
     @Override
-    public List<LockerLogDetailDto> findByLockerNumber(Long lockerNumber) {
+    public List<LockerLogResponseDto> findByLockerNumber(Long lockerNumber) {
         return this.lockerLogRepository.findByLockerNumber(lockerNumber)
                 .stream()
-                .map(LockerLogDetailDto::from)
+                .map(LockerLogResponseDto::from)
                 .collect(Collectors.toList());
     }
 

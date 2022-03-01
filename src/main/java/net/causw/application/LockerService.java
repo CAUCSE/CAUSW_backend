@@ -1,15 +1,15 @@
 package net.causw.application;
 
-import net.causw.application.dto.LockerAllLocationResponseDto;
-import net.causw.application.dto.LockerAllResponseDto;
-import net.causw.application.dto.LockerCreateRequestDto;
-import net.causw.application.dto.LockerLocationCreateRequestDto;
-import net.causw.application.dto.LockerLocationResponseDto;
-import net.causw.application.dto.LockerLocationUpdateRequestDto;
-import net.causw.application.dto.LockerLogDetailDto;
-import net.causw.application.dto.LockerMoveRequestDto;
-import net.causw.application.dto.LockerResponseDto;
-import net.causw.application.dto.LockerUpdateRequestDto;
+import net.causw.application.dto.locker.LockerLocationsResponseDto;
+import net.causw.application.dto.locker.LockersResponseDto;
+import net.causw.application.dto.locker.LockerCreateRequestDto;
+import net.causw.application.dto.locker.LockerLocationCreateRequestDto;
+import net.causw.application.dto.locker.LockerLocationResponseDto;
+import net.causw.application.dto.locker.LockerLocationUpdateRequestDto;
+import net.causw.application.dto.locker.LockerLogResponseDto;
+import net.causw.application.dto.locker.LockerMoveRequestDto;
+import net.causw.application.dto.locker.LockerResponseDto;
+import net.causw.application.dto.locker.LockerUpdateRequestDto;
 import net.causw.application.spi.LockerLocationPort;
 import net.causw.application.spi.LockerLogPort;
 import net.causw.application.spi.LockerPort;
@@ -272,7 +272,7 @@ public class LockerService {
     }
 
     @Transactional(readOnly = true)
-    public LockerAllResponseDto findByLocation(String locationId, String userId) {
+    public LockersResponseDto findByLocation(String locationId, String userId) {
         UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -287,7 +287,7 @@ public class LockerService {
                 )
         );
 
-        return LockerAllResponseDto.of(
+        return LockersResponseDto.of(
                 lockerLocation.getName(),
                 this.lockerPort.findByLocationId(lockerLocation.getId())
                         .stream()
@@ -297,7 +297,7 @@ public class LockerService {
     }
 
     @Transactional(readOnly = true)
-    public LockerAllLocationResponseDto findAllLocation(String userId) {
+    public LockerLocationsResponseDto findAllLocation(String userId) {
         UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -305,7 +305,7 @@ public class LockerService {
                 )
         );
 
-        return LockerAllLocationResponseDto.of(
+        return LockerLocationsResponseDto.of(
                 this.lockerLocationPort.findAll()
                         .stream()
                         .map(
@@ -446,7 +446,7 @@ public class LockerService {
     }
 
     @Transactional(readOnly = true)
-    public List<LockerLogDetailDto> findLog(String id) {
+    public List<LockerLogResponseDto> findLog(String id) {
         LockerDomainModel locker = this.lockerPort.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,

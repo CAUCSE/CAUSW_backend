@@ -1,22 +1,22 @@
 package net.causw.adapter.web;
 
 import net.causw.application.UserService;
-import net.causw.application.dto.BoardResponseDto;
-import net.causw.application.dto.CircleResponseDto;
-import net.causw.application.dto.DuplicatedCheckDto;
-import net.causw.application.dto.UserAdmissionAllResponseDto;
-import net.causw.application.dto.UserAdmissionCreateRequestDto;
-import net.causw.application.dto.UserAdmissionResponseDto;
-import net.causw.application.dto.UserCommentResponseDto;
-import net.causw.application.dto.UserCreateRequestDto;
-import net.causw.application.dto.UserFindEmailRequestDto;
-import net.causw.application.dto.UserPasswordUpdateRequestDto;
-import net.causw.application.dto.UserPostResponseDto;
-import net.causw.application.dto.UserPrivilegedDto;
-import net.causw.application.dto.UserResponseDto;
-import net.causw.application.dto.UserSignInRequestDto;
-import net.causw.application.dto.UserUpdateRequestDto;
-import net.causw.application.dto.UserUpdateRoleRequestDto;
+import net.causw.application.dto.user.UserFindEmailRequestDto;
+import net.causw.application.dto.board.BoardResponseDto;
+import net.causw.application.dto.circle.CircleResponseDto;
+import net.causw.application.dto.DuplicatedCheckResponseDto;
+import net.causw.application.dto.user.UserAdmissionsResponseDto;
+import net.causw.application.dto.user.UserAdmissionCreateRequestDto;
+import net.causw.application.dto.user.UserAdmissionResponseDto;
+import net.causw.application.dto.user.UserCommentsResponseDto;
+import net.causw.application.dto.user.UserCreateRequestDto;
+import net.causw.application.dto.user.UserUpdatePasswordRequestDto;
+import net.causw.application.dto.user.UserPostsResponseDto;
+import net.causw.application.dto.user.UserPrivilegedResponseDto;
+import net.causw.application.dto.user.UserResponseDto;
+import net.causw.application.dto.user.UserSignInRequestDto;
+import net.causw.application.dto.user.UserUpdateRequestDto;
+import net.causw.application.dto.user.UserUpdateRoleRequestDto;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -48,7 +48,7 @@ public class UserController {
     @ResponseStatus(value = HttpStatus.OK)
     public String findEmail(
             @RequestBody UserFindEmailRequestDto userFindEmailRequestDto
-            ) {
+    ) {
         return this.userService.findEmail(userFindEmailRequestDto);
     }
 
@@ -69,7 +69,7 @@ public class UserController {
 
     @GetMapping(value = "/posts")
     @ResponseStatus(value = HttpStatus.OK)
-    public UserPostResponseDto findPosts(
+    public UserPostsResponseDto findPosts(
             @AuthenticationPrincipal String requestUserId,
             @RequestParam(defaultValue = "0") Integer pageNum
     ) {
@@ -78,7 +78,7 @@ public class UserController {
 
     @GetMapping(value = "/comments")
     @ResponseStatus(value = HttpStatus.OK)
-    public UserCommentResponseDto findComments(
+    public UserCommentsResponseDto findComments(
             @AuthenticationPrincipal String requestUserId,
             @RequestParam(defaultValue = "0") Integer pageNum
     ) {
@@ -96,7 +96,7 @@ public class UserController {
 
     @GetMapping(value = "/privileged")
     @ResponseStatus(value = HttpStatus.OK)
-    public UserPrivilegedDto findPrivilegedUsers(@AuthenticationPrincipal String currentUserId) {
+    public UserPrivilegedResponseDto findPrivilegedUsers(@AuthenticationPrincipal String currentUserId) {
         return this.userService.findPrivilegedUsers(currentUserId);
     }
 
@@ -128,7 +128,7 @@ public class UserController {
 
     @GetMapping(value = "/{email}/is-duplicated")
     @ResponseStatus(value = HttpStatus.OK)
-    public DuplicatedCheckDto isDuplicatedEmail(@PathVariable String email) {
+    public DuplicatedCheckResponseDto isDuplicatedEmail(@PathVariable String email) {
         return this.userService.isDuplicatedEmail(email);
     }
 
@@ -165,9 +165,9 @@ public class UserController {
     @ResponseStatus(value = HttpStatus.OK)
     public UserResponseDto updatePassword(
             @AuthenticationPrincipal String id,
-            @RequestBody UserPasswordUpdateRequestDto userPasswordUpdateRequestDto
+            @RequestBody UserUpdatePasswordRequestDto userUpdatePasswordRequestDto
     ) {
-        return this.userService.updatePassword(id, userPasswordUpdateRequestDto);
+        return this.userService.updatePassword(id, userUpdatePasswordRequestDto);
     }
 
     @DeleteMapping
@@ -202,7 +202,7 @@ public class UserController {
 
     @GetMapping(value = "/admissions")
     @ResponseStatus(value = HttpStatus.OK)
-    public Page<UserAdmissionAllResponseDto> findAllAdmissions(
+    public Page<UserAdmissionsResponseDto> findAllAdmissions(
             @AuthenticationPrincipal String requestUserId,
             @RequestParam(defaultValue = "0") Integer pageNum
     ) {

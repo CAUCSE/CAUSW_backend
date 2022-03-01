@@ -1,10 +1,10 @@
 package net.causw.application
 
-import net.causw.application.dto.CircleCreateRequestDto
-import net.causw.application.dto.CircleMemberResponseDto
-import net.causw.application.dto.CircleResponseDto
-import net.causw.application.dto.CircleUpdateRequestDto
-import net.causw.application.dto.CircleWithBoardsResponseDto
+import net.causw.application.dto.circle.CircleCreateRequestDto
+import net.causw.application.dto.circle.CircleMemberResponseDto
+import net.causw.application.dto.circle.CircleResponseDto
+import net.causw.application.dto.circle.CircleUpdateRequestDto
+import net.causw.application.dto.circle.CircleBoardsResponseDto
 import net.causw.application.spi.BoardPort
 import net.causw.application.spi.CircleMemberPort
 import net.causw.application.spi.CirclePort
@@ -371,7 +371,7 @@ class CircleServiceTest extends Specification {
         def circleWithBoardsResponseDto = this.circleService.findBoards("test", "test")
 
         then:
-        circleWithBoardsResponseDto instanceof CircleWithBoardsResponseDto
+        circleWithBoardsResponseDto instanceof CircleBoardsResponseDto
         with(circleWithBoardsResponseDto) {
             getCircle().getId() == "test"
         }

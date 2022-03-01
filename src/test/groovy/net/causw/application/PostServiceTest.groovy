@@ -1,10 +1,10 @@
 package net.causw.application
 
 
-import net.causw.application.dto.PostAllWithBoardResponseDto
-import net.causw.application.dto.PostCreateRequestDto
-import net.causw.application.dto.PostResponseDto
-import net.causw.application.dto.PostUpdateRequestDto
+import net.causw.application.dto.post.BoardPostsResponseDto
+import net.causw.application.dto.post.PostCreateRequestDto
+import net.causw.application.dto.post.PostResponseDto
+import net.causw.application.dto.post.PostUpdateRequestDto
 import net.causw.application.spi.*
 import net.causw.domain.exceptions.BadRequestException
 import net.causw.domain.exceptions.UnauthorizedException
@@ -191,7 +191,7 @@ class PostServiceTest extends Specification {
         def postFind = this.postService.search("test user id", "test board id", "title", "keyword", 0)
 
         then:
-        postFind instanceof PostAllWithBoardResponseDto
+        postFind instanceof BoardPostsResponseDto
         with(postFind) {
             getPost().getContent().get(0).getTitle() == "test post title"
         }
@@ -201,7 +201,7 @@ class PostServiceTest extends Specification {
         postFind = this.postService.search("test user id", "test board id", "title", "keyword", 0)
 
         then:
-        postFind instanceof PostAllWithBoardResponseDto
+        postFind instanceof BoardPostsResponseDto
         with(postFind) {
             getPost().getContent().get(0).getTitle() == "test post title"
         }
@@ -321,7 +321,7 @@ class PostServiceTest extends Specification {
         def postFind = this.postService.findAll("test user id", "test board id", 0)
 
         then:
-        postFind instanceof PostAllWithBoardResponseDto
+        postFind instanceof BoardPostsResponseDto
         with(postFind) {
             getPost().getContent().get(0).getTitle() == "test post title"
         }
@@ -331,7 +331,7 @@ class PostServiceTest extends Specification {
         postFind = this.postService.findAll("test user id", "test board id", 0)
 
         then:
-        postFind instanceof PostAllWithBoardResponseDto
+        postFind instanceof BoardPostsResponseDto
         with(postFind) {
             getPost().getContent().get(0).getTitle() == "test post title"
         }
