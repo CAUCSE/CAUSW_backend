@@ -84,13 +84,18 @@ public abstract class DomainModelMapper {
     }
 
     protected CircleDomainModel entityToDomainModel(Circle circle) {
+        UserDomainModel leader = null;
+        if (circle.getLeader().isPresent()) {
+            leader = this.entityToDomainModel(circle.getLeader().get());
+        }
+
         return CircleDomainModel.of(
                 circle.getId(),
                 circle.getName(),
                 circle.getMainImage(),
                 circle.getDescription(),
                 circle.getIsDeleted(),
-                this.entityToDomainModel(circle.getLeader()),
+                leader,
                 circle.getCreatedAt(),
                 circle.getUpdatedAt()
         );
