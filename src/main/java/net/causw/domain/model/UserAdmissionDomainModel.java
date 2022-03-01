@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
 @Getter
@@ -12,6 +13,8 @@ public class UserAdmissionDomainModel {
     private String id;
 
     private String attachImage;
+
+    @Size(max = 255, message = "소개글은 255글자이상으로 작성할 수 없습니다.")
     private String description;
 
     @NotNull(message = "사용자가 입력되지 않았습니다.")
