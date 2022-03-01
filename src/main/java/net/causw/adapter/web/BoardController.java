@@ -1,9 +1,9 @@
 package net.causw.adapter.web;
 
 import net.causw.application.BoardService;
-import net.causw.application.dto.BoardCreateRequestDto;
-import net.causw.application.dto.BoardResponseDto;
-import net.causw.application.dto.BoardUpdateRequestDto;
+import net.causw.application.dto.board.BoardCreateRequestDto;
+import net.causw.application.dto.board.BoardResponseDto;
+import net.causw.application.dto.board.BoardUpdateRequestDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;

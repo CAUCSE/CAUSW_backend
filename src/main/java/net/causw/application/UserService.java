@@ -1,23 +1,23 @@
 package net.causw.application;
 
-import net.causw.application.dto.BoardResponseDto;
-import net.causw.application.dto.CircleResponseDto;
-import net.causw.application.dto.CommentAllForUserResponseDto;
-import net.causw.application.dto.DuplicatedCheckDto;
-import net.causw.application.dto.PostAllForUserResponseDto;
-import net.causw.application.dto.UserAdmissionAllResponseDto;
-import net.causw.application.dto.UserAdmissionCreateRequestDto;
-import net.causw.application.dto.UserAdmissionResponseDto;
-import net.causw.application.dto.UserCommentResponseDto;
-import net.causw.application.dto.UserCreateRequestDto;
-import net.causw.application.dto.UserFindEmailRequestDto;
-import net.causw.application.dto.UserPasswordUpdateRequestDto;
-import net.causw.application.dto.UserPostResponseDto;
-import net.causw.application.dto.UserPrivilegedDto;
-import net.causw.application.dto.UserResponseDto;
-import net.causw.application.dto.UserSignInRequestDto;
-import net.causw.application.dto.UserUpdateRequestDto;
-import net.causw.application.dto.UserUpdateRoleRequestDto;
+import net.causw.application.dto.user.UserFindEmailRequestDto;
+import net.causw.application.dto.board.BoardResponseDto;
+import net.causw.application.dto.circle.CircleResponseDto;
+import net.causw.application.dto.comment.CommentsOfUserResponseDto;
+import net.causw.application.dto.DuplicatedCheckResponseDto;
+import net.causw.application.dto.user.UserPostResponseDto;
+import net.causw.application.dto.user.UserAdmissionsResponseDto;
+import net.causw.application.dto.user.UserAdmissionCreateRequestDto;
+import net.causw.application.dto.user.UserAdmissionResponseDto;
+import net.causw.application.dto.user.UserCommentsResponseDto;
+import net.causw.application.dto.user.UserCreateRequestDto;
+import net.causw.application.dto.user.UserUpdatePasswordRequestDto;
+import net.causw.application.dto.user.UserPostsResponseDto;
+import net.causw.application.dto.user.UserPrivilegedResponseDto;
+import net.causw.application.dto.user.UserResponseDto;
+import net.causw.application.dto.user.UserSignInRequestDto;
+import net.causw.application.dto.user.UserUpdateRequestDto;
+import net.causw.application.dto.user.UserUpdateRoleRequestDto;
 import net.causw.application.spi.BoardPort;
 import net.causw.application.spi.CircleMemberPort;
 import net.causw.application.spi.CirclePort;
@@ -237,7 +237,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserPostResponseDto findPosts(String requestUserId, Integer pageNum) {
+    public UserPostsResponseDto findPosts(String requestUserId, Integer pageNum) {
         UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -250,9 +250,9 @@ public class UserService {
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .validate();
 
-        return UserPostResponseDto.from(
+        return UserPostsResponseDto.from(
                 requestUser,
-                this.postPort.findByUserId(requestUserId, pageNum).map(postDomainModel -> PostAllForUserResponseDto.from(
+                this.postPort.findByUserId(requestUserId, pageNum).map(postDomainModel -> UserPostResponseDto.from(
                         postDomainModel,
                         postDomainModel.getBoard().getId(),
                         postDomainModel.getBoard().getName(),
@@ -264,7 +264,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserCommentResponseDto findComments(String requestUserId, Integer pageNum) {
+    public UserCommentsResponseDto findComments(String requestUserId, Integer pageNum) {
         UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -277,7 +277,7 @@ public class UserService {
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .validate();
 
-        return UserCommentResponseDto.from(
+        return UserCommentsResponseDto.from(
                 requestUser,
                 this.commentPort.findByUserId(requestUserId, pageNum).map(comment -> {
                     PostDomainModel post = this.postPort.findById(comment.getPostId()).orElseThrow(
@@ -287,7 +287,7 @@ public class UserService {
                             )
                     );
 
-                    return CommentAllForUserResponseDto.from(
+                    return CommentsOfUserResponseDto.from(
                             comment,
                             post.getBoard().getId(),
                             post.getBoard().getName(),
@@ -361,7 +361,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserPrivilegedDto findPrivilegedUsers(String currentUserId) {
+    public UserPrivilegedResponseDto findPrivilegedUsers(String currentUserId) {
         UserDomainModel user = this.userPort.findById(currentUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -375,7 +375,7 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
                 .validate();
 
-        return UserPrivilegedDto.from(
+        return UserPrivilegedResponseDto.from(
                 this.userPort.findByRole(Role.COUNCIL)
                         .stream()
                         .map(UserResponseDto::from)
@@ -550,8 +550,8 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public DuplicatedCheckDto isDuplicatedEmail(String email) {
-        return DuplicatedCheckDto.of(this.userPort.findByEmail(email).isPresent());
+    public DuplicatedCheckResponseDto isDuplicatedEmail(String email) {
+        return DuplicatedCheckResponseDto.of(this.userPort.findByEmail(email).isPresent());
     }
 
     @Transactional
@@ -703,7 +703,7 @@ public class UserService {
     @Transactional
     public UserResponseDto updatePassword(
             String id,
-            UserPasswordUpdateRequestDto userPasswordUpdateRequestDto
+            UserUpdatePasswordRequestDto userUpdatePasswordRequestDto
     ) {
         UserDomainModel user = this.userPort.findById(id).orElseThrow(
                 () -> new BadRequestException(
@@ -715,11 +715,11 @@ public class UserService {
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
-                .consistOf(PasswordCorrectValidator.of(user, userPasswordUpdateRequestDto.getOriginPassword()))
-                .consistOf(PasswordFormatValidator.of(userPasswordUpdateRequestDto.getUpdatedPassword()))
+                .consistOf(PasswordCorrectValidator.of(user, userUpdatePasswordRequestDto.getOriginPassword()))
+                .consistOf(PasswordFormatValidator.of(userUpdatePasswordRequestDto.getUpdatedPassword()))
                 .validate();
 
-        return UserResponseDto.from(this.userPort.updatePassword(id, userPasswordUpdateRequestDto.getUpdatedPassword()).orElseThrow(
+        return UserResponseDto.from(this.userPort.updatePassword(id, userUpdatePasswordRequestDto.getUpdatedPassword()).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         "User id checked, but exception occurred"
@@ -852,7 +852,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public Page<UserAdmissionAllResponseDto> findAllAdmissions(
+    public Page<UserAdmissionsResponseDto> findAllAdmissions(
             String requestUserId,
             Integer pageNum
     ) {
@@ -870,7 +870,7 @@ public class UserService {
                 .validate();
 
         return this.userAdmissionPort.findAll(UserState.AWAIT, pageNum)
-                .map(UserAdmissionAllResponseDto::from);
+                .map(UserAdmissionsResponseDto::from);
     }
 
     @Transactional

@@ -1,16 +1,16 @@
 package net.causw.adapter.web;
 
 import net.causw.application.LockerService;
-import net.causw.application.dto.LockerAllLocationResponseDto;
-import net.causw.application.dto.LockerAllResponseDto;
-import net.causw.application.dto.LockerCreateRequestDto;
-import net.causw.application.dto.LockerLocationCreateRequestDto;
-import net.causw.application.dto.LockerLocationResponseDto;
-import net.causw.application.dto.LockerLocationUpdateRequestDto;
-import net.causw.application.dto.LockerLogDetailDto;
-import net.causw.application.dto.LockerMoveRequestDto;
-import net.causw.application.dto.LockerResponseDto;
-import net.causw.application.dto.LockerUpdateRequestDto;
+import net.causw.application.dto.locker.LockerLocationsResponseDto;
+import net.causw.application.dto.locker.LockersResponseDto;
+import net.causw.application.dto.locker.LockerCreateRequestDto;
+import net.causw.application.dto.locker.LockerLocationCreateRequestDto;
+import net.causw.application.dto.locker.LockerLocationResponseDto;
+import net.causw.application.dto.locker.LockerLocationUpdateRequestDto;
+import net.causw.application.dto.locker.LockerLogResponseDto;
+import net.causw.application.dto.locker.LockerMoveRequestDto;
+import net.causw.application.dto.locker.LockerResponseDto;
+import net.causw.application.dto.locker.LockerUpdateRequestDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -91,13 +91,13 @@ public class LockerController {
 
     @GetMapping(value = "/locations")
     @ResponseStatus(value = HttpStatus.OK)
-    public LockerAllLocationResponseDto findAllLocation(@AuthenticationPrincipal String userId) {
+    public LockerLocationsResponseDto findAllLocation(@AuthenticationPrincipal String userId) {
         return this.lockerService.findAllLocation(userId);
     }
 
     @GetMapping(value = "/locations/{locationId}")
     @ResponseStatus(value = HttpStatus.OK)
-    public LockerAllResponseDto findByLocation(
+    public LockersResponseDto findByLocation(
             @AuthenticationPrincipal String userId,
             @PathVariable String locationId
     ) {
@@ -138,7 +138,7 @@ public class LockerController {
 
     @GetMapping(value = "/{id}/log")
     @ResponseStatus(value = HttpStatus.OK)
-    public List<LockerLogDetailDto> findLog(@PathVariable String id) {
+    public List<LockerLogResponseDto> findLog(@PathVariable String id) {
         return this.lockerService.findLog(id);
     }
 }

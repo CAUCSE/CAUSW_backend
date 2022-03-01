@@ -1,10 +1,10 @@
 package net.causw.application.dto;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
-@NoArgsConstructor
+@Setter
 public class UploadImageResponseDto {
     private String path;
 

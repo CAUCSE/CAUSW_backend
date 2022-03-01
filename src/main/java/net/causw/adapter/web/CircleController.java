@@ -1,13 +1,13 @@
 package net.causw.adapter.web;
 
 import net.causw.application.CircleService;
-import net.causw.application.dto.CircleAllResponseDto;
-import net.causw.application.dto.CircleCreateRequestDto;
-import net.causw.application.dto.CircleMemberResponseDto;
-import net.causw.application.dto.CircleResponseDto;
-import net.causw.application.dto.CircleUpdateRequestDto;
-import net.causw.application.dto.CircleWithBoardsResponseDto;
-import net.causw.application.dto.DuplicatedCheckDto;
+import net.causw.application.dto.circle.CirclesResponseDto;
+import net.causw.application.dto.circle.CircleCreateRequestDto;
+import net.causw.application.dto.circle.CircleMemberResponseDto;
+import net.causw.application.dto.circle.CircleResponseDto;
+import net.causw.application.dto.circle.CircleUpdateRequestDto;
+import net.causw.application.dto.circle.CircleBoardsResponseDto;
+import net.causw.application.dto.DuplicatedCheckResponseDto;
 import net.causw.domain.model.CircleMemberStatus;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -42,13 +42,13 @@ public class CircleController {
 
     @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
-    public List<CircleAllResponseDto> findAll(@AuthenticationPrincipal String userId) {
+    public List<CirclesResponseDto> findAll(@AuthenticationPrincipal String userId) {
         return this.circleService.findAll(userId);
     }
 
     @GetMapping("/{id}/boards")
     @ResponseStatus(value = HttpStatus.OK)
-    public CircleWithBoardsResponseDto findBoards(
+    public CircleBoardsResponseDto findBoards(
             @AuthenticationPrincipal String userId,
             @PathVariable String id
     ) {
@@ -105,7 +105,7 @@ public class CircleController {
 
     @GetMapping(value = "/{name}/is-duplicated")
     @ResponseStatus(value = HttpStatus.OK)
-    public DuplicatedCheckDto isDuplicatedName(@PathVariable String name) {
+    public DuplicatedCheckResponseDto isDuplicatedName(@PathVariable String name) {
         return this.circleService.isDuplicatedName(name);
     }
 

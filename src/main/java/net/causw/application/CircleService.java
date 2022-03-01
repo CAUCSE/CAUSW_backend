@@ -1,13 +1,13 @@
 package net.causw.application;
 
-import net.causw.application.dto.BoardOfCircleResponseDto;
-import net.causw.application.dto.CircleAllResponseDto;
-import net.causw.application.dto.CircleCreateRequestDto;
-import net.causw.application.dto.CircleMemberResponseDto;
-import net.causw.application.dto.CircleResponseDto;
-import net.causw.application.dto.CircleUpdateRequestDto;
-import net.causw.application.dto.CircleWithBoardsResponseDto;
-import net.causw.application.dto.DuplicatedCheckDto;
+import net.causw.application.dto.board.BoardOfCircleResponseDto;
+import net.causw.application.dto.circle.CirclesResponseDto;
+import net.causw.application.dto.circle.CircleCreateRequestDto;
+import net.causw.application.dto.circle.CircleMemberResponseDto;
+import net.causw.application.dto.circle.CircleResponseDto;
+import net.causw.application.dto.circle.CircleUpdateRequestDto;
+import net.causw.application.dto.circle.CircleBoardsResponseDto;
+import net.causw.application.dto.DuplicatedCheckResponseDto;
 import net.causw.application.spi.BoardPort;
 import net.causw.application.spi.CircleMemberPort;
 import net.causw.application.spi.CirclePort;
@@ -91,7 +91,7 @@ public class CircleService {
     }
 
     @Transactional(readOnly = true)
-    public List<CircleAllResponseDto> findAll(String userId) {
+    public List<CirclesResponseDto> findAll(String userId) {
         UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -111,13 +111,13 @@ public class CircleService {
                 .map(
                         circleDomainModel -> {
                             if (joinedCircleMap.containsKey(circleDomainModel.getId())) {
-                                return CircleAllResponseDto.from(
+                                return CirclesResponseDto.from(
                                         circleDomainModel,
                                         this.circleMemberPort.getNumMember(circleDomainModel.getId()),
                                         joinedCircleMap.get(circleDomainModel.getId()).getUpdatedAt()
                                 );
                             } else {
-                                return CircleAllResponseDto.from(
+                                return CirclesResponseDto.from(
                                         circleDomainModel,
                                         this.circleMemberPort.getNumMember(circleDomainModel.getId())
                                 );
@@ -128,7 +128,7 @@ public class CircleService {
     }
 
     @Transactional(readOnly = true)
-    public CircleWithBoardsResponseDto findBoards(
+    public CircleBoardsResponseDto findBoards(
             String currentUserId,
             String circleId
     ) {
@@ -163,7 +163,7 @@ public class CircleService {
                 ))
                 .validate();
 
-        return CircleWithBoardsResponseDto.from(
+        return CircleBoardsResponseDto.from(
                 CircleResponseDto.from(
                         circleDomainModel,
                         this.circleMemberPort.getNumMember(circleId)
@@ -493,8 +493,8 @@ public class CircleService {
     }
 
     @Transactional(readOnly = true)
-    public DuplicatedCheckDto isDuplicatedName(String name) {
-        return DuplicatedCheckDto.of(this.circlePort.findByName(name).isPresent());
+    public DuplicatedCheckResponseDto isDuplicatedName(String name) {
+        return DuplicatedCheckResponseDto.of(this.circlePort.findByName(name).isPresent());
     }
 
     @Transactional

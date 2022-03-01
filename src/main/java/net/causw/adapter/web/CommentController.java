@@ -1,9 +1,9 @@
 package net.causw.adapter.web;
 
 import net.causw.application.CommentService;
-import net.causw.application.dto.CommentCreateRequestDto;
-import net.causw.application.dto.CommentResponseDto;
-import net.causw.application.dto.CommentUpdateRequestDto;
+import net.causw.application.dto.comment.CommentCreateRequestDto;
+import net.causw.application.dto.comment.CommentResponseDto;
+import net.causw.application.dto.comment.CommentUpdateRequestDto;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

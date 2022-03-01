@@ -1,10 +1,10 @@
 package net.causw.adapter.web;
 
 import net.causw.application.PostService;
-import net.causw.application.dto.PostAllWithBoardResponseDto;
-import net.causw.application.dto.PostCreateRequestDto;
-import net.causw.application.dto.PostResponseDto;
-import net.causw.application.dto.PostUpdateRequestDto;
+import net.causw.application.dto.post.BoardPostsResponseDto;
+import net.causw.application.dto.post.PostCreateRequestDto;
+import net.causw.application.dto.post.PostResponseDto;
+import net.causw.application.dto.post.PostUpdateRequestDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -38,7 +38,7 @@ public class PostController {
 
     @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
-    public PostAllWithBoardResponseDto findAll(
+    public BoardPostsResponseDto findAll(
             @AuthenticationPrincipal String requestUserId,
             @RequestParam String boardId,
             @RequestParam(defaultValue = "0") Integer pageNum
@@ -48,7 +48,7 @@ public class PostController {
 
     @GetMapping("/search")
     @ResponseStatus(value = HttpStatus.OK)
-    public PostAllWithBoardResponseDto search(
+    public BoardPostsResponseDto search(
             @AuthenticationPrincipal String requestUserId,
             @RequestParam String boardId,
             @RequestParam(defaultValue = "title") String option,
@@ -60,7 +60,7 @@ public class PostController {
 
     @GetMapping("/app/notice")
     @ResponseStatus(value = HttpStatus.OK)
-    public PostAllWithBoardResponseDto findAllAppNotice(
+    public BoardPostsResponseDto findAllAppNotice(
             @RequestParam(defaultValue = "0") Integer pageNum
     ) {
         return this.postService.findAllAppNotice(pageNum);

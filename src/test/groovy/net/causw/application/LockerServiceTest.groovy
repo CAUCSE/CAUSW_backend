@@ -1,12 +1,12 @@
 package net.causw.application
 
-import net.causw.application.dto.LockerCreateRequestDto
-import net.causw.application.dto.LockerLocationCreateRequestDto
-import net.causw.application.dto.LockerLocationResponseDto
-import net.causw.application.dto.LockerLocationUpdateRequestDto
-import net.causw.application.dto.LockerMoveRequestDto
-import net.causw.application.dto.LockerResponseDto
-import net.causw.application.dto.LockerUpdateRequestDto
+import net.causw.application.dto.locker.LockerCreateRequestDto
+import net.causw.application.dto.locker.LockerLocationCreateRequestDto
+import net.causw.application.dto.locker.LockerLocationResponseDto
+import net.causw.application.dto.locker.LockerLocationUpdateRequestDto
+import net.causw.application.dto.locker.LockerMoveRequestDto
+import net.causw.application.dto.locker.LockerResponseDto
+import net.causw.application.dto.locker.LockerUpdateRequestDto
 import net.causw.application.spi.LockerLocationPort
 import net.causw.application.spi.LockerLogPort
 import net.causw.application.spi.LockerPort

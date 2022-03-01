@@ -1,8 +1,8 @@
 package net.causw.application;
 
-import net.causw.application.dto.BoardCreateRequestDto;
-import net.causw.application.dto.BoardResponseDto;
-import net.causw.application.dto.BoardUpdateRequestDto;
+import net.causw.application.dto.board.BoardCreateRequestDto;
+import net.causw.application.dto.board.BoardResponseDto;
+import net.causw.application.dto.board.BoardUpdateRequestDto;
 import net.causw.application.spi.BoardPort;
 import net.causw.application.spi.CirclePort;
 import net.causw.application.spi.UserPort;

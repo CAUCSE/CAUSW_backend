@@ -1,10 +1,10 @@
 package net.causw.application;
 
-import net.causw.application.dto.ChildCommentAllResponseDto;
-import net.causw.application.dto.ChildCommentCreateRequestDto;
-import net.causw.application.dto.ChildCommentResponseDto;
-import net.causw.application.dto.ChildCommentUpdateRequestDto;
-import net.causw.application.dto.CommentResponseDto;
+import net.causw.application.dto.comment.ChildCommentsResponseDto;
+import net.causw.application.dto.comment.ChildCommentCreateRequestDto;
+import net.causw.application.dto.comment.ChildCommentResponseDto;
+import net.causw.application.dto.comment.ChildCommentUpdateRequestDto;
+import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.spi.ChildCommentPort;
 import net.causw.application.spi.CircleMemberPort;
 import net.causw.application.spi.CommentPort;
@@ -27,7 +27,6 @@ import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.ContentsAdminValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.UserEqualValidator;
-import net.causw.domain.validation.UserNameEqualValidator;
 import net.causw.domain.validation.UserRoleIsNoneValidator;
 import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
@@ -150,7 +149,7 @@ public class ChildCommentService {
     }
 
     @Transactional(readOnly = true)
-    public ChildCommentAllResponseDto findAll(String userId, String parentCommentId, Integer pageNum) {
+    public ChildCommentsResponseDto findAll(String userId, String parentCommentId, Integer pageNum) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
@@ -200,7 +199,7 @@ public class ChildCommentService {
         validatorBucket
                 .validate();
 
-        return ChildCommentAllResponseDto.from(
+        return ChildCommentsResponseDto.from(
                 CommentResponseDto.from(
                         parentCommentDomainModel,
                         userDomainModel,

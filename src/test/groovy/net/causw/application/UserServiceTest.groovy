@@ -1,6 +1,16 @@
 package net.causw.application
 
-import net.causw.application.dto.*
+
+import net.causw.application.dto.circle.CircleResponseDto
+import net.causw.application.dto.user.UserAdmissionCreateRequestDto
+import net.causw.application.dto.user.UserAdmissionResponseDto
+import net.causw.application.dto.user.UserCommentsResponseDto
+import net.causw.application.dto.user.UserCreateRequestDto
+import net.causw.application.dto.user.UserUpdatePasswordRequestDto
+import net.causw.application.dto.user.UserPostsResponseDto
+import net.causw.application.dto.user.UserResponseDto
+import net.causw.application.dto.user.UserUpdateRequestDto
+import net.causw.application.dto.user.UserUpdateRoleRequestDto
 import net.causw.application.spi.BoardPort
 import net.causw.application.spi.CircleMemberPort
 import net.causw.application.spi.CirclePort
@@ -135,7 +145,7 @@ class UserServiceTest extends Specification {
         def userPostResponseDto = this.userService.findPosts("test", 0)
 
         then:
-        userPostResponseDto instanceof UserPostResponseDto
+        userPostResponseDto instanceof UserPostsResponseDto
         with(userPostResponseDto) {
             getId() == "test"
             getPost().getContent().get(0).getId() == "test post id"
@@ -186,7 +196,7 @@ class UserServiceTest extends Specification {
         def userCommentResponseDto = this.userService.findComments("test", 0)
 
         then:
-        userCommentResponseDto instanceof UserCommentResponseDto
+        userCommentResponseDto instanceof UserCommentsResponseDto
         with(userCommentResponseDto) {
             getId() == "test"
             getComment().getContent().get(0).getId() == "test comment id"
@@ -893,7 +903,7 @@ class UserServiceTest extends Specification {
     @Test
     def "User password update normal case"() {
         given:
-        def userPasswordUpdateRequestDto = new UserPasswordUpdateRequestDto(
+        def userPasswordUpdateRequestDto = new UserUpdatePasswordRequestDto(
                 "test1234!",
                 "test12345!"
         )
@@ -923,7 +933,7 @@ class UserServiceTest extends Specification {
     @Test
     def "User password update invalid origin password"() {
         given:
-        def userPasswordUpdateRequestDto = new UserPasswordUpdateRequestDto(
+        def userPasswordUpdateRequestDto = new UserUpdatePasswordRequestDto(
                 "test12345!",
                 "test12345!"
         )
@@ -940,7 +950,7 @@ class UserServiceTest extends Specification {
     @Test
     def "User password update invalid password format"() {
         given:
-        def userPasswordUpdateRequestDto = new UserPasswordUpdateRequestDto(
+        def userPasswordUpdateRequestDto = new UserUpdatePasswordRequestDto(
                 "test1234!",
                 "test12345!"
         )
