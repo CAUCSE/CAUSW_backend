@@ -45,3 +45,4 @@ out/
 ### Project security ###
 **/resources/
 Dockerfile
+deploy_backend.sh
