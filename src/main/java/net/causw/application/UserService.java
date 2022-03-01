@@ -325,6 +325,7 @@ public class UserService {
 
             return this.userPort.findByName(name)
                     .stream()
+                    .filter(userDomainModel -> userDomainModel.getState().equals(UserState.ACTIVE))
                     .filter(userDomainModel ->
                             this.circleMemberPort.findByUserIdAndCircleId(userDomainModel.getId(), ownCircle.getId())
                                     .map(circleMemberDomainModel ->
@@ -336,6 +337,7 @@ public class UserService {
 
         return this.userPort.findByName(name)
                 .stream()
+                .filter(userDomainModel -> userDomainModel.getState().equals(UserState.ACTIVE))
                 .map(userDomainModel -> {
                     if (userDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
                         CircleDomainModel ownCircle = this.circlePort.findByLeaderId(userDomainModel.getId())
