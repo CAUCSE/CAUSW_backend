@@ -46,3 +46,4 @@ out/
 **/resources/
 Dockerfile
 deploy_backend.sh
+docker-compose.yaml
