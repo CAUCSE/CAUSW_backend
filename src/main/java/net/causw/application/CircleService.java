@@ -17,6 +17,7 @@ import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
+import net.causw.domain.model.BoardDomainModel;
 import net.causw.domain.model.CircleDomainModel;
 import net.causw.domain.model.CircleMemberDomainModel;
 import net.causw.domain.model.CircleMemberStatus;
@@ -42,6 +43,7 @@ import javax.validation.Validator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class CircleService {
@@ -285,6 +287,30 @@ public class CircleService {
 
         // Create circle
         CircleDomainModel newCircle = this.circlePort.create(circleDomainModel);
+
+        // Create boards of circle
+        BoardDomainModel noticeBoard = BoardDomainModel.of(
+            "공지 게시판",
+                newCircle.getName() + " 공지 게시판",
+                Stream.of(Role.ADMIN, Role.PRESIDENT, Role.LEADER_CIRCLE)
+                        .map(Role::getValue)
+                        .collect(Collectors.toList()),
+                "공지 게시판",
+                newCircle
+        );
+        this.boardPort.create(noticeBoard);
+
+        BoardDomainModel generalBoard = BoardDomainModel.of(
+                "자유 게시판",
+                newCircle.getName() + " 자유 게시판",
+                Stream.of(Role.ADMIN, Role.PRESIDENT, Role.COUNCIL, Role.LEADER_1, Role.LEADER_2, Role.LEADER_3, Role.LEADER_4,
+                                Role.LEADER_CIRCLE, Role.LEADER_ALUMNI, Role.COMMON, Role.PROFESSOR)
+                        .map(Role::getValue)
+                        .collect(Collectors.toList()),
+                "자유 게시판",
+                newCircle
+        );
+        this.boardPort.create(generalBoard);
 
         // Apply the leader automatically to the circle
         CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.create(leader, newCircle);
