@@ -22,8 +22,6 @@ repositories {
 }
 
 dependencies {
-    //Latest version of App Engine API
-    implementation group: 'com.google.cloud.tools', name: 'appengine-gradle-plugin', version: '2.4.2'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation('org.springframework.boot:spring-boot-starter-web') {
         exclude module: 'spring-boot-starter-tomcat'
