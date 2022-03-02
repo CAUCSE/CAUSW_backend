@@ -45,4 +45,5 @@ out/
 ### Project security ###
 **/resources/
 Dockerfile
+docker-compose.yaml
 deploy_*.sh
