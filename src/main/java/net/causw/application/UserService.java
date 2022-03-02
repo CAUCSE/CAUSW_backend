@@ -697,7 +697,29 @@ public class UserService {
                         );
                     });
         }
+        /* Delegate the Circle Leader
+         * 1) Check if the grantor's role is Admin or President
+         * 2) Check if the role to update is Leader Alumni
+         */
+        else if ((grantor.getRole() == Role.PRESIDENT || grantor.getRole() == Role.ADMIN)
+                && userUpdateRoleRequestDto.getRole() == Role.LEADER_ALUMNI
+        ) {
+            List<UserDomainModel> findList = this.userPort.findByRole(Role.LEADER_ALUMNI);
+            if (findList.size() < 1) {
+                throw new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "동문회장이 존재하지 않습니다."
+                );
+            }
+            UserDomainModel previousLeaderAlumni = findList.get(0);
 
+            this.userPort.updateRole(previousLeaderAlumni.getId(), Role.COMMON).orElseThrow(
+                    () -> new InternalServerException(
+                            ErrorCode.INTERNAL_SERVER,
+                            "User id checked, but exception occurred"
+                    )
+            );
+        }
 
         /* Grant the role
          * The linked updating process is performed on previous delegation process

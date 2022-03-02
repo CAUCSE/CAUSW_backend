@@ -27,32 +27,47 @@ public class GrantableRoleValidator extends AbstractValidator {
         /* When role of grantor is Admin
          * Granted and grantee role should not be Admin
          * Granted and grantee role should be different
+         * Grantee role should not be Leader Circle or Leader Alumni
+         *   => They will automatically granted while other granting process since the roles has unique user
          */
-        if (this.grantorRole == Role.ADMIN)
-            if (this.grantedRole != Role.ADMIN && this.granteeRole != Role.ADMIN
-                    && (this.grantedRole != this.granteeRole))
+        if (this.grantorRole == Role.ADMIN) {
+            if (this.grantedRole != Role.ADMIN
+                    && this.granteeRole != Role.ADMIN
+                    && (this.granteeRole != Role.LEADER_CIRCLE && this.granteeRole != Role.LEADER_ALUMNI)
+                    && (this.grantedRole != this.granteeRole)) {
                 return;
+            }
+        }
         /* When role of grantor is President
          * Granted role should not be Admin, and Grantee role should not be Admin and President
          * Granted and grantee role should be different
+         * Grantee role should not be Leader Circle or Leader Alumni
+         *   => They will automatically granted while other granting process since the roles has unique user
          */
-        if (this.grantorRole == Role.PRESIDENT)
-            if (this.grantedRole != Role.ADMIN &&
-                    (this.granteeRole != Role.ADMIN && this.granteeRole != Role.PRESIDENT)
-                    && (this.grantedRole != this.granteeRole))
+        if (this.grantorRole == Role.PRESIDENT) {
+            if (this.grantedRole != Role.ADMIN
+                    && (this.granteeRole != Role.ADMIN && this.granteeRole != Role.PRESIDENT)
+                    && (this.granteeRole != Role.LEADER_CIRCLE && this.granteeRole != Role.LEADER_ALUMNI)
+                    && (this.grantedRole != this.granteeRole)) {
                 return;
+            }
+        }
         /* When role of grantor is Leader_Circle
          * Granted role should be Leader_Circle, and Grantee role should be Common
          */
-        if (this.grantorRole == Role.LEADER_CIRCLE)
-            if (this.grantedRole == Role.LEADER_CIRCLE && this.granteeRole == Role.COMMON)
+        if (this.grantorRole == Role.LEADER_CIRCLE) {
+            if (this.grantedRole == Role.LEADER_CIRCLE && this.granteeRole == Role.COMMON) {
                 return;
+            }
+        }
         /* When role of grantor is Leader_Alumni
          * Granted role should be Leader_Alumni, and Grantee role should be Common
          */
-        if (this.grantorRole == Role.LEADER_ALUMNI)
-            if (this.grantedRole == Role.LEADER_ALUMNI && this.granteeRole == Role.COMMON)
+        if (this.grantorRole == Role.LEADER_ALUMNI) {
+            if (this.grantedRole == Role.LEADER_ALUMNI && this.granteeRole == Role.COMMON) {
                 return;
+            }
+        }
 
         throw new UnauthorizedException(
                 ErrorCode.GRANT_ROLE_NOT_ALLOWED,
