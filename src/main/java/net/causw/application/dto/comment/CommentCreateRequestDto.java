@@ -1,16 +1,10 @@
 package net.causw.application.dto.comment;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Data;
 
-import java.util.Optional;
-
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
-@NoArgsConstructor
 public class CommentCreateRequestDto {
     private String content;
     private String postId;

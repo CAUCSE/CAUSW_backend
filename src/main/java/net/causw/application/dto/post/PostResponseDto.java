@@ -1,7 +1,7 @@
 package net.causw.application.dto.post;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.Setter;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.domain.model.PostDomainModel;
@@ -12,7 +12,7 @@ import org.springframework.data.domain.Page;
 import java.time.LocalDateTime;
 
 @Getter
-@NoArgsConstructor
+@Setter
 public class PostResponseDto {
     private String id;
     private String title;
