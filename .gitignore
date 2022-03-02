@@ -45,5 +45,5 @@ out/
 ### Project security ###
 **/resources/
 Dockerfile
-deploy_backend.sh
 docker-compose.yaml
+deploy_*.sh

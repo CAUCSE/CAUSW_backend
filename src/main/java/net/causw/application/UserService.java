@@ -1,21 +1,21 @@
 package net.causw.application;
 
-import net.causw.application.dto.user.UserFindEmailRequestDto;
+import net.causw.application.dto.DuplicatedCheckResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.comment.CommentsOfUserResponseDto;
-import net.causw.application.dto.DuplicatedCheckResponseDto;
-import net.causw.application.dto.user.UserPostResponseDto;
-import net.causw.application.dto.user.UserAdmissionsResponseDto;
 import net.causw.application.dto.user.UserAdmissionCreateRequestDto;
 import net.causw.application.dto.user.UserAdmissionResponseDto;
+import net.causw.application.dto.user.UserAdmissionsResponseDto;
 import net.causw.application.dto.user.UserCommentsResponseDto;
 import net.causw.application.dto.user.UserCreateRequestDto;
-import net.causw.application.dto.user.UserUpdatePasswordRequestDto;
+import net.causw.application.dto.user.UserFindEmailRequestDto;
+import net.causw.application.dto.user.UserPostResponseDto;
 import net.causw.application.dto.user.UserPostsResponseDto;
 import net.causw.application.dto.user.UserPrivilegedResponseDto;
 import net.causw.application.dto.user.UserResponseDto;
 import net.causw.application.dto.user.UserSignInRequestDto;
+import net.causw.application.dto.user.UserUpdatePasswordRequestDto;
 import net.causw.application.dto.user.UserUpdateRequestDto;
 import net.causw.application.dto.user.UserUpdateRoleRequestDto;
 import net.causw.application.spi.BoardPort;
@@ -70,6 +70,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -551,7 +552,17 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public DuplicatedCheckResponseDto isDuplicatedEmail(String email) {
-        return DuplicatedCheckResponseDto.of(this.userPort.findByEmail(email).isPresent());
+        Optional<UserDomainModel> userFoundByEmail = this.userPort.findByEmail(email);
+        if (userFoundByEmail.isPresent()) {
+            UserState state = userFoundByEmail.get().getState();
+            if (state.equals(UserState.INACTIVE) || state.equals(UserState.DROP)) {
+                throw new BadRequestException(
+                        ErrorCode.ROW_ALREADY_EXIST,
+                        "탈퇴한 계정의 재가입은 관리자에게 문의해주세요."
+                );
+            }
+        }
+        return DuplicatedCheckResponseDto.of(userFoundByEmail.isPresent());
     }
 
     @Transactional
@@ -686,7 +697,28 @@ public class UserService {
                         );
                     });
         }
+        /* Delegate the Leader Alumni
+         * 1) Check if the grantor's role is Admin or President
+         * 2) Check if the role to update is Leader Alumni
+         */
+        else if ((grantor.getRole() == Role.PRESIDENT || grantor.getRole() == Role.ADMIN)
+                && userUpdateRoleRequestDto.getRole() == Role.LEADER_ALUMNI
+        ) {
+            UserDomainModel previousLeaderAlumni = this.userPort.findByRole(Role.LEADER_ALUMNI)
+                    .stream().findFirst()
+                    .orElseThrow(
+                            () -> new InternalServerException(
+                                    ErrorCode.INTERNAL_SERVER,
+                                    "동문회장이 존재하지 않습니다."
+                            ));
 
+            this.userPort.updateRole(previousLeaderAlumni.getId(), Role.COMMON).orElseThrow(
+                    () -> new InternalServerException(
+                            ErrorCode.INTERNAL_SERVER,
+                            "User id checked, but exception occurred"
+                    )
+            );
+        }
 
         /* Grant the role
          * The linked updating process is performed on previous delegation process

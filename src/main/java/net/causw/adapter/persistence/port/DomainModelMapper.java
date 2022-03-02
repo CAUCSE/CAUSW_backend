@@ -25,6 +25,7 @@ import net.causw.domain.model.UserDomainModel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Optional;
 
 // TODO: Refactoring
 public abstract class DomainModelMapper {
@@ -67,11 +68,6 @@ public abstract class DomainModelMapper {
     }
 
     protected BoardDomainModel entityToDomainModel(Board board) {
-        CircleDomainModel circleDomainModel = null;
-        if (board.getCircle() != null) {
-            circleDomainModel = this.entityToDomainModel(board.getCircle());
-        }
-
         return BoardDomainModel.of(
                 board.getId(),
                 board.getName(),
@@ -79,7 +75,7 @@ public abstract class DomainModelMapper {
                 new ArrayList<>(Arrays.asList(board.getCreateRoles().split(","))),
                 board.getCategory(),
                 board.getIsDeleted(),
-                circleDomainModel
+                Optional.ofNullable(board.getCircle()).map(this::entityToDomainModel).orElse(null)
         );
     }
 
@@ -90,7 +86,7 @@ public abstract class DomainModelMapper {
                 circle.getMainImage(),
                 circle.getDescription(),
                 circle.getIsDeleted(),
-                this.entityToDomainModel(circle.getLeader()),
+                circle.getLeader().map(this::entityToDomainModel).orElse(null),
                 circle.getCreatedAt(),
                 circle.getUpdatedAt()
         );
