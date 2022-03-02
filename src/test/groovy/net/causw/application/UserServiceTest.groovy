@@ -287,6 +287,8 @@ class UserServiceTest extends Specification {
         when: "President -> Grant Leader_Alumni"
         mockUpdatedUserDomainModel.setRole(Role.LEADER_ALUMNI)
         userUpdateRoleRequestDto.setRole(Role.LEADER_ALUMNI.value)
+        this.userPort.findByRole(Role.LEADER_ALUMNI) >> List.of(this.mockUserDomainModel)
+        this.userPort.updateRole(((UserDomainModel)this.mockUserDomainModel).getId(), Role.COMMON) >> Optional.of(this.mockUserDomainModel)
         userResponseDto = this.userService.updateUserRole(currentId, targetId, userUpdateRoleRequestDto)
 
         then:

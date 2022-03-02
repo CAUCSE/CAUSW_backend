@@ -52,10 +52,22 @@ dependencies {
     // Spock test
     testImplementation "org.spockframework:spock-core:1.2-groovy-2.4"
     testImplementation "org.spockframework:spock-spring:1.2-groovy-2.4"
+    testImplementation "org.junit.vintage:junit-vintage-engine"
     testImplementation "org.powermock:powermock-api-mockito2:2.0.2"
     testImplementation "org.powermock:powermock-module-junit4:2.0.2"
 }
 
 test {
     useJUnitPlatform()
+
+    testLogging {
+        showStandardStreams = true
+        events = ["passed", "skipped", "failed"]
+    }
+
+    afterSuite { desc, result ->
+        if (!desc.parent) {
+            println "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
+        }
+    }
 }
