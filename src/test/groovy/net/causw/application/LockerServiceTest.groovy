@@ -55,8 +55,7 @@ class LockerServiceTest extends Specification {
     def setup() {
         this.mockLockerLocationDomainModel = LockerLocationDomainModel.of(
                 "test locker location id",
-                "test locker location name",
-                "test locker location description"
+                "test locker location name"
         )
         this.mockLockerDomainModel = LockerDomainModel.of(
                 "test locker id",
@@ -459,8 +458,7 @@ class LockerServiceTest extends Specification {
 
         def mockMovedLockerLocationDomainModel = LockerLocationDomainModel.of(
                 "test locker location id2",
-                "test name2",
-                "test description2"
+                "test name2"
         )
 
         def updaterUserDomainModel = UserDomainModel.of(
@@ -510,8 +508,7 @@ class LockerServiceTest extends Specification {
 
         def mockMovedLockerLocationDomainModel = LockerLocationDomainModel.of(
                 "test locker location id2",
-                "test name2",
-                "test description2"
+                "test name2"
         )
 
         def updaterUserDomainModel = UserDomainModel.of(
@@ -547,8 +544,7 @@ class LockerServiceTest extends Specification {
     def "Locker location create normal case"() {
         given:
         def lockerLocationCreateRequestDto = new LockerLocationCreateRequestDto(
-                "test locker location name",
-                "test locker location description",
+                "test locker location name"
         )
 
         def creatorUserDomainModel = UserDomainModel.of(
@@ -570,8 +566,7 @@ class LockerServiceTest extends Specification {
         when:
         PowerMockito.mockStatic(LockerLocationDomainModel.class)
         PowerMockito.when(LockerLocationDomainModel.of(
-                lockerLocationCreateRequestDto.getName(),
-                lockerLocationCreateRequestDto.getDescription()
+                lockerLocationCreateRequestDto.getName()
         )).thenReturn((LockerLocationDomainModel) this.mockLockerLocationDomainModel)
         def lockerLocationResponseDto = this.lockerService.createLocation("test user id", lockerLocationCreateRequestDto)
 
@@ -579,7 +574,6 @@ class LockerServiceTest extends Specification {
         lockerLocationResponseDto instanceof LockerLocationResponseDto
         with(lockerLocationResponseDto) {
             getName() == "test locker location name"
-            getDescription() == "test locker location description"
         }
     }
 
@@ -587,7 +581,6 @@ class LockerServiceTest extends Specification {
     def "Locker location create invalid data case"() {
         given:
         def lockerLocationCreateRequestDto = new LockerLocationCreateRequestDto(
-                "",
                 "",
         )
 
@@ -608,11 +601,9 @@ class LockerServiceTest extends Specification {
 
         when:
         ((LockerLocationDomainModel) this.mockLockerLocationDomainModel).setName("")
-        ((LockerLocationDomainModel) this.mockLockerLocationDomainModel).setDescription("")
         PowerMockito.mockStatic(LockerLocationDomainModel.class)
         PowerMockito.when(LockerLocationDomainModel.of(
-                lockerLocationCreateRequestDto.getName(),
-                lockerLocationCreateRequestDto.getDescription()
+                lockerLocationCreateRequestDto.getName()
         )).thenReturn((LockerLocationDomainModel) this.mockLockerLocationDomainModel)
         this.lockerService.createLocation("test user id", lockerLocationCreateRequestDto)
 
@@ -624,8 +615,7 @@ class LockerServiceTest extends Specification {
     def "Locker location create unauthorized case"() {
         given:
         def lockerLocationCreateRequestDto = new LockerLocationCreateRequestDto(
-                "test locker location name",
-                "test locker location description",
+                "test locker location name"
         )
 
         def creatorUserDomainModel = UserDomainModel.of(
@@ -646,8 +636,7 @@ class LockerServiceTest extends Specification {
         when:
         PowerMockito.mockStatic(LockerLocationDomainModel.class)
         PowerMockito.when(LockerLocationDomainModel.of(
-                lockerLocationCreateRequestDto.getName(),
-                lockerLocationCreateRequestDto.getDescription()
+                lockerLocationCreateRequestDto.getName()
         )).thenReturn((LockerLocationDomainModel) this.mockLockerLocationDomainModel)
         this.lockerService.createLocation("test user id", lockerLocationCreateRequestDto)
 
@@ -664,8 +653,7 @@ class LockerServiceTest extends Specification {
         def lockerLocationId = "test locker location id"
 
         def lockerLocationUpdateRequestDto = new LockerLocationUpdateRequestDto(
-                "test locker location updated name",
-                "test locker location updated description"
+                "test locker location updated name"
         )
 
         def updaterUserDomainModel = UserDomainModel.of(
@@ -682,8 +670,7 @@ class LockerServiceTest extends Specification {
 
         def updatedLockerLocationDomainModel = LockerLocationDomainModel.of(
                 lockerLocationId,
-                "test locker location updated name",
-                "test locker location updated description"
+                "test locker location updated name"
         )
 
         this.userPort.findById(updaterUserDomainModel.getId()) >> Optional.of(updaterUserDomainModel)
@@ -698,7 +685,6 @@ class LockerServiceTest extends Specification {
         lockerLocationResponseDto instanceof LockerLocationResponseDto
         with(lockerLocationResponseDto) {
             getName() == "test locker location updated name"
-            getDescription() == "test locker location updated description"
         }
     }
 
@@ -708,7 +694,6 @@ class LockerServiceTest extends Specification {
         def lockerLocationId = "test locker location id"
 
         def lockerLocationUpdateRequestDto = new LockerLocationUpdateRequestDto(
-                "",
                 ""
         )
 
@@ -741,8 +726,7 @@ class LockerServiceTest extends Specification {
         def lockerLocationId = "test locker location id"
 
         def lockerLocationUpdateRequestDto = new LockerLocationUpdateRequestDto(
-                "test locker location updated name",
-                "test locker location updated description"
+                "test locker location updated name"
         )
 
         def updaterUserDomainModel = UserDomainModel.of(
