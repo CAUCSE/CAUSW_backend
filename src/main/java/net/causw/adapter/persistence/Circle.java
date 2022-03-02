@@ -11,6 +11,7 @@ import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import java.util.Optional;
 
 @Getter
 @Setter
@@ -34,6 +35,10 @@ public class Circle extends BaseEntity {
     @OneToOne
     @JoinColumn(name = "leader_id")
     private User leader;
+
+    public Optional<User> getLeader() {
+        return Optional.ofNullable(this.leader);
+    }
 
     private Circle(
             String id,
