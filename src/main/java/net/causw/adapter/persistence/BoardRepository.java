@@ -9,9 +9,9 @@ import java.util.Optional;
 
 @Repository
 public interface BoardRepository extends JpaRepository<Board, String> {
-    List<Board> findByCircle_IdAndIsDeletedIsFalse(String circleId);
+    List<Board> findByCircle_IdAndIsDeletedIsFalseOrderByCreatedAtAsc(String circleId);
 
-    List<Board> findByCircle_IdIsNullAndIsDeletedIsFalse();
+    List<Board> findByCircle_IdIsNullAndIsDeletedIsFalseOrderByCreatedAtAsc();
 
     List<Board> findTop3ByCircle_IdIsNullAndIsDeletedIsFalseOrderByCreatedAtAsc();
 
