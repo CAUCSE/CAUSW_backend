@@ -35,6 +35,7 @@ public enum ErrorCode {
     GRANT_ROLE_NOT_ALLOWED(4106),
     API_NOT_ALLOWED(4107),
     NOT_MEMBER(4108),
+    REJECT_USER(4109),
 
     /**
      * 500 Internal Server Error
