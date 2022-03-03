@@ -1,27 +1,8 @@
 package net.causw.application
 
-
 import net.causw.application.dto.circle.CircleResponseDto
-import net.causw.application.dto.user.UserAdmissionCreateRequestDto
-import net.causw.application.dto.user.UserAdmissionResponseDto
-import net.causw.application.dto.user.UserCommentsResponseDto
-import net.causw.application.dto.user.UserCreateRequestDto
-import net.causw.application.dto.user.UserUpdatePasswordRequestDto
-import net.causw.application.dto.user.UserPostsResponseDto
-import net.causw.application.dto.user.UserResponseDto
-import net.causw.application.dto.user.UserUpdateRequestDto
-import net.causw.application.dto.user.UserUpdateRoleRequestDto
-import net.causw.application.spi.BoardPort
-import net.causw.application.spi.CircleMemberPort
-import net.causw.application.spi.CirclePort
-import net.causw.application.spi.CommentPort
-import net.causw.application.spi.FavoriteBoardPort
-import net.causw.application.spi.LockerLogPort
-import net.causw.application.spi.LockerPort
-import net.causw.application.spi.PostPort
-import net.causw.application.spi.UserAdmissionLogPort
-import net.causw.application.spi.UserAdmissionPort
-import net.causw.application.spi.UserPort
+import net.causw.application.dto.user.*
+import net.causw.application.spi.*
 import net.causw.config.JwtTokenProvider
 import net.causw.domain.exceptions.BadRequestException
 import net.causw.domain.exceptions.UnauthorizedException
@@ -131,7 +112,7 @@ class UserServiceTest extends Specification {
                 "test post id",
                 "test post title",
                 "test post content",
-                (UserDomainModel)this.mockUserDomainModel,
+                (UserDomainModel) this.mockUserDomainModel,
                 false,
                 mockBoardDomainModel,
                 null,
@@ -139,7 +120,7 @@ class UserServiceTest extends Specification {
         )
 
         this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
-        this.postPort.findByUserId(((UserDomainModel)this.mockUserDomainModel).getId(), 0) >> new PageImpl<PostDomainModel>(List.of(mockPostDomainModel))
+        this.postPort.findByUserId(((UserDomainModel) this.mockUserDomainModel).getId(), 0) >> new PageImpl<PostDomainModel>(List.of(mockPostDomainModel))
 
         when:
         def userPostResponseDto = this.userService.findPosts("test", 0)
@@ -171,7 +152,7 @@ class UserServiceTest extends Specification {
                 "test post id",
                 "test post title",
                 "test post content",
-                (UserDomainModel)this.mockUserDomainModel,
+                (UserDomainModel) this.mockUserDomainModel,
                 false,
                 mockBoardDomainModel,
                 null,
@@ -190,7 +171,7 @@ class UserServiceTest extends Specification {
 
         this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
         this.postPort.findById("test post id") >> Optional.of(mockPostDomainModel)
-        this.commentPort.findByUserId(((UserDomainModel)this.mockUserDomainModel).getId(), 0) >> new PageImpl<CommentDomainModel>(List.of(mockCommentDomainModel))
+        this.commentPort.findByUserId(((UserDomainModel) this.mockUserDomainModel).getId(), 0) >> new PageImpl<CommentDomainModel>(List.of(mockCommentDomainModel))
 
         when:
         def userCommentResponseDto = this.userService.findComments("test", 0)
@@ -288,7 +269,7 @@ class UserServiceTest extends Specification {
         mockUpdatedUserDomainModel.setRole(Role.LEADER_ALUMNI)
         userUpdateRoleRequestDto.setRole(Role.LEADER_ALUMNI.value)
         this.userPort.findByRole(Role.LEADER_ALUMNI) >> List.of(this.mockUserDomainModel)
-        this.userPort.updateRole(((UserDomainModel)this.mockUserDomainModel).getId(), Role.COMMON) >> Optional.of(this.mockUserDomainModel)
+        this.userPort.updateRole(((UserDomainModel) this.mockUserDomainModel).getId(), Role.COMMON) >> Optional.of(this.mockUserDomainModel)
         userResponseDto = this.userService.updateUserRole(currentId, targetId, userUpdateRoleRequestDto)
 
         then:
@@ -585,7 +566,7 @@ class UserServiceTest extends Specification {
         this.userPort.findById(id) >> Optional.of(this.mockUserDomainModel)
         this.userPort.findByEmail("update@cau.ac.kr") >> Optional.ofNullable(null)
 
-        this.userPort.update(id, (UserDomainModel)this.mockUserDomainModel) >> Optional.of(mockUpdatedUserDomainModel)
+        this.userPort.update(id, (UserDomainModel) this.mockUserDomainModel) >> Optional.of(mockUpdatedUserDomainModel)
 
         when:
         def userResponseDto = this.userService.update(id, userUpdateRequestDto)
@@ -1338,7 +1319,7 @@ class UserServiceTest extends Specification {
         thrown(UnauthorizedException)
 
         when: "Request user is not president or admin"
-        ((UserDomainModel)this.mockUserDomainModel).setRole(Role.COMMON)
+        ((UserDomainModel) this.mockUserDomainModel).setRole(Role.COMMON)
         this.userService.restore("test", "test1")
 
         then:
@@ -1353,24 +1334,24 @@ class UserServiceTest extends Specification {
     def "User create admission normal case"() {
         given:
         def userAdmissionCreateRequestDto = new UserAdmissionCreateRequestDto(
-                ((UserDomainModel)this.mockUserDomainModel).getEmail(),
+                ((UserDomainModel) this.mockUserDomainModel).getEmail(),
                 "",
                 null
         )
 
         def createdUserAdmissionDomainModel = UserAdmissionDomainModel.of(
-                (UserDomainModel)this.mockUserDomainModel,
+                (UserDomainModel) this.mockUserDomainModel,
                 null,
                 userAdmissionCreateRequestDto.getDescription()
         )
 
         this.mockUserDomainModel.setState(UserState.AWAIT)
         this.userPort.findByEmail("test@cau.ac.kr") >> Optional.of(this.mockUserDomainModel)
-        this.userAdmissionPort.existsByUserId(((UserDomainModel)this.mockUserDomainModel).getId()) >> false
+        this.userAdmissionPort.existsByUserId(((UserDomainModel) this.mockUserDomainModel).getId()) >> false
 
         PowerMockito.mockStatic(UserAdmissionDomainModel.class)
         PowerMockito.when(UserAdmissionDomainModel.of(
-                (UserDomainModel)this.mockUserDomainModel,
+                (UserDomainModel) this.mockUserDomainModel,
                 null,
                 userAdmissionCreateRequestDto.getDescription()
         )).thenReturn(createdUserAdmissionDomainModel)
@@ -1383,30 +1364,30 @@ class UserServiceTest extends Specification {
         then:
         userAdmissionResponseDto instanceof UserAdmissionResponseDto
         with(userAdmissionResponseDto) {
-            getUser().getId() == ((UserDomainModel)this.mockUserDomainModel).getId()
+            getUser().getId() == ((UserDomainModel) this.mockUserDomainModel).getId()
         }
     }
 
     def "User create admission unauthorized case"() {
         given:
         def userAdmissionCreateRequestDto = new UserAdmissionCreateRequestDto(
-                ((UserDomainModel)this.mockUserDomainModel).getEmail(),
+                ((UserDomainModel) this.mockUserDomainModel).getEmail(),
                 "",
                 null
         )
 
         def createdUserAdmissionDomainModel = UserAdmissionDomainModel.of(
-                (UserDomainModel)this.mockUserDomainModel,
+                (UserDomainModel) this.mockUserDomainModel,
                 null,
                 userAdmissionCreateRequestDto.getDescription()
         )
 
         this.userPort.findByEmail("test@cau.ac.kr") >> Optional.of(this.mockUserDomainModel)
-        this.userAdmissionPort.existsByUserId(((UserDomainModel)this.mockUserDomainModel).getId()) >> false
+        this.userAdmissionPort.existsByUserId(((UserDomainModel) this.mockUserDomainModel).getId()) >> false
 
         PowerMockito.mockStatic(UserAdmissionDomainModel.class)
         PowerMockito.when(UserAdmissionDomainModel.of(
-                (UserDomainModel)this.mockUserDomainModel,
+                (UserDomainModel) this.mockUserDomainModel,
                 null,
                 userAdmissionCreateRequestDto.getDescription()
         )).thenReturn(createdUserAdmissionDomainModel)
@@ -1469,7 +1450,7 @@ class UserServiceTest extends Specification {
                 userAdmissionDomainModel.getDescription()
         ) >> null
         this.userAdmissionPort.delete(userAdmissionDomainModel) >> null
-
+        this.favoriteBoardPort.findByUserId(userAdmissionDomainModel.getUser().getId()) >> new ArrayList<FavoriteBoardDomainModel>()
         this.userPort.updateState(userAdmissionDomainModel.getUser().getId(), UserState.ACTIVE) >> Optional.of(mockRegisterUserDomainModel)
 
         when:

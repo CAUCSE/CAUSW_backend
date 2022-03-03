@@ -965,14 +965,17 @@ public class UserService {
                 .validate();
 
         // Create default favorite board
-        this.boardPort.findOldest3Boards()
-                .forEach(boardDomainModel ->
-                        this.favoriteBoardPort.create(FavoriteBoardDomainModel.of(
-                                userAdmissionDomainModel.getUser(),
-                                boardDomainModel
-                        ))
-                );
+        if (this.favoriteBoardPort.findByUserId(userAdmissionDomainModel.getUser().getId()).isEmpty()) {
+            this.boardPort.findOldest3Boards()
+                    .forEach(boardDomainModel ->
+                            this.favoriteBoardPort.create(FavoriteBoardDomainModel.of(
+                                    userAdmissionDomainModel.getUser(),
+                                    boardDomainModel
+                            ))
+                    );
+        }
 
+        // Update user role to COMMON
         this.userPort.updateRole(userAdmissionDomainModel.getUser().getId(), Role.COMMON).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
@@ -980,6 +983,7 @@ public class UserService {
                 )
         );
 
+        // Add admission log
         this.userAdmissionLogPort.create(
                 userAdmissionDomainModel.getUser().getEmail(),
                 userAdmissionDomainModel.getUser().getName(),
@@ -990,6 +994,7 @@ public class UserService {
                 userAdmissionDomainModel.getDescription()
         );
 
+        // Remove the admission
         this.userAdmissionPort.delete(userAdmissionDomainModel);
 
         return UserAdmissionResponseDto.from(
