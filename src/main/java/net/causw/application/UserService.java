@@ -515,8 +515,6 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public String signIn(UserSignInRequestDto userSignInRequestDto) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
         UserDomainModel userDomainModel = this.userPort.findByEmail(userSignInRequestDto.getEmail()).orElseThrow(
                 () -> new UnauthorizedException(
                         ErrorCode.INVALID_SIGNIN,
@@ -527,8 +525,9 @@ public class UserService {
         /* Validate the input password and user state
          * The sign-in process is rejected if the user is in BLOCKED, WAIT, or INACTIVE state.
          */
-        validatorBucket
-                .consistOf(PasswordCorrectValidator.of(userDomainModel, userSignInRequestDto.getPassword()));
+        ValidatorBucket.of()
+                .consistOf(PasswordCorrectValidator.of(userDomainModel, userSignInRequestDto.getPassword()))
+                .validate();
 
         if (userDomainModel.getState() == UserState.AWAIT) {
             this.userAdmissionPort.findByUserId(userDomainModel.getId()).orElseThrow(
@@ -539,7 +538,7 @@ public class UserService {
             );
         }
 
-        validatorBucket
+        ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(userDomainModel.getState()))
                 .validate();
 
