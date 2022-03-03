@@ -1,19 +1,23 @@
 package net.causw.application.dto.user;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Optional;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
+@NoArgsConstructor
 public class UserAdmissionCreateRequestDto {
     private String email;
     private String description;
     private MultipartFile attachImage;
 
     public Optional<MultipartFile> getAttachImage() {
-        return Optional.ofNullable(attachImage);
+        return Optional.ofNullable(this.attachImage);
     }
 }
