@@ -1,6 +1,8 @@
 runtime: java11
-
+env: standard
 instance_class: F2
-
 env_variables:
-  spring_profiles_active: ${SPRING_PROFILES_ACTIVE}
+  spring_profiles_active: prod
+automatic_scaling:
+  min_idle_instances: 0
+  max_idle_instances: 1
