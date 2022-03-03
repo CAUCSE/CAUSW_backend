@@ -1,12 +1,16 @@
 package net.causw.application.dto.board;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
+@NoArgsConstructor
 public class BoardUpdateRequestDto {
     private String name;
     private String description;
