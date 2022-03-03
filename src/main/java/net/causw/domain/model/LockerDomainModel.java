@@ -73,10 +73,12 @@ public class LockerDomainModel {
 
     public void register(UserDomainModel user) {
         this.user = user;
+        this.isActive = Boolean.FALSE;
     }
 
     public void returnLocker() {
         this.user = null;
+        this.isActive = Boolean.TRUE;
     }
 
     public void activate() {
