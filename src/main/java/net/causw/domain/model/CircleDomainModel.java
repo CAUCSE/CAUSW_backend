@@ -13,8 +13,6 @@ import java.util.Optional;
 public class CircleDomainModel {
     private String id;
     private String description;
-
-    @NotBlank(message = "소모임 이미지가 입력되지 않았습니다.")
     private String mainImage;
 
     @NotBlank(message = "소모임 이름이 입력되지 않았습니다.")
