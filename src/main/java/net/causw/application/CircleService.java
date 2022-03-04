@@ -1,13 +1,13 @@
 package net.causw.application;
 
+import net.causw.application.dto.DuplicatedCheckResponseDto;
 import net.causw.application.dto.board.BoardOfCircleResponseDto;
-import net.causw.application.dto.circle.CirclesResponseDto;
+import net.causw.application.dto.circle.CircleBoardsResponseDto;
 import net.causw.application.dto.circle.CircleCreateRequestDto;
 import net.causw.application.dto.circle.CircleMemberResponseDto;
 import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.circle.CircleUpdateRequestDto;
-import net.causw.application.dto.circle.CircleBoardsResponseDto;
-import net.causw.application.dto.DuplicatedCheckResponseDto;
+import net.causw.application.dto.circle.CirclesResponseDto;
 import net.causw.application.spi.BoardPort;
 import net.causw.application.spi.CircleMemberPort;
 import net.causw.application.spi.CirclePort;
@@ -29,7 +29,6 @@ import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.GrantableRoleValidator;
 import net.causw.domain.validation.StudentIdIsNullValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
-import net.causw.domain.validation.TimePassedValidator;
 import net.causw.domain.validation.UserEqualValidator;
 import net.causw.domain.validation.UserNotEqualValidator;
 import net.causw.domain.validation.UserRoleIsNoneValidator;
@@ -290,7 +289,7 @@ public class CircleService {
 
         // Create boards of circle
         BoardDomainModel noticeBoard = BoardDomainModel.of(
-            "공지 게시판",
+                "공지 게시판",
                 newCircle.getName() + " 공지 게시판",
                 Stream.of(Role.ADMIN, Role.PRESIDENT, Role.LEADER_CIRCLE)
                         .map(Role::getValue)
@@ -304,7 +303,7 @@ public class CircleService {
                 "자유 게시판",
                 newCircle.getName() + " 자유 게시판",
                 Stream.of(Role.ADMIN, Role.PRESIDENT, Role.COUNCIL, Role.LEADER_1, Role.LEADER_2, Role.LEADER_3, Role.LEADER_4,
-                                Role.LEADER_CIRCLE, Role.LEADER_ALUMNI, Role.COMMON, Role.PROFESSOR)
+                        Role.LEADER_CIRCLE, Role.LEADER_ALUMNI, Role.COMMON, Role.PROFESSOR)
                         .map(Role::getValue)
                         .collect(Collectors.toList()),
                 "자유 게시판",
@@ -499,7 +498,6 @@ public class CircleService {
                                             List.of(CircleMemberStatus.LEAVE, CircleMemberStatus.REJECT)
                                     )
                             )
-                            .consistOf(TimePassedValidator.of(circleMember.getUpdatedAt()))
                             .validate();
 
                     return this.circleMemberPort.updateStatus(circleMember.getId(), CircleMemberStatus.AWAIT).orElseThrow(
