@@ -790,7 +790,7 @@ class CircleServiceTest extends Specification {
         applyUser instanceof CircleMemberResponseDto
         with(applyUser) {
             getStatus() == CircleMemberStatus.AWAIT
-            getUserId() == "test1"
+            getUser().getId() == "test"
             getCircle().getId() == "test"
         }
     }
@@ -877,6 +877,7 @@ class CircleServiceTest extends Specification {
         this.mockCircleMemberDomainModel.setStatus(CircleMemberStatus.AWAIT)
         this.circleMemberPort.findById("test") >> Optional.of(this.mockCircleMemberDomainModel)
         this.userPort.findById("test") >> Optional.of(this.leader)
+        this.userPort.findById("test1") >> Optional.of(this.leader)
 
         this.circleMemberPort.updateStatus("test", CircleMemberStatus.MEMBER) >> Optional.of(updatedCircleMemberDomainModel)
         this.circleMemberPort.updateStatus("test", CircleMemberStatus.REJECT) >> Optional.of(updatedCircleMemberDomainModel)
@@ -914,6 +915,7 @@ class CircleServiceTest extends Specification {
         this.mockCircleMemberDomainModel.setStatus(CircleMemberStatus.AWAIT)
         this.circleMemberPort.findById("test") >> Optional.of(this.mockCircleMemberDomainModel)
         this.userPort.findById("invalid-test") >> Optional.of(this.leader)
+        this.userPort.findById("test1") >> Optional.of(this.leader)
 
         this.circleMemberPort.updateStatus("test", CircleMemberStatus.MEMBER) >> Optional.of(updatedCircleMemberDomainModel)
         this.circleMemberPort.updateStatus("test", CircleMemberStatus.REJECT) >> Optional.of(updatedCircleMemberDomainModel)
@@ -1130,7 +1132,7 @@ class CircleServiceTest extends Specification {
         then:
         circleMemberResponseDtoList instanceof List<CircleMemberResponseDto>
         with(circleMemberResponseDtoList) {
-            get(0).getUserId() == "test"
+            get(0).getUser().getId() == "test"
             get(0).getStatus() == CircleMemberStatus.MEMBER
         }
     }
