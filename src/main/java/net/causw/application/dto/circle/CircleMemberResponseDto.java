@@ -2,8 +2,10 @@ package net.causw.application.dto.circle;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.causw.application.dto.user.UserResponseDto;
 import net.causw.domain.model.CircleMemberDomainModel;
 import net.causw.domain.model.CircleMemberStatus;
+import net.causw.domain.model.UserDomainModel;
 
 @Getter
 @Setter
@@ -11,32 +13,31 @@ public class CircleMemberResponseDto {
     private String id;
     private CircleMemberStatus status;
     private CircleResponseDto circle;
-    private String userId;
-    private String userName;
+    private UserResponseDto user;
 
     private CircleMemberResponseDto(
             String id,
             CircleMemberStatus status,
             CircleResponseDto circle,
-            String userId,
-            String userName
+            UserResponseDto user
     ) {
         this.id = id;
         this.status = status;
         this.circle = circle;
-        this.userId = userId;
-        this.userName = userName;
+        this.user = user;
     }
 
-    public static CircleMemberResponseDto from(CircleMemberDomainModel circleMember) {
+    public static CircleMemberResponseDto from(
+            UserDomainModel user,
+            CircleMemberDomainModel circleMember
+    ) {
         return new CircleMemberResponseDto(
                 circleMember.getId(),
                 circleMember.getStatus(),
                 CircleResponseDto.from(
                         circleMember.getCircle()
                 ),
-                circleMember.getUserId(),
-                circleMember.getUserName()
+                UserResponseDto.from(user)
         );
     }
 }

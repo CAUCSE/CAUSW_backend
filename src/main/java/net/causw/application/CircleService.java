@@ -229,7 +229,7 @@ public class CircleService {
 
         return this.circleMemberPort.findByCircleId(circleId, status)
                 .stream()
-                .map(CircleMemberResponseDto::from)
+                .map(circleMember -> CircleMemberResponseDto.from(user, circleMember))
                 .collect(Collectors.toList());
     }
 
@@ -489,7 +489,7 @@ public class CircleService {
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                 .consistOf(StudentIdIsNullValidator.of(user.getStudentId()));
 
-        return CircleMemberResponseDto.from(this.circleMemberPort.findByUserIdAndCircleId(user.getId(), circle.getId()).map(
+        return CircleMemberResponseDto.from(user, this.circleMemberPort.findByUserIdAndCircleId(user.getId(), circle.getId()).map(
                 circleMember -> {
                     validatorBucket
                             .consistOf(
@@ -562,7 +562,7 @@ public class CircleService {
                         userId))
                 .validate();
 
-        return CircleMemberResponseDto.from(this.circleMemberPort.updateStatus(circleMember.getId(), CircleMemberStatus.LEAVE).orElseThrow(
+        return CircleMemberResponseDto.from(user, this.circleMemberPort.updateStatus(circleMember.getId(), CircleMemberStatus.LEAVE).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         "Application id checked, but exception occurred"
@@ -582,6 +582,13 @@ public class CircleService {
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
+                )
+        );
+
+        UserDomainModel user = this.userPort.findById(userId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "추방할 사용자를 찾을 수 없습니다."
                 )
         );
 
@@ -633,7 +640,7 @@ public class CircleService {
                         userId))
                 .validate();
 
-        return CircleMemberResponseDto.from(this.circleMemberPort.updateStatus(circleMember.getId(), CircleMemberStatus.DROP).orElseThrow(
+        return CircleMemberResponseDto.from(user, this.circleMemberPort.updateStatus(circleMember.getId(), CircleMemberStatus.DROP).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         "Application id checked, but exception occurred"
@@ -680,6 +687,13 @@ public class CircleService {
                 )
         );
 
+        UserDomainModel user = this.userPort.findById(circleMember.getUserId()).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "가입 요청한 사용자를 찾을 수 없습니다."
+                )
+        );
+
         validatorBucket
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
@@ -705,7 +719,7 @@ public class CircleService {
                 ))
                 .validate();
 
-        return CircleMemberResponseDto.from(this.circleMemberPort.updateStatus(applicationId, targetStatus).orElseThrow(
+        return CircleMemberResponseDto.from(user, this.circleMemberPort.updateStatus(applicationId, targetStatus).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         "Application id checked, but exception occurred"
