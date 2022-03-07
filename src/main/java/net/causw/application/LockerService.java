@@ -143,46 +143,51 @@ public class LockerService {
             String lockerId,
             LockerUpdateRequestDto lockerUpdateRequestDto
     ) {
-        UserDomainModel updaterDomainModel = this.userPort.findById(updaterId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
-                )
+        throw new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                "사물함 신청 기간이 아닙니다. 공지를 확인해주세요."
         );
 
-        LockerDomainModel lockerDomainModel = this.lockerPort.findById(lockerId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "사물함을 찾을 수 없습니다."
-                )
-        );
-
-        ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(updaterDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(updaterDomainModel.getRole()))
-                .validate();
-
-        return this.lockerActionFactory
-                .getLockerAction(LockerLogAction.of(lockerUpdateRequestDto.getAction()))
-                .updateLockerDomainModel(
-                        lockerDomainModel,
-                        updaterDomainModel,
-                        this.lockerPort,
-                        this.lockerLogPort
-                )
-                .map(resLockerDomainModel -> {
-                    this.lockerLogPort.create(
-                            resLockerDomainModel.getLockerNumber(),
-                            updaterDomainModel,
-                            LockerLogAction.of(lockerUpdateRequestDto.getAction()),
-                            lockerUpdateRequestDto.getMessage().orElse(lockerUpdateRequestDto.getAction())
-                    );
-                    return LockerResponseDto.from(resLockerDomainModel, updaterDomainModel);
-                })
-                .orElseThrow(() -> new InternalServerException(
-                        ErrorCode.INTERNAL_SERVER,
-                        "Locker id checked, but exception occurred"
-                ));
+//        UserDomainModel updaterDomainModel = this.userPort.findById(updaterId).orElseThrow(
+//                () -> new BadRequestException(
+//                        ErrorCode.ROW_DOES_NOT_EXIST,
+//                        "로그인된 사용자를 찾을 수 없습니다."
+//                )
+//        );
+//
+//        LockerDomainModel lockerDomainModel = this.lockerPort.findById(lockerId).orElseThrow(
+//                () -> new BadRequestException(
+//                        ErrorCode.ROW_DOES_NOT_EXIST,
+//                        "사물함을 찾을 수 없습니다."
+//                )
+//        );
+//
+//        ValidatorBucket.of()
+//                .consistOf(UserStateValidator.of(updaterDomainModel.getState()))
+//                .consistOf(UserRoleIsNoneValidator.of(updaterDomainModel.getRole()))
+//                .validate();
+//
+//        return this.lockerActionFactory
+//                .getLockerAction(LockerLogAction.of(lockerUpdateRequestDto.getAction()))
+//                .updateLockerDomainModel(
+//                        lockerDomainModel,
+//                        updaterDomainModel,
+//                        this.lockerPort,
+//                        this.lockerLogPort
+//                )
+//                .map(resLockerDomainModel -> {
+//                    this.lockerLogPort.create(
+//                            resLockerDomainModel.getLockerNumber(),
+//                            updaterDomainModel,
+//                            LockerLogAction.of(lockerUpdateRequestDto.getAction()),
+//                            lockerUpdateRequestDto.getMessage().orElse(lockerUpdateRequestDto.getAction())
+//                    );
+//                    return LockerResponseDto.from(resLockerDomainModel, updaterDomainModel);
+//                })
+//                .orElseThrow(() -> new InternalServerException(
+//                        ErrorCode.INTERNAL_SERVER,
+//                        "Locker id checked, but exception occurred"
+//                ));
     }
 
     @Transactional
