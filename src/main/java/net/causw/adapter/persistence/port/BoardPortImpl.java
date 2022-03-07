@@ -53,6 +53,14 @@ public class BoardPortImpl extends DomainModelMapper implements BoardPort {
     }
 
     @Override
+    public List<BoardDomainModel> findHomeBoards() {
+        return this.boardRepository.findHomeBoards()
+                .stream()
+                .map(this::entityToDomainModel)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public BoardDomainModel create(BoardDomainModel boardDomainModel) {
         return this.entityToDomainModel(this.boardRepository.save(Board.from(boardDomainModel)));
     }
