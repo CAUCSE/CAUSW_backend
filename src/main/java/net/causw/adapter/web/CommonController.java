@@ -26,7 +26,7 @@ public class CommonController {
     @GetMapping("/api/v1/home")
     @ResponseStatus(value = HttpStatus.OK)
     public List<HomePageResponseDto> getHomePage(@AuthenticationPrincipal String userId) {
-        return this.homePageService.getHomePage(userId);
+        return this.homePageService.getHomePageDefault(userId);
     }
 
     /*
