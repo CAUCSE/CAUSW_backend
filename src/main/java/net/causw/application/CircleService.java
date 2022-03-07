@@ -229,7 +229,16 @@ public class CircleService {
 
         return this.circleMemberPort.findByCircleId(circleId, status)
                 .stream()
-                .map(circleMember -> CircleMemberResponseDto.from(user, circleMember))
+                .map(circleMember -> {
+                    UserDomainModel member = this.userPort.findById(circleMember.getUserId()).orElseThrow(
+                            () -> new BadRequestException(
+                                    ErrorCode.ROW_DOES_NOT_EXIST,
+                                    "소모임원을 찾을 수 없습니다."
+                            )
+                    );
+
+                    return CircleMemberResponseDto.from(member, circleMember);
+                })
                 .collect(Collectors.toList());
     }
 
