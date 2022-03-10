@@ -39,6 +39,8 @@ public class GcpFileUploader {
                     + "/"
                     + DateTimeFormatter.ofPattern("yyyy-MM-dd").format(LocalDateTime.now())
                     + "/"
+                    + DateTimeFormatter.ofPattern("HH:mm:ss.SSSZ").format(LocalDateTime.now())
+                    + "_"
                     + image.getOriginalFilename();
 
             BlobInfo blobInfo = storage.create(
