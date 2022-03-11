@@ -1,11 +1,11 @@
 package net.causw.application;
 
 import net.causw.application.dto.comment.CommentResponseDto;
-import net.causw.application.dto.post.PostsResponseDto;
 import net.causw.application.dto.post.BoardPostsResponseDto;
 import net.causw.application.dto.post.PostCreateRequestDto;
 import net.causw.application.dto.post.PostResponseDto;
 import net.causw.application.dto.post.PostUpdateRequestDto;
+import net.causw.application.dto.post.PostsResponseDto;
 import net.causw.application.spi.BoardPort;
 import net.causw.application.spi.ChildCommentPort;
 import net.causw.application.spi.CircleMemberPort;
@@ -27,6 +27,7 @@ import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.ContentsAdminValidator;
+import net.causw.domain.validation.PostNumberOfAttachmentsValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.UserEqualValidator;
 import net.causw.domain.validation.UserRoleIsNoneValidator;
@@ -297,13 +298,6 @@ public class PostService {
                 )
         );
 
-        PostDomainModel postDomainModel = PostDomainModel.of(
-                postCreateRequestDto.getTitle(),
-                postCreateRequestDto.getContent(),
-                creatorDomainModel,
-                boardDomainModel
-        );
-
         if (boardDomainModel.getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
             validatorBucket
                     .consistOf(UserRoleValidator.of(
@@ -315,6 +309,7 @@ public class PostService {
         validatorBucket
                 .consistOf(UserStateValidator.of(creatorDomainModel.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(creatorDomainModel.getRole()))
+                .consistOf(PostNumberOfAttachmentsValidator.of(postCreateRequestDto.getAttachmentList()))
                 .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted(), StaticValue.DOMAIN_BOARD))
                 .consistOf(UserRoleValidator.of(
                         creatorDomainModel.getRole(),
@@ -342,11 +337,22 @@ public class PostService {
                 }
         );
 
+        PostDomainModel postDomainModel = PostDomainModel.of(
+                postCreateRequestDto.getTitle(),
+                postCreateRequestDto.getContent(),
+                creatorDomainModel,
+                boardDomainModel,
+                postCreateRequestDto.getAttachmentList()
+        );
+
         validatorBucket
                 .consistOf(ConstraintValidator.of(postDomainModel, this.validator))
                 .validate();
 
-        return PostResponseDto.from(this.postPort.create(postDomainModel), creatorDomainModel);
+        return PostResponseDto.from(
+                this.postPort.create(postDomainModel),
+                creatorDomainModel
+        );
     }
 
     @Transactional
@@ -472,6 +478,7 @@ public class PostService {
         validatorBucket
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
+                .consistOf(PostNumberOfAttachmentsValidator.of(postUpdateRequestDto.getAttachmentList()))
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), StaticValue.DOMAIN_POST));
 
@@ -495,7 +502,8 @@ public class PostService {
 
         postDomainModel.update(
                 postUpdateRequestDto.getTitle(),
-                postUpdateRequestDto.getContent()
+                postUpdateRequestDto.getContent(),
+                postUpdateRequestDto.getAttachmentList()
         );
 
         validatorBucket

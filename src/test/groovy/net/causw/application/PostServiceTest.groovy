@@ -1,6 +1,5 @@
 package net.causw.application
 
-
 import net.causw.application.dto.post.BoardPostsResponseDto
 import net.causw.application.dto.post.PostCreateRequestDto
 import net.causw.application.dto.post.PostResponseDto
@@ -71,7 +70,8 @@ class PostServiceTest extends Specification {
                 false,
                 (BoardDomainModel) this.mockBoardDomainModel,
                 null,
-                null
+                null,
+                List.of()
         )
 
         this.mockCircleLeaderUserDomainModel = UserDomainModel.of(
@@ -422,7 +422,8 @@ class PostServiceTest extends Specification {
         def mockPostCreateRequestDto = new PostCreateRequestDto(
                 "test post title",
                 "test post content",
-                ((BoardDomainModel) this.mockBoardDomainModel).getId()
+                ((BoardDomainModel) this.mockBoardDomainModel).getId(),
+                List.of()
         )
 
         def creatorUserDomainModel = UserDomainModel.of(
@@ -460,7 +461,8 @@ class PostServiceTest extends Specification {
                 mockPostCreateRequestDto.getTitle(),
                 mockPostCreateRequestDto.getContent(),
                 (UserDomainModel) creatorUserDomainModel,
-                (BoardDomainModel) this.mockBoardDomainModel
+                (BoardDomainModel) this.mockBoardDomainModel,
+                List.of()
         )).thenReturn((PostDomainModel) this.mockPostDomainModel)
         def postCreate = this.postService.create("test user id", mockPostCreateRequestDto)
 
@@ -480,7 +482,8 @@ class PostServiceTest extends Specification {
                 mockPostCreateRequestDto.getTitle(),
                 mockPostCreateRequestDto.getContent(),
                 (UserDomainModel) creatorUserDomainModel,
-                (BoardDomainModel) this.mockBoardDomainModel
+                (BoardDomainModel) this.mockBoardDomainModel,
+                List.of()
         )).thenReturn((PostDomainModel) this.mockPostDomainModel)
         postCreate = this.postService.create("test user id", mockPostCreateRequestDto)
 
@@ -497,7 +500,8 @@ class PostServiceTest extends Specification {
         def mockPostCreateRequestDto = new PostCreateRequestDto(
                 "test post title",
                 "test post content",
-                ((BoardDomainModel) this.mockBoardDomainModel).getId()
+                ((BoardDomainModel) this.mockBoardDomainModel).getId(),
+                List.of()
         )
 
         def creatorUserDomainModel = UserDomainModel.of(
@@ -535,7 +539,8 @@ class PostServiceTest extends Specification {
                 mockPostCreateRequestDto.getTitle(),
                 mockPostCreateRequestDto.getContent(),
                 (UserDomainModel) creatorUserDomainModel,
-                (BoardDomainModel) this.mockBoardDomainModel
+                (BoardDomainModel) this.mockBoardDomainModel,
+                List.of()
         )).thenReturn((PostDomainModel) this.mockPostDomainModel)
         this.postService.create("test user id", mockPostCreateRequestDto)
 
@@ -551,7 +556,8 @@ class PostServiceTest extends Specification {
                 mockPostCreateRequestDto.getTitle(),
                 mockPostCreateRequestDto.getContent(),
                 (UserDomainModel) creatorUserDomainModel,
-                (BoardDomainModel) this.mockBoardDomainModel
+                (BoardDomainModel) this.mockBoardDomainModel,
+                List.of()
         )).thenReturn((PostDomainModel) this.mockPostDomainModel)
         this.postService.create("test user id", mockPostCreateRequestDto)
 
@@ -564,7 +570,8 @@ class PostServiceTest extends Specification {
         def mockPostCreateRequestDto = new PostCreateRequestDto(
                 "test post title",
                 "test post content",
-                ((BoardDomainModel) this.mockBoardDomainModel).getId()
+                ((BoardDomainModel) this.mockBoardDomainModel).getId(),
+                List.of()
         )
 
         def creatorUserDomainModel = UserDomainModel.of(
@@ -603,7 +610,8 @@ class PostServiceTest extends Specification {
                 mockPostCreateRequestDto.getTitle(),
                 mockPostCreateRequestDto.getContent(),
                 (UserDomainModel) creatorUserDomainModel,
-                (BoardDomainModel) this.mockBoardDomainModel
+                (BoardDomainModel) this.mockBoardDomainModel,
+                List.of()
         )).thenReturn((PostDomainModel) this.mockPostDomainModel)
         this.postService.create("test user id", mockPostCreateRequestDto)
 
@@ -621,7 +629,8 @@ class PostServiceTest extends Specification {
                 mockPostCreateRequestDto.getTitle(),
                 mockPostCreateRequestDto.getContent(),
                 (UserDomainModel) creatorUserDomainModel,
-                (BoardDomainModel) this.mockBoardDomainModel
+                (BoardDomainModel) this.mockBoardDomainModel,
+                List.of()
         )).thenReturn((PostDomainModel) this.mockPostDomainModel)
         this.postService.create("test user id", mockPostCreateRequestDto)
 
@@ -634,7 +643,8 @@ class PostServiceTest extends Specification {
         def mockPostCreateRequestDto = new PostCreateRequestDto(
                 "test post title",
                 "test post content",
-                ((BoardDomainModel) this.mockBoardDomainModel).getId()
+                ((BoardDomainModel) this.mockBoardDomainModel).getId(),
+                List.of()
         )
 
         def creatorUserDomainModel = UserDomainModel.of(
@@ -663,7 +673,8 @@ class PostServiceTest extends Specification {
                 mockPostCreateRequestDto.getTitle(),
                 mockPostCreateRequestDto.getContent(),
                 (UserDomainModel) creatorUserDomainModel,
-                (BoardDomainModel) this.mockBoardDomainModel
+                (BoardDomainModel) this.mockBoardDomainModel,
+                List.of()
         )).thenReturn((PostDomainModel) this.mockPostDomainModel)
         this.postService.create("test user id", mockPostCreateRequestDto)
 
@@ -701,7 +712,8 @@ class PostServiceTest extends Specification {
                 false,
                 (BoardDomainModel) mockBoardDomainModel,
                 null,
-                null
+                null,
+                List.of()
         )
 
         def mockUpdatedPostDomainModel = PostDomainModel.of(
@@ -712,10 +724,11 @@ class PostServiceTest extends Specification {
                 false,
                 (BoardDomainModel) mockBoardDomainModel,
                 null,
-                null
+                null,
+                List.of()
         )
 
-        def postUpdateRequestDto = new PostUpdateRequestDto(targetTitle, "test")
+        def postUpdateRequestDto = new PostUpdateRequestDto(targetTitle, "test", List.of())
 
         this.userPort.findById(writerUserDomainModel.getId()) >> Optional.of(writerUserDomainModel)
         this.postPort.findById(postId) >> Optional.of(mockOriginPostDomainModel)
@@ -770,7 +783,8 @@ class PostServiceTest extends Specification {
                 false,
                 (BoardDomainModel) mockBoardDomainModel,
                 null,
-                null
+                null,
+                List.of()
         )
 
         def mockUpdatedPostDomainModel = PostDomainModel.of(
@@ -781,10 +795,11 @@ class PostServiceTest extends Specification {
                 false,
                 (BoardDomainModel) mockBoardDomainModel,
                 null,
-                null
+                null,
+                List.of()
         )
 
-        def postUpdateRequestDto = new PostUpdateRequestDto(targetTitle, "test")
+        def postUpdateRequestDto = new PostUpdateRequestDto(targetTitle, "test", List.of())
 
         this.userPort.findById(presidentUserDomainModel.getId()) >> Optional.of(presidentUserDomainModel)
         this.postPort.findById(postId) >> Optional.of(mockOriginPostDomainModel)
@@ -826,7 +841,8 @@ class PostServiceTest extends Specification {
                 true,
                 (BoardDomainModel) mockBoardDomainModel,
                 null,
-                null
+                null,
+                List.of()
         )
 
         def mockUpdatedPostDomainModel = PostDomainModel.of(
@@ -837,10 +853,11 @@ class PostServiceTest extends Specification {
                 false,
                 (BoardDomainModel) mockBoardDomainModel,
                 null,
-                null
+                null,
+                List.of()
         )
 
-        def postUpdateRequestDto = new PostUpdateRequestDto(targetTitle, "test")
+        def postUpdateRequestDto = new PostUpdateRequestDto(targetTitle, "test", List.of())
 
         this.userPort.findById(writerUserDomainModel.getId()) >> Optional.of(writerUserDomainModel)
         this.postPort.findById(postId) >> Optional.of(mockOriginPostDomainModel)
@@ -894,7 +911,8 @@ class PostServiceTest extends Specification {
                 true,
                 ((PostDomainModel) this.mockPostDomainModel).getBoard(),
                 ((PostDomainModel) this.mockPostDomainModel).getCreatedAt(),
-                ((PostDomainModel) this.mockPostDomainModel).getUpdatedAt()
+                ((PostDomainModel) this.mockPostDomainModel).getUpdatedAt(),
+                List.of()
         )
 
 
@@ -949,7 +967,8 @@ class PostServiceTest extends Specification {
                 true,
                 ((PostDomainModel) this.mockPostDomainModel).getBoard(),
                 ((PostDomainModel) this.mockPostDomainModel).getCreatedAt(),
-                ((PostDomainModel) this.mockPostDomainModel).getUpdatedAt()
+                ((PostDomainModel) this.mockPostDomainModel).getUpdatedAt(),
+                List.of()
         )
 
         def mockWriterUserCircleMemberDomainModel = CircleMemberDomainModel.of(
@@ -1026,7 +1045,8 @@ class PostServiceTest extends Specification {
                 true,
                 ((PostDomainModel) this.mockPostDomainModel).getBoard(),
                 ((PostDomainModel) this.mockPostDomainModel).getCreatedAt(),
-                ((PostDomainModel) this.mockPostDomainModel).getUpdatedAt()
+                ((PostDomainModel) this.mockPostDomainModel).getUpdatedAt(),
+                List.of()
         )
 
 
@@ -1068,7 +1088,8 @@ class PostServiceTest extends Specification {
                 true,
                 ((PostDomainModel) this.mockPostDomainModel).getBoard(),
                 ((PostDomainModel) this.mockPostDomainModel).getCreatedAt(),
-                ((PostDomainModel) this.mockPostDomainModel).getUpdatedAt()
+                ((PostDomainModel) this.mockPostDomainModel).getUpdatedAt(),
+                List.of()
         )
 
         this.userPort.findById(writerUser.getId()) >> Optional.of(writerUser)
@@ -1111,7 +1132,8 @@ class PostServiceTest extends Specification {
                 true,
                 ((PostDomainModel) this.mockPostDomainModel).getBoard(),
                 ((PostDomainModel) this.mockPostDomainModel).getCreatedAt(),
-                ((PostDomainModel) this.mockPostDomainModel).getUpdatedAt()
+                ((PostDomainModel) this.mockPostDomainModel).getUpdatedAt(),
+                List.of()
         )
 
         def mockWriterUserCircleMemberDomainModel = CircleMemberDomainModel.of(
@@ -1198,7 +1220,8 @@ class PostServiceTest extends Specification {
                 true,
                 ((PostDomainModel) this.mockPostDomainModel).getBoard(),
                 ((PostDomainModel) this.mockPostDomainModel).getCreatedAt(),
-                ((PostDomainModel) this.mockPostDomainModel).getUpdatedAt()
+                ((PostDomainModel) this.mockPostDomainModel).getUpdatedAt(),
+                List.of()
         )
 
         def mockRequestUserCircleMemberDomainModel = CircleMemberDomainModel.of(

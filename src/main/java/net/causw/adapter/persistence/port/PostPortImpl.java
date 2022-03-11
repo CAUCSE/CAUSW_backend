@@ -51,6 +51,7 @@ public class PostPortImpl extends DomainModelMapper implements PostPort {
                 srcPost -> {
                     srcPost.setTitle(postDomainModel.getTitle());
                     srcPost.setContent(postDomainModel.getContent());
+                    srcPost.setAttachments(String.join(":::", postDomainModel.getAttachmentList()));
 
                     return this.entityToDomainModel(this.postRepository.save(srcPost));
                 }

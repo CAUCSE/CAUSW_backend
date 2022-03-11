@@ -17,6 +17,8 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
+import static net.causw.domain.model.StaticValue.GCS_PUBLIC_LINK_PREFIX;
+
 @Component
 public class GcpFileUploader {
     @Value("${spring.cloud.gcp.credentials.location}")
@@ -27,6 +29,32 @@ public class GcpFileUploader {
 
     @Value("${spring.cloud.gcp.storage.bucket}")
     private String BUCKET_NAME;
+
+    public String uploadFileToGcp(MultipartFile file) {
+        try {
+            InputStream keyFile = ResourceUtils.getURL(KEY_FILE).openStream();
+
+            Storage storage = StorageOptions.newBuilder().setProjectId(PROJECT_ID)
+                    .setCredentials(GoogleCredentials.fromStream(keyFile))
+                    .build().getService();
+
+            String path = "ATTACHMENTS"
+                    + "/"
+                    + DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss-SSSZ").format(ZonedDateTime.now())
+                    + "/"
+                    + file.getOriginalFilename();
+
+            storage.create(
+                    BlobInfo.newBuilder(BUCKET_NAME, path)
+                            .build(),
+                    file.getBytes()
+            );
+
+            return GCS_PUBLIC_LINK_PREFIX + BUCKET_NAME + "/" + path;
+        } catch(IllegalStateException | IOException e){
+            throw new RuntimeException(e);
+        }
+    }
 
     public String uploadImageToGcp(MultipartFile image, ImageLocation imageLocation) {
         try {
@@ -40,7 +68,7 @@ public class GcpFileUploader {
                     + "/"
                     + DateTimeFormatter.ofPattern("yyyy-MM-dd").format(LocalDateTime.now())
                     + "/"
-                    + DateTimeFormatter.ofPattern("HH:mm:ss.SSSZ").format(ZonedDateTime.now())
+                    + DateTimeFormatter.ofPattern("HH-mm-ss-SSSZ").format(ZonedDateTime.now())
                     + "_"
                     + image.getOriginalFilename();
 
