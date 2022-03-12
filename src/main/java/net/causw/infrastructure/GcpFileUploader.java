@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
@@ -39,7 +40,7 @@ public class GcpFileUploader {
                     + "/"
                     + DateTimeFormatter.ofPattern("yyyy-MM-dd").format(LocalDateTime.now())
                     + "/"
-                    + DateTimeFormatter.ofPattern("HH:mm:ss.SSSZ").format(LocalDateTime.now())
+                    + DateTimeFormatter.ofPattern("HH:mm:ss.SSSZ").format(ZonedDateTime.now())
                     + "_"
                     + image.getOriginalFilename();
 
@@ -48,6 +49,7 @@ public class GcpFileUploader {
                             .build(),
                     image.getBytes()
             );
+
             return blobInfo.getMediaLink();
         } catch(IllegalStateException | IOException e){
             throw new RuntimeException(e);
