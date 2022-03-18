@@ -133,6 +133,8 @@ public class CircleService {
             String currentUserId,
             String circleId
     ) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
         CircleDomainModel circleDomainModel = this.circlePort.findById(circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -147,21 +149,28 @@ public class CircleService {
                 )
         );
 
-        CircleMemberDomainModel circleMember = this.circleMemberPort.findByUserIdAndCircleId(currentUserId, circleDomainModel.getId()).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.NOT_MEMBER,
-                        "로그인된 사용자가 가입 신청한 소모임이 아닙니다."
-                )
-        );
-
-        ValidatorBucket.of()
+        validatorBucket
                 .consistOf(UserStateValidator.of(userDomainModel.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                .consistOf(CircleMemberStatusValidator.of(
-                        circleMember.getStatus(),
-                        List.of(CircleMemberStatus.MEMBER)
-                ))
+                .validate();
+
+        if (!userDomainModel.getRole().equals(Role.ADMIN)) {
+            CircleMemberDomainModel circleMember = this.circleMemberPort.findByUserIdAndCircleId(currentUserId, circleDomainModel.getId()).orElseThrow(
+                    () -> new BadRequestException(
+                            ErrorCode.NOT_MEMBER,
+                            "로그인된 사용자가 가입 신청한 소모임이 아닙니다."
+                    )
+            );
+
+            validatorBucket
+                    .consistOf(CircleMemberStatusValidator.of(
+                            circleMember.getStatus(),
+                            List.of(CircleMemberStatus.MEMBER)
+                    ));
+        }
+
+        validatorBucket
                 .validate();
 
         return CircleBoardsResponseDto.from(
