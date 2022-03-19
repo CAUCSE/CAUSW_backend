@@ -91,7 +91,8 @@ class CommentServiceTest extends Specification {
                 false,
                 (BoardDomainModel) this.mockBoardDomainModel,
                 null,
-                null
+                null,
+                List.of()
         )
 
         this.mockCommentWriterUserDomainModel = UserDomainModel.of(

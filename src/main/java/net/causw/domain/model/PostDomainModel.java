@@ -6,6 +6,7 @@ import lombok.Setter;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -24,6 +25,8 @@ public class PostDomainModel {
 
     @NotNull(message = "게시판이 입력되지 않았습니다.")
     private BoardDomainModel board;
+
+    private List<String> attachmentList;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -35,7 +38,8 @@ public class PostDomainModel {
             Boolean isDeleted,
             BoardDomainModel board,
             LocalDateTime createdAt,
-            LocalDateTime updatedAt
+            LocalDateTime updatedAt,
+            List<String> attachmentList
     ) {
         this.id = id;
         this.title = title;
@@ -45,6 +49,7 @@ public class PostDomainModel {
         this.board = board;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.attachmentList = attachmentList;
     }
 
     public static PostDomainModel of(
@@ -55,7 +60,8 @@ public class PostDomainModel {
             Boolean isDeleted,
             BoardDomainModel board,
             LocalDateTime createdAt,
-            LocalDateTime updatedAt
+            LocalDateTime updatedAt,
+            List<String> attachmentList
     ) {
         return new PostDomainModel(
                 id,
@@ -65,7 +71,8 @@ public class PostDomainModel {
                 isDeleted,
                 board,
                 createdAt,
-                updatedAt
+                updatedAt,
+                attachmentList
         );
     }
 
@@ -73,7 +80,8 @@ public class PostDomainModel {
             String title,
             String content,
             UserDomainModel writer,
-            BoardDomainModel board
+            BoardDomainModel board,
+            List<String> attachmentList
     ) {
         return new PostDomainModel(
                 null,
@@ -83,15 +91,18 @@ public class PostDomainModel {
                 false,
                 board,
                 null,
-                null
+                null,
+                attachmentList
         );
     }
 
     public void update(
             String title,
-            String content
+            String content,
+            List<String> attachmentList
     ) {
         this.title = title;
         this.content = content;
+        this.attachmentList = attachmentList;
     }
 }

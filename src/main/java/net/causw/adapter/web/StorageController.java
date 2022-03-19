@@ -1,7 +1,7 @@
 package net.causw.adapter.web;
 
 import net.causw.application.StorageService;
-import net.causw.application.dto.UploadImageResponseDto;
+import net.causw.application.dto.UploadFileResponseDto;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -20,10 +20,17 @@ public class StorageController {
         this.storageService = storageService;
     }
 
+    @PostMapping("/attachment/upload")
+    public UploadFileResponseDto uploadAttachment(
+            @RequestPart MultipartFile attachment
+    ) {
+        return this.storageService.uploadAttachmentToGcs(attachment);
+    }
+
     @PostMapping("/image/upload")
-    public UploadImageResponseDto uploadImage(
+    public UploadFileResponseDto uploadImage(
             @RequestPart MultipartFile image, @RequestParam Optional<String> imageLocation
-            ) {
-        return this.storageService. uploadImageToGcs(image, imageLocation);
+    ) {
+        return this.storageService.uploadImageToGcs(image, imageLocation);
     }
 }

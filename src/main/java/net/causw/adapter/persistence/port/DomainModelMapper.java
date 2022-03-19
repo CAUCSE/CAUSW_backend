@@ -63,7 +63,8 @@ public abstract class DomainModelMapper {
                 post.getIsDeleted(),
                 this.entityToDomainModel(post.getBoard()),
                 post.getCreatedAt(),
-                post.getUpdatedAt()
+                post.getUpdatedAt(),
+                new ArrayList<>(Arrays.asList(post.getAttachments().split(":::")))
         );
     }
 

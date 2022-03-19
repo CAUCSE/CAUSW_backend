@@ -2,6 +2,7 @@ package net.causw.application.dto.post;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.causw.application.dto.FileResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.domain.model.PostDomainModel;
@@ -10,6 +11,8 @@ import net.causw.domain.model.UserDomainModel;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -21,6 +24,7 @@ public class PostResponseDto {
     private String writerName;
     private Integer writerAdmissionYear;
     private String writerProfileImage;
+    private List<FileResponseDto> files;
     private Long numComment;
     private BoardResponseDto board;
     private Boolean updatable;
@@ -40,6 +44,7 @@ public class PostResponseDto {
             String writerProfileImage,
             String writerName,
             Integer writerAdmissionYear,
+            List<FileResponseDto> files,
             Long numComment,
             BoardResponseDto board,
             Boolean updatable,
@@ -57,6 +62,7 @@ public class PostResponseDto {
         this.writerProfileImage = writerProfileImage;
         this.writerName = writerName;
         this.writerAdmissionYear = writerAdmissionYear;
+        this.files = files;
         this.numComment = numComment;
         this.board = board;
         this.updatable = updatable;
@@ -105,6 +111,7 @@ public class PostResponseDto {
                 post.getWriter().getProfileImage(),
                 post.getWriter().getName(),
                 post.getWriter().getAdmissionYear(),
+                post.getAttachmentList().stream().map(FileResponseDto::from).collect(Collectors.toList()),
                 0L,
                 BoardResponseDto.from(post.getBoard(), user.getRole()),
                 updatable,
@@ -156,6 +163,7 @@ public class PostResponseDto {
                 post.getWriter().getProfileImage(),
                 post.getWriter().getName(),
                 post.getWriter().getAdmissionYear(),
+                post.getAttachmentList().stream().map(FileResponseDto::from).collect(Collectors.toList()),
                 numComment,
                 BoardResponseDto.from(post.getBoard(), user.getRole()),
                 updatable,

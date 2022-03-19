@@ -1,7 +1,10 @@
 package net.causw.application;
 
-import net.causw.application.dto.UploadImageResponseDto;
+import net.causw.application.dto.UploadFileResponseDto;
 import net.causw.domain.model.ImageLocation;
+import net.causw.domain.validation.AttachmentSizeValidator;
+import net.causw.domain.validation.ImageSizeValidator;
+import net.causw.domain.validation.ValidatorBucket;
 import net.causw.infrastructure.GcpFileUploader;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,8 +19,22 @@ public class StorageService {
         this.gcpFileUploader = gcpFileUploader;
     }
 
-    public UploadImageResponseDto uploadImageToGcs(MultipartFile image, Optional<String> imageLocation) {
-        return UploadImageResponseDto.of(
+    public UploadFileResponseDto uploadAttachmentToGcs(MultipartFile attachment) {
+        ValidatorBucket.of()
+                .consistOf(AttachmentSizeValidator.of(attachment))
+                .validate();
+
+        return UploadFileResponseDto.of(
+                gcpFileUploader.uploadFileToGcp(attachment)
+        );
+    }
+
+    public UploadFileResponseDto uploadImageToGcs(MultipartFile image, Optional<String> imageLocation) {
+        ValidatorBucket.of()
+                .consistOf(ImageSizeValidator.of(image))
+                .validate();
+
+        return UploadFileResponseDto.of(
                 gcpFileUploader.uploadImageToGcp(image, ImageLocation.of(imageLocation.orElse("ETC")))
         );
     }

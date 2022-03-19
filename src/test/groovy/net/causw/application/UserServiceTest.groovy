@@ -116,7 +116,8 @@ class UserServiceTest extends Specification {
                 false,
                 mockBoardDomainModel,
                 null,
-                null
+                null,
+                List.of()
         )
 
         this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
@@ -156,7 +157,8 @@ class UserServiceTest extends Specification {
                 false,
                 mockBoardDomainModel,
                 null,
-                null
+                null,
+                List.of()
         )
 
         def mockCommentDomainModel = CommentDomainModel.of(

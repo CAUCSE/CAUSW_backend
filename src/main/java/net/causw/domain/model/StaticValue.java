@@ -5,6 +5,7 @@ public class StaticValue {
     public static final String BOARD_NAME_APP_NOTICE = "APP_NOTICE";
 
     public static final Integer CAUSW_CREATED = 1972;
+    public static final Integer ATTACHMENT_LIST_LIMIT_SIZE = 3;
 
     // Pagination
     public static final Integer DEFAULT_PAGE_SIZE = 20;
@@ -23,7 +24,12 @@ public class StaticValue {
     public static final String SWAGGER_API_DESCRIPTION = "중앙대학교 소프트웨어학부 동문네트워크 API";
 
     // Google mail
-    public static final String GOOGLE_MAIL = "causwdev2021@gmail.com";
+    public static final String GOOGLE_MAIL = "causwdevteam@gmail.com";
+
+    // GCP configuration
+    public static final Long ATTACHMENT_LIMIT_SIZE = (long) (50 * 1024 * 1024);
+    public static final Long IMAGE_LIMIT_SIZE = (long) (10 * 1024 * 1024);
+    public static final String GCS_PUBLIC_LINK_PREFIX = "https://storage.googleapis.com/";
 
     // Domain
     public static final String DOMAIN_BOARD = "게시판";

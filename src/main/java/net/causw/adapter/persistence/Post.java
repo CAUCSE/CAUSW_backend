@@ -11,6 +11,7 @@ import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import java.util.List;
 
 @Getter
 @Setter
@@ -23,6 +24,9 @@ public class Post extends BaseEntity {
 
     @Column(columnDefinition = "TEXT", name = "content", nullable = false)
     private String content;
+
+    @Column(name = "attachments")
+    private String attachments;
 
     @ManyToOne(targetEntity = User.class)
     @JoinColumn(name = "user_id", nullable = false)
@@ -41,13 +45,15 @@ public class Post extends BaseEntity {
             String content,
             User writer,
             Boolean isDeleted,
-            Board board
+            Board board,
+            String attachments
     ) {
         this.title = title;
         this.content = content;
         this.writer = writer;
         this.isDeleted = isDeleted;
         this.board = board;
+        this.attachments = attachments;
     }
 
     private Post(
@@ -56,7 +62,8 @@ public class Post extends BaseEntity {
             String content,
             User writer,
             Boolean isDeleted,
-            Board board
+            Board board,
+            String attachments
     ) {
         super(id);
         this.title = title;
@@ -64,6 +71,7 @@ public class Post extends BaseEntity {
         this.writer = writer;
         this.isDeleted = isDeleted;
         this.board = board;
+        this.attachments = attachments;
     }
 
     public static Post of(
@@ -71,14 +79,16 @@ public class Post extends BaseEntity {
             String content,
             User writer,
             Boolean isDeleted,
-            Board board
+            Board board,
+            String attachments
     ) {
         return new Post(
                 title,
                 content,
                 writer,
                 isDeleted,
-                board
+                board,
+                attachments
         );
     }
 
@@ -88,7 +98,8 @@ public class Post extends BaseEntity {
             String content,
             User writer,
             Boolean isDeleted,
-            Board board
+            Board board,
+            String attachments
     ) {
         return new Post(
                 id,
@@ -96,7 +107,8 @@ public class Post extends BaseEntity {
                 content,
                 writer,
                 isDeleted,
-                board
+                board,
+                attachments
         );
     }
 
@@ -107,7 +119,8 @@ public class Post extends BaseEntity {
                 postDomainModel.getContent(),
                 User.from(postDomainModel.getWriter()),
                 postDomainModel.getIsDeleted(),
-                Board.from(postDomainModel.getBoard())
+                Board.from(postDomainModel.getBoard()),
+                String.join(":::", postDomainModel.getAttachmentList())
         );
     }
 }

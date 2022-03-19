@@ -357,7 +357,8 @@ class CircleServiceTest extends Specification {
                 false,
                 board,
                 null,
-                null
+                null,
+                List.of()
         )
 
         this.userPort.findById("test") >> Optional.of(leader)
