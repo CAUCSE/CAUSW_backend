@@ -13,7 +13,6 @@ import java.util.Arrays;
 public class FileResponseDto {
     private String originalFileName;
     private String downloadFilePath;
-    private byte[] file;
 
     private FileResponseDto(
             String originalFileName,
