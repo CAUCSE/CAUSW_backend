@@ -964,20 +964,6 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT)))
                 .validate();
 
-        /*
-        * TODO: Favorite Board
-        // Create default favorite board
-        if (this.favoriteBoardPort.findByUserId(userAdmissionDomainModel.getUser().getId()).isEmpty()) {
-            this.boardPort.findOldest3Boards()
-                    .forEach(boardDomainModel ->
-                            this.favoriteBoardPort.create(FavoriteBoardDomainModel.of(
-                                    userAdmissionDomainModel.getUser(),
-                                    boardDomainModel
-                            ))
-                    );
-        }
-        */
-
         // Update user role to COMMON
         this.userPort.updateRole(userAdmissionDomainModel.getUser().getId(), Role.COMMON).orElseThrow(
                 () -> new InternalServerException(

@@ -45,16 +45,8 @@ public class BoardPortImpl extends DomainModelMapper implements BoardPort {
     }
 
     @Override
-    public List<BoardDomainModel> findOldest3Boards() {
-        return this.boardRepository.findTop3ByCircle_IdIsNullAndIsDeletedIsFalseOrderByCreatedAtAsc()
-                .stream()
-                .map(this::entityToDomainModel)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<BoardDomainModel> findHomeBoards() {
-        return this.boardRepository.findHomeBoards()
+    public List<BoardDomainModel> findBasicBoards() {
+        return this.boardRepository.findBasicBoards()
                 .stream()
                 .map(this::entityToDomainModel)
                 .collect(Collectors.toList());
