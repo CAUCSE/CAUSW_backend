@@ -24,7 +24,7 @@ public class PostResponseDto {
     private String writerName;
     private Integer writerAdmissionYear;
     private String writerProfileImage;
-    private List<FileResponseDto> files;
+    private List<FileResponseDto> attachmentList;
     private Long numComment;
     private BoardResponseDto board;
     private Boolean updatable;
@@ -44,7 +44,7 @@ public class PostResponseDto {
             String writerProfileImage,
             String writerName,
             Integer writerAdmissionYear,
-            List<FileResponseDto> files,
+            List<FileResponseDto> attachmentList,
             Long numComment,
             BoardResponseDto board,
             Boolean updatable,
@@ -62,7 +62,7 @@ public class PostResponseDto {
         this.writerProfileImage = writerProfileImage;
         this.writerName = writerName;
         this.writerAdmissionYear = writerAdmissionYear;
-        this.files = files;
+        this.attachmentList = attachmentList;
         this.numComment = numComment;
         this.board = board;
         this.updatable = updatable;

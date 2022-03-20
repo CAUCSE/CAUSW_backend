@@ -5,7 +5,7 @@ public class StaticValue {
     public static final String BOARD_NAME_APP_NOTICE = "APP_NOTICE";
 
     public static final Integer CAUSW_CREATED = 1972;
-    public static final Integer ATTACHMENT_LIST_LIMIT_SIZE = 3;
+    public static final Integer MAX_NUM_FILE_ATTACHMENTS = 3;
 
     // Pagination
     public static final Integer DEFAULT_PAGE_SIZE = 20;
