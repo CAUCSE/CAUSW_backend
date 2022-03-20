@@ -5,7 +5,7 @@ public class StaticValue {
     public static final String BOARD_NAME_APP_NOTICE = "APP_NOTICE";
 
     public static final Integer CAUSW_CREATED = 1972;
-    public static final Integer MAX_NUM_FILE_ATTACHMENTS = 3;
+    public static final Integer MIN_NUM_HOME_BOARD = 1;
 
     // Pagination
     public static final Integer DEFAULT_PAGE_SIZE = 20;
@@ -27,6 +27,7 @@ public class StaticValue {
     public static final String GOOGLE_MAIL = "causwdevteam@gmail.com";
 
     // GCP configuration
+    public static final Integer MAX_NUM_FILE_ATTACHMENTS = 3;
     public static final Long ATTACHMENT_LIMIT_SIZE = (long) (50 * 1024 * 1024);
     public static final Long IMAGE_LIMIT_SIZE = (long) (10 * 1024 * 1024);
     public static final String GCS_PUBLIC_LINK_PREFIX = "https://storage.googleapis.com/";

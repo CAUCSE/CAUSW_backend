@@ -36,6 +36,7 @@ import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.BoardDomainModel;
 import net.causw.domain.model.CircleDomainModel;
+import net.causw.domain.model.CircleMemberDomainModel;
 import net.causw.domain.model.CircleMemberStatus;
 import net.causw.domain.model.FavoriteBoardDomainModel;
 import net.causw.domain.model.ImageLocation;
@@ -72,6 +73,8 @@ import javax.validation.Validator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static net.causw.domain.model.StaticValue.MIN_NUM_HOME_BOARD;
 
 @Service
 public class UserService {
@@ -1049,35 +1052,136 @@ public class UserService {
             String userId,
             String boardId
     ) {
-        UserDomainModel user = this.userPort.findById(userId).orElseThrow(
+        UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
-        BoardDomainModel board = this.boardPort.findById(boardId).orElseThrow(
+        BoardDomainModel boardDomainModel = this.boardPort.findById(boardId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "게시판을 찾을 수 없습니다."
                 )
         );
 
+        this.favoriteBoardPort.findByUserIdAndBoardId(userId, boardId).ifPresent(
+                favoriteBoardDomainModel -> {
+                    throw new BadRequestException(
+                            ErrorCode.ROW_ALREADY_EXIST,
+                            "이미 즐겨찾는 게시판으로 등록된 게시판입니다."
+                    );
+                }
+        );
+
         FavoriteBoardDomainModel favoriteBoardDomainModel = FavoriteBoardDomainModel.of(
-                user,
-                board
+                userDomainModel,
+                boardDomainModel
         );
 
         ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
-                .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD))
+                .consistOf(UserStateValidator.of(userDomainModel.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
+                .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted(), StaticValue.DOMAIN_BOARD))
                 .consistOf(ConstraintValidator.of(favoriteBoardDomainModel, this.validator))
                 .validate();
 
+        boardDomainModel.getCircle()
+                .filter(circleDomainModel -> !userDomainModel.getRole().equals(Role.ADMIN))
+                .ifPresent(
+                        circleDomainModel -> {
+                            CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(userDomainModel.getId(), circleDomainModel.getId())
+                                    .orElseThrow(
+                                            () -> new UnauthorizedException(
+                                                    ErrorCode.NOT_MEMBER,
+                                                    "로그인된 사용자가 소모임 멤버가 아닙니다."
+                                            )
+                                    );
+
+                            ValidatorBucket.of()
+                                    .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
+                                    .consistOf(CircleMemberStatusValidator.of(
+                                            circleMemberDomainModel.getStatus(),
+                                            List.of(CircleMemberStatus.MEMBER)
+                                    ))
+                                    .validate();
+                        }
+                );
+
         return BoardResponseDto.from(
                 this.favoriteBoardPort.create(favoriteBoardDomainModel).getBoardDomainModel(),
-                user.getRole()
+                userDomainModel.getRole()
+        );
+    }
+
+    @Transactional
+    public BoardResponseDto deleteFavoriteBoard(
+            String userId,
+            String boardId
+    ) {
+        UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "로그인된 사용자를 찾을 수 없습니다."
+                )
+        );
+
+        BoardDomainModel boardDomainModel = this.boardPort.findById(boardId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "게시판을 찾을 수 없습니다."
+                )
+        );
+
+        FavoriteBoardDomainModel favoriteBoardDomainModel = this.favoriteBoardPort.findByUserIdAndBoardId(userId, boardId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "즐겨찾는 게시판으로 등록되지 않은 게시판입니다."
+                )
+        );
+
+        ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(userDomainModel.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
+                .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted(), StaticValue.DOMAIN_BOARD))
+                .consistOf(ConstraintValidator.of(favoriteBoardDomainModel, this.validator))
+                .validate();
+
+        boardDomainModel.getCircle()
+                .filter(circleDomainModel -> !userDomainModel.getRole().equals(Role.ADMIN))
+                .ifPresent(
+                        circleDomainModel -> {
+                            CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(userDomainModel.getId(), circleDomainModel.getId())
+                                    .orElseThrow(
+                                            () -> new UnauthorizedException(
+                                                    ErrorCode.NOT_MEMBER,
+                                                    "로그인된 사용자가 소모임 멤버가 아닙니다."
+                                            )
+                                    );
+
+                            ValidatorBucket.of()
+                                    .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
+                                    .consistOf(CircleMemberStatusValidator.of(
+                                            circleMemberDomainModel.getStatus(),
+                                            List.of(CircleMemberStatus.MEMBER)
+                                    ))
+                                    .validate();
+                        }
+                );
+
+        if (this.favoriteBoardPort.findByUserId(userId).size() <= MIN_NUM_HOME_BOARD) {
+            throw new BadRequestException(
+                    ErrorCode.CANNOT_PERFORMED,
+                    "최소 1개의 게시판은 등록되어 있어야 합니다."
+            );
+        }
+
+        this.favoriteBoardPort.delete(favoriteBoardDomainModel);
+
+        return BoardResponseDto.from(
+                favoriteBoardDomainModel.getBoardDomainModel(),
+                userDomainModel.getRole()
         );
     }
 

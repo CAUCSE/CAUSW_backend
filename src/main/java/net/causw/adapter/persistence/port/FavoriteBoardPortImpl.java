@@ -1,20 +1,13 @@
 package net.causw.adapter.persistence.port;
 
-import net.causw.adapter.persistence.Board;
-import net.causw.adapter.persistence.Circle;
 import net.causw.adapter.persistence.FavoriteBoard;
 import net.causw.adapter.persistence.FavoriteBoardRepository;
-import net.causw.adapter.persistence.User;
 import net.causw.application.spi.FavoriteBoardPort;
-import net.causw.domain.model.BoardDomainModel;
-import net.causw.domain.model.CircleDomainModel;
 import net.causw.domain.model.FavoriteBoardDomainModel;
-import net.causw.domain.model.UserDomainModel;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -33,10 +26,19 @@ public class FavoriteBoardPortImpl extends DomainModelMapper implements Favorite
     }
 
     @Override
+    public void delete(FavoriteBoardDomainModel favoriteBoardDomainModel) {
+        this.favoriteBoardRepository.delete(FavoriteBoard.from(favoriteBoardDomainModel));
+    }
+
+    @Override
+    public Optional<FavoriteBoardDomainModel> findByUserIdAndBoardId(String userId, String boardId) {
+        return this.favoriteBoardRepository.findByUser_IdAndBoard_Id(userId, boardId).map(this::entityToDomainModel);
+    }
+
+    @Override
     public List<FavoriteBoardDomainModel> findByUserId(String userId) {
         return this.favoriteBoardRepository.findByUser_Id(userId)
                 .stream()
-                .filter(favoriteBoard -> !favoriteBoard.getBoard().getIsDeleted())
                 .map(this::entityToDomainModel)
                 .collect(Collectors.toList());
     }

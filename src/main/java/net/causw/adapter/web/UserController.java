@@ -1,20 +1,20 @@
 package net.causw.adapter.web;
 
 import net.causw.application.UserService;
-import net.causw.application.dto.user.UserFindEmailRequestDto;
+import net.causw.application.dto.DuplicatedCheckResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.circle.CircleResponseDto;
-import net.causw.application.dto.DuplicatedCheckResponseDto;
-import net.causw.application.dto.user.UserAdmissionsResponseDto;
 import net.causw.application.dto.user.UserAdmissionCreateRequestDto;
 import net.causw.application.dto.user.UserAdmissionResponseDto;
+import net.causw.application.dto.user.UserAdmissionsResponseDto;
 import net.causw.application.dto.user.UserCommentsResponseDto;
 import net.causw.application.dto.user.UserCreateRequestDto;
-import net.causw.application.dto.user.UserUpdatePasswordRequestDto;
+import net.causw.application.dto.user.UserFindEmailRequestDto;
 import net.causw.application.dto.user.UserPostsResponseDto;
 import net.causw.application.dto.user.UserPrivilegedResponseDto;
 import net.causw.application.dto.user.UserResponseDto;
 import net.causw.application.dto.user.UserSignInRequestDto;
+import net.causw.application.dto.user.UserUpdatePasswordRequestDto;
 import net.causw.application.dto.user.UserUpdateRequestDto;
 import net.causw.application.dto.user.UserUpdateRoleRequestDto;
 import org.springframework.data.domain.Page;
@@ -249,6 +249,18 @@ public class UserController {
             @PathVariable String boardId
     ) {
         return this.userService.createFavoriteBoard(
+                requestUserId,
+                boardId
+        );
+    }
+
+    @DeleteMapping(value = "/favorite-boards/{boardId}")
+    @ResponseStatus(value = HttpStatus.OK)
+    public BoardResponseDto deleteFavoriteBoard(
+            @AuthenticationPrincipal String requestUserId,
+            @PathVariable String boardId
+    ) {
+        return this.userService.deleteFavoriteBoard(
                 requestUserId,
                 boardId
         );
