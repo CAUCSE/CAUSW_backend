@@ -120,23 +120,28 @@ public class ChildCommentService {
                         .consistOf(TargetIsDeletedValidator.of(refChildComment.getIsDeleted(), StaticValue.DOMAIN_CHILD_COMMENT))
         );
 
-        postDomainModel.getBoard().getCircle().ifPresent(
-                circleDomainModel -> {
-                    CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(creatorId, circleDomainModel.getId()).orElseThrow(
-                            () -> new UnauthorizedException(
-                                    ErrorCode.NOT_MEMBER,
-                                    "로그인된 사용자가 가입 신청한 소모임이 아닙니다."
-                            )
-                    );
+        postDomainModel.getBoard().getCircle()
+                .filter(circleDomainModel -> !creatorDomainModel.getRole().equals(Role.ADMIN))
+                .ifPresent(
+                        circleDomainModel -> {
+                            CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
+                                    creatorId,
+                                    circleDomainModel.getId()
+                            ).orElseThrow(
+                                    () -> new UnauthorizedException(
+                                            ErrorCode.NOT_MEMBER,
+                                            "로그인된 사용자가 가입 신청한 소모임이 아닙니다."
+                                    )
+                            );
 
-                    validatorBucket
-                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                            .consistOf(CircleMemberStatusValidator.of(
-                                    circleMemberDomainModel.getStatus(),
-                                    List.of(CircleMemberStatus.MEMBER)
-                            ));
-                }
-        );
+                            validatorBucket
+                                    .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
+                                    .consistOf(CircleMemberStatusValidator.of(
+                                            circleMemberDomainModel.getStatus(),
+                                            List.of(CircleMemberStatus.MEMBER)
+                                    ));
+                        }
+                );
 
         validatorBucket
                 .validate();
@@ -179,22 +184,28 @@ public class ChildCommentService {
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), StaticValue.DOMAIN_POST));
 
-        postDomainModel.getBoard().getCircle().ifPresent(
-                circleDomainModel -> {
-                    CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(userId, circleDomainModel.getId()).orElseThrow(
-                            () -> new UnauthorizedException(
-                                    ErrorCode.NOT_MEMBER,
-                                    "로그인된 사용자가 가입 신청한 소모임이 아닙니다."
-                            )
-                    );
+        postDomainModel.getBoard().getCircle()
+                .filter(circleDomainModel -> !userDomainModel.getRole().equals(Role.ADMIN))
+                .ifPresent(
+                        circleDomainModel -> {
+                            CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
+                                    userId,
+                                    circleDomainModel.getId()
+                            ).orElseThrow(
+                                    () -> new UnauthorizedException(
+                                            ErrorCode.NOT_MEMBER,
+                                            "로그인된 사용자가 가입 신청한 소모임이 아닙니다."
+                                    )
+                            );
 
-                    validatorBucket
-                            .consistOf(CircleMemberStatusValidator.of(
-                                    circleMemberDomainModel.getStatus(),
-                                    List.of(CircleMemberStatus.MEMBER)
-                            ));
-                }
-        );
+                            validatorBucket
+                                    .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
+                                    .consistOf(CircleMemberStatusValidator.of(
+                                            circleMemberDomainModel.getStatus(),
+                                            List.of(CircleMemberStatus.MEMBER)
+                                    ));
+                        }
+                );
 
         validatorBucket
                 .validate();
@@ -264,23 +275,28 @@ public class ChildCommentService {
                         List.of()
                 ));
 
-        postDomainModel.getBoard().getCircle().ifPresent(
-                circleDomainModel -> {
-                    CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(updaterId, circleDomainModel.getId()).orElseThrow(
-                            () -> new UnauthorizedException(
-                                    ErrorCode.NOT_MEMBER,
-                                    "사용자가 가입 신청한 소모임이 아닙니다."
-                            )
-                    );
+        postDomainModel.getBoard().getCircle()
+                .filter(circleDomainModel -> !updater.getRole().equals(Role.ADMIN))
+                .ifPresent(
+                        circleDomainModel -> {
+                            CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
+                                    updaterId,
+                                    circleDomainModel.getId()
+                            ).orElseThrow(
+                                    () -> new UnauthorizedException(
+                                            ErrorCode.NOT_MEMBER,
+                                            "사용자가 가입 신청한 소모임이 아닙니다."
+                                    )
+                            );
 
-                    validatorBucket
-                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                            .consistOf(CircleMemberStatusValidator.of(
-                                    circleMemberDomainModel.getStatus(),
-                                    List.of(CircleMemberStatus.MEMBER)
-                            ));
-                }
-        );
+                            validatorBucket
+                                    .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
+                                    .consistOf(CircleMemberStatusValidator.of(
+                                            circleMemberDomainModel.getStatus(),
+                                            List.of(CircleMemberStatus.MEMBER)
+                                    ));
+                        }
+                );
 
         validatorBucket
                 .validate();
@@ -327,50 +343,55 @@ public class ChildCommentService {
                 .consistOf(UserRoleIsNoneValidator.of(deleterDomainModel.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(childCommentDomainModel.getIsDeleted(), StaticValue.DOMAIN_CHILD_COMMENT));
 
-        postDomainModel.getBoard().getCircle().ifPresentOrElse(
-                circleDomainModel -> {
-                    CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(deleterId, circleDomainModel.getId()).orElseThrow(
-                            () -> new UnauthorizedException(
-                                    ErrorCode.NOT_MEMBER,
-                                    "로그인된 사용자가 가입 신청한 소모임이 아닙니다."
-                            )
-                    );
-
-                    validatorBucket
-                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                            .consistOf(CircleMemberStatusValidator.of(
-                                    circleMemberDomainModel.getStatus(),
-                                    List.of(CircleMemberStatus.MEMBER)
-                            ))
-                            .consistOf(ContentsAdminValidator.of(
-                                    deleterDomainModel.getRole(),
+        postDomainModel.getBoard().getCircle()
+                .filter(circleDomainModel -> !deleterDomainModel.getRole().equals(Role.ADMIN))
+                .ifPresentOrElse(
+                        circleDomainModel -> {
+                            CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
                                     deleterId,
-                                    childCommentDomainModel.getWriter().getId(),
-                                    List.of(Role.LEADER_CIRCLE)
-                            ));
+                                    circleDomainModel.getId()
+                            ).orElseThrow(
+                                    () -> new UnauthorizedException(
+                                            ErrorCode.NOT_MEMBER,
+                                            "로그인된 사용자가 가입 신청한 소모임이 아닙니다."
+                                    )
+                            );
 
-                    if (deleterDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
-                        validatorBucket
-                                .consistOf(UserEqualValidator.of(
-                                        circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
-                                                () -> new InternalServerException(
-                                                        ErrorCode.INTERNAL_SERVER,
-                                                        "The board has circle without circle leader"
-                                                )
-                                        ),
-                                        deleterId
-                                ));
-                    }
-                },
-                () -> validatorBucket
-                        .consistOf(ContentsAdminValidator.of(
-                                deleterDomainModel.getRole(),
-                                deleterId,
-                                childCommentDomainModel.getWriter().getId(),
-                                List.of(Role.PRESIDENT)
-                        ))
+                            validatorBucket
+                                    .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
+                                    .consistOf(CircleMemberStatusValidator.of(
+                                            circleMemberDomainModel.getStatus(),
+                                            List.of(CircleMemberStatus.MEMBER)
+                                    ))
+                                    .consistOf(ContentsAdminValidator.of(
+                                            deleterDomainModel.getRole(),
+                                            deleterId,
+                                            childCommentDomainModel.getWriter().getId(),
+                                            List.of(Role.LEADER_CIRCLE)
+                                    ));
 
-        );
+                            if (deleterDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
+                                validatorBucket
+                                        .consistOf(UserEqualValidator.of(
+                                                circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
+                                                        () -> new InternalServerException(
+                                                                ErrorCode.INTERNAL_SERVER,
+                                                                "The board has circle without circle leader"
+                                                        )
+                                                ),
+                                                deleterId
+                                        ));
+                            }
+                        },
+                        () -> validatorBucket
+                                .consistOf(ContentsAdminValidator.of(
+                                        deleterDomainModel.getRole(),
+                                        deleterId,
+                                        childCommentDomainModel.getWriter().getId(),
+                                        List.of(Role.PRESIDENT)
+                                ))
+
+                );
 
         validatorBucket
                 .validate();
