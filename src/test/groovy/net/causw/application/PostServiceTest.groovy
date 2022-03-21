@@ -35,6 +35,7 @@ class PostServiceTest extends Specification {
     private CircleMemberPort circleMemberPort = Mock(CircleMemberPort.class)
     private CommentPort commentPort = Mock(CommentPort.class)
     private ChildCommentPort childCommentPort = Mock(ChildCommentPort.class)
+    private FavoriteBoardPort favoriteBoardPort = Mock(FavoriteBoardPort.class)
     private Validator validator = Validation.buildDefaultValidatorFactory().getValidator()
     private PostService postService = new PostService(
             this.postPort,
@@ -43,6 +44,7 @@ class PostServiceTest extends Specification {
             this.circleMemberPort,
             this.commentPort,
             this.childCommentPort,
+            this.favoriteBoardPort,
             this.validator
     )
 
@@ -185,7 +187,8 @@ class PostServiceTest extends Specification {
         this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(this.mockPostDomainModel)
         this.boardPort.findById(((BoardDomainModel) this.mockBoardDomainModel).getId()) >> Optional.of(this.mockBoardDomainModel)
         this.circleMemberPort.findByUserIdAndCircleId(requestUserDomainModel.getId(), ((CircleDomainModel) this.mockCircleDomainModel).getId()) >> Optional.of(circleMemberDomainModel)
-        this.postPort.search(SearchOption.TITLE, "keyword", 0) >> new PageImpl<PostDomainModel>(List.of((PostDomainModel)this.mockPostDomainModel))
+        this.postPort.search(SearchOption.TITLE, "keyword", 0) >> new PageImpl<PostDomainModel>(List.of((PostDomainModel) this.mockPostDomainModel))
+        this.favoriteBoardPort.findByUserId(requestUserDomainModel.getId()) >> List.of()
 
         when: "post findById without circle"
         def postFind = this.postService.search("test user id", "test board id", "title", "keyword", 0)
@@ -226,6 +229,7 @@ class PostServiceTest extends Specification {
         this.userPort.findById(requestUserDomainModel.getId()) >> Optional.of(requestUserDomainModel)
         this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(this.mockPostDomainModel)
         this.boardPort.findById(((BoardDomainModel) this.mockBoardDomainModel).getId()) >> Optional.of(this.mockBoardDomainModel)
+        this.favoriteBoardPort.findByUserId(requestUserDomainModel.getId()) >> List.of()
 
         when:
         this.mockBoardDomainModel.setIsDeleted(true)
@@ -265,6 +269,7 @@ class PostServiceTest extends Specification {
         this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(this.mockPostDomainModel)
         this.boardPort.findById(((BoardDomainModel) this.mockBoardDomainModel).getId()) >> Optional.of(this.mockBoardDomainModel)
         this.circleMemberPort.findByUserIdAndCircleId(requestUserDomainModel.getId(), ((CircleDomainModel) this.mockCircleDomainModel).getId()) >> Optional.of(circleMemberDomainModel)
+        this.favoriteBoardPort.findByUserId(requestUserDomainModel.getId()) >> List.of()
 
         when: "bad request case - leave"
         ((BoardDomainModel) this.mockBoardDomainModel).setCircle((CircleDomainModel) this.mockCircleDomainModel)
@@ -315,7 +320,8 @@ class PostServiceTest extends Specification {
         this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(this.mockPostDomainModel)
         this.boardPort.findById(((BoardDomainModel) this.mockBoardDomainModel).getId()) >> Optional.of(this.mockBoardDomainModel)
         this.circleMemberPort.findByUserIdAndCircleId(requestUserDomainModel.getId(), ((CircleDomainModel) this.mockCircleDomainModel).getId()) >> Optional.of(circleMemberDomainModel)
-        this.postPort.findAll(((BoardDomainModel) this.mockBoardDomainModel).getId(), 0) >> new PageImpl<PostDomainModel>(List.of((PostDomainModel)this.mockPostDomainModel))
+        this.postPort.findAll(((BoardDomainModel) this.mockBoardDomainModel).getId(), 0) >> new PageImpl<PostDomainModel>(List.of((PostDomainModel) this.mockPostDomainModel))
+        this.favoriteBoardPort.findByUserId(requestUserDomainModel.getId()) >> List.of()
 
         when: "post findById without circle"
         def postFind = this.postService.findAll("test user id", "test board id", 0)
@@ -356,7 +362,8 @@ class PostServiceTest extends Specification {
         this.userPort.findById(requestUserDomainModel.getId()) >> Optional.of(requestUserDomainModel)
         this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(this.mockPostDomainModel)
         this.boardPort.findById(((BoardDomainModel) this.mockBoardDomainModel).getId()) >> Optional.of(this.mockBoardDomainModel)
-        this.postPort.findAll(((BoardDomainModel) this.mockBoardDomainModel).getId(), 0) >> new PageImpl<PostDomainModel>(List.of((PostDomainModel)this.mockPostDomainModel))
+        this.postPort.findAll(((BoardDomainModel) this.mockBoardDomainModel).getId(), 0) >> new PageImpl<PostDomainModel>(List.of((PostDomainModel) this.mockPostDomainModel))
+        this.favoriteBoardPort.findByUserId(requestUserDomainModel.getId()) >> List.of()
 
         when:
         this.mockBoardDomainModel.setIsDeleted(true)
@@ -396,7 +403,8 @@ class PostServiceTest extends Specification {
         this.postPort.findById(((PostDomainModel) this.mockPostDomainModel).getId()) >> Optional.of(this.mockPostDomainModel)
         this.boardPort.findById(((BoardDomainModel) this.mockBoardDomainModel).getId()) >> Optional.of(this.mockBoardDomainModel)
         this.circleMemberPort.findByUserIdAndCircleId(requestUserDomainModel.getId(), ((CircleDomainModel) this.mockCircleDomainModel).getId()) >> Optional.of(circleMemberDomainModel)
-        this.postPort.findAll(((BoardDomainModel) this.mockBoardDomainModel).getId(), 0) >> Page.of((PostDomainModel)this.mockPostDomainModel)
+        this.postPort.findAll(((BoardDomainModel) this.mockBoardDomainModel).getId(), 0) >> Page.of((PostDomainModel) this.mockPostDomainModel)
+        this.favoriteBoardPort.findByUserId(requestUserDomainModel.getId()) >> List.of()
 
         when: "bad request case - leave"
         ((BoardDomainModel) this.mockBoardDomainModel).setCircle((CircleDomainModel) this.mockCircleDomainModel)

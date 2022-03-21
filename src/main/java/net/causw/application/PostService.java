@@ -10,6 +10,7 @@ import net.causw.application.spi.BoardPort;
 import net.causw.application.spi.ChildCommentPort;
 import net.causw.application.spi.CircleMemberPort;
 import net.causw.application.spi.CommentPort;
+import net.causw.application.spi.FavoriteBoardPort;
 import net.causw.application.spi.PostPort;
 import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
@@ -50,6 +51,7 @@ public class PostService {
     private final CircleMemberPort circleMemberPort;
     private final CommentPort commentPort;
     private final ChildCommentPort childCommentPort;
+    private final FavoriteBoardPort favoriteBoardPort;
     private final Validator validator;
 
     public PostService(
@@ -59,6 +61,7 @@ public class PostService {
             CircleMemberPort circleMemberPort,
             CommentPort commentPort,
             ChildCommentPort childCommentPort,
+            FavoriteBoardPort favoriteBoardPort,
             Validator validator
     ) {
         this.postPort = postPort;
@@ -67,6 +70,7 @@ public class PostService {
         this.circleMemberPort = circleMemberPort;
         this.commentPort = commentPort;
         this.childCommentPort = childCommentPort;
+        this.favoriteBoardPort = favoriteBoardPort;
         this.validator = validator;
     }
 
@@ -192,6 +196,9 @@ public class PostService {
         return BoardPostsResponseDto.from(
                 boardDomainModel,
                 userDomainModel.getRole(),
+                this.favoriteBoardPort.findByUserId(requestUserId)
+                        .stream()
+                        .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
                 this.postPort.findAll(boardId, pageNum)
                         .map(postDomainModel -> PostsResponseDto.from(
                                 postDomainModel,
@@ -266,6 +273,9 @@ public class PostService {
         return BoardPostsResponseDto.from(
                 boardDomainModel,
                 userDomainModel.getRole(),
+                this.favoriteBoardPort.findByUserId(requestUserId)
+                        .stream()
+                        .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
                 this.postPort.search(searchOption, keyword, pageNum)
                         .map(postDomainModel -> PostsResponseDto.from(
                                 postDomainModel,
@@ -275,7 +285,14 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public BoardPostsResponseDto findAllAppNotice(Integer pageNum) {
+    public BoardPostsResponseDto findAllAppNotice(String requestUserId, Integer pageNum) {
+        UserDomainModel userDomainModel = this.userPort.findById(requestUserId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "로그인된 사용자를 찾을 수 없습니다."
+                )
+        );
+
         BoardDomainModel boardDomainModel = this.boardPort.findAppNotice().orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -285,7 +302,10 @@ public class PostService {
 
         return BoardPostsResponseDto.from(
                 boardDomainModel,
-                Role.ADMIN,
+                userDomainModel.getRole(),
+                this.favoriteBoardPort.findByUserId(requestUserId)
+                        .stream()
+                        .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
                 this.postPort.findAll(boardDomainModel.getId(), pageNum)
                         .map(postDomainModel -> PostsResponseDto.from(
                                 postDomainModel,

@@ -61,9 +61,10 @@ public class PostController {
     @GetMapping("/app/notice")
     @ResponseStatus(value = HttpStatus.OK)
     public BoardPostsResponseDto findAllAppNotice(
+            @AuthenticationPrincipal String requestUserId,
             @RequestParam(defaultValue = "0") Integer pageNum
     ) {
-        return this.postService.findAllAppNotice(pageNum);
+        return this.postService.findAllAppNotice(requestUserId, pageNum);
     }
 
     @PostMapping

@@ -19,7 +19,7 @@ public interface BoardRepository extends JpaRepository<Board, String> {
             "WHERE TB_BOARD.name = '앱 공지사항' " +
             "OR TB_BOARD.name = '학생회 공지게시판' " +
             "OR TB_BOARD.name = '전체 자유게시판'", nativeQuery = true)
-    List<Board> findHomeBoards();
+    List<Board> findBasicBoards();
 
     @Query(value = "SELECT * FROM TB_BOARD WHERE TB_BOARD.category = 'APP_NOTICE'", nativeQuery = true)
     Optional<Board> findAppNotice();
