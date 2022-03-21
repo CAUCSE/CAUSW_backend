@@ -65,6 +65,7 @@ import net.causw.infrastructure.GcpFileUploader;
 import net.causw.infrastructure.GoogleMailSender;
 import net.causw.infrastructure.PasswordGenerator;
 import org.springframework.data.domain.Page;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -90,6 +91,7 @@ public class UserService {
     private final GcpFileUploader gcpFileUploader;
     private final GoogleMailSender googleMailSender;
     private final PasswordGenerator passwordGenerator;
+    private final PasswordEncoder passwordEncoder;
     private final Validator validator;
 
     public UserService(
@@ -108,6 +110,7 @@ public class UserService {
             GcpFileUploader gcpFileUploader,
             GoogleMailSender googleMailSender,
             PasswordGenerator passwordGenerator,
+            PasswordEncoder passwordEncoder,
             Validator validator
     ) {
         this.userPort = userPort;
@@ -125,6 +128,7 @@ public class UserService {
         this.gcpFileUploader = gcpFileUploader;
         this.googleMailSender = googleMailSender;
         this.passwordGenerator = passwordGenerator;
+        this.passwordEncoder = passwordEncoder;
         this.validator = validator;
     }
 
@@ -154,8 +158,9 @@ public class UserService {
         );
 
         String newPassword = requestUser.updatePassword(this.passwordGenerator.generate());
+
         this.googleMailSender.sendNewPasswordMail(requestUser.getEmail(), newPassword);
-        this.userPort.updatePassword(requestUser.getId(), newPassword).orElseThrow(
+        this.userPort.updatePassword(requestUser.getId(), passwordEncoder.encode(newPassword)).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         "User id checked, but exception occurred"
@@ -488,7 +493,7 @@ public class UserService {
         UserDomainModel userDomainModel = UserDomainModel.of(
                 userCreateRequestDto.getEmail(),
                 userCreateRequestDto.getName(),
-                userCreateRequestDto.getPassword(),
+                passwordEncoder.encode(userCreateRequestDto.getPassword()),
                 userCreateRequestDto.getStudentId(),
                 userCreateRequestDto.getAdmissionYear(),
                 userCreateRequestDto.getProfileImage()
@@ -526,7 +531,11 @@ public class UserService {
          * The sign-in process is rejected if the user is in BLOCKED, WAIT, or INACTIVE state.
          */
         ValidatorBucket.of()
-                .consistOf(PasswordCorrectValidator.of(userDomainModel, userSignInRequestDto.getPassword()))
+                .consistOf(PasswordCorrectValidator.of(
+                        this.passwordEncoder,
+                        userDomainModel.getPassword(),
+                        userSignInRequestDto.getPassword()))
+                .consistOf(UserStateValidator.of(userDomainModel.getState()))
                 .validate();
 
         if (userDomainModel.getState() == UserState.AWAIT) {
@@ -537,10 +546,6 @@ public class UserService {
                     )
             );
         }
-
-        ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(userDomainModel.getState()))
-                .validate();
 
         return this.jwtTokenProvider.createToken(
                 userDomainModel.getId(),
@@ -746,16 +751,24 @@ public class UserService {
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
-                .consistOf(PasswordCorrectValidator.of(user, userUpdatePasswordRequestDto.getOriginPassword()))
+                .consistOf(PasswordCorrectValidator.of(
+                        this.passwordEncoder,
+                        user.getPassword(),
+                        userUpdatePasswordRequestDto.getOriginPassword())
+                )
                 .consistOf(PasswordFormatValidator.of(userUpdatePasswordRequestDto.getUpdatedPassword()))
                 .validate();
 
-        return UserResponseDto.from(this.userPort.updatePassword(id, userUpdatePasswordRequestDto.getUpdatedPassword()).orElseThrow(
-                () -> new InternalServerException(
-                        ErrorCode.INTERNAL_SERVER,
-                        "User id checked, but exception occurred"
+        return UserResponseDto.from(this.userPort.updatePassword(
+                        id,
+                        this.passwordEncoder.encode(userUpdatePasswordRequestDto.getUpdatedPassword())
                 )
-        ));
+                .orElseThrow(
+                        () -> new InternalServerException(
+                                ErrorCode.INTERNAL_SERVER,
+                                "User id checked, but exception occurred"
+                        )
+                ));
     }
 
     @Transactional
@@ -1132,5 +1145,22 @@ public class UserService {
                         "User id checked, but exception occurred"
                 )
         ));
+    }
+
+    @Transactional
+    public String encodingPassword() {
+        this.userPort.findAll().forEach(user ->
+                this.userPort.updatePassword(
+                                user.getId(),
+                                this.passwordEncoder.encode(user.getPassword())
+                        )
+                        .orElseThrow(
+                                () -> new InternalServerException(
+                                        ErrorCode.INTERNAL_SERVER,
+                                        "User id checked, but exception occurred"
+                                )
+                        ));
+
+        return "Success";
     }
 }
