@@ -19,7 +19,7 @@ public class UserAdmission extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "image", nullable = true)
+    @Column(name = "image", length = 500, nullable = true)
     private String attachImage;
 
     @Column(name = "description", nullable = true)
