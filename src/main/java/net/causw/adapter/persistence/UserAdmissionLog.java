@@ -27,7 +27,7 @@ public class UserAdmissionLog extends BaseEntity {
     @Column(name = "admin_user_name", nullable = false)
     private String adminUserName;
 
-    @Column(name = "image")
+    @Column(name = "image", length = 500)
     private String attachImage;
 
     @Column(name = "description")

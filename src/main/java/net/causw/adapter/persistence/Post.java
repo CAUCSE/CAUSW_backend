@@ -11,7 +11,6 @@ import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.util.List;
 
 @Getter
 @Setter
@@ -25,7 +24,7 @@ public class Post extends BaseEntity {
     @Column(columnDefinition = "TEXT", name = "content", nullable = false)
     private String content;
 
-    @Column(name = "attachments")
+    @Column(name = "attachments", length = 1500)
     private String attachments;
 
     @ManyToOne(targetEntity = User.class)

@@ -22,7 +22,7 @@ public class Circle extends BaseEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "main_image", nullable = true)
+    @Column(name = "main_image", length = 500, nullable = true)
     private String mainImage;
 
     @Column(name = "description", nullable = true)

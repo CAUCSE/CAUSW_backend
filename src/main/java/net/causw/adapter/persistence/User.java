@@ -42,7 +42,7 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @Column(name = "profile_image", nullable = true)
+    @Column(name = "profile_image", length = 500, nullable = true)
     private String profileImage;
 
     @Column(name = "state", nullable = false)
