@@ -25,6 +25,7 @@ import net.causw.domain.model.UserDomainModel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 // TODO: Refactoring
@@ -64,7 +65,7 @@ public abstract class DomainModelMapper {
                 this.entityToDomainModel(post.getBoard()),
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
-                new ArrayList<>(Arrays.asList(post.getAttachments().split(":::")))
+                post.getAttachments().map(attachments -> Arrays.asList(attachments.split(":::"))).orElse(List.of())
         );
     }
 

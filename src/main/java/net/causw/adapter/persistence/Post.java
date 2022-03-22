@@ -12,6 +12,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import java.util.Optional;
+
 @Getter
 @Setter
 @Entity
@@ -121,5 +123,9 @@ public class Post extends BaseEntity {
                 Board.from(postDomainModel.getBoard()),
                 String.join(":::", postDomainModel.getAttachmentList())
         );
+    }
+
+    public Optional<String> getAttachments() {
+        return Optional.ofNullable(this.attachments);
     }
 }

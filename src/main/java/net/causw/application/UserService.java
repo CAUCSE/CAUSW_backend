@@ -475,6 +475,13 @@ public class UserService {
                 .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
                 .validate();
 
+        if (user.getRole().equals(Role.ADMIN)) {
+            return this.circlePort.findAll()
+                    .stream()
+                    .map(CircleResponseDto::from)
+                    .collect(Collectors.toList());
+        }
+
         return this.circleMemberPort.getCircleListByUserId(user.getId())
                 .stream()
                 .filter(circle -> !circle.getIsDeleted())
