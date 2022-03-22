@@ -44,6 +44,12 @@ public class UserController {
         this.userService = userService;
     }
 
+    @PutMapping(value = "/password/encode")
+    @ResponseStatus(value = HttpStatus.OK)
+    public String encodingPassword() {
+        return this.userService.encodingPassword();
+    }
+
     @GetMapping(value = "/email")
     @ResponseStatus(value = HttpStatus.OK)
     public String findEmail(

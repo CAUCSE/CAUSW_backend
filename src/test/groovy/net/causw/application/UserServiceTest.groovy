@@ -18,6 +18,7 @@ import org.powermock.modules.junit4.PowerMockRunner
 import org.powermock.modules.junit4.PowerMockRunnerDelegate
 import org.spockframework.runtime.Sputnik
 import org.springframework.data.domain.PageImpl
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.test.context.ActiveProfiles
 import spock.lang.Specification
 
@@ -46,6 +47,7 @@ class UserServiceTest extends Specification {
     private GcpFileUploader gcpFileUploader = Mock(GcpFileUploader.class)
     private GoogleMailSender googleMailSender = Mock(GoogleMailSender.class)
     private PasswordGenerator passwordGenerator = Mock(PasswordGenerator.class)
+    private PasswordEncoder passwordEncoder = Mock(PasswordEncoder.class)
     private Validator validator = Validation.buildDefaultValidatorFactory().getValidator()
     private UserService userService = new UserService(
             this.userPort,
@@ -63,6 +65,7 @@ class UserServiceTest extends Specification {
             this.gcpFileUploader,
             this.googleMailSender,
             this.passwordGenerator,
+            this.passwordEncoder,
             this.validator
     )
 
@@ -626,6 +629,10 @@ class UserServiceTest extends Specification {
                 "/profile"
         )
 
+        this.passwordEncoder.encode("test1234!") >> "test1234!"
+        this.userPort.create((UserDomainModel) this.mockUserDomainModel) >> this.mockUserDomainModel
+        this.userPort.findByEmail("test@cau.ac.kr") >> Optional.ofNullable(null)
+
         PowerMockito.mockStatic(UserDomainModel.class)
         PowerMockito.when(UserDomainModel.of(
                 "test@cau.ac.kr",
@@ -635,9 +642,6 @@ class UserServiceTest extends Specification {
                 2021,
                 "/profile",
         )).thenReturn((UserDomainModel) this.mockUserDomainModel)
-
-        this.userPort.create((UserDomainModel) this.mockUserDomainModel) >> this.mockUserDomainModel
-        this.userPort.findByEmail("test@cau.ac.kr") >> Optional.ofNullable(null)
 
         when:
         def userResponseDto = this.userService.signUp(userCreateRequestDto)
@@ -681,6 +685,7 @@ class UserServiceTest extends Specification {
         when: "password with short length"
         mockCreatedUserDomainModel.setPassword("test12!")
         userCreateRequestDto.setPassword("test12!")
+        this.passwordEncoder.encode("test12!") >> "test12!"
         this.userService.signUp(userCreateRequestDto)
 
         then:
@@ -689,6 +694,7 @@ class UserServiceTest extends Specification {
         when: "password with invalid format: without special character"
         mockCreatedUserDomainModel.setPassword("test1234")
         userCreateRequestDto.setPassword("test1234")
+        this.passwordEncoder.encode("test1234") >> "test1234"
         this.userService.signUp(userCreateRequestDto)
 
         then:
@@ -697,6 +703,7 @@ class UserServiceTest extends Specification {
         when: "password with invalid format: without number"
         mockCreatedUserDomainModel.setPassword("test!!!!")
         userCreateRequestDto.setPassword("test!!!!")
+        this.passwordEncoder.encode("test!!!!") >> "test!!!!"
         this.userService.signUp(userCreateRequestDto)
 
         then:
@@ -705,6 +712,7 @@ class UserServiceTest extends Specification {
         when: "password with invalid format: without english"
         mockCreatedUserDomainModel.setPassword("1234567!")
         userCreateRequestDto.setPassword("1234567!")
+        this.passwordEncoder.encode("1234567!") >> "1234567!"
         this.userService.signUp(userCreateRequestDto)
 
         then:
@@ -732,6 +740,7 @@ class UserServiceTest extends Specification {
                 userCreateRequestDto.getProfileImage()
         )
 
+        this.passwordEncoder.encode("test123!") >> "test123!"
         this.userPort.create(mockCreatedUserDomainModel) >> mockCreatedUserDomainModel
         this.userPort.findByEmail("test@cau.ac.kr") >> Optional.ofNullable(null)
 
@@ -804,6 +813,7 @@ class UserServiceTest extends Specification {
                 userCreateRequestDto.getProfileImage()
         )
 
+        this.passwordEncoder.encode("test1234!") >> "test1234!"
         this.userPort.create(mockCreatedUserDomainModel) >> mockCreatedUserDomainModel
         this.userPort.findByEmail("test@cau.ac.kr") >> Optional.ofNullable(null)
         this.userPort.findByEmail("invalid-email") >> Optional.ofNullable(null)
@@ -905,6 +915,8 @@ class UserServiceTest extends Specification {
                 UserState.AWAIT
         )
 
+        this.passwordEncoder.matches("test1234!", "test1234!") >> true
+        this.passwordEncoder.encode("test12345!") >> "test12345!"
         this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
         this.userPort.updatePassword("test", "test12345!") >> Optional.of(mockUpdatedUserDomainModel)
 
@@ -940,6 +952,7 @@ class UserServiceTest extends Specification {
                 "test12345!"
         )
 
+        this.passwordEncoder.matches("test1234!", "test1234!") >> true
         this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
 
         when: "password with short length"
