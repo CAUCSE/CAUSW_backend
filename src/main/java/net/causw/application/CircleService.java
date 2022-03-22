@@ -24,12 +24,12 @@ import net.causw.domain.model.CircleMemberStatus;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.StaticValue;
 import net.causw.domain.model.UserDomainModel;
+import net.causw.domain.validation.CircleLeaderValidator;
 import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.GrantableRoleValidator;
 import net.causw.domain.validation.StudentIdIsNullValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
-import net.causw.domain.validation.UserEqualValidator;
 import net.causw.domain.validation.UserNotEqualValidator;
 import net.causw.domain.validation.UserRoleIsNoneValidator;
 import net.causw.domain.validation.UserRoleValidator;
@@ -112,26 +112,23 @@ public class CircleService {
         return this.circlePort.findAll()
                 .stream()
                 .map(circleDomainModel -> {
-                            if (userDomainModel.getRole().equals(Role.ADMIN)) {
-                                return CirclesResponseDto.from(
-                                        circleDomainModel,
-                                        this.circleMemberPort.getNumMember(circleDomainModel.getId()),
-                                        LocalDateTime.now()
-                                );
-                            }
+                    if (userDomainModel.getRole().equals(Role.ADMIN))
+                        return CirclesResponseDto.from(
+                                circleDomainModel,
+                                this.circleMemberPort.getNumMember(circleDomainModel.getId()),
+                                LocalDateTime.now());
 
-                            return Optional.ofNullable(joinedCircleMap.get(circleDomainModel.getId()))
-                                    .map(circleMemberDomainModel -> CirclesResponseDto.from(
-                                            circleDomainModel,
-                                            this.circleMemberPort.getNumMember(circleDomainModel.getId()),
-                                            circleMemberDomainModel.getUpdatedAt()
-                                    ))
-                                    .orElse(CirclesResponseDto.from(
-                                            circleDomainModel,
-                                            this.circleMemberPort.getNumMember(circleDomainModel.getId())
-                                    ));
-                        }
-                )
+                    return Optional.ofNullable(joinedCircleMap.get(circleDomainModel.getId()))
+                            .map(circleMemberDomainModel -> CirclesResponseDto.from(
+                                    circleDomainModel,
+                                    this.circleMemberPort.getNumMember(circleDomainModel.getId()),
+                                    circleMemberDomainModel.getUpdatedAt()
+                            ))
+                            .orElse(CirclesResponseDto.from(
+                                    circleDomainModel,
+                                    this.circleMemberPort.getNumMember(circleDomainModel.getId())
+                            ));
+                })
                 .collect(Collectors.toList());
     }
 
@@ -183,19 +180,17 @@ public class CircleService {
                 ),
                 this.boardPort.findByCircleId(circleId)
                         .stream()
-                        .map(boardDomainModel -> this.postPort.findLatest(boardDomainModel.getId()).map(
-                                postDomainModel -> BoardOfCircleResponseDto.from(
+                        .map(boardDomainModel -> this.postPort.findLatest(boardDomainModel.getId())
+                                .map(postDomainModel -> BoardOfCircleResponseDto.from(
                                         boardDomainModel,
                                         userDomainModel.getRole(),
                                         postDomainModel,
                                         this.commentPort.countByPostId(postDomainModel.getId())
-                                )
-                        ).orElse(
-                                BoardOfCircleResponseDto.from(
+                                ))
+                                .orElse(BoardOfCircleResponseDto.from(
                                         boardDomainModel,
                                         userDomainModel.getRole()
-                                )
-                        ))
+                                )))
                         .collect(Collectors.toList())
         );
     }
@@ -280,14 +275,13 @@ public class CircleService {
         /* Check if the request user is president or admin
          * Then, validate the circle name whether it is duplicated or not
          */
-        this.circlePort.findByName(circleDomainModel.getName()).ifPresent(
-                name -> {
+        this.circlePort.findByName(circleDomainModel.getName())
+                .ifPresent(name -> {
                     throw new BadRequestException(
                             ErrorCode.ROW_ALREADY_EXIST,
                             "중복된 소모임 이름입니다."
                     );
-                }
-        );
+                });
 
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(requestUser.getState()))
@@ -350,8 +344,6 @@ public class CircleService {
             String circleId,
             CircleUpdateRequestDto circleUpdateRequestDto
     ) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
         CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -367,14 +359,14 @@ public class CircleService {
         );
 
         if (!circle.getName().equals(circleUpdateRequestDto.getName())) {
-            this.circlePort.findByName(circleUpdateRequestDto.getName()).ifPresent(
-                    name -> {
-                        throw new BadRequestException(
-                                ErrorCode.ROW_ALREADY_EXIST,
-                                "중복된 소모임 이름입니다."
-                        );
-                    }
-            );
+            this.circlePort.findByName(circleUpdateRequestDto.getName())
+                    .ifPresent(name -> {
+                                throw new BadRequestException(
+                                        ErrorCode.ROW_ALREADY_EXIST,
+                                        "중복된 소모임 이름입니다."
+                                );
+                            }
+                    );
         }
 
         circle.update(
@@ -383,7 +375,7 @@ public class CircleService {
                 circleUpdateRequestDto.getDescription()
         );
 
-        validatorBucket
+        ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
@@ -391,22 +383,17 @@ public class CircleService {
                 .consistOf(UserRoleValidator.of(
                         user.getRole(),
                         List.of(Role.PRESIDENT, Role.LEADER_CIRCLE)
-                ));
-
-        if (user.getRole().equals(Role.LEADER_CIRCLE)) {
-            validatorBucket
-                    .consistOf(UserEqualValidator.of(
-                            circle.getLeader().map(UserDomainModel::getId).orElseThrow(
-                                    () -> new InternalServerException(
-                                            ErrorCode.INTERNAL_SERVER,
-                                            "This circle has not circle leader"
-                                    )
-                            ),
-                            userId
-                    ));
-        }
-
-        validatorBucket
+                ))
+                .consistOf(CircleLeaderValidator.of(
+                        user.getId(),
+                        circle.getLeader().map(UserDomainModel::getId).orElseThrow(
+                                () -> new InternalServerException(
+                                        ErrorCode.INTERNAL_SERVER,
+                                        "This circle has not circle leader"
+                                )
+                        ),
+                        user.getRole()
+                ))
                 .validate();
 
         return CircleResponseDto.from(this.circlePort.update(circleId, circle).orElseThrow(
@@ -422,8 +409,6 @@ public class CircleService {
             String requestUserId,
             String circleId
     ) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
         CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -438,29 +423,24 @@ public class CircleService {
                 )
         );
 
-        validatorBucket
+        ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                 .consistOf(UserRoleValidator.of(
                         user.getRole(),
                         List.of(Role.PRESIDENT, Role.LEADER_CIRCLE)
-                ));
-
-        if (user.getRole().equals(Role.LEADER_CIRCLE)) {
-            validatorBucket
-                    .consistOf(UserEqualValidator.of(
-                            circle.getLeader().map(UserDomainModel::getId).orElseThrow(
-                                    () -> new InternalServerException(
-                                            ErrorCode.INTERNAL_SERVER,
-                                            "This circle has not circle leader"
-                                    )
-                            ),
-                            user.getId()
-                    ));
-        }
-
-        validatorBucket
+                ))
+                .consistOf(CircleLeaderValidator.of(
+                        user.getId(),
+                        circle.getLeader().map(UserDomainModel::getId).orElseThrow(
+                                () -> new InternalServerException(
+                                        ErrorCode.INTERNAL_SERVER,
+                                        "This circle has not circle leader"
+                                )
+                        ),
+                        user.getRole()
+                ))
                 .validate();
 
         // Change leader role to COMMON
@@ -574,7 +554,8 @@ public class CircleService {
                                         "This circle has not circle leader"
                                 )
                         ),
-                        userId))
+                        userId
+                ))
                 .validate();
 
         return CircleMemberResponseDto.from(user, this.circleMemberPort.updateStatus(circleMember.getId(), CircleMemberStatus.LEAVE).orElseThrow(
@@ -591,8 +572,6 @@ public class CircleService {
             String userId,
             String circleId
     ) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
         UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -621,26 +600,21 @@ public class CircleService {
                 )
         );
 
-        validatorBucket
+        ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.LEADER_CIRCLE)));
-
-        if (requestUser.getRole().equals(Role.LEADER_CIRCLE)) {
-            validatorBucket
-                    .consistOf(UserEqualValidator.of(
-                            circle.getLeader().map(UserDomainModel::getId).orElseThrow(
-                                    () -> new InternalServerException(
-                                            ErrorCode.INTERNAL_SERVER,
-                                            "This circle has not circle leader"
-                                    )
-                            ),
-                            requestUserId
-                    ));
-        }
-
-        validatorBucket
+                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.LEADER_CIRCLE)))
+                .consistOf(CircleLeaderValidator.of(
+                        requestUser.getId(),
+                        circle.getLeader().map(UserDomainModel::getId).orElseThrow(
+                                () -> new InternalServerException(
+                                        ErrorCode.INTERNAL_SERVER,
+                                        "This circle has not circle leader"
+                                )
+                        ),
+                        requestUser.getRole()
+                ))
                 .consistOf(CircleMemberStatusValidator.of(
                         circleMember.getStatus(),
                         List.of(CircleMemberStatus.MEMBER)
@@ -652,7 +626,8 @@ public class CircleService {
                                         "This circle has not circle leader"
                                 )
                         ),
-                        userId))
+                        userId
+                ))
                 .validate();
 
         return CircleMemberResponseDto.from(user, this.circleMemberPort.updateStatus(circleMember.getId(), CircleMemberStatus.DROP).orElseThrow(
@@ -686,8 +661,6 @@ public class CircleService {
             String applicationId,
             CircleMemberStatus targetStatus
     ) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
         UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -709,25 +682,21 @@ public class CircleService {
                 )
         );
 
-        validatorBucket
+        ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(circleMember.getCircle().getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.LEADER_CIRCLE)));
-
-        if (requestUser.getRole().equals(Role.LEADER_CIRCLE)) {
-            validatorBucket
-                    .consistOf(UserEqualValidator.of(
-                            circleMember.getCircle().getLeader().map(UserDomainModel::getId).orElseThrow(
-                                    () -> new InternalServerException(
-                                            ErrorCode.INTERNAL_SERVER,
-                                            "This circle has not circle leader"
-                                    )
-                            ),
-                            requestUserId));
-        }
-
-        validatorBucket
+                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.LEADER_CIRCLE)))
+                .consistOf(CircleLeaderValidator.of(
+                        requestUserId,
+                        circleMember.getCircle().getLeader().map(UserDomainModel::getId).orElseThrow(
+                                () -> new InternalServerException(
+                                        ErrorCode.INTERNAL_SERVER,
+                                        "This circle has not circle leader"
+                                )
+                        ),
+                        requestUser.getRole()
+                ))
                 .consistOf(CircleMemberStatusValidator.of(
                         circleMember.getStatus(),
                         List.of(CircleMemberStatus.AWAIT)

@@ -15,7 +15,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest
 import org.powermock.modules.junit4.PowerMockRunner
 import org.powermock.modules.junit4.PowerMockRunnerDelegate
 import org.spockframework.runtime.Sputnik
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.test.context.ActiveProfiles
 import spock.lang.Specification
@@ -402,6 +401,7 @@ class PostServiceTest extends Specification {
         given:
         this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
         this.boardPort.findById("test board id") >> Optional.of(this.mockBoardDomainModel)
+        this.favoriteBoardPort.findByUserId("test") >> List.of()
 
         when:
         this.postService.search("test", "test board id", "invalid", "keyword", 0)

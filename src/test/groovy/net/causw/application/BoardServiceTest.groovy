@@ -3,7 +3,10 @@ package net.causw.application
 import net.causw.application.dto.board.BoardCreateRequestDto
 import net.causw.application.dto.board.BoardResponseDto
 import net.causw.application.dto.board.BoardUpdateRequestDto
-import net.causw.application.spi.*
+import net.causw.application.spi.BoardPort
+import net.causw.application.spi.CircleMemberPort
+import net.causw.application.spi.CirclePort
+import net.causw.application.spi.UserPort
 import net.causw.domain.exceptions.BadRequestException
 import net.causw.domain.exceptions.UnauthorizedException
 import net.causw.domain.model.*
@@ -29,17 +32,21 @@ class BoardServiceTest extends Specification {
     private BoardPort boardPort = Mock(BoardPort.class)
     private UserPort userPort = Mock(UserPort.class)
     private CirclePort circlePort = Mock(CirclePort.class)
+    private CircleMemberPort circleMemberPort = Mock(CircleMemberPort.class)
     private Validator validator = Validation.buildDefaultValidatorFactory().getValidator()
     private BoardService boardService = new BoardService(
             this.boardPort,
             this.userPort,
             this.circlePort,
+            this.circleMemberPort,
             this.validator
     )
 
     def mockUserDomainModel
+    def mockLeaderDomainModel
     def mockBoardDomainModel
     def mockCircleDomainModel
+    def mockCircleMemberDomainModel
 
     def setup() {
         this.mockUserDomainModel = UserDomainModel.of(
@@ -50,6 +57,18 @@ class BoardServiceTest extends Specification {
                 "20210000",
                 2021,
                 Role.PRESIDENT,
+                null,
+                UserState.ACTIVE
+        )
+
+        this.mockLeaderDomainModel = UserDomainModel.of(
+                "test leader",
+                "test@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.LEADER_CIRCLE,
                 null,
                 UserState.ACTIVE
         )
@@ -70,7 +89,17 @@ class BoardServiceTest extends Specification {
                 null,
                 "test_description",
                 false,
-                (UserDomainModel) this.mockUserDomainModel
+                (UserDomainModel) this.mockLeaderDomainModel
+        )
+
+        this.mockCircleMemberDomainModel = CircleMemberDomainModel.of(
+                "test",
+                CircleMemberStatus.MEMBER,
+                (CircleDomainModel) this.mockCircleDomainModel,
+                "test leader",
+                "test",
+                null,
+                null
         )
     }
 
@@ -132,7 +161,6 @@ class BoardServiceTest extends Specification {
 
         when: "create board with circle"
         mockBoardCreateRequestDto.setCircleId("test")
-        this.mockUserDomainModel.setRole(Role.LEADER_CIRCLE)
 
         PowerMockito.when(BoardDomainModel.of(
                 "test",
@@ -141,9 +169,11 @@ class BoardServiceTest extends Specification {
                 "test category",
                 (CircleDomainModel) this.mockCircleDomainModel
         )).thenReturn((BoardDomainModel) this.mockBoardDomainModel)
+        this.userPort.findById("test leader") >> Optional.of(this.mockLeaderDomainModel)
         this.circlePort.findById("test") >> Optional.of(this.mockCircleDomainModel)
+        this.circleMemberPort.findByUserIdAndCircleId("test leader", "test") >> Optional.of(this.mockCircleMemberDomainModel)
 
-        boardResponseDto = this.boardService.create("test", mockBoardCreateRequestDto)
+        boardResponseDto = this.boardService.create("test leader", mockBoardCreateRequestDto)
 
         then:
         boardResponseDto instanceof BoardResponseDto
@@ -241,24 +271,31 @@ class BoardServiceTest extends Specification {
         this.boardPort.create((BoardDomainModel) this.mockBoardDomainModel) >> this.mockBoardDomainModel
 
         when: "invalid leader id"
-        this.mockUserDomainModel.setId("invalid_test")
+        this.circleMemberPort.findByUserIdAndCircleId("test", "test") >> Optional.of(this.mockCircleMemberDomainModel)
         this.boardService.create("test", mockBoardCreateRequestDto)
 
         then:
         thrown(UnauthorizedException)
 
         when: "invalid leader role"
-        this.mockUserDomainModel.setId("test")
-        this.mockUserDomainModel.setRole(Role.PRESIDENT)
-        this.boardService.create("test", mockBoardCreateRequestDto)
+        this.mockLeaderDomainModel.setRole(Role.PRESIDENT)
+        this.userPort.findById("test leader") >> Optional.of(this.mockLeaderDomainModel)
+        this.circleMemberPort.findByUserIdAndCircleId("test leader", "test") >> Optional.of(this.mockCircleMemberDomainModel)
+        this.boardService.create("test leader", mockBoardCreateRequestDto)
 
         then:
         thrown(UnauthorizedException)
 
-        when: "invalid request user role"
-        mockBoardCreateRequestDto.setCircleId(null)
-        this.mockUserDomainModel.setRole(Role.COMMON)
-        this.boardService.create("test", mockBoardCreateRequestDto)
+        when: "circle member is await"
+        this.mockCircleMemberDomainModel.setStatus(CircleMemberStatus.AWAIT)
+        this.boardService.create("test leader", mockBoardCreateRequestDto)
+
+        then:
+        thrown(BadRequestException)
+
+        when: "circle member is blocked"
+        this.mockCircleMemberDomainModel.setStatus(CircleMemberStatus.REJECT)
+        this.boardService.create("test leader", mockBoardCreateRequestDto)
 
         then:
         thrown(UnauthorizedException)
@@ -279,8 +316,9 @@ class BoardServiceTest extends Specification {
         this.circlePort.findById("test") >> Optional.of(this.mockCircleDomainModel)
         this.boardPort.create((BoardDomainModel) this.mockBoardDomainModel) >> this.mockBoardDomainModel
 
-        when: "invalid leader id"
+        when:
         this.mockCircleDomainModel.setIsDeleted(true)
+        this.circleMemberPort.findByUserIdAndCircleId("test", "test") >> Optional.of(this.mockCircleMemberDomainModel)
         this.boardService.create("test", mockBoardCreateRequestDto)
 
         then:
@@ -315,9 +353,21 @@ class BoardServiceTest extends Specification {
         }
 
         when: "update board with circle"
-        this.mockUserDomainModel.setRole(Role.LEADER_CIRCLE)
         this.mockBoardDomainModel.setCircle(this.mockCircleDomainModel)
+        this.userPort.findById("test leader") >> Optional.of(this.mockLeaderDomainModel)
         this.circlePort.findById("test") >> Optional.of(this.mockCircleDomainModel)
+        this.circleMemberPort.findByUserIdAndCircleId("test leader", "test") >> Optional.of(this.mockCircleMemberDomainModel)
+        boardResponseDto = this.boardService.update("test leader", "test", mockBoardUpdateRequestDto)
+
+        then:
+        boardResponseDto instanceof BoardResponseDto
+        with(boardResponseDto) {
+            getName() == "test_update"
+            getDescription() == "test_description"
+        }
+
+        when: "update board with circle for admin"
+        this.mockUserDomainModel.setRole(Role.ADMIN)
         boardResponseDto = this.boardService.update("test", "test", mockBoardUpdateRequestDto)
 
         then:
@@ -352,6 +402,8 @@ class BoardServiceTest extends Specification {
         this.mockBoardDomainModel.setIsDeleted(false)
         this.mockBoardDomainModel.setCircle(this.mockCircleDomainModel)
         this.mockCircleDomainModel.setIsDeleted(true)
+        this.mockUserDomainModel.setRole(Role.LEADER_CIRCLE)
+        this.circleMemberPort.findByUserIdAndCircleId("test", "test") >> Optional.of(this.mockCircleMemberDomainModel)
         this.boardService.update("test", "test", mockBoardUpdateRequestDto)
 
         then:
@@ -404,7 +456,7 @@ class BoardServiceTest extends Specification {
         this.boardPort.findById("test") >> Optional.of(this.mockBoardDomainModel)
 
         when: "invalid updater role"
-        this.mockUserDomainModel.setRole(Role.COMMON)
+        this.mockUserDomainModel.setRole(Role.LEADER_CIRCLE)
         this.boardService.update("test", "test", mockBoardUpdateRequestDto)
 
         then:
@@ -420,7 +472,22 @@ class BoardServiceTest extends Specification {
 
         when: "invalid leader"
         this.mockUserDomainModel.setRole(Role.LEADER_CIRCLE)
-        this.mockUserDomainModel.setId("invalid-test")
+        this.circleMemberPort.findByUserIdAndCircleId("test", "test") >> Optional.of(this.mockCircleMemberDomainModel)
+        this.boardService.update("test", "test", mockBoardUpdateRequestDto)
+
+        then:
+        thrown(UnauthorizedException)
+
+        when: "circle member is await"
+        this.mockCircleMemberDomainModel.setStatus(CircleMemberStatus.AWAIT)
+        this.circleMemberPort.findByUserIdAndCircleId("test", "test") >> Optional.of(this.mockCircleMemberDomainModel)
+        this.boardService.update("test", "test", mockBoardUpdateRequestDto)
+
+        then:
+        thrown(BadRequestException)
+
+        when: "circle member is blocked"
+        this.mockCircleMemberDomainModel.setStatus(CircleMemberStatus.REJECT)
         this.boardService.update("test", "test", mockBoardUpdateRequestDto)
 
         then:
@@ -447,7 +514,7 @@ class BoardServiceTest extends Specification {
         this.boardPort.findById("test") >> Optional.of(this.mockBoardDomainModel)
         this.boardPort.delete("test") >> Optional.of(mockDeletedBoardDomainModel)
 
-        when: "update board without circle"
+        when: "delete board without circle"
         def boardResponseDto = this.boardService.delete("test", "test")
 
         then:
@@ -456,11 +523,22 @@ class BoardServiceTest extends Specification {
             getIsDeleted()
         }
 
-        when: "update board with circle"
+        when: "delete board with circle"
         this.mockBoardDomainModel.setCircle(mockCircleDomainModel)
-        this.mockUserDomainModel.setRole(Role.LEADER_CIRCLE)
+        this.userPort.findById("test leader") >> Optional.of(this.mockLeaderDomainModel)
         this.circlePort.findById("test") >> Optional.of(this.mockCircleDomainModel)
-        boardResponseDto = this.boardService.delete("test", "test")
+        this.circleMemberPort.findByUserIdAndCircleId("test leader", "test") >> Optional.of(this.mockCircleMemberDomainModel)
+        boardResponseDto = this.boardService.delete("test leader", "test")
+
+        then:
+        boardResponseDto instanceof BoardResponseDto
+        with(boardResponseDto) {
+            getIsDeleted()
+        }
+
+        when: "delete board with circle for admin"
+        this.mockUserDomainModel.setRole(Role.ADMIN)
+        boardResponseDto = this.boardService.delete("test leader", "test")
 
         then:
         boardResponseDto instanceof BoardResponseDto
@@ -486,8 +564,9 @@ class BoardServiceTest extends Specification {
         this.mockBoardDomainModel.setIsDeleted(false)
         this.mockBoardDomainModel.setCircle(this.mockCircleDomainModel)
         this.mockCircleDomainModel.setIsDeleted(true)
-        this.mockUserDomainModel.setRole(Role.LEADER_CIRCLE)
-        this.boardService.delete("test", "test")
+        this.userPort.findById("test leader") >> Optional.of(this.mockLeaderDomainModel)
+        this.circleMemberPort.findByUserIdAndCircleId("test leader", "test") >> Optional.of(this.mockCircleMemberDomainModel)
+        this.boardService.delete("test leader", "test")
 
         then:
         thrown(BadRequestException)
@@ -500,7 +579,7 @@ class BoardServiceTest extends Specification {
         this.boardPort.findById("test") >> Optional.of(this.mockBoardDomainModel)
 
         when: "invalid deleter role"
-        this.mockUserDomainModel.setRole(Role.COMMON)
+        this.mockUserDomainModel.setRole(Role.LEADER_CIRCLE)
         this.boardService.delete("test", "test")
 
         then:
@@ -516,7 +595,22 @@ class BoardServiceTest extends Specification {
 
         when: "invalid leader"
         this.mockUserDomainModel.setRole(Role.LEADER_CIRCLE)
-        this.mockUserDomainModel.setId("invalid-test")
+        this.mockUserDomainModel.setId("test")
+        this.circleMemberPort.findByUserIdAndCircleId("test", "test") >> Optional.of(this.mockCircleMemberDomainModel)
+        this.boardService.delete("test", "test")
+
+        then:
+        thrown(UnauthorizedException)
+
+        when: "circle member is await"
+        this.mockCircleMemberDomainModel.setStatus(CircleMemberStatus.AWAIT)
+        this.boardService.delete("test", "test")
+
+        then:
+        thrown(BadRequestException)
+
+        when: "circle member is blocked"
+        this.mockCircleMemberDomainModel.setStatus(CircleMemberStatus.REJECT)
         this.boardService.delete("test", "test")
 
         then:
