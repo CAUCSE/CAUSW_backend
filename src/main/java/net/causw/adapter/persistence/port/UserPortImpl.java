@@ -28,12 +28,6 @@ public class UserPortImpl extends DomainModelMapper implements UserPort {
         this.pageableFactory = pageableFactory;
     }
 
-
-    @Override
-    public List<UserDomainModel> findAll() {
-        return this.userRepository.findAll().stream().map(this::entityToDomainModel).collect(Collectors.toList());
-    }
-
     @Override
     public Optional<UserDomainModel> findEmail(String userName, String studentId) {
         return this.userRepository.findByNameAndStudentId(userName, studentId).map(this::entityToDomainModel);
