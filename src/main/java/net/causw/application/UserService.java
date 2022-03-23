@@ -1132,21 +1132,4 @@ public class UserService {
                 )
         ));
     }
-
-    @Transactional
-    public String encodingPassword() {
-        this.userPort.findAll().forEach(user ->
-                this.userPort.updatePassword(
-                                user.getId(),
-                                this.passwordEncoder.encode(user.getPassword())
-                        )
-                        .orElseThrow(
-                                () -> new InternalServerException(
-                                        ErrorCode.INTERNAL_SERVER,
-                                        "User id checked, but exception occurred"
-                                )
-                        ));
-
-        return "Success";
-    }
 }
