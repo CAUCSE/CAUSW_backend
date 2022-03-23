@@ -1,15 +1,16 @@
 package net.causw.application;
 
-import net.causw.application.dto.locker.LockerLocationsResponseDto;
-import net.causw.application.dto.locker.LockersResponseDto;
 import net.causw.application.dto.locker.LockerCreateRequestDto;
 import net.causw.application.dto.locker.LockerLocationCreateRequestDto;
 import net.causw.application.dto.locker.LockerLocationResponseDto;
 import net.causw.application.dto.locker.LockerLocationUpdateRequestDto;
+import net.causw.application.dto.locker.LockerLocationsResponseDto;
 import net.causw.application.dto.locker.LockerLogResponseDto;
 import net.causw.application.dto.locker.LockerMoveRequestDto;
 import net.causw.application.dto.locker.LockerResponseDto;
 import net.causw.application.dto.locker.LockerUpdateRequestDto;
+import net.causw.application.dto.locker.LockersResponseDto;
+import net.causw.application.spi.FlagPort;
 import net.causw.application.spi.LockerLocationPort;
 import net.causw.application.spi.LockerLogPort;
 import net.causw.application.spi.LockerPort;
@@ -23,6 +24,7 @@ import net.causw.domain.model.LockerLogAction;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.validation.ConstraintValidator;
+import net.causw.domain.validation.LockerInUseValidator;
 import net.causw.domain.validation.UserRoleIsNoneValidator;
 import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.UserStateValidator;
@@ -41,6 +43,7 @@ public class LockerService {
     private final LockerLocationPort lockerLocationPort;
     private final LockerLogPort lockerLogPort;
     private final UserPort userPort;
+    private final FlagPort flagPort;
     private final Validator validator;
     private final LockerActionFactory lockerActionFactory;
 
@@ -49,6 +52,7 @@ public class LockerService {
             LockerLocationPort lockerLocationPort,
             LockerLogPort lockerLogPort,
             UserPort userPort,
+            FlagPort flagPort,
             LockerActionFactory lockerActionFactory,
             Validator validator
     ) {
@@ -56,6 +60,7 @@ public class LockerService {
         this.lockerLocationPort = lockerLocationPort;
         this.lockerLogPort = lockerLogPort;
         this.userPort = userPort;
+        this.flagPort = flagPort;
         this.lockerActionFactory = lockerActionFactory;
         this.validator = validator;
     }
@@ -70,10 +75,10 @@ public class LockerService {
         );
 
         return LockerResponseDto.from(this.lockerPort.findById(id).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "사물함을 찾을 수 없습니다."
-                )),
+                        () -> new BadRequestException(
+                                ErrorCode.ROW_DOES_NOT_EXIST,
+                                "사물함을 찾을 수 없습니다."
+                        )),
                 userDomainModel
         );
     }
@@ -143,51 +148,47 @@ public class LockerService {
             String lockerId,
             LockerUpdateRequestDto lockerUpdateRequestDto
     ) {
-        throw new BadRequestException(
-                ErrorCode.ROW_DOES_NOT_EXIST,
-                "사물함 신청 기간이 아닙니다. 공지를 확인해주세요."
+        UserDomainModel updaterDomainModel = this.userPort.findById(updaterId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "로그인된 사용자를 찾을 수 없습니다."
+                )
         );
 
-//        UserDomainModel updaterDomainModel = this.userPort.findById(updaterId).orElseThrow(
-//                () -> new BadRequestException(
-//                        ErrorCode.ROW_DOES_NOT_EXIST,
-//                        "로그인된 사용자를 찾을 수 없습니다."
-//                )
-//        );
-//
-//        LockerDomainModel lockerDomainModel = this.lockerPort.findById(lockerId).orElseThrow(
-//                () -> new BadRequestException(
-//                        ErrorCode.ROW_DOES_NOT_EXIST,
-//                        "사물함을 찾을 수 없습니다."
-//                )
-//        );
-//
-//        ValidatorBucket.of()
-//                .consistOf(UserStateValidator.of(updaterDomainModel.getState()))
-//                .consistOf(UserRoleIsNoneValidator.of(updaterDomainModel.getRole()))
-//                .validate();
-//
-//        return this.lockerActionFactory
-//                .getLockerAction(LockerLogAction.of(lockerUpdateRequestDto.getAction()))
-//                .updateLockerDomainModel(
-//                        lockerDomainModel,
-//                        updaterDomainModel,
-//                        this.lockerPort,
-//                        this.lockerLogPort
-//                )
-//                .map(resLockerDomainModel -> {
-//                    this.lockerLogPort.create(
-//                            resLockerDomainModel.getLockerNumber(),
-//                            updaterDomainModel,
-//                            LockerLogAction.of(lockerUpdateRequestDto.getAction()),
-//                            lockerUpdateRequestDto.getMessage().orElse(lockerUpdateRequestDto.getAction())
-//                    );
-//                    return LockerResponseDto.from(resLockerDomainModel, updaterDomainModel);
-//                })
-//                .orElseThrow(() -> new InternalServerException(
-//                        ErrorCode.INTERNAL_SERVER,
-//                        "Locker id checked, but exception occurred"
-//                ));
+        LockerDomainModel lockerDomainModel = this.lockerPort.findById(lockerId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "사물함을 찾을 수 없습니다."
+                )
+        );
+
+        ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(updaterDomainModel.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(updaterDomainModel.getRole()))
+                .validate();
+
+        return this.lockerActionFactory
+                .getLockerAction(LockerLogAction.of(lockerUpdateRequestDto.getAction()))
+                .updateLockerDomainModel(
+                        lockerDomainModel,
+                        updaterDomainModel,
+                        this.lockerPort,
+                        this.lockerLogPort,
+                        this.flagPort
+                )
+                .map(resLockerDomainModel -> {
+                    this.lockerLogPort.create(
+                            resLockerDomainModel.getLockerNumber(),
+                            updaterDomainModel,
+                            LockerLogAction.of(lockerUpdateRequestDto.getAction()),
+                            lockerUpdateRequestDto.getMessage().orElse(lockerUpdateRequestDto.getAction())
+                    );
+                    return LockerResponseDto.from(resLockerDomainModel, updaterDomainModel);
+                })
+                .orElseThrow(() -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "Locker id checked, but exception occurred"
+                ));
     }
 
     @Transactional
@@ -227,10 +228,10 @@ public class LockerService {
                 .validate();
 
         return LockerResponseDto.from(this.lockerPort.updateLocation(lockerId, lockerDomainModel).orElseThrow(
-                () -> new InternalServerException(
-                        ErrorCode.INTERNAL_SERVER,
-                        "Locker id checked, but exception occurred"
-                )),
+                        () -> new InternalServerException(
+                                ErrorCode.INTERNAL_SERVER,
+                                "Locker id checked, but exception occurred"
+                        )),
                 updaterDomainModel
         );
     }
@@ -251,14 +252,8 @@ public class LockerService {
                 )
         );
 
-        if (lockerDomainModel.getUser().isPresent()) {
-            throw new BadRequestException(
-                    ErrorCode.CANNOT_PERFORMED,
-                    "사용 중인 사물함입니다."
-            );
-        }
-
         ValidatorBucket.of()
+                .consistOf(LockerInUseValidator.of(lockerDomainModel.getUser().isPresent()))
                 .consistOf(UserStateValidator.of(deleterDomainModel.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(deleterDomainModel.getRole()))
                 .consistOf(UserRoleValidator.of(deleterDomainModel.getRole(), List.of(Role.PRESIDENT)))

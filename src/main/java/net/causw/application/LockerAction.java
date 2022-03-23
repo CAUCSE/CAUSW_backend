@@ -1,11 +1,11 @@
 package net.causw.application;
 
+import net.causw.application.spi.FlagPort;
 import net.causw.application.spi.LockerLogPort;
 import net.causw.application.spi.LockerPort;
 import net.causw.domain.model.LockerDomainModel;
 import net.causw.domain.model.UserDomainModel;
 
-import javax.validation.Validator;
 import java.util.Optional;
 
 public interface LockerAction {
@@ -13,6 +13,7 @@ public interface LockerAction {
             LockerDomainModel lockerDomainModel,
             UserDomainModel updaterDomainModel,
             LockerPort lockerPort,
-            LockerLogPort lockerLogPort
+            LockerLogPort lockerLogPort,
+            FlagPort flagPort
     );
 }

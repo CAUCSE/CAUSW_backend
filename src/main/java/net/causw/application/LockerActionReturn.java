@@ -1,6 +1,7 @@
 package net.causw.application;
 
 import lombok.NoArgsConstructor;
+import net.causw.application.spi.FlagPort;
 import net.causw.application.spi.LockerLogPort;
 import net.causw.application.spi.LockerPort;
 import net.causw.domain.exceptions.BadRequestException;
@@ -15,13 +16,14 @@ import java.util.List;
 import java.util.Optional;
 
 @NoArgsConstructor
-public class LockerActionReturn implements LockerAction{
+public class LockerActionReturn implements LockerAction {
     @Override
     public Optional<LockerDomainModel> updateLockerDomainModel(
             LockerDomainModel lockerDomainModel,
             UserDomainModel updaterDomainModel,
             LockerPort lockerPort,
-            LockerLogPort lockerLogPort
+            LockerLogPort lockerLogPort,
+            FlagPort flagPort
     ) {
         if (lockerDomainModel.getUser().isEmpty()) {
             throw new BadRequestException(
