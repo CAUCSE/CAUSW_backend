@@ -7,6 +7,7 @@ import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.LockerDomainModel;
 import net.causw.domain.model.LockerLogAction;
+import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.validation.LockerIsDeactivatedValidator;
 import net.causw.domain.validation.TimePassedValidator;
@@ -40,20 +41,22 @@ public class LockerActionRegister implements LockerAction {
                         .validate(),
                 validator::validate);
 
-        lockerPort.findByUserId(updaterDomainModel.getId()).ifPresent(locker -> {
-            locker.returnLocker();
-            lockerPort.update(
-                    locker.getId(),
-                    locker
-            );
+        if (!updaterDomainModel.getRole().equals(Role.ADMIN)) {
+            lockerPort.findByUserId(updaterDomainModel.getId()).ifPresent(locker -> {
+                locker.returnLocker();
+                lockerPort.update(
+                        locker.getId(),
+                        locker
+                );
 
-            lockerLogPort.create(
-                    locker.getLockerNumber(),
-                    updaterDomainModel,
-                    LockerLogAction.RETURN,
-                    ""
-            );
-        });
+                lockerLogPort.create(
+                        locker.getLockerNumber(),
+                        updaterDomainModel,
+                        LockerLogAction.RETURN,
+                        ""
+                );
+            });
+        }
 
         lockerDomainModel.register(updaterDomainModel);
 
