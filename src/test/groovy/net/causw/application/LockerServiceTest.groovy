@@ -1,17 +1,7 @@
 package net.causw.application
 
-import net.causw.application.dto.locker.LockerCreateRequestDto
-import net.causw.application.dto.locker.LockerLocationCreateRequestDto
-import net.causw.application.dto.locker.LockerLocationResponseDto
-import net.causw.application.dto.locker.LockerLocationUpdateRequestDto
-import net.causw.application.dto.locker.LockerMoveRequestDto
-import net.causw.application.dto.locker.LockerResponseDto
-import net.causw.application.dto.locker.LockerUpdateRequestDto
-import net.causw.application.spi.LockerLocationPort
-import net.causw.application.spi.LockerLogPort
-import net.causw.application.spi.LockerPort
-import net.causw.application.spi.UserPort
-import net.causw.domain.exceptions.BadRequestException
+import net.causw.application.dto.locker.*
+import net.causw.application.spi.*
 import net.causw.domain.exceptions.UnauthorizedException
 import net.causw.domain.model.*
 import org.junit.Test
@@ -38,6 +28,7 @@ class LockerServiceTest extends Specification {
     private LockerLocationPort lockerLocationPort = Mock(LockerLocationPort.class)
     private LockerLogPort lockerLogPort = Mock(LockerLogPort.class)
     private UserPort userPort = Mock(UserPort.class)
+    private FlagPort flagPort = Mock(FlagPort.class)
     private LockerActionFactory lockerActionFactory = new LockerActionFactory()
     private Validator validator = Validation.buildDefaultValidatorFactory().getValidator()
     private LockerService lockerService = new LockerService(
@@ -45,6 +36,7 @@ class LockerServiceTest extends Specification {
             this.lockerLocationPort,
             this.lockerLogPort,
             this.userPort,
+            this.flagPort,
             this.lockerActionFactory,
             this.validator
     )
@@ -487,7 +479,7 @@ class LockerServiceTest extends Specification {
         this.lockerLocationPort.findById(((LockerLocationDomainModel) mockMovedLockerLocationDomainModel).getId()) >> Optional.of((LockerLocationDomainModel) mockMovedLockerLocationDomainModel)
         this.lockerPort.findById(((LockerDomainModel) this.mockLockerDomainModel).getId()) >> Optional.of((LockerDomainModel) this.mockLockerDomainModel)
 
-        this.lockerPort.updateLocation(lockerId, (LockerDomainModel)this.mockLockerDomainModel) >> Optional.of(mockMovedLockerDomainModel)
+        this.lockerPort.updateLocation(lockerId, (LockerDomainModel) this.mockLockerDomainModel) >> Optional.of(mockMovedLockerDomainModel)
 
         when:
         def lockerResponseDto = this.lockerService.move("test user id", lockerId, mockLockerMoveRequestDto)
@@ -676,7 +668,7 @@ class LockerServiceTest extends Specification {
         this.userPort.findById(updaterUserDomainModel.getId()) >> Optional.of(updaterUserDomainModel)
         this.lockerLocationPort.findByName(lockerLocationUpdateRequestDto.getName()) >> Optional.ofNullable(null)
         this.lockerLocationPort.findById(lockerLocationId) >> Optional.of(this.mockLockerLocationDomainModel)
-        this.lockerLocationPort.update(lockerLocationId, (LockerLocationDomainModel)this.mockLockerLocationDomainModel) >> Optional.of(updatedLockerLocationDomainModel)
+        this.lockerLocationPort.update(lockerLocationId, (LockerLocationDomainModel) this.mockLockerLocationDomainModel) >> Optional.of(updatedLockerLocationDomainModel)
 
         when:
         def lockerLocationResponseDto = this.lockerService.updateLocation("test user id", lockerLocationId, lockerLocationUpdateRequestDto)

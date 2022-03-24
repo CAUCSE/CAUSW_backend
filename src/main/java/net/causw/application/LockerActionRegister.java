@@ -1,19 +1,22 @@
 package net.causw.application;
 
 import lombok.NoArgsConstructor;
+import net.causw.application.spi.FlagPort;
 import net.causw.application.spi.LockerLogPort;
 import net.causw.application.spi.LockerPort;
-import net.causw.domain.exceptions.BadRequestException;
-import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.LockerDomainModel;
 import net.causw.domain.model.LockerLogAction;
 import net.causw.domain.model.Role;
 import net.causw.domain.model.UserDomainModel;
+import net.causw.domain.validation.LockerAccessValidator;
+import net.causw.domain.validation.LockerInUseValidator;
 import net.causw.domain.validation.LockerIsDeactivatedValidator;
 import net.causw.domain.validation.TimePassedValidator;
 import net.causw.domain.validation.ValidatorBucket;
 
 import java.util.Optional;
+
+import static net.causw.domain.model.StaticValue.LOCKER_ACCESS;
 
 @NoArgsConstructor
 public class LockerActionRegister implements LockerAction {
@@ -22,18 +25,15 @@ public class LockerActionRegister implements LockerAction {
             LockerDomainModel lockerDomainModel,
             UserDomainModel updaterDomainModel,
             LockerPort lockerPort,
-            LockerLogPort lockerLogPort
+            LockerLogPort lockerLogPort,
+            FlagPort flagPort
     ) {
         ValidatorBucket validator = ValidatorBucket.of();
 
-        if (lockerDomainModel.getUser().isPresent()) {
-            throw new BadRequestException(
-                    ErrorCode.CANNOT_PERFORMED,
-                    "이미 사용 중인 사물함입니다."
-            );
-        }
-
-        validator.consistOf(LockerIsDeactivatedValidator.of(lockerDomainModel.getIsActive()));
+        validator
+                .consistOf(LockerAccessValidator.of(flagPort.findByKey(LOCKER_ACCESS).orElse(false)))
+                .consistOf(LockerInUseValidator.of(lockerDomainModel.getUser().isPresent()))
+                .consistOf(LockerIsDeactivatedValidator.of(lockerDomainModel.getIsActive()));
 
         lockerLogPort.whenRegister(updaterDomainModel).ifPresentOrElse(
                 createdAt -> validator

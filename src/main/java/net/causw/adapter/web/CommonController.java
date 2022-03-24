@@ -1,11 +1,15 @@
 package net.causw.adapter.web;
 
+import net.causw.application.CommonService;
 import net.causw.application.HomePageService;
 import net.causw.application.dto.HomePageResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,11 +20,15 @@ import java.util.Map;
 @RestController
 @RequestMapping
 public class CommonController {
-
     private final HomePageService homePageService;
+    private final CommonService commonService;
 
-    public CommonController(HomePageService homePageService) {
+    public CommonController(
+            HomePageService homePageService,
+            CommonService commonService
+    ) {
         this.homePageService = homePageService;
+        this.commonService = commonService;
     }
 
     @GetMapping("/api/v1/home")
@@ -38,5 +46,33 @@ public class CommonController {
         HashMap<String, String> map = new HashMap<>();
         map.put("status", "OK");
         return map;
+    }
+
+    @PostMapping("/api/v1/flag")
+    @ResponseStatus(value = HttpStatus.OK)
+    public Boolean createFlag(
+            @AuthenticationPrincipal String userId,
+            @RequestParam String key,
+            @RequestParam Boolean value
+    ) {
+        return this.commonService.createFlag(
+                userId,
+                key,
+                value
+        );
+    }
+
+    @PutMapping("/api/v1/flag")
+    @ResponseStatus(value = HttpStatus.OK)
+    public Boolean updateFlag(
+            @AuthenticationPrincipal String userId,
+            @RequestParam String key,
+            @RequestParam Boolean value
+    ) {
+        return this.commonService.updateFlag(
+                userId,
+                key,
+                value
+        );
     }
 }

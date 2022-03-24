@@ -1,6 +1,7 @@
 package net.causw.application;
 
 import lombok.NoArgsConstructor;
+import net.causw.application.spi.FlagPort;
 import net.causw.application.spi.LockerLogPort;
 import net.causw.application.spi.LockerPort;
 import net.causw.domain.model.LockerDomainModel;
@@ -20,7 +21,8 @@ public class LockerActionDisable implements LockerAction {
             LockerDomainModel lockerDomainModel,
             UserDomainModel updaterDomainModel,
             LockerPort lockerPort,
-            LockerLogPort lockerLogPort
+            LockerLogPort lockerLogPort,
+            FlagPort flagPort
     ) {
         ValidatorBucket.of()
                 .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.PRESIDENT)))
