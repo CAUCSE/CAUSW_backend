@@ -542,7 +542,6 @@ public class UserService {
                         this.passwordEncoder,
                         userDomainModel.getPassword(),
                         userSignInRequestDto.getPassword()))
-                .consistOf(UserStateValidator.of(userDomainModel.getState()))
                 .validate();
 
         if (userDomainModel.getState() == UserState.AWAIT) {
@@ -553,6 +552,10 @@ public class UserService {
                     )
             );
         }
+
+        ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(userDomainModel.getState()))
+                .validate();
 
         return this.jwtTokenProvider.createToken(
                 userDomainModel.getId(),
