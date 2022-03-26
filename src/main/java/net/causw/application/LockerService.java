@@ -305,6 +305,12 @@ public class LockerService {
                 )
         );
 
+        LockerResponseDto myLocker = null;
+        if (!userDomainModel.getRole().equals(Role.ADMIN))
+            myLocker = this.lockerPort.findByUserId(userId)
+                    .map(lockerDomainModel -> LockerResponseDto.from(lockerDomainModel, userDomainModel))
+                    .orElse(null);
+
         return LockerLocationsResponseDto.of(
                 this.lockerLocationPort.findAll()
                         .stream()
@@ -316,9 +322,7 @@ public class LockerService {
                                 )
                         )
                         .collect(Collectors.toList()),
-                this.lockerPort.findByUserId(userId)
-                        .map(lockerDomainModel -> LockerResponseDto.from(lockerDomainModel, userDomainModel))
-                        .orElse(null)
+                myLocker
         );
     }
 
