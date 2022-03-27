@@ -13,14 +13,14 @@ import java.time.LocalDateTime;
 @Setter
 public class LockerResponseDto {
     private String id;
-    private Long lockerNumber;
+    private String lockerNumber;
     private Boolean isActive;
     private Boolean isMine;
     private LocalDateTime updatedAt;
 
     private LockerResponseDto(
             String id,
-            Long lockerNumber,
+            String lockerNumber,
             Boolean isActive,
             Boolean isMine,
             LocalDateTime updateAt
@@ -35,7 +35,7 @@ public class LockerResponseDto {
     public static LockerResponseDto from(Locker locker, UserDomainModel user) {
         return new LockerResponseDto(
                 locker.getId(),
-                locker.getLockerNumber(),
+                String.valueOf(locker.getLockerNumber()),
                 locker.getIsActive(),
                 locker.getUser().map(User::getId).orElse("").equals(user.getId()),
                 locker.getUpdatedAt()
@@ -45,7 +45,23 @@ public class LockerResponseDto {
     public static LockerResponseDto from(LockerDomainModel locker, UserDomainModel user) {
         return new LockerResponseDto(
                 locker.getId(),
-                locker.getLockerNumber(),
+                String.valueOf(locker.getLockerNumber()),
+                locker.getIsActive(),
+                locker.getUser().map(UserDomainModel::getId).orElse("").equals(user.getId()),
+                locker.getUpdatedAt()
+        );
+    }
+
+    public static LockerResponseDto from(
+            LockerDomainModel locker,
+            UserDomainModel user,
+            String locationName
+    ) {
+        String location = locationName + " " + locker.getLockerNumber();
+
+        return new LockerResponseDto(
+                locker.getId(),
+                location,
                 locker.getIsActive(),
                 locker.getUser().map(UserDomainModel::getId).orElse("").equals(user.getId()),
                 locker.getUpdatedAt()

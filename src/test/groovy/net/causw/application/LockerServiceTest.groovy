@@ -100,7 +100,7 @@ class LockerServiceTest extends Specification {
         then:
         lockerCreate instanceof LockerResponseDto
         with(lockerCreate) {
-            getLockerNumber() == 1
+            getLockerNumber() == "1"
         }
     }
 
@@ -487,7 +487,7 @@ class LockerServiceTest extends Specification {
         then:
         lockerResponseDto instanceof LockerResponseDto
         with(lockerResponseDto) {
-            getLockerNumber() == 1
+            getLockerNumber() == "1"
         }
     }
 
