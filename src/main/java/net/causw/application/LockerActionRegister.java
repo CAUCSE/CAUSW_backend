@@ -28,20 +28,19 @@ public class LockerActionRegister implements LockerAction {
             LockerLogPort lockerLogPort,
             FlagPort flagPort
     ) {
-        ValidatorBucket validator = ValidatorBucket.of();
-
-        validator
+        ValidatorBucket.of()
                 .consistOf(LockerAccessValidator.of(flagPort.findByKey(LOCKER_ACCESS).orElse(false)))
                 .consistOf(LockerInUseValidator.of(lockerDomainModel.getUser().isPresent()))
-                .consistOf(LockerIsDeactivatedValidator.of(lockerDomainModel.getIsActive()));
-
-        lockerLogPort.whenRegister(updaterDomainModel).ifPresentOrElse(
-                createdAt -> validator
-                        .consistOf(TimePassedValidator.of(createdAt))
-                        .validate(),
-                validator::validate);
+                .consistOf(LockerIsDeactivatedValidator.of(lockerDomainModel.getIsActive()))
+                .validate();
 
         if (!updaterDomainModel.getRole().equals(Role.ADMIN)) {
+            lockerLogPort.whenRegister(updaterDomainModel).ifPresent(
+                    createdAt -> ValidatorBucket.of()
+                            .consistOf(TimePassedValidator.of(createdAt))
+                            .validate()
+            );
+
             lockerPort.findByUserId(updaterDomainModel.getId()).ifPresent(locker -> {
                 locker.returnLocker();
                 lockerPort.update(
