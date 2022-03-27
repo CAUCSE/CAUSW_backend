@@ -46,7 +46,10 @@ public class CirclesResponseDto {
         this.joinedAt = joinedAt;
     }
 
-    public static CirclesResponseDto from(CircleDomainModel circleDomainModel, Long numMember) {
+    public static CirclesResponseDto from(
+            CircleDomainModel circleDomainModel,
+            Long numMember
+    ) {
         return new CirclesResponseDto(
                 circleDomainModel.getId(),
                 circleDomainModel.getName(),
