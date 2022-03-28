@@ -20,7 +20,7 @@ import java.util.Optional;
 @NoArgsConstructor
 @Table(name = "TB_LOCKER")
 public class Locker extends BaseEntity {
-    @Column(name = "locker_number", unique = true, nullable = false)
+    @Column(name = "locker_number", nullable = false)
     private Long lockerNumber;
 
     @Column(name = "is_active")

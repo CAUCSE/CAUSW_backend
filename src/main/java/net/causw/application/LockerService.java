@@ -311,7 +311,11 @@ public class LockerService {
         LockerResponseDto myLocker = null;
         if (!userDomainModel.getRole().equals(Role.ADMIN))
             myLocker = this.lockerPort.findByUserId(userId)
-                    .map(lockerDomainModel -> LockerResponseDto.from(lockerDomainModel, userDomainModel))
+                    .map(lockerDomainModel -> LockerResponseDto.from(
+                            lockerDomainModel,
+                            userDomainModel,
+                            lockerDomainModel.getLockerLocation().getName()
+                    ))
                     .orElse(null);
 
         return LockerLocationsResponseDto.of(
