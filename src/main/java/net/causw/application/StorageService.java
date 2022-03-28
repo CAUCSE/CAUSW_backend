@@ -3,6 +3,7 @@ package net.causw.application;
 import net.causw.application.dto.UploadFileResponseDto;
 import net.causw.domain.model.ImageLocation;
 import net.causw.domain.validation.AttachmentSizeValidator;
+import net.causw.domain.validation.ImageExtensionValidator;
 import net.causw.domain.validation.ImageSizeValidator;
 import net.causw.domain.validation.ValidatorBucket;
 import net.causw.infrastructure.GcpFileUploader;
@@ -32,6 +33,7 @@ public class StorageService {
     public UploadFileResponseDto uploadImageToGcs(MultipartFile image, Optional<String> imageLocation) {
         ValidatorBucket.of()
                 .consistOf(ImageSizeValidator.of(image))
+                .consistOf(ImageExtensionValidator.of(image))
                 .validate();
 
         return UploadFileResponseDto.of(
