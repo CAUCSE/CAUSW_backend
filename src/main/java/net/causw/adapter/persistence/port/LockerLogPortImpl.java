@@ -33,12 +33,14 @@ public class LockerLogPortImpl extends DomainModelMapper implements LockerLogPor
     @Override
     public void create(
             Long lockerNumber,
+            String lockerLocationName,
             UserDomainModel user,
             LockerLogAction action,
             String message
     ) {
         this.lockerLogRepository.save(LockerLog.of(
                 lockerNumber,
+                lockerLocationName,
                 user.getEmail(),
                 user.getName(),
                 action,

@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface LockerLogPort {
     List<LockerLogResponseDto> findByLockerNumber(Long lockerNumber);
 
-    void create(Long lockerNumber, UserDomainModel user, LockerLogAction action, String message);
+    void create(Long lockerNumber, String lockerLocationName, UserDomainModel user, LockerLogAction action, String message);
 
     Optional<LocalDateTime> whenRegister(UserDomainModel user);
 }
