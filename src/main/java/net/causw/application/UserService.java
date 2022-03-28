@@ -36,6 +36,7 @@ import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.BoardDomainModel;
 import net.causw.domain.model.CircleDomainModel;
+import net.causw.domain.model.CircleMemberDomainModel;
 import net.causw.domain.model.CircleMemberStatus;
 import net.causw.domain.model.FavoriteBoardDomainModel;
 import net.causw.domain.model.ImageLocation;
@@ -54,6 +55,7 @@ import net.causw.domain.validation.GrantableRoleValidator;
 import net.causw.domain.validation.PasswordCorrectValidator;
 import net.causw.domain.validation.PasswordFormatValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
+import net.causw.domain.validation.UserEqualValidator;
 import net.causw.domain.validation.UserRoleIsNoneValidator;
 import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.UserRoleWithoutAdminValidator;
@@ -337,32 +339,17 @@ public class UserService {
                                     .map(circleMemberDomainModel ->
                                             circleMemberDomainModel.getStatus() == CircleMemberStatus.MEMBER)
                                     .orElse(Boolean.FALSE))
-                    .map(UserResponseDto::from)
+                    .map(userDomainModel -> UserResponseDto.from(
+                            userDomainModel,
+                            ownCircle.getId(),
+                            ownCircle.getName()))
                     .collect(Collectors.toList());
         }
 
         return this.userPort.findByName(name)
                 .stream()
                 .filter(userDomainModel -> userDomainModel.getState().equals(UserState.ACTIVE))
-                .map(userDomainModel -> {
-                    if (userDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
-                        CircleDomainModel ownCircle = this.circlePort.findByLeaderId(userDomainModel.getId())
-                                .orElseThrow(
-                                        () -> new InternalServerException(
-                                                ErrorCode.INTERNAL_SERVER,
-                                                "소모임장이 아닙니다"
-                                        )
-                                );
-
-                        return UserResponseDto.from(
-                                userDomainModel,
-                                ownCircle.getId(),
-                                ownCircle.getName()
-                        );
-                    } else {
-                        return UserResponseDto.from(userDomainModel);
-                    }
-                })
+                .map(UserResponseDto::from)
                 .collect(Collectors.toList());
     }
 
