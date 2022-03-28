@@ -1,5 +1,7 @@
 package net.causw.domain.model;
 
+import java.util.List;
+
 public class StaticValue {
     public static final String CONTENT_DELETED_COMMENT = "삭제된 댓글입니다";
     public static final String BOARD_NAME_APP_NOTICE = "APP_NOTICE";
@@ -30,6 +32,7 @@ public class StaticValue {
     public static final Long ATTACHMENT_LIMIT_SIZE = (long) (50 * 1024 * 1024);
     public static final Long IMAGE_LIMIT_SIZE = (long) (10 * 1024 * 1024);
     public static final String GCS_PUBLIC_LINK_PREFIX = "https://storage.googleapis.com/";
+    public static final List<String> IMAGE_EXTENSION_LIST = List.of("JPEG", "JPG", "PNG");
 
     // Domain
     public static final String DOMAIN_BOARD = "게시판";
