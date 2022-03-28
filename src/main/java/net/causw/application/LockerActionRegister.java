@@ -50,6 +50,7 @@ public class LockerActionRegister implements LockerAction {
 
                 lockerLogPort.create(
                         locker.getLockerNumber(),
+                        locker.getLockerLocation().getName(),
                         updaterDomainModel,
                         LockerLogAction.RETURN,
                         ""

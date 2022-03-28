@@ -18,6 +18,9 @@ public class LockerLog extends BaseEntity{
     @Column(name = "locker_number", nullable = false)
     private Long lockerNumber;
 
+    @Column(name = "locker_location_name")
+    private String lockerLocationName;
+
     @Column(name = "user_email", nullable = true)
     private String userEmail;
 
@@ -34,6 +37,7 @@ public class LockerLog extends BaseEntity{
     private LockerLog(
             String id,
             Long lockerNumber,
+            String lockerLocationName,
             String userEmail,
             String userName,
             LockerLogAction action,
@@ -41,6 +45,7 @@ public class LockerLog extends BaseEntity{
     ) {
         super(id);
         this.lockerNumber = lockerNumber;
+        this.lockerLocationName = lockerLocationName;
         this.userEmail = userEmail;
         this.userName = userName;
         this.action = action;
@@ -49,12 +54,14 @@ public class LockerLog extends BaseEntity{
 
     private LockerLog(
             Long lockerNumber,
+            String lockerLocationName,
             String userEmail,
             String userName,
             LockerLogAction action,
             String message
     ) {
         this.lockerNumber = lockerNumber;
+        this.lockerLocationName = lockerLocationName;
         this.userEmail = userEmail;
         this.userName = userName;
         this.action = action;
@@ -63,6 +70,7 @@ public class LockerLog extends BaseEntity{
 
     public static LockerLog of(
             Long lockerNumber,
+            String lockerLocationName,
             String userEmail,
             String userName,
             LockerLogAction action,
@@ -70,6 +78,7 @@ public class LockerLog extends BaseEntity{
     ) {
         return new LockerLog(
                 lockerNumber,
+                lockerLocationName,
                 userEmail,
                 userName,
                 action,

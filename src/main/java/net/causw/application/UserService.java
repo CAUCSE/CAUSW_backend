@@ -803,6 +803,7 @@ public class UserService {
 
                     this.lockerLogPort.create(
                             lockerDomainModel.getLockerNumber(),
+                            lockerDomainModel.getLockerLocation().getName(),
                             user,
                             LockerLogAction.RETURN,
                             "사용자 탈퇴"
@@ -861,6 +862,7 @@ public class UserService {
 
                     this.lockerLogPort.create(
                             lockerDomainModel.getLockerNumber(),
+                            lockerDomainModel.getLockerLocation().getName(),
                             requestUser,
                             LockerLogAction.RETURN,
                             "사용자 추방"

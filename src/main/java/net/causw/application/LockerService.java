@@ -130,6 +130,7 @@ public class LockerService {
                 .map(resLockerDomainModel -> {
                     this.lockerLogPort.create(
                             resLockerDomainModel.getLockerNumber(),
+                            lockerLocationDomainModel.getName(),
                             creatorDomainModel,
                             LockerLogAction.ENABLE,
                             "사물함 최초 생성"
@@ -179,6 +180,7 @@ public class LockerService {
                 .map(resLockerDomainModel -> {
                     this.lockerLogPort.create(
                             resLockerDomainModel.getLockerNumber(),
+                            resLockerDomainModel.getLockerLocation().getName(),
                             updaterDomainModel,
                             LockerLogAction.of(lockerUpdateRequestDto.getAction()),
                             lockerUpdateRequestDto.getMessage().orElse(lockerUpdateRequestDto.getAction())
@@ -263,6 +265,7 @@ public class LockerService {
 
         this.lockerLogPort.create(
                 lockerDomainModel.getLockerNumber(),
+                lockerDomainModel.getLockerLocation().getName(),
                 deleterDomainModel,
                 LockerLogAction.DISABLE,
                 "사물함 삭제"
