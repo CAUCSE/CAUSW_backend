@@ -91,7 +91,9 @@ public class BoardService {
                                     "소모임을 찾을 수 없습니다."
                             )
                     );
+
                     validatorBucket
+                            .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                             .consistOf(UserRoleValidator.of(creatorDomainModel.getRole(), List.of(Role.LEADER_CIRCLE)));
 
                     if (creatorDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
@@ -234,6 +236,7 @@ public class BoardService {
         boardDomainModel.getCircle().ifPresentOrElse(
                 circleDomainModel -> {
                     validatorBucket
+                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                             .consistOf(UserRoleValidator.of(deleterDomainModel.getRole(), List.of(Role.LEADER_CIRCLE)));
 
                     if (deleterDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
@@ -249,9 +252,8 @@ public class BoardService {
                                 ));
                     }
                 },
-                () ->
-                        validatorBucket
-                                .consistOf(UserRoleValidator.of(deleterDomainModel.getRole(), List.of(Role.PRESIDENT)))
+                () -> validatorBucket
+                        .consistOf(UserRoleValidator.of(deleterDomainModel.getRole(), List.of(Role.PRESIDENT)))
         );
 
         validatorBucket
