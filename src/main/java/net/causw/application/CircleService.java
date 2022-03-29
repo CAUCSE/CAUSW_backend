@@ -140,8 +140,6 @@ public class CircleService {
             String currentUserId,
             String circleId
     ) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
         CircleDomainModel circleDomainModel = this.circlePort.findById(circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -156,7 +154,7 @@ public class CircleService {
                 )
         );
 
-        validatorBucket
+        ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(userDomainModel.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
@@ -170,15 +168,13 @@ public class CircleService {
                     )
             );
 
-            validatorBucket
+            ValidatorBucket.of()
                     .consistOf(CircleMemberStatusValidator.of(
                             circleMember.getStatus(),
                             List.of(CircleMemberStatus.MEMBER)
-                    ));
+                    ))
+                    .validate();
         }
-
-        validatorBucket
-                .validate();
 
         return CircleBoardsResponseDto.from(
                 CircleResponseDto.from(
@@ -492,8 +488,6 @@ public class CircleService {
 
     @Transactional
     public CircleMemberResponseDto userApply(String userId, String circleId) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
         CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -508,37 +502,33 @@ public class CircleService {
                 )
         );
 
-        validatorBucket
+        ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                .consistOf(StudentIdIsNullValidator.of(user.getStudentId()));
+                .consistOf(StudentIdIsNullValidator.of(user.getStudentId()))
+                .validate();
 
-        return CircleMemberResponseDto.from(user, this.circleMemberPort.findByUserIdAndCircleId(user.getId(), circle.getId()).map(
-                circleMember -> {
-                    validatorBucket
-                            .consistOf(
-                                    CircleMemberStatusValidator.of(
+        return CircleMemberResponseDto.from(
+                user,
+                this.circleMemberPort.findByUserIdAndCircleId(user.getId(), circle.getId())
+                        .map(circleMember -> {
+                            ValidatorBucket.of()
+                                    .consistOf(CircleMemberStatusValidator.of(
                                             circleMember.getStatus(),
                                             List.of(CircleMemberStatus.LEAVE, CircleMemberStatus.REJECT)
-                                    )
-                            )
-                            .validate();
+                                    ))
+                                    .validate();
 
-                    return this.circleMemberPort.updateStatus(circleMember.getId(), CircleMemberStatus.AWAIT).orElseThrow(
-                            () -> new InternalServerException(
-                                    ErrorCode.INTERNAL_SERVER,
-                                    "Application id checked, but exception occurred"
-                            )
-                    );
-                }
-        ).orElseGet(
-                () -> {
-                    validatorBucket
-                            .validate();
-                    return this.circleMemberPort.create(user, circle);
-                }
-        ));
+                            return this.circleMemberPort.updateStatus(circleMember.getId(), CircleMemberStatus.AWAIT).orElseThrow(
+                                    () -> new InternalServerException(
+                                            ErrorCode.INTERNAL_SERVER,
+                                            "Application id checked, but exception occurred"
+                                    )
+                            );
+                        })
+                        .orElseGet(() -> this.circleMemberPort.create(user, circle))
+        );
     }
 
     @Transactional(readOnly = true)
