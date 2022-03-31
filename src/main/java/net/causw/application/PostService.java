@@ -575,14 +575,12 @@ public class PostService {
                 postDomainModel,
                 requestUser,
                 this.commentPort.findByPostId(postId, 0)
-                        .map(
-                                commentDomainModel -> CommentResponseDto.from(
-                                        commentDomainModel,
-                                        requestUser,
-                                        updatedPostDomainModel.getBoard(),
-                                        this.childCommentPort.countByParentComment(commentDomainModel.getId())
-                                )
-                        ),
+                        .map(commentDomainModel -> CommentResponseDto.from(
+                                commentDomainModel,
+                                requestUser,
+                                updatedPostDomainModel.getBoard(),
+                                this.childCommentPort.countByParentComment(commentDomainModel.getId())
+                        )),
                 this.commentPort.countByPostId(postDomainModel.getId())
         );
     }

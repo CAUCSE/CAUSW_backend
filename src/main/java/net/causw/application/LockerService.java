@@ -321,13 +321,11 @@ public class LockerService {
         return LockerLocationsResponseDto.of(
                 this.lockerLocationPort.findAll()
                         .stream()
-                        .map(
-                                (lockerLocationDomainModel) -> LockerLocationResponseDto.from(
-                                        lockerLocationDomainModel,
-                                        this.lockerPort.getEnableLockerCountByLocation(lockerLocationDomainModel.getId()),
-                                        this.lockerPort.getLockerCountByLocation(lockerLocationDomainModel.getId())
-                                )
-                        )
+                        .map(lockerLocationDomainModel -> LockerLocationResponseDto.from(
+                                lockerLocationDomainModel,
+                                this.lockerPort.countEnableLockerByLocation(lockerLocationDomainModel.getId()),
+                                this.lockerPort.countByLocation(lockerLocationDomainModel.getId())
+                        ))
                         .collect(Collectors.toList()),
                 myLocker
         );
@@ -417,8 +415,8 @@ public class LockerService {
                                 "Locker location id checked, but exception occurred"
                         )
                 ),
-                this.lockerPort.getEnableLockerCountByLocation(lockerLocationDomainModel.getId()),
-                this.lockerPort.getLockerCountByLocation(lockerLocationDomainModel.getId())
+                this.lockerPort.countEnableLockerByLocation(lockerLocationDomainModel.getId()),
+                this.lockerPort.countByLocation(lockerLocationDomainModel.getId())
         );
     }
 
@@ -438,7 +436,7 @@ public class LockerService {
                 )
         );
 
-        if (this.lockerPort.getLockerCountByLocation(lockerLocationDomainModel.getId()) != 0L) {
+        if (this.lockerPort.countByLocation(lockerLocationDomainModel.getId()) != 0L) {
             throw new BadRequestException(
                     ErrorCode.CANNOT_PERFORMED,
                     "사물함 위치에 사물함이 존재합니다."
