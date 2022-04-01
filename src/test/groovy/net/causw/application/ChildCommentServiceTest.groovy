@@ -13,11 +13,15 @@ import net.causw.domain.exceptions.BadRequestException
 import net.causw.domain.exceptions.UnauthorizedException
 import net.causw.domain.model.BoardDomainModel
 import net.causw.domain.model.ChildCommentDomainModel
+import net.causw.domain.model.CircleDomainModel
+import net.causw.domain.model.CircleMemberDomainModel
+import net.causw.domain.model.CircleMemberStatus
 import net.causw.domain.model.CommentDomainModel
 import net.causw.domain.model.PostDomainModel
 import net.causw.domain.model.Role
 import net.causw.domain.model.UserDomainModel
 import net.causw.domain.model.UserState
+import org.junit.Test
 import org.junit.runner.RunWith
 import org.powermock.api.mockito.PowerMockito
 import org.powermock.core.classloader.annotations.PrepareForTest
@@ -52,6 +56,7 @@ class ChildCommentServiceTest extends Specification {
             this.validator
     )
 
+    def mockUserDomainModel
     def mockBoardDomainModel
     def mockPostWriter
     def mockPostDomainModel
@@ -61,7 +66,23 @@ class ChildCommentServiceTest extends Specification {
     def mockChildCommentDomainModel
     def mockRefChildCommentDomainModel
 
+    def mockCircleLeaderUserDomainModel
+    def mockCircleDomainModel
+    def mockCircleMemberDomainModel
+
     def setup() {
+        this.mockUserDomainModel = UserDomainModel.of(
+                "test",
+                "test@cau.ac.kr",
+                "test",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.ADMIN,
+                null,
+                UserState.ACTIVE
+        )
+
         this.mockBoardDomainModel = BoardDomainModel.of(
                 "test board id",
                 "test board id",
@@ -153,24 +174,61 @@ class ChildCommentServiceTest extends Specification {
                 null,
                 null
         )
+
+        this.mockCircleLeaderUserDomainModel = UserDomainModel.of(
+                "test leader user id",
+                "test-leader@cau.ac.kr",
+                "test leader user name",
+                "test1234!",
+                "20210000",
+                2021,
+                Role.LEADER_CIRCLE,
+                null,
+                UserState.ACTIVE
+        )
+
+        this.mockCircleDomainModel = CircleDomainModel.of(
+                "test circle id",
+                "test circle name",
+                null,
+                "test circle description",
+                false,
+                (UserDomainModel) this.mockCircleLeaderUserDomainModel
+        )
+
+        this.mockCircleMemberDomainModel = CircleMemberDomainModel.of(
+                "test",
+                CircleMemberStatus.MEMBER,
+                (CircleDomainModel) this.mockCircleDomainModel,
+                "test comment writer user id",
+                "test",
+                null,
+                null
+        )
     }
 
     /**
      * Test case for child comment create
      */
+    @Test
     def "Child Comment create normal case"() {
+        given:
         def childCommentCreateRequestDto = new ChildCommentCreateRequestDto(
                 "test child comment content",
-                ((CommentDomainModel)this.mockCommentDomainModel).getId(),
+                "test comment id",
                 "test ref child comment id"
         )
 
-        this.userPort.findById(((UserDomainModel)this.mockChildCommentWriter).getId()) >> Optional.of(this.mockChildCommentWriter)
-        this.commentPort.findById(((CommentDomainModel)this.mockCommentDomainModel).getId()) >> Optional.of(this.mockCommentDomainModel)
-        this.childCommentPort.findById(((ChildCommentDomainModel)this.mockRefChildCommentDomainModel).getId()) >> Optional.of(this.mockRefChildCommentDomainModel)
-        this.postPort.findById(((PostDomainModel)this.mockPostDomainModel).getId()) >> Optional.of(this.mockPostDomainModel)
+        this.userPort.findById("test child comment writer user id") >> Optional.of(this.mockChildCommentWriter)
+        this.commentPort.findById("test comment id") >> Optional.of(this.mockCommentDomainModel)
+        this.childCommentPort.findById("test ref child comment id") >> Optional.of(this.mockRefChildCommentDomainModel)
+        this.postPort.findById("test post id") >> Optional.of(this.mockPostDomainModel)
 
         PowerMockito.mockStatic(ChildCommentDomainModel.class)
+
+        this.childCommentPort.create((ChildCommentDomainModel)this.mockChildCommentDomainModel, (PostDomainModel)this.mockPostDomainModel) >> this.mockChildCommentDomainModel
+
+        when: "without circle"
         PowerMockito.when(ChildCommentDomainModel.of(
                 childCommentCreateRequestDto.getContent(),
                 ((ChildCommentDomainModel) this.mockRefChildCommentDomainModel).getWriter().getName(),
@@ -178,89 +236,114 @@ class ChildCommentServiceTest extends Specification {
                 (UserDomainModel) this.mockChildCommentWriter,
                 (CommentDomainModel) this.mockCommentDomainModel
         )).thenReturn((ChildCommentDomainModel) this.mockChildCommentDomainModel)
-
-        this.childCommentPort.create((ChildCommentDomainModel)this.mockChildCommentDomainModel, (PostDomainModel)this.mockPostDomainModel) >> this.mockChildCommentDomainModel
-
-        when:
-        def childCommentResponse = this.childCommentService.create(((UserDomainModel)this.mockChildCommentWriter).getId(), childCommentCreateRequestDto)
+        def childCommentResponseDto = this.childCommentService.create("test child comment writer user id", childCommentCreateRequestDto)
 
         then:
-        childCommentResponse instanceof ChildCommentResponseDto
-        with(childCommentResponse) {
+        childCommentResponseDto instanceof ChildCommentResponseDto
+        with(childCommentResponseDto) {
+            getContent() == "test child comment content"
+        }
+
+        when: "with circle"
+        this.mockBoardDomainModel.setCircle((CircleDomainModel)this.mockCircleDomainModel)
+        this.circleMemberPort.findByUserIdAndCircleId("test child comment writer user id", "test circle id") >> Optional.of(this.mockCircleMemberDomainModel)
+        childCommentResponseDto = this.childCommentService.create("test child comment writer user id", childCommentCreateRequestDto)
+
+        then:
+        childCommentResponseDto instanceof ChildCommentResponseDto
+        with(childCommentResponseDto) {
+            getContent() == "test child comment content"
+        }
+
+        when: "with circle for admin"
+        this.mockBoardDomainModel.setCircle((CircleDomainModel)this.mockCircleDomainModel)
+        this.mockChildCommentWriter.setRole(Role.ADMIN)
+        PowerMockito.when(ChildCommentDomainModel.of(
+                childCommentCreateRequestDto.getContent(),
+                ((ChildCommentDomainModel) this.mockRefChildCommentDomainModel).getWriter().getName(),
+                childCommentCreateRequestDto.getRefChildComment().orElse(null),
+                (UserDomainModel) this.mockChildCommentWriter,
+                (CommentDomainModel) this.mockCommentDomainModel
+        )).thenReturn((ChildCommentDomainModel) this.mockChildCommentDomainModel)
+        childCommentResponseDto = this.childCommentService.create("test child comment writer user id", childCommentCreateRequestDto)
+
+        then:
+        childCommentResponseDto instanceof ChildCommentResponseDto
+        with(childCommentResponseDto) {
             getContent() == "test child comment content"
         }
     }
 
-    def "Child Comment create unauthorized case"() {
+    @Test
+    def "Child Comment create deleted case"() {
+        given:
         def childCommentCreateRequestDto = new ChildCommentCreateRequestDto(
                 "test child comment content",
-                ((CommentDomainModel)this.mockCommentDomainModel).getId(),
+                "test comment id",
                 "test ref child comment id"
         )
 
-        this.userPort.findById(((UserDomainModel)this.mockChildCommentWriter).getId()) >> Optional.of(this.mockChildCommentWriter)
-        this.commentPort.findById(((CommentDomainModel)this.mockCommentDomainModel).getId()) >> Optional.of(this.mockCommentDomainModel)
-        this.childCommentPort.findById(((ChildCommentDomainModel)this.mockRefChildCommentDomainModel).getId()) >> Optional.of(this.mockRefChildCommentDomainModel)
-        this.postPort.findById(((PostDomainModel)this.mockPostDomainModel).getId()) >> Optional.of(this.mockPostDomainModel)
+        this.userPort.findById("test child comment writer user id") >> Optional.of(this.mockChildCommentWriter)
+        this.commentPort.findById("test comment id") >> Optional.of(this.mockCommentDomainModel)
+        this.childCommentPort.findById("test ref child comment id") >> Optional.of(this.mockRefChildCommentDomainModel)
+        this.postPort.findById("test post id") >> Optional.of(this.mockPostDomainModel)
 
-        PowerMockito.mockStatic(ChildCommentDomainModel.class)
-        PowerMockito.when(ChildCommentDomainModel.of(
-                childCommentCreateRequestDto.getContent(),
-                ((ChildCommentDomainModel) this.mockRefChildCommentDomainModel).getWriter().getName(),
-                childCommentCreateRequestDto.getRefChildComment().orElse(null),
-                (UserDomainModel) this.mockChildCommentWriter,
-                (CommentDomainModel) this.mockCommentDomainModel
-        )).thenReturn((ChildCommentDomainModel) this.mockChildCommentDomainModel)
+        when: "deleted board"
+        this.mockBoardDomainModel.setIsDeleted(true)
+        this.childCommentService.create("test child comment writer user id", childCommentCreateRequestDto)
 
-        when: "Creator' role is NONE"
-        ((UserDomainModel)this.mockChildCommentWriter).setRole(Role.NONE)
+        then:
+        thrown(BadRequestException)
+
+        when: "deleted post"
+        this.mockBoardDomainModel.setIsDeleted(false)
+        this.mockPostDomainModel.setIsDeleted(true)
+        this.childCommentService.create("test child comment writer user id", childCommentCreateRequestDto)
+
+        then:
+        thrown(BadRequestException)
+
+        when: "deleted circle"
+        this.mockPostDomainModel.setIsDeleted(false)
+        this.mockBoardDomainModel.setCircle((CircleDomainModel)this.mockCircleDomainModel)
+        this.mockCircleDomainModel.setIsDeleted(true)
+        this.circleMemberPort.findByUserIdAndCircleId("test child comment writer user id", "test circle id") >> Optional.of(this.mockCircleMemberDomainModel)
+        this.childCommentService.create("test child comment writer user id", childCommentCreateRequestDto)
+
+        then:
+        thrown(BadRequestException)
+
+        when: "deleted ref child comment"
+        childCommentCreateRequestDto.setContent("test child comment content")
+        this.mockChildCommentDomainModel.setContent("test child comment content")
+        this.mockBoardDomainModel.setCircle(null)
+        this.mockCircleDomainModel.setIsDeleted(false)
+        this.mockRefChildCommentDomainModel.setIsDeleted(true)
         this.childCommentService.create(((UserDomainModel)this.mockChildCommentWriter).getId(), childCommentCreateRequestDto)
 
         then:
-        thrown(UnauthorizedException)
+        thrown(BadRequestException)
     }
 
-    def "Child Comment create bad request case"() {
+    @Test
+    def "Child Comment create invalid parameter"() {
+        given:
         def childCommentCreateRequestDto = new ChildCommentCreateRequestDto(
                 "test child comment content",
-                ((CommentDomainModel)this.mockCommentDomainModel).getId(),
+                "test comment id",
                 "test ref child comment id"
         )
 
-        this.userPort.findById(((UserDomainModel)this.mockChildCommentWriter).getId()) >> Optional.of(this.mockChildCommentWriter)
-        this.commentPort.findById(((CommentDomainModel)this.mockCommentDomainModel).getId()) >> Optional.of(this.mockCommentDomainModel)
-        this.childCommentPort.findById(((ChildCommentDomainModel)this.mockRefChildCommentDomainModel).getId()) >> Optional.of(this.mockRefChildCommentDomainModel)
-        this.postPort.findById(((PostDomainModel)this.mockPostDomainModel).getId()) >> Optional.of(this.mockPostDomainModel)
+        this.userPort.findById("test child comment writer user id") >> Optional.of(this.mockChildCommentWriter)
+        this.commentPort.findById("test comment id") >> Optional.of(this.mockCommentDomainModel)
+        this.childCommentPort.findById("test ref child comment id") >> Optional.of(this.mockRefChildCommentDomainModel)
+        this.postPort.findById("test post id") >> Optional.of(this.mockPostDomainModel)
 
         PowerMockito.mockStatic(ChildCommentDomainModel.class)
-        PowerMockito.when(ChildCommentDomainModel.of(
-                childCommentCreateRequestDto.getContent(),
-                ((ChildCommentDomainModel) this.mockRefChildCommentDomainModel).getWriter().getName(),
-                childCommentCreateRequestDto.getRefChildComment().orElse(null),
-                (UserDomainModel) this.mockChildCommentWriter,
-                (CommentDomainModel) this.mockCommentDomainModel
-        )).thenReturn((ChildCommentDomainModel) this.mockChildCommentDomainModel)
-
-        when: "Board is deleted"
-        ((BoardDomainModel)this.mockBoardDomainModel).setIsDeleted(true)
-        this.childCommentService.create(((UserDomainModel)this.mockChildCommentWriter).getId(), childCommentCreateRequestDto)
-
-        then:
-        thrown(BadRequestException)
-
-        when: "Post is deleted"
-        ((BoardDomainModel)this.mockBoardDomainModel).setIsDeleted(false)
-        ((PostDomainModel)this.mockPostDomainModel).setIsDeleted(true)
-        this.childCommentService.create(((UserDomainModel)this.mockChildCommentWriter).getId(), childCommentCreateRequestDto)
-
-        then:
-        thrown(BadRequestException)
 
         when: "Child comment's content is blank"
-        ((PostDomainModel)this.mockPostDomainModel).setIsDeleted(false)
         childCommentCreateRequestDto.setContent("")
-        ((ChildCommentDomainModel)this.mockChildCommentDomainModel).setContent("")
-        PowerMockito.mockStatic(ChildCommentDomainModel.class)
+        this.mockChildCommentDomainModel.setContent("")
         PowerMockito.when(ChildCommentDomainModel.of(
                 childCommentCreateRequestDto.getContent(),
                 ((ChildCommentDomainModel) this.mockRefChildCommentDomainModel).getWriter().getName(),
@@ -272,119 +355,323 @@ class ChildCommentServiceTest extends Specification {
 
         then:
         thrown(ConstraintViolationException)
+    }
 
-        when: "Ref Child comment is deleted"
-        childCommentCreateRequestDto.setContent("test child comment content")
-        ((ChildCommentDomainModel)this.mockChildCommentDomainModel).setContent("test child comment content")
-        ((ChildCommentDomainModel)this.mockRefChildCommentDomainModel).setIsDeleted(true)
-        PowerMockito.mockStatic(ChildCommentDomainModel.class)
-        PowerMockito.when(ChildCommentDomainModel.of(
-                childCommentCreateRequestDto.getContent(),
-                ((ChildCommentDomainModel) this.mockRefChildCommentDomainModel).getWriter().getName(),
-                childCommentCreateRequestDto.getRefChildComment().orElse(null),
-                (UserDomainModel) this.mockChildCommentWriter,
-                (CommentDomainModel) this.mockCommentDomainModel
-        )).thenReturn((ChildCommentDomainModel) this.mockChildCommentDomainModel)
-        this.childCommentService.create(((UserDomainModel)this.mockChildCommentWriter).getId(), childCommentCreateRequestDto)
+    @Test
+    def "Child Comment create unauthorized case"() {
+        given:
+        def childCommentCreateRequestDto = new ChildCommentCreateRequestDto(
+                "test child comment content",
+                "test comment id",
+                "test ref child comment id"
+        )
+
+        this.userPort.findById("test child comment writer user id") >> Optional.of(this.mockChildCommentWriter)
+        this.commentPort.findById("test comment id") >> Optional.of(this.mockCommentDomainModel)
+        this.childCommentPort.findById("test ref child comment id") >> Optional.of(this.mockRefChildCommentDomainModel)
+        this.postPort.findById("test post id") >> Optional.of(this.mockPostDomainModel)
+
+        when: "circle member is await"
+        this.mockBoardDomainModel.setCircle((CircleDomainModel)this.mockCircleDomainModel)
+        this.mockCircleMemberDomainModel.setStatus(CircleMemberStatus.AWAIT)
+        this.circleMemberPort.findByUserIdAndCircleId("test child comment writer user id", "test circle id") >> Optional.of(this.mockCircleMemberDomainModel)
+        this.childCommentService.create("test child comment writer user id", childCommentCreateRequestDto)
 
         then:
         thrown(BadRequestException)
+
+        when: "circle member is blocked"
+        this.mockBoardDomainModel.setCircle((CircleDomainModel)this.mockCircleDomainModel)
+        this.mockCircleMemberDomainModel.setStatus(CircleMemberStatus.REJECT)
+        this.childCommentService.create("test child comment writer user id", childCommentCreateRequestDto)
+
+        then:
+        thrown(UnauthorizedException)
+    }
+
+    /**
+     * Test case for child comment find all
+     */
+    @Test
+    def "Child Comment find all normal case"() {
+        given:
+        this.userPort.findById("test child comment writer user id") >> Optional.of(this.mockChildCommentWriter)
+        this.commentPort.findById("test comment id") >> Optional.of(this.mockCommentDomainModel)
+        this.postPort.findById("test post id") >> Optional.of(this.mockPostDomainModel)
+
+        this.childCommentPort.findByParentComment("test comment id", 0) >> new PageImpl<ChildCommentDomainModel>(List.of((ChildCommentDomainModel)this.mockChildCommentDomainModel))
+
+        when: "without circle"
+        def childCommentsResponseDto = this.childCommentService.findAll("test child comment writer user id", "test comment id", 0)
+
+        then:
+        childCommentsResponseDto instanceof ChildCommentsResponseDto
+        with (childCommentsResponseDto) {
+            getChildComments().getContent().get(0).getContent() == "test child comment content"
+        }
+
+        when: "with circle"
+        this.mockBoardDomainModel.setCircle((CircleDomainModel)this.mockCircleDomainModel)
+        this.circleMemberPort.findByUserIdAndCircleId("test child comment writer user id", "test circle id") >> Optional.of(this.mockCircleMemberDomainModel)
+        childCommentsResponseDto = this.childCommentService.findAll("test child comment writer user id", "test comment id", 0)
+
+        then:
+        childCommentsResponseDto instanceof ChildCommentsResponseDto
+        with (childCommentsResponseDto) {
+            getChildComments().getContent().get(0).getContent() == "test child comment content"
+        }
+
+        when: "with circle for admin"
+        this.mockBoardDomainModel.setCircle((CircleDomainModel)this.mockCircleDomainModel)
+        this.mockChildCommentWriter.setRole(Role.ADMIN)
+        childCommentsResponseDto = this.childCommentService.findAll("test child comment writer user id", "test comment id", 0)
+
+        then:
+        childCommentsResponseDto instanceof ChildCommentsResponseDto
+        with (childCommentsResponseDto) {
+            getChildComments().getContent().get(0).getContent() == "test child comment content"
+        }
+    }
+
+    @Test
+    def "Child Comment find all deleted case"() {
+        given:
+        this.userPort.findById("test child comment writer user id") >> Optional.of(this.mockChildCommentWriter)
+        this.commentPort.findById("test comment id") >> Optional.of(this.mockCommentDomainModel)
+        this.postPort.findById("test post id") >> Optional.of(this.mockPostDomainModel)
+
+        when: "deleted board"
+        this.mockBoardDomainModel.setIsDeleted(true)
+        this.childCommentService.findAll("test child comment writer user id", "test comment id", 0)
+
+        then:
+        thrown(BadRequestException)
+
+        when: "deleted post"
+        this.mockBoardDomainModel.setIsDeleted(false)
+        this.mockPostDomainModel.setIsDeleted(true)
+        this.childCommentService.findAll("test child comment writer user id", "test comment id", 0)
+
+        then:
+        thrown(BadRequestException)
+
+        when: "deleted circle"
+        this.mockPostDomainModel.setIsDeleted(false)
+        this.mockCircleDomainModel.setIsDeleted(true)
+        this.mockBoardDomainModel.setCircle((CircleDomainModel)this.mockCircleDomainModel)
+        this.circleMemberPort.findByUserIdAndCircleId("test child comment writer user id", "test circle id") >> Optional.of(this.mockCircleMemberDomainModel)
+        this.childCommentService.findAll("test child comment writer user id", "test comment id", 0)
+
+        then:
+        thrown(BadRequestException)
+    }
+
+    @Test
+    def "Child Comment find all unauthorized case"() {
+        given:
+        this.userPort.findById("test child comment writer user id") >> Optional.of(this.mockChildCommentWriter)
+        this.commentPort.findById("test comment id") >> Optional.of(this.mockCommentDomainModel)
+        this.postPort.findById("test post id") >> Optional.of(this.mockPostDomainModel)
+
+        when: "circle member is await"
+        this.mockBoardDomainModel.setCircle((CircleDomainModel)this.mockCircleDomainModel)
+        this.mockCircleMemberDomainModel.setStatus(CircleMemberStatus.AWAIT)
+        this.circleMemberPort.findByUserIdAndCircleId("test child comment writer user id", "test circle id") >> Optional.of(this.mockCircleMemberDomainModel)
+        this.childCommentService.findAll("test child comment writer user id", "test comment id", 0)
+
+        then:
+        thrown(BadRequestException)
+
+        when: "circle member is blocked"
+        this.mockBoardDomainModel.setCircle((CircleDomainModel)this.mockCircleDomainModel)
+        this.mockCircleMemberDomainModel.setStatus(CircleMemberStatus.REJECT)
+        this.childCommentService.findAll("test child comment writer user id", "test comment id", 0)
+
+        then:
+        thrown(UnauthorizedException)
     }
 
     /**
      * Test case for child update create
      */
+    @Test
     def "Child Comment update normal case"() {
+        given:
         def childCommentUpdateRequestDto = new ChildCommentUpdateRequestDto(
                 "test child comment content"
         )
 
-        this.userPort.findById(((UserDomainModel)this.mockChildCommentWriter).getId()) >> Optional.of(this.mockChildCommentWriter)
-        this.postPort.findById(((PostDomainModel)this.mockPostDomainModel).getId()) >> Optional.of(this.mockPostDomainModel)
-        this.childCommentPort.findById(((ChildCommentDomainModel)this.mockChildCommentDomainModel).getId()) >> Optional.of(this.mockChildCommentDomainModel)
+        def updatedChildCommentDomainModel = ChildCommentDomainModel.of(
+                "test child comment id",
+                "updated content",
+                false,
+                "test child comment writer user name",
+                "test ref child comment id",
+                (UserDomainModel) this.mockChildCommentWriter,
+                (CommentDomainModel) this.mockCommentDomainModel,
+                null,
+                null
+        )
 
-        this.childCommentPort.update(((ChildCommentDomainModel)this.mockChildCommentDomainModel).getId(), (ChildCommentDomainModel)this.mockChildCommentDomainModel) >> Optional.of(this.mockChildCommentDomainModel)
+        this.userPort.findById("test child comment writer user id") >> Optional.of(this.mockChildCommentWriter)
+        this.commentPort.findById("test comment id") >> Optional.of(this.mockCommentDomainModel)
+        this.postPort.findById("test post id") >> Optional.of(this.mockPostDomainModel)
+        this.childCommentPort.findById("test child comment id") >> Optional.of(this.mockChildCommentDomainModel)
 
-        when:
-        def childCommentResponse = this.childCommentService.update(((UserDomainModel)this.mockChildCommentWriter).getId(), ((ChildCommentDomainModel)this.mockChildCommentDomainModel).getId(), childCommentUpdateRequestDto)
+        this.childCommentPort.update("test child comment id", (ChildCommentDomainModel)this.mockChildCommentDomainModel) >> Optional.of(updatedChildCommentDomainModel)
+
+        when: "without circle"
+        def childCommentResponse = this.childCommentService.update("test child comment writer user id", "test child comment id", childCommentUpdateRequestDto)
 
         then:
         childCommentResponse instanceof ChildCommentResponseDto
         with(childCommentResponse) {
-            getContent() == "test child comment content"
+            getContent() == "updated content"
+        }
+
+        when: "without circle for admin"
+        this.mockChildCommentWriter.setRole(Role.ADMIN)
+        childCommentResponse = this.childCommentService.update("test child comment writer user id", "test child comment id", childCommentUpdateRequestDto)
+
+        then:
+        childCommentResponse instanceof ChildCommentResponseDto
+        with(childCommentResponse) {
+            getContent() == "updated content"
+        }
+
+        when: "with circle"
+        this.mockChildCommentWriter.setRole(Role.COMMON)
+        this.mockBoardDomainModel.setCircle((CircleDomainModel)this.mockCircleDomainModel)
+        this.circleMemberPort.findByUserIdAndCircleId("test child comment writer user id", "test circle id") >> Optional.of(this.mockCircleMemberDomainModel)
+        childCommentResponse = this.childCommentService.update("test child comment writer user id", "test child comment id", childCommentUpdateRequestDto)
+
+        then:
+        childCommentResponse instanceof ChildCommentResponseDto
+        with(childCommentResponse) {
+            getContent() == "updated content"
+        }
+
+        when: "with circle for admin"
+        this.mockBoardDomainModel.setCircle((CircleDomainModel)this.mockCircleDomainModel)
+        this.mockChildCommentWriter.setRole(Role.ADMIN)
+        childCommentResponse = this.childCommentService.update("test child comment writer user id", "test child comment id", childCommentUpdateRequestDto)
+
+        then:
+        childCommentResponse instanceof ChildCommentResponseDto
+        with(childCommentResponse) {
+            getContent() == "updated content"
         }
     }
 
-    def "Child Comment update unauthorized case"() {
+    @Test
+    def "Child Comment update deleted case"() {
+        given:
         def childCommentUpdateRequestDto = new ChildCommentUpdateRequestDto(
                 "test child comment content"
         )
 
-        this.userPort.findById(((UserDomainModel)this.mockChildCommentWriter).getId()) >> Optional.of(this.mockChildCommentWriter)
-        this.postPort.findById(((PostDomainModel)this.mockPostDomainModel).getId()) >> Optional.of(this.mockPostDomainModel)
-        this.childCommentPort.findById(((ChildCommentDomainModel)this.mockChildCommentDomainModel).getId()) >> Optional.of(this.mockChildCommentDomainModel)
+        this.userPort.findById("test child comment writer user id") >> Optional.of(this.mockChildCommentWriter)
+        this.commentPort.findById("test comment id") >> Optional.of(this.mockCommentDomainModel)
+        this.postPort.findById("test post id") >> Optional.of(this.mockPostDomainModel)
+        this.childCommentPort.findById("test child comment id") >> Optional.of(this.mockChildCommentDomainModel)
 
-        when: "Updater's Role is NONE"
-        ((UserDomainModel)this.mockChildCommentWriter).setRole(Role.NONE)
-        this.childCommentService.update(((UserDomainModel)this.mockChildCommentWriter).getId(), ((ChildCommentDomainModel)this.mockChildCommentDomainModel).getId(), childCommentUpdateRequestDto)
-
-        then:
-        thrown(UnauthorizedException)
-
-        when: "This user is not contents admin"
-        ((UserDomainModel)this.mockChildCommentWriter).setRole(Role.COMMON)
-        this.userPort.findById(((UserDomainModel)this.mockCommentWriter).getId()) >> Optional.of(this.mockCommentWriter)
-        this.childCommentService.update(((UserDomainModel)this.mockCommentWriter).getId(), ((ChildCommentDomainModel)this.mockChildCommentDomainModel).getId(), childCommentUpdateRequestDto)
+        when: "deleted board"
+        this.mockBoardDomainModel.setIsDeleted(true)
+        this.childCommentService.update("test child comment writer user id", "test child comment id", childCommentUpdateRequestDto)
 
         then:
-        thrown(UnauthorizedException)
+        thrown(BadRequestException)
+
+        when: "deleted post"
+        this.mockBoardDomainModel.setIsDeleted(false)
+        this.mockPostDomainModel.setIsDeleted(true)
+        this.childCommentService.update("test child comment writer user id", "test child comment id", childCommentUpdateRequestDto)
+
+        then:
+        thrown(BadRequestException)
+
+        when: "deleted child comment"
+        this.mockPostDomainModel.setIsDeleted(false)
+        this.mockChildCommentDomainModel.setIsDeleted(true)
+        this.childCommentService.update("test child comment writer user id", "test child comment id", childCommentUpdateRequestDto)
+
+        then:
+        thrown(BadRequestException)
+
+        when: "deleted circle"
+        this.mockChildCommentDomainModel.setIsDeleted(false)
+        this.mockCircleDomainModel.setIsDeleted(true)
+        this.mockBoardDomainModel.setCircle((CircleDomainModel)this.mockCircleDomainModel)
+        this.circleMemberPort.findByUserIdAndCircleId("test child comment writer user id", "test circle id") >> Optional.of(this.mockCircleMemberDomainModel)
+        this.childCommentService.update("test child comment writer user id", "test child comment id", childCommentUpdateRequestDto)
+
+        then:
+        thrown(BadRequestException)
     }
 
-    def "Child Comment update bad request case"() {
+    @Test
+    def "Child Comment update invalid parameter"() {
+        given:
+        def childCommentUpdateRequestDto = new ChildCommentUpdateRequestDto(
+                ""
+        )
+
+        this.userPort.findById("test child comment writer user id") >> Optional.of(this.mockChildCommentWriter)
+        this.commentPort.findById("test comment id") >> Optional.of(this.mockCommentDomainModel)
+        this.postPort.findById("test post id") >> Optional.of(this.mockPostDomainModel)
+        this.childCommentPort.findById("test child comment id") >> Optional.of(this.mockChildCommentDomainModel)
+
+        when:
+        this.childCommentService.update("test child comment writer user id", "test child comment id", childCommentUpdateRequestDto)
+
+        then:
+        thrown(ConstraintViolationException)
+    }
+
+    @Test
+    def "Child Comment update unauthorized case"() {
+        given:
         def childCommentUpdateRequestDto = new ChildCommentUpdateRequestDto(
                 "test child comment content"
         )
 
-        this.userPort.findById(((UserDomainModel)this.mockChildCommentWriter).getId()) >> Optional.of(this.mockChildCommentWriter)
-        this.postPort.findById(((PostDomainModel)this.mockPostDomainModel).getId()) >> Optional.of(this.mockPostDomainModel)
-        this.childCommentPort.findById(((ChildCommentDomainModel)this.mockChildCommentDomainModel).getId()) >> Optional.of(this.mockChildCommentDomainModel)
+        this.userPort.findById("test child comment writer user id") >> Optional.of(this.mockChildCommentWriter)
+        this.commentPort.findById("test comment id") >> Optional.of(this.mockCommentDomainModel)
+        this.postPort.findById("test post id") >> Optional.of(this.mockPostDomainModel)
+        this.childCommentPort.findById("test child comment id") >> Optional.of(this.mockChildCommentDomainModel)
 
-        when: "Board is deleted"
-        ((BoardDomainModel)this.mockBoardDomainModel).setIsDeleted(true)
-        this.childCommentService.update(((UserDomainModel)this.mockChildCommentWriter).getId(), ((ChildCommentDomainModel)this.mockChildCommentDomainModel).getId(), childCommentUpdateRequestDto)
+        when: "not writer"
+        this.mockUserDomainModel.setRole(Role.COMMON)
+        this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
+        this.childCommentService.update("test", "test child comment id", childCommentUpdateRequestDto)
+
+        then:
+        thrown(UnauthorizedException)
+
+        when: "circle member is await"
+        this.mockBoardDomainModel.setCircle((CircleDomainModel)this.mockCircleDomainModel)
+        this.mockCircleMemberDomainModel.setStatus(CircleMemberStatus.AWAIT)
+        this.circleMemberPort.findByUserIdAndCircleId("test child comment writer user id", "test circle id") >> Optional.of(this.mockCircleMemberDomainModel)
+        this.childCommentService.update("test child comment writer user id", "test child comment id", childCommentUpdateRequestDto)
 
         then:
         thrown(BadRequestException)
 
-        when: "Post is deleted"
-        ((BoardDomainModel)this.mockBoardDomainModel).setIsDeleted(false)
-        ((PostDomainModel)this.mockPostDomainModel).setIsDeleted(true)
-        this.childCommentService.update(((UserDomainModel)this.mockChildCommentWriter).getId(), ((ChildCommentDomainModel)this.mockChildCommentDomainModel).getId(), childCommentUpdateRequestDto)
+        when: "circle member is blocked"
+        this.mockBoardDomainModel.setCircle((CircleDomainModel)this.mockCircleDomainModel)
+        this.mockCircleMemberDomainModel.setStatus(CircleMemberStatus.REJECT)
+        this.childCommentService.update("test child comment writer user id", "test child comment id", childCommentUpdateRequestDto)
 
         then:
-        thrown(BadRequestException)
-
-        when: "Child comment is deleted"
-        ((ChildCommentDomainModel)this.mockRefChildCommentDomainModel).setIsDeleted(false)
-        ((ChildCommentDomainModel)this.mockChildCommentDomainModel).setIsDeleted(true)
-        this.childCommentService.update(((UserDomainModel)this.mockChildCommentWriter).getId(), ((ChildCommentDomainModel)this.mockChildCommentDomainModel).getId(), childCommentUpdateRequestDto)
-
-        then:
-        thrown(BadRequestException)
-
-        when: "Ref Child comment' writer is not same tag name"
-        ((ChildCommentDomainModel)this.mockChildCommentDomainModel).setIsDeleted(false)
-        ((ChildCommentDomainModel)this.mockRefChildCommentDomainModel).getWriter().setName("wrong")
-        this.childCommentService.update(((UserDomainModel)this.mockChildCommentWriter).getId(), ((ChildCommentDomainModel)this.mockChildCommentDomainModel).getId(), childCommentUpdateRequestDto)
-
-        then:
-        thrown(BadRequestException)
+        thrown(UnauthorizedException)
     }
 
     /**
      * Test case for child comment delete
      */
+    @Test
     def "Child Comment delete normal case"() {
+        given:
         def deletedChildCommentDomainModel = ChildCommentDomainModel.of(
                 "test child comment id",
                 "test child comment content",
@@ -397,110 +684,137 @@ class ChildCommentServiceTest extends Specification {
                 null
         )
 
-        this.userPort.findById(((UserDomainModel)this.mockChildCommentWriter).getId()) >> Optional.of(this.mockChildCommentWriter)
-        this.postPort.findById(((PostDomainModel)this.mockPostDomainModel).getId()) >> Optional.of(this.mockPostDomainModel)
-        this.childCommentPort.findById(((ChildCommentDomainModel)this.mockChildCommentDomainModel).getId()) >> Optional.of(this.mockChildCommentDomainModel)
+        this.userPort.findById("test child comment writer user id") >> Optional.of(this.mockChildCommentWriter)
+        this.postPort.findById("test post id") >> Optional.of(this.mockPostDomainModel)
+        this.childCommentPort.findById("test child comment id") >> Optional.of(this.mockChildCommentDomainModel)
 
-        this.childCommentPort.delete(((ChildCommentDomainModel)this.mockChildCommentDomainModel).getId()) >> Optional.of(deletedChildCommentDomainModel)
+        this.childCommentPort.delete("test child comment id") >> Optional.of(deletedChildCommentDomainModel)
 
-        when:
-        def childCommentResponse = this.childCommentService.delete(((UserDomainModel)this.mockChildCommentWriter).getId(), ((ChildCommentDomainModel)this.mockChildCommentDomainModel).getId())
+        when: "without circle"
+        def childCommentResponseDto = this.childCommentService.delete("test child comment writer user id", "test child comment id")
 
         then:
-        childCommentResponse instanceof ChildCommentResponseDto
-        with(childCommentResponse) {
+        childCommentResponseDto instanceof ChildCommentResponseDto
+        with(childCommentResponseDto) {
+            getIsDeleted()
+        }
+
+        when: "without circle for president"
+        this.mockUserDomainModel.setRole(Role.PRESIDENT)
+        this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
+        childCommentResponseDto = this.childCommentService.delete("test", "test child comment id")
+
+        then:
+        childCommentResponseDto instanceof ChildCommentResponseDto
+        with(childCommentResponseDto) {
+            getIsDeleted()
+        }
+
+        when: "with circle"
+        this.mockBoardDomainModel.setCircle((CircleDomainModel)this.mockCircleDomainModel)
+        this.circleMemberPort.findByUserIdAndCircleId("test child comment writer user id", "test circle id") >> Optional.of(this.mockCircleMemberDomainModel)
+        childCommentResponseDto = this.childCommentService.delete("test child comment writer user id", "test child comment id")
+
+        then:
+        childCommentResponseDto instanceof ChildCommentResponseDto
+        with(childCommentResponseDto) {
+            getIsDeleted()
+        }
+
+        when: "with circle for leader circle"
+        this.mockBoardDomainModel.setCircle((CircleDomainModel)this.mockCircleDomainModel)
+        this.userPort.findById("test leader user id") >> Optional.of(this.mockCircleLeaderUserDomainModel)
+        this.circleMemberPort.findByUserIdAndCircleId("test leader user id", "test circle id") >> Optional.of(this.mockCircleMemberDomainModel)
+        childCommentResponseDto = this.childCommentService.delete("test leader user id", "test child comment id")
+
+        then:
+        childCommentResponseDto instanceof ChildCommentResponseDto
+        with(childCommentResponseDto) {
+            getIsDeleted()
+        }
+
+        when: "with circle for admin"
+        this.mockBoardDomainModel.setCircle((CircleDomainModel)this.mockCircleDomainModel)
+        this.mockUserDomainModel.setRole(Role.ADMIN)
+        childCommentResponseDto = this.childCommentService.delete("test", "test child comment id")
+
+        then:
+        childCommentResponseDto instanceof ChildCommentResponseDto
+        with(childCommentResponseDto) {
             getIsDeleted()
         }
     }
 
+    @Test
+    def "Child Comment delete deleted case"() {
+        given:
+        this.userPort.findById("test child comment writer user id") >> Optional.of(this.mockChildCommentWriter)
+        this.postPort.findById("test post id") >> Optional.of(this.mockPostDomainModel)
+        this.childCommentPort.findById("test child comment id") >> Optional.of(this.mockChildCommentDomainModel)
+
+        when: "deleted child comment"
+        this.mockChildCommentDomainModel.setIsDeleted(true)
+        this.childCommentService.delete("test child comment writer user id", "test child comment id")
+
+        then:
+        thrown(BadRequestException)
+
+        when: "deleted circle"
+        this.mockChildCommentDomainModel.setIsDeleted(false)
+        this.mockCircleDomainModel.setIsDeleted(true)
+        this.mockBoardDomainModel.setCircle((CircleDomainModel)this.mockCircleDomainModel)
+        this.circleMemberPort.findByUserIdAndCircleId("test child comment writer user id", "test circle id") >> Optional.of(this.mockCircleMemberDomainModel)
+        this.childCommentService.delete("test child comment writer user id", "test child comment id")
+
+        then:
+        thrown(BadRequestException)
+    }
+
+    @Test
     def "Child Comment delete unauthorized case"() {
-        this.userPort.findById(((UserDomainModel)this.mockChildCommentWriter).getId()) >> Optional.of(this.mockChildCommentWriter)
-        this.postPort.findById(((PostDomainModel)this.mockPostDomainModel).getId()) >> Optional.of(this.mockPostDomainModel)
-        this.childCommentPort.findById(((ChildCommentDomainModel)this.mockChildCommentDomainModel).getId()) >> Optional.of(this.mockChildCommentDomainModel)
+        this.userPort.findById("test child comment writer user id") >> Optional.of(this.mockChildCommentWriter)
+        this.postPort.findById("test post id") >> Optional.of(this.mockPostDomainModel)
+        this.childCommentPort.findById("test child comment id") >> Optional.of(this.mockChildCommentDomainModel)
 
-        when: "Deleter's Role is NONE"
-        ((UserDomainModel)this.mockChildCommentWriter).setRole(Role.NONE)
-        this.childCommentService.delete(((UserDomainModel)this.mockChildCommentWriter).getId(), ((ChildCommentDomainModel)this.mockChildCommentDomainModel).getId())
+        when: "not writer"
+        this.mockUserDomainModel.setRole(Role.COMMON)
+        this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
+        this.childCommentService.delete("test", "test child comment id")
+
+        then:
+        thrown(UnauthorizedException)
+
+        when: "not writer with circle"
+        this.mockBoardDomainModel.setCircle((CircleDomainModel)this.mockCircleDomainModel)
+        this.circleMemberPort.findByUserIdAndCircleId("test", "test circle id") >> Optional.of(this.mockCircleMemberDomainModel)
+        this.childCommentService.delete("test", "test child comment id")
 
         then:
         thrown(UnauthorizedException)
 
-        when: "This user is not contents admin"
-        ((UserDomainModel)this.mockChildCommentWriter).setRole(Role.COMMON)
-        this.userPort.findById(((UserDomainModel)this.mockCommentWriter).getId()) >> Optional.of(this.mockCommentWriter)
-        this.childCommentService.delete(((UserDomainModel)this.mockCommentWriter).getId(), ((ChildCommentDomainModel)this.mockChildCommentDomainModel).getId())
+        when: "not leader with circle"
+        this.mockBoardDomainModel.setCircle((CircleDomainModel)this.mockCircleDomainModel)
+        this.mockUserDomainModel.setRole(Role.LEADER_CIRCLE)
+        this.childCommentService.delete("test", "test child comment id")
 
         then:
         thrown(UnauthorizedException)
-    }
 
-    def "Child Comment delete bad request case"() {
-        this.userPort.findById(((UserDomainModel)this.mockChildCommentWriter).getId()) >> Optional.of(this.mockChildCommentWriter)
-        this.postPort.findById(((PostDomainModel)this.mockPostDomainModel).getId()) >> Optional.of(this.mockPostDomainModel)
-        this.childCommentPort.findById(((ChildCommentDomainModel)this.mockChildCommentDomainModel).getId()) >> Optional.of(this.mockChildCommentDomainModel)
-
-        when: "Child comment is deleted"
-        ((ChildCommentDomainModel)this.mockChildCommentDomainModel).setIsDeleted(true)
-        this.childCommentService.delete(((UserDomainModel)this.mockChildCommentWriter).getId(), ((ChildCommentDomainModel)this.mockChildCommentDomainModel).getId())
+        when: "circle member is await"
+        this.mockBoardDomainModel.setCircle((CircleDomainModel)this.mockCircleDomainModel)
+        this.mockCircleMemberDomainModel.setStatus(CircleMemberStatus.AWAIT)
+        this.circleMemberPort.findByUserIdAndCircleId("test child comment writer user id", "test circle id") >> Optional.of(this.mockCircleMemberDomainModel)
+        this.childCommentService.delete("test child comment writer user id", "test child comment id")
 
         then:
         thrown(BadRequestException)
-    }
 
-    /**
-     * Test case for child comment find all
-     */
-    def "Child Comment find all normal case"() {
-        this.userPort.findById(((UserDomainModel)this.mockChildCommentWriter).getId()) >> Optional.of(this.mockChildCommentWriter)
-        this.commentPort.findById(((CommentDomainModel)this.mockCommentDomainModel).getId()) >> Optional.of(this.mockCommentDomainModel)
-        this.postPort.findById(((PostDomainModel)this.mockPostDomainModel).getId()) >> Optional.of(this.mockPostDomainModel)
-        this.childCommentPort.findById(((ChildCommentDomainModel)this.mockChildCommentDomainModel).getId()) >> Optional.of(this.mockChildCommentDomainModel)
-
-        this.childCommentPort.findByParentComment(((CommentDomainModel)this.mockCommentDomainModel).getId(), 0) >> new PageImpl<ChildCommentDomainModel>(List.of((ChildCommentDomainModel)this.mockChildCommentDomainModel))
-
-        when:
-        def childCommentResponse = this.childCommentService.findAll(((UserDomainModel)this.mockChildCommentWriter).getId(), ((CommentDomainModel)this.mockCommentDomainModel).getId(), 0)
-
-        then:
-        childCommentResponse instanceof ChildCommentsResponseDto
-        with (childCommentResponse) {
-            getChildComments().getContent().get(0).getContent() == "test child comment content"
-        }
-    }
-
-    def "Child Comment find all unauthorized case"() {
-        this.userPort.findById(((UserDomainModel)this.mockChildCommentWriter).getId()) >> Optional.of(this.mockChildCommentWriter)
-        this.commentPort.findById(((CommentDomainModel)this.mockCommentDomainModel).getId()) >> Optional.of(this.mockCommentDomainModel)
-        this.postPort.findById(((PostDomainModel)this.mockPostDomainModel).getId()) >> Optional.of(this.mockPostDomainModel)
-        this.childCommentPort.findById(((ChildCommentDomainModel)this.mockChildCommentDomainModel).getId()) >> Optional.of(this.mockChildCommentDomainModel)
-
-        when: "Request user's Role is NONE"
-        ((UserDomainModel)this.mockChildCommentWriter).setRole(Role.NONE)
-        this.childCommentService.findAll(((UserDomainModel)this.mockChildCommentWriter).getId(), ((CommentDomainModel)this.mockCommentDomainModel).getId(), 0)
+        when: "circle member is blocked"
+        this.mockBoardDomainModel.setCircle((CircleDomainModel)this.mockCircleDomainModel)
+        this.mockCircleMemberDomainModel.setStatus(CircleMemberStatus.REJECT)
+        this.childCommentService.delete("test child comment writer user id", "test child comment id")
 
         then:
         thrown(UnauthorizedException)
-    }
-
-    def "Child Comment find all bad request case"() {
-        this.userPort.findById(((UserDomainModel)this.mockChildCommentWriter).getId()) >> Optional.of(this.mockChildCommentWriter)
-        this.commentPort.findById(((CommentDomainModel)this.mockCommentDomainModel).getId()) >> Optional.of(this.mockCommentDomainModel)
-        this.postPort.findById(((PostDomainModel)this.mockPostDomainModel).getId()) >> Optional.of(this.mockPostDomainModel)
-        this.childCommentPort.findById(((ChildCommentDomainModel)this.mockChildCommentDomainModel).getId()) >> Optional.of(this.mockChildCommentDomainModel)
-
-        when: "Board is deleted"
-        ((BoardDomainModel)this.mockBoardDomainModel).setIsDeleted(true)
-        this.childCommentService.findAll(((UserDomainModel)this.mockChildCommentWriter).getId(), ((CommentDomainModel)this.mockCommentDomainModel).getId(), 0)
-
-        then:
-        thrown(BadRequestException)
-
-        when: "Post is deleted"
-        ((BoardDomainModel)this.mockBoardDomainModel).setIsDeleted(false)
-        ((PostDomainModel)this.mockPostDomainModel).setIsDeleted(true)
-        this.childCommentService.findAll(((UserDomainModel)this.mockChildCommentWriter).getId(), ((CommentDomainModel)this.mockCommentDomainModel).getId(), 0)
-
-        then:
-        thrown(BadRequestException)
     }
 }
