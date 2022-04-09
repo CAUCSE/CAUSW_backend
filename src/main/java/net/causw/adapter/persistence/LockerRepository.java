@@ -19,10 +19,10 @@ public interface LockerRepository extends JpaRepository<Locker, String> {
     @Query(value = "SELECT COUNT(*) " +
             "FROM TB_LOCKER  " +
             "WHERE location_id = :location_id AND is_active = true AND user_id IS NULL", nativeQuery = true)
-    long getEnableLockerCountByLocation(@Param("location_id") String locationId);
+    long countEnableLockerByLocation(@Param("location_id") String locationId);
 
     @Query(value = "SELECT COUNT(*) " +
             "FROM TB_LOCKER " +
             "WHERE TB_LOCKER.location_id = :location_id", nativeQuery = true)
-    long getLockerCountByLocation(@Param("location_id") String locationId);
+    long countByLocation(@Param("location_id") String locationId);
 }

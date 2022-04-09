@@ -90,8 +90,7 @@ public class CommentService {
         validatorBucket
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), StaticValue.DOMAIN_POST))
-                .consistOf(ConstraintValidator.of(commentDomainModel, this.validator))
-                .validate();
+                .consistOf(ConstraintValidator.of(commentDomainModel, this.validator));
 
         postDomainModel.getBoard().getCircle()
                 .filter(circleDomainModel -> !creatorDomainModel.getRole().equals(Role.ADMIN))
@@ -115,6 +114,9 @@ public class CommentService {
                                     ));
                         }
                 );
+
+        validatorBucket
+                .validate();
 
         return CommentResponseDto.from(
                 this.commentPort.create(commentDomainModel, postDomainModel),
@@ -364,6 +366,5 @@ public class CommentService {
                 postDomainModel.getBoard(),
                 this.childCommentPort.countByParentComment(commentId)
         );
-
     }
 }

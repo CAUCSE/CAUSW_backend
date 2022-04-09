@@ -22,7 +22,7 @@ public interface LockerPort {
 
     List<LockerDomainModel> findByLocationId(String locationId);
 
-    Long getEnableLockerCountByLocation(String locationId);
+    Long countEnableLockerByLocation(String locationId);
 
-    Long getLockerCountByLocation(String locationId);
+    Long countByLocation(String locationId);
 }
