@@ -36,7 +36,6 @@ import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.BoardDomainModel;
 import net.causw.domain.model.CircleDomainModel;
-import net.causw.domain.model.CircleMemberDomainModel;
 import net.causw.domain.model.CircleMemberStatus;
 import net.causw.domain.model.FavoriteBoardDomainModel;
 import net.causw.domain.model.ImageLocation;
@@ -55,7 +54,6 @@ import net.causw.domain.validation.GrantableRoleValidator;
 import net.causw.domain.validation.PasswordCorrectValidator;
 import net.causw.domain.validation.PasswordFormatValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
-import net.causw.domain.validation.UserEqualValidator;
 import net.causw.domain.validation.UserRoleIsNoneValidator;
 import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.UserRoleWithoutAdminValidator;
@@ -407,6 +405,10 @@ public class UserService {
                         })
                         .collect(Collectors.toList()),
                 this.userPort.findByRole(Role.LEADER_ALUMNI)
+                        .stream()
+                        .map(UserResponseDto::from)
+                        .collect(Collectors.toList()),
+                this.userPort.findByRole(Role.VICE_PRESIDENT)
                         .stream()
                         .map(UserResponseDto::from)
                         .collect(Collectors.toList())

@@ -33,12 +33,15 @@ public class UserPrivilegedResponseDto {
             List<UserResponseDto> leaderGrade3,
             List<UserResponseDto> leaderGrade4,
             List<UserResponseDto> leaderCircleUsers,
-            List<UserResponseDto> leaderAlumniUsers
+            List<UserResponseDto> leaderAlumniUsers,
+            List<UserResponseDto> vicePresidentUser
     ) {
         List<UserResponseDto> leaderGradeUsers = new LinkedList<>(leaderGrade1);
         leaderGradeUsers.addAll(leaderGrade2);
         leaderGradeUsers.addAll(leaderGrade3);
         leaderGradeUsers.addAll(leaderGrade4);
+
+        councilUsers.addAll(vicePresidentUser);
 
         return new UserPrivilegedResponseDto(
                 councilUsers,
