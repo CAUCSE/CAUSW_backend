@@ -10,6 +10,7 @@ import java.util.Arrays;
 public enum Role {
     ADMIN("ADMIN"),
     PRESIDENT("PRESIDENT"),
+    VICE_PRESIDENT("VICE_PRESIDENT"),
     COUNCIL("COUNCIL"),
     LEADER_1("LEADER_1"),
     LEADER_2("LEADER_2"),

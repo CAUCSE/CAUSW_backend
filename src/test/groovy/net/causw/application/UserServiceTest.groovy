@@ -1,7 +1,6 @@
 package net.causw.application
 
 import net.causw.application.dto.DuplicatedCheckResponseDto
-import net.causw.application.dto.board.BoardResponseDto
 import net.causw.application.dto.circle.CircleResponseDto
 import net.causw.application.dto.user.*
 import net.causw.application.spi.*
@@ -350,6 +349,7 @@ class UserServiceTest extends Specification {
         this.userPort.findByRole(Role.LEADER_4) >> List.of()
         this.userPort.findByRole(Role.LEADER_CIRCLE) >> List.of()
         this.userPort.findByRole(Role.LEADER_ALUMNI) >> List.of()
+        this.userPort.findByRole(Role.VICE_PRESIDENT) >> List.of()
 
         when:
         def userPrivilegedResponseDto = this.userService.findPrivilegedUsers("test")
@@ -390,7 +390,7 @@ class UserServiceTest extends Specification {
         )
 
         this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
-        this.userPort.findByState(UserState.ACTIVE, 0) >> new PageImpl<UserDomainModel>(List.of((UserDomainModel)targetUserDomainModel))
+        this.userPort.findByState(UserState.ACTIVE, 0) >> new PageImpl<UserDomainModel>(List.of((UserDomainModel) targetUserDomainModel))
 
         when:
         def userResponseDto = this.userService.findByState("test", "ACTIVE", 0)
@@ -825,7 +825,7 @@ class UserServiceTest extends Specification {
 
         then:
         duplicatedCheckResponseDto instanceof DuplicatedCheckResponseDto
-        with (duplicatedCheckResponseDto) {
+        with(duplicatedCheckResponseDto) {
             !getResult()
         }
 
@@ -835,7 +835,7 @@ class UserServiceTest extends Specification {
 
         then:
         duplicatedCheckResponseDto instanceof DuplicatedCheckResponseDto
-        with (duplicatedCheckResponseDto) {
+        with(duplicatedCheckResponseDto) {
             getResult()
         }
     }
@@ -1568,7 +1568,7 @@ class UserServiceTest extends Specification {
         given:
         this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
 
-        this.userAdmissionPort.findAll(UserState.AWAIT, 0) >> new PageImpl<UserAdmissionDomainModel>(List.of((UserAdmissionDomainModel)this.mockUserAdmissionDomainModel))
+        this.userAdmissionPort.findAll(UserState.AWAIT, 0) >> new PageImpl<UserAdmissionDomainModel>(List.of((UserAdmissionDomainModel) this.mockUserAdmissionDomainModel))
 
         when:
         def userAdmissionResponseDto = this.userService.findAllAdmissions("test", 0)
@@ -1696,16 +1696,16 @@ class UserServiceTest extends Specification {
         this.userAdmissionPort.findById("test") >> Optional.of(this.mockUserAdmissionDomainModel)
         this.userPort.updateRole("test", Role.COMMON) >> Optional.of(this.mockUserDomainModel)
         this.userAdmissionLogPort.create(
-                ((UserAdmissionDomainModel)this.mockUserAdmissionDomainModel).getUser().getEmail(),
-                ((UserAdmissionDomainModel)this.mockUserAdmissionDomainModel).getUser().getName(),
-                ((UserDomainModel)this.mockUserDomainModel).getEmail(),
-                ((UserDomainModel)this.mockUserDomainModel).getName(),
+                ((UserAdmissionDomainModel) this.mockUserAdmissionDomainModel).getUser().getEmail(),
+                ((UserAdmissionDomainModel) this.mockUserAdmissionDomainModel).getUser().getName(),
+                ((UserDomainModel) this.mockUserDomainModel).getEmail(),
+                ((UserDomainModel) this.mockUserDomainModel).getName(),
                 UserAdmissionLogAction.ACCEPT,
-                ((UserAdmissionDomainModel)this.mockUserAdmissionDomainModel).getAttachImage(),
-                ((UserAdmissionDomainModel)this.mockUserAdmissionDomainModel).getDescription()
+                ((UserAdmissionDomainModel) this.mockUserAdmissionDomainModel).getAttachImage(),
+                ((UserAdmissionDomainModel) this.mockUserAdmissionDomainModel).getDescription()
         ) >> null
-        this.userAdmissionPort.delete((UserAdmissionDomainModel)this.mockUserAdmissionDomainModel) >> null
-        this.userPort.updateState(((UserAdmissionDomainModel)this.mockUserAdmissionDomainModel).getUser().getId(), UserState.ACTIVE) >> Optional.of(this.mockUserDomainModel)
+        this.userAdmissionPort.delete((UserAdmissionDomainModel) this.mockUserAdmissionDomainModel) >> null
+        this.userPort.updateState(((UserAdmissionDomainModel) this.mockUserAdmissionDomainModel).getUser().getId(), UserState.ACTIVE) >> Optional.of(this.mockUserDomainModel)
 
         when:
         def userAdmissionResponseDto = this.userService.accept("test", "test")
@@ -1741,17 +1741,17 @@ class UserServiceTest extends Specification {
         this.userAdmissionPort.findById("test") >> Optional.of(this.mockUserAdmissionDomainModel)
         this.userPort.updateRole("test", Role.COMMON) >> Optional.of(this.mockUserDomainModel)
         this.userAdmissionLogPort.create(
-                ((UserAdmissionDomainModel)this.mockUserAdmissionDomainModel).getUser().getEmail(),
-                ((UserAdmissionDomainModel)this.mockUserAdmissionDomainModel).getUser().getName(),
-                ((UserDomainModel)this.mockUserDomainModel).getEmail(),
-                ((UserDomainModel)this.mockUserDomainModel).getName(),
+                ((UserAdmissionDomainModel) this.mockUserAdmissionDomainModel).getUser().getEmail(),
+                ((UserAdmissionDomainModel) this.mockUserAdmissionDomainModel).getUser().getName(),
+                ((UserDomainModel) this.mockUserDomainModel).getEmail(),
+                ((UserDomainModel) this.mockUserDomainModel).getName(),
                 UserAdmissionLogAction.REJECT,
-                ((UserAdmissionDomainModel)this.mockUserAdmissionDomainModel).getAttachImage(),
-                ((UserAdmissionDomainModel)this.mockUserAdmissionDomainModel).getDescription()
+                ((UserAdmissionDomainModel) this.mockUserAdmissionDomainModel).getAttachImage(),
+                ((UserAdmissionDomainModel) this.mockUserAdmissionDomainModel).getDescription()
         ) >> null
-        this.userAdmissionPort.delete((UserAdmissionDomainModel)this.mockUserAdmissionDomainModel) >> null
+        this.userAdmissionPort.delete((UserAdmissionDomainModel) this.mockUserAdmissionDomainModel) >> null
 
-        this.userPort.updateState(((UserAdmissionDomainModel)this.mockUserAdmissionDomainModel).getUser().getId(), UserState.REJECT) >> Optional.of(this.mockUserDomainModel)
+        this.userPort.updateState(((UserAdmissionDomainModel) this.mockUserAdmissionDomainModel).getUser().getId(), UserState.REJECT) >> Optional.of(this.mockUserDomainModel)
 
         when:
         def userAdmissionResponseDto = this.userService.reject("test", "test")

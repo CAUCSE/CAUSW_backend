@@ -40,6 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -323,10 +324,7 @@ public class CircleService {
         BoardDomainModel generalBoard = BoardDomainModel.of(
                 "자유 게시판",
                 newCircle.getName() + " 자유 게시판",
-                Stream.of(Role.ADMIN, Role.PRESIDENT, Role.COUNCIL, Role.LEADER_1, Role.LEADER_2, Role.LEADER_3, Role.LEADER_4,
-                                Role.LEADER_CIRCLE, Role.LEADER_ALUMNI, Role.COMMON, Role.PROFESSOR)
-                        .map(Role::getValue)
-                        .collect(Collectors.toList()),
+                new ArrayList<>(),
                 "자유 게시판",
                 newCircle
         );
