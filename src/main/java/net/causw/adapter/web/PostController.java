@@ -98,4 +98,16 @@ public class PostController {
                 postUpdateRequestDto
         );
     }
+
+    @PutMapping(value = "/restore/{id}")
+    @ResponseStatus(value = HttpStatus.OK)
+    public PostResponseDto restore(
+            @AuthenticationPrincipal String requestUserId,
+            @PathVariable String id
+    ) {
+        return this.postService.restore(
+                requestUserId,
+                id
+        );
+    }
 }

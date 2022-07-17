@@ -35,6 +35,7 @@ import net.causw.domain.validation.UserRoleIsNoneValidator;
 import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
+import net.causw.domain.validation.TargetIsNotDeletedValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -579,6 +580,92 @@ public class PostService {
                                 commentDomainModel,
                                 requestUser,
                                 updatedPostDomainModel.getBoard(),
+                                this.childCommentPort.countByParentComment(commentDomainModel.getId())
+                        )),
+                this.commentPort.countByPostId(postDomainModel.getId())
+        );
+    }
+
+    public PostResponseDto restore(String requestUserId, String postId) {
+
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
+        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "로그인된 사용자를 찾을 수 없습니다."
+                )
+        );
+
+        PostDomainModel postDomainModel = this.postPort.findById(postId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "게시글을 찾을 수 없습니다."
+                )
+        );
+
+        if (postDomainModel.getBoard().getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
+            validatorBucket
+                    .consistOf(UserRoleValidator.of(
+                            requestUser.getRole(),
+                            List.of()
+                    ));
+        }
+
+        validatorBucket
+                .consistOf(UserStateValidator.of(requestUser.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
+                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
+                .consistOf(TargetIsNotDeletedValidator.of(postDomainModel.getIsDeleted(), StaticValue.DOMAIN_POST));
+
+        postDomainModel.getBoard().getCircle()
+                .filter(circleDomainModel -> !requestUser.getRole().equals(Role.ADMIN))
+                .ifPresent(
+                        circleDomainModel -> {
+                            CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
+                                    requestUserId,
+                                    circleDomainModel.getId()
+                            ).orElseThrow(
+                                    () -> new UnauthorizedException(
+                                            ErrorCode.NOT_MEMBER,
+                                            "로그인된 사용자가 소모임 멤버가 아닙니다."
+                                    )
+                            );
+
+                            validatorBucket
+                                    .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
+                                    .consistOf(CircleMemberStatusValidator.of(
+                                            circleMemberDomainModel.getStatus(),
+                                            List.of(CircleMemberStatus.MEMBER)
+                                    ));
+                        }
+                );
+
+        validatorBucket
+                .consistOf(ContentsAdminValidator.of(
+                        requestUser.getRole(),
+                        requestUserId,
+                        postDomainModel.getWriter().getId(),
+                        List.of()
+                ))
+                .consistOf(ConstraintValidator.of(postDomainModel, this.validator))
+                .validate();
+
+        PostDomainModel restoredPostDomainModel = this.postPort.restore(postId, postDomainModel).orElseThrow(
+                () -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "Post id checked, but exception occurred"
+                )
+        );
+
+        return PostResponseDto.from(
+                postDomainModel,
+                requestUser,
+                this.commentPort.findByPostId(postId, 0)
+                        .map(commentDomainModel -> CommentResponseDto.from(
+                                commentDomainModel,
+                                requestUser,
+                                restoredPostDomainModel.getBoard(),
                                 this.childCommentPort.countByParentComment(commentDomainModel.getId())
                         )),
                 this.commentPort.countByPostId(postDomainModel.getId())
