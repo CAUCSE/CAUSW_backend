@@ -20,6 +20,7 @@ import net.causw.domain.validation.UserEqualValidator;
 import net.causw.domain.validation.UserRoleIsNoneValidator;
 import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.UserStateValidator;
+import net.causw.domain.validation.TargetIsNotDeletedValidator;
 import net.causw.domain.validation.ValidatorBucket;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -267,6 +268,68 @@ public class BoardService {
                         )
                 ),
                 deleterDomainModel.getRole()
+        );
+    }
+    @Transactional
+    public BoardResponseDto restore(
+            String restorerId,
+            String boardId
+    ){
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
+        UserDomainModel restorerDomainModel = this.userPort.findById(restorerId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "로그인된 사용자를 찾을 수 없습니다."
+                )
+        );
+
+        BoardDomainModel boardDomainModel = this.boardPort.findById(boardId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "복구할 게시판을 찾을 수 없습니다."
+                )
+        );
+
+        validatorBucket
+                .consistOf(UserStateValidator.of(restorerDomainModel.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(restorerDomainModel.getRole()))
+                .consistOf(TargetIsNotDeletedValidator.of(boardDomainModel.getIsDeleted(), StaticValue.DOMAIN_BOARD));
+
+        boardDomainModel.getCircle().ifPresentOrElse(
+                circleDomainModel -> {
+                    validatorBucket
+                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
+                            .consistOf(UserRoleValidator.of(restorerDomainModel.getRole(), List.of(Role.LEADER_CIRCLE)));
+
+                    if (restorerDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
+                        validatorBucket
+                                .consistOf(UserEqualValidator.of(
+                                        circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
+                                                () -> new InternalServerException(
+                                                        ErrorCode.INTERNAL_SERVER,
+                                                        "The board has circle without circle leader"
+                                                )
+                                        ),
+                                        restorerId
+                                ));
+                    }
+                },
+                () -> validatorBucket
+                        .consistOf(UserRoleValidator.of(restorerDomainModel.getRole(), List.of(Role.PRESIDENT)))
+        );
+
+        validatorBucket
+                .validate();
+
+        return BoardResponseDto.from(
+                this.boardPort.restore(boardId).orElseThrow(
+                        () -> new InternalServerException(
+                                ErrorCode.INTERNAL_SERVER,
+                                "Board id checked, but exception occurred"
+                        )
+                ),
+                restorerDomainModel.getRole()
         );
     }
 }
