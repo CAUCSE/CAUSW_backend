@@ -158,4 +158,13 @@ public class CircleController {
     ) {
         return this.circleService.delete(requestUserId, id);
     }
+
+    @PutMapping(value = "/restore/{circleId}")
+    @ResponseStatus(value = HttpStatus.OK)
+    public CircleResponseDto restore(
+            @AuthenticationPrincipal String requestUserId,
+            @PathVariable String circleId
+    ) {
+        return this.circleService.restore(requestUserId, circleId);
+    }
 }

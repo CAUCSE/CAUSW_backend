@@ -29,6 +29,7 @@ import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.GrantableRoleValidator;
 import net.causw.domain.validation.StudentIdIsNullValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
+import net.causw.domain.validation.TargetIsNotDeletedValidator;
 import net.causw.domain.validation.UserEqualValidator;
 import net.causw.domain.validation.UserNotEqualValidator;
 import net.causw.domain.validation.UserRoleIsNoneValidator;
@@ -736,6 +737,57 @@ public class CircleService {
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         "Application id checked, but exception occurred"
+                )
+        ));
+    }
+
+    public CircleResponseDto restore(String requestUserId, String circleId) {
+
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
+        CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "복구할 소모임을 찾을 수 없습니다."
+                )
+        );
+
+        UserDomainModel user = this.userPort.findById(requestUserId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "로그인된 사용자를 찾을 수 없습니다."
+                )
+        );
+
+        validatorBucket
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+                .consistOf(TargetIsNotDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
+                .consistOf(UserRoleValidator.of(
+                        user.getRole(),
+                        List.of(Role.PRESIDENT, Role.LEADER_CIRCLE)
+                ));
+
+        if (user.getRole().equals(Role.LEADER_CIRCLE)) {
+            validatorBucket
+                    .consistOf(UserEqualValidator.of(
+                            circle.getLeader().map(UserDomainModel::getId).orElseThrow(
+                                    () -> new InternalServerException(
+                                            ErrorCode.INTERNAL_SERVER,
+                                            "This circle has not circle leader"
+                                    )
+                            ),
+                            requestUserId
+                    ));
+        }
+
+        validatorBucket
+                .validate();
+
+        return CircleResponseDto.from(this.circlePort.restore(circleId).orElseThrow(
+                () -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "Circle id checked, but exception occurred"
                 )
         ));
     }

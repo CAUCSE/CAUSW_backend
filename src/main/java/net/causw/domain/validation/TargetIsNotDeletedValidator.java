@@ -3,27 +3,27 @@ package net.causw.domain.validation;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 
-public class TargetIsDeletedValidator extends AbstractValidator {
+public class TargetIsNotDeletedValidator extends AbstractValidator {
 
     private final boolean isDeleted;
 
     private final String domain;
 
-    private TargetIsDeletedValidator(boolean isDeleted, String domain) {
+    private TargetIsNotDeletedValidator(boolean isDeleted, String domain) {
         this.isDeleted = isDeleted;
         this.domain = domain;
     }
 
-    public static TargetIsDeletedValidator of(boolean isDeleted, String domain) {
-        return new TargetIsDeletedValidator(isDeleted, domain);
+    public static TargetIsNotDeletedValidator of(boolean isDeleted, String domain) {
+        return new TargetIsNotDeletedValidator(isDeleted, domain);
     }
 
     @Override
     public void validate() {
-        if (this.isDeleted) {
+        if (!this.isDeleted) {
             throw new BadRequestException(
                     ErrorCode.TARGET_DELETED,
-                    String.format("삭제된 %s 입니다.", this.domain)
+                    String.format("삭제되지 않은 %s 입니다.", this.domain)
             );
         }
     }
