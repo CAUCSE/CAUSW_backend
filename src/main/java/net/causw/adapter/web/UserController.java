@@ -4,21 +4,12 @@ import net.causw.application.UserService;
 import net.causw.application.dto.DuplicatedCheckResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.circle.CircleResponseDto;
-import net.causw.application.dto.user.UserAdmissionCreateRequestDto;
-import net.causw.application.dto.user.UserAdmissionResponseDto;
-import net.causw.application.dto.user.UserAdmissionsResponseDto;
-import net.causw.application.dto.user.UserCommentsResponseDto;
-import net.causw.application.dto.user.UserCreateRequestDto;
-import net.causw.application.dto.user.UserFindEmailRequestDto;
-import net.causw.application.dto.user.UserPostsResponseDto;
-import net.causw.application.dto.user.UserPrivilegedResponseDto;
-import net.causw.application.dto.user.UserResponseDto;
-import net.causw.application.dto.user.UserSignInRequestDto;
-import net.causw.application.dto.user.UserUpdatePasswordRequestDto;
-import net.causw.application.dto.user.UserUpdateRequestDto;
-import net.causw.application.dto.user.UserUpdateRoleRequestDto;
+import net.causw.application.dto.user.*;
+import net.causw.domain.model.UserDomainModel;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,6 +23,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
+import java.net.URI;
 import java.util.List;
 
 
@@ -118,6 +111,13 @@ public class UserController {
     @ResponseStatus(value = HttpStatus.CREATED)
     public UserResponseDto signUp(@RequestBody UserCreateRequestDto userCreateDto) {
         return this.userService.signUp(userCreateDto);
+    }
+
+    //에러 코드 사용하기
+    @PostMapping("/social-login")
+    @ResponseStatus(value = HttpStatus.OK)
+    public SocialSignInResponseDto socialLogin(@RequestBody SocialSignInRequestDto socialSignInRequestDto, HttpServletResponse response){
+        return this.userService.socialLogin(socialSignInRequestDto);
     }
 
     @PostMapping(value = "/sign-in")

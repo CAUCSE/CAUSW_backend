@@ -61,11 +61,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(
                         "/api/**/users/sign-in",
                         "/api/**/users/sign-up",
+                        "/api/**/users/social-login",
                         "/healthy",
                         "/api/**/users/admissions/apply",
                         "/api/**/users/**/is-duplicated",
                         "/api/**/users/email",
-                        "/api/**/users/password"
+                        "/api/**/users/password",
+                        "/api/**/users/social-login"
                 )
                 .permitAll()
                 .anyRequest().authenticated()

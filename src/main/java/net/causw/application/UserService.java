@@ -1,23 +1,15 @@
 package net.causw.application;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import net.causw.adapter.persistence.User;
 import net.causw.application.dto.DuplicatedCheckResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.comment.CommentsOfUserResponseDto;
-import net.causw.application.dto.user.UserAdmissionCreateRequestDto;
-import net.causw.application.dto.user.UserAdmissionResponseDto;
-import net.causw.application.dto.user.UserAdmissionsResponseDto;
-import net.causw.application.dto.user.UserCommentsResponseDto;
-import net.causw.application.dto.user.UserCreateRequestDto;
-import net.causw.application.dto.user.UserFindEmailRequestDto;
-import net.causw.application.dto.user.UserPostResponseDto;
-import net.causw.application.dto.user.UserPostsResponseDto;
-import net.causw.application.dto.user.UserPrivilegedResponseDto;
-import net.causw.application.dto.user.UserResponseDto;
-import net.causw.application.dto.user.UserSignInRequestDto;
-import net.causw.application.dto.user.UserUpdatePasswordRequestDto;
-import net.causw.application.dto.user.UserUpdateRequestDto;
-import net.causw.application.dto.user.UserUpdateRoleRequestDto;
+import net.causw.application.dto.locker.LockerResponseDto;
+import net.causw.application.dto.user.*;
 import net.causw.application.spi.BoardPort;
 import net.causw.application.spi.CircleMemberPort;
 import net.causw.application.spi.CirclePort;
@@ -34,43 +26,24 @@ import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
-import net.causw.domain.model.BoardDomainModel;
-import net.causw.domain.model.CircleDomainModel;
-import net.causw.domain.model.CircleMemberDomainModel;
-import net.causw.domain.model.CircleMemberStatus;
-import net.causw.domain.model.FavoriteBoardDomainModel;
-import net.causw.domain.model.ImageLocation;
-import net.causw.domain.model.LockerLogAction;
-import net.causw.domain.model.PostDomainModel;
-import net.causw.domain.model.Role;
-import net.causw.domain.model.StaticValue;
-import net.causw.domain.model.UserAdmissionDomainModel;
-import net.causw.domain.model.UserAdmissionLogAction;
-import net.causw.domain.model.UserDomainModel;
-import net.causw.domain.model.UserState;
-import net.causw.domain.validation.AdmissionYearValidator;
-import net.causw.domain.validation.CircleMemberStatusValidator;
-import net.causw.domain.validation.ConstraintValidator;
-import net.causw.domain.validation.GrantableRoleValidator;
-import net.causw.domain.validation.PasswordCorrectValidator;
-import net.causw.domain.validation.PasswordFormatValidator;
-import net.causw.domain.validation.TargetIsDeletedValidator;
-import net.causw.domain.validation.UserEqualValidator;
-import net.causw.domain.validation.UserRoleIsNoneValidator;
-import net.causw.domain.validation.UserRoleValidator;
-import net.causw.domain.validation.UserRoleWithoutAdminValidator;
-import net.causw.domain.validation.UserStateIsDropValidator;
-import net.causw.domain.validation.UserStateIsNotDropAndActiveValidator;
-import net.causw.domain.validation.UserStateValidator;
-import net.causw.domain.validation.ValidatorBucket;
+import net.causw.domain.model.*;
+import net.causw.domain.validation.*;
 import net.causw.infrastructure.GcpFileUploader;
 import net.causw.infrastructure.GoogleMailSender;
 import net.causw.infrastructure.PasswordGenerator;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Validator;
 import java.util.List;
 import java.util.Optional;
@@ -96,6 +69,8 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final Validator validator;
 
+    private final SocialLoginFactory socialLoginFactory;
+
     public UserService(
             UserPort userPort,
             BoardPort boardPort,
@@ -113,7 +88,8 @@ public class UserService {
             GoogleMailSender googleMailSender,
             PasswordGenerator passwordGenerator,
             PasswordEncoder passwordEncoder,
-            Validator validator
+            Validator validator,
+            SocialLoginFactory socialLoginFactory
     ) {
         this.userPort = userPort;
         this.boardPort = boardPort;
@@ -132,6 +108,7 @@ public class UserService {
         this.passwordGenerator = passwordGenerator;
         this.passwordEncoder = passwordEncoder;
         this.validator = validator;
+        this.socialLoginFactory = socialLoginFactory;
     }
 
     @Transactional(readOnly = true)
@@ -529,6 +506,7 @@ public class UserService {
                         this.passwordEncoder,
                         userDomainModel.getPassword(),
                         userSignInRequestDto.getPassword()))
+                .consistOf(InfoRequiredValidator.of(userDomainModel))
                 .validate();
 
         if (userDomainModel.getState() == UserState.AWAIT) {
@@ -549,6 +527,12 @@ public class UserService {
                 userDomainModel.getRole(),
                 userDomainModel.getState()
         );
+    }
+
+    public SocialSignInResponseDto socialLogin(SocialSignInRequestDto socialSignInRequestDto){
+        return this.socialLoginFactory
+                .getSocialLogin(SocialLoginType.of(socialSignInRequestDto.getProvider()))
+                .returnJwtToken(userPort, jwtTokenProvider, socialSignInRequestDto);
     }
 
     @Transactional(readOnly = true)

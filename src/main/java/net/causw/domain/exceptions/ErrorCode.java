@@ -24,6 +24,8 @@ public enum ErrorCode {
     INVALID_REQUEST_USER_STATE(4014),
     INVALID_FILE_EXTENSION(4015),
 
+    SOCIAL_LOGIN_FAIL(4016),
+
     /**
      * 401 Unauthorized
      */
@@ -37,6 +39,10 @@ public enum ErrorCode {
     API_NOT_ALLOWED(4107),
     NOT_MEMBER(4108),
     REJECT_USER(4109),
+
+    NEED_INFO(4110),
+
+    INVALID_ACCESS_TOKEN(4111),
 
     /**
      * 500 Internal Server Error
