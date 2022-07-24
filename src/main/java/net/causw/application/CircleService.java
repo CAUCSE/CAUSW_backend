@@ -17,6 +17,7 @@ import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
+import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.BoardDomainModel;
 import net.causw.domain.model.CircleDomainModel;
 import net.causw.domain.model.CircleMemberDomainModel;
@@ -450,9 +451,9 @@ public class CircleService {
             validatorBucket
                     .consistOf(UserEqualValidator.of(
                             circle.getLeader().map(UserDomainModel::getId).orElseThrow(
-                                    () -> new InternalServerException(
-                                            ErrorCode.INTERNAL_SERVER,
-                                            "This circle has not circle leader"
+                                    () -> new UnauthorizedException(
+                                            ErrorCode.API_NOT_ALLOWED,
+                                            "해당 소모임의 소모임장이 아닙니다."
                                     )
                             ),
                             user.getId()
@@ -765,21 +766,8 @@ public class CircleService {
                 .consistOf(TargetIsNotDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                 .consistOf(UserRoleValidator.of(
                         user.getRole(),
-                        List.of(Role.PRESIDENT, Role.LEADER_CIRCLE)
+                        List.of(Role.ADMIN)
                 ));
-
-        if (user.getRole().equals(Role.LEADER_CIRCLE)) {
-            validatorBucket
-                    .consistOf(UserEqualValidator.of(
-                            circle.getLeader().map(UserDomainModel::getId).orElseThrow(
-                                    () -> new InternalServerException(
-                                            ErrorCode.INTERNAL_SERVER,
-                                            "This circle has not circle leader"
-                                    )
-                            ),
-                            requestUserId
-                    ));
-        }
 
         validatorBucket
                 .validate();
