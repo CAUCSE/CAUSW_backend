@@ -43,4 +43,7 @@ public class StaticValue {
 
     // Flag
     public static final String LOCKER_ACCESS = "LOCKER_ACCESS";
+
+    // Text Field
+    public static final String EXPIRED_AT = "EXPIRE_DATE";
 }

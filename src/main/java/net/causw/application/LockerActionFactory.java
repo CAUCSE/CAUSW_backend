@@ -20,6 +20,7 @@ public class LockerActionFactory {
         this.map.put(LockerLogAction.DISABLE, LockerActionDisable::new);
         this.map.put(LockerLogAction.REGISTER, LockerActionRegister::new);
         this.map.put(LockerLogAction.RETURN, LockerActionReturn::new);
+        this.map.put(LockerLogAction.EXTEND, LockerActionExtend::new);
     }
 
     public LockerAction getLockerAction(LockerLogAction action) {

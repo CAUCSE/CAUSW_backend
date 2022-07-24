@@ -23,6 +23,7 @@ public enum ErrorCode {
     INVALID_REQUEST_ROLE(4013),
     INVALID_REQUEST_USER_STATE(4014),
     INVALID_FILE_EXTENSION(4015),
+    INVALID_EXPIRE_DATE(4016),
 
     /**
      * 401 Unauthorized

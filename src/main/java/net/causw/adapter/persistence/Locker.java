@@ -12,6 +12,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Getter
@@ -26,6 +28,9 @@ public class Locker extends BaseEntity {
     @Column(name = "is_active")
     @ColumnDefault("true")
     private Boolean isActive;
+
+    @Column(name = "expire_date")
+    private LocalDateTime expireDate;
 
     @OneToOne
     @JoinColumn(name = "user_id", nullable = true)
