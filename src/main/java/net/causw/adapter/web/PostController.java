@@ -99,7 +99,7 @@ public class PostController {
         );
     }
 
-    @PutMapping(value = "/restore/{id}")
+    @PutMapping(value = "/{id}/restore")
     @ResponseStatus(value = HttpStatus.OK)
     public PostResponseDto restore(
             @AuthenticationPrincipal String requestUserId,

@@ -648,7 +648,6 @@ public class PostService {
                         postDomainModel.getWriter().getId(),
                         List.of()
                 ))
-                .consistOf(ConstraintValidator.of(postDomainModel, this.validator))
                 .validate();
 
         PostDomainModel restoredPostDomainModel = this.postPort.restore(postId, postDomainModel).orElseThrow(
