@@ -61,7 +61,7 @@ public class BoardController {
         return this.boardService.delete(deleterId, id);
     }
 
-    @PutMapping(value = "/restore/{id}")
+    @PutMapping(value = "/{id}/restore")
     @ResponseStatus(value =  HttpStatus.OK)
     public BoardResponseDto restore(
             @AuthenticationPrincipal String restorerId,
