@@ -21,4 +21,6 @@ public interface BoardPort {
     Optional<BoardDomainModel> update(String id, BoardDomainModel boardDomainModel);
 
     Optional<BoardDomainModel> delete(String id);
+
+    Optional<BoardDomainModel> restore(String id);
 }

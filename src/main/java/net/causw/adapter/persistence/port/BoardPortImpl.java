@@ -80,4 +80,15 @@ public class BoardPortImpl extends DomainModelMapper implements BoardPort {
                 }
         );
     }
+
+    @Override
+    public Optional<BoardDomainModel> restore(String id) {
+        return this.boardRepository.findById(id).map(
+                srcBoard -> {
+                    srcBoard.setIsDeleted(false);
+
+                    return this.entityToDomainModel(this.boardRepository.save(srcBoard));
+                }
+        );
+    }
 }
