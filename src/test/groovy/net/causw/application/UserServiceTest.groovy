@@ -52,6 +52,7 @@ class UserServiceTest extends Specification {
     private PasswordGenerator passwordGenerator = Mock(PasswordGenerator.class)
     private PasswordEncoder passwordEncoder = Mock(PasswordEncoder.class)
     private Validator validator = Validation.buildDefaultValidatorFactory().getValidator()
+    private SocialLoginFactory socialLoginFactory = Mock(SocialLoginFactory.class);
     private UserService userService = new UserService(
             this.userPort,
             this.boardPort,
@@ -69,7 +70,8 @@ class UserServiceTest extends Specification {
             this.googleMailSender,
             this.passwordGenerator,
             this.passwordEncoder,
-            this.validator
+            this.validator,
+            this.socialLoginFactory
     )
 
 
