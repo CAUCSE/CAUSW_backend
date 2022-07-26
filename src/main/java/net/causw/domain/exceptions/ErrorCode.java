@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum ErrorCode {
+
     /**
      * 400 Bad Request
      */
@@ -26,6 +27,8 @@ public enum ErrorCode {
 
     SOCIAL_LOGIN_FAIL(4016),
 
+    INVALID_PROVIDER(4017),
+
     /**
      * 401 Unauthorized
      */
@@ -42,12 +45,11 @@ public enum ErrorCode {
 
     NEED_INFO(4110),
 
-    INVALID_ACCESS_TOKEN(4111),
-
     /**
      * 500 Internal Server Error
      */
     INTERNAL_SERVER(5000),
+    PARSING_ERROR(5001),
 
     /**
      * 503 Service Unavailable Error

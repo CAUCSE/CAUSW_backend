@@ -26,8 +26,8 @@ public class SocialLoginFactory {
         Supplier<SocialLogin> socialLoginSupplier = map.get(provider);
         if(socialLoginSupplier == null) {
             throw new BadRequestException(
-                    ErrorCode.INVALID_PARAMETER,
-                    "Invalid action parameter"
+                    ErrorCode.INVALID_PROVIDER,
+                    "지원하지 않는 소셜로그인입니다."
             );
         }
         return socialLoginSupplier.get();

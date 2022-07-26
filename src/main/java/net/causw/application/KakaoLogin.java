@@ -1,27 +1,21 @@
 package net.causw.application;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.user.KakaoProfileDto;
-import net.causw.application.dto.user.OauthTokenDto;
 import net.causw.application.dto.user.SocialSignInRequestDto;
 import net.causw.application.dto.user.SocialSignInResponseDto;
 import net.causw.application.spi.UserPort;
 import net.causw.config.JwtTokenProvider;
-import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
+import net.causw.domain.exceptions.ServiceUnavailableException;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.UserDomainModel;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
@@ -31,7 +25,6 @@ public class KakaoLogin implements SocialLogin{
     public SocialSignInResponseDto returnJwtToken(UserPort userPort, JwtTokenProvider jwtTokenProvider, SocialSignInRequestDto socialSignInRequestDto) {
 
         String accessToken = socialSignInRequestDto.getAccessToken();
-        System.out.println("accessToken = " + accessToken);
 
         RestTemplate rt = new RestTemplate();
         //HttpHEader 오브젝트 생성
@@ -55,7 +48,7 @@ public class KakaoLogin implements SocialLogin{
         }
         catch(Exception e)
         {
-            throw new BadRequestException(ErrorCode.SOCIAL_LOGIN_FAIL, "소셜로그인 토큰 요청이 실패했습니다.");
+            throw new ServiceUnavailableException(ErrorCode.SERVICE_UNAVAILABLE, "소셜로그인에 실패하였습니다.");
         }
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -63,20 +56,27 @@ public class KakaoLogin implements SocialLogin{
         try {
             kakaoProfileDto = objectMapper.readValue(response.getBody(), KakaoProfileDto.class);
         } catch(Exception e) {
-            throw new UnauthorizedException(ErrorCode.INVALID_ACCESS_TOKEN, "유효하지 않은 Access Token 입니다.");
+            throw new InternalServerException(ErrorCode.PARSING_ERROR, "소셜 로그인에 실패하였습니다.");
         }
 
         UserDomainModel userDomainModel = userPort.findByEmail("KAKAO_" + kakaoProfileDto.getKakao_account().getEmail())
                 .orElse(null);
 
         if(userDomainModel == null){
-            userDomainModel = userPort.create(UserDomainModel.of(
-                    "KAKAO_"+kakaoProfileDto.getKakao_account().getEmail(),
-                    "temporary",
-                    "temporary",
-                    null,
-                    0,
-                    null
+            userDomainModel = userPort.create(UserDomainModel.of("KAKAO", kakaoProfileDto.getKakao_account().getEmail()));
+
+            throw new UnauthorizedException(ErrorCode.NEED_INFO, jwtTokenProvider.createToken(
+                    userDomainModel.getId(),
+                    userDomainModel.getRole(),
+                    userDomainModel.getState()
+            ));
+        }
+        else if(userDomainModel.getStudentId() == null && userDomainModel.getName() == null && userDomainModel.getAdmissionYear() == 0)
+        {
+            throw new UnauthorizedException(ErrorCode.NEED_INFO, jwtTokenProvider.createToken(
+                    userDomainModel.getId(),
+                    userDomainModel.getRole(),
+                    userDomainModel.getState()
             ));
         }
 
