@@ -559,7 +559,7 @@ public class UserService {
     public SocialSignInResponseDto socialLogin(SocialSignInRequestDto socialSignInRequestDto){
         return this.socialLoginFactory
                 .getSocialLogin(SocialLoginType.of(socialSignInRequestDto.getProvider()))
-                .returnJwtToken(userPort, jwtTokenProvider, socialSignInRequestDto);
+                .returnJwtToken(userAdmissionPort, userPort, jwtTokenProvider, socialSignInRequestDto);
     }
 
     @Transactional(readOnly = true)

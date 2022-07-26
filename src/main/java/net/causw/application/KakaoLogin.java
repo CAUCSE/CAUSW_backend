@@ -5,13 +5,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import net.causw.application.dto.user.KakaoProfileDto;
 import net.causw.application.dto.user.SocialSignInRequestDto;
 import net.causw.application.dto.user.SocialSignInResponseDto;
+import net.causw.application.spi.UserAdmissionPort;
 import net.causw.application.spi.UserPort;
 import net.causw.config.JwtTokenProvider;
+import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.ServiceUnavailableException;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.UserDomainModel;
+import net.causw.domain.model.UserState;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -22,7 +25,7 @@ import org.springframework.web.client.RestTemplate;
 public class KakaoLogin implements SocialLogin{
 
     @Override
-    public SocialSignInResponseDto returnJwtToken(UserPort userPort, JwtTokenProvider jwtTokenProvider, SocialSignInRequestDto socialSignInRequestDto) {
+    public SocialSignInResponseDto returnJwtToken(UserAdmissionPort userAdmissionPort, UserPort userPort, JwtTokenProvider jwtTokenProvider, SocialSignInRequestDto socialSignInRequestDto) {
 
         String accessToken = socialSignInRequestDto.getAccessToken();
 
@@ -78,6 +81,14 @@ public class KakaoLogin implements SocialLogin{
                     userDomainModel.getRole(),
                     userDomainModel.getState()
             ));
+        }
+        else if (userDomainModel.getState() == UserState.AWAIT) {
+            userAdmissionPort.findByUserId(userDomainModel.getId()).orElseThrow(
+                    () -> new BadRequestException(
+                            ErrorCode.NO_APPLICATION,
+                            "신청서를 작성하지 않았습니다."
+                    )
+            );
         }
 
         return new SocialSignInResponseDto(jwtTokenProvider.createToken(
