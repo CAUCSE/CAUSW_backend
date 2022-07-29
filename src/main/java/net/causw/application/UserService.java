@@ -312,7 +312,7 @@ public class UserService {
                                                     requestUser,
                                                     post.getBoard()
                                             )
-                                    )
+                            )
                     );
                 })
         );

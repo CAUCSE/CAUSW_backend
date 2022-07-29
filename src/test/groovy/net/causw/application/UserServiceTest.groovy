@@ -42,6 +42,7 @@ class UserServiceTest extends Specification {
     private CirclePort circlePort = Mock(CirclePort.class)
     private CircleMemberPort circleMemberPort = Mock(CircleMemberPort.class)
     private CommentPort commentPort = Mock(CommentPort.class)
+    private ChildCommentPort childCommentPort = Mock(ChildCommentPort.class)
     private FavoriteBoardPort favoriteBoardPort = Mock(FavoriteBoardPort.class)
     private LockerPort lockerPort = Mock(LockerPort.class)
     private LockerLogPort lockerLogPort = Mock(LockerLogPort.class)
@@ -60,6 +61,7 @@ class UserServiceTest extends Specification {
             this.circlePort,
             this.circleMemberPort,
             this.commentPort,
+            this.childCommentPort,
             this.favoriteBoardPort,
             this.lockerPort,
             this.lockerLogPort,
