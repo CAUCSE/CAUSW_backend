@@ -3,6 +3,7 @@ package net.causw.application.dto.comment;
 import lombok.Getter;
 import lombok.Setter;
 import net.causw.domain.model.CommentDomainModel;
+import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
 
@@ -20,6 +21,7 @@ public class CommentsOfUserResponseDto {
     private String postName;
     private String circleId;
     private String circleName;
+    private Page<ChildCommentResponseDto> childComments;
 
     private CommentsOfUserResponseDto(
             String id,
@@ -32,7 +34,8 @@ public class CommentsOfUserResponseDto {
             String postId,
             String postName,
             String circleId,
-            String circleName
+            String circleName,
+            Page<ChildCommentResponseDto> childComments
     ) {
         this.id = id;
         this.content = content;
@@ -45,6 +48,7 @@ public class CommentsOfUserResponseDto {
         this.postName = postName;
         this.circleId = circleId;
         this.circleName = circleName;
+        this.childComments = childComments;
     }
 
     public static CommentsOfUserResponseDto from(
@@ -54,7 +58,8 @@ public class CommentsOfUserResponseDto {
             String postId,
             String postName,
             String circleId,
-            String circleName
+            String circleName,
+            Page<ChildCommentResponseDto> childComments
     ) {
         return new CommentsOfUserResponseDto(
                 comment.getId(),
@@ -67,7 +72,8 @@ public class CommentsOfUserResponseDto {
                 postId,
                 postName,
                 circleId,
-                circleName
+                circleName,
+                childComments
         );
     }
 }

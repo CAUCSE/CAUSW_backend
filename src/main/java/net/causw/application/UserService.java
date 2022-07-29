@@ -3,6 +3,7 @@ package net.causw.application;
 import net.causw.application.dto.DuplicatedCheckResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.circle.CircleResponseDto;
+import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentsOfUserResponseDto;
 import net.causw.application.dto.user.UserAdmissionCreateRequestDto;
 import net.causw.application.dto.user.UserAdmissionResponseDto;
@@ -22,6 +23,7 @@ import net.causw.application.spi.BoardPort;
 import net.causw.application.spi.CircleMemberPort;
 import net.causw.application.spi.CirclePort;
 import net.causw.application.spi.CommentPort;
+import net.causw.application.spi.ChildCommentPort;
 import net.causw.application.spi.FavoriteBoardPort;
 import net.causw.application.spi.LockerLogPort;
 import net.causw.application.spi.LockerPort;
@@ -84,6 +86,7 @@ public class UserService {
     private final CirclePort circlePort;
     private final CircleMemberPort circleMemberPort;
     private final CommentPort commentPort;
+    private final ChildCommentPort childCommentPort;
     private final FavoriteBoardPort favoriteBoardPort;
     private final LockerPort lockerPort;
     private final LockerLogPort lockerLogPort;
@@ -103,6 +106,7 @@ public class UserService {
             CirclePort circlePort,
             CircleMemberPort circleMemberPort,
             CommentPort commentPort,
+            ChildCommentPort childCommentPort,
             FavoriteBoardPort favoriteBoardPort,
             LockerPort lockerPort,
             LockerLogPort lockerLogPort,
@@ -121,6 +125,7 @@ public class UserService {
         this.circlePort = circlePort;
         this.circleMemberPort = circleMemberPort;
         this.commentPort = commentPort;
+        this.childCommentPort = childCommentPort;
         this.favoriteBoardPort = favoriteBoardPort;
         this.lockerPort = lockerPort;
         this.lockerLogPort = lockerLogPort;
@@ -300,7 +305,14 @@ public class UserService {
                             post.getId(),
                             post.getTitle(),
                             post.getBoard().getCircle().map(CircleDomainModel::getId).orElse(null),
-                            post.getBoard().getCircle().map(CircleDomainModel::getName).orElse(null)
+                            post.getBoard().getCircle().map(CircleDomainModel::getName).orElse(null),
+                            this.childCommentPort.findByParentComment(comment.getId(), 0).map(childCommentDomainModel ->
+                                            ChildCommentResponseDto.from(
+                                                    childCommentDomainModel,
+                                                    requestUser,
+                                                    post.getBoard()
+                                            )
+                                    )
                     );
                 })
         );
