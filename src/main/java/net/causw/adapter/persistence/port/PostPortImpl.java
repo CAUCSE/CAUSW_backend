@@ -95,4 +95,14 @@ public class PostPortImpl extends DomainModelMapper implements PostPort {
         return this.postRepository.findByUserId(userId, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
                 .map(this::entityToDomainModel);
     }
+
+    @Override
+    public Optional<PostDomainModel> restore(String id, PostDomainModel postDomainModel) {
+        return this.postRepository.findById(id).map(
+                srcPost -> {
+                    srcPost.setIsDeleted(false);
+                    return this.entityToDomainModel(this.postRepository.save(srcPost));
+                }
+        );
+    }
 }

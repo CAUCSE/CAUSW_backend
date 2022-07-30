@@ -24,4 +24,6 @@ public interface PostPort {
     Optional<PostDomainModel> findLatest(String boardId);
 
     Page<PostDomainModel> findByUserId(String userId, Integer pageNum);
+
+    Optional<PostDomainModel> restore(String id, PostDomainModel postDomainModel);
 }
