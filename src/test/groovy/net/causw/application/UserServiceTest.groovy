@@ -260,9 +260,22 @@ class UserServiceTest extends Specification {
                 mockPostDomainModel.getId()
         )
 
+        def mockChildCommentDomainModel = ChildCommentDomainModel.of(
+                "test child comment id",
+                "test child comment content",
+                false,
+                null,
+                null,
+                (UserDomainModel) this.mockUserDomainModel,
+                mockCommentDomainModel,
+                null,
+                null
+        )
+
         this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
         this.postPort.findById("test post id") >> Optional.of(mockPostDomainModel)
         this.commentPort.findByUserId(((UserDomainModel) this.mockUserDomainModel).getId(), 0) >> new PageImpl<CommentDomainModel>(List.of(mockCommentDomainModel))
+        this.childCommentPort.findByParentComment("test comment id", 0) >> new PageImpl<ChildCommentDomainModel>(List.of(mockChildCommentDomainModel))
 
         when:
         def userCommentResponseDto = this.userService.findComments("test", 0)

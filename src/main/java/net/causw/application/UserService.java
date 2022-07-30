@@ -36,19 +36,7 @@ import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
-import net.causw.domain.model.BoardDomainModel;
-import net.causw.domain.model.CircleDomainModel;
-import net.causw.domain.model.CircleMemberStatus;
-import net.causw.domain.model.FavoriteBoardDomainModel;
-import net.causw.domain.model.ImageLocation;
-import net.causw.domain.model.LockerLogAction;
-import net.causw.domain.model.PostDomainModel;
-import net.causw.domain.model.Role;
-import net.causw.domain.model.StaticValue;
-import net.causw.domain.model.UserAdmissionDomainModel;
-import net.causw.domain.model.UserAdmissionLogAction;
-import net.causw.domain.model.UserDomainModel;
-import net.causw.domain.model.UserState;
+import net.causw.domain.model.*;
 import net.causw.domain.validation.AdmissionYearValidator;
 import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.ConstraintValidator;
@@ -307,11 +295,11 @@ public class UserService {
                             post.getBoard().getCircle().map(CircleDomainModel::getId).orElse(null),
                             post.getBoard().getCircle().map(CircleDomainModel::getName).orElse(null),
                             this.childCommentPort.findByParentComment(comment.getId(), 0).map(childCommentDomainModel ->
-                                            ChildCommentResponseDto.from(
-                                                    childCommentDomainModel,
-                                                    requestUser,
-                                                    post.getBoard()
-                                            )
+                                    ChildCommentResponseDto.from(
+                                            childCommentDomainModel,
+                                            requestUser,
+                                            post.getBoard()
+                                    )
                             )
                     );
                 })
