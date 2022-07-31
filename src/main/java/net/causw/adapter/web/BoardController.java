@@ -60,4 +60,13 @@ public class BoardController {
     ) {
         return this.boardService.delete(deleterId, id);
     }
+
+    @PutMapping(value = "/{id}/restore")
+    @ResponseStatus(value =  HttpStatus.OK)
+    public BoardResponseDto restore(
+            @AuthenticationPrincipal String restorerId,
+            @PathVariable String id
+    ){
+        return this.boardService.restore(restorerId, id);
+    }
 }
