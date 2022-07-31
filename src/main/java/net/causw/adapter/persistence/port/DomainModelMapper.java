@@ -11,6 +11,7 @@ import net.causw.adapter.persistence.LockerLocation;
 import net.causw.adapter.persistence.Post;
 import net.causw.adapter.persistence.User;
 import net.causw.adapter.persistence.UserAdmission;
+import net.causw.adapter.persistence.Inquiry;
 import net.causw.domain.model.BoardDomainModel;
 import net.causw.domain.model.ChildCommentDomainModel;
 import net.causw.domain.model.CircleDomainModel;
@@ -22,6 +23,7 @@ import net.causw.domain.model.LockerLocationDomainModel;
 import net.causw.domain.model.PostDomainModel;
 import net.causw.domain.model.UserAdmissionDomainModel;
 import net.causw.domain.model.UserDomainModel;
+import net.causw.domain.model.InquiryDomainModel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -155,6 +157,18 @@ public abstract class DomainModelMapper {
                 circleMember.getUser().getName(),
                 circleMember.getCreatedAt(),
                 circleMember.getUpdatedAt()
+        );
+    }
+
+    protected InquiryDomainModel entityToDomainModel(Inquiry inquiry){
+        return InquiryDomainModel.of(
+                inquiry.getId(),
+                inquiry.getTitle(),
+                inquiry.getContent(),
+                this.entityToDomainModel(inquiry.getWriter()),
+                inquiry.getIsDeleted(),
+                inquiry.getCreatedAt(),
+                inquiry.getUpdatedAt()
         );
     }
 }
