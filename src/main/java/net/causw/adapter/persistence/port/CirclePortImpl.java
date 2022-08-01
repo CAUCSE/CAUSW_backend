@@ -84,4 +84,15 @@ public class CirclePortImpl extends DomainModelMapper implements CirclePort {
                 }
         );
     }
+
+    @Override
+    public Optional<CircleDomainModel> restore(String id) {
+        return this.circleRepository.findById(id).map(
+                srcCircle -> {
+                    srcCircle.setIsDeleted(false);
+                    return this.entityToDomainModel(this.circleRepository.save(srcCircle));
+                }
+        );
+
+    }
 }
