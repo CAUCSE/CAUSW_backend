@@ -9,7 +9,8 @@ public enum LockerLogAction {
     ENABLE("ENABLE"),
     DISABLE("DISABLE"),
     REGISTER("REGISTER"),
-    RETURN("RETURN");
+    RETURN("RETURN"),
+    EXTEND("EXTEND");
 
     private final String value;
 

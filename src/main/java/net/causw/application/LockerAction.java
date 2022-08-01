@@ -3,6 +3,7 @@ package net.causw.application;
 import net.causw.application.spi.FlagPort;
 import net.causw.application.spi.LockerLogPort;
 import net.causw.application.spi.LockerPort;
+import net.causw.application.spi.TextFieldPort;
 import net.causw.domain.model.LockerDomainModel;
 import net.causw.domain.model.UserDomainModel;
 
@@ -14,6 +15,7 @@ public interface LockerAction {
             UserDomainModel updaterDomainModel,
             LockerPort lockerPort,
             LockerLogPort lockerLogPort,
-            FlagPort flagPort
+            FlagPort flagPort,
+            TextFieldPort textFieldPort
     );
 }

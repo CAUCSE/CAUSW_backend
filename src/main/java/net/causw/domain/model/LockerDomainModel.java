@@ -17,6 +17,9 @@ public class LockerDomainModel {
 
     @NotNull(message = "사물함 상태가 입력되지 않았습니다.")
     private Boolean isActive;
+
+    private LocalDateTime expiredAt;
+
     private LocalDateTime updatedAt;
     private UserDomainModel user;
 
@@ -71,14 +74,20 @@ public class LockerDomainModel {
         );
     }
 
-    public void register(UserDomainModel user) {
+    public void register(UserDomainModel user, LocalDateTime expiredAt) {
         this.user = user;
         this.isActive = Boolean.FALSE;
+        this.expiredAt = expiredAt;
     }
 
     public void returnLocker() {
         this.user = null;
         this.isActive = Boolean.TRUE;
+        this.expiredAt = null;
+    }
+
+    public void extendExpireDate(LocalDateTime expiredAt) {
+        this.expiredAt = expiredAt;
     }
 
     public void activate() {
