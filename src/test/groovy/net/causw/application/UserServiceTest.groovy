@@ -42,6 +42,7 @@ class UserServiceTest extends Specification {
     private CirclePort circlePort = Mock(CirclePort.class)
     private CircleMemberPort circleMemberPort = Mock(CircleMemberPort.class)
     private CommentPort commentPort = Mock(CommentPort.class)
+    private ChildCommentPort childCommentPort = Mock(ChildCommentPort.class)
     private FavoriteBoardPort favoriteBoardPort = Mock(FavoriteBoardPort.class)
     private LockerPort lockerPort = Mock(LockerPort.class)
     private LockerLogPort lockerLogPort = Mock(LockerLogPort.class)
@@ -60,6 +61,7 @@ class UserServiceTest extends Specification {
             this.circlePort,
             this.circleMemberPort,
             this.commentPort,
+            this.childCommentPort,
             this.favoriteBoardPort,
             this.lockerPort,
             this.lockerLogPort,
@@ -258,9 +260,22 @@ class UserServiceTest extends Specification {
                 mockPostDomainModel.getId()
         )
 
+        def mockChildCommentDomainModel = ChildCommentDomainModel.of(
+                "test child comment id",
+                "test child comment content",
+                false,
+                null,
+                null,
+                (UserDomainModel) this.mockUserDomainModel,
+                mockCommentDomainModel,
+                null,
+                null
+        )
+
         this.userPort.findById("test") >> Optional.of(this.mockUserDomainModel)
         this.postPort.findById("test post id") >> Optional.of(mockPostDomainModel)
         this.commentPort.findByUserId(((UserDomainModel) this.mockUserDomainModel).getId(), 0) >> new PageImpl<CommentDomainModel>(List.of(mockCommentDomainModel))
+        this.childCommentPort.findByParentComment("test comment id", 0) >> new PageImpl<ChildCommentDomainModel>(List.of(mockChildCommentDomainModel))
 
         when:
         def userCommentResponseDto = this.userService.findComments("test", 0)
