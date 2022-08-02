@@ -100,6 +100,23 @@ public class UserDomainModel {
         );
     }
 
+    public static UserDomainModel of(
+            String provider,
+            String email
+    ){
+        return new UserDomainModel(
+                null,
+        provider+"_"+email,
+                "temporary",
+                "temporary",
+                null,
+                0,
+                Role.NONE,
+                null,
+                UserState.AWAIT
+            );
+    }
+
     public void update(
             String email,
             String name,

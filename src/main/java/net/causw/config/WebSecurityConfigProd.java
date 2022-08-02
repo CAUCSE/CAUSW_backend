@@ -65,11 +65,11 @@ public class WebSecurityConfigProd extends WebSecurityConfigurerAdapter {
                         "/api/**/users/admissions/apply",
                         "/api/**/users/**/is-duplicated",
                         "/api/**/users/email",
-                        "/api/**/users/password"
+                        "/api/**/users/password",
+                        "/api/**/users/social-login"
                 )
                 .permitAll()
                 .anyRequest().authenticated()
-
                 .and()
                 .addFilterBefore(new JwtAuthenticationFilter(this.jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
     }

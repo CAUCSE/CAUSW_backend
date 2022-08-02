@@ -4,6 +4,8 @@ import net.causw.application.dto.DuplicatedCheckResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.comment.CommentsOfUserResponseDto;
+import net.causw.application.dto.user.SocialSignInRequestDto;
+import net.causw.application.dto.user.SocialSignInResponseDto;
 import net.causw.application.dto.user.UserAdmissionCreateRequestDto;
 import net.causw.application.dto.user.UserAdmissionResponseDto;
 import net.causw.application.dto.user.UserAdmissionsResponseDto;
@@ -42,6 +44,7 @@ import net.causw.domain.model.ImageLocation;
 import net.causw.domain.model.LockerLogAction;
 import net.causw.domain.model.PostDomainModel;
 import net.causw.domain.model.Role;
+import net.causw.domain.model.SocialLoginType;
 import net.causw.domain.model.StaticValue;
 import net.causw.domain.model.UserAdmissionDomainModel;
 import net.causw.domain.model.UserAdmissionLogAction;
@@ -68,7 +71,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import javax.validation.Validator;
 import java.util.List;
 import java.util.Optional;
@@ -94,6 +96,8 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final Validator validator;
 
+    private final SocialLoginFactory socialLoginFactory;
+
     public UserService(
             UserPort userPort,
             BoardPort boardPort,
@@ -111,7 +115,8 @@ public class UserService {
             GoogleMailSender googleMailSender,
             PasswordGenerator passwordGenerator,
             PasswordEncoder passwordEncoder,
-            Validator validator
+            Validator validator,
+            SocialLoginFactory socialLoginFactory
     ) {
         this.userPort = userPort;
         this.boardPort = boardPort;
@@ -130,6 +135,7 @@ public class UserService {
         this.passwordGenerator = passwordGenerator;
         this.passwordEncoder = passwordEncoder;
         this.validator = validator;
+        this.socialLoginFactory = socialLoginFactory;
     }
 
     @Transactional(readOnly = true)
@@ -551,6 +557,13 @@ public class UserService {
                 userDomainModel.getRole(),
                 userDomainModel.getState()
         );
+    }
+
+    @Transactional
+    public SocialSignInResponseDto socialLogin(SocialSignInRequestDto socialSignInRequestDto){
+        return this.socialLoginFactory
+                .getSocialLogin(SocialLoginType.of(socialSignInRequestDto.getProvider()))
+                .returnJwtToken(userAdmissionPort, userPort, jwtTokenProvider, socialSignInRequestDto);
     }
 
     @Transactional(readOnly = true)
