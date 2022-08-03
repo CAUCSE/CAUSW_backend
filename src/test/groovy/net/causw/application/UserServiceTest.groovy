@@ -45,6 +45,7 @@ class UserServiceTest extends Specification {
     private FavoriteBoardPort favoriteBoardPort = Mock(FavoriteBoardPort.class)
     private LockerPort lockerPort = Mock(LockerPort.class)
     private LockerLogPort lockerLogPort = Mock(LockerLogPort.class)
+    private DeviceTokenPort deviceTokenPort = Mock(DeviceTokenPort.class)
     private JwtTokenProvider jwtTokenProvider = Mock(JwtTokenProvider.class)
     private GcpFileUploader gcpFileUploader = Mock(GcpFileUploader.class)
     private GoogleMailSender googleMailSender = Mock(GoogleMailSender.class)
@@ -63,6 +64,7 @@ class UserServiceTest extends Specification {
             this.favoriteBoardPort,
             this.lockerPort,
             this.lockerLogPort,
+            this.deviceTokenPort,
             this.jwtTokenProvider,
             this.gcpFileUploader,
             this.googleMailSender,

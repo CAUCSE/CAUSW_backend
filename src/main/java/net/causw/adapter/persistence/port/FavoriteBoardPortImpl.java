@@ -40,4 +40,13 @@ public class FavoriteBoardPortImpl extends DomainModelMapper implements Favorite
                 .map(this::entityToDomainModel)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<FavoriteBoardDomainModel> findByBoardId(String boardId) {
+        return this.favoriteBoardRepository.findByBoard_Id(boardId)
+                .stream()
+                .filter(favoriteBoard -> !favoriteBoard.getBoard().getIsDeleted())
+                .map(this::entityToDomainModel)
+                .collect(Collectors.toList());
+    }
 }

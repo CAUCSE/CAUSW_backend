@@ -4,49 +4,14 @@ import net.causw.application.dto.DuplicatedCheckResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.comment.CommentsOfUserResponseDto;
-import net.causw.application.dto.user.UserAdmissionCreateRequestDto;
-import net.causw.application.dto.user.UserAdmissionResponseDto;
-import net.causw.application.dto.user.UserAdmissionsResponseDto;
-import net.causw.application.dto.user.UserCommentsResponseDto;
-import net.causw.application.dto.user.UserCreateRequestDto;
-import net.causw.application.dto.user.UserFindEmailRequestDto;
-import net.causw.application.dto.user.UserPostResponseDto;
-import net.causw.application.dto.user.UserPostsResponseDto;
-import net.causw.application.dto.user.UserPrivilegedResponseDto;
-import net.causw.application.dto.user.UserResponseDto;
-import net.causw.application.dto.user.UserSignInRequestDto;
-import net.causw.application.dto.user.UserUpdatePasswordRequestDto;
-import net.causw.application.dto.user.UserUpdateRequestDto;
-import net.causw.application.dto.user.UserUpdateRoleRequestDto;
-import net.causw.application.spi.BoardPort;
-import net.causw.application.spi.CircleMemberPort;
-import net.causw.application.spi.CirclePort;
-import net.causw.application.spi.CommentPort;
-import net.causw.application.spi.FavoriteBoardPort;
-import net.causw.application.spi.LockerLogPort;
-import net.causw.application.spi.LockerPort;
-import net.causw.application.spi.PostPort;
-import net.causw.application.spi.UserAdmissionLogPort;
-import net.causw.application.spi.UserAdmissionPort;
-import net.causw.application.spi.UserPort;
+import net.causw.application.dto.user.*;
+import net.causw.application.spi.*;
 import net.causw.config.JwtTokenProvider;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
-import net.causw.domain.model.BoardDomainModel;
-import net.causw.domain.model.CircleDomainModel;
-import net.causw.domain.model.CircleMemberStatus;
-import net.causw.domain.model.FavoriteBoardDomainModel;
-import net.causw.domain.model.ImageLocation;
-import net.causw.domain.model.LockerLogAction;
-import net.causw.domain.model.PostDomainModel;
-import net.causw.domain.model.Role;
-import net.causw.domain.model.StaticValue;
-import net.causw.domain.model.UserAdmissionDomainModel;
-import net.causw.domain.model.UserAdmissionLogAction;
-import net.causw.domain.model.UserDomainModel;
-import net.causw.domain.model.UserState;
+import net.causw.domain.model.*;
 import net.causw.domain.validation.AdmissionYearValidator;
 import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.ConstraintValidator;
@@ -87,6 +52,7 @@ public class UserService {
     private final FavoriteBoardPort favoriteBoardPort;
     private final LockerPort lockerPort;
     private final LockerLogPort lockerLogPort;
+    private final DeviceTokenPort deviceTokenPort;
     private final JwtTokenProvider jwtTokenProvider;
     private final GcpFileUploader gcpFileUploader;
     private final GoogleMailSender googleMailSender;
@@ -106,6 +72,7 @@ public class UserService {
             FavoriteBoardPort favoriteBoardPort,
             LockerPort lockerPort,
             LockerLogPort lockerLogPort,
+            DeviceTokenPort deviceTokenPort,
             JwtTokenProvider jwtTokenProvider,
             GcpFileUploader gcpFileUploader,
             GoogleMailSender googleMailSender,
@@ -124,6 +91,7 @@ public class UserService {
         this.favoriteBoardPort = favoriteBoardPort;
         this.lockerPort = lockerPort;
         this.lockerLogPort = lockerLogPort;
+        this.deviceTokenPort = deviceTokenPort;
         this.jwtTokenProvider = jwtTokenProvider;
         this.gcpFileUploader = gcpFileUploader;
         this.googleMailSender = googleMailSender;
@@ -1132,5 +1100,28 @@ public class UserService {
                         "User id checked, but exception occurred"
                 )
         ));
+    }
+
+    @Transactional
+    public UserTokenSaveResponseDto saveToken(
+            String userId,
+            UserTokenSaveRequestDto userTokenSaveRequestDto
+    ) {
+        UserDomainModel user = this.userPort.findById(userId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "로그인된 사용자를 찾을 수 없습니다."
+                )
+        );
+
+        DeviceTokenDomainModel deviceTokenDomainModel = DeviceTokenDomainModel.of(
+                userTokenSaveRequestDto.getDeviceToken(),
+                userTokenSaveRequestDto.getOs(),
+                userTokenSaveRequestDto.getDeviceName(),
+                user
+        );
+        return UserTokenSaveResponseDto.from(user,
+                this.deviceTokenPort.create(deviceTokenDomainModel)
+        );
     }
 }

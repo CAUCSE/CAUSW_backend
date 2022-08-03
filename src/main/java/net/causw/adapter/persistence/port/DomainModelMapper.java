@@ -1,27 +1,7 @@
 package net.causw.adapter.persistence.port;
 
-import net.causw.adapter.persistence.Board;
-import net.causw.adapter.persistence.ChildComment;
-import net.causw.adapter.persistence.Circle;
-import net.causw.adapter.persistence.CircleMember;
-import net.causw.adapter.persistence.Comment;
-import net.causw.adapter.persistence.FavoriteBoard;
-import net.causw.adapter.persistence.Locker;
-import net.causw.adapter.persistence.LockerLocation;
-import net.causw.adapter.persistence.Post;
-import net.causw.adapter.persistence.User;
-import net.causw.adapter.persistence.UserAdmission;
-import net.causw.domain.model.BoardDomainModel;
-import net.causw.domain.model.ChildCommentDomainModel;
-import net.causw.domain.model.CircleDomainModel;
-import net.causw.domain.model.CircleMemberDomainModel;
-import net.causw.domain.model.CommentDomainModel;
-import net.causw.domain.model.FavoriteBoardDomainModel;
-import net.causw.domain.model.LockerDomainModel;
-import net.causw.domain.model.LockerLocationDomainModel;
-import net.causw.domain.model.PostDomainModel;
-import net.causw.domain.model.UserAdmissionDomainModel;
-import net.causw.domain.model.UserDomainModel;
+import net.causw.adapter.persistence.*;
+import net.causw.domain.model.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -155,6 +135,16 @@ public abstract class DomainModelMapper {
                 circleMember.getUser().getName(),
                 circleMember.getCreatedAt(),
                 circleMember.getUpdatedAt()
+        );
+    }
+
+    protected DeviceTokenDomainModel entityToDomainModel(DeviceToken deviceToken) {
+        return DeviceTokenDomainModel.of(
+                deviceToken.getId(),
+                deviceToken.getDeviceToken(),
+                deviceToken.getOs(),
+                deviceToken.getDeviceName(),
+                this.entityToDomainModel(deviceToken.getUser())
         );
     }
 }

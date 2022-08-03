@@ -11,6 +11,7 @@ spring:
     password: causwlocalpw
 
   jpa:
+    database: postgresql
     hibernate:
       ddl-auto: create
     show-sql: true
