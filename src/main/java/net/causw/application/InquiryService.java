@@ -13,8 +13,14 @@ import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
-import net.causw.domain.model.*;
-import net.causw.domain.validation.*;
+import net.causw.domain.model.InquiryDomainModel;
+import net.causw.domain.model.StaticValue;
+import net.causw.domain.model.UserDomainModel;
+import net.causw.domain.validation.ValidatorBucket;
+import net.causw.domain.validation.UserStateValidator;
+import net.causw.domain.validation.UserRoleIsNoneValidator;
+import net.causw.domain.validation.TargetIsDeletedValidator;
+import net.causw.domain.validation.ConstraintValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,7 +64,7 @@ public class InquiryService {
         validatorBucket
                 .consistOf(UserStateValidator.of(userDomainModel.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
-                .consistOf(TargetIsDeletedValidator.of(inquiryDomainModel.getIsDeleted(), "문의글"));
+                .consistOf(TargetIsDeletedValidator.of(inquiryDomainModel.getIsDeleted(), StaticValue.DOMAIN_INQUIRY));
 
         validatorBucket
                 .validate();

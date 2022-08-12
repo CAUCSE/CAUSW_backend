@@ -21,7 +21,7 @@ public class InquiryResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public InquiryResponseDto(
+    private InquiryResponseDto(
             String id,
             String title,
             String content,
