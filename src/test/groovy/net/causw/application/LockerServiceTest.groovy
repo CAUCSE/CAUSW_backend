@@ -30,6 +30,7 @@ class LockerServiceTest extends Specification {
     private LockerLogPort lockerLogPort = Mock(LockerLogPort.class)
     private UserPort userPort = Mock(UserPort.class)
     private FlagPort flagPort = Mock(FlagPort.class)
+    private TextFieldPort textFieldPort = Mock(TextFieldPort.class)
     private LockerActionFactory lockerActionFactory = new LockerActionFactory()
     private Validator validator = Validation.buildDefaultValidatorFactory().getValidator()
     private LockerService lockerService = new LockerService(
@@ -39,6 +40,7 @@ class LockerServiceTest extends Specification {
             this.userPort,
             this.flagPort,
             this.lockerActionFactory,
+            this.textFieldPort,
             this.validator
     )
 
@@ -194,6 +196,7 @@ class LockerServiceTest extends Specification {
         this.userPort.findById("test1") >> Optional.of(this.mockUserDomainModel)
         this.userPort.findById("owner test") >> Optional.of(ownerUserDomainModel)
         this.lockerPort.findById("test") >> Optional.of((LockerDomainModel) this.mockLockerDomainModel)
+        this.textFieldPort.findByKey(StaticValue.EXPIRED_AT) >> Optional.of("2022-07-25 10:00")
 
         this.lockerPort.update("test", (LockerDomainModel)this.mockLockerDomainModel) >> Optional.of(this.mockLockerDomainModel)
 

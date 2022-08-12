@@ -1,6 +1,7 @@
 package net.causw.application;
 
 import net.causw.application.dto.locker.LockerCreateRequestDto;
+import net.causw.application.dto.locker.LockerExpiredAtRequestDto;
 import net.causw.application.dto.locker.LockerLocationCreateRequestDto;
 import net.causw.application.dto.locker.LockerLocationResponseDto;
 import net.causw.application.dto.locker.LockerLocationUpdateRequestDto;
@@ -14,6 +15,7 @@ import net.causw.application.spi.FlagPort;
 import net.causw.application.spi.LockerLocationPort;
 import net.causw.application.spi.LockerLogPort;
 import net.causw.application.spi.LockerPort;
+import net.causw.application.spi.TextFieldPort;
 import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -22,8 +24,10 @@ import net.causw.domain.model.LockerDomainModel;
 import net.causw.domain.model.LockerLocationDomainModel;
 import net.causw.domain.model.LockerLogAction;
 import net.causw.domain.model.Role;
+import net.causw.domain.model.StaticValue;
 import net.causw.domain.model.UserDomainModel;
 import net.causw.domain.validation.ConstraintValidator;
+import net.causw.domain.validation.LockerExpiredAtValidator;
 import net.causw.domain.validation.LockerInUseValidator;
 import net.causw.domain.validation.UserRoleIsNoneValidator;
 import net.causw.domain.validation.UserRoleValidator;
@@ -33,6 +37,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -46,6 +52,7 @@ public class LockerService {
     private final FlagPort flagPort;
     private final Validator validator;
     private final LockerActionFactory lockerActionFactory;
+    private final TextFieldPort textFieldPort;
 
     public LockerService(
             LockerPort lockerPort,
@@ -54,6 +61,7 @@ public class LockerService {
             UserPort userPort,
             FlagPort flagPort,
             LockerActionFactory lockerActionFactory,
+            TextFieldPort textFieldPort,
             Validator validator
     ) {
         this.lockerPort = lockerPort;
@@ -62,6 +70,7 @@ public class LockerService {
         this.userPort = userPort;
         this.flagPort = flagPort;
         this.lockerActionFactory = lockerActionFactory;
+        this.textFieldPort = textFieldPort;
         this.validator = validator;
     }
 
@@ -175,7 +184,8 @@ public class LockerService {
                         updaterDomainModel,
                         this.lockerPort,
                         this.lockerLogPort,
-                        this.flagPort
+                        this.flagPort,
+                        this.textFieldPort
                 )
                 .map(resLockerDomainModel -> {
                     this.lockerLogPort.create(
@@ -464,5 +474,42 @@ public class LockerService {
         );
 
         return this.lockerLogPort.findByLockerNumber(locker.getLockerNumber());
+    }
+
+    @Transactional
+    public void setExpireAt(
+            String requestUserId,
+            LockerExpiredAtRequestDto lockerExpiredAtRequestDto
+    ) {
+        UserDomainModel userDomainModel = this.userPort.findById(requestUserId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "로그인된 사용자를 찾을 수 없습니다."
+                )
+        );
+
+        ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(userDomainModel.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
+                .consistOf(UserRoleValidator.of(userDomainModel.getRole(), List.of(Role.PRESIDENT)))
+                .validate();
+
+        this.textFieldPort.findByKey(StaticValue.EXPIRED_AT)
+                .ifPresentOrElse(textField -> {
+                            ValidatorBucket.of()
+                                    .consistOf(LockerExpiredAtValidator.of(
+                                            LocalDateTime.parse(textField, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
+                                            lockerExpiredAtRequestDto.getExpiredAt()))
+                                    .validate();
+
+                            this.textFieldPort.update(
+                                    StaticValue.EXPIRED_AT,
+                                    lockerExpiredAtRequestDto.getExpiredAt().toString()
+                            );
+                        },
+                        () -> this.textFieldPort.create(
+                                StaticValue.EXPIRED_AT,
+                                lockerExpiredAtRequestDto.getExpiredAt().toString())
+                );
     }
 }

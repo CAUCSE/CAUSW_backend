@@ -1,6 +1,7 @@
 package net.causw.adapter.web;
 
 import net.causw.application.LockerService;
+import net.causw.application.dto.locker.LockerExpiredAtRequestDto;
 import net.causw.application.dto.locker.LockerLocationsResponseDto;
 import net.causw.application.dto.locker.LockersResponseDto;
 import net.causw.application.dto.locker.LockerCreateRequestDto;
@@ -140,5 +141,14 @@ public class LockerController {
     @ResponseStatus(value = HttpStatus.OK)
     public List<LockerLogResponseDto> findLog(@PathVariable String id) {
         return this.lockerService.findLog(id);
+    }
+
+    @PostMapping(value = "/expire")
+    @ResponseStatus(value = HttpStatus.OK)
+    public void setExpireDate(
+            @AuthenticationPrincipal String requestUserId,
+            @RequestBody LockerExpiredAtRequestDto lockerExpiredAtRequestDto
+    ) {
+        this.lockerService.setExpireAt(requestUserId, lockerExpiredAtRequestDto);
     }
 }
