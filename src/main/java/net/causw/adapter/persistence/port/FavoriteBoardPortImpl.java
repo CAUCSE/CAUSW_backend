@@ -43,7 +43,7 @@ public class FavoriteBoardPortImpl extends DomainModelMapper implements Favorite
 
     @Override
     public List<FavoriteBoardDomainModel> findByBoardId(String boardId) {
-        return this.favoriteBoardRepository.findByBoard_Id(boardId)
+        return this.favoriteBoardRepository.findByBoard_IdIsDeletedIsFalse(boardId)
                 .stream()
                 .filter(favoriteBoard -> !favoriteBoard.getBoard().getIsDeleted())
                 .map(this::entityToDomainModel)

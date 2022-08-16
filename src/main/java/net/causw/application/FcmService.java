@@ -72,8 +72,6 @@ public class FcmService {
         List<DeviceTokenDomainModel> devices = this.circleMemberPort.findByCircleId(
                 circle.getId(), CircleMemberStatus.MEMBER).stream()
                 .map(circleMember -> circleMember.getUserId())
-                .collect(Collectors.toList())
-                .stream()
                 .map(id -> this.deviceTokenPort.findByUserId(id))
                 .collect(ArrayList::new, List::addAll, List::addAll);
 
@@ -106,8 +104,6 @@ public class FcmService {
                 .build();
 
         Response response = client.newCall(request).execute();
-
-        System.out.println(response.body().string());
     }
 
     private String makeMessage(String targetToken, String title, String body, String image) throws JsonParseException, JsonProcessingException {
