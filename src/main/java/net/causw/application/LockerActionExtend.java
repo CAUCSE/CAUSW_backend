@@ -45,10 +45,6 @@ public class LockerActionExtend implements LockerAction {
                     .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.PRESIDENT)))
                     .validate();
 
-        ValidatorBucket.of()
-                .consistOf(LockerIsDeactivatedValidator.of(lockerDomainModel.getIsActive()))
-                .validate();
-
         LocalDateTime expiredAtToExtend = LocalDateTime.parse(textFieldPort.findByKey(StaticValue.EXPIRED_AT).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
