@@ -8,6 +8,8 @@ import net.causw.domain.model.LockerDomainModel;
 import net.causw.domain.model.UserDomainModel;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 @Getter
 @Setter
@@ -16,6 +18,7 @@ public class LockerResponseDto {
     private String lockerNumber;
     private Boolean isActive;
     private Boolean isMine;
+    private String expireAt;
     private LocalDateTime updatedAt;
 
     private LockerResponseDto(
@@ -23,12 +26,14 @@ public class LockerResponseDto {
             String lockerNumber,
             Boolean isActive,
             Boolean isMine,
+            String expireAt,
             LocalDateTime updateAt
     ) {
         this.id = id;
         this.lockerNumber = lockerNumber;
         this.isActive = isActive;
         this.isMine = isMine;
+        this.expireAt = expireAt;
         this.updatedAt = updateAt;
     }
 
@@ -38,6 +43,8 @@ public class LockerResponseDto {
                 String.valueOf(locker.getLockerNumber()),
                 locker.getIsActive(),
                 locker.getUser().map(User::getId).orElse("").equals(user.getId()),
+                Optional.ofNullable(locker.getExpireDate()).map(
+                        expire -> expire.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))).orElse(null),
                 locker.getUpdatedAt()
         );
     }
@@ -48,6 +55,8 @@ public class LockerResponseDto {
                 String.valueOf(locker.getLockerNumber()),
                 locker.getIsActive(),
                 locker.getUser().map(UserDomainModel::getId).orElse("").equals(user.getId()),
+                Optional.ofNullable(locker.getExpiredAt()).map(
+                        expire -> expire.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))).orElse(null),
                 locker.getUpdatedAt()
         );
     }
@@ -64,6 +73,8 @@ public class LockerResponseDto {
                 location,
                 locker.getIsActive(),
                 locker.getUser().map(UserDomainModel::getId).orElse("").equals(user.getId()),
+                Optional.ofNullable(locker.getExpiredAt()).map(
+                        expire -> expire.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))).orElse(null),
                 locker.getUpdatedAt()
         );
     }
