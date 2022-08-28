@@ -30,6 +30,7 @@ public class LockerDomainModel {
             String id,
             Long lockerNumber,
             Boolean isActive,
+            LocalDateTime expiredAt,
             LocalDateTime updatedAt,
             UserDomainModel user,
             LockerLocationDomainModel lockerLocation
@@ -37,6 +38,7 @@ public class LockerDomainModel {
         this.id = id;
         this.lockerNumber = lockerNumber;
         this.isActive = isActive;
+        this.expiredAt = expiredAt;
         this.updatedAt = updatedAt;
         this.user = user;
         this.lockerLocation = lockerLocation;
@@ -52,6 +54,7 @@ public class LockerDomainModel {
                 true,
                 null,
                 null,
+                null,
                 lockerLocation
         );
     }
@@ -60,6 +63,7 @@ public class LockerDomainModel {
             String id,
             Long lockerNumber,
             Boolean isActive,
+            LocalDateTime expiredAt,
             LocalDateTime updatedAt,
             UserDomainModel user,
             LockerLocationDomainModel lockerLocation
@@ -68,6 +72,7 @@ public class LockerDomainModel {
                 id,
                 lockerNumber,
                 isActive,
+                expiredAt,
                 updatedAt,
                 user,
                 lockerLocation

@@ -84,6 +84,7 @@ class LockerServiceTest extends Specification {
                 1,
                 true,
                 LocalDateTime.now(),
+                LocalDateTime.now(),
                 null,
                 (LockerLocationDomainModel) this.mockLockerLocationDomainModel
         )
@@ -437,6 +438,7 @@ class LockerServiceTest extends Specification {
                 "test",
                 1,
                 true,
+                LocalDateTime.now(),
                 LocalDateTime.now(),
                 null,
                 mockMovedLockerLocationDomainModel
