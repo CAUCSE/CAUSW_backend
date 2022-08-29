@@ -40,6 +40,7 @@ public class StaticValue {
     public static final String DOMAIN_CIRCLE = "소모임";
     public static final String DOMAIN_COMMENT = "댓글";
     public static final String DOMAIN_CHILD_COMMENT = "답글";
+    public static final String DOMAIN_INQUIRY = "문의글";
 
     // Flag
     public static final String LOCKER_ACCESS = "LOCKER_ACCESS";
