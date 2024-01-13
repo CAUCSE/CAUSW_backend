@@ -23,7 +23,7 @@ public class StaticValue {
     // Swagger configuration
     public static final String SWAGGER_API_NAME = "CAU_SW API";
     public static final String SWAGGER_API_VERSION = "0.0.1";
-    public static final String SWAGGER_API_DESCRIPTION = "중앙대학교 소프트웨어학부 동문네트워크 API";
+    public static final String SWAGGER_API_DESCRIPTION = "2024 RENEW 중앙대학교 소프트웨어학부 동문네트워크 API swagger 문서입니다.";
 
     // Google mail
     public static final String GOOGLE_MAIL = "causwdevteam@gmail.com";
