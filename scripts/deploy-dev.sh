@@ -29,4 +29,4 @@ chmod +x $JAR_NAME
 
 echo "> $JAR_NAME 실행"
 
-nohup java -jar -Dspring.config.location=/home/ubuntu/app/src/main/resources/application.yml -Duser.timezone=Asia/Seoul $JAR_NAME >> $REPOSITORY/nohup.out 2>&1 &
+nohup java -jar -Dspring.config.location=/home/ubuntu/app/src/main/resources/application.yml,/home/ubuntu/app/src/main/resources/causw-dev-51ab1a030da2.json, /home/ubuntu/app/src/main/resources/email-config.yaml, /home/ubuntu/app/src/main/resources/password-config.yaml -Duser.timezone=Asia/Seoul $JAR_NAME >> $REPOSITORY/nohup.out 2>&1 &
