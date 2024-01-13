@@ -1,5 +1,5 @@
 package net.causw.adapter.web;
-
+/*
 import net.causw.application.StorageService;
 import net.causw.application.dto.UploadFileResponseDto;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,3 +34,5 @@ public class StorageController {
         return this.storageService.uploadImageToGcs(image, imageLocation);
     }
 }
+
+ */

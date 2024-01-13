@@ -15,7 +15,7 @@ import javax.persistence.Table;
 @NoArgsConstructor
 @Table(name = "TB_FLAG")
 public class Flag extends BaseEntity {
-    @Column(name = "key", unique = true, nullable = false)
+    @Column(name = "tb_key", unique = true, nullable = false)
     private String key;
 
     @Column(name = "value")

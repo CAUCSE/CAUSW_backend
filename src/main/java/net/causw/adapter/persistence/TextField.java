@@ -14,7 +14,7 @@ import javax.persistence.Table;
 @NoArgsConstructor
 @Table(name = "TB_TEXT_FIELD")
 public class TextField extends BaseEntity {
-    @Column(name = "key", unique = true, nullable = false)
+    @Column(name = "tb_key", unique = true, nullable = false)
     private String key;
 
     @Column(name = "value", nullable = false)
