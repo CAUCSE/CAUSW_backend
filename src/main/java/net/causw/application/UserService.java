@@ -61,7 +61,7 @@ import net.causw.domain.validation.UserStateIsDropValidator;
 import net.causw.domain.validation.UserStateIsNotDropAndActiveValidator;
 import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
-import net.causw.infrastructure.GcpFileUploader;
+//import net.causw.infrastructure.GcpFileUploader;
 import net.causw.infrastructure.GoogleMailSender;
 import net.causw.infrastructure.PasswordGenerator;
 import org.springframework.data.domain.Page;
@@ -88,7 +88,7 @@ public class UserService {
     private final LockerPort lockerPort;
     private final LockerLogPort lockerLogPort;
     private final JwtTokenProvider jwtTokenProvider;
-    private final GcpFileUploader gcpFileUploader;
+    //private final GcpFileUploader gcpFileUploader;
     private final GoogleMailSender googleMailSender;
     private final PasswordGenerator passwordGenerator;
     private final PasswordEncoder passwordEncoder;
@@ -107,7 +107,7 @@ public class UserService {
             LockerPort lockerPort,
             LockerLogPort lockerLogPort,
             JwtTokenProvider jwtTokenProvider,
-            GcpFileUploader gcpFileUploader,
+            //GcpFileUploader gcpFileUploader,
             GoogleMailSender googleMailSender,
             PasswordGenerator passwordGenerator,
             PasswordEncoder passwordEncoder,
@@ -125,7 +125,7 @@ public class UserService {
         this.lockerPort = lockerPort;
         this.lockerLogPort = lockerLogPort;
         this.jwtTokenProvider = jwtTokenProvider;
-        this.gcpFileUploader = gcpFileUploader;
+        //this.gcpFileUploader = gcpFileUploader;
         this.googleMailSender = googleMailSender;
         this.passwordGenerator = passwordGenerator;
         this.passwordEncoder = passwordEncoder;
@@ -934,10 +934,15 @@ public class UserService {
             );
         }
 
-        String attachImage = userAdmissionCreateRequestDto.getAttachImage()
+        //TODO
+        String attachImage = "나중에 고치기";
+
+        /*userAdmissionCreateRequestDto.getAttachImage()
                 .map(image ->
                         this.gcpFileUploader.uploadImageToGcp(image, ImageLocation.USER_ADMISSION))
                 .orElse(null);
+         */
+
 
         UserAdmissionDomainModel userAdmissionDomainModel = UserAdmissionDomainModel.of(
                 requestUser,
