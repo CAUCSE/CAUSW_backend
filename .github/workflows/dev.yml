@@ -2,7 +2,7 @@ name: caucse-dev
 
 on:
   push:
-    branches: [ main ]
+    branches: [ develop ]
 
 env:
   S3_BUCKET_NAME: caucse-s3-bucket
