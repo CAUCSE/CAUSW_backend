@@ -28,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.validation.Validator;
 import java.util.List;
 import java.util.stream.Collectors;
-
+//boardservice
 @Service
 public class BoardService {
     private final BoardPort boardPort;
