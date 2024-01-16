@@ -1,9 +1,9 @@
 package net.causw.infrastructure;
 
-import net.causw.config.MailProperties;
+import net.causw.config.mail.MailProperties;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.ServiceUnavailableException;
-import net.causw.domain.model.StaticValue;
+import net.causw.domain.model.util.StaticValue;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;

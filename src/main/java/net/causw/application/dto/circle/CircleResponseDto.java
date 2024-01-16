@@ -2,8 +2,8 @@ package net.causw.application.dto.circle;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.domain.model.CircleDomainModel;
-import net.causw.domain.model.UserDomainModel;
+import net.causw.domain.model.circle.CircleDomainModel;
+import net.causw.domain.model.user.UserDomainModel;
 
 import java.time.LocalDateTime;
 

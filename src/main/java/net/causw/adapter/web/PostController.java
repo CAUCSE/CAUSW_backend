@@ -1,6 +1,6 @@
 package net.causw.adapter.web;
 
-import net.causw.application.PostService;
+import net.causw.application.post.PostService;
 import net.causw.application.dto.post.BoardPostsResponseDto;
 import net.causw.application.dto.post.PostCreateRequestDto;
 import net.causw.application.dto.post.PostResponseDto;

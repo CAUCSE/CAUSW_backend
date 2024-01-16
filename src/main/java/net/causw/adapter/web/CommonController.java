@@ -1,8 +1,8 @@
 package net.causw.adapter.web;
 
-import net.causw.application.CommonService;
-import net.causw.application.HomePageService;
-import net.causw.application.dto.HomePageResponseDto;
+import net.causw.application.common.CommonService;
+import net.causw.application.homepage.HomePageService;
+import net.causw.application.dto.homepage.HomePageResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;

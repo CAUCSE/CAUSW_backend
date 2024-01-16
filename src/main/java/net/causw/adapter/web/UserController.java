@@ -1,7 +1,7 @@
 package net.causw.adapter.web;
 
-import net.causw.application.UserService;
-import net.causw.application.dto.DuplicatedCheckResponseDto;
+import net.causw.application.user.UserService;
+import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.user.UserAdmissionCreateRequestDto;

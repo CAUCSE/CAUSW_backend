@@ -2,10 +2,10 @@ package net.causw.application.dto.locker;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.adapter.persistence.Locker;
-import net.causw.adapter.persistence.User;
-import net.causw.domain.model.LockerDomainModel;
-import net.causw.domain.model.UserDomainModel;
+import net.causw.adapter.persistence.locker.Locker;
+import net.causw.adapter.persistence.user.User;
+import net.causw.domain.model.locker.LockerDomainModel;
+import net.causw.domain.model.user.UserDomainModel;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

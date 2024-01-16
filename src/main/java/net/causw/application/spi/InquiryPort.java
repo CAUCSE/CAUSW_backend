@@ -1,7 +1,6 @@
 package net.causw.application.spi;
 
-import net.causw.domain.model.InquiryDomainModel;
-import net.causw.domain.model.UserDomainModel;
+import net.causw.domain.model.inquiry.InquiryDomainModel;
 
 import java.util.Optional;
 

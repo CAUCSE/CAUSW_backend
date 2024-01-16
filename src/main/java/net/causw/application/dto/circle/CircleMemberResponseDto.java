@@ -3,9 +3,9 @@ package net.causw.application.dto.circle;
 import lombok.Getter;
 import lombok.Setter;
 import net.causw.application.dto.user.UserResponseDto;
-import net.causw.domain.model.CircleMemberDomainModel;
-import net.causw.domain.model.CircleMemberStatus;
-import net.causw.domain.model.UserDomainModel;
+import net.causw.domain.model.circle.CircleMemberDomainModel;
+import net.causw.domain.model.enums.CircleMemberStatus;
+import net.causw.domain.model.user.UserDomainModel;
 
 @Getter
 @Setter

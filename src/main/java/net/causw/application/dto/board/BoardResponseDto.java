@@ -2,9 +2,9 @@ package net.causw.application.dto.board;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.domain.model.BoardDomainModel;
-import net.causw.domain.model.CircleDomainModel;
-import net.causw.domain.model.Role;
+import net.causw.domain.model.board.BoardDomainModel;
+import net.causw.domain.model.circle.CircleDomainModel;
+import net.causw.domain.model.enums.Role;
 
 import java.util.List;
 

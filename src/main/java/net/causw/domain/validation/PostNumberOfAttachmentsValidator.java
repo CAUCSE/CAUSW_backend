@@ -5,7 +5,7 @@ import net.causw.domain.exceptions.ErrorCode;
 
 import java.util.List;
 
-import static net.causw.domain.model.StaticValue.MAX_NUM_FILE_ATTACHMENTS;
+import static net.causw.domain.model.util.StaticValue.MAX_NUM_FILE_ATTACHMENTS;
 
 public class PostNumberOfAttachmentsValidator extends AbstractValidator {
     private final List<String> attachmentList;

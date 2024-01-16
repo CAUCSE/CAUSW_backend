@@ -1,6 +1,6 @@
 package net.causw.application.spi;
 
-import net.causw.domain.model.LockerDomainModel;
+import net.causw.domain.model.locker.LockerDomainModel;
 
 import java.util.List;
 import java.util.Optional;

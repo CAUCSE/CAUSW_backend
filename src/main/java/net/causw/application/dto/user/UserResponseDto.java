@@ -2,9 +2,9 @@ package net.causw.application.dto.user;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.domain.model.Role;
-import net.causw.domain.model.UserDomainModel;
-import net.causw.domain.model.UserState;
+import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.user.UserDomainModel;
+import net.causw.domain.model.enums.UserState;
 
 @Getter
 @Setter

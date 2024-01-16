@@ -1,9 +1,8 @@
 package net.causw.application.dto.locker;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.causw.domain.model.LockerLocationDomainModel;
+import net.causw.domain.model.locker.LockerLocationDomainModel;
 
 @Getter
 @Setter

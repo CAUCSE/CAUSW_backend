@@ -4,7 +4,7 @@ import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import org.springframework.web.multipart.MultipartFile;
 
-import static net.causw.domain.model.StaticValue.IMAGE_LIMIT_SIZE;
+import static net.causw.domain.model.util.StaticValue.IMAGE_LIMIT_SIZE;
 
 public class ImageSizeValidator extends AbstractValidator {
     private final MultipartFile image;
