@@ -1,7 +1,7 @@
 package net.causw.application.spi;
 
-import net.causw.domain.model.PostDomainModel;
-import net.causw.domain.model.SearchOption;
+import net.causw.domain.model.post.PostDomainModel;
+import net.causw.domain.model.enums.SearchOption;
 import org.springframework.data.domain.Page;
 
 import java.util.Optional;

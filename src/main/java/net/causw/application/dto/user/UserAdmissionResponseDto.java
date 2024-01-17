@@ -2,8 +2,8 @@ package net.causw.application.dto.user;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.domain.model.UserAdmissionDomainModel;
-import net.causw.domain.model.UserDomainModel;
+import net.causw.domain.model.user.UserAdmissionDomainModel;
+import net.causw.domain.model.user.UserDomainModel;
 
 import java.time.LocalDateTime;
 

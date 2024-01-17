@@ -2,7 +2,7 @@ package net.causw.domain.validation;
 
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
-import net.causw.domain.model.StaticValue;
+import net.causw.domain.model.util.StaticValue;
 
 import java.time.Duration;
 import java.time.LocalDateTime;

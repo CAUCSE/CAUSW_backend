@@ -1,6 +1,6 @@
 package net.causw.application.spi;
 
-import net.causw.domain.model.BoardDomainModel;
+import net.causw.domain.model.board.BoardDomainModel;
 
 import java.util.List;
 import java.util.Optional;

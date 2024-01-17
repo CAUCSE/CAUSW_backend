@@ -5,7 +5,7 @@ import net.causw.domain.exceptions.ErrorCode;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import static net.causw.domain.model.StaticValue.IMAGE_EXTENSION_LIST;
+import static net.causw.domain.model.util.StaticValue.IMAGE_EXTENSION_LIST;
 
 public class ImageExtensionValidator extends AbstractValidator {
     private final MultipartFile image;

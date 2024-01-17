@@ -2,7 +2,7 @@ package net.causw.application.dto.post;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.domain.model.PostDomainModel;
+import net.causw.domain.model.post.PostDomainModel;
 
 import java.time.LocalDateTime;
 

@@ -2,9 +2,9 @@ package net.causw.application.dto.inquiry;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.domain.model.InquiryDomainModel;
-import net.causw.domain.model.Role;
-import net.causw.domain.model.UserDomainModel;
+import net.causw.domain.model.inquiry.InquiryDomainModel;
+import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.user.UserDomainModel;
 
 import java.time.LocalDateTime;
 

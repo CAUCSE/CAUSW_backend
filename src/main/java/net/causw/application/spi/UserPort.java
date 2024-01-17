@@ -1,8 +1,8 @@
 package net.causw.application.spi;
 
-import net.causw.domain.model.Role;
-import net.causw.domain.model.UserDomainModel;
-import net.causw.domain.model.UserState;
+import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.user.UserDomainModel;
+import net.causw.domain.model.enums.UserState;
 import org.springframework.data.domain.Page;
 
 import java.util.List;

@@ -1,7 +1,7 @@
 package net.causw.application.spi;
 
-import net.causw.domain.model.CircleDomainModel;
-import net.causw.domain.model.UserDomainModel;
+import net.causw.domain.model.circle.CircleDomainModel;
+import net.causw.domain.model.user.UserDomainModel;
 
 import java.util.List;
 import java.util.Optional;

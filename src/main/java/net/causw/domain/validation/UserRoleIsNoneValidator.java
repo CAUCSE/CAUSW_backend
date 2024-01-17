@@ -2,7 +2,7 @@ package net.causw.domain.validation;
 
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
-import net.causw.domain.model.Role;
+import net.causw.domain.model.enums.Role;
 
 public class UserRoleIsNoneValidator extends AbstractValidator {
     private final Role requestUserRole;

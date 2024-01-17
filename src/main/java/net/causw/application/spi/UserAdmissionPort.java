@@ -1,7 +1,7 @@
 package net.causw.application.spi;
 
-import net.causw.domain.model.UserAdmissionDomainModel;
-import net.causw.domain.model.UserState;
+import net.causw.domain.model.user.UserAdmissionDomainModel;
+import net.causw.domain.model.enums.UserState;
 import org.springframework.data.domain.Page;
 
 import java.util.Optional;

@@ -1,6 +1,6 @@
 package net.causw.adapter.web;
 
-import net.causw.application.LockerService;
+import net.causw.application.locker.LockerService;
 import net.causw.application.dto.locker.LockerExpiredAtRequestDto;
 import net.causw.application.dto.locker.LockerLocationsResponseDto;
 import net.causw.application.dto.locker.LockersResponseDto;

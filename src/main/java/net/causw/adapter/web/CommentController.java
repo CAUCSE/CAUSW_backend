@@ -1,6 +1,6 @@
 package net.causw.adapter.web;
 
-import net.causw.application.CommentService;
+import net.causw.application.comment.CommentService;
 import net.causw.application.dto.comment.CommentCreateRequestDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.comment.CommentUpdateRequestDto;

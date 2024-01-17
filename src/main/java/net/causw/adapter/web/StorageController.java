@@ -1,7 +1,7 @@
 package net.causw.adapter.web;
 /*
 import net.causw.application.StorageService;
-import net.causw.application.dto.UploadFileResponseDto;
+import net.causw.application.dto.file.UploadFileResponseDto;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;

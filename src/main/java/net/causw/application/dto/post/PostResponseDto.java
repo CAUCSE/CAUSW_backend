@@ -2,12 +2,12 @@ package net.causw.application.dto.post;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.application.dto.FileResponseDto;
+import net.causw.application.dto.file.FileResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.comment.CommentResponseDto;
-import net.causw.domain.model.PostDomainModel;
-import net.causw.domain.model.Role;
-import net.causw.domain.model.UserDomainModel;
+import net.causw.domain.model.post.PostDomainModel;
+import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.user.UserDomainModel;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;

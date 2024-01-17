@@ -1,6 +1,6 @@
 package net.causw.adapter.web;
 
-import net.causw.application.BoardService;
+import net.causw.application.board.BoardService;
 import net.causw.application.dto.board.BoardCreateRequestDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.board.BoardUpdateRequestDto;

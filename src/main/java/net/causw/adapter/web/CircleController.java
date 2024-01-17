@@ -1,14 +1,14 @@
 package net.causw.adapter.web;
 
-import net.causw.application.CircleService;
+import net.causw.application.circle.CircleService;
 import net.causw.application.dto.circle.CirclesResponseDto;
 import net.causw.application.dto.circle.CircleCreateRequestDto;
 import net.causw.application.dto.circle.CircleMemberResponseDto;
 import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.circle.CircleUpdateRequestDto;
 import net.causw.application.dto.circle.CircleBoardsResponseDto;
-import net.causw.application.dto.DuplicatedCheckResponseDto;
-import net.causw.domain.model.CircleMemberStatus;
+import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
+import net.causw.domain.model.enums.CircleMemberStatus;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
