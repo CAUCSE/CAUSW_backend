@@ -1,5 +1,6 @@
 # CAUSW Backend
 
+<!--
 <a href="https://spring.io">
   <img src="https://img.shields.io/badge/spring-v2.4.1-green">
 </a>
@@ -50,6 +51,8 @@
 
 - **Domain**
     - 도메인에 관한 정보, 비즈니스 로직을 표현하는 일을 책임
+
+-->
 
 ## Contact
 
