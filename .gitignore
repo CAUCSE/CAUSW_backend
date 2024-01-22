@@ -43,7 +43,11 @@ out/
 .LSOverride
 
 ### Project security ###
-**/resources/
+**/resources/application.yml
+**/resources/email-config.yaml
+**/resources/password-config.yaml
+**/resources/causw-dev-51ab1a030da2.json
+
 Dockerfile
 docker-compose.yaml
 deploy_*.sh
