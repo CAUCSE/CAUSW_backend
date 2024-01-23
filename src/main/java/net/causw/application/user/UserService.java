@@ -483,6 +483,11 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 회원가입 메소드
+     * @param userCreateRequestDto
+     * @return UserResponseDto
+     */
     @Transactional
     public UserResponseDto signUp(UserCreateRequestDto userCreateRequestDto) {
         // Make domain model for generalized data model and validate the format of request parameter
@@ -553,6 +558,11 @@ public class UserService {
         );
     }
 
+    /**
+     * 이메일 중복 확인 메소드
+     * @param email
+     * @return DuplicatedCheckResponseDto
+     */
     @Transactional(readOnly = true)
     public DuplicatedCheckResponseDto isDuplicatedEmail(String email) {
         Optional<UserDomainModel> userFoundByEmail = this.userPort.findByEmail(email);
@@ -568,6 +578,12 @@ public class UserService {
         return DuplicatedCheckResponseDto.of(userFoundByEmail.isPresent());
     }
 
+    /**
+     * 사용자 정보 업데이트 메소드
+     * @param id
+     * @param userUpdateRequestDto
+     * @return UserResponseDto
+     */
     @Transactional
     public UserResponseDto update(String id, UserUpdateRequestDto userUpdateRequestDto) {
         // First, load the user data from input user id
@@ -617,6 +633,13 @@ public class UserService {
         ));
     }
 
+    /**
+     * 사용자 권한 업데이트 메소드
+     * @param grantorId
+     * @param granteeId
+     * @param userUpdateRoleRequestDto
+     * @return UserResponseDto
+     */
     @Transactional
     public UserResponseDto updateUserRole(
             String grantorId,
