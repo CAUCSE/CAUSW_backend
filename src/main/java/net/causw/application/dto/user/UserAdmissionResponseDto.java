@@ -1,5 +1,6 @@
 package net.causw.application.dto.user;
 
+import io.swagger.annotations.*;
 import lombok.Getter;
 import lombok.Setter;
 import net.causw.domain.model.user.UserAdmissionDomainModel;
@@ -10,7 +11,10 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class UserAdmissionResponseDto {
+
+    @ApiModelProperty(value = "admission id", example = "ff7576321d26d71c018d26dc284a9999", required = true)
     private String id;
+
     private UserResponseDto user;
     private String attachImage;
     private String description;
