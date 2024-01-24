@@ -124,7 +124,7 @@ public class UserController {
      */
     @PostMapping(value = "/sign-up")
     @ResponseStatus(value = HttpStatus.CREATED)
-    @ApiOperation(value = "회원가입 API")
+    @ApiOperation(value = "회원가입 API (완료)", notes = "회원가입 후에는 신청서를 작성해야 합니다.\n신청서 작성 후 승인이 이뤄지면 로그인이 가능합니다.")
     @ApiResponses({
             @ApiResponse(code = 201, message = "Created", response = UserResponseDto.class),
             @ApiResponse(code = 4001, message = "중복된 이메일입니다.", response = BadRequestException.class),
@@ -142,7 +142,7 @@ public class UserController {
      */
     @PostMapping(value = "/sign-in")
     @ResponseStatus(value = HttpStatus.OK)
-    @ApiOperation(value = "로그인 API")
+    @ApiOperation(value = "로그인 API (완료)")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = String.class),
             @ApiResponse(code = 4101, message = "잘못된 이메일 입니다.", response = BadRequestException.class),
@@ -164,7 +164,7 @@ public class UserController {
      */
     @GetMapping(value = "/{email}/is-duplicated")
     @ResponseStatus(value = HttpStatus.OK)
-    @ApiOperation(value = "이메일 중복 확인 API")
+    @ApiOperation(value = "이메일 중복 확인 API (완료)")
     @ApiResponses({
         @ApiResponse(code = 200, message = "OK", response = String.class),
         @ApiResponse(code = 4001, message = "탈퇴한 계정의 재가입은 관리자에게 문의해주세요.", response = BadRequestException.class)
@@ -174,14 +174,14 @@ public class UserController {
     }
 
     /**
-     * 유저 정보 업데이트 컨트롤러
+     * 사용자 정보 업데이트 컨트롤러
      * @param id
      * @param userUpdateDto
      * @return UserResponseDto
      */
     @PutMapping
     @ResponseStatus(value = HttpStatus.OK)
-    @ApiOperation(value = "사용자 정보 업데이트 API", notes = "id 에는 user 의 고유 id 값을 넣어주세요.")
+    @ApiOperation(value = "사용자 정보 업데이트 API (완료)", notes = "id 에는 user 의 고유 id 값을 넣어주세요.")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = String.class),
             @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
@@ -316,6 +316,14 @@ public class UserController {
 
     @PostMapping(value = "/admissions/apply")
     @ResponseStatus(value = HttpStatus.CREATED)
+    @ApiOperation(value = "승인 신청서 작성 API (미완료 / 사용 가능)", notes = "attachImage는 우선 무시하고 진행해주세요.")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "OK", response = String.class),
+        @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
+        @ApiResponse(code = 4001, message = "이미 신청한 사용자 입니다.", response = BadRequestException.class),
+        @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = BadRequestException.class),
+        @ApiResponse(code = 4107, message = "이미 등록된 사용자 입니다.", response = BadRequestException.class)
+    })
     public UserAdmissionResponseDto createAdmission(
             @ModelAttribute UserAdmissionCreateRequestDto userAdmissionCreateRequestDto
     ) {
@@ -323,6 +331,18 @@ public class UserController {
     }
 
     @PutMapping(value = "/admissions/{id}/accept")
+    @ApiOperation(value = "신청 승인 API (미완료 / 사용 가능)", notes = "id 에는 승인 고유 id 값을 넣어주세요.\nrequestUserId는 token 값입니다. 추후 수정 및 삭제 예정입니다.")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "OK", response = String.class),
+        @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
+        @ApiResponse(code = 4000, message = "사용자의 가입 신청을 찾을 수 없습니다.", response = BadRequestException.class),
+        @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = BadRequestException.class),
+        @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = BadRequestException.class),
+        @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = BadRequestException.class),
+        @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = BadRequestException.class),
+        @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = BadRequestException.class),
+        @ApiResponse(code = 5000, message = "User id checked, but exception occurred", response = BadRequestException.class)
+    })
     public UserAdmissionResponseDto acceptAdmission(
             @AuthenticationPrincipal String requestUserId,
             @PathVariable String id
@@ -334,6 +354,19 @@ public class UserController {
     }
 
     @PutMapping(value = "/admissions/{id}/reject")
+    @ApiOperation(value = "신청 거절 API (미완료 / 사용 가능)", notes = "id 에는 승인 고유 id 값을 넣어주세요.\nrequestUserId는 token 값입니다. 추후 수정 및 삭제 예정입니다.")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "OK", response = String.class),
+        @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
+        @ApiResponse(code = 4000, message = "사용자의 가입 신청을 찾을 수 없습니다.", response = BadRequestException.class),
+        @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = BadRequestException.class),
+        @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = BadRequestException.class),
+        @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = BadRequestException.class),
+        @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = BadRequestException.class),
+        @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = BadRequestException.class),
+        @ApiResponse(code = 4107, message = "접근 권한이 없습니다.", response = BadRequestException.class),
+        @ApiResponse(code = 5000, message = "User id checked, but exception occurred", response = BadRequestException.class)
+    })
     public UserAdmissionResponseDto rejectAdmission(
             @AuthenticationPrincipal String requestUserId,
             @PathVariable String id
