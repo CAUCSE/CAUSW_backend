@@ -1,5 +1,6 @@
 package net.causw.adapter.web;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import net.causw.application.circle.CircleService;
 import net.causw.application.dto.circle.CirclesResponseDto;
 import net.causw.application.dto.circle.CircleCreateRequestDto;
@@ -11,6 +12,8 @@ import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.domain.model.enums.CircleMemberStatus;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -87,10 +90,13 @@ public class CircleController {
     @PutMapping(value = "/{circleId}")
     @ResponseStatus(value = HttpStatus.OK)
     public CircleResponseDto update(
-            @AuthenticationPrincipal String userId,
+
             @PathVariable String circleId,
             @RequestBody CircleUpdateRequestDto circleUpdateRequestDto
     ) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String userId = ((UserDetails) principal).getUsername();
+
         return this.circleService.update(userId, circleId, circleUpdateRequestDto);
     }
 
