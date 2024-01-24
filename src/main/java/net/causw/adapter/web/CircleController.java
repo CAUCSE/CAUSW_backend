@@ -1,167 +1,71 @@
-package net.causw.adapter.web;
+package net.causw.config.swagger;
 
-import io.swagger.v3.oas.annotations.Parameter;
-import net.causw.application.circle.CircleService;
-import net.causw.application.dto.circle.CirclesResponseDto;
-import net.causw.application.dto.circle.CircleCreateRequestDto;
-import net.causw.application.dto.circle.CircleMemberResponseDto;
-import net.causw.application.dto.circle.CircleResponseDto;
-import net.causw.application.dto.circle.CircleUpdateRequestDto;
-import net.causw.application.dto.circle.CircleBoardsResponseDto;
-import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
-import net.causw.domain.model.enums.CircleMemberStatus;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import net.causw.domain.model.util.StaticValue;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import springfox.documentation.spi.service.contexts.SecurityContext;
+import springfox.documentation.builders.ApiInfoBuilder;
+import springfox.documentation.builders.PathSelectors;
+import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.service.ApiInfo;
+import springfox.documentation.service.ApiKey;
+import springfox.documentation.service.AuthorizationScope;
+import springfox.documentation.service.SecurityReference;
+import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
-
-@RestController
-@RequestMapping("/api/v1/circles")
-public class CircleController {
-    private final CircleService circleService;
-
-    public CircleController(CircleService circleService) {
-        this.circleService = circleService;
+@EnableSwagger2
+@Configuration
+public class SwaggerConfig {
+    @Bean
+    public Docket api() {
+        return new Docket(DocumentationType.SWAGGER_2)
+                .select()
+                .apis(RequestHandlerSelectors.basePackage("net.causw"))
+                .paths(PathSelectors.any())
+                .build()
+                .apiInfo(this.apiInfo())
+                .securityContexts(Collections.singletonList(securityContext()))
+                .securitySchemes(List.of(apiKey()))
+                .globalOperationParameters(Arrays.asList(
+                        new springfox.documentation.builders.ParameterBuilder()
+                                .name("Authorization")
+                                .description("JWT token")
+                                .modelRef(new springfox.documentation.schema.ModelRef("string"))
+                                .parameterType("header")
+                                .required(true)
+                                .build()));
     }
 
-    @GetMapping(value = "/{id}")
-    @ResponseStatus(value = HttpStatus.OK)
-    public CircleResponseDto findById(@PathVariable String id) {
-        return this.circleService.findById(id);
+    private ApiInfo apiInfo() {
+        return new ApiInfoBuilder()
+                .title(StaticValue.SWAGGER_API_NAME)
+                .version(StaticValue.SWAGGER_API_VERSION)
+                .description(StaticValue.SWAGGER_API_DESCRIPTION)
+                .build();
     }
 
-    @GetMapping
-    @ResponseStatus(value = HttpStatus.OK)
-    public List<CirclesResponseDto> findAll(@AuthenticationPrincipal String userId) {
-        return this.circleService.findAll(userId);
+    private ApiKey apiKey() {
+        return new ApiKey("Authorization", "Authorization", "header");
     }
 
-    @GetMapping("/{id}/boards")
-    @ResponseStatus(value = HttpStatus.OK)
-    public CircleBoardsResponseDto findBoards(
-            @AuthenticationPrincipal String userId,
-            @PathVariable String id
-    ) {
-        return this.circleService.findBoards(userId, id);
+    private SecurityContext securityContext() {
+        return SecurityContext.builder()
+                .securityReferences(defaultAuth())
+                .forPaths(PathSelectors.any())
+                .build();
     }
 
-    @GetMapping(value = "/{id}/num-member")
-    @ResponseStatus(value = HttpStatus.OK)
-    public Long getNumMember(@PathVariable String id) {
-        return this.circleService.getNumMember(id);
-    }
-
-    @GetMapping(value = "/{id}/users")
-    @ResponseStatus(value = HttpStatus.OK)
-    public List<CircleMemberResponseDto> getUserList(
-            @AuthenticationPrincipal String currentUserId,
-            @PathVariable String id,
-            @RequestParam CircleMemberStatus status
-    ) {
-        return this.circleService.getUserList(
-                currentUserId,
-                id,
-                status
-        );
-    }
-
-    @PostMapping
-    @ResponseStatus(value = HttpStatus.CREATED)
-    public CircleResponseDto create(
-            @AuthenticationPrincipal String userId,
-            @RequestBody CircleCreateRequestDto circleCreateRequestDto
-    ) {
-        return this.circleService.create(userId, circleCreateRequestDto);
-    }
-
-    @PutMapping(value = "/{circleId}")
-    @ResponseStatus(value = HttpStatus.OK)
-    public CircleResponseDto update(
-
-            @PathVariable String circleId,
-            @RequestBody CircleUpdateRequestDto circleUpdateRequestDto
-    ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String userId = ((UserDetails) principal).getUsername();
-
-        return this.circleService.update(userId, circleId, circleUpdateRequestDto);
-    }
-
-    @GetMapping(value = "/{circleId}/applications")
-    @ResponseStatus(value = HttpStatus.CREATED)
-    public CircleMemberResponseDto userApply(
-            @AuthenticationPrincipal String userId,
-            @PathVariable String circleId
-    ) {
-        return this.circleService.userApply(userId, circleId);
-    }
-
-    @GetMapping(value = "/{name}/is-duplicated")
-    @ResponseStatus(value = HttpStatus.OK)
-    public DuplicatedCheckResponseDto isDuplicatedName(@PathVariable String name) {
-        return this.circleService.isDuplicatedName(name);
-    }
-
-    @PutMapping(value = "/{circleId}/users/leave")
-    @ResponseStatus(value = HttpStatus.OK)
-    public CircleMemberResponseDto leaveUser(
-            @AuthenticationPrincipal String userId,
-            @PathVariable String circleId
-    ) {
-        return this.circleService.leaveUser(userId, circleId);
-    }
-
-    @PutMapping(value = "/{circleId}/users/{userId}/drop")
-    @ResponseStatus(value = HttpStatus.OK)
-    public CircleMemberResponseDto dropUser(
-            @AuthenticationPrincipal String requestUserId,
-            @PathVariable String userId,
-            @PathVariable String circleId
-    ) {
-        return this.circleService.dropUser(
-                requestUserId,
-                userId,
-                circleId
-        );
-    }
-
-    @PutMapping(value = "/applications/{applicationId}/accept")
-    @ResponseStatus(value = HttpStatus.OK)
-    public CircleMemberResponseDto acceptUser(
-            @AuthenticationPrincipal String requestUserId,
-            @PathVariable String applicationId
-    ) {
-        return this.circleService.acceptUser(requestUserId, applicationId);
-    }
-
-    @PutMapping(value = "/applications/{applicationId}/reject")
-    @ResponseStatus(value = HttpStatus.OK)
-    public CircleMemberResponseDto rejectUser(
-            @AuthenticationPrincipal String requestUserId,
-            @PathVariable String applicationId
-    ) {
-        return this.circleService.rejectUser(requestUserId, applicationId);
-    }
-
-    @DeleteMapping(value = "/{id}")
-    @ResponseStatus(value = HttpStatus.OK)
-    public CircleResponseDto delete(
-            @AuthenticationPrincipal String requestUserId,
-            @PathVariable String id
-    ) {
-        return this.circleService.delete(requestUserId, id);
+    List<SecurityReference> defaultAuth() {
+        AuthorizationScope authorizationScope = new AuthorizationScope("global", "accessEverything");
+        AuthorizationScope[] authorizationScopes = new AuthorizationScope[1];
+        authorizationScopes[0] = authorizationScope;
+        return List.of(new SecurityReference("Authorization", authorizationScopes));
     }
 }
