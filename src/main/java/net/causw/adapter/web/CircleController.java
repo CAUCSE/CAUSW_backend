@@ -1,6 +1,5 @@
 package net.causw.adapter.web;
 
-import io.swagger.v3.oas.annotations.Parameter;
 import net.causw.application.circle.CircleService;
 import net.causw.application.dto.circle.CirclesResponseDto;
 import net.causw.application.dto.circle.CircleCreateRequestDto;
@@ -11,9 +10,7 @@ import net.causw.application.dto.circle.CircleBoardsResponseDto;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.domain.model.enums.CircleMemberStatus;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
