@@ -44,9 +44,9 @@ public class CircleController {
     @ResponseStatus(value = HttpStatus.OK)
     public List<CirclesResponseDto> findAll() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String userId = ((String) principal);
+        String currentUserId = ((String) principal);
 
-        return this.circleService.findAll(userId);
+        return this.circleService.findAll(currentUserId);
     }
 
     @GetMapping("/{id}/boards")
@@ -55,9 +55,9 @@ public class CircleController {
             @PathVariable String id
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String userId = ((String) principal);
+        String currentUserId = ((String) principal);
 
-        return this.circleService.findBoards(userId, id);
+        return this.circleService.findBoards(currentUserId, id);
     }
 
     @GetMapping(value = "/{id}/num-member")
@@ -88,9 +88,9 @@ public class CircleController {
             @RequestBody CircleCreateRequestDto circleCreateRequestDto
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String userId = ((String) principal);
+        String currentUserId = ((String) principal);
 
-        return this.circleService.create(userId, circleCreateRequestDto);
+        return this.circleService.create(currentUserId, circleCreateRequestDto);
     }
 
     @PutMapping(value = "/{circleId}")
@@ -100,9 +100,9 @@ public class CircleController {
             @RequestBody CircleUpdateRequestDto circleUpdateRequestDto
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String userId = ((String) principal);
+        String currentUserId = ((String) principal);
 
-        return this.circleService.update(userId, circleId, circleUpdateRequestDto);
+        return this.circleService.update(currentUserId, circleId, circleUpdateRequestDto);
     }
 
     @GetMapping(value = "/{circleId}/applications")
@@ -111,9 +111,9 @@ public class CircleController {
             @PathVariable String circleId
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String userId = ((String) principal);
+        String currentUserId = ((String) principal);
 
-        return this.circleService.userApply(userId, circleId);
+        return this.circleService.userApply(currentUserId, circleId);
     }
 
     @GetMapping(value = "/{name}/is-duplicated")
@@ -128,9 +128,9 @@ public class CircleController {
             @PathVariable String circleId
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String userId = ((String) principal);
+        String currentUserId = ((String) principal);
 
-        return this.circleService.leaveUser(userId, circleId);
+        return this.circleService.leaveUser(currentUserId, circleId);
     }
 
     @PutMapping(value = "/{circleId}/users/{userId}/drop")
@@ -140,10 +140,10 @@ public class CircleController {
             @PathVariable String circleId
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String requestUserId = ((String) principal);
+        String currentUserId = ((String) principal);
 
         return this.circleService.dropUser(
-                requestUserId,
+                currentUserId,
                 userId,
                 circleId
         );
@@ -155,9 +155,9 @@ public class CircleController {
             @PathVariable String applicationId
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String requestUserId = ((String) principal);
+        String currentUserId = ((String) principal);
 
-        return this.circleService.acceptUser(requestUserId, applicationId);
+        return this.circleService.acceptUser(currentUserId, applicationId);
     }
 
     @PutMapping(value = "/applications/{applicationId}/reject")
@@ -166,9 +166,9 @@ public class CircleController {
             @PathVariable String applicationId
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String requestUserId = ((String) principal);
+        String currentUserId = ((String) principal);
 
-        return this.circleService.rejectUser(requestUserId, applicationId);
+        return this.circleService.rejectUser(currentUserId, applicationId);
     }
 
     @DeleteMapping(value = "/{id}")
@@ -177,9 +177,9 @@ public class CircleController {
             @PathVariable String id
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String requestUserId = ((String) principal);
+        String currentUserId = ((String) principal);
 
-        return this.circleService.delete(requestUserId, id);
+        return this.circleService.delete(currentUserId, id);
     }
 }
 
