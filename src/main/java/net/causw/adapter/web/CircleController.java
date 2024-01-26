@@ -10,7 +10,7 @@ import net.causw.application.dto.circle.CircleBoardsResponseDto;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.domain.model.enums.CircleMemberStatus;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,17 +42,22 @@ public class CircleController {
 
     @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
-    public List<CirclesResponseDto> findAll(@AuthenticationPrincipal String userId) {
-        return this.circleService.findAll(userId);
+    public List<CirclesResponseDto> findAll() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
+
+        return this.circleService.findAll(currentUserId);
     }
 
     @GetMapping("/{id}/boards")
     @ResponseStatus(value = HttpStatus.OK)
     public CircleBoardsResponseDto findBoards(
-            @AuthenticationPrincipal String userId,
             @PathVariable String id
     ) {
-        return this.circleService.findBoards(userId, id);
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
+
+        return this.circleService.findBoards(currentUserId, id);
     }
 
     @GetMapping(value = "/{id}/num-member")
@@ -64,10 +69,12 @@ public class CircleController {
     @GetMapping(value = "/{id}/users")
     @ResponseStatus(value = HttpStatus.OK)
     public List<CircleMemberResponseDto> getUserList(
-            @AuthenticationPrincipal String currentUserId,
             @PathVariable String id,
             @RequestParam CircleMemberStatus status
     ) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
+
         return this.circleService.getUserList(
                 currentUserId,
                 id,
@@ -78,29 +85,35 @@ public class CircleController {
     @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)
     public CircleResponseDto create(
-            @AuthenticationPrincipal String userId,
             @RequestBody CircleCreateRequestDto circleCreateRequestDto
     ) {
-        return this.circleService.create(userId, circleCreateRequestDto);
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
+
+        return this.circleService.create(currentUserId, circleCreateRequestDto);
     }
 
     @PutMapping(value = "/{circleId}")
     @ResponseStatus(value = HttpStatus.OK)
     public CircleResponseDto update(
-            @AuthenticationPrincipal String userId,
             @PathVariable String circleId,
             @RequestBody CircleUpdateRequestDto circleUpdateRequestDto
     ) {
-        return this.circleService.update(userId, circleId, circleUpdateRequestDto);
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
+
+        return this.circleService.update(currentUserId, circleId, circleUpdateRequestDto);
     }
 
     @GetMapping(value = "/{circleId}/applications")
     @ResponseStatus(value = HttpStatus.CREATED)
     public CircleMemberResponseDto userApply(
-            @AuthenticationPrincipal String userId,
             @PathVariable String circleId
     ) {
-        return this.circleService.userApply(userId, circleId);
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
+
+        return this.circleService.userApply(currentUserId, circleId);
     }
 
     @GetMapping(value = "/{name}/is-duplicated")
@@ -112,21 +125,25 @@ public class CircleController {
     @PutMapping(value = "/{circleId}/users/leave")
     @ResponseStatus(value = HttpStatus.OK)
     public CircleMemberResponseDto leaveUser(
-            @AuthenticationPrincipal String userId,
             @PathVariable String circleId
     ) {
-        return this.circleService.leaveUser(userId, circleId);
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
+
+        return this.circleService.leaveUser(currentUserId, circleId);
     }
 
     @PutMapping(value = "/{circleId}/users/{userId}/drop")
     @ResponseStatus(value = HttpStatus.OK)
     public CircleMemberResponseDto dropUser(
-            @AuthenticationPrincipal String requestUserId,
             @PathVariable String userId,
             @PathVariable String circleId
     ) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
+
         return this.circleService.dropUser(
-                requestUserId,
+                currentUserId,
                 userId,
                 circleId
         );
@@ -135,27 +152,34 @@ public class CircleController {
     @PutMapping(value = "/applications/{applicationId}/accept")
     @ResponseStatus(value = HttpStatus.OK)
     public CircleMemberResponseDto acceptUser(
-            @AuthenticationPrincipal String requestUserId,
             @PathVariable String applicationId
     ) {
-        return this.circleService.acceptUser(requestUserId, applicationId);
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
+
+        return this.circleService.acceptUser(currentUserId, applicationId);
     }
 
     @PutMapping(value = "/applications/{applicationId}/reject")
     @ResponseStatus(value = HttpStatus.OK)
     public CircleMemberResponseDto rejectUser(
-            @AuthenticationPrincipal String requestUserId,
             @PathVariable String applicationId
     ) {
-        return this.circleService.rejectUser(requestUserId, applicationId);
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
+
+        return this.circleService.rejectUser(currentUserId, applicationId);
     }
 
     @DeleteMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
     public CircleResponseDto delete(
-            @AuthenticationPrincipal String requestUserId,
             @PathVariable String id
     ) {
-        return this.circleService.delete(requestUserId, id);
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
+
+        return this.circleService.delete(currentUserId, id);
     }
 }
+
