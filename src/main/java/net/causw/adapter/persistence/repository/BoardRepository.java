@@ -14,6 +14,9 @@ public interface BoardRepository extends JpaRepository<Board, String> {
 
     List<Board> findByCircle_IdIsNullAndIsDeletedIsFalseOrderByCreatedAtAsc();
 
+    List<Board> findByIsDeletedIsFalseOrderByCreatedAtAsc();
+
+
     List<Board> findTop3ByCircle_IdIsNullAndIsDeletedIsFalseOrderByCreatedAtAsc();
 
     @Query(value = "SELECT * FROM TB_BOARD " +
