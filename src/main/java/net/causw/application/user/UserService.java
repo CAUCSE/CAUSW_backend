@@ -932,7 +932,7 @@ public class UserService {
         UserDomainModel requestUser = this.userPort.findByEmail(userAdmissionCreateRequestDto.getEmail()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        "회원가입된 사용자의 이메일이 아닙니다."
                 )
         );
 

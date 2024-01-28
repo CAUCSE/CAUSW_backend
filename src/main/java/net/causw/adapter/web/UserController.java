@@ -313,10 +313,10 @@ public class UserController {
 
     @PostMapping(value = "/admissions/apply")
     @ResponseStatus(value = HttpStatus.CREATED)
-    @ApiOperation(value = "승인 신청서 작성 API (미완료 / 사용 가능)", notes = "attachImage는 우선 무시하고 진행해주세요.")
+    @ApiOperation(value = "승인 신청서 작성 API (미완료 / 사용 가능)", notes = "attachImage는 무시하고 진행해주세요.")
     @ApiResponses({
         @ApiResponse(code = 200, message = "OK", response = String.class),
-        @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
+        @ApiResponse(code = 4000, message = "회원가입된 사용자의 이메일이 아닙니다.", response = BadRequestException.class),
         @ApiResponse(code = 4001, message = "이미 신청한 사용자 입니다.", response = BadRequestException.class),
         @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = BadRequestException.class),
         @ApiResponse(code = 4107, message = "이미 등록된 사용자 입니다.", response = BadRequestException.class)
