@@ -158,7 +158,7 @@ public class UserService {
 
     // Find process of another user
     @Transactional(readOnly = true)
-    public UserResponseDto findById(String targetUserId, String requestUserId) {
+    public UserResponseDto findByUserId(String targetUserId, String requestUserId) {
         UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -197,7 +197,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserResponseDto findById(String id) {
+    public UserResponseDto findByUserId(String id) {
         UserDomainModel requestUser = this.userPort.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,

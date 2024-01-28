@@ -49,20 +49,48 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping(value = "/{id}")
+    /**
+     * 사용자 고유 id 값으로 사용자 정보를 조회하는 API
+     * @param userId
+     * @return
+     */
+    @GetMapping(value = "/{userId}")
     @ResponseStatus(value = HttpStatus.OK)
-    public UserResponseDto findById(@PathVariable String id) {
+    @ApiOperation(value = "사용자 정보 조회 API (완료)", notes = "userId 에는 사용자 고유 id 값을 입력해주세요.")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "OK", response = UserResponseDto.class),
+        @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
+        @ApiResponse(code = 4000, message = "해당 사용자를 찾을 수 없습니다", response = BadRequestException.class),
+        @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = BadRequestException.class),
+        @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = BadRequestException.class),
+        @ApiResponse(code = 4107, message = "접근 권한이 없습니다.", response = BadRequestException.class),
+        @ApiResponse(code = 5000, message = "소모임장이 아닙니다.", response = BadRequestException.class),
+        @ApiResponse(code = 4108, message = "해당 유저는 소모임 회원이 아닙니다.", response = BadRequestException.class)
+    })
+    public UserResponseDto findByUserId(@PathVariable String userId) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String currentUserId = ((String) principal);
-        return this.userService.findById(id, currentUserId);
+        return this.userService.findByUserId(userId, currentUserId);
     }
 
+    /**
+     * 현재 로그인한 사용자 정보를 조회하는 API
+     * @return
+     */
     @GetMapping(value = "/me")
     @ResponseStatus(value = HttpStatus.OK)
+    @ApiOperation(value = "로그인한 사용자 정보 조회 API (완료)")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "OK", response = UserResponseDto.class),
+        @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
+        @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = BadRequestException.class),
+        @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = BadRequestException.class),
+        @ApiResponse(code = 5000, message = "소모임장이 아닙니다.", response = BadRequestException.class)
+    })
     public UserResponseDto findCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String currentUserId = ((String) principal);
-        return this.userService.findById(currentUserId);
+        return this.userService.findByUserId(currentUserId);
     }
 
     @GetMapping(value = "/posts")
@@ -163,7 +191,6 @@ public class UserController {
 
     /**
      * 사용자 정보 업데이트 컨트롤러
-     * @param id
      * @param userUpdateDto
      * @return UserResponseDto
      */
@@ -249,7 +276,7 @@ public class UserController {
      */
     @DeleteMapping
     @ResponseStatus(value = HttpStatus.OK)
-    @ApiOperation(value = "사용자 탈퇴 API")
+    @ApiOperation(value = "사용자 탈퇴 API (완료)")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = String.class),
             @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
@@ -316,7 +343,7 @@ public class UserController {
     }
 
     @PutMapping(value = "/admissions/{id}/accept")
-    @ApiOperation(value = "신청 승인 API (미완료 / 사용 가능)", notes = "id 에는 승인 고유 id 값(admission id)을 넣어주세요.")
+    @ApiOperation(value = "신청 승인 API (완료)", notes = "id 에는 승인 고유 id 값(admission id)을 넣어주세요.")
     @ApiResponses({
         @ApiResponse(code = 200, message = "OK", response = String.class),
         @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
@@ -334,8 +361,13 @@ public class UserController {
         return this.userService.accept(currentUserId, id);
     }
 
+    /**
+     * 신청 거절 API
+     * @param id
+     * @return
+     */
     @PutMapping(value = "/admissions/{id}/reject")
-    @ApiOperation(value = "신청 거절 API (완료)", notes = "id 에는 승인 고유 id 값을 넣어주세요.")
+    @ApiOperation(value = "신청 거절 API (완료)", notes = "id 에는 승인 고유 id 값(admission id)을 넣어주세요.")
     @ApiResponses({
         @ApiResponse(code = 200, message = "OK", response = String.class),
         @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
