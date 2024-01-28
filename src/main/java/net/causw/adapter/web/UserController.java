@@ -13,7 +13,6 @@ import net.causw.application.dto.user.UserAdmissionResponseDto;
 import net.causw.application.dto.user.UserAdmissionsResponseDto;
 import net.causw.application.dto.user.UserCommentsResponseDto;
 import net.causw.application.dto.user.UserCreateRequestDto;
-import net.causw.application.dto.user.UserFindEmailRequestDto;
 import net.causw.application.dto.user.UserPostsResponseDto;
 import net.causw.application.dto.user.UserPrivilegedResponseDto;
 import net.causw.application.dto.user.UserResponseDto;
@@ -48,14 +47,6 @@ public class UserController {
 
     public UserController(UserService userService) {
         this.userService = userService;
-    }
-
-    @GetMapping(value = "/email")
-    @ResponseStatus(value = HttpStatus.OK)
-    public String findEmail(
-            @RequestBody UserFindEmailRequestDto userFindEmailRequestDto
-    ) {
-        return this.userService.findEmail(userFindEmailRequestDto);
     }
 
     @GetMapping(value = "/{id}")
