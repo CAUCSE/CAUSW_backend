@@ -24,6 +24,7 @@ import net.causw.domain.exceptions.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -251,12 +252,12 @@ public class UserController {
 
     /**
      * 탈퇴 컨트롤러
-     * @param id
+     * @param
      * @return
      */
     @DeleteMapping
     @ResponseStatus(value = HttpStatus.OK)
-    @ApiOperation(value = "사용자 탈퇴 API", notes = "id 에는 user 의 고유 id 값을 넣어주세요.")
+    @ApiOperation(value = "사용자 탈퇴 API")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = String.class),
             @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
@@ -268,8 +269,10 @@ public class UserController {
             @ApiResponse(code = 4107, message = "접근 권한이 없습니다.", response = BadRequestException.class),
             @ApiResponse(code = 5000, message = "User id checked, but exception occurred", response = BadRequestException.class)
     })
-    public UserResponseDto leave(@AuthenticationPrincipal String id) {
-        return this.userService.leave(id);
+    public UserResponseDto leave() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
+        return this.userService.leave(currentUserId);
     }
 
     @PutMapping(value = "{id}/drop")
