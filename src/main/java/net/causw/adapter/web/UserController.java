@@ -52,64 +52,58 @@ public class UserController {
 
     @GetMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
-    public UserResponseDto findById(
-            @AuthenticationPrincipal String requestUserId,
-            @PathVariable String id
-    ) {
-        return this.userService.findById(id, requestUserId);
+    public UserResponseDto findById(@PathVariable String id) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
+        return this.userService.findById(id, currentUserId);
     }
 
     @GetMapping(value = "/me")
     @ResponseStatus(value = HttpStatus.OK)
-    public UserResponseDto findCurrentUser(@AuthenticationPrincipal String currentUserId) {
+    public UserResponseDto findCurrentUser() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
         return this.userService.findById(currentUserId);
     }
 
     @GetMapping(value = "/posts")
     @ResponseStatus(value = HttpStatus.OK)
-    public UserPostsResponseDto findPosts(
-            @AuthenticationPrincipal String requestUserId,
-            @RequestParam(defaultValue = "0") Integer pageNum
-    ) {
-        return this.userService.findPosts(requestUserId, pageNum);
+    public UserPostsResponseDto findPosts(@RequestParam(defaultValue = "0") Integer pageNum) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
+        return this.userService.findPosts(currentUserId, pageNum);
     }
 
     @GetMapping(value = "/comments")
     @ResponseStatus(value = HttpStatus.OK)
-    public UserCommentsResponseDto findComments(
-            @AuthenticationPrincipal String requestUserId,
-            @RequestParam(defaultValue = "0") Integer pageNum
-    ) {
-        return this.userService.findComments(requestUserId, pageNum);
+    public UserCommentsResponseDto findComments(@RequestParam(defaultValue = "0") Integer pageNum) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
+        return this.userService.findComments(currentUserId, pageNum);
     }
 
     @GetMapping(value = "/name/{name}")
     @ResponseStatus(value = HttpStatus.OK)
-    public List<UserResponseDto> findByName(
-            @AuthenticationPrincipal String currentUserId,
-            @PathVariable String name
-    ) {
+    public List<UserResponseDto> findByName(@PathVariable String name) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
         return this.userService.findByName(currentUserId, name);
     }
 
     @GetMapping(value = "/privileged")
     @ResponseStatus(value = HttpStatus.OK)
-    public UserPrivilegedResponseDto findPrivilegedUsers(@AuthenticationPrincipal String currentUserId) {
+    public UserPrivilegedResponseDto findPrivilegedUsers() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
         return this.userService.findPrivilegedUsers(currentUserId);
     }
 
     @GetMapping(value = "/state/{state}")
     @ResponseStatus(value = HttpStatus.OK)
-    public Page<UserResponseDto> findByState(
-            @AuthenticationPrincipal String currentUserId,
-            @PathVariable String state,
-            @RequestParam(defaultValue = "0") Integer pageNum
-    ) {
-        return this.userService.findByState(
-                currentUserId,
-                state,
-                pageNum
-        );
+    public Page<UserResponseDto> findByState(@PathVariable String state,@RequestParam(defaultValue = "0") Integer pageNum) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
+        return this.userService.findByState(currentUserId, state, pageNum);
     }
 
     /**
@@ -176,7 +170,7 @@ public class UserController {
      */
     @PutMapping
     @ResponseStatus(value = HttpStatus.OK)
-    @ApiOperation(value = "사용자 정보 업데이트 API (완료)", notes = "id 에는 user 의 고유 id 값을 넣어주세요.")
+    @ApiOperation(value = "사용자 정보 업데이트 API (완료)")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = String.class),
             @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
@@ -189,16 +183,14 @@ public class UserController {
             @ApiResponse(code = 4003, message = "입학년도를 다시 확인해주세요.", response = BadRequestException.class),
             @ApiResponse(code = 5000, message = "User id checked, but exception occurred", response = BadRequestException.class)
     })
-    public UserResponseDto update(
-            @AuthenticationPrincipal String id,
-            @RequestBody UserUpdateRequestDto userUpdateDto
-    ) {
-        return this.userService.update(id, userUpdateDto);
+    public UserResponseDto update(@RequestBody UserUpdateRequestDto userUpdateDto) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
+        return this.userService.update(currentUserId, userUpdateDto);
     }
 
     /**
      * 권한 업데이트 컨트롤러
-     * @param grantorId
      * @param granteeId
      * @param userUpdateRoleRequestDto
      * @return
@@ -223,31 +215,32 @@ public class UserController {
             @ApiResponse(code = 5000, message = "동문회장이 존재하지 않습니다.", response = BadRequestException.class),
             @ApiResponse(code = 5000, message = "User id checked, but exception occurred", response = BadRequestException.class)
     })
-    public UserResponseDto updateRole(
-            @AuthenticationPrincipal String grantorId,
-            @PathVariable String granteeId,
-            @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto
-    ) {
-        return this.userService.updateUserRole(grantorId, granteeId, userUpdateRoleRequestDto);
+    public UserResponseDto updateRole(@PathVariable String granteeId, @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
+        return this.userService.updateUserRole(currentUserId, granteeId, userUpdateRoleRequestDto);
     }
 
+    /**
+     * 비밀번호 찾기 API
+     * @param email
+     * @param name
+     * @param studentId
+     * @return
+     */
     @GetMapping(value = "/password")
     @ResponseStatus(value = HttpStatus.OK)
-    public UserResponseDto findPassword(
-            @RequestParam String email,
-            @RequestParam String name,
-            @RequestParam String studentId
-    ) {
+    @ApiOperation(value = "비밀번호 찾기 API (미완료)", notes = "redis 사용해서 새로 작업할 예정입니다. (cc. 조명근)")
+    public UserResponseDto findPassword(@RequestParam String email, @RequestParam String name, @RequestParam String studentId) {
         return this.userService.findPassword(email, name, studentId);
     }
 
     @PutMapping(value = "/password")
     @ResponseStatus(value = HttpStatus.OK)
-    public UserResponseDto updatePassword(
-            @AuthenticationPrincipal String id,
-            @RequestBody UserUpdatePasswordRequestDto userUpdatePasswordRequestDto
-    ) {
-        return this.userService.updatePassword(id, userUpdatePasswordRequestDto);
+    public UserResponseDto updatePassword(@RequestBody UserUpdatePasswordRequestDto userUpdatePasswordRequestDto) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
+        return this.userService.updatePassword(currentUserId, userUpdatePasswordRequestDto);
     }
 
     /**
@@ -277,38 +270,34 @@ public class UserController {
 
     @PutMapping(value = "{id}/drop")
     @ResponseStatus(value = HttpStatus.OK)
-    public UserResponseDto drop(
-            @AuthenticationPrincipal String requestUserId,
-            @PathVariable String id
-    ) {
-        return this.userService.dropUser(requestUserId, id);
+    public UserResponseDto drop(@PathVariable String id) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
+        return this.userService.dropUser(currentUserId, id);
     }
 
     @GetMapping(value = "/circles")
     @ResponseStatus(value = HttpStatus.OK)
-    public List<CircleResponseDto> getCircleList(@AuthenticationPrincipal String currentUserId) {
+    public List<CircleResponseDto> getCircleList() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
         return this.userService.getCircleList(currentUserId);
     }
 
     @GetMapping(value = "/admissions/{id}")
     @ResponseStatus(value = HttpStatus.OK)
-    public UserAdmissionResponseDto findAdmissionById(
-            @AuthenticationPrincipal String requestUserId,
-            @PathVariable String id
-    ) {
-        return this.userService.findAdmissionById(requestUserId, id);
+    public UserAdmissionResponseDto findAdmissionById(@PathVariable String id) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
+        return this.userService.findAdmissionById(currentUserId, id);
     }
 
     @GetMapping(value = "/admissions")
     @ResponseStatus(value = HttpStatus.OK)
-    public Page<UserAdmissionsResponseDto> findAllAdmissions(
-            @AuthenticationPrincipal String requestUserId,
-            @RequestParam(defaultValue = "0") Integer pageNum
-    ) {
-        return this.userService.findAllAdmissions(
-                requestUserId,
-                pageNum
-        );
+    public Page<UserAdmissionsResponseDto> findAllAdmissions(@RequestParam(defaultValue = "0") Integer pageNum) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
+        return this.userService.findAllAdmissions(currentUserId,pageNum);
     }
 
     @PostMapping(value = "/admissions/apply")
@@ -328,7 +317,7 @@ public class UserController {
     }
 
     @PutMapping(value = "/admissions/{id}/accept")
-    @ApiOperation(value = "신청 승인 API (미완료 / 사용 가능)", notes = "id 에는 승인 고유 id 값을 넣어주세요.\nrequestUserId는 token 값입니다. 추후 수정 및 삭제 예정입니다.")
+    @ApiOperation(value = "신청 승인 API (미완료 / 사용 가능)", notes = "id 에는 승인 고유 id 값(admission id)을 넣어주세요.")
     @ApiResponses({
         @ApiResponse(code = 200, message = "OK", response = String.class),
         @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
@@ -340,18 +329,14 @@ public class UserController {
         @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = BadRequestException.class),
         @ApiResponse(code = 5000, message = "User id checked, but exception occurred", response = BadRequestException.class)
     })
-    public UserAdmissionResponseDto acceptAdmission(
-            @AuthenticationPrincipal String requestUserId,
-            @PathVariable String id
-    ) {
-        return this.userService.accept(
-                requestUserId,
-                id
-        );
+    public UserAdmissionResponseDto acceptAdmission(@PathVariable String id) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
+        return this.userService.accept(currentUserId, id);
     }
 
     @PutMapping(value = "/admissions/{id}/reject")
-    @ApiOperation(value = "신청 거절 API (미완료 / 사용 가능)", notes = "id 에는 승인 고유 id 값을 넣어주세요.\nrequestUserId는 token 값입니다. 추후 수정 및 삭제 예정입니다.")
+    @ApiOperation(value = "신청 거절 API (완료)", notes = "id 에는 승인 고유 id 값을 넣어주세요.")
     @ApiResponses({
         @ApiResponse(code = 200, message = "OK", response = String.class),
         @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
@@ -364,37 +349,25 @@ public class UserController {
         @ApiResponse(code = 4107, message = "접근 권한이 없습니다.", response = BadRequestException.class),
         @ApiResponse(code = 5000, message = "User id checked, but exception occurred", response = BadRequestException.class)
     })
-    public UserAdmissionResponseDto rejectAdmission(
-            @AuthenticationPrincipal String requestUserId,
-            @PathVariable String id
-    ) {
-        return this.userService.reject(
-                requestUserId,
-                id
-        );
+    public UserAdmissionResponseDto rejectAdmission(@PathVariable String id) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
+        return this.userService.reject(currentUserId, id);
     }
 
     @PostMapping(value = "/favorite-boards/{boardId}")
     @ResponseStatus(value = HttpStatus.CREATED)
-    public BoardResponseDto createFavoriteBoard(
-            @AuthenticationPrincipal String requestUserId,
-            @PathVariable String boardId
-    ) {
-        return this.userService.createFavoriteBoard(
-                requestUserId,
-                boardId
-        );
+    public BoardResponseDto createFavoriteBoard(@PathVariable String boardId) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
+        return this.userService.createFavoriteBoard(currentUserId, boardId);
     }
 
     @PutMapping(value = "/restore/{id}")
     @ResponseStatus(value = HttpStatus.OK)
-    public UserResponseDto restore(
-            @AuthenticationPrincipal String requestUserId,
-            @PathVariable String id
-    ) {
-        return this.userService.restore(
-                requestUserId,
-                id
-        );
+    public UserResponseDto restore(@PathVariable String id) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
+        return this.userService.restore(currentUserId, id);
     }
 }
