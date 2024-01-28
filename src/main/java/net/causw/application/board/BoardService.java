@@ -49,7 +49,7 @@ public class BoardService {
     }
 
     @Transactional(readOnly = true)
-    public List<BoardResponseDto> findAll(String userId) {
+    public List<BoardResponseDto> findAllBoard(String userId) {
         UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -62,14 +62,14 @@ public class BoardService {
                 .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
                 .validate();
 
-        return this.boardPort.findAll()
+        return this.boardPort.findAllBoard()
                 .stream()
                 .map(boardDomainModel -> BoardResponseDto.from(boardDomainModel, userDomainModel.getRole()))
                 .collect(Collectors.toList());
     }
 
     @Transactional
-    public BoardResponseDto create(String creatorId, BoardCreateRequestDto boardCreateRequestDto) {
+    public BoardResponseDto createBoard(String creatorId, BoardCreateRequestDto boardCreateRequestDto) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         UserDomainModel creatorDomainModel = this.userPort.findById(creatorId).orElseThrow(
@@ -132,11 +132,11 @@ public class BoardService {
                 .consistOf(ConstraintValidator.of(boardDomainModel, this.validator))
                 .validate();
 
-        return BoardResponseDto.from(this.boardPort.create(boardDomainModel), creatorDomainModel.getRole());
+        return BoardResponseDto.from(this.boardPort.createBoard(boardDomainModel), creatorDomainModel.getRole());
     }
 
     @Transactional
-    public BoardResponseDto update(
+    public BoardResponseDto updateBoard(
             String updaterId,
             String boardId,
             BoardUpdateRequestDto boardUpdateRequestDto
@@ -197,7 +197,7 @@ public class BoardService {
                 .validate();
 
         return BoardResponseDto.from(
-                this.boardPort.update(boardId, boardDomainModel).orElseThrow(
+                this.boardPort.updateBoard(boardId, boardDomainModel).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
                                 "Board id checked, but exception occurred"
@@ -208,7 +208,7 @@ public class BoardService {
     }
 
     @Transactional
-    public BoardResponseDto delete(
+    public BoardResponseDto deleteBoard(
             String deleterId,
             String boardId
     ) {
@@ -268,7 +268,7 @@ public class BoardService {
                 .validate();
 
         return BoardResponseDto.from(
-                this.boardPort.delete(boardId).orElseThrow(
+                this.boardPort.deleteBoard(boardId).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
                                 "Board id checked, but exception occurred"
@@ -279,7 +279,7 @@ public class BoardService {
     }
 
     @Transactional
-    public BoardResponseDto restore(
+    public BoardResponseDto restoreBoard(
             String restorerId,
             String boardId
     ){
@@ -339,7 +339,7 @@ public class BoardService {
                 .validate();
 
         return BoardResponseDto.from(
-                this.boardPort.restore(boardId).orElseThrow(
+                this.boardPort.restoreBoard(boardId).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
                                 "Board id checked, but exception occurred"

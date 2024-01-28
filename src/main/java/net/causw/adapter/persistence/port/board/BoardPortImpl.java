@@ -25,7 +25,7 @@ public class BoardPortImpl extends DomainModelMapper implements BoardPort {
     }
 
     @Override
-    public List<BoardDomainModel> findAll() {
+    public List<BoardDomainModel> findAllBoard() {
         return this.boardRepository.findByIsDeletedIsFalseOrderByCreatedAtAsc()
                 .stream()
                 .map(this::entityToDomainModel)
@@ -54,12 +54,12 @@ public class BoardPortImpl extends DomainModelMapper implements BoardPort {
     }
 
     @Override
-    public BoardDomainModel create(BoardDomainModel boardDomainModel) {
+    public BoardDomainModel createBoard(BoardDomainModel boardDomainModel) {
         return this.entityToDomainModel(this.boardRepository.save(Board.from(boardDomainModel)));
     }
 
     @Override
-    public Optional<BoardDomainModel> update(String id, BoardDomainModel boardDomainModel) {
+    public Optional<BoardDomainModel> updateBoard(String id, BoardDomainModel boardDomainModel) {
         return this.boardRepository.findById(id).map(
                 srcBoard -> {
                     srcBoard.setName(boardDomainModel.getName());
@@ -72,7 +72,7 @@ public class BoardPortImpl extends DomainModelMapper implements BoardPort {
     }
 
     @Override
-    public Optional<BoardDomainModel> delete(String id) {
+    public Optional<BoardDomainModel> deleteBoard(String id) {
         return this.boardRepository.findById(id).map(
                 srcBoard -> {
                     srcBoard.setIsDeleted(true);
@@ -83,7 +83,7 @@ public class BoardPortImpl extends DomainModelMapper implements BoardPort {
     }
 
     @Override
-    public Optional<BoardDomainModel> restore(String id) {
+    public Optional<BoardDomainModel> restoreBoard(String id) {
         return this.boardRepository.findById(id).map(
                 srcBoard -> {
                     srcBoard.setIsDeleted(false);
