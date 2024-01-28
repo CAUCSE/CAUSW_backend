@@ -1,6 +1,9 @@
 package net.causw.adapter.web;
 
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import net.causw.application.user.UserService;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
@@ -18,7 +21,7 @@ import net.causw.application.dto.user.UserSignInRequestDto;
 import net.causw.application.dto.user.UserUpdatePasswordRequestDto;
 import net.causw.application.dto.user.UserUpdateRequestDto;
 import net.causw.application.dto.user.UserUpdateRoleRequestDto;
-import net.causw.domain.exceptions.*;
+import net.causw.domain.exceptions.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
