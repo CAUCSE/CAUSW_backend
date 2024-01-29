@@ -41,7 +41,7 @@ public class Board extends BaseEntity {
     private Boolean isDeleted;
 
     @ManyToOne
-    @JoinColumn(name = "circle_id")
+    @JoinColumn(name = "circle_id", nullable = true)
     private Circle circle;
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)

@@ -12,12 +12,10 @@ import java.util.Optional;
 public interface BoardRepository extends JpaRepository<Board, String> {
     List<Board> findByCircle_IdAndIsDeletedIsFalseOrderByCreatedAtAsc(String circleId);
 
+    List<Board> findByCircle_IdOrderByCreatedAtAsc(String circleId);
+    List<Board> findByOrderByCreatedAtAsc();
     List<Board> findByCircle_IdIsNullAndIsDeletedIsFalseOrderByCreatedAtAsc();
-
-    List<Board> findByIsDeletedIsFalseOrderByCreatedAtAsc();
-
-
-    List<Board> findTop3ByCircle_IdIsNullAndIsDeletedIsFalseOrderByCreatedAtAsc();
+    List<Board> findByIsDeletedOrderByCreatedAtAsc(boolean IsDeleted);
 
     @Query(value = "SELECT * FROM TB_BOARD " +
             "WHERE TB_BOARD.name = '앱 공지사항' " +

@@ -63,10 +63,33 @@ public class BoardService {
                 .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
                 .validate();
 
-        return this.boardPort.findAllBoard()
-                .stream()
-                .map(boardDomainModel -> BoardResponseDto.from(boardDomainModel, userDomainModel.getRole()))
-                .collect(Collectors.toList());
+        String circleId = null;
+        if (userDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
+            String leaderUserId = userDomainModel.getId();
+            Optional<CircleDomainModel> circleOptional = this.circlePort.findByLeaderId(leaderUserId);
+
+            if (circleOptional.isPresent()) {
+                circleId = circleOptional.get().getId();
+            }
+            return this.boardPort.findAllBoard(circleId)
+                    .stream()
+                    .map(boardDomainModel -> BoardResponseDto.from(boardDomainModel, userDomainModel.getRole()))
+                    .collect(Collectors.toList());
+        }
+
+        else if(userDomainModel.getRole().equals(Role.ADMIN) || userDomainModel.getRole().equals(Role.PRESIDENT) ){
+            return this.boardPort.findAllBoard()
+                    .stream()
+                    .map(boardDomainModel -> BoardResponseDto.from(boardDomainModel, userDomainModel.getRole()))
+                    .collect(Collectors.toList());
+        }
+        else{ //admin,president, leader_circle 제외 일반 user들
+            return this.boardPort.findAllBoard(false)
+                    .stream()
+                    .map(boardDomainModel -> BoardResponseDto.from(boardDomainModel, userDomainModel.getRole()))
+                    .collect(Collectors.toList());
+        }
+
     }
 
     @Transactional

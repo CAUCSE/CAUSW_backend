@@ -7,6 +7,7 @@ import net.causw.application.spi.BoardPort;
 import net.causw.domain.model.board.BoardDomainModel;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,9 +25,31 @@ public class BoardPortImpl extends DomainModelMapper implements BoardPort {
         return this.boardRepository.findById(id).map(this::entityToDomainModel);
     }
 
+
+    @Override
+    public List<BoardDomainModel> findAllBoard(String circleId) {
+        List<Board> boardsInCircle = this.boardRepository.findByCircle_IdOrderByCreatedAtAsc(circleId);
+        List<Board> boardsOutsideCircle = this.boardRepository.findByCircle_IdIsNullAndIsDeletedIsFalseOrderByCreatedAtAsc();
+
+        List<Board> allBoards = new ArrayList<>();
+        allBoards.addAll(boardsInCircle);
+        allBoards.addAll(boardsOutsideCircle);
+
+        return allBoards.stream()
+                .map(this::entityToDomainModel)
+                .collect(Collectors.toList());
+    }
     @Override
     public List<BoardDomainModel> findAllBoard() {
-        return this.boardRepository.findByIsDeletedIsFalseOrderByCreatedAtAsc()
+
+        return this.boardRepository.findByOrderByCreatedAtAsc()
+                .stream()
+                .map(this::entityToDomainModel)
+                .collect(Collectors.toList());
+    }
+    @Override
+    public List<BoardDomainModel> findAllBoard(boolean isDeleted) {
+        return this.boardRepository.findByIsDeletedOrderByCreatedAtAsc(isDeleted)
                 .stream()
                 .map(this::entityToDomainModel)
                 .collect(Collectors.toList());
