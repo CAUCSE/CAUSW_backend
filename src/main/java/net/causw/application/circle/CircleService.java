@@ -40,7 +40,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -290,6 +289,8 @@ public class CircleService {
                 }
         );
 
+        // user Role이 Common이 아니면 아예 안 됨. -> 권한의 중첩이 필요하다. User Role에 대한 새로운 table 생성 어떤지?
+        // https://www.inflearn.com/questions/21303/enum%EC%9D%84-list%EB%A1%9C-%EC%96%B4%EB%96%BB%EA%B2%8C-%EB%B0%9B%EB%8A%94%EC%A7%80-%EA%B6%81%EA%B8%88%ED%95%A9%EB%8B%88%EB%8B%A4
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
@@ -321,14 +322,6 @@ public class CircleService {
         );
         this.boardPort.create(noticeBoard);
 
-        BoardDomainModel generalBoard = BoardDomainModel.of(
-                "자유 게시판",
-                newCircle.getName() + " 자유 게시판",
-                new ArrayList<>(),
-                "자유 게시판",
-                newCircle
-        );
-        this.boardPort.create(generalBoard);
 
         // Apply the leader automatically to the circle
         CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.create(leader, newCircle);
