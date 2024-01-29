@@ -65,8 +65,7 @@ public class BoardService {
 
         String circleId = null;
         if (userDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
-            String leaderUserId = userDomainModel.getId();
-            Optional<CircleDomainModel> circleOptional = this.circlePort.findByLeaderId(leaderUserId);
+            Optional<CircleDomainModel> circleOptional = this.circlePort.findByLeaderId(loginUserId);
 
             if (circleOptional.isPresent()) {
                 circleId = circleOptional.get().getId();
