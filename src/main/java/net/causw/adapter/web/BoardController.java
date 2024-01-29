@@ -40,7 +40,7 @@ public class BoardController {
 
     @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)
-    @ApiOperation(value = "게시판 생성 API (미완료/사용가능)", notes = "circleId는 현재 존재하는 circleId를 적용해야 합니다\n validation 오류 응답값은 추후 추가 예정입니다")
+    @ApiOperation(value = "게시판 생성 API (미완료/사용가능)", notes = "circleId는 현재 존재하는 circleId를 적용해야 합니다(nullable)\n validation 오류 응답값은 추후 추가 예정입니다")
     public BoardResponseDto createBoard(
             @RequestBody BoardCreateRequestDto boardCreateRequestDto
     ) {

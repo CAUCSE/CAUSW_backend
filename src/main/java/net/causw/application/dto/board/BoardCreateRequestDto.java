@@ -27,7 +27,7 @@ public class BoardCreateRequestDto {
     @ApiModelProperty(value = "게시판 카테고리", example = "APP_NOTICE")
     private String category;
 
-    @ApiModelProperty(value = "게시판이 속한 동아리 id", example = "uuid 형식의 String 값입니다.")
+    @ApiModelProperty(value = "게시판이 속한 동아리 id", example = "uuid 형식의 String 값입니다(nullable).")
     private String circleId;
 
     public Optional<String> getCircleId() {

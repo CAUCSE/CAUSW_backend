@@ -33,7 +33,7 @@ public class BoardResponseDto {
     @ApiModelProperty(value = "삭제 여부", example = "false")
     private Boolean isDeleted;
 
-    @ApiModelProperty(value = "게시판이 속한 동아리 id", example = "uuid 형식의 String 값입니다.")
+    @ApiModelProperty(value = "게시판이 속한 동아리 id", example = "uuid 형식의 String 값입니다(nullable).")
     private String circleId;
 
     @ApiModelProperty(value = "속한 동아리 이름", example = "circleName_example")
