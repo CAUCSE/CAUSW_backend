@@ -15,19 +15,19 @@ import java.util.Optional;
 @NoArgsConstructor
 public class BoardCreateRequestDto {
 
-    @ApiModelProperty(value = "Board 이름", example = "board_name")
+    @ApiModelProperty(value = "게시판 이름", example = "board_name")
     private String name;
 
-    @ApiModelProperty(value = "Board 설명", example = "board_description")
+    @ApiModelProperty(value = "게시판 설명", example = "board_description")
     private String description;
 
     @ApiModelProperty(value = "createRoleList(미완)", example = "[ 'ADMIN' ]")
     private List<String> createRoleList;
 
-    @ApiModelProperty(value = "Board 카테고리", example = "APP_NOTICE")
+    @ApiModelProperty(value = "게시판 카테고리", example = "APP_NOTICE")
     private String category;
 
-    @ApiModelProperty(value = "속한 동아리 id", example = "circleId_example")
+    @ApiModelProperty(value = "게시판이 속한 동아리 id", example = "uuid 형식의 String 값입니다.")
     private String circleId;
 
     public Optional<String> getCircleId() {
