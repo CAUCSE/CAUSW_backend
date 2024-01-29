@@ -34,8 +34,8 @@ public class BoardController {
     @ApiOperation(value = "게시판 검색 API (미완료/사용가능)", notes = "전체 게시판을 불러오는 api로 관리자 권한을 가진 경우 삭제된 게시판도 확인할 수 있습니다.\nvalidation 오류 응답값은 추후 추가 예정입니다")
     public List<BoardResponseDto> findAllBoard() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String userId = ((String) principal);
-        return this.boardService.findAllBoard(userId);
+        String loginUserId = ((String) principal);
+        return this.boardService.findAllBoard(loginUserId);
     }
 
     @PostMapping
@@ -45,8 +45,8 @@ public class BoardController {
             @RequestBody BoardCreateRequestDto boardCreateRequestDto
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String creatorId = ((String) principal);
-        return this.boardService.createBoard(creatorId, boardCreateRequestDto);
+        String loginUserId = ((String) principal);
+        return this.boardService.createBoard(loginUserId, boardCreateRequestDto);
     }
 
     @PutMapping(value = "/{id}")
@@ -57,8 +57,8 @@ public class BoardController {
             @RequestBody BoardUpdateRequestDto boardUpdateRequestDto
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String updaterId = ((String) principal);
-        return this.boardService.updateBoard(updaterId, id, boardUpdateRequestDto);
+        String loginUserId = ((String) principal);
+        return this.boardService.updateBoard(loginUserId, id, boardUpdateRequestDto);
     }
 
     @DeleteMapping(value = "/{id}")
@@ -69,8 +69,8 @@ public class BoardController {
             @PathVariable String id
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String deleterId = ((String) principal);
-        return this.boardService.deleteBoard(deleterId, id);
+        String loginUserId = ((String) principal);
+        return this.boardService.deleteBoard(loginUserId, id);
     }
 
     @PutMapping(value = "/{id}/restore")
@@ -81,7 +81,7 @@ public class BoardController {
             @PathVariable String id
     ){
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String restorerId = ((String) principal);
-        return this.boardService.restoreBoard(restorerId, id);
+        String loginUserId = ((String) principal);
+        return this.boardService.restoreBoard(loginUserId, id);
     }
 }
