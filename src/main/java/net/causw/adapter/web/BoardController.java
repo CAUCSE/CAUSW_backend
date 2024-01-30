@@ -1,10 +1,13 @@
 package net.causw.adapter.web;
 
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import net.causw.application.board.BoardService;
 import net.causw.application.dto.board.BoardCreateRequestDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.board.BoardUpdateRequestDto;
+import net.causw.domain.exceptions.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,7 +34,16 @@ public class BoardController {
 
     @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
-    @ApiOperation(value = "게시판 검색 API (미완료/사용가능)", notes = "전체 게시판을 불러오는 api로 관리자 권한을 가진 경우 삭제된 게시판도 확인할 수 있습니다.\nvalidation 오류 응답값은 추후 추가 예정입니다")
+    @ApiOperation(value = "게시판 검색 API(완료)", notes = "전체 게시판을 불러오는 api로 관리자 권한을 가진 경우 삭제된 게시판도 확인할 수 있습니다.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "OK", response = String.class),
+            @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = BadRequestException.class)
+    })
     public List<BoardResponseDto> findAllBoard() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
@@ -40,7 +52,20 @@ public class BoardController {
 
     @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)
-    @ApiOperation(value = "게시판 생성 API (미완료/사용가능)", notes = "circleId는 현재 존재하는 circleId를 적용해야 합니다(nullable)\n validation 오류 응답값은 추후 추가 예정입니다")
+    @ApiOperation(value = "게시판 생성 API(완료)", notes = "circleId는 현재 존재하는 circleId를 적용해야 합니다(nullable)")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Created", response = String.class),
+            @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = BadRequestException.class),
+            @ApiResponse(code = 4004, message = "삭제된 동아리입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4107, message = "게시판을 생성할 수 있는 권한이 아닙니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4000, message = "동아리를 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 5000, message = "The board has circle without circle leader", response = BadRequestException.class)
+    })
     public BoardResponseDto createBoard(
             @RequestBody BoardCreateRequestDto boardCreateRequestDto
     ) {
@@ -51,7 +76,21 @@ public class BoardController {
 
     @PutMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
-    @ApiOperation(value = "게시판 업데이트 API (미완료/사용가능)", notes = "id 에는 board id 값을 넣어주세요\n validation 오류 응답값은 추후 추가 예정입니다")
+    @ApiOperation(value = "게시판 업데이트 API(완료)", notes = "id 에는 board id 값을 넣어주세요")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "OK", response = String.class),
+            @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = BadRequestException.class),
+            @ApiResponse(code = 4004, message = "삭제된 동아리입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4107, message = "게시판을 수정할 수 있는 권한이 아닙니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4000, message = "수정할 게시판을 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 5000, message = "The board has circle without circle leader", response = BadRequestException.class),
+            @ApiResponse(code = 5000, message = "Board id checked, but exception occurred", response = BadRequestException.class)
+    })
     public BoardResponseDto updateBoard(
             @PathVariable String id,
             @RequestBody BoardUpdateRequestDto boardUpdateRequestDto
@@ -63,7 +102,21 @@ public class BoardController {
 
     @DeleteMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
-    @ApiOperation(value = "게시판 삭제 API (미완료/사용가능)", notes = "id 에는 board id 값을 넣어주세요\n validation 오류 응답값은 추후 추가 예정입니다")
+    @ApiOperation(value = "게시판 삭제 API(완료)", notes = "id 에는 board id 값을 넣어주세요")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "OK", response = String.class),
+            @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = BadRequestException.class),
+            @ApiResponse(code = 4004, message = "삭제된 동아리입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4107, message = "게시판을 삭할 수 있는 권한이 아닙니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4000, message = "삭제할 게시판을 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 5000, message = "The board has circle without circle leader", response = BadRequestException.class),
+            @ApiResponse(code = 5000, message = "Board id checked, but exception occurred", response = BadRequestException.class)
+    })
     public BoardResponseDto deleteBoard(
 
             @PathVariable String id
@@ -75,7 +128,21 @@ public class BoardController {
 
     @PutMapping(value = "/{id}/restore")
     @ResponseStatus(value =  HttpStatus.OK)
-    @ApiOperation(value = "게시판 복구 API (미완료/사용가능)", notes = "id 에는 board id 값을 넣어주세요\n validation 오류 응답값은 추후 추가 예정입니다")
+    @ApiOperation(value = "게시판 복구 API(완료)", notes = "id 에는 board id 값을 넣어주세요")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "OK", response = String.class),
+            @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = BadRequestException.class),
+            @ApiResponse(code = 4004, message = "삭제된 동아리입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4107, message = "게시판을 복구할 수 있는 권한이 아닙니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4000, message = "복구할 게시판을 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 5000, message = "The board has circle without circle leader", response = BadRequestException.class),
+            @ApiResponse(code = 5000, message = "Board id checked, but exception occurred", response = BadRequestException.class)
+    })
     public BoardResponseDto restoreBoard(
 
             @PathVariable String id

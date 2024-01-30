@@ -21,7 +21,7 @@ public class BoardUpdateRequestDto {
     private String description;
 
 
-    @ApiModelProperty(value = "createRoleList(미완)", example = "[ 'ADMIN' ]")
+    @ApiModelProperty(value = "게시판에 글을 작성할 수 있는 권한 명단", example = "[ 'ADMIN' ]")
     private List<String> createRoleList;
 
     @ApiModelProperty(value = "게시판 카테고리", example = "APP_NOTICE")
