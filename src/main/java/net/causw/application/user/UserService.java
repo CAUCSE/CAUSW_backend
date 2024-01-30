@@ -10,7 +10,6 @@ import net.causw.application.dto.user.UserAdmissionResponseDto;
 import net.causw.application.dto.user.UserAdmissionsResponseDto;
 import net.causw.application.dto.user.UserCommentsResponseDto;
 import net.causw.application.dto.user.UserCreateRequestDto;
-import net.causw.application.dto.user.UserFindEmailRequestDto;
 import net.causw.application.dto.user.UserPostResponseDto;
 import net.causw.application.dto.user.UserPostsResponseDto;
 import net.causw.application.dto.user.UserPrivilegedResponseDto;
@@ -61,7 +60,6 @@ import net.causw.domain.validation.UserStateIsDropValidator;
 import net.causw.domain.validation.UserStateIsNotDropAndActiveValidator;
 import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
-//import net.causw.infrastructure.GcpFileUploader;
 import net.causw.infrastructure.GoogleMailSender;
 import net.causw.infrastructure.PasswordGenerator;
 import org.springframework.data.domain.Page;
@@ -132,18 +130,6 @@ public class UserService {
         this.validator = validator;
     }
 
-    @Transactional(readOnly = true)
-    public String findEmail(
-            UserFindEmailRequestDto userFindEmailRequestDto
-    ) {
-        return this.userPort.findEmail(userFindEmailRequestDto.getEmail(), userFindEmailRequestDto.getStudentId())
-                .map(UserDomainModel::getEmail)
-                .orElseThrow(() -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "가입정보가 존재하지 않습니다."
-                ));
-    }
-
     @Transactional
     public UserResponseDto findPassword(
             String email,
@@ -172,7 +158,7 @@ public class UserService {
 
     // Find process of another user
     @Transactional(readOnly = true)
-    public UserResponseDto findById(String targetUserId, String requestUserId) {
+    public UserResponseDto findByUserId(String targetUserId, String requestUserId) {
         UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -211,7 +197,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserResponseDto findById(String id) {
+    public UserResponseDto findByUserId(String id) {
         UserDomainModel requestUser = this.userPort.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -946,7 +932,7 @@ public class UserService {
         UserDomainModel requestUser = this.userPort.findByEmail(userAdmissionCreateRequestDto.getEmail()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        "회원가입된 사용자의 이메일이 아닙니다."
                 )
         );
 
