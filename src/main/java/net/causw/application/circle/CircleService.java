@@ -319,7 +319,7 @@ public class CircleService {
                 "공지 게시판",
                 newCircle
         );
-        this.boardPort.create(noticeBoard);
+        this.boardPort.createBoard(noticeBoard);
 
         BoardDomainModel generalBoard = BoardDomainModel.of(
                 "자유 게시판",
@@ -328,7 +328,7 @@ public class CircleService {
                 "자유 게시판",
                 newCircle
         );
-        this.boardPort.create(generalBoard);
+        this.boardPort.createBoard(generalBoard);
 
         // Apply the leader automatically to the circle
         CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.create(leader, newCircle);

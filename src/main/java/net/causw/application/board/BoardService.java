@@ -27,8 +27,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
-//boardservice
+
 @Service
 public class BoardService {
     private final BoardPort boardPort;
@@ -49,8 +50,8 @@ public class BoardService {
     }
 
     @Transactional(readOnly = true)
-    public List<BoardResponseDto> findAll(String userId) {
-        UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
+    public List<BoardResponseDto> findAllBoard(String loginUserId) {
+        UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -62,18 +63,39 @@ public class BoardService {
                 .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
                 .validate();
 
-        return this.boardPort.findAll()
-                .stream()
-                .filter(boardDomainModel -> !boardDomainModel.getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE))
-                .map(boardDomainModel -> BoardResponseDto.from(boardDomainModel, userDomainModel.getRole()))
-                .collect(Collectors.toList());
+        String circleId = null;
+        if (userDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
+            Optional<CircleDomainModel> circleOptional = this.circlePort.findByLeaderId(loginUserId);
+
+            if (circleOptional.isPresent()) {
+                circleId = circleOptional.get().getId();
+            }
+            return this.boardPort.findAllBoard(circleId)
+                    .stream()
+                    .map(boardDomainModel -> BoardResponseDto.from(boardDomainModel, userDomainModel.getRole()))
+                    .collect(Collectors.toList());
+        }
+
+        else if(userDomainModel.getRole().equals(Role.ADMIN) || userDomainModel.getRole().equals(Role.PRESIDENT) ){
+            return this.boardPort.findAllBoard()
+                    .stream()
+                    .map(boardDomainModel -> BoardResponseDto.from(boardDomainModel, userDomainModel.getRole()))
+                    .collect(Collectors.toList());
+        }
+        else{ //admin,president, leader_circle 제외 일반 user들
+            return this.boardPort.findAllBoard(false)
+                    .stream()
+                    .map(boardDomainModel -> BoardResponseDto.from(boardDomainModel, userDomainModel.getRole()))
+                    .collect(Collectors.toList());
+        }
+
     }
 
     @Transactional
-    public BoardResponseDto create(String creatorId, BoardCreateRequestDto boardCreateRequestDto) {
+    public BoardResponseDto createBoard(String loginUserId, BoardCreateRequestDto boardCreateRequestDto) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel creatorDomainModel = this.userPort.findById(creatorId).orElseThrow(
+        UserDomainModel creatorDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -106,7 +128,7 @@ public class BoardService {
                                                         "The board has circle without circle leader"
                                                 )
                                         ),
-                                        creatorId
+                                        loginUserId
                                 ));
                     }
 
@@ -133,18 +155,18 @@ public class BoardService {
                 .consistOf(ConstraintValidator.of(boardDomainModel, this.validator))
                 .validate();
 
-        return BoardResponseDto.from(this.boardPort.create(boardDomainModel), creatorDomainModel.getRole());
+        return BoardResponseDto.from(this.boardPort.createBoard(boardDomainModel), creatorDomainModel.getRole());
     }
 
     @Transactional
-    public BoardResponseDto update(
-            String updaterId,
+    public BoardResponseDto updateBoard(
+            String loginUserId,
             String boardId,
             BoardUpdateRequestDto boardUpdateRequestDto
     ) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel updaterDomainModel = this.userPort.findById(updaterId).orElseThrow(
+        UserDomainModel updaterDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -178,7 +200,7 @@ public class BoardService {
                                                         "The board has circle without circle leader"
                                                 )
                                         ),
-                                        updaterId
+                                        loginUserId
                                 ));
                     }
                 },
@@ -198,7 +220,7 @@ public class BoardService {
                 .validate();
 
         return BoardResponseDto.from(
-                this.boardPort.update(boardId, boardDomainModel).orElseThrow(
+                this.boardPort.updateBoard(boardId, boardDomainModel).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
                                 "Board id checked, but exception occurred"
@@ -209,13 +231,13 @@ public class BoardService {
     }
 
     @Transactional
-    public BoardResponseDto delete(
-            String deleterId,
+    public BoardResponseDto deleteBoard(
+            String loginUserId,
             String boardId
     ) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel deleterDomainModel = this.userPort.findById(deleterId).orElseThrow(
+        UserDomainModel deleterDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -257,7 +279,7 @@ public class BoardService {
                                                         "The board has circle without circle leader"
                                                 )
                                         ),
-                                        deleterId
+                                        loginUserId
                                 ));
                     }
                 },
@@ -269,7 +291,7 @@ public class BoardService {
                 .validate();
 
         return BoardResponseDto.from(
-                this.boardPort.delete(boardId).orElseThrow(
+                this.boardPort.deleteBoard(boardId).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
                                 "Board id checked, but exception occurred"
@@ -280,13 +302,13 @@ public class BoardService {
     }
 
     @Transactional
-    public BoardResponseDto restore(
-            String restorerId,
+    public BoardResponseDto restoreBoard(
+            String loginUserId,
             String boardId
     ){
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel restorerDomainModel = this.userPort.findById(restorerId).orElseThrow(
+        UserDomainModel restorerDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -328,7 +350,7 @@ public class BoardService {
                                                         "The board has circle without circle leader"
                                                 )
                                         ),
-                                        restorerId
+                                        loginUserId
                                 ));
                     }
                 },
@@ -340,7 +362,7 @@ public class BoardService {
                 .validate();
 
         return BoardResponseDto.from(
-                this.boardPort.restore(boardId).orElseThrow(
+                this.boardPort.restoreBoard(boardId).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
                                 "Board id checked, but exception occurred"
