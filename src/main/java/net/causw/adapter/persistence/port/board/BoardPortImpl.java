@@ -88,6 +88,7 @@ public class BoardPortImpl extends DomainModelMapper implements BoardPort {
                     srcBoard.setName(boardDomainModel.getName());
                     srcBoard.setDescription(boardDomainModel.getDescription());
                     srcBoard.setCreateRoles(String.join(",", boardDomainModel.getCreateRoleList()));
+                    srcBoard.setCategory(boardDomainModel.getCategory());
 
                     return this.entityToDomainModel(this.boardRepository.save(srcBoard));
                 }
