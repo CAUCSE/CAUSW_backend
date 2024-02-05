@@ -9,8 +9,6 @@ import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.circle.CircleUpdateRequestDto;
 import net.causw.application.dto.circle.CircleBoardsResponseDto;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
-import net.causw.application.dto.user.UserResponseDto;
-import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.model.enums.CircleMemberStatus;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -49,8 +47,8 @@ public class CircleController {
             value = "동아리 ID",
             required = true,
             dataType = "string",
-            paramType = "path",
-            defaultValue = "")
+            paramType = "path"
+    )
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = CircleResponseDto.class)
     })
@@ -89,8 +87,8 @@ public class CircleController {
             value = "동아리 ID",
             required = true,
             dataType = "string",
-            paramType = "path",
-            defaultValue = "")
+            paramType = "path"
+    )
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = CircleBoardsResponseDto.class)
     })
@@ -114,8 +112,8 @@ public class CircleController {
             value = "동아리 ID",
             required = true,
             dataType = "string",
-            paramType = "path",
-            defaultValue = "")
+            paramType = "path"
+    )
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = Long.class)
     })
@@ -139,15 +137,13 @@ public class CircleController {
                             value = "동아리 ID",
                             required = true,
                             dataType = "string",
-                            paramType = "path",
-                            defaultValue = ""),
+                            paramType = "path"
+                    ),
                     @ApiImplicitParam(name = "circleMemberStatus",
                             value = "동아리원 상태",
                             required = true,
                             dataType = "string",
-                            paramType = "query",
-                            defaultValue = "none",
-                            allowableValues = ""
+                            paramType = "query"
                     )
             }
     )
@@ -200,8 +196,8 @@ public class CircleController {
     @PutMapping(value = "/{circleId}")
     @ResponseStatus(value = HttpStatus.OK)
     @ApiOperation(value = "동아리 수정 API / update (완료)",
-            notes = "circleId에는 수정하고자 하는 동아리의 UUID 형식의 ID String 값을 입력해주세요.\n" +
-                    "circleUpdateRequestDto에는 수정하고자 하는 동아리의 정보를 입력해주세요.\n" +
+            notes = "circleId 에는 수정하고자 하는 동아리의 UUID 형식의 ID String 값을 입력해주세요.\n" +
+                    "circleUpdateRequestDto 에는 수정하고자 하는 동아리의 정보를 입력해주세요.\n" +
                     "동아리장의 권한은 일반 유저만 가능하며, 생성 요청은 관리자(admin), 학생회장(president)만 가능합니다.")
     @ApiImplicitParams(
             {
@@ -274,8 +270,8 @@ public class CircleController {
                             value = "동아리 이름",
                             required = true,
                             dataType = "string",
-                            paramType = "path",
-                            defaultValue = ""),
+                            paramType = "path"
+                    ),
             }
     )
     @ApiResponses({
@@ -302,8 +298,8 @@ public class CircleController {
                             value = "동아리 ID",
                             required = true,
                             dataType = "string",
-                            paramType = "path",
-                            defaultValue = ""),
+                            paramType = "path"
+                    )
             }
     )
     @ApiResponses({
@@ -335,14 +331,13 @@ public class CircleController {
                             value = "유저 ID",
                             required = true,
                             dataType = "string",
-                            paramType = "path",
-                            defaultValue = ""),
+                            paramType = "path"
+                    ),
                     @ApiImplicitParam(name = "circleId",
                             value = "동아리 ID",
                             required = true,
                             dataType = "string",
-                            paramType = "path",
-                            defaultValue = ""
+                            paramType = "path"
                     )
             }
     )
@@ -374,15 +369,15 @@ public class CircleController {
     @ApiOperation(value = "동아리 가입 신청 수락 API",
             notes = "동아리 가입 신청에 대해 수락하는 API 입니다.\n" +
                     "동아리 가입 신청 건수 고유의 ID 값(PK)을 입력해주세요.\n" +
-                    "수락 시 동아리원 데이터의 상태(status)가 AWAIT에서 MEMBER로 변경됩니다.")
+                    "수락 시 동아리원 데이터의 상태(status)가 AWAIT 에서 MEMBER 로 변경됩니다.")
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(name = "applicationId",
                             value = "동아리 가입 신청 ID",
                             required = true,
                             dataType = "string",
-                            paramType = "path",
-                            defaultValue = ""),
+                            paramType = "path"
+                    )
             }
     )
     @ApiResponses({
@@ -408,15 +403,15 @@ public class CircleController {
     @ApiOperation(value = "동아리 가입 신청 거절 API",
             notes = "동아리 가입 신청에 대해 거절하는 API 입니다.\n" +
                     "동아리 가입 신청 건수 고유의 ID 값(PK)을 입력해주세요.\n" +
-                    "거절 시 동아리원으로의 데이터가 삭제되는 것이 아니라 상태(status)가 REJECT로 변경됩니다.")
+                    "거절 시 동아리원으로의 데이터가 삭제되는 것이 아니라 상태(status)가 REJECT 로 변경됩니다.")
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(name = "applicationId",
                             value = "동아리 가입 신청 ID",
                             required = true,
                             dataType = "string",
-                            paramType = "path",
-                            defaultValue = ""),
+                            paramType = "path"
+                    )
             }
     )
     @ApiResponses({
@@ -442,15 +437,15 @@ public class CircleController {
     @ApiOperation(value = "동아리 삭제 API",
             notes = "동아리 삭제 API 입니다.\n" +
                     "동아리 고유 ID 값(PK)을 입력해주세요.\n" +
-                    "삭제 시 동아리 데이터가 아예 삭제되는 것이 아닌 isDeleted가 true로 바뀝니다.")
+                    "삭제 시 동아리 데이터가 아예 삭제되는 것이 아닌 isDeleted 가 true 로 바뀝니다.")
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(name = "circleId",
                             value = "동아리 ID",
                             required = true,
                             dataType = "string",
-                            paramType = "path",
-                            defaultValue = ""),
+                            paramType = "path"
+                    )
             }
     )
     @ApiResponses({
