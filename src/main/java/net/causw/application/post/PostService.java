@@ -76,10 +76,10 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public PostResponseDto findById(String requestUserId, String postId) {
+    public PostResponseDto findById(String loginUserId, String postId) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel userDomainModel = this.userPort.findById(requestUserId).orElseThrow(
+        UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -143,13 +143,13 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public BoardPostsResponseDto findAll(
-            String requestUserId,
+            String loginUserId,
             String boardId,
             Integer pageNum
     ) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel userDomainModel = this.userPort.findById(requestUserId).orElseThrow(
+        UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -197,7 +197,7 @@ public class PostService {
         return BoardPostsResponseDto.from(
                 boardDomainModel,
                 userDomainModel.getRole(),
-                this.favoriteBoardPort.findByUserId(requestUserId)
+                this.favoriteBoardPort.findByUserId(loginUserId)
                         .stream()
                         .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
                 this.postPort.findAll(boardId, pageNum)
@@ -210,7 +210,7 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public BoardPostsResponseDto search(
-            String requestUserId,
+            String loginUserId,
             String boardId,
             String option,
             String keyword,
@@ -218,7 +218,7 @@ public class PostService {
     ) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel userDomainModel = this.userPort.findById(requestUserId).orElseThrow(
+        UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -274,7 +274,7 @@ public class PostService {
         return BoardPostsResponseDto.from(
                 boardDomainModel,
                 userDomainModel.getRole(),
-                this.favoriteBoardPort.findByUserId(requestUserId)
+                this.favoriteBoardPort.findByUserId(loginUserId)
                         .stream()
                         .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
                 this.postPort.search(searchOption, keyword, pageNum)
@@ -286,8 +286,8 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public BoardPostsResponseDto findAllAppNotice(String requestUserId, Integer pageNum) {
-        UserDomainModel userDomainModel = this.userPort.findById(requestUserId).orElseThrow(
+    public BoardPostsResponseDto findAllAppNotice(String loginUserId, Integer pageNum) {
+        UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -304,7 +304,7 @@ public class PostService {
         return BoardPostsResponseDto.from(
                 boardDomainModel,
                 userDomainModel.getRole(),
-                this.favoriteBoardPort.findByUserId(requestUserId)
+                this.favoriteBoardPort.findByUserId(loginUserId)
                         .stream()
                         .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
                 this.postPort.findAll(boardDomainModel.getId(), pageNum)
@@ -316,10 +316,10 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponseDto create(String requestUserId, PostCreateRequestDto postCreateRequestDto) {
+    public PostResponseDto create(String loginUserId, PostCreateRequestDto postCreateRequestDto) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel creatorDomainModel = this.userPort.findById(requestUserId).orElseThrow(
+        UserDomainModel creatorDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -359,7 +359,7 @@ public class PostService {
                 .ifPresent(
                         circleDomainModel -> {
                             CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
-                                    requestUserId,
+                                    loginUserId,
                                     circleDomainModel.getId()
                             ).orElseThrow(
                                     () -> new UnauthorizedException(
@@ -396,10 +396,10 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponseDto delete(String requestUserId, String postId) {
+    public PostResponseDto delete(String loginUserId, String postId) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+        UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -448,7 +448,7 @@ public class PostService {
                                     ))
                                     .consistOf(ContentsAdminValidator.of(
                                             requestUser.getRole(),
-                                            requestUserId,
+                                            loginUserId,
                                             postDomainModel.getWriter().getId(),
                                             List.of(Role.LEADER_CIRCLE)
                                     ));
@@ -462,14 +462,14 @@ public class PostService {
                                                                 "The board has circle without circle leader"
                                                         )
                                                 ),
-                                                requestUserId
+                                                loginUserId
                                         ));
                             }
                         },
                         () -> validatorBucket
                                 .consistOf(ContentsAdminValidator.of(
                                         requestUser.getRole(),
-                                        requestUserId,
+                                        loginUserId,
                                         postDomainModel.getWriter().getId(),
                                         List.of(Role.PRESIDENT)
                                 ))
@@ -491,13 +491,13 @@ public class PostService {
 
     @Transactional
     public PostResponseDto update(
-            String requestUserId,
+            String loginUserId,
             String postId,
             PostUpdateRequestDto postUpdateRequestDto
     ) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+        UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -531,7 +531,7 @@ public class PostService {
                 .ifPresent(
                         circleDomainModel -> {
                             CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
-                                    requestUserId,
+                                    loginUserId,
                                     circleDomainModel.getId()
                             ).orElseThrow(
                                     () -> new UnauthorizedException(
@@ -558,7 +558,7 @@ public class PostService {
         validatorBucket
                 .consistOf(ContentsAdminValidator.of(
                         requestUser.getRole(),
-                        requestUserId,
+                        loginUserId,
                         postDomainModel.getWriter().getId(),
                         List.of()
                 ))
@@ -586,11 +586,11 @@ public class PostService {
         );
     }
 
-    public PostResponseDto restore(String requestUserId, String postId) {
+    public PostResponseDto restore(String loginUserId, String postId) {
 
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+        UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -623,7 +623,7 @@ public class PostService {
                 .ifPresent(
                         circleDomainModel -> {
                             CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
-                                    requestUserId,
+                                    loginUserId,
                                     circleDomainModel.getId()
                             ).orElseThrow(
                                     () -> new UnauthorizedException(
@@ -644,7 +644,7 @@ public class PostService {
         validatorBucket
                 .consistOf(ContentsAdminValidator.of(
                         requestUser.getRole(),
-                        requestUserId,
+                        loginUserId,
                         postDomainModel.getWriter().getId(),
                         List.of()
                 ))
