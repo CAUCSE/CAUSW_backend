@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 public class DuplicatedCheckResponseDto {
 
-    @ApiModelProperty(value = "이메일 중복 여부 boolean 값", example = "true")
+    @ApiModelProperty(value = "중복 여부 boolean 값", example = "true")
     private Boolean result;
 
     private DuplicatedCheckResponseDto(boolean result) {

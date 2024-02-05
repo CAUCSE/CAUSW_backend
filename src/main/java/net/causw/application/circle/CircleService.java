@@ -128,8 +128,8 @@ public class CircleService {
                                     ))
                                     .orElse(CirclesResponseDto.from(
                                             circleDomainModel,
-                                            this.circleMemberPort.getNumMember(circleDomainModel.getId())
-                                    ));
+                                            this.circleMemberPort.getNumMember(circleDomainModel.getId()),
+                                            LocalDateTime.now()));
                         }
                 )
                 .collect(Collectors.toList());
@@ -320,7 +320,7 @@ public class CircleService {
                 "공지 게시판",
                 newCircle
         );
-        this.boardPort.create(noticeBoard);
+        this.boardPort.createBoard(noticeBoard);
 
 
         // Apply the leader automatically to the circle
