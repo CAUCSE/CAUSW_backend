@@ -1,6 +1,5 @@
 package net.causw.application.dto.circle;
 
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

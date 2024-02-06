@@ -11,10 +11,10 @@ import java.util.List;
 @Setter
 public class CircleBoardsResponseDto {
 
-    @ApiModelProperty(value ="CircleResponseDto", example = "동아리 responseDTO 객체를 반환합니다.")
+    @ApiModelProperty(value ="동아리 정보", example = "동아리 responseDTO 객체를 반환합니다.")
     private CircleResponseDto circle;
 
-    @ApiModelProperty(value ="List<BoardOfCircleResponseDto", example = "동아리의 속한 게시판 목록을 List<BoardOfCircleResponseDto 객체(리스트)로 반환합니다.")
+    @ApiModelProperty(value ="동아리 게시판 리스트", example = "동아리의 속한 게시판 목록을 List<BoardOfCircleResponseDto> 객체(리스트)로 반환합니다.")
     private List<BoardOfCircleResponseDto> boardList;
 
     private CircleBoardsResponseDto(
