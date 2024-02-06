@@ -7,7 +7,7 @@ import org.springframework.data.domain.Page;
 import java.util.Optional;
 
 public interface PostPort {
-    Optional<PostDomainModel> findById(String id);
+    Optional<PostDomainModel> findPostById(String id);
 
     PostDomainModel create(PostDomainModel postDomainModel);
 
@@ -17,9 +17,14 @@ public interface PostPort {
 
     Page<PostDomainModel> findAll(String boardId, Integer pageNum);
 
+    Page<PostDomainModel> findAll(String boardId, Integer pageNum, boolean isDeleted);
+
     Page<PostDomainModel> findAll(String boardId, Integer pageNum, Integer pageSize);
 
-    Page<PostDomainModel> search(SearchOption option, String keyword, Integer pageNum);
+
+    Page<PostDomainModel> search(SearchOption option, String keyword, String boardId, Integer pageNum);
+
+    Page<PostDomainModel> search(SearchOption option, String keyword, String boardId, Integer pageNum, boolean isDeleted);
 
     Optional<PostDomainModel> findLatest(String boardId);
 

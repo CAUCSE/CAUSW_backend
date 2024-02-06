@@ -93,7 +93,7 @@ public class ChildCommentService {
                 )
         );
 
-        PostDomainModel postDomainModel = this.postPort.findById(parentCommentDomainModel.getPostId()).orElseThrow(
+        PostDomainModel postDomainModel = this.postPort.findPostById(parentCommentDomainModel.getPostId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "게시글을 찾을 수 없습니다."
@@ -171,7 +171,7 @@ public class ChildCommentService {
                 )
         );
 
-        PostDomainModel postDomainModel = this.postPort.findById(parentCommentDomainModel.getPostId()).orElseThrow(
+        PostDomainModel postDomainModel = this.postPort.findPostById(parentCommentDomainModel.getPostId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "게시글을 찾을 수 없습니다."
@@ -250,7 +250,7 @@ public class ChildCommentService {
                 )
         );
 
-        PostDomainModel postDomainModel = this.postPort.findById(childCommentDomainModel.getParentComment().getPostId()).orElseThrow(
+        PostDomainModel postDomainModel = this.postPort.findPostById(childCommentDomainModel.getParentComment().getPostId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "게시글을 찾을 수 없습니다."
@@ -331,7 +331,7 @@ public class ChildCommentService {
                 )
         );
 
-        PostDomainModel postDomainModel = this.postPort.findById(childCommentDomainModel.getParentComment().getPostId()).orElseThrow(
+        PostDomainModel postDomainModel = this.postPort.findPostById(childCommentDomainModel.getParentComment().getPostId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "게시글을 찾을 수 없습니다."

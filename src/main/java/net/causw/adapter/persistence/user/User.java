@@ -24,7 +24,7 @@ import java.util.List;
 @Setter
 @Entity
 @NoArgsConstructor
-@Table(name = "TB_USER")
+@Table(name = "tb_user")
 public class User extends BaseEntity {
     @Column(name = "email", unique = true, nullable = false)
     private String email;

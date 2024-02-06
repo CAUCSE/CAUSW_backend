@@ -21,7 +21,7 @@ import java.util.Optional;
 @Setter
 @Entity
 @NoArgsConstructor
-@Table(name = "TB_POST")
+@Table(name = "tb_post")
 public class Post extends BaseEntity {
     @Column(name = "title", nullable = false)
     private String title;
