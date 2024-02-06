@@ -1,11 +1,7 @@
 package net.causw.adapter.web;
 
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import com.sun.xml.bind.v2.runtime.reflect.opt.Const;
+import io.swagger.annotations.*;
 import net.causw.application.circle.CircleService;
 import net.causw.application.dto.circle.CirclesResponseDto;
 import net.causw.application.dto.circle.CircleCreateRequestDto;
@@ -14,7 +10,11 @@ import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.circle.CircleUpdateRequestDto;
 import net.causw.application.dto.circle.CircleBoardsResponseDto;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
+import net.causw.domain.exceptions.BadRequestException;
+import net.causw.domain.exceptions.InternalServerException;
+import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.CircleMemberStatus;
+import net.causw.domain.validation.ConstraintValidator;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -55,7 +55,9 @@ public class CircleController {
             paramType = "path"
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "OK", response = CircleResponseDto.class)
+            @ApiResponse(code = 200, message = "OK", response = CircleResponseDto.class),
+            @ApiResponse(code = 4000, message = "소모임을 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4004, message = "삭제된 {동아리명} 입니다.", response = BadRequestException.class),
     })
     public CircleResponseDto findById(@PathVariable(name = "circleId") String circleId) {
         return this.circleService.findById(circleId);
@@ -70,7 +72,13 @@ public class CircleController {
     @ResponseStatus(value = HttpStatus.OK)
     @ApiOperation(value = "전체 동아리 정보 조회 API / findAll (완료)")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "OK", response = CircleResponseDto.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "OK", response = CircleResponseDto.class, responseContainer = "List"),
+            @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = UnauthorizedException.class)
     })
     public List<CirclesResponseDto> findAll() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -95,7 +103,15 @@ public class CircleController {
             paramType = "path"
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "OK", response = CircleBoardsResponseDto.class)
+            @ApiResponse(code = 200, message = "OK", response = CircleBoardsResponseDto.class),
+            @ApiResponse(code = 4000, message = "소모임을 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4001, message = "이미 소모임에 가입한 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4006, message = "소모임을 떠난 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4008, message = "가입 대기 중인 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4102, message = "가입 거절된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4108, message = "로그인된 사용자가 가입 신청한 소모임이 아닙니다.", response = UnauthorizedException.class)
     })
     public CircleBoardsResponseDto findBoards(@PathVariable(name = "circleId") String circleId) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -120,7 +136,8 @@ public class CircleController {
             paramType = "path"
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "OK", response = Long.class)
+            @ApiResponse(code = 200, message = "OK", response = Long.class),
+            @ApiResponse(code = 4000, message = "소모임을 찾을 수 없습니다.", response = BadRequestException.class)
     })
     public Long getNumMember(@PathVariable(name = "circleId") String circleId) {
         return this.circleService.getNumMember(circleId);
@@ -153,7 +170,18 @@ public class CircleController {
             }
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "OK", response = CircleMemberResponseDto.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "OK", response = CircleMemberResponseDto.class, responseContainer = "List"),
+            @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4000, message = "소모임을 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4004, message = "삭제된 {동아리명} 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4107, message = "접근 권한이 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4000, message = "소모임원을 찾을 수 없습니다.", response = BadRequestException.class)
+
     })
     public List<CircleMemberResponseDto> getUserList(
             @PathVariable String circleId,
@@ -180,7 +208,23 @@ public class CircleController {
     @ApiOperation(value = "동아리 생성 API / create (완료)",
             notes = "생성하고자 하는 동아리의 정보를 입력해주세요.\n동아리장의 권한은 일반 유저만 가능하며, 생성 요청은 관리자(admin), 학생회장(president)만 가능합니다.")
     @ApiResponses({
-            @ApiResponse(code = 201, message = "Created", response = CircleResponseDto.class)
+            @ApiResponse(code = 201, message = "Created", response = CircleResponseDto.class),
+            @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4000, message = "소모임을 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4001, message = "중복된 소모임 이름입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = UnauthorizedException.class),
+            @ApiResponse(code = 0, message = "ConstraintValidator", response = ConstraintValidator.class),
+            @ApiResponse(code = 4107, message = "접근 권한이 없습니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4106,
+                    message = "권한을 부여할 수 없습니다. -부여하는 사용자 권한 : {grantorRole}, 부여할 권한 : {grantedRole}, 부여받는 사용자 권한 : {granteeRole}",
+                    response = UnauthorizedException.class),
+            @ApiResponse(code = 5000, message = "Leader id checked, but exception occured", response = BadRequestException.class),
+            @ApiResponse(code = 5000, message = "Circle id immediately can be used, but exception occured", response = InternalServerException.class)
+
     })
     public CircleResponseDto create(
             @RequestBody @ApiParam(value = "동아리 생성 정보", required = true) CircleCreateRequestDto circleCreateRequestDto
@@ -215,7 +259,20 @@ public class CircleController {
             }
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "OK", response = CircleResponseDto.class)
+            @ApiResponse(code = 200, message = "OK", response = CircleResponseDto.class),
+            @ApiResponse(code = 4000, message = "수정할 소모임을 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4001, message = "중복된 소모임 이름입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4004, message = "삭제된 {동아리명} 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 0, message = "ConstraintValidator", response = ConstraintValidator.class),
+            @ApiResponse(code = 4107, message = "접근 권한이 없습니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 5000, message = "This circle has not circle leader", response = InternalServerException.class),
+            @ApiResponse(code = 5000, message = "Circle id checked, but exception occurred", response = InternalServerException.class)
     })
     public CircleResponseDto update(
             @PathVariable(name = "circleId") String circleId,
@@ -226,6 +283,54 @@ public class CircleController {
 
         return this.circleService.update(currentUserId, circleId, circleUpdateRequestDto);
     }
+
+
+    /**
+     * 동아리 삭제 API
+     * @param circleId 동아리 고유 ID 값(PK)
+     * @return CircleResponseDto
+     */
+    @DeleteMapping(value = "/{circleId}")
+    @ResponseStatus(value = HttpStatus.OK)
+    @ApiOperation(value = "동아리 삭제 API",
+            notes = "동아리 삭제 API 입니다.\n" +
+                    "동아리 고유 ID 값(PK)을 입력해주세요.\n" +
+                    "삭제 시 동아리 데이터가 아예 삭제되는 것이 아닌 isDeleted 가 true 로 바뀝니다.")
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(name = "circleId",
+                            value = "동아리 ID",
+                            required = true,
+                            dataType = "string",
+                            paramType = "path"
+                    )
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "OK", response = CircleMemberResponseDto.class),
+            @ApiResponse(code = 4000, message = "삭제할 소모임을 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4004, message = "삭제된 {동아리명} 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4107, message = "접근 권한이 없습니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 5000, message = "This circle has not circle leader", response = InternalServerException.class),
+            @ApiResponse(code = 5000, message = "Leader id of this circle is null", response = InternalServerException.class),
+            @ApiResponse(code = 5000, message = "Leader id checked, but exception occurred", response = InternalServerException.class),
+            @ApiResponse(code = 5000, message = "Circle id checked, but exception occurred", response = InternalServerException.class)
+    })
+    public CircleResponseDto delete(
+            @PathVariable(name = "circleId") String circleId
+    ) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
+
+        return this.circleService.delete(currentUserId, circleId);
+    }
+
 
     /**
      * 사용자 동아리 지원 API
@@ -248,7 +353,22 @@ public class CircleController {
             }
     )
     @ApiResponses({
-            @ApiResponse(code = 201, message = "Created", response = CircleMemberResponseDto.class)
+            @ApiResponse(code = 201, message = "Created", response = CircleMemberResponseDto.class),
+            @ApiResponse(code = 4000, message = "신청할 소모임을 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4004, message = "삭제된 {동아리명} 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4009, message = "학번이 입력되지 않았습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4001, message = "이미 소모임에 가입한 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4006, message = "소모임을 떠난 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4008, message = "가입 대기 중인 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4102, message = "가입 거절된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 5000, message = "Application id checked, but exception occurred", response = InternalServerException.class)
     })
     public CircleMemberResponseDto userApply(
             @PathVariable(name = "circleId") String circleId
@@ -308,7 +428,23 @@ public class CircleController {
             }
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "OK", response = CircleMemberResponseDto.class)
+            @ApiResponse(code = 200, message = "OK", response = CircleMemberResponseDto.class),
+            @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4000, message = "탈퇴할 소모임을 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4000, message = "가입 신청한 소모임이 아닙니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4004, message = "삭제된 {동아리명} 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4001, message = "이미 소모임에 가입한 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4006, message = "소모임을 떠난 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4008, message = "가입 대기 중인 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4102, message = "가입 거절된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 5000, message = "This circle has not circle leader", response = InternalServerException.class),
+            @ApiResponse(code = 5000, message = "Application id checked, but exception occurred", response = InternalServerException.class)
     })
     public CircleMemberResponseDto leaveUser(
             @PathVariable(name = "circleId") String circleId
@@ -347,7 +483,20 @@ public class CircleController {
             }
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "OK", response = CircleMemberResponseDto.class)
+            @ApiResponse(code = 200, message = "OK", response = CircleMemberResponseDto.class),
+            @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4000, message = "추방할 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4000, message = "소모임을 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4000, message = "추방시킬 사용자가 가입 신청한 소모임이 아닙니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4004, message = "삭제된 {동아리명} 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4107, message = "접근 권한이 없습니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 5000, message = "This circle has not circle leader", response = InternalServerException.class),
+            @ApiResponse(code = 5000, message = "Application id checked, but exception occurred", response = InternalServerException.class)
     })
     public CircleMemberResponseDto dropUser(
             @PathVariable(name = "userId") String userId,
@@ -386,7 +535,19 @@ public class CircleController {
             }
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "OK", response = CircleMemberResponseDto.class)
+            @ApiResponse(code = 200, message = "OK", response = CircleMemberResponseDto.class),
+            @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4000, message = "소모임 가입 신청을 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4000, message = "가입 요청한 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4004, message = "삭제된 {동아리명} 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4107, message = "접근 권한이 없습니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 5000, message = "This circle has not circle leader", response = InternalServerException.class),
+            @ApiResponse(code = 5000, message = "Application id checked, but exception occurred", response = InternalServerException.class)
     })
     public CircleMemberResponseDto acceptUser(
             @PathVariable(name = "applicationId") String applicationId
@@ -420,7 +581,19 @@ public class CircleController {
             }
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "OK", response = CircleMemberResponseDto.class)
+            @ApiResponse(code = 200, message = "OK", response = CircleMemberResponseDto.class),
+            @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4000, message = "소모임 가입 신청을 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4000, message = "가입 요청한 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4004, message = "삭제된 {동아리명} 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4107, message = "접근 권한이 없습니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 5000, message = "This circle has not circle leader", response = InternalServerException.class),
+            @ApiResponse(code = 5000, message = "Application id checked, but exception occurred", response = InternalServerException.class)
     })
     public CircleMemberResponseDto rejectUser(
             @PathVariable(name = "applicationId") String applicationId
@@ -431,38 +604,5 @@ public class CircleController {
         return this.circleService.rejectUser(currentUserId, applicationId);
     }
 
-
-    /**
-     * 동아리 삭제 API
-     * @param circleId 동아리 고유 ID 값(PK)
-     * @return CircleResponseDto
-     */
-    @DeleteMapping(value = "/{circleId}")
-    @ResponseStatus(value = HttpStatus.OK)
-    @ApiOperation(value = "동아리 삭제 API",
-            notes = "동아리 삭제 API 입니다.\n" +
-                    "동아리 고유 ID 값(PK)을 입력해주세요.\n" +
-                    "삭제 시 동아리 데이터가 아예 삭제되는 것이 아닌 isDeleted 가 true 로 바뀝니다.")
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(name = "circleId",
-                            value = "동아리 ID",
-                            required = true,
-                            dataType = "string",
-                            paramType = "path"
-                    )
-            }
-    )
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "OK", response = CircleMemberResponseDto.class)
-    })
-    public CircleResponseDto delete(
-            @PathVariable(name = "circleId") String circleId
-    ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-
-        return this.circleService.delete(currentUserId, circleId);
-    }
 }
 

@@ -75,8 +75,8 @@ public class CircleService {
     }
 
     @Transactional(readOnly = true)
-    public CircleResponseDto findById(String id) {
-        CircleDomainModel circle = this.circlePort.findById(id).orElseThrow(
+    public CircleResponseDto findById(String circleId) {
+        CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "소모임을 찾을 수 없습니다."
@@ -89,13 +89,13 @@ public class CircleService {
 
         return CircleResponseDto.from(
                 circle,
-                this.circleMemberPort.getNumMember(id)
+                this.circleMemberPort.getNumMember(circleId)
         );
     }
 
     @Transactional(readOnly = true)
-    public List<CirclesResponseDto> findAll(String userId) {
-        UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
+    public List<CirclesResponseDto> findAll(String currentUserId) {
+        UserDomainModel userDomainModel = this.userPort.findById(currentUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -128,8 +128,8 @@ public class CircleService {
                                     ))
                                     .orElse(CirclesResponseDto.from(
                                             circleDomainModel,
-                                            this.circleMemberPort.getNumMember(circleDomainModel.getId()),
-                                            LocalDateTime.now()));
+                                            this.circleMemberPort.getNumMember(circleDomainModel.getId())
+                                            ));
                         }
                 )
                 .collect(Collectors.toList());

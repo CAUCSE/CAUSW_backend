@@ -19,7 +19,7 @@ import java.util.Optional;
 @Setter
 @Entity
 @NoArgsConstructor
-@Table(name = "tb_circle")
+@Table(name = "TB_CIRCLE")
 public class Circle extends BaseEntity {
     @Column(name = "name", nullable = false)
     private String name;

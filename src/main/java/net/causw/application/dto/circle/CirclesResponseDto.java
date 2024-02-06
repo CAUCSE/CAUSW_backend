@@ -1,5 +1,6 @@
 package net.causw.application.dto.circle;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,8 +34,14 @@ public class CirclesResponseDto {
     @ApiModelProperty(value = "동아리장 숫자", example = "7")
     private Long numMember;
 
+    @ApiModelProperty(value = "join 여부", example = "false")
+    private Boolean isJoined;
+
     @ApiModelProperty(value = "동아리 생성 일시", example = "2024-02-04 16:11:02.342644")
     private LocalDateTime createdAt;
+
+    @ApiModelProperty(value = "join 시점", example = "2024-02-04 16:11:02.342644")
+    private LocalDateTime joinedAt;
 
     private CirclesResponseDto(
             String id,
@@ -44,7 +51,9 @@ public class CirclesResponseDto {
             String leaderId,
             String leaderName,
             Long numMember,
-            LocalDateTime createdAt
+            Boolean isJoined,
+            LocalDateTime createdAt,
+            LocalDateTime joinedAt
     ) {
         this.id = id;
         this.name = name;
@@ -53,7 +62,9 @@ public class CirclesResponseDto {
         this.leaderId = leaderId;
         this.leaderName = leaderName;
         this.numMember = numMember;
+        this.isJoined = isJoined;
         this.createdAt = createdAt;
+        this.joinedAt = joinedAt;
     }
 
     public static CirclesResponseDto from(
@@ -68,7 +79,28 @@ public class CirclesResponseDto {
                 circleDomainModel.getLeader().map(UserDomainModel::getId).orElse(null),
                 circleDomainModel.getLeader().map(UserDomainModel::getName).orElse(null),
                 numMember,
-                circleDomainModel.getCreatedAt()
+                false,
+                circleDomainModel.getCreatedAt(),
+                null
+        );
+    }
+
+    public static CirclesResponseDto from(
+            CircleDomainModel circleDomainModel,
+            Long numMember,
+            LocalDateTime joinedAt
+    ) {
+        return new CirclesResponseDto(
+                circleDomainModel.getId(),
+                circleDomainModel.getName(),
+                circleDomainModel.getMainImage(),
+                circleDomainModel.getDescription(),
+                circleDomainModel.getLeader().map(UserDomainModel::getId).orElse(null),
+                circleDomainModel.getLeader().map(UserDomainModel::getName).orElse(null),
+                numMember,
+                true,
+                circleDomainModel.getCreatedAt(),
+                joinedAt
         );
     }
 }
