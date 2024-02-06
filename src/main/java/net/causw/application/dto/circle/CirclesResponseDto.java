@@ -58,8 +58,8 @@ public class CirclesResponseDto {
 
     public static CirclesResponseDto from(
             CircleDomainModel circleDomainModel,
-            Long numMember,
-            LocalDateTime now) {
+            Long numMember
+    ) {
         return new CirclesResponseDto(
                 circleDomainModel.getId(),
                 circleDomainModel.getName(),
