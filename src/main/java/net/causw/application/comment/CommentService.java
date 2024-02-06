@@ -74,7 +74,7 @@ public class CommentService {
                 .consistOf(UserStateValidator.of(creatorDomainModel.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(creatorDomainModel.getRole()));
 
-        PostDomainModel postDomainModel = this.postPort.findById(commentCreateDto.getPostId()).orElseThrow(
+        PostDomainModel postDomainModel = this.postPort.findPostById(commentCreateDto.getPostId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "게시글을 찾을 수 없습니다."
@@ -137,7 +137,7 @@ public class CommentService {
                 )
         );
 
-        PostDomainModel postDomainModel = this.postPort.findById(postId).orElseThrow(
+        PostDomainModel postDomainModel = this.postPort.findPostById(postId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "게시글을 찾을 수 없습니다."
@@ -209,7 +209,7 @@ public class CommentService {
                 )
         );
 
-        PostDomainModel postDomainModel = this.postPort.findById(commentDomainModel.getPostId()).orElseThrow(
+        PostDomainModel postDomainModel = this.postPort.findPostById(commentDomainModel.getPostId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "게시글을 찾을 수 없습니다."
@@ -291,7 +291,7 @@ public class CommentService {
                 )
         );
 
-        PostDomainModel postDomainModel = this.postPort.findById(commentDomainModel.getPostId()).orElseThrow(
+        PostDomainModel postDomainModel = this.postPort.findPostById(commentDomainModel.getPostId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "게시글을 찾을 수 없습니다."

@@ -272,7 +272,7 @@ public class UserService {
         return UserCommentsResponseDto.from(
                 requestUser,
                 this.commentPort.findByUserId(requestUserId, pageNum).map(comment -> {
-                    PostDomainModel post = this.postPort.findById(comment.getPostId()).orElseThrow(
+                    PostDomainModel post = this.postPort.findPostById(comment.getPostId()).orElseThrow(
                             () -> new BadRequestException(
                                     ErrorCode.ROW_DOES_NOT_EXIST,
                                     "게시글을 찾을 수 없습니다."
