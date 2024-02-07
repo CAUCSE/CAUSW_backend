@@ -55,6 +55,7 @@ public class PostService {
     private final FavoriteBoardPort favoriteBoardPort;
     private final Validator validator;
 
+
     public PostService(
             PostPort postPort,
             UserPort userPort,
@@ -76,17 +77,17 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public PostResponseDto findById(String requestUserId, String postId) {
+    public PostResponseDto findPostById(String loginUserId, String postId) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel userDomainModel = this.userPort.findById(requestUserId).orElseThrow(
+        UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
-        PostDomainModel postDomainModel = this.postPort.findById(postId).orElseThrow(
+        PostDomainModel postDomainModel = this.postPort.findPostById(postId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "게시글을 찾을 수 없습니다."
@@ -95,12 +96,10 @@ public class PostService {
 
         validatorBucket
                 .consistOf(UserStateValidator.of(userDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
-                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
-                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), StaticValue.DOMAIN_POST));
+                .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()));
 
         postDomainModel.getBoard().getCircle()
-                .filter(circleDomainModel -> !userDomainModel.getRole().equals(Role.ADMIN))
+                .filter(circleDomainModel -> !userDomainModel.getRole().equals(Role.ADMIN) && !userDomainModel.getRole().equals(Role.PRESIDENT))
                 .ifPresent(
                         circleDomainModel -> {
                             CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
@@ -109,7 +108,7 @@ public class PostService {
                             ).orElseThrow(
                                     () -> new UnauthorizedException(
                                             ErrorCode.NOT_MEMBER,
-                                            "로그인된 사용자가 소모임 멤버가 아닙니다."
+                                            "로그인된 사용자가 동아리 멤버가 아닙니다."
                                     )
                             );
 
@@ -143,13 +142,13 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public BoardPostsResponseDto findAll(
-            String requestUserId,
+            String loginUserId,
             String boardId,
             Integer pageNum
     ) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel userDomainModel = this.userPort.findById(requestUserId).orElseThrow(
+        UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -168,7 +167,7 @@ public class PostService {
         );
 
         boardDomainModel.getCircle()
-                .filter(circleDomainModel -> !userDomainModel.getRole().equals(Role.ADMIN))
+                .filter(circleDomainModel -> !userDomainModel.getRole().equals(Role.ADMIN) && !userDomainModel.getRole().equals(Role.PRESIDENT))
                 .ifPresent(
                         circleDomainModel -> {
                             CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
@@ -190,27 +189,48 @@ public class PostService {
                         }
                 );
 
-        validatorBucket
-                .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted(), StaticValue.DOMAIN_BOARD))
-                .validate();
+        validatorBucket.validate();
 
-        return BoardPostsResponseDto.from(
-                boardDomainModel,
-                userDomainModel.getRole(),
-                this.favoriteBoardPort.findByUserId(requestUserId)
-                        .stream()
-                        .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
-                this.postPort.findAll(boardId, pageNum)
-                        .map(postDomainModel -> PostsResponseDto.from(
-                                postDomainModel,
-                                this.commentPort.countByPostId(postDomainModel.getId())
-                        ))
-        );
+        boolean isCircleLeader = false;
+        if(userDomainModel.getRole().equals(Role.LEADER_CIRCLE)){
+            isCircleLeader = boardDomainModel.getCircle().get()
+                .getLeader().map(UserDomainModel::getId).orElse("").equals(loginUserId);
+        }
+
+        if (isCircleLeader || userDomainModel.getRole().equals(Role.ADMIN) || userDomainModel.getRole().equals(Role.PRESIDENT)) {
+            return BoardPostsResponseDto.from(
+                    boardDomainModel,
+                    userDomainModel.getRole(),
+                    this.favoriteBoardPort.findByUserId(loginUserId)
+                            .stream()
+                            .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
+                    this.postPort.findAll(boardId, pageNum)
+                            .map(postDomainModel -> PostsResponseDto.from(
+                                    postDomainModel,
+                                    this.commentPort.countByPostId(postDomainModel.getId())
+                            ))
+            );
+        }
+        else{
+            return BoardPostsResponseDto.from(
+                    boardDomainModel,
+                    userDomainModel.getRole(),
+                    this.favoriteBoardPort.findByUserId(loginUserId)
+                            .stream()
+                            .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
+                    this.postPort.findAll(boardId, pageNum, false)
+                            .map(postDomainModel -> PostsResponseDto.from(
+                                    postDomainModel,
+                                    this.commentPort.countByPostId(postDomainModel.getId())
+                            ))
+            );
+        }
+
     }
 
     @Transactional(readOnly = true)
     public BoardPostsResponseDto search(
-            String requestUserId,
+            String loginUserId,
             String boardId,
             String option,
             String keyword,
@@ -218,7 +238,7 @@ public class PostService {
     ) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel userDomainModel = this.userPort.findById(requestUserId).orElseThrow(
+        UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -264,6 +284,8 @@ public class PostService {
                 .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted(), StaticValue.DOMAIN_BOARD))
                 .validate();
 
+
+
         SearchOption searchOption = Optional.ofNullable(SearchOption.of(option)).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.INVALID_PARAMETER,
@@ -271,23 +293,47 @@ public class PostService {
                 )
         );
 
-        return BoardPostsResponseDto.from(
-                boardDomainModel,
-                userDomainModel.getRole(),
-                this.favoriteBoardPort.findByUserId(requestUserId)
-                        .stream()
-                        .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
-                this.postPort.search(searchOption, keyword, pageNum)
-                        .map(postDomainModel -> PostsResponseDto.from(
-                                postDomainModel,
-                                this.commentPort.countByPostId(postDomainModel.getId())
-                        ))
-        );
+        boolean isCircleLeader = false;
+        if(userDomainModel.getRole().equals(Role.LEADER_CIRCLE)){
+            isCircleLeader = boardDomainModel.getCircle().get()
+                    .getLeader().map(UserDomainModel::getId).orElse("").equals(loginUserId);
+        }
+
+        if (isCircleLeader || userDomainModel.getRole().equals(Role.ADMIN) || userDomainModel.getRole().equals(Role.PRESIDENT)) {
+            return BoardPostsResponseDto.from(
+                    boardDomainModel,
+                    userDomainModel.getRole(),
+                    this.favoriteBoardPort.findByUserId(loginUserId)
+                            .stream()
+                            .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
+                    this.postPort.search(searchOption, keyword, boardId, pageNum)
+                            .map(postDomainModel -> PostsResponseDto.from(
+                                    postDomainModel,
+                                    this.commentPort.countByPostId(postDomainModel.getId())
+                            ))
+            );
+        }
+        else{
+            return BoardPostsResponseDto.from(
+                    boardDomainModel,
+                    userDomainModel.getRole(),
+                    this.favoriteBoardPort.findByUserId(loginUserId)
+                            .stream()
+                            .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
+                    this.postPort.search(searchOption, keyword, boardId, pageNum, false)
+                            .map(postDomainModel -> PostsResponseDto.from(
+                                    postDomainModel,
+                                    this.commentPort.countByPostId(postDomainModel.getId())
+                            ))
+            );
+        }
+
+
     }
 
     @Transactional(readOnly = true)
-    public BoardPostsResponseDto findAllAppNotice(String requestUserId, Integer pageNum) {
-        UserDomainModel userDomainModel = this.userPort.findById(requestUserId).orElseThrow(
+    public BoardPostsResponseDto findAllAppNotice(String loginUserId, Integer pageNum) {
+        UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -304,7 +350,7 @@ public class PostService {
         return BoardPostsResponseDto.from(
                 boardDomainModel,
                 userDomainModel.getRole(),
-                this.favoriteBoardPort.findByUserId(requestUserId)
+                this.favoriteBoardPort.findByUserId(loginUserId)
                         .stream()
                         .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
                 this.postPort.findAll(boardDomainModel.getId(), pageNum)
@@ -316,10 +362,10 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponseDto create(String requestUserId, PostCreateRequestDto postCreateRequestDto) {
+    public PostResponseDto create(String loginUserId, PostCreateRequestDto postCreateRequestDto) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel creatorDomainModel = this.userPort.findById(requestUserId).orElseThrow(
+        UserDomainModel creatorDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -355,11 +401,11 @@ public class PostService {
                 ));
 
         boardDomainModel.getCircle()
-                .filter(circleDomainModel -> !creatorDomainModel.getRole().equals(Role.ADMIN))
+                .filter(circleDomainModel -> !creatorDomainModel.getRole().equals(Role.ADMIN) && !creatorDomainModel.getRole().equals(Role.PRESIDENT))
                 .ifPresent(
                         circleDomainModel -> {
                             CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
-                                    requestUserId,
+                                    loginUserId,
                                     circleDomainModel.getId()
                             ).orElseThrow(
                                     () -> new UnauthorizedException(
@@ -374,6 +420,19 @@ public class PostService {
                                             circleMemberDomainModel.getStatus(),
                                             List.of(CircleMemberStatus.MEMBER)
                                     ));
+
+                            if (creatorDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
+                                validatorBucket
+                                        .consistOf(UserEqualValidator.of(
+                                                circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
+                                                        () -> new UnauthorizedException(
+                                                                ErrorCode.API_NOT_ALLOWED,
+                                                                "사용자가 해당 동아리의 동아리장이 아닙니다."
+                                                        )
+                                                ),
+                                                loginUserId
+                                        ));
+                            }
                         }
                 );
 
@@ -396,17 +455,17 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponseDto delete(String requestUserId, String postId) {
+    public PostResponseDto delete(String loginUserId, String postId) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+        UserDomainModel deleterDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
-        PostDomainModel postDomainModel = this.postPort.findById(postId).orElseThrow(
+        PostDomainModel postDomainModel = this.postPort.findPostById(postId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "게시글을 찾을 수 없습니다."
@@ -416,22 +475,22 @@ public class PostService {
         if (postDomainModel.getBoard().getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
             validatorBucket
                     .consistOf(UserRoleValidator.of(
-                            requestUser.getRole(),
+                            deleterDomainModel.getRole(),
                             List.of()
                     ));
         }
 
         validatorBucket
-                .consistOf(UserStateValidator.of(requestUser.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
+                .consistOf(UserStateValidator.of(deleterDomainModel.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(deleterDomainModel.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), StaticValue.DOMAIN_POST));
 
         postDomainModel.getBoard().getCircle()
-                .filter(circleDomainModel -> !requestUser.getRole().equals(Role.ADMIN))
-                .ifPresentOrElse(
+                .filter(circleDomainModel -> !deleterDomainModel.getRole().equals(Role.ADMIN) && !deleterDomainModel.getRole().equals(Role.PRESIDENT))
+                .ifPresent(
                         circleDomainModel -> {
                             CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
-                                    requestUser.getId(),
+                                    deleterDomainModel.getId(),
                                     circleDomainModel.getId()
                             ).orElseThrow(
                                     () -> new UnauthorizedException(
@@ -445,37 +504,30 @@ public class PostService {
                                     .consistOf(CircleMemberStatusValidator.of(
                                             circleMemberDomainModel.getStatus(),
                                             List.of(CircleMemberStatus.MEMBER)
-                                    ))
-                                    .consistOf(ContentsAdminValidator.of(
-                                            requestUser.getRole(),
-                                            requestUserId,
-                                            postDomainModel.getWriter().getId(),
-                                            List.of(Role.LEADER_CIRCLE)
                                     ));
 
-                            if (requestUser.getRole().equals(Role.LEADER_CIRCLE)) {
+                            if (deleterDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
                                 validatorBucket
                                         .consistOf(UserEqualValidator.of(
                                                 circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
-                                                        () -> new InternalServerException(
-                                                                ErrorCode.INTERNAL_SERVER,
-                                                                "The board has circle without circle leader"
+                                                        () -> new UnauthorizedException(
+                                                                ErrorCode.API_NOT_ALLOWED,
+                                                                "사용자가 해당 동아리의 동아리장이 아닙니다."
                                                         )
                                                 ),
-                                                requestUserId
+                                                loginUserId
                                         ));
                             }
-                        },
-                        () -> validatorBucket
-                                .consistOf(ContentsAdminValidator.of(
-                                        requestUser.getRole(),
-                                        requestUserId,
-                                        postDomainModel.getWriter().getId(),
-                                        List.of(Role.PRESIDENT)
-                                ))
+                        }
                 );
 
         validatorBucket
+                .consistOf(ContentsAdminValidator.of(
+                        deleterDomainModel.getRole(),
+                        loginUserId,
+                        postDomainModel.getWriter().getId(),
+                        List.of(Role.PRESIDENT, Role.LEADER_CIRCLE)
+                ))
                 .validate();
 
         return PostResponseDto.from(
@@ -485,26 +537,26 @@ public class PostService {
                                 "Post id checked, but exception occurred"
                         )
                 ),
-                requestUser
+                deleterDomainModel
         );
     }
 
     @Transactional
     public PostResponseDto update(
-            String requestUserId,
+            String loginUserId,
             String postId,
             PostUpdateRequestDto postUpdateRequestDto
     ) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+        UserDomainModel updaterDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
-        PostDomainModel postDomainModel = this.postPort.findById(postId).orElseThrow(
+        PostDomainModel postDomainModel = this.postPort.findPostById(postId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "게시글을 찾을 수 없습니다."
@@ -514,24 +566,24 @@ public class PostService {
         if (postDomainModel.getBoard().getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
             validatorBucket
                     .consistOf(UserRoleValidator.of(
-                            requestUser.getRole(),
+                            updaterDomainModel.getRole(),
                             List.of()
                     ));
         }
 
         validatorBucket
-                .consistOf(UserStateValidator.of(requestUser.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
+                .consistOf(UserStateValidator.of(updaterDomainModel.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(updaterDomainModel.getRole()))
                 .consistOf(PostNumberOfAttachmentsValidator.of(postUpdateRequestDto.getAttachmentList()))
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), StaticValue.DOMAIN_POST));
 
         postDomainModel.getBoard().getCircle()
-                .filter(circleDomainModel -> !requestUser.getRole().equals(Role.ADMIN))
+                .filter(circleDomainModel -> !updaterDomainModel.getRole().equals(Role.ADMIN) && !updaterDomainModel.getRole().equals(Role.PRESIDENT))
                 .ifPresent(
                         circleDomainModel -> {
                             CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
-                                    requestUserId,
+                                    loginUserId,
                                     circleDomainModel.getId()
                             ).orElseThrow(
                                     () -> new UnauthorizedException(
@@ -546,6 +598,19 @@ public class PostService {
                                             circleMemberDomainModel.getStatus(),
                                             List.of(CircleMemberStatus.MEMBER)
                                     ));
+
+                            if (updaterDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
+                                validatorBucket
+                                        .consistOf(UserEqualValidator.of(
+                                                circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
+                                                        () -> new UnauthorizedException(
+                                                                ErrorCode.API_NOT_ALLOWED,
+                                                                "사용자가 해당 동아리의 동아리장이 아닙니다."
+                                                        )
+                                                ),
+                                                loginUserId
+                                        ));
+                            }
                         }
                 );
 
@@ -557,10 +622,10 @@ public class PostService {
 
         validatorBucket
                 .consistOf(ContentsAdminValidator.of(
-                        requestUser.getRole(),
-                        requestUserId,
+                        updaterDomainModel.getRole(),
+                        loginUserId,
                         postDomainModel.getWriter().getId(),
-                        List.of()
+                        List.of(Role.PRESIDENT, Role.LEADER_CIRCLE)
                 ))
                 .consistOf(ConstraintValidator.of(postDomainModel, this.validator))
                 .validate();
@@ -574,11 +639,11 @@ public class PostService {
 
         return PostResponseDto.from(
                 postDomainModel,
-                requestUser,
+                updaterDomainModel,
                 this.commentPort.findByPostId(postId, 0)
                         .map(commentDomainModel -> CommentResponseDto.from(
                                 commentDomainModel,
-                                requestUser,
+                                updaterDomainModel,
                                 updatedPostDomainModel.getBoard(),
                                 this.childCommentPort.countByParentComment(commentDomainModel.getId())
                         )),
@@ -586,18 +651,18 @@ public class PostService {
         );
     }
 
-    public PostResponseDto restore(String requestUserId, String postId) {
+    public PostResponseDto restore(String loginUserId, String postId) {
 
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+        UserDomainModel restorerDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
-        PostDomainModel postDomainModel = this.postPort.findById(postId).orElseThrow(
+        PostDomainModel postDomainModel = this.postPort.findPostById(postId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "게시글을 찾을 수 없습니다."
@@ -607,23 +672,23 @@ public class PostService {
         if (postDomainModel.getBoard().getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
             validatorBucket
                     .consistOf(UserRoleValidator.of(
-                            requestUser.getRole(),
+                            restorerDomainModel.getRole(),
                             List.of()
                     ));
         }
 
         validatorBucket
-                .consistOf(UserStateValidator.of(requestUser.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
+                .consistOf(UserStateValidator.of(restorerDomainModel.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(restorerDomainModel.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
                 .consistOf(TargetIsNotDeletedValidator.of(postDomainModel.getIsDeleted(), StaticValue.DOMAIN_POST));
 
         postDomainModel.getBoard().getCircle()
-                .filter(circleDomainModel -> !requestUser.getRole().equals(Role.ADMIN))
+                .filter(circleDomainModel -> !restorerDomainModel.getRole().equals(Role.ADMIN) && !restorerDomainModel.getRole().equals(Role.PRESIDENT))
                 .ifPresent(
                         circleDomainModel -> {
                             CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
-                                    requestUserId,
+                                    loginUserId,
                                     circleDomainModel.getId()
                             ).orElseThrow(
                                     () -> new UnauthorizedException(
@@ -638,15 +703,28 @@ public class PostService {
                                             circleMemberDomainModel.getStatus(),
                                             List.of(CircleMemberStatus.MEMBER)
                                     ));
+
+                            if (restorerDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
+                                validatorBucket
+                                        .consistOf(UserEqualValidator.of(
+                                                circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
+                                                        () -> new UnauthorizedException(
+                                                                ErrorCode.API_NOT_ALLOWED,
+                                                                "사용자가 해당 동아리의 동아리장이 아닙니다."
+                                                        )
+                                                ),
+                                                loginUserId
+                                        ));
+                            }
                         }
                 );
 
         validatorBucket
                 .consistOf(ContentsAdminValidator.of(
-                        requestUser.getRole(),
-                        requestUserId,
+                        restorerDomainModel.getRole(),
+                        loginUserId,
                         postDomainModel.getWriter().getId(),
-                        List.of()
+                        List.of(Role.PRESIDENT, Role.LEADER_CIRCLE)
                 ))
                 .validate();
 
@@ -659,11 +737,11 @@ public class PostService {
 
         return PostResponseDto.from(
                 postDomainModel,
-                requestUser,
+                restorerDomainModel,
                 this.commentPort.findByPostId(postId, 0)
                         .map(commentDomainModel -> CommentResponseDto.from(
                                 commentDomainModel,
-                                requestUser,
+                                restorerDomainModel,
                                 restoredPostDomainModel.getBoard(),
                                 this.childCommentPort.countByParentComment(commentDomainModel.getId())
                         )),

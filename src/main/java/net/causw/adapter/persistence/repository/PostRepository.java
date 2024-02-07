@@ -13,17 +13,40 @@ import java.util.Optional;
 @Repository
 public interface PostRepository extends JpaRepository<Post, String> {
     Page<Post> findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(String boardId, Pageable pageable);
+    Page<Post> findAllByBoard_IdAndIsDeletedOrderByCreatedAtDesc(String boardId, Pageable pageable, boolean IsDeleted);
+    Page<Post> findAllByBoard_IdOrderByCreatedAtDesc(String boardId, Pageable pageable);
     Optional<Post> findTop1ByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(String boardId);
 
+
+    //해당 동아리의 동아리장, 관리자, 학생회장인 경우 삭제여부와 관계없이 모든 게시글 검색
     @Query(value = "SELECT * " +
-            "FROM TB_POST AS p " +
-            "WHERE p.title = %:title% ORDER BY p.created_at DESC", nativeQuery = true)
-    Page<Post> searchByTitle(@Param("title") String userName, Pageable pageable);
+            "FROM tb_post AS p " +
+            "WHERE p.title LIKE CONCAT('%', :title, '%')AND p.board_id = :boardId ORDER BY p.created_at DESC", nativeQuery = true)
+    Page<Post> searchByTitle(@Param("title") String title, @Param("boardId") String boardId, Pageable pageable);
+
     @Query(value = "SELECT * " +
-            "FROM TB_POST AS p " +
-            "LEFT JOIN TB_USER AS u ON p.user_id = u.id " +
-            "WHERE u.name = %:user_name% ORDER BY p.created_at DESC", nativeQuery = true)
-    Page<Post> searchByWriter(@Param("user_name") String userName, Pageable pageable);
+            "FROM tb_post AS p " +
+            "LEFT JOIN tb_user AS u ON p.user_id = u.id " +
+            "WHERE u.name LIKE CONCAT('%', :userName, '%') AND p.board_id = :boardId ORDER BY p.created_at DESC", nativeQuery = true)
+    Page<Post> searchByWriter(@Param("userName") String userName, @Param("boardId") String boardId, Pageable pageable);
+
+
+    //해당 동아리의 동아리장, 관리자, 학생회장이 아닌경우 삭제되지 않은 게시글 검색
+    @Query(value = "SELECT * " +
+            "FROM tb_post AS p " +
+            "WHERE p.title LIKE CONCAT('%', :title, '%')AND p.board_id = :boardId AND p.is_deleted = :isDeleted ORDER BY p.created_at DESC", nativeQuery = true)
+    Page<Post> searchByTitle(@Param("title") String title, @Param("boardId") String boardId, Pageable pageable, boolean isDeleted);
+
+    @Query(value = "SELECT * " +
+            "FROM tb_post AS p " +
+            "LEFT JOIN tb_user AS u ON p.user_id = u.id " +
+            "WHERE u.name LIKE CONCAT('%', :userName, '%') AND p.board_id = :boardId AND p.is_deleted = :isDeleted ORDER BY p.created_at DESC", nativeQuery = true)
+    Page<Post> searchByWriter(@Param("userName") String userName, @Param("boardId") String boardId, Pageable pageable, boolean isDeleted);
+
+
+
+
+
 
     @Query(value = "select * from tb_post as p " +
             "join tb_board as b on p.board_id = b.id " +

@@ -26,7 +26,7 @@ public class PostPortImpl extends DomainModelMapper implements PostPort {
     }
 
     @Override
-    public Optional<PostDomainModel> findById(String id) {
+    public Optional<PostDomainModel> findPostById(String id) {
         return this.postRepository.findById(id).map(this::entityToDomainModel);
     }
 
@@ -61,7 +61,13 @@ public class PostPortImpl extends DomainModelMapper implements PostPort {
 
     @Override
     public Page<PostDomainModel> findAll(String boardId, Integer pageNum) {
-        return this.postRepository.findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(boardId, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
+        return this.postRepository.findAllByBoard_IdOrderByCreatedAtDesc(boardId, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
+                .map(this::entityToDomainModel);
+    }
+
+    @Override
+    public Page<PostDomainModel> findAll(String boardId, Integer pageNum, boolean isDeleted) {
+        return this.postRepository.findAllByBoard_IdAndIsDeletedOrderByCreatedAtDesc(boardId, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), isDeleted)
                 .map(this::entityToDomainModel);
     }
 
@@ -71,14 +77,29 @@ public class PostPortImpl extends DomainModelMapper implements PostPort {
                 .map(this::entityToDomainModel);
     }
 
+
     @Override
-    public Page<PostDomainModel> search(SearchOption option, String keyword, Integer pageNum) {
+    public Page<PostDomainModel> search(SearchOption option, String keyword, String boardId, Integer pageNum) {
         switch (option){
             case TITLE:
-                return this.postRepository.searchByTitle(keyword, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
+                return this.postRepository.searchByTitle(keyword, boardId, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
                         .map(this::entityToDomainModel);
             case WRITER:
-                return this.postRepository.searchByWriter(keyword, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
+                return this.postRepository.searchByWriter(keyword, boardId, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
+                        .map(this::entityToDomainModel);
+            default:
+                return null;
+        }
+    }
+
+    @Override
+    public Page<PostDomainModel> search(SearchOption option, String keyword, String boardId, Integer pageNum, boolean isDeleted) {
+        switch (option){
+            case TITLE:
+                return this.postRepository.searchByTitle(keyword, boardId, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), isDeleted)
+                        .map(this::entityToDomainModel);
+            case WRITER:
+                return this.postRepository.searchByWriter(keyword, boardId, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), isDeleted)
                         .map(this::entityToDomainModel);
             default:
                 return null;
