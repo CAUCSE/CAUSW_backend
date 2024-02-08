@@ -35,7 +35,7 @@ public class PostController {
 
     @GetMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
-    @ApiOperation(value = "게시글 열람 API(사용가능)", notes = "게시판에서 게시글을 선택했을 때 게시글을 열람할 수 있습니다.")
+    @ApiOperation(value = "게시글 열람 API(완료)", notes = "게시판에서 게시글을 선택했을 때 게시글을 열람할 수 있습니다.")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = String.class),
             @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
@@ -63,7 +63,7 @@ public class PostController {
 
     @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
-    @ApiOperation(value = "게시글 전체 조회 API(validator응답값 추가 예정 / 사용가능)", notes = "전체 게시글을 불러오는 api로 페이지 별로 불러올 수 있습니다.\n현재 한 페이지당 20개의 게시글이 조회 가능합니다 \n 1페이지는 value값이 0입니다")
+    @ApiOperation(value = "게시글 전체 조회 API(완료)", notes = "전체 게시글을 불러오는 api로 페이지 별로 불러올 수 있습니다.\n현재 한 페이지당 20개의 게시글이 조회 가능합니다 \n 1페이지는 value값이 0입니다")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = String.class),
             @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
@@ -92,7 +92,7 @@ public class PostController {
 
     @GetMapping("/search")
     @ResponseStatus(value = HttpStatus.OK)
-    @ApiOperation(value = "게시글 검색 API(validator응답값 추가 예정 / 사용가능)", notes = "게시글을 검색하는 api로 검색 option은 writer와 title 중 택1입니다.")
+    @ApiOperation(value = "게시글 검색 API(완료)", notes = "게시글을 검색하는 api로 검색 option은 writer와 title 중 택1입니다.")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = String.class),
             @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
@@ -136,7 +136,7 @@ public class PostController {
 
     @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)
-    @ApiOperation(value = "게시글 생성 API(validator응답값 추가 예정 / 사용가능)", notes = "게시글을 생성하는 api로 각 게시판의 createrolelist에 따라서 작성할 수 있는 권한이 달라집니다.")
+    @ApiOperation(value = "게시글 생성 API(완료)", notes = "게시글을 생성하는 api로 각 게시판의 createrolelist에 따라서 작성할 수 있는 권한이 달라집니다.")
     @ApiResponses({
             @ApiResponse(code = 201, message = "Created", response = String.class),
             @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
@@ -165,7 +165,7 @@ public class PostController {
 
     @DeleteMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
-    @ApiOperation(value = "게시글 삭제 API(validator응답값 추가 예정 / 사용가능)", notes = "게시글을 삭제하는 api로 작성자 본인이나 해당 게시판이 속한 동아리의 동아리장, 관리자, 학생회장의 경우 삭제 가능합니다.")
+    @ApiOperation(value = "게시글 삭제 API(완료)", notes = "게시글을 삭제하는 api로 작성자 본인이나 해당 게시판이 속한 동아리의 동아리장, 관리자, 학생회장의 경우 삭제 가능합니다.")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = String.class),
             @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
@@ -196,7 +196,7 @@ public class PostController {
 
     @PutMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
-    @ApiOperation(value = "게시글 업데이트 API(validator응답값 추가 예정 / 사용가능)", notes = "게시글을 업뎅이트하는 api로 작성자 본인이나 해당 게시판이 속한 동아리의 동아리장, 관리자, 학생회장의 경우 업데이트 가능합니다.")
+    @ApiOperation(value = "게시글 업데이트 API(완료)", notes = "게시글을 업데이트하는 api로 작성자 본인이나 해당 게시판이 속한 동아리의 동아리장, 관리자, 학생회장의 경우 업데이트 가능합니다.")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = String.class),
             @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
@@ -235,7 +235,7 @@ public class PostController {
 
     @PutMapping(value = "/{id}/restore")
     @ResponseStatus(value = HttpStatus.OK)
-    @ApiOperation(value = "게시글 복구 API(validator응답값 추가 예정 / 사용가능)", notes = "게시글을 복구하는 api로 작성자 본인이나 해당 게시판이 속한 동아리의 동아리장, 관리자, 학생회장의 경우 복구 가능합니다.")
+    @ApiOperation(value = "게시글 복구 API(완료)", notes = "게시글을 복구하는 api로 작성자 본인이나 해당 게시판이 속한 동아리의 동아리장, 관리자, 학생회장의 경우 복구 가능합니다.")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = String.class),
             @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
