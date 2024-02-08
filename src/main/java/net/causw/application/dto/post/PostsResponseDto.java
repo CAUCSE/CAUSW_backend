@@ -31,6 +31,9 @@ public class PostsResponseDto {
     @ApiModelProperty(value = "게시글 업데이트 시간", example =  "2024-01-26T18:40:40.643Z")
     private LocalDateTime updatedAt;
 
+    @ApiModelProperty(value = "게시글 삭제여부", example = "false")
+    private Boolean isDeleted;
+
     private PostsResponseDto(
             String id,
             String title,
@@ -38,7 +41,8 @@ public class PostsResponseDto {
             Integer writerAdmissionYear,
             Long numComment,
             LocalDateTime createdAt,
-            LocalDateTime updatedAt
+            LocalDateTime updatedAt,
+            Boolean isDeleted
     ) {
         this.id = id;
         this.title = title;
@@ -47,6 +51,7 @@ public class PostsResponseDto {
         this.numComment = numComment;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.isDeleted = isDeleted;
     }
 
     public static PostsResponseDto from(
@@ -60,7 +65,8 @@ public class PostsResponseDto {
                 post.getWriter().getAdmissionYear(),
                 numComment,
                 post.getCreatedAt(),
-                post.getUpdatedAt()
+                post.getUpdatedAt(),
+                post.getIsDeleted()
         );
     }
 }
