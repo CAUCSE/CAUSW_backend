@@ -176,7 +176,7 @@ public class PostService {
                             ).orElseThrow(
                                     () -> new UnauthorizedException(
                                             ErrorCode.NOT_MEMBER,
-                                            "로그인된 사용자가 소모임 멤버가 아닙니다."
+                                            "로그인된 사용자가 동아리 멤버가 아닙니다."
                                     )
                             );
 
@@ -267,7 +267,7 @@ public class PostService {
                                     .orElseThrow(
                                             () -> new UnauthorizedException(
                                                     ErrorCode.NOT_MEMBER,
-                                                    "로그인된 사용자가 소모임 멤버가 아닙니다."
+                                                    "로그인된 사용자가 동아리 멤버가 아닙니다."
                                             )
                                     );
 
@@ -410,7 +410,7 @@ public class PostService {
                             ).orElseThrow(
                                     () -> new UnauthorizedException(
                                             ErrorCode.NOT_MEMBER,
-                                            "로그인된 사용자가 소모임 멤버가 아닙니다."
+                                            "로그인된 사용자가 동아리 멤버가 아닙니다."
                                     )
                             );
 
@@ -495,7 +495,7 @@ public class PostService {
                             ).orElseThrow(
                                     () -> new UnauthorizedException(
                                             ErrorCode.NOT_MEMBER,
-                                            "로그인된 사용자가 소모임 멤버가 아닙니다."
+                                            "로그인된 사용자가 동아리 멤버가 아닙니다."
                                     )
                             );
 
@@ -588,7 +588,7 @@ public class PostService {
                             ).orElseThrow(
                                     () -> new UnauthorizedException(
                                             ErrorCode.NOT_MEMBER,
-                                            "로그인된 사용자가 소모임 멤버가 아닙니다."
+                                            "로그인된 사용자가 동아리 멤버가 아닙니다."
                                     )
                             );
 
@@ -693,7 +693,7 @@ public class PostService {
                             ).orElseThrow(
                                     () -> new UnauthorizedException(
                                             ErrorCode.NOT_MEMBER,
-                                            "로그인된 사용자가 소모임 멤버가 아닙니다."
+                                            "로그인된 사용자가 동아리 멤버가 아닙니다."
                                     )
                             );
 
