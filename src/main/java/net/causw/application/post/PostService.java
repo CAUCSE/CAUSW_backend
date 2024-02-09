@@ -141,7 +141,7 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public BoardPostsResponseDto findAll(
+    public BoardPostsResponseDto findAllPost(
             String loginUserId,
             String boardId,
             Integer pageNum
@@ -204,7 +204,7 @@ public class PostService {
                     this.favoriteBoardPort.findByUserId(loginUserId)
                             .stream()
                             .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
-                    this.postPort.findAll(boardId, pageNum)
+                    this.postPort.findAllPost(boardId, pageNum)
                             .map(postDomainModel -> PostsResponseDto.from(
                                     postDomainModel,
                                     this.commentPort.countByPostId(postDomainModel.getId())
@@ -218,7 +218,7 @@ public class PostService {
                     this.favoriteBoardPort.findByUserId(loginUserId)
                             .stream()
                             .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
-                    this.postPort.findAll(boardId, pageNum, false)
+                    this.postPort.findAllPost(boardId, pageNum, false)
                             .map(postDomainModel -> PostsResponseDto.from(
                                     postDomainModel,
                                     this.commentPort.countByPostId(postDomainModel.getId())
@@ -229,7 +229,7 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public BoardPostsResponseDto search(
+    public BoardPostsResponseDto searchPost(
             String loginUserId,
             String boardId,
             String option,
@@ -306,7 +306,7 @@ public class PostService {
                     this.favoriteBoardPort.findByUserId(loginUserId)
                             .stream()
                             .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
-                    this.postPort.search(searchOption, keyword, boardId, pageNum)
+                    this.postPort.searchPost(searchOption, keyword, boardId, pageNum)
                             .map(postDomainModel -> PostsResponseDto.from(
                                     postDomainModel,
                                     this.commentPort.countByPostId(postDomainModel.getId())
@@ -320,7 +320,7 @@ public class PostService {
                     this.favoriteBoardPort.findByUserId(loginUserId)
                             .stream()
                             .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
-                    this.postPort.search(searchOption, keyword, boardId, pageNum, false)
+                    this.postPort.searchPost(searchOption, keyword, boardId, pageNum, false)
                             .map(postDomainModel -> PostsResponseDto.from(
                                     postDomainModel,
                                     this.commentPort.countByPostId(postDomainModel.getId())
@@ -353,7 +353,7 @@ public class PostService {
                 this.favoriteBoardPort.findByUserId(loginUserId)
                         .stream()
                         .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
-                this.postPort.findAll(boardDomainModel.getId(), pageNum)
+                this.postPort.findAllPost(boardDomainModel.getId(), pageNum)
                         .map(postDomainModel -> PostsResponseDto.from(
                                 postDomainModel,
                                 this.commentPort.countByPostId(postDomainModel.getId())
@@ -362,7 +362,7 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponseDto create(String loginUserId, PostCreateRequestDto postCreateRequestDto) {
+    public PostResponseDto createPost(String loginUserId, PostCreateRequestDto postCreateRequestDto) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         UserDomainModel creatorDomainModel = this.userPort.findById(loginUserId).orElseThrow(
@@ -449,13 +449,13 @@ public class PostService {
                 .validate();
 
         return PostResponseDto.from(
-                this.postPort.create(postDomainModel),
+                this.postPort.createPost(postDomainModel),
                 creatorDomainModel
         );
     }
 
     @Transactional
-    public PostResponseDto delete(String loginUserId, String postId) {
+    public PostResponseDto deletePost(String loginUserId, String postId) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         UserDomainModel deleterDomainModel = this.userPort.findById(loginUserId).orElseThrow(
@@ -531,7 +531,7 @@ public class PostService {
                 .validate();
 
         return PostResponseDto.from(
-                this.postPort.delete(postId).orElseThrow(
+                this.postPort.deletePost(postId).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
                                 "Post id checked, but exception occurred"
@@ -542,7 +542,7 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponseDto update(
+    public PostResponseDto updatePost(
             String loginUserId,
             String postId,
             PostUpdateRequestDto postUpdateRequestDto
@@ -630,7 +630,7 @@ public class PostService {
                 .consistOf(ConstraintValidator.of(postDomainModel, this.validator))
                 .validate();
 
-        PostDomainModel updatedPostDomainModel = this.postPort.update(postId, postDomainModel).orElseThrow(
+        PostDomainModel updatedPostDomainModel = this.postPort.updatePost(postId, postDomainModel).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         "Post id checked, but exception occurred"
@@ -651,7 +651,7 @@ public class PostService {
         );
     }
 
-    public PostResponseDto restore(String loginUserId, String postId) {
+    public PostResponseDto restorePost(String loginUserId, String postId) {
 
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
@@ -728,7 +728,7 @@ public class PostService {
                 ))
                 .validate();
 
-        PostDomainModel restoredPostDomainModel = this.postPort.restore(postId, postDomainModel).orElseThrow(
+        PostDomainModel restoredPostDomainModel = this.postPort.restorePost(postId, postDomainModel).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         "Post id checked, but exception occurred"

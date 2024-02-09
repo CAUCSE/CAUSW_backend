@@ -87,7 +87,7 @@ public class PostController {
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
-        return this.postService.findAll(loginUserId, boardId, pageNum);
+        return this.postService.findAllPost(loginUserId, boardId, pageNum);
     }
 
     @GetMapping("/search")
@@ -120,7 +120,7 @@ public class PostController {
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
-        return this.postService.search(loginUserId, boardId, option, keyword, pageNum);
+        return this.postService.searchPost(loginUserId, boardId, option, keyword, pageNum);
     }
 
     @GetMapping("/app/notice")
@@ -160,7 +160,7 @@ public class PostController {
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
-        return this.postService.create(loginUserId, postCreateRequestDto);
+        return this.postService.createPost(loginUserId, postCreateRequestDto);
     }
 
     @DeleteMapping(value = "/{id}")
@@ -191,7 +191,7 @@ public class PostController {
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
-        return this.postService.delete(loginUserId, id);
+        return this.postService.deletePost(loginUserId, id);
     }
 
     @PutMapping(value = "/{id}")
@@ -226,7 +226,7 @@ public class PostController {
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
-        return this.postService.update(
+        return this.postService.updatePost(
                 loginUserId,
                 id,
                 postUpdateRequestDto
@@ -264,7 +264,7 @@ public class PostController {
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
-        return this.postService.restore(
+        return this.postService.restorePost(
                 loginUserId,
                 id
         );

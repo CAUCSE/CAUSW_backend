@@ -244,7 +244,7 @@ public class UserService {
 
         return UserPostsResponseDto.from(
                 requestUser,
-                this.postPort.findByUserId(requestUserId, pageNum).map(postDomainModel -> UserPostResponseDto.from(
+                this.postPort.findPostByUserId(requestUserId, pageNum).map(postDomainModel -> UserPostResponseDto.from(
                         postDomainModel,
                         postDomainModel.getBoard().getId(),
                         postDomainModel.getBoard().getName(),

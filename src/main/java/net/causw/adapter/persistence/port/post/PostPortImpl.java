@@ -31,12 +31,12 @@ public class PostPortImpl extends DomainModelMapper implements PostPort {
     }
 
     @Override
-    public PostDomainModel create(PostDomainModel postDomainModel) {
+    public PostDomainModel createPost(PostDomainModel postDomainModel) {
         return this.entityToDomainModel(this.postRepository.save(Post.from(postDomainModel)));
     }
 
     @Override
-    public Optional<PostDomainModel> delete(String id) {
+    public Optional<PostDomainModel> deletePost(String id) {
         return this.postRepository.findById(id).map(
                 srcPost -> {
                     srcPost.setIsDeleted(true);
@@ -47,7 +47,7 @@ public class PostPortImpl extends DomainModelMapper implements PostPort {
     }
 
     @Override
-    public Optional<PostDomainModel> update(String id, PostDomainModel postDomainModel) {
+    public Optional<PostDomainModel> updatePost(String id, PostDomainModel postDomainModel) {
         return this.postRepository.findById(id).map(
                 srcPost -> {
                     srcPost.setTitle(postDomainModel.getTitle());
@@ -60,26 +60,26 @@ public class PostPortImpl extends DomainModelMapper implements PostPort {
     }
 
     @Override
-    public Page<PostDomainModel> findAll(String boardId, Integer pageNum) {
+    public Page<PostDomainModel> findAllPost(String boardId, Integer pageNum) {
         return this.postRepository.findAllByBoard_IdOrderByCreatedAtDesc(boardId, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
                 .map(this::entityToDomainModel);
     }
 
     @Override
-    public Page<PostDomainModel> findAll(String boardId, Integer pageNum, boolean isDeleted) {
+    public Page<PostDomainModel> findAllPost(String boardId, Integer pageNum, boolean isDeleted) {
         return this.postRepository.findAllByBoard_IdAndIsDeletedOrderByCreatedAtDesc(boardId, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), isDeleted)
                 .map(this::entityToDomainModel);
     }
 
     @Override
-    public Page<PostDomainModel> findAll(String boardId, Integer pageNum, Integer pageSize) {
+    public Page<PostDomainModel> findAllPost(String boardId, Integer pageNum, Integer pageSize) {
         return this.postRepository.findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(boardId, this.pageableFactory.create(pageNum, pageSize))
                 .map(this::entityToDomainModel);
     }
 
 
     @Override
-    public Page<PostDomainModel> search(SearchOption option, String keyword, String boardId, Integer pageNum) {
+    public Page<PostDomainModel> searchPost(SearchOption option, String keyword, String boardId, Integer pageNum) {
         switch (option){
             case TITLE:
                 return this.postRepository.searchByTitle(keyword, boardId, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
@@ -93,7 +93,7 @@ public class PostPortImpl extends DomainModelMapper implements PostPort {
     }
 
     @Override
-    public Page<PostDomainModel> search(SearchOption option, String keyword, String boardId, Integer pageNum, boolean isDeleted) {
+    public Page<PostDomainModel> searchPost(SearchOption option, String keyword, String boardId, Integer pageNum, boolean isDeleted) {
         switch (option){
             case TITLE:
                 return this.postRepository.searchByTitle(keyword, boardId, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), isDeleted)
@@ -107,19 +107,19 @@ public class PostPortImpl extends DomainModelMapper implements PostPort {
     }
 
     @Override
-    public Optional<PostDomainModel> findLatest(String boardId) {
+    public Optional<PostDomainModel> findLatestPost(String boardId) {
         return this.postRepository.findTop1ByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(boardId)
                 .map(this::entityToDomainModel);
     }
 
     @Override
-    public Page<PostDomainModel> findByUserId(String userId, Integer pageNum) {
+    public Page<PostDomainModel> findPostByUserId(String userId, Integer pageNum) {
         return this.postRepository.findByUserId(userId, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
                 .map(this::entityToDomainModel);
     }
 
     @Override
-    public Optional<PostDomainModel> restore(String id, PostDomainModel postDomainModel) {
+    public Optional<PostDomainModel> restorePost(String id, PostDomainModel postDomainModel) {
         return this.postRepository.findById(id).map(
                 srcPost -> {
                     srcPost.setIsDeleted(false);
