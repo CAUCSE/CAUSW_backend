@@ -4,7 +4,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import net.causw.application.dto.file.FileResponseDto;
-import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.domain.model.post.PostDomainModel;
 import net.causw.domain.model.enums.Role;
@@ -45,9 +44,6 @@ public class PostResponseDto {
     @ApiModelProperty(value = "답글 개수", example = "13")
     private Long numComment;
 
-    @ApiModelProperty(value = "게시글이 속한 게시판 정보", example = "게시판 정보 조회")
-    private BoardResponseDto board;
-
     @ApiModelProperty(value = "게시글 업데이트 가능여부", example = "true")
     private Boolean updatable;
 
@@ -63,9 +59,6 @@ public class PostResponseDto {
     @ApiModelProperty(value = "게시글의 답글 정보", example =  "답글에 대한 정보 조회")
     private Page<CommentResponseDto> commentList;
 
-    @ApiModelProperty(value = "게시판 id", example =  "uuid 형식의 String 값입니다.")
-    private String boardId;
-
     @ApiModelProperty(value = "게시판 이름", example =  "게시판 이름입니다.")
     private String boardName;
 
@@ -79,13 +72,11 @@ public class PostResponseDto {
             Integer writerAdmissionYear,
             List<FileResponseDto> attachmentList,
             Long numComment,
-            BoardResponseDto board,
             Boolean updatable,
             Boolean deletable,
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
             Page<CommentResponseDto> commentList,
-            String boardId,
             String boardName
     ) {
         this.id = id;
@@ -97,13 +88,11 @@ public class PostResponseDto {
         this.writerAdmissionYear = writerAdmissionYear;
         this.attachmentList = attachmentList;
         this.numComment = numComment;
-        this.board = board;
         this.updatable = updatable;
         this.deletable = deletable;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.commentList = commentList;
-        this.boardId = boardId;
         this.boardName = boardName;
     }
 
@@ -146,12 +135,10 @@ public class PostResponseDto {
                 post.getWriter().getAdmissionYear(),
                 post.getAttachmentList().stream().map(FileResponseDto::from).collect(Collectors.toList()),
                 0L,
-                BoardResponseDto.from(post.getBoard(), user.getRole()),
                 updatable,
                 deletable,
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
-                null,
                 null,
                 null
         );
@@ -198,13 +185,11 @@ public class PostResponseDto {
                 post.getWriter().getAdmissionYear(),
                 post.getAttachmentList().stream().map(FileResponseDto::from).collect(Collectors.toList()),
                 numComment,
-                BoardResponseDto.from(post.getBoard(), user.getRole()),
                 updatable,
                 deletable,
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
                 commentList,
-                post.getBoard().getId(),
                 post.getBoard().getName()
         );
     }
