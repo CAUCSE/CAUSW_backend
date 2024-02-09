@@ -183,7 +183,7 @@ public class CircleService {
                 ),
                 this.boardPort.findByCircleId(circleId)
                         .stream()
-                        .map(boardDomainModel -> this.postPort.findLatest(boardDomainModel.getId()).map(
+                        .map(boardDomainModel -> this.postPort.findLatestPost(boardDomainModel.getId()).map(
                                 postDomainModel -> BoardOfCircleResponseDto.from(
                                         boardDomainModel,
                                         userDomainModel.getRole(),

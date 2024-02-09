@@ -74,7 +74,7 @@ public class HomePageService {
                 .stream()
                 .map(favoriteBoardDomainModel -> HomePageResponseDto.from(
                         BoardResponseDto.from(favoriteBoardDomainModel.getBoardDomainModel(), userDomainModel.getRole()),
-                        this.postPort.findAll(
+                        this.postPort.findAllPost(
                                 favoriteBoardDomainModel.getBoardDomainModel().getId(),
                                 0,
                                 StaticValue.HOME_POST_PAGE_SIZE
