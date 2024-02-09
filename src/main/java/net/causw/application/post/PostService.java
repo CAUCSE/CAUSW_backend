@@ -410,7 +410,7 @@ public class PostService {
                                             List.of(CircleMemberStatus.MEMBER)
                                     ));
 
-                            if (creatorDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
+                            if (creatorDomainModel.getRole().equals(Role.LEADER_CIRCLE) && !boardDomainModel.getCreateRoleList().contains("COMMON")) {
                                 validatorBucket
                                         .consistOf(UserEqualValidator.of(
                                                 circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
@@ -495,7 +495,7 @@ public class PostService {
                                             List.of(CircleMemberStatus.MEMBER)
                                     ));
 
-                            if (deleterDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
+                            if (deleterDomainModel.getRole().equals(Role.LEADER_CIRCLE) && !postDomainModel.getWriter().getId().equals(loginUserId)) {
                                 validatorBucket
                                         .consistOf(UserEqualValidator.of(
                                                 circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
@@ -588,7 +588,7 @@ public class PostService {
                                             List.of(CircleMemberStatus.MEMBER)
                                     ));
 
-                            if (updaterDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
+                            if (updaterDomainModel.getRole().equals(Role.LEADER_CIRCLE) && !postDomainModel.getWriter().getId().equals(loginUserId)) {
                                 validatorBucket
                                         .consistOf(UserEqualValidator.of(
                                                 circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
@@ -693,7 +693,7 @@ public class PostService {
                                             List.of(CircleMemberStatus.MEMBER)
                                     ));
 
-                            if (restorerDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
+                            if (restorerDomainModel.getRole().equals(Role.LEADER_CIRCLE) && !postDomainModel.getWriter().getId().equals(loginUserId)) {
                                 validatorBucket
                                         .consistOf(UserEqualValidator.of(
                                                 circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
