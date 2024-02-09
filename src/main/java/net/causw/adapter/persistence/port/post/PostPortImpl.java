@@ -6,7 +6,6 @@ import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.PostRepository;
 import net.causw.application.spi.PostPort;
 import net.causw.domain.model.post.PostDomainModel;
-import net.causw.domain.model.enums.SearchOption;
 import net.causw.domain.model.util.StaticValue;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
@@ -79,31 +78,15 @@ public class PostPortImpl extends DomainModelMapper implements PostPort {
 
 
     @Override
-    public Page<PostDomainModel> searchPost(SearchOption option, String keyword, String boardId, Integer pageNum) {
-        switch (option){
-            case TITLE:
-                return this.postRepository.searchByTitle(keyword, boardId, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
-                        .map(this::entityToDomainModel);
-            case WRITER:
-                return this.postRepository.searchByWriter(keyword, boardId, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
-                        .map(this::entityToDomainModel);
-            default:
-                return null;
-        }
+    public Page<PostDomainModel> searchPost(String keyword, String boardId, Integer pageNum) {
+        return this.postRepository.searchByTitle(keyword, boardId, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
+                .map(this::entityToDomainModel);
     }
 
     @Override
-    public Page<PostDomainModel> searchPost(SearchOption option, String keyword, String boardId, Integer pageNum, boolean isDeleted) {
-        switch (option){
-            case TITLE:
-                return this.postRepository.searchByTitle(keyword, boardId, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), isDeleted)
-                        .map(this::entityToDomainModel);
-            case WRITER:
-                return this.postRepository.searchByWriter(keyword, boardId, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), isDeleted)
-                        .map(this::entityToDomainModel);
-            default:
-                return null;
-        }
+    public Page<PostDomainModel> searchPost(String keyword, String boardId, Integer pageNum, boolean isDeleted) {
+        return this.postRepository.searchByTitle(keyword, boardId, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), isDeleted)
+                .map(this::entityToDomainModel);
     }
 
     @Override

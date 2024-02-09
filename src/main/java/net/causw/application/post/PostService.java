@@ -22,7 +22,6 @@ import net.causw.domain.model.circle.CircleMemberDomainModel;
 import net.causw.domain.model.enums.CircleMemberStatus;
 import net.causw.domain.model.post.PostDomainModel;
 import net.causw.domain.model.enums.Role;
-import net.causw.domain.model.enums.SearchOption;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.validation.CircleMemberStatusValidator;
@@ -41,7 +40,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -232,7 +230,6 @@ public class PostService {
     public BoardPostsResponseDto searchPost(
             String loginUserId,
             String boardId,
-            String option,
             String keyword,
             Integer pageNum
     ) {
@@ -285,14 +282,6 @@ public class PostService {
                 .validate();
 
 
-
-        SearchOption searchOption = Optional.ofNullable(SearchOption.of(option)).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.INVALID_PARAMETER,
-                        "잘못된 검색 옵션입니다."
-                )
-        );
-
         boolean isCircleLeader = false;
         if(userDomainModel.getRole().equals(Role.LEADER_CIRCLE)){
             isCircleLeader = boardDomainModel.getCircle().get()
@@ -306,7 +295,7 @@ public class PostService {
                     this.favoriteBoardPort.findByUserId(loginUserId)
                             .stream()
                             .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
-                    this.postPort.searchPost(searchOption, keyword, boardId, pageNum)
+                    this.postPort.searchPost(keyword, boardId, pageNum)
                             .map(postDomainModel -> PostsResponseDto.from(
                                     postDomainModel,
                                     this.commentPort.countByPostId(postDomainModel.getId())
@@ -320,7 +309,7 @@ public class PostService {
                     this.favoriteBoardPort.findByUserId(loginUserId)
                             .stream()
                             .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
-                    this.postPort.searchPost(searchOption, keyword, boardId, pageNum, false)
+                    this.postPort.searchPost(keyword, boardId, pageNum, false)
                             .map(postDomainModel -> PostsResponseDto.from(
                                     postDomainModel,
                                     this.commentPort.countByPostId(postDomainModel.getId())
