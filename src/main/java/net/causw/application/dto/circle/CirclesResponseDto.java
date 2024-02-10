@@ -1,6 +1,5 @@
 package net.causw.application.dto.circle;
 
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,13 +33,13 @@ public class CirclesResponseDto {
     @ApiModelProperty(value = "동아리장 숫자", example = "7")
     private Long numMember;
 
-    @ApiModelProperty(value = "join 여부", example = "false")
+    @ApiModelProperty(value = "유저의 동아리 가입 여부\n(User Role ADMIN 일 시 항상 true)", example = "false")
     private Boolean isJoined;
 
     @ApiModelProperty(value = "동아리 생성 일시", example = "2024-02-04 16:11:02.342644")
     private LocalDateTime createdAt;
 
-    @ApiModelProperty(value = "join 시점", example = "2024-02-04 16:11:02.342644")
+    @ApiModelProperty(value = "동아리 가입 시점\n(User Role ADMIN 일 시 항상 API 호출 시점)", example = "2024-02-04 16:11:02.342644")
     private LocalDateTime joinedAt;
 
     private CirclesResponseDto(
