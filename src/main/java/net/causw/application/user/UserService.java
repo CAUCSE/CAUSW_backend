@@ -232,7 +232,16 @@ public class UserService {
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .validate();
 
-        if (requestUser.getRole().equals(Role.LEADER_CIRCLE)) {
+        if (List.of(
+                Role.LEADER_CIRCLE,
+                Role.PRESIDENT_N_LEADER_CIRCLE,
+                Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
+                Role.COUNCIL_N_LEADER_CIRCLE,
+                Role.LEADER_1_N_LEADER_CIRCLE,
+                Role.LEADER_2_N_LEADER_CIRCLE,
+                Role.LEADER_3_N_LEADER_CIRCLE,
+                Role.LEADER_4_N_LEADER_CIRCLE
+        ).contains(requestUser.getRole())) {
             CircleDomainModel ownCircle = this.circlePort.findByLeaderId(id).orElseThrow(
                     () -> new InternalServerException(
                             ErrorCode.INTERNAL_SERVER,
