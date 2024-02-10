@@ -166,13 +166,35 @@ public class UserService {
                 )
         );
 
+
         ValidatorBucket.of()
                 .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
                 .consistOf(UserStateValidator.of(requestUser.getState()))
-                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT, Role.LEADER_CIRCLE)))
+                .consistOf(UserRoleValidator.of(requestUser.getRole(),
+                        List.of(Role.ADMIN,
+                                Role.PRESIDENT,
+                                Role.LEADER_CIRCLE,
+                                Role.PRESIDENT_N_LEADER_CIRCLE,
+                                Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
+                                Role.COUNCIL_N_LEADER_CIRCLE,
+                                Role.LEADER_1_N_LEADER_CIRCLE,
+                                Role.LEADER_2_N_LEADER_CIRCLE,
+                                Role.LEADER_3_N_LEADER_CIRCLE,
+                                Role.LEADER_4_N_LEADER_CIRCLE
+                        )))
                 .validate();
 
-        if (requestUser.getRole().equals(Role.LEADER_CIRCLE)) {
+
+        if (List.of(
+                Role.LEADER_CIRCLE,
+                Role.PRESIDENT_N_LEADER_CIRCLE,
+                Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
+                Role.COUNCIL_N_LEADER_CIRCLE,
+                Role.LEADER_1_N_LEADER_CIRCLE,
+                Role.LEADER_2_N_LEADER_CIRCLE,
+                Role.LEADER_3_N_LEADER_CIRCLE,
+                Role.LEADER_4_N_LEADER_CIRCLE
+        ).contains(requestUser.getRole())) {
             CircleDomainModel ownCircle = this.circlePort.findByLeaderId(requestUserId).orElseThrow(
                     () -> new InternalServerException(
                             ErrorCode.INTERNAL_SERVER,
