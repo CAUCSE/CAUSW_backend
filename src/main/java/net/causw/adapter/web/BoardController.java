@@ -8,6 +8,8 @@ import net.causw.application.dto.board.BoardCreateRequestDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.board.BoardUpdateRequestDto;
 import net.causw.domain.exceptions.BadRequestException;
+import net.causw.domain.exceptions.InternalServerException;
+import net.causw.domain.exceptions.UnauthorizedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,10 +40,10 @@ public class BoardController {
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = String.class),
             @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = UnauthorizedException.class),
             @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = BadRequestException.class)
     })
     public List<BoardResponseDto> findAllBoard() {
@@ -56,15 +58,15 @@ public class BoardController {
     @ApiResponses({
             @ApiResponse(code = 201, message = "Created", response = String.class),
             @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = UnauthorizedException.class),
             @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = BadRequestException.class),
             @ApiResponse(code = 4004, message = "삭제된 동아리입니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4107, message = "게시판을 생성할 수 있는 권한이 아닙니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4107, message = "게시판을 생성할 수 있는 권한이 아닙니다.", response = UnauthorizedException.class),
             @ApiResponse(code = 4000, message = "동아리를 찾을 수 없습니다.", response = BadRequestException.class),
-            @ApiResponse(code = 5000, message = "The board has circle without circle leader", response = BadRequestException.class)
+            @ApiResponse(code = 5000, message = "The board has circle without circle leader", response = InternalServerException.class)
     })
     public BoardResponseDto createBoard(
             @RequestBody BoardCreateRequestDto boardCreateRequestDto
@@ -80,16 +82,16 @@ public class BoardController {
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = String.class),
             @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = UnauthorizedException.class),
             @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = BadRequestException.class),
             @ApiResponse(code = 4004, message = "삭제된 동아리입니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4107, message = "게시판을 수정할 수 있는 권한이 아닙니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4107, message = "게시판을 수정할 수 있는 권한이 아닙니다.", response = UnauthorizedException.class),
             @ApiResponse(code = 4000, message = "수정할 게시판을 찾을 수 없습니다.", response = BadRequestException.class),
-            @ApiResponse(code = 5000, message = "The board has circle without circle leader", response = BadRequestException.class),
-            @ApiResponse(code = 5000, message = "Board id checked, but exception occurred", response = BadRequestException.class)
+            @ApiResponse(code = 5000, message = "The board has circle without circle leader", response = InternalServerException.class),
+            @ApiResponse(code = 5000, message = "Board id checked, but exception occurred", response = InternalServerException.class)
     })
     public BoardResponseDto updateBoard(
             @PathVariable String id,
@@ -106,16 +108,15 @@ public class BoardController {
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = String.class),
             @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = UnauthorizedException.class),
             @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = BadRequestException.class),
             @ApiResponse(code = 4004, message = "삭제된 동아리입니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4107, message = "게시판을 삭할 수 있는 권한이 아닙니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4107, message = "게시판을 삭할 수 있는 권한이 아닙니다.", response = UnauthorizedException.class),
             @ApiResponse(code = 4000, message = "삭제할 게시판을 찾을 수 없습니다.", response = BadRequestException.class),
-            @ApiResponse(code = 5000, message = "The board has circle without circle leader", response = BadRequestException.class),
-            @ApiResponse(code = 5000, message = "Board id checked, but exception occurred", response = BadRequestException.class)
+            @ApiResponse(code = 5000, message = "Board id checked, but exception occurred", response = InternalServerException.class)
     })
     public BoardResponseDto deleteBoard(
 
@@ -132,16 +133,15 @@ public class BoardController {
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = String.class),
             @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = UnauthorizedException.class),
             @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = BadRequestException.class),
             @ApiResponse(code = 4004, message = "삭제된 동아리입니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4107, message = "게시판을 복구할 수 있는 권한이 아닙니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4107, message = "게시판을 복구할 수 있는 권한이 아닙니다.", response = UnauthorizedException.class),
             @ApiResponse(code = 4000, message = "복구할 게시판을 찾을 수 없습니다.", response = BadRequestException.class),
-            @ApiResponse(code = 5000, message = "The board has circle without circle leader", response = BadRequestException.class),
-            @ApiResponse(code = 5000, message = "Board id checked, but exception occurred", response = BadRequestException.class)
+            @ApiResponse(code = 5000, message = "Board id checked, but exception occurred", response = InternalServerException.class)
     })
     public BoardResponseDto restoreBoard(
 
