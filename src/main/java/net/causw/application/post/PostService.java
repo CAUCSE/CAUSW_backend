@@ -22,7 +22,6 @@ import net.causw.domain.model.circle.CircleMemberDomainModel;
 import net.causw.domain.model.enums.CircleMemberStatus;
 import net.causw.domain.model.post.PostDomainModel;
 import net.causw.domain.model.enums.Role;
-import net.causw.domain.model.enums.SearchOption;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.validation.CircleMemberStatusValidator;
@@ -41,7 +40,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -141,7 +139,7 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public BoardPostsResponseDto findAll(
+    public BoardPostsResponseDto findAllPost(
             String loginUserId,
             String boardId,
             Integer pageNum
@@ -204,7 +202,7 @@ public class PostService {
                     this.favoriteBoardPort.findByUserId(loginUserId)
                             .stream()
                             .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
-                    this.postPort.findAll(boardId, pageNum)
+                    this.postPort.findAllPost(boardId, pageNum)
                             .map(postDomainModel -> PostsResponseDto.from(
                                     postDomainModel,
                                     this.commentPort.countByPostId(postDomainModel.getId())
@@ -218,7 +216,7 @@ public class PostService {
                     this.favoriteBoardPort.findByUserId(loginUserId)
                             .stream()
                             .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
-                    this.postPort.findAll(boardId, pageNum, false)
+                    this.postPort.findAllPost(boardId, pageNum, false)
                             .map(postDomainModel -> PostsResponseDto.from(
                                     postDomainModel,
                                     this.commentPort.countByPostId(postDomainModel.getId())
@@ -229,10 +227,9 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public BoardPostsResponseDto search(
+    public BoardPostsResponseDto searchPost(
             String loginUserId,
             String boardId,
-            String option,
             String keyword,
             Integer pageNum
     ) {
@@ -285,14 +282,6 @@ public class PostService {
                 .validate();
 
 
-
-        SearchOption searchOption = Optional.ofNullable(SearchOption.of(option)).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.INVALID_PARAMETER,
-                        "잘못된 검색 옵션입니다."
-                )
-        );
-
         boolean isCircleLeader = false;
         if(userDomainModel.getRole().equals(Role.LEADER_CIRCLE)){
             isCircleLeader = boardDomainModel.getCircle().get()
@@ -306,7 +295,7 @@ public class PostService {
                     this.favoriteBoardPort.findByUserId(loginUserId)
                             .stream()
                             .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
-                    this.postPort.search(searchOption, keyword, boardId, pageNum)
+                    this.postPort.searchPost(keyword, boardId, pageNum)
                             .map(postDomainModel -> PostsResponseDto.from(
                                     postDomainModel,
                                     this.commentPort.countByPostId(postDomainModel.getId())
@@ -320,7 +309,7 @@ public class PostService {
                     this.favoriteBoardPort.findByUserId(loginUserId)
                             .stream()
                             .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
-                    this.postPort.search(searchOption, keyword, boardId, pageNum, false)
+                    this.postPort.searchPost(keyword, boardId, pageNum, false)
                             .map(postDomainModel -> PostsResponseDto.from(
                                     postDomainModel,
                                     this.commentPort.countByPostId(postDomainModel.getId())
@@ -353,7 +342,7 @@ public class PostService {
                 this.favoriteBoardPort.findByUserId(loginUserId)
                         .stream()
                         .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
-                this.postPort.findAll(boardDomainModel.getId(), pageNum)
+                this.postPort.findAllPost(boardDomainModel.getId(), pageNum)
                         .map(postDomainModel -> PostsResponseDto.from(
                                 postDomainModel,
                                 this.commentPort.countByPostId(postDomainModel.getId())
@@ -362,7 +351,7 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponseDto create(String loginUserId, PostCreateRequestDto postCreateRequestDto) {
+    public PostResponseDto createPost(String loginUserId, PostCreateRequestDto postCreateRequestDto) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         UserDomainModel creatorDomainModel = this.userPort.findById(loginUserId).orElseThrow(
@@ -421,7 +410,7 @@ public class PostService {
                                             List.of(CircleMemberStatus.MEMBER)
                                     ));
 
-                            if (creatorDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
+                            if (creatorDomainModel.getRole().equals(Role.LEADER_CIRCLE) && !boardDomainModel.getCreateRoleList().contains("COMMON")) {
                                 validatorBucket
                                         .consistOf(UserEqualValidator.of(
                                                 circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
@@ -449,13 +438,13 @@ public class PostService {
                 .validate();
 
         return PostResponseDto.from(
-                this.postPort.create(postDomainModel),
+                this.postPort.createPost(postDomainModel),
                 creatorDomainModel
         );
     }
 
     @Transactional
-    public PostResponseDto delete(String loginUserId, String postId) {
+    public PostResponseDto deletePost(String loginUserId, String postId) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         UserDomainModel deleterDomainModel = this.userPort.findById(loginUserId).orElseThrow(
@@ -506,7 +495,7 @@ public class PostService {
                                             List.of(CircleMemberStatus.MEMBER)
                                     ));
 
-                            if (deleterDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
+                            if (deleterDomainModel.getRole().equals(Role.LEADER_CIRCLE) && !postDomainModel.getWriter().getId().equals(loginUserId)) {
                                 validatorBucket
                                         .consistOf(UserEqualValidator.of(
                                                 circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
@@ -531,7 +520,7 @@ public class PostService {
                 .validate();
 
         return PostResponseDto.from(
-                this.postPort.delete(postId).orElseThrow(
+                this.postPort.deletePost(postId).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
                                 "Post id checked, but exception occurred"
@@ -542,7 +531,7 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponseDto update(
+    public PostResponseDto updatePost(
             String loginUserId,
             String postId,
             PostUpdateRequestDto postUpdateRequestDto
@@ -599,7 +588,7 @@ public class PostService {
                                             List.of(CircleMemberStatus.MEMBER)
                                     ));
 
-                            if (updaterDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
+                            if (updaterDomainModel.getRole().equals(Role.LEADER_CIRCLE) && !postDomainModel.getWriter().getId().equals(loginUserId)) {
                                 validatorBucket
                                         .consistOf(UserEqualValidator.of(
                                                 circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
@@ -630,7 +619,7 @@ public class PostService {
                 .consistOf(ConstraintValidator.of(postDomainModel, this.validator))
                 .validate();
 
-        PostDomainModel updatedPostDomainModel = this.postPort.update(postId, postDomainModel).orElseThrow(
+        PostDomainModel updatedPostDomainModel = this.postPort.updatePost(postId, postDomainModel).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         "Post id checked, but exception occurred"
@@ -651,7 +640,7 @@ public class PostService {
         );
     }
 
-    public PostResponseDto restore(String loginUserId, String postId) {
+    public PostResponseDto restorePost(String loginUserId, String postId) {
 
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
@@ -704,7 +693,7 @@ public class PostService {
                                             List.of(CircleMemberStatus.MEMBER)
                                     ));
 
-                            if (restorerDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
+                            if (restorerDomainModel.getRole().equals(Role.LEADER_CIRCLE) && !postDomainModel.getWriter().getId().equals(loginUserId)) {
                                 validatorBucket
                                         .consistOf(UserEqualValidator.of(
                                                 circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
@@ -728,7 +717,7 @@ public class PostService {
                 ))
                 .validate();
 
-        PostDomainModel restoredPostDomainModel = this.postPort.restore(postId, postDomainModel).orElseThrow(
+        PostDomainModel restoredPostDomainModel = this.postPort.restorePost(postId, postDomainModel).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         "Post id checked, but exception occurred"

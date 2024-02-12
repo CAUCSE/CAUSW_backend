@@ -1,5 +1,6 @@
 package net.causw.adapter.web;
 
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -87,12 +88,12 @@ public class PostController {
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
-        return this.postService.findAll(loginUserId, boardId, pageNum);
+        return this.postService.findAllPost(loginUserId, boardId, pageNum);
     }
 
     @GetMapping("/search")
     @ResponseStatus(value = HttpStatus.OK)
-    @ApiOperation(value = "게시글 검색 API(완료)", notes = "게시글을 검색하는 api로 검색 option은 writer와 title 중 택1입니다.")
+    @ApiOperation(value = "게시글 검색 API(완료)", notes = "게시글을 검색하는 api로 제목의 연관검색어로 검색 가능합니다.")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = String.class),
             @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
@@ -110,17 +111,21 @@ public class PostController {
             @ApiResponse(code = 4102, message = "동아리 가입 거절된 사용자입니다.", response = UnauthorizedException.class),
             @ApiResponse(code = 4102, message = "동아리에서 추방된 사용자입니다.", response = UnauthorizedException.class),
             @ApiResponse(code = 4004, message = "삭제된 게시판입니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4002, message = "잘못된 검색 옵션입니다.(추후 옵션 title로 고정)", response = BadRequestException.class)
     })
+    @ApiImplicitParam(name = "keyword",
+            value = "제목 연관검색어",
+            required = true,
+            dataType = "String",
+            paramType = "query"
+    )
     public BoardPostsResponseDto searchPost(
             @RequestParam String boardId,
-            @RequestParam(defaultValue = "title") String option,
             @RequestParam(defaultValue = "") String keyword,
             @RequestParam(defaultValue = "0") Integer pageNum
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
-        return this.postService.search(loginUserId, boardId, option, keyword, pageNum);
+        return this.postService.searchPost(loginUserId, boardId, keyword, pageNum);
     }
 
     @GetMapping("/app/notice")
@@ -160,7 +165,7 @@ public class PostController {
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
-        return this.postService.create(loginUserId, postCreateRequestDto);
+        return this.postService.createPost(loginUserId, postCreateRequestDto);
     }
 
     @DeleteMapping(value = "/{id}")
@@ -191,7 +196,7 @@ public class PostController {
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
-        return this.postService.delete(loginUserId, id);
+        return this.postService.deletePost(loginUserId, id);
     }
 
     @PutMapping(value = "/{id}")
@@ -226,7 +231,7 @@ public class PostController {
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
-        return this.postService.update(
+        return this.postService.updatePost(
                 loginUserId,
                 id,
                 postUpdateRequestDto
@@ -264,7 +269,7 @@ public class PostController {
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
-        return this.postService.restore(
+        return this.postService.restorePost(
                 loginUserId,
                 id
         );
