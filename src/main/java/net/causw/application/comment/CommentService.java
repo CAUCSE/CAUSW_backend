@@ -61,7 +61,7 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentResponseDto create(String loginUserId, CommentCreateRequestDto commentCreateDto) {
+    public CommentResponseDto createComment(String loginUserId, CommentCreateRequestDto commentCreateDto) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         UserDomainModel creatorDomainModel = this.userPort.findById(loginUserId).orElseThrow(
@@ -127,7 +127,7 @@ public class CommentService {
     }
 
     @Transactional(readOnly = true)
-    public Page<CommentResponseDto> findAll(String loginUserId, String postId, Integer pageNum) {
+    public Page<CommentResponseDto> findAllComments(String loginUserId, String postId, Integer pageNum) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(
@@ -188,7 +188,7 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentResponseDto update(
+    public CommentResponseDto updateComment(
             String loginUserId,
             String commentId,
             CommentUpdateRequestDto commentUpdateRequestDto
@@ -274,7 +274,7 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentResponseDto delete(String loginUserId, String commentId) {
+    public CommentResponseDto deleteComment(String loginUserId, String commentId) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         UserDomainModel deleterDomainModel = this.userPort.findById(loginUserId).orElseThrow(

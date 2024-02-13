@@ -55,13 +55,13 @@ public class CommentController {
             @ApiResponse(code = 4108, message = "로그인된 사용자가 가입 신청한 소모임이 아닙니다.", response = UnauthorizedException.class),
             @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = BadRequestException.class)
     })
-    public Page<CommentResponseDto> findAll(
+    public Page<CommentResponseDto> findAllComments(
             @RequestParam String postId,
             @RequestParam(defaultValue = "0") Integer pageNum
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
-        return this.commentService.findAll(loginUserId, postId, pageNum);
+        return this.commentService.findAllComments(loginUserId, postId, pageNum);
     }
 
     @PostMapping
@@ -86,12 +86,12 @@ public class CommentController {
             @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = BadRequestException.class),
             @ApiResponse(code = 4004, message = "삭제된 동아리입니다.", response = BadRequestException.class),
     })
-    public CommentResponseDto create(
+    public CommentResponseDto createComment(
             @RequestBody CommentCreateRequestDto commentCreateRequestDto
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
-        return this.commentService.create(loginUserId, commentCreateRequestDto);
+        return this.commentService.createComment(loginUserId, commentCreateRequestDto);
     }
 
     @PutMapping(value = "/{id}")
@@ -120,13 +120,13 @@ public class CommentController {
             @ApiResponse(code = 5000, message = "Comment id checked, but exception occurred", response = BadRequestException.class),
 
     })
-    public CommentResponseDto update(
+    public CommentResponseDto updateComment(
             @PathVariable String id,
             @RequestBody CommentUpdateRequestDto commentUpdateRequestDto
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
-        return this.commentService.update(
+        return this.commentService.updateComment(
                 loginUserId,
                 id,
                 commentUpdateRequestDto
@@ -159,11 +159,11 @@ public class CommentController {
             @ApiResponse(code = 5000, message = "The board has circle without circle leader", response = BadRequestException.class),
             @ApiResponse(code = 5000, message = "Comment id checked, but exception occurred", response = BadRequestException.class),
     })
-    public CommentResponseDto delete(
+    public CommentResponseDto deleteComment(
             @PathVariable String id
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
-        return this.commentService.delete(loginUserId, id);
+        return this.commentService.deleteComment(loginUserId, id);
     }
 }
