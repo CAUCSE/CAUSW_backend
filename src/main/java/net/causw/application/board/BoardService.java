@@ -9,6 +9,7 @@ import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
+import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.board.BoardDomainModel;
 import net.causw.domain.model.circle.CircleDomainModel;
 import net.causw.domain.model.enums.Role;
@@ -111,7 +112,7 @@ public class BoardService {
                     CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
                             () -> new BadRequestException(
                                     ErrorCode.ROW_DOES_NOT_EXIST,
-                                    "소모임을 찾을 수 없습니다."
+                                    "동아리를 찾을 수 없습니다."
                             )
                     );
 
@@ -123,9 +124,9 @@ public class BoardService {
                         validatorBucket
                                 .consistOf(UserEqualValidator.of(
                                         circle.getLeader().map(UserDomainModel::getId).orElseThrow(
-                                                () -> new InternalServerException(
-                                                        ErrorCode.INTERNAL_SERVER,
-                                                        "The board has circle without circle leader"
+                                                () -> new UnauthorizedException(
+                                                        ErrorCode.API_NOT_ALLOWED,
+                                                        "사용자가 해당 동아리의 동아리장이 아닙니다."
                                                 )
                                         ),
                                         loginUserId
@@ -195,9 +196,9 @@ public class BoardService {
                         validatorBucket
                                 .consistOf(UserEqualValidator.of(
                                         circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
-                                                () -> new InternalServerException(
-                                                        ErrorCode.INTERNAL_SERVER,
-                                                        "The board has circle without circle leader"
+                                                () -> new UnauthorizedException(
+                                                        ErrorCode.API_NOT_ALLOWED,
+                                                        "사용자가 해당 동아리의 동아리장이 아닙니다."
                                                 )
                                         ),
                                         loginUserId
@@ -274,9 +275,9 @@ public class BoardService {
                         validatorBucket
                                 .consistOf(UserEqualValidator.of(
                                         circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
-                                                () -> new InternalServerException(
-                                                        ErrorCode.INTERNAL_SERVER,
-                                                        "The board has circle without circle leader"
+                                                () -> new UnauthorizedException(
+                                                        ErrorCode.API_NOT_ALLOWED,
+                                                        "사용자가 해당 동아리의 동아리장이 아닙니다."
                                                 )
                                         ),
                                         loginUserId
@@ -345,9 +346,9 @@ public class BoardService {
                         validatorBucket
                                 .consistOf(UserEqualValidator.of(
                                         circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
-                                                () -> new InternalServerException(
-                                                        ErrorCode.INTERNAL_SERVER,
-                                                        "The board has circle without circle leader"
+                                                () -> new UnauthorizedException(
+                                                        ErrorCode.API_NOT_ALLOWED,
+                                                        "사용자가 해당 동아리의 동아리장이 아닙니다."
                                                 )
                                         ),
                                         loginUserId
