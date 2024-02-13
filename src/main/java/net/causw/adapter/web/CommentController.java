@@ -1,12 +1,17 @@
 package net.causw.adapter.web;
 
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import net.causw.application.comment.CommentService;
 import net.causw.application.dto.comment.CommentCreateRequestDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.comment.CommentUpdateRequestDto;
+import net.causw.domain.exceptions.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,32 +34,50 @@ public class CommentController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @ApiOperation(value = "댓글 생성 API(완료)")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Created", response = String.class),
+            @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4000, message = "게시글을 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4004, message = "삭제된 게시판입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4004, message = "삭제된 게시글입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4108, message = "로그인된 사용자가 가입 신청한 소모임이 아닙니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = BadRequestException.class),
+            @ApiResponse(code = 4004, message = "삭제된 동아리입니다.", response = BadRequestException.class),
+    })
     public CommentResponseDto create(
-            @AuthenticationPrincipal String creatorId,
             @RequestBody CommentCreateRequestDto commentCreateRequestDto
     ) {
-        return this.commentService.create(creatorId, commentCreateRequestDto);
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String loginUserId = ((String) principal);
+        return this.commentService.create(loginUserId, commentCreateRequestDto);
     }
 
     @GetMapping(params = "postId")
     @ResponseStatus(value = HttpStatus.OK)
     public Page<CommentResponseDto> findAll(
-            @AuthenticationPrincipal String userId,
             @RequestParam String postId,
             @RequestParam(defaultValue = "0") Integer pageNum
     ) {
-        return this.commentService.findAll(userId, postId, pageNum);
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String loginUserId = ((String) principal);
+        return this.commentService.findAll(loginUserId, postId, pageNum);
     }
 
     @PutMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
     public CommentResponseDto update(
-            @AuthenticationPrincipal String requestUserId,
             @PathVariable String id,
             @RequestBody CommentUpdateRequestDto commentUpdateRequestDto
     ) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String loginUserId = ((String) principal);
         return this.commentService.update(
-                requestUserId,
+                loginUserId,
                 id,
                 commentUpdateRequestDto
         );
@@ -63,9 +86,10 @@ public class CommentController {
     @DeleteMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
     public CommentResponseDto delete(
-            @AuthenticationPrincipal String userId,
             @PathVariable String id
     ) {
-        return this.commentService.delete(userId, id);
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String loginUserId = ((String) principal);
+        return this.commentService.delete(loginUserId, id);
     }
 }
