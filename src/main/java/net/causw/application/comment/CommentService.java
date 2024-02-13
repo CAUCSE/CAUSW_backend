@@ -28,6 +28,7 @@ import net.causw.domain.validation.UserRoleIsNoneValidator;
 import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
 import org.springframework.data.domain.Page;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,10 +61,10 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentResponseDto create(String creatorId, CommentCreateRequestDto commentCreateDto) {
+    public CommentResponseDto createComment(String loginUserId, CommentCreateRequestDto commentCreateDto) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel creatorDomainModel = this.userPort.findById(creatorId).orElseThrow(
+        UserDomainModel creatorDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -97,7 +98,7 @@ public class CommentService {
                 .ifPresent(
                         circleDomainModel -> {
                             CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
-                                    creatorId,
+                                    loginUserId,
                                     circleDomainModel.getId()
                             ).orElseThrow(
                                     () -> new UnauthorizedException(
@@ -105,7 +106,6 @@ public class CommentService {
                                             "로그인된 사용자가 가입 신청한 소모임이 아닙니다."
                                     )
                             );
-
                             validatorBucket
                                     .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                                     .consistOf(CircleMemberStatusValidator.of(
@@ -127,10 +127,10 @@ public class CommentService {
     }
 
     @Transactional(readOnly = true)
-    public Page<CommentResponseDto> findAll(String userId, String postId, Integer pageNum) {
+    public Page<CommentResponseDto> findAllComments(String loginUserId, String postId, Integer pageNum) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
+        UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -155,7 +155,7 @@ public class CommentService {
                 .ifPresent(
                         circleDomainModel -> {
                             CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
-                                    userId,
+                                    loginUserId,
                                     circleDomainModel.getId()
                             ).orElseThrow(
                                     () -> new UnauthorizedException(
@@ -188,14 +188,14 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentResponseDto update(
-            String requestUserId,
+    public CommentResponseDto updateComment(
+            String loginUserId,
             String commentId,
             CommentUpdateRequestDto commentUpdateRequestDto
     ) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+        UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -229,7 +229,7 @@ public class CommentService {
                 .consistOf(ConstraintValidator.of(commentDomainModel, this.validator))
                 .consistOf(ContentsAdminValidator.of(
                         requestUser.getRole(),
-                        requestUserId,
+                        loginUserId,
                         commentDomainModel.getWriter().getId(),
                         List.of()
                 ));
@@ -239,7 +239,7 @@ public class CommentService {
                 .ifPresent(
                         circleDomainModel -> {
                             CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
-                                    requestUserId,
+                                    loginUserId,
                                     circleDomainModel.getId()
                             ).orElseThrow(
                                     () -> new UnauthorizedException(
@@ -274,10 +274,10 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentResponseDto delete(String deleterId, String commentId) {
+    public CommentResponseDto deleteComment(String loginUserId, String commentId) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel deleterDomainModel = this.userPort.findById(deleterId).orElseThrow(
+        UserDomainModel deleterDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -308,7 +308,7 @@ public class CommentService {
                 .ifPresentOrElse(
                         circleDomainModel -> {
                             CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
-                                    deleterId,
+                                    loginUserId,
                                     circleDomainModel.getId()
                             ).orElseThrow(
                                     () -> new UnauthorizedException(
@@ -325,7 +325,7 @@ public class CommentService {
                                     ))
                                     .consistOf(ContentsAdminValidator.of(
                                             deleterDomainModel.getRole(),
-                                            deleterId,
+                                            loginUserId,
                                             commentDomainModel.getWriter().getId(),
                                             List.of(Role.LEADER_CIRCLE)
                                     ));
@@ -339,14 +339,14 @@ public class CommentService {
                                                                 "The board has circle without circle leader"
                                                         )
                                                 ),
-                                                deleterId
+                                                loginUserId
                                         ));
                             }
                         },
                         () -> validatorBucket
                                 .consistOf(ContentsAdminValidator.of(
                                         deleterDomainModel.getRole(),
-                                        deleterId,
+                                        loginUserId,
                                         commentDomainModel.getWriter().getId(),
                                         List.of(Role.PRESIDENT)
                                 ))
