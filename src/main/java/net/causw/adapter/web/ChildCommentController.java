@@ -63,7 +63,7 @@ public class ChildCommentController {
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
-        return this.childCommentService.create(loginUserId, childCommentCreateRequestDto);
+        return this.childCommentService.createChildComment(loginUserId, childCommentCreateRequestDto);
     }
 
     @GetMapping(params = "parentCommentId")
@@ -96,7 +96,7 @@ public class ChildCommentController {
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
-        return this.childCommentService.findAll(loginUserId, parentCommentId, pageNum);
+        return this.childCommentService.findAllChildComments(loginUserId, parentCommentId, pageNum);
     }
 
     @PutMapping(value = "/{id}")
@@ -130,7 +130,7 @@ public class ChildCommentController {
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
-        return this.childCommentService.update(loginUserId, id, childCommentUpdateRequestDto);
+        return this.childCommentService.updateChildComment(loginUserId, id, childCommentUpdateRequestDto);
     }
 
     @DeleteMapping(value = "/{id}")
@@ -163,6 +163,6 @@ public class ChildCommentController {
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
-        return this.childCommentService.delete(loginUserId, id);
+        return this.childCommentService.deleteChildComment(loginUserId, id);
     }
 }
