@@ -54,7 +54,9 @@ public class BoardController {
 
     @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)
-    @ApiOperation(value = "게시판 생성 API(완료)", notes = "circleId는 현재 존재하는 circleId를 적용해야 합니다(nullable)")
+    @ApiOperation(value = "게시판 생성 API(완료)", notes = "circleId는 현재 존재하는 circleId를 적용해야 합니다(nullable) \n createRoleList에는 ADMIN과 PRESIDENT가 디폴트로 입력됩니다. 그 외의 권한을 별도로 입력해주세요." +
+            "\n createRoleList에 'ALL'을 입력할 경우 모든 권한을 가진 사용자가 게시글을 생성할 수 있습니다.(NONE 제외) \n 아무것도 입력하지 않을 경우에는 ADMIN과 PRESIDENT가 자동으로 입력됩니다.")
+
     @ApiResponses({
             @ApiResponse(code = 201, message = "Created", response = String.class),
             @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
