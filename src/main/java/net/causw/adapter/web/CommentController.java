@@ -32,6 +32,32 @@ public class CommentController {
         this.commentService = commentService;
     }
 
+    @GetMapping(params = "postId")
+    @ResponseStatus(value = HttpStatus.OK)
+    @ApiOperation(value = "댓글 조회 API(완료)", notes = "해당 게시글의 전체 댓글을 불러오는 api입니다.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "OK", response = String.class),
+            @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4000, message = "게시글을 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4004, message = "삭제된 게시판입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4004, message = "삭제된 게시글입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4004, message = "삭제된 동아리입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4108, message = "로그인된 사용자가 가입 신청한 소모임이 아닙니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = BadRequestException.class)
+    })
+    public Page<CommentResponseDto> findAll(
+            @RequestParam String postId,
+            @RequestParam(defaultValue = "0") Integer pageNum
+    ) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String loginUserId = ((String) principal);
+        return this.commentService.findAll(loginUserId, postId, pageNum);
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @ApiOperation(value = "댓글 생성 API(완료)")
@@ -57,17 +83,6 @@ public class CommentController {
         return this.commentService.create(loginUserId, commentCreateRequestDto);
     }
 
-    @GetMapping(params = "postId")
-    @ResponseStatus(value = HttpStatus.OK)
-    public Page<CommentResponseDto> findAll(
-            @RequestParam String postId,
-            @RequestParam(defaultValue = "0") Integer pageNum
-    ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.commentService.findAll(loginUserId, postId, pageNum);
-    }
-
     @PutMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
     public CommentResponseDto update(
@@ -85,6 +100,25 @@ public class CommentController {
 
     @DeleteMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
+    @ApiOperation(value = "댓글 삭제 API(완료)")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "OK", response = String.class),
+            @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4000, message = "게시글을 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4000, message = "삭제할 댓글을 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4004, message = "삭제된 게시판입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4004, message = "삭제된 댓글입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4004, message = "삭제된 게시글입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4108, message = "로그인된 사용자가 가입 신청한 소모임이 아닙니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = BadRequestException.class),
+            @ApiResponse(code = 4004, message = "삭제된 동아리입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 5000, message = "The board has circle without circle leader", response = BadRequestException.class),
+            @ApiResponse(code = 5000, message = "Comment id checked, but exception occurred", response = BadRequestException.class),
+    })
     public CommentResponseDto delete(
             @PathVariable String id
     ) {
