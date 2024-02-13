@@ -79,12 +79,16 @@ public class BoardDomainModel {
     ) {
         if (createRoleList != null) {
             if (createRoleList.isEmpty()) {
+                createRoleList.add(Role.ADMIN.getValue());
+                createRoleList.add(Role.PRESIDENT.getValue());
+            } else if (createRoleList.contains("ALL")) {
                 createRoleList.addAll(
                         Arrays.stream(Role.values())
                                 .map(Role::getValue)
                                 .collect(Collectors.toList())
                 );
                 createRoleList.remove(Role.NONE.getValue());
+                createRoleList.remove("ALL");
             } else {
                 createRoleList = createRoleList
                         .stream()
@@ -93,6 +97,7 @@ public class BoardDomainModel {
                         .collect(Collectors.toList());
 
                 createRoleList.add(Role.ADMIN.getValue());
+                createRoleList.add(Role.PRESIDENT.getValue());
             }
         }
 
