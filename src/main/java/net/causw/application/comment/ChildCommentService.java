@@ -63,7 +63,7 @@ public class ChildCommentService {
     }
 
     @Transactional
-    public ChildCommentResponseDto create(String creatorId, ChildCommentCreateRequestDto childCommentCreateRequestDto) {
+    public ChildCommentResponseDto createChildComment(String creatorId, ChildCommentCreateRequestDto childCommentCreateRequestDto) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         UserDomainModel creatorDomainModel = this.userPort.findById(creatorId).orElseThrow(
@@ -154,7 +154,7 @@ public class ChildCommentService {
     }
 
     @Transactional(readOnly = true)
-    public ChildCommentsResponseDto findAll(String userId, String parentCommentId, Integer pageNum) {
+    public ChildCommentsResponseDto findAllChildComments(String userId, String parentCommentId, Integer pageNum) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
@@ -229,7 +229,7 @@ public class ChildCommentService {
     }
 
     @Transactional
-    public ChildCommentResponseDto update(
+    public ChildCommentResponseDto updateChildComment(
             String updaterId,
             String childCommentId,
             ChildCommentUpdateRequestDto childCommentUpdateRequestDto
@@ -314,7 +314,7 @@ public class ChildCommentService {
     }
 
     @Transactional
-    public ChildCommentResponseDto delete(String deleterId, String childCommentId) {
+    public ChildCommentResponseDto deleteChildComment(String deleterId, String childCommentId) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         UserDomainModel deleterDomainModel = this.userPort.findById(deleterId).orElseThrow(
