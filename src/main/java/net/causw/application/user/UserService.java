@@ -171,8 +171,7 @@ public class UserService {
                 .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .consistOf(UserRoleValidator.of(requestUser.getRole(),
-                        List.of(Role.ADMIN,
-                                Role.PRESIDENT,
+                        List.of(Role.PRESIDENT,
                                 Role.LEADER_CIRCLE,
                                 Role.PRESIDENT_N_LEADER_CIRCLE,
                                 Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
@@ -184,17 +183,7 @@ public class UserService {
                         )))
                 .validate();
 
-
-        if (List.of(
-                Role.LEADER_CIRCLE,
-                Role.PRESIDENT_N_LEADER_CIRCLE,
-                Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
-                Role.COUNCIL_N_LEADER_CIRCLE,
-                Role.LEADER_1_N_LEADER_CIRCLE,
-                Role.LEADER_2_N_LEADER_CIRCLE,
-                Role.LEADER_3_N_LEADER_CIRCLE,
-                Role.LEADER_4_N_LEADER_CIRCLE
-        ).contains(requestUser.getRole())) {
+        if (requestUser.getRole().getValue().contains("LEADER_CIRCLE")) {
             List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(requestUserId);
             if (ownCircles.isEmpty()) {
                 throw new InternalServerException(
@@ -234,16 +223,7 @@ public class UserService {
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .validate();
 
-        if (List.of(
-                Role.LEADER_CIRCLE,
-                Role.PRESIDENT_N_LEADER_CIRCLE,
-                Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
-                Role.COUNCIL_N_LEADER_CIRCLE,
-                Role.LEADER_1_N_LEADER_CIRCLE,
-                Role.LEADER_2_N_LEADER_CIRCLE,
-                Role.LEADER_3_N_LEADER_CIRCLE,
-                Role.LEADER_4_N_LEADER_CIRCLE
-        ).contains(requestUser.getRole())) {
+        if (requestUser.getRole().getValue().contains("LEADER_CIRCLE")) {
             List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(id);
             if (ownCircles.isEmpty()) {
                 throw new InternalServerException(
@@ -339,10 +319,19 @@ public class UserService {
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
-                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT, Role.LEADER_CIRCLE)))
+                .consistOf(UserRoleValidator.of(user.getRole(),
+                        List.of(Role.PRESIDENT,
+                                Role.LEADER_CIRCLE,
+                                Role.PRESIDENT_N_LEADER_CIRCLE,
+                                Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
+                                Role.COUNCIL_N_LEADER_CIRCLE,
+                                Role.LEADER_1_N_LEADER_CIRCLE,
+                                Role.LEADER_2_N_LEADER_CIRCLE,
+                                Role.LEADER_3_N_LEADER_CIRCLE,
+                                Role.LEADER_4_N_LEADER_CIRCLE)))
                 .validate();
 
-        if (user.getRole().equals(Role.LEADER_CIRCLE)) {
+        if (user.getRole().getValue().contains("LEADER_CIRCLE")) {
             List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(currentUserId);
             if (ownCircles.isEmpty()) {
                 throw new InternalServerException(
@@ -461,7 +450,7 @@ public class UserService {
 
         return this.userPort.findByState(UserState.of(state), pageNum)
                 .map(userDomainModel -> {
-                    if (userDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
+                    if (userDomainModel.getRole().getValue().contains("LEADER_CIRCLE")) {
                         List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(currentUserId);
                         if (ownCircles.isEmpty()) {
                             throw new InternalServerException(
@@ -707,7 +696,7 @@ public class UserService {
          */
         if (grantor.getRole() == userUpdateRoleRequestDto.getRole()) {
             String circleId = "";
-            if(grantor.getRole().equals(Role.LEADER_CIRCLE)){
+            if(grantor.getRole().getValue().contains("LEADER_CIRCLE")){
                 circleId = userUpdateRoleRequestDto.getCircleId()
                         .orElseThrow(() -> new BadRequestException(
                                 ErrorCode.INVALID_PARAMETER,
@@ -722,8 +711,8 @@ public class UserService {
          * 1) Check if the grantor's role is Admin or President
          * 2) Check if the role to update is Circle Leader
          */
-        else if ((grantor.getRole() == Role.PRESIDENT || grantor.getRole() == Role.ADMIN)
-                && userUpdateRoleRequestDto.getRole() == Role.LEADER_CIRCLE
+        else if ((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
+                && userUpdateRoleRequestDto.getRole().getValue().contains("LEADER_CIRCLE")
         ) {
             String circleId = userUpdateRoleRequestDto.getCircleId()
                     .orElseThrow(() -> new BadRequestException(
@@ -761,8 +750,8 @@ public class UserService {
          * 1) Check if the grantor's role is Admin or President
          * 2) Check if the role to update is Leader Alumni
          */
-        else if ((grantor.getRole() == Role.PRESIDENT || grantor.getRole() == Role.ADMIN)
-                && userUpdateRoleRequestDto.getRole() == Role.LEADER_ALUMNI
+        else if ((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
+                && userUpdateRoleRequestDto.getRole().equals(Role.LEADER_ALUMNI)
         ) {
             UserDomainModel previousLeaderAlumni = this.userPort.findByRole(Role.LEADER_ALUMNI)
                     .stream().findFirst()
