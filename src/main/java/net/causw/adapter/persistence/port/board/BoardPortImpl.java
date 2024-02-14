@@ -27,9 +27,10 @@ public class BoardPortImpl extends DomainModelMapper implements BoardPort {
 
 
     @Override
-    public List<BoardDomainModel> findAllBoard(String circleId) {
-        List<Board> boardsInCircle = this.boardRepository.findByCircle_IdOrderByCreatedAtAsc(circleId);
-        List<Board> boardsOutsideCircle = this.boardRepository.findByCircle_IdIsNullAndIsDeletedIsFalseOrderByCreatedAtAsc();
+    public List<BoardDomainModel> findAllBoard(List<String> circleIdList) {
+        List<Board> boardsInCircle = this.boardRepository.findByCircle_IdOrderByCreatedAtAsc(circleIdList);
+        List<Board> boardsOutsideCircle = this.boardRepository.findByCircle_IdNotInAndIsDeletedIsFalseOrderByCreatedAtAsc(circleIdList);
+
 
         List<Board> allBoards = new ArrayList<>();
         allBoards.addAll(boardsInCircle);
@@ -41,7 +42,6 @@ public class BoardPortImpl extends DomainModelMapper implements BoardPort {
     }
     @Override
     public List<BoardDomainModel> findAllBoard() {
-
         return this.boardRepository.findByOrderByCreatedAtAsc()
                 .stream()
                 .map(this::entityToDomainModel)

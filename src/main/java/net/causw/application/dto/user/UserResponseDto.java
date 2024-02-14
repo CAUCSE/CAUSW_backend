@@ -6,7 +6,7 @@ import lombok.Setter;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.model.enums.UserState;
-
+import java.util.List;
 @Getter
 @Setter
 public class UserResponseDto {
@@ -36,10 +36,10 @@ public class UserResponseDto {
     private UserState state;
 
     @ApiModelProperty(value = "리더일 경우, 동아리 고유 id값", example = "uuid 형식의 String 값입니다.")
-    private String circleIdIfLeader;
+    private List<String> circleIdIfLeader;
 
     @ApiModelProperty(value = "리더일 경우, 동아리 이름", example = "개발 동아리")
-    private String circleNameIfLeader;
+    private List<String> circleNameIfLeader;
 
 
     private UserResponseDto(
@@ -51,8 +51,8 @@ public class UserResponseDto {
             Role role,
             String profileImage,
             UserState state,
-            String circleIdIfLeader,
-            String circleNameIfLeader
+            List<String> circleIdIfLeader,
+            List<String> circleNameIfLeader
     ) {
         this.id = id;
         this.email = email;
@@ -83,8 +83,8 @@ public class UserResponseDto {
 
     public static UserResponseDto from(
             UserDomainModel user,
-            String circleId,
-            String circleName
+            List<String> circleId,
+            List<String> circleName
     ) {
         return new UserResponseDto(
                 user.getId(),

@@ -27,9 +27,9 @@ public class CirclePortImpl extends DomainModelMapper implements CirclePort {
     }
 
     @Override
-    public Optional<CircleDomainModel> findByLeaderId(String leaderId) {
-        return this.circleRepository.findByLeader_Id(leaderId).map(this::entityToDomainModel);
-
+    public List<CircleDomainModel> findByLeaderId(String leaderId) {
+        List<Circle> circles = this.circleRepository.findByLeader_Id(leaderId);
+        return circles.stream().map(this::entityToDomainModel).collect(Collectors.toList());
     }
 
     @Override

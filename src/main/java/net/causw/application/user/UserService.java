@@ -195,19 +195,21 @@ public class UserService {
                 Role.LEADER_3_N_LEADER_CIRCLE,
                 Role.LEADER_4_N_LEADER_CIRCLE
         ).contains(requestUser.getRole())) {
-            CircleDomainModel ownCircle = this.circlePort.findByLeaderId(requestUserId).orElseThrow(
-                    () -> new InternalServerException(
-                            ErrorCode.INTERNAL_SERVER,
-                            "소모임장이 아닙니다."
-                    )
-            );
-
-            this.circleMemberPort.findByUserIdAndCircleId(targetUserId, ownCircle.getId()).orElseThrow(
-                    () -> new BadRequestException(
-                            ErrorCode.NOT_MEMBER,
-                            "해당 유저는 소모임 회원이 아닙니다."
-                    )
-            );
+            List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(requestUserId);
+            if (ownCircles.isEmpty()) {
+                throw new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "해당 동아리장이 배정된 동아리가 없습니다."
+                );
+            }
+            boolean isMemberOfAnyCircle = ownCircles.stream()
+                    .anyMatch(circleDomainModel ->
+                            this.circleMemberPort.findByUserIdAndCircleId(targetUserId, circleDomainModel.getId())
+                                    .map(circleMemberDomainModel -> circleMemberDomainModel.getStatus() == CircleMemberStatus.MEMBER)
+                                    .orElse(false));
+            if (!isMemberOfAnyCircle) {
+                throw new BadRequestException(ErrorCode.NOT_MEMBER, "해당 유저는 동아리 회원이 아닙니다.");
+            }
         }
 
         return this.userPort.findById(targetUserId)
@@ -242,17 +244,19 @@ public class UserService {
                 Role.LEADER_3_N_LEADER_CIRCLE,
                 Role.LEADER_4_N_LEADER_CIRCLE
         ).contains(requestUser.getRole())) {
-            CircleDomainModel ownCircle = this.circlePort.findByLeaderId(id).orElseThrow(
-                    () -> new InternalServerException(
-                            ErrorCode.INTERNAL_SERVER,
-                            "소모임장이 아닙니다"
-                    )
-            );
+            List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(id);
+            if (ownCircles.isEmpty()) {
+                throw new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "해당 동아리장이 배정된 동아리가 없습니다."
+                );
+            }
 
             return UserResponseDto.from(
                     requestUser,
-                    ownCircle.getId(),
-                    ownCircle.getName()
+                    ownCircles.stream().map(CircleDomainModel::getId).collect(Collectors.toList()),
+                    ownCircles.stream().map(CircleDomainModel::getName).collect(Collectors.toList())
+
             );
         }
 
@@ -339,25 +343,28 @@ public class UserService {
                 .validate();
 
         if (user.getRole().equals(Role.LEADER_CIRCLE)) {
-            CircleDomainModel ownCircle = this.circlePort.findByLeaderId(currentUserId).orElseThrow(
-                    () -> new InternalServerException(
-                            ErrorCode.INTERNAL_SERVER,
-                            "소모임장이 아닙니다"
-                    )
-            );
+            List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(currentUserId);
+            if (ownCircles.isEmpty()) {
+                throw new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "해당 동아리장이 배정된 동아리가 없습니다."
+                );
+            }
 
             return this.userPort.findByName(name)
                     .stream()
                     .filter(userDomainModel -> userDomainModel.getState().equals(UserState.ACTIVE))
                     .filter(userDomainModel ->
-                            this.circleMemberPort.findByUserIdAndCircleId(userDomainModel.getId(), ownCircle.getId())
-                                    .map(circleMemberDomainModel ->
-                                            circleMemberDomainModel.getStatus() == CircleMemberStatus.MEMBER)
-                                    .orElse(Boolean.FALSE))
+                            ownCircles.stream()
+                                    .anyMatch(circleDomainModel ->
+                                            this.circleMemberPort.findByUserIdAndCircleId(userDomainModel.getId(), circleDomainModel.getId())
+                                                    .map(circleMemberDomainModel ->
+                                                            circleMemberDomainModel.getStatus() == CircleMemberStatus.MEMBER)
+                                    .orElse(false)))
                     .map(userDomainModel -> UserResponseDto.from(
                             userDomainModel,
-                            ownCircle.getId(),
-                            ownCircle.getName()))
+                            ownCircles.stream().map(CircleDomainModel::getId).collect(Collectors.toList()),
+                            ownCircles.stream().map(CircleDomainModel::getName).collect(Collectors.toList())))
                     .collect(Collectors.toList());
         }
 
@@ -407,17 +414,18 @@ public class UserService {
                 this.userPort.findByRole(Role.LEADER_CIRCLE)
                         .stream()
                         .map(userDomainModel -> {
-                            CircleDomainModel ownCircle = this.circlePort.findByLeaderId(userDomainModel.getId()).orElseThrow(
-                                    () -> new InternalServerException(
-                                            ErrorCode.INTERNAL_SERVER,
-                                            "소모임장이 아닙니다"
-                                    )
-                            );
+                            List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(currentUserId);
+                            if (ownCircles.isEmpty()) {
+                                throw new InternalServerException(
+                                        ErrorCode.INTERNAL_SERVER,
+                                        "해당 동아리장이 배정된 동아리가 없습니다."
+                                );
+                            }
 
                             return UserResponseDto.from(
                                     userDomainModel,
-                                    ownCircle.getId(),
-                                    ownCircle.getName()
+                                    ownCircles.stream().map(CircleDomainModel::getId).collect(Collectors.toList()),
+                                    ownCircles.stream().map(CircleDomainModel::getName).collect(Collectors.toList())
                             );
                         })
                         .collect(Collectors.toList()),
@@ -454,17 +462,18 @@ public class UserService {
         return this.userPort.findByState(UserState.of(state), pageNum)
                 .map(userDomainModel -> {
                     if (userDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
-                        CircleDomainModel ownCircle = this.circlePort.findByLeaderId(userDomainModel.getId()).orElseThrow(
-                                () -> new InternalServerException(
-                                        ErrorCode.INTERNAL_SERVER,
-                                        "소모임장이 아닙니다"
-                                )
-                        );
+                        List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(currentUserId);
+                        if (ownCircles.isEmpty()) {
+                            throw new InternalServerException(
+                                    ErrorCode.INTERNAL_SERVER,
+                                    "해당 동아리장이 배정된 동아리가 없습니다."
+                            );
+                        }
 
                         return UserResponseDto.from(
                                 userDomainModel,
-                                ownCircle.getId(),
-                                ownCircle.getName()
+                                ownCircles.stream().map(CircleDomainModel::getId).collect(Collectors.toList()),
+                                ownCircles.stream().map(CircleDomainModel::getName).collect(Collectors.toList())
                         );
                     } else {
                         return UserResponseDto.from(userDomainModel);
@@ -697,8 +706,16 @@ public class UserService {
          * 3) Then, the DelegationFactory match the instance for the delegation considering the role -> Then processed
          */
         if (grantor.getRole() == userUpdateRoleRequestDto.getRole()) {
+            String circleId = "";
+            if(grantor.getRole().equals(Role.LEADER_CIRCLE)){
+                circleId = userUpdateRoleRequestDto.getCircleId()
+                        .orElseThrow(() -> new BadRequestException(
+                                ErrorCode.INVALID_PARAMETER,
+                                "소모임장을 위임할 소모임 입력이 필요합니다."
+                        ));
+            }
             DelegationFactory
-                    .create(grantor.getRole(), this.userPort, this.circlePort, this.circleMemberPort)
+                    .create(grantor.getRole(), this.userPort, this.circlePort, this.circleMemberPort, circleId)
                     .delegate(grantorId, granteeId);
         }
         /* Delegate the Circle Leader

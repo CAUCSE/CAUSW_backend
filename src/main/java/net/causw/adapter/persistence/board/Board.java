@@ -22,7 +22,7 @@ import java.util.Set;
 @Setter
 @Entity
 @NoArgsConstructor
-@Table(name = "TB_BOARD")
+@Table(name = "tb_board")
 public class Board extends BaseEntity {
     @Column(name = "name", nullable = false)
     private String name;

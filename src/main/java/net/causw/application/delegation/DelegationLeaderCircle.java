@@ -29,20 +29,23 @@ public class DelegationLeaderCircle implements Delegation {
     private final CirclePort circlePort;
 
     private final CircleMemberPort circleMemberPort;
+    private final String circleId;
 
     public DelegationLeaderCircle(
             UserPort userPort,
             CirclePort circlePort,
-            CircleMemberPort circleMemberPort
+            CircleMemberPort circleMemberPort,
+            String circleId
     ) {
         this.userPort = userPort;
         this.circlePort = circlePort;
         this.circleMemberPort = circleMemberPort;
+        this.circleId = circleId;
     }
 
     @Override
     public void delegate(String currentId, String targetId) {
-        CircleDomainModel circle = this.circlePort.findByLeaderId(currentId).orElseThrow(
+        CircleDomainModel circle = this.circlePort.findById(this.circleId).orElseThrow(
                 () -> new UnauthorizedException(
                         ErrorCode.API_NOT_ALLOWED,
                         "권한을 위임할 소모임장의 소모임을 찾을 수 없습니다."

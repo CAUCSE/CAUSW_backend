@@ -9,7 +9,7 @@ import java.util.Optional;
 public interface CirclePort {
     Optional<CircleDomainModel> findById(String id);
 
-    Optional<CircleDomainModel> findByLeaderId(String leaderId);
+    List<CircleDomainModel> findByLeaderId(String leaderId);
 
     List<CircleDomainModel> findAll();
 
