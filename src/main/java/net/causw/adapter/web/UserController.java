@@ -69,8 +69,8 @@ public class UserController {
     })
     public UserResponseDto findByUserId(@PathVariable String userId) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-        return this.userService.findByUserId(userId, currentUserId);
+        String loginUserId = ((String) principal);
+        return this.userService.findByUserId(userId, loginUserId);
     }
 
     /**
@@ -89,48 +89,48 @@ public class UserController {
     })
     public UserResponseDto findCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-        return this.userService.findByUserId(currentUserId);
+        String loginUserId = ((String) principal);
+        return this.userService.findByUserId(loginUserId);
     }
 
     @GetMapping(value = "/posts")
     @ResponseStatus(value = HttpStatus.OK)
     public UserPostsResponseDto findPosts(@RequestParam(defaultValue = "0") Integer pageNum) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-        return this.userService.findPosts(currentUserId, pageNum);
+        String loginUserId = ((String) principal);
+        return this.userService.findPosts(loginUserId, pageNum);
     }
 
     @GetMapping(value = "/comments")
     @ResponseStatus(value = HttpStatus.OK)
     public UserCommentsResponseDto findComments(@RequestParam(defaultValue = "0") Integer pageNum) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-        return this.userService.findComments(currentUserId, pageNum);
+        String loginUserId = ((String) principal);
+        return this.userService.findComments(loginUserId, pageNum);
     }
 
     @GetMapping(value = "/name/{name}")
     @ResponseStatus(value = HttpStatus.OK)
     public List<UserResponseDto> findByName(@PathVariable String name) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-        return this.userService.findByName(currentUserId, name);
+        String loginUserId = ((String) principal);
+        return this.userService.findByName(loginUserId, name);
     }
 
     @GetMapping(value = "/privileged")
     @ResponseStatus(value = HttpStatus.OK)
     public UserPrivilegedResponseDto findPrivilegedUsers() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-        return this.userService.findPrivilegedUsers(currentUserId);
+        String loginUserId = ((String) principal);
+        return this.userService.findPrivilegedUsers(loginUserId);
     }
 
     @GetMapping(value = "/state/{state}")
     @ResponseStatus(value = HttpStatus.OK)
     public Page<UserResponseDto> findByState(@PathVariable String state,@RequestParam(defaultValue = "0") Integer pageNum) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-        return this.userService.findByState(currentUserId, state, pageNum);
+        String loginUserId = ((String) principal);
+        return this.userService.findByState(loginUserId, state, pageNum);
     }
 
     /**
@@ -211,8 +211,8 @@ public class UserController {
     })
     public UserResponseDto update(@RequestBody UserUpdateRequestDto userUpdateDto) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-        return this.userService.update(currentUserId, userUpdateDto);
+        String loginUserId = ((String) principal);
+        return this.userService.update(loginUserId, userUpdateDto);
     }
 
     /**
@@ -243,8 +243,8 @@ public class UserController {
     })
     public UserResponseDto updateRole(@PathVariable String granteeId, @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-        return this.userService.updateUserRole(currentUserId, granteeId, userUpdateRoleRequestDto);
+        String loginUserId = ((String) principal);
+        return this.userService.updateUserRole(loginUserId, granteeId, userUpdateRoleRequestDto);
     }
 
     /**
@@ -265,8 +265,8 @@ public class UserController {
     @ResponseStatus(value = HttpStatus.OK)
     public UserResponseDto updatePassword(@RequestBody UserUpdatePasswordRequestDto userUpdatePasswordRequestDto) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-        return this.userService.updatePassword(currentUserId, userUpdatePasswordRequestDto);
+        String loginUserId = ((String) principal);
+        return this.userService.updatePassword(loginUserId, userUpdatePasswordRequestDto);
     }
 
     /**
@@ -290,40 +290,40 @@ public class UserController {
     })
     public UserResponseDto leave() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-        return this.userService.leave(currentUserId);
+        String loginUserId = ((String) principal);
+        return this.userService.leave(loginUserId);
     }
 
     @PutMapping(value = "{id}/drop")
     @ResponseStatus(value = HttpStatus.OK)
     public UserResponseDto drop(@PathVariable String id) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-        return this.userService.dropUser(currentUserId, id);
+        String loginUserId = ((String) principal);
+        return this.userService.dropUser(loginUserId, id);
     }
 
     @GetMapping(value = "/circles")
     @ResponseStatus(value = HttpStatus.OK)
     public List<CircleResponseDto> getCircleList() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-        return this.userService.getCircleList(currentUserId);
+        String loginUserId = ((String) principal);
+        return this.userService.getCircleList(loginUserId);
     }
 
     @GetMapping(value = "/admissions/{id}")
     @ResponseStatus(value = HttpStatus.OK)
     public UserAdmissionResponseDto findAdmissionById(@PathVariable String id) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-        return this.userService.findAdmissionById(currentUserId, id);
+        String loginUserId = ((String) principal);
+        return this.userService.findAdmissionById(loginUserId, id);
     }
 
     @GetMapping(value = "/admissions")
     @ResponseStatus(value = HttpStatus.OK)
     public Page<UserAdmissionsResponseDto> findAllAdmissions(@RequestParam(defaultValue = "0") Integer pageNum) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-        return this.userService.findAllAdmissions(currentUserId,pageNum);
+        String loginUserId = ((String) principal);
+        return this.userService.findAllAdmissions(loginUserId,pageNum);
     }
 
     @PostMapping(value = "/admissions/apply")
@@ -357,8 +357,8 @@ public class UserController {
     })
     public UserAdmissionResponseDto acceptAdmission(@PathVariable String id) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-        return this.userService.accept(currentUserId, id);
+        String loginUserId = ((String) principal);
+        return this.userService.accept(loginUserId, id);
     }
 
     /**
@@ -382,23 +382,23 @@ public class UserController {
     })
     public UserAdmissionResponseDto rejectAdmission(@PathVariable String id) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-        return this.userService.reject(currentUserId, id);
+        String loginUserId = ((String) principal);
+        return this.userService.reject(loginUserId, id);
     }
 
     @PostMapping(value = "/favorite-boards/{boardId}")
     @ResponseStatus(value = HttpStatus.CREATED)
     public BoardResponseDto createFavoriteBoard(@PathVariable String boardId) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-        return this.userService.createFavoriteBoard(currentUserId, boardId);
+        String loginUserId = ((String) principal);
+        return this.userService.createFavoriteBoard(loginUserId, boardId);
     }
 
     @PutMapping(value = "/restore/{id}")
     @ResponseStatus(value = HttpStatus.OK)
     public UserResponseDto restore(@PathVariable String id) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-        return this.userService.restore(currentUserId, id);
+        String loginUserId = ((String) principal);
+        return this.userService.restore(loginUserId, id);
     }
 }

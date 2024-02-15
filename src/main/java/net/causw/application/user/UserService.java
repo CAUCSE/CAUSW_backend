@@ -158,34 +158,47 @@ public class UserService {
 
     // Find process of another user
     @Transactional(readOnly = true)
-    public UserResponseDto findByUserId(String targetUserId, String requestUserId) {
-        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+    public UserResponseDto findByUserId(String targetUserId, String loginUserId) {
+        UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
+
         ValidatorBucket.of()
                 .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
                 .consistOf(UserStateValidator.of(requestUser.getState()))
-                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT, Role.LEADER_CIRCLE)))
+                .consistOf(UserRoleValidator.of(requestUser.getRole(),
+                        List.of(Role.PRESIDENT,
+                                Role.LEADER_CIRCLE,
+                                Role.PRESIDENT_N_LEADER_CIRCLE,
+                                Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
+                                Role.COUNCIL_N_LEADER_CIRCLE,
+                                Role.LEADER_1_N_LEADER_CIRCLE,
+                                Role.LEADER_2_N_LEADER_CIRCLE,
+                                Role.LEADER_3_N_LEADER_CIRCLE,
+                                Role.LEADER_4_N_LEADER_CIRCLE
+                        )))
                 .validate();
 
-        if (requestUser.getRole().equals(Role.LEADER_CIRCLE)) {
-            CircleDomainModel ownCircle = this.circlePort.findByLeaderId(requestUserId).orElseThrow(
-                    () -> new InternalServerException(
-                            ErrorCode.INTERNAL_SERVER,
-                            "소모임장이 아닙니다."
-                    )
-            );
-
-            this.circleMemberPort.findByUserIdAndCircleId(targetUserId, ownCircle.getId()).orElseThrow(
-                    () -> new BadRequestException(
-                            ErrorCode.NOT_MEMBER,
-                            "해당 유저는 소모임 회원이 아닙니다."
-                    )
-            );
+        if (requestUser.getRole().getValue().contains("LEADER_CIRCLE")) {
+            List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(loginUserId);
+            if (ownCircles.isEmpty()) {
+                throw new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "해당 동아리장이 배정된 동아리가 없습니다."
+                );
+            }
+            boolean isMemberOfAnyCircle = ownCircles.stream()
+                    .anyMatch(circleDomainModel ->
+                            this.circleMemberPort.findByUserIdAndCircleId(targetUserId, circleDomainModel.getId())
+                                    .map(circleMemberDomainModel -> circleMemberDomainModel.getStatus() == CircleMemberStatus.MEMBER)
+                                    .orElse(false));
+            if (!isMemberOfAnyCircle) {
+                throw new BadRequestException(ErrorCode.NOT_MEMBER, "해당 유저는 동아리 회원이 아닙니다.");
+            }
         }
 
         return this.userPort.findById(targetUserId)
@@ -197,8 +210,8 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserResponseDto findByUserId(String id) {
-        UserDomainModel requestUser = this.userPort.findById(id).orElseThrow(
+    public UserResponseDto findByUserId(String loginUserId) {
+        UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -210,18 +223,20 @@ public class UserService {
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .validate();
 
-        if (requestUser.getRole().equals(Role.LEADER_CIRCLE)) {
-            CircleDomainModel ownCircle = this.circlePort.findByLeaderId(id).orElseThrow(
-                    () -> new InternalServerException(
-                            ErrorCode.INTERNAL_SERVER,
-                            "소모임장이 아닙니다"
-                    )
-            );
+        if (requestUser.getRole().getValue().contains("LEADER_CIRCLE")) {
+            List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(loginUserId);
+            if (ownCircles.isEmpty()) {
+                throw new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "해당 동아리장이 배정된 동아리가 없습니다."
+                );
+            }
 
             return UserResponseDto.from(
                     requestUser,
-                    ownCircle.getId(),
-                    ownCircle.getName()
+                    ownCircles.stream().map(CircleDomainModel::getId).collect(Collectors.toList()),
+                    ownCircles.stream().map(CircleDomainModel::getName).collect(Collectors.toList())
+
             );
         }
 
@@ -229,8 +244,8 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserPostsResponseDto findPosts(String requestUserId, Integer pageNum) {
-        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+    public UserPostsResponseDto findPosts(String loginUserId, Integer pageNum) {
+        UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -244,7 +259,7 @@ public class UserService {
 
         return UserPostsResponseDto.from(
                 requestUser,
-                this.postPort.findPostByUserId(requestUserId, pageNum).map(postDomainModel -> UserPostResponseDto.from(
+                this.postPort.findPostByUserId(loginUserId, pageNum).map(postDomainModel -> UserPostResponseDto.from(
                         postDomainModel,
                         postDomainModel.getBoard().getId(),
                         postDomainModel.getBoard().getName(),
@@ -256,8 +271,8 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserCommentsResponseDto findComments(String requestUserId, Integer pageNum) {
-        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+    public UserCommentsResponseDto findComments(String loginUserId, Integer pageNum) {
+        UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -271,7 +286,7 @@ public class UserService {
 
         return UserCommentsResponseDto.from(
                 requestUser,
-                this.commentPort.findByUserId(requestUserId, pageNum).map(comment -> {
+                this.commentPort.findByUserId(loginUserId, pageNum).map(comment -> {
                     PostDomainModel post = this.postPort.findPostById(comment.getPostId()).orElseThrow(
                             () -> new BadRequestException(
                                     ErrorCode.ROW_DOES_NOT_EXIST,
@@ -293,8 +308,8 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserResponseDto> findByName(String currentUserId, String name) {
-        UserDomainModel user = this.userPort.findById(currentUserId).orElseThrow(
+    public List<UserResponseDto> findByName(String loginUserId, String name) {
+        UserDomainModel user = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -304,29 +319,41 @@ public class UserService {
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
-                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT, Role.LEADER_CIRCLE)))
+                .consistOf(UserRoleValidator.of(user.getRole(),
+                        List.of(Role.PRESIDENT,
+                                Role.LEADER_CIRCLE,
+                                Role.PRESIDENT_N_LEADER_CIRCLE,
+                                Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
+                                Role.COUNCIL_N_LEADER_CIRCLE,
+                                Role.LEADER_1_N_LEADER_CIRCLE,
+                                Role.LEADER_2_N_LEADER_CIRCLE,
+                                Role.LEADER_3_N_LEADER_CIRCLE,
+                                Role.LEADER_4_N_LEADER_CIRCLE)))
                 .validate();
 
-        if (user.getRole().equals(Role.LEADER_CIRCLE)) {
-            CircleDomainModel ownCircle = this.circlePort.findByLeaderId(currentUserId).orElseThrow(
-                    () -> new InternalServerException(
-                            ErrorCode.INTERNAL_SERVER,
-                            "소모임장이 아닙니다"
-                    )
-            );
+        if (user.getRole().getValue().contains("LEADER_CIRCLE")) {
+            List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(loginUserId);
+            if (ownCircles.isEmpty()) {
+                throw new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "해당 동아리장이 배정된 동아리가 없습니다."
+                );
+            }
 
             return this.userPort.findByName(name)
                     .stream()
                     .filter(userDomainModel -> userDomainModel.getState().equals(UserState.ACTIVE))
                     .filter(userDomainModel ->
-                            this.circleMemberPort.findByUserIdAndCircleId(userDomainModel.getId(), ownCircle.getId())
-                                    .map(circleMemberDomainModel ->
-                                            circleMemberDomainModel.getStatus() == CircleMemberStatus.MEMBER)
-                                    .orElse(Boolean.FALSE))
+                            ownCircles.stream()
+                                    .anyMatch(circleDomainModel ->
+                                            this.circleMemberPort.findByUserIdAndCircleId(userDomainModel.getId(), circleDomainModel.getId())
+                                                    .map(circleMemberDomainModel ->
+                                                            circleMemberDomainModel.getStatus() == CircleMemberStatus.MEMBER)
+                                    .orElse(false)))
                     .map(userDomainModel -> UserResponseDto.from(
                             userDomainModel,
-                            ownCircle.getId(),
-                            ownCircle.getName()))
+                            ownCircles.stream().map(CircleDomainModel::getId).collect(Collectors.toList()),
+                            ownCircles.stream().map(CircleDomainModel::getName).collect(Collectors.toList())))
                     .collect(Collectors.toList());
         }
 
@@ -338,8 +365,8 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserPrivilegedResponseDto findPrivilegedUsers(String currentUserId) {
-        UserDomainModel user = this.userPort.findById(currentUserId).orElseThrow(
+    public UserPrivilegedResponseDto findPrivilegedUsers(String loginUserId) {
+        UserDomainModel user = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -376,17 +403,18 @@ public class UserService {
                 this.userPort.findByRole(Role.LEADER_CIRCLE)
                         .stream()
                         .map(userDomainModel -> {
-                            CircleDomainModel ownCircle = this.circlePort.findByLeaderId(userDomainModel.getId()).orElseThrow(
-                                    () -> new InternalServerException(
-                                            ErrorCode.INTERNAL_SERVER,
-                                            "소모임장이 아닙니다"
-                                    )
-                            );
+                            List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(loginUserId);
+                            if (ownCircles.isEmpty()) {
+                                throw new InternalServerException(
+                                        ErrorCode.INTERNAL_SERVER,
+                                        "해당 동아리장이 배정된 동아리가 없습니다."
+                                );
+                            }
 
                             return UserResponseDto.from(
                                     userDomainModel,
-                                    ownCircle.getId(),
-                                    ownCircle.getName()
+                                    ownCircles.stream().map(CircleDomainModel::getId).collect(Collectors.toList()),
+                                    ownCircles.stream().map(CircleDomainModel::getName).collect(Collectors.toList())
                             );
                         })
                         .collect(Collectors.toList()),
@@ -403,11 +431,11 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public Page<UserResponseDto> findByState(
-            String currentUserId,
+            String loginUserId,
             String state,
             Integer pageNum
     ) {
-        UserDomainModel user = this.userPort.findById(currentUserId).orElseThrow(
+        UserDomainModel user = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -422,18 +450,19 @@ public class UserService {
 
         return this.userPort.findByState(UserState.of(state), pageNum)
                 .map(userDomainModel -> {
-                    if (userDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
-                        CircleDomainModel ownCircle = this.circlePort.findByLeaderId(userDomainModel.getId()).orElseThrow(
-                                () -> new InternalServerException(
-                                        ErrorCode.INTERNAL_SERVER,
-                                        "소모임장이 아닙니다"
-                                )
-                        );
+                    if (userDomainModel.getRole().getValue().contains("LEADER_CIRCLE")) {
+                        List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(loginUserId);
+                        if (ownCircles.isEmpty()) {
+                            throw new InternalServerException(
+                                    ErrorCode.INTERNAL_SERVER,
+                                    "해당 동아리장이 배정된 동아리가 없습니다."
+                            );
+                        }
 
                         return UserResponseDto.from(
                                 userDomainModel,
-                                ownCircle.getId(),
-                                ownCircle.getName()
+                                ownCircles.stream().map(CircleDomainModel::getId).collect(Collectors.toList()),
+                                ownCircles.stream().map(CircleDomainModel::getName).collect(Collectors.toList())
                         );
                     } else {
                         return UserResponseDto.from(userDomainModel);
@@ -442,8 +471,8 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<CircleResponseDto> getCircleList(String currentUserId) {
-        UserDomainModel user = this.userPort.findById(currentUserId).orElseThrow(
+    public List<CircleResponseDto> getCircleList(String loginUserId) {
+        UserDomainModel user = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -566,14 +595,14 @@ public class UserService {
 
     /**
      * 사용자 정보 업데이트 메소드
-     * @param id
+     * @param loginUserId
      * @param userUpdateRequestDto
      * @return UserResponseDto
      */
     @Transactional
-    public UserResponseDto update(String id, UserUpdateRequestDto userUpdateRequestDto) {
+    public UserResponseDto update(String loginUserId, UserUpdateRequestDto userUpdateRequestDto) {
         // First, load the user data from input user id
-        UserDomainModel userDomainModel = this.userPort.findById(id).orElseThrow(
+        UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -611,7 +640,7 @@ public class UserService {
                 .consistOf(AdmissionYearValidator.of(userUpdateRequestDto.getAdmissionYear()))
                 .validate();
 
-        return UserResponseDto.from(this.userPort.update(id, userDomainModel).orElseThrow(
+        return UserResponseDto.from(this.userPort.update(loginUserId, userDomainModel).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         "User id checked, but exception occurred"
@@ -621,19 +650,19 @@ public class UserService {
 
     /**
      * 사용자 권한 업데이트 메소드
-     * @param grantorId
+     * @param loginUserId
      * @param granteeId
      * @param userUpdateRoleRequestDto
      * @return UserResponseDto
      */
     @Transactional
     public UserResponseDto updateUserRole(
-            String grantorId,
+            String loginUserId,
             String granteeId,
             UserUpdateRoleRequestDto userUpdateRoleRequestDto
     ) {
         // Load the user data from input grantor and grantee ids.
-        UserDomainModel grantor = this.userPort.findById(grantorId).orElseThrow(
+        UserDomainModel grantor = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -666,16 +695,24 @@ public class UserService {
          * 3) Then, the DelegationFactory match the instance for the delegation considering the role -> Then processed
          */
         if (grantor.getRole() == userUpdateRoleRequestDto.getRole()) {
+            String circleId = "";
+            if(grantor.getRole().getValue().contains("LEADER_CIRCLE")){
+                circleId = userUpdateRoleRequestDto.getCircleId()
+                        .orElseThrow(() -> new BadRequestException(
+                                ErrorCode.INVALID_PARAMETER,
+                                "소모임장을 위임할 소모임 입력이 필요합니다."
+                        ));
+            }
             DelegationFactory
-                    .create(grantor.getRole(), this.userPort, this.circlePort, this.circleMemberPort)
-                    .delegate(grantorId, granteeId);
+                    .create(grantor.getRole(), this.userPort, this.circlePort, this.circleMemberPort, circleId)
+                    .delegate(loginUserId, granteeId);
         }
         /* Delegate the Circle Leader
          * 1) Check if the grantor's role is Admin or President
          * 2) Check if the role to update is Circle Leader
          */
-        else if ((grantor.getRole() == Role.PRESIDENT || grantor.getRole() == Role.ADMIN)
-                && userUpdateRoleRequestDto.getRole() == Role.LEADER_CIRCLE
+        else if ((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
+                && userUpdateRoleRequestDto.getRole().getValue().contains("LEADER_CIRCLE")
         ) {
             String circleId = userUpdateRoleRequestDto.getCircleId()
                     .orElseThrow(() -> new BadRequestException(
@@ -713,8 +750,8 @@ public class UserService {
          * 1) Check if the grantor's role is Admin or President
          * 2) Check if the role to update is Leader Alumni
          */
-        else if ((grantor.getRole() == Role.PRESIDENT || grantor.getRole() == Role.ADMIN)
-                && userUpdateRoleRequestDto.getRole() == Role.LEADER_ALUMNI
+        else if ((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
+                && userUpdateRoleRequestDto.getRole().equals(Role.LEADER_ALUMNI)
         ) {
             UserDomainModel previousLeaderAlumni = this.userPort.findByRole(Role.LEADER_ALUMNI)
                     .stream().findFirst()
@@ -746,10 +783,10 @@ public class UserService {
 
     @Transactional
     public UserResponseDto updatePassword(
-            String id,
+            String loginUserId,
             UserUpdatePasswordRequestDto userUpdatePasswordRequestDto
     ) {
-        UserDomainModel user = this.userPort.findById(id).orElseThrow(
+        UserDomainModel user = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -768,7 +805,7 @@ public class UserService {
                 .validate();
 
         return UserResponseDto.from(this.userPort.updatePassword(
-                        id,
+                        loginUserId,
                         this.passwordEncoder.encode(userUpdatePasswordRequestDto.getUpdatedPassword())
                 )
                 .orElseThrow(
@@ -780,8 +817,8 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponseDto leave(String id) {
-        UserDomainModel user = this.userPort.findById(id).orElseThrow(
+    public UserResponseDto leave(String loginUserId) {
+        UserDomainModel user = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -794,7 +831,7 @@ public class UserService {
                 .consistOf(UserRoleWithoutAdminValidator.of(user.getRole(), List.of(Role.COMMON, Role.PROFESSOR)))
                 .validate();
 
-        this.lockerPort.findByUserId(id)
+        this.lockerPort.findByUserId(loginUserId)
                 .ifPresent(lockerDomainModel -> {
                     lockerDomainModel.returnLocker();
                     this.lockerPort.update(lockerDomainModel.getId(), lockerDomainModel);
@@ -809,7 +846,7 @@ public class UserService {
                 });
 
         // Change user role to NONE
-        this.userPort.updateRole(id, Role.NONE).orElseThrow(
+        this.userPort.updateRole(loginUserId, Role.NONE).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         "User id checked, but exception occurred"
@@ -817,12 +854,12 @@ public class UserService {
         );
 
         // Leave from circle where user joined
-        this.circleMemberPort.findByUserId(id).forEach(
+        this.circleMemberPort.findByUserId(loginUserId).forEach(
                 circleMemberDomainModel ->
                         this.circleMemberPort.updateStatus(circleMemberDomainModel.getId(), CircleMemberStatus.LEAVE)
         );
 
-        return UserResponseDto.from(this.userPort.updateState(id, UserState.INACTIVE).orElseThrow(
+        return UserResponseDto.from(this.userPort.updateState(loginUserId, UserState.INACTIVE).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         "User id checked, but exception occurred"
@@ -831,8 +868,8 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponseDto dropUser(String requestUserId, String userId) {
-        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+    public UserResponseDto dropUser(String loginUserId, String userId) {
+        UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -883,8 +920,8 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserAdmissionResponseDto findAdmissionById(String requestUserId, String admissionId) {
-        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+    public UserAdmissionResponseDto findAdmissionById(String loginUserId, String admissionId) {
+        UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -907,10 +944,10 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public Page<UserAdmissionsResponseDto> findAllAdmissions(
-            String requestUserId,
+            String loginUserId,
             Integer pageNum
     ) {
-        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+        UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -969,10 +1006,10 @@ public class UserService {
 
     @Transactional
     public UserAdmissionResponseDto accept(
-            String requestUserId,
+            String loginUserId,
             String admissionId
     ) {
-        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+        UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -1027,10 +1064,10 @@ public class UserService {
 
     @Transactional
     public UserAdmissionResponseDto reject(
-            String requestUserId,
+            String loginUserId,
             String admissionId
     ) {
-        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+        UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -1074,10 +1111,10 @@ public class UserService {
 
     @Transactional
     public BoardResponseDto createFavoriteBoard(
-            String userId,
+            String loginUserId,
             String boardId
     ) {
-        UserDomainModel user = this.userPort.findById(userId).orElseThrow(
+        UserDomainModel user = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -1111,10 +1148,10 @@ public class UserService {
 
     @Transactional
     public UserResponseDto restore(
-            String requestUserId,
+            String loginUserId,
             String userId
     ) {
-        UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
+        UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."

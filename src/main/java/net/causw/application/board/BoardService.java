@@ -64,19 +64,21 @@ public class BoardService {
                 .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
                 .validate();
 
-        String circleId = null;
         if (userDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
-            Optional<CircleDomainModel> circleOptional = this.circlePort.findByLeaderId(loginUserId);
-
-            if (circleOptional.isPresent()) {
-                circleId = circleOptional.get().getId();
+            List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(loginUserId);
+            if (ownCircles.isEmpty()) {
+                throw new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "해당 동아리장이 배정된 동아리가 없습니다."
+                );
+            }else{
+                List<String> circleIdList = ownCircles.stream().map(CircleDomainModel::getId).collect(Collectors.toList());
+                return this.boardPort.findAllBoard(circleIdList)
+                        .stream()
+                        .map(boardDomainModel -> BoardResponseDto.from(boardDomainModel, userDomainModel.getRole()))
+                        .collect(Collectors.toList());
             }
-            return this.boardPort.findAllBoard(circleId)
-                    .stream()
-                    .map(boardDomainModel -> BoardResponseDto.from(boardDomainModel, userDomainModel.getRole()))
-                    .collect(Collectors.toList());
         }
-
         else if(userDomainModel.getRole().equals(Role.ADMIN) || userDomainModel.getRole().equals(Role.PRESIDENT) ){
             return this.boardPort.findAllBoard()
                     .stream()

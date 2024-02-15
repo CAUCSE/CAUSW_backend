@@ -9,7 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface CircleRepository extends JpaRepository<Circle, String> {
-    Optional<Circle> findByLeader_Id(String leader_id);
+    List<Circle> findByLeader_Id(String leader_id);
 
     Optional<Circle> findByName(String name);
 

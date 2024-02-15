@@ -12,13 +12,14 @@ public class DelegationFactory {
             Role role,
             UserPort userPort,
             CirclePort circlePort,
-            CircleMemberPort circleMemberPort
+            CircleMemberPort circleMemberPort,
+            String circleId
     ) {
         switch (role) {
             case PRESIDENT:
                 return new DelegationPresident(userPort);
             case LEADER_CIRCLE:
-                return new DelegationLeaderCircle(userPort, circlePort, circleMemberPort);
+                return new DelegationLeaderCircle(userPort, circlePort, circleMemberPort, circleId);
             case LEADER_ALUMNI:
                 return new DelegationLeaderAlumni(userPort);
             default:

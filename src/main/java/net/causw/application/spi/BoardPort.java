@@ -8,7 +8,7 @@ import java.util.Optional;
 public interface BoardPort {
     Optional<BoardDomainModel> findById(String id);
 
-    List<BoardDomainModel> findAllBoard(String circleId);
+    List<BoardDomainModel> findAllBoard(List<String> circleIdList);
     List<BoardDomainModel> findAllBoard();
     List<BoardDomainModel> findAllBoard(boolean isDeleted);
 
