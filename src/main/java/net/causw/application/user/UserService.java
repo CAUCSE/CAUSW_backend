@@ -171,9 +171,7 @@ public class UserService {
                 .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .consistOf(UserRoleValidator.of(requestUser.getRole(),
-                        List.of(Role.PRESIDENT,
-                                Role.LEADER_CIRCLE,
-                                Role.PRESIDENT_N_LEADER_CIRCLE,
+                        List.of(Role.LEADER_CIRCLE,
                                 Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
                                 Role.COUNCIL_N_LEADER_CIRCLE,
                                 Role.LEADER_1_N_LEADER_CIRCLE,
@@ -320,15 +318,14 @@ public class UserService {
                 .consistOf(UserStateValidator.of(user.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
                 .consistOf(UserRoleValidator.of(user.getRole(),
-                        List.of(Role.PRESIDENT,
-                                Role.LEADER_CIRCLE,
-                                Role.PRESIDENT_N_LEADER_CIRCLE,
+                        List.of(Role.LEADER_CIRCLE,
                                 Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
                                 Role.COUNCIL_N_LEADER_CIRCLE,
                                 Role.LEADER_1_N_LEADER_CIRCLE,
                                 Role.LEADER_2_N_LEADER_CIRCLE,
                                 Role.LEADER_3_N_LEADER_CIRCLE,
-                                Role.LEADER_4_N_LEADER_CIRCLE)))
+                                Role.LEADER_4_N_LEADER_CIRCLE
+                        )))
                 .validate();
 
         if (user.getRole().getValue().contains("LEADER_CIRCLE")) {
@@ -376,31 +373,31 @@ public class UserService {
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
-                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
+                .consistOf(UserRoleValidator.of(user.getRole(), List.of()))
                 .validate();
 
         return UserPrivilegedResponseDto.from(
-                this.userPort.findByRole(Role.COUNCIL)
+                this.userPort.findByRole("COUNCIL")
                         .stream()
                         .map(UserResponseDto::from)
                         .collect(Collectors.toList()),
-                this.userPort.findByRole(Role.LEADER_1)
+                this.userPort.findByRole("LEADER_1")
                         .stream()
                         .map(UserResponseDto::from)
                         .collect(Collectors.toList()),
-                this.userPort.findByRole(Role.LEADER_2)
+                this.userPort.findByRole("LEADER_2")
                         .stream()
                         .map(UserResponseDto::from)
                         .collect(Collectors.toList()),
-                this.userPort.findByRole(Role.LEADER_3)
+                this.userPort.findByRole("LEADER_3")
                         .stream()
                         .map(UserResponseDto::from)
                         .collect(Collectors.toList()),
-                this.userPort.findByRole(Role.LEADER_4)
+                this.userPort.findByRole("LEADER_4")
                         .stream()
                         .map(UserResponseDto::from)
                         .collect(Collectors.toList()),
-                this.userPort.findByRole(Role.LEADER_CIRCLE)
+                this.userPort.findByRole("LEADER_CIRCLE")
                         .stream()
                         .map(userDomainModel -> {
                             List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(loginUserId);
@@ -410,7 +407,6 @@ public class UserService {
                                         "해당 동아리장이 배정된 동아리가 없습니다."
                                 );
                             }
-
                             return UserResponseDto.from(
                                     userDomainModel,
                                     ownCircles.stream().map(CircleDomainModel::getId).collect(Collectors.toList()),
@@ -418,11 +414,11 @@ public class UserService {
                             );
                         })
                         .collect(Collectors.toList()),
-                this.userPort.findByRole(Role.LEADER_ALUMNI)
+                this.userPort.findByRole("LEADER_ALUMNI")
                         .stream()
                         .map(UserResponseDto::from)
                         .collect(Collectors.toList()),
-                this.userPort.findByRole(Role.VICE_PRESIDENT)
+                this.userPort.findByRole("VICE_PRESIDENT")
                         .stream()
                         .map(UserResponseDto::from)
                         .collect(Collectors.toList())
@@ -445,7 +441,7 @@ public class UserService {
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
-                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
+                .consistOf(UserRoleValidator.of(user.getRole(), List.of()))
                 .validate();
 
         return this.userPort.findByState(UserState.of(state), pageNum)
@@ -753,7 +749,7 @@ public class UserService {
         else if ((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
                 && userUpdateRoleRequestDto.getRole().equals(Role.LEADER_ALUMNI)
         ) {
-            UserDomainModel previousLeaderAlumni = this.userPort.findByRole(Role.LEADER_ALUMNI)
+            UserDomainModel previousLeaderAlumni = this.userPort.findByRole("LEADER_ALUMNI")
                     .stream().findFirst()
                     .orElseThrow(
                             () -> new InternalServerException(
@@ -886,7 +882,7 @@ public class UserService {
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
-                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT)))
+                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of()))
                 .consistOf(UserRoleWithoutAdminValidator.of(droppedUser.getRole(), List.of(Role.COMMON, Role.PROFESSOR)))
                 .validate();
 
@@ -931,7 +927,7 @@ public class UserService {
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
-                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT)))
+                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of()))
                 .validate();
 
         return UserAdmissionResponseDto.from(this.userAdmissionPort.findById(admissionId).orElseThrow(
@@ -957,7 +953,7 @@ public class UserService {
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
-                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT)))
+                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of()))
                 .validate();
 
         return this.userAdmissionPort.findAll(UserState.AWAIT, pageNum)
@@ -1026,7 +1022,7 @@ public class UserService {
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
-                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT)))
+                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of()))
                 .validate();
 
         // Update user role to COMMON
@@ -1084,7 +1080,7 @@ public class UserService {
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
-                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT)))
+                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of()))
                 .validate();
 
         this.userAdmissionLogPort.create(
@@ -1166,7 +1162,7 @@ public class UserService {
         );
 
         ValidatorBucket.of()
-                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT)))
+                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of()))
                 .consistOf(UserStateIsDropValidator.of(restoredUser.getState()))
                 .validate();
 

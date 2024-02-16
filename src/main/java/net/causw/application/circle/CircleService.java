@@ -236,7 +236,15 @@ public class CircleService {
                 .consistOf(UserStateValidator.of(user.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.LEADER_CIRCLE, Role.PRESIDENT)))
+                .consistOf(UserRoleValidator.of(user.getRole(),
+                        List.of(Role.LEADER_CIRCLE,
+                                Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
+                                Role.COUNCIL_N_LEADER_CIRCLE,
+                                Role.LEADER_1_N_LEADER_CIRCLE,
+                                Role.LEADER_2_N_LEADER_CIRCLE,
+                                Role.LEADER_3_N_LEADER_CIRCLE,
+                                Role.LEADER_4_N_LEADER_CIRCLE
+                        )))
                 .validate();
 
         return this.circleMemberPort.findByCircleId(circleId, status)
@@ -295,7 +303,7 @@ public class CircleService {
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
                 .consistOf(ConstraintValidator.of(circleDomainModel, this.validator))
-                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.PRESIDENT)))
+                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of()))
                 .consistOf(GrantableRoleValidator.of(requestUser.getRole(), Role.LEADER_CIRCLE, leader.getRole()))
                 .validate();
 
@@ -314,7 +322,9 @@ public class CircleService {
         BoardDomainModel noticeBoard = BoardDomainModel.of(
                 "공지 게시판",
                 newCircle.getName() + " 공지 게시판",
-                Stream.of(Role.ADMIN, Role.PRESIDENT, Role.LEADER_CIRCLE)
+                Stream.of(Role.ADMIN, Role.PRESIDENT, Role.LEADER_CIRCLE, Role.LEADER_1_N_LEADER_CIRCLE, Role.LEADER_2_N_LEADER_CIRCLE,
+                                Role.LEADER_3_N_LEADER_CIRCLE, Role.LEADER_4_N_LEADER_CIRCLE, Role.PRESIDENT_N_LEADER_CIRCLE,
+                                Role.COUNCIL_N_LEADER_CIRCLE, Role.VICE_PRESIDENT_N_LEADER_CIRCLE)
                         .map(Role::getValue)
                         .collect(Collectors.toList()),
                 "공지 게시판",
@@ -381,10 +391,17 @@ public class CircleService {
                 .consistOf(ConstraintValidator.of(circle, this.validator))
                 .consistOf(UserRoleValidator.of(
                         user.getRole(),
-                        List.of(Role.PRESIDENT, Role.LEADER_CIRCLE)
+                        List.of(Role.LEADER_CIRCLE,
+                                Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
+                                Role.COUNCIL_N_LEADER_CIRCLE,
+                                Role.LEADER_1_N_LEADER_CIRCLE,
+                                Role.LEADER_2_N_LEADER_CIRCLE,
+                                Role.LEADER_3_N_LEADER_CIRCLE,
+                                Role.LEADER_4_N_LEADER_CIRCLE
+                        )
                 ));
 
-        if (user.getRole().equals(Role.LEADER_CIRCLE)) {
+        if (user.getRole().getValue().contains("LEADER_CIRCLE")) {
             validatorBucket
                     .consistOf(UserEqualValidator.of(
                             circle.getLeader().map(UserDomainModel::getId).orElseThrow(
@@ -435,10 +452,17 @@ public class CircleService {
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                 .consistOf(UserRoleValidator.of(
                         user.getRole(),
-                        List.of(Role.PRESIDENT, Role.LEADER_CIRCLE)
+                        List.of(Role.LEADER_CIRCLE,
+                                Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
+                                Role.COUNCIL_N_LEADER_CIRCLE,
+                                Role.LEADER_1_N_LEADER_CIRCLE,
+                                Role.LEADER_2_N_LEADER_CIRCLE,
+                                Role.LEADER_3_N_LEADER_CIRCLE,
+                                Role.LEADER_4_N_LEADER_CIRCLE
+                        )
                 ));
 
-        if (user.getRole().equals(Role.LEADER_CIRCLE)) {
+        if (user.getRole().getValue().contains("LEADER_CIRCLE")) {
             validatorBucket
                     .consistOf(UserEqualValidator.of(
                             circle.getLeader().map(UserDomainModel::getId).orElseThrow(
@@ -616,9 +640,17 @@ public class CircleService {
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.LEADER_CIRCLE)));
+                .consistOf(UserRoleValidator.of(requestUser.getRole(),
+                        List.of(Role.LEADER_CIRCLE,
+                                Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
+                                Role.COUNCIL_N_LEADER_CIRCLE,
+                                Role.LEADER_1_N_LEADER_CIRCLE,
+                                Role.LEADER_2_N_LEADER_CIRCLE,
+                                Role.LEADER_3_N_LEADER_CIRCLE,
+                                Role.LEADER_4_N_LEADER_CIRCLE
+                        )));
 
-        if (requestUser.getRole().equals(Role.LEADER_CIRCLE)) {
+        if (requestUser.getRole().getValue().contains("LEADER_CIRCLE")) {
             validatorBucket
                     .consistOf(UserEqualValidator.of(
                             circle.getLeader().map(UserDomainModel::getId).orElseThrow(
@@ -704,9 +736,17 @@ public class CircleService {
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(circleMember.getCircle().getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of(Role.LEADER_CIRCLE)));
+                .consistOf(UserRoleValidator.of(requestUser.getRole(),
+                        List.of(Role.LEADER_CIRCLE,
+                                Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
+                                Role.COUNCIL_N_LEADER_CIRCLE,
+                                Role.LEADER_1_N_LEADER_CIRCLE,
+                                Role.LEADER_2_N_LEADER_CIRCLE,
+                                Role.LEADER_3_N_LEADER_CIRCLE,
+                                Role.LEADER_4_N_LEADER_CIRCLE
+                        )));
 
-        if (requestUser.getRole().equals(Role.LEADER_CIRCLE)) {
+        if (requestUser.getRole().getValue().contains("LEADER_CIRCLE")) {
             validatorBucket
                     .consistOf(UserEqualValidator.of(
                             circleMember.getCircle().getLeader().map(UserDomainModel::getId).orElseThrow(
