@@ -9,7 +9,6 @@ if [ "$BRANCH" = "main" ]; then
     # main 브랜치에 대한 동작
     echo "Deploying on main branch"
 
-
     REPOSITORY=/home/ubuntu/app/build/libs
 
     echo "> 현재 구동 중인 애플리케이션 pid 확인"
