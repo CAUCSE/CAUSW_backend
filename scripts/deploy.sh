@@ -2,6 +2,8 @@
 
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
+echo "> branch $BRANCH"
+
 if [ "$BRANCH" = "main" ]; then
 
     # main 브랜치에 대한 동작
