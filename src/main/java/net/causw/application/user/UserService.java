@@ -480,7 +480,7 @@ public class UserService {
                 .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
                 .validate();
 
-        if (user.getRole().equals(Role.ADMIN)) {
+        if (user.getRole().equals(Role.ADMIN) || user.getRole().getValue().contains("PRESIDENT")) {
             return this.circlePort.findAll()
                     .stream()
                     .map(CircleResponseDto::from)
@@ -863,24 +863,24 @@ public class UserService {
         ));
     }
 
-    @Transactional
-    public UserResponseDto dropUser(String loginUserId, String userId) {
-        UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
-                )
-        );
+        @Transactional
+        public UserResponseDto dropUser(String loginUserId, String userId) {
+            UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
+                    () -> new BadRequestException(
+                            ErrorCode.ROW_DOES_NOT_EXIST,
+                            "로그인된 사용자를 찾을 수 없습니다."
+                    )
+            );
 
-        UserDomainModel droppedUser = this.userPort.findById(userId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "내보낼 사용자를 찾을 수 없습니다."
-                )
-        );
+            UserDomainModel droppedUser = this.userPort.findById(userId).orElseThrow(
+                    () -> new BadRequestException(
+                            ErrorCode.ROW_DOES_NOT_EXIST,
+                            "내보낼 사용자를 찾을 수 없습니다."
+                    )
+            );
 
-        ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(requestUser.getState()))
+            ValidatorBucket.of()
+                    .consistOf(UserStateValidator.of(requestUser.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
                 .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of()))
                 .consistOf(UserRoleWithoutAdminValidator.of(droppedUser.getRole(), List.of(Role.COMMON, Role.PROFESSOR)))
