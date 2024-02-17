@@ -121,7 +121,7 @@ public class ChildCommentService {
         );
 
         postDomainModel.getBoard().getCircle()
-                .filter(circleDomainModel -> !creatorDomainModel.getRole().equals(Role.ADMIN))
+                .filter(circleDomainModel -> !creatorDomainModel.getRole().equals(Role.ADMIN) && !creatorDomainModel.getRole().getValue().contains("PRESIDENT"))
                 .ifPresent(
                         circleDomainModel -> {
                             CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
@@ -185,7 +185,7 @@ public class ChildCommentService {
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), StaticValue.DOMAIN_POST));
 
         postDomainModel.getBoard().getCircle()
-                .filter(circleDomainModel -> !userDomainModel.getRole().equals(Role.ADMIN))
+                .filter(circleDomainModel -> !userDomainModel.getRole().equals(Role.ADMIN) && !userDomainModel.getRole().getValue().contains("PRESIDENT"))
                 .ifPresent(
                         circleDomainModel -> {
                             CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
@@ -276,7 +276,7 @@ public class ChildCommentService {
                 ));
 
         postDomainModel.getBoard().getCircle()
-                .filter(circleDomainModel -> !updater.getRole().equals(Role.ADMIN))
+                .filter(circleDomainModel -> !updater.getRole().equals(Role.ADMIN) && !updater.getRole().getValue().contains("PRESIDENT"))
                 .ifPresent(
                         circleDomainModel -> {
                             CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
@@ -344,7 +344,7 @@ public class ChildCommentService {
                 .consistOf(TargetIsDeletedValidator.of(childCommentDomainModel.getIsDeleted(), StaticValue.DOMAIN_CHILD_COMMENT));
 
         postDomainModel.getBoard().getCircle()
-                .filter(circleDomainModel -> !deleterDomainModel.getRole().equals(Role.ADMIN))
+                .filter(circleDomainModel -> !deleterDomainModel.getRole().equals(Role.ADMIN) && !deleterDomainModel.getRole().getValue().contains("PRESIDENT"))
                 .ifPresentOrElse(
                         circleDomainModel -> {
                             CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
@@ -367,10 +367,17 @@ public class ChildCommentService {
                                             deleterDomainModel.getRole(),
                                             deleterId,
                                             childCommentDomainModel.getWriter().getId(),
-                                            List.of(Role.LEADER_CIRCLE)
+                                            List.of(Role.LEADER_CIRCLE,
+                                                    Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
+                                                    Role.COUNCIL_N_LEADER_CIRCLE,
+                                                    Role.LEADER_1_N_LEADER_CIRCLE,
+                                                    Role.LEADER_2_N_LEADER_CIRCLE,
+                                                    Role.LEADER_3_N_LEADER_CIRCLE,
+                                                    Role.LEADER_4_N_LEADER_CIRCLE
+                                            )
                                     ));
 
-                            if (deleterDomainModel.getRole().equals(Role.LEADER_CIRCLE)) {
+                            if (deleterDomainModel.getRole().getValue().contains("LEADER_CIRCLE")) {
                                 validatorBucket
                                         .consistOf(UserEqualValidator.of(
                                                 circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
@@ -388,7 +395,7 @@ public class ChildCommentService {
                                         deleterDomainModel.getRole(),
                                         deleterId,
                                         childCommentDomainModel.getWriter().getId(),
-                                        List.of(Role.PRESIDENT)
+                                        List.of()
                                 ))
 
                 );

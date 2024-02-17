@@ -12,6 +12,7 @@ import net.causw.domain.model.enums.UserState;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -84,9 +85,11 @@ public class UserPortImpl extends DomainModelMapper implements UserPort {
     }
 
     @Override
-    public List<UserDomainModel> findByRole(Role role) {
-        return this.userRepository.findByRole(role)
-                .stream()
+    public List<UserDomainModel> findByRole(String role) {
+
+        return Arrays.stream(Role.values())
+                .filter(enumRole -> enumRole.getValue().contains(role))
+                .flatMap(enumRole -> this.userRepository.findByRole(enumRole).stream())
                 .map(this::entityToDomainModel)
                 .collect(Collectors.toList());
     }

@@ -23,14 +23,14 @@ public class DelegationPresident implements Delegation {
 
     @Override
     public void delegate(String currentId, String targetId) {
-        List<UserDomainModel> councilList = this.userPort.findByRole(Role.COUNCIL);
+        List<UserDomainModel> councilList = this.userPort.findByRole("COUNCIL");
         if (councilList != null) {
             councilList.forEach(
                     user -> this.userPort.updateRole(user.getId(), Role.COMMON)
             );
         }
 
-        List<UserDomainModel> vicePresident = this.userPort.findByRole(Role.VICE_PRESIDENT);
+        List<UserDomainModel> vicePresident = this.userPort.findByRole("VICE_PRESIDENT");
         if (vicePresident != null) {
             vicePresident.forEach(
                     user -> this.userPort.updateRole(user.getId(), Role.COMMON)

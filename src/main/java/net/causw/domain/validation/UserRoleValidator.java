@@ -4,6 +4,7 @@ import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.Role;
 
+import java.util.EnumSet;
 import java.util.List;
 
 public class UserRoleValidator extends AbstractValidator {
@@ -23,7 +24,8 @@ public class UserRoleValidator extends AbstractValidator {
 
     @Override
     public void validate() {
-        if (this.requestUserRole.equals(Role.ADMIN)) {
+
+        if (EnumSet.of(Role.ADMIN, Role.PRESIDENT, Role.PRESIDENT_N_LEADER_CIRCLE).contains(this.requestUserRole)) {
             return;
         }
 
