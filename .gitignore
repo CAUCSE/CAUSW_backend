@@ -47,6 +47,7 @@ out/
 **/resources/email-config.yaml
 **/resources/password-config.yaml
 **/resources/causw-dev-51ab1a030da2.json
+**/resources/application-prod.yml
 
 Dockerfile
 docker-compose.yaml
