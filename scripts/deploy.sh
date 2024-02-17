@@ -9,7 +9,6 @@ if [ "$BRANCH" = "main" ]; then
     # main 브랜치에 대한 동작
     echo "Deploying on main branch"
 
-
     REPOSITORY=/home/ubuntu/app/build/libs
 
     echo "> 현재 구동 중인 애플리케이션 pid 확인"
@@ -39,7 +38,7 @@ if [ "$BRANCH" = "main" ]; then
 
     echo "> $JAR_NAME 실행"
 
-    nohup java -jar -Dspring.config.location=/home/ubuntu/app/src/main/resources/application-prod.yml,/home/ubuntu/app/src/main/resources/email-config.yaml,/home/ubuntu/app/src/main/resources/password-config.yaml -Duser.timezone=Asia/Seoul $JAR_NAME >> $REPOSITORY/nohup.out 2>&1 &
+    nohup java -jar -Dspring.config.location=/home/ubuntu/app/src/main/resources/application.yml,/home/ubuntu/app/src/main/resources/application-prod.yml,/home/ubuntu/app/src/main/resources/email-config.yaml,/home/ubuntu/app/src/main/resources/password-config.yaml -Duser.timezone=Asia/Seoul $JAR_NAME >> $REPOSITORY/nohup.out 2>&1 &
 
     echo "> jar 실행 완료"
 
@@ -78,7 +77,7 @@ elif [ "$BRANCH" = "develop" ]; then
 
     echo "> $JAR_NAME 실행"
 
-    nohup java -jar -Dspring.config.location=/home/ubuntu/app/src/main/resources/application.yml,/home/ubuntu/app/src/main/resources/email-config.yaml,/home/ubuntu/app/src/main/resources/password-config.yaml -Duser.timezone=Asia/Seoul $JAR_NAME >> $REPOSITORY/nohup.out 2>&1 &
+    nohup java -jar -Dspring.config.location=/home/ubuntu/app/src/main/resources/application.yml,/home/ubuntu/app/src/main/resources/application-dev.yml,/home/ubuntu/app/src/main/resources/email-config.yaml,/home/ubuntu/app/src/main/resources/password-config.yaml -Duser.timezone=Asia/Seoul $JAR_NAME >> $REPOSITORY/nohup.out 2>&1 &
 
     echo "> jar 실행 완료"
 
