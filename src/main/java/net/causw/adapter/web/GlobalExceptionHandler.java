@@ -1,8 +1,8 @@
 package net.causw.adapter.web;
 
 import lombok.extern.slf4j.Slf4j;
-import net.causw.application.dto.ConstraintExceptionDto;
-import net.causw.application.dto.ExceptionDto;
+import net.causw.application.dto.exception.ConstraintExceptionDto;
+import net.causw.application.dto.exception.ExceptionDto;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;

@@ -2,7 +2,7 @@ package net.causw.application.dto.comment;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.domain.model.CommentDomainModel;
+import net.causw.domain.model.comment.CommentDomainModel;
 
 import java.time.LocalDateTime;
 

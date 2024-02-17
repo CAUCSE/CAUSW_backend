@@ -1,10 +1,10 @@
 //package net.causw.application
 //
-//import net.causw.application.dto.DuplicatedCheckResponseDto
+//import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto
 //import net.causw.application.dto.circle.CircleResponseDto
 //import net.causw.application.dto.user.*
 //import net.causw.application.spi.*
-//import net.causw.config.JwtTokenProvider
+//import net.causw.config.security.JwtTokenProvider
 //import net.causw.domain.exceptions.BadRequestException
 //import net.causw.domain.exceptions.UnauthorizedException
 //import net.causw.domain.model.*

@@ -4,7 +4,7 @@ import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import org.springframework.web.multipart.MultipartFile;
 
-import static net.causw.domain.model.StaticValue.ATTACHMENT_LIMIT_SIZE;
+import static net.causw.domain.model.util.StaticValue.ATTACHMENT_LIMIT_SIZE;
 
 public class AttachmentSizeValidator extends AbstractValidator {
     private final MultipartFile attachment;

@@ -1,8 +1,8 @@
 package net.causw.application.spi;
 
 import net.causw.application.dto.locker.LockerLogResponseDto;
-import net.causw.domain.model.LockerLogAction;
-import net.causw.domain.model.UserDomainModel;
+import net.causw.domain.model.enums.LockerLogAction;
+import net.causw.domain.model.user.UserDomainModel;
 
 import java.time.LocalDateTime;
 import java.util.List;

@@ -2,8 +2,8 @@ package net.causw.application.dto.locker;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.adapter.persistence.LockerLog;
-import net.causw.domain.model.LockerLogAction;
+import net.causw.adapter.persistence.locker.LockerLog;
+import net.causw.domain.model.enums.LockerLogAction;
 
 import java.time.LocalDateTime;
 

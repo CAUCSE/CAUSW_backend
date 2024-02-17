@@ -1,7 +1,7 @@
 package net.causw.application.spi;
 
-import net.causw.domain.model.CommentDomainModel;
-import net.causw.domain.model.PostDomainModel;
+import net.causw.domain.model.comment.CommentDomainModel;
+import net.causw.domain.model.post.PostDomainModel;
 import org.springframework.data.domain.Page;
 
 import java.util.Optional;

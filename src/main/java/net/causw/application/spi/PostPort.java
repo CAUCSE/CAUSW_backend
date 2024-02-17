@@ -1,29 +1,33 @@
 package net.causw.application.spi;
 
-import net.causw.domain.model.PostDomainModel;
-import net.causw.domain.model.SearchOption;
+import net.causw.domain.model.post.PostDomainModel;
 import org.springframework.data.domain.Page;
 
 import java.util.Optional;
 
 public interface PostPort {
-    Optional<PostDomainModel> findById(String id);
+    Optional<PostDomainModel> findPostById(String id);
 
-    PostDomainModel create(PostDomainModel postDomainModel);
+    PostDomainModel createPost(PostDomainModel postDomainModel);
 
-    Optional<PostDomainModel> delete(String id);
+    Optional<PostDomainModel> deletePost(String id);
 
-    Optional<PostDomainModel> update(String id, PostDomainModel postDomainModel);
+    Optional<PostDomainModel> updatePost(String id, PostDomainModel postDomainModel);
 
-    Page<PostDomainModel> findAll(String boardId, Integer pageNum);
+    Page<PostDomainModel> findAllPost(String boardId, Integer pageNum);
 
-    Page<PostDomainModel> findAll(String boardId, Integer pageNum, Integer pageSize);
+    Page<PostDomainModel> findAllPost(String boardId, Integer pageNum, boolean isDeleted);
 
-    Page<PostDomainModel> search(SearchOption option, String keyword, Integer pageNum);
+    Page<PostDomainModel> findAllPost(String boardId, Integer pageNum, Integer pageSize);
 
-    Optional<PostDomainModel> findLatest(String boardId);
 
-    Page<PostDomainModel> findByUserId(String userId, Integer pageNum);
+    Page<PostDomainModel> searchPost(String keyword, String boardId, Integer pageNum);
 
-    Optional<PostDomainModel> restore(String id, PostDomainModel postDomainModel);
+    Page<PostDomainModel> searchPost(String keyword, String boardId, Integer pageNum, boolean isDeleted);
+
+    Optional<PostDomainModel> findLatestPost(String boardId);
+
+    Page<PostDomainModel> findPostByUserId(String userId, Integer pageNum);
+
+    Optional<PostDomainModel> restorePost(String id, PostDomainModel postDomainModel);
 }

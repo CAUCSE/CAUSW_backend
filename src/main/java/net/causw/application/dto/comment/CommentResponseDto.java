@@ -2,11 +2,11 @@ package net.causw.application.dto.comment;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.domain.model.BoardDomainModel;
-import net.causw.domain.model.CommentDomainModel;
-import net.causw.domain.model.Role;
-import net.causw.domain.model.StaticValue;
-import net.causw.domain.model.UserDomainModel;
+import net.causw.domain.model.board.BoardDomainModel;
+import net.causw.domain.model.comment.CommentDomainModel;
+import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.util.StaticValue;
+import net.causw.domain.model.user.UserDomainModel;
 
 import java.time.LocalDateTime;
 

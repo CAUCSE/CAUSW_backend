@@ -1,15 +1,14 @@
 package net.causw.application.spi;
 
-import net.causw.domain.model.Role;
-import net.causw.domain.model.UserDomainModel;
-import net.causw.domain.model.UserState;
+import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.user.UserDomainModel;
+import net.causw.domain.model.enums.UserState;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface UserPort {
-    Optional<UserDomainModel> findEmail(String userName, String studentId);
 
     Optional<UserDomainModel> findForPassword(String email, String name, String studentId);
 
@@ -25,7 +24,7 @@ public interface UserPort {
 
     Optional<UserDomainModel> updateRole(String id, Role role);
 
-    List<UserDomainModel> findByRole(Role role);
+    List<UserDomainModel> findByRole(String role);
 
     Page<UserDomainModel> findByState(UserState state, Integer pageNum);
 

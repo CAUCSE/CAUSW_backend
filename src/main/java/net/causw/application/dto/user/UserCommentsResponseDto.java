@@ -1,10 +1,9 @@
 package net.causw.application.dto.user;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.causw.application.dto.comment.CommentsOfUserResponseDto;
-import net.causw.domain.model.UserDomainModel;
+import net.causw.domain.model.user.UserDomainModel;
 import org.springframework.data.domain.Page;
 
 @Getter

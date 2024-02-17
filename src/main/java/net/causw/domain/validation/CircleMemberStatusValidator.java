@@ -3,7 +3,7 @@ package net.causw.domain.validation;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
-import net.causw.domain.model.CircleMemberStatus;
+import net.causw.domain.model.enums.CircleMemberStatus;
 
 import java.util.List;
 
@@ -34,27 +34,27 @@ public class CircleMemberStatusValidator extends AbstractValidator {
             case MEMBER:
                 throw new BadRequestException(
                         ErrorCode.ROW_ALREADY_EXIST,
-                        "이미 소모임에 가입한 사용자 입니다."
+                        "이미 동아리에 가입한 사용자 입니다."
                 );
             case LEAVE:
                 throw new BadRequestException(
                         ErrorCode.APPLY_NOT_EXIST,
-                        "소모임을 떠난 사용자 입니다."
+                        "동아리를 떠난 사용자 입니다."
                 );
             case AWAIT:
                 throw new BadRequestException(
                         ErrorCode.AWAITING_STATUS,
-                        "가입 대기 중인 사용자 입니다."
+                        "동아리 가입 대기 중인 사용자 입니다."
                 );
             case REJECT:
                 throw new UnauthorizedException(
                         ErrorCode.BLOCKED_USER,
-                        "가입 거절된 사용자 입니다."
+                        "동아리 가입 거절된 사용자 입니다."
                 );
             case DROP:
                 throw new UnauthorizedException(
                         ErrorCode.BLOCKED_USER,
-                        "추방된 사용자 입니다."
+                        "동아리에서 추방된 사용자 입니다."
                 );
             default:
                 break;

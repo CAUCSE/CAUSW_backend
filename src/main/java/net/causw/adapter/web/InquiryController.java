@@ -1,10 +1,8 @@
 package net.causw.adapter.web;
 
-import net.causw.application.InquiryService;
+import net.causw.application.inquiry.InquiryService;
 import net.causw.application.dto.inquiry.InquiryCreateRequestDto;
 import net.causw.application.dto.inquiry.InquiryResponseDto;
-import net.causw.application.dto.post.BoardPostsResponseDto;
-import net.causw.application.dto.post.PostResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;

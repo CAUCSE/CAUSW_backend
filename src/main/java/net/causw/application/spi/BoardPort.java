@@ -1,6 +1,6 @@
 package net.causw.application.spi;
 
-import net.causw.domain.model.BoardDomainModel;
+import net.causw.domain.model.board.BoardDomainModel;
 
 import java.util.List;
 import java.util.Optional;
@@ -8,7 +8,10 @@ import java.util.Optional;
 public interface BoardPort {
     Optional<BoardDomainModel> findById(String id);
 
-    List<BoardDomainModel> findAll();
+    List<BoardDomainModel> findAllBoard(List<String> circleIdList);
+    List<BoardDomainModel> findAllBoard();
+    List<BoardDomainModel> findAllBoard(boolean isDeleted);
+
 
     Optional<BoardDomainModel> findAppNotice();
 
@@ -16,11 +19,11 @@ public interface BoardPort {
 
     List<BoardDomainModel> findBasicBoards();
 
-    BoardDomainModel create(BoardDomainModel boardDomainModel);
+    BoardDomainModel createBoard(BoardDomainModel boardDomainModel);
 
-    Optional<BoardDomainModel> update(String id, BoardDomainModel boardDomainModel);
+    Optional<BoardDomainModel> updateBoard(String id, BoardDomainModel boardDomainModel);
 
-    Optional<BoardDomainModel> delete(String id);
+    Optional<BoardDomainModel> deleteBoard(String id);
 
-    Optional<BoardDomainModel> restore(String id);
+    Optional<BoardDomainModel> restoreBoard(String id);
 }
