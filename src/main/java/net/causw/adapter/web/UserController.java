@@ -90,7 +90,7 @@ public class UserController {
     public UserResponseDto findCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
-        return this.userService.findByUserId(loginUserId);
+        return this.userService.findCurrentUser(loginUserId);
     }
 
     @GetMapping(value = "/posts")

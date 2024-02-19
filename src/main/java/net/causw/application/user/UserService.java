@@ -208,7 +208,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserResponseDto findByUserId(String loginUserId) {
+    public UserResponseDto findCurrentUser(String loginUserId) {
         UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
