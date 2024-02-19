@@ -24,6 +24,8 @@ public interface UserPort {
 
     Optional<UserDomainModel> updateRole(String id, Role role);
 
+    Optional<UserDomainModel> removeRole(String id, Role role);
+
     List<UserDomainModel> findByRole(String role);
 
     Page<UserDomainModel> findByState(UserState state, Integer pageNum);

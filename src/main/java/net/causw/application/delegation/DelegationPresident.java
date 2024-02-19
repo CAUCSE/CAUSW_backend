@@ -26,18 +26,18 @@ public class DelegationPresident implements Delegation {
         List<UserDomainModel> councilList = this.userPort.findByRole("COUNCIL");
         if (councilList != null) {
             councilList.forEach(
-                    user -> this.userPort.updateRole(user.getId(), Role.COMMON)
+                    user -> this.userPort.removeRole(user.getId(), Role.COUNCIL)
             );
         }
 
         List<UserDomainModel> vicePresident = this.userPort.findByRole("VICE_PRESIDENT");
         if (vicePresident != null) {
             vicePresident.forEach(
-                    user -> this.userPort.updateRole(user.getId(), Role.COMMON)
+                    user -> this.userPort.removeRole(user.getId(), Role.VICE_PRESIDENT)
             );
         }
 
-        this.userPort.updateRole(currentId, Role.COMMON).orElseThrow(
+        this.userPort.removeRole(currentId, Role.PRESIDENT).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         "User id checked, but exception occurred"

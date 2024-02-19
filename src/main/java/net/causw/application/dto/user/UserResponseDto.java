@@ -35,10 +35,10 @@ public class UserResponseDto {
     @ApiModelProperty(value = "상태", example = "AWAIT")
     private UserState state;
 
-    @ApiModelProperty(value = "리더일 경우, 동아리 고유 id값", example = "uuid 형식의 String 값입니다.")
+    @ApiModelProperty(value = "리더일 경우, 동아리 고유 id값", example = "['uuid 형식의 String 값입니다.', ...]")
     private List<String> circleIdIfLeader;
 
-    @ApiModelProperty(value = "리더일 경우, 동아리 이름", example = "개발 동아리")
+    @ApiModelProperty(value = "리더일 경우, 동아리 이름", example = "[개발 동아리, 퍼주마,..]")
     private List<String> circleNameIfLeader;
 
 

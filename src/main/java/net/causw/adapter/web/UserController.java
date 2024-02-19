@@ -90,7 +90,7 @@ public class UserController {
     public UserResponseDto findCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
-        return this.userService.findByUserId(loginUserId);
+        return this.userService.findCurrentUser(loginUserId);
     }
 
     @GetMapping(value = "/posts")
@@ -228,7 +228,7 @@ public class UserController {
      */
     @PutMapping(value = "/{granteeId}/role")
     @ResponseStatus(value = HttpStatus.OK)
-    @ApiOperation(value = "역할 업데이트 API", notes = "grantorId 에는 관리자의 고유 id값, granteeId 에는 권한이 업데이트될 사용자의 고유 id 값을 넣어주세요")
+    @ApiOperation(value = "역할 업데이트 API(완료)", notes = "grantorId 에는 관리자의 고유 id값, granteeId 에는 권한이 업데이트될 사용자의 고유 id 값을 넣어주세요")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = String.class),
             @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),

@@ -254,7 +254,7 @@ public class PostService {
         );
 
         boardDomainModel.getCircle()
-                .filter(circleDomainModel -> !userDomainModel.getRole().equals(Role.ADMIN))
+                .filter(circleDomainModel -> !userDomainModel.getRole().equals(Role.ADMIN) && !userDomainModel.getRole().getValue().contains("PRESIDENT"))
                 .ifPresent(
                         circleDomainModel -> {
                             CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
