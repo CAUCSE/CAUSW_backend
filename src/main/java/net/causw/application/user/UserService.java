@@ -684,15 +684,15 @@ public class UserService {
                         grantee.getRole()
                 ))
                 .validate();
+        /* 권한 위임
+        * 1. 권한 위임자와 넘겨주는 권한이 같을 경우, 권한을 위임자가 동아리장일 경우 진행
+        * 2. 넘겨받을 권한이 동아리장일 경우 넘겨받을 동아리 id 저장
+        * 3. DelegationFactory를 통해 권한 위임 진행(동아리장 위임일 경우 circle id를 넘겨주어서 어떤 동아리의 동아리장 권한을 위임하는 것인지 확인)
+        * */
 
-        /* Delegate the role
-         * 1) Check if the grantor's role is same
-         * 2) If yes, it is delegating process (The grantor may lose the role)
-         * 3) Then, the DelegationFactory match the instance for the delegation considering the role -> Then processed
-         */
-        if (grantor.getRole() == userUpdateRoleRequestDto.getRole()) {
+        if (grantor.getRole() == userUpdateRoleRequestDto.getRole() || grantor.getRole().getValue().contains("LEADER_CIRCLE")){
             String circleId = "";
-            if(grantor.getRole().getValue().contains("LEADER_CIRCLE")){
+            if(userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)){
                 circleId = userUpdateRoleRequestDto.getCircleId()
                         .orElseThrow(() -> new BadRequestException(
                                 ErrorCode.INVALID_PARAMETER,
@@ -700,15 +700,17 @@ public class UserService {
                         ));
             }
             DelegationFactory
-                    .create(grantor.getRole(), this.userPort, this.circlePort, this.circleMemberPort, circleId)
+                    .create(userUpdateRoleRequestDto.getRole(), this.userPort, this.circlePort, this.circleMemberPort, circleId)
                     .delegate(loginUserId, granteeId);
         }
-        /* Delegate the Circle Leader
-         * 1) Check if the grantor's role is Admin or President
-         * 2) Check if the role to update is Circle Leader
-         */
+        /* 권한 위임
+        * 1. 권한 위임자가 학생회장이거나 관리자일 경우 이면서 넘겨받을 권한이 동아리장 일때
+        * 2. 동아리장 업데이트
+        * 3. 기존 동아리장의 동아리장 권한 박탈
+        * */
+
         else if ((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
-                && userUpdateRoleRequestDto.getRole().getValue().contains("LEADER_CIRCLE")
+                && userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)
         ) {
             String circleId = userUpdateRoleRequestDto.getCircleId()
                     .orElseThrow(() -> new BadRequestException(
@@ -734,7 +736,14 @@ public class UserService {
             this.circlePort.findById(circleId)
                     .ifPresentOrElse(circle -> {
                         this.circlePort.updateLeader(circle.getId(), grantee);
-                        circle.getLeader().ifPresent(leader -> this.userPort.updateRole(leader.getId(), Role.COMMON));
+
+                        circle.getLeader().ifPresent(leader -> {
+                            // Check if the leader is the leader of only one circle
+                            List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(leader.getId());
+                            if (ownCircles.size() == 1) {
+                                this.userPort.removeRole(leader.getId(), Role.LEADER_CIRCLE);
+                            }
+                        });
                     }, () -> {
                         throw new BadRequestException(
                                 ErrorCode.ROW_DOES_NOT_EXIST,
@@ -742,10 +751,7 @@ public class UserService {
                         );
                     });
         }
-        /* Delegate the Leader Alumni
-         * 1) Check if the grantor's role is Admin or President
-         * 2) Check if the role to update is Leader Alumni
-         */
+
         else if ((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
                 && userUpdateRoleRequestDto.getRole().equals(Role.LEADER_ALUMNI)
         ) {
@@ -757,7 +763,7 @@ public class UserService {
                                     "동문회장이 존재하지 않습니다."
                             ));
 
-            this.userPort.updateRole(previousLeaderAlumni.getId(), Role.COMMON).orElseThrow(
+            this.userPort.removeRole(previousLeaderAlumni.getId(), Role.LEADER_ALUMNI).orElseThrow(
                     () -> new InternalServerException(
                             ErrorCode.INTERNAL_SERVER,
                             "User id checked, but exception occurred"

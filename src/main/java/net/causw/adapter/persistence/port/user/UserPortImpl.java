@@ -74,11 +74,39 @@ public class UserPortImpl extends DomainModelMapper implements UserPort {
     }
 
     @Override
-    public Optional<UserDomainModel> updateRole(String id, Role role) {
+    public Optional<UserDomainModel> updateRole(String id, Role newRole) {
         return this.userRepository.findById(id).map(
                 srcUser -> {
-                    srcUser.setRole(role);
-
+                    if (newRole.equals(Role.LEADER_CIRCLE)) {
+                        if(!srcUser.getRole().getValue().contains("LEADER_CIRCLE")){
+                            String combinedRoleValue = srcUser.getRole().getValue() + "_N_" + "LEADER_CIRCLE";
+                            Role combinedRole = Role.of(combinedRoleValue.toUpperCase());
+                            srcUser.setRole(combinedRole);
+                        } else {
+                            srcUser.setRole(srcUser.getRole());
+                        }
+                    } else if(srcUser.getRole().equals(Role.LEADER_CIRCLE)){
+                        String combinedRoleValue = newRole.getValue() + "_N_" + "LEADER_CIRCLE";
+                        Role combinedRole = Role.of(combinedRoleValue.toUpperCase());
+                        srcUser.setRole(combinedRole);
+                    }
+                    else {
+                        srcUser.setRole(newRole);
+                    }
+                    return this.entityToDomainModel(this.userRepository.save(srcUser));
+                }
+        );
+    }
+    @Override
+    public Optional<UserDomainModel> removeRole(String id, Role targetRole) {
+        return this.userRepository.findById(id).map(
+                srcUser -> {
+                    if(srcUser.getRole().equals(targetRole)){
+                        srcUser.setRole(Role.COMMON);
+                    } else if (srcUser.getRole().getValue().contains(targetRole.getValue())) {
+                        String updatedRoleValue = srcUser.getRole().getValue().replace(targetRole.getValue(), "").replace("_N_","");
+                        srcUser.setRole(Role.of(updatedRoleValue));
+                    }
                     return this.entityToDomainModel(this.userRepository.save(srcUser));
                 }
         );
