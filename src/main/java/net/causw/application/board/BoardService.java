@@ -64,7 +64,7 @@ public class BoardService {
                 .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
                 .validate();
 
-        if (userDomainModel.getRole().getValue().contains("LEADER_CIRCLE")) {
+        if (userDomainModel.getRole().getValue().contains("LEADER_CIRCLE") && !userDomainModel.getRole().getValue().contains("PRESIDENT")) {
             List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(loginUserId);
             if (ownCircles.isEmpty()) {
                 throw new InternalServerException(
@@ -130,7 +130,7 @@ public class BoardService {
                                             Role.LEADER_4_N_LEADER_CIRCLE
                                     )));
 
-                    if (creatorDomainModel.getRole().getValue().contains("LEADER_CIRCLE")) {
+                    if (creatorDomainModel.getRole().getValue().contains("LEADER_CIRCLE") && !creatorDomainModel.getRole().getValue().contains("PRESIDENT")) {
                         validatorBucket
                                 .consistOf(UserEqualValidator.of(
                                         circle.getLeader().map(UserDomainModel::getId).orElseThrow(
@@ -210,7 +210,7 @@ public class BoardService {
                                             Role.LEADER_4_N_LEADER_CIRCLE
                                     )));
 
-                    if (updaterDomainModel.getRole().getValue().contains("LEADER_CIRCLE")) {
+                    if (updaterDomainModel.getRole().getValue().contains("LEADER_CIRCLE") && !updaterDomainModel.getRole().getValue().contains("PRESIDENT")) {
                         validatorBucket
                                 .consistOf(UserEqualValidator.of(
                                         circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
@@ -297,7 +297,7 @@ public class BoardService {
                                             Role.LEADER_4_N_LEADER_CIRCLE
                                     )));
 
-                    if (deleterDomainModel.getRole().getValue().contains("LEADER_CIRCLE")) {
+                    if (deleterDomainModel.getRole().getValue().contains("LEADER_CIRCLE") && !deleterDomainModel.getRole().getValue().contains("PRESIDENT")) {
                         validatorBucket
                                 .consistOf(UserEqualValidator.of(
                                         circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(

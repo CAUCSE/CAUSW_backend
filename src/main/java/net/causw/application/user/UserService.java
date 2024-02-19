@@ -181,7 +181,7 @@ public class UserService {
                         )))
                 .validate();
 
-        if (requestUser.getRole().getValue().contains("LEADER_CIRCLE")) {
+        if (requestUser.getRole().getValue().contains("LEADER_CIRCLE") && !requestUser.getRole().getValue().contains("PRESIDENT")) {
             List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(loginUserId);
             if (ownCircles.isEmpty()) {
                 throw new InternalServerException(
@@ -328,7 +328,7 @@ public class UserService {
                         )))
                 .validate();
 
-        if (user.getRole().getValue().contains("LEADER_CIRCLE")) {
+        if (user.getRole().getValue().contains("LEADER_CIRCLE") && !user.getRole().getValue().contains("PRESIDENT")) {
             List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(loginUserId);
             if (ownCircles.isEmpty()) {
                 throw new InternalServerException(
