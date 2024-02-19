@@ -95,6 +95,7 @@ public class UserController {
 
     @GetMapping(value = "/posts")
     @ResponseStatus(value = HttpStatus.OK)
+    @ApiOperation(value = "로그인한 사용자의 게시글 조회 API(완료)")
     public UserPostsResponseDto findPosts(@RequestParam(defaultValue = "0") Integer pageNum) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
@@ -103,6 +104,7 @@ public class UserController {
 
     @GetMapping(value = "/comments")
     @ResponseStatus(value = HttpStatus.OK)
+    @ApiOperation(value = "로그인한 사용자의 댓글 조회 API(완료)")
     public UserCommentsResponseDto findComments(@RequestParam(defaultValue = "0") Integer pageNum) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
@@ -111,6 +113,7 @@ public class UserController {
 
     @GetMapping(value = "/name/{name}")
     @ResponseStatus(value = HttpStatus.OK)
+    @ApiOperation(value = "유저 관리 시 사용자 이름으로 검색 API(완료)")
     public List<UserResponseDto> findByName(@PathVariable String name) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
@@ -119,6 +122,7 @@ public class UserController {
 
     @GetMapping(value = "/privileged")
     @ResponseStatus(value = HttpStatus.OK)
+    @ApiOperation(value = "특별한 권한을 가진 사용자 목록 확인 API(완료)", notes = "학생회장, 부학생회장, 학생회, 학년대표, 동문회장 역할을 가지는 사용자를 반환합니다. \n 권한 역임을 할 수 있기 때문에 중복되는 사용자가 존재합니다.(ex. PRESIDENT_N_LEADER_CIRCLE)")
     public UserPrivilegedResponseDto findPrivilegedUsers() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
@@ -127,6 +131,7 @@ public class UserController {
 
     @GetMapping(value = "/state/{state}")
     @ResponseStatus(value = HttpStatus.OK)
+    @ApiOperation(value = "유저 관리 시 사용자의 상태(ACTIVE, INACTIVE 등) 에 따라 검색하는 API(완료)", notes = "유저를 관리할 때 사용자가 활성, 비활성 상태인지에 따라서 분류하여 검색할 수 있습니다. \n state 는 ACTIVE, INACTIVE, AWAIT, REJECT, DROP 으로 검색가능합니다.")
     public Page<UserResponseDto> findByState(@PathVariable String state,@RequestParam(defaultValue = "0") Integer pageNum) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
@@ -263,6 +268,7 @@ public class UserController {
 
     @PutMapping(value = "/password")
     @ResponseStatus(value = HttpStatus.OK)
+    @ApiOperation(value = "비밀번호 업데이트 API")
     public UserResponseDto updatePassword(@RequestBody UserUpdatePasswordRequestDto userUpdatePasswordRequestDto) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
@@ -296,14 +302,15 @@ public class UserController {
 
     @PutMapping(value = "{id}/drop")
     @ResponseStatus(value = HttpStatus.OK)
+    @ApiOperation(value = "사용자 추방 및 사물함 반환 API (완료)")
     public UserResponseDto drop(@PathVariable String id) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
         return this.userService.dropUser(loginUserId, id);
     }
-
     @GetMapping(value = "/circles")
     @ResponseStatus(value = HttpStatus.OK)
+    @ApiOperation(value = "사용자가 속한 동아리 목록 불러오기 API(완료)" , notes = "관리자, 학생회장인 경우 모든 동아리 불러오기")
     public List<CircleResponseDto> getCircleList() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
@@ -312,14 +319,17 @@ public class UserController {
 
     @GetMapping(value = "/admissions/{id}")
     @ResponseStatus(value = HttpStatus.OK)
+    @ApiOperation(value = "가입 대기 사용자 정보 확인 API (완료)")
     public UserAdmissionResponseDto findAdmissionById(@PathVariable String id) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
         return this.userService.findAdmissionById(loginUserId, id);
     }
 
+
     @GetMapping(value = "/admissions")
     @ResponseStatus(value = HttpStatus.OK)
+    @ApiOperation(value = "모든 가입 대기 사용자 목록 확인 API (완료)")
     public Page<UserAdmissionsResponseDto> findAllAdmissions(@RequestParam(defaultValue = "0") Integer pageNum) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
@@ -388,6 +398,7 @@ public class UserController {
 
     @PostMapping(value = "/favorite-boards/{boardId}")
     @ResponseStatus(value = HttpStatus.CREATED)
+    @ApiOperation(value = "즐겨찾는 게시판 생성 API(완료)", notes = "즐겨찾는 게시판을 생성할 수 있습니다.")
     public BoardResponseDto createFavoriteBoard(@PathVariable String boardId) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
@@ -396,6 +407,7 @@ public class UserController {
 
     @PutMapping(value = "/restore/{id}")
     @ResponseStatus(value = HttpStatus.OK)
+    @ApiOperation(value = "사용자 복구 API(완료)", notes = "복구할 사용자의 id를 넣어주세요")
     public UserResponseDto restore(@PathVariable String id) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
