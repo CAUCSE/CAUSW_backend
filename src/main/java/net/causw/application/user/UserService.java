@@ -735,7 +735,6 @@ public class UserService {
 
             this.circlePort.findById(circleId)
                     .ifPresentOrElse(circle -> {
-                        this.circlePort.updateLeader(circle.getId(), grantee);
 
                         circle.getLeader().ifPresent(leader -> {
                             // Check if the leader is the leader of only one circle
@@ -744,6 +743,8 @@ public class UserService {
                                 this.userPort.removeRole(leader.getId(), Role.LEADER_CIRCLE);
                             }
                         });
+
+                        this.circlePort.updateLeader(circle.getId(), grantee);
                     }, () -> {
                         throw new BadRequestException(
                                 ErrorCode.ROW_DOES_NOT_EXIST,
