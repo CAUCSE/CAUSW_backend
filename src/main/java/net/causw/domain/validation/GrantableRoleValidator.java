@@ -31,8 +31,7 @@ public class GrantableRoleValidator extends AbstractValidator {
          *   => They will automatically granted while other granting process since the roles has unique user
          */
         if (this.grantorRole == Role.ADMIN) {
-            if (this.granteeRole != Role.ADMIN
-                    && (this.granteeRole != Role.LEADER_ALUMNI && this.granteeRole != Role.PROFESSOR)) {
+            if (this.granteeRole != Role.ADMIN) {
                 if(this.grantedRole.equals(Role.LEADER_CIRCLE)){
                     return;
                 } else if(this.granteeRole != this.grantedRole){
@@ -48,8 +47,7 @@ public class GrantableRoleValidator extends AbstractValidator {
          */
         if (this.grantorRole.getValue().contains("PRESIDENT")) {
             if (this.grantedRole != Role.ADMIN
-                    && (this.granteeRole != Role.ADMIN && this.granteeRole != Role.PRESIDENT)
-                    && (this.granteeRole != Role.LEADER_ALUMNI && this.granteeRole != Role.PROFESSOR)) {
+                    && (this.granteeRole != Role.ADMIN && this.granteeRole != Role.PRESIDENT)) {
                 if(this.grantedRole.equals(Role.LEADER_CIRCLE)){
                     return;
                 } else if(this.granteeRole != this.grantedRole){

@@ -79,9 +79,14 @@ public class UserPortImpl extends DomainModelMapper implements UserPort {
                 srcUser -> {
                     if (newRole.equals(Role.LEADER_CIRCLE)) {
                         if(!srcUser.getRole().getValue().contains("LEADER_CIRCLE")){
-                            String combinedRoleValue = srcUser.getRole().getValue() + "_N_" + "LEADER_CIRCLE";
-                            Role combinedRole = Role.of(combinedRoleValue.toUpperCase());
-                            srcUser.setRole(combinedRole);
+                            if(srcUser.getRole().equals(Role.COMMON)){
+                                srcUser.setRole(newRole);
+                            }
+                            else{
+                                String combinedRoleValue = srcUser.getRole().getValue() + "_N_" + "LEADER_CIRCLE";
+                                Role combinedRole = Role.of(combinedRoleValue.toUpperCase());
+                                srcUser.setRole(combinedRole);
+                            }
                         } else {
                             srcUser.setRole(srcUser.getRole());
                         }
