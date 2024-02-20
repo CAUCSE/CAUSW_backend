@@ -75,12 +75,6 @@ public class DelegationLeaderCircle implements Delegation {
                 ))
                 .validate();
 
-        this.circlePort.updateLeader(circle.getId(), newLeader).orElseThrow(
-                () -> new InternalServerException(
-                        ErrorCode.INTERNAL_SERVER,
-                        "Circle id and Leader id checked, but exception occurred"
-                )
-        );
 
         List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(currentId);
         if(isCircleLeader && ownCircles.size() == 1){
@@ -92,5 +86,11 @@ public class DelegationLeaderCircle implements Delegation {
             );
         }
 
+        this.circlePort.updateLeader(circle.getId(), newLeader).orElseThrow(
+                () -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "Circle id and Leader id checked, but exception occurred"
+                )
+        );
     }
 }
