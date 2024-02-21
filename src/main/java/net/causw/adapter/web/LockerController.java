@@ -14,6 +14,7 @@ import net.causw.application.dto.locker.LockerResponseDto;
 import net.causw.application.dto.locker.LockerUpdateRequestDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,30 +39,33 @@ public class LockerController {
     @GetMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
     public LockerResponseDto findById(
-            @AuthenticationPrincipal String userId,
             @PathVariable String id
     ) {
-        return this.lockerService.findById(id, userId);
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String loginUserId = ((String) principal);
+        return this.lockerService.findById(id, loginUserId);
     }
 
     @PostMapping(value = "")
     @ResponseStatus(value = HttpStatus.CREATED)
     public LockerResponseDto create(
-            @AuthenticationPrincipal String creatorId,
             @RequestBody LockerCreateRequestDto lockerCreateRequestDto
     ) {
-        return this.lockerService.create(creatorId, lockerCreateRequestDto);
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String loginUserId = ((String) principal);
+        return this.lockerService.create(loginUserId, lockerCreateRequestDto);
     }
 
     @PutMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
     public LockerResponseDto update(
-            @AuthenticationPrincipal String updaterId,
             @PathVariable String id,
             @RequestBody LockerUpdateRequestDto lockerUpdateRequestDto
     ) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String loginUserId = ((String) principal);
         return this.lockerService.update(
-                updaterId,
+                loginUserId,
                 id,
                 lockerUpdateRequestDto
         );
@@ -70,12 +74,13 @@ public class LockerController {
     @PutMapping(value = "/{id}/move")
     @ResponseStatus(value = HttpStatus.OK)
     public LockerResponseDto move(
-            @AuthenticationPrincipal String updaterId,
             @PathVariable String id,
             @RequestBody LockerMoveRequestDto lockerMoveRequestDto
     ) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String loginUserId = ((String) principal);
         return this.lockerService.move(
-                updaterId,
+                loginUserId,
                 id,
                 lockerMoveRequestDto
         );
@@ -84,45 +89,51 @@ public class LockerController {
     @DeleteMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
     public LockerResponseDto delete(
-            @AuthenticationPrincipal String deleterId,
             @PathVariable String id
     ) {
-        return this.lockerService.delete(deleterId, id);
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String loginUserId = ((String) principal);
+        return this.lockerService.delete(loginUserId, id);
     }
 
     @GetMapping(value = "/locations")
     @ResponseStatus(value = HttpStatus.OK)
-    public LockerLocationsResponseDto findAllLocation(@AuthenticationPrincipal String userId) {
-        return this.lockerService.findAllLocation(userId);
+    public LockerLocationsResponseDto findAllLocation() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String loginUserId = ((String) principal);
+        return this.lockerService.findAllLocation(loginUserId);
     }
 
     @GetMapping(value = "/locations/{locationId}")
     @ResponseStatus(value = HttpStatus.OK)
     public LockersResponseDto findByLocation(
-            @AuthenticationPrincipal String userId,
             @PathVariable String locationId
     ) {
-        return this.lockerService.findByLocation(locationId, userId);
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String loginUserId = ((String) principal);
+        return this.lockerService.findByLocation(locationId, loginUserId);
     }
 
     @PostMapping(value = "/locations")
     @ResponseStatus(value = HttpStatus.CREATED)
     public LockerLocationResponseDto createLocation(
-            @AuthenticationPrincipal String creatorId,
             @RequestBody LockerLocationCreateRequestDto lockerLocationCreateRequestDto
     ) {
-        return this.lockerService.createLocation(creatorId, lockerLocationCreateRequestDto);
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String loginUserId = ((String) principal);
+        return this.lockerService.createLocation(loginUserId, lockerLocationCreateRequestDto);
     }
 
     @PutMapping(value = "/locations/{locationId}")
     @ResponseStatus(value = HttpStatus.OK)
     public LockerLocationResponseDto updateLocation(
-            @AuthenticationPrincipal String updaterId,
             @PathVariable String locationId,
             @RequestBody LockerLocationUpdateRequestDto lockerLocationUpdateRequestDto
     ) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String loginUserId = ((String) principal);
         return this.lockerService.updateLocation(
-                updaterId,
+                loginUserId,
                 locationId,
                 lockerLocationUpdateRequestDto
         );
@@ -131,10 +142,11 @@ public class LockerController {
     @DeleteMapping(value = "/locations/{locationId}")
     @ResponseStatus(value = HttpStatus.OK)
     public LockerLocationResponseDto deleteLocation(
-            @AuthenticationPrincipal String deleterId,
             @PathVariable String locationId
     ) {
-        return this.lockerService.deleteLocation(deleterId, locationId);
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String loginUserId = ((String) principal);
+        return this.lockerService.deleteLocation(loginUserId, locationId);
     }
 
     @GetMapping(value = "/{id}/log")
@@ -146,9 +158,10 @@ public class LockerController {
     @PostMapping(value = "/expire")
     @ResponseStatus(value = HttpStatus.OK)
     public void setExpireDate(
-            @AuthenticationPrincipal String requestUserId,
             @RequestBody LockerExpiredAtRequestDto lockerExpiredAtRequestDto
     ) {
-        this.lockerService.setExpireAt(requestUserId, lockerExpiredAtRequestDto);
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String loginUserId = ((String) principal);
+        this.lockerService.setExpireAt(loginUserId, lockerExpiredAtRequestDto);
     }
 }
