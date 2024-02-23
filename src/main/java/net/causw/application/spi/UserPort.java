@@ -31,4 +31,6 @@ public interface UserPort {
     Optional<UserDomainModel> updatePassword(String id, String password);
 
     Optional<UserDomainModel> updateState(String id, UserState state);
+
+    Optional<UserDomainModel> updateRefreshToken(String id, String refreshToken);
 }

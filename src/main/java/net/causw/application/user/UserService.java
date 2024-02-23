@@ -531,8 +531,7 @@ public class UserService {
         return UserResponseDto.from(this.userPort.create(userDomainModel));
     }
 
-    @Transactional(readOnly = true)
-    //TODO : 기태 작업중
+    @Transactional
     public UserSignInResponseDto signIn(UserSignInRequestDto userSignInRequestDto) {
         UserDomainModel userDomainModel = this.userPort.findByEmail(userSignInRequestDto.getEmail()).orElseThrow(
                 () -> new UnauthorizedException(
@@ -564,7 +563,10 @@ public class UserService {
                 .consistOf(UserStateValidator.of(userDomainModel.getState()))
                 .validate();
 
-        //TODO
+        // refreshToken은 user DB에 보관 (추후 redis로 옮기면 좋을듯)
+        String refreshToken = jwtTokenProvider.createRefreshToken();
+        this.userPort.updateRefreshToken(userDomainModel.getId(), refreshToken);
+
         return UserSignInResponseDto.builder()
                 .accessToken(jwtTokenProvider.createAccessToken(userDomainModel.getId(), userDomainModel.getRole(), userDomainModel.getState()))
                 .refreshToken(jwtTokenProvider.createRefreshToken())
