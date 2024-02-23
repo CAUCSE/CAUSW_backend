@@ -1,5 +1,6 @@
 package net.causw.adapter.web;
 
+import io.swagger.annotations.ApiOperation;
 import net.causw.application.locker.LockerService;
 import net.causw.application.dto.locker.LockerExpiredAtRequestDto;
 import net.causw.application.dto.locker.LockerLocationsResponseDto;
@@ -37,6 +38,7 @@ public class LockerController {
     }
 
     @GetMapping(value = "/{id}")
+    @ApiOperation(value = "사물함 조회 Api", notes = "사물함 id를 바탕으로 사물함 정보를 가져오는 Api 입니다.")
     @ResponseStatus(value = HttpStatus.OK)
     public LockerResponseDto findById(
             @PathVariable String id
@@ -47,6 +49,7 @@ public class LockerController {
     }
 
     @PostMapping(value = "")
+    @ApiOperation(value = "사물함 생성 Api", notes = "사물함을 생성하는 Api입니다.")
     @ResponseStatus(value = HttpStatus.CREATED)
     public LockerResponseDto create(
             @RequestBody LockerCreateRequestDto lockerCreateRequestDto
@@ -58,6 +61,7 @@ public class LockerController {
 
     @PutMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
+    @ApiOperation(value = "사물함 생성 Api", notes = "사물함을 생성하는 Api입니다.")
     public LockerResponseDto update(
             @PathVariable String id,
             @RequestBody LockerUpdateRequestDto lockerUpdateRequestDto
@@ -98,6 +102,7 @@ public class LockerController {
 
     @GetMapping(value = "/locations")
     @ResponseStatus(value = HttpStatus.OK)
+    @ApiOperation(value = "사물함 층별 사용가능 여부 조회 Api", notes = "사물함 층별 개수 정보와 사용 가능 개수를 제공하는 API입니다.")
     public LockerLocationsResponseDto findAllLocation() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);

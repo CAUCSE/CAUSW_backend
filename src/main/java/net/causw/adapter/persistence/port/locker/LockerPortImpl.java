@@ -80,11 +80,11 @@ public class LockerPortImpl extends DomainModelMapper implements LockerPort {
 
     @Override
     public Long countEnableLockerByLocation(String locationId) {
-        return this.lockerRepository.countEnableLockerByLocation(locationId);
+        return this.lockerRepository.countByLocationIdAndIsActiveIsTrueAndUserIdIsNull(locationId);
     }
 
     @Override
     public Long countByLocation(String locationId) {
-        return this.lockerRepository.countByLocation(locationId);
+        return this.lockerRepository.countByLocationId(locationId);
     }
 }
