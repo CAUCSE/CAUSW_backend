@@ -110,6 +110,7 @@ public class LockerController {
     }
 
     @GetMapping(value = "/locations/{locationId}")
+    @ApiOperation(value = "사물함 층별 사용가능 여부 조회 Api", notes = "사물함 층별 개수 정보와 사용 가능 개수를 제공하는 API입니다.")
     @ResponseStatus(value = HttpStatus.OK)
     public LockersResponseDto findByLocation(
             @PathVariable String locationId
