@@ -4,10 +4,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import net.causw.application.user.UserService;
-import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
-import net.causw.application.dto.board.BoardResponseDto;
-import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.user.UserAdmissionCreateRequestDto;
 import net.causw.application.dto.user.UserAdmissionResponseDto;
 import net.causw.application.dto.user.UserAdmissionsResponseDto;
@@ -17,9 +13,14 @@ import net.causw.application.dto.user.UserPostsResponseDto;
 import net.causw.application.dto.user.UserPrivilegedResponseDto;
 import net.causw.application.dto.user.UserResponseDto;
 import net.causw.application.dto.user.UserSignInRequestDto;
+import net.causw.application.dto.user.UserSignInResponseDto;
 import net.causw.application.dto.user.UserUpdatePasswordRequestDto;
 import net.causw.application.dto.user.UserUpdateRequestDto;
 import net.causw.application.dto.user.UserUpdateRoleRequestDto;
+import net.causw.application.user.UserService;
+import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
+import net.causw.application.dto.board.BoardResponseDto;
+import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.domain.exceptions.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -174,7 +175,7 @@ public class UserController {
             @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = BadRequestException.class),
             @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = BadRequestException.class)
     })
-    public String signIn(@RequestBody UserSignInRequestDto userSignInRequestDto) {
+    public UserSignInResponseDto signIn(@RequestBody UserSignInRequestDto userSignInRequestDto) {
         return this.userService.signIn(userSignInRequestDto);
     }
 

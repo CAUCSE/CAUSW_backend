@@ -15,6 +15,7 @@ import net.causw.application.dto.user.UserPostsResponseDto;
 import net.causw.application.dto.user.UserPrivilegedResponseDto;
 import net.causw.application.dto.user.UserResponseDto;
 import net.causw.application.dto.user.UserSignInRequestDto;
+import net.causw.application.dto.user.UserSignInResponseDto;
 import net.causw.application.dto.user.UserUpdatePasswordRequestDto;
 import net.causw.application.dto.user.UserUpdateRequestDto;
 import net.causw.application.dto.user.UserUpdateRoleRequestDto;
@@ -531,7 +532,8 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public String signIn(UserSignInRequestDto userSignInRequestDto) {
+    //TODO : 기태 작업중
+    public UserSignInResponseDto signIn(UserSignInRequestDto userSignInRequestDto) {
         UserDomainModel userDomainModel = this.userPort.findByEmail(userSignInRequestDto.getEmail()).orElseThrow(
                 () -> new UnauthorizedException(
                         ErrorCode.INVALID_SIGNIN,
@@ -562,11 +564,11 @@ public class UserService {
                 .consistOf(UserStateValidator.of(userDomainModel.getState()))
                 .validate();
 
-        return this.jwtTokenProvider.createToken(
-                userDomainModel.getId(),
-                userDomainModel.getRole(),
-                userDomainModel.getState()
-        );
+        //TODO
+        return UserSignInResponseDto.builder()
+                .accessToken(jwtTokenProvider.createAccessToken(userDomainModel.getId(), userDomainModel.getRole(), userDomainModel.getState()))
+                .refreshToken(jwtTokenProvider.createRefreshToken())
+                .build();
     }
 
     /**
