@@ -498,7 +498,7 @@ public class LockerService {
                 .ifPresentOrElse(textField -> {
                             ValidatorBucket.of()
                                     .consistOf(LockerExpiredAtValidator.of(
-                                            LocalDateTime.parse(textField, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
+                                            LocalDateTime.parse(textField, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")),
                                             lockerExpiredAtRequestDto.getExpiredAt()))
                                     .validate();
 
