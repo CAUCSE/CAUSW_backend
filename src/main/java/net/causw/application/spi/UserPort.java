@@ -18,6 +18,8 @@ public interface UserPort {
 
     Optional<UserDomainModel> findByEmail(String email);
 
+    Optional<UserDomainModel> findByRefreshToken(String refreshToken);
+
     UserDomainModel create(UserDomainModel userDomainModel);
 
     Optional<UserDomainModel> update(String id, UserDomainModel userDomainModel);

@@ -1184,4 +1184,28 @@ public class UserService {
                 )
         ));
     }
+
+    @Transactional
+    public UserSignInResponseDto updateToken(String refreshToken) {
+        // STEP1 : refreshToken이 유효한지 확인
+        jwtTokenProvider.validateToken(refreshToken);
+
+        // STEP2 : refreshToken으로 맵핑된 유저 찾기
+        UserDomainModel user = this.userPort.findByRefreshToken(refreshToken).orElseThrow(
+            () -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                "로그인된 사용자를 찾을 수 없습니다."
+            )
+        );
+
+        // STEP3 : 새로운 accessToken 제공
+        String newAccessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getRole(), user.getState());
+        String newRefreshToken = jwtTokenProvider.createRefreshToken();
+        this.userPort.updateRefreshToken(user.getId(), newRefreshToken);
+
+        return UserSignInResponseDto.builder()
+            .accessToken(newAccessToken)
+            .refreshToken(newRefreshToken)
+            .build();
+    }
 }

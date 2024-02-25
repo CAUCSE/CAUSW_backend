@@ -65,7 +65,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         "/api/**/users/admissions/apply",
                         "/api/**/users/**/is-duplicated",
                         "/api/**/users/email",
-                        "/api/**/users/password"
+                        "/api/**/users/password",
+                        "/api/**/users/token/update"
                 )
                 .permitAll()
                 .anyRequest().authenticated()

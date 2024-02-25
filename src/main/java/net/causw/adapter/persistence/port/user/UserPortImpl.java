@@ -54,6 +54,11 @@ public class UserPortImpl extends DomainModelMapper implements UserPort {
     }
 
     @Override
+    public Optional<UserDomainModel> findByRefreshToken(String refreshToken) {
+        return this.userRepository.findByRefreshToken(refreshToken).map(this::entityToDomainModel);
+    }
+
+    @Override
     public UserDomainModel create(UserDomainModel userDomainModel) {
         return this.entityToDomainModel(this.userRepository.save(User.from(userDomainModel)));
     }

@@ -65,12 +65,12 @@ public class JwtTokenProvider {
         return request.getHeader("Authorization");
     }
 
-    public boolean validateToken(String jwtToken, HttpServletRequest request) {
+    public boolean validateToken(String jwtToken) {
         try {
             Jws<Claims> claims = Jwts.parser().setSigningKey(this.secretKey).parseClaimsJws(jwtToken);
 
             if (claims.getBody().getExpiration().before(new Date())) {
-                throw new UnauthorizedException(ErrorCode.INVALID_JWT, "만료된 access 토큰입니다.");
+                throw new UnauthorizedException(ErrorCode.INVALID_JWT, "만료된 토큰입니다.");
             }
 
             if (claims.getBody().get("role").equals(Role.NONE.getValue()) ||
