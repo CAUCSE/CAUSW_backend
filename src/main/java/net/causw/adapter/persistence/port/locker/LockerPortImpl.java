@@ -1,6 +1,5 @@
 package net.causw.adapter.persistence.port.locker;
 
-import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.locker.Locker;
 import net.causw.adapter.persistence.locker.LockerLocation;
 import net.causw.adapter.persistence.port.mapper.DomainModelMapper;
@@ -15,18 +14,16 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
-@RequiredArgsConstructor
 public class LockerPortImpl extends DomainModelMapper implements LockerPort {
     private final LockerRepository lockerRepository;
 
-    @Override
-    public Optional<LockerDomainModel> findByIdForRead(String id) {
-        return this.lockerRepository.findByIdForRead(id).map(this::entityToDomainModel);
+    public LockerPortImpl(LockerRepository lockerRepository) {
+        this.lockerRepository = lockerRepository;
     }
 
     @Override
-    public Optional<LockerDomainModel> findByIdForWrite(String id) {
-        return this.lockerRepository.findByIdForWrite(id).map(this::entityToDomainModel);
+    public Optional<LockerDomainModel> findById(String id) {
+        return this.lockerRepository.findById(id).map(this::entityToDomainModel);
     }
 
     @Override
@@ -83,11 +80,11 @@ public class LockerPortImpl extends DomainModelMapper implements LockerPort {
 
     @Override
     public Long countEnableLockerByLocation(String locationId) {
-        return this.lockerRepository.countByLocationIdAndIsActiveIsTrueAndUserIdIsNull(locationId);
+        return this.lockerRepository.countEnableLockerByLocation(locationId);
     }
 
     @Override
     public Long countByLocation(String locationId) {
-        return this.lockerRepository.countByLocationId(locationId);
+        return this.lockerRepository.countByLocation(locationId);
     }
 }

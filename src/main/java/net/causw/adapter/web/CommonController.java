@@ -5,7 +5,6 @@ import net.causw.application.homepage.HomePageService;
 import net.causw.application.dto.homepage.HomePageResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -52,13 +51,12 @@ public class CommonController {
     @PostMapping("/api/v1/flag")
     @ResponseStatus(value = HttpStatus.OK)
     public Boolean createFlag(
+            @AuthenticationPrincipal String userId,
             @RequestParam String key,
             @RequestParam Boolean value
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
         return this.commonService.createFlag(
-                loginUserId,
+                userId,
                 key,
                 value
         );
@@ -67,13 +65,12 @@ public class CommonController {
     @PutMapping("/api/v1/flag")
     @ResponseStatus(value = HttpStatus.OK)
     public Boolean updateFlag(
+            @AuthenticationPrincipal String userId,
             @RequestParam String key,
             @RequestParam Boolean value
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
         return this.commonService.updateFlag(
-                loginUserId,
+                userId,
                 key,
                 value
         );

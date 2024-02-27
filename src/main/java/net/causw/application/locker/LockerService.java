@@ -83,7 +83,7 @@ public class LockerService {
                 )
         );
 
-        return LockerResponseDto.from(this.lockerPort.findByIdForRead(id).orElseThrow(
+        return LockerResponseDto.from(this.lockerPort.findById(id).orElseThrow(
                         () -> new BadRequestException(
                                 ErrorCode.ROW_DOES_NOT_EXIST,
                                 "사물함을 찾을 수 없습니다."
@@ -165,7 +165,7 @@ public class LockerService {
                 )
         );
 
-        LockerDomainModel lockerDomainModel = this.lockerPort.findByIdForWrite(lockerId).orElseThrow(
+        LockerDomainModel lockerDomainModel = this.lockerPort.findById(lockerId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "사물함을 찾을 수 없습니다."
@@ -216,7 +216,7 @@ public class LockerService {
                 )
         );
 
-        LockerDomainModel lockerDomainModel = this.lockerPort.findByIdForWrite(lockerId).orElseThrow(
+        LockerDomainModel lockerDomainModel = this.lockerPort.findById(lockerId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "사물함을 찾을 수 없습니다."
@@ -257,7 +257,7 @@ public class LockerService {
                 )
         );
 
-        LockerDomainModel lockerDomainModel = this.lockerPort.findByIdForWrite(lockerId).orElseThrow(
+        LockerDomainModel lockerDomainModel = this.lockerPort.findById(lockerId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "사물함을 찾을 수 없습니다."
@@ -466,7 +466,7 @@ public class LockerService {
 
     @Transactional(readOnly = true)
     public List<LockerLogResponseDto> findLog(String id) {
-        LockerDomainModel locker = this.lockerPort.findByIdForRead(id).orElseThrow(
+        LockerDomainModel locker = this.lockerPort.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "사물함을 찾을 수 없습니다."
@@ -498,7 +498,7 @@ public class LockerService {
                 .ifPresentOrElse(textField -> {
                             ValidatorBucket.of()
                                     .consistOf(LockerExpiredAtValidator.of(
-                                            LocalDateTime.parse(textField, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")),
+                                            LocalDateTime.parse(textField, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
                                             lockerExpiredAtRequestDto.getExpiredAt()))
                                     .validate();
 

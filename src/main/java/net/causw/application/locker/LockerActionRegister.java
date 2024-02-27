@@ -44,7 +44,7 @@ public class LockerActionRegister implements LockerAction {
             ValidatorBucket.of()
                     .consistOf(LockerAccessValidator.of(flagPort.findByKey(LOCKER_ACCESS).orElse(false)))
                     .validate();
-            //이미 등록 시 하루 제한
+
             lockerLogPort.whenRegister(updaterDomainModel).ifPresent(
                     createdAt -> ValidatorBucket.of()
                             .consistOf(TimePassedValidator.of(createdAt))
@@ -75,7 +75,7 @@ public class LockerActionRegister implements LockerAction {
                                 ErrorCode.INTERNAL_SERVER,
                                 "사물함 반납 기한을 설정하지 않았습니다."
                         )
-                ), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"))
+                ), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
         );
 
         return lockerPort.update(

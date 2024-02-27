@@ -29,11 +29,11 @@ public class CommonService {
 
     @Transactional
     public Boolean createFlag(
-            String loginUserId,
+            String userId,
             String key,
             Boolean value
     ) {
-        UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(
+        UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
@@ -58,11 +58,11 @@ public class CommonService {
 
     @Transactional
     public Boolean updateFlag(
-            String loginUserId,
+            String userId,
             String key,
             Boolean value
     ) {
-        UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(
+        UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "로그인된 사용자를 찾을 수 없습니다."
