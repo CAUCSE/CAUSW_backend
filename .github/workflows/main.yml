@@ -44,6 +44,7 @@ jobs:
       - name: Start redis-server
         uses: aws-actions/configure-aws-credentials@v1
         with:
+          aws-region: ap-northeast-2
           key: ${{ secrets.EC2_KEY_PROD }}
           host: ${{ secrets.EC2_HOST_PROD }}
           username: ${{ secrets.EC2_USER_PROD }}
