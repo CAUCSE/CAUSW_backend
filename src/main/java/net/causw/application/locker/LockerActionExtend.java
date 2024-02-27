@@ -49,7 +49,7 @@ public class LockerActionExtend implements LockerAction {
                         ErrorCode.INTERNAL_SERVER,
                         "사물함 반납 기한을 설정하지 않았습니다."
                 )
-        ), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        ), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"));
 
         Optional.ofNullable(lockerDomainModel.getExpiredAt()).ifPresent(expiredAt ->
                 ValidatorBucket.of()

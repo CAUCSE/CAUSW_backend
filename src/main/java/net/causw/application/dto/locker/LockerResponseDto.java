@@ -44,7 +44,7 @@ public class LockerResponseDto {
                 locker.getIsActive(),
                 locker.getUser().map(User::getId).orElse("").equals(user.getId()),
                 Optional.ofNullable(locker.getExpireDate()).map(
-                        expire -> expire.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))).orElse(null),
+                        expire -> expire.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"))).orElse(null),
                 locker.getUpdatedAt()
         );
     }
@@ -56,7 +56,7 @@ public class LockerResponseDto {
                 locker.getIsActive(),
                 locker.getUser().map(UserDomainModel::getId).orElse("").equals(user.getId()),
                 Optional.ofNullable(locker.getExpiredAt()).map(
-                        expire -> expire.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))).orElse(null),
+                        expire -> expire.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"))).orElse(null),
                 locker.getUpdatedAt()
         );
     }
@@ -74,7 +74,7 @@ public class LockerResponseDto {
                 locker.getIsActive(),
                 locker.getUser().map(UserDomainModel::getId).orElse("").equals(user.getId()),
                 Optional.ofNullable(locker.getExpiredAt()).map(
-                        expire -> expire.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))).orElse(null),
+                        expire -> expire.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"))).orElse(null),
                 locker.getUpdatedAt()
         );
     }
