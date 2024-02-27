@@ -15,6 +15,7 @@ public class UserDomainModel {
     private String id;
     private String studentId;
     private String profileImage;
+    private String refreshToken;
 
     @NotBlank(message = "사용자 이름이 입력되지 않았습니다.")
     private String name;
@@ -44,6 +45,7 @@ public class UserDomainModel {
             Integer admissionYear,
             Role role,
             String profileImage,
+            String refreshToken,
             UserState state
     ) {
         this.id = id;
@@ -54,6 +56,7 @@ public class UserDomainModel {
         this.admissionYear = admissionYear;
         this.role = role;
         this.profileImage = profileImage;
+        this.refreshToken = refreshToken;
         this.state = state;
     }
 
@@ -66,6 +69,7 @@ public class UserDomainModel {
             Integer admissionYear,
             Role role,
             String profileImage,
+            String refreshToken,
             UserState state
     ) {
         return new UserDomainModel(
@@ -77,6 +81,7 @@ public class UserDomainModel {
                 admissionYear,
                 role,
                 profileImage,
+                refreshToken,
                 state
         );
     }
@@ -98,6 +103,7 @@ public class UserDomainModel {
                 admissionYear,
                 Role.NONE,
                 profileImage,
+                null,
                 UserState.AWAIT
         );
     }

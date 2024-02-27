@@ -15,6 +15,7 @@ import net.causw.application.dto.user.UserPostsResponseDto;
 import net.causw.application.dto.user.UserPrivilegedResponseDto;
 import net.causw.application.dto.user.UserResponseDto;
 import net.causw.application.dto.user.UserSignInRequestDto;
+import net.causw.application.dto.user.UserSignInResponseDto;
 import net.causw.application.dto.user.UserUpdatePasswordRequestDto;
 import net.causw.application.dto.user.UserUpdateRequestDto;
 import net.causw.application.dto.user.UserUpdateRoleRequestDto;
@@ -530,8 +531,8 @@ public class UserService {
         return UserResponseDto.from(this.userPort.create(userDomainModel));
     }
 
-    @Transactional(readOnly = true)
-    public String signIn(UserSignInRequestDto userSignInRequestDto) {
+    @Transactional
+    public UserSignInResponseDto signIn(UserSignInRequestDto userSignInRequestDto) {
         UserDomainModel userDomainModel = this.userPort.findByEmail(userSignInRequestDto.getEmail()).orElseThrow(
                 () -> new UnauthorizedException(
                         ErrorCode.INVALID_SIGNIN,
@@ -562,11 +563,14 @@ public class UserService {
                 .consistOf(UserStateValidator.of(userDomainModel.getState()))
                 .validate();
 
-        return this.jwtTokenProvider.createToken(
-                userDomainModel.getId(),
-                userDomainModel.getRole(),
-                userDomainModel.getState()
-        );
+        // refreshToken은 user DB에 보관 (추후 redis로 옮기면 좋을듯)
+        String refreshToken = jwtTokenProvider.createRefreshToken();
+        this.userPort.updateRefreshToken(userDomainModel.getId(), refreshToken);
+
+        return UserSignInResponseDto.builder()
+                .accessToken(jwtTokenProvider.createAccessToken(userDomainModel.getId(), userDomainModel.getRole(), userDomainModel.getState()))
+                .refreshToken(jwtTokenProvider.createRefreshToken())
+                .build();
     }
 
     /**
@@ -1186,5 +1190,29 @@ public class UserService {
                         "User id checked, but exception occurred"
                 )
         ));
+    }
+
+    @Transactional
+    public UserSignInResponseDto updateToken(String refreshToken) {
+        // STEP1 : refreshToken이 유효한지 확인
+        jwtTokenProvider.validateToken(refreshToken);
+
+        // STEP2 : refreshToken으로 맵핑된 유저 찾기
+        UserDomainModel user = this.userPort.findByRefreshToken(refreshToken).orElseThrow(
+            () -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                "로그인된 사용자를 찾을 수 없습니다."
+            )
+        );
+
+        // STEP3 : 새로운 accessToken 제공
+        String newAccessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getRole(), user.getState());
+        String newRefreshToken = jwtTokenProvider.createRefreshToken();
+        this.userPort.updateRefreshToken(user.getId(), newRefreshToken);
+
+        return UserSignInResponseDto.builder()
+            .accessToken(newAccessToken)
+            .refreshToken(newRefreshToken)
+            .build();
     }
 }

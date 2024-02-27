@@ -4,10 +4,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import net.causw.application.user.UserService;
-import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
-import net.causw.application.dto.board.BoardResponseDto;
-import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.user.UserAdmissionCreateRequestDto;
 import net.causw.application.dto.user.UserAdmissionResponseDto;
 import net.causw.application.dto.user.UserAdmissionsResponseDto;
@@ -17,9 +13,15 @@ import net.causw.application.dto.user.UserPostsResponseDto;
 import net.causw.application.dto.user.UserPrivilegedResponseDto;
 import net.causw.application.dto.user.UserResponseDto;
 import net.causw.application.dto.user.UserSignInRequestDto;
+import net.causw.application.dto.user.UserSignInResponseDto;
 import net.causw.application.dto.user.UserUpdatePasswordRequestDto;
 import net.causw.application.dto.user.UserUpdateRequestDto;
 import net.causw.application.dto.user.UserUpdateRoleRequestDto;
+import net.causw.application.dto.user.UserUpdateTokenRequestDto;
+import net.causw.application.user.UserService;
+import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
+import net.causw.application.dto.board.BoardResponseDto;
+import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.domain.exceptions.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -165,7 +167,7 @@ public class UserController {
     @ResponseStatus(value = HttpStatus.OK)
     @ApiOperation(value = "로그인 API (완료)")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "OK", response = String.class),
+            @ApiResponse(code = 200, message = "OK", response = UserSignInResponseDto.class),
             @ApiResponse(code = 4101, message = "잘못된 이메일 입니다.", response = BadRequestException.class),
             @ApiResponse(code = 4101, message = "비밀번호를 잘못 입력했습니다.", response = BadRequestException.class),
             @ApiResponse(code = 4011, message = "신청서를 작성하지 않았습니다.", response = BadRequestException.class),
@@ -174,7 +176,7 @@ public class UserController {
             @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = BadRequestException.class),
             @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = BadRequestException.class)
     })
-    public String signIn(@RequestBody UserSignInRequestDto userSignInRequestDto) {
+    public UserSignInResponseDto signIn(@RequestBody UserSignInRequestDto userSignInRequestDto) {
         return this.userService.signIn(userSignInRequestDto);
     }
 
@@ -412,5 +414,16 @@ public class UserController {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
         return this.userService.restore(loginUserId, id);
+    }
+
+    @PutMapping(value = "/token/update")
+    @ResponseStatus(value = HttpStatus.OK)
+    @ApiOperation(value = "토큰 재발급 API", notes = "refreshToken을 넣어주세요.")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "OK", response = UserSignInResponseDto.class),
+        @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class)
+    })
+    public UserSignInResponseDto updateToken(@RequestBody UserUpdateTokenRequestDto userUpdateTokenRequestDto) {
+        return this.userService.updateToken(userUpdateTokenRequestDto.getRefreshToken());
     }
 }
