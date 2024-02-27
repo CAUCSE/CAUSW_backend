@@ -29,14 +29,13 @@ public class JwtTokenProvider {
     @Value("${spring.jwt.secret}")
     private String secretKey;
 
-    Date now = new Date();
-
     @PostConstruct
     protected void init() {
         this.secretKey = Base64.getEncoder().encodeToString(this.secretKey.getBytes());
     }
 
     public String createAccessToken(String userPk, Role role, UserState userState) {
+        Date now = new Date();
         Claims claims = Jwts.claims().setSubject(userPk);
         claims.put("role", role.getValue());
         claims.put("state", userState.getValue());
@@ -50,6 +49,7 @@ public class JwtTokenProvider {
     }
 
     public String createRefreshToken() {
+        Date now = new Date();
         return Jwts.builder()
                 .setExpiration(new Date(now.getTime() + StaticValue.JWT_REFRESH_TOKEN_VALID_TIME))
                 .signWith(SignatureAlgorithm.HS256, this.secretKey)
