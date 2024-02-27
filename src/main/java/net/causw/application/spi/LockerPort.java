@@ -6,7 +6,10 @@ import java.util.List;
 import java.util.Optional;
 
 public interface LockerPort {
-    Optional<LockerDomainModel> findById(String id);
+    Optional<LockerDomainModel> findByIdForRead(String id);
+
+    Optional<LockerDomainModel> findByIdForWrite(String id);
+
 
     Optional<LockerDomainModel> findByLockerNumber(Long lockerNumber);
 
