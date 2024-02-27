@@ -21,7 +21,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
         // API Access without JWT token or invalid JWT
         if (errorCode == null || errorCode == ErrorCode.INVALID_JWT) {
-            this.setResponse(response, ErrorCode.INVALID_JWT, "다시 로그인 해주세요.");
+            this.setResponse(response, ErrorCode.INVALID_JWT, "ACCESS TOKEN 만료");
             return;
         }
 
