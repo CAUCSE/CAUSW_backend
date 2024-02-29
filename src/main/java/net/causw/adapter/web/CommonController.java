@@ -1,10 +1,10 @@
 package net.causw.adapter.web;
 
+import io.swagger.annotations.ApiOperation;
 import net.causw.application.common.CommonService;
 import net.causw.application.homepage.HomePageService;
 import net.causw.application.dto.homepage.HomePageResponseDto;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,8 +34,11 @@ public class CommonController {
 
     @GetMapping("/api/v1/home")
     @ResponseStatus(value = HttpStatus.OK)
-    public List<HomePageResponseDto> getHomePage(@AuthenticationPrincipal String userId) {
-        return this.homePageService.getHomePage(userId);
+    @ApiOperation(value = "홈페이지 불러오기 API(완료)", notes = "동아리에 속하지 않고 삭제되지 않은 게시판과 해당 게시판의 최신 글 3개의 정보를 반환합니다. \n 개발 db상에는 동아리에 속하지 않은 많은 더미 데이터가 있지만 실제 운영될 때는 동아리에 속하지 않는 게시판은 학생회 공지게시판 뿐입니다.")
+    public List<HomePageResponseDto> getHomePage() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String loginUserId = ((String) principal);
+        return this.homePageService.getHomePage(loginUserId);
     }
 
     /*

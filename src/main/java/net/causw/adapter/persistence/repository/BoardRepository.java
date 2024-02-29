@@ -22,10 +22,10 @@ public interface BoardRepository extends JpaRepository<Board, String> {
     List<Board> findByOrderByCreatedAtAsc();
     List<Board> findByIsDeletedOrderByCreatedAtAsc(boolean IsDeleted);
 
-    @Query(value = "SELECT * FROM tb_board " +
-            "WHERE TB_BOARD.name = '앱 공지사항' " +
-            "OR TB_BOARD.name = '학생회 공지게시판' " +
-            "OR TB_BOARD.name = '전체 자유게시판'", nativeQuery = true)
+    @Query(value = "SELECT * FROM tb_board AS b " +
+            "WHERE b.name = '앱 공지사항' " +
+            "OR b.name = '학생회 공지게시판' " +
+            "OR b.name = '전체 자유게시판'", nativeQuery = true)
     List<Board> findBasicBoards();
 
     @Query(value = "SELECT * FROM tb_board WHERE tb_board.category = 'APP_NOTICE'", nativeQuery = true)
