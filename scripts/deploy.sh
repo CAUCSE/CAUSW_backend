@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+git init
+
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
 echo "> branch $BRANCH"

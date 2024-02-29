@@ -15,6 +15,7 @@ import net.causw.application.dto.user.UserPostsResponseDto;
 import net.causw.application.dto.user.UserPrivilegedResponseDto;
 import net.causw.application.dto.user.UserResponseDto;
 import net.causw.application.dto.user.UserSignInRequestDto;
+import net.causw.application.dto.user.UserSignInResponseDto;
 import net.causw.application.dto.user.UserUpdatePasswordRequestDto;
 import net.causw.application.dto.user.UserUpdateRequestDto;
 import net.causw.application.dto.user.UserUpdateRoleRequestDto;
@@ -181,7 +182,7 @@ public class UserService {
                         )))
                 .validate();
 
-        if (requestUser.getRole().getValue().contains("LEADER_CIRCLE")) {
+        if (requestUser.getRole().getValue().contains("LEADER_CIRCLE") && !requestUser.getRole().getValue().contains("PRESIDENT")) {
             List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(loginUserId);
             if (ownCircles.isEmpty()) {
                 throw new InternalServerException(
@@ -208,7 +209,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserResponseDto findByUserId(String loginUserId) {
+    public UserResponseDto findCurrentUser(String loginUserId) {
         UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -328,7 +329,7 @@ public class UserService {
                         )))
                 .validate();
 
-        if (user.getRole().getValue().contains("LEADER_CIRCLE")) {
+        if (user.getRole().getValue().contains("LEADER_CIRCLE") && !user.getRole().getValue().contains("PRESIDENT")) {
             List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(loginUserId);
             if (ownCircles.isEmpty()) {
                 throw new InternalServerException(
@@ -480,7 +481,7 @@ public class UserService {
                 .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
                 .validate();
 
-        if (user.getRole().equals(Role.ADMIN)) {
+        if (user.getRole().equals(Role.ADMIN) || user.getRole().getValue().contains("PRESIDENT")) {
             return this.circlePort.findAll()
                     .stream()
                     .map(CircleResponseDto::from)
@@ -530,8 +531,8 @@ public class UserService {
         return UserResponseDto.from(this.userPort.create(userDomainModel));
     }
 
-    @Transactional(readOnly = true)
-    public String signIn(UserSignInRequestDto userSignInRequestDto) {
+    @Transactional
+    public UserSignInResponseDto signIn(UserSignInRequestDto userSignInRequestDto) {
         UserDomainModel userDomainModel = this.userPort.findByEmail(userSignInRequestDto.getEmail()).orElseThrow(
                 () -> new UnauthorizedException(
                         ErrorCode.INVALID_SIGNIN,
@@ -562,11 +563,14 @@ public class UserService {
                 .consistOf(UserStateValidator.of(userDomainModel.getState()))
                 .validate();
 
-        return this.jwtTokenProvider.createToken(
-                userDomainModel.getId(),
-                userDomainModel.getRole(),
-                userDomainModel.getState()
-        );
+        // refreshToken은 user DB에 보관 (추후 redis로 옮기면 좋을듯)
+        String refreshToken = jwtTokenProvider.createRefreshToken();
+        this.userPort.updateRefreshToken(userDomainModel.getId(), refreshToken);
+
+        return UserSignInResponseDto.builder()
+                .accessToken(jwtTokenProvider.createAccessToken(userDomainModel.getId(), userDomainModel.getRole(), userDomainModel.getState()))
+                .refreshToken(jwtTokenProvider.createRefreshToken())
+                .build();
     }
 
     /**
@@ -684,15 +688,15 @@ public class UserService {
                         grantee.getRole()
                 ))
                 .validate();
+        /* 권한 위임
+        * 1. 권한 위임자와 넘겨주는 권한이 같을 경우, 권한을 위임자가 동아리장일 경우 진행
+        * 2. 넘겨받을 권한이 동아리장일 경우 넘겨받을 동아리 id 저장
+        * 3. DelegationFactory를 통해 권한 위임 진행(동아리장 위임일 경우 circle id를 넘겨주어서 어떤 동아리의 동아리장 권한을 위임하는 것인지 확인)
+        * */
 
-        /* Delegate the role
-         * 1) Check if the grantor's role is same
-         * 2) If yes, it is delegating process (The grantor may lose the role)
-         * 3) Then, the DelegationFactory match the instance for the delegation considering the role -> Then processed
-         */
-        if (grantor.getRole() == userUpdateRoleRequestDto.getRole()) {
+        if (grantor.getRole() == userUpdateRoleRequestDto.getRole() || grantor.getRole().getValue().contains("LEADER_CIRCLE")){
             String circleId = "";
-            if(grantor.getRole().getValue().contains("LEADER_CIRCLE")){
+            if(userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)){
                 circleId = userUpdateRoleRequestDto.getCircleId()
                         .orElseThrow(() -> new BadRequestException(
                                 ErrorCode.INVALID_PARAMETER,
@@ -700,15 +704,17 @@ public class UserService {
                         ));
             }
             DelegationFactory
-                    .create(grantor.getRole(), this.userPort, this.circlePort, this.circleMemberPort, circleId)
+                    .create(userUpdateRoleRequestDto.getRole(), this.userPort, this.circlePort, this.circleMemberPort, circleId)
                     .delegate(loginUserId, granteeId);
         }
-        /* Delegate the Circle Leader
-         * 1) Check if the grantor's role is Admin or President
-         * 2) Check if the role to update is Circle Leader
-         */
+        /* 권한 위임
+        * 1. 권한 위임자가 학생회장이거나 관리자일 경우 이면서 넘겨받을 권한이 동아리장 일때
+        * 2. 동아리장 업데이트
+        * 3. 기존 동아리장의 동아리장 권한 박탈
+        * */
+
         else if ((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
-                && userUpdateRoleRequestDto.getRole().getValue().contains("LEADER_CIRCLE")
+                && userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)
         ) {
             String circleId = userUpdateRoleRequestDto.getCircleId()
                     .orElseThrow(() -> new BadRequestException(
@@ -733,8 +739,16 @@ public class UserService {
 
             this.circlePort.findById(circleId)
                     .ifPresentOrElse(circle -> {
+
+                        circle.getLeader().ifPresent(leader -> {
+                            // Check if the leader is the leader of only one circle
+                            List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(leader.getId());
+                            if (ownCircles.size() == 1) {
+                                this.userPort.removeRole(leader.getId(), Role.LEADER_CIRCLE);
+                            }
+                        });
+
                         this.circlePort.updateLeader(circle.getId(), grantee);
-                        circle.getLeader().ifPresent(leader -> this.userPort.updateRole(leader.getId(), Role.COMMON));
                     }, () -> {
                         throw new BadRequestException(
                                 ErrorCode.ROW_DOES_NOT_EXIST,
@@ -742,10 +756,7 @@ public class UserService {
                         );
                     });
         }
-        /* Delegate the Leader Alumni
-         * 1) Check if the grantor's role is Admin or President
-         * 2) Check if the role to update is Leader Alumni
-         */
+
         else if ((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
                 && userUpdateRoleRequestDto.getRole().equals(Role.LEADER_ALUMNI)
         ) {
@@ -757,7 +768,7 @@ public class UserService {
                                     "동문회장이 존재하지 않습니다."
                             ));
 
-            this.userPort.updateRole(previousLeaderAlumni.getId(), Role.COMMON).orElseThrow(
+            this.userPort.removeRole(previousLeaderAlumni.getId(), Role.LEADER_ALUMNI).orElseThrow(
                     () -> new InternalServerException(
                             ErrorCode.INTERNAL_SERVER,
                             "User id checked, but exception occurred"
@@ -863,24 +874,24 @@ public class UserService {
         ));
     }
 
-    @Transactional
-    public UserResponseDto dropUser(String loginUserId, String userId) {
-        UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
-                )
-        );
+        @Transactional
+        public UserResponseDto dropUser(String loginUserId, String userId) {
+            UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
+                    () -> new BadRequestException(
+                            ErrorCode.ROW_DOES_NOT_EXIST,
+                            "로그인된 사용자를 찾을 수 없습니다."
+                    )
+            );
 
-        UserDomainModel droppedUser = this.userPort.findById(userId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "내보낼 사용자를 찾을 수 없습니다."
-                )
-        );
+            UserDomainModel droppedUser = this.userPort.findById(userId).orElseThrow(
+                    () -> new BadRequestException(
+                            ErrorCode.ROW_DOES_NOT_EXIST,
+                            "내보낼 사용자를 찾을 수 없습니다."
+                    )
+            );
 
-        ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(requestUser.getState()))
+            ValidatorBucket.of()
+                    .consistOf(UserStateValidator.of(requestUser.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
                 .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of()))
                 .consistOf(UserRoleWithoutAdminValidator.of(droppedUser.getRole(), List.of(Role.COMMON, Role.PROFESSOR)))
@@ -1179,5 +1190,29 @@ public class UserService {
                         "User id checked, but exception occurred"
                 )
         ));
+    }
+
+    @Transactional
+    public UserSignInResponseDto updateToken(String refreshToken) {
+        // STEP1 : refreshToken이 유효한지 확인
+        jwtTokenProvider.validateToken(refreshToken);
+
+        // STEP2 : refreshToken으로 맵핑된 유저 찾기
+        UserDomainModel user = this.userPort.findByRefreshToken(refreshToken).orElseThrow(
+            () -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                "로그인된 사용자를 찾을 수 없습니다."
+            )
+        );
+
+        // STEP3 : 새로운 accessToken 제공
+        String newAccessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getRole(), user.getState());
+        String newRefreshToken = jwtTokenProvider.createRefreshToken();
+        this.userPort.updateRefreshToken(user.getId(), newRefreshToken);
+
+        return UserSignInResponseDto.builder()
+            .accessToken(newAccessToken)
+            .refreshToken(newRefreshToken)
+            .build();
     }
 }

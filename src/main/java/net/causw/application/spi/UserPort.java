@@ -18,11 +18,15 @@ public interface UserPort {
 
     Optional<UserDomainModel> findByEmail(String email);
 
+    Optional<UserDomainModel> findByRefreshToken(String refreshToken);
+
     UserDomainModel create(UserDomainModel userDomainModel);
 
     Optional<UserDomainModel> update(String id, UserDomainModel userDomainModel);
 
     Optional<UserDomainModel> updateRole(String id, Role role);
+
+    Optional<UserDomainModel> removeRole(String id, Role role);
 
     List<UserDomainModel> findByRole(String role);
 
@@ -31,4 +35,6 @@ public interface UserPort {
     Optional<UserDomainModel> updatePassword(String id, String password);
 
     Optional<UserDomainModel> updateState(String id, UserState state);
+
+    Optional<UserDomainModel> updateRefreshToken(String id, String refreshToken);
 }

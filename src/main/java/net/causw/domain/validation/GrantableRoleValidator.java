@@ -31,11 +31,12 @@ public class GrantableRoleValidator extends AbstractValidator {
          *   => They will automatically granted while other granting process since the roles has unique user
          */
         if (this.grantorRole == Role.ADMIN) {
-            if (this.grantedRole != Role.ADMIN
-                    && this.granteeRole != Role.ADMIN
-                    && (this.granteeRole != Role.LEADER_CIRCLE && this.granteeRole != Role.LEADER_ALUMNI)
-                    && (this.grantedRole != this.granteeRole)) {
-                return;
+            if (this.granteeRole != Role.ADMIN) {
+                if(this.grantedRole.equals(Role.LEADER_CIRCLE)){
+                    return;
+                } else if(this.granteeRole != this.grantedRole){
+                    return;
+                }
             }
         }
         /* When role of grantor is President
@@ -44,20 +45,24 @@ public class GrantableRoleValidator extends AbstractValidator {
          * Grantee role should not be Leader Circle or Leader Alumni
          *   => They will automatically granted while other granting process since the roles has unique user
          */
-        if (this.grantorRole == Role.PRESIDENT) {
+        if (this.grantorRole.getValue().contains("PRESIDENT")) {
             if (this.grantedRole != Role.ADMIN
-                    && (this.granteeRole != Role.ADMIN && this.granteeRole != Role.PRESIDENT)
-                    && (this.granteeRole != Role.LEADER_CIRCLE && this.granteeRole != Role.LEADER_ALUMNI)
-                    && (this.grantedRole != this.granteeRole)) {
-                return;
+                    && (this.granteeRole != Role.ADMIN && this.granteeRole != Role.PRESIDENT)) {
+                if(this.grantedRole.equals(Role.LEADER_CIRCLE)){
+                    return;
+                } else if(this.granteeRole != this.grantedRole){
+                    return;
+                }
             }
         }
         /* When role of grantor is Leader_Circle
          * Granted role should be Leader_Circle, and Grantee role should be Common
          */
-        if (this.grantorRole == Role.LEADER_CIRCLE) {
-            if (this.grantedRole == Role.LEADER_CIRCLE && this.granteeRole == Role.COMMON) {
-                return;
+        if (this.grantorRole.getValue().contains("LEADER_CIRCLE")) {
+            if(this.grantedRole.equals(Role.LEADER_CIRCLE)){
+                if(this.granteeRole != Role.ADMIN && this.granteeRole != Role.LEADER_ALUMNI && this.granteeRole != Role.PROFESSOR){
+                    return;
+                }
             }
         }
         /* When role of grantor is Leader_Alumni

@@ -48,6 +48,9 @@ public class User extends BaseEntity {
     @Column(name = "profile_image", length = 500, nullable = true)
     private String profileImage;
 
+    @Column(name = "refresh_token", nullable = true)
+    private String refreshToken;
+
     @Column(name = "state", nullable = false)
     @Enumerated(EnumType.STRING)
     private UserState state;

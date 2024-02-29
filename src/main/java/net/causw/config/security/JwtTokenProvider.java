@@ -5,7 +5,9 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
+import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
+import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.model.enums.UserState;
@@ -27,21 +29,29 @@ public class JwtTokenProvider {
     @Value("${spring.jwt.secret}")
     private String secretKey;
 
+    Date now = new Date();
+
     @PostConstruct
     protected void init() {
         this.secretKey = Base64.getEncoder().encodeToString(this.secretKey.getBytes());
     }
 
-    public String createToken(String userPk, Role role, UserState userState) {
+    public String createAccessToken(String userPk, Role role, UserState userState) {
         Claims claims = Jwts.claims().setSubject(userPk);
         claims.put("role", role.getValue());
         claims.put("state", userState.getValue());
 
-        Date now = new Date();
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + StaticValue.JWT_TOKEN_VALID_TIME))
+                .setExpiration(new Date(now.getTime() + StaticValue.JWT_ACCESS_TOKEN_VALID_TIME))
+                .signWith(SignatureAlgorithm.HS256, this.secretKey)
+                .compact();
+    }
+
+    public String createRefreshToken() {
+        return Jwts.builder()
+                .setExpiration(new Date(now.getTime() + StaticValue.JWT_REFRESH_TOKEN_VALID_TIME))
                 .signWith(SignatureAlgorithm.HS256, this.secretKey)
                 .compact();
     }
@@ -55,22 +65,20 @@ public class JwtTokenProvider {
         return request.getHeader("Authorization");
     }
 
-    public boolean validateToken(String jwtToken, HttpServletRequest request) {
+    public boolean validateToken(String jwtToken) {
         try {
             Jws<Claims> claims = Jwts.parser().setSigningKey(this.secretKey).parseClaimsJws(jwtToken);
 
             if (claims.getBody().getExpiration().before(new Date())) {
-                request.setAttribute("exception", ErrorCode.INVALID_JWT);
-                return false;
+                throw new UnauthorizedException(ErrorCode.INVALID_JWT, "만료된 토큰입니다.");
             }
 
             if (claims.getBody().get("role").equals(Role.NONE.getValue()) ||
                     !claims.getBody().get("state").equals(UserState.ACTIVE.getValue())) {
-                request.setAttribute("exception", ErrorCode.NEED_SIGN_IN);
-                return false;
+                throw new BadRequestException(ErrorCode.NEED_SIGN_IN, "다시 로그인 하세요.");
             }
-
             return true;
+
         } catch (Exception e) {
             return false;
         }

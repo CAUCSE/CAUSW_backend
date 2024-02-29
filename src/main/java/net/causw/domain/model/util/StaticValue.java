@@ -17,13 +17,14 @@ public class StaticValue {
     public final static Integer USER_LIST_PAGE_SIZE = 30;
 
     // JWT Token
-    public static final Long JWT_TOKEN_VALID_TIME = 1000L * 60 * 60 * 24 * 7;
+    public static final Long JWT_ACCESS_TOKEN_VALID_TIME = 1000L * 60 * 30;    // 30min
+    public static final Long JWT_REFRESH_TOKEN_VALID_TIME = 1000L * 60 * 60 * 24 * 7;   // 7day
     public static final Integer JWT_ACCESS_THRESHOLD = 60 * 60 * 24;  // 1 day
 
     // Swagger configuration
     public static final String SWAGGER_API_NAME = "CAU_SW API";
     public static final String SWAGGER_API_VERSION = "0.0.1";
-    public static final String SWAGGER_API_DESCRIPTION = "2024 RENEW ver. 중앙대학교 소프트웨어학부 동문네트워크 BACKEND API Swagger 문서입니다.";
+    public static final String SWAGGER_API_DESCRIPTION = "2024 RENEW ver. 중앙대학교 소프트웨어학부 동문네트워크 BACKEND API 스웨거 문서입니다.";
 
     // Google mail
     public static final String GOOGLE_MAIL = "causwdevteam@gmail.com";

@@ -66,6 +66,8 @@ public class DelegationLeaderCircle implements Delegation {
                 )
         );
 
+        boolean isCircleLeader = circle.getLeader().map(UserDomainModel::getId).orElse("").equals(currentId);
+
         ValidatorBucket.of()
                 .consistOf(CircleMemberStatusValidator.of(
                         circleMember.getStatus(),
@@ -73,17 +75,21 @@ public class DelegationLeaderCircle implements Delegation {
                 ))
                 .validate();
 
+
+        List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(currentId);
+        if(isCircleLeader && ownCircles.size() == 1){
+            this.userPort.removeRole(currentId, Role.LEADER_CIRCLE).orElseThrow(
+                    () -> new InternalServerException(
+                            ErrorCode.INTERNAL_SERVER,
+                            "User id checked, but exception occurred"
+                    )
+            );
+        }
+
         this.circlePort.updateLeader(circle.getId(), newLeader).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         "Circle id and Leader id checked, but exception occurred"
-                )
-        );
-
-        this.userPort.updateRole(currentId, Role.COMMON).orElseThrow(
-                () -> new InternalServerException(
-                        ErrorCode.INTERNAL_SERVER,
-                        "User id checked, but exception occurred"
                 )
         );
     }
