@@ -22,7 +22,7 @@ import java.util.List;
 @Setter
 @Entity
 @NoArgsConstructor
-@Table(name = "TB_COMMENT")
+@Table(name = "tb_comment")
 public class Comment extends BaseEntity {
     @Column(name = "content", nullable = false)
     private String content;
