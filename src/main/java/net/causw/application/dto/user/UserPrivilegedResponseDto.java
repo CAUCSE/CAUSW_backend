@@ -9,17 +9,20 @@ import java.util.List;
 @Getter
 @Setter
 public class UserPrivilegedResponseDto {
+    private UserResponseDto presidentUsers;
     private List<UserResponseDto> councilUsers;
     private List<UserResponseDto> leaderGradeUsers;
     private List<UserResponseDto> leaderCircleUsers;
     private UserResponseDto leaderAlumni;
 
     private UserPrivilegedResponseDto(
+            UserResponseDto presidentUsers,
             List<UserResponseDto> councilUsers,
             List<UserResponseDto> leaderGradeUsers,
             List<UserResponseDto> leaderCircleUsers,
             UserResponseDto leaderAlumni
     ) {
+        this.presidentUsers = presidentUsers;
         this.councilUsers = councilUsers;
         this.leaderGradeUsers = leaderGradeUsers;
         this.leaderCircleUsers = leaderCircleUsers;
@@ -27,6 +30,7 @@ public class UserPrivilegedResponseDto {
     }
 
     public static UserPrivilegedResponseDto from(
+            List<UserResponseDto> presidentUsers,
             List<UserResponseDto> councilUsers,
             List<UserResponseDto> leaderGrade1,
             List<UserResponseDto> leaderGrade2,
@@ -44,6 +48,9 @@ public class UserPrivilegedResponseDto {
         councilUsers.addAll(vicePresidentUser);
 
         return new UserPrivilegedResponseDto(
+                presidentUsers.stream()
+                        .findFirst()
+                        .orElse(null),
                 councilUsers,
                 leaderGradeUsers,
                 leaderCircleUsers,
