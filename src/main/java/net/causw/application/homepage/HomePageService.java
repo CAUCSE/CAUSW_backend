@@ -10,7 +10,7 @@ import net.causw.application.spi.PostPort;
 import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
-import net.causw.domain.model.board.FavoriteBoardDomainModel;
+import net.causw.domain.model.board.BoardDomainModel;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.validation.UserRoleIsNoneValidator;
@@ -56,26 +56,21 @@ public class HomePageService {
                 .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
                 .validate();
 
-        // Create default favorite board if not exist
-        List<FavoriteBoardDomainModel> favoriteBoardDomainModelList = this.favoriteBoardPort.findByUserId(userId);
-        if (favoriteBoardDomainModelList.isEmpty()) {
-            favoriteBoardDomainModelList = this.boardPort.findBasicBoards()
-                    .stream()
-                    .map(boardDomainModel ->
-                            this.favoriteBoardPort.create(FavoriteBoardDomainModel.of(
-                                    userDomainModel,
-                                    boardDomainModel
-                            ))
-                    )
-                    .collect(Collectors.toList());
-        }
 
-        return favoriteBoardDomainModelList
+        List<BoardDomainModel> boardDomainModelList = this.boardPort.findAllBoard(false);
+        if(boardDomainModelList.isEmpty()){
+            throw new BadRequestException(
+                    ErrorCode.ROW_DOES_NOT_EXIST,
+                    "게시판을 찾을 수 없습니다."
+            );
+        }
+        return boardDomainModelList
                 .stream()
-                .map(favoriteBoardDomainModel -> HomePageResponseDto.from(
-                        BoardResponseDto.from(favoriteBoardDomainModel.getBoardDomainModel(), userDomainModel.getRole()),
+                .filter(board -> board.getCircle().isEmpty())
+                .map(boardDomainModel -> HomePageResponseDto.from(
+                        BoardResponseDto.from(boardDomainModel, userDomainModel.getRole()),
                         this.postPort.findAllPost(
-                                favoriteBoardDomainModel.getBoardDomainModel().getId(),
+                                boardDomainModel.getId(),
                                 0,
                                 StaticValue.HOME_POST_PAGE_SIZE
                         ).map(postDomainModel -> PostsResponseDto.from(
