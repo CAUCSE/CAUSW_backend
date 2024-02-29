@@ -19,7 +19,7 @@ import javax.persistence.Table;
 @Setter
 @Entity
 @NoArgsConstructor
-@Table(name = "TB_CIRCLE_MEMBER")
+@Table(name = "tb_circle_member")
 public class CircleMember extends BaseEntity {
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)

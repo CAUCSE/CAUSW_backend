@@ -31,11 +31,12 @@ public interface PostRepository extends JpaRepository<Post, String> {
     Page<Post> searchByTitle(@Param("title") String title, @Param("boardId") String boardId, Pageable pageable, boolean isDeleted);
 
 
-    @Query(value = "select * from tb_post as p " +
-            "join tb_board as b on p.board_id = b.id " +
-            "left join tb_circle as c on c.id = b.circle_id " +
-            "left join tb_circle_member as cm on p.user_id = cm.user_id and c.id = cm.circle_id " +
-            "where p.user_id = :user_id and p.is_deleted = false and b.is_deleted = false " +
-            "and (c is null or (cm.status = 'MEMBER' and c.is_deleted = false)) ORDER BY p.created_at DESC", nativeQuery = true)
+    @Query(value = "SELECT * FROM tb_post AS p " +
+            "JOIN tb_board AS b ON p.board_id = b.id " +
+            "LEFT JOIN tb_circle AS c ON c.id = b.circle_id " +
+            "LEFT JOIN tb_circle_member AS cm ON p.user_id = cm.user_id AND c.id = cm.circle_id " +
+            "WHERE p.user_id = :user_id AND p.is_deleted = false AND b.is_deleted = false " +
+            "AND (c.id is NULL " +
+            "OR (cm.status = 'MEMBER' AND c.is_deleted = false)) ORDER BY p.created_at DESC", nativeQuery = true)
     Page<Post> findByUserId(@Param("user_id") String userId, Pageable pageable);
 }

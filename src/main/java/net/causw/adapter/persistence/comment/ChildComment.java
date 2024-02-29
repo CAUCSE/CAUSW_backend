@@ -19,7 +19,7 @@ import javax.persistence.Table;
 @Setter
 @Entity
 @NoArgsConstructor
-@Table(name = "TB_CHILD_COMMENT")
+@Table(name = "tb_child_comment")
 public class ChildComment extends BaseEntity {
     @Column(name = "content", nullable = false)
     private String content;
