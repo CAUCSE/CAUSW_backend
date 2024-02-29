@@ -20,6 +20,6 @@ public interface CommentRepository extends JpaRepository<Comment, String> {
             "left join tb_circle as c on c.id = b.circle_id " +
             "left join tb_circle_member as cm on p.user_id = cm.user_id and c.id = cm.circle_id " +
             "where co.user_id = :user_id and p.is_deleted = false and b.is_deleted = false and  co.is_deleted = false " +
-            "and (c is null or (c.is_deleted = false and cm.status = 'MEMBER')) ORDER BY p.created_at DESC", nativeQuery = true)
+            "and (c.id is null or (c.is_deleted = false and cm.status = 'MEMBER')) ORDER BY p.created_at DESC", nativeQuery = true)
     Page<Comment> findByUserId(@Param("user_id") String userId, Pageable pageable);
 }
