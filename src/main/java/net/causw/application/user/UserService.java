@@ -378,6 +378,10 @@ public class UserService {
                 .validate();
 
         return UserPrivilegedResponseDto.from(
+                this.userPort.findByRole("PRESIDENT")
+                        .stream()
+                        .map(UserResponseDto::from)
+                        .collect(Collectors.toList()),
                 this.userPort.findByRole("COUNCIL")
                         .stream()
                         .map(UserResponseDto::from)
@@ -401,7 +405,7 @@ public class UserService {
                 this.userPort.findByRole("LEADER_CIRCLE")
                         .stream()
                         .map(userDomainModel -> {
-                            List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(loginUserId);
+                            List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(userDomainModel.getId());
                             if (ownCircles.isEmpty()) {
                                 throw new InternalServerException(
                                         ErrorCode.INTERNAL_SERVER,

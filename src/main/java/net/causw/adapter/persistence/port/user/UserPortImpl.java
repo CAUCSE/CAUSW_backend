@@ -127,7 +127,7 @@ public class UserPortImpl extends DomainModelMapper implements UserPort {
 
         return Arrays.stream(Role.values())
                 .filter(enumRole -> enumRole.getValue().contains(role))
-                .flatMap(enumRole -> this.userRepository.findByRole(enumRole).stream())
+                .flatMap(enumRole -> this.userRepository.findByRoleAndState(enumRole, UserState.ACTIVE).stream())
                 .map(this::entityToDomainModel)
                 .collect(Collectors.toList());
     }
