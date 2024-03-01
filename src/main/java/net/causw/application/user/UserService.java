@@ -434,6 +434,7 @@ public class UserService {
     public Page<UserResponseDto> findByState(
             String loginUserId,
             String state,
+            String name,
             Integer pageNum
     ) {
         UserDomainModel user = this.userPort.findById(loginUserId).orElseThrow(
@@ -449,7 +450,7 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(user.getRole(), List.of()))
                 .validate();
 
-        return this.userPort.findByState(UserState.of(state), pageNum)
+        return this.userPort.findByStateAndName(UserState.of(state), name, pageNum)
                 .map(userDomainModel -> {
                     if (userDomainModel.getRole().getValue().contains("LEADER_CIRCLE") && !state.equals("INACTIVE")) {
                         List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(userDomainModel.getId());
@@ -956,6 +957,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public Page<UserAdmissionsResponseDto> findAllAdmissions(
             String loginUserId,
+            String name,
             Integer pageNum
     ) {
         UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
@@ -971,7 +973,7 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of()))
                 .validate();
 
-        return this.userAdmissionPort.findAll(UserState.AWAIT, pageNum)
+        return this.userAdmissionPort.findAll(UserState.AWAIT, name, pageNum)
                 .map(UserAdmissionsResponseDto::from);
     }
 

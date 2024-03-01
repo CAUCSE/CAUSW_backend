@@ -15,8 +15,14 @@ public interface UserAdmissionRepository extends JpaRepository<UserAdmission, St
     Boolean existsByUser_Id(String userId);
 
     @Query(value = "SELECT * " +
-            "FROM TB_USER_ADMISSION AS ua " +
-            "LEFT JOIN TB_USER AS u ON ua.user_id = u.id " +
+            "FROM tb_user_admission AS ua " +
+            "LEFT JOIN tb_user AS u ON ua.user_id = u.id " +
             "WHERE u.state = :user_state ORDER BY ua.created_at DESC", nativeQuery = true)
     Page<UserAdmission> findAll(@Param("user_state") String userState, Pageable pageable);
+
+    @Query(value = "SELECT * " +
+            "FROM tb_user_admission AS ua " +
+            "LEFT JOIN tb_user AS u ON ua.user_id = u.id " +
+            "WHERE u.state = :user_state AND (:name IS NULL OR u.name LIKE %:name%) ORDER BY ua.created_at DESC", nativeQuery = true)
+    Page<UserAdmission> findAllWithName(@Param("user_state") String userState, @Param("name") String name, Pageable pageable);
 }
