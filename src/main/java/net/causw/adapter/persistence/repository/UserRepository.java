@@ -6,6 +6,8 @@ import net.causw.domain.model.enums.UserState;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -25,7 +27,23 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     List<User> findByRoleAndState(Role role, UserState state);
 
-    Page<User> findByStateOrderByCreatedAtAsc(UserState state, Pageable pageable);
-
-    Page<User> findByStateAndNameOrderByCreatedAtAsc(UserState state, String name, Pageable pageable);
+    @Query(value = "SELECT * "  +
+            "FROM tb_user AS u " +
+            "WHERE u.state = :state AND (:name IS NULL OR u.name LIKE %:name%) ORDER BY u.created_at DESC" , nativeQuery = true)
+    Page<User> findByStateAndName(@Param("state") String state, @Param("name") String name, Pageable pageable);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
