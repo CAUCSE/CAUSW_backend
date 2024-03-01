@@ -14,7 +14,7 @@ import javax.persistence.Table;
 @Getter
 @Entity
 @NoArgsConstructor
-@Table(name = "TB_USER_ADMISSION")
+@Table(name = "tb_user_admission")
 public class UserAdmission extends BaseEntity {
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false)
