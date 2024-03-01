@@ -14,7 +14,7 @@ import javax.persistence.Table;
 @Getter
 @Entity
 @NoArgsConstructor
-@Table(name = "TB_USER_ADMISSION_LOG")
+@Table(name = "tb_user_admission_log")
 public class UserAdmissionLog extends BaseEntity {
     @Column(name = "user_email", nullable = false)
     private String userEmail;

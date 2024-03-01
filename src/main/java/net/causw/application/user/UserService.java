@@ -451,8 +451,8 @@ public class UserService {
 
         return this.userPort.findByState(UserState.of(state), pageNum)
                 .map(userDomainModel -> {
-                    if (userDomainModel.getRole().getValue().contains("LEADER_CIRCLE")) {
-                        List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(loginUserId);
+                    if (userDomainModel.getRole().getValue().contains("LEADER_CIRCLE") && !state.equals("INACTIVE")) {
+                        List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(userDomainModel.getId());
                         if (ownCircles.isEmpty()) {
                             throw new InternalServerException(
                                     ErrorCode.INTERNAL_SERVER,
