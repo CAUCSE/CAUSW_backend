@@ -41,9 +41,8 @@ public class UserAdmissionPortImpl extends DomainModelMapper implements UserAdmi
     }
 
     @Override
-    public Page<UserAdmissionDomainModel> findAll(UserState userState, Integer pageNum) {
-        return this.userAdmissionRepository.findAll(userState.getValue(), this.pageableFactory.create(pageNum))
-                .map(this::entityToDomainModel);
+    public Page<UserAdmissionDomainModel> findAll(UserState userState, String name, Integer pageNum) {
+        return this.userAdmissionRepository.findAllWithName(userState.getValue(), name, this.pageableFactory.create(pageNum)).map(this::entityToDomainModel);
     }
 
     @Override

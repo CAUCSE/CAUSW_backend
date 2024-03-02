@@ -41,6 +41,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 
+
+
+
 @RestController
 @RequestMapping("/api/v1/users")
 @Api(tags = "User 컨트롤러")
@@ -134,10 +137,13 @@ public class UserController {
     @GetMapping(value = "/state/{state}")
     @ResponseStatus(value = HttpStatus.OK)
     @ApiOperation(value = "유저 관리 시 사용자의 상태(ACTIVE, INACTIVE 등) 에 따라 검색하는 API(완료)", notes = "유저를 관리할 때 사용자가 활성, 비활성 상태인지에 따라서 분류하여 검색할 수 있습니다. \n state 는 ACTIVE, INACTIVE, AWAIT, REJECT, DROP 으로 검색가능합니다.")
-    public Page<UserResponseDto> findByState(@PathVariable String state,@RequestParam(defaultValue = "0") Integer pageNum) {
+    public Page<UserResponseDto> findByState(
+            @PathVariable String state,
+            @RequestParam(required = false) String name,
+            @RequestParam(defaultValue = "0") Integer pageNum) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
-        return this.userService.findByState(loginUserId, state, pageNum);
+        return this.userService.findByState(loginUserId, state, name, pageNum);
     }
 
     /**
@@ -332,10 +338,13 @@ public class UserController {
     @GetMapping(value = "/admissions")
     @ResponseStatus(value = HttpStatus.OK)
     @ApiOperation(value = "모든 가입 대기 사용자 목록 확인 API (완료)")
-    public Page<UserAdmissionsResponseDto> findAllAdmissions(@RequestParam(defaultValue = "0") Integer pageNum) {
+    public Page<UserAdmissionsResponseDto> findAllAdmissions(
+            @RequestParam(defaultValue = "0") Integer pageNum,
+            @RequestParam(required = false) String name
+    ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
-        return this.userService.findAllAdmissions(loginUserId,pageNum);
+        return this.userService.findAllAdmissions(loginUserId, name, pageNum);
     }
 
     @PostMapping(value = "/admissions/apply")

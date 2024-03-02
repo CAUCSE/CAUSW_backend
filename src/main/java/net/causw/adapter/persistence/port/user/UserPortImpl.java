@@ -133,13 +133,12 @@ public class UserPortImpl extends DomainModelMapper implements UserPort {
     }
 
     @Override
-    public Page<UserDomainModel> findByState(UserState state, Integer pageNum) {
-        Page<User> users = this.userRepository.findByStateOrderByCreatedAtAsc(
-                state,
+    public Page<UserDomainModel> findByStateAndName(UserState state, String name, Integer pageNum) {
+        return this.userRepository.findByStateAndName(
+                state.getValue(),
+                name,
                 this.pageableFactory.create(pageNum, StaticValue.USER_LIST_PAGE_SIZE)
-        );
-        return users
-                .map(this::entityToDomainModel);
+        ).map(this::entityToDomainModel);
     }
 
     @Override

@@ -13,7 +13,7 @@ public interface UserAdmissionPort {
 
     Optional<UserAdmissionDomainModel> findByUserId(String id);
 
-    Page<UserAdmissionDomainModel> findAll(UserState userState, Integer pageNum);
+    Page<UserAdmissionDomainModel> findAll(UserState userState, String name, Integer pageNum);
 
     UserAdmissionDomainModel create(UserAdmissionDomainModel userAdmissionDomainModel);
 
