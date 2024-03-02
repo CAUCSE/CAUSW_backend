@@ -1,5 +1,6 @@
 package net.causw.application.user;
 
+import lombok.RequiredArgsConstructor;
 import net.causw.application.delegation.DelegationFactory;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
@@ -74,6 +75,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
     private final UserPort userPort;
     private final BoardPort boardPort;
@@ -92,44 +94,6 @@ public class UserService {
     private final PasswordGenerator passwordGenerator;
     private final PasswordEncoder passwordEncoder;
     private final Validator validator;
-
-    public UserService(
-            UserPort userPort,
-            BoardPort boardPort,
-            PostPort postPort,
-            UserAdmissionPort userAdmissionPort,
-            UserAdmissionLogPort userAdmissionLogPort,
-            CirclePort circlePort,
-            CircleMemberPort circleMemberPort,
-            CommentPort commentPort,
-            FavoriteBoardPort favoriteBoardPort,
-            LockerPort lockerPort,
-            LockerLogPort lockerLogPort,
-            JwtTokenProvider jwtTokenProvider,
-            //GcpFileUploader gcpFileUploader,
-            GoogleMailSender googleMailSender,
-            PasswordGenerator passwordGenerator,
-            PasswordEncoder passwordEncoder,
-            Validator validator
-    ) {
-        this.userPort = userPort;
-        this.boardPort = boardPort;
-        this.postPort = postPort;
-        this.userAdmissionPort = userAdmissionPort;
-        this.userAdmissionLogPort = userAdmissionLogPort;
-        this.circlePort = circlePort;
-        this.circleMemberPort = circleMemberPort;
-        this.commentPort = commentPort;
-        this.favoriteBoardPort = favoriteBoardPort;
-        this.lockerPort = lockerPort;
-        this.lockerLogPort = lockerLogPort;
-        this.jwtTokenProvider = jwtTokenProvider;
-        //this.gcpFileUploader = gcpFileUploader;
-        this.googleMailSender = googleMailSender;
-        this.passwordGenerator = passwordGenerator;
-        this.passwordEncoder = passwordEncoder;
-        this.validator = validator;
-    }
 
     @Transactional
     public UserResponseDto findPassword(

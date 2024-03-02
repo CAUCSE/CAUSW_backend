@@ -3,6 +3,7 @@ package net.causw.adapter.web;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import lombok.RequiredArgsConstructor;
 import net.causw.application.comment.CommentService;
 import net.causw.application.dto.comment.CommentCreateRequestDto;
 import net.causw.application.dto.comment.CommentResponseDto;
@@ -25,13 +26,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/comments")
 public class CommentController {
     private final CommentService commentService;
-
-    public CommentController(CommentService commentService) {
-        this.commentService = commentService;
-    }
 
     @GetMapping(params = "postId")
     @ResponseStatus(value = HttpStatus.OK)

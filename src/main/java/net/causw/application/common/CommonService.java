@@ -1,5 +1,6 @@
 package net.causw.application.common;
 
+import lombok.RequiredArgsConstructor;
 import net.causw.application.spi.FlagPort;
 import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
@@ -15,17 +16,10 @@ import javax.transaction.Transactional;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class CommonService {
     private final FlagPort flagPort;
     private final UserPort userPort;
-
-    public CommonService(
-            FlagPort flagPort,
-            UserPort userPort
-    ) {
-        this.flagPort = flagPort;
-        this.userPort = userPort;
-    }
 
     @Transactional
     public Boolean createFlag(

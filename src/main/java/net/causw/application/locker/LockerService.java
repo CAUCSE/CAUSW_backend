@@ -1,5 +1,6 @@
 package net.causw.application.locker;
 
+import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.locker.LockerCreateRequestDto;
 import net.causw.application.dto.locker.LockerExpiredAtRequestDto;
 import net.causw.application.dto.locker.LockerLocationCreateRequestDto;
@@ -44,6 +45,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class LockerService {
     private final LockerPort lockerPort;
     private final LockerLocationPort lockerLocationPort;
@@ -53,26 +55,6 @@ public class LockerService {
     private final Validator validator;
     private final LockerActionFactory lockerActionFactory;
     private final TextFieldPort textFieldPort;
-
-    public LockerService(
-            LockerPort lockerPort,
-            LockerLocationPort lockerLocationPort,
-            LockerLogPort lockerLogPort,
-            UserPort userPort,
-            FlagPort flagPort,
-            LockerActionFactory lockerActionFactory,
-            TextFieldPort textFieldPort,
-            Validator validator
-    ) {
-        this.lockerPort = lockerPort;
-        this.lockerLocationPort = lockerLocationPort;
-        this.lockerLogPort = lockerLogPort;
-        this.userPort = userPort;
-        this.flagPort = flagPort;
-        this.lockerActionFactory = lockerActionFactory;
-        this.textFieldPort = textFieldPort;
-        this.validator = validator;
-    }
 
     @Transactional(readOnly = true)
     public LockerResponseDto findById(String id, String userId) {

@@ -1,5 +1,6 @@
 package net.causw.application.inquiry;
 
+import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.inquiry.InquiryCreateRequestDto;
 import net.causw.application.dto.inquiry.InquiryResponseDto;
 import net.causw.application.spi.InquiryPort;
@@ -20,17 +21,12 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.validation.Validator;
 
 @Service
+@RequiredArgsConstructor
 public class InquiryService {
 
     private final UserPort userPort;
     private final Validator validator;
     private final InquiryPort inquiryPort;
-
-    public InquiryService(UserPort userPort, Validator validator, InquiryPort inquiryPort) {
-        this.userPort = userPort;
-        this.validator = validator;
-        this.inquiryPort = inquiryPort;
-    }
 
     @Transactional(readOnly = true)
     public InquiryResponseDto findById(

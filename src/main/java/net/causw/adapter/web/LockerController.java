@@ -1,6 +1,7 @@
 package net.causw.adapter.web;
 
 import io.swagger.annotations.ApiOperation;
+import lombok.RequiredArgsConstructor;
 import net.causw.application.locker.LockerService;
 import net.causw.application.dto.locker.LockerExpiredAtRequestDto;
 import net.causw.application.dto.locker.LockerLocationsResponseDto;
@@ -29,13 +30,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/lockers")
 public class LockerController {
     private final LockerService lockerService;
-
-    public LockerController(LockerService lockerService) {
-        this.lockerService = lockerService;
-    }
 
     @GetMapping(value = "/{id}")
     @ApiOperation(value = "사물함 조회 Api(완료)", notes = "사물함 id를 바탕으로 사물함 정보를 가져오는 Api 입니다.")

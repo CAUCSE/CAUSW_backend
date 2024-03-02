@@ -1,5 +1,6 @@
 package net.causw.application.homepage;
 
+import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.homepage.HomePageResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.post.PostsResponseDto;
@@ -22,27 +23,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class HomePageService {
     private final FavoriteBoardPort favoriteBoardPort;
     private final UserPort userPort;
     private final BoardPort boardPort;
     private final PostPort postPort;
     private final CommentPort commentPort;
-
-    public HomePageService(
-            FavoriteBoardPort favoriteBoardPort,
-            UserPort userPort,
-            BoardPort boardPort,
-            PostPort postPort,
-            CommentPort commentPort
-    ) {
-        this.favoriteBoardPort = favoriteBoardPort;
-        this.userPort = userPort;
-        this.boardPort = boardPort;
-        this.postPort = postPort;
-        this.commentPort = commentPort;
-    }
-
     public List<HomePageResponseDto> getHomePage(String userId) {
         UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(

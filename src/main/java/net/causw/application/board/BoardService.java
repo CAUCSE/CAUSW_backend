@@ -1,5 +1,6 @@
 package net.causw.application.board;
 
+import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.board.BoardCreateRequestDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.board.BoardUpdateRequestDto;
@@ -32,24 +33,12 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class BoardService {
     private final BoardPort boardPort;
     private final UserPort userPort;
     private final CirclePort circlePort;
     private final Validator validator;
-
-    public BoardService(
-            BoardPort boardPort,
-            UserPort userPort,
-            CirclePort circlePort,
-            Validator validator
-    ) {
-        this.boardPort = boardPort;
-        this.userPort = userPort;
-        this.circlePort = circlePort;
-        this.validator = validator;
-    }
-
     @Transactional(readOnly = true)
     public List<BoardResponseDto> findAllBoard(String loginUserId) {
         UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(

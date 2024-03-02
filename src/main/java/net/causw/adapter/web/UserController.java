@@ -4,6 +4,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.user.UserAdmissionCreateRequestDto;
 import net.causw.application.dto.user.UserAdmissionResponseDto;
 import net.causw.application.dto.user.UserAdmissionsResponseDto;
@@ -46,13 +47,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/users")
+@RequiredArgsConstructor
 @Api(tags = "User 컨트롤러")
 public class UserController {
     private final UserService userService;
-
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
 
     /**
      * 사용자 고유 id 값으로 사용자 정보를 조회하는 API

@@ -1,5 +1,6 @@
 package net.causw.application.comment;
 
+import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.comment.CommentCreateRequestDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.comment.CommentUpdateRequestDto;
@@ -36,6 +37,7 @@ import javax.validation.Validator;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class CommentService {
     private final CommentPort commentPort;
     private final UserPort userPort;
@@ -43,22 +45,6 @@ public class CommentService {
     private final CircleMemberPort circleMemberPort;
     private final ChildCommentPort childCommentPort;
     private final Validator validator;
-
-    public CommentService(
-            CommentPort commentPort,
-            UserPort userPort,
-            PostPort postPort,
-            CircleMemberPort circleMemberPort,
-            ChildCommentPort childCommentPort,
-            Validator validator
-    ) {
-        this.commentPort = commentPort;
-        this.userPort = userPort;
-        this.postPort = postPort;
-        this.circleMemberPort = circleMemberPort;
-        this.childCommentPort = childCommentPort;
-        this.validator = validator;
-    }
 
     @Transactional
     public CommentResponseDto createComment(String loginUserId, CommentCreateRequestDto commentCreateDto) {
