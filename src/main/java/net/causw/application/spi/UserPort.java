@@ -30,7 +30,7 @@ public interface UserPort {
 
     List<UserDomainModel> findByRole(String role);
 
-    Page<UserDomainModel> findByState(UserState state, Integer pageNum);
+    Page<UserDomainModel> findByStateAndName(UserState state, String name, Integer pageNum);
 
     Optional<UserDomainModel> updatePassword(String id, String password);
 
