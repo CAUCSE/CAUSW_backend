@@ -176,4 +176,13 @@ public class LockerController {
         String loginUserId = ((String) principal);
         this.lockerService.setExpireAt(loginUserId, lockerExpiredAtRequestDto);
     }
+
+    @PostMapping(value = "/createAll")
+    @ApiOperation(value = "사물함 전체 생성 API(관리자)" , notes = "현재 존재하는 모든 사물함을 생성하는 API입니다.")
+    @ResponseStatus(value = HttpStatus.OK)
+    public void createAllLockers(){
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String loginUserId = ((String) principal);
+        this.lockerService.createAllLockers(loginUserId);
+    }
 }
