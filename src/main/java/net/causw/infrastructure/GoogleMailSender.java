@@ -41,12 +41,11 @@ public class GoogleMailSender {
     ) {
         try {
             MimeMessage message = javaMailSender.createMimeMessage();
-            MimeMessageHelper messageHelper = new MimeMessageHelper(message, false,"UTF-8");
+            MimeMessageHelper messageHelper = new MimeMessageHelper(message, false, "UTF-8");
             messageHelper.setFrom(from);
             messageHelper.setSubject(title);
             messageHelper.setText(content, true);
             messageHelper.setTo(to);
-            System.out.println("hi");
             javaMailSender.send(message);
         } catch (MailException | MessagingException exception) {
             throw new ServiceUnavailableException(ErrorCode.SERVICE_UNAVAILABLE, "이메일을 전송할 수 없습니다.");
