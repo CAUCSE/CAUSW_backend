@@ -5,20 +5,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
-import net.causw.application.dto.user.UserAdmissionCreateRequestDto;
-import net.causw.application.dto.user.UserAdmissionResponseDto;
-import net.causw.application.dto.user.UserAdmissionsResponseDto;
-import net.causw.application.dto.user.UserCommentsResponseDto;
-import net.causw.application.dto.user.UserCreateRequestDto;
-import net.causw.application.dto.user.UserPostsResponseDto;
-import net.causw.application.dto.user.UserPrivilegedResponseDto;
-import net.causw.application.dto.user.UserResponseDto;
-import net.causw.application.dto.user.UserSignInRequestDto;
-import net.causw.application.dto.user.UserSignInResponseDto;
-import net.causw.application.dto.user.UserUpdatePasswordRequestDto;
-import net.causw.application.dto.user.UserUpdateRequestDto;
-import net.causw.application.dto.user.UserUpdateRoleRequestDto;
-import net.causw.application.dto.user.UserUpdateTokenRequestDto;
+import net.causw.application.dto.user.*;
 import net.causw.application.user.UserService;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
@@ -265,16 +252,16 @@ public class UserController {
      * @param studentId
      * @return
      */
-    @GetMapping(value = "/password")
+    @PutMapping(value = "/password/find")
     @ResponseStatus(value = HttpStatus.OK)
-    @ApiOperation(value = "비밀번호 찾기 API (미완료)", notes = "redis 사용해서 새로 작업할 예정입니다. (cc. 조명근)")
-    public UserResponseDto findPassword(@RequestParam String email, @RequestParam String name, @RequestParam String studentId) {
-        return this.userService.findPassword(email, name, studentId);
+    @ApiOperation(value = "비밀번호 찾기 API (완료)", notes = "비밀번호 재설정 이메일 전송 API입니다.")
+    public UserResponseDto findPassword(@RequestBody UserFindPasswordRequestDto userFindPasswordRequestDto) {
+        return this.userService.findPassword(userFindPasswordRequestDto);
     }
 
     @PutMapping(value = "/password")
     @ResponseStatus(value = HttpStatus.OK)
-    @ApiOperation(value = "비밀번호 업데이트 API")
+    @ApiOperation(value = "비밀번호 업데이트 API (완료)")
     public UserResponseDto updatePassword(@RequestBody UserUpdatePasswordRequestDto userUpdatePasswordRequestDto) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
@@ -425,7 +412,7 @@ public class UserController {
 
     @PutMapping(value = "/token/update")
     @ResponseStatus(value = HttpStatus.OK)
-    @ApiOperation(value = "토큰 재발급 API", notes = "refreshToken을 넣어주세요.")
+    @ApiOperation(value = "토큰 재발급 API(완료)", notes = "refreshToken을 넣어주세요.")
     @ApiResponses({
         @ApiResponse(code = 200, message = "OK", response = UserSignInResponseDto.class),
         @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class)
