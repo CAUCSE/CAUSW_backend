@@ -12,12 +12,10 @@ public interface BoardPort {
     List<BoardDomainModel> findAllBoard();
     List<BoardDomainModel> findAllBoard(boolean isDeleted);
 
-
     Optional<BoardDomainModel> findAppNotice();
 
     List<BoardDomainModel> findByCircleId(String circleId);
 
-    List<BoardDomainModel> findBasicBoards();
 
     BoardDomainModel createBoard(BoardDomainModel boardDomainModel);
 

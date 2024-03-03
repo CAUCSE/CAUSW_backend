@@ -25,16 +25,14 @@ public class BoardPortImpl extends DomainModelMapper implements BoardPort {
         return this.boardRepository.findById(id).map(this::entityToDomainModel);
     }
 
-
     @Override
     public List<BoardDomainModel> findAllBoard(List<String> circleIdList) {
-        List<Board> boardsInCircle = this.boardRepository.findByCircle_IdOrderByCreatedAtAsc(circleIdList);
-        List<Board> boardsOutsideCircle = this.boardRepository.findByCircle_IdNotInAndIsDeletedIsFalseOrderByCreatedAtAsc(circleIdList);
-
+        List<Board> boardsInCircle = this.boardRepository.findByCircle_IdInAndIsDeletedFalseOrderByCreatedAtAsc(circleIdList);
+        List<Board> boardsOutsideCircle = this.boardRepository.findByCircle_IdIsNullAndIsDeletedOrderByCreatedAtAsc(false);
 
         List<Board> allBoards = new ArrayList<>();
-        allBoards.addAll(boardsInCircle);
         allBoards.addAll(boardsOutsideCircle);
+        allBoards.addAll(boardsInCircle);
 
         return allBoards.stream()
                 .map(this::entityToDomainModel)
@@ -49,7 +47,7 @@ public class BoardPortImpl extends DomainModelMapper implements BoardPort {
     }
     @Override
     public List<BoardDomainModel> findAllBoard(boolean isDeleted) {
-        return this.boardRepository.findByIsDeletedOrderByCreatedAtAsc(isDeleted)
+        return this.boardRepository.findByCircle_IdIsNullAndIsDeletedOrderByCreatedAtAsc(isDeleted)
                 .stream()
                 .map(this::entityToDomainModel)
                 .collect(Collectors.toList());
@@ -68,13 +66,6 @@ public class BoardPortImpl extends DomainModelMapper implements BoardPort {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public List<BoardDomainModel> findBasicBoards() {
-        return this.boardRepository.findBasicBoards()
-                .stream()
-                .map(this::entityToDomainModel)
-                .collect(Collectors.toList());
-    }
 
     @Override
     public BoardDomainModel createBoard(BoardDomainModel boardDomainModel) {
