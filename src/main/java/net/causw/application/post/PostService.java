@@ -191,8 +191,9 @@ public class PostService {
 
         boolean isCircleLeader = false;
         if(userDomainModel.getRole().getValue().contains("LEADER_CIRCLE")){
-            isCircleLeader = boardDomainModel.getCircle().get()
-                .getLeader().map(UserDomainModel::getId).orElse("").equals(loginUserId);
+            isCircleLeader = boardDomainModel.getCircle()
+                    .map(circle -> circle.getLeader().map(UserDomainModel::getId).orElse("").equals(loginUserId))
+                    .orElse(false);
         }
 
         if (isCircleLeader || userDomainModel.getRole().equals(Role.ADMIN) || userDomainModel.getRole().getValue().contains("PRESIDENT")) {
