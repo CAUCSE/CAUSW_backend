@@ -30,7 +30,7 @@ public class UserRoleValidator extends AbstractValidator {
         }
 
         for (Role targetRole : this.targetRoleList) {
-            if (this.requestUserRole.equals(targetRole)) {
+            if (this.requestUserRole.getValue().contains(targetRole.getValue())) {
                 return;
             }
         }

@@ -5,6 +5,7 @@ import net.causw.application.dto.board.BoardCreateRequestDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.board.BoardUpdateRequestDto;
 import net.causw.application.spi.BoardPort;
+import net.causw.application.spi.CircleMemberPort;
 import net.causw.application.spi.CirclePort;
 import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
@@ -38,6 +39,7 @@ public class BoardService {
     private final BoardPort boardPort;
     private final UserPort userPort;
     private final CirclePort circlePort;
+    private final CircleMemberPort circleMemberPort;
     private final Validator validator;
     @Transactional(readOnly = true)
     public List<BoardResponseDto> findAllBoard(String loginUserId) {
@@ -53,32 +55,29 @@ public class BoardService {
                 .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
                 .validate();
 
-        if (userDomainModel.getRole().getValue().contains("LEADER_CIRCLE") && !userDomainModel.getRole().getValue().contains("PRESIDENT")) {
-            List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(loginUserId);
-            if (ownCircles.isEmpty()) {
-                throw new InternalServerException(
-                        ErrorCode.INTERNAL_SERVER,
-                        "해당 동아리장이 배정된 동아리가 없습니다."
-                );
-            }else{
-                List<String> circleIdList = ownCircles.stream().map(CircleDomainModel::getId).collect(Collectors.toList());
-                return this.boardPort.findAllBoard(circleIdList)
-                        .stream()
-                        .map(boardDomainModel -> BoardResponseDto.from(boardDomainModel, userDomainModel.getRole()))
-                        .collect(Collectors.toList());
-            }
-        }
-        else if(userDomainModel.getRole().equals(Role.ADMIN) || userDomainModel.getRole().getValue().contains("PRESIDENT") ){
+        if(userDomainModel.getRole().equals(Role.ADMIN) || userDomainModel.getRole().getValue().contains("PRESIDENT") ){
             return this.boardPort.findAllBoard()
                     .stream()
                     .map(boardDomainModel -> BoardResponseDto.from(boardDomainModel, userDomainModel.getRole()))
                     .collect(Collectors.toList());
         }
-        else{ //admin,president, leader_circle 제외 일반 user들
-            return this.boardPort.findAllBoard(false)
-                    .stream()
-                    .map(boardDomainModel -> BoardResponseDto.from(boardDomainModel, userDomainModel.getRole()))
-                    .collect(Collectors.toList());
+        else  {
+            List<CircleDomainModel> joinCircles = this.circleMemberPort.getCircleListByUserId(loginUserId);
+            if (joinCircles.isEmpty()) {
+                return this.boardPort.findAllBoard(false)
+                        .stream()
+                        .map(boardDomainModel -> BoardResponseDto.from(boardDomainModel, userDomainModel.getRole()))
+                        .collect(Collectors.toList());
+            }else{
+                List<String> circleIdList = joinCircles.stream()
+                        .map(CircleDomainModel::getId)
+                        .collect(Collectors.toList());
+
+                return this.boardPort.findAllBoard(circleIdList)
+                        .stream()
+                        .map(boardDomainModel -> BoardResponseDto.from(boardDomainModel, userDomainModel.getRole()))
+                        .collect(Collectors.toList());
+            }
         }
 
     }

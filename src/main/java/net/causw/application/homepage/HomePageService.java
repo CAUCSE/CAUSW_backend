@@ -53,7 +53,6 @@ public class HomePageService {
         }
         return boardDomainModelList
                 .stream()
-                .filter(board -> board.getCircle().isEmpty())
                 .map(boardDomainModel -> HomePageResponseDto.from(
                         BoardResponseDto.from(boardDomainModel, userDomainModel.getRole()),
                         this.postPort.findAllPost(
