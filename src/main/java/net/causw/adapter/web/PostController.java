@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import lombok.RequiredArgsConstructor;
 import net.causw.application.post.PostService;
 import net.causw.application.dto.post.BoardPostsResponseDto;
 import net.causw.application.dto.post.PostCreateRequestDto;
@@ -26,14 +27,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/posts")
 public class PostController {
     private final PostService postService;
-
-    public PostController(PostService postService) {
-        this.postService = postService;
-    }
-
     @GetMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
     @ApiOperation(value = "게시글 열람 API(완료)", notes = "게시판에서 게시글을 선택했을 때 게시글을 열람할 수 있습니다.")

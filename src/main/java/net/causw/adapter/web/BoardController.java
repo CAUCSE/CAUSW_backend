@@ -3,6 +3,7 @@ package net.causw.adapter.web;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import lombok.RequiredArgsConstructor;
 import net.causw.application.board.BoardService;
 import net.causw.application.dto.board.BoardCreateRequestDto;
 import net.causw.application.dto.board.BoardResponseDto;
@@ -26,13 +27,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/boards")
 public class BoardController {
     private final BoardService boardService;
-
-    public BoardController(BoardService boardService) {
-        this.boardService = boardService;
-    }
 
     @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
@@ -130,7 +128,7 @@ public class BoardController {
     }
 
     @PutMapping(value = "/{id}/restore")
-    @ResponseStatus(value =  HttpStatus.OK)
+    @ResponseStatus(value = HttpStatus.OK)
     @ApiOperation(value = "게시판 복구 API(완료)", notes = "id 에는 board id 값을 넣어주세요")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = String.class),
@@ -148,7 +146,7 @@ public class BoardController {
     public BoardResponseDto restoreBoard(
 
             @PathVariable String id
-    ){
+    ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
         return this.boardService.restoreBoard(loginUserId, id);

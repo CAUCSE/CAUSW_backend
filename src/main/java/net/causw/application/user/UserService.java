@@ -1,24 +1,12 @@
 package net.causw.application.user;
 
+import lombok.RequiredArgsConstructor;
 import net.causw.application.delegation.DelegationFactory;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.comment.CommentsOfUserResponseDto;
-import net.causw.application.dto.user.UserAdmissionCreateRequestDto;
-import net.causw.application.dto.user.UserAdmissionResponseDto;
-import net.causw.application.dto.user.UserAdmissionsResponseDto;
-import net.causw.application.dto.user.UserCommentsResponseDto;
-import net.causw.application.dto.user.UserCreateRequestDto;
-import net.causw.application.dto.user.UserPostResponseDto;
-import net.causw.application.dto.user.UserPostsResponseDto;
-import net.causw.application.dto.user.UserPrivilegedResponseDto;
-import net.causw.application.dto.user.UserResponseDto;
-import net.causw.application.dto.user.UserSignInRequestDto;
-import net.causw.application.dto.user.UserSignInResponseDto;
-import net.causw.application.dto.user.UserUpdatePasswordRequestDto;
-import net.causw.application.dto.user.UserUpdateRequestDto;
-import net.causw.application.dto.user.UserUpdateRoleRequestDto;
+import net.causw.application.dto.user.*;
 import net.causw.application.spi.BoardPort;
 import net.causw.application.spi.CircleMemberPort;
 import net.causw.application.spi.CirclePort;
@@ -74,6 +62,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
     private final UserPort userPort;
     private final BoardPort boardPort;
@@ -93,59 +82,17 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final Validator validator;
 
-    public UserService(
-            UserPort userPort,
-            BoardPort boardPort,
-            PostPort postPort,
-            UserAdmissionPort userAdmissionPort,
-            UserAdmissionLogPort userAdmissionLogPort,
-            CirclePort circlePort,
-            CircleMemberPort circleMemberPort,
-            CommentPort commentPort,
-            FavoriteBoardPort favoriteBoardPort,
-            LockerPort lockerPort,
-            LockerLogPort lockerLogPort,
-            JwtTokenProvider jwtTokenProvider,
-            //GcpFileUploader gcpFileUploader,
-            GoogleMailSender googleMailSender,
-            PasswordGenerator passwordGenerator,
-            PasswordEncoder passwordEncoder,
-            Validator validator
-    ) {
-        this.userPort = userPort;
-        this.boardPort = boardPort;
-        this.postPort = postPort;
-        this.userAdmissionPort = userAdmissionPort;
-        this.userAdmissionLogPort = userAdmissionLogPort;
-        this.circlePort = circlePort;
-        this.circleMemberPort = circleMemberPort;
-        this.commentPort = commentPort;
-        this.favoriteBoardPort = favoriteBoardPort;
-        this.lockerPort = lockerPort;
-        this.lockerLogPort = lockerLogPort;
-        this.jwtTokenProvider = jwtTokenProvider;
-        //this.gcpFileUploader = gcpFileUploader;
-        this.googleMailSender = googleMailSender;
-        this.passwordGenerator = passwordGenerator;
-        this.passwordEncoder = passwordEncoder;
-        this.validator = validator;
-    }
-
     @Transactional
     public UserResponseDto findPassword(
-            String email,
-            String name,
-            String studentId
+            UserFindPasswordRequestDto userFindPasswordRequestDto
     ) {
-        UserDomainModel requestUser = this.userPort.findForPassword(email, name, studentId).orElseThrow(
+        UserDomainModel requestUser = this.userPort.findForPassword(userFindPasswordRequestDto.getEmail(), userFindPasswordRequestDto.getName(), userFindPasswordRequestDto.getStudentId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "해당 사용자를 찾을 수 없습니다."
                 )
         );
-
         String newPassword = requestUser.updatePassword(this.passwordGenerator.generate());
-
         this.googleMailSender.sendNewPasswordMail(requestUser.getEmail(), newPassword);
         this.userPort.updatePassword(requestUser.getId(), passwordEncoder.encode(newPassword)).orElseThrow(
                 () -> new InternalServerException(
@@ -153,10 +100,8 @@ public class UserService {
                         "User id checked, but exception occurred"
                 )
         );
-
         return UserResponseDto.from(requestUser);
     }
-
     // Find process of another user
     @Transactional(readOnly = true)
     public UserResponseDto findByUserId(String targetUserId, String loginUserId) {

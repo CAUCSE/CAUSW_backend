@@ -1,5 +1,6 @@
 package net.causw.application.locker;
 
+import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.locker.LockerCreateRequestDto;
 import net.causw.application.dto.locker.LockerExpiredAtRequestDto;
 import net.causw.application.dto.locker.LockerLocationCreateRequestDto;
@@ -44,6 +45,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class LockerService {
     private final LockerPort lockerPort;
     private final LockerLocationPort lockerLocationPort;
@@ -53,26 +55,6 @@ public class LockerService {
     private final Validator validator;
     private final LockerActionFactory lockerActionFactory;
     private final TextFieldPort textFieldPort;
-
-    public LockerService(
-            LockerPort lockerPort,
-            LockerLocationPort lockerLocationPort,
-            LockerLogPort lockerLogPort,
-            UserPort userPort,
-            FlagPort flagPort,
-            LockerActionFactory lockerActionFactory,
-            TextFieldPort textFieldPort,
-            Validator validator
-    ) {
-        this.lockerPort = lockerPort;
-        this.lockerLocationPort = lockerLocationPort;
-        this.lockerLogPort = lockerLogPort;
-        this.userPort = userPort;
-        this.flagPort = flagPort;
-        this.lockerActionFactory = lockerActionFactory;
-        this.textFieldPort = textFieldPort;
-        this.validator = validator;
-    }
 
     @Transactional(readOnly = true)
     public LockerResponseDto findById(String id, String userId) {
@@ -511,5 +493,114 @@ public class LockerService {
                                 StaticValue.EXPIRED_AT,
                                 lockerExpiredAtRequestDto.getExpiredAt().toString())
                 );
+    }
+    @Transactional
+    public void createAllLockers(String creatorId) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
+        UserDomainModel creatorDomainModel = this.userPort.findById(creatorId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "로그인된 사용자를 찾을 수 없습니다."
+                )
+        );
+
+        LockerLocationDomainModel lockerLocationSecondFloorDomainModel = this.lockerLocationPort
+                .findById("402881cd8dcaaab2018dcab2d8820000")
+                .orElseThrow(
+                        () -> new BadRequestException(
+                                ErrorCode.ROW_DOES_NOT_EXIST,
+                                "등록된 사물함 위치가 아닙니다."
+                        )
+                );
+        LockerLocationDomainModel lockerLocationThirdFloorDomainModel = this.lockerLocationPort
+                .findById("402881cd8dcaaab2018dcab2fb980001")
+                .orElseThrow(
+                        () -> new BadRequestException(
+                                ErrorCode.ROW_DOES_NOT_EXIST,
+                                "등록된 사물함 위치가 아닙니다."
+                        )
+                );
+        LockerLocationDomainModel lockerLocationFourthFloorDomainModel = this.lockerLocationPort
+                .findById("402881cd8dcaaab2018dcab30ea90002")
+                .orElseThrow(
+                        () -> new BadRequestException(
+                                ErrorCode.ROW_DOES_NOT_EXIST,
+                                "등록된 사물함 위치가 아닙니다."
+                        )
+                );
+
+        for (Long lockerNumber = 1L; lockerNumber <= 136; lockerNumber++) {
+
+            LockerDomainModel lockerDomainModel = LockerDomainModel.of(
+                    lockerNumber,
+                    lockerLocationSecondFloorDomainModel
+            );
+
+            validatorBucket
+                    .consistOf(UserStateValidator.of(creatorDomainModel.getState()))
+                    .consistOf(UserRoleIsNoneValidator.of(creatorDomainModel.getRole()))
+                    .consistOf(UserRoleValidator.of(creatorDomainModel.getRole(), List.of(Role.PRESIDENT)))
+                    .consistOf(ConstraintValidator.of(lockerDomainModel, this.validator))
+                    .validate();
+
+            this.lockerPort.create(lockerDomainModel);
+
+            this.lockerLogPort.create(
+                    lockerNumber,
+                    lockerLocationSecondFloorDomainModel.getName(),
+                    creatorDomainModel,
+                    LockerLogAction.ENABLE,
+                    "사물함 최초 생성"
+            );
+        }
+        for (Long lockerNumber = 1L; lockerNumber <= 168; lockerNumber++) {
+
+            LockerDomainModel lockerDomainModel = LockerDomainModel.of(
+                    lockerNumber,
+                    lockerLocationThirdFloorDomainModel
+            );
+
+            validatorBucket
+                    .consistOf(UserStateValidator.of(creatorDomainModel.getState()))
+                    .consistOf(UserRoleIsNoneValidator.of(creatorDomainModel.getRole()))
+                    .consistOf(UserRoleValidator.of(creatorDomainModel.getRole(), List.of(Role.PRESIDENT)))
+                    .consistOf(ConstraintValidator.of(lockerDomainModel, this.validator))
+                    .validate();
+
+            this.lockerPort.create(lockerDomainModel);
+
+            this.lockerLogPort.create(
+                    lockerNumber,
+                    lockerLocationThirdFloorDomainModel.getName(),
+                    creatorDomainModel,
+                    LockerLogAction.ENABLE,
+                    "사물함 최초 생성"
+            );
+        }
+        for (Long lockerNumber = 1L; lockerNumber <= 32; lockerNumber++) {
+
+            LockerDomainModel lockerDomainModel = LockerDomainModel.of(
+                    lockerNumber,
+                    lockerLocationFourthFloorDomainModel
+            );
+
+            validatorBucket
+                    .consistOf(UserStateValidator.of(creatorDomainModel.getState()))
+                    .consistOf(UserRoleIsNoneValidator.of(creatorDomainModel.getRole()))
+                    .consistOf(UserRoleValidator.of(creatorDomainModel.getRole(), List.of(Role.PRESIDENT)))
+                    .consistOf(ConstraintValidator.of(lockerDomainModel, this.validator))
+                    .validate();
+
+            this.lockerPort.create(lockerDomainModel);
+
+            this.lockerLogPort.create(
+                    lockerNumber,
+                    lockerLocationFourthFloorDomainModel.getName(),
+                    creatorDomainModel,
+                    LockerLogAction.ENABLE,
+                    "사물함 최초 생성"
+            );
+        }
     }
 }

@@ -1,6 +1,7 @@
 package net.causw.adapter.web;
 
 import io.swagger.annotations.ApiOperation;
+import lombok.RequiredArgsConstructor;
 import net.causw.application.common.CommonService;
 import net.causw.application.homepage.HomePageService;
 import net.causw.application.dto.homepage.HomePageResponseDto;
@@ -19,18 +20,11 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping
 public class CommonController {
     private final HomePageService homePageService;
     private final CommonService commonService;
-
-    public CommonController(
-            HomePageService homePageService,
-            CommonService commonService
-    ) {
-        this.homePageService = homePageService;
-        this.commonService = commonService;
-    }
 
     @GetMapping("/api/v1/home")
     @ResponseStatus(value = HttpStatus.OK)

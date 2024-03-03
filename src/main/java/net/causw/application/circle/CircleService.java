@@ -1,5 +1,6 @@
 package net.causw.application.circle;
 
+import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.board.BoardOfCircleResponseDto;
 import net.causw.application.dto.circle.CircleBoardsResponseDto;
@@ -47,6 +48,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
+@RequiredArgsConstructor
 public class CircleService {
     private final CirclePort circlePort;
     private final UserPort userPort;
@@ -55,24 +57,6 @@ public class CircleService {
     private final PostPort postPort;
     private final CommentPort commentPort;
     private final Validator validator;
-
-    public CircleService(
-            CirclePort circlePort,
-            UserPort userPort,
-            CircleMemberPort circleMemberPort,
-            BoardPort boardPort,
-            PostPort postPort,
-            CommentPort commentPort,
-            Validator validator
-    ) {
-        this.circlePort = circlePort;
-        this.userPort = userPort;
-        this.circleMemberPort = circleMemberPort;
-        this.boardPort = boardPort;
-        this.postPort = postPort;
-        this.commentPort = commentPort;
-        this.validator = validator;
-    }
 
     @Transactional(readOnly = true)
     public CircleResponseDto findById(String circleId) {

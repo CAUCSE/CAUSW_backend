@@ -26,8 +26,6 @@ public class StaticValue {
     public static final String SWAGGER_API_VERSION = "0.0.1";
     public static final String SWAGGER_API_DESCRIPTION = "2024 RENEW ver. 중앙대학교 소프트웨어학부 동문네트워크 BACKEND API 스웨거 문서입니다.";
 
-    // Google mail
-    public static final String GOOGLE_MAIL = "causwdevteam@gmail.com";
 
     // GCP configuration
     public static final Long ATTACHMENT_LIMIT_SIZE = (long) (50 * 1024 * 1024);

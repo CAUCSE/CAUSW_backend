@@ -67,8 +67,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         "/api/**/users/email",
                         "/api/**/users/password",
                         "/api/**/users/token/update",
-                        "/api/**/storage/**"
-                )
+                        "/api/**/storage/**",
+                        "/api/**/users/password/find")
                 .permitAll()
                 .anyRequest().authenticated()
 
