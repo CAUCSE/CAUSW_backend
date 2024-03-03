@@ -13,20 +13,11 @@ import java.util.Optional;
 public interface BoardRepository extends JpaRepository<Board, String> {
     List<Board> findByCircle_IdAndIsDeletedIsFalseOrderByCreatedAtAsc(String circleId);
 
-    @Query(value = "SELECT * FROM tb_board AS b WHERE b.circle_id IN :circleIdList ORDER BY b.created_at ASC", nativeQuery = true)
-    List<Board> findByCircle_IdOrderByCreatedAtAsc(@Param("circleIdList") List<String> circleIdList);
+    List<Board> findByCircle_IdInAndIsDeletedFalseOrderByCreatedAtAsc(List<String> circleIdList);
 
-    @Query(value = "SELECT * FROM tb_board AS b WHERE (b.circle_id NOT IN :circleIdList OR b.circle_id IS NULL) AND b.is_deleted = false ORDER BY b.created_at ASC", nativeQuery = true)
-    List<Board> findByCircle_IdNotInAndIsDeletedIsFalseOrderByCreatedAtAsc(@Param("circleIdList") List<String> circleIdList);
+    List<Board> findByCircle_IdIsNullAndIsDeletedOrderByCreatedAtAsc(boolean isDeleted);
 
     List<Board> findByOrderByCreatedAtAsc();
-    List<Board> findByIsDeletedOrderByCreatedAtAsc(boolean IsDeleted);
-
-    @Query(value = "SELECT * FROM tb_board AS b " +
-            "WHERE b.name = '앱 공지사항' " +
-            "OR b.name = '학생회 공지게시판' " +
-            "OR b.name = '전체 자유게시판'", nativeQuery = true)
-    List<Board> findBasicBoards();
 
     @Query(value = "SELECT * FROM tb_board WHERE tb_board.category = 'APP_NOTICE'", nativeQuery = true)
     Optional<Board> findAppNotice();
