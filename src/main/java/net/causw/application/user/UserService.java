@@ -26,16 +26,12 @@ import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.board.BoardDomainModel;
 import net.causw.domain.model.circle.CircleDomainModel;
-import net.causw.domain.model.enums.CircleMemberStatus;
+import net.causw.domain.model.enums.*;
 import net.causw.domain.model.board.FavoriteBoardDomainModel;
-import net.causw.domain.model.enums.LockerLogAction;
 import net.causw.domain.model.post.PostDomainModel;
-import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.model.user.UserAdmissionDomainModel;
-import net.causw.domain.model.enums.UserAdmissionLogAction;
 import net.causw.domain.model.user.UserDomainModel;
-import net.causw.domain.model.enums.UserState;
 import net.causw.domain.validation.AdmissionYearValidator;
 import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.ConstraintValidator;
@@ -945,7 +941,7 @@ public class UserService {
         String attachImage = userAdmissionCreateRequestDto.getAttachImage()
                 .map(multipartFile -> {
                     if (multipartFile != null) {
-                        return storageService.uploadFile(multipartFile);
+                        return storageService.uploadFile(multipartFile, "USER_ADMISSION");
                     } else {
                         return null; // 업로드 시도하지 않고 null 반환
                     }

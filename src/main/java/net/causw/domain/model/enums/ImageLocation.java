@@ -1,7 +1,10 @@
 package net.causw.domain.model.enums;
 
+import lombok.Getter;
+
 import java.util.Arrays;
 
+@Getter
 public enum ImageLocation {
     USER_PROFILE("USER_PROFILE"),
     USER_ADMISSION("USER_ADMISSION"),
