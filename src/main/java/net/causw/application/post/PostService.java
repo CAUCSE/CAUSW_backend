@@ -478,7 +478,7 @@ public class PostService {
 
         postDomainModel.getBoard().getCircle()
                 .filter(circleDomainModel -> !deleterDomainModel.getRole().equals(Role.ADMIN) && !deleterDomainModel.getRole().getValue().contains("PRESIDENT"))
-                .ifPresent(
+                .ifPresentOrElse(
                         circleDomainModel -> {
                             CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
                                     deleterDomainModel.getId(),
@@ -495,6 +495,11 @@ public class PostService {
                                     .consistOf(CircleMemberStatusValidator.of(
                                             circleMemberDomainModel.getStatus(),
                                             List.of(CircleMemberStatus.MEMBER)
+                                    )).consistOf(ContentsAdminValidator.of(
+                                            deleterDomainModel.getRole(),
+                                            loginUserId,
+                                            postDomainModel.getWriter().getId(),
+                                            List.of(Role.LEADER_CIRCLE)
                                     ));
 
                             if (deleterDomainModel.getRole().getValue().contains("LEADER_CIRCLE") && !postDomainModel.getWriter().getId().equals(loginUserId)) {
@@ -509,23 +514,17 @@ public class PostService {
                                                 loginUserId
                                         ));
                             }
-                        }
+                        },
+                        () -> validatorBucket
+                                .consistOf(ContentsAdminValidator.of(
+                                        deleterDomainModel.getRole(),
+                                        loginUserId,
+                                        postDomainModel.getWriter().getId(),
+                                        List.of())
+                                )
                 );
 
         validatorBucket
-                .consistOf(ContentsAdminValidator.of(
-                        deleterDomainModel.getRole(),
-                        loginUserId,
-                        postDomainModel.getWriter().getId(),
-                        List.of(Role.LEADER_CIRCLE,
-                                Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
-                                Role.COUNCIL_N_LEADER_CIRCLE,
-                                Role.LEADER_1_N_LEADER_CIRCLE,
-                                Role.LEADER_2_N_LEADER_CIRCLE,
-                                Role.LEADER_3_N_LEADER_CIRCLE,
-                                Role.LEADER_4_N_LEADER_CIRCLE
-                        ))
-                )
                 .validate();
 
         return PostResponseDto.from(
@@ -574,7 +573,13 @@ public class PostService {
                 .consistOf(UserRoleIsNoneValidator.of(updaterDomainModel.getRole()))
                 .consistOf(PostNumberOfAttachmentsValidator.of(postUpdateRequestDto.getAttachmentList()))
                 .consistOf(TargetIsDeletedValidator.of(postDomainModel.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
-                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), StaticValue.DOMAIN_POST));
+                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), StaticValue.DOMAIN_POST))
+                .consistOf(ContentsAdminValidator.of(
+                        updaterDomainModel.getRole(),
+                        loginUserId,
+                        postDomainModel.getWriter().getId(),
+                        List.of()
+                ));
 
         postDomainModel.getBoard().getCircle()
                 .filter(circleDomainModel -> !updaterDomainModel.getRole().equals(Role.ADMIN) && !updaterDomainModel.getRole().getValue().contains("PRESIDENT"))
@@ -596,19 +601,6 @@ public class PostService {
                                             circleMemberDomainModel.getStatus(),
                                             List.of(CircleMemberStatus.MEMBER)
                                     ));
-
-                            if (updaterDomainModel.getRole().getValue().contains("LEADER_CIRCLE") && !postDomainModel.getWriter().getId().equals(loginUserId)) {
-                                validatorBucket
-                                        .consistOf(UserEqualValidator.of(
-                                                circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
-                                                        () -> new UnauthorizedException(
-                                                                ErrorCode.API_NOT_ALLOWED,
-                                                                "사용자가 해당 동아리의 동아리장이 아닙니다."
-                                                        )
-                                                ),
-                                                loginUserId
-                                        ));
-                            }
                         }
                 );
 
@@ -619,19 +611,6 @@ public class PostService {
         );
 
         validatorBucket
-                .consistOf(ContentsAdminValidator.of(
-                        updaterDomainModel.getRole(),
-                        loginUserId,
-                        postDomainModel.getWriter().getId(),
-                        List.of(Role.LEADER_CIRCLE,
-                                Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
-                                Role.COUNCIL_N_LEADER_CIRCLE,
-                                Role.LEADER_1_N_LEADER_CIRCLE,
-                                Role.LEADER_2_N_LEADER_CIRCLE,
-                                Role.LEADER_3_N_LEADER_CIRCLE,
-                                Role.LEADER_4_N_LEADER_CIRCLE
-                        )
-                ))
                 .consistOf(ConstraintValidator.of(postDomainModel, this.validator))
                 .validate();
 
@@ -690,7 +669,7 @@ public class PostService {
 
         postDomainModel.getBoard().getCircle()
                 .filter(circleDomainModel -> !restorerDomainModel.getRole().equals(Role.ADMIN) && !restorerDomainModel.getRole().getValue().contains("PRESIDENT"))
-                .ifPresent(
+                .ifPresentOrElse(
                         circleDomainModel -> {
                             CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
                                     loginUserId,
@@ -707,6 +686,12 @@ public class PostService {
                                     .consistOf(CircleMemberStatusValidator.of(
                                             circleMemberDomainModel.getStatus(),
                                             List.of(CircleMemberStatus.MEMBER)
+                                    ))
+                                    .consistOf(ContentsAdminValidator.of(
+                                            restorerDomainModel.getRole(),
+                                            loginUserId,
+                                            postDomainModel.getWriter().getId(),
+                                            List.of(Role.LEADER_CIRCLE)
                                     ));
 
                             if (restorerDomainModel.getRole().getValue().contains("LEADER_CIRCLE") && !postDomainModel.getWriter().getId().equals(loginUserId)) {
@@ -721,7 +706,14 @@ public class PostService {
                                                 loginUserId
                                         ));
                             }
-                        }
+                        },
+                        () -> validatorBucket
+                                .consistOf(ContentsAdminValidator.of(
+                                        restorerDomainModel.getRole(),
+                                        loginUserId,
+                                        postDomainModel.getWriter().getId(),
+                                        List.of()
+                                ))
                 );
 
         validatorBucket
@@ -729,14 +721,7 @@ public class PostService {
                         restorerDomainModel.getRole(),
                         loginUserId,
                         postDomainModel.getWriter().getId(),
-                        List.of(Role.LEADER_CIRCLE,
-                                Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
-                                Role.COUNCIL_N_LEADER_CIRCLE,
-                                Role.LEADER_1_N_LEADER_CIRCLE,
-                                Role.LEADER_2_N_LEADER_CIRCLE,
-                                Role.LEADER_3_N_LEADER_CIRCLE,
-                                Role.LEADER_4_N_LEADER_CIRCLE
-                        )
+                        List.of(Role.LEADER_CIRCLE)
                 ))
                 .validate();
 

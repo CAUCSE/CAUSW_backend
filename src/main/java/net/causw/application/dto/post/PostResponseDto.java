@@ -109,17 +109,15 @@ public class PostResponseDto {
         } else if (post.getWriter().getId().equals(user.getId())) {
             updatable = true;
             deletable = true;
+        } else if (user.getRole().getValue().contains("PRESIDENT")) {
+            deletable = true;
         } else {
             if (post.getBoard().getCircle().isPresent()) {
-                boolean isLeader = user.getRole() == Role.LEADER_CIRCLE
+                boolean isLeader = user.getRole().getValue().contains("LEADER_CIRCLE")
                         && post.getBoard().getCircle().get().getLeader()
                         .map(leader -> leader.getId().equals(user.getId()))
                         .orElse(false);
                 if (isLeader) {
-                    deletable = true;
-                }
-            } else {
-                if (user.getRole() == Role.PRESIDENT) {
                     deletable = true;
                 }
             }
@@ -159,17 +157,15 @@ public class PostResponseDto {
         } else if (post.getWriter().getId().equals(user.getId())) {
             updatable = true;
             deletable = true;
+        } else if (user.getRole().getValue().contains("PRESIDENT")) {
+            deletable = true;
         } else {
             if (post.getBoard().getCircle().isPresent()) {
-                boolean isLeader = user.getRole() == Role.LEADER_CIRCLE
+                boolean isLeader = user.getRole().getValue().contains("LEADER_CIRCLE")
                         && post.getBoard().getCircle().get().getLeader()
                         .map(leader -> leader.getId().equals(user.getId()))
                         .orElse(false);
                 if (isLeader) {
-                    deletable = true;
-                }
-            } else {
-                if (user.getRole() == Role.PRESIDENT) {
                     deletable = true;
                 }
             }
