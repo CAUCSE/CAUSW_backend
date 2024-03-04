@@ -1,5 +1,6 @@
 package net.causw.application.comment;
 
+import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.comment.ChildCommentsResponseDto;
 import net.causw.application.dto.comment.ChildCommentCreateRequestDto;
 import net.causw.application.dto.comment.ChildCommentResponseDto;
@@ -38,6 +39,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class ChildCommentService {
     private final ChildCommentPort childCommentPort;
     private final CommentPort commentPort;
@@ -46,21 +48,6 @@ public class ChildCommentService {
     private final PostPort postPort;
     private final Validator validator;
 
-    public ChildCommentService(
-            ChildCommentPort childCommentPort,
-            CommentPort commentPort,
-            UserPort userPort,
-            CircleMemberPort circleMemberPort,
-            PostPort postPort,
-            Validator validator
-    ) {
-        this.childCommentPort = childCommentPort;
-        this.commentPort = commentPort;
-        this.userPort = userPort;
-        this.circleMemberPort = circleMemberPort;
-        this.postPort = postPort;
-        this.validator = validator;
-    }
 
     @Transactional
     public ChildCommentResponseDto createChildComment(String creatorId, ChildCommentCreateRequestDto childCommentCreateRequestDto) {
@@ -367,17 +354,10 @@ public class ChildCommentService {
                                             deleterDomainModel.getRole(),
                                             deleterId,
                                             childCommentDomainModel.getWriter().getId(),
-                                            List.of(Role.LEADER_CIRCLE,
-                                                    Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
-                                                    Role.COUNCIL_N_LEADER_CIRCLE,
-                                                    Role.LEADER_1_N_LEADER_CIRCLE,
-                                                    Role.LEADER_2_N_LEADER_CIRCLE,
-                                                    Role.LEADER_3_N_LEADER_CIRCLE,
-                                                    Role.LEADER_4_N_LEADER_CIRCLE
-                                            )
+                                            List.of(Role.LEADER_CIRCLE)
                                     ));
 
-                            if (deleterDomainModel.getRole().getValue().contains("LEADER_CIRCLE")) {
+                            if (deleterDomainModel.getRole().getValue().contains("LEADER_CIRCLE") && !childCommentDomainModel.getWriter().getId().equals(deleterId)) {
                                 validatorBucket
                                         .consistOf(UserEqualValidator.of(
                                                 circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(

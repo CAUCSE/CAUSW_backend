@@ -1,5 +1,6 @@
 package net.causw.application.circle;
 
+import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.board.BoardOfCircleResponseDto;
 import net.causw.application.dto.circle.CircleBoardsResponseDto;
@@ -47,6 +48,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
+@RequiredArgsConstructor
 public class CircleService {
     private final CirclePort circlePort;
     private final UserPort userPort;
@@ -55,24 +57,6 @@ public class CircleService {
     private final PostPort postPort;
     private final CommentPort commentPort;
     private final Validator validator;
-
-    public CircleService(
-            CirclePort circlePort,
-            UserPort userPort,
-            CircleMemberPort circleMemberPort,
-            BoardPort boardPort,
-            PostPort postPort,
-            CommentPort commentPort,
-            Validator validator
-    ) {
-        this.circlePort = circlePort;
-        this.userPort = userPort;
-        this.circleMemberPort = circleMemberPort;
-        this.boardPort = boardPort;
-        this.postPort = postPort;
-        this.commentPort = commentPort;
-        this.validator = validator;
-    }
 
     @Transactional(readOnly = true)
     public CircleResponseDto findById(String circleId) {
@@ -237,14 +221,7 @@ public class CircleService {
                 .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                 .consistOf(UserRoleValidator.of(user.getRole(),
-                        List.of(Role.LEADER_CIRCLE,
-                                Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
-                                Role.COUNCIL_N_LEADER_CIRCLE,
-                                Role.LEADER_1_N_LEADER_CIRCLE,
-                                Role.LEADER_2_N_LEADER_CIRCLE,
-                                Role.LEADER_3_N_LEADER_CIRCLE,
-                                Role.LEADER_4_N_LEADER_CIRCLE
-                        )))
+                        List.of(Role.LEADER_CIRCLE)))
                 .validate();
 
         return this.circleMemberPort.findByCircleId(circleId, status)
@@ -322,7 +299,7 @@ public class CircleService {
         BoardDomainModel noticeBoard = BoardDomainModel.of(
                 newCircle.getName() + "공지 게시판",
                 newCircle.getName() + " 공지 게시판",
-                Stream.of(Role.ADMIN, Role.PRESIDENT, Role.LEADER_CIRCLE, Role.LEADER_1_N_LEADER_CIRCLE, Role.LEADER_2_N_LEADER_CIRCLE,
+                Stream.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT, Role.LEADER_CIRCLE, Role.LEADER_1_N_LEADER_CIRCLE, Role.LEADER_2_N_LEADER_CIRCLE,
                                 Role.LEADER_3_N_LEADER_CIRCLE, Role.LEADER_4_N_LEADER_CIRCLE, Role.PRESIDENT_N_LEADER_CIRCLE,
                                 Role.COUNCIL_N_LEADER_CIRCLE, Role.VICE_PRESIDENT_N_LEADER_CIRCLE)
                         .map(Role::getValue)
@@ -391,14 +368,7 @@ public class CircleService {
                 .consistOf(ConstraintValidator.of(circle, this.validator))
                 .consistOf(UserRoleValidator.of(
                         user.getRole(),
-                        List.of(Role.LEADER_CIRCLE,
-                                Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
-                                Role.COUNCIL_N_LEADER_CIRCLE,
-                                Role.LEADER_1_N_LEADER_CIRCLE,
-                                Role.LEADER_2_N_LEADER_CIRCLE,
-                                Role.LEADER_3_N_LEADER_CIRCLE,
-                                Role.LEADER_4_N_LEADER_CIRCLE
-                        )
+                        List.of(Role.LEADER_CIRCLE)
                 ));
 
         if (user.getRole().getValue().contains("LEADER_CIRCLE")) {
@@ -452,14 +422,7 @@ public class CircleService {
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                 .consistOf(UserRoleValidator.of(
                         user.getRole(),
-                        List.of(Role.LEADER_CIRCLE,
-                                Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
-                                Role.COUNCIL_N_LEADER_CIRCLE,
-                                Role.LEADER_1_N_LEADER_CIRCLE,
-                                Role.LEADER_2_N_LEADER_CIRCLE,
-                                Role.LEADER_3_N_LEADER_CIRCLE,
-                                Role.LEADER_4_N_LEADER_CIRCLE
-                        )
+                        List.of(Role.LEADER_CIRCLE)
                 ));
 
         if (user.getRole().getValue().contains("LEADER_CIRCLE")) {
@@ -641,14 +604,7 @@ public class CircleService {
                 .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                 .consistOf(UserRoleValidator.of(requestUser.getRole(),
-                        List.of(Role.LEADER_CIRCLE,
-                                Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
-                                Role.COUNCIL_N_LEADER_CIRCLE,
-                                Role.LEADER_1_N_LEADER_CIRCLE,
-                                Role.LEADER_2_N_LEADER_CIRCLE,
-                                Role.LEADER_3_N_LEADER_CIRCLE,
-                                Role.LEADER_4_N_LEADER_CIRCLE
-                        )));
+                        List.of(Role.LEADER_CIRCLE)));
 
         if (requestUser.getRole().getValue().contains("LEADER_CIRCLE")) {
             validatorBucket
@@ -737,14 +693,7 @@ public class CircleService {
                 .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(circleMember.getCircle().getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                 .consistOf(UserRoleValidator.of(requestUser.getRole(),
-                        List.of(Role.LEADER_CIRCLE,
-                                Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
-                                Role.COUNCIL_N_LEADER_CIRCLE,
-                                Role.LEADER_1_N_LEADER_CIRCLE,
-                                Role.LEADER_2_N_LEADER_CIRCLE,
-                                Role.LEADER_3_N_LEADER_CIRCLE,
-                                Role.LEADER_4_N_LEADER_CIRCLE
-                        )));
+                        List.of(Role.LEADER_CIRCLE)));
 
         if (requestUser.getRole().getValue().contains("LEADER_CIRCLE")) {
             validatorBucket

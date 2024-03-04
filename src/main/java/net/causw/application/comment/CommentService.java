@@ -1,5 +1,6 @@
 package net.causw.application.comment;
 
+import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.comment.CommentCreateRequestDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.comment.CommentUpdateRequestDto;
@@ -28,7 +29,6 @@ import net.causw.domain.validation.UserRoleIsNoneValidator;
 import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
 import org.springframework.data.domain.Page;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +36,7 @@ import javax.validation.Validator;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class CommentService {
     private final CommentPort commentPort;
     private final UserPort userPort;
@@ -43,22 +44,6 @@ public class CommentService {
     private final CircleMemberPort circleMemberPort;
     private final ChildCommentPort childCommentPort;
     private final Validator validator;
-
-    public CommentService(
-            CommentPort commentPort,
-            UserPort userPort,
-            PostPort postPort,
-            CircleMemberPort circleMemberPort,
-            ChildCommentPort childCommentPort,
-            Validator validator
-    ) {
-        this.commentPort = commentPort;
-        this.userPort = userPort;
-        this.postPort = postPort;
-        this.circleMemberPort = circleMemberPort;
-        this.childCommentPort = childCommentPort;
-        this.validator = validator;
-    }
 
     @Transactional
     public CommentResponseDto createComment(String loginUserId, CommentCreateRequestDto commentCreateDto) {
@@ -327,17 +312,10 @@ public class CommentService {
                                             deleterDomainModel.getRole(),
                                             loginUserId,
                                             commentDomainModel.getWriter().getId(),
-                                            List.of(Role.LEADER_CIRCLE,
-                                                    Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
-                                                    Role.COUNCIL_N_LEADER_CIRCLE,
-                                                    Role.LEADER_1_N_LEADER_CIRCLE,
-                                                    Role.LEADER_2_N_LEADER_CIRCLE,
-                                                    Role.LEADER_3_N_LEADER_CIRCLE,
-                                                    Role.LEADER_4_N_LEADER_CIRCLE
-                                            )
+                                            List.of(Role.LEADER_CIRCLE)
                                     ));
 
-                            if (deleterDomainModel.getRole().getValue().contains("LEADER_CIRCLE")) {
+                            if (deleterDomainModel.getRole().getValue().contains("LEADER_CIRCLE") && !commentDomainModel.getWriter().getId().equals(loginUserId)) {
                                 validatorBucket
                                         .consistOf(UserEqualValidator.of(
                                                 circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(

@@ -2,6 +2,7 @@ package net.causw.adapter.web;
 
 import com.sun.xml.bind.v2.runtime.reflect.opt.Const;
 import io.swagger.annotations.*;
+import lombok.RequiredArgsConstructor;
 import net.causw.application.circle.CircleService;
 import net.causw.application.dto.circle.CirclesResponseDto;
 import net.causw.application.dto.circle.CircleCreateRequestDto;
@@ -32,13 +33,10 @@ import java.util.List;
 
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/circles")
 public class CircleController {
     private final CircleService circleService;
-
-    public CircleController(CircleService circleService) {
-        this.circleService = circleService;
-    }
 
     /**
      * 동아리 고유 id 값으로 동아리 정보를 조회하는 API

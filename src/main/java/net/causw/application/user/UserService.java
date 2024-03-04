@@ -1,24 +1,12 @@
 package net.causw.application.user;
 
+import lombok.RequiredArgsConstructor;
 import net.causw.application.delegation.DelegationFactory;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.comment.CommentsOfUserResponseDto;
-import net.causw.application.dto.user.UserAdmissionCreateRequestDto;
-import net.causw.application.dto.user.UserAdmissionResponseDto;
-import net.causw.application.dto.user.UserAdmissionsResponseDto;
-import net.causw.application.dto.user.UserCommentsResponseDto;
-import net.causw.application.dto.user.UserCreateRequestDto;
-import net.causw.application.dto.user.UserPostResponseDto;
-import net.causw.application.dto.user.UserPostsResponseDto;
-import net.causw.application.dto.user.UserPrivilegedResponseDto;
-import net.causw.application.dto.user.UserResponseDto;
-import net.causw.application.dto.user.UserSignInRequestDto;
-import net.causw.application.dto.user.UserSignInResponseDto;
-import net.causw.application.dto.user.UserUpdatePasswordRequestDto;
-import net.causw.application.dto.user.UserUpdateRequestDto;
-import net.causw.application.dto.user.UserUpdateRoleRequestDto;
+import net.causw.application.dto.user.*;
 import net.causw.application.spi.BoardPort;
 import net.causw.application.spi.CircleMemberPort;
 import net.causw.application.spi.CirclePort;
@@ -30,6 +18,7 @@ import net.causw.application.spi.PostPort;
 import net.causw.application.spi.UserAdmissionLogPort;
 import net.causw.application.spi.UserAdmissionPort;
 import net.causw.application.spi.UserPort;
+import net.causw.application.storage.StorageService;
 import net.causw.config.security.JwtTokenProvider;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -37,16 +26,12 @@ import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.board.BoardDomainModel;
 import net.causw.domain.model.circle.CircleDomainModel;
-import net.causw.domain.model.enums.CircleMemberStatus;
 import net.causw.domain.model.board.FavoriteBoardDomainModel;
-import net.causw.domain.model.enums.LockerLogAction;
+import net.causw.domain.model.enums.*;
 import net.causw.domain.model.post.PostDomainModel;
-import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.model.user.UserAdmissionDomainModel;
-import net.causw.domain.model.enums.UserAdmissionLogAction;
 import net.causw.domain.model.user.UserDomainModel;
-import net.causw.domain.model.enums.UserState;
 import net.causw.domain.validation.AdmissionYearValidator;
 import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.ConstraintValidator;
@@ -74,6 +59,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
     private final UserPort userPort;
     private final BoardPort boardPort;
@@ -87,65 +73,23 @@ public class UserService {
     private final LockerPort lockerPort;
     private final LockerLogPort lockerLogPort;
     private final JwtTokenProvider jwtTokenProvider;
-    //private final GcpFileUploader gcpFileUploader;
+    private final StorageService storageService;
     private final GoogleMailSender googleMailSender;
     private final PasswordGenerator passwordGenerator;
     private final PasswordEncoder passwordEncoder;
     private final Validator validator;
 
-    public UserService(
-            UserPort userPort,
-            BoardPort boardPort,
-            PostPort postPort,
-            UserAdmissionPort userAdmissionPort,
-            UserAdmissionLogPort userAdmissionLogPort,
-            CirclePort circlePort,
-            CircleMemberPort circleMemberPort,
-            CommentPort commentPort,
-            FavoriteBoardPort favoriteBoardPort,
-            LockerPort lockerPort,
-            LockerLogPort lockerLogPort,
-            JwtTokenProvider jwtTokenProvider,
-            //GcpFileUploader gcpFileUploader,
-            GoogleMailSender googleMailSender,
-            PasswordGenerator passwordGenerator,
-            PasswordEncoder passwordEncoder,
-            Validator validator
-    ) {
-        this.userPort = userPort;
-        this.boardPort = boardPort;
-        this.postPort = postPort;
-        this.userAdmissionPort = userAdmissionPort;
-        this.userAdmissionLogPort = userAdmissionLogPort;
-        this.circlePort = circlePort;
-        this.circleMemberPort = circleMemberPort;
-        this.commentPort = commentPort;
-        this.favoriteBoardPort = favoriteBoardPort;
-        this.lockerPort = lockerPort;
-        this.lockerLogPort = lockerLogPort;
-        this.jwtTokenProvider = jwtTokenProvider;
-        //this.gcpFileUploader = gcpFileUploader;
-        this.googleMailSender = googleMailSender;
-        this.passwordGenerator = passwordGenerator;
-        this.passwordEncoder = passwordEncoder;
-        this.validator = validator;
-    }
-
     @Transactional
     public UserResponseDto findPassword(
-            String email,
-            String name,
-            String studentId
+            UserFindPasswordRequestDto userFindPasswordRequestDto
     ) {
-        UserDomainModel requestUser = this.userPort.findForPassword(email, name, studentId).orElseThrow(
+        UserDomainModel requestUser = this.userPort.findForPassword(userFindPasswordRequestDto.getEmail(), userFindPasswordRequestDto.getName(), userFindPasswordRequestDto.getStudentId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "해당 사용자를 찾을 수 없습니다."
                 )
         );
-
         String newPassword = requestUser.updatePassword(this.passwordGenerator.generate());
-
         this.googleMailSender.sendNewPasswordMail(requestUser.getEmail(), newPassword);
         this.userPort.updatePassword(requestUser.getId(), passwordEncoder.encode(newPassword)).orElseThrow(
                 () -> new InternalServerException(
@@ -153,7 +97,6 @@ public class UserService {
                         "User id checked, but exception occurred"
                 )
         );
-
         return UserResponseDto.from(requestUser);
     }
 
@@ -347,7 +290,7 @@ public class UserService {
                                             this.circleMemberPort.findByUserIdAndCircleId(userDomainModel.getId(), circleDomainModel.getId())
                                                     .map(circleMemberDomainModel ->
                                                             circleMemberDomainModel.getStatus() == CircleMemberStatus.MEMBER)
-                                    .orElse(false)))
+                                                    .orElse(false)))
                     .map(userDomainModel -> UserResponseDto.from(
                             userDomainModel,
                             ownCircles.stream().map(CircleDomainModel::getId).collect(Collectors.toList()),
@@ -502,6 +445,7 @@ public class UserService {
 
     /**
      * 회원가입 메소드
+     *
      * @param userCreateRequestDto
      * @return UserResponseDto
      */
@@ -580,6 +524,7 @@ public class UserService {
 
     /**
      * 이메일 중복 확인 메소드
+     *
      * @param email
      * @return DuplicatedCheckResponseDto
      */
@@ -600,6 +545,7 @@ public class UserService {
 
     /**
      * 사용자 정보 업데이트 메소드
+     *
      * @param loginUserId
      * @param userUpdateRequestDto
      * @return UserResponseDto
@@ -655,6 +601,7 @@ public class UserService {
 
     /**
      * 사용자 권한 업데이트 메소드
+     *
      * @param loginUserId
      * @param granteeId
      * @param userUpdateRoleRequestDto
@@ -694,14 +641,15 @@ public class UserService {
                 ))
                 .validate();
         /* 권한 위임
-        * 1. 권한 위임자와 넘겨주는 권한이 같을 경우, 권한을 위임자가 동아리장일 경우 진행
-        * 2. 넘겨받을 권한이 동아리장일 경우 넘겨받을 동아리 id 저장
-        * 3. DelegationFactory를 통해 권한 위임 진행(동아리장 위임일 경우 circle id를 넘겨주어서 어떤 동아리의 동아리장 권한을 위임하는 것인지 확인)
-        * */
+         * 1. 권한 위임자와 넘겨주는 권한이 같을 경우, 권한을 위임자가 동아리장일 경우 진행
+         * 2. 넘겨받을 권한이 동아리장일 경우 넘겨받을 동아리 id 저장
+         * 3. DelegationFactory를 통해 권한 위임 진행(동아리장 위임일 경우 circle id를 넘겨주어서 어떤 동아리의 동아리장 권한을 위임하는 것인지 확인)
+         * */
 
-        if (grantor.getRole() == userUpdateRoleRequestDto.getRole() || grantor.getRole().getValue().contains("LEADER_CIRCLE")){
+        if (grantor.getRole().getValue().contains(userUpdateRoleRequestDto.getRole().getValue())){
+
             String circleId = "";
-            if(userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)){
+            if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)) {
                 circleId = userUpdateRoleRequestDto.getCircleId()
                         .orElseThrow(() -> new BadRequestException(
                                 ErrorCode.INVALID_PARAMETER,
@@ -713,12 +661,13 @@ public class UserService {
                     .delegate(loginUserId, granteeId);
         }
         /* 권한 위임
-        * 1. 권한 위임자가 학생회장이거나 관리자일 경우 이면서 넘겨받을 권한이 동아리장 일때
-        * 2. 동아리장 업데이트
-        * 3. 기존 동아리장의 동아리장 권한 박탈
-        * */
+         * 1. 권한 위임자가 학생회장이거나 관리자일 경우 이면서 넘겨받을 권한이 동아리장 일때
+         * 2. 동아리장 업데이트
+         * 3. 기존 동아리장의 동아리장 권한 박탈
+         * */
 
-        else if ((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
+        else if (((grantor.getRole().getValue().contains("PRESIDENT") && !grantor.getRole().getValue().contains("VICE"))
+                || grantor.getRole().equals(Role.ADMIN))
                 && userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)
         ) {
             String circleId = userUpdateRoleRequestDto.getCircleId()
@@ -760,9 +709,11 @@ public class UserService {
                                 "소모임을 찾을 수 없습니다."
                         );
                     });
+
         }
 
-        else if ((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
+        else if (((grantor.getRole().getValue().contains("PRESIDENT") && !grantor.getRole().getValue().contains("VICE"))
+                || grantor.getRole().equals(Role.ADMIN))
                 && userUpdateRoleRequestDto.getRole().equals(Role.LEADER_ALUMNI)
         ) {
             UserDomainModel previousLeaderAlumni = this.userPort.findByRole("LEADER_ALUMNI")
@@ -879,24 +830,24 @@ public class UserService {
         ));
     }
 
-        @Transactional
-        public UserResponseDto dropUser(String loginUserId, String userId) {
-            UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
-                    () -> new BadRequestException(
-                            ErrorCode.ROW_DOES_NOT_EXIST,
-                            "로그인된 사용자를 찾을 수 없습니다."
-                    )
-            );
+    @Transactional
+    public UserResponseDto dropUser(String loginUserId, String userId) {
+        UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "로그인된 사용자를 찾을 수 없습니다."
+                )
+        );
 
-            UserDomainModel droppedUser = this.userPort.findById(userId).orElseThrow(
-                    () -> new BadRequestException(
-                            ErrorCode.ROW_DOES_NOT_EXIST,
-                            "내보낼 사용자를 찾을 수 없습니다."
-                    )
-            );
+        UserDomainModel droppedUser = this.userPort.findById(userId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "내보낼 사용자를 찾을 수 없습니다."
+                )
+        );
 
-            ValidatorBucket.of()
-                    .consistOf(UserStateValidator.of(requestUser.getState()))
+        ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(requestUser.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
                 .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of()))
                 .consistOf(UserRoleWithoutAdminValidator.of(droppedUser.getRole(), List.of(Role.COMMON, Role.PROFESSOR)))
@@ -993,14 +944,15 @@ public class UserService {
             );
         }
 
-        //TODO
-        String attachImage = "나중에 고치기";
-
-        /*userAdmissionCreateRequestDto.getAttachImage()
-                .map(image ->
-                        this.gcpFileUploader.uploadImageToGcp(image, ImageLocation.USER_ADMISSION))
-                .orElse(null);
-         */
+        String attachImage = userAdmissionCreateRequestDto.getAttachImage()
+                .map(multipartFile -> {
+                    if (multipartFile != null) {
+                        return storageService.uploadFile(multipartFile, "USER_ADMISSION");
+                    } else {
+                        return null; // 업로드 시도하지 않고 null 반환
+                    }
+                })
+                .orElse("https://caucse-s3-bucket-prod.s3.ap-northeast-2.amazonaws.com/basic_profile.png");
 
 
         UserAdmissionDomainModel userAdmissionDomainModel = UserAdmissionDomainModel.of(
@@ -1205,10 +1157,10 @@ public class UserService {
 
         // STEP2 : refreshToken으로 맵핑된 유저 찾기
         UserDomainModel user = this.userPort.findByRefreshToken(refreshToken).orElseThrow(
-            () -> new BadRequestException(
-                ErrorCode.ROW_DOES_NOT_EXIST,
-                "로그인된 사용자를 찾을 수 없습니다."
-            )
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "로그인된 사용자를 찾을 수 없습니다."
+                )
         );
 
         // STEP3 : 새로운 accessToken 제공
@@ -1217,8 +1169,8 @@ public class UserService {
         this.userPort.updateRefreshToken(user.getId(), newRefreshToken);
 
         return UserSignInResponseDto.builder()
-            .accessToken(newAccessToken)
-            .refreshToken(newRefreshToken)
-            .build();
+                .accessToken(newAccessToken)
+                .refreshToken(newRefreshToken)
+                .build();
     }
 }

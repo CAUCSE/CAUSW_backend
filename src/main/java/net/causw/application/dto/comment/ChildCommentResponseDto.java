@@ -72,17 +72,15 @@ public class ChildCommentResponseDto {
         } else if (comment.getWriter().getId().equals(user.getId())) {
             updatable = true;
             deletable = true;
+        } else if (user.getRole().getValue().contains("PRESIDENT")) {
+            deletable = true;
         } else {
             if (board.getCircle().isPresent()) {
-                boolean isLeader = user.getRole() == Role.LEADER_CIRCLE
+                boolean isLeader = user.getRole().getValue().contains("LEADER_CIRCLE")
                         && board.getCircle().get().getLeader()
                         .map(leader -> leader.getId().equals(user.getId()))
                         .orElse(false);
                 if (isLeader) {
-                    deletable = true;
-                }
-            } else {
-                if (user.getRole() == Role.PRESIDENT) {
                     deletable = true;
                 }
             }

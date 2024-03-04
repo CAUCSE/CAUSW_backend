@@ -22,7 +22,7 @@ public class ImageSizeValidator extends AbstractValidator {
         if (image.getSize() > IMAGE_LIMIT_SIZE) {
             throw new BadRequestException(
                     ErrorCode.INVALID_PARAMETER,
-                    "10MB 이상의 이미지를 첨부할 수 없습니다."
+                    "20MB 이상의 이미지를 첨부할 수 없습니다."
             );
         }
     }
