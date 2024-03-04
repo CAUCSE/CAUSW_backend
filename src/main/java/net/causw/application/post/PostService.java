@@ -1,5 +1,6 @@
 package net.causw.application.post;
 
+import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.post.BoardPostsResponseDto;
 import net.causw.application.dto.post.PostCreateRequestDto;
@@ -43,6 +44,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class PostService {
     private final PostPort postPort;
     private final UserPort userPort;
@@ -52,27 +54,6 @@ public class PostService {
     private final ChildCommentPort childCommentPort;
     private final FavoriteBoardPort favoriteBoardPort;
     private final Validator validator;
-
-
-    public PostService(
-            PostPort postPort,
-            UserPort userPort,
-            BoardPort boardPort,
-            CircleMemberPort circleMemberPort,
-            CommentPort commentPort,
-            ChildCommentPort childCommentPort,
-            FavoriteBoardPort favoriteBoardPort,
-            Validator validator
-    ) {
-        this.postPort = postPort;
-        this.userPort = userPort;
-        this.boardPort = boardPort;
-        this.circleMemberPort = circleMemberPort;
-        this.commentPort = commentPort;
-        this.childCommentPort = childCommentPort;
-        this.favoriteBoardPort = favoriteBoardPort;
-        this.validator = validator;
-    }
 
     @Transactional(readOnly = true)
     public PostResponseDto findPostById(String loginUserId, String postId) {

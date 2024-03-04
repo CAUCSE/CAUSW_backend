@@ -3,6 +3,7 @@ package net.causw.adapter.web;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import lombok.RequiredArgsConstructor;
 import net.causw.application.comment.ChildCommentService;
 import net.causw.application.dto.comment.ChildCommentsResponseDto;
 import net.causw.application.dto.comment.ChildCommentCreateRequestDto;
@@ -25,13 +26,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/child-comments")
 public class ChildCommentController {
     private final ChildCommentService childCommentService;
-
-    public ChildCommentController(ChildCommentService childCommentService) {
-        this.childCommentService = childCommentService;
-    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
