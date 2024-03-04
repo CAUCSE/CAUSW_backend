@@ -144,7 +144,7 @@ public class CircleService {
                 .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                 .validate();
 
-        if (!userDomainModel.getRole().equals(Role.ADMIN)) {
+        if (!(userDomainModel.getRole().equals(Role.ADMIN) || userDomainModel.getRole().getValue().contains("PRESIDENT"))) {
             CircleMemberDomainModel circleMember = this.circleMemberPort.findByUserIdAndCircleId(currentUserId, circleDomainModel.getId()).orElseThrow(
                     () -> new BadRequestException(
                             ErrorCode.NOT_MEMBER,
