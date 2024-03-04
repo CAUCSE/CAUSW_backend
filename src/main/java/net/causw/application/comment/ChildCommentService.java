@@ -354,17 +354,10 @@ public class ChildCommentService {
                                             deleterDomainModel.getRole(),
                                             deleterId,
                                             childCommentDomainModel.getWriter().getId(),
-                                            List.of(Role.LEADER_CIRCLE,
-                                                    Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
-                                                    Role.COUNCIL_N_LEADER_CIRCLE,
-                                                    Role.LEADER_1_N_LEADER_CIRCLE,
-                                                    Role.LEADER_2_N_LEADER_CIRCLE,
-                                                    Role.LEADER_3_N_LEADER_CIRCLE,
-                                                    Role.LEADER_4_N_LEADER_CIRCLE
-                                            )
+                                            List.of(Role.LEADER_CIRCLE)
                                     ));
 
-                            if (deleterDomainModel.getRole().getValue().contains("LEADER_CIRCLE")) {
+                            if (deleterDomainModel.getRole().getValue().contains("LEADER_CIRCLE") && !childCommentDomainModel.getWriter().getId().equals(deleterId)) {
                                 validatorBucket
                                         .consistOf(UserEqualValidator.of(
                                                 circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(

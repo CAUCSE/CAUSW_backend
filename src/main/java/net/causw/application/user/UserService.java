@@ -646,7 +646,8 @@ public class UserService {
          * 3. DelegationFactory를 통해 권한 위임 진행(동아리장 위임일 경우 circle id를 넘겨주어서 어떤 동아리의 동아리장 권한을 위임하는 것인지 확인)
          * */
 
-        if (grantor.getRole() == userUpdateRoleRequestDto.getRole() || grantor.getRole().getValue().contains("LEADER_CIRCLE")) {
+        if (grantor.getRole().getValue().contains(userUpdateRoleRequestDto.getRole().getValue())){
+
             String circleId = "";
             if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)) {
                 circleId = userUpdateRoleRequestDto.getCircleId()
@@ -665,7 +666,8 @@ public class UserService {
          * 3. 기존 동아리장의 동아리장 권한 박탈
          * */
 
-        else if ((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
+        else if (((grantor.getRole().getValue().contains("PRESIDENT") && !grantor.getRole().getValue().contains("VICE"))
+                || grantor.getRole().equals(Role.ADMIN))
                 && userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)
         ) {
             String circleId = userUpdateRoleRequestDto.getCircleId()
@@ -707,7 +709,11 @@ public class UserService {
                                 "소모임을 찾을 수 없습니다."
                         );
                     });
-        } else if ((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
+
+        }
+
+        else if (((grantor.getRole().getValue().contains("PRESIDENT") && !grantor.getRole().getValue().contains("VICE"))
+                || grantor.getRole().equals(Role.ADMIN))
                 && userUpdateRoleRequestDto.getRole().equals(Role.LEADER_ALUMNI)
         ) {
             UserDomainModel previousLeaderAlumni = this.userPort.findByRole("LEADER_ALUMNI")

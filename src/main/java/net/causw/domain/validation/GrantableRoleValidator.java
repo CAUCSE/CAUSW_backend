@@ -45,7 +45,7 @@ public class GrantableRoleValidator extends AbstractValidator {
          * Grantee role should not be Leader Circle or Leader Alumni
          *   => They will automatically granted while other granting process since the roles has unique user
          */
-        if (this.grantorRole.getValue().contains("PRESIDENT")) {
+        if (this.grantorRole.getValue().contains("PRESIDENT") && !this.grantorRole.getValue().contains("VICE")) {
             if (this.grantedRole != Role.ADMIN
                     && (this.granteeRole != Role.ADMIN && this.granteeRole != Role.PRESIDENT)) {
                 if(this.grantedRole.equals(Role.LEADER_CIRCLE)){

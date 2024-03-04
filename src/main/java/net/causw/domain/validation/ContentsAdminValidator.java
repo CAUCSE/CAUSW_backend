@@ -59,7 +59,7 @@ public class ContentsAdminValidator extends AbstractValidator {
         }
 
         for (Role adminRole : this.adminRoleList) {
-            if (this.requestUserRole.equals(adminRole)) {
+            if (this.requestUserRole.getValue().contains(adminRole.getValue())) {
                 return;
             }
         }

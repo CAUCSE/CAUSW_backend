@@ -109,14 +109,7 @@ public class BoardService {
                     validatorBucket
                             .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                             .consistOf(UserRoleValidator.of(creatorDomainModel.getRole(),
-                                    List.of(Role.LEADER_CIRCLE,
-                                            Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
-                                            Role.COUNCIL_N_LEADER_CIRCLE,
-                                            Role.LEADER_1_N_LEADER_CIRCLE,
-                                            Role.LEADER_2_N_LEADER_CIRCLE,
-                                            Role.LEADER_3_N_LEADER_CIRCLE,
-                                            Role.LEADER_4_N_LEADER_CIRCLE
-                                    )));
+                                    List.of(Role.LEADER_CIRCLE)));
 
                     if (creatorDomainModel.getRole().getValue().contains("LEADER_CIRCLE") && !creatorDomainModel.getRole().getValue().contains("PRESIDENT")) {
                         validatorBucket
@@ -189,14 +182,7 @@ public class BoardService {
                     validatorBucket
                             .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                             .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(),
-                                    List.of(Role.LEADER_CIRCLE,
-                                            Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
-                                            Role.COUNCIL_N_LEADER_CIRCLE,
-                                            Role.LEADER_1_N_LEADER_CIRCLE,
-                                            Role.LEADER_2_N_LEADER_CIRCLE,
-                                            Role.LEADER_3_N_LEADER_CIRCLE,
-                                            Role.LEADER_4_N_LEADER_CIRCLE
-                                    )));
+                                    List.of(Role.LEADER_CIRCLE)));
 
                     if (updaterDomainModel.getRole().getValue().contains("LEADER_CIRCLE") && !updaterDomainModel.getRole().getValue().contains("PRESIDENT")) {
                         validatorBucket
@@ -276,14 +262,7 @@ public class BoardService {
                     validatorBucket
                             .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                             .consistOf(UserRoleValidator.of(deleterDomainModel.getRole(),
-                                    List.of(Role.LEADER_CIRCLE,
-                                            Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
-                                            Role.COUNCIL_N_LEADER_CIRCLE,
-                                            Role.LEADER_1_N_LEADER_CIRCLE,
-                                            Role.LEADER_2_N_LEADER_CIRCLE,
-                                            Role.LEADER_3_N_LEADER_CIRCLE,
-                                            Role.LEADER_4_N_LEADER_CIRCLE
-                                    )));
+                                    List.of(Role.LEADER_CIRCLE)));
 
                     if (deleterDomainModel.getRole().getValue().contains("LEADER_CIRCLE") && !deleterDomainModel.getRole().getValue().contains("PRESIDENT")) {
                         validatorBucket
@@ -355,16 +334,9 @@ public class BoardService {
                     validatorBucket
                             .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                             .consistOf(UserRoleValidator.of(restorerDomainModel.getRole(),
-                                    List.of(Role.LEADER_CIRCLE,
-                                            Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
-                                            Role.COUNCIL_N_LEADER_CIRCLE,
-                                            Role.LEADER_1_N_LEADER_CIRCLE,
-                                            Role.LEADER_2_N_LEADER_CIRCLE,
-                                            Role.LEADER_3_N_LEADER_CIRCLE,
-                                            Role.LEADER_4_N_LEADER_CIRCLE
-                                    )));
+                                    List.of(Role.LEADER_CIRCLE)));
 
-                    if (restorerDomainModel.getRole().getValue().contains("LEADER_CIRCLE")) {
+                    if (restorerDomainModel.getRole().getValue().contains("LEADER_CIRCLE") && !restorerDomainModel.getRole().getValue().contains("PRESIDENT")) {
                         validatorBucket
                                 .consistOf(UserEqualValidator.of(
                                         circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
