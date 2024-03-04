@@ -96,7 +96,7 @@ public class CircleService {
         return this.circlePort.findAll()
                 .stream()
                 .map(circleDomainModel -> {
-                            if (userDomainModel.getRole().equals(Role.ADMIN)) {
+                            if (userDomainModel.getRole().equals(Role.ADMIN) || userDomainModel.getRole().getValue().contains("PRESIDENT")) {
                                 return CirclesResponseDto.from(
                                         circleDomainModel,
                                         this.circleMemberPort.getNumMember(circleDomainModel.getId()),
