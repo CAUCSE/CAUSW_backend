@@ -26,7 +26,6 @@ public class StorageService {
     public String uploadFile(MultipartFile multipartFile) {
 
         String fileName = S3Util.buildFileName(Objects.requireNonNull(multipartFile.getOriginalFilename()));
-
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentType(multipartFile.getContentType());
 
