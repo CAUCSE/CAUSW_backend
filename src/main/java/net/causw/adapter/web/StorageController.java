@@ -3,8 +3,6 @@ package net.causw.adapter.web;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.file.FileResponseDto;
 import net.causw.application.storage.StorageService;
-import net.causw.domain.model.enums.ImageLocation;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
