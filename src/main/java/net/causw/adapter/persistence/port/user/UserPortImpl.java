@@ -5,7 +5,10 @@ import net.causw.adapter.persistence.port.mapper.DomainModelMapper;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.repository.UserRepository;
 import net.causw.application.spi.UserPort;
+import net.causw.domain.exceptions.BadRequestException;
+import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.util.RedisUtils;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.model.enums.UserState;
@@ -22,12 +25,17 @@ public class UserPortImpl extends DomainModelMapper implements UserPort {
     private final UserRepository userRepository;
     private final PageableFactory pageableFactory;
 
+    private final RedisUtils redisUtils;
+
     public UserPortImpl(
             UserRepository userRepository,
-            PageableFactory pageableFactory
+            PageableFactory pageableFactory,
+            RedisUtils redisUtils
     ) {
+
         this.userRepository = userRepository;
         this.pageableFactory = pageableFactory;
+        this.redisUtils = redisUtils;
     }
 
     @Override
@@ -55,7 +63,7 @@ public class UserPortImpl extends DomainModelMapper implements UserPort {
 
     @Override
     public Optional<UserDomainModel> findByRefreshToken(String refreshToken) {
-        return this.userRepository.findByRefreshToken(refreshToken).map(this::entityToDomainModel);
+        return this.userRepository.findById(getUserIdFromRefreshToken(refreshToken)).map(this::entityToDomainModel);
     }
 
     @Override
@@ -164,12 +172,14 @@ public class UserPortImpl extends DomainModelMapper implements UserPort {
     }
 
     @Override
-    public Optional<UserDomainModel> updateRefreshToken(String id, String refreshToken) {
-        return this.userRepository.findById(id).map(
-            srcUser -> {
-                srcUser.setRefreshToken(refreshToken);
-                return this.entityToDomainModel(this.userRepository.save(srcUser));
-            }
-        );
+    public void updateRefreshToken(String id, String refreshToken) {
+        redisUtils.setData(refreshToken,id,StaticValue.JWT_REFRESH_TOKEN_VALID_TIME);
+    }
+
+    public String getUserIdFromRefreshToken(String refreshToken) {
+        return Optional.ofNullable(redisUtils.getData(refreshToken))
+                .orElseThrow(() -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "RefreshToken 유효성 검증 실패"));
     }
 }
