@@ -7,15 +7,15 @@ import net.causw.domain.model.util.StaticValue;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
-public class TimePassedValidator extends AbstractValidator {
+public class LockerTimePassedValidator extends AbstractValidator {
     private final LocalDateTime updatedAt;
 
-    private TimePassedValidator(LocalDateTime updatedAt) {
+    private LockerTimePassedValidator(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
 
-    public static TimePassedValidator of(LocalDateTime updatedAt) {
-        return new TimePassedValidator(updatedAt);
+    public static LockerTimePassedValidator of(LocalDateTime updatedAt) {
+        return new LockerTimePassedValidator(updatedAt);
     }
 
     @Override
@@ -26,7 +26,8 @@ public class TimePassedValidator extends AbstractValidator {
             LocalDateTime allowedTime = this.updatedAt.plusSeconds(StaticValue.JWT_ACCESS_THRESHOLD);
 
             String message =
-                            allowedTime.getYear() + "-" +
+                    "24시간 이내에 사물함 신청 내역이 있습니다." +
+                    allowedTime.getYear() + "-" +
                             allowedTime.getMonthValue() + "-" +
                             allowedTime.getDayOfMonth() + " " +
                             allowedTime.getHour() + ":" +
