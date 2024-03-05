@@ -176,10 +176,17 @@ public class UserPortImpl extends DomainModelMapper implements UserPort {
         redisUtils.setData(refreshToken,id,StaticValue.JWT_REFRESH_TOKEN_VALID_TIME);
     }
 
+    @Override
     public String getUserIdFromRefreshToken(String refreshToken) {
         return Optional.ofNullable(redisUtils.getData(refreshToken))
                 .orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "RefreshToken 유효성 검증 실패"));
+    }
+
+    @Override
+    public void signOut(String refreshToken, String accessToken) {
+        redisUtils.addToBlacklist(accessToken);
+        redisUtils.deleteData(refreshToken);
     }
 }

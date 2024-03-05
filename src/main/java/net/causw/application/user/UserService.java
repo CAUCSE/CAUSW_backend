@@ -1152,20 +1152,24 @@ public class UserService {
 
     @Transactional
     public UserSignInResponseDto updateToken(String refreshToken) {
-        // STEP1 : refreshToken이 유효한지 확인
-        jwtTokenProvider.validateToken(refreshToken);
-
-        // STEP2 : refreshToken으로 맵핑된 유저 찾기
+        // STEP1 : refreshToken으로 맵핑된 유저 찾기
         UserDomainModel user = this.userPort.findByRefreshToken(refreshToken).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         "RefreshToken 유효성 검증 실패"
                 )
         );
-        // STEP3 : 새로운 accessToken 제공
+        // STEP2 : 새로운 accessToken 제공
         String newAccessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getRole(), user.getState());
         return UserSignInResponseDto.builder()
                 .accessToken(newAccessToken)
+                .build();
+    }
+
+    public UserSignOutResponseDto signOut(UserSignOutRequestDto userSignOutRequestDto){
+        userPort.signOut(userSignOutRequestDto.getRefreshToken(), userSignOutRequestDto.getAccessToken());
+        return UserSignOutResponseDto.builder()
+                .message("로그아웃 성공")
                 .build();
     }
 }

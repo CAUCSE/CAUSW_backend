@@ -25,4 +25,12 @@ public class RedisUtils {
     public void deleteData(String key){
         redisTemplate.delete(key);
     }
+
+    public void addToBlacklist(String token) {
+        redisTemplate.opsForValue().set(token, "BLACKLISTED", StaticValue.JWT_ACCESS_TOKEN_VALID_TIME, TimeUnit.SECONDS);
+    }
+
+    public boolean isTokenBlacklisted(String token) {
+        return "BLACKLISTED".equals(redisTemplate.opsForValue().get(token));
+    }
 }

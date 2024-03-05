@@ -37,4 +37,8 @@ public interface UserPort {
     Optional<UserDomainModel> updateState(String id, UserState state);
 
     void updateRefreshToken(String id, String refreshToken);
+
+    String getUserIdFromRefreshToken(String refreshToken);
+
+    void signOut(String refreshToken, String accessToken);
 }
