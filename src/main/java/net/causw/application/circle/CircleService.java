@@ -222,6 +222,12 @@ public class CircleService {
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                 .consistOf(UserRoleValidator.of(user.getRole(),
                         List.of(Role.LEADER_CIRCLE)))
+                .consistOf(UserEqualValidator.of(user.getId(),circle.getLeader().orElseThrow(
+                        () -> new BadRequestException(
+                                ErrorCode.ROW_DOES_NOT_EXIST,
+                                "해당 동아리의 동아리장을 찾을 수 없습니다."
+                        )
+                ).getId()))
                 .validate();
 
         return this.circleMemberPort.findByCircleId(circleId, status)
