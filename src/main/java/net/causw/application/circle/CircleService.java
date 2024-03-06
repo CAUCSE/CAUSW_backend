@@ -354,9 +354,13 @@ public class CircleService {
             );
         }
 
+        String mainImage = circleUpdateRequestDto.getMainImage();
+        if (mainImage.isEmpty()) {
+            mainImage = circle.getMainImage();
+        }
         circle.update(
                 circleUpdateRequestDto.getName(),
-                circleUpdateRequestDto.getMainImage(),
+                mainImage,
                 circleUpdateRequestDto.getDescription()
         );
 

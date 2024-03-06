@@ -9,6 +9,7 @@ import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.util.RedisUtils;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.model.enums.UserState;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,6 +29,8 @@ public class JwtTokenProvider {
 
     @Value("${spring.jwt.secret}")
     private String secretKey;
+
+    private final RedisUtils redisUtils;
 
     @PostConstruct
     protected void init() {
@@ -65,11 +68,12 @@ public class JwtTokenProvider {
         return request.getHeader("Authorization");
     }
 
+    //ACCESS TOKEN만 Validate합니다.
     public boolean validateToken(String jwtToken) {
         try {
             Jws<Claims> claims = Jwts.parser().setSigningKey(this.secretKey).parseClaimsJws(jwtToken);
 
-            if (claims.getBody().getExpiration().before(new Date())) {
+            if (claims.getBody().getExpiration().before(new Date()) || redisUtils.isTokenBlacklisted(jwtToken)) {
                 throw new UnauthorizedException(ErrorCode.INVALID_JWT, "만료된 토큰입니다.");
             }
 

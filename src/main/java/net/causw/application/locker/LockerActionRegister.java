@@ -15,7 +15,7 @@ import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.validation.LockerAccessValidator;
 import net.causw.domain.validation.LockerInUseValidator;
 import net.causw.domain.validation.LockerIsDeactivatedValidator;
-import net.causw.domain.validation.TimePassedValidator;
+import net.causw.domain.validation.LockerTimePassedValidator;
 import net.causw.domain.validation.ValidatorBucket;
 
 import java.time.LocalDateTime;
@@ -47,7 +47,7 @@ public class LockerActionRegister implements LockerAction {
             //이미 등록 시 하루 제한
             lockerLogPort.whenRegister(updaterDomainModel).ifPresent(
                     createdAt -> ValidatorBucket.of()
-                            .consistOf(TimePassedValidator.of(createdAt))
+                            .consistOf(LockerTimePassedValidator.of(createdAt))
                             .validate()
             );
 

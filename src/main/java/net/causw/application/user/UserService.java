@@ -490,7 +490,7 @@ public class UserService {
                 .consistOf(UserStateValidator.of(userDomainModel.getState()))
                 .validate();
 
-        // refreshToken은 user DB에 보관 (추후 redis로 옮기면 좋을듯)
+        // refreshToken은 redis에 보관
         String refreshToken = jwtTokenProvider.createRefreshToken();
         this.userPort.updateRefreshToken(userDomainModel.getId(), refreshToken);
 
@@ -1166,25 +1166,24 @@ public class UserService {
 
     @Transactional
     public UserSignInResponseDto updateToken(String refreshToken) {
-        // STEP1 : refreshToken이 유효한지 확인
-        jwtTokenProvider.validateToken(refreshToken);
-
-        // STEP2 : refreshToken으로 맵핑된 유저 찾기
+        // STEP1 : refreshToken으로 맵핑된 유저 찾기
         UserDomainModel user = this.userPort.findByRefreshToken(refreshToken).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        "RefreshToken 유효성 검증 실패"
                 )
         );
-
-        // STEP3 : 새로운 accessToken 제공
+        // STEP2 : 새로운 accessToken 제공
         String newAccessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getRole(), user.getState());
-        String newRefreshToken = jwtTokenProvider.createRefreshToken();
-        this.userPort.updateRefreshToken(user.getId(), newRefreshToken);
-
         return UserSignInResponseDto.builder()
                 .accessToken(newAccessToken)
-                .refreshToken(newRefreshToken)
+                .build();
+    }
+
+    public UserSignOutResponseDto signOut(UserSignOutRequestDto userSignOutRequestDto){
+        userPort.signOut(userSignOutRequestDto.getRefreshToken(), userSignOutRequestDto.getAccessToken());
+        return UserSignOutResponseDto.builder()
+                .message("로그아웃 성공")
                 .build();
     }
 }
