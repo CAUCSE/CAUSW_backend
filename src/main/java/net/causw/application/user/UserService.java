@@ -308,8 +308,14 @@ public class UserService {
                 .validate();
 
         return UserPrivilegedResponseDto.from(
-                UserResponseDto.from(this.userPort.findByRole(Role.PRESIDENT)),
-                UserResponseDto.from(this.userPort.findByRole(Role.VICE_PRESIDENT)),
+                this.userPort.findByRole("PRESIDENT")
+                        .stream()
+                        .map(UserResponseDto::from)
+                        .collect(Collectors.toList()),
+                this.userPort.findByRole("VICE_PRESIDENT")
+                        .stream()
+                        .map(UserResponseDto::from)
+                        .collect(Collectors.toList()),
                 this.userPort.findByRole("COUNCIL")
                         .stream()
                         .map(UserResponseDto::from)
@@ -347,7 +353,10 @@ public class UserService {
                             );
                         })
                         .collect(Collectors.toList()),
-                UserResponseDto.from((this.userPort.findByRole(Role.LEADER_ALUMNI)))
+                this.userPort.findByRole("LEADER_ALUMINI")
+                        .stream()
+                        .map(UserResponseDto::from)
+                        .collect(Collectors.toList())
         );
     }
 
@@ -371,7 +380,8 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(user.getRole(), List.of()))
                 .validate();
 
-        return this.userPort.findByStateAndName(UserState.of(state), name, pageNum)
+
+        return this.userPort.findByStateAndName(state, name, pageNum)
                 .map(userDomainModel -> {
                     if (userDomainModel.getRole().getValue().contains("LEADER_CIRCLE") && !state.equals("INACTIVE")) {
                         List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(userDomainModel.getId());
@@ -645,13 +655,15 @@ public class UserService {
         else if((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
                 && (userUpdateRoleRequestDto.getRole().equals(Role.VICE_PRESIDENT))
         ){
-            UserDomainModel previousVicePresident = this.userPort.findByRole(Role.VICE_PRESIDENT);
-            if(previousVicePresident != null){
-                this.userPort.removeRole(previousVicePresident.getId(), Role.VICE_PRESIDENT).orElseThrow(
-                        () -> new InternalServerException(
-                                ErrorCode.INTERNAL_SERVER,
-                                "User id checked, but exception occurred"
-                        ));
+            List<UserDomainModel> previousVicePresident = this.userPort.findByRole("VICE_PRESIDENT");
+            if(!previousVicePresident.isEmpty()){
+                previousVicePresident.forEach(
+                        user -> this.userPort.removeRole(user.getId(), Role.VICE_PRESIDENT).orElseThrow(
+                                () -> new InternalServerException(
+                                        ErrorCode.INTERNAL_SERVER,
+                                        "User id checked, but exception occurred"
+                                ))
+                );
             }
         }
         else if ((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
