@@ -150,17 +150,20 @@ public class UserPortImpl extends DomainModelMapper implements UserPort {
     }
 
     @Override
-    public UserDomainModel findByRole(Role role) {
-        return this.userRepository.findByRoleAndState(role, UserState.ACTIVE).stream()
-                .map(this::entityToDomainModel)
-                .findFirst()
-                .orElse(null);
-    }
+    public Page<UserDomainModel> findByStateAndName(String state, String name, Integer pageNum) {
 
-    @Override
-    public Page<UserDomainModel> findByStateAndName(UserState state, String name, Integer pageNum) {
+        if(state.equals("INACTIVE_N_DROP")){
+            List<UserState> statesToSearch = Arrays.asList(UserState.INACTIVE, UserState.DROP);
+            return this.userRepository.findByStateInAndNameContaining(
+                    statesToSearch,
+                    name,
+                    this.pageableFactory.create(pageNum, StaticValue.USER_LIST_PAGE_SIZE)
+            ).map(this::entityToDomainModel);
+        }
+
+
         return this.userRepository.findByStateAndName(
-                state.getValue(),
+                state,
                 name,
                 this.pageableFactory.create(pageNum, StaticValue.USER_LIST_PAGE_SIZE)
         ).map(this::entityToDomainModel);

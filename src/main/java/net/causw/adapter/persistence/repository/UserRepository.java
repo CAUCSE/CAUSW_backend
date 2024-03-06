@@ -31,10 +31,9 @@ public interface UserRepository extends JpaRepository<User, String> {
             "FROM tb_user AS u " +
             "WHERE u.state = :state AND (:name IS NULL OR u.name LIKE %:name%) ORDER BY u.created_at DESC" , nativeQuery = true)
     Page<User> findByStateAndName(@Param("state") String state, @Param("name") String name, Pageable pageable);
+
+    Page<User> findByStateInAndNameContaining(List<UserState> states, String name, Pageable pageable);
 }
-
-
-
 
 
 
