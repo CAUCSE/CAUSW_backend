@@ -82,23 +82,27 @@ public class UserPortImpl extends DomainModelMapper implements UserPort {
     public Optional<UserDomainModel> updateRole(String id, Role newRole) {
         return this.userRepository.findById(id).map(
                 srcUser -> {
-                    if (newRole.equals(Role.LEADER_CIRCLE)) {
+                    if(srcUser.getRole().equals(Role.COMMON)){
+                        srcUser.setRole(newRole);
+                    }
+                    else if (newRole.equals(Role.LEADER_CIRCLE)) {
                         if(!srcUser.getRole().getValue().contains("LEADER_CIRCLE")){
-                            if(srcUser.getRole().equals(Role.COMMON)){
-                                srcUser.setRole(newRole);
-                            }
-                            else{
-                                String combinedRoleValue = srcUser.getRole().getValue() + "_N_" + "LEADER_CIRCLE";
-                                Role combinedRole = Role.of(combinedRoleValue.toUpperCase());
-                                srcUser.setRole(combinedRole);
-                            }
-                        } else {
+                            String combinedRoleValue = srcUser.getRole().getValue() + "_N_" + "LEADER_CIRCLE";
+                            Role combinedRole = Role.of(combinedRoleValue.toUpperCase());
+                            srcUser.setRole(combinedRole);
+                        }
+                        else {
                             srcUser.setRole(srcUser.getRole());
                         }
-                    } else if(srcUser.getRole().equals(Role.LEADER_CIRCLE)){
-                        String combinedRoleValue = newRole.getValue() + "_N_" + "LEADER_CIRCLE";
-                        Role combinedRole = Role.of(combinedRoleValue.toUpperCase());
-                        srcUser.setRole(combinedRole);
+                    }
+                    else if(!newRole.equals(Role.LEADER_CIRCLE) && srcUser.getRole().equals(Role.LEADER_CIRCLE)){
+                        if(newRole.equals(Role.COMMON)){
+                            srcUser.setRole(newRole);
+                        } else{
+                            String combinedRoleValue = newRole.getValue() + "_N_" + "LEADER_CIRCLE";
+                            Role combinedRole = Role.of(combinedRoleValue.toUpperCase());
+                            srcUser.setRole(combinedRole);
+                        }
                     }
                     else {
                         srcUser.setRole(newRole);
@@ -113,9 +117,14 @@ public class UserPortImpl extends DomainModelMapper implements UserPort {
                 srcUser -> {
                     if(srcUser.getRole().equals(targetRole)){
                         srcUser.setRole(Role.COMMON);
-                    } else if (srcUser.getRole().getValue().contains(targetRole.getValue())) {
-                        String updatedRoleValue = srcUser.getRole().getValue().replace(targetRole.getValue(), "").replace("_N_","");
-                        srcUser.setRole(Role.of(updatedRoleValue));
+                    }
+                    else if (srcUser.getRole().getValue().contains(targetRole.getValue())) {
+                        if(targetRole.equals(Role.LEADER_CIRCLE)){
+                            String updatedRoleValue = srcUser.getRole().getValue().replace(targetRole.getValue(), "").replace("_N_","");
+                            srcUser.setRole(Role.of(updatedRoleValue));
+                        } else{ //학생회 겸 동아리장, 학년대표 겸 동아리장의 경우 타깃이 동아리 장만 남기는걸로 변경
+                            srcUser.setRole(Role.LEADER_CIRCLE);
+                        }
                     }
                     return this.entityToDomainModel(this.userRepository.save(srcUser));
                 }
@@ -130,6 +139,14 @@ public class UserPortImpl extends DomainModelMapper implements UserPort {
                 .flatMap(enumRole -> this.userRepository.findByRoleAndState(enumRole, UserState.ACTIVE).stream())
                 .map(this::entityToDomainModel)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public UserDomainModel findByRole(Role role) {
+        return this.userRepository.findByRoleAndState(role, UserState.ACTIVE).stream()
+                .map(this::entityToDomainModel)
+                .findFirst()
+                .orElse(null);
     }
 
     @Override

@@ -448,12 +448,16 @@ public class CircleService {
                 )
         );
 
-        this.userPort.updateRole(leaderId, Role.COMMON).orElseThrow(
-                () -> new InternalServerException(
-                        ErrorCode.INTERNAL_SERVER,
-                        "Leader id checked, but exception occurred"
-                )
-        );
+        List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(leaderId);
+        if (ownCircles.size() == 1) {
+            this.userPort.removeRole(leaderId, Role.LEADER_CIRCLE).orElseThrow(
+                    () -> new InternalServerException(
+                            ErrorCode.INTERNAL_SERVER,
+                            "Leader id checked, but exception occurred"
+                    )
+            );
+        }
+
 
         return CircleResponseDto.from(this.circlePort.delete(circleId).orElseThrow(
                 () -> new InternalServerException(
