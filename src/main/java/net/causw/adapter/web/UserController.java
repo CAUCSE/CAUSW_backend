@@ -420,4 +420,14 @@ public class UserController {
     public UserSignInResponseDto updateToken(@RequestBody UserUpdateTokenRequestDto userUpdateTokenRequestDto) {
         return this.userService.updateToken(userUpdateTokenRequestDto.getRefreshToken());
     }
+
+    @PostMapping(value = "/sign-out")
+    @ResponseStatus(value = HttpStatus.OK)
+    @ApiOperation(value = "로그아웃 API" , notes = "로그아웃(refreshToken, AccessToken 무효화")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "OK", response = UserSignInResponseDto.class),
+    })
+    public UserSignOutResponseDto signOut(@RequestBody UserSignOutRequestDto userSignOutRequestDto){
+        return userService.signOut(userSignOutRequestDto);
+    }
 }
