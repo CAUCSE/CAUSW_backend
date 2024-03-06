@@ -30,11 +30,9 @@ public class DelegationPresident implements Delegation {
             );
         }
 
-        List<UserDomainModel> vicePresident = this.userPort.findByRole("VICE_PRESIDENT");
+        UserDomainModel vicePresident = this.userPort.findByRole(Role.VICE_PRESIDENT);
         if (vicePresident != null) {
-            vicePresident.forEach(
-                    user -> this.userPort.removeRole(user.getId(), Role.VICE_PRESIDENT)
-            );
+            this.userPort.removeRole(vicePresident.getId(), Role.VICE_PRESIDENT);
         }
 
         this.userPort.removeRole(currentId, Role.PRESIDENT).orElseThrow(

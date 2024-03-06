@@ -54,7 +54,7 @@ public class ContentsAdminValidator extends AbstractValidator {
             return;
         }
 
-        if (EnumSet.of(Role.ADMIN, Role.PRESIDENT, Role.PRESIDENT_N_LEADER_CIRCLE).contains(this.requestUserRole)) {
+        if (EnumSet.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT).contains(this.requestUserRole)) {
             return;
         }
 

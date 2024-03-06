@@ -297,11 +297,10 @@ public class CircleService {
 
         // Create boards of circle
         BoardDomainModel noticeBoard = BoardDomainModel.of(
-                newCircle.getName() + "공지 게시판",
+                newCircle.getName() + " 공지 게시판",
                 newCircle.getName() + " 공지 게시판",
                 Stream.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT, Role.LEADER_CIRCLE, Role.LEADER_1_N_LEADER_CIRCLE, Role.LEADER_2_N_LEADER_CIRCLE,
-                                Role.LEADER_3_N_LEADER_CIRCLE, Role.LEADER_4_N_LEADER_CIRCLE, Role.PRESIDENT_N_LEADER_CIRCLE,
-                                Role.COUNCIL_N_LEADER_CIRCLE, Role.VICE_PRESIDENT_N_LEADER_CIRCLE)
+                                Role.LEADER_3_N_LEADER_CIRCLE, Role.LEADER_4_N_LEADER_CIRCLE, Role.COUNCIL_N_LEADER_CIRCLE)
                         .map(Role::getValue)
                         .collect(Collectors.toList()),
                 "공지 게시판",
@@ -453,12 +452,16 @@ public class CircleService {
                 )
         );
 
-        this.userPort.updateRole(leaderId, Role.COMMON).orElseThrow(
-                () -> new InternalServerException(
-                        ErrorCode.INTERNAL_SERVER,
-                        "Leader id checked, but exception occurred"
-                )
-        );
+        List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(leaderId);
+        if (ownCircles.size() == 1) {
+            this.userPort.removeRole(leaderId, Role.LEADER_CIRCLE).orElseThrow(
+                    () -> new InternalServerException(
+                            ErrorCode.INTERNAL_SERVER,
+                            "Leader id checked, but exception occurred"
+                    )
+            );
+        }
+
 
         return CircleResponseDto.from(this.circlePort.delete(circleId).orElseThrow(
                 () -> new InternalServerException(
