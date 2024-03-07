@@ -17,6 +17,8 @@ public class PostDomainModel {
 
     @NotBlank(message = "게시글 제목이 입력되지 않았습니다.")
     private String title;
+
+    @NotBlank(message = "게시글 내용이 입력되지 않았습니다.")
     private String content;
 
     @NotNull(message = "작성자가 입력되지 않았습니다.")
