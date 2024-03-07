@@ -468,14 +468,14 @@ public class CircleService {
                     )
             );
         }
-
-
-        return CircleResponseDto.from(this.circlePort.delete(circleId).orElseThrow(
+        CircleResponseDto circleResponseDto = CircleResponseDto.from(this.circlePort.delete(circleId).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         "Circle id checked, but exception occurred"
                 )
         ));
+        boardPort.deleteAllCircleBoard(circleId);
+        return circleResponseDto;
     }
 
     @Transactional
