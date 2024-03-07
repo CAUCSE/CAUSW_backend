@@ -5,7 +5,10 @@ import net.causw.adapter.persistence.port.mapper.DomainModelMapper;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.repository.UserRepository;
 import net.causw.application.spi.UserPort;
+import net.causw.domain.exceptions.BadRequestException;
+import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.util.RedisUtils;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.model.enums.UserState;
@@ -22,12 +25,17 @@ public class UserPortImpl extends DomainModelMapper implements UserPort {
     private final UserRepository userRepository;
     private final PageableFactory pageableFactory;
 
+    private final RedisUtils redisUtils;
+
     public UserPortImpl(
             UserRepository userRepository,
-            PageableFactory pageableFactory
+            PageableFactory pageableFactory,
+            RedisUtils redisUtils
     ) {
+
         this.userRepository = userRepository;
         this.pageableFactory = pageableFactory;
+        this.redisUtils = redisUtils;
     }
 
     @Override
@@ -55,7 +63,7 @@ public class UserPortImpl extends DomainModelMapper implements UserPort {
 
     @Override
     public Optional<UserDomainModel> findByRefreshToken(String refreshToken) {
-        return this.userRepository.findByRefreshToken(refreshToken).map(this::entityToDomainModel);
+        return this.userRepository.findById(getUserIdFromRefreshToken(refreshToken)).map(this::entityToDomainModel);
     }
 
     @Override
@@ -82,23 +90,27 @@ public class UserPortImpl extends DomainModelMapper implements UserPort {
     public Optional<UserDomainModel> updateRole(String id, Role newRole) {
         return this.userRepository.findById(id).map(
                 srcUser -> {
-                    if (newRole.equals(Role.LEADER_CIRCLE)) {
+                    if(srcUser.getRole().equals(Role.COMMON)){
+                        srcUser.setRole(newRole);
+                    }
+                    else if (newRole.equals(Role.LEADER_CIRCLE)) {
                         if(!srcUser.getRole().getValue().contains("LEADER_CIRCLE")){
-                            if(srcUser.getRole().equals(Role.COMMON)){
-                                srcUser.setRole(newRole);
-                            }
-                            else{
-                                String combinedRoleValue = srcUser.getRole().getValue() + "_N_" + "LEADER_CIRCLE";
-                                Role combinedRole = Role.of(combinedRoleValue.toUpperCase());
-                                srcUser.setRole(combinedRole);
-                            }
-                        } else {
+                            String combinedRoleValue = srcUser.getRole().getValue() + "_N_" + "LEADER_CIRCLE";
+                            Role combinedRole = Role.of(combinedRoleValue.toUpperCase());
+                            srcUser.setRole(combinedRole);
+                        }
+                        else {
                             srcUser.setRole(srcUser.getRole());
                         }
-                    } else if(srcUser.getRole().equals(Role.LEADER_CIRCLE)){
-                        String combinedRoleValue = newRole.getValue() + "_N_" + "LEADER_CIRCLE";
-                        Role combinedRole = Role.of(combinedRoleValue.toUpperCase());
-                        srcUser.setRole(combinedRole);
+                    }
+                    else if(!newRole.equals(Role.LEADER_CIRCLE) && srcUser.getRole().equals(Role.LEADER_CIRCLE)){
+                        if(newRole.equals(Role.COMMON)){
+                            srcUser.setRole(newRole);
+                        } else{
+                            String combinedRoleValue = newRole.getValue() + "_N_" + "LEADER_CIRCLE";
+                            Role combinedRole = Role.of(combinedRoleValue.toUpperCase());
+                            srcUser.setRole(combinedRole);
+                        }
                     }
                     else {
                         srcUser.setRole(newRole);
@@ -113,9 +125,14 @@ public class UserPortImpl extends DomainModelMapper implements UserPort {
                 srcUser -> {
                     if(srcUser.getRole().equals(targetRole)){
                         srcUser.setRole(Role.COMMON);
-                    } else if (srcUser.getRole().getValue().contains(targetRole.getValue())) {
-                        String updatedRoleValue = srcUser.getRole().getValue().replace(targetRole.getValue(), "").replace("_N_","");
-                        srcUser.setRole(Role.of(updatedRoleValue));
+                    }
+                    else if (srcUser.getRole().getValue().contains(targetRole.getValue())) {
+                        if(targetRole.equals(Role.LEADER_CIRCLE)){
+                            String updatedRoleValue = srcUser.getRole().getValue().replace(targetRole.getValue(), "").replace("_N_","");
+                            srcUser.setRole(Role.of(updatedRoleValue));
+                        } else{ //학생회 겸 동아리장, 학년대표 겸 동아리장의 경우 타깃이 동아리 장만 남기는걸로 변경
+                            srcUser.setRole(Role.LEADER_CIRCLE);
+                        }
                     }
                     return this.entityToDomainModel(this.userRepository.save(srcUser));
                 }
@@ -133,9 +150,20 @@ public class UserPortImpl extends DomainModelMapper implements UserPort {
     }
 
     @Override
-    public Page<UserDomainModel> findByStateAndName(UserState state, String name, Integer pageNum) {
+    public Page<UserDomainModel> findByStateAndName(String state, String name, Integer pageNum) {
+
+        if(state.equals("INACTIVE_N_DROP")){
+            List<UserState> statesToSearch = Arrays.asList(UserState.INACTIVE, UserState.DROP);
+            return this.userRepository.findByStateInAndNameContaining(
+                    statesToSearch,
+                    name,
+                    this.pageableFactory.create(pageNum, StaticValue.USER_LIST_PAGE_SIZE)
+            ).map(this::entityToDomainModel);
+        }
+
+
         return this.userRepository.findByStateAndName(
-                state.getValue(),
+                state,
                 name,
                 this.pageableFactory.create(pageNum, StaticValue.USER_LIST_PAGE_SIZE)
         ).map(this::entityToDomainModel);
@@ -164,12 +192,21 @@ public class UserPortImpl extends DomainModelMapper implements UserPort {
     }
 
     @Override
-    public Optional<UserDomainModel> updateRefreshToken(String id, String refreshToken) {
-        return this.userRepository.findById(id).map(
-            srcUser -> {
-                srcUser.setRefreshToken(refreshToken);
-                return this.entityToDomainModel(this.userRepository.save(srcUser));
-            }
-        );
+    public void updateRefreshToken(String id, String refreshToken) {
+        redisUtils.setData(refreshToken,id,StaticValue.JWT_REFRESH_TOKEN_VALID_TIME);
+    }
+
+    @Override
+    public String getUserIdFromRefreshToken(String refreshToken) {
+        return Optional.ofNullable(redisUtils.getData(refreshToken))
+                .orElseThrow(() -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "RefreshToken 유효성 검증 실패"));
+    }
+
+    @Override
+    public void signOut(String refreshToken, String accessToken) {
+        redisUtils.addToBlacklist(accessToken);
+        redisUtils.deleteData(refreshToken);
     }
 }

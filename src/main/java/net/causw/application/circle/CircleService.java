@@ -216,12 +216,20 @@ public class CircleService {
                 )
         );
 
+        UserDomainModel circleLeader = circle.getLeader().orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "해당 동아리의 동아리장을 찾을 수 없습니다."
+                )
+        );
+
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                 .consistOf(UserRoleValidator.of(user.getRole(),
                         List.of(Role.LEADER_CIRCLE)))
+                .consistOf(UserEqualValidator.of(user.getId(), circleLeader.getId()))
                 .validate();
 
         return this.circleMemberPort.findByCircleId(circleId, status)
@@ -297,14 +305,12 @@ public class CircleService {
 
         // Create boards of circle
         BoardDomainModel noticeBoard = BoardDomainModel.of(
-                newCircle.getName() + "공지 게시판",
                 newCircle.getName() + " 공지 게시판",
-                Stream.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT, Role.LEADER_CIRCLE, Role.LEADER_1_N_LEADER_CIRCLE, Role.LEADER_2_N_LEADER_CIRCLE,
-                                Role.LEADER_3_N_LEADER_CIRCLE, Role.LEADER_4_N_LEADER_CIRCLE, Role.PRESIDENT_N_LEADER_CIRCLE,
-                                Role.COUNCIL_N_LEADER_CIRCLE, Role.VICE_PRESIDENT_N_LEADER_CIRCLE)
+                newCircle.getName() + " 공지 게시판",
+                Stream.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT, Role.LEADER_CIRCLE)
                         .map(Role::getValue)
                         .collect(Collectors.toList()),
-                "공지 게시판",
+                "동아리 공지 게시판",
                 newCircle
         );
         this.boardPort.createBoard(noticeBoard);
@@ -355,9 +361,13 @@ public class CircleService {
             );
         }
 
+        String mainImage = circleUpdateRequestDto.getMainImage();
+        if (mainImage.isEmpty()) {
+            mainImage = circle.getMainImage();
+        }
         circle.update(
                 circleUpdateRequestDto.getName(),
-                circleUpdateRequestDto.getMainImage(),
+                mainImage,
                 circleUpdateRequestDto.getDescription()
         );
 
@@ -449,19 +459,23 @@ public class CircleService {
                 )
         );
 
-        this.userPort.updateRole(leaderId, Role.COMMON).orElseThrow(
-                () -> new InternalServerException(
-                        ErrorCode.INTERNAL_SERVER,
-                        "Leader id checked, but exception occurred"
-                )
-        );
-
-        return CircleResponseDto.from(this.circlePort.delete(circleId).orElseThrow(
+        List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(leaderId);
+        if (ownCircles.size() == 1) {
+            this.userPort.removeRole(leaderId, Role.LEADER_CIRCLE).orElseThrow(
+                    () -> new InternalServerException(
+                            ErrorCode.INTERNAL_SERVER,
+                            "Leader id checked, but exception occurred"
+                    )
+            );
+        }
+        CircleResponseDto circleResponseDto = CircleResponseDto.from(this.circlePort.delete(circleId).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         "Circle id checked, but exception occurred"
                 )
         ));
+        boardPort.deleteAllCircleBoard(circleId);
+        return circleResponseDto;
     }
 
     @Transactional

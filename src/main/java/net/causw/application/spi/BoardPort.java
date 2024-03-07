@@ -24,4 +24,7 @@ public interface BoardPort {
     Optional<BoardDomainModel> deleteBoard(String id);
 
     Optional<BoardDomainModel> restoreBoard(String id);
+
+    List<BoardDomainModel> deleteAllCircleBoard(String circleId);
+
 }

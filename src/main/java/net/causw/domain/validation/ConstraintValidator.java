@@ -28,9 +28,6 @@ public class ConstraintValidator <T> extends AbstractValidator {
             StringBuilder sb = new StringBuilder();
             violations.forEach( violation ->
                     sb.append(violation.getMessage())
-                            .append(" - ")
-                            .append(violation.getPropertyPath().toString())
-                            .append(" : ").append(violation.getInvalidValue())
             );
 
             throw new ConstraintViolationException(sb.toString(), violations);

@@ -107,4 +107,14 @@ public class BoardPortImpl extends DomainModelMapper implements BoardPort {
                 }
         );
     }
+
+    @Override
+    public List<BoardDomainModel> deleteAllCircleBoard(String circleId){
+        List<BoardDomainModel> boards = this.findByCircleId(circleId);
+        for (BoardDomainModel board : boards) {
+            this.deleteBoard(board.getId());
+        }
+        return boards;
+    }
+
 }

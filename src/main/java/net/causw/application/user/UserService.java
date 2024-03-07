@@ -42,7 +42,7 @@ import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.UserRoleIsNoneValidator;
 import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.UserRoleWithoutAdminValidator;
-import net.causw.domain.validation.UserStateIsDropValidator;
+import net.causw.domain.validation.UserStateIsDropOrIsInActiveValidator;
 import net.causw.domain.validation.UserStateIsNotDropAndActiveValidator;
 import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
@@ -115,17 +115,10 @@ public class UserService {
                 .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .consistOf(UserRoleValidator.of(requestUser.getRole(),
-                        List.of(Role.LEADER_CIRCLE,
-                                Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
-                                Role.COUNCIL_N_LEADER_CIRCLE,
-                                Role.LEADER_1_N_LEADER_CIRCLE,
-                                Role.LEADER_2_N_LEADER_CIRCLE,
-                                Role.LEADER_3_N_LEADER_CIRCLE,
-                                Role.LEADER_4_N_LEADER_CIRCLE
-                        )))
+                        List.of(Role.LEADER_CIRCLE)))
                 .validate();
 
-        if (requestUser.getRole().getValue().contains("LEADER_CIRCLE") && !requestUser.getRole().getValue().contains("PRESIDENT")) {
+        if (requestUser.getRole().getValue().contains("LEADER_CIRCLE")) {
             List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(loginUserId);
             if (ownCircles.isEmpty()) {
                 throw new InternalServerException(
@@ -262,17 +255,11 @@ public class UserService {
                 .consistOf(UserStateValidator.of(user.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
                 .consistOf(UserRoleValidator.of(user.getRole(),
-                        List.of(Role.LEADER_CIRCLE,
-                                Role.VICE_PRESIDENT_N_LEADER_CIRCLE,
-                                Role.COUNCIL_N_LEADER_CIRCLE,
-                                Role.LEADER_1_N_LEADER_CIRCLE,
-                                Role.LEADER_2_N_LEADER_CIRCLE,
-                                Role.LEADER_3_N_LEADER_CIRCLE,
-                                Role.LEADER_4_N_LEADER_CIRCLE
+                        List.of(Role.LEADER_CIRCLE
                         )))
                 .validate();
 
-        if (user.getRole().getValue().contains("LEADER_CIRCLE") && !user.getRole().getValue().contains("PRESIDENT")) {
+        if (user.getRole().getValue().contains("LEADER_CIRCLE")) {
             List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(loginUserId);
             if (ownCircles.isEmpty()) {
                 throw new InternalServerException(
@@ -325,6 +312,10 @@ public class UserService {
                         .stream()
                         .map(UserResponseDto::from)
                         .collect(Collectors.toList()),
+                this.userPort.findByRole("VICE_PRESIDENT")
+                        .stream()
+                        .map(UserResponseDto::from)
+                        .collect(Collectors.toList()),
                 this.userPort.findByRole("COUNCIL")
                         .stream()
                         .map(UserResponseDto::from)
@@ -362,11 +353,7 @@ public class UserService {
                             );
                         })
                         .collect(Collectors.toList()),
-                this.userPort.findByRole("LEADER_ALUMNI")
-                        .stream()
-                        .map(UserResponseDto::from)
-                        .collect(Collectors.toList()),
-                this.userPort.findByRole("VICE_PRESIDENT")
+                this.userPort.findByRole("LEADER_ALUMINI")
                         .stream()
                         .map(UserResponseDto::from)
                         .collect(Collectors.toList())
@@ -393,7 +380,8 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(user.getRole(), List.of()))
                 .validate();
 
-        return this.userPort.findByStateAndName(UserState.of(state), name, pageNum)
+
+        return this.userPort.findByStateAndName(state, name, pageNum)
                 .map(userDomainModel -> {
                     if (userDomainModel.getRole().getValue().contains("LEADER_CIRCLE") && !state.equals("INACTIVE")) {
                         List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(userDomainModel.getId());
@@ -512,7 +500,7 @@ public class UserService {
                 .consistOf(UserStateValidator.of(userDomainModel.getState()))
                 .validate();
 
-        // refreshToken은 user DB에 보관 (추후 redis로 옮기면 좋을듯)
+        // refreshToken은 redis에 보관
         String refreshToken = jwtTokenProvider.createRefreshToken();
         this.userPort.updateRefreshToken(userDomainModel.getId(), refreshToken);
 
@@ -647,7 +635,6 @@ public class UserService {
          * */
 
         if (grantor.getRole().getValue().contains(userUpdateRoleRequestDto.getRole().getValue())){
-
             String circleId = "";
             if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)) {
                 circleId = userUpdateRoleRequestDto.getCircleId()
@@ -665,9 +652,21 @@ public class UserService {
          * 2. 동아리장 업데이트
          * 3. 기존 동아리장의 동아리장 권한 박탈
          * */
-
-        else if (((grantor.getRole().getValue().contains("PRESIDENT") && !grantor.getRole().getValue().contains("VICE"))
-                || grantor.getRole().equals(Role.ADMIN))
+        else if((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
+                && (userUpdateRoleRequestDto.getRole().equals(Role.VICE_PRESIDENT))
+        ){
+            List<UserDomainModel> previousVicePresident = this.userPort.findByRole("VICE_PRESIDENT");
+            if(!previousVicePresident.isEmpty()){
+                previousVicePresident.forEach(
+                        user -> this.userPort.removeRole(user.getId(), Role.VICE_PRESIDENT).orElseThrow(
+                                () -> new InternalServerException(
+                                        ErrorCode.INTERNAL_SERVER,
+                                        "User id checked, but exception occurred"
+                                ))
+                );
+            }
+        }
+        else if ((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
                 && userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)
         ) {
             String circleId = userUpdateRoleRequestDto.getCircleId()
@@ -675,6 +674,11 @@ public class UserService {
                             ErrorCode.INVALID_PARAMETER,
                             "소모임장을 위임할 소모임 입력이 필요합니다."
                     ));
+            if(grantee.getRole().equals(Role.VICE_PRESIDENT)){
+                throw new UnauthorizedException(
+                        ErrorCode.API_NOT_ALLOWED, "부회장은 동아리장 겸직이 불가합니다."
+                );
+            }
 
             this.circleMemberPort.findByUserIdAndCircleId(granteeId, circleId)
                     .ifPresentOrElse(
@@ -693,7 +697,6 @@ public class UserService {
 
             this.circlePort.findById(circleId)
                     .ifPresentOrElse(circle -> {
-
                         circle.getLeader().ifPresent(leader -> {
                             // Check if the leader is the leader of only one circle
                             List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(leader.getId());
@@ -711,9 +714,23 @@ public class UserService {
                     });
 
         }
-
-        else if (((grantor.getRole().getValue().contains("PRESIDENT") && !grantor.getRole().getValue().contains("VICE"))
-                || grantor.getRole().equals(Role.ADMIN))
+        //관리자가 권한을 삭제하는 경우
+        //학생회 권한 삭제일 때는 바로 삭제 가능
+        //but 동아리장 겸직일 때 어떤 권한을 삭제하는지 확인이 필요함
+        else if ((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
+                && userUpdateRoleRequestDto.getRole().equals(Role.COMMON)
+        ) {
+            //TODO : 로직 수정 필요
+            if(grantee.getRole().getValue().contains("COUNCIL") || grantee.getRole().getValue().contains("LEADER_\\d+")){
+                return UserResponseDto.from(this.userPort.removeRole(granteeId, Role.COMMON).orElseThrow(
+                        () -> new InternalServerException(
+                                ErrorCode.INTERNAL_SERVER,
+                                "User id checked, but exception occurred"
+                        )
+                ));
+            }
+        }
+        else if ((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
                 && userUpdateRoleRequestDto.getRole().equals(Role.LEADER_ALUMNI)
         ) {
             UserDomainModel previousLeaderAlumni = this.userPort.findByRole("LEADER_ALUMNI")
@@ -731,7 +748,6 @@ public class UserService {
                     )
             );
         }
-
         /* Grant the role
          * The linked updating process is performed on previous delegation process
          * Therefore, the updating for the grantee is performed in this process
@@ -1132,7 +1148,7 @@ public class UserService {
 
         ValidatorBucket.of()
                 .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of()))
-                .consistOf(UserStateIsDropValidator.of(restoredUser.getState()))
+                .consistOf(UserStateIsDropOrIsInActiveValidator.of(restoredUser.getState()))
                 .validate();
 
         this.userPort.updateRole(restoredUser.getId(), Role.COMMON).orElseThrow(
@@ -1152,25 +1168,24 @@ public class UserService {
 
     @Transactional
     public UserSignInResponseDto updateToken(String refreshToken) {
-        // STEP1 : refreshToken이 유효한지 확인
-        jwtTokenProvider.validateToken(refreshToken);
-
-        // STEP2 : refreshToken으로 맵핑된 유저 찾기
+        // STEP1 : refreshToken으로 맵핑된 유저 찾기
         UserDomainModel user = this.userPort.findByRefreshToken(refreshToken).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        "RefreshToken 유효성 검증 실패"
                 )
         );
-
-        // STEP3 : 새로운 accessToken 제공
+        // STEP2 : 새로운 accessToken 제공
         String newAccessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getRole(), user.getState());
-        String newRefreshToken = jwtTokenProvider.createRefreshToken();
-        this.userPort.updateRefreshToken(user.getId(), newRefreshToken);
-
         return UserSignInResponseDto.builder()
                 .accessToken(newAccessToken)
-                .refreshToken(newRefreshToken)
+                .build();
+    }
+
+    public UserSignOutResponseDto signOut(UserSignOutRequestDto userSignOutRequestDto){
+        userPort.signOut(userSignOutRequestDto.getRefreshToken(), userSignOutRequestDto.getAccessToken());
+        return UserSignOutResponseDto.builder()
+                .message("로그아웃 성공")
                 .build();
     }
 }

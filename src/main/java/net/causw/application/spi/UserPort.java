@@ -30,11 +30,15 @@ public interface UserPort {
 
     List<UserDomainModel> findByRole(String role);
 
-    Page<UserDomainModel> findByStateAndName(UserState state, String name, Integer pageNum);
+    Page<UserDomainModel> findByStateAndName(String state, String name, Integer pageNum);
 
     Optional<UserDomainModel> updatePassword(String id, String password);
 
     Optional<UserDomainModel> updateState(String id, UserState state);
 
-    Optional<UserDomainModel> updateRefreshToken(String id, String refreshToken);
+    void updateRefreshToken(String id, String refreshToken);
+
+    String getUserIdFromRefreshToken(String refreshToken);
+
+    void signOut(String refreshToken, String accessToken);
 }

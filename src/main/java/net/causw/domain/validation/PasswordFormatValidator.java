@@ -29,7 +29,7 @@ public class PasswordFormatValidator extends AbstractValidator {
     }
 
     public boolean validatePassword() {
-        String passwordPolicy = "((?=.*[a-z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,})";
+        String passwordPolicy = "((?=.*[a-zA-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,})";
 
         Pattern pattern_password = Pattern.compile(passwordPolicy);
         Matcher matcher_password = pattern_password.matcher(this.password);

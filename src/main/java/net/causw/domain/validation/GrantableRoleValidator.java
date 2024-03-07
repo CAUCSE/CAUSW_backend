@@ -30,11 +30,13 @@ public class GrantableRoleValidator extends AbstractValidator {
          * Grantee role should not be Leader Circle or Leader Alumni
          *   => They will automatically granted while other granting process since the roles has unique user
          */
-        if (this.grantorRole == Role.ADMIN) {
+        if (this.grantorRole.equals(Role.ADMIN)) {
             if (this.granteeRole != Role.ADMIN) {
-                if(this.grantedRole.equals(Role.LEADER_CIRCLE)){
+                if(this.grantedRole.equals(Role.LEADER_CIRCLE) || this.granteeRole.equals(Role.LEADER_CIRCLE)){
                     return;
-                } else if(this.granteeRole != this.grantedRole){
+                } else if(this.granteeRole.equals(Role.COMMON)){
+                    return;
+                } else if(this.granteeRole.getValue().contains("_N_") && this.grantedRole.equals(Role.COMMON)){
                     return;
                 }
             }
@@ -45,12 +47,14 @@ public class GrantableRoleValidator extends AbstractValidator {
          * Grantee role should not be Leader Circle or Leader Alumni
          *   => They will automatically granted while other granting process since the roles has unique user
          */
-        if (this.grantorRole.getValue().contains("PRESIDENT") && !this.grantorRole.getValue().contains("VICE")) {
+        else if (this.grantorRole.equals(Role.PRESIDENT)) {
             if (this.grantedRole != Role.ADMIN
                     && (this.granteeRole != Role.ADMIN && this.granteeRole != Role.PRESIDENT)) {
-                if(this.grantedRole.equals(Role.LEADER_CIRCLE)){
+                if(this.grantedRole.equals(Role.LEADER_CIRCLE) || this.granteeRole.equals(Role.LEADER_CIRCLE)){
                     return;
-                } else if(this.granteeRole != this.grantedRole){
+                } else if(this.granteeRole.equals(Role.COMMON)){
+                    return;
+                } else if(this.granteeRole.getValue().contains("_N_") && this.grantedRole.equals(Role.COMMON)){
                     return;
                 }
             }
@@ -58,9 +62,10 @@ public class GrantableRoleValidator extends AbstractValidator {
         /* When role of grantor is Leader_Circle
          * Granted role should be Leader_Circle, and Grantee role should be Common
          */
-        if (this.grantorRole.getValue().contains("LEADER_CIRCLE")) {
+        else if (this.grantorRole.getValue().contains("LEADER_CIRCLE")) {
             if(this.grantedRole.equals(Role.LEADER_CIRCLE)){
-                if(this.granteeRole != Role.ADMIN && this.granteeRole != Role.LEADER_ALUMNI && this.granteeRole != Role.PROFESSOR){
+                if(this.granteeRole != Role.ADMIN && this.granteeRole != Role.PRESIDENT && this.granteeRole !=Role.VICE_PRESIDENT
+                        && this.granteeRole != Role.LEADER_ALUMNI && this.granteeRole != Role.PROFESSOR ){
                     return;
                 }
             }
@@ -68,7 +73,7 @@ public class GrantableRoleValidator extends AbstractValidator {
         /* When role of grantor is Leader_Alumni
          * Granted role should be Leader_Alumni, and Grantee role should be Common
          */
-        if (this.grantorRole == Role.LEADER_ALUMNI) {
+        else if (this.grantorRole.equals(Role.LEADER_ALUMNI)) {
             if (this.grantedRole == Role.LEADER_ALUMNI && this.granteeRole == Role.COMMON) {
                 return;
             }
@@ -76,10 +81,7 @@ public class GrantableRoleValidator extends AbstractValidator {
 
         throw new UnauthorizedException(
                 ErrorCode.GRANT_ROLE_NOT_ALLOWED,
-                String.format("권한을 부여할 수 없습니다. - 부여하는 사용자 권한 : %s, 부여할 권한 : %s, 부여받는 사용자 권한 : %s",
-                        this.grantorRole.getValue(),
-                        this.grantedRole.getValue(),
-                        this.granteeRole.getValue())
+                String.format("권한을 부여할 수 없습니다.")
         );
     }
 }
