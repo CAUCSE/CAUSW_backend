@@ -310,7 +310,7 @@ public class CircleService {
                 Stream.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT, Role.LEADER_CIRCLE)
                         .map(Role::getValue)
                         .collect(Collectors.toList()),
-                "공지 게시판",
+                "동아리 공지 게시판",
                 newCircle
         );
         this.boardPort.createBoard(noticeBoard);
