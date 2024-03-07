@@ -71,7 +71,7 @@ public class BoardResponseDto {
                 boardDomainModel.getDescription(),
                 boardDomainModel.getCreateRoleList(),
                 boardDomainModel.getCategory(),
-                boardDomainModel.getCreateRoleList().contains(userRole.getValue()),
+                boardDomainModel.getCreateRoleList().stream().anyMatch(str -> userRole.getValue().contains(str)),
                 boardDomainModel.getIsDeleted(),
                 circleId,
                 circleName

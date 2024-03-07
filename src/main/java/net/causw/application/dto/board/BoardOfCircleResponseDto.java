@@ -76,7 +76,7 @@ public class BoardOfCircleResponseDto {
         return new BoardOfCircleResponseDto(
                 boardDomainModel.getId(),
                 boardDomainModel.getName(),
-                boardDomainModel.getCreateRoleList().contains(userRole.getValue()),
+                boardDomainModel.getCreateRoleList().stream().anyMatch(str -> userRole.getValue().contains(str)),
                 boardDomainModel.getIsDeleted(),
                 postDomainModel.getId(),
                 postDomainModel.getTitle(),
@@ -94,7 +94,7 @@ public class BoardOfCircleResponseDto {
         return new BoardOfCircleResponseDto(
                 boardDomainModel.getId(),
                 boardDomainModel.getName(),
-                boardDomainModel.getCreateRoleList().contains(userRole.getValue()),
+                boardDomainModel.getCreateRoleList().stream().anyMatch(str -> userRole.getValue().contains(str)),
                 boardDomainModel.getIsDeleted(),
                 null,
                 null,
