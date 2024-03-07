@@ -735,4 +735,61 @@ public class CircleService {
                 )
         ));
     }
+
+    @Transactional
+    public CircleMemberResponseDto restoreUser(String loginUserId, String circleId, String targetUserId) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
+        UserDomainModel loginUser = this.userPort.findById(loginUserId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "로그인된 사용자를 찾을 수 없습니다."
+                )
+        );
+        UserDomainModel targetUser = this.userPort.findById(targetUserId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "추방된 사용자를 찾을 수 없습니다."
+                )
+        );
+
+        CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "소모임을 찾을 수 없습니다."
+                )
+        );
+
+        CircleMemberDomainModel restoreTargetMember = this.circleMemberPort.findByUserIdAndCircleId(targetUserId, circleId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "추방시킬 사용자가 가입 신청한 소모임이 아닙니다."
+                )
+        );
+
+        validatorBucket
+                .consistOf(UserStateValidator.of(loginUser.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(loginUser.getRole()))
+                .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
+                .consistOf(UserRoleValidator.of(loginUser.getRole(),
+                        List.of(Role.LEADER_CIRCLE)))
+                .consistOf(UserEqualValidator.of(loginUserId,circle.getLeader().map(UserDomainModel::getId).orElseThrow(
+                        () -> new InternalServerException(
+                                ErrorCode.INTERNAL_SERVER,
+                                "The board has circle without circle leader"
+                        )
+                )));
+        validatorBucket
+                .consistOf(CircleMemberStatusValidator.of(
+                        restoreTargetMember.getStatus(),
+                        List.of(CircleMemberStatus.DROP)
+                )).validate();
+
+        return CircleMemberResponseDto.from(targetUser, this.circleMemberPort.updateStatus(restoreTargetMember.getId(), CircleMemberStatus.MEMBER).orElseThrow(
+                () -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        "Application id checked, but exception occurred"
+                )
+        ));
+    }
 }

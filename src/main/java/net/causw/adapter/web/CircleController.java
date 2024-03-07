@@ -1,6 +1,5 @@
 package net.causw.adapter.web;
 
-import com.sun.xml.bind.v2.runtime.reflect.opt.Const;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.circle.CircleService;
@@ -18,6 +17,7 @@ import net.causw.domain.model.enums.CircleMemberStatus;
 import net.causw.domain.validation.ConstraintValidator;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.Security;
 import java.util.List;
 
 
@@ -600,6 +601,59 @@ public class CircleController {
         String currentUserId = ((String) principal);
 
         return this.circleService.rejectUser(currentUserId, applicationId);
+    }
+
+
+    /**
+     * 동아리 가입 신청 거절 API
+     * @param circleId 동아리 고유 ID 값(PK)
+     * @param userId 복구 유저 고유 ID 값(PK)
+     * @return CircleMemberResponseDto
+     */
+    @PutMapping(value = "/{circleId}/users/{userId}/restore")
+    @ResponseStatus(value = HttpStatus.OK)
+    @ApiOperation(value = "추방된 동아리원 복구 API",
+            notes = "추방된 동아리원을 복구 시키는 API 입니다. 복구 시 동아리원으로 바꿔줍니다.\n" +
+                    "해당하는 동아리 고유의 ID 값(PK)과 복구하려는 유저 고유의 ID 값(PK)를 입력해주세요.\n" +
+                    "복구 시 동아리원으로 상태(status)가 ACTIVE 로 변경됩니다.")
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(name = "circleId",
+                            value = "동아리 가입 신청 ID",
+                            required = true,
+                            dataType = "string",
+                            paramType = "path"
+                    ),
+                    @ApiImplicitParam(name = "userId",
+                            value = "복구 유저 ID",
+                            required = true,
+                            dataType = "string",
+                            paramType = "path"
+                    )
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "OK", response = CircleMemberResponseDto.class),
+            @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4000, message = "소모임 가입 신청을 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4000, message = "가입 요청한 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = UnauthorizedException.class),
+            @ApiResponse(code = 4004, message = "삭제된 {동아리명} 입니다.", response = BadRequestException.class),
+            @ApiResponse(code = 4107, message = "접근 권한이 없습니다.", response = UnauthorizedException.class),
+            @ApiResponse(code = 5000, message = "This circle has not circle leader", response = InternalServerException.class),
+            @ApiResponse(code = 5000, message = "Application id checked, but exception occurred", response = InternalServerException.class)
+    })
+    public CircleMemberResponseDto restoreUser(
+            @PathVariable(name = "circleId") String circleId,
+            @PathVariable(name = "userId") String userId
+    ) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String currentUserId = ((String) principal);
+        return this.circleService.restoreUser(currentUserId, circleId, userId);
     }
 
 }
