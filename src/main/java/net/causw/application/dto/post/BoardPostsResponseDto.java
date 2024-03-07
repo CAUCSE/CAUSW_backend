@@ -49,7 +49,7 @@ public class BoardPostsResponseDto {
         return new BoardPostsResponseDto(
                 boardDomainModel.getId(),
                 boardDomainModel.getName(),
-                boardDomainModel.getCreateRoleList().contains(userRole.getValue()),
+                boardDomainModel.getCreateRoleList().stream().anyMatch(str -> userRole.getValue().contains(str)),
                 isFavorite,
                 post
         );
