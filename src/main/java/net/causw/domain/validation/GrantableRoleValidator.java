@@ -32,9 +32,11 @@ public class GrantableRoleValidator extends AbstractValidator {
          */
         if (this.grantorRole.equals(Role.ADMIN)) {
             if (this.granteeRole != Role.ADMIN) {
-                if(this.grantedRole.equals(Role.LEADER_CIRCLE)){
+                if(this.grantedRole.equals(Role.LEADER_CIRCLE) || this.granteeRole.equals(Role.LEADER_CIRCLE)){
                     return;
-                } else if(this.granteeRole != this.grantedRole){
+                } else if(this.granteeRole.equals(Role.COMMON)){
+                    return;
+                } else if(this.granteeRole.getValue().contains("_N_") && this.grantedRole.equals(Role.COMMON)){
                     return;
                 }
             }
@@ -48,9 +50,11 @@ public class GrantableRoleValidator extends AbstractValidator {
         else if (this.grantorRole.equals(Role.PRESIDENT)) {
             if (this.grantedRole != Role.ADMIN
                     && (this.granteeRole != Role.ADMIN && this.granteeRole != Role.PRESIDENT)) {
-                if(this.grantedRole.equals(Role.LEADER_CIRCLE)){
+                if(this.grantedRole.equals(Role.LEADER_CIRCLE) || this.granteeRole.equals(Role.LEADER_CIRCLE)){
                     return;
-                } else if(this.granteeRole != this.grantedRole){
+                } else if(this.granteeRole.equals(Role.COMMON)){
+                    return;
+                } else if(this.granteeRole.getValue().contains("_N_") && this.grantedRole.equals(Role.COMMON)){
                     return;
                 }
             }
@@ -77,10 +81,7 @@ public class GrantableRoleValidator extends AbstractValidator {
 
         throw new UnauthorizedException(
                 ErrorCode.GRANT_ROLE_NOT_ALLOWED,
-                String.format("권한을 부여할 수 없습니다. - 부여하는 사용자 권한 : %s, 부여할 권한 : %s, 부여받는 사용자 권한 : %s",
-                        this.grantorRole.getValue(),
-                        this.grantedRole.getValue(),
-                        this.granteeRole.getValue())
+                String.format("권한을 부여할 수 없습니다.")
         );
     }
 }
