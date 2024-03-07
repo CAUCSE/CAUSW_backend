@@ -36,7 +36,7 @@ public class GrantableRoleValidator extends AbstractValidator {
                     return;
                 } else if(this.granteeRole.equals(Role.COMMON)){
                     return;
-                } else if(this.granteeRole.getValue().contains("_N_") && this.grantedRole.equals(Role.COMMON)){
+                } else if(this.grantedRole.equals(Role.COMMON)){
                     return;
                 }
             }
@@ -54,7 +54,7 @@ public class GrantableRoleValidator extends AbstractValidator {
                     return;
                 } else if(this.granteeRole.equals(Role.COMMON)){
                     return;
-                } else if(this.granteeRole.getValue().contains("_N_") && this.grantedRole.equals(Role.COMMON)){
+                } else if(this.grantedRole.equals(Role.COMMON)){
                     return;
                 }
             }

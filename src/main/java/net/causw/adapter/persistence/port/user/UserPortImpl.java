@@ -130,9 +130,11 @@ public class UserPortImpl extends DomainModelMapper implements UserPort {
                         if(targetRole.equals(Role.LEADER_CIRCLE)){
                             String updatedRoleValue = srcUser.getRole().getValue().replace(targetRole.getValue(), "").replace("_N_","");
                             srcUser.setRole(Role.of(updatedRoleValue));
-                        } else{ //학생회 겸 동아리장, 학년대표 겸 동아리장의 경우 타깃이 동아리 장만 남기는걸로 변경
-                            srcUser.setRole(Role.LEADER_CIRCLE);
                         }
+                    }
+                    //학생회 겸 동아리장, 학년대표 겸 동아리장의 경우 타깃이 동아리 장만 남기는걸로 변경
+                    else if(targetRole.equals(Role.COMMON)){
+                        srcUser.setRole(Role.LEADER_CIRCLE);
                     }
                     return this.entityToDomainModel(this.userRepository.save(srcUser));
                 }
