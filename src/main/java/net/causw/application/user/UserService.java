@@ -42,7 +42,7 @@ import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.UserRoleIsNoneValidator;
 import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.UserRoleWithoutAdminValidator;
-import net.causw.domain.validation.UserStateIsDropValidator;
+import net.causw.domain.validation.UserStateIsDropOrIsInActiveValidator;
 import net.causw.domain.validation.UserStateIsNotDropAndActiveValidator;
 import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
@@ -1148,7 +1148,7 @@ public class UserService {
 
         ValidatorBucket.of()
                 .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of()))
-                .consistOf(UserStateIsDropValidator.of(restoredUser.getState()))
+                .consistOf(UserStateIsDropOrIsInActiveValidator.of(restoredUser.getState()))
                 .validate();
 
         this.userPort.updateRole(restoredUser.getId(), Role.COMMON).orElseThrow(
