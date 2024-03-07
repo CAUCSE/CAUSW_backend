@@ -714,7 +714,22 @@ public class UserService {
                     });
 
         }
-
+        //관리자가 권한을 삭제하는 경우
+        //학생회 권한 삭제일 때는 바로 삭제 가능
+        //but 동아리장 겸직일 때 어떤 권한을 삭제하는지 확인이 필요함
+        else if ((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
+                && userUpdateRoleRequestDto.getRole().equals(Role.COMMON)
+        ) {
+            //TODO : 로직 수정 필요
+            if(grantee.getRole().getValue().contains("COUNCIL") || grantee.getRole().getValue().contains("LEADER_\\d+")){
+                return UserResponseDto.from(this.userPort.removeRole(granteeId, Role.COMMON).orElseThrow(
+                        () -> new InternalServerException(
+                                ErrorCode.INTERNAL_SERVER,
+                                "User id checked, but exception occurred"
+                        )
+                ));
+            }
+        }
         else if ((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
                 && userUpdateRoleRequestDto.getRole().equals(Role.LEADER_ALUMNI)
         ) {
@@ -732,31 +747,6 @@ public class UserService {
                             "User id checked, but exception occurred"
                     )
             );
-        }
-        //관리자가 권한을 삭제하는 경우
-        //학생회 권한 삭제일 때는 바로 삭제 가능
-        //but 동아리장 겸직일 때 어떤 권한을 삭제하는지 확인이 필요함
-        else if ((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
-                && userUpdateRoleRequestDto.getRole().equals(Role.COMMON)
-        ) {
-            if(grantee.getRole().getValue().contains("COUNCIL")){
-                return UserResponseDto.from(this.userPort.removeRole(granteeId, Role.COUNCIL).orElseThrow(
-                        () -> new InternalServerException(
-                                ErrorCode.INTERNAL_SERVER,
-                                "User id checked, but exception occurred"
-                        )
-                ));
-            }
-            else if(grantee.getRole().getValue().contains("LEADER_\\d+")){
-                return UserResponseDto.from(this.userPort.removeRole(granteeId, Role.COUNCIL).orElseThrow(
-                        () -> new InternalServerException(
-                                ErrorCode.INTERNAL_SERVER,
-                                "User id checked, but exception occurred"
-                        )
-                ));
-            }
-
-
         }
         /* Grant the role
          * The linked updating process is performed on previous delegation process
