@@ -2,7 +2,6 @@ plugins {
     id 'org.springframework.boot' version '2.4.1'
     id 'io.spring.dependency-management' version '1.0.10.RELEASE'
     id 'java'
-    id 'groovy'
 }
 
 group = 'net.causw'
@@ -50,11 +49,11 @@ dependencies {
     implementation "io.springfox:springfox-swagger-ui:3.0.0"
 
     // Spock test
-    testImplementation "org.spockframework:spock-core:1.2-groovy-2.4"
-    testImplementation "org.spockframework:spock-spring:1.2-groovy-2.4"
-    testImplementation "org.junit.vintage:junit-vintage-engine"
-    testImplementation "org.powermock:powermock-api-mockito2:2.0.2"
-    testImplementation "org.powermock:powermock-module-junit4:2.0.2"
+//    testImplementation "org.spockframework:spock-core:1.2-groovy-2.4"
+//    testImplementation "org.spockframework:spock-spring:1.2-groovy-2.4"
+//    testImplementation "org.junit.vintage:junit-vintage-engine"
+//    testImplementation "org.powermock:powermock-api-mockito2:2.0.2"
+//    testImplementation "org.powermock:powermock-module-junit4:2.0.2"
 
     // Discord LogBack
     implementation 'com.github.napstr:logback-discord-appender:1.0.0'
@@ -64,19 +63,4 @@ dependencies {
 
     // Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-}
-
-test {
-    useJUnitPlatform()
-
-    testLogging {
-        showStandardStreams = true
-        events = ["passed", "skipped", "failed"]
-    }
-
-    afterSuite { desc, result ->
-        if (!desc.parent) {
-            println "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
-        }
-    }
 }
