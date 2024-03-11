@@ -40,7 +40,8 @@ dependencies {
 
     // Lombok
     compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok:1.18.26'
+    testCompileOnly 'org.projectlombok:lombok:1.18.26'
     implementation group: 'org.hibernate', name: 'hibernate-spatial', version: '5.6.15.Final'
 
     // Swagger
