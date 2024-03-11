@@ -43,12 +43,12 @@ out/
 .LSOverride
 
 ### Project security ###
-**/resources/application.yml
-**/resources/email-config.yaml
-**/resources/password-config.yaml
-**/resources/causw-dev-51ab1a030da2.json
-**/resources/application-dev.yml
-**/resources/application-prod.yml
+src/main/resources/application.yml
+src/main/resources/email-config.yaml
+src/main/resources/password-config.yaml
+src/main/resources/causw-dev-51ab1a030da2.json
+src/main/resources/application-dev.yml
+src/main/resources/application-prod.yml
 
 Dockerfile
 docker-compose.yaml

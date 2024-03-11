@@ -1,0 +1,66 @@
+spring:
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DATASOURCE_URL}
+    username: ${DATASOURCE_USER}
+    password: ${DATASOURCE_PASSWORD}
+
+  jpa:
+    properties:
+      hibernate.hbm2ddl.auto: none
+      hibernate:
+        format_sql: true
+        show-sql: true
+
+  jwt:
+    secret: ${JWT_SECRET}
+
+  data:
+    redis:
+      host: 127.0.0.1 # 로컬에서 테스트 할 때는 localhost로 사용 (노출해도 괜찮음)
+      port: 6379
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: caucsedongne@gmail.com
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        debug: true
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  password:
+    prefix: ${PASSWORD_PREFIX}
+
+
+logging:
+  discord:
+    webhook-uri: ${WEBHOOK_URI}
+  level:
+    org.hibernate.SQL: DEBUG
+    com:
+      amazonaws:
+        util:
+          EC2MetadataUtils: ERROR
+
+cloud:
+  aws:
+    s3:
+      bucket: ${BUCKET_NAME}
+    credentials:
+      access-key: ${S3_ACCESS_KEY}
+      secret-key: ${S3_SECRET_KEY}
+    region:
+      static: ap-northeast-2
+      auto: false
+    stack:
+      auto: false
