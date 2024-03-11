@@ -36,8 +36,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'io.jsonwebtoken:jjwt:0.9.1'
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.security:spring-security-test'
     runtimeOnly 'mysql:mysql-connector-java'
 
     // Lombok
@@ -57,8 +55,8 @@ dependencies {
 
     // Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-}
 
-test {
-    useJUnitPlatform()
+    // Test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.7'
+    testImplementation 'org.springframework.security:spring-security-test'
 }
