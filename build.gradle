@@ -57,10 +57,6 @@ dependencies {
 
     // Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-
-    // Junit
-    testImplementation("org.junit.platform:junit-platform-launcher:1.5.2")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.5.2")
 }
 
 test {
