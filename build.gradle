@@ -61,3 +61,12 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.7'
     testImplementation 'org.springframework.security:spring-security-test'
 }
+
+test {
+    // XML 형식의 결과 파일 생성 설정
+    useJUnitPlatform()
+    reports {
+        junitXml.enabled = true
+        junitXml.destination = file("$buildDir/test-results")
+    }
+}
