@@ -39,6 +39,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     runtimeOnly 'mysql:mysql-connector-java'
+
     // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
@@ -48,13 +49,6 @@ dependencies {
     implementation "io.springfox:springfox-boot-starter:3.0.0"
     implementation "io.springfox:springfox-swagger-ui:3.0.0"
 
-    // Spock test
-//    testImplementation "org.spockframework:spock-core:1.2-groovy-2.4"
-//    testImplementation "org.spockframework:spock-spring:1.2-groovy-2.4"
-//    testImplementation "org.junit.vintage:junit-vintage-engine"
-//    testImplementation "org.powermock:powermock-api-mockito2:2.0.2"
-//    testImplementation "org.powermock:powermock-module-junit4:2.0.2"
-
     // Discord LogBack
     implementation 'com.github.napstr:logback-discord-appender:1.0.0'
 
@@ -63,4 +57,12 @@ dependencies {
 
     // Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    // Junit
+    testImplementation("org.junit.platform:junit-platform-launcher:1.5.2")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.5.2")
+}
+
+test {
+    useJUnitPlatform()
 }
