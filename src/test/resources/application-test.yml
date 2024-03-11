@@ -6,9 +6,9 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: ${DATASOURCE_URL}
-    username: ${DATASOURCE_USER}
-    password: ${DATASOURCE_PASSWORD}
+    url: ${{DATASOURCE_URL}}
+    username: ${{DATASOURCE_USER}}
+    password: ${{DATASOURCE_PASSWORD}}
 
   jpa:
     properties:
@@ -18,7 +18,7 @@ spring:
         show-sql: true
 
   jwt:
-    secret: ${JWT_SECRET}
+    secret: ${{JWT_SECRET}}
 
   data:
     redis:
@@ -29,7 +29,7 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: caucsedongne@gmail.com
-    password: ${MAIL_PASSWORD}
+    password: ${{MAIL_PASSWORD}}
     properties:
       mail:
         debug: true
@@ -39,12 +39,12 @@ spring:
             enable: true
 
   password:
-    prefix: ${PASSWORD_PREFIX}
+    prefix: ${{PASSWORD_PREFIX}}
 
 
 logging:
   discord:
-    webhook-uri: ${WEBHOOK_URI}
+    webhook-uri: ${{WEBHOOK_URI}}
   level:
     org.hibernate.SQL: DEBUG
     com:
@@ -55,10 +55,10 @@ logging:
 cloud:
   aws:
     s3:
-      bucket: ${BUCKET_NAME}
+      bucket: ${{BUCKET_NAME}}
     credentials:
-      access-key: ${S3_ACCESS_KEY}
-      secret-key: ${S3_SECRET_KEY}
+      access-key: ${{S3_ACCESS_KEY}}
+      secret-key: ${{S3_SECRET_KEY}}
     region:
       static: ap-northeast-2
       auto: false
