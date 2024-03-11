@@ -1175,6 +1175,12 @@ public class UserService {
                         "RefreshToken 유효성 검증 실패"
                 )
         );
+
+        ValidatorBucket.of()
+                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+                .consistOf(UserStateValidator.of(user.getState()))
+                .validate();
+
         // STEP2 : 새로운 accessToken 제공
         String newAccessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getRole(), user.getState());
         return UserSignInResponseDto.builder()
