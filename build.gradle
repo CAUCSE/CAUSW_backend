@@ -83,6 +83,18 @@ sourceSets {
     }
 }
 
+jacocoTestReport {
+    afterEvaluate {
+        classDirectories.setFrom(
+                files(classDirectories.files.collect {
+                    fileTree(dir: it, includes: ['**/application/**'], excludes: ['**/dto/**'])
+                })
+        )
+    }
+
+    finalizedBy 'jacocoTestCoverageVerification'
+}
+
 compileJava {
     enabled = false
 }
