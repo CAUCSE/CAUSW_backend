@@ -1,7 +1,10 @@
-//package net.causw;
-//
-//import static org.junit.jupiter.api.Assertions.*;
-//
-//class CauswApplicationTest {
-//
-//}
+package net.causw;
+
+import org.springframework.boot.test.context.SpringBootTest;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@SpringBootTest
+class CauswApplicationTest {
+
+}
