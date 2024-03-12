@@ -18,7 +18,7 @@ public class LockerAccessValidator extends AbstractValidator {
     public void validate() {
         if (!flag) {
             throw new BadRequestException(
-                    ErrorCode.ROW_DOES_NOT_EXIST,
+                    ErrorCode.FLAG_NOT_AVAILABLE,
                     "사물함 신청 기간이 아닙니다. 공지를 확인해주세요."
             );
         }
