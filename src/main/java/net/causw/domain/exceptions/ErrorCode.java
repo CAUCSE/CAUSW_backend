@@ -24,6 +24,7 @@ public enum ErrorCode {
     INVALID_REQUEST_USER_STATE(4014),
     INVALID_FILE_EXTENSION(4015),
     INVALID_EXPIRE_DATE(4016),
+    FLAG_NOT_AVAILABLE(4017),
 
     /**
      * 401 Unauthorized
