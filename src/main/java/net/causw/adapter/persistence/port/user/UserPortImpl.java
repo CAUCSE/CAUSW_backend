@@ -155,7 +155,7 @@ public class UserPortImpl extends DomainModelMapper implements UserPort {
     public Page<UserDomainModel> findByStateAndName(String state, String name, Integer pageNum) {
 
         if(state.equals("INACTIVE_N_DROP")){
-            List<UserState> statesToSearch = Arrays.asList(UserState.INACTIVE, UserState.DROP);
+            List<String> statesToSearch = Arrays.asList("INACTIVE", "DROP");
             return this.userRepository.findByStateInAndNameContaining(
                     statesToSearch,
                     name,
