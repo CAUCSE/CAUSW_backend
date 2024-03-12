@@ -15,6 +15,12 @@ jobs:
         with:
           java-version: 11
 
+      - name: Set YML
+        run: |
+          mkdir -p src/main/resources
+          echo "${{ secrets.APPLICATION_YML }}" | base64 --decode > src/test/resources/application.yml
+          find src
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
@@ -24,6 +30,7 @@ jobs:
       # 테스트 후 Result를 보기위해 Publish Unit Test Results step 추가
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action@v1
-        if: ${{ always() }}  # 테스트가 실패하여도 Report를 보기 위해 `always`로 설정
+        env:
+          if: ${{ always() }}  # 테스트가 실패하여도 Report를 보기 위해 `always`로 설정
         with:
           files: build/test-results/**/*.xml
