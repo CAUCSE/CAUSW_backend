@@ -24,8 +24,8 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Test with Gradle
-        run: ./gradlew --info test
+      - name: Build Gradle
+        run: ./gradlew build
 
       # 테스트 후 Result를 보기위해 Publish Unit Test Results step 추가
       - name: Publish Unit Test Results
