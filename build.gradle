@@ -98,3 +98,7 @@ jacocoTestReport {
 compileJava {
     enabled = false
 }
+
+bootJar {
+    mainClassName = 'net/causw/CauswApplication'
+}
