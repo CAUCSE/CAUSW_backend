@@ -41,8 +41,8 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     runtimeOnly 'mysql:mysql-connector-java'
     // Lombok
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+    compileOnly 'org.projectlombok:lombok:1.18.20'
+    annotationProcessor 'org.projectlombok:lombok:1.18.20'
     implementation group: 'org.hibernate', name: 'hibernate-spatial', version: '5.6.15.Final'
 
     // Swagger
