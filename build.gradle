@@ -2,7 +2,6 @@ plugins {
     id 'org.springframework.boot' version '2.4.1'
     id 'io.spring.dependency-management' version '1.0.10.RELEASE'
     id 'java'
-    id 'groovy'
 }
 
 group = 'net.causw'
@@ -57,4 +56,18 @@ dependencies {
 
     // Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    // Junit5
+    testImplementation("org.junit.platform:junit-platform-launcher:1.5.2")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.5.2")
+}
+
+test {
+    useJUnitPlatform()
+    // JUnit 테스트를 실행하고 결과를 XML 파일로 저장합니다.
+    reports {
+        junitXml.enabled = true
+        // 결과 파일의 경로를 지정합니다.
+        junitXml.destination = file("$buildDir/test-results/test")
+    }
 }
