@@ -17,4 +17,10 @@ class UserServiceTest {
         Assertions.assertEquals("동문 네트워크", test);
     }
 
+    @Test
+    @DisplayName("Junit을 활성화합니다2")
+    void Junit을_활성화합니다2() {
+        String test = "동문 네트워크";
+        Assertions.assertEquals("동문 네트워크", test);
+    }
 }
