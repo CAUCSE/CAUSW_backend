@@ -17,7 +17,7 @@ jobs:
           distribution: 'corretto'
 
       - name: Set YML
-      - run: |
+        run: |
           mkdir -p src/main/resources
           echo "${{ secrets.APPLICATION_YML }}" | base64 --decode > src/main/resources/application.yml
           find src
