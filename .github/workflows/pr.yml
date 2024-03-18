@@ -16,6 +16,12 @@ jobs:
           java-version: '11'
           distribution: 'corretto'
 
+      - name: Set YML
+      - run: |
+          mkdir -p src/main/resources
+          echo "${{ secrets.APPLICATION_YML }}" | base64 --decode > src/main/resources/application.yml
+          find src
+
       - name: Build with Gradle
         run: ./gradlew build
 
