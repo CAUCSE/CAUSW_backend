@@ -4,6 +4,8 @@ on:
   pull_request:
     branches: [ develop ]
 
+permissions: write-all
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -30,3 +32,13 @@ jobs:
         if: always()
         with:
           files: '**/test-results/**/*.xml'
+
+      - name: Test Coverage Report
+        id: jacoco
+        uses: madrapps/jacoco-report@v1.6
+        with:
+          title: Test Coverage Report
+          paths: ${{ github.workspace }}/build/reports/jacoco/test/jacocoTestReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 30
+          min-coverage-changed-files: 50
