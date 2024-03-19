@@ -2,6 +2,7 @@ plugins {
     id 'org.springframework.boot' version '2.4.1'
     id 'io.spring.dependency-management' version '1.0.10.RELEASE'
     id 'java'
+    id 'jacoco'
 }
 
 group = 'net.causw'
@@ -63,11 +64,34 @@ dependencies {
 }
 
 test {
+    finalizedBy jacocoTestReport
     useJUnitPlatform()
     // JUnit 테스트를 실행하고 결과를 XML 파일로 저장합니다.
     reports {
         junitXml.enabled = true
         // 결과 파일의 경로를 지정합니다.
         junitXml.destination = file("$buildDir/test-results/test")
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.8"
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.enabled true
+    }
+
+    // 리포트 작성 시 특정 경로만 포함 (비즈니스 로직만)
+    afterEvaluate {
+        classDirectories.setFrom(
+                files(classDirectories.files.collect {
+                    fileTree(dir: it, includes: [
+                            '**/application/**'
+                    ])
+                })
+        )
     }
 }
