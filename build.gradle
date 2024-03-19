@@ -2,7 +2,7 @@ plugins {
     id 'org.springframework.boot' version '2.4.1'
     id 'io.spring.dependency-management' version '1.0.10.RELEASE'
     id 'java'
-    id 'groovy'
+    id 'jacoco'
 }
 
 group = 'net.causw'
@@ -41,20 +41,13 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     runtimeOnly 'mysql:mysql-connector-java'
     // Lombok
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+    compileOnly 'org.projectlombok:lombok:1.18.20'
+    annotationProcessor 'org.projectlombok:lombok:1.18.20'
     implementation group: 'org.hibernate', name: 'hibernate-spatial', version: '5.6.15.Final'
 
     // Swagger
     implementation "io.springfox:springfox-boot-starter:3.0.0"
     implementation "io.springfox:springfox-swagger-ui:3.0.0"
-
-    // Spock test
-    testImplementation "org.spockframework:spock-core:1.2-groovy-2.4"
-    testImplementation "org.spockframework:spock-spring:1.2-groovy-2.4"
-    testImplementation "org.junit.vintage:junit-vintage-engine"
-    testImplementation "org.powermock:powermock-api-mockito2:2.0.2"
-    testImplementation "org.powermock:powermock-module-junit4:2.0.2"
 
     // Discord LogBack
     implementation 'com.github.napstr:logback-discord-appender:1.0.0'
@@ -64,19 +57,41 @@ dependencies {
 
     // Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    // Junit5
+    testImplementation("org.junit.platform:junit-platform-launcher:1.5.2")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.5.2")
 }
 
 test {
+    finalizedBy jacocoTestReport
     useJUnitPlatform()
+    // JUnit 테스트를 실행하고 결과를 XML 파일로 저장합니다.
+    reports {
+        junitXml.enabled = true
+        // 결과 파일의 경로를 지정합니다.
+        junitXml.destination = file("$buildDir/test-results/test")
+    }
+}
 
-    testLogging {
-        showStandardStreams = true
-        events = ["passed", "skipped", "failed"]
+jacoco {
+    toolVersion = "0.8.8"
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.enabled true
     }
 
-    afterSuite { desc, result ->
-        if (!desc.parent) {
-            println "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
-        }
+    // 리포트 작성 시 특정 경로만 포함 (비즈니스 로직만)
+    afterEvaluate {
+        classDirectories.setFrom(
+                files(classDirectories.files.collect {
+                    fileTree(dir: it, includes: [
+                            '**/application/**'
+                    ])
+                })
+        )
     }
 }
