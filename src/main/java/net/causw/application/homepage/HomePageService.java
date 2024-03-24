@@ -12,6 +12,7 @@ import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.board.BoardDomainModel;
+import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.validation.UserRoleIsNoneValidator;
@@ -30,11 +31,12 @@ public class HomePageService {
     private final BoardPort boardPort;
     private final PostPort postPort;
     private final CommentPort commentPort;
+
     public List<HomePageResponseDto> getHomePage(String userId) {
         UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
@@ -48,7 +50,7 @@ public class HomePageService {
         if(boardDomainModelList.isEmpty()){
             throw new BadRequestException(
                     ErrorCode.ROW_DOES_NOT_EXIST,
-                    "게시판을 찾을 수 없습니다."
+                    MessageUtil.BOARD_NOT_FOUND
             );
         }
         return boardDomainModelList

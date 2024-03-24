@@ -15,6 +15,7 @@ import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.board.BoardDomainModel;
 import net.causw.domain.model.circle.CircleDomainModel;
 import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.validation.ConstraintValidator;
@@ -30,7 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,12 +41,13 @@ public class BoardService {
     private final CirclePort circlePort;
     private final CircleMemberPort circleMemberPort;
     private final Validator validator;
+
     @Transactional(readOnly = true)
     public List<BoardResponseDto> findAllBoard(String loginUserId) {
         UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
@@ -55,20 +56,19 @@ public class BoardService {
                 .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
                 .validate();
 
-        if(userDomainModel.getRole().equals(Role.ADMIN) || userDomainModel.getRole().getValue().contains("PRESIDENT") ){
+        if (userDomainModel.getRole().equals(Role.ADMIN) || userDomainModel.getRole().getValue().contains("PRESIDENT")) {
             return this.boardPort.findAllBoard()
                     .stream()
                     .map(boardDomainModel -> BoardResponseDto.from(boardDomainModel, userDomainModel.getRole()))
                     .collect(Collectors.toList());
-        }
-        else  {
+        } else {
             List<CircleDomainModel> joinCircles = this.circleMemberPort.getCircleListByUserId(loginUserId);
             if (joinCircles.isEmpty()) {
                 return this.boardPort.findAllBoard(false)
                         .stream()
                         .map(boardDomainModel -> BoardResponseDto.from(boardDomainModel, userDomainModel.getRole()))
                         .collect(Collectors.toList());
-            }else{
+            } else {
                 List<String> circleIdList = joinCircles.stream()
                         .map(CircleDomainModel::getId)
                         .collect(Collectors.toList());
@@ -79,7 +79,6 @@ public class BoardService {
                         .collect(Collectors.toList());
             }
         }
-
     }
 
     @Transactional
@@ -89,7 +88,7 @@ public class BoardService {
         UserDomainModel creatorDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
@@ -102,7 +101,7 @@ public class BoardService {
                     CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
                             () -> new BadRequestException(
                                     ErrorCode.ROW_DOES_NOT_EXIST,
-                                    "동아리를 찾을 수 없습니다."
+                                    MessageUtil.CIRCLE_NOT_FOUND
                             )
                     );
 
@@ -117,7 +116,7 @@ public class BoardService {
                                         circle.getLeader().map(UserDomainModel::getId).orElseThrow(
                                                 () -> new UnauthorizedException(
                                                         ErrorCode.API_NOT_ALLOWED,
-                                                        "사용자가 해당 동아리의 동아리장이 아닙니다."
+                                                        MessageUtil.NOT_CIRCLE_LEADER
                                                 )
                                         ),
                                         loginUserId
@@ -161,14 +160,14 @@ public class BoardService {
         UserDomainModel updaterDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
         BoardDomainModel boardDomainModel = this.boardPort.findById(boardId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "수정할 게시판을 찾을 수 없습니다."
+                        MessageUtil.UPDATE_BOARD_NOT_FOUND
                 )
         );
 
@@ -190,7 +189,7 @@ public class BoardService {
                                         circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
                                                 () -> new UnauthorizedException(
                                                         ErrorCode.API_NOT_ALLOWED,
-                                                        "사용자가 해당 동아리의 동아리장이 아닙니다."
+                                                        MessageUtil.NOT_CIRCLE_LEADER
                                                 )
                                         ),
                                         loginUserId
@@ -216,7 +215,7 @@ public class BoardService {
                 this.boardPort.updateBoard(boardId, boardDomainModel).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
-                                "Board id checked, but exception occurred"
+                                MessageUtil.exceptionOccur("Board")
                         )
                 ),
                 updaterDomainModel.getRole()
@@ -233,14 +232,14 @@ public class BoardService {
         UserDomainModel deleterDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
         BoardDomainModel boardDomainModel = this.boardPort.findById(boardId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "삭제할 게시판을 찾을 수 없습니다."
+                        MessageUtil.DELETE_BOARD_NOT_FOUND
                 )
         );
 
@@ -270,7 +269,7 @@ public class BoardService {
                                         circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
                                                 () -> new UnauthorizedException(
                                                         ErrorCode.API_NOT_ALLOWED,
-                                                        "사용자가 해당 동아리의 동아리장이 아닙니다."
+                                                        MessageUtil.NOT_CIRCLE_LEADER
                                                 )
                                         ),
                                         loginUserId
@@ -288,7 +287,7 @@ public class BoardService {
                 this.boardPort.deleteBoard(boardId).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
-                                "Board id checked, but exception occurred"
+                                MessageUtil.exceptionOccur("Board")
                         )
                 ),
                 deleterDomainModel.getRole()
@@ -299,20 +298,20 @@ public class BoardService {
     public BoardResponseDto restoreBoard(
             String loginUserId,
             String boardId
-    ){
+    ) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         UserDomainModel restorerDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
         BoardDomainModel boardDomainModel = this.boardPort.findById(boardId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "복구할 게시판을 찾을 수 없습니다."
+                        MessageUtil.RESTORE_BOARD_NOT_FOUND
                 )
         );
 
@@ -342,7 +341,7 @@ public class BoardService {
                                         circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
                                                 () -> new UnauthorizedException(
                                                         ErrorCode.API_NOT_ALLOWED,
-                                                        "사용자가 해당 동아리의 동아리장이 아닙니다."
+                                                        MessageUtil.NOT_CIRCLE_LEADER
                                                 )
                                         ),
                                         loginUserId
@@ -360,7 +359,7 @@ public class BoardService {
                 this.boardPort.restoreBoard(boardId).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
-                                "Board id checked, but exception occurred"
+                                MessageUtil.exceptionOccur("Board")
                         )
                 ),
                 restorerDomainModel.getRole()
