@@ -28,7 +28,7 @@ public class CommentDomainModel {
 
     @NotNull(message = "게시글이 입력되지 않았습니다.")
     private String postId;
-    private List<CommentDomainModel> childCommentList;
+    private List<ChildCommentDomainModel> childCommentList;
 
     private CommentDomainModel(
             String id,
@@ -38,7 +38,7 @@ public class CommentDomainModel {
             LocalDateTime updatedAt,
             UserDomainModel writer,
             String postId,
-            List<CommentDomainModel> childCommentList
+            List<ChildCommentDomainModel> childCommentList
     ) {
         this.id = id;
         this.content = content;
@@ -96,7 +96,7 @@ public class CommentDomainModel {
             LocalDateTime updatedAt,
             UserDomainModel writer,
             String postId,
-            List<CommentDomainModel> childCommentList
+            List<ChildCommentDomainModel> childCommentList
     ) {
         return new CommentDomainModel(
                 id,
