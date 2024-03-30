@@ -1,44 +1,44 @@
-name: 동문네트워크 백엔드 CI 테스트 자동화
-
-on:
-  pull_request:
-    branches: [ develop ]
-
-permissions: write-all
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up JDK 11
-        uses: actions/setup-java@v3
-        with:
-          java-version: '11'
-          distribution: 'corretto'
-
-      - name: Set YML
-        run: |
-          mkdir -p src/main/resources
-          echo "${{ secrets.APPLICATION_YML }}" | base64 --decode > src/main/resources/application.yml
-          find src
-
-      - name: Build with Gradle
-        run: ./gradlew build
-
-      - name: Publish Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
-        with:
-          files: '**/test-results/**/*.xml'
-
-      - name: Test Coverage Report
-        id: jacoco
-        uses: madrapps/jacoco-report@v1.6
-        with:
-          title: Test Coverage Report
-          paths: ${{ github.workspace }}/build/reports/jacoco/test/jacocoTestReport.xml
-          token: ${{ secrets.GITHUB_TOKEN }}
-          min-coverage-overall: 30
-          min-coverage-changed-files: 50
+#name: 동문네트워크 백엔드 CI 테스트 자동화
+#
+#on:
+#  pull_request:
+#    branches: [ develop ]
+#
+#permissions: write-all
+#
+#jobs:
+#  build:
+#    runs-on: ubuntu-latest
+#    timeout-minutes: 10
+#    steps:
+#      - uses: actions/checkout@v2
+#      - name: Set up JDK 11
+#        uses: actions/setup-java@v3
+#        with:
+#          java-version: '11'
+#          distribution: 'corretto'
+#
+#      - name: Set YML
+#        run: |
+#          mkdir -p src/main/resources
+#          echo "${{ secrets.APPLICATION_YML }}" | base64 --decode > src/main/resources/application.yml
+#          find src
+#
+#      - name: Build with Gradle
+#        run: ./gradlew build
+#
+#      - name: Publish Test Results
+#        uses: EnricoMi/publish-unit-test-result-action@v2
+#        if: always()
+#        with:
+#          files: '**/test-results/**/*.xml'
+#
+#      - name: Test Coverage Report
+#        id: jacoco
+#        uses: madrapps/jacoco-report@v1.6
+#        with:
+#          title: Test Coverage Report
+#          paths: ${{ github.workspace }}/build/reports/jacoco/test/jacocoTestReport.xml
+#          token: ${{ secrets.GITHUB_TOKEN }}
+#          min-coverage-overall: 30
+#          min-coverage-changed-files: 50

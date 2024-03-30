@@ -61,6 +61,9 @@ dependencies {
     // Junit5
     testImplementation("org.junit.platform:junit-platform-launcher:1.5.2")
     testImplementation("org.junit.jupiter:junit-jupiter:5.5.2")
+
+    // h2
+    runtimeOnly 'com.h2database:h2'
 }
 
 test {
