@@ -25,7 +25,6 @@ public class ChildCommentResponseDto {
     private String writerProfileImage;
     private Boolean updatable;
     private Boolean deletable;
-    private String parentCommentId;
 
     private ChildCommentResponseDto(
             String id,
@@ -39,8 +38,7 @@ public class ChildCommentResponseDto {
             Integer writerAdmissionYear,
             String writerProfileImage,
             Boolean updatable,
-            Boolean deletable,
-            String parentCommentId
+            Boolean deletable
     ) {
         this.id = id;
         this.content = content;
@@ -54,7 +52,6 @@ public class ChildCommentResponseDto {
         this.writerProfileImage = writerProfileImage;
         this.updatable = updatable;
         this.deletable = deletable;
-        this.parentCommentId = parentCommentId;
     }
 
     public static ChildCommentResponseDto from(
@@ -104,8 +101,22 @@ public class ChildCommentResponseDto {
                 comment.getWriter().getAdmissionYear(),
                 comment.getWriter().getProfileImage(),
                 updatable,
-                deletable,
-                comment.getParentComment().getId()
+                deletable
         );
+    }
+
+    public ChildCommentResponseDto(ChildCommentDomainModel domainModel) {
+        UserDomainModel writer = domainModel.getWriter();
+
+        this.id = domainModel.getId();
+        this.content = domainModel.getContent();
+        this.createdAt = domainModel.getCreatedAt();
+        this.updatedAt = domainModel.getUpdatedAt();
+        this.isDeleted = domainModel.getIsDeleted();
+        this.tagUserName = domainModel.getTagUserName();
+        this.refChildComment = domainModel.getRefChildComment();
+        this.writerName = writer.getName();
+        this.writerAdmissionYear = writer.getAdmissionYear();
+        this.writerProfileImage = writer.getProfileImage();
     }
 }

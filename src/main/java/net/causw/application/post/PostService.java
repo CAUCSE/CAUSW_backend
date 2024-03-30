@@ -1,6 +1,7 @@
 package net.causw.application.post;
 
 import lombok.RequiredArgsConstructor;
+import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.post.BoardPostsResponseDto;
 import net.causw.application.dto.post.PostCreateRequestDto;
@@ -112,7 +113,10 @@ public class PostService {
                                         commentDomainModel,
                                         userDomainModel,
                                         postDomainModel.getBoard(),
-                                        this.childCommentPort.countByParentComment(commentDomainModel.getId())
+                                        this.childCommentPort.countByParentComment(commentDomainModel.getId()),
+                                        commentDomainModel.getChildCommentList().stream()
+                                                .map(ChildCommentResponseDto::new)
+                                                .collect(Collectors.toList())
                                 )
                         ),
                 this.commentPort.countByPostId(postDomainModel.getId())
@@ -610,7 +614,10 @@ public class PostService {
                                 commentDomainModel,
                                 updaterDomainModel,
                                 updatedPostDomainModel.getBoard(),
-                                this.childCommentPort.countByParentComment(commentDomainModel.getId())
+                                this.childCommentPort.countByParentComment(commentDomainModel.getId()),
+                                commentDomainModel.getChildCommentList().stream()
+                                        .map(ChildCommentResponseDto::new)
+                                        .collect(Collectors.toList())
                         )),
                 this.commentPort.countByPostId(postDomainModel.getId())
         );
@@ -721,9 +728,13 @@ public class PostService {
                                 commentDomainModel,
                                 restorerDomainModel,
                                 restoredPostDomainModel.getBoard(),
-                                this.childCommentPort.countByParentComment(commentDomainModel.getId())
+                                this.childCommentPort.countByParentComment(commentDomainModel.getId()),
+                                commentDomainModel.getChildCommentList().stream()
+                                        .map(ChildCommentResponseDto::new)
+                                        .collect(Collectors.toList())
                         )),
                 this.commentPort.countByPostId(postDomainModel.getId())
         );
     }
+
 }

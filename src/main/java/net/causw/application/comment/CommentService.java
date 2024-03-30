@@ -1,6 +1,7 @@
 package net.causw.application.comment;
 
 import lombok.RequiredArgsConstructor;
+import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentCreateRequestDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.comment.CommentUpdateRequestDto;
@@ -34,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -107,7 +109,10 @@ public class CommentService {
                 this.commentPort.create(commentDomainModel, postDomainModel),
                 creatorDomainModel,
                 postDomainModel.getBoard(),
-                this.childCommentPort.countByParentComment(commentDomainModel.getId())
+                this.childCommentPort.countByParentComment(commentDomainModel.getId()),
+                commentDomainModel.getChildCommentList().stream()
+                        .map(ChildCommentResponseDto::new)
+                        .collect(Collectors.toList())
         );
     }
 
@@ -167,7 +172,10 @@ public class CommentService {
                                 commentDomainModel,
                                 userDomainModel,
                                 postDomainModel.getBoard(),
-                                this.childCommentPort.countByParentComment(commentDomainModel.getId())
+                                this.childCommentPort.countByParentComment(commentDomainModel.getId()),
+                                commentDomainModel.getChildCommentList().stream()
+                                        .map(ChildCommentResponseDto::new)
+                                        .collect(Collectors.toList())
                         )
                 );
     }
@@ -254,7 +262,10 @@ public class CommentService {
                 ),
                 requestUser,
                 postDomainModel.getBoard(),
-                this.childCommentPort.countByParentComment(commentId)
+                this.childCommentPort.countByParentComment(commentId),
+                commentDomainModel.getChildCommentList().stream()
+                        .map(ChildCommentResponseDto::new)
+                        .collect(Collectors.toList())
         );
     }
 
@@ -349,7 +360,10 @@ public class CommentService {
                 ),
                 deleterDomainModel,
                 postDomainModel.getBoard(),
-                this.childCommentPort.countByParentComment(commentId)
+                this.childCommentPort.countByParentComment(commentId),
+                commentDomainModel.getChildCommentList().stream()
+                        .map(ChildCommentResponseDto::new)
+                        .collect(Collectors.toList())
         );
     }
 }
