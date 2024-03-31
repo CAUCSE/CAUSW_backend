@@ -8,6 +8,8 @@ import java.util.Optional;
 public interface PostPort {
     Optional<PostDomainModel> findPostById(String id);
 
+    Long countAllComment(String postId);
+
     PostDomainModel createPost(PostDomainModel postDomainModel);
 
     Optional<PostDomainModel> deletePost(String id);
