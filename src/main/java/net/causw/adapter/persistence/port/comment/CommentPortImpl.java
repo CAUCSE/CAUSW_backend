@@ -54,11 +54,6 @@ public class CommentPortImpl extends DomainModelMapper implements CommentPort {
     }
 
     @Override
-    public Long countByPostId(String postId) {
-        return this.commentRepository.countByPost_IdAndIsDeletedIsFalse(postId);
-    }
-
-    @Override
     public CommentDomainModel create(CommentDomainModel commentDomainModel, PostDomainModel postDomainModel) {
         return this.entityToDomainModel(this.commentRepository.save(Comment.from(commentDomainModel, postDomainModel)));
     }

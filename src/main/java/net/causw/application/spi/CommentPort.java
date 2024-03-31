@@ -11,8 +11,6 @@ public interface CommentPort {
 
     Page<CommentDomainModel> findByPostId(String postId, Integer pageNum);
 
-    Long countByPostId(String postId);
-
     CommentDomainModel create(CommentDomainModel commentDomainModel, PostDomainModel postDomainModel);
 
     Optional<CommentDomainModel> update(String commentId, CommentDomainModel commentDomainModel);
