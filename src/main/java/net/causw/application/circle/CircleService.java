@@ -172,7 +172,7 @@ public class CircleService {
                                         boardDomainModel,
                                         userDomainModel.getRole(),
                                         postDomainModel,
-                                        this.commentPort.countByPostId(postDomainModel.getId())
+                                        this.postPort.countAllComment(postDomainModel.getId())
                                 )
                         ).orElse(
                                 BoardOfCircleResponseDto.from(

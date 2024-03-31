@@ -200,7 +200,7 @@ public class UserService {
                         postDomainModel.getBoard().getName(),
                         postDomainModel.getBoard().getCircle().map(CircleDomainModel::getId).orElse(null),
                         postDomainModel.getBoard().getCircle().map(CircleDomainModel::getName).orElse(null),
-                        this.commentPort.countByPostId(postDomainModel.getId())
+                        this.postPort.countAllComment(postDomainModel.getId())
                 ))
         );
     }

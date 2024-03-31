@@ -119,7 +119,8 @@ public class PostService {
                                                 .collect(Collectors.toList())
                                 )
                         ),
-                this.commentPort.countByPostId(postDomainModel.getId())
+//                this.commentPort.countByPostId(postDomainModel.getId())
+                this.postPort.countAllComment(postId)
         );
     }
 
@@ -191,7 +192,7 @@ public class PostService {
                     this.postPort.findAllPost(boardId, pageNum)
                             .map(postDomainModel -> PostsResponseDto.from(
                                     postDomainModel,
-                                    this.commentPort.countByPostId(postDomainModel.getId())
+                                    this.postPort.countAllComment(postDomainModel.getId())
                             ))
             );
         }
@@ -205,7 +206,7 @@ public class PostService {
                     this.postPort.findAllPost(boardId, pageNum, false)
                             .map(postDomainModel -> PostsResponseDto.from(
                                     postDomainModel,
-                                    this.commentPort.countByPostId(postDomainModel.getId())
+                                    this.postPort.countAllComment(postDomainModel.getId())
                             ))
             );
         }
@@ -285,7 +286,7 @@ public class PostService {
                     this.postPort.searchPost(keyword, boardId, pageNum)
                             .map(postDomainModel -> PostsResponseDto.from(
                                     postDomainModel,
-                                    this.commentPort.countByPostId(postDomainModel.getId())
+                                    this.postPort.countAllComment(postDomainModel.getId())
                             ))
             );
         }
@@ -299,7 +300,7 @@ public class PostService {
                     this.postPort.searchPost(keyword, boardId, pageNum, false)
                             .map(postDomainModel -> PostsResponseDto.from(
                                     postDomainModel,
-                                    this.commentPort.countByPostId(postDomainModel.getId())
+                                    this.postPort.countAllComment(postDomainModel.getId())
                             ))
             );
         }
@@ -332,7 +333,7 @@ public class PostService {
                 this.postPort.findAllPost(boardDomainModel.getId(), pageNum)
                         .map(postDomainModel -> PostsResponseDto.from(
                                 postDomainModel,
-                                this.commentPort.countByPostId(postDomainModel.getId())
+                                this.postPort.countAllComment(postDomainModel.getId())
                         ))
         );
     }
@@ -619,7 +620,7 @@ public class PostService {
                                         .map(ChildCommentResponseDto::new)
                                         .collect(Collectors.toList())
                         )),
-                this.commentPort.countByPostId(postDomainModel.getId())
+                this.postPort.countAllComment(postId)
         );
     }
 
@@ -733,7 +734,7 @@ public class PostService {
                                         .map(ChildCommentResponseDto::new)
                                         .collect(Collectors.toList())
                         )),
-                this.commentPort.countByPostId(postDomainModel.getId())
+                this.postPort.countAllComment(postId)
         );
     }
 
