@@ -25,6 +25,7 @@ import net.causw.domain.model.locker.LockerDomainModel;
 import net.causw.domain.model.locker.LockerLocationDomainModel;
 import net.causw.domain.model.enums.LockerLogAction;
 import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.validation.ConstraintValidator;
@@ -61,14 +62,14 @@ public class LockerService {
         UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
         return LockerResponseDto.from(this.lockerPort.findByIdForRead(id).orElseThrow(
                         () -> new BadRequestException(
                                 ErrorCode.ROW_DOES_NOT_EXIST,
-                                "사물함을 찾을 수 없습니다."
+                                MessageUtil.LOCKER_NOT_FOUND
                         )),
                 userDomainModel
         );
@@ -84,7 +85,7 @@ public class LockerService {
         UserDomainModel creatorDomainModel = this.userPort.findById(creatorId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
@@ -93,14 +94,14 @@ public class LockerService {
                 .orElseThrow(
                         () -> new BadRequestException(
                                 ErrorCode.ROW_DOES_NOT_EXIST,
-                                "등록된 사물함 위치가 아닙니다."
+                                MessageUtil.LOCKER_WRONG_POSITION
                         )
                 );
 
         if (this.lockerPort.findByLockerNumber(lockerCreateRequestDto.getLockerNumber()).isPresent()) {
             throw new BadRequestException(
                     ErrorCode.ROW_ALREADY_EXIST,
-                    "중복된 사물함 번호입니다."
+                    MessageUtil.LOCKER_DUPLICATE_NUMBER
             );
         }
 
@@ -124,7 +125,7 @@ public class LockerService {
                             lockerLocationDomainModel.getName(),
                             creatorDomainModel,
                             LockerLogAction.ENABLE,
-                            "사물함 최초 생성"
+                            MessageUtil.LOCKER_FIRST_CREATED
                     );
                     return LockerResponseDto.from(resLockerDomainModel, creatorDomainModel);
                 })
@@ -143,14 +144,14 @@ public class LockerService {
         UserDomainModel updaterDomainModel = this.userPort.findById(updaterId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
         LockerDomainModel lockerDomainModel = this.lockerPort.findByIdForWrite(lockerId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "사물함을 찾을 수 없습니다."
+                        MessageUtil.LOCKER_NOT_FOUND
                 )
         );
 
@@ -194,21 +195,21 @@ public class LockerService {
         UserDomainModel updaterDomainModel = this.userPort.findById(updaterId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
         LockerDomainModel lockerDomainModel = this.lockerPort.findByIdForWrite(lockerId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "사물함을 찾을 수 없습니다."
+                        MessageUtil.LOCKER_WRONG_POSITION
                 )
         );
 
         LockerLocationDomainModel lockerLocationDomainModel = this.lockerLocationPort.findById(lockerMoveRequestDto.getLocationId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "등록된 사물함 위치가 아닙니다."
+                        MessageUtil.LOCKER_WRONG_POSITION
                 )
         );
 
@@ -235,14 +236,14 @@ public class LockerService {
         UserDomainModel deleterDomainModel = this.userPort.findById(deleterId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
         LockerDomainModel lockerDomainModel = this.lockerPort.findByIdForWrite(lockerId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "사물함을 찾을 수 없습니다."
+                        MessageUtil.LOCKER_NOT_FOUND
                 )
         );
 
@@ -271,14 +272,14 @@ public class LockerService {
         UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
         LockerLocationDomainModel lockerLocation = this.lockerLocationPort.findById(locationId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "등록된 사물함 위치가 아닙니다."
+                        MessageUtil.LOCKER_WRONG_POSITION
                 )
         );
 
@@ -296,7 +297,7 @@ public class LockerService {
         UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
@@ -331,14 +332,14 @@ public class LockerService {
         UserDomainModel creatorDomainModel = this.userPort.findById(creatorId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
         if (this.lockerLocationPort.findByName(lockerLocationCreateRequestDto.getName()).isPresent()) {
             throw new BadRequestException(
                     ErrorCode.ROW_ALREADY_EXIST,
-                    "이미 등록된 사물함 위치입니다."
+                    MessageUtil.LOCKER_ALREADY_REGISTERED
             );
         }
 
@@ -369,14 +370,14 @@ public class LockerService {
         UserDomainModel creatorDomainModel = this.userPort.findById(updaterId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
         LockerLocationDomainModel lockerLocationDomainModel = this.lockerLocationPort.findById(locationId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "등록된 사물함 위치가 아닙니다."
+                        MessageUtil.LOCKER_WRONG_POSITION
                 )
         );
 
@@ -384,7 +385,7 @@ public class LockerService {
             if (this.lockerLocationPort.findByName(lockerLocationRequestDto.getName()).isPresent()) {
                 throw new BadRequestException(
                         ErrorCode.ROW_ALREADY_EXIST,
-                        "이미 등록된 사물함 위치 입니다."
+                        MessageUtil.LOCKER_ALREADY_REGISTERED
                 );
             }
         }
@@ -417,21 +418,21 @@ public class LockerService {
         UserDomainModel deleterDomainModel = this.userPort.findById(deleterId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
         LockerLocationDomainModel lockerLocationDomainModel = this.lockerLocationPort.findById(lockerLocationId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "등록된 사물함 위치가 아닙니다."
+                        MessageUtil.LOCKER_WRONG_POSITION
                 )
         );
 
         if (this.lockerPort.countByLocation(lockerLocationDomainModel.getId()) != 0L) {
             throw new BadRequestException(
                     ErrorCode.CANNOT_PERFORMED,
-                    "사물함 위치에 사물함이 존재합니다."
+                    MessageUtil.LOCKER_ALREADY_EXIST
             );
         }
 
@@ -451,7 +452,7 @@ public class LockerService {
         LockerDomainModel locker = this.lockerPort.findByIdForRead(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "사물함을 찾을 수 없습니다."
+                        MessageUtil.LOCKER_NOT_FOUND
                 )
         );
 
@@ -466,7 +467,7 @@ public class LockerService {
         UserDomainModel userDomainModel = this.userPort.findById(requestUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
@@ -501,7 +502,7 @@ public class LockerService {
         UserDomainModel creatorDomainModel = this.userPort.findById(creatorId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
@@ -510,7 +511,7 @@ public class LockerService {
                 .orElseThrow(
                         () -> new BadRequestException(
                                 ErrorCode.ROW_DOES_NOT_EXIST,
-                                "등록된 사물함 위치가 아닙니다."
+                                MessageUtil.LOCKER_WRONG_POSITION
                         )
                 );
         LockerLocationDomainModel lockerLocationThirdFloorDomainModel = this.lockerLocationPort
@@ -518,7 +519,7 @@ public class LockerService {
                 .orElseThrow(
                         () -> new BadRequestException(
                                 ErrorCode.ROW_DOES_NOT_EXIST,
-                                "등록된 사물함 위치가 아닙니다."
+                                MessageUtil.LOCKER_WRONG_POSITION
                         )
                 );
         LockerLocationDomainModel lockerLocationFourthFloorDomainModel = this.lockerLocationPort
@@ -526,7 +527,7 @@ public class LockerService {
                 .orElseThrow(
                         () -> new BadRequestException(
                                 ErrorCode.ROW_DOES_NOT_EXIST,
-                                "등록된 사물함 위치가 아닙니다."
+                                MessageUtil.LOCKER_WRONG_POSITION
                         )
                 );
 
@@ -551,7 +552,7 @@ public class LockerService {
                     lockerLocationSecondFloorDomainModel.getName(),
                     creatorDomainModel,
                     LockerLogAction.ENABLE,
-                    "사물함 최초 생성"
+                    MessageUtil.LOCKER_FIRST_CREATED
             );
         }
         for (Long lockerNumber = 1L; lockerNumber <= 168; lockerNumber++) {
@@ -575,7 +576,7 @@ public class LockerService {
                     lockerLocationThirdFloorDomainModel.getName(),
                     creatorDomainModel,
                     LockerLogAction.ENABLE,
-                    "사물함 최초 생성"
+                    MessageUtil.LOCKER_FIRST_CREATED
             );
         }
         for (Long lockerNumber = 1L; lockerNumber <= 32; lockerNumber++) {
@@ -599,7 +600,7 @@ public class LockerService {
                     lockerLocationFourthFloorDomainModel.getName(),
                     creatorDomainModel,
                     LockerLogAction.ENABLE,
-                    "사물함 최초 생성"
+                    MessageUtil.LOCKER_FIRST_CREATED
             );
         }
     }
