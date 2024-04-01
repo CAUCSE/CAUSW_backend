@@ -5,6 +5,7 @@ import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.user.UserDomainModel;
+import net.causw.domain.model.util.MessageUtil;
 
 import java.util.List;
 
@@ -40,7 +41,7 @@ public class DelegationPresident implements Delegation {
         this.userPort.removeRole(currentId, Role.PRESIDENT).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        "User id checked, but exception occurred"
+                        MessageUtil.exceptionOccur("User")
                 )
         );
     }

@@ -12,6 +12,7 @@ import net.causw.domain.model.circle.CircleMemberDomainModel;
 import net.causw.domain.model.enums.CircleMemberStatus;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.user.UserDomainModel;
+import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.ValidatorBucket;
 
@@ -81,7 +82,7 @@ public class DelegationLeaderCircle implements Delegation {
             this.userPort.removeRole(currentId, Role.LEADER_CIRCLE).orElseThrow(
                     () -> new InternalServerException(
                             ErrorCode.INTERNAL_SERVER,
-                            "User id checked, but exception occurred"
+                            MessageUtil.exceptionOccur("User")
                     )
             );
         }
@@ -89,7 +90,7 @@ public class DelegationLeaderCircle implements Delegation {
         this.circlePort.updateLeader(circle.getId(), newLeader).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        "Circle id and Leader id checked, but exception occurred"
+                        "Circle id and" + MessageUtil.exceptionOccur("Leader")
                 )
         );
     }

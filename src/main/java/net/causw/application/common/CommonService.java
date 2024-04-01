@@ -8,6 +8,7 @@ import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.user.UserDomainModel;
+import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.ValidatorBucket;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,7 @@ public class CommonService {
         UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
@@ -59,7 +60,7 @@ public class CommonService {
         UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 

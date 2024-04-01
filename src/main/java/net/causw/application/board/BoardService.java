@@ -101,7 +101,7 @@ public class BoardService {
                     CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
                             () -> new BadRequestException(
                                     ErrorCode.ROW_DOES_NOT_EXIST,
-                                    MessageUtil.CIRCLE_NOT_FOUND
+                                    MessageUtil.SMALL_CLUB_NOT_FOUND
                             )
                     );
 
@@ -167,7 +167,7 @@ public class BoardService {
         BoardDomainModel boardDomainModel = this.boardPort.findById(boardId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.UPDATE_BOARD_NOT_FOUND
+                        "수정할 게시판을 찾을 수 없습니다."
                 )
         );
 
@@ -239,7 +239,7 @@ public class BoardService {
         BoardDomainModel boardDomainModel = this.boardPort.findById(boardId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.DELETE_BOARD_NOT_FOUND
+                        "삭제할 게시판을 찾을 수 없습니다."
                 )
         );
 
@@ -311,7 +311,7 @@ public class BoardService {
         BoardDomainModel boardDomainModel = this.boardPort.findById(boardId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.RESTORE_BOARD_NOT_FOUND
+                        "복구할 게시판을 찾을 수 없습니다."
                 )
         );
 
