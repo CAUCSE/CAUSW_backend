@@ -5,11 +5,7 @@ import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentCreateRequestDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.comment.CommentUpdateRequestDto;
-import net.causw.application.spi.ChildCommentPort;
-import net.causw.application.spi.CircleMemberPort;
-import net.causw.application.spi.CommentPort;
-import net.causw.application.spi.PostPort;
-import net.causw.application.spi.UserPort;
+import net.causw.application.spi.*;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
@@ -111,7 +107,11 @@ public class CommentService {
                 postDomainModel.getBoard(),
                 this.childCommentPort.countByParentComment(commentDomainModel.getId()),
                 commentDomainModel.getChildCommentList().stream()
-                        .map(ChildCommentResponseDto::new)
+                        .map(childCommentDomainModel -> ChildCommentResponseDto.from(
+                                childCommentDomainModel,
+                                creatorDomainModel,
+                                postDomainModel.getBoard()
+                        ))
                         .collect(Collectors.toList())
         );
     }
@@ -174,7 +174,11 @@ public class CommentService {
                                 postDomainModel.getBoard(),
                                 this.childCommentPort.countByParentComment(commentDomainModel.getId()),
                                 commentDomainModel.getChildCommentList().stream()
-                                        .map(ChildCommentResponseDto::new)
+                                        .map(childCommentDomainModel -> ChildCommentResponseDto.from(
+                                                childCommentDomainModel,
+                                                userDomainModel,
+                                                postDomainModel.getBoard()
+                                        ))
                                         .collect(Collectors.toList())
                         )
                 );
@@ -264,7 +268,11 @@ public class CommentService {
                 postDomainModel.getBoard(),
                 this.childCommentPort.countByParentComment(commentId),
                 commentDomainModel.getChildCommentList().stream()
-                        .map(ChildCommentResponseDto::new)
+                        .map(childCommentDomainModel -> ChildCommentResponseDto.from(
+                                childCommentDomainModel,
+                                requestUser,
+                                postDomainModel.getBoard()
+                        ))
                         .collect(Collectors.toList())
         );
     }
@@ -362,7 +370,11 @@ public class CommentService {
                 postDomainModel.getBoard(),
                 this.childCommentPort.countByParentComment(commentId),
                 commentDomainModel.getChildCommentList().stream()
-                        .map(ChildCommentResponseDto::new)
+                        .map(childCommentDomainModel -> ChildCommentResponseDto.from(
+                                childCommentDomainModel,
+                                deleterDomainModel,
+                                postDomainModel.getBoard()
+                        ))
                         .collect(Collectors.toList())
         );
     }

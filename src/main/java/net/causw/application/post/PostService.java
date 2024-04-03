@@ -115,7 +115,11 @@ public class PostService {
                                         postDomainModel.getBoard(),
                                         this.childCommentPort.countByParentComment(commentDomainModel.getId()),
                                         commentDomainModel.getChildCommentList().stream()
-                                                .map(ChildCommentResponseDto::new)
+                                                .map(childCommentDomainModel -> ChildCommentResponseDto.from(
+                                                        childCommentDomainModel,
+                                                        userDomainModel,
+                                                        postDomainModel.getBoard()
+                                                ))
                                                 .collect(Collectors.toList())
                                 )
                         ),
@@ -617,7 +621,11 @@ public class PostService {
                                 updatedPostDomainModel.getBoard(),
                                 this.childCommentPort.countByParentComment(commentDomainModel.getId()),
                                 commentDomainModel.getChildCommentList().stream()
-                                        .map(ChildCommentResponseDto::new)
+                                        .map(childCommentDomainModel -> ChildCommentResponseDto.from(
+                                                childCommentDomainModel,
+                                                updaterDomainModel,
+                                                postDomainModel.getBoard()
+                                        ))
                                         .collect(Collectors.toList())
                         )),
                 this.postPort.countAllComment(postId)
@@ -731,7 +739,11 @@ public class PostService {
                                 restoredPostDomainModel.getBoard(),
                                 this.childCommentPort.countByParentComment(commentDomainModel.getId()),
                                 commentDomainModel.getChildCommentList().stream()
-                                        .map(ChildCommentResponseDto::new)
+                                        .map(childCommentDomainModel -> ChildCommentResponseDto.from(
+                                                childCommentDomainModel,
+                                                restorerDomainModel,
+                                                postDomainModel.getBoard()
+                                        ))
                                         .collect(Collectors.toList())
                         )),
                 this.postPort.countAllComment(postId)

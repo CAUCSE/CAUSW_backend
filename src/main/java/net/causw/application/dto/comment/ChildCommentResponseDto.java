@@ -104,19 +104,4 @@ public class ChildCommentResponseDto {
                 deletable
         );
     }
-
-    public ChildCommentResponseDto(ChildCommentDomainModel domainModel) {
-        UserDomainModel writer = domainModel.getWriter();
-
-        this.id = domainModel.getId();
-        this.content = domainModel.getContent();
-        this.createdAt = domainModel.getCreatedAt();
-        this.updatedAt = domainModel.getUpdatedAt();
-        this.isDeleted = domainModel.getIsDeleted();
-        this.tagUserName = domainModel.getTagUserName();
-        this.refChildComment = domainModel.getRefChildComment();
-        this.writerName = writer.getName();
-        this.writerAdmissionYear = writer.getAdmissionYear();
-        this.writerProfileImage = writer.getProfileImage();
-    }
 }
