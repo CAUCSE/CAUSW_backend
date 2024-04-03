@@ -41,12 +41,12 @@ public interface PostRepository extends JpaRepository<Post, String> {
     Page<Post> findByUserId(@Param("user_id") String userId, Pageable pageable);
 
     // 게시물에 작성된 모든 댓글(댓글+대댓글)의 수 세기
-    @Query(value = "select count(distinct c.id) + count(distinct cc.id) - count(distinct case when c.is_deleted = true and not cc.is_deleted is null then c.id end)" +
-            "from tb_post as p " +
-            "join tb_comment as c on p.id = c.post_id " +
-            "left join tb_child_comment as cc on c.id = cc.parent_comment_id " +
-            "where p.id = :postId and p.is_deleted = false " +
-            "and not (c.is_deleted = true and cc.is_deleted is null)" +
-            "and (cc.is_deleted = false or cc.is_deleted is null)", nativeQuery = true)
+    @Query(value = "SELECT COUNT(DISTINCT c.id) + COUNT(DISTINCT cc.id) - COUNT(DISTINCT CASE WHEN c.is_deleted = true AND NOT cc.is_deleted IS NULL THEN c.id END)" +
+            "FROM tb_post AS p " +
+            "JOIN tb_comment AS c ON p.id = c.post_id " +
+            "LEFT JOIN tb_child_comment AS cc ON c.id = cc.parent_comment_id " +
+            "WHERE p.id = :postId AND p.is_deleted = false " +
+            "AND NOT (c.is_deleted = true AND cc.is_deleted IS NULL)" +
+            "AND (cc.is_deleted = false OR cc.is_deleted IS NULL)", nativeQuery = true)
     Long countAllCommentByPost_Id(@Param("postId") String postId);
 }
