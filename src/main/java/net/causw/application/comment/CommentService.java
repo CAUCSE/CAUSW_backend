@@ -191,7 +191,7 @@ public class CommentService {
         CommentDomainModel commentDomainModel = this.commentPort.findById(commentId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "수정할 댓글을 찾을 수 없습니다."
+                        MessageUtil.COMMENT_NOT_FOUND
                 )
         );
 
@@ -250,7 +250,7 @@ public class CommentService {
                 this.commentPort.update(commentId, commentDomainModel).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
-                                MessageUtil.exceptionOccur("Comment")
+                                MessageUtil.INTERNAL_SERVER_ERROR
                         )
                 ),
                 requestUser,
@@ -273,7 +273,7 @@ public class CommentService {
         CommentDomainModel commentDomainModel = this.commentPort.findById(commentId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "삭제할 댓글을 찾을 수 없습니다."
+                        MessageUtil.COMMENT_NOT_FOUND
                 )
         );
 
@@ -345,7 +345,7 @@ public class CommentService {
                 this.commentPort.delete(commentId).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
-                                MessageUtil.exceptionOccur("Comment")
+                                MessageUtil.INTERNAL_SERVER_ERROR
                         )
                 ),
                 deleterDomainModel,

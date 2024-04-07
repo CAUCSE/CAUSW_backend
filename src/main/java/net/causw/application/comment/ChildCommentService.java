@@ -69,7 +69,7 @@ public class ChildCommentService {
                 refChildCommentId -> this.childCommentPort.findById(refChildCommentId).orElseThrow(
                         () -> new BadRequestException(
                                 ErrorCode.ROW_DOES_NOT_EXIST,
-                                "답할 답글을 찾을 수 없습니다."
+                                MessageUtil.COMMENT_NOT_FOUND
                         )
                 )
         );
@@ -77,7 +77,7 @@ public class ChildCommentService {
         CommentDomainModel parentCommentDomainModel = this.commentPort.findById(childCommentCreateRequestDto.getParentCommentId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "상위 댓글을 찾을 수 없습니다."
+                        MessageUtil.COMMENT_NOT_FOUND
                 )
         );
 
@@ -155,7 +155,7 @@ public class ChildCommentService {
         CommentDomainModel parentCommentDomainModel = this.commentPort.findById(parentCommentId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "상위 댓글을 찾을 수 없습니다."
+                        MessageUtil.COMMENT_NOT_FOUND
                 )
         );
 
@@ -234,7 +234,7 @@ public class ChildCommentService {
         ChildCommentDomainModel childCommentDomainModel = this.childCommentPort.findById(childCommentId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "수정할 답글을 찾을 수 없습니다."
+                        MessageUtil.COMMENT_NOT_FOUND
                 )
         );
 
@@ -293,7 +293,7 @@ public class ChildCommentService {
                 this.childCommentPort.update(childCommentId, childCommentDomainModel).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
-                                MessageUtil.exceptionOccur("Comment")
+                                MessageUtil.INTERNAL_SERVER_ERROR
                         )
                 ),
                 updater,
@@ -315,7 +315,7 @@ public class ChildCommentService {
         ChildCommentDomainModel childCommentDomainModel = this.childCommentPort.findById(childCommentId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "삭제할 답글을 찾을 수 없습니다."
+                        MessageUtil.COMMENT_NOT_FOUND
                 )
         );
 
@@ -388,7 +388,7 @@ public class ChildCommentService {
                 this.childCommentPort.delete(childCommentId).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
-                                MessageUtil.exceptionOccur("Comment")
+                                MessageUtil.INTERNAL_SERVER_ERROR
                         )
                 ),
                 deleterDomainModel,

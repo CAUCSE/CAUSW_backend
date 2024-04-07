@@ -95,7 +95,7 @@ public class UserService {
         this.userPort.updatePassword(requestUser.getId(), passwordEncoder.encode(newPassword)).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        MessageUtil.exceptionOccur("User")
+                        MessageUtil.INTERNAL_SERVER_ERROR
                 )
         );
         return UserResponseDto.from(requestUser);
@@ -133,7 +133,7 @@ public class UserService {
                                     .map(circleMemberDomainModel -> circleMemberDomainModel.getStatus() == CircleMemberStatus.MEMBER)
                                     .orElse(false));
             if (!isMemberOfAnyCircle) {
-                throw new BadRequestException(ErrorCode.NOT_MEMBER, "해당 유저는 동아리 회원이 아닙니다.");
+                throw new BadRequestException(ErrorCode.NOT_MEMBER, MessageUtil.CIRCLE_MEMBER_NOT_FOUND);
             }
         }
 
@@ -141,7 +141,7 @@ public class UserService {
                 .map(UserResponseDto::from)
                 .orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "해당 사용자를 찾을 수 없습니다."
+                        MessageUtil.USER_NOT_FOUND
                 ));
     }
 
@@ -226,7 +226,7 @@ public class UserService {
                     PostDomainModel post = this.postPort.findPostById(comment.getPostId()).orElseThrow(
                             () -> new BadRequestException(
                                     ErrorCode.ROW_DOES_NOT_EXIST,
-                                    "게시글을 찾을 수 없습니다."
+                                    MessageUtil.POST_NOT_FOUND
                             )
                     );
 
@@ -454,7 +454,7 @@ public class UserService {
                 email -> {
                     throw new BadRequestException(
                             ErrorCode.ROW_ALREADY_EXIST,
-                            "중복된 이메일 입니다."
+                            MessageUtil.EMAIL_ALREADY_EXIST
                     );
                 }
         );
@@ -474,7 +474,7 @@ public class UserService {
         UserDomainModel userDomainModel = this.userPort.findByEmail(userSignInRequestDto.getEmail()).orElseThrow(
                 () -> new UnauthorizedException(
                         ErrorCode.INVALID_SIGNIN,
-                        "잘못된 이메일 입니다."
+                        MessageUtil.EMAIL_INVALID
                 )
         );
 
@@ -492,7 +492,7 @@ public class UserService {
             this.userAdmissionPort.findByUserId(userDomainModel.getId()).orElseThrow(
                     () -> new BadRequestException(
                             ErrorCode.NO_APPLICATION,
-                            "신청서를 작성하지 않았습니다."
+                            MessageUtil.NO_APPLICATION
                     )
             );
         }
@@ -525,7 +525,7 @@ public class UserService {
             if (state.equals(UserState.INACTIVE) || state.equals(UserState.DROP)) {
                 throw new BadRequestException(
                         ErrorCode.ROW_ALREADY_EXIST,
-                        "탈퇴한 계정의 재가입은 관리자에게 문의해주세요."
+                        MessageUtil.USER_ALREADY_APPLY
                 );
             }
         }
@@ -557,7 +557,7 @@ public class UserService {
                     email -> {
                         throw new BadRequestException(
                                 ErrorCode.ROW_ALREADY_EXIST,
-                                "이미 사용중인 이메일입니다."
+                                MessageUtil.EMAIL_ALREADY_EXIST
                         );
                     }
             );
@@ -583,7 +583,7 @@ public class UserService {
         return UserResponseDto.from(this.userPort.update(loginUserId, userDomainModel).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        MessageUtil.exceptionOccur("user")
+                        MessageUtil.INTERNAL_SERVER_ERROR
                 )
         ));
     }
@@ -612,7 +612,7 @@ public class UserService {
         UserDomainModel grantee = this.userPort.findById(granteeId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "권한을 받을 사용자를 찾을 수 없습니다."
+                        MessageUtil.USER_NOT_FOUND
                 )
         );
 
@@ -662,7 +662,7 @@ public class UserService {
                         user -> this.userPort.removeRole(user.getId(), Role.VICE_PRESIDENT).orElseThrow(
                                 () -> new InternalServerException(
                                         ErrorCode.INTERNAL_SERVER,
-                                        MessageUtil.exceptionOccur("user")
+                                        MessageUtil.INTERNAL_SERVER_ERROR
                                 ))
                 );
             }
@@ -677,7 +677,9 @@ public class UserService {
                     ));
             if(grantee.getRole().equals(Role.VICE_PRESIDENT)){
                 throw new UnauthorizedException(
-                        ErrorCode.API_NOT_ALLOWED, "부회장은 동아리장 겸직이 불가합니다."
+                        ErrorCode.API_NOT_ALLOWED,
+                        MessageUtil.CONCURRENT_JOB_IMPOSSIBLE
+
                 );
             }
 
@@ -692,7 +694,7 @@ public class UserService {
                             () -> {
                                 throw new UnauthorizedException(
                                         ErrorCode.NOT_MEMBER,
-                                        MessageUtil.USER_NOT_APPLIED_FOR_CIRCLE
+                                        MessageUtil.CIRCLE_APPLY_INVALID
                                 );
                             });
 
@@ -726,7 +728,7 @@ public class UserService {
                 return UserResponseDto.from(this.userPort.removeRole(granteeId, Role.COMMON).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
-                                MessageUtil.exceptionOccur("user")
+                                MessageUtil.INTERNAL_SERVER_ERROR
                         )
                 ));
             }
@@ -739,13 +741,13 @@ public class UserService {
                     .orElseThrow(
                             () -> new InternalServerException(
                                     ErrorCode.INTERNAL_SERVER,
-                                    "동문회장이 존재하지 않습니다."
+                                    MessageUtil.INTERNAL_SERVER_ERROR
                             ));
 
             this.userPort.removeRole(previousLeaderAlumni.getId(), Role.LEADER_ALUMNI).orElseThrow(
                     () -> new InternalServerException(
                             ErrorCode.INTERNAL_SERVER,
-                            MessageUtil.exceptionOccur("user")
+                            MessageUtil.INTERNAL_SERVER_ERROR
                     )
             );
         }
@@ -756,7 +758,7 @@ public class UserService {
         return UserResponseDto.from(this.userPort.updateRole(granteeId, userUpdateRoleRequestDto.getRole()).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        MessageUtil.exceptionOccur("user")
+                        MessageUtil.INTERNAL_SERVER_ERROR
                 )
         ));
     }
@@ -791,7 +793,7 @@ public class UserService {
                 .orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
-                                MessageUtil.exceptionOccur("user")
+                                MessageUtil.INTERNAL_SERVER_ERROR
                         )
                 ));
     }
@@ -829,7 +831,7 @@ public class UserService {
         this.userPort.updateRole(loginUserId, Role.NONE).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        MessageUtil.exceptionOccur("user")
+                        MessageUtil.INTERNAL_SERVER_ERROR
                 )
         );
 
@@ -842,7 +844,7 @@ public class UserService {
         return UserResponseDto.from(this.userPort.updateState(loginUserId, UserState.INACTIVE).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        MessageUtil.exceptionOccur("user")
+                        MessageUtil.INTERNAL_SERVER_ERROR
                 )
         ));
     }
@@ -859,7 +861,7 @@ public class UserService {
         UserDomainModel droppedUser = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "내보낼 사용자를 찾을 수 없습니다."
+                        MessageUtil.USER_NOT_FOUND
                 )
         );
 
@@ -887,14 +889,14 @@ public class UserService {
         this.userPort.updateRole(userId, Role.NONE).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        MessageUtil.exceptionOccur("user")
+                        MessageUtil.INTERNAL_SERVER_ERROR
                 )
         );
 
         return UserResponseDto.from(this.userPort.updateState(userId, UserState.DROP).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        MessageUtil.exceptionOccur("user")
+                        MessageUtil.INTERNAL_SERVER_ERROR
                 )
         ));
     }
@@ -950,14 +952,14 @@ public class UserService {
         UserDomainModel requestUser = this.userPort.findByEmail(userAdmissionCreateRequestDto.getEmail()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "회원가입된 사용자의 이메일이 아닙니다."
+                        MessageUtil.USER_NOT_FOUND
                 )
         );
 
         if (this.userAdmissionPort.existsByUserId(requestUser.getId())) {
             throw new BadRequestException(
                     ErrorCode.ROW_ALREADY_EXIST,
-                    "이미 신청한 사용자 입니다."
+                    MessageUtil.USER_ALREADY_APPLY
             );
         }
 
@@ -1143,7 +1145,7 @@ public class UserService {
         UserDomainModel restoredUser = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "복구할 사용자를 찾을 수 없습니다."
+                        MessageUtil.USER_NOT_FOUND
                 )
         );
 
@@ -1155,14 +1157,14 @@ public class UserService {
         this.userPort.updateRole(restoredUser.getId(), Role.COMMON).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        MessageUtil.exceptionOccur("user")
+                        MessageUtil.INTERNAL_SERVER_ERROR
                 )
         );
 
         return UserResponseDto.from(this.userPort.updateState(restoredUser.getId(), UserState.ACTIVE).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        MessageUtil.exceptionOccur("user")
+                        MessageUtil.INTERNAL_SERVER_ERROR
                 )
         ));
     }
@@ -1173,7 +1175,7 @@ public class UserService {
         UserDomainModel user = this.userPort.findByRefreshToken(refreshToken).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "RefreshToken 유효성 검증 실패"
+                        MessageUtil.INVALID_TOKEN
                 )
         );
 
