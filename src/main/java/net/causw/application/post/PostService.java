@@ -1,6 +1,7 @@
 package net.causw.application.post;
 
 import lombok.RequiredArgsConstructor;
+import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.post.BoardPostsResponseDto;
 import net.causw.application.dto.post.PostCreateRequestDto;
@@ -112,10 +113,18 @@ public class PostService {
                                         commentDomainModel,
                                         userDomainModel,
                                         postDomainModel.getBoard(),
-                                        this.childCommentPort.countByParentComment(commentDomainModel.getId())
+                                        this.childCommentPort.countByParentComment(commentDomainModel.getId()),
+                                        commentDomainModel.getChildCommentList().stream()
+                                                .map(childCommentDomainModel -> ChildCommentResponseDto.from(
+                                                        childCommentDomainModel,
+                                                        userDomainModel,
+                                                        postDomainModel.getBoard()
+                                                ))
+                                                .collect(Collectors.toList())
                                 )
                         ),
-                this.commentPort.countByPostId(postDomainModel.getId())
+//                this.commentPort.countByPostId(postDomainModel.getId())
+                this.postPort.countAllComment(postId)
         );
     }
 
@@ -187,7 +196,7 @@ public class PostService {
                     this.postPort.findAllPost(boardId, pageNum)
                             .map(postDomainModel -> PostsResponseDto.from(
                                     postDomainModel,
-                                    this.commentPort.countByPostId(postDomainModel.getId())
+                                    this.postPort.countAllComment(postDomainModel.getId())
                             ))
             );
         }
@@ -201,7 +210,7 @@ public class PostService {
                     this.postPort.findAllPost(boardId, pageNum, false)
                             .map(postDomainModel -> PostsResponseDto.from(
                                     postDomainModel,
-                                    this.commentPort.countByPostId(postDomainModel.getId())
+                                    this.postPort.countAllComment(postDomainModel.getId())
                             ))
             );
         }
@@ -281,7 +290,7 @@ public class PostService {
                     this.postPort.searchPost(keyword, boardId, pageNum)
                             .map(postDomainModel -> PostsResponseDto.from(
                                     postDomainModel,
-                                    this.commentPort.countByPostId(postDomainModel.getId())
+                                    this.postPort.countAllComment(postDomainModel.getId())
                             ))
             );
         }
@@ -295,7 +304,7 @@ public class PostService {
                     this.postPort.searchPost(keyword, boardId, pageNum, false)
                             .map(postDomainModel -> PostsResponseDto.from(
                                     postDomainModel,
-                                    this.commentPort.countByPostId(postDomainModel.getId())
+                                    this.postPort.countAllComment(postDomainModel.getId())
                             ))
             );
         }
@@ -328,7 +337,7 @@ public class PostService {
                 this.postPort.findAllPost(boardDomainModel.getId(), pageNum)
                         .map(postDomainModel -> PostsResponseDto.from(
                                 postDomainModel,
-                                this.commentPort.countByPostId(postDomainModel.getId())
+                                this.postPort.countAllComment(postDomainModel.getId())
                         ))
         );
     }
@@ -610,9 +619,16 @@ public class PostService {
                                 commentDomainModel,
                                 updaterDomainModel,
                                 updatedPostDomainModel.getBoard(),
-                                this.childCommentPort.countByParentComment(commentDomainModel.getId())
+                                this.childCommentPort.countByParentComment(commentDomainModel.getId()),
+                                commentDomainModel.getChildCommentList().stream()
+                                        .map(childCommentDomainModel -> ChildCommentResponseDto.from(
+                                                childCommentDomainModel,
+                                                updaterDomainModel,
+                                                postDomainModel.getBoard()
+                                        ))
+                                        .collect(Collectors.toList())
                         )),
-                this.commentPort.countByPostId(postDomainModel.getId())
+                this.postPort.countAllComment(postId)
         );
     }
 
@@ -721,9 +737,17 @@ public class PostService {
                                 commentDomainModel,
                                 restorerDomainModel,
                                 restoredPostDomainModel.getBoard(),
-                                this.childCommentPort.countByParentComment(commentDomainModel.getId())
+                                this.childCommentPort.countByParentComment(commentDomainModel.getId()),
+                                commentDomainModel.getChildCommentList().stream()
+                                        .map(childCommentDomainModel -> ChildCommentResponseDto.from(
+                                                childCommentDomainModel,
+                                                restorerDomainModel,
+                                                postDomainModel.getBoard()
+                                        ))
+                                        .collect(Collectors.toList())
                         )),
-                this.commentPort.countByPostId(postDomainModel.getId())
+                this.postPort.countAllComment(postId)
         );
     }
+
 }

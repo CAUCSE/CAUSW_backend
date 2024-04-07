@@ -64,39 +64,6 @@ public class ChildCommentController {
         return this.childCommentService.createChildComment(loginUserId, childCommentCreateRequestDto);
     }
 
-    @GetMapping(params = "parentCommentId")
-    @ResponseStatus(value = HttpStatus.OK)
-    @ApiOperation(value = "대댓글 조회 API(완료)")
-    @ApiResponses({
-            @ApiResponse(code = 201, message = "Created", response = String.class),
-            @ApiResponse(code = 4000, message = "로그인된 사용자를 찾을 수 없습니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4000, message = "게시글을 찾을 수 없습니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4000, message = "상위 댓글을 찾을 수 없습니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4004, message = "삭제된 게시판입니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4004, message = "삭제된 게시글입니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4004, message = "삭제된 답글입니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4102, message = "추방된 사용자 입니다.", response = UnauthorizedException.class),
-            @ApiResponse(code = 4103, message = "비활성화된 사용자 입니다.", response = UnauthorizedException.class),
-            @ApiResponse(code = 4104, message = "대기 중인 사용자 입니다.", response = UnauthorizedException.class),
-            @ApiResponse(code = 4102, message = "동아리에서 추방된 사용자 입니다.", response = UnauthorizedException.class),
-            @ApiResponse(code = 4102, message = "동아리 가입 거절된 사용자 입니다.", response = UnauthorizedException.class),
-            @ApiResponse(code = 4008, message = "동아리 가입 대기 중인 사용자 입니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4006, message = "동아리를 떠난 사용자 입니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4001, message = "이미 동아리에 가입한 사용자 입니다.", response = BadRequestException.class),
-            @ApiResponse(code = 4108, message = "로그인된 사용자가 가입 신청한 소모임이 아닙니다.", response = UnauthorizedException.class),
-            @ApiResponse(code = 4109, message = "가입이 거절된 사용자 입니다.", response = UnauthorizedException.class),
-            @ApiResponse(code = 4012, message = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", response = BadRequestException.class),
-            @ApiResponse(code = 4004, message = "삭제된 동아리입니다.", response = BadRequestException.class),
-    })
-    public ChildCommentsResponseDto findAllChildComments(
-            @RequestParam String parentCommentId,
-            @RequestParam(defaultValue = "0") Integer pageNum
-    ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.childCommentService.findAllChildComments(loginUserId, parentCommentId, pageNum);
-    }
-
     @PutMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
     @ApiOperation(value = "대댓글 수정 API")

@@ -1,14 +1,11 @@
 package net.causw.application.comment;
 
 import lombok.RequiredArgsConstructor;
+import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentCreateRequestDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.comment.CommentUpdateRequestDto;
-import net.causw.application.spi.ChildCommentPort;
-import net.causw.application.spi.CircleMemberPort;
-import net.causw.application.spi.CommentPort;
-import net.causw.application.spi.PostPort;
-import net.causw.application.spi.UserPort;
+import net.causw.application.spi.*;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
@@ -34,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -107,7 +105,14 @@ public class CommentService {
                 this.commentPort.create(commentDomainModel, postDomainModel),
                 creatorDomainModel,
                 postDomainModel.getBoard(),
-                this.childCommentPort.countByParentComment(commentDomainModel.getId())
+                this.childCommentPort.countByParentComment(commentDomainModel.getId()),
+                commentDomainModel.getChildCommentList().stream()
+                        .map(childCommentDomainModel -> ChildCommentResponseDto.from(
+                                childCommentDomainModel,
+                                creatorDomainModel,
+                                postDomainModel.getBoard()
+                        ))
+                        .collect(Collectors.toList())
         );
     }
 
@@ -167,7 +172,14 @@ public class CommentService {
                                 commentDomainModel,
                                 userDomainModel,
                                 postDomainModel.getBoard(),
-                                this.childCommentPort.countByParentComment(commentDomainModel.getId())
+                                this.childCommentPort.countByParentComment(commentDomainModel.getId()),
+                                commentDomainModel.getChildCommentList().stream()
+                                        .map(childCommentDomainModel -> ChildCommentResponseDto.from(
+                                                childCommentDomainModel,
+                                                userDomainModel,
+                                                postDomainModel.getBoard()
+                                        ))
+                                        .collect(Collectors.toList())
                         )
                 );
     }
@@ -254,7 +266,14 @@ public class CommentService {
                 ),
                 requestUser,
                 postDomainModel.getBoard(),
-                this.childCommentPort.countByParentComment(commentId)
+                this.childCommentPort.countByParentComment(commentId),
+                commentDomainModel.getChildCommentList().stream()
+                        .map(childCommentDomainModel -> ChildCommentResponseDto.from(
+                                childCommentDomainModel,
+                                requestUser,
+                                postDomainModel.getBoard()
+                        ))
+                        .collect(Collectors.toList())
         );
     }
 
@@ -349,7 +368,14 @@ public class CommentService {
                 ),
                 deleterDomainModel,
                 postDomainModel.getBoard(),
-                this.childCommentPort.countByParentComment(commentId)
+                this.childCommentPort.countByParentComment(commentId),
+                commentDomainModel.getChildCommentList().stream()
+                        .map(childCommentDomainModel -> ChildCommentResponseDto.from(
+                                childCommentDomainModel,
+                                deleterDomainModel,
+                                postDomainModel.getBoard()
+                        ))
+                        .collect(Collectors.toList())
         );
     }
 }

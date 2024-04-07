@@ -39,4 +39,14 @@ public interface PostRepository extends JpaRepository<Post, String> {
             "AND (c.id is NULL " +
             "OR (cm.status = 'MEMBER' AND c.is_deleted = false)) ORDER BY p.created_at DESC", nativeQuery = true)
     Page<Post> findByUserId(@Param("user_id") String userId, Pageable pageable);
+
+    // 게시물에 작성된 모든 댓글(댓글+대댓글)의 수 세기
+    @Query(value = "SELECT COUNT(DISTINCT c.id) + COUNT(DISTINCT cc.id) - COUNT(DISTINCT CASE WHEN c.is_deleted = true AND NOT cc.is_deleted IS NULL THEN c.id END)" +
+            "FROM tb_post AS p " +
+            "JOIN tb_comment AS c ON p.id = c.post_id " +
+            "LEFT JOIN tb_child_comment AS cc ON c.id = cc.parent_comment_id " +
+            "WHERE p.id = :postId AND p.is_deleted = false " +
+            "AND NOT (c.is_deleted = true AND cc.is_deleted IS NULL)" +
+            "AND (cc.is_deleted = false OR cc.is_deleted IS NULL)", nativeQuery = true)
+    Long countAllCommentByPost_Id(@Param("postId") String postId);
 }

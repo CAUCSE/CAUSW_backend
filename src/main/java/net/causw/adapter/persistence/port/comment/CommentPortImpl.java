@@ -2,6 +2,7 @@ package net.causw.adapter.persistence.port.comment;
 
 import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.port.mapper.DomainModelMapper;
+import net.causw.adapter.persistence.repository.ChildCommentRepository;
 import net.causw.adapter.persistence.repository.CommentRepository;
 import net.causw.adapter.persistence.page.PageableFactory;
 import net.causw.application.spi.CommentPort;
@@ -12,17 +13,20 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 public class CommentPortImpl extends DomainModelMapper implements CommentPort {
     private final CommentRepository commentRepository;
+    private final ChildCommentRepository childCommentRepository;
     private final PageableFactory pageableFactory;
 
     public CommentPortImpl(
-            CommentRepository commentRepository,
+            CommentRepository commentRepository, ChildCommentRepository childCommentRepository,
             PageableFactory pageableFactory
     ) {
         this.commentRepository = commentRepository;
+        this.childCommentRepository = childCommentRepository;
         this.pageableFactory = pageableFactory;
     }
 
@@ -33,15 +37,20 @@ public class CommentPortImpl extends DomainModelMapper implements CommentPort {
 
     @Override
     public Page<CommentDomainModel> findByPostId(String postId, Integer pageNum) {
-        return this.commentRepository.findByPost_IdOrderByCreatedAt(
+        Page<CommentDomainModel> commentDomainModels = this.commentRepository.findByPost_IdOrderByCreatedAt(
                 postId,
                 this.pageableFactory.create(pageNum, StaticValue.DEFAULT_COMMENT_PAGE_SIZE)
         ).map(this::entityToDomainModel);
-    }
 
-    @Override
-    public Long countByPostId(String postId) {
-        return this.commentRepository.countByPost_IdAndIsDeletedIsFalse(postId);
+        for (CommentDomainModel commentDomainModel : commentDomainModels) {
+            commentDomainModel.setChildCommentList(
+                    this.childCommentRepository.findByParentComment_Id(commentDomainModel.getId()).stream()
+                            .map(this::entityToDomainModel)
+                            .collect(Collectors.toList())
+            );
+        }
+
+        return commentDomainModels;
     }
 
     @Override

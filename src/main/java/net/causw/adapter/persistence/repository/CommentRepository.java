@@ -12,8 +12,6 @@ import org.springframework.stereotype.Repository;
 public interface CommentRepository extends JpaRepository<Comment, String> {
     Page<Comment> findByPost_IdOrderByCreatedAt(String postId, Pageable pageable);
 
-    Long countByPost_IdAndIsDeletedIsFalse(String postId);
-
     @Query(value = "select * from tb_comment as co " +
             "join tb_post as p on co.post_id = p.id " +
             "join tb_board as b on p.board_id = b.id " +

@@ -61,7 +61,7 @@ public class HomePageService {
                                 StaticValue.HOME_POST_PAGE_SIZE
                         ).map(postDomainModel -> PostsResponseDto.from(
                                 postDomainModel,
-                                this.commentPort.countByPostId(postDomainModel.getId())
+                                this.postPort.countAllComment(postDomainModel.getId())
                         )))
                 )
                 .collect(Collectors.toList());

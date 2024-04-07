@@ -9,6 +9,7 @@ import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.model.user.UserDomainModel;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -25,6 +26,7 @@ public class CommentResponseDto {
     private Boolean updatable;
     private Boolean deletable;
     private Long numChildComment;
+    private List<ChildCommentResponseDto> childCommentList;
 
     private CommentResponseDto(
             String id,
@@ -38,7 +40,8 @@ public class CommentResponseDto {
             String writerProfileImage,
             Boolean updatable,
             Boolean deletable,
-            Long numChildComment
+            Long numChildComment,
+            List<ChildCommentResponseDto> childCommentList
     ) {
         this.id = id;
         this.content = content;
@@ -52,13 +55,15 @@ public class CommentResponseDto {
         this.updatable = updatable;
         this.deletable = deletable;
         this.numChildComment = numChildComment;
+        this.childCommentList = childCommentList;
     }
 
     public static CommentResponseDto from(
             CommentDomainModel comment,
             UserDomainModel user,
             BoardDomainModel board,
-            Long numChildComment
+            Long numChildComment,
+            List<ChildCommentResponseDto> childCommentList
     ) {
         boolean updatable = false;
         boolean deletable = false;
@@ -102,7 +107,8 @@ public class CommentResponseDto {
                 comment.getWriter().getProfileImage(),
                 updatable,
                 deletable,
-                numChildComment
+                numChildComment,
+                childCommentList
         );
     }
 }

@@ -30,6 +30,11 @@ public class PostPortImpl extends DomainModelMapper implements PostPort {
     }
 
     @Override
+    public Long countAllComment(String postId) {
+        return this.postRepository.countAllCommentByPost_Id(postId);
+    }
+
+    @Override
     public PostDomainModel createPost(PostDomainModel postDomainModel) {
         return this.entityToDomainModel(this.postRepository.save(Post.from(postDomainModel)));
     }

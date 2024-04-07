@@ -3,11 +3,9 @@ package net.causw.adapter.persistence.port.comment;
 import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.port.mapper.DomainModelMapper;
 import net.causw.adapter.persistence.repository.ChildCommentRepository;
-import net.causw.adapter.persistence.page.PageableFactory;
 import net.causw.application.spi.ChildCommentPort;
 import net.causw.domain.model.comment.ChildCommentDomainModel;
 import net.causw.domain.model.post.PostDomainModel;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -15,27 +13,16 @@ import java.util.Optional;
 @Component
 public class ChildCommentPortImpl extends DomainModelMapper implements ChildCommentPort {
     private final ChildCommentRepository childCommentRepository;
-    private final PageableFactory pageableFactory;
 
     public ChildCommentPortImpl(
-            ChildCommentRepository childCommentRepository,
-            PageableFactory pageableFactory
+            ChildCommentRepository childCommentRepository
     ) {
         this.childCommentRepository = childCommentRepository;
-        this.pageableFactory = pageableFactory;
     }
 
     @Override
     public Optional<ChildCommentDomainModel> findById(String id) {
         return this.childCommentRepository.findById(id).map(this::entityToDomainModel);
-    }
-
-    @Override
-    public Page<ChildCommentDomainModel> findByParentComment(String parentCommentId, Integer pageNum) {
-        Page<ChildComment> childComments = this.childCommentRepository.findByParentComment_IdOrderByCreatedAtAsc(parentCommentId, this.pageableFactory.create(pageNum));
-
-        return childComments
-                .map(this::entityToDomainModel);
     }
 
     @Override
