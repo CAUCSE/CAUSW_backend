@@ -12,6 +12,7 @@ import net.causw.domain.model.circle.CircleMemberDomainModel;
 import net.causw.domain.model.enums.CircleMemberStatus;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.user.UserDomainModel;
+import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.ValidatorBucket;
 
@@ -48,21 +49,21 @@ public class DelegationLeaderCircle implements Delegation {
         CircleDomainModel circle = this.circlePort.findById(this.circleId).orElseThrow(
                 () -> new UnauthorizedException(
                         ErrorCode.API_NOT_ALLOWED,
-                        "권한을 위임할 소모임장의 소모임을 찾을 수 없습니다."
+                        MessageUtil.SMALL_CLUB_NOT_FOUND
                 )
         );
 
         UserDomainModel newLeader = this.userPort.findById(targetId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "피위임자를 찾을 수 없습니다."
+                        MessageUtil.USER_NOT_FOUND
                 )
         );
 
         CircleMemberDomainModel circleMember = this.circleMemberPort.findByUserIdAndCircleId(targetId, circle.getId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "피위임자가 가입 신청한 소모임이 아닙니다."
+                        MessageUtil.CIRCLE_MEMBER_NOT_FOUND
                 )
         );
 
@@ -81,7 +82,7 @@ public class DelegationLeaderCircle implements Delegation {
             this.userPort.removeRole(currentId, Role.LEADER_CIRCLE).orElseThrow(
                     () -> new InternalServerException(
                             ErrorCode.INTERNAL_SERVER,
-                            "User id checked, but exception occurred"
+                            MessageUtil.INTERNAL_SERVER_ERROR
                     )
             );
         }
@@ -89,7 +90,7 @@ public class DelegationLeaderCircle implements Delegation {
         this.circlePort.updateLeader(circle.getId(), newLeader).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        "Circle id and Leader id checked, but exception occurred"
+                        MessageUtil.INTERNAL_SERVER_ERROR
                 )
         );
     }

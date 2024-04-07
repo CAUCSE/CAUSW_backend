@@ -23,6 +23,7 @@ import net.causw.domain.model.circle.CircleDomainModel;
 import net.causw.domain.model.circle.CircleMemberDomainModel;
 import net.causw.domain.model.enums.CircleMemberStatus;
 import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.validation.CircleMemberStatusValidator;
@@ -63,7 +64,7 @@ public class CircleService {
         CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "소모임을 찾을 수 없습니다."
+                        MessageUtil.SMALL_CLUB_NOT_FOUND
                 )
         );
 
@@ -82,7 +83,7 @@ public class CircleService {
         UserDomainModel userDomainModel = this.userPort.findById(currentUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
@@ -127,14 +128,14 @@ public class CircleService {
         CircleDomainModel circleDomainModel = this.circlePort.findById(circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "소모임을 찾을 수 없습니다."
+                        MessageUtil.SMALL_CLUB_NOT_FOUND
                 )
         );
 
         UserDomainModel userDomainModel = this.userPort.findById(currentUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
@@ -148,7 +149,7 @@ public class CircleService {
             CircleMemberDomainModel circleMember = this.circleMemberPort.findByUserIdAndCircleId(currentUserId, circleDomainModel.getId()).orElseThrow(
                     () -> new BadRequestException(
                             ErrorCode.NOT_MEMBER,
-                            "로그인된 사용자가 가입 신청한 소모임이 아닙니다."
+                            MessageUtil.CIRCLE_APPLY_INVALID
                     )
             );
 
@@ -189,7 +190,7 @@ public class CircleService {
         this.circlePort.findById(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "소모임을 찾을 수 없습니다."
+                        MessageUtil.SMALL_CLUB_NOT_FOUND
                 )
         );
 
@@ -205,21 +206,21 @@ public class CircleService {
         UserDomainModel user = this.userPort.findById(currentUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
         CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "소모임을 찾을 수 없습니다."
+                        MessageUtil.SMALL_CLUB_NOT_FOUND
                 )
         );
 
         UserDomainModel circleLeader = circle.getLeader().orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "해당 동아리의 동아리장을 찾을 수 없습니다."
+                        MessageUtil.CIRCLE_LEADER_NOR_FOUND
                 )
         );
 
@@ -238,7 +239,7 @@ public class CircleService {
                     UserDomainModel member = this.userPort.findById(circleMember.getUserId()).orElseThrow(
                             () -> new BadRequestException(
                                     ErrorCode.ROW_DOES_NOT_EXIST,
-                                    "소모임원을 찾을 수 없습니다."
+                                    MessageUtil.CIRCLE_MEMBER_NOT_FOUND
                             )
                     );
 
@@ -252,14 +253,14 @@ public class CircleService {
         UserDomainModel requestUser = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
         UserDomainModel leader = this.userPort.findById(circleCreateRequestDto.getLeaderId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "등록할 소모임장을 다시 확인해주세요."
+                        MessageUtil.USER_NOT_FOUND
                 )
         );
 
@@ -277,7 +278,7 @@ public class CircleService {
                 name -> {
                     throw new BadRequestException(
                             ErrorCode.ROW_ALREADY_EXIST,
-                            "중복된 소모임 이름입니다."
+                            MessageUtil.CIRCLE_DUPLICATE_NAME
                     );
                 }
         );
@@ -296,7 +297,7 @@ public class CircleService {
         leader = this.userPort.updateRole(circleCreateRequestDto.getLeaderId(), Role.LEADER_CIRCLE).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.INTERNAL_SERVER,
-                        "Leader id checked, but exception occurred"
+                        MessageUtil.INTERNAL_SERVER_ERROR
                 )
         );
 
@@ -321,7 +322,7 @@ public class CircleService {
         this.circleMemberPort.updateStatus(circleMemberDomainModel.getId(), CircleMemberStatus.MEMBER).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        "Circle id immediately can be used, but exception occurred"
+                        MessageUtil.INTERNAL_SERVER_ERROR
                 )
         );
 
@@ -339,14 +340,14 @@ public class CircleService {
         CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "수정할 소모임을 찾을 수 없습니다."
+                        MessageUtil.SMALL_CLUB_NOT_FOUND
                 )
         );
 
         UserDomainModel user = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
@@ -355,7 +356,7 @@ public class CircleService {
                     name -> {
                         throw new BadRequestException(
                                 ErrorCode.ROW_ALREADY_EXIST,
-                                "중복된 소모임 이름입니다."
+                                MessageUtil.CIRCLE_DUPLICATE_NAME
                         );
                     }
             );
@@ -387,7 +388,7 @@ public class CircleService {
                             circle.getLeader().map(UserDomainModel::getId).orElseThrow(
                                     () -> new InternalServerException(
                                             ErrorCode.INTERNAL_SERVER,
-                                            "This circle has not circle leader"
+                                            MessageUtil.CIRCLE_WITHOUT_LEADER
                                     )
                             ),
                             userId
@@ -400,7 +401,7 @@ public class CircleService {
         return CircleResponseDto.from(this.circlePort.update(circleId, circle).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        "Circle id checked, but exception occurred"
+                        MessageUtil.INTERNAL_SERVER_ERROR
                 )
         ));
     }
@@ -415,14 +416,14 @@ public class CircleService {
         CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "삭제할 소모임을 찾을 수 없습니다."
+                        MessageUtil.SMALL_CLUB_NOT_FOUND
                 )
         );
 
         UserDomainModel user = this.userPort.findById(requestUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
@@ -441,7 +442,7 @@ public class CircleService {
                             circle.getLeader().map(UserDomainModel::getId).orElseThrow(
                                     () -> new InternalServerException(
                                             ErrorCode.INTERNAL_SERVER,
-                                            "This circle has not circle leader"
+                                            MessageUtil.CIRCLE_WITHOUT_LEADER
                                     )
                             ),
                             user.getId()
@@ -464,14 +465,14 @@ public class CircleService {
             this.userPort.removeRole(leaderId, Role.LEADER_CIRCLE).orElseThrow(
                     () -> new InternalServerException(
                             ErrorCode.INTERNAL_SERVER,
-                            "Leader id checked, but exception occurred"
+                            MessageUtil.INTERNAL_SERVER_ERROR
                     )
             );
         }
         CircleResponseDto circleResponseDto = CircleResponseDto.from(this.circlePort.delete(circleId).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        "Circle id checked, but exception occurred"
+                        MessageUtil.INTERNAL_SERVER_ERROR
                 )
         ));
         boardPort.deleteAllCircleBoard(circleId);
@@ -483,14 +484,14 @@ public class CircleService {
         CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "신청할 소모임을 찾을 수 없습니다."
+                        MessageUtil.SMALL_CLUB_NOT_FOUND
                 )
         );
 
         UserDomainModel user = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
@@ -515,7 +516,7 @@ public class CircleService {
                             return this.circleMemberPort.updateStatus(circleMember.getId(), CircleMemberStatus.AWAIT).orElseThrow(
                                     () -> new InternalServerException(
                                             ErrorCode.INTERNAL_SERVER,
-                                            "Application id checked, but exception occurred"
+                                            MessageUtil.INTERNAL_SERVER_ERROR
                                     )
                             );
                         })
@@ -533,21 +534,21 @@ public class CircleService {
         UserDomainModel user = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
         CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "탈퇴할 소모임을 찾을 수 없습니다."
+                        MessageUtil.SMALL_CLUB_NOT_FOUND
                 )
         );
 
         CircleMemberDomainModel circleMember = this.circleMemberPort.findByUserIdAndCircleId(user.getId(), circle.getId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "가입 신청한 소모임이 아닙니다."
+                        MessageUtil.CIRCLE_APPLY_INVALID
                 )
         );
 
@@ -563,7 +564,7 @@ public class CircleService {
                         circle.getLeader().map(UserDomainModel::getId).orElseThrow(
                                 () -> new InternalServerException(
                                         ErrorCode.INTERNAL_SERVER,
-                                        "This circle has not circle leader"
+                                        MessageUtil.CIRCLE_WITHOUT_LEADER
                                 )
                         ),
                         userId))
@@ -572,7 +573,7 @@ public class CircleService {
         return CircleMemberResponseDto.from(user, this.circleMemberPort.updateStatus(circleMember.getId(), CircleMemberStatus.LEAVE).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        "Application id checked, but exception occurred"
+                        MessageUtil.INTERNAL_SERVER_ERROR
                 )
         ));
     }
@@ -588,28 +589,28 @@ public class CircleService {
         UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
         UserDomainModel user = this.userPort.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "추방할 사용자를 찾을 수 없습니다."
+                        MessageUtil.USER_NOT_FOUND
                 )
         );
 
         CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "소모임을 찾을 수 없습니다."
+                       MessageUtil.SMALL_CLUB_NOT_FOUND
                 )
         );
 
         CircleMemberDomainModel circleMember = this.circleMemberPort.findByUserIdAndCircleId(userId, circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "추방시킬 사용자가 가입 신청한 소모임이 아닙니다."
+                        MessageUtil.CIRCLE_APPLY_INVALID
                 )
         );
 
@@ -626,7 +627,7 @@ public class CircleService {
                             circle.getLeader().map(UserDomainModel::getId).orElseThrow(
                                     () -> new InternalServerException(
                                             ErrorCode.INTERNAL_SERVER,
-                                            "This circle has not circle leader"
+                                            MessageUtil.CIRCLE_WITHOUT_LEADER
                                     )
                             ),
                             requestUserId
@@ -642,7 +643,7 @@ public class CircleService {
                         circle.getLeader().map(UserDomainModel::getId).orElseThrow(
                                 () -> new InternalServerException(
                                         ErrorCode.INTERNAL_SERVER,
-                                        "This circle has not circle leader"
+                                        MessageUtil.CIRCLE_WITHOUT_LEADER
                                 )
                         ),
                         userId))
@@ -651,7 +652,7 @@ public class CircleService {
         return CircleMemberResponseDto.from(user, this.circleMemberPort.updateStatus(circleMember.getId(), CircleMemberStatus.DROP).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        "Application id checked, but exception occurred"
+                        MessageUtil.INTERNAL_SERVER_ERROR
                 )
         ));
     }
@@ -684,21 +685,21 @@ public class CircleService {
         UserDomainModel requestUser = this.userPort.findById(requestUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
         CircleMemberDomainModel circleMember = this.circleMemberPort.findById(applicationId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "소모임 가입 신청을 찾을 수 없습니다."
+                        MessageUtil.USER_APPLY_NOT_FOUND
                 )
         );
 
         UserDomainModel user = this.userPort.findById(circleMember.getUserId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "가입 요청한 사용자를 찾을 수 없습니다."
+                        MessageUtil.USER_NOT_FOUND
                 )
         );
 
@@ -715,7 +716,7 @@ public class CircleService {
                             circleMember.getCircle().getLeader().map(UserDomainModel::getId).orElseThrow(
                                     () -> new InternalServerException(
                                             ErrorCode.INTERNAL_SERVER,
-                                            "This circle has not circle leader"
+                                            MessageUtil.CIRCLE_WITHOUT_LEADER
                                     )
                             ),
                             requestUserId));
@@ -731,7 +732,7 @@ public class CircleService {
         return CircleMemberResponseDto.from(user, this.circleMemberPort.updateStatus(applicationId, targetStatus).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        "Application id checked, but exception occurred"
+                        MessageUtil.INTERNAL_SERVER_ERROR
                 )
         ));
     }
@@ -743,27 +744,27 @@ public class CircleService {
         UserDomainModel loginUser = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
         UserDomainModel targetUser = this.userPort.findById(targetUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "추방된 사용자를 찾을 수 없습니다."
+                        MessageUtil.USER_NOT_FOUND
                 )
         );
 
         CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "소모임을 찾을 수 없습니다."
+                        MessageUtil.SMALL_CLUB_NOT_FOUND
                 )
         );
 
         CircleMemberDomainModel restoreTargetMember = this.circleMemberPort.findByUserIdAndCircleId(targetUserId, circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "추방시킬 사용자가 가입 신청한 소모임이 아닙니다."
+                        MessageUtil.CIRCLE_APPLY_INVALID
                 )
         );
 
@@ -776,7 +777,7 @@ public class CircleService {
                 .consistOf(UserEqualValidator.of(loginUserId,circle.getLeader().map(UserDomainModel::getId).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
-                                "The board has circle without circle leader"
+                                MessageUtil.CIRCLE_WITHOUT_LEADER
                         )
                 )));
         validatorBucket
@@ -788,7 +789,7 @@ public class CircleService {
         return CircleMemberResponseDto.from(targetUser, this.circleMemberPort.updateStatus(restoreTargetMember.getId(), CircleMemberStatus.MEMBER).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        "Application id checked, but exception occurred"
+                        MessageUtil.INTERNAL_SERVER_ERROR
                 )
         ));
     }

@@ -24,6 +24,7 @@ import net.causw.domain.model.circle.CircleMemberDomainModel;
 import net.causw.domain.model.enums.CircleMemberStatus;
 import net.causw.domain.model.post.PostDomainModel;
 import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.validation.CircleMemberStatusValidator;
@@ -63,14 +64,14 @@ public class PostService {
         UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
         PostDomainModel postDomainModel = this.postPort.findPostById(postId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "게시글을 찾을 수 없습니다."
+                        MessageUtil.POST_NOT_FOUND
                 )
         );
 
@@ -88,7 +89,7 @@ public class PostService {
                             ).orElseThrow(
                                     () -> new UnauthorizedException(
                                             ErrorCode.NOT_MEMBER,
-                                            "로그인된 사용자가 동아리 멤버가 아닙니다."
+                                            MessageUtil.NOT_CIRCLE_MEMBER
                                     )
                             );
 
@@ -139,7 +140,7 @@ public class PostService {
         UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
@@ -150,7 +151,7 @@ public class PostService {
         BoardDomainModel boardDomainModel = this.boardPort.findById(boardId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "게시판을 찾을 수 없습니다."
+                        MessageUtil.BOARD_NOT_FOUND
                 )
         );
 
@@ -164,7 +165,7 @@ public class PostService {
                             ).orElseThrow(
                                     () -> new UnauthorizedException(
                                             ErrorCode.NOT_MEMBER,
-                                            "로그인된 사용자가 동아리 멤버가 아닙니다."
+                                            MessageUtil.NOT_CIRCLE_MEMBER
                                     )
                             );
 
@@ -229,7 +230,7 @@ public class PostService {
         UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
@@ -240,7 +241,7 @@ public class PostService {
         BoardDomainModel boardDomainModel = this.boardPort.findById(boardId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "게시판을 찾을 수 없습니다."
+                        MessageUtil.BOARD_NOT_FOUND
                 )
         );
 
@@ -255,7 +256,7 @@ public class PostService {
                                     .orElseThrow(
                                             () -> new UnauthorizedException(
                                                     ErrorCode.NOT_MEMBER,
-                                                    "로그인된 사용자가 동아리 멤버가 아닙니다."
+                                                    MessageUtil.NOT_CIRCLE_MEMBER
                                             )
                                     );
 
@@ -317,14 +318,14 @@ public class PostService {
         UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
         BoardDomainModel boardDomainModel = this.boardPort.findAppNotice().orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "앱 공지 게시판을 찾을 수 없습니다."
+                        MessageUtil.NOTICE_NOT_FOUND
                 )
         );
 
@@ -349,14 +350,14 @@ public class PostService {
         UserDomainModel creatorDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
         BoardDomainModel boardDomainModel = this.boardPort.findById(postCreateRequestDto.getBoardId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "게시판을 찾을 수 없습니다."
+                        MessageUtil.BOARD_NOT_FOUND
                 )
         );
 
@@ -391,7 +392,7 @@ public class PostService {
                             ).orElseThrow(
                                     () -> new UnauthorizedException(
                                             ErrorCode.NOT_MEMBER,
-                                            "로그인된 사용자가 동아리 멤버가 아닙니다."
+                                            MessageUtil.NOT_CIRCLE_MEMBER
                                     )
                             );
 
@@ -408,7 +409,7 @@ public class PostService {
                                                 circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
                                                         () -> new UnauthorizedException(
                                                                 ErrorCode.API_NOT_ALLOWED,
-                                                                "사용자가 해당 동아리의 동아리장이 아닙니다."
+                                                                MessageUtil.NOT_CIRCLE_LEADER
                                                         )
                                                 ),
                                                 loginUserId
@@ -442,14 +443,14 @@ public class PostService {
         UserDomainModel deleterDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
         PostDomainModel postDomainModel = this.postPort.findPostById(postId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "게시글을 찾을 수 없습니다."
+                        MessageUtil.POST_NOT_FOUND
                 )
         );
 
@@ -476,7 +477,7 @@ public class PostService {
                             ).orElseThrow(
                                     () -> new UnauthorizedException(
                                             ErrorCode.NOT_MEMBER,
-                                            "로그인된 사용자가 동아리 멤버가 아닙니다."
+                                            MessageUtil.NOT_CIRCLE_MEMBER
                                     )
                             );
 
@@ -498,7 +499,7 @@ public class PostService {
                                                 circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
                                                         () -> new UnauthorizedException(
                                                                 ErrorCode.API_NOT_ALLOWED,
-                                                                "사용자가 해당 동아리의 동아리장이 아닙니다."
+                                                                MessageUtil.NOT_CIRCLE_LEADER
                                                         )
                                                 ),
                                                 loginUserId
@@ -521,7 +522,7 @@ public class PostService {
                 this.postPort.deletePost(postId).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
-                                "Post id checked, but exception occurred"
+                                MessageUtil.INTERNAL_SERVER_ERROR
                         )
                 ),
                 deleterDomainModel
@@ -539,14 +540,14 @@ public class PostService {
         UserDomainModel updaterDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
         PostDomainModel postDomainModel = this.postPort.findPostById(postId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "게시글을 찾을 수 없습니다."
+                        MessageUtil.POST_NOT_FOUND
                 )
         );
 
@@ -581,7 +582,7 @@ public class PostService {
                             ).orElseThrow(
                                     () -> new UnauthorizedException(
                                             ErrorCode.NOT_MEMBER,
-                                            "로그인된 사용자가 동아리 멤버가 아닙니다."
+                                            MessageUtil.NOT_CIRCLE_MEMBER
                                     )
                             );
 
@@ -607,7 +608,7 @@ public class PostService {
         PostDomainModel updatedPostDomainModel = this.postPort.updatePost(postId, postDomainModel).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        "Post id checked, but exception occurred"
+                        MessageUtil.INTERNAL_SERVER_ERROR
                 )
         );
 
@@ -639,14 +640,14 @@ public class PostService {
         UserDomainModel restorerDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
         PostDomainModel postDomainModel = this.postPort.findPostById(postId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "게시글을 찾을 수 없습니다."
+                        MessageUtil.POST_NOT_FOUND
                 )
         );
 
@@ -674,7 +675,7 @@ public class PostService {
                             ).orElseThrow(
                                     () -> new UnauthorizedException(
                                             ErrorCode.NOT_MEMBER,
-                                            "로그인된 사용자가 동아리 멤버가 아닙니다."
+                                            MessageUtil.NOT_CIRCLE_MEMBER
                                     )
                             );
 
@@ -697,7 +698,7 @@ public class PostService {
                                                 circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
                                                         () -> new UnauthorizedException(
                                                                 ErrorCode.API_NOT_ALLOWED,
-                                                                "사용자가 해당 동아리의 동아리장이 아닙니다."
+                                                                MessageUtil.NOT_CIRCLE_LEADER
                                                         )
                                                 ),
                                                 loginUserId
@@ -725,7 +726,7 @@ public class PostService {
         PostDomainModel restoredPostDomainModel = this.postPort.restorePost(postId, postDomainModel).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        "Post id checked, but exception occurred"
+                        MessageUtil.INTERNAL_SERVER_ERROR
                 )
         );
 

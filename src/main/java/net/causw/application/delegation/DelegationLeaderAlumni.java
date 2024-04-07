@@ -4,6 +4,7 @@ import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.util.MessageUtil;
 
 /**
  * The delegation process for the leader of the alumni.
@@ -22,7 +23,7 @@ public class DelegationLeaderAlumni implements Delegation {
         this.userPort.updateRole(currentId, Role.COMMON).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        "User id checked, but exception occurred"
+                        MessageUtil.INTERNAL_SERVER_ERROR
                 )
         );
     }

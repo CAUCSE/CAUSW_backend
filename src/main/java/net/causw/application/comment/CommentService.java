@@ -15,6 +15,7 @@ import net.causw.domain.model.enums.CircleMemberStatus;
 import net.causw.domain.model.comment.CommentDomainModel;
 import net.causw.domain.model.post.PostDomainModel;
 import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.validation.CircleMemberStatusValidator;
@@ -50,7 +51,7 @@ public class CommentService {
         UserDomainModel creatorDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
@@ -61,7 +62,7 @@ public class CommentService {
         PostDomainModel postDomainModel = this.postPort.findPostById(commentCreateDto.getPostId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "게시글을 찾을 수 없습니다."
+                        MessageUtil.POST_NOT_FOUND
                 )
         );
 
@@ -86,7 +87,7 @@ public class CommentService {
                             ).orElseThrow(
                                     () -> new UnauthorizedException(
                                             ErrorCode.NOT_MEMBER,
-                                            "로그인된 사용자가 가입 신청한 소모임이 아닙니다."
+                                            MessageUtil.CIRCLE_APPLY_INVALID
                                     )
                             );
                             validatorBucket
@@ -123,14 +124,14 @@ public class CommentService {
         UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
         PostDomainModel postDomainModel = this.postPort.findPostById(postId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "게시글을 찾을 수 없습니다."
+                        MessageUtil.POST_NOT_FOUND
                 )
         );
 
@@ -150,7 +151,7 @@ public class CommentService {
                             ).orElseThrow(
                                     () -> new UnauthorizedException(
                                             ErrorCode.NOT_MEMBER,
-                                            "로그인된 사용자가 가입 신청한 소모임이 아닙니다."
+                                            MessageUtil.CIRCLE_APPLY_INVALID
                                     )
                             );
 
@@ -195,21 +196,21 @@ public class CommentService {
         UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
         CommentDomainModel commentDomainModel = this.commentPort.findById(commentId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "수정할 댓글을 찾을 수 없습니다."
+                        MessageUtil.COMMENT_NOT_FOUND
                 )
         );
 
         PostDomainModel postDomainModel = this.postPort.findPostById(commentDomainModel.getPostId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "게시글을 찾을 수 없습니다."
+                        MessageUtil.POST_NOT_FOUND
                 )
         );
 
@@ -241,7 +242,7 @@ public class CommentService {
                             ).orElseThrow(
                                     () -> new UnauthorizedException(
                                             ErrorCode.NOT_MEMBER,
-                                            "사용자가 가입 신청한 소모임이 아닙니다."
+                                            MessageUtil.CIRCLE_APPLY_INVALID
                                     )
                             );
 
@@ -261,7 +262,7 @@ public class CommentService {
                 this.commentPort.update(commentId, commentDomainModel).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
-                                "Comment id checked, but exception occurred"
+                                MessageUtil.INTERNAL_SERVER_ERROR
                         )
                 ),
                 requestUser,
@@ -284,21 +285,21 @@ public class CommentService {
         UserDomainModel deleterDomainModel = this.userPort.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
         CommentDomainModel commentDomainModel = this.commentPort.findById(commentId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "삭제할 댓글을 찾을 수 없습니다."
+                        MessageUtil.COMMENT_NOT_FOUND
                 )
         );
 
         PostDomainModel postDomainModel = this.postPort.findPostById(commentDomainModel.getPostId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "게시글을 찾을 수 없습니다."
+                        MessageUtil.POST_NOT_FOUND
                 )
         );
 
@@ -317,7 +318,7 @@ public class CommentService {
                             ).orElseThrow(
                                     () -> new UnauthorizedException(
                                             ErrorCode.NOT_MEMBER,
-                                            "로그인된 사용자가 가입 신청한 소모임이 아닙니다."
+                                            MessageUtil.CIRCLE_APPLY_INVALID
                                     )
                             );
 
@@ -340,7 +341,7 @@ public class CommentService {
                                                 circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
                                                         () -> new InternalServerException(
                                                                 ErrorCode.INTERNAL_SERVER,
-                                                                "The board has circle without circle leader"
+                                                                MessageUtil.CIRCLE_WITHOUT_LEADER
                                                         )
                                                 ),
                                                 loginUserId
@@ -363,7 +364,7 @@ public class CommentService {
                 this.commentPort.delete(commentId).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
-                                "Comment id checked, but exception occurred"
+                                MessageUtil.INTERNAL_SERVER_ERROR
                         )
                 ),
                 deleterDomainModel,
