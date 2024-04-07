@@ -513,7 +513,7 @@ public class PostService {
                 this.postPort.deletePost(postId).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
-                                MessageUtil.exceptionOccur("Post")
+                                MessageUtil.INTERNAL_SERVER_ERROR
                         )
                 ),
                 deleterDomainModel
@@ -599,7 +599,7 @@ public class PostService {
         PostDomainModel updatedPostDomainModel = this.postPort.updatePost(postId, postDomainModel).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        MessageUtil.exceptionOccur("Post")
+                        MessageUtil.INTERNAL_SERVER_ERROR
                 )
         );
 
@@ -710,7 +710,7 @@ public class PostService {
         PostDomainModel restoredPostDomainModel = this.postPort.restorePost(postId, postDomainModel).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        MessageUtil.exceptionOccur("Post")
+                        MessageUtil.INTERNAL_SERVER_ERROR
                 )
         );
 

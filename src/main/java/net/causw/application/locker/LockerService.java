@@ -131,7 +131,7 @@ public class LockerService {
                 })
                 .orElseThrow(() -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        "Exception occurred when creating locker"
+                        MessageUtil.INTERNAL_SERVER_ERROR
                 ));
     }
 
@@ -182,7 +182,7 @@ public class LockerService {
                 })
                 .orElseThrow(() -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        "Locker id checked, but exception occurred"
+                        MessageUtil.INTERNAL_SERVER_ERROR
                 ));
     }
 
@@ -225,7 +225,7 @@ public class LockerService {
         return LockerResponseDto.from(this.lockerPort.updateLocation(lockerId, lockerDomainModel).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
-                                "Locker id checked, but exception occurred"
+                                MessageUtil.INTERNAL_SERVER_ERROR
                         )),
                 updaterDomainModel
         );
@@ -261,7 +261,7 @@ public class LockerService {
                 lockerDomainModel.getLockerLocation().getName(),
                 deleterDomainModel,
                 LockerLogAction.DISABLE,
-                "사물함 삭제"
+                MessageUtil.LOCKER_DELETED
         );
 
         return LockerResponseDto.from(lockerDomainModel, deleterDomainModel);
@@ -405,7 +405,7 @@ public class LockerService {
                 this.lockerLocationPort.update(locationId, lockerLocationDomainModel).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
-                                "Locker location id checked, but exception occurred"
+                                MessageUtil.INTERNAL_SERVER_ERROR
                         )
                 ),
                 this.lockerPort.countEnableLockerByLocation(lockerLocationDomainModel.getId()),

@@ -167,7 +167,7 @@ public class BoardService {
         BoardDomainModel boardDomainModel = this.boardPort.findById(boardId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "수정할 게시판을 찾을 수 없습니다."
+                        MessageUtil.BOARD_NOT_FOUND
                 )
         );
 
@@ -215,7 +215,7 @@ public class BoardService {
                 this.boardPort.updateBoard(boardId, boardDomainModel).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
-                                MessageUtil.exceptionOccur("Board")
+                                MessageUtil.INTERNAL_SERVER_ERROR
                         )
                 ),
                 updaterDomainModel.getRole()
@@ -239,7 +239,7 @@ public class BoardService {
         BoardDomainModel boardDomainModel = this.boardPort.findById(boardId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "삭제할 게시판을 찾을 수 없습니다."
+                        MessageUtil.BOARD_NOT_FOUND
                 )
         );
 
@@ -287,7 +287,7 @@ public class BoardService {
                 this.boardPort.deleteBoard(boardId).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
-                                MessageUtil.exceptionOccur("Board")
+                                MessageUtil.INTERNAL_SERVER_ERROR
                         )
                 ),
                 deleterDomainModel.getRole()
@@ -311,7 +311,7 @@ public class BoardService {
         BoardDomainModel boardDomainModel = this.boardPort.findById(boardId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "복구할 게시판을 찾을 수 없습니다."
+                        MessageUtil.BOARD_NOT_FOUND
                 )
         );
 
@@ -359,7 +359,7 @@ public class BoardService {
                 this.boardPort.restoreBoard(boardId).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
-                                MessageUtil.exceptionOccur("Board")
+                                MessageUtil.INTERNAL_SERVER_ERROR
                         )
                 ),
                 restorerDomainModel.getRole()

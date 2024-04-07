@@ -23,7 +23,7 @@ public class DelegationLeaderAlumni implements Delegation {
         this.userPort.updateRole(currentId, Role.COMMON).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        MessageUtil.exceptionOccur("User")
+                        MessageUtil.INTERNAL_SERVER_ERROR
                 )
         );
     }

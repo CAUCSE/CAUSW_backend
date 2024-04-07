@@ -10,6 +10,7 @@ import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.locker.LockerDomainModel;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.user.UserDomainModel;
+import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.ValidatorBucket;
 
@@ -30,7 +31,7 @@ public class LockerActionReturn implements LockerAction {
         if (lockerDomainModel.getUser().isEmpty()) {
             throw new BadRequestException(
                     ErrorCode.CANNOT_PERFORMED,
-                    "사용 중인 사물함이 아닙니다."
+                    MessageUtil.LOCKER_UNUSED
             );
         }
 

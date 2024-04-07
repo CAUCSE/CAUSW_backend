@@ -41,7 +41,7 @@ public class DelegationPresident implements Delegation {
         this.userPort.removeRole(currentId, Role.PRESIDENT).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        MessageUtil.exceptionOccur("User")
+                        MessageUtil.INTERNAL_SERVER_ERROR
                 )
         );
     }
