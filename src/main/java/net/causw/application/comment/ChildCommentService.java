@@ -1,11 +1,9 @@
 package net.causw.application.comment;
 
 import lombok.RequiredArgsConstructor;
-import net.causw.application.dto.comment.ChildCommentsResponseDto;
 import net.causw.application.dto.comment.ChildCommentCreateRequestDto;
 import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.ChildCommentUpdateRequestDto;
-import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.spi.ChildCommentPort;
 import net.causw.application.spi.CircleMemberPort;
 import net.causw.application.spi.CommentPort;
@@ -21,7 +19,6 @@ import net.causw.domain.model.enums.CircleMemberStatus;
 import net.causw.domain.model.comment.CommentDomainModel;
 import net.causw.domain.model.post.PostDomainModel;
 import net.causw.domain.model.enums.Role;
-import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.validation.CircleMemberStatusValidator;
@@ -57,7 +54,7 @@ public class ChildCommentService {
         UserDomainModel creatorDomainModel = this.userPort.findById(creatorId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
@@ -69,7 +66,7 @@ public class ChildCommentService {
                 refChildCommentId -> this.childCommentPort.findById(refChildCommentId).orElseThrow(
                         () -> new BadRequestException(
                                 ErrorCode.ROW_DOES_NOT_EXIST,
-                                MessageUtil.COMMENT_NOT_FOUND
+                                "답할 답글을 찾을 수 없습니다."
                         )
                 )
         );
@@ -77,14 +74,14 @@ public class ChildCommentService {
         CommentDomainModel parentCommentDomainModel = this.commentPort.findById(childCommentCreateRequestDto.getParentCommentId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.COMMENT_NOT_FOUND
+                        "상위 댓글을 찾을 수 없습니다."
                 )
         );
 
         PostDomainModel postDomainModel = this.postPort.findPostById(parentCommentDomainModel.getPostId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.POST_NOT_FOUND
+                        "게시글을 찾을 수 없습니다."
                 )
         );
 
@@ -118,7 +115,7 @@ public class ChildCommentService {
                             ).orElseThrow(
                                     () -> new UnauthorizedException(
                                             ErrorCode.NOT_MEMBER,
-                                            MessageUtil.CIRCLE_APPLY_INVALID
+                                            "로그인된 사용자가 가입 신청한 소모임이 아닙니다."
                                     )
                             );
 
@@ -141,81 +138,6 @@ public class ChildCommentService {
         );
     }
 
-    @Transactional(readOnly = true)
-    public ChildCommentsResponseDto findAllChildComments(String userId, String parentCommentId, Integer pageNum) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
-        UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
-
-        CommentDomainModel parentCommentDomainModel = this.commentPort.findById(parentCommentId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.COMMENT_NOT_FOUND
-                )
-        );
-
-        PostDomainModel postDomainModel = this.postPort.findPostById(parentCommentDomainModel.getPostId()).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.POST_NOT_FOUND
-                )
-        );
-
-        validatorBucket
-                .consistOf(UserStateValidator.of(userDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
-                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
-                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), StaticValue.DOMAIN_POST));
-
-        postDomainModel.getBoard().getCircle()
-                .filter(circleDomainModel -> !userDomainModel.getRole().equals(Role.ADMIN) && !userDomainModel.getRole().getValue().contains("PRESIDENT"))
-                .ifPresent(
-                        circleDomainModel -> {
-                            CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
-                                    userId,
-                                    circleDomainModel.getId()
-                            ).orElseThrow(
-                                    () -> new UnauthorizedException(
-                                            ErrorCode.NOT_MEMBER,
-                                            MessageUtil.CIRCLE_APPLY_INVALID
-                                    )
-                            );
-
-                            validatorBucket
-                                    .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                                    .consistOf(CircleMemberStatusValidator.of(
-                                            circleMemberDomainModel.getStatus(),
-                                            List.of(CircleMemberStatus.MEMBER)
-                                    ));
-                        }
-                );
-
-        validatorBucket
-                .validate();
-
-        return ChildCommentsResponseDto.from(
-                CommentResponseDto.from(
-                        parentCommentDomainModel,
-                        userDomainModel,
-                        postDomainModel.getBoard(),
-                        this.childCommentPort.countByParentComment(parentCommentDomainModel.getId())
-                ),
-                this.childCommentPort.findByParentComment(parentCommentId, pageNum)
-                        .map(childCommentDomainModel ->
-                                ChildCommentResponseDto.from(
-                                        childCommentDomainModel,
-                                        userDomainModel,
-                                        postDomainModel.getBoard()
-                                )
-                        )
-        );
-    }
-
     @Transactional
     public ChildCommentResponseDto updateChildComment(
             String updaterId,
@@ -227,21 +149,21 @@ public class ChildCommentService {
         UserDomainModel updater = this.userPort.findById(updaterId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
         ChildCommentDomainModel childCommentDomainModel = this.childCommentPort.findById(childCommentId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.COMMENT_NOT_FOUND
+                        "수정할 답글을 찾을 수 없습니다."
                 )
         );
 
         PostDomainModel postDomainModel = this.postPort.findPostById(childCommentDomainModel.getParentComment().getPostId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.POST_NOT_FOUND
+                        "게시글을 찾을 수 없습니다."
                 )
         );
 
@@ -273,7 +195,7 @@ public class ChildCommentService {
                             ).orElseThrow(
                                     () -> new UnauthorizedException(
                                             ErrorCode.NOT_MEMBER,
-                                            MessageUtil.CIRCLE_APPLY_INVALID
+                                            "사용자가 가입 신청한 소모임이 아닙니다."
                                     )
                             );
 
@@ -293,7 +215,7 @@ public class ChildCommentService {
                 this.childCommentPort.update(childCommentId, childCommentDomainModel).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
-                                MessageUtil.INTERNAL_SERVER_ERROR
+                                "Comment id checked, but exception occurred"
                         )
                 ),
                 updater,
@@ -308,21 +230,21 @@ public class ChildCommentService {
         UserDomainModel deleterDomainModel = this.userPort.findById(deleterId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
+                        "로그인된 사용자를 찾을 수 없습니다."
                 )
         );
 
         ChildCommentDomainModel childCommentDomainModel = this.childCommentPort.findById(childCommentId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.COMMENT_NOT_FOUND
+                        "삭제할 답글을 찾을 수 없습니다."
                 )
         );
 
         PostDomainModel postDomainModel = this.postPort.findPostById(childCommentDomainModel.getParentComment().getPostId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.POST_NOT_FOUND
+                        "게시글을 찾을 수 없습니다."
                 )
         );
 
@@ -341,7 +263,7 @@ public class ChildCommentService {
                             ).orElseThrow(
                                     () -> new UnauthorizedException(
                                             ErrorCode.NOT_MEMBER,
-                                            MessageUtil.CIRCLE_APPLY_INVALID
+                                            "로그인된 사용자가 가입 신청한 소모임이 아닙니다."
                                     )
                             );
 
@@ -364,7 +286,7 @@ public class ChildCommentService {
                                                 circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
                                                         () -> new InternalServerException(
                                                                 ErrorCode.INTERNAL_SERVER,
-                                                                MessageUtil.CIRCLE_WITHOUT_LEADER
+                                                                "The board has circle without circle leader"
                                                         )
                                                 ),
                                                 deleterId
@@ -388,7 +310,7 @@ public class ChildCommentService {
                 this.childCommentPort.delete(childCommentId).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
-                                MessageUtil.INTERNAL_SERVER_ERROR
+                                "Comment id checked, but exception occurred"
                         )
                 ),
                 deleterDomainModel,
