@@ -1,5 +1,7 @@
 package net.causw.adapter.persistence.locker;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.causw.adapter.persistence.base.BaseEntity;
@@ -13,7 +15,8 @@ import javax.persistence.Table;
 
 @Getter
 @Entity
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "TB_LOCKER_LOG")
 public class LockerLog extends BaseEntity {
     @Column(name = "locker_number", nullable = false)
@@ -34,40 +37,6 @@ public class LockerLog extends BaseEntity {
 
     @Column(name = "message", nullable = true)
     private String message;
-
-    private LockerLog(
-            String id,
-            Long lockerNumber,
-            String lockerLocationName,
-            String userEmail,
-            String userName,
-            LockerLogAction action,
-            String message
-    ) {
-        super(id);
-        this.lockerNumber = lockerNumber;
-        this.lockerLocationName = lockerLocationName;
-        this.userEmail = userEmail;
-        this.userName = userName;
-        this.action = action;
-        this.message = message;
-    }
-
-    private LockerLog(
-            Long lockerNumber,
-            String lockerLocationName,
-            String userEmail,
-            String userName,
-            LockerLogAction action,
-            String message
-    ) {
-        this.lockerNumber = lockerNumber;
-        this.lockerLocationName = lockerLocationName;
-        this.userEmail = userEmail;
-        this.userName = userName;
-        this.action = action;
-        this.message = message;
-    }
 
     public static LockerLog of(
             Long lockerNumber,

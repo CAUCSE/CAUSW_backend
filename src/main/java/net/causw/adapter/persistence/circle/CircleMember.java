@@ -1,8 +1,6 @@
 package net.causw.adapter.persistence.circle;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.domain.model.enums.CircleMemberStatus;
@@ -18,7 +16,8 @@ import javax.persistence.Table;
 @Getter
 @Setter
 @Entity
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_circle_member")
 public class CircleMember extends BaseEntity {
     @Column(name = "status", nullable = false)
@@ -33,51 +32,7 @@ public class CircleMember extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    private CircleMember(
-            String id,
-            CircleMemberStatus status,
-            Circle circle,
-            User user
-    ) {
-        super(id);
-        this.status = status;
-        this.circle = circle;
-        this.user = user;
-    }
-
-    private CircleMember(
-            CircleMemberStatus status,
-            Circle circle,
-            User user
-    ) {
-        this.status = status;
-        this.circle = circle;
-        this.user = user;
-    }
-
-    public static CircleMember of(
-            String id,
-            CircleMemberStatus status,
-            Circle circle,
-            User user
-    ) {
-        return new CircleMember(
-                id,
-                status,
-                circle,
-                user
-        );
-    }
-
-    public static CircleMember of(
-            CircleMemberStatus status,
-            Circle circle,
-            User user
-    ) {
-        return new CircleMember(
-                status,
-                circle,
-                user
-        );
+    public static CircleMember of(CircleMemberStatus status, Circle circle, User user) {
+        return new CircleMember(status, circle, user);
     }
 }

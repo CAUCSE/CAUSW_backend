@@ -1,5 +1,6 @@
 package net.causw.adapter.persistence.inquiry;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,7 +18,7 @@ import javax.persistence.Table;
 @Getter
 @Setter
 @Entity
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "TB_INQUIRY")
 public class Inquiry extends BaseEntity {
     @Column(name = "title",nullable = false)
@@ -34,19 +35,6 @@ public class Inquiry extends BaseEntity {
     @ColumnDefault("false")
     private Boolean isDeleted;
 
-
-    private Inquiry(
-            String title,
-            String content,
-            User writer,
-            Boolean isDeleted
-    ){
-        this.title = title;
-        this.content = content;
-        this.writer = writer;
-        this.isDeleted = isDeleted;
-    }
-
     private Inquiry(
             String id,
             String title,
@@ -61,37 +49,6 @@ public class Inquiry extends BaseEntity {
         this.isDeleted = isDeleted;
     }
 
-    public static Inquiry of(
-            String title,
-            String content,
-            User writer,
-            Boolean isDeleted
-    ){
-        return new Inquiry(
-                title,
-                content,
-                writer,
-                isDeleted
-        );
-    }
-
-    public static Inquiry of(
-            String id,
-            String title,
-            String content,
-            User writer,
-            Boolean isDeleted,
-            Boolean isPublic
-    ){
-        return new Inquiry(
-                id,
-                title,
-                content,
-                writer,
-                isDeleted
-        );
-    }
-
     public static Inquiry from(InquiryDomainModel inquiryDomainModel) {
         return new Inquiry(
                 inquiryDomainModel.getId(),
@@ -101,5 +58,4 @@ public class Inquiry extends BaseEntity {
                 inquiryDomainModel.getIsDeleted()
         );
     }
-
 }

@@ -1,5 +1,6 @@
 package net.causw.adapter.persistence.user;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.causw.adapter.persistence.base.BaseEntity;
@@ -13,7 +14,7 @@ import javax.persistence.Table;
 
 @Getter
 @Entity
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "tb_user_admission")
 public class UserAdmission extends BaseEntity {
     @OneToOne
@@ -36,19 +37,6 @@ public class UserAdmission extends BaseEntity {
         this.user = user;
         this.attachImage = attachImage;
         this.description = description;
-    }
-
-    public static UserAdmission of(
-            User user,
-            String attachImage,
-            String description
-    ) {
-        return new UserAdmission(
-                null,
-                user,
-                attachImage,
-                description
-        );
     }
 
     public static UserAdmission from(UserAdmissionDomainModel userAdmissionDomainModel) {

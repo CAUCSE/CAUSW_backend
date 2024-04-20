@@ -1,5 +1,6 @@
 package net.causw.adapter.persistence.post;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,7 +21,7 @@ import java.util.Optional;
 @Getter
 @Setter
 @Entity
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "tb_post")
 public class Post extends BaseEntity {
     @Column(name = "title", nullable = false)
@@ -45,22 +46,6 @@ public class Post extends BaseEntity {
     private Board board;
 
     private Post(
-            String title,
-            String content,
-            User writer,
-            Boolean isDeleted,
-            Board board,
-            String attachments
-    ) {
-        this.title = title;
-        this.content = content;
-        this.writer = writer;
-        this.isDeleted = isDeleted;
-        this.board = board;
-        this.attachments = attachments;
-    }
-
-    private Post(
             String id,
             String title,
             String content,
@@ -76,44 +61,6 @@ public class Post extends BaseEntity {
         this.isDeleted = isDeleted;
         this.board = board;
         this.attachments = attachments;
-    }
-
-    public static Post of(
-            String title,
-            String content,
-            User writer,
-            Boolean isDeleted,
-            Board board,
-            String attachments
-    ) {
-        return new Post(
-                title,
-                content,
-                writer,
-                isDeleted,
-                board,
-                attachments
-        );
-    }
-
-    public static Post of(
-            String id,
-            String title,
-            String content,
-            User writer,
-            Boolean isDeleted,
-            Board board,
-            String attachments
-    ) {
-        return new Post(
-                id,
-                title,
-                content,
-                writer,
-                isDeleted,
-                board,
-                attachments
-        );
     }
 
     public static Post from(PostDomainModel postDomainModel) {

@@ -1,5 +1,6 @@
 package net.causw.adapter.persistence.user;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -23,7 +24,7 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "tb_user")
 public class User extends BaseEntity {
     @Column(name = "email", unique = true, nullable = false)
@@ -64,26 +65,6 @@ public class User extends BaseEntity {
     private List<CircleMember> circleMemberList;
 
     private User(
-            String email,
-            String name,
-            String password,
-            String studentId,
-            Integer admissionYear,
-            Role role,
-            String profileImage,
-            UserState state
-    ) {
-        this.email = email;
-        this.name = name;
-        this.password = password;
-        this.studentId = studentId;
-        this.admissionYear = admissionYear;
-        this.role = role;
-        this.profileImage = profileImage;
-        this.state = state;
-    }
-
-    private User(
             String id,
             String email,
             String name,
@@ -103,52 +84,6 @@ public class User extends BaseEntity {
         this.role = role;
         this.profileImage = profileImage;
         this.state = state;
-    }
-
-    public static User of(
-            String email,
-            String name,
-            String password,
-            String studentId,
-            Integer admissionYear,
-            Role role,
-            String profileImage,
-            UserState state
-    ) {
-        return new User(
-                email,
-                name,
-                password,
-                studentId,
-                admissionYear,
-                role,
-                profileImage,
-                state
-        );
-    }
-
-    public static User of(
-            String id,
-            String email,
-            String name,
-            String password,
-            String studentId,
-            Integer admissionYear,
-            Role role,
-            String profileImage,
-            UserState state
-    ) {
-        return new User(
-                id,
-                email,
-                name,
-                password,
-                studentId,
-                admissionYear,
-                role,
-                profileImage,
-                state
-        );
     }
 
     public static User from(UserDomainModel userDomainModel) {
