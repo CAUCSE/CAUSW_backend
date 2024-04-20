@@ -1,7 +1,7 @@
 package net.causw.domain.model.locker;
 
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 import net.causw.domain.model.user.UserDomainModel;
 
 import javax.validation.constraints.NotNull;
@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Getter
-@Setter
+@Builder
 public class LockerDomainModel {
     private String id;
 
@@ -22,42 +22,20 @@ public class LockerDomainModel {
     private LocalDateTime expiredAt;
 
     private LocalDateTime updatedAt;
+
     private UserDomainModel user;
 
     @NotNull(message = "사물함 위치가 입력되지 않았습니다.")
     private LockerLocationDomainModel lockerLocation;
 
-    private LockerDomainModel(
-            String id,
-            Long lockerNumber,
-            Boolean isActive,
-            LocalDateTime expiredAt,
-            LocalDateTime updatedAt,
-            UserDomainModel user,
-            LockerLocationDomainModel lockerLocation
-    ) {
-        this.id = id;
-        this.lockerNumber = lockerNumber;
-        this.isActive = isActive;
-        this.expiredAt = expiredAt;
-        this.updatedAt = updatedAt;
-        this.user = user;
-        this.lockerLocation = lockerLocation;
-    }
-
     public static LockerDomainModel of(
             Long lockerNumber,
             LockerLocationDomainModel lockerLocation
     ) {
-        return new LockerDomainModel(
-                null,
-                lockerNumber,
-                true,
-                null,
-                null,
-                null,
-                lockerLocation
-        );
+        return LockerDomainModel.builder()
+                .lockerNumber(lockerNumber)
+                .lockerLocation(lockerLocation)
+                .build();
     }
 
     public static LockerDomainModel of(
@@ -69,15 +47,15 @@ public class LockerDomainModel {
             UserDomainModel user,
             LockerLocationDomainModel lockerLocation
     ) {
-        return new LockerDomainModel(
-                id,
-                lockerNumber,
-                isActive,
-                expiredAt,
-                updatedAt,
-                user,
-                lockerLocation
-        );
+        return LockerDomainModel.builder()
+                .id(id)
+                .lockerNumber(lockerNumber)
+                .isActive(isActive)
+                .expiredAt(expiredAt)
+                .updatedAt(updatedAt)
+                .user(user)
+                .lockerLocation(lockerLocation)
+                .build();
     }
 
     public void register(UserDomainModel user, LocalDateTime expiredAt) {

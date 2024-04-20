@@ -1,14 +1,14 @@
 package net.causw.domain.model.user;
 
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
 @Getter
-@Setter
+@Builder
 public class UserAdmissionDomainModel {
     private String id;
 
@@ -21,23 +21,8 @@ public class UserAdmissionDomainModel {
     private UserDomainModel user;
 
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 
-    private UserAdmissionDomainModel(
-            String id,
-            UserDomainModel user,
-            String attachImage,
-            String description,
-            LocalDateTime createdAt,
-            LocalDateTime updatedAt
-    ) {
-        this.id = id;
-        this.user = user;
-        this.attachImage = attachImage;
-        this.description = description;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
+    private LocalDateTime updatedAt;
 
     public static UserAdmissionDomainModel of(
             String id,
@@ -47,14 +32,14 @@ public class UserAdmissionDomainModel {
             LocalDateTime createdAt,
             LocalDateTime updatedAt
     ) {
-        return new UserAdmissionDomainModel(
-                id,
-                user,
-                attachImage,
-                description,
-                createdAt,
-                updatedAt
-        );
+        return UserAdmissionDomainModel.builder()
+                .id(id)
+                .user(user)
+                .attachImage(attachImage)
+                .description(description)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .build();
     }
 
     public static UserAdmissionDomainModel of(
@@ -62,13 +47,10 @@ public class UserAdmissionDomainModel {
             String attachImage,
             String description
     ) {
-        return new UserAdmissionDomainModel(
-                null,
-                user,
-                attachImage,
-                description,
-                null,
-                null
-        );
+        return UserAdmissionDomainModel.builder()
+                .user(user)
+                .attachImage(attachImage)
+                .description(description)
+                .build();
     }
 }

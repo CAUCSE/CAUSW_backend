@@ -1,7 +1,7 @@
 package net.causw.domain.model.circle;
 
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 import net.causw.domain.model.user.UserDomainModel;
 
 import javax.validation.constraints.NotBlank;
@@ -10,10 +10,12 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Getter
-@Setter
+@Builder
 public class CircleDomainModel {
     private String id;
+
     private String description;
+
     private String mainImage;
 
     @NotBlank(message = "소모임 이름이 입력되지 않았습니다.")
@@ -26,28 +28,9 @@ public class CircleDomainModel {
     private UserDomainModel leader;
 
     private LocalDateTime createdAt;
+
     private LocalDateTime updatedAt;
 
-    private CircleDomainModel(
-            String id,
-            String name,
-            String mainImage,
-            String description,
-            Boolean isDeleted,
-            UserDomainModel leader,
-            LocalDateTime createdAt,
-            LocalDateTime updatedAt
-    ) {
-        this.id = id;
-        this.name = name;
-        this.mainImage = mainImage;
-        this.description = description;
-        this.isDeleted = isDeleted;
-        this.leader = leader;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
-
     public static CircleDomainModel of(
             String id,
             String name,
@@ -58,36 +41,16 @@ public class CircleDomainModel {
             LocalDateTime createdAt,
             LocalDateTime updatedAt
     ) {
-        return new CircleDomainModel(
-                id,
-                name,
-                mainImage,
-                description,
-                isDeleted,
-                leader,
-                createdAt,
-                updatedAt
-        );
-    }
-
-    public static CircleDomainModel of(
-            String id,
-            String name,
-            String mainImage,
-            String description,
-            Boolean isDeleted,
-            UserDomainModel leader
-    ) {
-        return new CircleDomainModel(
-                id,
-                name,
-                mainImage,
-                description,
-                isDeleted,
-                leader,
-                null,
-                null
-        );
+        return CircleDomainModel.builder()
+                .id(id)
+                .name(name)
+                .mainImage(mainImage)
+                .description(description)
+                .isDeleted(isDeleted)
+                .leader(leader)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .build();
     }
 
     public static CircleDomainModel of(
@@ -96,16 +59,12 @@ public class CircleDomainModel {
             String description,
             UserDomainModel leader
     ) {
-        return new CircleDomainModel(
-                null,
-                name,
-                mainImage,
-                description,
-                false,
-                leader,
-                null,
-                null
-        );
+        return CircleDomainModel.builder()
+                .name(name)
+                .mainImage(mainImage)
+                .description(description)
+                .leader(leader)
+                .build();
     }
 
     public void update(

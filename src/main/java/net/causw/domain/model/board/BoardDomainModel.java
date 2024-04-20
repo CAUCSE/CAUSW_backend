@@ -1,7 +1,7 @@
 package net.causw.domain.model.board;
 
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 import net.causw.domain.model.circle.CircleDomainModel;
 import net.causw.domain.model.enums.Role;
 
@@ -13,9 +13,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Getter
-@Setter
+@Builder
 public class BoardDomainModel {
     private String id;
+
     private String description;
 
     @NotBlank(message = "게시판 이름이 입력되지 않았습니다.")
@@ -32,24 +33,6 @@ public class BoardDomainModel {
 
     private CircleDomainModel circle;
 
-    private BoardDomainModel(
-            String id,
-            String name,
-            String description,
-            List<String> createRoleList,
-            String category,
-            Boolean isDeleted,
-            CircleDomainModel circle
-    ) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.createRoleList = createRoleList;
-        this.category = category;
-        this.isDeleted = isDeleted;
-        this.circle = circle;
-    }
-
     public static BoardDomainModel of(
             String id,
             String name,
@@ -59,15 +42,15 @@ public class BoardDomainModel {
             Boolean isDeleted,
             CircleDomainModel circle
     ) {
-        return new BoardDomainModel(
-                id,
-                name,
-                description,
-                createRoleList,
-                category,
-                isDeleted,
-                circle
-        );
+        return BoardDomainModel.builder()
+                .id(id)
+                .name(name)
+                .description(description)
+                .createRoleList(createRoleList)
+                .category(category)
+                .isDeleted(isDeleted)
+                .circle(circle)
+                .build();
     }
 
     public static BoardDomainModel of(
@@ -101,15 +84,13 @@ public class BoardDomainModel {
             }
         }
 
-        return new BoardDomainModel(
-                null,
-                name,
-                description,
-                createRoleList,
-                category,
-                false,
-                circle
-        );
+        return BoardDomainModel.builder()
+                .name(name)
+                .description(description)
+                .createRoleList(createRoleList)
+                .category(category)
+                .circle(circle)
+                .build();
     }
 
     public void update(
