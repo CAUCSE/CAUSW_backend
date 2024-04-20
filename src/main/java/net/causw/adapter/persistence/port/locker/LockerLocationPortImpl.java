@@ -48,7 +48,7 @@ public class LockerLocationPortImpl extends DomainModelMapper implements LockerL
     public Optional<LockerLocationDomainModel> update(String id, LockerLocationDomainModel lockerLocationDomainModel) {
         return this.lockerLocationRepository.findById(id).map(
                 srcLockerLocation -> {
-                    srcLockerLocation.setName(lockerLocationDomainModel.getName());
+                    srcLockerLocation.update(lockerLocationDomainModel.getName());
 
                     return this.entityToDomainModel(this.lockerLocationRepository.save(srcLockerLocation));
                 }

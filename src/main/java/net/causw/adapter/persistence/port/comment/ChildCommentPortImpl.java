@@ -39,10 +39,7 @@ public class ChildCommentPortImpl extends DomainModelMapper implements ChildComm
     public Optional<ChildCommentDomainModel> update(String childCommentId, ChildCommentDomainModel childCommentDomainModel) {
         return this.childCommentRepository.findById(childCommentId).map(
                 srcChildComment -> {
-                    srcChildComment.setContent(childCommentDomainModel.getContent());
-                    srcChildComment.setTagUserName(childCommentDomainModel.getTagUserName());
-                    srcChildComment.setRefChildComment(childCommentDomainModel.getRefChildComment());
-
+                    srcChildComment.update(childCommentDomainModel.getContent(), childCommentDomainModel.getTagUserName(), childCommentDomainModel.getRefChildComment());
                     return this.entityToDomainModel(this.childCommentRepository.save(srcChildComment));
                 }
         );
@@ -52,7 +49,7 @@ public class ChildCommentPortImpl extends DomainModelMapper implements ChildComm
     public Optional<ChildCommentDomainModel> delete(String childCommentId) {
         return this.childCommentRepository.findById(childCommentId).map(
                 childComment -> {
-                    childComment.setIsDeleted(true);
+                    childComment.delete();
 
                     return this.entityToDomainModel(this.childCommentRepository.save(childComment));
                 }

@@ -1,8 +1,6 @@
 package net.causw.adapter.persistence.board;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.base.BaseEntity;
@@ -19,9 +17,8 @@ import javax.persistence.Table;
 import java.util.Set;
 
 @Getter
-@Setter
 @Entity
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "tb_board")
 public class Board extends BaseEntity {
     @Column(name = "name", nullable = false)
@@ -65,60 +62,6 @@ public class Board extends BaseEntity {
         this.circle = circle;
     }
 
-    private Board(
-            String name,
-            String description,
-            String createRoles,
-            String category,
-            Boolean isDeleted,
-            Circle circle
-    ) {
-        this.name = name;
-        this.description = description;
-        this.createRoles = createRoles;
-        this.category = category;
-        this.isDeleted = isDeleted;
-        this.circle = circle;
-    }
-
-    public static Board of(
-            String id,
-            String name,
-            String description,
-            String createRoles,
-            String category,
-            Boolean isDeleted,
-            Circle circle
-    ) {
-        return new Board(
-                id,
-                name,
-                description,
-                createRoles,
-                category,
-                isDeleted,
-                circle
-        );
-    }
-
-    public static Board of(
-            String name,
-            String description,
-            String createRoles,
-            String category,
-            Boolean isDeleted,
-            Circle circle
-    ) {
-        return new Board(
-                name,
-                description,
-                createRoles,
-                category,
-                isDeleted,
-                circle
-        );
-    }
-
     public static Board from(BoardDomainModel boardDomainModel) {
         Circle circle = boardDomainModel.getCircle().map(Circle::from).orElse(null);
 
@@ -131,5 +74,16 @@ public class Board extends BaseEntity {
                 boardDomainModel.getIsDeleted(),
                 circle
         );
+    }
+
+    public void setIsDeleted(boolean isDeleted){
+        this.isDeleted = isDeleted;
+    }
+
+    public void update(String name, String description, String createRoles, String category){
+        this.name = name;
+        this.description = description;
+        this.createRoles = createRoles;
+        this.category = category;
     }
 }

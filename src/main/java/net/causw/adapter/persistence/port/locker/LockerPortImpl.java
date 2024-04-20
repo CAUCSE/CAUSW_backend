@@ -48,9 +48,7 @@ public class LockerPortImpl extends DomainModelMapper implements LockerPort {
     public Optional<LockerDomainModel> update(String id, LockerDomainModel lockerDomainModel) {
         return this.lockerRepository.findById(id).map(
                 locker -> {
-                    locker.setIsActive(lockerDomainModel.getIsActive());
-                    locker.setUser(lockerDomainModel.getUser().map(User::from).orElse(null));
-                    locker.setExpireDate(lockerDomainModel.getExpiredAt());
+                    locker.update(lockerDomainModel.getIsActive(), lockerDomainModel.getUser().map(User::from).orElse(null), lockerDomainModel.getExpiredAt());
 
                     return this.entityToDomainModel(this.lockerRepository.save(locker));
                 }
