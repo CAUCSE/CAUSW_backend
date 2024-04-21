@@ -1,6 +1,7 @@
 package net.causw.application.dto.circle;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import net.causw.domain.model.circle.CircleDomainModel;
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@Builder
 public class CirclesResponseDto {
 
     @ApiModelProperty(value = "동아리 ID", example = "UUID 형식의 동아리 고유 ID String 값입니다.")
@@ -42,46 +44,21 @@ public class CirclesResponseDto {
     @ApiModelProperty(value = "동아리 가입 시점\n(User Role ADMIN 일 시 항상 API 호출 시점)", example = "2024-02-04 16:11:02.342644")
     private LocalDateTime joinedAt;
 
-    private CirclesResponseDto(
-            String id,
-            String name,
-            String mainImage,
-            String description,
-            String leaderId,
-            String leaderName,
-            Long numMember,
-            Boolean isJoined,
-            LocalDateTime createdAt,
-            LocalDateTime joinedAt
-    ) {
-        this.id = id;
-        this.name = name;
-        this.mainImage = mainImage;
-        this.description = description;
-        this.leaderId = leaderId;
-        this.leaderName = leaderName;
-        this.numMember = numMember;
-        this.isJoined = isJoined;
-        this.createdAt = createdAt;
-        this.joinedAt = joinedAt;
-    }
-
     public static CirclesResponseDto from(
             CircleDomainModel circleDomainModel,
             Long numMember
     ) {
-        return new CirclesResponseDto(
-                circleDomainModel.getId(),
-                circleDomainModel.getName(),
-                circleDomainModel.getMainImage(),
-                circleDomainModel.getDescription(),
-                circleDomainModel.getLeader().map(UserDomainModel::getId).orElse(null),
-                circleDomainModel.getLeader().map(UserDomainModel::getName).orElse(null),
-                numMember,
-                false,
-                circleDomainModel.getCreatedAt(),
-                null
-        );
+        return CirclesResponseDto.builder()
+                .id(circleDomainModel.getId())
+                .name(circleDomainModel.getName())
+                .mainImage(circleDomainModel.getMainImage())
+                .description(circleDomainModel.getDescription())
+                .leaderId(circleDomainModel.getLeader().map(UserDomainModel::getId).orElse(null))
+                .leaderName(circleDomainModel.getLeader().map(UserDomainModel::getName).orElse(null))
+                .numMember(numMember)
+                .isJoined(false)
+                .createdAt(circleDomainModel.getCreatedAt())
+                .build();
     }
 
     public static CirclesResponseDto from(
@@ -89,17 +66,17 @@ public class CirclesResponseDto {
             Long numMember,
             LocalDateTime joinedAt
     ) {
-        return new CirclesResponseDto(
-                circleDomainModel.getId(),
-                circleDomainModel.getName(),
-                circleDomainModel.getMainImage(),
-                circleDomainModel.getDescription(),
-                circleDomainModel.getLeader().map(UserDomainModel::getId).orElse(null),
-                circleDomainModel.getLeader().map(UserDomainModel::getName).orElse(null),
-                numMember,
-                true,
-                circleDomainModel.getCreatedAt(),
-                joinedAt
-        );
+        return CirclesResponseDto.builder()
+                .id(circleDomainModel.getId())
+                .name(circleDomainModel.getName())
+                .mainImage(circleDomainModel.getMainImage())
+                .description(circleDomainModel.getDescription())
+                .leaderId(circleDomainModel.getLeader().map(UserDomainModel::getId).orElse(null))
+                .leaderName(circleDomainModel.getLeader().map(UserDomainModel::getName).orElse(null))
+                .numMember(numMember)
+                .isJoined(true)
+                .createdAt(circleDomainModel.getCreatedAt())
+                .joinedAt(joinedAt)
+                .build();
     }
 }

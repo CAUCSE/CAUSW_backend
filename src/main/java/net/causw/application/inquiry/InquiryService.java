@@ -58,7 +58,7 @@ public class InquiryService {
         validatorBucket
                 .validate();
 
-        return InquiryResponseDto.from(
+        return InquiryResponseDto.of(
                 inquiryDomainModel,
                 userDomainModel
         );
@@ -89,7 +89,7 @@ public class InquiryService {
                 .consistOf(ConstraintValidator.of(inquiryDomainModel, this.validator))
                 .validate();
 
-        return InquiryResponseDto.from(
+        return InquiryResponseDto.of(
                 this.inquiryPort.create(inquiryDomainModel),
                 creatorDomainModel
         );

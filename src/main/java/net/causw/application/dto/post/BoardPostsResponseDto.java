@@ -1,6 +1,7 @@
 package net.causw.application.dto.post;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import net.causw.domain.model.board.BoardDomainModel;
@@ -9,6 +10,7 @@ import org.springframework.data.domain.Page;
 
 @Getter
 @Setter
+@Builder
 public class BoardPostsResponseDto {
 
     @ApiModelProperty(value = "게시판 id", example = "uuid 형식의 String 값입니다.")
@@ -26,32 +28,18 @@ public class BoardPostsResponseDto {
     @ApiModelProperty(value = "게시글 정보입니다", example = "게시글 정보입니다")
     private Page<PostsResponseDto> post;
 
-    private BoardPostsResponseDto(
-            String boardId,
-            String boardName,
-            Boolean writable,
-            Boolean isFavorite,
-            Page<PostsResponseDto> post
-    ) {
-        this.boardId = boardId;
-        this.boardName = boardName;
-        this.writable = writable;
-        this.isFavorite = isFavorite;
-        this.post = post;
-    }
-
     public static BoardPostsResponseDto from(
             BoardDomainModel boardDomainModel,
             Role userRole,
             Boolean isFavorite,
             Page<PostsResponseDto> post
     ) {
-        return new BoardPostsResponseDto(
-                boardDomainModel.getId(),
-                boardDomainModel.getName(),
-                boardDomainModel.getCreateRoleList().stream().anyMatch(str -> userRole.getValue().contains(str)),
-                isFavorite,
-                post
-        );
+        return BoardPostsResponseDto.builder()
+                .boardId(boardDomainModel.getId())
+                .boardName(boardDomainModel.getName())
+                .writable(boardDomainModel.getCreateRoleList().stream().anyMatch(str -> userRole.getValue().contains(str)))
+                .isFavorite(isFavorite)
+                .post(post)
+                .build();
     }
 }

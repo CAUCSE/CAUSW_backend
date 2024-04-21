@@ -102,13 +102,13 @@ public class CommentService {
         validatorBucket
                 .validate();
 
-        return CommentResponseDto.from(
+        return CommentResponseDto.of(
                 this.commentPort.create(commentDomainModel, postDomainModel),
                 creatorDomainModel,
                 postDomainModel.getBoard(),
                 this.childCommentPort.countByParentComment(commentDomainModel.getId()),
                 commentDomainModel.getChildCommentList().stream()
-                        .map(childCommentDomainModel -> ChildCommentResponseDto.from(
+                        .map(childCommentDomainModel -> ChildCommentResponseDto.of(
                                 childCommentDomainModel,
                                 creatorDomainModel,
                                 postDomainModel.getBoard()
@@ -169,13 +169,13 @@ public class CommentService {
 
         return this.commentPort.findByPostId(postId, pageNum)
                 .map(commentDomainModel ->
-                        CommentResponseDto.from(
+                        CommentResponseDto.of(
                                 commentDomainModel,
                                 userDomainModel,
                                 postDomainModel.getBoard(),
                                 this.childCommentPort.countByParentComment(commentDomainModel.getId()),
                                 commentDomainModel.getChildCommentList().stream()
-                                        .map(childCommentDomainModel -> ChildCommentResponseDto.from(
+                                        .map(childCommentDomainModel -> ChildCommentResponseDto.of(
                                                 childCommentDomainModel,
                                                 userDomainModel,
                                                 postDomainModel.getBoard()
@@ -258,7 +258,7 @@ public class CommentService {
         validatorBucket
                 .validate();
 
-        return CommentResponseDto.from(
+        return CommentResponseDto.of(
                 this.commentPort.update(commentId, commentDomainModel).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
@@ -269,7 +269,7 @@ public class CommentService {
                 postDomainModel.getBoard(),
                 this.childCommentPort.countByParentComment(commentId),
                 commentDomainModel.getChildCommentList().stream()
-                        .map(childCommentDomainModel -> ChildCommentResponseDto.from(
+                        .map(childCommentDomainModel -> ChildCommentResponseDto.of(
                                 childCommentDomainModel,
                                 requestUser,
                                 postDomainModel.getBoard()
@@ -360,7 +360,7 @@ public class CommentService {
         validatorBucket
                 .validate();
 
-        return CommentResponseDto.from(
+        return CommentResponseDto.of(
                 this.commentPort.delete(commentId).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
@@ -371,7 +371,7 @@ public class CommentService {
                 postDomainModel.getBoard(),
                 this.childCommentPort.countByParentComment(commentId),
                 commentDomainModel.getChildCommentList().stream()
-                        .map(childCommentDomainModel -> ChildCommentResponseDto.from(
+                        .map(childCommentDomainModel -> ChildCommentResponseDto.of(
                                 childCommentDomainModel,
                                 deleterDomainModel,
                                 postDomainModel.getBoard()

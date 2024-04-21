@@ -1,21 +1,21 @@
 package net.causw.application.dto.duplicate;
 
 import io.swagger.annotations.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Builder
 public class DuplicatedCheckResponseDto {
 
     @ApiModelProperty(value = "중복 여부 boolean 값", example = "true")
     private Boolean result;
 
-    private DuplicatedCheckResponseDto(boolean result) {
-        this.result = result;
-    }
-
-    public static DuplicatedCheckResponseDto of(boolean result) {
-        return new DuplicatedCheckResponseDto(result);
+    public static DuplicatedCheckResponseDto from(boolean result) {
+        return DuplicatedCheckResponseDto.builder()
+                .result(result)
+                .build();
     }
 }
