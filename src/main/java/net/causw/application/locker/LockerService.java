@@ -343,7 +343,7 @@ public class LockerService {
             );
         }
 
-        LockerLocationDomainModel lockerLocationDomainModel = LockerLocationDomainModel.of(
+        LockerLocationDomainModel lockerLocationDomainModel = LockerLocationDomainModel.from(
                 lockerLocationCreateRequestDto.getName()
         );
 

@@ -23,7 +23,7 @@ public class LockerLocationDomainModel {
                 .build();
     }
 
-    public static LockerLocationDomainModel of(String name) {
+    public static LockerLocationDomainModel from(String name) {
         return LockerLocationDomainModel.builder()
                 .name(name)
                 .build();
