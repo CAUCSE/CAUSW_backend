@@ -1,6 +1,7 @@
 package net.causw.application.dto.post;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import net.causw.application.dto.file.FileResponseDto;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 
 @Getter
 @Setter
+@Builder
 public class PostResponseDto {
     @ApiModelProperty(value = "게시글 id", example = "uuid 형식의 String 값입니다.")
     private String id;
@@ -62,51 +64,14 @@ public class PostResponseDto {
     @ApiModelProperty(value = "게시판 이름", example =  "게시판 이름입니다.")
     private String boardName;
 
-    private PostResponseDto(
-            String id,
-            String title,
-            String content,
-            Boolean isDeleted,
-            String writerProfileImage,
-            String writerName,
-            Integer writerAdmissionYear,
-            List<FileResponseDto> attachmentList,
-            Long numComment,
-            Boolean updatable,
-            Boolean deletable,
-            LocalDateTime createdAt,
-            LocalDateTime updatedAt,
-            Page<CommentResponseDto> commentList,
-            String boardName
-    ) {
-        this.id = id;
-        this.title = title;
-        this.content = content;
-        this.isDeleted = isDeleted;
-        this.writerProfileImage = writerProfileImage;
-        this.writerName = writerName;
-        this.writerAdmissionYear = writerAdmissionYear;
-        this.attachmentList = attachmentList;
-        this.numComment = numComment;
-        this.updatable = updatable;
-        this.deletable = deletable;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.commentList = commentList;
-        this.boardName = boardName;
-    }
-
-    public static PostResponseDto from(
+    public static PostResponseDto of(
             PostDomainModel post,
             UserDomainModel user
     ) {
         boolean updatable = false;
         boolean deletable = false;
 
-        if (user.getRole() == Role.ADMIN) {
-            updatable = true;
-            deletable = true;
-        } else if (post.getWriter().getId().equals(user.getId())) {
+        if (user.getRole() == Role.ADMIN || post.getWriter().getId().equals(user.getId())) {
             updatable = true;
             deletable = true;
         } else if (user.getRole().getValue().contains("PRESIDENT")) {
@@ -123,26 +88,24 @@ public class PostResponseDto {
             }
         }
 
-        return new PostResponseDto(
-                post.getId(),
-                post.getTitle(),
-                post.getContent(),
-                post.getIsDeleted(),
-                post.getWriter().getProfileImage(),
-                post.getWriter().getName(),
-                post.getWriter().getAdmissionYear(),
-                post.getAttachmentList().stream().map(FileResponseDto::from).collect(Collectors.toList()),
-                0L,
-                updatable,
-                deletable,
-                post.getCreatedAt(),
-                post.getUpdatedAt(),
-                null,
-                null
-        );
+        return PostResponseDto.builder()
+                .id(post.getId())
+                .title(post.getTitle())
+                .content(post.getContent())
+                .isDeleted(post.getIsDeleted())
+                .writerName(post.getWriter().getName())
+                .writerAdmissionYear(post.getWriter().getAdmissionYear())
+                .writerProfileImage(post.getWriter().getProfileImage())
+                .attachmentList(post.getAttachmentList().stream().map(FileResponseDto::from).collect(Collectors.toList()))
+                .numComment(0L)
+                .updatable(updatable)
+                .deletable(deletable)
+                .createdAt(post.getCreatedAt())
+                .updatedAt(post.getUpdatedAt())
+                .build();
     }
 
-    public static PostResponseDto from(
+    public static PostResponseDto of(
             PostDomainModel post,
             UserDomainModel user,
             Page<CommentResponseDto> commentList,
@@ -151,10 +114,7 @@ public class PostResponseDto {
         boolean updatable = false;
         boolean deletable = false;
 
-        if (user.getRole() == Role.ADMIN) {
-            updatable = true;
-            deletable = true;
-        } else if (post.getWriter().getId().equals(user.getId())) {
+        if (user.getRole() == Role.ADMIN || post.getWriter().getId().equals(user.getId())) {
             updatable = true;
             deletable = true;
         } else if (user.getRole().getValue().contains("PRESIDENT")) {
@@ -171,22 +131,22 @@ public class PostResponseDto {
             }
         }
 
-        return new PostResponseDto(
-                post.getId(),
-                post.getTitle(),
-                post.getContent(),
-                post.getIsDeleted(),
-                post.getWriter().getProfileImage(),
-                post.getWriter().getName(),
-                post.getWriter().getAdmissionYear(),
-                post.getAttachmentList().stream().map(FileResponseDto::from).collect(Collectors.toList()),
-                numComment,
-                updatable,
-                deletable,
-                post.getCreatedAt(),
-                post.getUpdatedAt(),
-                commentList,
-                post.getBoard().getName()
-        );
+        return PostResponseDto.builder()
+                .id(post.getId())
+                .title(post.getTitle())
+                .content(post.getContent())
+                .isDeleted(post.getIsDeleted())
+                .writerName(post.getWriter().getName())
+                .writerAdmissionYear(post.getWriter().getAdmissionYear())
+                .writerProfileImage(post.getWriter().getProfileImage())
+                .attachmentList(post.getAttachmentList().stream().map(FileResponseDto::from).collect(Collectors.toList()))
+                .numComment(numComment)
+                .updatable(updatable)
+                .deletable(deletable)
+                .createdAt(post.getCreatedAt())
+                .updatedAt(post.getUpdatedAt())
+                .commentList(commentList)
+                .boardName(post.getBoard().getName())
+                .build();
     }
 }

@@ -1,6 +1,7 @@
 package net.causw.application.dto.board;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import net.causw.domain.model.board.BoardDomainModel;
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@Builder
 public class BoardOfCircleResponseDto {
 
     @ApiModelProperty(value = "게시판 id 값", example = "uuid 형식의 String 값입니다.")
@@ -43,65 +45,36 @@ public class BoardOfCircleResponseDto {
     @ApiModelProperty(value = "게시글 댓글 개수", example =  "12")
     private Long postNumComment;
 
-    private BoardOfCircleResponseDto(
-            String id,
-            String name,
-            Boolean writable,
-            Boolean isDeleted,
-            String postId,
-            String postTitle,
-            String postWriterName,
-            String postWriterStudentId,
-            LocalDateTime postCreatedAt,
-            Long postNumComment
-    ) {
-        this.id = id;
-        this.name = name;
-        this.writable = writable;
-        this.isDeleted = isDeleted;
-        this.postId = postId;
-        this.postTitle = postTitle;
-        this.postWriterName = postWriterName;
-        this.postWriterStudentId = postWriterStudentId;
-        this.postCreatedAt = postCreatedAt;
-        this.postNumComment = postNumComment;
-    }
-
     public static BoardOfCircleResponseDto from(
             BoardDomainModel boardDomainModel,
             Role userRole,
             PostDomainModel postDomainModel,
             Long numComment
     ) {
-        return new BoardOfCircleResponseDto(
-                boardDomainModel.getId(),
-                boardDomainModel.getName(),
-                boardDomainModel.getCreateRoleList().stream().anyMatch(str -> userRole.getValue().contains(str)),
-                boardDomainModel.getIsDeleted(),
-                postDomainModel.getId(),
-                postDomainModel.getTitle(),
-                postDomainModel.getWriter().getName(),
-                postDomainModel.getWriter().getStudentId(),
-                postDomainModel.getCreatedAt(),
-                numComment
-        );
+        return BoardOfCircleResponseDto.builder()
+                .id(boardDomainModel.getId())
+                .name(boardDomainModel.getName())
+                .writable(boardDomainModel.getCreateRoleList().stream().anyMatch(str -> userRole.getValue().contains(str)))
+                .isDeleted(boardDomainModel.getIsDeleted())
+                .postId(postDomainModel.getId())
+                .postTitle(postDomainModel.getTitle())
+                .postWriterName(postDomainModel.getWriter().getName())
+                .postWriterStudentId(postDomainModel.getWriter().getStudentId())
+                .postCreatedAt(postDomainModel.getCreatedAt())
+                .postNumComment(numComment)
+                .build();
     }
 
     public static BoardOfCircleResponseDto from(
             BoardDomainModel boardDomainModel,
             Role userRole
     ) {
-        return new BoardOfCircleResponseDto(
-                boardDomainModel.getId(),
-                boardDomainModel.getName(),
-                boardDomainModel.getCreateRoleList().stream().anyMatch(str -> userRole.getValue().contains(str)),
-                boardDomainModel.getIsDeleted(),
-                null,
-                null,
-                null,
-                null,
-                null,
-                0L
-        );
+        return BoardOfCircleResponseDto.builder()
+                .id(boardDomainModel.getId())
+                .name(boardDomainModel.getName())
+                .writable(boardDomainModel.getCreateRoleList().stream().anyMatch(str -> userRole.getValue().contains(str)))
+                .isDeleted(boardDomainModel.getIsDeleted())
+                .postNumComment(0L)
+                .build();
     }
 }

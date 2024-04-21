@@ -66,7 +66,7 @@ public class LockerService {
                 )
         );
 
-        return LockerResponseDto.from(this.lockerPort.findByIdForRead(id).orElseThrow(
+        return LockerResponseDto.of(this.lockerPort.findByIdForRead(id).orElseThrow(
                         () -> new BadRequestException(
                                 ErrorCode.ROW_DOES_NOT_EXIST,
                                 MessageUtil.LOCKER_NOT_FOUND
@@ -127,7 +127,7 @@ public class LockerService {
                             LockerLogAction.ENABLE,
                             MessageUtil.LOCKER_FIRST_CREATED
                     );
-                    return LockerResponseDto.from(resLockerDomainModel, creatorDomainModel);
+                    return LockerResponseDto.of(resLockerDomainModel, creatorDomainModel);
                 })
                 .orElseThrow(() -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
@@ -178,7 +178,7 @@ public class LockerService {
                             LockerLogAction.of(lockerUpdateRequestDto.getAction()),
                             lockerUpdateRequestDto.getMessage().orElse(lockerUpdateRequestDto.getAction())
                     );
-                    return LockerResponseDto.from(resLockerDomainModel, updaterDomainModel);
+                    return LockerResponseDto.of(resLockerDomainModel, updaterDomainModel);
                 })
                 .orElseThrow(() -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
@@ -222,7 +222,7 @@ public class LockerService {
                 .consistOf(ConstraintValidator.of(lockerDomainModel, this.validator))
                 .validate();
 
-        return LockerResponseDto.from(this.lockerPort.updateLocation(lockerId, lockerDomainModel).orElseThrow(
+        return LockerResponseDto.of(this.lockerPort.updateLocation(lockerId, lockerDomainModel).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
                                 MessageUtil.INTERNAL_SERVER_ERROR
@@ -264,7 +264,7 @@ public class LockerService {
                 MessageUtil.LOCKER_DELETED
         );
 
-        return LockerResponseDto.from(lockerDomainModel, deleterDomainModel);
+        return LockerResponseDto.of(lockerDomainModel, deleterDomainModel);
     }
 
     @Transactional(readOnly = true)
@@ -287,7 +287,7 @@ public class LockerService {
                 lockerLocation.getName(),
                 this.lockerPort.findByLocationId(lockerLocation.getId())
                         .stream()
-                        .map(lockerDomainModel -> LockerResponseDto.from(lockerDomainModel, userDomainModel))
+                        .map(lockerDomainModel -> LockerResponseDto.of(lockerDomainModel, userDomainModel))
                         .collect(Collectors.toList())
         );
     }
@@ -304,7 +304,7 @@ public class LockerService {
         LockerResponseDto myLocker = null;
         if (!userDomainModel.getRole().equals(Role.ADMIN))
             myLocker = this.lockerPort.findByUserId(userId)
-                    .map(lockerDomainModel -> LockerResponseDto.from(
+                    .map(lockerDomainModel -> LockerResponseDto.of(
                             lockerDomainModel,
                             userDomainModel,
                             lockerDomainModel.getLockerLocation().getName()
@@ -314,7 +314,7 @@ public class LockerService {
         return LockerLocationsResponseDto.of(
                 this.lockerLocationPort.findAll()
                         .stream()
-                        .map(lockerLocationDomainModel -> LockerLocationResponseDto.from(
+                        .map(lockerLocationDomainModel -> LockerLocationResponseDto.of(
                                 lockerLocationDomainModel,
                                 this.lockerPort.countEnableLockerByLocation(lockerLocationDomainModel.getId()),
                                 this.lockerPort.countByLocation(lockerLocationDomainModel.getId())
@@ -354,7 +354,7 @@ public class LockerService {
                 .consistOf(ConstraintValidator.of(lockerLocationDomainModel, this.validator))
                 .validate();
 
-        return LockerLocationResponseDto.from(
+        return LockerLocationResponseDto.of(
                 this.lockerLocationPort.create(lockerLocationDomainModel),
                 0L,
                 0L
@@ -401,7 +401,7 @@ public class LockerService {
                 .consistOf(ConstraintValidator.of(lockerLocationDomainModel, this.validator))
                 .validate();
 
-        return LockerLocationResponseDto.from(
+        return LockerLocationResponseDto.of(
                 this.lockerLocationPort.update(locationId, lockerLocationDomainModel).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
@@ -444,7 +444,7 @@ public class LockerService {
 
         this.lockerLocationPort.delete(lockerLocationDomainModel);
 
-        return LockerLocationResponseDto.from(lockerLocationDomainModel, 0L, 0L);
+        return LockerLocationResponseDto.of(lockerLocationDomainModel, 0L, 0L);
     }
 
     @Transactional(readOnly = true)

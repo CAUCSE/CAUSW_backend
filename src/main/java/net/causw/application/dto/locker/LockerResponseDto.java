@@ -1,5 +1,6 @@
 package net.causw.application.dto.locker;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import net.causw.adapter.persistence.locker.Locker;
@@ -13,6 +14,7 @@ import java.util.Optional;
 
 @Getter
 @Setter
+@Builder
 public class LockerResponseDto {
     private String id;
     private String lockerNumber;
@@ -21,61 +23,45 @@ public class LockerResponseDto {
     private String expireAt;
     private LocalDateTime updatedAt;
 
-    private LockerResponseDto(
-            String id,
-            String lockerNumber,
-            Boolean isActive,
-            Boolean isMine,
-            String expireAt,
-            LocalDateTime updateAt
-    ) {
-        this.id = id;
-        this.lockerNumber = lockerNumber;
-        this.isActive = isActive;
-        this.isMine = isMine;
-        this.expireAt = expireAt;
-        this.updatedAt = updateAt;
+    public static LockerResponseDto of(Locker locker, UserDomainModel user) {
+        return LockerResponseDto.builder()
+                .id(locker.getId())
+                .lockerNumber(String.valueOf(locker.getLockerNumber()))
+                .isActive(locker.getIsActive())
+                .isMine(locker.getUser().map(User::getId).orElse("").equals(user.getId()))
+                .expireAt(Optional.ofNullable(locker.getExpireDate()).map(
+                        expire -> expire.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"))).orElse(null))
+                .updatedAt(locker.getUpdatedAt())
+                .build();
     }
 
-    public static LockerResponseDto from(Locker locker, UserDomainModel user) {
-        return new LockerResponseDto(
-                locker.getId(),
-                String.valueOf(locker.getLockerNumber()),
-                locker.getIsActive(),
-                locker.getUser().map(User::getId).orElse("").equals(user.getId()),
-                Optional.ofNullable(locker.getExpireDate()).map(
-                        expire -> expire.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"))).orElse(null),
-                locker.getUpdatedAt()
-        );
+    public static LockerResponseDto of(LockerDomainModel locker, UserDomainModel user) {
+        return LockerResponseDto.builder()
+                .id(locker.getId())
+                .lockerNumber(String.valueOf(locker.getLockerNumber()))
+                .isActive(locker.getIsActive())
+                .isMine(locker.getUser().map(UserDomainModel::getId).orElse("").equals(user.getId()))
+                .expireAt(Optional.ofNullable(locker.getExpiredAt()).map(
+                        expire -> expire.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"))).orElse(null))
+                .updatedAt(locker.getUpdatedAt())
+                .build();
     }
 
-    public static LockerResponseDto from(LockerDomainModel locker, UserDomainModel user) {
-        return new LockerResponseDto(
-                locker.getId(),
-                String.valueOf(locker.getLockerNumber()),
-                locker.getIsActive(),
-                locker.getUser().map(UserDomainModel::getId).orElse("").equals(user.getId()),
-                Optional.ofNullable(locker.getExpiredAt()).map(
-                        expire -> expire.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"))).orElse(null),
-                locker.getUpdatedAt()
-        );
-    }
-
-    public static LockerResponseDto from(
+    public static LockerResponseDto of(
             LockerDomainModel locker,
             UserDomainModel user,
             String locationName
     ) {
         String location = locationName + " " + locker.getLockerNumber();
 
-        return new LockerResponseDto(
-                locker.getId(),
-                location,
-                locker.getIsActive(),
-                locker.getUser().map(UserDomainModel::getId).orElse("").equals(user.getId()),
-                Optional.ofNullable(locker.getExpiredAt()).map(
-                        expire -> expire.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"))).orElse(null),
-                locker.getUpdatedAt()
-        );
+        return LockerResponseDto.builder()
+                .id(locker.getId())
+                .lockerNumber(location)
+                .isActive(locker.getIsActive())
+                .isMine(locker.getUser().map(UserDomainModel::getId).orElse("").equals(user.getId()))
+                .expireAt(Optional.ofNullable(locker.getExpiredAt()).map(
+                        expire -> expire.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"))).orElse(null))
+                .updatedAt(locker.getUpdatedAt())
+                .build();
     }
 }
