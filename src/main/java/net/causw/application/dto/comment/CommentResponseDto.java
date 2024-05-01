@@ -3,11 +3,11 @@ package net.causw.application.dto.comment;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.domain.model.board.BoardDomainModel;
-import net.causw.domain.model.comment.CommentDomainModel;
+import net.causw.adapter.persistence.board.Board;
+import net.causw.adapter.persistence.comment.Comment;
+import net.causw.adapter.persistence.user.User;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.util.StaticValue;
-import net.causw.domain.model.user.UserDomainModel;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,38 +31,15 @@ public class CommentResponseDto {
     private List<ChildCommentResponseDto> childCommentList;
 
     public static CommentResponseDto of(
-            CommentDomainModel comment,
-            UserDomainModel user,
-            BoardDomainModel board,
+            Comment comment,
+            User user,
+            Board board,
             Long numChildComment,
             List<ChildCommentResponseDto> childCommentList
     ) {
-        boolean updatable = false;
-        boolean deletable = false;
-        String content = comment.getContent();
-
-        if (user.getRole() == Role.ADMIN || comment.getWriter().getId().equals(user.getId())) {
-            updatable = true;
-            deletable = true;
-        } else if (user.getRole().getValue().contains("PRESIDENT")) {
-            deletable = true;
-        } else {
-            if (board.getCircle().isPresent()) {
-                boolean isLeader = user.getRole().getValue().contains("LEADER_CIRCLE")
-                        && board.getCircle().get().getLeader()
-                        .map(leader -> leader.getId().equals(user.getId()))
-                        .orElse(false);
-                if (isLeader) {
-                    deletable = true;
-                }
-            }
-        }
-
-        if (comment.getIsDeleted()) {
-            updatable = false;
-            deletable = false;
-            content = StaticValue.CONTENT_DELETED_COMMENT;
-        }
+        String content = comment.getIsDeleted() ? StaticValue.CONTENT_DELETED_COMMENT : comment.getContent();
+        boolean updatable = determineUpdatable(comment, user);
+        boolean deletable = determineDeletable(comment, user, board);
 
         return CommentResponseDto.builder()
                 .id(comment.getId())
@@ -70,7 +47,7 @@ public class CommentResponseDto {
                 .createdAt(comment.getCreatedAt())
                 .updatedAt(comment.getUpdatedAt())
                 .isDeleted(comment.getIsDeleted())
-                .postId(comment.getPostId())
+                .postId(comment.getPost().getId())
                 .writerName(comment.getWriter().getName())
                 .writerAdmissionYear(comment.getWriter().getAdmissionYear())
                 .writerProfileImage(comment.getWriter().getProfileImage())
@@ -79,5 +56,19 @@ public class CommentResponseDto {
                 .numChildComment(numChildComment)
                 .childCommentList(childCommentList)
                 .build();
+    }
+
+    private static boolean determineUpdatable(Comment comment, User user) {
+        if (comment.getIsDeleted()) return false;
+        return user.getRole() == Role.ADMIN || comment.getWriter().getId().equals(user.getId());
+    }
+
+    private static boolean determineDeletable(Comment comment, User user, Board board) {
+        if (comment.getIsDeleted()) return false;
+        if (user.getRole() == Role.ADMIN || user.getRole().getValue().contains("PRESIDENT") || comment.getWriter().getId().equals(user.getId())) {
+            return true;
+        }
+        return board.getCircle() != null && user.getRole().getValue().contains("LEADER_CIRCLE")
+                && board.getCircle().getLeader().map(leader -> leader.getId().equals(user.getId())).orElse(false);
     }
 }
