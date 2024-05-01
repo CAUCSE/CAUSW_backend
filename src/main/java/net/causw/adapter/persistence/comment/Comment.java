@@ -1,6 +1,7 @@
 package net.causw.adapter.persistence.comment;
 
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.causw.adapter.persistence.post.Post;
@@ -16,11 +17,13 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_comment")
 public class Comment extends BaseEntity {
     @Column(name = "content", nullable = false)
@@ -39,15 +42,9 @@ public class Comment extends BaseEntity {
     private Post post;
 
     @OneToMany(mappedBy = "parentComment")
-    private List<ChildComment> childCommentList;
+    private List<ChildComment> childCommentList = new ArrayList<>(); // 필드 초기화 없으면 NPE
 
-    private Comment(
-            String id,
-            String content,
-            Boolean isDeleted,
-            User writer,
-            Post post
-    ) {
+    private Comment(String id, String content, Boolean isDeleted, User writer, Post post) {
         super(id);
         this.content = content;
         this.isDeleted = isDeleted;
@@ -63,6 +60,14 @@ public class Comment extends BaseEntity {
                 User.from(commentDomainModel.getWriter()),
                 Post.from(postDomainModel)
         );
+    }
+
+    public static Comment of(String content, Boolean isDeleted, User writer, Post post) {
+        return new Comment(content, isDeleted, writer, post, new ArrayList<>());
+    }
+
+    public void setChildCommentList(List<ChildComment> childCommentList) {
+        this.childCommentList = childCommentList;
     }
 
     public void update(String content) {
