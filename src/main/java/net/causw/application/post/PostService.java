@@ -10,11 +10,8 @@ import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentResponseDto;
-import net.causw.application.dto.post.BoardPostsResponseDto;
-import net.causw.application.dto.post.PostCreateRequestDto;
-import net.causw.application.dto.post.PostResponseDto;
-import net.causw.application.dto.post.PostUpdateRequestDto;
-import net.causw.application.dto.post.PostsResponseDto;
+import net.causw.application.dto.post.*;
+import net.causw.application.dto.util.StatusUtil;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
@@ -68,9 +65,10 @@ public class PostService {
 
         return PostResponseDto.of(
                 post,
-                user,
                 findCommentsByPostIdByPage(user, post, 0),
-                postRepository.countAllCommentByPost_Id(postId)
+                postRepository.countAllCommentByPost_Id(postId),
+                StatusUtil.isUpdatable(post, user),
+                StatusUtil.isDeletable(post, user, post.getBoard())
         );
     }
 
@@ -146,8 +144,7 @@ public class PostService {
                             .map(post -> PostsResponseDto.of(
                                     post,
                                     postRepository.countAllCommentByPost_Id(post.getId())
-                            ))
-            );
+                            )));
         } else {
             return BoardPostsResponseDto.of(
                     board,
@@ -256,7 +253,8 @@ public class PostService {
 
         return PostResponseDto.of(
                 postRepository.save(post),
-                creator
+                StatusUtil.isUpdatable(post, creator),
+                StatusUtil.isDeletable(post, creator, board)
         );
     }
 
@@ -324,7 +322,8 @@ public class PostService {
 
         return PostResponseDto.of(
                 postRepository.save(post),
-                deleter
+                StatusUtil.isUpdatable(post, deleter),
+                StatusUtil.isDeletable(post, deleter, post.getBoard())
         );
     }
 
@@ -367,9 +366,10 @@ public class PostService {
 
         return PostResponseDto.of(
                 updatedPost,
-                updater,
                 findCommentsByPostIdByPage(updater, updatedPost, 0),
-                postRepository.countAllCommentByPost_Id(postId)
+                postRepository.countAllCommentByPost_Id(postId),
+                StatusUtil.isUpdatable(updatedPost, updater),
+                StatusUtil.isDeletable(updatedPost, updater, post.getBoard())
         );
     }
 
@@ -448,9 +448,10 @@ public class PostService {
 
         return PostResponseDto.of(
                 restoredPost,
-                restorer,
                 findCommentsByPostIdByPage(restorer, restoredPost, 0),
-                postRepository.countAllCommentByPost_Id(postId)
+                postRepository.countAllCommentByPost_Id(postId),
+                StatusUtil.isUpdatable(restoredPost, restorer),
+                StatusUtil.isDeletable(restoredPost, restorer, post.getBoard())
         );
     }
 
@@ -482,21 +483,22 @@ public class PostService {
                 post.getId(),
                 pageableFactory.create(pageNum, StaticValue.DEFAULT_COMMENT_PAGE_SIZE)
         ).map(comment -> CommentResponseDto.of(
-                comment,
-                user,
-                post.getBoard(),
-                childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
-                comment.getChildCommentList().stream()
-                        .map(childComment -> ChildCommentResponseDto.of(
-                                childComment,
-                                user,
-                                post.getBoard()
-                        ))
-                        .collect(Collectors.toList())
-        ));
+                        comment,
+                        childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
+                        comment.getChildCommentList().stream()
+                                .map(childComment -> ChildCommentResponseDto.of(
+                                        childComment,
+                                        StatusUtil.isUpdatable(childComment, user),
+                                        StatusUtil.isDeletable(childComment, user, post.getBoard())
+                                ))
+                                .collect(Collectors.toList()),
+                        StatusUtil.isUpdatable(comment, user),
+                        StatusUtil.isDeletable(comment, user, post.getBoard())
+                )
+        );
     }
 
-    private boolean isFavorite(String userId, String boardId){
+    private boolean isFavorite(String userId, String boardId) {
         return favoriteBoardRepository.findByUser_Id(userId)
                 .stream()
                 .filter(favoriteBoard -> !favoriteBoard.getBoard().getIsDeleted())
