@@ -1,19 +1,25 @@
 package net.causw.application.dto.exception;
 
+import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import net.causw.domain.exceptions.ErrorCode;
 
 import java.time.LocalDateTime;
 
 @Getter
+@Setter
+@Builder
 public class ExceptionDto {
     private final Integer errorCode;
     private final String message;
     private final LocalDateTime timeStamp;
 
-    public ExceptionDto(ErrorCode errorCode, String message) {
-        this.errorCode = errorCode.getCode();
-        this.message = message;
-        this.timeStamp = LocalDateTime.now();
+    public static ExceptionDto of(ErrorCode errorCode, String message) {
+        return ExceptionDto.builder()
+                .errorCode(errorCode.getCode())
+                .message(message)
+                .timeStamp(LocalDateTime.now())
+                .build();
     }
 }

@@ -1,8 +1,8 @@
 package net.causw.adapter.persistence.locker;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.domain.model.locker.LockerDomainModel;
@@ -18,9 +18,8 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Getter
-@Setter
 @Entity
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "TB_LOCKER")
 public class Locker extends BaseEntity {
     @Column(name = "locker_number", nullable = false)
@@ -55,32 +54,6 @@ public class Locker extends BaseEntity {
         this.location = location;
     }
 
-    private Locker(
-            Long lockerNumber,
-            Boolean isActive,
-            User user,
-            LockerLocation location
-    ) {
-        this.lockerNumber = lockerNumber;
-        this.isActive = isActive;
-        this.user = user;
-        this.location = location;
-    }
-
-    public static Locker of(
-            Long lockerNumber,
-            Boolean isActive,
-            User user,
-            LockerLocation location
-    ) {
-        return new Locker(
-                lockerNumber,
-                isActive,
-                user,
-                location
-        );
-    }
-
     public static Locker from(LockerDomainModel lockerDomainModel) {
         return new Locker(
                 lockerDomainModel.getId(),
@@ -93,5 +66,15 @@ public class Locker extends BaseEntity {
 
     public Optional<User> getUser() {
         return Optional.ofNullable(this.user);
+    }
+
+    public void update(boolean isActive, User user, LocalDateTime expireDate) {
+        this.isActive = isActive;
+        this.user = user;
+        this.expireDate = expireDate;
+    }
+
+    public void setLocation(LockerLocation location) {
+        this.location = location;
     }
 }

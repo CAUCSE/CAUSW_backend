@@ -526,7 +526,7 @@ public class CircleService {
 
     @Transactional(readOnly = true)
     public DuplicatedCheckResponseDto isDuplicatedName(String name) {
-        return DuplicatedCheckResponseDto.of(this.circlePort.findByName(name).isPresent());
+        return DuplicatedCheckResponseDto.from(this.circlePort.findByName(name).isPresent());
     }
 
     @Transactional

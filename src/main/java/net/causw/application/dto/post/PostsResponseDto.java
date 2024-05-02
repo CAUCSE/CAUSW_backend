@@ -1,6 +1,7 @@
 package net.causw.application.dto.post;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import net.causw.domain.model.post.PostDomainModel;
@@ -9,6 +10,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@Builder
 public class PostsResponseDto {
     @ApiModelProperty(value = "게시글 id", example = "uuid 형식의 String 값입니다.")
     private String id;
@@ -34,39 +36,19 @@ public class PostsResponseDto {
     @ApiModelProperty(value = "게시글 삭제여부", example = "false")
     private Boolean isDeleted;
 
-    private PostsResponseDto(
-            String id,
-            String title,
-            String writerName,
-            Integer writerAdmissionYear,
-            Long numComment,
-            LocalDateTime createdAt,
-            LocalDateTime updatedAt,
-            Boolean isDeleted
-    ) {
-        this.id = id;
-        this.title = title;
-        this.writerName = writerName;
-        this.writerAdmissionYear = writerAdmissionYear;
-        this.numComment = numComment;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.isDeleted = isDeleted;
-    }
-
-    public static PostsResponseDto from(
+    public static PostsResponseDto of(
             PostDomainModel post,
             Long numComment
     ) {
-        return new PostsResponseDto(
-                post.getId(),
-                post.getTitle(),
-                post.getWriter().getName(),
-                post.getWriter().getAdmissionYear(),
-                numComment,
-                post.getCreatedAt(),
-                post.getUpdatedAt(),
-                post.getIsDeleted()
-        );
+        return PostsResponseDto.builder()
+                .id(post.getId())
+                .title(post.getTitle())
+                .writerName(post.getWriter().getName())
+                .writerAdmissionYear(post.getWriter().getAdmissionYear())
+                .numComment(numComment)
+                .createdAt(post.getCreatedAt())
+                .updatedAt(post.getUpdatedAt())
+                .isDeleted(post.getIsDeleted())
+                .build();
     }
 }

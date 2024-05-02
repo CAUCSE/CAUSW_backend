@@ -62,7 +62,7 @@ public class CommentPortImpl extends DomainModelMapper implements CommentPort {
     public Optional<CommentDomainModel> update(String commentId, CommentDomainModel commentDomainModel) {
         return this.commentRepository.findById(commentId).map(
                 srcComment -> {
-                    srcComment.setContent(commentDomainModel.getContent());
+                    srcComment.update(commentDomainModel.getContent());
 
                     return this.entityToDomainModel(this.commentRepository.save(srcComment));
                 }
@@ -73,7 +73,7 @@ public class CommentPortImpl extends DomainModelMapper implements CommentPort {
     public Optional<CommentDomainModel> delete(String commentId) {
         return this.commentRepository.findById(commentId).map(
                 comment -> {
-                    comment.setIsDeleted(true);
+                    comment.delete();
 
                     return this.entityToDomainModel(this.commentRepository.save(comment));
                 }

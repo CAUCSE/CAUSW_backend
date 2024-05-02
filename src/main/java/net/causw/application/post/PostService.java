@@ -105,18 +105,18 @@ public class PostService {
         validatorBucket
                 .validate();
 
-        return PostResponseDto.from(
+        return PostResponseDto.of(
                 postDomainModel,
                 userDomainModel,
                 this.commentPort.findByPostId(postId, 0)
                         .map(
-                                commentDomainModel -> CommentResponseDto.from(
+                                commentDomainModel -> CommentResponseDto.of(
                                         commentDomainModel,
                                         userDomainModel,
                                         postDomainModel.getBoard(),
                                         this.childCommentPort.countByParentComment(commentDomainModel.getId()),
                                         commentDomainModel.getChildCommentList().stream()
-                                                .map(childCommentDomainModel -> ChildCommentResponseDto.from(
+                                                .map(childCommentDomainModel -> ChildCommentResponseDto.of(
                                                         childCommentDomainModel,
                                                         userDomainModel,
                                                         postDomainModel.getBoard()
@@ -195,7 +195,7 @@ public class PostService {
                             .stream()
                             .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
                     this.postPort.findAllPost(boardId, pageNum)
-                            .map(postDomainModel -> PostsResponseDto.from(
+                            .map(postDomainModel -> PostsResponseDto.of(
                                     postDomainModel,
                                     this.postPort.countAllComment(postDomainModel.getId())
                             ))
@@ -209,7 +209,7 @@ public class PostService {
                             .stream()
                             .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
                     this.postPort.findAllPost(boardId, pageNum, false)
-                            .map(postDomainModel -> PostsResponseDto.from(
+                            .map(postDomainModel -> PostsResponseDto.of(
                                     postDomainModel,
                                     this.postPort.countAllComment(postDomainModel.getId())
                             ))
@@ -289,7 +289,7 @@ public class PostService {
                             .stream()
                             .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
                     this.postPort.searchPost(keyword, boardId, pageNum)
-                            .map(postDomainModel -> PostsResponseDto.from(
+                            .map(postDomainModel -> PostsResponseDto.of(
                                     postDomainModel,
                                     this.postPort.countAllComment(postDomainModel.getId())
                             ))
@@ -303,7 +303,7 @@ public class PostService {
                             .stream()
                             .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
                     this.postPort.searchPost(keyword, boardId, pageNum, false)
-                            .map(postDomainModel -> PostsResponseDto.from(
+                            .map(postDomainModel -> PostsResponseDto.of(
                                     postDomainModel,
                                     this.postPort.countAllComment(postDomainModel.getId())
                             ))
@@ -336,7 +336,7 @@ public class PostService {
                         .stream()
                         .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
                 this.postPort.findAllPost(boardDomainModel.getId(), pageNum)
-                        .map(postDomainModel -> PostsResponseDto.from(
+                        .map(postDomainModel -> PostsResponseDto.of(
                                 postDomainModel,
                                 this.postPort.countAllComment(postDomainModel.getId())
                         ))
@@ -430,7 +430,7 @@ public class PostService {
                 .consistOf(ConstraintValidator.of(postDomainModel, this.validator))
                 .validate();
 
-        return PostResponseDto.from(
+        return PostResponseDto.of(
                 this.postPort.createPost(postDomainModel),
                 creatorDomainModel
         );
@@ -518,7 +518,7 @@ public class PostService {
         validatorBucket
                 .validate();
 
-        return PostResponseDto.from(
+        return PostResponseDto.of(
                 this.postPort.deletePost(postId).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
@@ -612,17 +612,17 @@ public class PostService {
                 )
         );
 
-        return PostResponseDto.from(
+        return PostResponseDto.of(
                 postDomainModel,
                 updaterDomainModel,
                 this.commentPort.findByPostId(postId, 0)
-                        .map(commentDomainModel -> CommentResponseDto.from(
+                        .map(commentDomainModel -> CommentResponseDto.of(
                                 commentDomainModel,
                                 updaterDomainModel,
                                 updatedPostDomainModel.getBoard(),
                                 this.childCommentPort.countByParentComment(commentDomainModel.getId()),
                                 commentDomainModel.getChildCommentList().stream()
-                                        .map(childCommentDomainModel -> ChildCommentResponseDto.from(
+                                        .map(childCommentDomainModel -> ChildCommentResponseDto.of(
                                                 childCommentDomainModel,
                                                 updaterDomainModel,
                                                 postDomainModel.getBoard()
@@ -730,17 +730,17 @@ public class PostService {
                 )
         );
 
-        return PostResponseDto.from(
+        return PostResponseDto.of(
                 postDomainModel,
                 restorerDomainModel,
                 this.commentPort.findByPostId(postId, 0)
-                        .map(commentDomainModel -> CommentResponseDto.from(
+                        .map(commentDomainModel -> CommentResponseDto.of(
                                 commentDomainModel,
                                 restorerDomainModel,
                                 restoredPostDomainModel.getBoard(),
                                 this.childCommentPort.countByParentComment(commentDomainModel.getId()),
                                 commentDomainModel.getChildCommentList().stream()
-                                        .map(childCommentDomainModel -> ChildCommentResponseDto.from(
+                                        .map(childCommentDomainModel -> ChildCommentResponseDto.of(
                                                 childCommentDomainModel,
                                                 restorerDomainModel,
                                                 postDomainModel.getBoard()

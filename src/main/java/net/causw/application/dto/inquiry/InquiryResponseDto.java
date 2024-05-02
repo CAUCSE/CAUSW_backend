@@ -1,5 +1,6 @@
 package net.causw.application.dto.inquiry;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import net.causw.domain.model.inquiry.InquiryDomainModel;
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@Builder
 public class InquiryResponseDto {
     private String id;
     private String title;
@@ -21,49 +23,28 @@ public class InquiryResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    private InquiryResponseDto(
-            String id,
-            String title,
-            String content,
-            Boolean isDeleted,
-            String writerName,
-            LocalDateTime createdAt,
-            LocalDateTime updatedAt
-    ) {
-        this.id = id;
-        this.title = title;
-        this.content = content;
-        this.isDeleted = isDeleted;
-        this.writerName = writerName;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
-
-    public static InquiryResponseDto from(
+    public static InquiryResponseDto of(
             InquiryDomainModel inquiry,
             UserDomainModel user
     ){
         boolean updatable = false;
         boolean deletable = false;
 
-        if (user.getRole() == Role.ADMIN) {
+        if (user.getRole() == Role.ADMIN || inquiry.getWriter().getId().equals(user.getId())) {
             updatable = true;
             deletable = true;
-        } else if (inquiry.getWriter().getId().equals(user.getId())) {
-            updatable = true;
-            deletable = true;
-        } else {
-
         }
 
-        return new InquiryResponseDto(
-                inquiry.getId(),
-                inquiry.getTitle(),
-                inquiry.getContent(),
-                inquiry.getIsDeleted(),
-                inquiry.getWriter().getName(),
-                inquiry.getCreatedAt(),
-                inquiry.getUpdatedAt()
-        );
+        return InquiryResponseDto.builder()
+                .id(inquiry.getId())
+                .title(inquiry.getTitle())
+                .content(inquiry.getContent())
+                .isDeleted(inquiry.getIsDeleted())
+                .writerName(inquiry.getWriter().getName())
+                .updatable(updatable)
+                .deletable(deletable)
+                .createdAt(inquiry.getCreatedAt())
+                .updatedAt(inquiry.getUpdatedAt())
+                .build();
     }
 }

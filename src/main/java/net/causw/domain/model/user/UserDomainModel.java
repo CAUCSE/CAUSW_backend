@@ -1,7 +1,7 @@
 package net.causw.domain.model.user;
 
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 import net.causw.domain.model.enums.UserState;
 import net.causw.domain.model.enums.Role;
 
@@ -10,11 +10,14 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Getter
-@Setter
+@Builder
 public class UserDomainModel {
     private String id;
+
     private String studentId;
+
     private String profileImage;
+
     private String refreshToken;
 
     @NotBlank(message = "사용자 이름이 입력되지 않았습니다.")
@@ -36,30 +39,6 @@ public class UserDomainModel {
     @NotNull(message = "사용자 상태가 입력되지 않았습니다.")
     private UserState state;
 
-    private UserDomainModel(
-            String id,
-            String email,
-            String name,
-            String password,
-            String studentId,
-            Integer admissionYear,
-            Role role,
-            String profileImage,
-            String refreshToken,
-            UserState state
-    ) {
-        this.id = id;
-        this.email = email;
-        this.name = name;
-        this.password = password;
-        this.studentId = studentId;
-        this.admissionYear = admissionYear;
-        this.role = role;
-        this.profileImage = profileImage;
-        this.refreshToken = refreshToken;
-        this.state = state;
-    }
-
     public static UserDomainModel of(
             String id,
             String email,
@@ -72,18 +51,18 @@ public class UserDomainModel {
             String refreshToken,
             UserState state
     ) {
-        return new UserDomainModel(
-                id,
-                email,
-                name,
-                password,
-                studentId,
-                admissionYear,
-                role,
-                profileImage,
-                refreshToken,
-                state
-        );
+        return UserDomainModel.builder()
+                .id(id)
+                .email(email)
+                .name(name)
+                .password(password)
+                .studentId(studentId)
+                .admissionYear(admissionYear)
+                .role(role)
+                .profileImage(profileImage)
+                .refreshToken(refreshToken)
+                .state(state)
+                .build();
     }
 
     public static UserDomainModel of(
@@ -94,18 +73,14 @@ public class UserDomainModel {
             Integer admissionYear,
             String profileImage
     ) {
-        return new UserDomainModel(
-                null,
-                email,
-                name,
-                password,
-                studentId,
-                admissionYear,
-                Role.NONE,
-                profileImage,
-                null,
-                UserState.AWAIT
-        );
+        return UserDomainModel.builder()
+                .email(email)
+                .name(name)
+                .password(password)
+                .studentId(studentId)
+                .admissionYear(admissionYear)
+                .profileImage(profileImage)
+                .build();
     }
 
     public void update(

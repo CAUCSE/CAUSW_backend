@@ -1,6 +1,7 @@
 package net.causw.application.dto.circle;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import net.causw.domain.model.circle.CircleDomainModel;
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@Builder
 public class CircleResponseDto {
 
     @ApiModelProperty(value = "동아리 ID", example = "UUID 형식의 동아리 고유 ID String 값 입니다.")
@@ -39,72 +41,31 @@ public class CircleResponseDto {
     @ApiModelProperty(value = "동아리 생성 일시", example = "2024-02-04 16:11:02.342644")
     private LocalDateTime createdAt;
 
-    private CircleResponseDto(
-            String id,
-            String name,
-            String mainImage,
-            String description,
-            Boolean isDeleted,
-            String leaderId,
-            String leaderName,
-            LocalDateTime createdAt
-    ) {
-        this.id = id;
-        this.name = name;
-        this.mainImage = mainImage;
-        this.description = description;
-        this.isDeleted = isDeleted;
-        this.leaderId = leaderId;
-        this.leaderName = leaderName;
-        this.createdAt = createdAt;
-    }
-
-    private CircleResponseDto(
-            String id,
-            String name,
-            String mainImage,
-            String description,
-            Boolean isDeleted,
-            String leaderId,
-            String leaderName,
-            Long numMember,
-            LocalDateTime createdAt
-    ) {
-        this.id = id;
-        this.name = name;
-        this.mainImage = mainImage;
-        this.description = description;
-        this.isDeleted = isDeleted;
-        this.leaderId = leaderId;
-        this.leaderName = leaderName;
-        this.numMember = numMember;
-        this.createdAt = createdAt;
-    }
 
     public static CircleResponseDto from(CircleDomainModel circle) {
-        return new CircleResponseDto(
-                circle.getId(),
-                circle.getName(),
-                circle.getMainImage(),
-                circle.getDescription(),
-                circle.getIsDeleted(),
-                circle.getLeader().map(UserDomainModel::getId).orElse(null),
-                circle.getLeader().map(UserDomainModel::getName).orElse(null),
-                circle.getCreatedAt()
-        );
+        return CircleResponseDto.builder()
+                .id(circle.getId())
+                .name(circle.getName())
+                .mainImage(circle.getMainImage())
+                .description(circle.getDescription())
+                .isDeleted(circle.getIsDeleted())
+                .leaderId(circle.getLeader().map(UserDomainModel::getId).orElse(null))
+                .leaderName(circle.getLeader().map(UserDomainModel::getName).orElse(null))
+                .createdAt(circle.getCreatedAt())
+                .build();
     }
 
     public static CircleResponseDto from(CircleDomainModel circle, Long numMember) {
-        return new CircleResponseDto(
-                circle.getId(),
-                circle.getName(),
-                circle.getMainImage(),
-                circle.getDescription(),
-                circle.getIsDeleted(),
-                circle.getLeader().map(UserDomainModel::getId).orElse(null),
-                circle.getLeader().map(UserDomainModel::getName).orElse(null),
-                numMember,
-                circle.getCreatedAt()
-        );
+        return CircleResponseDto.builder()
+                .id(circle.getId())
+                .name(circle.getName())
+                .mainImage(circle.getMainImage())
+                .description(circle.getDescription())
+                .isDeleted(circle.getIsDeleted())
+                .leaderId(circle.getLeader().map(UserDomainModel::getId).orElse(null))
+                .leaderName(circle.getLeader().map(UserDomainModel::getName).orElse(null))
+                .numMember(numMember)
+                .createdAt(circle.getCreatedAt())
+                .build();
     }
 }

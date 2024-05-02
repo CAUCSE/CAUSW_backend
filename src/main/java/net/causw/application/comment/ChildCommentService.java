@@ -132,7 +132,7 @@ public class ChildCommentService {
         validatorBucket
                 .validate();
 
-        return ChildCommentResponseDto.from(
+        return ChildCommentResponseDto.of(
                 this.childCommentPort.create(childCommentDomainModel, postDomainModel),
                 creatorDomainModel,
                 postDomainModel.getBoard()
@@ -212,7 +212,7 @@ public class ChildCommentService {
         validatorBucket
                 .validate();
 
-        return ChildCommentResponseDto.from(
+        return ChildCommentResponseDto.of(
                 this.childCommentPort.update(childCommentId, childCommentDomainModel).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
@@ -307,7 +307,7 @@ public class ChildCommentService {
         validatorBucket
                 .validate();
 
-        return ChildCommentResponseDto.from(
+        return ChildCommentResponseDto.of(
                 this.childCommentPort.delete(childCommentId).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,

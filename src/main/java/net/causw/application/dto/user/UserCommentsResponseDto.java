@@ -1,5 +1,6 @@
 package net.causw.application.dto.user;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import net.causw.application.dto.comment.CommentsOfUserResponseDto;
@@ -8,6 +9,7 @@ import org.springframework.data.domain.Page;
 
 @Getter
 @Setter
+@Builder
 public class UserCommentsResponseDto {
     private String id;
     private String email;
@@ -17,36 +19,18 @@ public class UserCommentsResponseDto {
     private String profileImage;
     private Page<CommentsOfUserResponseDto> comment;
 
-    private UserCommentsResponseDto(
-            String id,
-            String email,
-            String name,
-            String studentId,
-            Integer admissionYear,
-            String profileImage,
-            Page<CommentsOfUserResponseDto> comment
-    ) {
-        this.id = id;
-        this.email = email;
-        this.name = name;
-        this.studentId = studentId;
-        this.admissionYear = admissionYear;
-        this.profileImage = profileImage;
-        this.comment = comment;
-    }
-
-    public static UserCommentsResponseDto from(
+    public static UserCommentsResponseDto of(
             UserDomainModel user,
             Page<CommentsOfUserResponseDto> comment
     ) {
-        return new UserCommentsResponseDto(
-                user.getId(),
-                user.getEmail(),
-                user.getName(),
-                user.getStudentId(),
-                user.getAdmissionYear(),
-                user.getProfileImage(),
-                comment
-        );
+        return UserCommentsResponseDto.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .name(user.getName())
+                .studentId(user.getStudentId())
+                .admissionYear(user.getAdmissionYear())
+                .profileImage(user.getProfileImage())
+                .comment(comment)
+                .build();
     }
 }

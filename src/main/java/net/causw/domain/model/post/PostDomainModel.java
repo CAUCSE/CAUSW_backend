@@ -1,7 +1,7 @@
 package net.causw.domain.model.post;
 
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.model.board.BoardDomainModel;
 
@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
-@Setter
+@Builder
 public class PostDomainModel {
     private String id;
 
@@ -31,31 +31,11 @@ public class PostDomainModel {
     private BoardDomainModel board;
 
     private List<String> attachmentList;
+
     private LocalDateTime createdAt;
+
     private LocalDateTime updatedAt;
 
-    private PostDomainModel(
-            String id,
-            String title,
-            String content,
-            UserDomainModel writer,
-            Boolean isDeleted,
-            BoardDomainModel board,
-            LocalDateTime createdAt,
-            LocalDateTime updatedAt,
-            List<String> attachmentList
-    ) {
-        this.id = id;
-        this.title = title;
-        this.content = content;
-        this.writer = writer;
-        this.isDeleted = isDeleted;
-        this.board = board;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.attachmentList = attachmentList;
-    }
-
     public static PostDomainModel of(
             String id,
             String title,
@@ -67,17 +47,17 @@ public class PostDomainModel {
             LocalDateTime updatedAt,
             List<String> attachmentList
     ) {
-        return new PostDomainModel(
-                id,
-                title,
-                content,
-                writer,
-                isDeleted,
-                board,
-                createdAt,
-                updatedAt,
-                attachmentList
-        );
+        return PostDomainModel.builder()
+                .id(id)
+                .title(title)
+                .content(content)
+                .writer(writer)
+                .isDeleted(isDeleted)
+                .board(board)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .attachmentList(attachmentList)
+                .build();
     }
 
     public static PostDomainModel of(
@@ -87,17 +67,13 @@ public class PostDomainModel {
             BoardDomainModel board,
             List<String> attachmentList
     ) {
-        return new PostDomainModel(
-                null,
-                title,
-                content,
-                writer,
-                false,
-                board,
-                null,
-                null,
-                attachmentList
-        );
+        return PostDomainModel.builder()
+                .title(title)
+                .content(content)
+                .writer(writer)
+                .board(board)
+                .attachmentList(attachmentList)
+                .build();
     }
 
     public void update(

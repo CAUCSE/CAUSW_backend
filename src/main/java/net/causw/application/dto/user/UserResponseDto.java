@@ -1,14 +1,17 @@
 package net.causw.application.dto.user;
 
 import io.swagger.annotations.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.model.enums.UserState;
 import java.util.List;
+
 @Getter
 @Setter
+@Builder
 public class UserResponseDto {
 
     @ApiModelProperty(value = "고유 id값", example = "uuid 형식의 String 값입니다.")
@@ -41,62 +44,35 @@ public class UserResponseDto {
     @ApiModelProperty(value = "리더일 경우, 동아리 이름", example = "[개발 동아리, 퍼주마,..]")
     private List<String> circleNameIfLeader;
 
-
-    private UserResponseDto(
-            String id,
-            String email,
-            String name,
-            String studentId,
-            Integer admissionYear,
-            Role role,
-            String profileImage,
-            UserState state,
-            List<String> circleIdIfLeader,
-            List<String> circleNameIfLeader
-    ) {
-        this.id = id;
-        this.email = email;
-        this.name = name;
-        this.studentId = studentId;
-        this.admissionYear = admissionYear;
-        this.role = role;
-        this.profileImage = profileImage;
-        this.state = state;
-        this.circleIdIfLeader = circleIdIfLeader;
-        this.circleNameIfLeader = circleNameIfLeader;
-    }
-
     public static UserResponseDto from(UserDomainModel user) {
-        return new UserResponseDto(
-                user.getId(),
-                user.getEmail(),
-                user.getName(),
-                user.getStudentId(),
-                user.getAdmissionYear(),
-                user.getRole(),
-                user.getProfileImage(),
-                user.getState(),
-                null,
-                null
-        );
+        return UserResponseDto.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .name(user.getName())
+                .studentId(user.getStudentId())
+                .admissionYear(user.getAdmissionYear())
+                .role(user.getRole())
+                .profileImage(user.getProfileImage())
+                .state(user.getState())
+                .build();
     }
 
-    public static UserResponseDto from(
+    public static UserResponseDto of(
             UserDomainModel user,
             List<String> circleId,
             List<String> circleName
     ) {
-        return new UserResponseDto(
-                user.getId(),
-                user.getEmail(),
-                user.getName(),
-                user.getStudentId(),
-                user.getAdmissionYear(),
-                user.getRole(),
-                user.getProfileImage(),
-                user.getState(),
-                circleId,
-                circleName
-        );
+        return UserResponseDto.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .name(user.getName())
+                .studentId(user.getStudentId())
+                .admissionYear(user.getAdmissionYear())
+                .role(user.getRole())
+                .profileImage(user.getProfileImage())
+                .state(user.getState())
+                .circleIdIfLeader(circleId)
+                .circleNameIfLeader(circleName)
+                .build();
     }
 }

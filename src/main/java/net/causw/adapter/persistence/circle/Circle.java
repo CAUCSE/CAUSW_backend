@@ -1,8 +1,8 @@
 package net.causw.adapter.persistence.circle;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.domain.model.circle.CircleDomainModel;
@@ -16,9 +16,8 @@ import javax.persistence.Table;
 import java.util.Optional;
 
 @Getter
-@Setter
 @Entity
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "tb_circle")
 public class Circle extends BaseEntity {
     @Column(name = "name", nullable = false)
@@ -58,54 +57,6 @@ public class Circle extends BaseEntity {
         this.leader = leader;
     }
 
-    private Circle(
-            String name,
-            String mainImage,
-            String description,
-            Boolean isDeleted,
-            User leader
-    ) {
-        this.name = name;
-        this.mainImage = mainImage;
-        this.description = description;
-        this.isDeleted = isDeleted;
-        this.leader = leader;
-    }
-
-    public static Circle of(
-            String name,
-            String mainImage,
-            String description,
-            Boolean isDeleted,
-            User leader
-    ) {
-        return new Circle(
-                name,
-                mainImage,
-                description,
-                isDeleted,
-                leader
-        );
-    }
-
-    public static Circle of(
-            String id,
-            String name,
-            String mainImage,
-            String description,
-            Boolean isDeleted,
-            User leader
-    ) {
-        return new Circle(
-                id,
-                name,
-                mainImage,
-                description,
-                isDeleted,
-                leader
-        );
-    }
-
     public static Circle from(CircleDomainModel circleDomainModel) {
         return new Circle(
                 circleDomainModel.getId(),
@@ -115,5 +66,20 @@ public class Circle extends BaseEntity {
                 circleDomainModel.getIsDeleted(),
                 circleDomainModel.getLeader().map(User::from).orElse(null)
         );
+    }
+
+    public void update(String description, String name, String mainImage){
+        this.description = description;
+        this.name = name;
+        this.mainImage = mainImage;
+    }
+
+    public void setLeader(User leader){
+        this.leader = leader;
+    }
+
+    public void delete(){
+        this.isDeleted = true;
+        this.leader = null;
     }
 }

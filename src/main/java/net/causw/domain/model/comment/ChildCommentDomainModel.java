@@ -1,7 +1,7 @@
 package net.causw.domain.model.comment;
 
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 import net.causw.domain.model.user.UserDomainModel;
 
 import javax.validation.constraints.NotBlank;
@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Getter
-@Setter
+@Builder
 public class ChildCommentDomainModel {
     private String id;
 
@@ -20,6 +20,7 @@ public class ChildCommentDomainModel {
     private Boolean isDeleted;
 
     private String tagUserName;
+
     private String refChildComment;
 
     @NotNull(message = "작성자가 입력되지 않았습니다.")
@@ -29,29 +30,8 @@ public class ChildCommentDomainModel {
     private CommentDomainModel parentComment;
 
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 
-    private ChildCommentDomainModel(
-            String id,
-            String content,
-            Boolean isDeleted,
-            String tagUserName,
-            String refChildComment,
-            UserDomainModel writer,
-            CommentDomainModel parentComment,
-            LocalDateTime createdAt,
-            LocalDateTime updatedAt
-    ) {
-        this.id = id;
-        this.content = content;
-        this.isDeleted = isDeleted;
-        this.tagUserName = tagUserName;
-        this.refChildComment = refChildComment;
-        this.writer = writer;
-        this.parentComment = parentComment;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
+    private LocalDateTime updatedAt;
 
     public static ChildCommentDomainModel of(
             String content,
@@ -60,17 +40,13 @@ public class ChildCommentDomainModel {
             UserDomainModel writer,
             CommentDomainModel parentComment
     ) {
-        return new ChildCommentDomainModel(
-                null,
-                content,
-                false,
-                tagUserName,
-                refChildComment,
-                writer,
-                parentComment,
-                null,
-                null
-        );
+        return ChildCommentDomainModel.builder()
+                .content(content)
+                .tagUserName(tagUserName)
+                .refChildComment(refChildComment)
+                .writer(writer)
+                .parentComment(parentComment)
+                .build();
     }
 
     public static ChildCommentDomainModel of(
@@ -84,17 +60,17 @@ public class ChildCommentDomainModel {
             LocalDateTime createdAt,
             LocalDateTime updatedAt
     ) {
-        return new ChildCommentDomainModel(
-                id,
-                content,
-                isDeleted,
-                tagUserName,
-                refChildComment,
-                writer,
-                parentComment,
-                createdAt,
-                updatedAt
-        );
+        return ChildCommentDomainModel.builder()
+                .id(id)
+                .content(content)
+                .isDeleted(isDeleted)
+                .tagUserName(tagUserName)
+                .refChildComment(refChildComment)
+                .writer(writer)
+                .parentComment(parentComment)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .build();
     }
 
     public void update(

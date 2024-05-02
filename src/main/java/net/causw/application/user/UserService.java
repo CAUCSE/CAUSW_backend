@@ -168,7 +168,7 @@ public class UserService {
                 );
             }
 
-            return UserResponseDto.from(
+            return UserResponseDto.of(
                     requestUser,
                     ownCircles.stream().map(CircleDomainModel::getId).collect(Collectors.toList()),
                     ownCircles.stream().map(CircleDomainModel::getName).collect(Collectors.toList())
@@ -193,9 +193,9 @@ public class UserService {
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .validate();
 
-        return UserPostsResponseDto.from(
+        return UserPostsResponseDto.of(
                 requestUser,
-                this.postPort.findPostByUserId(loginUserId, pageNum).map(postDomainModel -> UserPostResponseDto.from(
+                this.postPort.findPostByUserId(loginUserId, pageNum).map(postDomainModel -> UserPostResponseDto.of(
                         postDomainModel,
                         postDomainModel.getBoard().getId(),
                         postDomainModel.getBoard().getName(),
@@ -220,7 +220,7 @@ public class UserService {
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .validate();
 
-        return UserCommentsResponseDto.from(
+        return UserCommentsResponseDto.of(
                 requestUser,
                 this.commentPort.findByUserId(loginUserId, pageNum).map(comment -> {
                     PostDomainModel post = this.postPort.findPostById(comment.getPostId()).orElseThrow(
@@ -230,7 +230,7 @@ public class UserService {
                             )
                     );
 
-                    return CommentsOfUserResponseDto.from(
+                    return CommentsOfUserResponseDto.of(
                             comment,
                             post.getBoard().getId(),
                             post.getBoard().getName(),
@@ -279,7 +279,7 @@ public class UserService {
                                                     .map(circleMemberDomainModel ->
                                                             circleMemberDomainModel.getStatus() == CircleMemberStatus.MEMBER)
                                                     .orElse(false)))
-                    .map(userDomainModel -> UserResponseDto.from(
+                    .map(userDomainModel -> UserResponseDto.of(
                             userDomainModel,
                             ownCircles.stream().map(CircleDomainModel::getId).collect(Collectors.toList()),
                             ownCircles.stream().map(CircleDomainModel::getName).collect(Collectors.toList())))
@@ -308,7 +308,7 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(user.getRole(), List.of()))
                 .validate();
 
-        return UserPrivilegedResponseDto.from(
+        return UserPrivilegedResponseDto.of(
                 this.userPort.findByRole("PRESIDENT")
                         .stream()
                         .map(UserResponseDto::from)
@@ -347,7 +347,7 @@ public class UserService {
                                         MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER
                                 );
                             }
-                            return UserResponseDto.from(
+                            return UserResponseDto.of(
                                     userDomainModel,
                                     ownCircles.stream().map(CircleDomainModel::getId).collect(Collectors.toList()),
                                     ownCircles.stream().map(CircleDomainModel::getName).collect(Collectors.toList())
@@ -393,7 +393,7 @@ public class UserService {
                             );
                         }
 
-                        return UserResponseDto.from(
+                        return UserResponseDto.of(
                                 userDomainModel,
                                 ownCircles.stream().map(CircleDomainModel::getId).collect(Collectors.toList()),
                                 ownCircles.stream().map(CircleDomainModel::getName).collect(Collectors.toList())
@@ -529,7 +529,7 @@ public class UserService {
                 );
             }
         }
-        return DuplicatedCheckResponseDto.of(userFoundByEmail.isPresent());
+        return DuplicatedCheckResponseDto.from(userFoundByEmail.isPresent());
     }
 
     /**
@@ -1035,7 +1035,7 @@ public class UserService {
         // Remove the admission
         this.userAdmissionPort.delete(userAdmissionDomainModel);
 
-        return UserAdmissionResponseDto.from(
+        return UserAdmissionResponseDto.of(
                 userAdmissionDomainModel,
                 this.userPort.updateState(userAdmissionDomainModel.getUser().getId(), UserState.ACTIVE).orElseThrow(
                         () -> new InternalServerException(
@@ -1083,7 +1083,7 @@ public class UserService {
 
         this.userAdmissionPort.delete(userAdmissionDomainModel);
 
-        return UserAdmissionResponseDto.from(
+        return UserAdmissionResponseDto.of(
                 userAdmissionDomainModel,
                 this.userPort.updateState(userAdmissionDomainModel.getUser().getId(), UserState.REJECT).orElseThrow(
                         () -> new InternalServerException(

@@ -1,14 +1,15 @@
 package net.causw.application.dto.locker;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class LockerExpiredAtRequestDto {

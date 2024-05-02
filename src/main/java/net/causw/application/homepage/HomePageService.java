@@ -55,13 +55,13 @@ public class HomePageService {
         }
         return boardDomainModelList
                 .stream()
-                .map(boardDomainModel -> HomePageResponseDto.from(
+                .map(boardDomainModel -> HomePageResponseDto.of(
                         BoardResponseDto.from(boardDomainModel, userDomainModel.getRole()),
                         this.postPort.findAllPost(
                                 boardDomainModel.getId(),
                                 0,
                                 StaticValue.HOME_POST_PAGE_SIZE
-                        ).map(postDomainModel -> PostsResponseDto.from(
+                        ).map(postDomainModel -> PostsResponseDto.of(
                                 postDomainModel,
                                 this.postPort.countAllComment(postDomainModel.getId())
                         )))

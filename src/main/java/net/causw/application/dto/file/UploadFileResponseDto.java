@@ -1,18 +1,18 @@
 package net.causw.application.dto.file;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Builder
 public class UploadFileResponseDto {
     private String path;
 
-    private UploadFileResponseDto(String path) {
-        this.path = path;
-    }
-
-    public static UploadFileResponseDto of(String path) {
-        return new UploadFileResponseDto(path);
+    public static UploadFileResponseDto from(String path) {
+        return UploadFileResponseDto.builder()
+                .path(path)
+                .build();
     }
 }

@@ -1,5 +1,6 @@
 package net.causw.application.dto.user;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import net.causw.domain.model.user.UserAdmissionDomainModel;
@@ -9,6 +10,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@Builder
 public class UserAdmissionsResponseDto {
     private String id;
     private String userName;
@@ -20,39 +22,17 @@ public class UserAdmissionsResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public UserAdmissionsResponseDto(
-            String id,
-            String userName,
-            String userEmail,
-            Integer admissionYear,
-            String attachImage,
-            String description,
-            UserState userState,
-            LocalDateTime createdAt,
-            LocalDateTime updatedAt
-    ) {
-        this.id = id;
-        this.userName = userName;
-        this.userEmail = userEmail;
-        this.admissionYear = admissionYear;
-        this.attachImage = attachImage;
-        this.description = description;
-        this.userState = userState;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
-
     public static UserAdmissionsResponseDto from(UserAdmissionDomainModel userAdmissionDomainModel) {
-        return new UserAdmissionsResponseDto(
-                userAdmissionDomainModel.getId(),
-                userAdmissionDomainModel.getUser().getName(),
-                userAdmissionDomainModel.getUser().getEmail(),
-                userAdmissionDomainModel.getUser().getAdmissionYear(),
-                userAdmissionDomainModel.getAttachImage(),
-                userAdmissionDomainModel.getDescription(),
-                userAdmissionDomainModel.getUser().getState(),
-                userAdmissionDomainModel.getCreatedAt(),
-                userAdmissionDomainModel.getUpdatedAt()
-        );
+        return UserAdmissionsResponseDto.builder()
+                .id(userAdmissionDomainModel.getId())
+                .userName(userAdmissionDomainModel.getUser().getName())
+                .userEmail(userAdmissionDomainModel.getUser().getEmail())
+                .admissionYear(userAdmissionDomainModel.getUser().getAdmissionYear())
+                .attachImage(userAdmissionDomainModel.getAttachImage())
+                .description(userAdmissionDomainModel.getDescription())
+                .userState(userAdmissionDomainModel.getUser().getState())
+                .createdAt(userAdmissionDomainModel.getCreatedAt())
+                .updatedAt(userAdmissionDomainModel.getUpdatedAt())
+                .build();
     }
 }

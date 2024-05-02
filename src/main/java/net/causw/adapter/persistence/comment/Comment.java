@@ -1,8 +1,8 @@
 package net.causw.adapter.persistence.comment;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.base.BaseEntity;
@@ -19,9 +19,8 @@ import javax.persistence.Table;
 import java.util.List;
 
 @Getter
-@Setter
 @Entity
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "tb_comment")
 public class Comment extends BaseEntity {
     @Column(name = "content", nullable = false)
@@ -43,18 +42,6 @@ public class Comment extends BaseEntity {
     private List<ChildComment> childCommentList;
 
     private Comment(
-            String content,
-            Boolean isDeleted,
-            User writer,
-            Post post
-    ) {
-        this.content = content;
-        this.isDeleted = isDeleted;
-        this.writer = writer;
-        this.post = post;
-    }
-
-    private Comment(
             String id,
             String content,
             Boolean isDeleted,
@@ -68,36 +55,6 @@ public class Comment extends BaseEntity {
         this.post = post;
     }
 
-    public static Comment of(
-            String content,
-            Boolean isDeleted,
-            User writer,
-            Post post
-    ) {
-        return new Comment(
-                content,
-                isDeleted,
-                writer,
-                post
-        );
-    }
-
-    public static Comment of(
-            String id,
-            String content,
-            Boolean isDeleted,
-            User writer,
-            Post post
-    ) {
-        return new Comment(
-                id,
-                content,
-                isDeleted,
-                writer,
-                post
-        );
-    }
-
     public static Comment from(CommentDomainModel commentDomainModel, PostDomainModel postDomainModel) {
         return new Comment(
                 commentDomainModel.getId(),
@@ -106,5 +63,13 @@ public class Comment extends BaseEntity {
                 User.from(commentDomainModel.getWriter()),
                 Post.from(postDomainModel)
         );
+    }
+
+    public void update(String content) {
+        this.content = content;
+    }
+
+    public void delete() {
+        this.isDeleted = true;
     }
 }

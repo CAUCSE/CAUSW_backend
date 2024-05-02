@@ -1,5 +1,6 @@
 package net.causw.application.dto.user;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,6 +9,7 @@ import java.util.List;
 
 @Getter
 @Setter
+@Builder
 public class UserPrivilegedResponseDto {
     private List<UserResponseDto> presidentUser;
     private List<UserResponseDto> vicePresidentUser;
@@ -16,23 +18,7 @@ public class UserPrivilegedResponseDto {
     private List<UserResponseDto> leaderCircleUsers;
     private List<UserResponseDto> leaderAlumni;
 
-    private UserPrivilegedResponseDto(
-            List<UserResponseDto> presidentUser,
-            List<UserResponseDto> vicePresidentUser,
-            List<UserResponseDto> councilUsers,
-            List<UserResponseDto> leaderGradeUsers,
-            List<UserResponseDto> leaderCircleUsers,
-            List<UserResponseDto> leaderAlumniUser
-    ) {
-        this.presidentUser = presidentUser;
-        this.vicePresidentUser = vicePresidentUser;
-        this.councilUsers = councilUsers;
-        this.leaderGradeUsers = leaderGradeUsers;
-        this.leaderCircleUsers = leaderCircleUsers;
-        this.leaderAlumni = leaderAlumniUser;
-    }
-
-    public static UserPrivilegedResponseDto from(
+    public static UserPrivilegedResponseDto of(
             List<UserResponseDto> presidentUser,
             List<UserResponseDto> vicePresidentUser,
             List<UserResponseDto> councilUsers,
@@ -48,13 +34,13 @@ public class UserPrivilegedResponseDto {
         leaderGradeUsers.addAll(leaderGrade3);
         leaderGradeUsers.addAll(leaderGrade4);
 
-        return new UserPrivilegedResponseDto(
-                presidentUser,
-                vicePresidentUser,
-                councilUsers,
-                leaderGradeUsers,
-                leaderCircleUsers,
-                leaderAlumniUser
-        );
+        return UserPrivilegedResponseDto.builder()
+                .presidentUser(presidentUser)
+                .vicePresidentUser(vicePresidentUser)
+                .councilUsers(councilUsers)
+                .leaderGradeUsers(leaderGradeUsers)
+                .leaderCircleUsers(leaderCircleUsers)
+                .leaderAlumni(leaderAlumniUser)
+                .build();
     }
 }

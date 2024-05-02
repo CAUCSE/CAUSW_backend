@@ -1,5 +1,7 @@
 package net.causw.adapter.persistence.user;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.causw.adapter.persistence.base.BaseEntity;
@@ -13,7 +15,8 @@ import javax.persistence.Table;
 
 @Getter
 @Entity
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_user_admission_log")
 public class UserAdmissionLog extends BaseEntity {
     @Column(name = "user_email", nullable = false)
@@ -38,44 +41,6 @@ public class UserAdmissionLog extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private UserAdmissionLogAction action;
 
-    private UserAdmissionLog(
-            String id,
-            String userEmail,
-            String userName,
-            String adminUserEmail,
-            String adminUserName,
-            UserAdmissionLogAction action,
-            String attachImage,
-            String description
-    ) {
-        super(id);
-        this.userEmail = userEmail;
-        this.userName = userName;
-        this.adminUserEmail = adminUserEmail;
-        this.adminUserName = adminUserName;
-        this.action = action;
-        this.attachImage = attachImage;
-        this.description = description;
-    }
-
-    private UserAdmissionLog(
-            String userEmail,
-            String userName,
-            String adminUserEmail,
-            String adminUserName,
-            UserAdmissionLogAction action,
-            String attachImage,
-            String description
-    ) {
-        this.userEmail = userEmail;
-        this.userName = userName;
-        this.adminUserEmail = adminUserEmail;
-        this.adminUserName = adminUserName;
-        this.action = action;
-        this.attachImage = attachImage;
-        this.description = description;
-    }
-
     public static UserAdmissionLog of(
             String userEmail,
             String userName,
@@ -90,9 +55,9 @@ public class UserAdmissionLog extends BaseEntity {
                 userName,
                 adminUserEmail,
                 adminUserName,
-                action,
                 attachImage,
-                description
+                description,
+                action
         );
     }
 }
