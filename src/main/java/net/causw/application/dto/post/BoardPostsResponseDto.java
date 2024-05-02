@@ -4,9 +4,13 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.domain.model.board.BoardDomainModel;
+import net.causw.adapter.persistence.board.Board;
 import net.causw.domain.model.enums.Role;
 import org.springframework.data.domain.Page;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Getter
 @Setter
@@ -28,16 +32,17 @@ public class BoardPostsResponseDto {
     @ApiModelProperty(value = "게시글 정보입니다", example = "게시글 정보입니다")
     private Page<PostsResponseDto> post;
 
-    public static BoardPostsResponseDto from(
-            BoardDomainModel boardDomainModel,
+    public static BoardPostsResponseDto of(
+            Board board,
             Role userRole,
             Boolean isFavorite,
             Page<PostsResponseDto> post
     ) {
+        List<String> roles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
         return BoardPostsResponseDto.builder()
-                .boardId(boardDomainModel.getId())
-                .boardName(boardDomainModel.getName())
-                .writable(boardDomainModel.getCreateRoleList().stream().anyMatch(str -> userRole.getValue().contains(str)))
+                .boardId(board.getId())
+                .boardName(board.getName())
+                .writable(roles.stream().anyMatch(str -> userRole.getValue().contains(str)))
                 .isFavorite(isFavorite)
                 .post(post)
                 .build();
