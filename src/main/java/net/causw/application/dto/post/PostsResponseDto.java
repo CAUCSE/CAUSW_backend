@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import net.causw.adapter.persistence.post.Post;
 import net.causw.domain.model.post.PostDomainModel;
 
 import java.time.LocalDateTime;
@@ -36,8 +37,25 @@ public class PostsResponseDto {
     @ApiModelProperty(value = "게시글 삭제여부", example = "false")
     private Boolean isDeleted;
 
+    // FIXME: Domain model 사용하는 생성메서드 삭제 필요 (컴파일 에러 방지 목적으로 일단 대기)
     public static PostsResponseDto of(
             PostDomainModel post,
+            Long numComment
+    ) {
+        return PostsResponseDto.builder()
+                .id(post.getId())
+                .title(post.getTitle())
+                .writerName(post.getWriter().getName())
+                .writerAdmissionYear(post.getWriter().getAdmissionYear())
+                .numComment(numComment)
+                .createdAt(post.getCreatedAt())
+                .updatedAt(post.getUpdatedAt())
+                .isDeleted(post.getIsDeleted())
+                .build();
+    }
+
+    public static PostsResponseDto of(
+            Post post,
             Long numComment
     ) {
         return PostsResponseDto.builder()

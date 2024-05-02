@@ -1,6 +1,13 @@
 package net.causw.application.post;
 
 import lombok.RequiredArgsConstructor;
+import net.causw.adapter.persistence.board.Board;
+import net.causw.adapter.persistence.circle.Circle;
+import net.causw.adapter.persistence.circle.CircleMember;
+import net.causw.adapter.persistence.page.PageableFactory;
+import net.causw.adapter.persistence.post.Post;
+import net.causw.adapter.persistence.repository.*;
+import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.post.BoardPostsResponseDto;
@@ -8,25 +15,13 @@ import net.causw.application.dto.post.PostCreateRequestDto;
 import net.causw.application.dto.post.PostResponseDto;
 import net.causw.application.dto.post.PostUpdateRequestDto;
 import net.causw.application.dto.post.PostsResponseDto;
-import net.causw.application.spi.BoardPort;
-import net.causw.application.spi.ChildCommentPort;
-import net.causw.application.spi.CircleMemberPort;
-import net.causw.application.spi.CommentPort;
-import net.causw.application.spi.FavoriteBoardPort;
-import net.causw.application.spi.PostPort;
-import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
-import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
-import net.causw.domain.model.board.BoardDomainModel;
-import net.causw.domain.model.circle.CircleMemberDomainModel;
 import net.causw.domain.model.enums.CircleMemberStatus;
-import net.causw.domain.model.post.PostDomainModel;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
-import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.ContentsAdminValidator;
@@ -38,94 +33,44 @@ import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
 import net.causw.domain.validation.TargetIsNotDeletedValidator;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class PostService {
-    private final PostPort postPort;
-    private final UserPort userPort;
-    private final BoardPort boardPort;
-    private final CircleMemberPort circleMemberPort;
-    private final CommentPort commentPort;
-    private final ChildCommentPort childCommentPort;
-    private final FavoriteBoardPort favoriteBoardPort;
+
+    private final PostRepository postRepository;
+    private final UserRepository userRepository;
+    private final BoardRepository boardRepository;
+    private final CircleMemberRepository circleMemberRepository;
+    private final CommentRepository commentRepository;
+    private final ChildCommentRepository childCommentRepository;
+    private final FavoriteBoardRepository favoriteBoardRepository;
+    private final PageableFactory pageableFactory;
     private final Validator validator;
 
     @Transactional(readOnly = true)
     public PostResponseDto findPostById(String loginUserId, String postId) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
+        User user = getUser(loginUserId);
+        Post post = getPost(postId);
 
-        UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
-
-        PostDomainModel postDomainModel = this.postPort.findPostById(postId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.POST_NOT_FOUND
-                )
-        );
-
-        validatorBucket
-                .consistOf(UserStateValidator.of(userDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()));
-
-        postDomainModel.getBoard().getCircle()
-                .filter(circleDomainModel -> !userDomainModel.getRole().equals(Role.ADMIN) && !userDomainModel.getRole().getValue().contains("PRESIDENT"))
-                .ifPresent(
-                        circleDomainModel -> {
-                            CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
-                                    userDomainModel.getId(),
-                                    circleDomainModel.getId()
-                            ).orElseThrow(
-                                    () -> new UnauthorizedException(
-                                            ErrorCode.NOT_MEMBER,
-                                            MessageUtil.NOT_CIRCLE_MEMBER
-                                    )
-                            );
-
-                            validatorBucket
-                                    .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                                    .consistOf(CircleMemberStatusValidator.of(
-                                            circleMemberDomainModel.getStatus(),
-                                            List.of(CircleMemberStatus.MEMBER)
-                                    ));
-                        }
-                );
-
-        validatorBucket
-                .validate();
+        ValidatorBucket validatorBucket = initializeValidator(user, post.getBoard());
+        validatorBucket.validate();
 
         return PostResponseDto.of(
-                postDomainModel,
-                userDomainModel,
-                this.commentPort.findByPostId(postId, 0)
-                        .map(
-                                commentDomainModel -> CommentResponseDto.of(
-                                        commentDomainModel,
-                                        userDomainModel,
-                                        postDomainModel.getBoard(),
-                                        this.childCommentPort.countByParentComment(commentDomainModel.getId()),
-                                        commentDomainModel.getChildCommentList().stream()
-                                                .map(childCommentDomainModel -> ChildCommentResponseDto.of(
-                                                        childCommentDomainModel,
-                                                        userDomainModel,
-                                                        postDomainModel.getBoard()
-                                                ))
-                                                .collect(Collectors.toList())
-                                )
-                        ),
-//                this.commentPort.countByPostId(postDomainModel.getId())
-                this.postPort.countAllComment(postId)
+                post,
+                user,
+                findCommentsByPostIdByPage(user, post, 0),
+                postRepository.countAllCommentByPost_Id(postId)
         );
     }
 
@@ -135,83 +80,37 @@ public class PostService {
             String boardId,
             Integer pageNum
     ) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
+        User user = getUser(loginUserId);
+        Board board = getBoard(boardId);
 
-        UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
-
-        validatorBucket
-                .consistOf(UserStateValidator.of(userDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()));
-
-        BoardDomainModel boardDomainModel = this.boardPort.findById(boardId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.BOARD_NOT_FOUND
-                )
-        );
-
-        boardDomainModel.getCircle()
-                .filter(circleDomainModel -> !userDomainModel.getRole().equals(Role.ADMIN) && !userDomainModel.getRole().getValue().contains("PRESIDENT"))
-                .ifPresent(
-                        circleDomainModel -> {
-                            CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
-                                    userDomainModel.getId(),
-                                    circleDomainModel.getId()
-                            ).orElseThrow(
-                                    () -> new UnauthorizedException(
-                                            ErrorCode.NOT_MEMBER,
-                                            MessageUtil.NOT_CIRCLE_MEMBER
-                                    )
-                            );
-
-                            validatorBucket
-                                    .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                                    .consistOf(CircleMemberStatusValidator.of(
-                                            circleMemberDomainModel.getStatus(),
-                                            List.of(CircleMemberStatus.MEMBER)
-                                    ));
-                        }
-                );
-
+        ValidatorBucket validatorBucket = initializeValidator(user, board);
         validatorBucket.validate();
 
         boolean isCircleLeader = false;
-        if(userDomainModel.getRole().getValue().contains("LEADER_CIRCLE")){
-            isCircleLeader = boardDomainModel.getCircle()
-                    .map(circle -> circle.getLeader().map(UserDomainModel::getId).orElse("").equals(loginUserId))
-                    .orElse(false);
+        if (user.getRole().getValue().contains("LEADER_CIRCLE")) {
+            isCircleLeader = board.getCircle().getLeader().map(User::getId).orElse("").equals(loginUserId);
         }
 
-        if (isCircleLeader || userDomainModel.getRole().equals(Role.ADMIN) || userDomainModel.getRole().getValue().contains("PRESIDENT")) {
-            return BoardPostsResponseDto.from(
-                    boardDomainModel,
-                    userDomainModel.getRole(),
-                    this.favoriteBoardPort.findByUserId(loginUserId)
-                            .stream()
-                            .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
-                    this.postPort.findAllPost(boardId, pageNum)
-                            .map(postDomainModel -> PostsResponseDto.of(
-                                    postDomainModel,
-                                    this.postPort.countAllComment(postDomainModel.getId())
+        if (isCircleLeader || user.getRole().equals(Role.ADMIN) || user.getRole().getValue().contains("PRESIDENT")) {
+            return BoardPostsResponseDto.of(
+                    board,
+                    user.getRole(),
+                    isFavorite(loginUserId, board.getId()),
+                    postRepository.findAllByBoard_IdOrderByCreatedAtDesc(boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
+                            .map(post -> PostsResponseDto.of(
+                                    post,
+                                    postRepository.countAllCommentByPost_Id(post.getId())
                             ))
             );
-        }
-        else{
-            return BoardPostsResponseDto.from(
-                    boardDomainModel,
-                    userDomainModel.getRole(),
-                    this.favoriteBoardPort.findByUserId(loginUserId)
-                            .stream()
-                            .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
-                    this.postPort.findAllPost(boardId, pageNum, false)
-                            .map(postDomainModel -> PostsResponseDto.of(
-                                    postDomainModel,
-                                    this.postPort.countAllComment(postDomainModel.getId())
+        } else {
+            return BoardPostsResponseDto.of(
+                    board,
+                    user.getRole(),
+                    isFavorite(loginUserId, board.getId()),
+                    postRepository.findAllByBoard_IdAndIsDeletedOrderByCreatedAtDesc(boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), false)
+                            .map(post -> PostsResponseDto.of(
+                                    post,
+                                    postRepository.countAllCommentByPost_Id(post.getId())
                             ))
             );
         }
@@ -225,87 +124,39 @@ public class PostService {
             String keyword,
             Integer pageNum
     ) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
+        User user = getUser(loginUserId);
+        Board board = getBoard(boardId);
 
-        UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
-
+        ValidatorBucket validatorBucket = initializeValidator(user, board);
         validatorBucket
-                .consistOf(UserStateValidator.of(userDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()));
-
-        BoardDomainModel boardDomainModel = this.boardPort.findById(boardId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.BOARD_NOT_FOUND
-                )
-        );
-
-        boardDomainModel.getCircle()
-                .filter(circleDomainModel -> !userDomainModel.getRole().equals(Role.ADMIN) && !userDomainModel.getRole().getValue().contains("PRESIDENT"))
-                .ifPresent(
-                        circleDomainModel -> {
-                            CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
-                                            userDomainModel.getId(),
-                                            circleDomainModel.getId()
-                                    )
-                                    .orElseThrow(
-                                            () -> new UnauthorizedException(
-                                                    ErrorCode.NOT_MEMBER,
-                                                    MessageUtil.NOT_CIRCLE_MEMBER
-                                            )
-                                    );
-
-                            validatorBucket
-                                    .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                                    .consistOf(CircleMemberStatusValidator.of(
-                                            circleMemberDomainModel.getStatus(),
-                                            List.of(CircleMemberStatus.MEMBER)
-                                    ));
-                        }
-                );
-
-        validatorBucket
-                .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted(), StaticValue.DOMAIN_BOARD))
+                .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD))
                 .validate();
 
-
         boolean isCircleLeader = false;
-        if(userDomainModel.getRole().getValue().contains("LEADER_CIRCLE")){
-            isCircleLeader = boardDomainModel.getCircle()
-                    .map(circle -> circle.getLeader().map(UserDomainModel::getId).orElse("").equals(loginUserId))
-                    .orElse(false);
+        if (user.getRole().getValue().contains("LEADER_CIRCLE")) {
+            isCircleLeader = board.getCircle().getLeader().map(User::getId).orElse("").equals(loginUserId);
         }
 
-        if (isCircleLeader || userDomainModel.getRole().equals(Role.ADMIN) || userDomainModel.getRole().getValue().contains("PRESIDENT")) {
-            return BoardPostsResponseDto.from(
-                    boardDomainModel,
-                    userDomainModel.getRole(),
-                    this.favoriteBoardPort.findByUserId(loginUserId)
-                            .stream()
-                            .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
-                    this.postPort.searchPost(keyword, boardId, pageNum)
-                            .map(postDomainModel -> PostsResponseDto.of(
-                                    postDomainModel,
-                                    this.postPort.countAllComment(postDomainModel.getId())
+        if (isCircleLeader || user.getRole().equals(Role.ADMIN) || user.getRole().getValue().contains("PRESIDENT")) {
+            return BoardPostsResponseDto.of(
+                    board,
+                    user.getRole(),
+                    isFavorite(loginUserId, board.getId()),
+                    postRepository.searchByTitle(keyword, boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
+                            .map(post -> PostsResponseDto.of(
+                                    post,
+                                    postRepository.countAllCommentByPost_Id(post.getId())
                             ))
             );
-        }
-        else{
-            return BoardPostsResponseDto.from(
-                    boardDomainModel,
-                    userDomainModel.getRole(),
-                    this.favoriteBoardPort.findByUserId(loginUserId)
-                            .stream()
-                            .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
-                    this.postPort.searchPost(keyword, boardId, pageNum, false)
-                            .map(postDomainModel -> PostsResponseDto.of(
-                                    postDomainModel,
-                                    this.postPort.countAllComment(postDomainModel.getId())
+        } else {
+            return BoardPostsResponseDto.of(
+                    board,
+                    user.getRole(),
+                    isFavorite(loginUserId, board.getId()),
+                    postRepository.searchByTitle(keyword, boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), false)
+                            .map(post -> PostsResponseDto.of(
+                                    post,
+                                    postRepository.countAllCommentByPost_Id(post.getId())
                             ))
             );
         }
@@ -315,30 +166,22 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public BoardPostsResponseDto findAllAppNotice(String loginUserId, Integer pageNum) {
-        UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(
+        User user = getUser(loginUserId);
+        Board board = boardRepository.findAppNotice().orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
+                        MessageUtil.BOARD_NOT_FOUND
                 )
         );
 
-        BoardDomainModel boardDomainModel = this.boardPort.findAppNotice().orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.NOTICE_NOT_FOUND
-                )
-        );
-
-        return BoardPostsResponseDto.from(
-                boardDomainModel,
-                userDomainModel.getRole(),
-                this.favoriteBoardPort.findByUserId(loginUserId)
-                        .stream()
-                        .anyMatch(favoriteBoardDomainModel -> favoriteBoardDomainModel.getBoardDomainModel().getId().equals(boardDomainModel.getId())),
-                this.postPort.findAllPost(boardDomainModel.getId(), pageNum)
-                        .map(postDomainModel -> PostsResponseDto.of(
-                                postDomainModel,
-                                this.postPort.countAllComment(postDomainModel.getId())
+        return BoardPostsResponseDto.of(
+                board,
+                user.getRole(),
+                isFavorite(loginUserId, board.getId()),
+                postRepository.findAllByBoard_IdOrderByCreatedAtDesc(board.getId(), pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
+                        .map(post -> PostsResponseDto.of(
+                                post,
+                                postRepository.countAllCommentByPost_Id(post.getId())
                         ))
         );
     }
@@ -347,66 +190,56 @@ public class PostService {
     public PostResponseDto createPost(String loginUserId, PostCreateRequestDto postCreateRequestDto) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel creatorDomainModel = this.userPort.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
-
-        BoardDomainModel boardDomainModel = this.boardPort.findById(postCreateRequestDto.getBoardId()).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.BOARD_NOT_FOUND
-                )
-        );
-
-        if (boardDomainModel.getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
+        User creator = getUser(loginUserId);
+        Board board = getBoard(postCreateRequestDto.getBoardId());
+        List<String> createRoles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
+        if (board.getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
             validatorBucket
                     .consistOf(UserRoleValidator.of(
-                            creatorDomainModel.getRole(),
+                            creator.getRole(),
                             List.of()
                     ));
         }
 
+        Post post = Post.of(
+                postCreateRequestDto.getTitle(),
+                postCreateRequestDto.getContent(),
+                creator,
+                false,
+                board,
+                String.join(":::", postCreateRequestDto.getAttachmentList())
+        );
+
         validatorBucket
-                .consistOf(UserStateValidator.of(creatorDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(creatorDomainModel.getRole()))
+                .consistOf(UserStateValidator.of(creator.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(creator.getRole()))
                 .consistOf(PostNumberOfAttachmentsValidator.of(postCreateRequestDto.getAttachmentList()))
-                .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted(), StaticValue.DOMAIN_BOARD))
+                .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD))
                 .consistOf(UserRoleValidator.of(
-                        creatorDomainModel.getRole(),
-                        boardDomainModel.getCreateRoleList()
-                                .stream()
+                        creator.getRole(),
+                        createRoles.stream()
                                 .map(Role::of)
                                 .collect(Collectors.toList())
                 ));
 
-        boardDomainModel.getCircle()
-                .filter(circleDomainModel -> !creatorDomainModel.getRole().equals(Role.ADMIN) && !creatorDomainModel.getRole().getValue().contains("PRESIDENT"))
+        Optional<Circle> circles = Optional.ofNullable(board.getCircle());
+        circles
+                .filter(circle -> !creator.getRole().equals(Role.ADMIN) && !creator.getRole().getValue().contains("PRESIDENT"))
                 .ifPresent(
-                        circleDomainModel -> {
-                            CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
-                                    loginUserId,
-                                    circleDomainModel.getId()
-                            ).orElseThrow(
-                                    () -> new UnauthorizedException(
-                                            ErrorCode.NOT_MEMBER,
-                                            MessageUtil.NOT_CIRCLE_MEMBER
-                                    )
-                            );
+                        circle -> {
+                            CircleMember member = getCircleMember(creator.getId(), circle.getId());
 
                             validatorBucket
-                                    .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
+                                    .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                                     .consistOf(CircleMemberStatusValidator.of(
-                                            circleMemberDomainModel.getStatus(),
+                                            member.getStatus(),
                                             List.of(CircleMemberStatus.MEMBER)
                                     ));
 
-                            if (creatorDomainModel.getRole().getValue().contains("LEADER_CIRCLE") && !boardDomainModel.getCreateRoleList().contains("COMMON")) {
+                            if (creator.getRole().getValue().contains("LEADER_CIRCLE") && !createRoles.contains("COMMON")) {
                                 validatorBucket
                                         .consistOf(UserEqualValidator.of(
-                                                circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
+                                                circle.getLeader().map(User::getId).orElseThrow(
                                                         () -> new UnauthorizedException(
                                                                 ErrorCode.API_NOT_ALLOWED,
                                                                 MessageUtil.NOT_CIRCLE_LEADER
@@ -417,86 +250,57 @@ public class PostService {
                             }
                         }
                 );
-
-        PostDomainModel postDomainModel = PostDomainModel.of(
-                postCreateRequestDto.getTitle(),
-                postCreateRequestDto.getContent(),
-                creatorDomainModel,
-                boardDomainModel,
-                postCreateRequestDto.getAttachmentList()
-        );
-
         validatorBucket
-                .consistOf(ConstraintValidator.of(postDomainModel, this.validator))
+                .consistOf(ConstraintValidator.of(post, this.validator))
                 .validate();
 
         return PostResponseDto.of(
-                this.postPort.createPost(postDomainModel),
-                creatorDomainModel
+                postRepository.save(post),
+                creator
         );
     }
 
     @Transactional
     public PostResponseDto deletePost(String loginUserId, String postId) {
+        User deleter = getUser(loginUserId);
+        Post post = getPost(postId);
+
         ValidatorBucket validatorBucket = ValidatorBucket.of();
-
-        UserDomainModel deleterDomainModel = this.userPort.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
-
-        PostDomainModel postDomainModel = this.postPort.findPostById(postId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.POST_NOT_FOUND
-                )
-        );
-
-        if (postDomainModel.getBoard().getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
+        if (post.getBoard().getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
             validatorBucket
                     .consistOf(UserRoleValidator.of(
-                            deleterDomainModel.getRole(),
+                            deleter.getRole(),
                             List.of()
                     ));
         }
-
         validatorBucket
-                .consistOf(UserStateValidator.of(deleterDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(deleterDomainModel.getRole()))
-                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), StaticValue.DOMAIN_POST));
+                .consistOf(UserStateValidator.of(deleter.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(deleter.getRole()))
+                .consistOf(TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST));
 
-        postDomainModel.getBoard().getCircle()
-                .filter(circleDomainModel -> !deleterDomainModel.getRole().equals(Role.ADMIN) && !deleterDomainModel.getRole().getValue().contains("PRESIDENT"))
+        Optional<Circle> circles = Optional.ofNullable(post.getBoard().getCircle());
+        circles
+                .filter(circle -> !deleter.getRole().equals(Role.ADMIN) && !deleter.getRole().getValue().contains("PRESIDENT"))
                 .ifPresentOrElse(
-                        circleDomainModel -> {
-                            CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
-                                    deleterDomainModel.getId(),
-                                    circleDomainModel.getId()
-                            ).orElseThrow(
-                                    () -> new UnauthorizedException(
-                                            ErrorCode.NOT_MEMBER,
-                                            MessageUtil.NOT_CIRCLE_MEMBER
-                                    )
-                            );
+                        circle -> {
+                            CircleMember member = getCircleMember(deleter.getId(), circle.getId());
 
                             validatorBucket
-                                    .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
+                                    .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                                     .consistOf(CircleMemberStatusValidator.of(
-                                            circleMemberDomainModel.getStatus(),
+                                            member.getStatus(),
                                             List.of(CircleMemberStatus.MEMBER)
                                     )).consistOf(ContentsAdminValidator.of(
-                                            deleterDomainModel.getRole(),
+                                            deleter.getRole(),
                                             loginUserId,
-                                            postDomainModel.getWriter().getId(),
+                                            post.getWriter().getId(),
                                             List.of(Role.LEADER_CIRCLE)
                                     ));
 
-                            if (deleterDomainModel.getRole().getValue().contains("LEADER_CIRCLE") && !postDomainModel.getWriter().getId().equals(loginUserId)) {
+                            if (deleter.getRole().getValue().contains("LEADER_CIRCLE") && !post.getWriter().getId().equals(loginUserId)) {
                                 validatorBucket
                                         .consistOf(UserEqualValidator.of(
-                                                circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
+                                                circle.getLeader().map(User::getId).orElseThrow(
                                                         () -> new UnauthorizedException(
                                                                 ErrorCode.API_NOT_ALLOWED,
                                                                 MessageUtil.NOT_CIRCLE_LEADER
@@ -508,24 +312,19 @@ public class PostService {
                         },
                         () -> validatorBucket
                                 .consistOf(ContentsAdminValidator.of(
-                                        deleterDomainModel.getRole(),
+                                        deleter.getRole(),
                                         loginUserId,
-                                        postDomainModel.getWriter().getId(),
+                                        post.getWriter().getId(),
                                         List.of())
                                 )
                 );
+        validatorBucket.validate();
 
-        validatorBucket
-                .validate();
+        post.setIsDeleted(true);
 
         return PostResponseDto.of(
-                this.postPort.deletePost(postId).orElseThrow(
-                        () -> new InternalServerException(
-                                ErrorCode.INTERNAL_SERVER,
-                                MessageUtil.INTERNAL_SERVER_ERROR
-                        )
-                ),
-                deleterDomainModel
+                postRepository.save(post),
+                deleter
         );
     }
 
@@ -535,167 +334,88 @@ public class PostService {
             String postId,
             PostUpdateRequestDto postUpdateRequestDto
     ) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
+        User updater = getUser(loginUserId);
+        Post post = getPost(postId);
 
-        UserDomainModel updaterDomainModel = this.userPort.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
-
-        PostDomainModel postDomainModel = this.postPort.findPostById(postId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.POST_NOT_FOUND
-                )
-        );
-
-        if (postDomainModel.getBoard().getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
+        ValidatorBucket validatorBucket = initializeValidator(updater, post.getBoard());
+        if (post.getBoard().getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
             validatorBucket
                     .consistOf(UserRoleValidator.of(
-                            updaterDomainModel.getRole(),
+                            updater.getRole(),
                             List.of()
                     ));
         }
-
         validatorBucket
-                .consistOf(UserStateValidator.of(updaterDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(updaterDomainModel.getRole()))
                 .consistOf(PostNumberOfAttachmentsValidator.of(postUpdateRequestDto.getAttachmentList()))
-                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
-                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getIsDeleted(), StaticValue.DOMAIN_POST))
+                .consistOf(TargetIsDeletedValidator.of(post.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
+                .consistOf(TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST))
                 .consistOf(ContentsAdminValidator.of(
-                        updaterDomainModel.getRole(),
+                        updater.getRole(),
                         loginUserId,
-                        postDomainModel.getWriter().getId(),
+                        post.getWriter().getId(),
                         List.of()
-                ));
+                ))
+                .consistOf(ConstraintValidator.of(post, this.validator));
+        validatorBucket.validate();
 
-        postDomainModel.getBoard().getCircle()
-                .filter(circleDomainModel -> !updaterDomainModel.getRole().equals(Role.ADMIN) && !updaterDomainModel.getRole().getValue().contains("PRESIDENT"))
-                .ifPresent(
-                        circleDomainModel -> {
-                            CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
-                                    loginUserId,
-                                    circleDomainModel.getId()
-                            ).orElseThrow(
-                                    () -> new UnauthorizedException(
-                                            ErrorCode.NOT_MEMBER,
-                                            MessageUtil.NOT_CIRCLE_MEMBER
-                                    )
-                            );
-
-                            validatorBucket
-                                    .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                                    .consistOf(CircleMemberStatusValidator.of(
-                                            circleMemberDomainModel.getStatus(),
-                                            List.of(CircleMemberStatus.MEMBER)
-                                    ));
-                        }
-                );
-
-        postDomainModel.update(
+        post.update(
                 postUpdateRequestDto.getTitle(),
                 postUpdateRequestDto.getContent(),
-                postUpdateRequestDto.getAttachmentList()
+                String.join(":::", postUpdateRequestDto.getAttachmentList())
         );
-
-        validatorBucket
-                .consistOf(ConstraintValidator.of(postDomainModel, this.validator))
-                .validate();
-
-        PostDomainModel updatedPostDomainModel = this.postPort.updatePost(postId, postDomainModel).orElseThrow(
-                () -> new InternalServerException(
-                        ErrorCode.INTERNAL_SERVER,
-                        MessageUtil.INTERNAL_SERVER_ERROR
-                )
-        );
+        Post updatedPost = postRepository.save(post);
 
         return PostResponseDto.of(
-                postDomainModel,
-                updaterDomainModel,
-                this.commentPort.findByPostId(postId, 0)
-                        .map(commentDomainModel -> CommentResponseDto.of(
-                                commentDomainModel,
-                                updaterDomainModel,
-                                updatedPostDomainModel.getBoard(),
-                                this.childCommentPort.countByParentComment(commentDomainModel.getId()),
-                                commentDomainModel.getChildCommentList().stream()
-                                        .map(childCommentDomainModel -> ChildCommentResponseDto.of(
-                                                childCommentDomainModel,
-                                                updaterDomainModel,
-                                                postDomainModel.getBoard()
-                                        ))
-                                        .collect(Collectors.toList())
-                        )),
-                this.postPort.countAllComment(postId)
+                updatedPost,
+                updater,
+                findCommentsByPostIdByPage(updater, updatedPost, 0),
+                postRepository.countAllCommentByPost_Id(postId)
         );
     }
 
+    @Transactional
     public PostResponseDto restorePost(String loginUserId, String postId) {
+        User restorer = getUser(loginUserId);
+        Post post = getPost(postId);
 
         ValidatorBucket validatorBucket = ValidatorBucket.of();
-
-        UserDomainModel restorerDomainModel = this.userPort.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
-
-        PostDomainModel postDomainModel = this.postPort.findPostById(postId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.POST_NOT_FOUND
-                )
-        );
-
-        if (postDomainModel.getBoard().getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
+        if (post.getBoard().getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
             validatorBucket
                     .consistOf(UserRoleValidator.of(
-                            restorerDomainModel.getRole(),
+                            restorer.getRole(),
                             List.of()
                     ));
         }
-
         validatorBucket
-                .consistOf(UserStateValidator.of(restorerDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(restorerDomainModel.getRole()))
-                .consistOf(TargetIsDeletedValidator.of(postDomainModel.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
-                .consistOf(TargetIsNotDeletedValidator.of(postDomainModel.getIsDeleted(), StaticValue.DOMAIN_POST));
+                .consistOf(UserStateValidator.of(restorer.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(restorer.getRole()))
+                .consistOf(TargetIsDeletedValidator.of(post.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
+                .consistOf(TargetIsNotDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST));
 
-        postDomainModel.getBoard().getCircle()
-                .filter(circleDomainModel -> !restorerDomainModel.getRole().equals(Role.ADMIN) && !restorerDomainModel.getRole().getValue().contains("PRESIDENT"))
+        Optional<Circle> circles = Optional.ofNullable(post.getBoard().getCircle());
+        circles
+                .filter(circle -> !restorer.getRole().equals(Role.ADMIN) && !restorer.getRole().getValue().contains("PRESIDENT"))
                 .ifPresentOrElse(
-                        circleDomainModel -> {
-                            CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.findByUserIdAndCircleId(
-                                    loginUserId,
-                                    circleDomainModel.getId()
-                            ).orElseThrow(
-                                    () -> new UnauthorizedException(
-                                            ErrorCode.NOT_MEMBER,
-                                            MessageUtil.NOT_CIRCLE_MEMBER
-                                    )
-                            );
+                        circle -> {
+                            CircleMember member = getCircleMember(restorer.getId(), circle.getId());
 
                             validatorBucket
-                                    .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
+                                    .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                                     .consistOf(CircleMemberStatusValidator.of(
-                                            circleMemberDomainModel.getStatus(),
+                                            member.getStatus(),
                                             List.of(CircleMemberStatus.MEMBER)
                                     ))
                                     .consistOf(ContentsAdminValidator.of(
-                                            restorerDomainModel.getRole(),
+                                            restorer.getRole(),
                                             loginUserId,
-                                            postDomainModel.getWriter().getId(),
+                                            post.getWriter().getId(),
                                             List.of(Role.LEADER_CIRCLE)
                                     ));
 
-                            if (restorerDomainModel.getRole().getValue().contains("LEADER_CIRCLE") && !postDomainModel.getWriter().getId().equals(loginUserId)) {
+                            if (restorer.getRole().getValue().contains("LEADER_CIRCLE") && !post.getWriter().getId().equals(loginUserId)) {
                                 validatorBucket
                                         .consistOf(UserEqualValidator.of(
-                                                circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
+                                                circle.getLeader().map(User::getId).orElseThrow(
                                                         () -> new UnauthorizedException(
                                                                 ErrorCode.API_NOT_ALLOWED,
                                                                 MessageUtil.NOT_CIRCLE_LEADER
@@ -707,48 +427,115 @@ public class PostService {
                         },
                         () -> validatorBucket
                                 .consistOf(ContentsAdminValidator.of(
-                                        restorerDomainModel.getRole(),
+                                        restorer.getRole(),
                                         loginUserId,
-                                        postDomainModel.getWriter().getId(),
+                                        post.getWriter().getId(),
                                         List.of()
                                 ))
                 );
 
         validatorBucket
                 .consistOf(ContentsAdminValidator.of(
-                        restorerDomainModel.getRole(),
+                        restorer.getRole(),
                         loginUserId,
-                        postDomainModel.getWriter().getId(),
+                        post.getWriter().getId(),
                         List.of(Role.LEADER_CIRCLE)
                 ))
                 .validate();
 
-        PostDomainModel restoredPostDomainModel = this.postPort.restorePost(postId, postDomainModel).orElseThrow(
-                () -> new InternalServerException(
-                        ErrorCode.INTERNAL_SERVER,
-                        MessageUtil.INTERNAL_SERVER_ERROR
-                )
-        );
+        post.setIsDeleted(false);
+        Post restoredPost = postRepository.save(post);
 
         return PostResponseDto.of(
-                postDomainModel,
-                restorerDomainModel,
-                this.commentPort.findByPostId(postId, 0)
-                        .map(commentDomainModel -> CommentResponseDto.of(
-                                commentDomainModel,
-                                restorerDomainModel,
-                                restoredPostDomainModel.getBoard(),
-                                this.childCommentPort.countByParentComment(commentDomainModel.getId()),
-                                commentDomainModel.getChildCommentList().stream()
-                                        .map(childCommentDomainModel -> ChildCommentResponseDto.of(
-                                                childCommentDomainModel,
-                                                restorerDomainModel,
-                                                postDomainModel.getBoard()
-                                        ))
-                                        .collect(Collectors.toList())
-                        )),
-                this.postPort.countAllComment(postId)
+                restoredPost,
+                restorer,
+                findCommentsByPostIdByPage(restorer, restoredPost, 0),
+                postRepository.countAllCommentByPost_Id(postId)
         );
     }
 
+    private ValidatorBucket initializeValidator(User user, Board board) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+        validatorBucket
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(user.getRole()));
+
+        Optional<Circle> circles = Optional.ofNullable(board.getCircle());
+        circles
+                .filter(circle -> !user.getRole().equals(Role.ADMIN) && !user.getRole().getValue().contains("PRESIDENT"))
+                .ifPresent(
+                        circle -> {
+                            CircleMember member = getCircleMember(user.getId(), circle.getId());
+                            validatorBucket
+                                    .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
+                                    .consistOf(CircleMemberStatusValidator.of(
+                                            member.getStatus(),
+                                            List.of(CircleMemberStatus.MEMBER)
+                                    ));
+                        }
+                );
+        return validatorBucket;
+    }
+
+    private Page<CommentResponseDto> findCommentsByPostIdByPage(User user, Post post, Integer pageNum) {
+        return commentRepository.findByPost_IdOrderByCreatedAt(
+                post.getId(),
+                pageableFactory.create(pageNum, StaticValue.DEFAULT_COMMENT_PAGE_SIZE)
+        ).map(comment -> CommentResponseDto.of(
+                comment,
+                user,
+                post.getBoard(),
+                childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
+                comment.getChildCommentList().stream()
+                        .map(childComment -> ChildCommentResponseDto.of(
+                                childComment,
+                                user,
+                                post.getBoard()
+                        ))
+                        .collect(Collectors.toList())
+        ));
+    }
+
+    private boolean isFavorite(String userId, String boardId){
+        return favoriteBoardRepository.findByUser_Id(userId)
+                .stream()
+                .filter(favoriteBoard -> !favoriteBoard.getBoard().getIsDeleted())
+                .anyMatch(favoriteboard -> favoriteboard.getBoard().getId().equals(boardId));
+    }
+
+    private Post getPost(String postId) {
+        return postRepository.findById(postId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.POST_NOT_FOUND
+                )
+        );
+    }
+
+    private User getUser(String userId) {
+        return userRepository.findById(userId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.USER_NOT_FOUND
+                )
+        );
+    }
+
+    private Board getBoard(String boardId) {
+        return boardRepository.findById(boardId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.BOARD_NOT_FOUND
+                )
+        );
+    }
+
+    private CircleMember getCircleMember(String userId, String circleId) {
+        return circleMemberRepository.findByUser_IdAndCircle_Id(userId, circleId).orElseThrow(
+                () -> new UnauthorizedException(
+                        ErrorCode.NOT_MEMBER,
+                        MessageUtil.CIRCLE_APPLY_INVALID
+                )
+        );
+    }
 }
