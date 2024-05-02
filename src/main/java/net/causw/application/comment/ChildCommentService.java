@@ -47,8 +47,6 @@ public class ChildCommentService {
 
     @Transactional
     public ChildCommentResponseDto createChildComment(String creatorId, ChildCommentCreateRequestDto childCommentCreateRequestDto) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
         User user = getUser(creatorId);
         Comment parentComment = getComment(childCommentCreateRequestDto.getParentCommentId());
         Post post = getPost(parentComment.getPost().getId());
@@ -62,36 +60,12 @@ public class ChildCommentService {
                 parentComment
         );
 
-        validatorBucket
-                .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
-                .consistOf(TargetIsDeletedValidator.of(post.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
-                .consistOf(TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST))
-                .consistOf(ConstraintValidator.of(childComment, this.validator));
-
+        ValidatorBucket validatorBucket = initializeValidator(user, post);
+        validatorBucket.consistOf(ConstraintValidator.of(childComment, this.validator));
         refChildComment.ifPresent(
-                refChild -> validatorBucket
-                        .consistOf(TargetIsDeletedValidator.of(refChild.getIsDeleted(), StaticValue.DOMAIN_CHILD_COMMENT))
+                refChild -> validatorBucket.consistOf(TargetIsDeletedValidator.of(refChild.getIsDeleted(), StaticValue.DOMAIN_CHILD_COMMENT))
         );
-
-        Optional<Circle> circles = Optional.ofNullable(post.getBoard().getCircle());
-        circles
-                .filter(circleDomainModel -> !user.getRole().equals(Role.ADMIN) && !user.getRole().getValue().contains("PRESIDENT"))
-                .ifPresent(
-                        circle -> {
-                            CircleMember member = getCircleMember(creatorId, circle.getId());
-
-                            validatorBucket
-                                    .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                                    .consistOf(CircleMemberStatusValidator.of(
-                                            member.getStatus(),
-                                            List.of(CircleMemberStatus.MEMBER)
-                                    ));
-                        }
-                );
-
-        validatorBucket
-                .validate();
+        validatorBucket.validate();
 
         return ChildCommentResponseDto.of(childCommentRepository.save(childComment), user, post.getBoard());
     }
@@ -102,21 +76,13 @@ public class ChildCommentService {
             String childCommentId,
             ChildCommentUpdateRequestDto childCommentUpdateRequestDto
     ) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
         User updater = getUser(updaterId);
         ChildComment childComment = getChildComment(childCommentId);
         Post post = getPost(childComment.getParentComment().getPost().getId());
+        childComment.update(childCommentUpdateRequestDto.getContent());
 
-        childComment.update(
-                childCommentUpdateRequestDto.getContent()
-        );
-
+        ValidatorBucket validatorBucket = initializeValidator(updater, post);
         validatorBucket
-                .consistOf(UserStateValidator.of(updater.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(updater.getRole()))
-                .consistOf(TargetIsDeletedValidator.of(post.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
-                .consistOf(TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST))
                 .consistOf(TargetIsDeletedValidator.of(childComment.getIsDeleted(), StaticValue.DOMAIN_CHILD_COMMENT))
                 .consistOf(ConstraintValidator.of(childComment, this.validator))
                 .consistOf(ContentsAdminValidator.of(
@@ -125,45 +91,22 @@ public class ChildCommentService {
                         childComment.getWriter().getId(),
                         List.of()
                 ));
-
-        Optional<Circle> circles = Optional.ofNullable(post.getBoard().getCircle());
-        circles
-                .filter(circleDomainModel -> !updater.getRole().equals(Role.ADMIN) && !updater.getRole().getValue().contains("PRESIDENT"))
-                .ifPresent(
-                        circle -> {
-                            CircleMember member = getCircleMember(updaterId, circle.getId());
-
-                            validatorBucket
-                                    .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                                    .consistOf(CircleMemberStatusValidator.of(
-                                            member.getStatus(),
-                                            List.of(CircleMemberStatus.MEMBER)
-                                    ));
-                        }
-                );
-
-        validatorBucket
-                .validate();
+        validatorBucket.validate();
 
         return ChildCommentResponseDto.of(childCommentRepository.save(childComment), updater, post.getBoard());
     }
 
     @Transactional
     public ChildCommentResponseDto deleteChildComment(String deleterId, String childCommentId) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
         User deleter = getUser(deleterId);
         ChildComment childComment = getChildComment(childCommentId);
         Post post = getPost(childComment.getParentComment().getPost().getId());
 
-        validatorBucket
-                .consistOf(UserStateValidator.of(deleter.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(deleter.getRole()))
-                .consistOf(TargetIsDeletedValidator.of(childComment.getIsDeleted(), StaticValue.DOMAIN_CHILD_COMMENT));
-
+        ValidatorBucket validatorBucket = initializeValidator(deleter, post);
+        validatorBucket.consistOf(TargetIsDeletedValidator.of(childComment.getIsDeleted(), StaticValue.DOMAIN_CHILD_COMMENT));
         Optional<Circle> circles = Optional.ofNullable(post.getBoard().getCircle());
         circles
-                .filter(circleDomainModel -> !deleter.getRole().equals(Role.ADMIN) && !deleter.getRole().getValue().contains("PRESIDENT"))
+                .filter(circle -> !deleter.getRole().equals(Role.ADMIN) && !deleter.getRole().getValue().contains("PRESIDENT"))
                 .ifPresentOrElse(
                         circle -> {
                             CircleMember member = getCircleMember(deleterId, circle.getId());
@@ -203,11 +146,10 @@ public class ChildCommentService {
                                 ))
 
                 );
-
-        validatorBucket
-                .validate();
+        validatorBucket.validate();
 
         childComment.delete();
+
         return ChildCommentResponseDto.of(
                 childCommentRepository.save(childComment),
                 deleter,
@@ -215,7 +157,31 @@ public class ChildCommentService {
         );
     }
 
-    private User getUser(String userId){
+    private ValidatorBucket initializeValidator(User user, Post post) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+        validatorBucket
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+                .consistOf(TargetIsDeletedValidator.of(post.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
+                .consistOf(TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST));
+
+        Optional<Circle> circles = Optional.ofNullable(post.getBoard().getCircle());
+        circles
+                .filter(circle -> !user.getRole().equals(Role.ADMIN) && !user.getRole().getValue().contains("PRESIDENT"))
+                .ifPresent(circle -> {
+                    CircleMember member = getCircleMember(user.getId(), circle.getId());
+
+                    validatorBucket
+                            .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
+                            .consistOf(CircleMemberStatusValidator.of(
+                                    member.getStatus(),
+                                    List.of(CircleMemberStatus.MEMBER)
+                            ));
+                });
+        return validatorBucket;
+    }
+
+    private User getUser(String userId) {
         return userRepository.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -224,7 +190,7 @@ public class ChildCommentService {
         );
     }
 
-    private Post getPost(String postId){
+    private Post getPost(String postId) {
         return postRepository.findById(postId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -233,7 +199,7 @@ public class ChildCommentService {
         );
     }
 
-    private Comment getComment(String commentId){
+    private Comment getComment(String commentId) {
         return commentRepository.findById(commentId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -242,7 +208,7 @@ public class ChildCommentService {
         );
     }
 
-    private ChildComment getChildComment(String childCommentId){
+    private ChildComment getChildComment(String childCommentId) {
         return childCommentRepository.findById(childCommentId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -251,7 +217,7 @@ public class ChildCommentService {
         );
     }
 
-    private CircleMember getCircleMember(String userId, String circleId){
+    private CircleMember getCircleMember(String userId, String circleId) {
         return circleMemberRepository.findByUser_IdAndCircle_Id(userId, circleId).orElseThrow(
                 () -> new UnauthorizedException(
                         ErrorCode.NOT_MEMBER,
