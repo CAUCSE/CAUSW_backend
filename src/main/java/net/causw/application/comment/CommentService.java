@@ -12,6 +12,7 @@ import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentCreateRequestDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.comment.CommentUpdateRequestDto;
+import net.causw.application.dto.util.StatusUtil;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
@@ -62,12 +63,12 @@ public class CommentService {
 
         return CommentResponseDto.of(
                 commentRepository.save(comment),
-                user,
-                post.getBoard(),
                 childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
                 comment.getChildCommentList().stream()
-                        .map(childComment -> ChildCommentResponseDto.of(childComment, user, post.getBoard()))
-                        .collect(Collectors.toList())
+                        .map(childComment -> ChildCommentResponseDto.of(childComment, StatusUtil.isUpdatable(childComment, user), StatusUtil.isDeletable(childComment, user, post.getBoard())))
+                        .collect(Collectors.toList()),
+                StatusUtil.isUpdatable(comment, user),
+                StatusUtil.isDeletable(comment, user, post.getBoard())
         );
     }
 
@@ -88,12 +89,12 @@ public class CommentService {
         return comments.map(comment ->
                 CommentResponseDto.of(
                         comment,
-                        user,
-                        post.getBoard(),
                         childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
                         comment.getChildCommentList().stream()
-                                .map(childComment -> ChildCommentResponseDto.of(childComment, user, post.getBoard()))
-                                .collect(Collectors.toList())
+                                .map(childComment -> ChildCommentResponseDto.of(childComment, StatusUtil.isUpdatable(childComment, user), StatusUtil.isDeletable(childComment, user, post.getBoard())))
+                                .collect(Collectors.toList()),
+                        StatusUtil.isUpdatable(comment, user),
+                        StatusUtil.isDeletable(comment, user, post.getBoard())
                 )
         );
     }
@@ -124,12 +125,12 @@ public class CommentService {
 
         return CommentResponseDto.of(
                 commentRepository.save(comment),
-                user,
-                post.getBoard(),
                 childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
                 comment.getChildCommentList().stream()
-                        .map(childComment -> ChildCommentResponseDto.of(childComment, user, post.getBoard()))
-                        .collect(Collectors.toList())
+                        .map(childComment -> ChildCommentResponseDto.of(childComment, StatusUtil.isUpdatable(childComment, user), StatusUtil.isDeletable(childComment, user, post.getBoard())))
+                        .collect(Collectors.toList()),
+                StatusUtil.isUpdatable(comment, user),
+                StatusUtil.isDeletable(comment, user, post.getBoard())
         );
     }
 
@@ -194,12 +195,12 @@ public class CommentService {
 
         return CommentResponseDto.of(
                 commentRepository.save(comment),
-                user,
-                post.getBoard(),
                 childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(commentId),
                 comment.getChildCommentList().stream()
-                        .map(childCommentDomainModel -> ChildCommentResponseDto.of(childCommentDomainModel, user, post.getBoard()))
-                        .collect(Collectors.toList())
+                        .map(childComment -> ChildCommentResponseDto.of(childComment, StatusUtil.isUpdatable(childComment, user), StatusUtil.isDeletable(childComment, user, post.getBoard())))
+                        .collect(Collectors.toList()),
+                StatusUtil.isUpdatable(comment, user),
+                StatusUtil.isDeletable(comment, user, post.getBoard())
         );
     }
 

@@ -3,11 +3,7 @@ package net.causw.application.dto.comment;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.comment.Comment;
-import net.causw.adapter.persistence.user.User;
-import net.causw.domain.model.enums.Role;
-import net.causw.domain.model.util.StaticValue;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,18 +28,14 @@ public class CommentResponseDto {
 
     public static CommentResponseDto of(
             Comment comment,
-            User user,
-            Board board,
             Long numChildComment,
-            List<ChildCommentResponseDto> childCommentList
-    ) {
-        String content = comment.getIsDeleted() ? StaticValue.CONTENT_DELETED_COMMENT : comment.getContent();
-        boolean updatable = determineUpdatable(comment, user);
-        boolean deletable = determineDeletable(comment, user, board);
-
+            List<ChildCommentResponseDto> childCommentList,
+            boolean updatable,
+            boolean deletable
+    ){
         return CommentResponseDto.builder()
                 .id(comment.getId())
-                .content(content)
+                .content(comment.getContent())
                 .createdAt(comment.getCreatedAt())
                 .updatedAt(comment.getUpdatedAt())
                 .isDeleted(comment.getIsDeleted())
@@ -56,19 +48,5 @@ public class CommentResponseDto {
                 .numChildComment(numChildComment)
                 .childCommentList(childCommentList)
                 .build();
-    }
-
-    private static boolean determineUpdatable(Comment comment, User user) {
-        if (comment.getIsDeleted()) return false;
-        return user.getRole() == Role.ADMIN || comment.getWriter().getId().equals(user.getId());
-    }
-
-    private static boolean determineDeletable(Comment comment, User user, Board board) {
-        if (comment.getIsDeleted()) return false;
-        if (user.getRole() == Role.ADMIN || user.getRole().getValue().contains("PRESIDENT") || comment.getWriter().getId().equals(user.getId())) {
-            return true;
-        }
-        return board.getCircle() != null && user.getRole().getValue().contains("LEADER_CIRCLE")
-                && board.getCircle().getLeader().map(leader -> leader.getId().equals(user.getId())).orElse(false);
     }
 }
