@@ -8,9 +8,9 @@ import net.causw.adapter.persistence.page.PageableFactory;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.user.User;
-import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.post.*;
+import net.causw.application.dto.util.DtoMapper;
 import net.causw.application.dto.util.StatusUtil;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -63,13 +63,7 @@ public class PostService {
         ValidatorBucket validatorBucket = initializeValidator(user, post.getBoard());
         validatorBucket.validate();
 
-        return PostResponseDto.of(
-                post,
-                findCommentsByPostIdByPage(user, post, 0),
-                postRepository.countAllCommentByPost_Id(postId),
-                StatusUtil.isUpdatable(post, user),
-                StatusUtil.isDeletable(post, user, post.getBoard())
-        );
+        return toDtoExtended(post, user);
     }
 
     @Transactional(readOnly = true)
@@ -90,29 +84,22 @@ public class PostService {
         }
 
         if (isCircleLeader || user.getRole().equals(Role.ADMIN) || user.getRole().getValue().contains("PRESIDENT")) {
-            return BoardPostsResponseDto.of(
+            return toDto(
                     board,
                     user.getRole(),
                     isFavorite(loginUserId, board.getId()),
                     postRepository.findAllByBoard_IdOrderByCreatedAtDesc(boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
-                            .map(post -> PostsResponseDto.of(
-                                    post,
-                                    postRepository.countAllCommentByPost_Id(post.getId())
-                            ))
+                            .map(this::toDto)
             );
         } else {
-            return BoardPostsResponseDto.of(
+            return toDto(
                     board,
                     user.getRole(),
                     isFavorite(loginUserId, board.getId()),
                     postRepository.findAllByBoard_IdAndIsDeletedOrderByCreatedAtDesc(boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), false)
-                            .map(post -> PostsResponseDto.of(
-                                    post,
-                                    postRepository.countAllCommentByPost_Id(post.getId())
-                            ))
+                            .map(this::toDto)
             );
         }
-
     }
 
     @Transactional(readOnly = true)
@@ -136,29 +123,20 @@ public class PostService {
         }
 
         if (isCircleLeader || user.getRole().equals(Role.ADMIN) || user.getRole().getValue().contains("PRESIDENT")) {
-            return BoardPostsResponseDto.of(
+            return toDto(
                     board,
                     user.getRole(),
                     isFavorite(loginUserId, board.getId()),
-                    postRepository.searchByTitle(keyword, boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
-                            .map(post -> PostsResponseDto.of(
-                                    post,
-                                    postRepository.countAllCommentByPost_Id(post.getId())
-                            )));
+                    postRepository.findAllByBoard_IdOrderByCreatedAtDesc(boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
+                            .map(this::toDto));
         } else {
-            return BoardPostsResponseDto.of(
+            return toDto(
                     board,
                     user.getRole(),
                     isFavorite(loginUserId, board.getId()),
                     postRepository.searchByTitle(keyword, boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), false)
-                            .map(post -> PostsResponseDto.of(
-                                    post,
-                                    postRepository.countAllCommentByPost_Id(post.getId())
-                            ))
-            );
+                            .map(this::toDto));
         }
-
-
     }
 
     @Transactional(readOnly = true)
@@ -171,16 +149,12 @@ public class PostService {
                 )
         );
 
-        return BoardPostsResponseDto.of(
+        return toDto(
                 board,
                 user.getRole(),
                 isFavorite(loginUserId, board.getId()),
                 postRepository.findAllByBoard_IdOrderByCreatedAtDesc(board.getId(), pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
-                        .map(post -> PostsResponseDto.of(
-                                post,
-                                postRepository.countAllCommentByPost_Id(post.getId())
-                        ))
-        );
+                        .map(this::toDto));
     }
 
     @Transactional
@@ -251,11 +225,7 @@ public class PostService {
                 .consistOf(ConstraintValidator.of(post, this.validator))
                 .validate();
 
-        return PostResponseDto.of(
-                postRepository.save(post),
-                StatusUtil.isUpdatable(post, creator),
-                StatusUtil.isDeletable(post, creator, board)
-        );
+        return toDto(postRepository.save(post), creator);
     }
 
     @Transactional
@@ -320,11 +290,7 @@ public class PostService {
 
         post.setIsDeleted(true);
 
-        return PostResponseDto.of(
-                postRepository.save(post),
-                StatusUtil.isUpdatable(post, deleter),
-                StatusUtil.isDeletable(post, deleter, post.getBoard())
-        );
+        return toDto(postRepository.save(post), deleter);
     }
 
     @Transactional
@@ -362,15 +328,8 @@ public class PostService {
                 postUpdateRequestDto.getContent(),
                 String.join(":::", postUpdateRequestDto.getAttachmentList())
         );
-        Post updatedPost = postRepository.save(post);
 
-        return PostResponseDto.of(
-                updatedPost,
-                findCommentsByPostIdByPage(updater, updatedPost, 0),
-                postRepository.countAllCommentByPost_Id(postId),
-                StatusUtil.isUpdatable(updatedPost, updater),
-                StatusUtil.isDeletable(updatedPost, updater, post.getBoard())
-        );
+        return toDtoExtended(post, updater);
     }
 
     @Transactional
@@ -444,15 +403,8 @@ public class PostService {
                 .validate();
 
         post.setIsDeleted(false);
-        Post restoredPost = postRepository.save(post);
 
-        return PostResponseDto.of(
-                restoredPost,
-                findCommentsByPostIdByPage(restorer, restoredPost, 0),
-                postRepository.countAllCommentByPost_Id(postId),
-                StatusUtil.isUpdatable(restoredPost, restorer),
-                StatusUtil.isDeletable(restoredPost, restorer, post.getBoard())
-        );
+        return toDtoExtended(postRepository.save(post), restorer);
     }
 
     private ValidatorBucket initializeValidator(User user, Board board) {
@@ -478,6 +430,43 @@ public class PostService {
         return validatorBucket;
     }
 
+    private BoardPostsResponseDto toDto(Board board, Role userRole, boolean isFavorite, Page<PostsResponseDto> post) {
+        List<String> roles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
+        boolean writable = roles.stream().anyMatch(str -> userRole.getValue().contains(str));
+        return DtoMapper.INSTANCE.toBoardPostsResponseDto(
+                board,
+                userRole,
+                writable,
+                isFavorite,
+                post
+        );
+    }
+
+    private PostsResponseDto toDto(Post post) {
+        return DtoMapper.INSTANCE.toPostsResponseDto(
+                post,
+                postRepository.countAllCommentByPost_Id(post.getId())
+        );
+    }
+
+    private PostResponseDto toDto(Post post, User user) {
+        return DtoMapper.INSTANCE.toPostResponseDto(
+                post,
+                StatusUtil.isUpdatable(post, user),
+                StatusUtil.isDeletable(post, user, post.getBoard())
+        );
+    }
+
+    private PostResponseDto toDtoExtended(Post post, User user) {
+        return DtoMapper.INSTANCE.toPostResponseDtoExtended(
+                postRepository.save(post),
+                findCommentsByPostIdByPage(user, post, 0),
+                postRepository.countAllCommentByPost_Id(post.getId()),
+                StatusUtil.isUpdatable(post, user),
+                StatusUtil.isDeletable(post, user, post.getBoard())
+        );
+    }
+
     private Page<CommentResponseDto> findCommentsByPostIdByPage(User user, Post post, Integer pageNum) {
         return commentRepository.findByPost_IdOrderByCreatedAt(
                 post.getId(),
@@ -486,11 +475,11 @@ public class PostService {
                         comment,
                         childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
                         comment.getChildCommentList().stream()
-                                .map(childComment -> ChildCommentResponseDto.of(
+                                .map(childComment -> DtoMapper.INSTANCE.toChildCommentResponseDto(
                                         childComment,
                                         StatusUtil.isUpdatable(childComment, user),
-                                        StatusUtil.isDeletable(childComment, user, post.getBoard())
-                                ))
+                                        StatusUtil.isDeletable(childComment, user, post.getBoard()))
+                                )
                                 .collect(Collectors.toList()),
                         StatusUtil.isUpdatable(comment, user),
                         StatusUtil.isDeletable(comment, user, post.getBoard())

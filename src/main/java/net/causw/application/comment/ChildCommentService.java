@@ -11,6 +11,7 @@ import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.comment.ChildCommentCreateRequestDto;
 import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.ChildCommentUpdateRequestDto;
+import net.causw.application.dto.util.DtoMapper;
 import net.causw.application.dto.util.StatusUtil;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -68,7 +69,7 @@ public class ChildCommentService {
         );
         validatorBucket.validate();
 
-        return ChildCommentResponseDto.of(
+        return toDto(
                 childCommentRepository.save(childComment),
                 StatusUtil.isUpdatable(childComment, user),
                 StatusUtil.isDeletable(childComment, user, post.getBoard())
@@ -98,7 +99,7 @@ public class ChildCommentService {
                 ));
         validatorBucket.validate();
 
-        return ChildCommentResponseDto.of(
+        return toDto(
                 childCommentRepository.save(childComment),
                 StatusUtil.isUpdatable(childComment, updater),
                 StatusUtil.isDeletable(childComment, updater, post.getBoard())
@@ -159,7 +160,7 @@ public class ChildCommentService {
 
         childComment.delete();
 
-        return ChildCommentResponseDto.of(
+        return toDto(
                 childCommentRepository.save(childComment),
                 StatusUtil.isUpdatable(childComment, deleter),
                 StatusUtil.isDeletable(childComment, deleter, post.getBoard())
@@ -188,6 +189,10 @@ public class ChildCommentService {
                             ));
                 });
         return validatorBucket;
+    }
+
+    private ChildCommentResponseDto toDto(ChildComment comment, Boolean updatable, Boolean deletable) {
+        return DtoMapper.INSTANCE.toChildCommentResponseDto(comment, updatable, deletable);
     }
 
     private User getUser(String userId) {

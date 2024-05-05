@@ -1,6 +1,7 @@
 package net.causw.application.comment;
 
 import lombok.RequiredArgsConstructor;
+import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.comment.Comment;
@@ -8,10 +9,10 @@ import net.causw.adapter.persistence.page.PageableFactory;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.user.User;
-import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentCreateRequestDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.comment.CommentUpdateRequestDto;
+import net.causw.application.dto.util.DtoMapper;
 import net.causw.application.dto.util.StatusUtil;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -61,15 +62,7 @@ public class CommentService {
                 consistOf(ConstraintValidator.of(comment, this.validator));
         validatorBucket.validate();
 
-        return CommentResponseDto.of(
-                commentRepository.save(comment),
-                childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
-                comment.getChildCommentList().stream()
-                        .map(childComment -> ChildCommentResponseDto.of(childComment, StatusUtil.isUpdatable(childComment, user), StatusUtil.isDeletable(childComment, user, post.getBoard())))
-                        .collect(Collectors.toList()),
-                StatusUtil.isUpdatable(comment, user),
-                StatusUtil.isDeletable(comment, user, post.getBoard())
-        );
+        return toDto(commentRepository.save(comment), user, post.getBoard());
     }
 
     @Transactional(readOnly = true)
@@ -86,17 +79,7 @@ public class CommentService {
         );
         comments.forEach(comment -> comment.setChildCommentList(childCommentRepository.findByParentComment_Id(comment.getId())));
 
-        return comments.map(comment ->
-                CommentResponseDto.of(
-                        comment,
-                        childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
-                        comment.getChildCommentList().stream()
-                                .map(childComment -> ChildCommentResponseDto.of(childComment, StatusUtil.isUpdatable(childComment, user), StatusUtil.isDeletable(childComment, user, post.getBoard())))
-                                .collect(Collectors.toList()),
-                        StatusUtil.isUpdatable(comment, user),
-                        StatusUtil.isDeletable(comment, user, post.getBoard())
-                )
-        );
+        return comments.map(comment -> toDto(comment, user, post.getBoard()));
     }
 
     @Transactional
@@ -123,15 +106,7 @@ public class CommentService {
 
         comment.update(commentUpdateRequestDto.getContent());
 
-        return CommentResponseDto.of(
-                commentRepository.save(comment),
-                childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
-                comment.getChildCommentList().stream()
-                        .map(childComment -> ChildCommentResponseDto.of(childComment, StatusUtil.isUpdatable(childComment, user), StatusUtil.isDeletable(childComment, user, post.getBoard())))
-                        .collect(Collectors.toList()),
-                StatusUtil.isUpdatable(comment, user),
-                StatusUtil.isDeletable(comment, user, post.getBoard())
-        );
+        return toDto(commentRepository.save(comment), user, post.getBoard());
     }
 
 
@@ -193,14 +168,18 @@ public class CommentService {
 
         comment.delete();
 
-        return CommentResponseDto.of(
-                commentRepository.save(comment),
-                childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(commentId),
+        return toDto(commentRepository.save(comment), user, post.getBoard());
+    }
+
+    private CommentResponseDto toDto(Comment comment, User user, Board board) {
+        return DtoMapper.INSTANCE.toCommentResponseDto(
+                comment,
+                childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
                 comment.getChildCommentList().stream()
-                        .map(childComment -> ChildCommentResponseDto.of(childComment, StatusUtil.isUpdatable(childComment, user), StatusUtil.isDeletable(childComment, user, post.getBoard())))
+                        .map(childComment -> DtoMapper.INSTANCE.toChildCommentResponseDto(childComment, StatusUtil.isUpdatable(childComment, user), StatusUtil.isDeletable(childComment, user, board)))
                         .collect(Collectors.toList()),
                 StatusUtil.isUpdatable(comment, user),
-                StatusUtil.isDeletable(comment, user, post.getBoard())
+                StatusUtil.isDeletable(comment, user, board)
         );
     }
 
