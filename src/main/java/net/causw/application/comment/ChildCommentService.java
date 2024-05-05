@@ -69,7 +69,7 @@ public class ChildCommentService {
         );
         validatorBucket.validate();
 
-        return toDto(
+        return toChildCommentResponseDto(
                 childCommentRepository.save(childComment),
                 StatusUtil.isUpdatable(childComment, user),
                 StatusUtil.isDeletable(childComment, user, post.getBoard())
@@ -99,7 +99,7 @@ public class ChildCommentService {
                 ));
         validatorBucket.validate();
 
-        return toDto(
+        return toChildCommentResponseDto(
                 childCommentRepository.save(childComment),
                 StatusUtil.isUpdatable(childComment, updater),
                 StatusUtil.isDeletable(childComment, updater, post.getBoard())
@@ -160,7 +160,7 @@ public class ChildCommentService {
 
         childComment.delete();
 
-        return toDto(
+        return toChildCommentResponseDto(
                 childCommentRepository.save(childComment),
                 StatusUtil.isUpdatable(childComment, deleter),
                 StatusUtil.isDeletable(childComment, deleter, post.getBoard())
@@ -191,7 +191,7 @@ public class ChildCommentService {
         return validatorBucket;
     }
 
-    private ChildCommentResponseDto toDto(ChildComment comment, Boolean updatable, Boolean deletable) {
+    private ChildCommentResponseDto toChildCommentResponseDto(ChildComment comment, Boolean updatable, Boolean deletable) {
         return DtoMapper.INSTANCE.toChildCommentResponseDto(comment, updatable, deletable);
     }
 

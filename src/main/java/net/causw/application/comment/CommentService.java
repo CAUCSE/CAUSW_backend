@@ -62,7 +62,7 @@ public class CommentService {
                 consistOf(ConstraintValidator.of(comment, this.validator));
         validatorBucket.validate();
 
-        return toDto(commentRepository.save(comment), user, post.getBoard());
+        return toCommentResponseDto(commentRepository.save(comment), user, post.getBoard());
     }
 
     @Transactional(readOnly = true)
@@ -79,7 +79,7 @@ public class CommentService {
         );
         comments.forEach(comment -> comment.setChildCommentList(childCommentRepository.findByParentComment_Id(comment.getId())));
 
-        return comments.map(comment -> toDto(comment, user, post.getBoard()));
+        return comments.map(comment -> toCommentResponseDto(comment, user, post.getBoard()));
     }
 
     @Transactional
@@ -106,7 +106,7 @@ public class CommentService {
 
         comment.update(commentUpdateRequestDto.getContent());
 
-        return toDto(commentRepository.save(comment), user, post.getBoard());
+        return toCommentResponseDto(commentRepository.save(comment), user, post.getBoard());
     }
 
 
@@ -168,10 +168,10 @@ public class CommentService {
 
         comment.delete();
 
-        return toDto(commentRepository.save(comment), user, post.getBoard());
+        return toCommentResponseDto(commentRepository.save(comment), user, post.getBoard());
     }
 
-    private CommentResponseDto toDto(Comment comment, User user, Board board) {
+    private CommentResponseDto toCommentResponseDto(Comment comment, User user, Board board) {
         return DtoMapper.INSTANCE.toCommentResponseDto(
                 comment,
                 childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),

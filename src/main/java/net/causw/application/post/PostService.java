@@ -63,7 +63,7 @@ public class PostService {
         ValidatorBucket validatorBucket = initializeValidator(user, post.getBoard());
         validatorBucket.validate();
 
-        return toDtoExtended(post, user);
+        return toPostResponseDtoExtended(post, user);
     }
 
     @Transactional(readOnly = true)
@@ -84,20 +84,20 @@ public class PostService {
         }
 
         if (isCircleLeader || user.getRole().equals(Role.ADMIN) || user.getRole().getValue().contains("PRESIDENT")) {
-            return toDto(
+            return toBoardPostsResponseDto(
                     board,
                     user.getRole(),
                     isFavorite(loginUserId, board.getId()),
                     postRepository.findAllByBoard_IdOrderByCreatedAtDesc(boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
-                            .map(this::toDto)
+                            .map(this::toPostsResponseDto)
             );
         } else {
-            return toDto(
+            return toBoardPostsResponseDto(
                     board,
                     user.getRole(),
                     isFavorite(loginUserId, board.getId()),
                     postRepository.findAllByBoard_IdAndIsDeletedOrderByCreatedAtDesc(boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), false)
-                            .map(this::toDto)
+                            .map(this::toPostsResponseDto)
             );
         }
     }
@@ -123,19 +123,19 @@ public class PostService {
         }
 
         if (isCircleLeader || user.getRole().equals(Role.ADMIN) || user.getRole().getValue().contains("PRESIDENT")) {
-            return toDto(
+            return toBoardPostsResponseDto(
                     board,
                     user.getRole(),
                     isFavorite(loginUserId, board.getId()),
                     postRepository.findAllByBoard_IdOrderByCreatedAtDesc(boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
-                            .map(this::toDto));
+                            .map(this::toPostsResponseDto));
         } else {
-            return toDto(
+            return toBoardPostsResponseDto(
                     board,
                     user.getRole(),
                     isFavorite(loginUserId, board.getId()),
                     postRepository.searchByTitle(keyword, boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), false)
-                            .map(this::toDto));
+                            .map(this::toPostsResponseDto));
         }
     }
 
@@ -149,12 +149,12 @@ public class PostService {
                 )
         );
 
-        return toDto(
+        return toBoardPostsResponseDto(
                 board,
                 user.getRole(),
                 isFavorite(loginUserId, board.getId()),
                 postRepository.findAllByBoard_IdOrderByCreatedAtDesc(board.getId(), pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
-                        .map(this::toDto));
+                        .map(this::toPostsResponseDto));
     }
 
     @Transactional
@@ -225,7 +225,7 @@ public class PostService {
                 .consistOf(ConstraintValidator.of(post, this.validator))
                 .validate();
 
-        return toDto(postRepository.save(post), creator);
+        return toPostResponseDto(postRepository.save(post), creator);
     }
 
     @Transactional
@@ -290,7 +290,7 @@ public class PostService {
 
         post.setIsDeleted(true);
 
-        return toDto(postRepository.save(post), deleter);
+        return toPostResponseDto(postRepository.save(post), deleter);
     }
 
     @Transactional
@@ -329,7 +329,7 @@ public class PostService {
                 String.join(":::", postUpdateRequestDto.getAttachmentList())
         );
 
-        return toDtoExtended(post, updater);
+        return toPostResponseDtoExtended(post, updater);
     }
 
     @Transactional
@@ -404,7 +404,7 @@ public class PostService {
 
         post.setIsDeleted(false);
 
-        return toDtoExtended(postRepository.save(post), restorer);
+        return toPostResponseDtoExtended(postRepository.save(post), restorer);
     }
 
     private ValidatorBucket initializeValidator(User user, Board board) {
@@ -430,9 +430,9 @@ public class PostService {
         return validatorBucket;
     }
 
-    private BoardPostsResponseDto toDto(Board board, Role userRole, boolean isFavorite, Page<PostsResponseDto> post) {
+    private BoardPostsResponseDto toBoardPostsResponseDto(Board board, Role userRole, boolean isFavorite, Page<PostsResponseDto> post) {
         List<String> roles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
-        boolean writable = roles.stream().anyMatch(str -> userRole.getValue().contains(str));
+        Boolean writable = roles.stream().anyMatch(str -> userRole.getValue().contains(str));
         return DtoMapper.INSTANCE.toBoardPostsResponseDto(
                 board,
                 userRole,
@@ -442,14 +442,14 @@ public class PostService {
         );
     }
 
-    private PostsResponseDto toDto(Post post) {
+    private PostsResponseDto toPostsResponseDto(Post post) {
         return DtoMapper.INSTANCE.toPostsResponseDto(
                 post,
                 postRepository.countAllCommentByPost_Id(post.getId())
         );
     }
 
-    private PostResponseDto toDto(Post post, User user) {
+    private PostResponseDto toPostResponseDto(Post post, User user) {
         return DtoMapper.INSTANCE.toPostResponseDto(
                 post,
                 StatusUtil.isUpdatable(post, user),
@@ -457,7 +457,7 @@ public class PostService {
         );
     }
 
-    private PostResponseDto toDtoExtended(Post post, User user) {
+    private PostResponseDto toPostResponseDtoExtended(Post post, User user) {
         return DtoMapper.INSTANCE.toPostResponseDtoExtended(
                 postRepository.save(post),
                 findCommentsByPostIdByPage(user, post, 0),
