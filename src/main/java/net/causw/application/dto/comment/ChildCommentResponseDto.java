@@ -26,6 +26,7 @@ public class ChildCommentResponseDto {
     private Boolean updatable;
     private Boolean deletable;
 
+    // FIXME: 리팩토링 후 삭제예정
     public static ChildCommentResponseDto of(
             ChildComment comment,
             boolean updatable,

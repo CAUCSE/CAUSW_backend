@@ -64,6 +64,7 @@ public class PostResponseDto {
     @ApiModelProperty(value = "게시판 이름", example =  "게시판 이름입니다.")
     private String boardName;
 
+    // FIXME: 리팩토링 후 삭제예정
     // 생성, 삭제
     public static PostResponseDto of(
             Post post,

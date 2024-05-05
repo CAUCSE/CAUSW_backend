@@ -1,6 +1,7 @@
 package net.causw.application.dto.post;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,6 +16,7 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
 public class BoardPostsResponseDto {
 
     @ApiModelProperty(value = "게시판 id", example = "uuid 형식의 String 값입니다.")
@@ -32,6 +34,7 @@ public class BoardPostsResponseDto {
     @ApiModelProperty(value = "게시글 정보입니다", example = "게시글 정보입니다")
     private Page<PostsResponseDto> post;
 
+    // FIXME: 리팩토링 후 삭제예정
     public static BoardPostsResponseDto of(
             Board board,
             Role userRole,
