@@ -1,5 +1,6 @@
 package net.causw.application.dto.comment;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
 public class ChildCommentResponseDto {
     private String id;
     private String content;

@@ -1,6 +1,7 @@
 package net.causw.application.dto.post;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,13 +11,12 @@ import net.causw.application.dto.comment.CommentResponseDto;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
 public class PostResponseDto {
     @ApiModelProperty(value = "게시글 id", example = "uuid 형식의 String 값입니다.")
     private String id;
@@ -43,7 +43,8 @@ public class PostResponseDto {
     private List<FileResponseDto> attachmentList;
 
     @ApiModelProperty(value = "답글 개수", example = "13")
-    private Long numComment;
+    @Builder.Default // 기본값 0
+    private Long numComment = 0L;
 
     @ApiModelProperty(value = "게시글 업데이트 가능여부", example = "true")
     private Boolean updatable;
@@ -63,12 +64,13 @@ public class PostResponseDto {
     @ApiModelProperty(value = "게시판 이름", example =  "게시판 이름입니다.")
     private String boardName;
 
+    // 생성, 삭제
     public static PostResponseDto of(
             Post post,
             boolean updatable,
             boolean deletable
     ) {
-        List<String> attachmentList = post.getAttachments().map(attachments -> Arrays.asList(attachments.split(":::"))).orElse(List.of());
+        //List<String> attachmentList = post.getAttachments().map(attachments -> Arrays.asList(attachments.split(":::"))).orElse(List.of());
         return PostResponseDto.builder()
                 .id(post.getId())
                 .title(post.getTitle())
@@ -77,7 +79,7 @@ public class PostResponseDto {
                 .writerName(post.getWriter().getName())
                 .writerAdmissionYear(post.getWriter().getAdmissionYear())
                 .writerProfileImage(post.getWriter().getProfileImage())
-                .attachmentList(attachmentList.stream().map(FileResponseDto::from).collect(Collectors.toList()))
+                //.attachmentList(attachmentList.stream().map(FileResponseDto::from).collect(Collectors.toList()))
                 .numComment(0L)
                 .updatable(updatable)
                 .deletable(deletable)
@@ -86,6 +88,7 @@ public class PostResponseDto {
                 .build();
     }
 
+    // 조회, 수정, 복원
     public static PostResponseDto of(
             Post post,
             Page<CommentResponseDto> commentList,
@@ -93,8 +96,7 @@ public class PostResponseDto {
             boolean updatable,
             boolean deletable
     ) {
-        List<String> attachmentList = post.getAttachments().map(attachments -> Arrays.asList(attachments.split(":::"))).orElse(List.of());
-
+        //List<String> attachmentList = post.getAttachments().map(attachments -> Arrays.asList(attachments.split(":::"))).orElse(List.of());
         return PostResponseDto.builder()
                 .id(post.getId())
                 .title(post.getTitle())
@@ -103,7 +105,7 @@ public class PostResponseDto {
                 .writerName(post.getWriter().getName())
                 .writerAdmissionYear(post.getWriter().getAdmissionYear())
                 .writerProfileImage(post.getWriter().getProfileImage())
-                .attachmentList(attachmentList.stream().map(FileResponseDto::from).collect(Collectors.toList()))
+                //.attachmentList(attachmentList.stream().map(FileResponseDto::from).collect(Collectors.toList()))
                 .numComment(numComment)
                 .updatable(updatable)
                 .deletable(deletable)
