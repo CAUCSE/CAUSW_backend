@@ -74,8 +74,21 @@ public interface DtoMapper{
     @Mapping(target = "boardName", source = "entity.name")
     BoardPostsResponseDto toBoardPostsResponseDto(Board entity, Role userRole, Boolean writable, Boolean isFavorite, Page<PostsResponseDto> post);
 
-    // TODO: 각자 역할분담한 부분의 Dto 채우기
+    /** TODO: 각자 역할분담한 부분의 Dto를 위를 참고하여 아래 작성하시면 됩니다.
+     *  기존에 Dto에 존재하던 of 메서드를 DtoMapper.INSTANCE.toDtoName(entity)로 대체하시면 됩니다.
+     *  컴파일 후 DtoMapperImpl 파일을 확인하여 필드별로 제대로 매핑이 되었는지 확인해야 합니다.
+     */
 
+    // User
+
+
+    // Board
+
+
+    // Circle
+
+
+    // Locker
 
 
 }
