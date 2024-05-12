@@ -68,7 +68,7 @@ public abstract class DomainModelMapper {
                 this.entityToDomainModel(post.getBoard()),
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
-                post.getAttachments().map(attachments -> Arrays.asList(attachments.split(":::"))).orElse(List.of())
+                List.of()
         );
     }
 

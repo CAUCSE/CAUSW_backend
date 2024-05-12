@@ -1,23 +1,22 @@
 package net.causw.application.dto.post;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import net.causw.adapter.persistence.post.Post;
 import net.causw.application.dto.file.FileResponseDto;
 import net.causw.application.dto.comment.CommentResponseDto;
-import net.causw.domain.model.post.PostDomainModel;
-import net.causw.domain.model.enums.Role;
-import net.causw.domain.model.user.UserDomainModel;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
 public class PostResponseDto {
     @ApiModelProperty(value = "게시글 id", example = "uuid 형식의 String 값입니다.")
     private String id;
@@ -44,7 +43,8 @@ public class PostResponseDto {
     private List<FileResponseDto> attachmentList;
 
     @ApiModelProperty(value = "답글 개수", example = "13")
-    private Long numComment;
+    @Builder.Default // 기본값 0
+    private Long numComment = 0L;
 
     @ApiModelProperty(value = "게시글 업데이트 가능여부", example = "true")
     private Boolean updatable;
@@ -64,30 +64,14 @@ public class PostResponseDto {
     @ApiModelProperty(value = "게시판 이름", example =  "게시판 이름입니다.")
     private String boardName;
 
+    // FIXME: 리팩토링 후 삭제예정
+    // 생성, 삭제
     public static PostResponseDto of(
-            PostDomainModel post,
-            UserDomainModel user
+            Post post,
+            boolean updatable,
+            boolean deletable
     ) {
-        boolean updatable = false;
-        boolean deletable = false;
-
-        if (user.getRole() == Role.ADMIN || post.getWriter().getId().equals(user.getId())) {
-            updatable = true;
-            deletable = true;
-        } else if (user.getRole().getValue().contains("PRESIDENT")) {
-            deletable = true;
-        } else {
-            if (post.getBoard().getCircle().isPresent()) {
-                boolean isLeader = user.getRole().getValue().contains("LEADER_CIRCLE")
-                        && post.getBoard().getCircle().get().getLeader()
-                        .map(leader -> leader.getId().equals(user.getId()))
-                        .orElse(false);
-                if (isLeader) {
-                    deletable = true;
-                }
-            }
-        }
-
+        //List<String> attachmentList = post.getAttachments().map(attachments -> Arrays.asList(attachments.split(":::"))).orElse(List.of());
         return PostResponseDto.builder()
                 .id(post.getId())
                 .title(post.getTitle())
@@ -96,7 +80,7 @@ public class PostResponseDto {
                 .writerName(post.getWriter().getName())
                 .writerAdmissionYear(post.getWriter().getAdmissionYear())
                 .writerProfileImage(post.getWriter().getProfileImage())
-                .attachmentList(post.getAttachmentList().stream().map(FileResponseDto::from).collect(Collectors.toList()))
+                //.attachmentList(attachmentList.stream().map(FileResponseDto::from).collect(Collectors.toList()))
                 .numComment(0L)
                 .updatable(updatable)
                 .deletable(deletable)
@@ -105,32 +89,15 @@ public class PostResponseDto {
                 .build();
     }
 
+    // 조회, 수정, 복원
     public static PostResponseDto of(
-            PostDomainModel post,
-            UserDomainModel user,
+            Post post,
             Page<CommentResponseDto> commentList,
-            Long numComment
+            Long numComment,
+            boolean updatable,
+            boolean deletable
     ) {
-        boolean updatable = false;
-        boolean deletable = false;
-
-        if (user.getRole() == Role.ADMIN || post.getWriter().getId().equals(user.getId())) {
-            updatable = true;
-            deletable = true;
-        } else if (user.getRole().getValue().contains("PRESIDENT")) {
-            deletable = true;
-        } else {
-            if (post.getBoard().getCircle().isPresent()) {
-                boolean isLeader = user.getRole().getValue().contains("LEADER_CIRCLE")
-                        && post.getBoard().getCircle().get().getLeader()
-                        .map(leader -> leader.getId().equals(user.getId()))
-                        .orElse(false);
-                if (isLeader) {
-                    deletable = true;
-                }
-            }
-        }
-
+        //List<String> attachmentList = post.getAttachments().map(attachments -> Arrays.asList(attachments.split(":::"))).orElse(List.of());
         return PostResponseDto.builder()
                 .id(post.getId())
                 .title(post.getTitle())
@@ -139,7 +106,7 @@ public class PostResponseDto {
                 .writerName(post.getWriter().getName())
                 .writerAdmissionYear(post.getWriter().getAdmissionYear())
                 .writerProfileImage(post.getWriter().getProfileImage())
-                .attachmentList(post.getAttachmentList().stream().map(FileResponseDto::from).collect(Collectors.toList()))
+                //.attachmentList(attachmentList.stream().map(FileResponseDto::from).collect(Collectors.toList()))
                 .numComment(numComment)
                 .updatable(updatable)
                 .deletable(deletable)

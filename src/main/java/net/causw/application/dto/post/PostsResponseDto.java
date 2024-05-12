@@ -1,9 +1,11 @@
 package net.causw.application.dto.post;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import net.causw.adapter.persistence.post.Post;
 import net.causw.domain.model.post.PostDomainModel;
 
 import java.time.LocalDateTime;
@@ -11,6 +13,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
 public class PostsResponseDto {
     @ApiModelProperty(value = "게시글 id", example = "uuid 형식의 String 값입니다.")
     private String id;
@@ -36,8 +39,25 @@ public class PostsResponseDto {
     @ApiModelProperty(value = "게시글 삭제여부", example = "false")
     private Boolean isDeleted;
 
+    // FIXME: 리팩토링 후 삭제예정
     public static PostsResponseDto of(
             PostDomainModel post,
+            Long numComment
+    ) {
+        return PostsResponseDto.builder()
+                .id(post.getId())
+                .title(post.getTitle())
+                .writerName(post.getWriter().getName())
+                .writerAdmissionYear(post.getWriter().getAdmissionYear())
+                .numComment(numComment)
+                .createdAt(post.getCreatedAt())
+                .updatedAt(post.getUpdatedAt())
+                .isDeleted(post.getIsDeleted())
+                .build();
+    }
+
+    public static PostsResponseDto of(
+            Post post,
             Long numComment
     ) {
         return PostsResponseDto.builder()

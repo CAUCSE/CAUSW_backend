@@ -1,19 +1,17 @@
 package net.causw.application.dto.comment;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.domain.model.board.BoardDomainModel;
-import net.causw.domain.model.comment.ChildCommentDomainModel;
-import net.causw.domain.model.enums.Role;
-import net.causw.domain.model.util.StaticValue;
-import net.causw.domain.model.user.UserDomainModel;
+import net.causw.adapter.persistence.comment.ChildComment;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
 public class ChildCommentResponseDto {
     private String id;
     private String content;
@@ -28,41 +26,15 @@ public class ChildCommentResponseDto {
     private Boolean updatable;
     private Boolean deletable;
 
+    // FIXME: 리팩토링 후 삭제예정
     public static ChildCommentResponseDto of(
-            ChildCommentDomainModel comment,
-            UserDomainModel user,
-            BoardDomainModel board
+            ChildComment comment,
+            boolean updatable,
+            boolean deletable
     ) {
-        boolean updatable = false;
-        boolean deletable = false;
-        String content = comment.getContent();
-
-        if (user.getRole() == Role.ADMIN || comment.getWriter().getId().equals(user.getId())) {
-            updatable = true;
-            deletable = true;
-        } else if (user.getRole().getValue().contains("PRESIDENT")) {
-            deletable = true;
-        } else {
-            if (board.getCircle().isPresent()) {
-                boolean isLeader = user.getRole().getValue().contains("LEADER_CIRCLE")
-                        && board.getCircle().get().getLeader()
-                        .map(leader -> leader.getId().equals(user.getId()))
-                        .orElse(false);
-                if (isLeader) {
-                    deletable = true;
-                }
-            }
-        }
-
-        if (comment.getIsDeleted()) {
-            updatable = false;
-            deletable = false;
-            content = StaticValue.CONTENT_DELETED_COMMENT;
-        }
-
         return ChildCommentResponseDto.builder()
                 .id(comment.getId())
-                .content(content)
+                .content(comment.getContent())
                 .createdAt(comment.getCreatedAt())
                 .updatedAt(comment.getUpdatedAt())
                 .isDeleted(comment.getIsDeleted())

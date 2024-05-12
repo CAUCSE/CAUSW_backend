@@ -1,6 +1,7 @@
 package net.causw.adapter.persistence.comment;
 
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.causw.adapter.persistence.user.User;
@@ -18,6 +19,7 @@ import javax.persistence.Table;
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_child_comment")
 public class ChildComment extends BaseEntity {
     @Column(name = "content", nullable = false)
@@ -75,13 +77,29 @@ public class ChildComment extends BaseEntity {
         );
     }
 
+    public static ChildComment of(
+            String content,
+            Boolean isDeleted,
+            String tagUserName,
+            String refChildComment,
+            User writer,
+            Comment parentComment
+    ) {
+        return new ChildComment(content, isDeleted, tagUserName, refChildComment, writer, parentComment);
+    }
+
     public void delete(){
         this.isDeleted = true;
     }
 
+    // FIXME: Port 분리가 완전하게 다 끝나면 중복되는 메서드 삭제할 예정
     public void update(String content, String tagUserName, String refChildComment){
         this.content = content;
         this.tagUserName = tagUserName;
         this.refChildComment = refChildComment;
+    }
+
+    public void update(String content){
+        this.content = content;
     }
 }
