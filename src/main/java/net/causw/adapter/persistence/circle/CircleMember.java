@@ -35,4 +35,8 @@ public class CircleMember extends BaseEntity {
     public static CircleMember of(CircleMemberStatus status, Circle circle, User user) {
         return new CircleMember(status, circle, user);
     }
+
+    public void updateStatus(CircleMemberStatus status) {
+        this.status = status;
+    }
 }
