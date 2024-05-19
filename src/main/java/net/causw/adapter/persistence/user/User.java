@@ -99,4 +99,28 @@ public class User extends BaseEntity {
                 userDomainModel.getState()
         );
     }
+
+    public static User of(
+            String id,
+            String email,
+            String name,
+            String password,
+            String studentId,
+            Integer admissionYear,
+            Role role,
+            String profileImage,
+            UserState state
+    ) {
+        return new User(
+                id,
+                email,
+                name,
+                password,
+                studentId,
+                admissionYear,
+                role,
+                profileImage,
+                state
+        );
+    }
 }

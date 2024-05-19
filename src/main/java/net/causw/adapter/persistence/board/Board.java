@@ -62,6 +62,15 @@ public class Board extends BaseEntity {
         this.circle = circle;
     }
 
+    public Board(String name, String description, String createRoles, String category, Boolean isDeleted, Circle circle) {
+        this.name = name;
+        this.description = description;
+        this.createRoles = createRoles;
+        this.category = category;
+        this.isDeleted = isDeleted;
+        this.circle = circle;
+    }
+
     public static Board from(BoardDomainModel boardDomainModel) {
         Circle circle = boardDomainModel.getCircle().map(Circle::from).orElse(null);
 
@@ -74,6 +83,18 @@ public class Board extends BaseEntity {
                 boardDomainModel.getIsDeleted(),
                 circle
         );
+    }
+
+    public static Board of(
+            String id,
+            String name,
+            String description,
+            String createRoles,
+            String category,
+            Boolean isDeleted,
+            Circle circle
+    ) {
+        return new Board(id, name, description, createRoles, category, isDeleted, circle);
     }
 
     public void setIsDeleted(boolean isDeleted){
