@@ -59,7 +59,7 @@ class ChildCommentServiceTest {
     @BeforeEach
     void setUp() {
         user = ObjectFixtures.getUser();
-        comment = ObjectFixtures.getComment();
+        comment = ObjectFixtures.getComment(false);
         post = ObjectFixtures.getPost();
         childComment = ObjectFixtures.getChildComment("content", false);
         childCommentCreateRequestDto = new ChildCommentCreateRequestDto("content", comment.getId(), "ref");
