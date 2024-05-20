@@ -13,6 +13,7 @@ import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.model.util.StaticValue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -69,7 +70,7 @@ class CommentServiceTest {
     @BeforeEach
     void setUp() {
         user = ObjectFixtures.getUser();
-        post = ObjectFixtures.getPost();
+        post = ObjectFixtures.getPost(false);
         comment = ObjectFixtures.getComment("content");
         commentCreateRequestDto = new CommentCreateRequestDto("content", post.getId());
         commentUpdateRequestDto = new CommentUpdateRequestDto("updated");
@@ -147,40 +148,45 @@ class CommentServiceTest {
         assertFalse(result.getUpdatable());
     }
 
-    @DisplayName("유저가 존재하지 않을 때")
-    @Test
-    void userNotFound() {
-        // Given
-        given(userRepository.findById(user.getId())).willReturn(Optional.empty());
+    @DisplayName("Exception Handling")
+    @Nested
+    class ExceptionTest {
 
-        // When & Then
-        assertThrows(BadRequestException.class, () -> commentService.createComment(user.getId(), commentCreateRequestDto));
-        assertThrows(BadRequestException.class, () -> commentService.findAllComments(user.getId(), post.getId(), 0));
-        assertThrows(BadRequestException.class, () -> commentService.updateComment(user.getId(), comment.getId(), commentUpdateRequestDto));
-        assertThrows(BadRequestException.class, () -> commentService.deleteComment(user.getId(), comment.getId()));
-    }
+        @DisplayName("유저가 존재하지 않을 때")
+        @Test
+        void userNotFound() {
+            // Given
+            given(userRepository.findById(user.getId())).willReturn(Optional.empty());
 
-    @DisplayName("댓글이 존재하지 않을 때")
-    @Test
-    void commentNotFound() {
-        // Given
-        given(commentRepository.findById(comment.getId())).willReturn(Optional.empty());
+            // When & Then
+            assertThrows(BadRequestException.class, () -> commentService.createComment(user.getId(), commentCreateRequestDto));
+            assertThrows(BadRequestException.class, () -> commentService.findAllComments(user.getId(), post.getId(), 0));
+            assertThrows(BadRequestException.class, () -> commentService.updateComment(user.getId(), comment.getId(), commentUpdateRequestDto));
+            assertThrows(BadRequestException.class, () -> commentService.deleteComment(user.getId(), comment.getId()));
+        }
 
-        // When & Then
-        assertThrows(BadRequestException.class, () -> commentService.updateComment(user.getId(), comment.getId(), commentUpdateRequestDto));
-        assertThrows(BadRequestException.class, () -> commentService.deleteComment(user.getId(), comment.getId()));
-    }
+        @DisplayName("댓글이 존재하지 않을 때")
+        @Test
+        void commentNotFound() {
+            // Given
+            given(commentRepository.findById(comment.getId())).willReturn(Optional.empty());
 
-    @DisplayName("게시글이 존재하지 않을 때")
-    @Test
-    void postNotFound() {
-        // Given
-        given(postRepository.findById(post.getId())).willReturn(Optional.empty());
+            // When & Then
+            assertThrows(BadRequestException.class, () -> commentService.updateComment(user.getId(), comment.getId(), commentUpdateRequestDto));
+            assertThrows(BadRequestException.class, () -> commentService.deleteComment(user.getId(), comment.getId()));
+        }
 
-        // When & Then
-        assertThrows(BadRequestException.class, () -> commentService.createComment(user.getId(), commentCreateRequestDto));
-        assertThrows(BadRequestException.class, () -> commentService.findAllComments(user.getId(), post.getId(), 0));
-        assertThrows(BadRequestException.class, () -> commentService.updateComment(user.getId(), comment.getId(), commentUpdateRequestDto));
-        assertThrows(BadRequestException.class, () -> commentService.deleteComment(user.getId(), comment.getId()));
+        @DisplayName("게시글이 존재하지 않을 때")
+        @Test
+        void postNotFound() {
+            // Given
+            given(postRepository.findById(post.getId())).willReturn(Optional.empty());
+
+            // When & Then
+            assertThrows(BadRequestException.class, () -> commentService.createComment(user.getId(), commentCreateRequestDto));
+            assertThrows(BadRequestException.class, () -> commentService.findAllComments(user.getId(), post.getId(), 0));
+            assertThrows(BadRequestException.class, () -> commentService.updateComment(user.getId(), comment.getId(), commentUpdateRequestDto));
+            assertThrows(BadRequestException.class, () -> commentService.deleteComment(user.getId(), comment.getId()));
+        }
     }
 }

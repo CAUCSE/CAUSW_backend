@@ -12,6 +12,7 @@ import net.causw.application.util.ObjectFixtures;
 import net.causw.domain.exceptions.BadRequestException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -60,7 +61,7 @@ class ChildCommentServiceTest {
     void setUp() {
         user = ObjectFixtures.getUser();
         comment = ObjectFixtures.getComment(false);
-        post = ObjectFixtures.getPost();
+        post = ObjectFixtures.getPost(false);
         childComment = ObjectFixtures.getChildComment("content", false);
         childCommentCreateRequestDto = new ChildCommentCreateRequestDto("content", comment.getId(), "ref");
         childCommentUpdateRequestDto = new ChildCommentUpdateRequestDto("updated");
@@ -115,49 +116,53 @@ class ChildCommentServiceTest {
         assertFalse(childCommentResponseDto.getDeletable());
     }
 
-    @DisplayName("유저가 존재하지 않을 때")
-    @Test
-    void userNotFound() {
-        // Given
-        given(userRepository.findById(user.getId())).willReturn(Optional.empty());
+    @DisplayName("Exception Handling")
+    @Nested
+    class ExceptionTest {
+        @DisplayName("유저가 존재하지 않을 때")
+        @Test
+        void userNotFound() {
+            // Given
+            given(userRepository.findById(user.getId())).willReturn(Optional.empty());
 
-        // When
-        assertThrows(BadRequestException.class, () -> childCommentService.createChildComment(user.getId(), childCommentCreateRequestDto));
-        assertThrows(BadRequestException.class, () -> childCommentService.updateChildComment(user.getId(), childComment.getId(), childCommentUpdateRequestDto));
-        assertThrows(BadRequestException.class, () -> childCommentService.deleteChildComment(user.getId(), childComment.getId()));
-    }
+            // When & Then
+            assertThrows(BadRequestException.class, () -> childCommentService.createChildComment(user.getId(), childCommentCreateRequestDto));
+            assertThrows(BadRequestException.class, () -> childCommentService.updateChildComment(user.getId(), childComment.getId(), childCommentUpdateRequestDto));
+            assertThrows(BadRequestException.class, () -> childCommentService.deleteChildComment(user.getId(), childComment.getId()));
+        }
 
-    @DisplayName("대댓글이 존재하지 않을 때")
-    @Test
-    void childCommentNotFound() {
-        // Given
-        given(childCommentRepository.findById(childComment.getId())).willReturn(Optional.empty());
+        @DisplayName("대댓글이 존재하지 않을 때")
+        @Test
+        void childCommentNotFound() {
+            // Given
+            given(childCommentRepository.findById(childComment.getId())).willReturn(Optional.empty());
 
-        // When
-        assertThrows(BadRequestException.class, () -> childCommentService.createChildComment(user.getId(), childCommentCreateRequestDto));
-        assertThrows(BadRequestException.class, () -> childCommentService.updateChildComment(user.getId(), childComment.getId(), childCommentUpdateRequestDto));
-        assertThrows(BadRequestException.class, () -> childCommentService.deleteChildComment(user.getId(), childComment.getId()));
-    }
+            // When & Then
+            assertThrows(BadRequestException.class, () -> childCommentService.createChildComment(user.getId(), childCommentCreateRequestDto));
+            assertThrows(BadRequestException.class, () -> childCommentService.updateChildComment(user.getId(), childComment.getId(), childCommentUpdateRequestDto));
+            assertThrows(BadRequestException.class, () -> childCommentService.deleteChildComment(user.getId(), childComment.getId()));
+        }
 
-    @DisplayName("댓글이 존재하지 않을 때")
-    @Test
-    void commentNotFound() {
-        // Given
-        given(commentRepository.findById(comment.getId())).willReturn(Optional.empty());
+        @DisplayName("댓글이 존재하지 않을 때")
+        @Test
+        void commentNotFound() {
+            // Given
+            given(commentRepository.findById(comment.getId())).willReturn(Optional.empty());
 
-        // When & Then
-        assertThrows(BadRequestException.class, () -> childCommentService.createChildComment(user.getId(), childCommentCreateRequestDto));
-    }
+            // When & Then
+            assertThrows(BadRequestException.class, () -> childCommentService.createChildComment(user.getId(), childCommentCreateRequestDto));
+        }
 
-    @DisplayName("게시글이 존재하지 않을 때")
-    @Test
-    void postNotFound() {
-        // Given
-        given(postRepository.findById(post.getId())).willReturn(Optional.empty());
+        @DisplayName("게시글이 존재하지 않을 때")
+        @Test
+        void postNotFound() {
+            // Given
+            given(postRepository.findById(post.getId())).willReturn(Optional.empty());
 
-        // When & Then
-        assertThrows(BadRequestException.class, () -> childCommentService.createChildComment(user.getId(), childCommentCreateRequestDto));
-        assertThrows(BadRequestException.class, () -> childCommentService.updateChildComment(user.getId(), childComment.getId(), childCommentUpdateRequestDto));
-        assertThrows(BadRequestException.class, () -> childCommentService.deleteChildComment(user.getId(), childComment.getId()));
+            // When & Then
+            assertThrows(BadRequestException.class, () -> childCommentService.createChildComment(user.getId(), childCommentCreateRequestDto));
+            assertThrows(BadRequestException.class, () -> childCommentService.updateChildComment(user.getId(), childComment.getId(), childCommentUpdateRequestDto));
+            assertThrows(BadRequestException.class, () -> childCommentService.deleteChildComment(user.getId(), childComment.getId()));
+        }
     }
 }

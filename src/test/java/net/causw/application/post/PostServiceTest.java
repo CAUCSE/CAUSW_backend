@@ -11,6 +11,7 @@ import net.causw.application.dto.post.PostCreateRequestDto;
 import net.causw.application.dto.post.PostResponseDto;
 import net.causw.application.dto.post.PostUpdateRequestDto;
 import net.causw.application.util.ObjectFixtures;
+import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.util.StaticValue;
 import org.junit.jupiter.api.*;
@@ -258,5 +259,55 @@ class PostServiceTest {
         // Then
         assertEquals(board.getName(), result.getBoardName());
         assertEquals(0, result.getPost().getTotalElements());
+    }
+
+    @DisplayName("Exception Handling")
+    @Nested
+    class ExceptionTest {
+
+        @DisplayName("유저가 존재하지 않을 때")
+        @Test
+        void userNotFound() {
+            // Given
+            given(userRepository.findById(user.getId())).willReturn(Optional.empty());
+
+            // When & Then
+            assertThrows(BadRequestException.class, () -> postService.createPost(user.getId(), postCreateRequestDto));
+            assertThrows(BadRequestException.class, () -> postService.deletePost(user.getId(), post.getId()));
+            assertThrows(BadRequestException.class, () -> postService.findPostById(user.getId(), post.getId()));
+            assertThrows(BadRequestException.class, () -> postService.updatePost(user.getId(), post.getId(), postUpdateRequestDto));
+            assertThrows(BadRequestException.class, () -> postService.restorePost(user.getId(), post.getId()));
+            assertThrows(BadRequestException.class, () -> postService.findAllPost(user.getId(), board.getId(), 0));
+            assertThrows(BadRequestException.class, () -> postService.searchPost(user.getId(), board.getId(), "title", 0));
+            assertThrows(BadRequestException.class, () -> postService.findAllAppNotice(user.getId(), 0));
+        }
+        
+        @DisplayName("게시글이 존재하지 않을 때")
+        @Test
+        void postNotFound() {
+            // Given
+            given(postRepository.findById(post.getId())).willReturn(Optional.empty());
+
+            // When & Then
+            assertThrows(BadRequestException.class, () -> postService.deletePost(user.getId(), post.getId()));
+            assertThrows(BadRequestException.class, () -> postService.findPostById(user.getId(), post.getId()));
+            assertThrows(BadRequestException.class, () -> postService.updatePost(user.getId(), post.getId(), postUpdateRequestDto));
+            assertThrows(BadRequestException.class, () -> postService.restorePost(user.getId(), post.getId()));
+            assertThrows(BadRequestException.class, () -> postService.findAllAppNotice(user.getId(), 0));
+        }
+
+        @DisplayName("게시판이 존재하지 않을 때")
+        @Test
+        void boardNotFound() {
+            // Given
+            given(boardRepository.findById(board.getId())).willReturn(Optional.empty());
+
+            // When & Then
+            assertThrows(BadRequestException.class, () -> postService.createPost(user.getId(), postCreateRequestDto));
+            assertThrows(BadRequestException.class, () -> postService.restorePost(user.getId(), post.getId()));
+            assertThrows(BadRequestException.class, () -> postService.findAllPost(user.getId(), board.getId(), 0));
+            assertThrows(BadRequestException.class, () -> postService.searchPost(user.getId(), board.getId(), "title", 0));
+            assertThrows(BadRequestException.class, () -> postService.findAllAppNotice(user.getId(), 0));
+        }
     }
 }

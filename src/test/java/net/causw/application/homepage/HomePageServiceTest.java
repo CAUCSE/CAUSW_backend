@@ -13,6 +13,7 @@ import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.model.util.StaticValue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -76,24 +77,29 @@ class HomePageServiceTest {
         assertEquals(board.getCreateRoles(), boardResponseDto.getCreateRoleList().get(0));
     }
 
-    @DisplayName("유저가 존재하지 않을 때")
-    @Test
-    void getHomePage_WhenUserNotFound_ThrowsException() {
-        // Given
-        given(userRepository.findById(user.getId())).willReturn(Optional.empty());
+    @DisplayName("Exception Handling")
+    @Nested
+    class ExceptionTest {
 
-        // When & Then
-        assertThrows(BadRequestException.class, () -> homePageService.getHomePage(user.getId()));
-    }
+        @DisplayName("유저가 존재하지 않을 때")
+        @Test
+        void userNotFound() {
+            // Given
+            given(userRepository.findById(user.getId())).willReturn(Optional.empty());
 
-    @DisplayName("게시판이 존재하지 않을 때")
-    @Test
-    void getHomePage_WhenBoardNotFound_ThrowsException() {
-        // Given
-        given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
-        given(boardRepository.findByCircle_IdIsNullAndIsDeletedOrderByCreatedAtAsc(false)).willReturn(List.of());
+            // When & Then
+            assertThrows(BadRequestException.class, () -> homePageService.getHomePage(user.getId()));
+        }
 
-        // When & Then
-        assertThrows(BadRequestException.class, () -> homePageService.getHomePage(user.getId()));
+        @DisplayName("게시판이 존재하지 않을 때")
+        @Test
+        void boardNotFound() {
+            // Given
+            given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+            given(boardRepository.findByCircle_IdIsNullAndIsDeletedOrderByCreatedAtAsc(false)).willReturn(List.of());
+
+            // When & Then
+            assertThrows(BadRequestException.class, () -> homePageService.getHomePage(user.getId()));
+        }
     }
 }
