@@ -20,23 +20,31 @@ public class ObjectFixtures {
         return User.of("user1", "email", "name", "password", "studentId", 2021, Role.ADMIN, "profileImage", UserState.ACTIVE);
     }
 
+    public static User getUser(Role role){
+        return User.of("user1", "email", "name", "password", "studentId", 2021, role, "profileImage", UserState.ACTIVE);
+    }
+
     // board
     public static Board getBoard() {
-        return Board.of("board1", "name", "description", "createRoles", "category", false, null);
+        return Board.of("board1", "name", "description", "ADMIN", "category", false, null);
     }
 
     // post
-    public static Post getPost() {
-        return Post.of("title", "content", getUser(), false, getBoard(),"attachment");
+    public static Post getPost(boolean isDeleted) {
+        return Post.of("title", "content", getUser(), isDeleted, getBoard(),"attachment");
+    }
+
+    public static Post getPost(String title, String content){
+        return Post.of(title, content, getUser(), false, getBoard(), "attachment");
     }
 
     // comment
     public static Comment getComment(String content) {
-        return Comment.of(content, false, getUser(), getPost());
+        return Comment.of(content, false, getUser(), getPost(false));
     }
 
     public static Comment getComment(boolean isDeleted) {
-        return Comment.of("content", isDeleted, getUser(), getPost());
+        return Comment.of("content", isDeleted, getUser(), getPost(false));
     }
 
     // childComment
