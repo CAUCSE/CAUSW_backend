@@ -30,6 +30,8 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
+import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 @SpringBootTest(classes = {CommentService.class})
 class CommentServiceTest {
@@ -104,6 +106,7 @@ class CommentServiceTest {
         Page<CommentResponseDto> result = commentService.findAllComments(user.getId(), post.getId(), 0);
 
         // Then
+        verify(childCommentRepository, times(3)).findByParentComment_Id(any());
         assertEquals(3, result.getTotalElements());
         assertEquals(comment.getContent(), result.getContent().get(0).getContent());
         assertEquals(comment2.getContent(), result.getContent().get(1).getContent());

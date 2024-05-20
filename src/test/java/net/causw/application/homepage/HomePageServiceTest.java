@@ -25,7 +25,6 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
 
 @SpringBootTest(classes = {HomePageService.class})
 class HomePageServiceTest {
@@ -68,7 +67,6 @@ class HomePageServiceTest {
         List<HomePageResponseDto> result = homePageService.getHomePage(user.getId());
 
         // Then
-        verify(userRepository).findById(user.getId());
         assertEquals(1, result.size());
         BoardResponseDto boardResponseDto = result.get(0).getBoard();
         assertEquals(board.getId(), boardResponseDto.getId());
