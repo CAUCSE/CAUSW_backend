@@ -14,11 +14,13 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.util.HashSet;
 import java.util.Set;
 
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_board")
 public class Board extends BaseEntity {
     @Column(name = "name", nullable = false)
@@ -74,6 +76,17 @@ public class Board extends BaseEntity {
                 boardDomainModel.getIsDeleted(),
                 circle
         );
+    }
+
+    public static Board of(
+            String name,
+            String description,
+            String createRoles,
+            String category,
+            Boolean isDeleted,
+            Circle circle
+    ) {
+        return new Board(name, description, createRoles, category, isDeleted, circle, new HashSet<>());
     }
 
     public void setIsDeleted(boolean isDeleted){
