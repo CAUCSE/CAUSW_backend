@@ -4,6 +4,7 @@ import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.post.Post;
+import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.file.FileResponseDto;
@@ -83,7 +84,7 @@ public interface DtoMapper{
 
 
     // Board
-
+    BoardResponseDto toBoardResponseDto(Board entity, List<String> createRoleList, Boolean writable, String circleId, String circleName);
 
     // Circle
 
