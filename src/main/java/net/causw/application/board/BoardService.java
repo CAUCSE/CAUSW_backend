@@ -134,9 +134,8 @@ public class BoardService {
         Board board = Board.of(
                 boardCreateRequestDto.getName(),
                 boardCreateRequestDto.getDescription(),
-                String.join(",", boardCreateRequestDto.getCreateRoleList()),
+                boardCreateRequestDto.getCreateRoleList(),
                 boardCreateRequestDto.getCategory(),
-                false,
                 circle
         );
 
