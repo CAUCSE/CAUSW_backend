@@ -1,6 +1,14 @@
 package net.causw.application.circle;
 
 import lombok.RequiredArgsConstructor;
+import net.causw.adapter.persistence.board.Board;
+import net.causw.adapter.persistence.circle.Circle;
+import net.causw.adapter.persistence.post.Post;
+import net.causw.adapter.persistence.repository.BoardRepository;
+import net.causw.adapter.persistence.repository.CircleRepository;
+import net.causw.adapter.persistence.repository.PostRepository;
+import net.causw.adapter.persistence.repository.UserRepository;
+import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.board.BoardOfCircleResponseDto;
 import net.causw.application.dto.circle.CircleBoardsResponseDto;
@@ -9,7 +17,7 @@ import net.causw.application.dto.circle.CircleMemberResponseDto;
 import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.circle.CircleUpdateRequestDto;
 import net.causw.application.dto.circle.CirclesResponseDto;
-import net.causw.application.spi.BoardPort;
+import net.causw.application.dto.util.DtoMapper;
 import net.causw.application.spi.CircleMemberPort;
 import net.causw.application.spi.CirclePort;
 import net.causw.application.spi.CommentPort;
@@ -18,7 +26,6 @@ import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
-import net.causw.domain.model.board.BoardDomainModel;
 import net.causw.domain.model.circle.CircleDomainModel;
 import net.causw.domain.model.circle.CircleMemberDomainModel;
 import net.causw.domain.model.enums.CircleMemberStatus;
@@ -42,9 +49,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -54,10 +59,14 @@ public class CircleService {
     private final CirclePort circlePort;
     private final UserPort userPort;
     private final CircleMemberPort circleMemberPort;
-    private final BoardPort boardPort;
     private final PostPort postPort;
     private final CommentPort commentPort;
     private final Validator validator;
+
+    private final UserRepository userRepository;
+    private final BoardRepository boardRepository;
+    private final CircleRepository circleRepository;
+    private final PostRepository postRepository;
 
     @Transactional(readOnly = true)
     public CircleResponseDto findById(String circleId) {
@@ -132,20 +141,15 @@ public class CircleService {
                 )
         );
 
-        UserDomainModel userDomainModel = this.userPort.findById(currentUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
+        User user = getUser(currentUserId);
 
         ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(userDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                 .validate();
 
-        if (!(userDomainModel.getRole().equals(Role.ADMIN) || userDomainModel.getRole().getValue().contains("PRESIDENT"))) {
+        if (!(user.getRole().equals(Role.ADMIN) || user.getRole().getValue().contains("PRESIDENT"))) {
             CircleMemberDomainModel circleMember = this.circleMemberPort.findByUserIdAndCircleId(currentUserId, circleDomainModel.getId()).orElseThrow(
                     () -> new BadRequestException(
                             ErrorCode.NOT_MEMBER,
@@ -166,19 +170,19 @@ public class CircleService {
                         circleDomainModel,
                         this.circleMemberPort.getNumMember(circleId)
                 ),
-                this.boardPort.findByCircleId(circleId)
+                boardRepository.findByCircle_IdAndIsDeletedIsFalseOrderByCreatedAtAsc(circleId)
                         .stream()
-                        .map(boardDomainModel -> this.postPort.findLatestPost(boardDomainModel.getId()).map(
-                                postDomainModel -> BoardOfCircleResponseDto.from(
-                                        boardDomainModel,
-                                        userDomainModel.getRole(),
-                                        postDomainModel,
-                                        this.postPort.countAllComment(postDomainModel.getId())
+                        .map(board -> postRepository.findTop1ByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(board.getId()).map(
+                                post -> toBoardOfCircleResponseDto(
+                                        board,
+                                        user.getRole(),
+                                        post,
+                                        postRepository.countAllCommentByPost_Id(post.getId())
                                 )
                         ).orElse(
-                                BoardOfCircleResponseDto.from(
-                                        boardDomainModel,
-                                        userDomainModel.getRole()
+                                toBoardOfCircleResponseDto(
+                                        board,
+                                        user.getRole()
                                 )
                         ))
                         .collect(Collectors.toList())
@@ -250,12 +254,8 @@ public class CircleService {
 
     @Transactional
     public CircleResponseDto create(String userId, CircleCreateRequestDto circleCreateRequestDto) {
-        UserDomainModel requestUser = this.userPort.findById(userId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
+        User requestUser = getUser(userId);
+//        User leader = getUser(circleCreateRequestDto.getLeaderId());
 
         UserDomainModel leader = this.userPort.findById(circleCreateRequestDto.getLeaderId()).orElseThrow(
                 () -> new BadRequestException(
@@ -302,10 +302,13 @@ public class CircleService {
         );
 
         // Create circle
-        CircleDomainModel newCircle = this.circlePort.create(circleDomainModel);
+        // FIXME: newCircleDomainModel을 Circle of 메서드로 변경 이후 다음과 같이 변경
+        // Circle newCircle = circleRepository.save(newCircleDomainModel);
+        CircleDomainModel newCircleDomainModel = this.circlePort.create(circleDomainModel);
+        Circle newCircle = Circle.from(newCircleDomainModel);
 
         // Create boards of circle
-        BoardDomainModel noticeBoard = BoardDomainModel.of(
+        Board noticeBoard = Board.of(
                 newCircle.getName() + " 공지 게시판",
                 newCircle.getName() + " 공지 게시판",
                 Stream.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT, Role.LEADER_CIRCLE)
@@ -314,11 +317,10 @@ public class CircleService {
                 "동아리 공지 게시판",
                 newCircle
         );
-        this.boardPort.createBoard(noticeBoard);
-
+        boardRepository.save(noticeBoard);
 
         // Apply the leader automatically to the circle
-        CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.create(leader, newCircle);
+        CircleMemberDomainModel circleMemberDomainModel = this.circleMemberPort.create(leader, newCircleDomainModel);
         this.circleMemberPort.updateStatus(circleMemberDomainModel.getId(), CircleMemberStatus.MEMBER).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
@@ -326,7 +328,7 @@ public class CircleService {
                 )
         );
 
-        return CircleResponseDto.from(newCircle);
+        return CircleResponseDto.from(newCircleDomainModel);
     }
 
     @Transactional
@@ -475,7 +477,17 @@ public class CircleService {
                         MessageUtil.INTERNAL_SERVER_ERROR
                 )
         ));
-        boardPort.deleteAllCircleBoard(circleId);
+
+        List<Board> boards = boardRepository.findByCircle_IdAndIsDeletedIsFalseOrderByCreatedAtAsc(circleId);
+        for (Board board : boards) {
+            boardRepository.findById(board.getId()).map(
+                    srcBoard -> {
+                        srcBoard.setIsDeleted(true);
+                        return boardRepository.save(srcBoard);
+                    }
+            );
+        }
+
         return circleResponseDto;
     }
 
@@ -792,5 +804,33 @@ public class CircleService {
                         MessageUtil.INTERNAL_SERVER_ERROR
                 )
         ));
+    }
+
+    private BoardOfCircleResponseDto toBoardOfCircleResponseDto(Board board, Role userRole, Post post, Long numComment) {
+        boolean writable = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(","))).stream().anyMatch(str -> userRole.getValue().contains(str));
+        return DtoMapper.INSTANCE.toBoardOfCircleResponseDto(
+                board,
+                post,
+                numComment,
+                writable
+        );
+    }
+
+    private BoardOfCircleResponseDto toBoardOfCircleResponseDto(Board board, Role userRole) {
+        boolean writable = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(","))).stream().anyMatch(str -> userRole.getValue().contains(str));
+        return DtoMapper.INSTANCE.toBoardOfCircleResponseDto(
+                board,
+                0L,
+                writable
+        );
+    }
+
+    private User getUser(String userId) {
+        return userRepository.findById(userId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.USER_NOT_FOUND
+                )
+        );
     }
 }
