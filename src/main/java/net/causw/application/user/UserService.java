@@ -537,7 +537,7 @@ public class UserService {
 
         // refreshToken은 redis에 보관
         String refreshToken = jwtTokenProvider.createRefreshToken();
-        this.userPort.updateRefreshToken(userDomainModel.getId(), refreshToken);
+        redisUtils.setData(refreshToken,user.getId(),StaticValue.JWT_REFRESH_TOKEN_VALID_TIME);
 
         return UserSignInResponseDto.builder()
                 .accessToken(jwtTokenProvider.createAccessToken(user.getId(), user.getRole(), user.getState()))
@@ -1206,8 +1206,17 @@ public class UserService {
                 .build();
     }
 
+    private String getUserIdFromRefreshToken(String refreshToken) {
+        return Optional.ofNullable(redisUtils.getData(refreshToken))
+                .orElseThrow(() -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "RefreshToken 유효성 검증 실패"));
+    }
+
     public UserSignOutResponseDto signOut(UserSignOutRequestDto userSignOutRequestDto){
-        userPort.signOut(userSignOutRequestDto.getRefreshToken(), userSignOutRequestDto.getAccessToken());
+        redisUtils.addToBlacklist(userSignOutRequestDto.getAccessToken());
+        redisUtils.deleteData(userSignOutRequestDto.getRefreshToken());
+
         return UserSignOutResponseDto.builder()
                 .message("로그아웃 성공")
                 .build();
