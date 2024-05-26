@@ -402,17 +402,32 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(user.getRole(), List.of()))
                 .validate();
 
+        //portimpl 내부 로직 서비스단으로 이동
+        Page<User> usersPage;
+        if ("INACTIVE_N_DROP".equals(state)) {
+            List<String> statesToSearch = Arrays.asList("INACTIVE", "DROP");
+            usersPage = userRepository.findByStateInAndNameContaining(
+                    statesToSearch,
+                    name,
+                    PageRequest.of(pageNum, StaticValue.USER_LIST_PAGE_SIZE)
+            );
+        } else {
+            usersPage = userRepository.findByStateAndName(
+                    state,
+                    name,
+                    PageRequest.of(pageNum, StaticValue.USER_LIST_PAGE_SIZE)
+            );
+        }
 
-        return this.userPort.findByStateAndName(state, name, pageNum)
-                .map(userDomainModel -> {
-                    if (userDomainModel.getRole().getValue().contains("LEADER_CIRCLE") && !state.equals("INACTIVE")) {
-                        List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(userDomainModel.getId());
-                        if (ownCircles.isEmpty()) {
-                            throw new InternalServerException(
-                                    ErrorCode.INTERNAL_SERVER,
-                                    MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER
-                            );
-                        }
+        return usersPage.map(userEntity -> {
+            if (userEntity.getRole().getValue().contains("LEADER_CIRCLE") && !"INACTIVE_N_DROP".equals(state)) {
+                List<Circle> ownCircles = circleRepository.findByLeader_Id(userEntity.getId());
+                if (ownCircles.isEmpty()) {
+                    throw new InternalServerException(
+                            ErrorCode.INTERNAL_SERVER,
+                            MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER
+                    );
+                }
 
                 return UserResponseDto.of(
                         userEntity,
