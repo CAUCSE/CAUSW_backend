@@ -1188,42 +1188,35 @@ public class UserService {
                 ));
     }
 
-    @Transactional
-    public BoardResponseDto createFavoriteBoard(
-            String loginUserId,
-            String boardId
-    ) {
-        UserDomainModel user = this.userPort.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
-
-        BoardDomainModel board = this.boardPort.findById(boardId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.BOARD_NOT_FOUND
-                )
-        );
-
-        FavoriteBoardDomainModel favoriteBoardDomainModel = FavoriteBoardDomainModel.of(
-                user,
-                board
-        );
-
-        ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
-                .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD))
-                .consistOf(ConstraintValidator.of(favoriteBoardDomainModel, this.validator))
-                .validate();
-
-        return BoardResponseDto.from(
-                this.favoriteBoardPort.create(favoriteBoardDomainModel).getBoardDomainModel(),
-                user.getRole()
-        );
-    }
+    //TODO: 현재 사용하지 않는 기능으로 주석처리
+    //사용 여부 결정 후 board 수정 후 도입 필요할 것으로 보임
+//    @Transactional
+//    public BoardResponseDto cre한ateFavoriteBoard(
+//            String loginUserId,
+//            String boardId
+//    ) {
+//        User user = this.userRepository.findById(loginUserId).orElseThrow(
+//                () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.LOGIN_USER_NOT_FOUND)
+//        );
+//
+//        Board board = this.boardRepository.findById(boardId).orElseThrow(
+//                () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.BOARD_NOT_FOUND)
+//        );
+//
+//        FavoriteBoard favoriteBoard = FavoriteBoard.builder()
+//                .user(user)
+//                .board(board)
+//                .build();
+//
+//        ValidatorBucket.of()
+//                .consistOf(UserStateValidator.of(user.getState()))
+//                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+//                .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD))
+//                .consistOf(ConstraintValidator.of(favoriteBoard, this.validator))
+//                .validate();
+//
+//        return BoardResponseDto.from(this.favoriteBoardRepository.save(favoriteBoard).getBoard(), user.getRole());
+//    }
 
     @Transactional
     public UserResponseDto restore(
