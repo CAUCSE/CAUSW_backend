@@ -11,7 +11,9 @@ import net.causw.application.dto.post.BoardPostsResponseDto;
 import net.causw.application.dto.post.PostResponseDto;
 import net.causw.application.dto.post.PostsResponseDto;
 import net.causw.domain.model.enums.Role;
-import org.mapstruct.*;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 import org.springframework.data.domain.Page;
 
@@ -86,7 +88,6 @@ public interface DtoMapper{
 
 
     // Circle
-
 
     // Locker
 
