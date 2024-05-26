@@ -3,7 +3,7 @@ package net.causw.application.dto.user;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.domain.model.user.UserAdmissionDomainModel;
+import net.causw.adapter.persistence.user.UserAdmission;
 import net.causw.domain.model.enums.UserState;
 
 import java.time.LocalDateTime;
@@ -22,17 +22,17 @@ public class UserAdmissionsResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public static UserAdmissionsResponseDto from(UserAdmissionDomainModel userAdmissionDomainModel) {
+    public static UserAdmissionsResponseDto from(UserAdmission userAdmission) {
         return UserAdmissionsResponseDto.builder()
-                .id(userAdmissionDomainModel.getId())
-                .userName(userAdmissionDomainModel.getUser().getName())
-                .userEmail(userAdmissionDomainModel.getUser().getEmail())
-                .admissionYear(userAdmissionDomainModel.getUser().getAdmissionYear())
-                .attachImage(userAdmissionDomainModel.getAttachImage())
-                .description(userAdmissionDomainModel.getDescription())
-                .userState(userAdmissionDomainModel.getUser().getState())
-                .createdAt(userAdmissionDomainModel.getCreatedAt())
-                .updatedAt(userAdmissionDomainModel.getUpdatedAt())
+                .id(userAdmission.getId())
+                .userName(userAdmission.getUser().getName())
+                .userEmail(userAdmission.getUser().getEmail())
+                .admissionYear(userAdmission.getUser().getAdmissionYear())
+                .attachImage(userAdmission.getAttachImage())
+                .description(userAdmission.getDescription())
+                .userState(userAdmission.getUser().getState())
+                .createdAt(userAdmission.getCreatedAt())
+                .updatedAt(userAdmission.getUpdatedAt())
                 .build();
     }
 }

@@ -1143,11 +1143,12 @@ public class UserService {
         // Add admission log
 
         // Remove the admission
-        this.userAdmissionPort.delete(userAdmissionDomainModel);
+        this.userAdmissionLogRepository.save(userAdmissionLog);
+        this.userAdmissionRepository.delete(userAdmission);
 
         return UserAdmissionResponseDto.of(
-                userAdmissionDomainModel,
-                this.userPort.updateState(userAdmissionDomainModel.getUser().getId(), UserState.ACTIVE).orElseThrow(
+                userAdmission,
+                this.updateState(userAdmission.getUser().getId(), UserState.ACTIVE).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
                                 MessageUtil.ADMISSION_EXCEPTION
