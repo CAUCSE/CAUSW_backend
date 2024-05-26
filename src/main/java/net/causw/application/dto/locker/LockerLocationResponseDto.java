@@ -3,7 +3,7 @@ package net.causw.application.dto.locker;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.domain.model.locker.LockerLocationDomainModel;
+import net.causw.adapter.persistence.locker.LockerLocation;
 
 @Getter
 @Setter
@@ -15,7 +15,7 @@ public class LockerLocationResponseDto {
     private Long totalLockerCount;
 
     public static LockerLocationResponseDto of(
-            LockerLocationDomainModel lockerLocation,
+            LockerLocation lockerLocation,
             Long enableLockerCount,
             Long totalLockerCount
     ) {
