@@ -3,7 +3,7 @@ package net.causw.application.dto.user;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.domain.model.user.UserDomainModel;
+import net.causw.adapter.persistence.user.User;
 import org.springframework.data.domain.Page;
 
 @Getter
@@ -19,7 +19,7 @@ public class UserPostsResponseDto {
     private Page<UserPostResponseDto> post;
 
     public static UserPostsResponseDto of(
-            UserDomainModel user,
+            User user,
             Page<UserPostResponseDto> post
     ) {
         return UserPostsResponseDto.builder()
