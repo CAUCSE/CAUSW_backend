@@ -688,7 +688,7 @@ public class UserService {
         else if ((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
                 && (userUpdateRoleRequestDto.getRole().equals(Role.VICE_PRESIDENT))
         ){
-            List<User> previousVicePresidents = userRepository.findByRoleContainingAndState(Role.VICE_PRESIDENT.getValue(), UserState.ACTIVE);
+            List<User> previousVicePresidents = userRepository.findByRoleAndState(Role.VICE_PRESIDENT, UserState.ACTIVE);
             if (!previousVicePresidents.isEmpty()) {
                 previousVicePresidents.forEach(previousVicePresident -> {
                     this.removeRole(previousVicePresident.getId(), Role.VICE_PRESIDENT);
@@ -764,7 +764,7 @@ public class UserService {
         else if ((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
                 && userUpdateRoleRequestDto.getRole().equals(Role.LEADER_ALUMNI)
         ) {
-            User previousLeaderAlumni = this.userRepository.findByRoleContainingAndState(Role.LEADER_ALUMNI.getValue(), UserState.ACTIVE)
+            User previousLeaderAlumni = this.userRepository.findByRoleAndState(Role.LEADER_ALUMNI, UserState.ACTIVE)
                     .stream().findFirst()
                     .orElseThrow(
                             () -> new InternalServerException(
