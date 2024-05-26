@@ -38,6 +38,8 @@ public class MessageUtil {
     public static final String LOCKER_RETURN_TIME_NOT_SET = "사물함 반납 시간이 설정되지 않았습니다.";
     public static final String LOCKER_UNUSED = "사용 중인 사물함이 아닙니다.";
     public static final String LOCKER_DELETED = "사물함 삭제";
+    public static final String LOCKER_ACTION_ERROR = "사물함 액션 실행 중 에러가 발생하였습니다.";
+
 
     // User
     public static final String USER_NOT_FOUND = "해당 사용자를 찾을 수 없습니다.";

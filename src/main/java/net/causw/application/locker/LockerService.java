@@ -1,6 +1,15 @@
 package net.causw.application.locker;
 
 import lombok.RequiredArgsConstructor;
+import net.causw.adapter.persistence.locker.Locker;
+import net.causw.adapter.persistence.locker.LockerLocation;
+import net.causw.adapter.persistence.locker.LockerLog;
+import net.causw.adapter.persistence.repository.LockerLocationRepository;
+import net.causw.adapter.persistence.repository.LockerLogRepository;
+import net.causw.adapter.persistence.repository.LockerRepository;
+import net.causw.adapter.persistence.repository.UserRepository;
+import net.causw.adapter.persistence.user.User;
+import net.causw.application.common.CommonService;
 import net.causw.application.dto.locker.LockerCreateRequestDto;
 import net.causw.application.dto.locker.LockerExpiredAtRequestDto;
 import net.causw.application.dto.locker.LockerLocationCreateRequestDto;
@@ -12,22 +21,13 @@ import net.causw.application.dto.locker.LockerMoveRequestDto;
 import net.causw.application.dto.locker.LockerResponseDto;
 import net.causw.application.dto.locker.LockerUpdateRequestDto;
 import net.causw.application.dto.locker.LockersResponseDto;
-import net.causw.application.spi.FlagPort;
-import net.causw.application.spi.LockerLocationPort;
-import net.causw.application.spi.LockerLogPort;
-import net.causw.application.spi.LockerPort;
-import net.causw.application.spi.TextFieldPort;
-import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
-import net.causw.domain.model.locker.LockerDomainModel;
-import net.causw.domain.model.locker.LockerLocationDomainModel;
 import net.causw.domain.model.enums.LockerLogAction;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
-import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.LockerExpiredAtValidator;
 import net.causw.domain.validation.LockerInUseValidator;
@@ -48,30 +48,28 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class LockerService {
-    private final LockerPort lockerPort;
-    private final LockerLocationPort lockerLocationPort;
-    private final LockerLogPort lockerLogPort;
-    private final UserPort userPort;
-    private final FlagPort flagPort;
+    private final LockerRepository lockerRepository;
+    private final UserRepository userRepository;
+    private final LockerLogRepository lockerLogRepository;
+    private final LockerLocationRepository lockerLocationRepository;
     private final Validator validator;
     private final LockerActionFactory lockerActionFactory;
-    private final TextFieldPort textFieldPort;
+    private final CommonService commonService;
 
     @Transactional(readOnly = true)
     public LockerResponseDto findById(String id, String userId) {
-        UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
 
-        return LockerResponseDto.of(this.lockerPort.findByIdForRead(id).orElseThrow(
+        User user = userRepository.findById(userId).orElseThrow(() -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                MessageUtil.LOGIN_USER_NOT_FOUND
+        ));
+
+        return LockerResponseDto.of(lockerRepository.findByIdForRead(id).orElseThrow(
                         () -> new BadRequestException(
                                 ErrorCode.ROW_DOES_NOT_EXIST,
                                 MessageUtil.LOCKER_NOT_FOUND
                         )),
-                userDomainModel
+                user
         );
     }
 
@@ -82,15 +80,12 @@ public class LockerService {
     ) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel creatorDomainModel = this.userPort.findById(creatorId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
+        User user = userRepository.findById(creatorId).orElseThrow(() -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                MessageUtil.LOGIN_USER_NOT_FOUND
+        ));
 
-        LockerLocationDomainModel lockerLocationDomainModel = this.lockerLocationPort
-                .findById(lockerCreateRequestDto.getLockerLocationId())
+        LockerLocation lockerLocation = lockerLocationRepository.findById(lockerCreateRequestDto.getLockerLocationId())
                 .orElseThrow(
                         () -> new BadRequestException(
                                 ErrorCode.ROW_DOES_NOT_EXIST,
@@ -98,41 +93,24 @@ public class LockerService {
                         )
                 );
 
-        if (this.lockerPort.findByLockerNumber(lockerCreateRequestDto.getLockerNumber()).isPresent()) {
+        if (lockerRepository.findByLockerNumber(lockerCreateRequestDto.getLockerNumber()).isPresent()) {
             throw new BadRequestException(
                     ErrorCode.ROW_ALREADY_EXIST,
                     MessageUtil.LOCKER_DUPLICATE_NUMBER
             );
         }
-
-        LockerDomainModel lockerDomainModel = LockerDomainModel.of(
-                lockerCreateRequestDto.getLockerNumber(),
-                lockerLocationDomainModel
-        );
-
+        Locker locker = Locker.of(lockerCreateRequestDto.getLockerNumber(), true, user, lockerLocation, null);
         validatorBucket
-                .consistOf(UserStateValidator.of(creatorDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(creatorDomainModel.getRole()))
-                .consistOf(UserRoleValidator.of(creatorDomainModel.getRole(), List.of(Role.PRESIDENT)))
-                .consistOf(ConstraintValidator.of(lockerDomainModel, this.validator))
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
+                .consistOf(ConstraintValidator.of(locker, this.validator))
                 .validate();
 
-        return Optional
-                .of(this.lockerPort.create(lockerDomainModel))
-                .map(resLockerDomainModel -> {
-                    this.lockerLogPort.create(
-                            resLockerDomainModel.getLockerNumber(),
-                            lockerLocationDomainModel.getName(),
-                            creatorDomainModel,
-                            LockerLogAction.ENABLE,
-                            MessageUtil.LOCKER_FIRST_CREATED
-                    );
-                    return LockerResponseDto.of(resLockerDomainModel, creatorDomainModel);
-                })
-                .orElseThrow(() -> new InternalServerException(
-                        ErrorCode.INTERNAL_SERVER,
-                        MessageUtil.INTERNAL_SERVER_ERROR
-                ));
+        lockerRepository.save(locker);
+        lockerLogRepository.save(LockerLog.of(locker.getLockerNumber(), lockerLocation.getName(), user.getEmail(), user.getName(), LockerLogAction.ENABLE,
+                MessageUtil.LOCKER_FIRST_CREATED));
+        return LockerResponseDto.of(locker, user);
     }
 
     @Transactional
@@ -141,49 +119,43 @@ public class LockerService {
             String lockerId,
             LockerUpdateRequestDto lockerUpdateRequestDto
     ) {
-        UserDomainModel updaterDomainModel = this.userPort.findById(updaterId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
+        User user = userRepository.findById(updaterId).orElseThrow(() -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                MessageUtil.LOGIN_USER_NOT_FOUND
+        ));
 
-        LockerDomainModel lockerDomainModel = this.lockerPort.findByIdForWrite(lockerId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOCKER_NOT_FOUND
-                )
-        );
+        LockerLocation lockerLocation = lockerLocationRepository.findById(lockerId)
+                .orElseThrow(
+                        () -> new BadRequestException(
+                                ErrorCode.ROW_DOES_NOT_EXIST,
+                                MessageUtil.LOCKER_WRONG_POSITION
+                        )
+                );
+        Locker locker = lockerRepository.findById(lockerId).orElseThrow(() -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                MessageUtil.LOCKER_NOT_FOUND
+        ));
 
         ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(updaterDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(updaterDomainModel.getRole()))
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
                 .validate();
 
-        return this.lockerActionFactory
+        locker = this.lockerActionFactory
                 .getLockerAction(LockerLogAction.of(lockerUpdateRequestDto.getAction()))
                 .updateLockerDomainModel(
-                        lockerDomainModel,
-                        updaterDomainModel,
-                        this.lockerPort,
-                        this.lockerLogPort,
-                        this.flagPort,
-                        this.textFieldPort
-                )
-                .map(resLockerDomainModel -> {
-                    this.lockerLogPort.create(
-                            resLockerDomainModel.getLockerNumber(),
-                            resLockerDomainModel.getLockerLocation().getName(),
-                            updaterDomainModel,
-                            LockerLogAction.of(lockerUpdateRequestDto.getAction()),
-                            lockerUpdateRequestDto.getMessage().orElse(lockerUpdateRequestDto.getAction())
-                    );
-                    return LockerResponseDto.of(resLockerDomainModel, updaterDomainModel);
-                })
-                .orElseThrow(() -> new InternalServerException(
-                        ErrorCode.INTERNAL_SERVER,
-                        MessageUtil.INTERNAL_SERVER_ERROR
-                ));
+                        locker,
+                        user,
+                        this,
+                        commonService
+                ).orElseThrow(() -> new InternalServerException(ErrorCode.LOCKER_ACTION_ERROR, MessageUtil.LOCKER_ACTION_ERROR));
+
+        LockerLog lockerLog = LockerLog.of(locker.getLockerNumber(), lockerLocation.getName(), user.getEmail(), user.getName(), LockerLogAction.of(lockerUpdateRequestDto.getAction()),
+                lockerUpdateRequestDto.getMessage().orElse(lockerUpdateRequestDto.getAction()));
+
+        lockerRepository.save(locker);
+        lockerLogRepository.save(lockerLog);
+        return LockerResponseDto.of(locker, user);
     }
 
     @Transactional
@@ -192,132 +164,122 @@ public class LockerService {
             String lockerId,
             LockerMoveRequestDto lockerMoveRequestDto
     ) {
-        UserDomainModel updaterDomainModel = this.userPort.findById(updaterId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
+        User user = userRepository.findById(updaterId).orElseThrow(() -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                MessageUtil.LOGIN_USER_NOT_FOUND
+        ));
 
-        LockerDomainModel lockerDomainModel = this.lockerPort.findByIdForWrite(lockerId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOCKER_WRONG_POSITION
-                )
-        );
+        Locker locker = lockerRepository.findById(lockerId).orElseThrow(() -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                MessageUtil.LOCKER_NOT_FOUND
+        ));
 
-        LockerLocationDomainModel lockerLocationDomainModel = this.lockerLocationPort.findById(lockerMoveRequestDto.getLocationId()).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOCKER_WRONG_POSITION
-                )
-        );
+        LockerLocation lockerLocation = lockerLocationRepository.findById(lockerMoveRequestDto.getLocationId())
+                .orElseThrow(
+                        () -> new BadRequestException(
+                                ErrorCode.ROW_DOES_NOT_EXIST,
+                                MessageUtil.LOCKER_WRONG_POSITION
+                        )
+                );
 
-        lockerDomainModel.move(lockerLocationDomainModel);
+        locker.move(lockerLocation);
 
         ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(updaterDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(updaterDomainModel.getRole()))
-                .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.PRESIDENT)))
-                .consistOf(ConstraintValidator.of(lockerDomainModel, this.validator))
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
+                .consistOf(ConstraintValidator.of(locker, this.validator))
                 .validate();
 
-        return LockerResponseDto.of(this.lockerPort.updateLocation(lockerId, lockerDomainModel).orElseThrow(
-                        () -> new InternalServerException(
-                                ErrorCode.INTERNAL_SERVER,
-                                MessageUtil.INTERNAL_SERVER_ERROR
-                        )),
-                updaterDomainModel
-        );
+        lockerRepository.save(locker);
+
+        return LockerResponseDto.of(locker, user);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Locker> findByUserId(String userId) {
+        return lockerRepository.findByUser_Id(userId);
     }
 
     @Transactional
     public LockerResponseDto delete(String deleterId, String lockerId) {
-        UserDomainModel deleterDomainModel = this.userPort.findById(deleterId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
+        User user = userRepository.findById(deleterId).orElseThrow(() -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                MessageUtil.LOGIN_USER_NOT_FOUND
+        ));
 
-        LockerDomainModel lockerDomainModel = this.lockerPort.findByIdForWrite(lockerId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOCKER_NOT_FOUND
-                )
-        );
+        Locker locker = lockerRepository.findById(lockerId).orElseThrow(() -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                MessageUtil.LOCKER_NOT_FOUND
+        ));
+
 
         ValidatorBucket.of()
-                .consistOf(LockerInUseValidator.of(lockerDomainModel.getUser().isPresent()))
-                .consistOf(UserStateValidator.of(deleterDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(deleterDomainModel.getRole()))
-                .consistOf(UserRoleValidator.of(deleterDomainModel.getRole(), List.of(Role.PRESIDENT)))
+                .consistOf(LockerInUseValidator.of(locker.getUser().isPresent()))
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
                 .validate();
 
-        this.lockerPort.delete(lockerDomainModel);
+        lockerRepository.delete(locker);
 
-        this.lockerLogPort.create(
-                lockerDomainModel.getLockerNumber(),
-                lockerDomainModel.getLockerLocation().getName(),
-                deleterDomainModel,
-                LockerLogAction.DISABLE,
-                MessageUtil.LOCKER_DELETED
-        );
-
-        return LockerResponseDto.of(lockerDomainModel, deleterDomainModel);
+        LockerLog lockerLog = LockerLog.of(locker.getLockerNumber(), locker.getLocation().getName(), user.getEmail(), user.getName(), LockerLogAction.DISABLE,
+                MessageUtil.LOCKER_DELETED);
+        lockerLogRepository.save(lockerLog);
+        return LockerResponseDto.of(locker, user);
     }
 
     @Transactional(readOnly = true)
     public LockersResponseDto findByLocation(String locationId, String userId) {
-        UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
 
-        LockerLocationDomainModel lockerLocation = this.lockerLocationPort.findById(locationId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOCKER_WRONG_POSITION
-                )
-        );
+        User user = userRepository.findById(userId).orElseThrow(() -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                MessageUtil.LOGIN_USER_NOT_FOUND
+        ));
+
+
+        LockerLocation lockerLocation = lockerLocationRepository.findById(locationId)
+                .orElseThrow(
+                        () -> new BadRequestException(
+                                ErrorCode.ROW_DOES_NOT_EXIST,
+                                MessageUtil.LOCKER_WRONG_POSITION
+                        )
+                );
 
         return LockersResponseDto.of(
                 lockerLocation.getName(),
-                this.lockerPort.findByLocationId(lockerLocation.getId())
+                lockerRepository.findByLocation_IdOrderByLockerNumberAsc(lockerLocation.getId())
                         .stream()
-                        .map(lockerDomainModel -> LockerResponseDto.of(lockerDomainModel, userDomainModel))
+                        .map(locker -> LockerResponseDto.of(locker, user))
                         .collect(Collectors.toList())
         );
     }
 
     @Transactional(readOnly = true)
     public LockerLocationsResponseDto findAllLocation(String userId) {
-        UserDomainModel userDomainModel = this.userPort.findById(userId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
+
+        User user = userRepository.findById(userId).orElseThrow(() -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                MessageUtil.LOGIN_USER_NOT_FOUND
+        ));
 
         LockerResponseDto myLocker = null;
-        if (!userDomainModel.getRole().equals(Role.ADMIN))
-            myLocker = this.lockerPort.findByUserId(userId)
-                    .map(lockerDomainModel -> LockerResponseDto.of(
-                            lockerDomainModel,
-                            userDomainModel,
-                            lockerDomainModel.getLockerLocation().getName()
+        if (!user.getRole().equals(Role.ADMIN))
+            myLocker = lockerRepository.findByUser_Id(userId)
+                    .map(locker -> LockerResponseDto.of(
+                            locker,
+                            user,
+                            locker.getLocation().getName()
                     ))
                     .orElse(null);
 
         return LockerLocationsResponseDto.of(
-                this.lockerLocationPort.findAll()
+                lockerLocationRepository.findAll()
                         .stream()
-                        .map(lockerLocationDomainModel -> LockerLocationResponseDto.of(
-                                lockerLocationDomainModel,
-                                this.lockerPort.countEnableLockerByLocation(lockerLocationDomainModel.getId()),
-                                this.lockerPort.countByLocation(lockerLocationDomainModel.getId())
+                        .map(lockerLocation -> LockerLocationResponseDto.of(
+                                lockerLocation,
+                                lockerRepository.countByLocationIdAndIsActiveIsTrueAndUserIdIsNull(lockerLocation.getId()),
+                                lockerRepository.countByLocationId(lockerLocation.getId())
                         ))
                         .collect(Collectors.toList()),
                 myLocker
@@ -329,33 +291,32 @@ public class LockerService {
             String creatorId,
             LockerLocationCreateRequestDto lockerLocationCreateRequestDto
     ) {
-        UserDomainModel creatorDomainModel = this.userPort.findById(creatorId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
+        User user = userRepository.findById(creatorId).orElseThrow(() -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                MessageUtil.LOGIN_USER_NOT_FOUND
+        ));
 
-        if (this.lockerLocationPort.findByName(lockerLocationCreateRequestDto.getName()).isPresent()) {
+        if (lockerLocationRepository.findByName(lockerLocationCreateRequestDto.getName()).isPresent()) {
             throw new BadRequestException(
                     ErrorCode.ROW_ALREADY_EXIST,
                     MessageUtil.LOCKER_ALREADY_REGISTERED
             );
         }
 
-        LockerLocationDomainModel lockerLocationDomainModel = LockerLocationDomainModel.from(
+        LockerLocation lockerLocation = LockerLocation.of(
                 lockerLocationCreateRequestDto.getName()
         );
 
         ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(creatorDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(creatorDomainModel.getRole()))
-                .consistOf(UserRoleValidator.of(creatorDomainModel.getRole(), List.of(Role.PRESIDENT)))
-                .consistOf(ConstraintValidator.of(lockerLocationDomainModel, this.validator))
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
+                .consistOf(ConstraintValidator.of(lockerLocation, this.validator))
                 .validate();
+        LockerLocation location = LockerLocation.of(lockerLocationCreateRequestDto.getName());
 
         return LockerLocationResponseDto.of(
-                this.lockerLocationPort.create(lockerLocationDomainModel),
+                location,
                 0L,
                 0L
         );
@@ -367,22 +328,20 @@ public class LockerService {
             String locationId,
             LockerLocationUpdateRequestDto lockerLocationRequestDto
     ) {
-        UserDomainModel creatorDomainModel = this.userPort.findById(updaterId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
+        User user = userRepository.findById(updaterId).orElseThrow(() -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                MessageUtil.LOGIN_USER_NOT_FOUND
+        ));
 
-        LockerLocationDomainModel lockerLocationDomainModel = this.lockerLocationPort.findById(locationId).orElseThrow(
+        LockerLocation lockerLocation = lockerLocationRepository.findById(locationId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.LOCKER_WRONG_POSITION
                 )
         );
 
-        if (!lockerLocationDomainModel.getName().equals(lockerLocationRequestDto.getName())) {
-            if (this.lockerLocationPort.findByName(lockerLocationRequestDto.getName()).isPresent()) {
+        if (!lockerLocation.getName().equals(lockerLocationRequestDto.getName())) {
+            if (lockerLocationRepository.findByName(lockerLocationRequestDto.getName()).isPresent()) {
                 throw new BadRequestException(
                         ErrorCode.ROW_ALREADY_EXIST,
                         MessageUtil.LOCKER_ALREADY_REGISTERED
@@ -390,46 +349,39 @@ public class LockerService {
             }
         }
 
-        lockerLocationDomainModel.update(
+        lockerLocation.update(
                 lockerLocationRequestDto.getName()
         );
 
         ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(creatorDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(creatorDomainModel.getRole()))
-                .consistOf(UserRoleValidator.of(creatorDomainModel.getRole(), List.of(Role.PRESIDENT)))
-                .consistOf(ConstraintValidator.of(lockerLocationDomainModel, this.validator))
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
+                .consistOf(ConstraintValidator.of(lockerLocation, this.validator))
                 .validate();
 
         return LockerLocationResponseDto.of(
-                this.lockerLocationPort.update(locationId, lockerLocationDomainModel).orElseThrow(
-                        () -> new InternalServerException(
-                                ErrorCode.INTERNAL_SERVER,
-                                MessageUtil.INTERNAL_SERVER_ERROR
-                        )
-                ),
-                this.lockerPort.countEnableLockerByLocation(lockerLocationDomainModel.getId()),
-                this.lockerPort.countByLocation(lockerLocationDomainModel.getId())
+                lockerLocation,
+                lockerRepository.countByLocationIdAndIsActiveIsTrueAndUserIdIsNull(lockerLocation.getId()),
+                lockerRepository.countByLocationId(lockerLocation.getId())
         );
     }
 
     @Transactional
     public LockerLocationResponseDto deleteLocation(String deleterId, String lockerLocationId) {
-        UserDomainModel deleterDomainModel = this.userPort.findById(deleterId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
+        User user = userRepository.findById(deleterId).orElseThrow(() -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                MessageUtil.LOGIN_USER_NOT_FOUND
+        ));
 
-        LockerLocationDomainModel lockerLocationDomainModel = this.lockerLocationPort.findById(lockerLocationId).orElseThrow(
+        LockerLocation lockerLocation = lockerLocationRepository.findById(lockerLocationId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.LOCKER_WRONG_POSITION
                 )
         );
 
-        if (this.lockerPort.countByLocation(lockerLocationDomainModel.getId()) != 0L) {
+        if (lockerRepository.countByLocationId(lockerLocation.getId()) != 0L) {
             throw new BadRequestException(
                     ErrorCode.CANNOT_PERFORMED,
                     MessageUtil.LOCKER_ALREADY_EXIST
@@ -437,47 +389,48 @@ public class LockerService {
         }
 
         ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(deleterDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(deleterDomainModel.getRole()))
-                .consistOf(UserRoleValidator.of(deleterDomainModel.getRole(), List.of(Role.PRESIDENT)))
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
                 .validate();
 
-        this.lockerLocationPort.delete(lockerLocationDomainModel);
+        lockerLocationRepository.delete(lockerLocation);
 
-        return LockerLocationResponseDto.of(lockerLocationDomainModel, 0L, 0L);
+        return LockerLocationResponseDto.of(lockerLocation, 0L, 0L);
     }
 
     @Transactional(readOnly = true)
     public List<LockerLogResponseDto> findLog(String id) {
-        LockerDomainModel locker = this.lockerPort.findByIdForRead(id).orElseThrow(
+        Locker locker = lockerRepository.findByIdForRead(id).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.LOCKER_NOT_FOUND
                 )
         );
-
-        return this.lockerLogPort.findByLockerNumber(locker.getLockerNumber());
+        return lockerLogRepository.findByLockerNumber(locker.getLockerNumber())
+                .stream()
+                .map(LockerLogResponseDto::from)
+                .collect(Collectors.toList());
     }
+
 
     @Transactional
     public void setExpireAt(
             String requestUserId,
             LockerExpiredAtRequestDto lockerExpiredAtRequestDto
     ) {
-        UserDomainModel userDomainModel = this.userPort.findById(requestUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
+        User user = userRepository.findById(requestUserId).orElseThrow(() -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                MessageUtil.LOGIN_USER_NOT_FOUND
+        ));
 
         ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(userDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
-                .consistOf(UserRoleValidator.of(userDomainModel.getRole(), List.of(Role.PRESIDENT)))
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
                 .validate();
 
-        this.textFieldPort.findByKey(StaticValue.EXPIRED_AT)
+        commonService.findByKeyInTextField(StaticValue.EXPIRED_AT)
                 .ifPresentOrElse(textField -> {
                             ValidatorBucket.of()
                                     .consistOf(LockerExpiredAtValidator.of(
@@ -485,123 +438,69 @@ public class LockerService {
                                             lockerExpiredAtRequestDto.getExpiredAt()))
                                     .validate();
 
-                            this.textFieldPort.update(
+                            commonService.updateTextField(
                                     StaticValue.EXPIRED_AT,
                                     lockerExpiredAtRequestDto.getExpiredAt().toString()
                             );
                         },
-                        () -> this.textFieldPort.create(
+                        () -> commonService.createTextField(
                                 StaticValue.EXPIRED_AT,
                                 lockerExpiredAtRequestDto.getExpiredAt().toString())
                 );
     }
+
     @Transactional
     public void createAllLockers(String creatorId) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel creatorDomainModel = this.userPort.findById(creatorId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
+        User user = userRepository.findById(creatorId).orElseThrow(() -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                MessageUtil.LOGIN_USER_NOT_FOUND
+        ));
 
-        LockerLocationDomainModel lockerLocationSecondFloorDomainModel = this.lockerLocationPort
-                .findById("402881cd8dcaaab2018dcab2d8820000")
-                .orElseThrow(
-                        () -> new BadRequestException(
-                                ErrorCode.ROW_DOES_NOT_EXIST,
-                                MessageUtil.LOCKER_WRONG_POSITION
-                        )
-                );
-        LockerLocationDomainModel lockerLocationThirdFloorDomainModel = this.lockerLocationPort
-                .findById("402881cd8dcaaab2018dcab2fb980001")
-                .orElseThrow(
-                        () -> new BadRequestException(
-                                ErrorCode.ROW_DOES_NOT_EXIST,
-                                MessageUtil.LOCKER_WRONG_POSITION
-                        )
-                );
-        LockerLocationDomainModel lockerLocationFourthFloorDomainModel = this.lockerLocationPort
-                .findById("402881cd8dcaaab2018dcab30ea90002")
-                .orElseThrow(
-                        () -> new BadRequestException(
-                                ErrorCode.ROW_DOES_NOT_EXIST,
-                                MessageUtil.LOCKER_WRONG_POSITION
-                        )
-                );
+        LockerLocation lockerLocationSecondFloor = LockerLocation.of("Second Floor");
+        lockerLocationRepository.save(lockerLocationSecondFloor);
 
-        for (Long lockerNumber = 1L; lockerNumber <= 136; lockerNumber++) {
+        LockerLocation lockerLocationThirdFloor = LockerLocation.of("Third Floor");
+        lockerLocationRepository.save(lockerLocationThirdFloor);
 
-            LockerDomainModel lockerDomainModel = LockerDomainModel.of(
+        LockerLocation lockerLocationFourthFloor = LockerLocation.of("Fourth Floor");
+        lockerLocationRepository.save(lockerLocationFourthFloor);
+
+        createLockerByLockerLocationAndEndLockerNumber(lockerLocationSecondFloor, validatorBucket, user,136L);
+        createLockerByLockerLocationAndEndLockerNumber(lockerLocationThirdFloor,validatorBucket, user,168L);
+        createLockerByLockerLocationAndEndLockerNumber(lockerLocationFourthFloor,validatorBucket, user,32L);
+    }
+
+    private void createLockerByLockerLocationAndEndLockerNumber(LockerLocation lockerLocationSecondFloor, ValidatorBucket validatorBucket, User user , Long endNum) {
+        for (Long lockerNumber = 1L; lockerNumber <= endNum; lockerNumber++) {
+
+            Locker locker = Locker.of(
                     lockerNumber,
-                    lockerLocationSecondFloorDomainModel
+                    true,
+                    null,
+                    lockerLocationSecondFloor,
+                    null
             );
 
             validatorBucket
-                    .consistOf(UserStateValidator.of(creatorDomainModel.getState()))
-                    .consistOf(UserRoleIsNoneValidator.of(creatorDomainModel.getRole()))
-                    .consistOf(UserRoleValidator.of(creatorDomainModel.getRole(), List.of(Role.PRESIDENT)))
-                    .consistOf(ConstraintValidator.of(lockerDomainModel, this.validator))
+                    .consistOf(UserStateValidator.of(user.getState()))
+                    .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+                    .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
+                    .consistOf(ConstraintValidator.of(locker, this.validator))
                     .validate();
 
-            this.lockerPort.create(lockerDomainModel);
+            lockerRepository.save(locker);
 
-            this.lockerLogPort.create(
+            LockerLog lockerLog = LockerLog.of(
                     lockerNumber,
-                    lockerLocationSecondFloorDomainModel.getName(),
-                    creatorDomainModel,
+                    lockerLocationSecondFloor.getName(),
+                    user.getEmail(),
+                    user.getName(),
                     LockerLogAction.ENABLE,
                     MessageUtil.LOCKER_FIRST_CREATED
             );
-        }
-        for (Long lockerNumber = 1L; lockerNumber <= 168; lockerNumber++) {
-
-            LockerDomainModel lockerDomainModel = LockerDomainModel.of(
-                    lockerNumber,
-                    lockerLocationThirdFloorDomainModel
-            );
-
-            validatorBucket
-                    .consistOf(UserStateValidator.of(creatorDomainModel.getState()))
-                    .consistOf(UserRoleIsNoneValidator.of(creatorDomainModel.getRole()))
-                    .consistOf(UserRoleValidator.of(creatorDomainModel.getRole(), List.of(Role.PRESIDENT)))
-                    .consistOf(ConstraintValidator.of(lockerDomainModel, this.validator))
-                    .validate();
-
-            this.lockerPort.create(lockerDomainModel);
-
-            this.lockerLogPort.create(
-                    lockerNumber,
-                    lockerLocationThirdFloorDomainModel.getName(),
-                    creatorDomainModel,
-                    LockerLogAction.ENABLE,
-                    MessageUtil.LOCKER_FIRST_CREATED
-            );
-        }
-        for (Long lockerNumber = 1L; lockerNumber <= 32; lockerNumber++) {
-
-            LockerDomainModel lockerDomainModel = LockerDomainModel.of(
-                    lockerNumber,
-                    lockerLocationFourthFloorDomainModel
-            );
-
-            validatorBucket
-                    .consistOf(UserStateValidator.of(creatorDomainModel.getState()))
-                    .consistOf(UserRoleIsNoneValidator.of(creatorDomainModel.getRole()))
-                    .consistOf(UserRoleValidator.of(creatorDomainModel.getRole(), List.of(Role.PRESIDENT)))
-                    .consistOf(ConstraintValidator.of(lockerDomainModel, this.validator))
-                    .validate();
-
-            this.lockerPort.create(lockerDomainModel);
-
-            this.lockerLogPort.create(
-                    lockerNumber,
-                    lockerLocationFourthFloorDomainModel.getName(),
-                    creatorDomainModel,
-                    LockerLogAction.ENABLE,
-                    MessageUtil.LOCKER_FIRST_CREATED
-            );
+            lockerLogRepository.save(lockerLog);
         }
     }
 }
