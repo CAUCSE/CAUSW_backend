@@ -54,7 +54,7 @@ public class CommonController {
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);
-        return this.commonService.createFlag(
+        return commonService.createFlag(
                 loginUserId,
                 key,
                 value
