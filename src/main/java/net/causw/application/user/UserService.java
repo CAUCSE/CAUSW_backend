@@ -489,6 +489,10 @@ public class UserService {
                 }
         );
 
+        User user = userCreateRequestDto.toEntity(passwordEncoder.encode(userCreateRequestDto.getPassword()));
+
+        this.userRepository.save(user);
+
         // Validate password format, admission year range, and whether the email is duplicate or not
         ValidatorBucket.of()
                 .consistOf(ConstraintValidator.of(user, this.validator))
