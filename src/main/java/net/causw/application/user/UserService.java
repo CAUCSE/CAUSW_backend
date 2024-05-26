@@ -898,10 +898,19 @@ public class UserService {
                 .consistOf(UserRoleWithoutAdminValidator.of(user.getRole(), List.of(Role.COMMON, Role.PROFESSOR)))
                 .validate();
 
-        this.lockerPort.findByUserId(loginUserId)
-                .ifPresent(lockerDomainModel -> {
-                    lockerDomainModel.returnLocker();
-                    this.lockerPort.update(lockerDomainModel.getId(), lockerDomainModel);
+        this.lockerRepository.findByUser_Id(loginUserId)
+                .ifPresent(locker -> {
+                    locker.returnLocker();
+                    this.lockerRepository.save(locker);
+
+                    LockerLog lockerLog = LockerLog.builder()
+                            .lockerNumber(locker.getLockerNumber())
+                            .lockerLocationName(locker.getLocation().getName())
+                            .userEmail(user.getEmail())
+                            .userName(user.getName())
+                            .action(LockerLogAction.RETURN)
+                            .message("사용자 탈퇴")
+                            .build();
 
                     this.lockerLogRepository.save(lockerLog);
 
@@ -975,18 +984,21 @@ public class UserService {
                 .consistOf(UserRoleWithoutAdminValidator.of(droppedUser.getRole(), List.of(Role.COMMON, Role.PROFESSOR)))
                 .validate();
 
-        this.lockerPort.findByUserId(userId)
-                .ifPresent(lockerDomainModel -> {
-                    lockerDomainModel.returnLocker();
-                    this.lockerPort.update(lockerDomainModel.getId(), lockerDomainModel);
+        this.lockerRepository.findByUser_Id(userId)
+                .ifPresent(locker -> {
+                    locker.returnLocker();
+                    this.lockerRepository.save(locker);
 
-                    this.lockerLogPort.create(
-                            lockerDomainModel.getLockerNumber(),
-                            lockerDomainModel.getLockerLocation().getName(),
-                            requestUser,
-                            LockerLogAction.RETURN,
-                            "사용자 추방"
-                    );
+                    LockerLog lockerLog = LockerLog.builder()
+                            .lockerNumber(locker.getLockerNumber())
+                            .lockerLocationName(locker.getLocation().getName())
+                            .userEmail(requestUser.getEmail())
+                            .userName(requestUser.getName())
+                            .action(LockerLogAction.RETURN)
+                            .message("사용자 추방")
+                            .build();
+
+                    this.lockerLogRepository.save(lockerLog);
                 });
 
         this.updateRole(userId, Role.NONE).orElseThrow(

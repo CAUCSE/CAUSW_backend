@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Builder;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.domain.model.enums.LockerLogAction;
 
@@ -14,6 +15,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.Table;
 
 @Getter
+@Builder
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)

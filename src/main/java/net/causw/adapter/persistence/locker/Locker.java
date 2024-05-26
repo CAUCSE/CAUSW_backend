@@ -77,4 +77,38 @@ public class Locker extends BaseEntity {
     public void setLocation(LockerLocation location) {
         this.location = location;
     }
+
+
+
+    //lockerdomainmodel 에서 엔티티로 이동
+    public void register(User user, LocalDateTime expireDate) {
+        this.isActive = Boolean.FALSE;
+        this.user = user;
+        this.expireDate = expireDate;
+    }
+
+    public void returnLocker() {
+        this.isActive = Boolean.TRUE;
+        this.user = null;
+        this.expireDate = null;
+    }
+
+    public void extendExpireDate(LocalDateTime expireDate) {
+        this.expireDate = expireDate;
+    }
+
+    public void activate() {
+        this.isActive = true;
+    }
+
+    public void deactivate() {
+        this.isActive = false;
+        this.user = null;
+    }
+
+    public void move(LockerLocation location) {
+        this.location = location;
+    }
 }
+
+
