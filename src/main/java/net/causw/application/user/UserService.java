@@ -688,15 +688,11 @@ public class UserService {
         else if ((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
                 && (userUpdateRoleRequestDto.getRole().equals(Role.VICE_PRESIDENT))
         ){
-            List<UserDomainModel> previousVicePresident = this.userPort.findByRole("VICE_PRESIDENT");
-            if(!previousVicePresident.isEmpty()){
-                previousVicePresident.forEach(
-                        user -> this.userPort.removeRole(user.getId(), Role.VICE_PRESIDENT).orElseThrow(
-                                () -> new InternalServerException(
-                                        ErrorCode.INTERNAL_SERVER,
-                                        MessageUtil.INTERNAL_SERVER_ERROR
-                                ))
-                );
+            List<User> previousVicePresidents = userRepository.findByRoleContainingAndState(Role.VICE_PRESIDENT.getValue(), UserState.ACTIVE);
+            if (!previousVicePresidents.isEmpty()) {
+                previousVicePresidents.forEach(previousVicePresident -> {
+                    this.removeRole(previousVicePresident.getId(), Role.VICE_PRESIDENT);
+                });
             }
         }
 
@@ -740,8 +736,7 @@ public class UserService {
                                 this.userPort.removeRole(leader.getId(), Role.LEADER_CIRCLE);
                             }
                         });
-
-                        this.circlePort.updateLeader(circle.getId(), grantee);
+                        updateLeader(circle.getId(), grantee);
                     }, () -> {
                         throw new BadRequestException(
                                 ErrorCode.ROW_DOES_NOT_EXIST,
@@ -757,8 +752,8 @@ public class UserService {
                 && userUpdateRoleRequestDto.getRole().equals(Role.COMMON)
         ) {
             //TODO : 로직 수정 필요
-            if(grantee.getRole().getValue().contains("COUNCIL") || grantee.getRole().getValue().contains("LEADER_\\d+")){
-                return UserResponseDto.from(this.userPort.removeRole(granteeId, Role.COMMON).orElseThrow(
+            if(grantee.getRole().getValue().contains("COUNCIL") || grantee.getRole().getValue().matches("LEADER_\\d+")){
+                return UserResponseDto.from(removeRole(granteeId, Role.COMMON).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
                                 MessageUtil.INTERNAL_SERVER_ERROR
@@ -777,7 +772,7 @@ public class UserService {
                                     MessageUtil.INTERNAL_SERVER_ERROR
                             ));
 
-            this.userPort.removeRole(previousLeaderAlumni.getId(), Role.LEADER_ALUMNI).orElseThrow(
+            removeRole(previousLeaderAlumni.getId(), Role.LEADER_ALUMNI).orElseThrow(
                     () -> new InternalServerException(
                             ErrorCode.INTERNAL_SERVER,
                             MessageUtil.INTERNAL_SERVER_ERROR
@@ -789,13 +784,73 @@ public class UserService {
          * The linked updating process is performed on previous delegation process
          * Therefore, the updating for the grantee is performed in this process
          */
-        return UserResponseDto.from(this.userPort.updateRole(granteeId, userUpdateRoleRequestDto.getRole()).orElseThrow(
+        return UserResponseDto.from(this.updateRole(granteeId, userUpdateRoleRequestDto.getRole()).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.INTERNAL_SERVER_ERROR
                 )
         ));
     }
+
+    //UserPort의 removeRole 로직 서비스단으로 이동
+    //TODO : role 관련 로직 변경후 권한 삭제 코드 변경 필요
+    private Optional<User> removeRole(String id, Role targetRole) {
+        return this.userRepository.findById(id).map(
+                srcUser -> {
+                    if(srcUser.getRole().equals(targetRole)){
+                        srcUser.setRole(Role.COMMON);
+                    }
+                    else if (srcUser.getRole().getValue().contains(targetRole.getValue())) {
+                        if(targetRole.equals(Role.LEADER_CIRCLE)){
+                            String updatedRoleValue = srcUser.getRole().getValue().replace(targetRole.getValue(), "").replace("_N_","");
+                            srcUser.setRole(Role.of(updatedRoleValue));
+                        }
+                    }
+                    //학생회 겸 동아리장, 학년대표 겸 동아리장의 경우 타깃이 동아리 장만 남기는걸로 변경
+                    else if(targetRole.equals(Role.COMMON)){
+                        srcUser.setRole(Role.LEADER_CIRCLE);
+                    }
+                    return this.userRepository.save(srcUser);
+                }
+        );
+    }
+
+    private Optional<Circle> updateLeader(String circleId, User newLeader) {
+        return this.circleRepository.findById(circleId).map(
+                srcCircle -> {
+                    srcCircle.setLeader(newLeader);
+
+                    return this.circleRepository.save(srcCircle);
+                }
+        );
+    }
+
+    private Optional<User> updateRole(String id, Role newRole) {
+        return this.userRepository.findById(id).map(srcUser -> {
+            if (srcUser.getRole().equals(Role.COMMON)) {
+                srcUser.setRole(newRole);
+            } else if (newRole.equals(Role.LEADER_CIRCLE)) {
+                if (!srcUser.getRole().getValue().contains("LEADER_CIRCLE")) {
+                    String combinedRoleValue = srcUser.getRole().getValue() + "_N_" + "LEADER_CIRCLE";
+                    Role combinedRole = Role.of(combinedRoleValue.toUpperCase());
+                    srcUser.setRole(combinedRole);
+                }
+            } else if (!newRole.equals(Role.LEADER_CIRCLE) && srcUser.getRole().equals(Role.LEADER_CIRCLE)) {
+                if (newRole.equals(Role.COMMON)) {
+                    srcUser.setRole(newRole);
+                } else {
+                    String combinedRoleValue = newRole.getValue() + "_N_" + "LEADER_CIRCLE";
+                    Role combinedRole = Role.of(combinedRoleValue.toUpperCase());
+                    srcUser.setRole(combinedRole);
+                }
+            } else {
+                srcUser.setRole(newRole);
+            }
+            return this.userRepository.save(srcUser);
+        });
+    }
+
+
 
     @Transactional
     public UserResponseDto updatePassword(
@@ -848,17 +903,12 @@ public class UserService {
                     lockerDomainModel.returnLocker();
                     this.lockerPort.update(lockerDomainModel.getId(), lockerDomainModel);
 
-                    this.lockerLogPort.create(
-                            lockerDomainModel.getLockerNumber(),
-                            lockerDomainModel.getLockerLocation().getName(),
-                            user,
-                            LockerLogAction.RETURN,
-                            "사용자 탈퇴"
-                    );
+                    this.lockerLogRepository.save(lockerLog);
+
                 });
 
         // Change user role to NONE
-        this.userPort.updateRole(loginUserId, Role.NONE).orElseThrow(
+        this.updateRole(loginUserId, Role.NONE).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.INTERNAL_SERVER_ERROR
@@ -871,13 +921,35 @@ public class UserService {
                         this.updateStatus(circleMember.getId(), CircleMemberStatus.LEAVE)
                 );
 
-        return UserResponseDto.from(this.userPort.updateState(loginUserId, UserState.INACTIVE).orElseThrow(
+        return UserResponseDto.from(this.updateState(loginUserId, UserState.INACTIVE).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.INTERNAL_SERVER_ERROR
                 )
         ));
     }
+
+
+    private Optional<CircleMember> updateStatus(String applicationId, CircleMemberStatus targetStatus) {
+        return this.circleMemberRepository.findById(applicationId).map(
+                circleMember -> {
+                    circleMember.setStatus(targetStatus);
+                    return this.circleMemberRepository.save(circleMember);
+                }
+        );
+    }
+
+    private Optional<User> updateState(String id, UserState state) {
+        return this.userRepository.findById(id).map(
+                srcUser -> {
+                    srcUser.setState(state);
+
+                    this.userRepository.save(srcUser);
+                    return srcUser;
+                }
+        );
+    }
+
 
     @Transactional
     public UserResponseDto dropUser(String loginUserId, String userId) {
@@ -917,14 +989,14 @@ public class UserService {
                     );
                 });
 
-        this.userPort.updateRole(userId, Role.NONE).orElseThrow(
+        this.updateRole(userId, Role.NONE).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.INTERNAL_SERVER_ERROR
                 )
         );
 
-        return UserResponseDto.from(this.userPort.updateState(userId, UserState.DROP).orElseThrow(
+        return UserResponseDto.from(this.updateState(userId, UserState.DROP).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.INTERNAL_SERVER_ERROR
@@ -1170,14 +1242,14 @@ public class UserService {
                 .consistOf(UserStateIsDropOrIsInActiveValidator.of(restoredUser.getState()))
                 .validate();
 
-        this.userPort.updateRole(restoredUser.getId(), Role.COMMON).orElseThrow(
+        this.updateRole(restoredUser.getId(), Role.COMMON).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.INTERNAL_SERVER_ERROR
                 )
         );
 
-        return UserResponseDto.from(this.userPort.updateState(restoredUser.getId(), UserState.ACTIVE).orElseThrow(
+        return UserResponseDto.from(this.updateState(restoredUser.getId(), UserState.ACTIVE).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.INTERNAL_SERVER_ERROR
