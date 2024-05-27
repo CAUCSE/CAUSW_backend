@@ -1,16 +1,19 @@
 package net.causw.adapter.persistence.board;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import net.causw.adapter.persistence.base.BaseEntity;
+import lombok.*;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.post.Post;
+import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.domain.model.board.BoardDomainModel;
 import org.hibernate.annotations.ColumnDefault;
 
-import javax.persistence.*;
-import java.util.List;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 import java.util.Set;
 
 @Getter
@@ -59,22 +62,6 @@ public class Board extends BaseEntity {
         this.circle = circle;
     }
 
-    private Board(
-            String name,
-            String description,
-            String createRoles,
-            String category,
-            Boolean isDeleted,
-            Circle circle
-    ) {
-        this.name = name;
-        this.description = description;
-        this.createRoles = createRoles;
-        this.category = category;
-        this.isDeleted = isDeleted;
-        this.circle = circle;
-    }
-
     public static Board from(BoardDomainModel boardDomainModel) {
         Circle circle = boardDomainModel.getCircle().map(Circle::from).orElse(null);
 
@@ -87,16 +74,6 @@ public class Board extends BaseEntity {
                 boardDomainModel.getIsDeleted(),
                 circle
         );
-    }
-
-    public static Board of(String name, String description, List<String> createRoleList, String category, Circle circle){
-        return new Board(
-                name,
-                description,
-                String.join(",", createRoleList),
-                category,
-                false,
-                circle);
     }
 
     public void setIsDeleted(boolean isDeleted){
