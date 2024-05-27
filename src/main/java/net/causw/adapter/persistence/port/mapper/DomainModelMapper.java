@@ -91,7 +91,7 @@ public abstract class DomainModelMapper {
                 circle.getMainImage(),
                 circle.getDescription(),
                 circle.getIsDeleted(),
-                circle.getLeader().map(this::entityToDomainModel).orElse(null),
+                entityToDomainModel(circle.getLeader()),
                 circle.getCreatedAt(),
                 circle.getUpdatedAt()
         );

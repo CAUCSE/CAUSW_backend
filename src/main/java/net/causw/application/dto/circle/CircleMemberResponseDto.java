@@ -1,6 +1,7 @@
 package net.causw.application.dto.circle;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,6 +13,7 @@ import net.causw.domain.model.user.UserDomainModel;
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
 public class CircleMemberResponseDto {
 
     @ApiModelProperty(value = "동아리원 고유 ID", example = "동아리원의 UUID 형식 유저 고유 ID 값입니다.")

@@ -1,6 +1,7 @@
 package net.causw.application.dto.circle;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
 public class CirclesResponseDto {
 
     @ApiModelProperty(value = "동아리 ID", example = "UUID 형식의 동아리 고유 ID String 값입니다.")

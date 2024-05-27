@@ -26,8 +26,8 @@ import java.util.List;
 // Custom Annotation을 사용하여 중복되는 @Mapping을 줄일 수 있습니다.
 @Retention(RetentionPolicy.CLASS)
 @Target({ElementType.METHOD})
-@Mapping(target = "leaderId", source = "entity.leader.id")
-@Mapping(target = "leaderName", source = "entity.leader.name")
+@Mapping(target = "leaderId", expression = "java(entity.getLeader() != null ? entity.getLeader().getId() : null)")
+@Mapping(target = "leaderName", expression = "java(entity.getLeader() != null ? entity.getLeader().getName() : null)")
 @interface CircleCommonWriterMappings {}
 
 @Mapper(componentModel = "spring")
@@ -41,24 +41,30 @@ public interface CircleServiceDtoMapper {
 
     // Circle
 
+
     @CircleCommonWriterMappings
     CircleResponseDto toCircleResponseDto(Circle entity);
+
 
     @CircleCommonWriterMappings
     CircleResponseDto toCircleResponseDtoExtended(Circle entity, Long numMember);
 
+
     @CircleCommonWriterMappings
-    @Mapping(target = "isJoined", defaultValue = "false")
+    @Mapping(target = "isJoined", constant = "false")
     CirclesResponseDto toCirclesResponseDto(Circle entity, Long numMember);
 
+
     @CircleCommonWriterMappings
-    @Mapping(target = "isJoined", defaultValue = "true")
+    @Mapping(target = "isJoined", constant = "true")
     CirclesResponseDto toCirclesResponseDtoExtended(Circle entity, Long numMember, LocalDateTime joinedAt);
 
-    @CircleCommonWriterMappings
-    @Mapping(target = "postNumComment", defaultValue = "0L")
+
+    @Mapping(target = "postNumComment", constant = "0L")
     BoardOfCircleResponseDto toBoardOFCIrcleResponseDto(Board entity, Boolean writeable);
 
+    @Mapping(target = "id", source = "entity.id")
+    @Mapping(target = "isDeleted", source = "entity.isDeleted")
     @Mapping(target = "postId", source = "post.id")
     @Mapping(target = "postTitle", source = "post.title")
     @Mapping(target = "postWriterName", source = "post.writer.name")
@@ -68,6 +74,7 @@ public interface CircleServiceDtoMapper {
 
     CircleBoardsResponseDto toCircleBoardsResponseDto(CircleResponseDto circle, List<BoardOfCircleResponseDto> boardList);
 
+    @Mapping(target = "id", source = "entity.id")
     CircleMemberResponseDto toCircleMemberResponseDto(CircleMember entity, CircleResponseDto circle, UserResponseDto user);
 
     DuplicatedCheckResponseDto toDuplicatedCheckResponseDto(Boolean result);

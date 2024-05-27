@@ -135,14 +135,16 @@ public class ChildCommentService {
                                     ));
 
                             if (deleter.getRole().getValue().contains("LEADER_CIRCLE") && !childComment.getWriter().getId().equals(deleterId)) {
+                                User leader = circle.getLeader();
+                                if (leader == null) {
+                                    throw new InternalServerException(
+                                            ErrorCode.INTERNAL_SERVER,
+                                            MessageUtil.CIRCLE_WITHOUT_LEADER
+                                    );
+                                }
                                 validatorBucket
                                         .consistOf(UserEqualValidator.of(
-                                                circle.getLeader().map(User::getId).orElseThrow(
-                                                        () -> new InternalServerException(
-                                                                ErrorCode.INTERNAL_SERVER,
-                                                                MessageUtil.CIRCLE_WITHOUT_LEADER
-                                                        )
-                                                ),
+                                                leader.getId(),
                                                 deleterId
                                         ));
                             }

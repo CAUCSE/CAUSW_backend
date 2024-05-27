@@ -14,6 +14,7 @@ import net.causw.application.dto.util.DtoMapper;
 import net.causw.application.dto.util.StatusUtil;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
+import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.CircleMemberStatus;
 import net.causw.domain.model.enums.Role;
@@ -80,7 +81,7 @@ public class PostService {
 
         boolean isCircleLeader = false;
         if (user.getRole().getValue().contains("LEADER_CIRCLE")) {
-            isCircleLeader = board.getCircle().getLeader().map(User::getId).orElse("").equals(loginUserId);
+            isCircleLeader = getCircleLeader(board.getCircle()).getId().equals(loginUserId);
         }
 
         if (isCircleLeader || user.getRole().equals(Role.ADMIN) || user.getRole().getValue().contains("PRESIDENT")) {
@@ -119,7 +120,7 @@ public class PostService {
 
         boolean isCircleLeader = false;
         if (user.getRole().getValue().contains("LEADER_CIRCLE")) {
-            isCircleLeader = board.getCircle().getLeader().map(User::getId).orElse("").equals(loginUserId);
+            isCircleLeader = getCircleLeader(board.getCircle()).getId().equals(loginUserId);
         }
 
         if (isCircleLeader || user.getRole().equals(Role.ADMIN) || user.getRole().getValue().contains("PRESIDENT")) {
@@ -210,12 +211,7 @@ public class PostService {
                             if (creator.getRole().getValue().contains("LEADER_CIRCLE") && !createRoles.contains("COMMON")) {
                                 validatorBucket
                                         .consistOf(UserEqualValidator.of(
-                                                circle.getLeader().map(User::getId).orElseThrow(
-                                                        () -> new UnauthorizedException(
-                                                                ErrorCode.API_NOT_ALLOWED,
-                                                                MessageUtil.NOT_CIRCLE_LEADER
-                                                        )
-                                                ),
+                                                getCircleLeader(circle).getId(),
                                                 loginUserId
                                         ));
                             }
@@ -268,12 +264,7 @@ public class PostService {
                             if (deleter.getRole().getValue().contains("LEADER_CIRCLE") && !post.getWriter().getId().equals(loginUserId)) {
                                 validatorBucket
                                         .consistOf(UserEqualValidator.of(
-                                                circle.getLeader().map(User::getId).orElseThrow(
-                                                        () -> new UnauthorizedException(
-                                                                ErrorCode.API_NOT_ALLOWED,
-                                                                MessageUtil.NOT_CIRCLE_LEADER
-                                                        )
-                                                ),
+                                                getCircleLeader(circle).getId(),
                                                 loginUserId
                                         ));
                             }
@@ -374,12 +365,7 @@ public class PostService {
                             if (restorer.getRole().getValue().contains("LEADER_CIRCLE") && !post.getWriter().getId().equals(loginUserId)) {
                                 validatorBucket
                                         .consistOf(UserEqualValidator.of(
-                                                circle.getLeader().map(User::getId).orElseThrow(
-                                                        () -> new UnauthorizedException(
-                                                                ErrorCode.API_NOT_ALLOWED,
-                                                                MessageUtil.NOT_CIRCLE_LEADER
-                                                        )
-                                                ),
+                                                getCircleLeader(circle).getId(),
                                                 loginUserId
                                         ));
                             }
@@ -528,5 +514,16 @@ public class PostService {
                         MessageUtil.CIRCLE_APPLY_INVALID
                 )
         );
+    }
+
+    private User getCircleLeader(Circle circle) {
+        User leader = circle.getLeader();
+        if (leader == null) {
+            throw new InternalServerException(
+                    ErrorCode.INTERNAL_SERVER,
+                    MessageUtil.CIRCLE_WITHOUT_LEADER
+            );
+        }
+        return leader;
     }
 }

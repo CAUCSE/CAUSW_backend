@@ -1,6 +1,7 @@
 package net.causw.adapter.persistence.circle;
 
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.causw.adapter.persistence.user.User;
@@ -18,6 +19,7 @@ import java.util.Optional;
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_circle")
 public class Circle extends BaseEntity {
     @Column(name = "name", nullable = false)
@@ -37,9 +39,9 @@ public class Circle extends BaseEntity {
     @JoinColumn(name = "leader_id")
     private User leader;
 
-    public Optional<User> getLeader() {
-        return Optional.ofNullable(this.leader);
-    }
+//    public Optional<User> getLeader() {
+//        return Optional.ofNullable(this.leader);
+//    }
 
     private Circle(
             String id,
@@ -66,6 +68,16 @@ public class Circle extends BaseEntity {
                 circleDomainModel.getIsDeleted(),
                 circleDomainModel.getLeader().map(User::from).orElse(null)
         );
+    }
+
+    public static Circle of(
+            String name,
+            String mainImage,
+            String description,
+            Boolean isDeleted,
+            User leader
+    ) {
+        return new Circle(name, mainImage, description, isDeleted, leader);
     }
 
     public void update(String description, String name, String mainImage){
