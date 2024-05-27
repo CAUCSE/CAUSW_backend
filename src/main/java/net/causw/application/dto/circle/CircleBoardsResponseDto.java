@@ -1,6 +1,7 @@
 package net.causw.application.dto.circle;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,6 +12,7 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
 public class CircleBoardsResponseDto {
 
     @ApiModelProperty(value ="동아리 정보", example = "동아리 responseDTO 객체를 반환합니다.")

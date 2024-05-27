@@ -1,6 +1,7 @@
 package net.causw.application.dto.user;
 
 import io.swagger.annotations.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,6 +13,7 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
 public class UserResponseDto {
 
     @ApiModelProperty(value = "고유 id값", example = "uuid 형식의 String 값입니다.")

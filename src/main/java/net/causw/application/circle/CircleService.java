@@ -311,12 +311,7 @@ public class CircleService {
         if (user.getRole().getValue().contains("LEADER_CIRCLE")) {
             validatorBucket
                     .consistOf(UserEqualValidator.of(
-                            circle.getLeader().map(User::getId).orElseThrow(
-                                    () -> new InternalServerException(
-                                            ErrorCode.INTERNAL_SERVER,
-                                            MessageUtil.CIRCLE_WITHOUT_LEADER
-                                    )
-                            ),
+                            getCircleLeader(circle).getId(),
                             userId
                     ));
         }
@@ -347,14 +342,16 @@ public class CircleService {
                 ));
 
         if (user.getRole().getValue().contains("LEADER_CIRCLE")) {
+            User leader = circle.getLeader();
+            if (leader == null) {
+                throw new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        MessageUtil.CIRCLE_WITHOUT_LEADER
+                );
+            }
             validatorBucket
                     .consistOf(UserEqualValidator.of(
-                            circle.getLeader().map(User::getId).orElseThrow(
-                                    () -> new InternalServerException(
-                                            ErrorCode.INTERNAL_SERVER,
-                                            MessageUtil.CIRCLE_WITHOUT_LEADER
-                                    )
-                            ),
+                            leader.getId(),
                             user.getId()
                     ));
         }
@@ -363,17 +360,12 @@ public class CircleService {
                 .validate();
 
         // Change leader role to COMMON
-        String leaderId = circle.getLeader().map(User::getId).orElseThrow(
-                () -> new InternalServerException(
-                        ErrorCode.INTERNAL_SERVER,
-                        "Leader id of this circle is null"
-                )
-        );
+        User leader = getCircleLeader(circle);
 
-        List<Circle> ownCircleList = circleRepository.findByLeader_Id(leaderId);
+        List<Circle> ownCircleList = circleRepository.findByLeader_Id(leader.getId());
 
         if (ownCircleList.size() == 1) {
-            removeUserRole(leaderId, Role.LEADER_CIRCLE).orElseThrow(
+            removeUserRole(leader.getId(), Role.LEADER_CIRCLE).orElseThrow(
                     () -> new InternalServerException(
                             ErrorCode.INTERNAL_SERVER,
                             MessageUtil.INTERNAL_SERVER_ERROR
@@ -452,12 +444,7 @@ public class CircleService {
                         List.of(CircleMemberStatus.MEMBER)
                 ))
                 .consistOf(UserNotEqualValidator.of(
-                        circle.getLeader().map(User::getId).orElseThrow(
-                                () -> new InternalServerException(
-                                        ErrorCode.INTERNAL_SERVER,
-                                        MessageUtil.CIRCLE_WITHOUT_LEADER
-                                )
-                        ),
+                        getCircleLeader(circle).getId(),
                         userId))
                 .validate();
 
@@ -498,12 +485,7 @@ public class CircleService {
         if (requestUser.getRole().getValue().contains("LEADER_CIRCLE")) {
             validatorBucket
                     .consistOf(UserEqualValidator.of(
-                            circle.getLeader().map(User::getId).orElseThrow(
-                                    () -> new InternalServerException(
-                                            ErrorCode.INTERNAL_SERVER,
-                                            MessageUtil.CIRCLE_WITHOUT_LEADER
-                                    )
-                            ),
+                            getCircleLeader(circle).getId(),
                             requestUserId
                     ));
         }
@@ -514,12 +496,7 @@ public class CircleService {
                         List.of(CircleMemberStatus.MEMBER)
                 ))
                 .consistOf(UserNotEqualValidator.of(
-                        circle.getLeader().map(User::getId).orElseThrow(
-                                () -> new InternalServerException(
-                                        ErrorCode.INTERNAL_SERVER,
-                                        MessageUtil.CIRCLE_WITHOUT_LEADER
-                                )
-                        ),
+                        getCircleLeader(circle).getId(),
                         userId))
                 .validate();
 
@@ -575,12 +552,7 @@ public class CircleService {
         if (requestUser.getRole().getValue().contains("LEADER_CIRCLE")) {
             validatorBucket
                     .consistOf(UserEqualValidator.of(
-                            circleMember.getCircle().getLeader().map(User::getId).orElseThrow(
-                                    () -> new InternalServerException(
-                                            ErrorCode.INTERNAL_SERVER,
-                                            MessageUtil.CIRCLE_WITHOUT_LEADER
-                                    )
-                            ),
+                            getCircleLeader(circleMember.getCircle()).getId(),
                             requestUserId));
         }
 
@@ -620,12 +592,10 @@ public class CircleService {
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                 .consistOf(UserRoleValidator.of(loginUser.getRole(),
                         List.of(Role.LEADER_CIRCLE)))
-                .consistOf(UserEqualValidator.of(loginUserId,circle.getLeader().map(User::getId).orElseThrow(
-                        () -> new InternalServerException(
-                                ErrorCode.INTERNAL_SERVER,
-                                MessageUtil.CIRCLE_WITHOUT_LEADER
-                        )
-                )));
+                .consistOf(UserEqualValidator.of(
+                        loginUserId,
+                        getCircleLeader(circle).getId()
+                ));
         validatorBucket
                 .consistOf(CircleMemberStatusValidator.of(
                         restoreTargetMember.getStatus(),
@@ -686,12 +656,16 @@ public class CircleService {
     }
 
     private User getCircleLeader(Circle circle) {
-        return userRepository.findById(circle.getLeader().orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.CIRCLE_LEADER_NOR_FOUND
-                )
-        ).getId()).orElseThrow(
+        User leader = circle.getLeader();
+
+        if (leader == null) {
+            throw new InternalServerException(
+                    ErrorCode.INTERNAL_SERVER,
+                    MessageUtil.CIRCLE_WITHOUT_LEADER
+            );
+        }
+
+        return userRepository.findById(leader.getId()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.USER_NOT_FOUND
@@ -809,6 +783,7 @@ public class CircleService {
                 .consistOf(UserRoleIsNoneValidator.of(role));
         return validatorBucket;
     }
+
 
     // Is User is ADMIN or PRESIDENT
     private Boolean isAdminOrPresident(User user) {

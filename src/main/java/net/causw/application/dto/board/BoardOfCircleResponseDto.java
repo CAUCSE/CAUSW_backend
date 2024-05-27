@@ -1,6 +1,7 @@
 package net.causw.application.dto.board;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
 public class BoardOfCircleResponseDto {
 
     @ApiModelProperty(value = "게시판 id 값", example = "uuid 형식의 String 값입니다.")

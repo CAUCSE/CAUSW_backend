@@ -143,15 +143,16 @@ public class CommentService {
                                     ));
 
                             if (user.getRole().getValue().contains("LEADER_CIRCLE") && !comment.getWriter().getId().equals(loginUserId)) {
+                                User leader = circle.getLeader();
+                                if (leader == null) {
+                                    throw new InternalServerException(
+                                            ErrorCode.ROW_DOES_NOT_EXIST,
+                                            MessageUtil.CIRCLE_WITHOUT_LEADER
+                                    );
+                                }
                                 validatorBucket
                                         .consistOf(UserEqualValidator.of(
-                                                circle.getLeader().map(User::getId).orElseThrow(
-                                                        () -> new InternalServerException(
-                                                                ErrorCode.ROW_DOES_NOT_EXIST,
-                                                                MessageUtil.CIRCLE_WITHOUT_LEADER
-
-                                                        )
-                                                ),
+                                                leader.getId(),
                                                 loginUserId
                                         ));
                             }
