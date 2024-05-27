@@ -124,13 +124,6 @@ public class LockerService {
                 MessageUtil.LOGIN_USER_NOT_FOUND
         ));
 
-        LockerLocation lockerLocation = lockerLocationRepository.findById(lockerId)
-                .orElseThrow(
-                        () -> new BadRequestException(
-                                ErrorCode.ROW_DOES_NOT_EXIST,
-                                MessageUtil.LOCKER_WRONG_POSITION
-                        )
-                );
         Locker locker = lockerRepository.findById(lockerId).orElseThrow(() -> new BadRequestException(
                 ErrorCode.ROW_DOES_NOT_EXIST,
                 MessageUtil.LOCKER_NOT_FOUND
@@ -150,7 +143,7 @@ public class LockerService {
                         commonService
                 ).orElseThrow(() -> new InternalServerException(ErrorCode.LOCKER_ACTION_ERROR, MessageUtil.LOCKER_ACTION_ERROR));
 
-        LockerLog lockerLog = LockerLog.of(locker.getLockerNumber(), lockerLocation.getName(), user.getEmail(), user.getName(), LockerLogAction.of(lockerUpdateRequestDto.getAction()),
+        LockerLog lockerLog = LockerLog.of(locker.getLockerNumber(), locker.getLocation().getName(), user.getEmail(), user.getName(), LockerLogAction.of(lockerUpdateRequestDto.getAction()),
                 lockerUpdateRequestDto.getMessage().orElse(lockerUpdateRequestDto.getAction()));
 
         lockerRepository.save(locker);
