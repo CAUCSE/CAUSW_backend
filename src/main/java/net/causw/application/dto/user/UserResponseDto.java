@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import net.causw.adapter.persistence.user.User;
+import net.causw.application.dto.util.CircleServiceDtoMapper;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.model.enums.UserState;
@@ -76,5 +78,9 @@ public class UserResponseDto {
                 .circleIdIfLeader(circleId)
                 .circleNameIfLeader(circleName)
                 .build();
+    }
+
+    public static UserResponseDto toUserResponseDto(User user) {
+        return CircleServiceDtoMapper.INSTANCE.toUserResponseDto(user);
     }
 }

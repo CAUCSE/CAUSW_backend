@@ -5,7 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.application.dto.user.UserResponseDto;
+import net.causw.application.dto.util.CircleServiceDtoMapper;
 import net.causw.domain.model.circle.CircleMemberDomainModel;
 import net.causw.domain.model.enums.CircleMemberStatus;
 import net.causw.domain.model.user.UserDomainModel;
@@ -38,5 +40,9 @@ public class CircleMemberResponseDto {
                 .circle(CircleResponseDto.from(circleMember.getCircle()))
                 .user(UserResponseDto.from(user))
                 .build();
+    }
+
+    public static CircleMemberResponseDto toCircleMemberResponseDto(CircleMember circleMember, CircleResponseDto circle, UserResponseDto user) {
+        return CircleServiceDtoMapper.INSTANCE.toCircleMemberResponseDto(circleMember, circle, user);
     }
 }

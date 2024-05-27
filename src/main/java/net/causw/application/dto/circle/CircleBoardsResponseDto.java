@@ -5,7 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import net.causw.adapter.persistence.circle.Circle;
 import net.causw.application.dto.board.BoardOfCircleResponseDto;
+import net.causw.application.dto.util.CircleServiceDtoMapper;
 
 import java.util.List;
 
@@ -29,5 +31,9 @@ public class CircleBoardsResponseDto {
                 .circle(circle)
                 .boardList(boardList)
                 .build();
+    }
+
+    public static CircleBoardsResponseDto toCircleBoardsResponseDto(Circle circle, Long numMember, List<BoardOfCircleResponseDto> boardList) {
+        return CircleServiceDtoMapper.INSTANCE.toCircleBoardsResponseDto(CircleResponseDto.toCircleResponseDtoExtended(circle, numMember), boardList);
     }
 }

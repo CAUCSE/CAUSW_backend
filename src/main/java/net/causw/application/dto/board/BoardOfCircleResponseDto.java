@@ -5,11 +5,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import net.causw.adapter.persistence.board.Board;
+import net.causw.adapter.persistence.post.Post;
+import net.causw.application.dto.util.CircleServiceDtoMapper;
 import net.causw.domain.model.board.BoardDomainModel;
 import net.causw.domain.model.post.PostDomainModel;
 import net.causw.domain.model.enums.Role;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 
 @Getter
 @Setter
@@ -78,5 +82,30 @@ public class BoardOfCircleResponseDto {
                 .isDeleted(boardDomainModel.getIsDeleted())
                 .postNumComment(0L)
                 .build();
+    }
+
+    public static BoardOfCircleResponseDto toBoardOfCircleResponseDto(Board board, Role userRole) {
+        return CircleServiceDtoMapper.INSTANCE.toBoardOFCIrcleResponseDto(
+                board,
+                isWriteable(board, userRole)
+        );
+    }
+
+    public static BoardOfCircleResponseDto toBoardOfCircleResponseDtoExtended(Board board, Role userRole, Post post, Long numComment) {
+        return CircleServiceDtoMapper.INSTANCE.toBoardOfCircleResponseDtoExtended(
+                board,
+                isWriteable(board, userRole),
+                post,
+                numComment
+        );
+    }
+
+    // Board의 CreateRoles는 List가 ","로 이어진 형태로 존재. "," 기준으로 split해서 List<String>으로 변환 후 userRole과 비교
+    private static Boolean isWriteable(Board board, Role userRole) {
+        return Arrays.stream(
+                        board.getCreateRoles().split(","))
+                .anyMatch(str ->
+                        userRole.getValue().contains(str)
+                );
     }
 }

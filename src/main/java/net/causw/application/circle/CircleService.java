@@ -4,15 +4,13 @@ import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
-import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.board.BoardOfCircleResponseDto;
 import net.causw.application.dto.circle.*;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.user.UserResponseDto;
-import net.causw.application.dto.util.CircleServiceDtoMapper;
-import net.causw.application.spi.*;
+import net.causw.application.dto.util.StatusUtil;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
@@ -27,7 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,19 +34,12 @@ import java.util.stream.Stream;
 @Service
 @RequiredArgsConstructor
 public class CircleService {
-    private final CirclePort circlePort;
-    private final UserPort userPort;
-    private final CircleMemberPort circleMemberPort;
-    private final BoardPort boardPort;
-    private final PostPort postPort;
-    private final CommentPort commentPort;
     private final Validator validator;
     private final CircleRepository circleRepository;
     private final CircleMemberRepository circleMemberRepository;
     private final UserRepository userRepository;
     private final BoardRepository boardRepository;
     private final PostRepository postRepository;
-    private final CommentRepository commentRepository;
 
     @Transactional(readOnly = true)
     public CircleResponseDto findById(String circleId) {
@@ -57,7 +47,7 @@ public class CircleService {
 
         initializeValidator(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE).validate();
 
-        return toCircleResponseDtoExtended(circle, getCircleNumMember(circleId));
+        return CircleResponseDto.toCircleResponseDtoExtended(circle, getCircleNumMember(circleId));
     }
 
     @Transactional(readOnly = true)
@@ -77,21 +67,21 @@ public class CircleService {
         return circleRepository.findAll()
                 .stream()
                 .map(circle -> {
-                    if (isAdminOrPresident(user)) {
-                        return toCirclesResponseDtoExtended(
+                    if (StatusUtil.isAdminOrPresident(user)) {
+                        return CirclesResponseDto.toCirclesResponseDtoExtended(
                                 circle,
                                 getCircleNumMember(circle.getId()),
                                 LocalDateTime.now()
                         );
                     } else {
                         if (joinedCircleMap.containsKey(circle.getId())) {
-                            return toCirclesResponseDtoExtended(
+                            return CirclesResponseDto.toCirclesResponseDtoExtended(
                                     circle,
                                     getCircleNumMember(circle.getId()),
                                     joinedCircleMap.get(circle.getId()).getUpdatedAt()
                             );
                         } else {
-                            return toCirclesResponseDto(
+                            return CirclesResponseDto.toCirclesResponseDto(
                                     circle,
                                     getCircleNumMember(circle.getId())
                             );
@@ -115,7 +105,7 @@ public class CircleService {
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                 .validate();
 
-        if (!isAdminOrPresident(user)) {
+        if (!StatusUtil.isAdminOrPresident(user)) {
             CircleMember circleMember = circleMemberRepository.findByUser_IdAndCircle_Id(currentUserId, circleId).orElseThrow(
                     () -> new BadRequestException(
                             ErrorCode.ROW_DOES_NOT_EXIST,
@@ -131,19 +121,19 @@ public class CircleService {
                     .validate();
         }
 
-        return toCircleBoardsResponseDto(
+        return CircleBoardsResponseDto.toCircleBoardsResponseDto(
                 circle,
                 getCircleNumMember(circleId),
                 boardRepository.findByCircle_IdAndIsDeletedIsFalseOrderByCreatedAtAsc(circleId)
                         .stream()
                         .map(board -> postRepository.findTop1ByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(board.getId())
-                                    .map(post -> toBoardOfCircleResponseDtoExtended(
+                                    .map(post -> BoardOfCircleResponseDto.toBoardOfCircleResponseDtoExtended(
                                             board,
                                             user.getRole(),
                                             post,
                                             postRepository.countAllCommentByPost_Id(post.getId())
                                     )).orElse(
-                                            toBoardOfCircleResponseDto(
+                                        BoardOfCircleResponseDto.toBoardOfCircleResponseDto(
                                                     board,
                                                     user.getRole()
                                             ))
@@ -180,10 +170,10 @@ public class CircleService {
         return circleMemberRepository.findByCircle_Id(circle.getId())
                 .stream()
                 .filter(circleMember -> circleMember.getStatus().equals(status))
-                .map(circleMember -> toCircleMemberResponseDto(
+                .map(circleMember -> CircleMemberResponseDto.toCircleMemberResponseDto(
                         circleMember,
-                        toCircleResponseDto(circleMember.getCircle()),
-                        toUserResponseDto(userRepository.findById(circleMember.getUser().getId()).orElseThrow(
+                        CircleResponseDto.toCircleResponseDto(circleMember.getCircle()),
+                        UserResponseDto.toUserResponseDto(userRepository.findById(circleMember.getUser().getId()).orElseThrow(
                                 () -> new BadRequestException(
                                         ErrorCode.ROW_DOES_NOT_EXIST,
                                         MessageUtil.USER_NOT_FOUND
@@ -262,7 +252,7 @@ public class CircleService {
 
         updateCircleMemberStatus(circleMember.getId(), CircleMemberStatus.MEMBER);
 
-        return toCircleResponseDto(circle);
+        return CircleResponseDto.toCircleResponseDto(circle);
     }
 
     @Transactional
@@ -319,7 +309,7 @@ public class CircleService {
         validatorBucket
                 .validate();
 
-        return toCircleResponseDto(updateCircle(circleId, circle));
+        return CircleResponseDto.toCircleResponseDto(updateCircle(circleId, circle));
     }
 
     @Transactional
@@ -373,7 +363,7 @@ public class CircleService {
             );
         }
 
-        CircleResponseDto circleResponseDto = toCircleResponseDto(deleteCircle(circleId).orElseThrow(
+        CircleResponseDto circleResponseDto = CircleResponseDto.toCircleResponseDto(deleteCircle(circleId).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.INTERNAL_SERVER_ERROR
@@ -410,16 +400,16 @@ public class CircleService {
                 }
         ).orElseGet(() -> createCircleMember(user, circle));
 
-        return toCircleMemberResponseDto(
+        return CircleMemberResponseDto.toCircleMemberResponseDto(
                 circleMember,
-                toCircleResponseDto(circle),
-                toUserResponseDto(user)
+                CircleResponseDto.toCircleResponseDto(circle),
+                UserResponseDto.toUserResponseDto(user)
         );
     }
 
     @Transactional(readOnly = true)
     public DuplicatedCheckResponseDto isDuplicatedName(String name) {
-        return toDuplicatedCheckResponseDto(circleRepository.findByName(name).isPresent());
+        return DuplicatedCheckResponseDto.toDuplicatedCheckResponseDto(circleRepository.findByName(name).isPresent());
     }
 
     @Transactional
@@ -448,10 +438,10 @@ public class CircleService {
                         userId))
                 .validate();
 
-        return toCircleMemberResponseDto(
+        return CircleMemberResponseDto.toCircleMemberResponseDto(
                 updateCircleMemberStatus(circleMember.getId(), CircleMemberStatus.LEAVE),
-                toCircleResponseDto(circle),
-                toUserResponseDto(user)
+                CircleResponseDto.toCircleResponseDto(circle),
+                UserResponseDto.toUserResponseDto(user)
         );
     }
 
@@ -500,10 +490,10 @@ public class CircleService {
                         userId))
                 .validate();
 
-        return toCircleMemberResponseDto(
+        return CircleMemberResponseDto.toCircleMemberResponseDto(
                 updateCircleMemberStatus(circleMember.getId(), CircleMemberStatus.DROP),
-                toCircleResponseDto(circle),
-                toUserResponseDto(user)
+                CircleResponseDto.toCircleResponseDto(circle),
+                UserResponseDto.toUserResponseDto(user)
         );
     }
 
@@ -563,10 +553,10 @@ public class CircleService {
                 ))
                 .validate();
 
-        return toCircleMemberResponseDto(
+        return CircleMemberResponseDto.toCircleMemberResponseDto(
                 updateCircleMemberStatus(applicationId, targetStatus),
-                toCircleResponseDto(circleMember.getCircle()),
-                toUserResponseDto(user)
+                CircleResponseDto.toCircleResponseDto(circleMember.getCircle()),
+                UserResponseDto.toUserResponseDto(user)
         );
     }
 
@@ -602,15 +592,18 @@ public class CircleService {
                         List.of(CircleMemberStatus.DROP)
                 )).validate();
 
-        return toCircleMemberResponseDto(
+        return CircleMemberResponseDto.toCircleMemberResponseDto(
                 updateCircleMemberStatus(restoreTargetMember.getId(), CircleMemberStatus.MEMBER),
-                toCircleResponseDto(circle),
-                toUserResponseDto(targetUser)
+                CircleResponseDto.toCircleResponseDto(circle),
+                UserResponseDto.toUserResponseDto(targetUser)
         );
     }
 
+
+
     // CRUD Entity or Entity Information
 
+    // Circle
     private Circle getCircle(String circleId) {
         return circleRepository.findById(circleId).orElseThrow(
                 () -> new BadRequestException(
@@ -646,6 +639,30 @@ public class CircleService {
         return circleMemberRepository.getNumMember(circleId);
     }
 
+    // CircleMember
+    private CircleMember createCircleMember(User user, Circle circle) {
+        return circleMemberRepository.save(CircleMember.of(
+                CircleMemberStatus.AWAIT,
+                circle,
+                user
+        ));
+    }
+
+    private CircleMember updateCircleMemberStatus(String applicationId, CircleMemberStatus targetStatus) {
+        return circleMemberRepository.findById(applicationId).map(
+                circleMember -> {
+                    circleMember.setStatus(targetStatus);
+                    return circleMemberRepository.save(circleMember);
+                }
+        ).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.INTERNAL_SERVER,
+                        MessageUtil.INTERNAL_SERVER_ERROR
+                )
+        );
+    }
+
+    // User
     private User getUser(String userId) {
         return userRepository.findById(userId).orElseThrow(
                 () -> new BadRequestException(
@@ -706,28 +723,6 @@ public class CircleService {
         );
     }
 
-    private CircleMember createCircleMember(User user, Circle circle) {
-        return circleMemberRepository.save(CircleMember.of(
-                CircleMemberStatus.AWAIT,
-                circle,
-                user
-        ));
-    }
-
-    private CircleMember updateCircleMemberStatus(String applicationId, CircleMemberStatus targetStatus) {
-        return circleMemberRepository.findById(applicationId).map(
-                circleMember -> {
-                    circleMember.setStatus(targetStatus);
-                    return circleMemberRepository.save(circleMember);
-                }
-        ).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.INTERNAL_SERVER,
-                        MessageUtil.INTERNAL_SERVER_ERROR
-                )
-        );
-    }
-
     private Optional<User> removeUserRole(String userId, Role targetRole) {
         return userRepository.findById(userId).map(
                 srcUser -> {
@@ -749,7 +744,7 @@ public class CircleService {
         );
     }
 
-
+    // Board
     private List<Board> deleteAllCircleBoard(String circleId) {
         List<Board> boardList = boardRepository.findByCircle_IdAndIsDeletedIsFalseOrderByCreatedAtAsc(circleId);
         for (Board board : boardList) {
@@ -782,71 +777,6 @@ public class CircleService {
                 .consistOf(UserStateValidator.of(state))
                 .consistOf(UserRoleIsNoneValidator.of(role));
         return validatorBucket;
-    }
-
-
-    // Is User is ADMIN or PRESIDENT
-    private Boolean isAdminOrPresident(User user) {
-        return user.getRole().equals(Role.ADMIN) || user.getRole().getValue().contains("PRESIDENT");
-    }
-
-    // Dto Mapper
-
-    private CircleResponseDto toCircleResponseDto(Circle circle) {
-        return CircleServiceDtoMapper.INSTANCE.toCircleResponseDto(circle);
-    }
-
-    private CircleResponseDto toCircleResponseDtoExtended(Circle circle, Long numMember) {
-        return CircleServiceDtoMapper.INSTANCE.toCircleResponseDtoExtended(circle, numMember);
-    }
-
-    private CirclesResponseDto toCirclesResponseDto(Circle circle, Long numMember) {
-        return CircleServiceDtoMapper.INSTANCE.toCirclesResponseDto(circle, numMember);
-    }
-
-    private CirclesResponseDto toCirclesResponseDtoExtended(Circle circle, Long numMember, LocalDateTime joinedAt) {
-        return CircleServiceDtoMapper.INSTANCE.toCirclesResponseDtoExtended(circle, numMember, joinedAt);
-    }
-
-    // Board의 CreateRoles는 List가 ","로 이어진 형태로 존재. "," 기준으로 split해서 List<String>으로 변환 후 userRole과 비교
-    private Boolean isWriteable(Board board, Role userRole) {
-        return Arrays.stream(
-                board.getCreateRoles().split(","))
-                .anyMatch(str ->
-                        userRole.getValue().contains(str)
-        );
-    }
-
-    private BoardOfCircleResponseDto toBoardOfCircleResponseDto(Board board, Role userRole) {
-        return CircleServiceDtoMapper.INSTANCE.toBoardOFCIrcleResponseDto(
-                board,
-                isWriteable(board, userRole)
-                );
-    }
-
-    private BoardOfCircleResponseDto toBoardOfCircleResponseDtoExtended(Board board, Role userRole, Post post, Long numComment) {
-        return CircleServiceDtoMapper.INSTANCE.toBoardOfCircleResponseDtoExtended(
-                board,
-                isWriteable(board, userRole),
-                post,
-                numComment
-        );
-    }
-
-    private CircleBoardsResponseDto toCircleBoardsResponseDto(Circle circle, Long numMember, List<BoardOfCircleResponseDto> boardList) {
-        return CircleServiceDtoMapper.INSTANCE.toCircleBoardsResponseDto(toCircleResponseDtoExtended(circle, numMember), boardList);
-    }
-
-    private UserResponseDto toUserResponseDto(User user) {
-        return CircleServiceDtoMapper.INSTANCE.toUserResponseDto(user);
-    }
-
-    private CircleMemberResponseDto toCircleMemberResponseDto(CircleMember circleMember, CircleResponseDto circle, UserResponseDto user) {
-        return CircleServiceDtoMapper.INSTANCE.toCircleMemberResponseDto(circleMember, circle, user);
-    }
-
-    private DuplicatedCheckResponseDto toDuplicatedCheckResponseDto(Boolean isDuplicated) {
-        return CircleServiceDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(isDuplicated);
     }
 
 }

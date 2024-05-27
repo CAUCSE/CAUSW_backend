@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import net.causw.application.dto.util.CircleServiceDtoMapper;
 
 @Getter
 @Setter
@@ -19,5 +20,9 @@ public class DuplicatedCheckResponseDto {
         return DuplicatedCheckResponseDto.builder()
                 .result(result)
                 .build();
+    }
+
+    public static DuplicatedCheckResponseDto toDuplicatedCheckResponseDto(Boolean isDuplicated) {
+        return CircleServiceDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(isDuplicated);
     }
 }

@@ -60,4 +60,8 @@ public class StatusUtil {
 
         return user.getRole().getValue().contains("LEADER_CIRCLE") && leader.getId().equals(user.getId());
     }
+
+    public static boolean isAdminOrPresident(User user) {
+        return user.getRole().equals(Role.ADMIN) || user.getRole().getValue().contains("PRESIDENT");
+    }
 }
