@@ -2,6 +2,7 @@ package net.causw.application.homepage;
 
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
+import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.page.PageableFactory;
 import net.causw.adapter.persistence.repository.BoardRepository;
 import net.causw.adapter.persistence.repository.PostRepository;
@@ -12,6 +13,7 @@ import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.util.DtoMapper;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
+import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.validation.UserRoleIsNoneValidator;
@@ -19,7 +21,10 @@ import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -53,7 +58,7 @@ public class HomePageService {
         return boards
                 .stream()
                 .map(board -> HomePageResponseDto.of(
-                        BoardResponseDto.of(board, user.getRole()),
+                        toBoardResponseDto(board, user.getRole()),
                         postRepository.findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(board.getId(), pageableFactory.create(0, StaticValue.HOME_POST_PAGE_SIZE))
                                 .map(post -> DtoMapper.INSTANCE.toPostsResponseDto(
                                         post,
@@ -61,5 +66,19 @@ public class HomePageService {
                                 )))
                 )
                 .collect(Collectors.toList());
+    }
+
+    private BoardResponseDto toBoardResponseDto(Board board, Role userRole) {
+        List<String> roles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
+        Boolean writable = roles.stream().anyMatch(str -> userRole.getValue().contains(str));
+        String circleId = Optional.ofNullable(board.getCircle()).map(Circle::getId).orElse(null);
+        String circleName = Optional.ofNullable(board.getCircle()).map(Circle::getName).orElse(null);
+        return DtoMapper.INSTANCE.toBoardResponseDto(
+                board,
+                roles,
+                writable,
+                circleId,
+                circleName
+        );
     }
 }
