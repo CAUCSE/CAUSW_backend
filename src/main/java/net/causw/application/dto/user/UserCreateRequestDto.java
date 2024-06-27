@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.causw.adapter.persistence.user.User;
+import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.enums.UserState;
 
 @Getter
 @Setter
@@ -32,10 +34,12 @@ public class UserCreateRequestDto {
     private String profileImage;
 
 
-    public User toEntity(String encodedPassword) {
+    public User toEntity(String encodedPassword, Role role, UserState state) {
         return User.builder()
                 .email(email)
                 .name(name)
+                .role(role)
+                .state(state)
                 .password(encodedPassword)
                 .studentId(studentId)
                 .admissionYear(admissionYear)
