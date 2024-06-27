@@ -61,7 +61,7 @@ public interface CircleServiceDtoMapper {
 
 
     @Mapping(target = "postNumComment", constant = "0L")
-    BoardOfCircleResponseDto toBoardOFCIrcleResponseDto(Board entity, Boolean writeable);
+    BoardOfCircleResponseDto toBoardOfCircleResponseDto(Board entity, Boolean writeable);
 
     @Mapping(target = "id", source = "entity.id")
     @Mapping(target = "isDeleted", source = "entity.isDeleted")

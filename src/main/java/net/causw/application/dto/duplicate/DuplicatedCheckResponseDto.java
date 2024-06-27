@@ -22,7 +22,4 @@ public class DuplicatedCheckResponseDto {
                 .build();
     }
 
-    public static DuplicatedCheckResponseDto toDuplicatedCheckResponseDto(Boolean isDuplicated) {
-        return CircleServiceDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(isDuplicated);
-    }
 }

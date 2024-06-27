@@ -42,7 +42,4 @@ public class CircleMemberResponseDto {
                 .build();
     }
 
-    public static CircleMemberResponseDto toCircleMemberResponseDto(CircleMember circleMember, CircleResponseDto circle, UserResponseDto user) {
-        return CircleServiceDtoMapper.INSTANCE.toCircleMemberResponseDto(circleMember, circle, user);
-    }
 }

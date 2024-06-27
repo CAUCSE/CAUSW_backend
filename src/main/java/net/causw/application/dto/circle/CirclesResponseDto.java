@@ -84,11 +84,4 @@ public class CirclesResponseDto {
                 .build();
     }
 
-    public static CirclesResponseDto toCirclesResponseDto(Circle circle, Long numMember) {
-        return CircleServiceDtoMapper.INSTANCE.toCirclesResponseDto(circle, numMember);
-    }
-
-    public static CirclesResponseDto toCirclesResponseDtoExtended(Circle circle, Long numMember, LocalDateTime joinedAt) {
-        return CircleServiceDtoMapper.INSTANCE.toCirclesResponseDtoExtended(circle, numMember, joinedAt);
-    }
 }

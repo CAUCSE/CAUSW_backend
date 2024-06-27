@@ -80,7 +80,4 @@ public class UserResponseDto {
                 .build();
     }
 
-    public static UserResponseDto toUserResponseDto(User user) {
-        return CircleServiceDtoMapper.INSTANCE.toUserResponseDto(user);
-    }
 }

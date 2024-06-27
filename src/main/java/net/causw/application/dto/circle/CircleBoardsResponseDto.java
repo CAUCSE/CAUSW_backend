@@ -33,7 +33,4 @@ public class CircleBoardsResponseDto {
                 .build();
     }
 
-    public static CircleBoardsResponseDto toCircleBoardsResponseDto(Circle circle, Long numMember, List<BoardOfCircleResponseDto> boardList) {
-        return CircleServiceDtoMapper.INSTANCE.toCircleBoardsResponseDto(CircleResponseDto.toCircleResponseDtoExtended(circle, numMember), boardList);
-    }
 }

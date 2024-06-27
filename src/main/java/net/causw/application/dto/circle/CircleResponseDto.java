@@ -73,11 +73,4 @@ public class CircleResponseDto {
                 .build();
     }
 
-    public static CircleResponseDto toCircleResponseDto(Circle circle) {
-        return CircleServiceDtoMapper.INSTANCE.toCircleResponseDto(circle);
-    }
-
-    public static CircleResponseDto toCircleResponseDtoExtended(Circle circle, Long numMember) {
-        return CircleServiceDtoMapper.INSTANCE.toCircleResponseDtoExtended(circle, numMember);
-    }
 }
