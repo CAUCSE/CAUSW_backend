@@ -517,7 +517,7 @@ public class PostService {
     }
 
     private User getCircleLeader(Circle circle) {
-        User leader = circle.getLeader();
+        User leader = circle.getLeader().orElse(null);
         if (leader == null) {
             throw new InternalServerException(
                     ErrorCode.INTERNAL_SERVER,

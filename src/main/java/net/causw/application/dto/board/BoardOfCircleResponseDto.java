@@ -51,6 +51,7 @@ public class BoardOfCircleResponseDto {
     @ApiModelProperty(value = "게시글 댓글 개수", example =  "12")
     private Long postNumComment;
 
+    // FIXME: Port 분리 후 삭제 필요
     public static BoardOfCircleResponseDto from(
             BoardDomainModel boardDomainModel,
             Role userRole,

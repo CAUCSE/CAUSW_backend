@@ -1,17 +1,23 @@
 package net.causw.application.user;
 
 import lombok.RequiredArgsConstructor;
+import net.causw.adapter.persistence.board.Board;
+import net.causw.adapter.persistence.board.FavoriteBoard;
+import net.causw.adapter.persistence.circle.Circle;
+import net.causw.adapter.persistence.repository.BoardRepository;
+import net.causw.adapter.persistence.repository.FavoriteBoardRepository;
+import net.causw.adapter.persistence.repository.UserRepository;
+import net.causw.adapter.persistence.user.User;
 import net.causw.application.delegation.DelegationFactory;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.comment.CommentsOfUserResponseDto;
 import net.causw.application.dto.user.*;
-import net.causw.application.spi.BoardPort;
+import net.causw.application.dto.util.DtoMapper;
 import net.causw.application.spi.CircleMemberPort;
 import net.causw.application.spi.CirclePort;
 import net.causw.application.spi.CommentPort;
-import net.causw.application.spi.FavoriteBoardPort;
 import net.causw.application.spi.LockerLogPort;
 import net.causw.application.spi.LockerPort;
 import net.causw.application.spi.PostPort;
@@ -24,9 +30,7 @@ import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
-import net.causw.domain.model.board.BoardDomainModel;
 import net.causw.domain.model.circle.CircleDomainModel;
-import net.causw.domain.model.board.FavoriteBoardDomainModel;
 import net.causw.domain.model.enums.*;
 import net.causw.domain.model.post.PostDomainModel;
 import net.causw.domain.model.util.MessageUtil;
@@ -55,6 +59,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -63,14 +69,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserService {
     private final UserPort userPort;
-    private final BoardPort boardPort;
     private final PostPort postPort;
     private final UserAdmissionPort userAdmissionPort;
     private final UserAdmissionLogPort userAdmissionLogPort;
     private final CirclePort circlePort;
     private final CircleMemberPort circleMemberPort;
     private final CommentPort commentPort;
-    private final FavoriteBoardPort favoriteBoardPort;
     private final LockerPort lockerPort;
     private final LockerLogPort lockerLogPort;
     private final JwtTokenProvider jwtTokenProvider;
@@ -79,6 +83,10 @@ public class UserService {
     private final PasswordGenerator passwordGenerator;
     private final PasswordEncoder passwordEncoder;
     private final Validator validator;
+
+    private final UserRepository userRepository;
+    private final BoardRepository boardRepository;
+    private final FavoriteBoardRepository favoriteBoardRepository;
 
     @Transactional
     public UserResponseDto findPassword(
@@ -1098,21 +1106,10 @@ public class UserService {
             String loginUserId,
             String boardId
     ) {
-        UserDomainModel user = this.userPort.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
+        User user = getUser(loginUserId);
+        Board board = getBoard(boardId);
 
-        BoardDomainModel board = this.boardPort.findById(boardId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.BOARD_NOT_FOUND
-                )
-        );
-
-        FavoriteBoardDomainModel favoriteBoardDomainModel = FavoriteBoardDomainModel.of(
+        FavoriteBoard favoriteBoard = FavoriteBoard.of(
                 user,
                 board
         );
@@ -1121,11 +1118,11 @@ public class UserService {
                 .consistOf(UserStateValidator.of(user.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
                 .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD))
-                .consistOf(ConstraintValidator.of(favoriteBoardDomainModel, this.validator))
+                .consistOf(ConstraintValidator.of(favoriteBoard, this.validator))
                 .validate();
 
-        return BoardResponseDto.from(
-                this.favoriteBoardPort.create(favoriteBoardDomainModel).getBoardDomainModel(),
+        return toBoardResponseDto(
+                favoriteBoardRepository.save(favoriteBoard).getBoard(),
                 user.getRole()
         );
     }
@@ -1196,5 +1193,37 @@ public class UserService {
         return UserSignOutResponseDto.builder()
                 .message("로그아웃 성공")
                 .build();
+    }
+
+    private BoardResponseDto toBoardResponseDto(Board board, Role userRole) {
+        List<String> roles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
+        Boolean writable = roles.stream().anyMatch(str -> userRole.getValue().contains(str));
+        String circleId = Optional.ofNullable(board.getCircle()).map(Circle::getId).orElse(null);
+        String circleName = Optional.ofNullable(board.getCircle()).map(Circle::getName).orElse(null);
+        return DtoMapper.INSTANCE.toBoardResponseDto(
+                board,
+                roles,
+                writable,
+                circleId,
+                circleName
+        );
+    }
+
+    private User getUser(String userId) {
+        return userRepository.findById(userId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.USER_NOT_FOUND
+                )
+        );
+    }
+
+    private Board getBoard(String boardId) {
+        return boardRepository.findById(boardId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.BOARD_NOT_FOUND
+                )
+        );
     }
 }

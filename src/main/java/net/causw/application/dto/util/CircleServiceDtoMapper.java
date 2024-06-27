@@ -26,8 +26,8 @@ import java.util.List;
 // Custom Annotation을 사용하여 중복되는 @Mapping을 줄일 수 있습니다.
 @Retention(RetentionPolicy.CLASS)
 @Target({ElementType.METHOD})
-@Mapping(target = "leaderId", expression = "java(entity.getLeader() != null ? entity.getLeader().getId() : null)")
-@Mapping(target = "leaderName", expression = "java(entity.getLeader() != null ? entity.getLeader().getName() : null)")
+@Mapping(target = "leaderId", expression = "java(entity.getLeader().map(User::getId).orElse(null))")
+@Mapping(target = "leaderName", expression = "java(entity.getLeader().map(User::getName).orElse(null))")
 @interface CircleCommonWriterMappings {}
 
 @Mapper(componentModel = "spring")

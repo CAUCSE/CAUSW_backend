@@ -39,9 +39,9 @@ public class Circle extends BaseEntity {
     @JoinColumn(name = "leader_id")
     private User leader;
 
-//    public Optional<User> getLeader() {
-//        return Optional.ofNullable(this.leader);
-//    }
+    public Optional<User> getLeader() {
+        return Optional.ofNullable(this.leader);
+    }
 
     private Circle(
             String id,

@@ -5,6 +5,7 @@ import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.domain.model.board.BoardDomainModel;
+import net.causw.domain.model.enums.Role;
 import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.CascadeType;
@@ -14,12 +15,16 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_board")
 public class Board extends BaseEntity {
     @Column(name = "name", nullable = false)
@@ -100,14 +105,29 @@ public class Board extends BaseEntity {
             String category,
             Circle circle
     ) {
-        return new Board(
-                name,
-                description,
-                String.join(",", createRoleList),
-                category,
-                false,
-                circle
-        );
+        if (createRoleList != null) {
+            if (createRoleList.isEmpty()) {
+                createRoleList.add(Role.ADMIN.getValue());
+                createRoleList.add(Role.PRESIDENT.getValue());
+            } else if (createRoleList.contains("ALL")) {
+                createRoleList.addAll(
+                        Arrays.stream(Role.values())
+                                .map(Role::getValue)
+                                .collect(Collectors.toList())
+                );
+                createRoleList.remove(Role.NONE.getValue());
+                createRoleList.remove("ALL");
+            } else {
+                createRoleList = createRoleList
+                        .stream()
+                        .map(Role::of)
+                        .map(Role::getValue)
+                        .collect(Collectors.toList());
+                createRoleList.add(Role.ADMIN.getValue());
+                createRoleList.add(Role.PRESIDENT.getValue());
+            }
+        }
+        return new Board(name, description, String.join(",", createRoleList), category, false, circle, new HashSet<>());
     }
 
     public void setIsDeleted(boolean isDeleted){

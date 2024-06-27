@@ -22,7 +22,7 @@ public class StatusUtil {
         if (user.getRole() == Role.ADMIN || user.getRole().getValue().contains("PRESIDENT") || comment.getWriter().getId().equals(user.getId())) {
             return true;
         }
-        User leader = board.getCircle().getLeader();
+        User leader = board.getCircle().getLeader().orElse(null);
         if (leader == null) return false;
 
         return user.getRole().getValue().contains("LEADER_CIRCLE") && leader.getId().equals(user.getId());
@@ -39,7 +39,7 @@ public class StatusUtil {
             return true;
         }
 
-        User leader = board.getCircle().getLeader();
+        User leader = board.getCircle().getLeader().orElse(null);
         if (leader == null) return false;
 
         return user.getRole().getValue().contains("LEADER_CIRCLE") && leader.getId().equals(user.getId());
@@ -56,7 +56,7 @@ public class StatusUtil {
             return true;
         }
 
-        User leader = board.getCircle().getLeader();
+        User leader = board.getCircle().getLeader().orElse(null);
 
         return user.getRole().getValue().contains("LEADER_CIRCLE") && leader.getId().equals(user.getId());
     }

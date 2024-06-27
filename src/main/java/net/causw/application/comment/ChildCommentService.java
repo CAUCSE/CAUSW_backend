@@ -49,7 +49,7 @@ public class ChildCommentService {
 
     @Transactional
     public ChildCommentResponseDto createChildComment(String creatorId, ChildCommentCreateRequestDto childCommentCreateRequestDto) {
-        User user = getUser(creatorId);
+        User creator = getUser(creatorId);
         Comment parentComment = getComment(childCommentCreateRequestDto.getParentCommentId());
         Post post = getPost(parentComment.getPost().getId());
         Optional<ChildComment> refChildComment = childCommentCreateRequestDto.getRefChildComment().map(this::getChildComment);
@@ -58,11 +58,11 @@ public class ChildCommentService {
                 false,
                 refChildComment.map(refChild -> refChild.getWriter().getName()).orElse(null),
                 childCommentCreateRequestDto.getRefChildComment().orElse(null),
-                user,
+                creator,
                 parentComment
         );
 
-        ValidatorBucket validatorBucket = initializeValidator(user, post);
+        ValidatorBucket validatorBucket = initializeValidator(creator, post);
         validatorBucket.consistOf(ConstraintValidator.of(childComment, this.validator));
         refChildComment.ifPresent(
                 refChild -> validatorBucket.consistOf(TargetIsDeletedValidator.of(refChild.getIsDeleted(), StaticValue.DOMAIN_CHILD_COMMENT))
@@ -71,8 +71,8 @@ public class ChildCommentService {
 
         return toChildCommentResponseDto(
                 childCommentRepository.save(childComment),
-                StatusUtil.isUpdatable(childComment, user),
-                StatusUtil.isDeletable(childComment, user, post.getBoard())
+                StatusUtil.isUpdatable(childComment, creator),
+                StatusUtil.isDeletable(childComment, creator, post.getBoard())
         );
     }
 
@@ -135,7 +135,7 @@ public class ChildCommentService {
                                     ));
 
                             if (deleter.getRole().getValue().contains("LEADER_CIRCLE") && !childComment.getWriter().getId().equals(deleterId)) {
-                                User leader = circle.getLeader();
+                                User leader = circle.getLeader().orElse(null);
                                 if (leader == null) {
                                     throw new InternalServerException(
                                             ErrorCode.INTERNAL_SERVER,

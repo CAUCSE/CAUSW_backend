@@ -4,12 +4,14 @@ import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
+import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.board.BoardOfCircleResponseDto;
 import net.causw.application.dto.circle.*;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.user.UserResponseDto;
+import net.causw.application.dto.util.DtoMapper;
 import net.causw.application.dto.util.StatusUtil;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -25,9 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -332,7 +332,7 @@ public class CircleService {
                 ));
 
         if (user.getRole().getValue().contains("LEADER_CIRCLE")) {
-            User leader = circle.getLeader();
+            User leader = circle.getLeader().orElse(null);
             if (leader == null) {
                 throw new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
@@ -673,7 +673,7 @@ public class CircleService {
     }
 
     private User getCircleLeader(Circle circle) {
-        User leader = circle.getLeader();
+        User leader = circle.getLeader().orElse(null);
 
         if (leader == null) {
             throw new InternalServerException(
@@ -779,4 +779,23 @@ public class CircleService {
         return validatorBucket;
     }
 
+
+    private BoardOfCircleResponseDto toBoardOfCircleResponseDto(Board board, Role userRole, Post post, Long numComment) {
+        boolean writable = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(","))).stream().anyMatch(str -> userRole.getValue().contains(str));
+        return DtoMapper.INSTANCE.toBoardOfCircleResponseDto(
+                board,
+                post,
+                numComment,
+                writable
+        );
+    }
+
+    private BoardOfCircleResponseDto toBoardOfCircleResponseDto(Board board, Role userRole) {
+        boolean writable = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(","))).stream().anyMatch(str -> userRole.getValue().contains(str));
+        return DtoMapper.INSTANCE.toBoardOfCircleResponseDto(
+                board,
+                0L,
+                writable
+        );
+    }
 }
