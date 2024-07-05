@@ -68,6 +68,22 @@ public class Board extends BaseEntity {
         this.circle = circle;
     }
 
+    private Board(
+            String name,
+            String description,
+            String createRoles,
+            String category,
+            Boolean isDeleted,
+            Circle circle
+    ) {
+        this.name = name;
+        this.description = description;
+        this.createRoles = createRoles;
+        this.category = category;
+        this.isDeleted = isDeleted;
+        this.circle = circle;
+    }
+
     public static Board from(BoardDomainModel boardDomainModel) {
         Circle circle = boardDomainModel.getCircle().map(Circle::from).orElse(null);
 

@@ -22,8 +22,10 @@ public class StatusUtil {
         if (user.getRole() == Role.ADMIN || user.getRole().getValue().contains("PRESIDENT") || comment.getWriter().getId().equals(user.getId())) {
             return true;
         }
-        return board.getCircle() != null && user.getRole().getValue().contains("LEADER_CIRCLE")
-                && board.getCircle().getLeader().map(leader -> leader.getId().equals(user.getId())).orElse(false);
+        User leader = board.getCircle().getLeader().orElse(null);
+        if (leader == null) return false;
+
+        return user.getRole().getValue().contains("LEADER_CIRCLE") && leader.getId().equals(user.getId());
     }
 
     public static boolean isUpdatable(ChildComment comment, User user) {
@@ -36,8 +38,11 @@ public class StatusUtil {
         if (user.getRole() == Role.ADMIN || user.getRole().getValue().contains("PRESIDENT") || comment.getWriter().getId().equals(user.getId())) {
             return true;
         }
-        return board.getCircle() != null && user.getRole().getValue().contains("LEADER_CIRCLE")
-                && board.getCircle().getLeader().map(leader -> leader.getId().equals(user.getId())).orElse(false);
+
+        User leader = board.getCircle().getLeader().orElse(null);
+        if (leader == null) return false;
+
+        return user.getRole().getValue().contains("LEADER_CIRCLE") && leader.getId().equals(user.getId());
     }
 
     public static boolean isUpdatable(Post post, User user) {
@@ -50,7 +55,13 @@ public class StatusUtil {
         if (user.getRole() == Role.ADMIN || user.getRole().getValue().contains("PRESIDENT") || post.getWriter().getId().equals(user.getId())) {
             return true;
         }
-        return board.getCircle() != null && user.getRole().getValue().contains("LEADER_CIRCLE")
-                && board.getCircle().getLeader().map(leader -> leader.getId().equals(user.getId())).orElse(false);
+
+        User leader = board.getCircle().getLeader().orElse(null);
+
+        return user.getRole().getValue().contains("LEADER_CIRCLE") && leader.getId().equals(user.getId());
+    }
+
+    public static boolean isAdminOrPresident(User user) {
+        return user.getRole().equals(Role.ADMIN) || user.getRole().getValue().contains("PRESIDENT");
     }
 }

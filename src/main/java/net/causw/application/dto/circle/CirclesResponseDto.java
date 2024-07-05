@@ -1,9 +1,12 @@
 package net.causw.application.dto.circle;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import net.causw.adapter.persistence.circle.Circle;
+import net.causw.application.dto.util.CircleServiceDtoMapper;
 import net.causw.domain.model.circle.CircleDomainModel;
 import net.causw.domain.model.user.UserDomainModel;
 
@@ -12,6 +15,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
 public class CirclesResponseDto {
 
     @ApiModelProperty(value = "동아리 ID", example = "UUID 형식의 동아리 고유 ID String 값입니다.")
@@ -79,4 +83,5 @@ public class CirclesResponseDto {
                 .joinedAt(joinedAt)
                 .build();
     }
+
 }
