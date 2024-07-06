@@ -1,6 +1,7 @@
 package net.causw.adapter.persistence.board;
 
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.causw.adapter.persistence.user.User;
@@ -15,6 +16,7 @@ import javax.persistence.Table;
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "TB_FAVORITE_BOARD")
 public class FavoriteBoard extends BaseEntity {
     @OneToOne
@@ -41,5 +43,12 @@ public class FavoriteBoard extends BaseEntity {
                 User.from(favoriteBoardDomainModel.getUserDomainModel()),
                 Board.from(favoriteBoardDomainModel.getBoardDomainModel())
         );
+    }
+
+    public static FavoriteBoard of(
+            User user,
+            Board board
+    ) {
+        return new FavoriteBoard(user, board);
     }
 }

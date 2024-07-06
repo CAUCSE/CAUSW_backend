@@ -58,12 +58,10 @@ public class LockerService {
 
     @Transactional(readOnly = true)
     public LockerResponseDto findById(String id, String userId) {
-
         User user = userRepository.findById(userId).orElseThrow(() -> new BadRequestException(
                 ErrorCode.ROW_DOES_NOT_EXIST,
                 MessageUtil.LOGIN_USER_NOT_FOUND
         ));
-
         return LockerResponseDto.of(lockerRepository.findByIdForRead(id).orElseThrow(
                         () -> new BadRequestException(
                                 ErrorCode.ROW_DOES_NOT_EXIST,
@@ -460,12 +458,12 @@ public class LockerService {
         LockerLocation lockerLocationFourthFloor = LockerLocation.of("Fourth Floor");
         lockerLocationRepository.save(lockerLocationFourthFloor);
 
-        createLockerByLockerLocationAndEndLockerNumber(lockerLocationSecondFloor, validatorBucket, user,136L);
-        createLockerByLockerLocationAndEndLockerNumber(lockerLocationThirdFloor,validatorBucket, user,168L);
-        createLockerByLockerLocationAndEndLockerNumber(lockerLocationFourthFloor,validatorBucket, user,32L);
+        createLockerByLockerLocationAndEndLockerNumber(lockerLocationSecondFloor, validatorBucket, user, 136L);
+        createLockerByLockerLocationAndEndLockerNumber(lockerLocationThirdFloor, validatorBucket, user, 168L);
+        createLockerByLockerLocationAndEndLockerNumber(lockerLocationFourthFloor, validatorBucket, user, 32L);
     }
 
-    private void createLockerByLockerLocationAndEndLockerNumber(LockerLocation lockerLocationSecondFloor, ValidatorBucket validatorBucket, User user , Long endNum) {
+    private void createLockerByLockerLocationAndEndLockerNumber(LockerLocation lockerLocationSecondFloor, ValidatorBucket validatorBucket, User user, Long endNum) {
         for (Long lockerNumber = 1L; lockerNumber <= endNum; lockerNumber++) {
 
             Locker locker = Locker.of(

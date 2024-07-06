@@ -27,6 +27,8 @@ public class MessageUtil {
     public static final String CIRCLE_WITHOUT_LEADER = "The board has circle without circle leader";
     public static final String CIRCLE_APPLY_INVALID = "사용자가 가입 신청한 소모임이 아닙니다.";
     public static final String CIRCLE_DUPLICATE_NAME = "중복된 소모임 이름입니다.";
+    public static final String NEW_CIRCLE_LEADER_NOT_FOUND = "등록할 동아리장을 다시 확인해주세요.";
+    public static final String CIRCLE_NOT_FOUND = "해당 동아리를 찾을 수 없습니다.";
 
     // Locker
     public static final String LOCKER_WRONG_POSITION = "등록된 사물함 위치가 아닙니다.";
