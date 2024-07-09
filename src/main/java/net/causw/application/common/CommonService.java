@@ -1,6 +1,10 @@
 package net.causw.application.common;
 
 import lombok.RequiredArgsConstructor;
+import net.causw.adapter.persistence.flag.Flag;
+import net.causw.adapter.persistence.repository.FlagRepository;
+import net.causw.adapter.persistence.repository.TextFieldRepository;
+import net.causw.adapter.persistence.textfield.TextField;
 import net.causw.application.spi.FlagPort;
 import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
@@ -15,64 +19,51 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class CommonService {
-    private final FlagPort flagPort;
-    private final UserPort userPort;
+    private final TextFieldRepository textFieldRepository;
+    private final FlagRepository flagRepository;
+
 
     @Transactional
-    public Boolean createFlag(
-            String loginUserId,
-            String key,
-            Boolean value
-    ) {
-        UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
+    public String createTextField(String key, String value) {
+        return textFieldRepository.save(TextField.of(key, value)).getValue();
+    }
 
-        ValidatorBucket.of()
-                .consistOf(UserRoleValidator.of(userDomainModel.getRole(), List.of(Role.PRESIDENT)))
-                .validate();
-
-        this.flagPort.findByKey(key).ifPresent(
+    @Transactional
+    public Optional<String> updateTextField(String key, String value) {
+        return textFieldRepository.findByKey(key).map(
                 flag -> {
-                    throw new BadRequestException(
-                            ErrorCode.ROW_ALREADY_EXIST,
-                            MessageUtil.FLAG_ALREADY_EXIST
-                    );
+                    flag.setValue(value);
+
+                    return this.textFieldRepository.save(flag).getValue();
                 }
         );
-
-        return this.flagPort.create(key, value);
     }
 
-    @Transactional
-    public Boolean updateFlag(
-            String loginUserId,
-            String key,
-            Boolean value
-    ) {
-        UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
+    public Boolean createFlag(String loginUserId, String key, Boolean value) {
 
-        ValidatorBucket.of()
-                .consistOf(UserRoleValidator.of(userDomainModel.getRole(), List.of(Role.PRESIDENT)))
-                .validate();
-
-        return this.flagPort.update(key, value).orElseThrow(
-                () -> new InternalServerException(
-                        ErrorCode.INTERNAL_SERVER,
-                        MessageUtil.FLAG_UPDATE_FAILED
-                )
-        );
+        return flagRepository.save(Flag.of(key, value)).getValue();
     }
+
+    public Boolean updateFlag(String loginUserId , String key, Boolean value) {
+        return flagRepository.findByKey(key).map(
+                flag -> {
+                    flag.setValue(value);
+
+                    return this.flagRepository.save(flag).getValue();
+                }
+        ).orElse(false);
+    }
+    public Optional<String> findByKeyInTextField(String key) {
+        return textFieldRepository.findByKey(key).map(TextField::getValue);
+    }
+
+    public Optional<Boolean> findByKeyInFlag(String key) {
+        return flagRepository.findByKey(key).map(Flag::getValue);
+    }
+
 }

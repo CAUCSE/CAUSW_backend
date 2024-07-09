@@ -25,6 +25,7 @@ public enum ErrorCode {
     INVALID_FILE_EXTENSION(4015),
     INVALID_EXPIRE_DATE(4016),
     FLAG_NOT_AVAILABLE(4017),
+    LOCKER_ACTION_ERROR(4018),
 
     /**
      * 401 Unauthorized

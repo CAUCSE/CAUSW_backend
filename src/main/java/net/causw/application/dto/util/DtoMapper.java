@@ -4,6 +4,8 @@ import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.post.Post;
+import net.causw.application.dto.board.BoardOfCircleResponseDto;
+import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.file.FileResponseDto;
@@ -11,7 +13,9 @@ import net.causw.application.dto.post.BoardPostsResponseDto;
 import net.causw.application.dto.post.PostResponseDto;
 import net.causw.application.dto.post.PostsResponseDto;
 import net.causw.domain.model.enums.Role;
-import org.mapstruct.*;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 import org.springframework.data.domain.Page;
 
@@ -83,7 +87,23 @@ public interface DtoMapper{
 
 
     // Board
+    BoardResponseDto toBoardResponseDto(Board entity, List<String> createRoleList, Boolean writable, String circleId, String circleName);
 
+    @Mapping(target = "id", source = "board.id")
+    @Mapping(target = "name", source = "board.name")
+    @Mapping(target = "writable", source = "writable")
+    @Mapping(target = "isDeleted", source = "board.isDeleted")
+    @Mapping(target = "postId", source = "post.id")
+    @Mapping(target = "postTitle", source = "post.title")
+    @Mapping(target = "postWriterName", source = "post.writer.name")
+    @Mapping(target = "postWriterStudentId", source = "post.writer.studentId")
+    @Mapping(target = "postCreatedAt", source = "post.createdAt")
+    @Mapping(target = "postNumComment", source = "numComment")
+    BoardOfCircleResponseDto toBoardOfCircleResponseDto(Board board, Post post, Long numComment, boolean writable);
+
+    @Mapping(target = "writable", source = "writable")
+    @Mapping(target = "postNumComment", source = "numComment")
+    BoardOfCircleResponseDto toBoardOfCircleResponseDto(Board entity, Long numComment, boolean writable);
 
     // Circle
 

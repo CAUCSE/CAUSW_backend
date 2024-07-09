@@ -1,11 +1,14 @@
 package net.causw.application.dto.circle;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.user.User;
+import net.causw.adapter.persistence.circle.Circle;
+import net.causw.application.dto.util.CircleServiceDtoMapper;
 import net.causw.domain.model.circle.CircleDomainModel;
 import net.causw.domain.model.user.UserDomainModel;
 
@@ -14,6 +17,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
 public class CircleResponseDto {
 
     @ApiModelProperty(value = "동아리 ID", example = "UUID 형식의 동아리 고유 ID String 값 입니다.")
@@ -43,34 +47,35 @@ public class CircleResponseDto {
     @ApiModelProperty(value = "동아리 생성 일시", example = "2024-02-04 16:11:02.342644")
     private LocalDateTime createdAt;
 
-
-    public static CircleResponseDto from(CircleDomainModel circle) {
-        return CircleResponseDto.builder()
-                .id(circle.getId())
-                .name(circle.getName())
-                .mainImage(circle.getMainImage())
-                .description(circle.getDescription())
-                .isDeleted(circle.getIsDeleted())
-                .leaderId(circle.getLeader().map(UserDomainModel::getId).orElse(null))
-                .leaderName(circle.getLeader().map(UserDomainModel::getName).orElse(null))
-                .createdAt(circle.getCreatedAt())
-                .build();
-    }
-
-    public static CircleResponseDto from(CircleDomainModel circle, Long numMember) {
-        return CircleResponseDto.builder()
-                .id(circle.getId())
-                .name(circle.getName())
-                .mainImage(circle.getMainImage())
-                .description(circle.getDescription())
-                .isDeleted(circle.getIsDeleted())
-                .leaderId(circle.getLeader().map(UserDomainModel::getId).orElse(null))
-                .leaderName(circle.getLeader().map(UserDomainModel::getName).orElse(null))
-                .numMember(numMember)
-                .createdAt(circle.getCreatedAt())
-                .build();
-    }
-
+//
+//    public static CircleResponseDto from(CircleDomainModel circle) {
+//        return CircleResponseDto.builder()
+//                .id(circle.getId())
+//                .name(circle.getName())
+//                .mainImage(circle.getMainImage())
+//                .description(circle.getDescription())
+//                .isDeleted(circle.getIsDeleted())
+//                .leaderId(circle.getLeader().map(UserDomainModel::getId).orElse(null))
+//                .leaderName(circle.getLeader().map(UserDomainModel::getName).orElse(null))
+//                .createdAt(circle.getCreatedAt())
+//                .build();
+//    }
+//
+//    public static CircleResponseDto from(CircleDomainModel circle, Long numMember) {
+//        return CircleResponseDto.builder()
+//                .id(circle.getId())
+//                .name(circle.getName())
+//                .mainImage(circle.getMainImage())
+//                .description(circle.getDescription())
+//                .isDeleted(circle.getIsDeleted())
+//                .leaderId(circle.getLeader().map(UserDomainModel::getId).orElse(null))
+//                .leaderName(circle.getLeader().map(UserDomainModel::getName).orElse(null))
+//                .numMember(numMember)
+//                .createdAt(circle.getCreatedAt())
+//                .build();
+//    }
+//
+//
 
     //circle domainmodel 삭제 작업 중 충돌을 방지하기 위해 별도 생성
     public static CircleResponseDto from(Circle circle) {

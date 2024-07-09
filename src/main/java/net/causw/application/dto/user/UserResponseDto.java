@@ -1,10 +1,12 @@
 package net.causw.application.dto.user;
 
 import io.swagger.annotations.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import net.causw.adapter.persistence.user.User;
+import net.causw.application.dto.util.CircleServiceDtoMapper;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.model.enums.UserState;
@@ -13,6 +15,7 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
 public class UserResponseDto {
 
     @ApiModelProperty(value = "고유 id값", example = "uuid 형식의 String 값입니다.")
@@ -90,4 +93,5 @@ public class UserResponseDto {
                 .circleNameIfLeader(circleName)
                 .build();
     }
+
 }

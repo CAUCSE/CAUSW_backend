@@ -27,6 +27,8 @@ public class MessageUtil {
     public static final String CIRCLE_WITHOUT_LEADER = "The board has circle without circle leader";
     public static final String CIRCLE_APPLY_INVALID = "사용자가 가입 신청한 소모임이 아닙니다.";
     public static final String CIRCLE_DUPLICATE_NAME = "중복된 소모임 이름입니다.";
+    public static final String NEW_CIRCLE_LEADER_NOT_FOUND = "등록할 동아리장을 다시 확인해주세요.";
+    public static final String CIRCLE_NOT_FOUND = "해당 동아리를 찾을 수 없습니다.";
 
     // Locker
     public static final String LOCKER_WRONG_POSITION = "등록된 사물함 위치가 아닙니다.";
@@ -38,6 +40,8 @@ public class MessageUtil {
     public static final String LOCKER_RETURN_TIME_NOT_SET = "사물함 반납 시간이 설정되지 않았습니다.";
     public static final String LOCKER_UNUSED = "사용 중인 사물함이 아닙니다.";
     public static final String LOCKER_DELETED = "사물함 삭제";
+    public static final String LOCKER_ACTION_ERROR = "사물함 액션 실행 중 에러가 발생하였습니다.";
+
 
     // User
     public static final String USER_NOT_FOUND = "해당 사용자를 찾을 수 없습니다.";

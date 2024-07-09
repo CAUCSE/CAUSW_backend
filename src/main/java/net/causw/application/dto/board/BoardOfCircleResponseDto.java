@@ -1,18 +1,24 @@
 package net.causw.application.dto.board;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import net.causw.adapter.persistence.board.Board;
+import net.causw.adapter.persistence.post.Post;
+import net.causw.application.dto.util.CircleServiceDtoMapper;
 import net.causw.domain.model.board.BoardDomainModel;
 import net.causw.domain.model.post.PostDomainModel;
 import net.causw.domain.model.enums.Role;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
 public class BoardOfCircleResponseDto {
 
     @ApiModelProperty(value = "게시판 id 값", example = "uuid 형식의 String 값입니다.")
@@ -45,6 +51,7 @@ public class BoardOfCircleResponseDto {
     @ApiModelProperty(value = "게시글 댓글 개수", example =  "12")
     private Long postNumComment;
 
+    // FIXME: Port 분리 후 삭제 필요
     public static BoardOfCircleResponseDto from(
             BoardDomainModel boardDomainModel,
             Role userRole,
@@ -76,5 +83,14 @@ public class BoardOfCircleResponseDto {
                 .isDeleted(boardDomainModel.getIsDeleted())
                 .postNumComment(0L)
                 .build();
+    }
+
+    // Board의 CreateRoles는 List가 ","로 이어진 형태로 존재. "," 기준으로 split해서 List<String>으로 변환 후 userRole과 비교
+    public static Boolean isWriteable(Board board, Role userRole) {
+        return Arrays.stream(
+                        board.getCreateRoles().split(","))
+                .anyMatch(str ->
+                        userRole.getValue().contains(str)
+                );
     }
 }
