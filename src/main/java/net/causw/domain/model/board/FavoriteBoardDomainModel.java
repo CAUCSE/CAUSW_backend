@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.causw.domain.model.user.UserDomainModel;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 @Getter
 @Setter

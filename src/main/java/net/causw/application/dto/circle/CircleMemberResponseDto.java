@@ -1,6 +1,6 @@
 package net.causw.application.dto.circle;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 import net.causw.application.dto.user.UserResponseDto;
@@ -12,16 +12,16 @@ import net.causw.domain.model.user.UserDomainModel;
 @Setter
 public class CircleMemberResponseDto {
 
-    @ApiModelProperty(value = "동아리원 고유 ID", example = "동아리원의 UUID 형식 유저 고유 ID 값입니다.")
+    @Schema(description = "동아리원 고유 ID", example = "동아리원의 UUID 형식 유저 고유 ID 값입니다.")
     private String id;
 
-    @ApiModelProperty(value = "동아리원의 상태입니다.", example = "MEMBER")
+    @Schema(description = "동아리원의 상태입니다.", example = "MEMBER")
     private CircleMemberStatus status;
 
-    @ApiModelProperty(value = "CircleResponseDTO", example = "동아리 responseDTO 객체를 반환합니다.")
+    @Schema(description = "동아리 정보")
     private CircleResponseDto circle;
 
-    @ApiModelProperty(value = "UserResponseDTO", example = "유저 responseDTO 객체를 반환합니다.")
+    @Schema(description = "유저 정보")
     private UserResponseDto user;
 
     private CircleMemberResponseDto(
@@ -43,9 +43,7 @@ public class CircleMemberResponseDto {
         return new CircleMemberResponseDto(
                 circleMember.getId(),
                 circleMember.getStatus(),
-                CircleResponseDto.from(
-                        circleMember.getCircle()
-                ),
+                CircleResponseDto.from(circleMember.getCircle()),
                 UserResponseDto.from(user)
         );
     }

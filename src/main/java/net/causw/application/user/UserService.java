@@ -53,7 +53,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -624,7 +624,7 @@ public class UserService {
                 .consistOf(UserRoleIsNoneValidator.of(grantor.getRole()))
                 .consistOf(GrantableRoleValidator.of(
                         grantor.getRole(),
-                        userUpdateRoleRequestDto.getRole(),
+                        Role.valueOf(userUpdateRoleRequestDto.getRole()),
                         grantee.getRole()
                 ))
                 .validate();
@@ -634,7 +634,7 @@ public class UserService {
          * 3. DelegationFactory를 통해 권한 위임 진행(동아리장 위임일 경우 circle id를 넘겨주어서 어떤 동아리의 동아리장 권한을 위임하는 것인지 확인)
          * */
 
-        if (grantor.getRole().getValue().contains(userUpdateRoleRequestDto.getRole().getValue())){
+        if (grantor.getRole().getValue().contains(userUpdateRoleRequestDto.getRole())){
             String circleId = "";
             if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)) {
                 circleId = userUpdateRoleRequestDto.getCircleId()
@@ -644,7 +644,7 @@ public class UserService {
                         ));
             }
             DelegationFactory
-                    .create(userUpdateRoleRequestDto.getRole(), this.userPort, this.circlePort, this.circleMemberPort, circleId)
+                    .create(Role.valueOf(userUpdateRoleRequestDto.getRole()), this.userPort, this.circlePort, this.circleMemberPort, circleId)
                     .delegate(loginUserId, granteeId);
         }
         /* 권한 위임
@@ -752,7 +752,7 @@ public class UserService {
          * The linked updating process is performed on previous delegation process
          * Therefore, the updating for the grantee is performed in this process
          */
-        return UserResponseDto.from(this.userPort.updateRole(granteeId, userUpdateRoleRequestDto.getRole()).orElseThrow(
+        return UserResponseDto.from(this.userPort.updateRole(granteeId, Role.valueOf(userUpdateRoleRequestDto.getRole())).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         "User id checked, but exception occurred"

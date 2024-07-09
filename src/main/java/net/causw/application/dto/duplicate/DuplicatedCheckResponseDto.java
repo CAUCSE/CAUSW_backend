@@ -1,6 +1,6 @@
 package net.causw.application.dto.duplicate;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 public class DuplicatedCheckResponseDto {
 
-    @ApiModelProperty(value = "중복 여부 boolean 값", example = "true")
+    @Schema(description = "중복 여부 boolean 값", example = "true")
     private Boolean result;
 
     private DuplicatedCheckResponseDto(boolean result) {

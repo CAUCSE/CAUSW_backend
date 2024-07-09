@@ -1,21 +1,17 @@
 package net.causw.adapter.persistence.locker;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.domain.model.enums.LockerLogAction;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Table;
 
 @Getter
 @Entity
 @NoArgsConstructor
 @Table(name = "TB_LOCKER_LOG")
 public class LockerLog extends BaseEntity {
+
     @Column(name = "locker_number", nullable = false)
     private Long lockerNumber;
 
@@ -34,6 +30,7 @@ public class LockerLog extends BaseEntity {
 
     @Column(name = "message", nullable = true)
     private String message;
+
 
     private LockerLog(
             String id,
@@ -86,4 +83,5 @@ public class LockerLog extends BaseEntity {
                 message
         );
     }
+
 }

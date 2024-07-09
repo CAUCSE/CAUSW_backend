@@ -1,10 +1,10 @@
 package net.causw.application.dto.locker;
 
-import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.Optional;
 
@@ -13,14 +13,11 @@ import java.util.Optional;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LockerUpdateRequestDto {
-    @ApiModelProperty(value = "\n" +
-            "            ENABLE(\"ENABLE\"),\n" +
-            "    DISABLE(\"DISABLE\"),\n" +
-            "    REGISTER(\"REGISTER\"),\n" +
-            "    RETURN(\"RETURN\"),\n" +
-            "    EXTEND(\"EXTEND\");", example = "REGISTER")
+
+    @Schema(description = "Action to perform on the locker", allowableValues = {"ENABLE", "DISABLE", "REGISTER", "RETURN", "EXTEND"}, example = "REGISTER")
     private String action;
-    @ApiModelProperty(value = "로그에 남길 message", example = "hi(자율)")
+
+    @Schema(description = "Message to be logged", example = "hi(자율)")
     private String message;
 
     public Optional<String> getMessage() {

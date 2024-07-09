@@ -37,7 +37,7 @@ import net.causw.domain.validation.ValidatorBucket;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;

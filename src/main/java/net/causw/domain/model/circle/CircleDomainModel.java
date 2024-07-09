@@ -4,8 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import net.causw.domain.model.user.UserDomainModel;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.Optional;
 

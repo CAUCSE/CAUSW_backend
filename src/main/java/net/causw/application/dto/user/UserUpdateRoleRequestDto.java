@@ -1,6 +1,6 @@
 package net.causw.application.dto.user;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,13 +15,13 @@ import java.util.Optional;
 @NoArgsConstructor
 public class UserUpdateRoleRequestDto {
 
-    @ApiModelProperty(value = "역할", example = "COMMON")
+    @Schema(description = "역할", example = "COMMON")
     private String role;
 
-    @ApiModelProperty(value = "동아리 고유 id값", example = "uuid 형식의 String 값입니다.")
+    @Schema(description = "동아리 고유 id값", example = "uuid 형식의 String 값입니다.")
     private String circleId;
 
-    public Role getRole() {
+    public Role getRoleEnum() {
         return Role.of(this.role);
     }
 

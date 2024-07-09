@@ -1,6 +1,6 @@
 package net.causw.adapter.web;
 
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.common.CommonService;
 import net.causw.application.homepage.HomePageService;
@@ -28,7 +28,7 @@ public class CommonController {
 
     @GetMapping("/api/v1/home")
     @ResponseStatus(value = HttpStatus.OK)
-    @ApiOperation(value = "홈페이지 불러오기 API(완료)", notes = "동아리에 속하지 않고 삭제되지 않은 게시판과 해당 게시판의 최신 글 3개의 정보를 반환합니다. \n 개발 db상에는 동아리에 속하지 않은 많은 더미 데이터가 있지만 실제 운영될 때는 동아리에 속하지 않는 게시판은 학생회 공지게시판 뿐입니다.")
+    @Operation(summary = "홈페이지 불러오기 API(완료)", description = "동아리에 속하지 않고 삭제되지 않은 게시판과 해당 게시판의 최신 글 3개의 정보를 반환합니다. \n 개발 db상에는 동아리에 속하지 않은 많은 더미 데이터가 있지만 실제 운영될 때는 동아리에 속하지 않는 게시판은 학생회 공지게시판 뿐입니다.")
     public List<HomePageResponseDto> getHomePage() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String loginUserId = ((String) principal);

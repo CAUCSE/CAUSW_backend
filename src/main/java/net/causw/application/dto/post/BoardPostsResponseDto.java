@@ -1,6 +1,6 @@
 package net.causw.application.dto.post;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 import net.causw.domain.model.board.BoardDomainModel;
@@ -11,19 +11,19 @@ import org.springframework.data.domain.Page;
 @Setter
 public class BoardPostsResponseDto {
 
-    @ApiModelProperty(value = "게시판 id", example = "uuid 형식의 String 값입니다.")
+    @Schema(description = "게시판 id", example = "uuid 형식의 String 값입니다.")
     private String boardId;
 
-    @ApiModelProperty(value = "게시판 이름", example = "게시판 이름입니다.")
+    @Schema(description = "게시판 이름", example = "게시판 이름입니다.")
     private String boardName;
 
-    @ApiModelProperty(value = "게시글 작성 가능여부", example = "true")
+    @Schema(description = "게시글 작성 가능 여부", example = "true")
     private Boolean writable;
 
-    @ApiModelProperty(value = "즐겨찾기 게시판 여부", example = "false")
+    @Schema(description = "즐겨찾기 게시판 여부", example = "false")
     private Boolean isFavorite;
 
-    @ApiModelProperty(value = "게시글 정보입니다", example = "게시글 정보입니다")
+    @Schema(description = "게시글 정보입니다")
     private Page<PostsResponseDto> post;
 
     private BoardPostsResponseDto(

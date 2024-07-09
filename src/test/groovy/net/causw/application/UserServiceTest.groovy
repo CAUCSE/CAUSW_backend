@@ -24,9 +24,9 @@
 //import org.springframework.test.context.ActiveProfiles
 //import spock.lang.Specification
 //
-//import javax.validation.ConstraintViolationException
-//import javax.validation.Validation
-//import javax.validation.Validator
+//import jakarta.validation.ConstraintViolationException
+//import jakarta.validation.Validation
+//import jakarta.validation.Validator
 //import java.time.LocalDateTime
 //
 //@ActiveProfiles(value = "test")
