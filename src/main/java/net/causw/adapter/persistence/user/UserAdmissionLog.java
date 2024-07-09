@@ -1,9 +1,6 @@
 package net.causw.adapter.persistence.user;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.domain.model.enums.UserAdmissionLogAction;
 
@@ -15,6 +12,7 @@ import javax.persistence.Table;
 
 @Getter
 @Entity
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_user_admission_log")

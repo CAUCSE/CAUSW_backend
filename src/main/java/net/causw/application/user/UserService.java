@@ -4,6 +4,17 @@ import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.board.FavoriteBoard;
 import net.causw.adapter.persistence.circle.Circle;
+import net.causw.adapter.persistence.circle.CircleMember;
+import net.causw.adapter.persistence.locker.LockerLog;
+import net.causw.adapter.persistence.page.PageableFactory;
+import net.causw.adapter.persistence.post.Post;
+import net.causw.adapter.persistence.repository.*;
+import net.causw.adapter.persistence.user.User;
+import net.causw.adapter.persistence.user.UserAdmission;
+import net.causw.adapter.persistence.user.UserAdmissionLog;
+import net.causw.adapter.persistence.board.Board;
+import net.causw.adapter.persistence.board.FavoriteBoard;
+import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.repository.BoardRepository;
 import net.causw.adapter.persistence.repository.FavoriteBoardRepository;
 import net.causw.adapter.persistence.repository.UserRepository;
@@ -34,6 +45,7 @@ import net.causw.domain.model.circle.CircleDomainModel;
 import net.causw.domain.model.enums.*;
 import net.causw.domain.model.post.PostDomainModel;
 import net.causw.domain.model.util.MessageUtil;
+import net.causw.domain.model.util.RedisUtils;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.model.user.UserAdmissionDomainModel;
 import net.causw.domain.model.user.UserDomainModel;
@@ -54,12 +66,14 @@ import net.causw.domain.validation.ValidatorBucket;
 import net.causw.infrastructure.GoogleMailSender;
 import net.causw.infrastructure.PasswordGenerator;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -69,14 +83,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserService {
     private final UserPort userPort;
-    private final PostPort postPort;
-    private final UserAdmissionPort userAdmissionPort;
-    private final UserAdmissionLogPort userAdmissionLogPort;
     private final CirclePort circlePort;
     private final CircleMemberPort circleMemberPort;
-    private final CommentPort commentPort;
-    private final LockerPort lockerPort;
-    private final LockerLogPort lockerLogPort;
     private final JwtTokenProvider jwtTokenProvider;
     private final StorageService storageService;
     private final GoogleMailSender googleMailSender;
@@ -85,6 +93,16 @@ public class UserService {
     private final Validator validator;
 
     private final UserRepository userRepository;
+    private final CircleRepository circleRepository;
+    private final CircleMemberRepository circleMemberRepository;
+    private final PostRepository postRepository;
+    private final PageableFactory pageableFactory;
+    private final CommentRepository commentRepository;
+    private final UserAdmissionRepository userAdmissionRepository;
+    private final RedisUtils redisUtils;
+    private final LockerRepository lockerRepository;
+    private final LockerLogRepository lockerLogRepository;
+    private final UserAdmissionLogRepository userAdmissionLogRepository;
     private final BoardRepository boardRepository;
     private final FavoriteBoardRepository favoriteBoardRepository;
 
@@ -92,32 +110,33 @@ public class UserService {
     public UserResponseDto findPassword(
             UserFindPasswordRequestDto userFindPasswordRequestDto
     ) {
-        UserDomainModel requestUser = this.userPort.findForPassword(userFindPasswordRequestDto.getEmail(), userFindPasswordRequestDto.getName(), userFindPasswordRequestDto.getStudentId()).orElseThrow(
-                () -> new BadRequestException(
+        User requestUser = userRepository.findByEmailAndNameAndStudentId(userFindPasswordRequestDto.getEmail(), userFindPasswordRequestDto.getName(), userFindPasswordRequestDto.getStudentId())
+                .orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.USER_NOT_FOUND
-                )
-        );
-        String newPassword = requestUser.updatePassword(this.passwordGenerator.generate());
+                ));
+
+        String newPassword = this.passwordGenerator.generate();
         this.googleMailSender.sendNewPasswordMail(requestUser.getEmail(), newPassword);
-        this.userPort.updatePassword(requestUser.getId(), passwordEncoder.encode(newPassword)).orElseThrow(
-                () -> new InternalServerException(
-                        ErrorCode.INTERNAL_SERVER,
-                        MessageUtil.INTERNAL_SERVER_ERROR
-                )
-        );
+
+        this.userRepository.findById(requestUser.getId()).map(
+                srcUser -> {
+                    srcUser.setPassword(passwordEncoder.encode(newPassword));
+                    return this.userRepository.save(srcUser);
+                }).orElseThrow(() -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                MessageUtil.USER_NOT_FOUND));
         return UserResponseDto.from(requestUser);
     }
 
     // Find process of another user
     @Transactional(readOnly = true)
     public UserResponseDto findByUserId(String targetUserId, String loginUserId) {
-        UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
+        User requestUser = this.userRepository.findById(loginUserId)
+                .orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
+                ));
 
 
         ValidatorBucket.of()
@@ -128,24 +147,27 @@ public class UserService {
                 .validate();
 
         if (requestUser.getRole().getValue().contains("LEADER_CIRCLE")) {
-            List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(loginUserId);
+            List<Circle> ownCircles = this.circleRepository.findByLeader_Id(loginUserId);
             if (ownCircles.isEmpty()) {
                 throw new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER
                 );
             }
+
             boolean isMemberOfAnyCircle = ownCircles.stream()
-                    .anyMatch(circleDomainModel ->
-                            this.circleMemberPort.findByUserIdAndCircleId(targetUserId, circleDomainModel.getId())
-                                    .map(circleMemberDomainModel -> circleMemberDomainModel.getStatus() == CircleMemberStatus.MEMBER)
-                                    .orElse(false));
+                    .anyMatch(circleEntity ->
+                            this.circleMemberRepository.findByUser_IdAndCircle_Id(targetUserId, circleEntity.getId())
+                                    .map(circleMemberEntity -> circleMemberEntity.getStatus() == CircleMemberStatus.MEMBER)
+                                    .orElse(false)
+                    );
+
             if (!isMemberOfAnyCircle) {
                 throw new BadRequestException(ErrorCode.NOT_MEMBER, MessageUtil.CIRCLE_MEMBER_NOT_FOUND);
             }
         }
 
-        return this.userPort.findById(targetUserId)
+        return this.userRepository.findById(targetUserId)
                 .map(UserResponseDto::from)
                 .orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -155,12 +177,11 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserResponseDto findCurrentUser(String loginUserId) {
-        UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
+        User requestUser = this.userRepository.findById(loginUserId)
+                .orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
+                        MessageUtil.USER_NOT_FOUND
+                ));
 
         ValidatorBucket.of()
                 .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
@@ -168,7 +189,7 @@ public class UserService {
                 .validate();
 
         if (requestUser.getRole().getValue().contains("LEADER_CIRCLE")) {
-            List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(loginUserId);
+            List<Circle> ownCircles = this.circleRepository.findByLeader_Id(loginUserId);
             if (ownCircles.isEmpty()) {
                 throw new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
@@ -178,8 +199,8 @@ public class UserService {
 
             return UserResponseDto.of(
                     requestUser,
-                    ownCircles.stream().map(CircleDomainModel::getId).collect(Collectors.toList()),
-                    ownCircles.stream().map(CircleDomainModel::getName).collect(Collectors.toList())
+                    ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
+                    ownCircles.stream().map(Circle::getName).collect(Collectors.toList())
 
             );
         }
@@ -189,12 +210,11 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserPostsResponseDto findPosts(String loginUserId, Integer pageNum) {
-        UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
+        User requestUser = this.userRepository.findById(loginUserId)
+                .orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
+                        MessageUtil.USER_NOT_FOUND
+                ));
 
         ValidatorBucket.of()
                 .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
@@ -203,25 +223,25 @@ public class UserService {
 
         return UserPostsResponseDto.of(
                 requestUser,
-                this.postPort.findPostByUserId(loginUserId, pageNum).map(postDomainModel -> UserPostResponseDto.of(
-                        postDomainModel,
-                        postDomainModel.getBoard().getId(),
-                        postDomainModel.getBoard().getName(),
-                        postDomainModel.getBoard().getCircle().map(CircleDomainModel::getId).orElse(null),
-                        postDomainModel.getBoard().getCircle().map(CircleDomainModel::getName).orElse(null),
-                        this.postPort.countAllComment(postDomainModel.getId())
-                ))
+                this.postRepository.findByUserId(loginUserId, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
+                        .map(post -> UserPostResponseDto.of(
+                                post,
+                                post.getBoard().getId(),
+                                post.getBoard().getName(),
+                                post.getBoard().getCircle() != null ? post.getBoard().getCircle().getId() : null,
+                                post.getBoard().getCircle() != null ? post.getBoard().getCircle().getName() : null,
+                                this.postRepository.countAllCommentByPost_Id(post.getId())
+                        ))
         );
     }
 
     @Transactional(readOnly = true)
     public UserCommentsResponseDto findComments(String loginUserId, Integer pageNum) {
-        UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
+        User requestUser = this.userRepository.findById(loginUserId)
+                .orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
+                        MessageUtil.USER_NOT_FOUND
+                ));
 
         ValidatorBucket.of()
                 .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
@@ -230,8 +250,9 @@ public class UserService {
 
         return UserCommentsResponseDto.of(
                 requestUser,
-                this.commentPort.findByUserId(loginUserId, pageNum).map(comment -> {
-                    PostDomainModel post = this.postPort.findPostById(comment.getPostId()).orElseThrow(
+                this.commentRepository.findByUserId(loginUserId, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_COMMENT_PAGE_SIZE))
+                .map(comment -> {
+                    Post post = this.postRepository.findById(comment.getPost().getId()).orElseThrow(
                             () -> new BadRequestException(
                                     ErrorCode.ROW_DOES_NOT_EXIST,
                                     MessageUtil.POST_NOT_FOUND
@@ -244,32 +265,32 @@ public class UserService {
                             post.getBoard().getName(),
                             post.getId(),
                             post.getTitle(),
-                            post.getBoard().getCircle().map(CircleDomainModel::getId).orElse(null),
-                            post.getBoard().getCircle().map(CircleDomainModel::getName).orElse(null)
+                            post.getBoard().getCircle() != null ? post.getBoard().getCircle().getId() : null,
+                            post.getBoard().getCircle() != null ? post.getBoard().getCircle().getName() : null
                     );
                 })
+
         );
     }
 
     @Transactional(readOnly = true)
     public List<UserResponseDto> findByName(String loginUserId, String name) {
-        UserDomainModel user = this.userPort.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
+        User requestUser = this.userRepository.findById(loginUserId)
+                .orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
+                        MessageUtil.USER_NOT_FOUND
+                ));
 
         ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
-                .consistOf(UserRoleValidator.of(user.getRole(),
+                .consistOf(UserStateValidator.of(requestUser.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
+                .consistOf(UserRoleValidator.of(requestUser.getRole(),
                         List.of(Role.LEADER_CIRCLE
                         )))
                 .validate();
 
-        if (user.getRole().getValue().contains("LEADER_CIRCLE")) {
-            List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(loginUserId);
+        if (requestUser.getRole().getValue().contains("LEADER_CIRCLE")) {
+            List<Circle> ownCircles = this.circleRepository.findByLeader_Id(loginUserId);
             if (ownCircles.isEmpty()) {
                 throw new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
@@ -277,78 +298,79 @@ public class UserService {
                 );
             }
 
-            return this.userPort.findByName(name)
+            return this.userRepository.findByName(name)
                     .stream()
-                    .filter(userDomainModel -> userDomainModel.getState().equals(UserState.ACTIVE))
-                    .filter(userDomainModel ->
+                    .filter(user -> user.getState().equals(UserState.ACTIVE))
+                    .filter(user ->
                             ownCircles.stream()
-                                    .anyMatch(circleDomainModel ->
-                                            this.circleMemberPort.findByUserIdAndCircleId(userDomainModel.getId(), circleDomainModel.getId())
-                                                    .map(circleMemberDomainModel ->
-                                                            circleMemberDomainModel.getStatus() == CircleMemberStatus.MEMBER)
+                                    .anyMatch(circle ->
+                                            this.circleMemberRepository.findByUser_IdAndCircle_Id(user.getId(), circle.getId())
+                                                    .map(circleMemberEntity -> circleMemberEntity.getStatus() == CircleMemberStatus.MEMBER)
                                                     .orElse(false)))
-                    .map(userDomainModel -> UserResponseDto.of(
-                            userDomainModel,
-                            ownCircles.stream().map(CircleDomainModel::getId).collect(Collectors.toList()),
-                            ownCircles.stream().map(CircleDomainModel::getName).collect(Collectors.toList())))
+                    .map(user -> UserResponseDto.of(
+                            user,
+                            ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
+                            ownCircles.stream().map(Circle::getName).collect(Collectors.toList())))
                     .collect(Collectors.toList());
+
         }
 
-        return this.userPort.findByName(name)
+        return this.userRepository.findByName(name)
                 .stream()
-                .filter(userDomainModel -> userDomainModel.getState().equals(UserState.ACTIVE))
+                .filter(user -> user.getState().equals(UserState.ACTIVE))
                 .map(UserResponseDto::from)
                 .collect(Collectors.toList());
+
     }
 
     @Transactional(readOnly = true)
     public UserPrivilegedResponseDto findPrivilegedUsers(String loginUserId) {
-        UserDomainModel user = this.userPort.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
+        User user = this.userRepository.findById(loginUserId)
+                .orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
-
+                ));
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
                 .consistOf(UserRoleValidator.of(user.getRole(), List.of()))
                 .validate();
 
+        //todo: 현재 겸직을 고려하기 위해 _N_ 사용 중이나 port 와 domain model 삭제를 위해 배제
+        //때문에 추후 userRole 관리 리팩토링 후 겸직을 고려하게 변경 필요
         return UserPrivilegedResponseDto.of(
-                this.userPort.findByRole("PRESIDENT")
+                this.userRepository.findByRoleAndState(Role.PRESIDENT, UserState.ACTIVE)
                         .stream()
                         .map(UserResponseDto::from)
                         .collect(Collectors.toList()),
-                this.userPort.findByRole("VICE_PRESIDENT")
+                this.userRepository.findByRoleAndState(Role.VICE_PRESIDENT, UserState.ACTIVE)
                         .stream()
                         .map(UserResponseDto::from)
                         .collect(Collectors.toList()),
-                this.userPort.findByRole("COUNCIL")
+                this.userRepository.findByRoleAndState(Role.COUNCIL, UserState.ACTIVE)
                         .stream()
                         .map(UserResponseDto::from)
                         .collect(Collectors.toList()),
-                this.userPort.findByRole("LEADER_1")
+                this.userRepository.findByRoleAndState(Role.LEADER_1, UserState.ACTIVE)
                         .stream()
                         .map(UserResponseDto::from)
                         .collect(Collectors.toList()),
-                this.userPort.findByRole("LEADER_2")
+                this.userRepository.findByRoleAndState(Role.LEADER_2, UserState.ACTIVE)
                         .stream()
                         .map(UserResponseDto::from)
                         .collect(Collectors.toList()),
-                this.userPort.findByRole("LEADER_3")
+                this.userRepository.findByRoleAndState(Role.LEADER_3, UserState.ACTIVE)
                         .stream()
                         .map(UserResponseDto::from)
                         .collect(Collectors.toList()),
-                this.userPort.findByRole("LEADER_4")
+                this.userRepository.findByRoleAndState(Role.LEADER_4, UserState.ACTIVE)
                         .stream()
                         .map(UserResponseDto::from)
                         .collect(Collectors.toList()),
-                this.userPort.findByRole("LEADER_CIRCLE")
+                this.userRepository.findByRoleAndState(Role.LEADER_CIRCLE, UserState.ACTIVE)
                         .stream()
                         .map(userDomainModel -> {
-                            List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(userDomainModel.getId());
+                            List<Circle> ownCircles = this.circleRepository.findByLeader_Id(loginUserId);
                             if (ownCircles.isEmpty()) {
                                 throw new InternalServerException(
                                         ErrorCode.INTERNAL_SERVER,
@@ -357,12 +379,12 @@ public class UserService {
                             }
                             return UserResponseDto.of(
                                     userDomainModel,
-                                    ownCircles.stream().map(CircleDomainModel::getId).collect(Collectors.toList()),
-                                    ownCircles.stream().map(CircleDomainModel::getName).collect(Collectors.toList())
+                                    ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
+                                    ownCircles.stream().map(Circle::getName).collect(Collectors.toList())
                             );
                         })
                         .collect(Collectors.toList()),
-                this.userPort.findByRole("LEADER_ALUMINI")
+                this.userRepository.findByRoleAndState(Role.LEADER_ALUMNI, UserState.ACTIVE)
                         .stream()
                         .map(UserResponseDto::from)
                         .collect(Collectors.toList())
@@ -376,12 +398,11 @@ public class UserService {
             String name,
             Integer pageNum
     ) {
-        UserDomainModel user = this.userPort.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
+        User user = this.userRepository.findById(loginUserId)
+                .orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
+                        MessageUtil.USER_NOT_FOUND
+                ));
 
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
@@ -389,37 +410,53 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(user.getRole(), List.of()))
                 .validate();
 
+        //portimpl 내부 로직 서비스단으로 이동
+        Page<User> usersPage;
+        if ("INACTIVE_N_DROP".equals(state)) {
+            List<String> statesToSearch = Arrays.asList("INACTIVE", "DROP");
+            usersPage = userRepository.findByStateInAndNameContaining(
+                    statesToSearch,
+                    name,
+                    PageRequest.of(pageNum, StaticValue.USER_LIST_PAGE_SIZE)
+            );
+        } else {
+            usersPage = userRepository.findByStateAndName(
+                    state,
+                    name,
+                    PageRequest.of(pageNum, StaticValue.USER_LIST_PAGE_SIZE)
+            );
+        }
 
-        return this.userPort.findByStateAndName(state, name, pageNum)
-                .map(userDomainModel -> {
-                    if (userDomainModel.getRole().getValue().contains("LEADER_CIRCLE") && !state.equals("INACTIVE")) {
-                        List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(userDomainModel.getId());
-                        if (ownCircles.isEmpty()) {
-                            throw new InternalServerException(
-                                    ErrorCode.INTERNAL_SERVER,
-                                    MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER
-                            );
-                        }
+        return usersPage.map(userEntity -> {
+            if (userEntity.getRole().getValue().contains("LEADER_CIRCLE") && !"INACTIVE_N_DROP".equals(state)) {
+                List<Circle> ownCircles = circleRepository.findByLeader_Id(userEntity.getId());
+                if (ownCircles.isEmpty()) {
+                    throw new InternalServerException(
+                            ErrorCode.INTERNAL_SERVER,
+                            MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER
+                    );
+                }
 
-                        return UserResponseDto.of(
-                                userDomainModel,
-                                ownCircles.stream().map(CircleDomainModel::getId).collect(Collectors.toList()),
-                                ownCircles.stream().map(CircleDomainModel::getName).collect(Collectors.toList())
-                        );
-                    } else {
-                        return UserResponseDto.from(userDomainModel);
-                    }
-                });
+                return UserResponseDto.of(
+                        userEntity,
+                        ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
+                        ownCircles.stream().map(Circle::getName).collect(Collectors.toList())
+                );
+            } else {
+                return UserResponseDto.from(userEntity);
+            }
+        });
     }
+
+
 
     @Transactional(readOnly = true)
     public List<CircleResponseDto> getCircleList(String loginUserId) {
-        UserDomainModel user = this.userPort.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
+        User user = this.userRepository.findById(loginUserId)
+                .orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
+                        MessageUtil.USER_NOT_FOUND
+                ));
 
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
@@ -427,16 +464,17 @@ public class UserService {
                 .validate();
 
         if (user.getRole().equals(Role.ADMIN) || user.getRole().getValue().contains("PRESIDENT")) {
-            return this.circlePort.findAll()
+            return this.circleRepository.findAllByIsDeletedIsFalse()
                     .stream()
                     .map(CircleResponseDto::from)
                     .collect(Collectors.toList());
         }
 
-        return this.circleMemberPort.getCircleListByUserId(user.getId())
+
+        return this.circleMemberRepository.findByUser_Id(user.getId())
                 .stream()
-                .filter(circle -> !circle.getIsDeleted())
-                .map(CircleResponseDto::from)
+                .filter(circleMember -> circleMember.getStatus() == CircleMemberStatus.MEMBER && !circleMember.getCircle().getIsDeleted())
+                .map(circleMember -> CircleResponseDto.from(circleMember.getCircle()))
                 .collect(Collectors.toList());
     }
 
@@ -449,16 +487,8 @@ public class UserService {
     @Transactional
     public UserResponseDto signUp(UserCreateRequestDto userCreateRequestDto) {
         // Make domain model for generalized data model and validate the format of request parameter
-        UserDomainModel userDomainModel = UserDomainModel.of(
-                userCreateRequestDto.getEmail(),
-                userCreateRequestDto.getName(),
-                passwordEncoder.encode(userCreateRequestDto.getPassword()),
-                userCreateRequestDto.getStudentId(),
-                userCreateRequestDto.getAdmissionYear(),
-                userCreateRequestDto.getProfileImage()
-        );
 
-        this.userPort.findByEmail(userDomainModel.getEmail()).ifPresent(
+        this.userRepository.findByEmail(userCreateRequestDto.getEmail()).ifPresent(
                 email -> {
                     throw new BadRequestException(
                             ErrorCode.ROW_ALREADY_EXIST,
@@ -467,19 +497,24 @@ public class UserService {
                 }
         );
 
+        //DomainModel 제거과정에서 role과 state가 누락된 것에 대한 해결을 위해 user에 직접 NONE과 AWAIT 설정
+        User user = userCreateRequestDto.toEntity(passwordEncoder.encode(userCreateRequestDto.getPassword()), Role.NONE, UserState.AWAIT);
+
+        this.userRepository.save(user);
+
         // Validate password format, admission year range, and whether the email is duplicate or not
         ValidatorBucket.of()
-                .consistOf(ConstraintValidator.of(userDomainModel, this.validator))
+                .consistOf(ConstraintValidator.of(user, this.validator))
                 .consistOf(PasswordFormatValidator.of(userCreateRequestDto.getPassword()))
                 .consistOf(AdmissionYearValidator.of(userCreateRequestDto.getAdmissionYear()))
                 .validate();
 
-        return UserResponseDto.from(this.userPort.create(userDomainModel));
+        return UserResponseDto.from(user);
     }
 
     @Transactional
     public UserSignInResponseDto signIn(UserSignInRequestDto userSignInRequestDto) {
-        UserDomainModel userDomainModel = this.userPort.findByEmail(userSignInRequestDto.getEmail()).orElseThrow(
+        User user = userRepository.findByEmail(userSignInRequestDto.getEmail()).orElseThrow(
                 () -> new UnauthorizedException(
                         ErrorCode.INVALID_SIGNIN,
                         MessageUtil.EMAIL_INVALID
@@ -492,12 +527,12 @@ public class UserService {
         ValidatorBucket.of()
                 .consistOf(PasswordCorrectValidator.of(
                         this.passwordEncoder,
-                        userDomainModel.getPassword(),
+                        user.getPassword(),
                         userSignInRequestDto.getPassword()))
                 .validate();
 
-        if (userDomainModel.getState() == UserState.AWAIT) {
-            this.userAdmissionPort.findByUserId(userDomainModel.getId()).orElseThrow(
+        if (user.getState() == UserState.AWAIT) {
+            userAdmissionRepository.findByUser_Id(user.getId()).orElseThrow(
                     () -> new BadRequestException(
                             ErrorCode.NO_APPLICATION,
                             MessageUtil.NO_APPLICATION
@@ -506,15 +541,15 @@ public class UserService {
         }
 
         ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(userDomainModel.getState()))
+                .consistOf(UserStateValidator.of(user.getState()))
                 .validate();
 
         // refreshToken은 redis에 보관
         String refreshToken = jwtTokenProvider.createRefreshToken();
-        this.userPort.updateRefreshToken(userDomainModel.getId(), refreshToken);
+        redisUtils.setData(refreshToken,user.getId(),StaticValue.JWT_REFRESH_TOKEN_VALID_TIME);
 
         return UserSignInResponseDto.builder()
-                .accessToken(jwtTokenProvider.createAccessToken(userDomainModel.getId(), userDomainModel.getRole(), userDomainModel.getState()))
+                .accessToken(jwtTokenProvider.createAccessToken(user.getId(), user.getRole(), user.getState()))
                 .refreshToken(jwtTokenProvider.createRefreshToken())
                 .build();
     }
@@ -527,7 +562,7 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public DuplicatedCheckResponseDto isDuplicatedEmail(String email) {
-        Optional<UserDomainModel> userFoundByEmail = this.userPort.findByEmail(email);
+        Optional<User> userFoundByEmail = userRepository.findByEmail(email);
         if (userFoundByEmail.isPresent()) {
             UserState state = userFoundByEmail.get().getState();
             if (state.equals(UserState.INACTIVE) || state.equals(UserState.DROP)) {
@@ -550,18 +585,18 @@ public class UserService {
     @Transactional
     public UserResponseDto update(String loginUserId, UserUpdateRequestDto userUpdateRequestDto) {
         // First, load the user data from input user id
-        UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
+        User user = this.userRepository.findById(loginUserId)
+                .orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
+                        MessageUtil.USER_NOT_FOUND
+                ));
+
 
         /* The user requested changing the email if the request email is different from the original one
          * Then, validate it whether the requested email is duplicated or not
          */
-        if (!userDomainModel.getEmail().equals(userUpdateRequestDto.getEmail())) {
-            this.userPort.findByEmail(userUpdateRequestDto.getEmail()).ifPresent(
+        if (!user.getEmail().equals(userUpdateRequestDto.getEmail())) {
+            userRepository.findByEmail(userUpdateRequestDto.getEmail()).ifPresent(
                     email -> {
                         throw new BadRequestException(
                                 ErrorCode.ROW_ALREADY_EXIST,
@@ -571,29 +606,24 @@ public class UserService {
             );
         }
 
-        // Validate the requested parameters format from making the domain model
-        userDomainModel.update(
-                userUpdateRequestDto.getEmail(),
-                userUpdateRequestDto.getName(),
-                userUpdateRequestDto.getStudentId(),
-                userUpdateRequestDto.getAdmissionYear(),
-                userUpdateRequestDto.getProfileImage()
-        );
+        // Update user entity with requested parameters
+        user.setEmail(userUpdateRequestDto.getEmail());
+        user.setName(userUpdateRequestDto.getName());
+        user.setStudentId(userUpdateRequestDto.getStudentId());
+        user.setAdmissionYear(userUpdateRequestDto.getAdmissionYear());
+        user.setProfileImage(userUpdateRequestDto.getProfileImage());
 
         // Validate the admission year range
         ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(userDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
-                .consistOf(ConstraintValidator.of(userDomainModel, this.validator))
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+                .consistOf(ConstraintValidator.of(user, this.validator))
                 .consistOf(AdmissionYearValidator.of(userUpdateRequestDto.getAdmissionYear()))
                 .validate();
 
-        return UserResponseDto.from(this.userPort.update(loginUserId, userDomainModel).orElseThrow(
-                () -> new InternalServerException(
-                        ErrorCode.INTERNAL_SERVER,
-                        MessageUtil.INTERNAL_SERVER_ERROR
-                )
-        ));
+        User updatedUser = userRepository.save(user);
+
+        return UserResponseDto.from(updatedUser);
     }
 
     /**
@@ -611,18 +641,19 @@ public class UserService {
             UserUpdateRoleRequestDto userUpdateRoleRequestDto
     ) {
         // Load the user data from input grantor and grantee ids.
-        UserDomainModel grantor = this.userPort.findById(loginUserId).orElseThrow(
+        User grantor = userRepository.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
-        UserDomainModel grantee = this.userPort.findById(granteeId).orElseThrow(
+        User grantee = userRepository.findById(granteeId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.USER_NOT_FOUND
                 )
         );
+
 
         /* Validate the role
          * 1) Combination of grantor role and the role to be granted must be acceptable
@@ -637,11 +668,13 @@ public class UserService {
                         grantee.getRole()
                 ))
                 .validate();
+
         /* 권한 위임
          * 1. 권한 위임자와 넘겨주는 권한이 같을 경우, 권한을 위임자가 동아리장일 경우 진행
          * 2. 넘겨받을 권한이 동아리장일 경우 넘겨받을 동아리 id 저장
-         * 3. DelegationFactory를 통해 권한 위임 진행(동아리장 위임일 경우 circle id를 넘겨주어서 어떤 동아리의 동아리장 권한을 위임하는 것인지 확인)
+         * 3. DelegationFactory를 통해 권한 위임 진행(동아리장 위임 경우 circle id를 넘겨주어서 어떤 동아리의 동아리장 권한을 위임하는 것인지 확인)
          * */
+
 
         if (grantor.getRole().getValue().contains(userUpdateRoleRequestDto.getRole().getValue())){
             String circleId = "";
@@ -661,20 +694,17 @@ public class UserService {
          * 2. 동아리장 업데이트
          * 3. 기존 동아리장의 동아리장 권한 박탈
          * */
-        else if((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
+        else if ((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
                 && (userUpdateRoleRequestDto.getRole().equals(Role.VICE_PRESIDENT))
         ){
-            List<UserDomainModel> previousVicePresident = this.userPort.findByRole("VICE_PRESIDENT");
-            if(!previousVicePresident.isEmpty()){
-                previousVicePresident.forEach(
-                        user -> this.userPort.removeRole(user.getId(), Role.VICE_PRESIDENT).orElseThrow(
-                                () -> new InternalServerException(
-                                        ErrorCode.INTERNAL_SERVER,
-                                        MessageUtil.INTERNAL_SERVER_ERROR
-                                ))
-                );
+            List<User> previousVicePresidents = userRepository.findByRoleAndState(Role.VICE_PRESIDENT, UserState.ACTIVE);
+            if (!previousVicePresidents.isEmpty()) {
+                previousVicePresidents.forEach(previousVicePresident -> {
+                    this.removeRole(previousVicePresident.getId(), Role.VICE_PRESIDENT);
+                });
             }
         }
+
         else if ((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
                 && userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)
         ) {
@@ -691,7 +721,7 @@ public class UserService {
                 );
             }
 
-            this.circleMemberPort.findByUserIdAndCircleId(granteeId, circleId)
+            this.circleMemberRepository.findByUser_IdAndCircle_Id(granteeId, circleId)
                     .ifPresentOrElse(
                             circleMember ->
                                     ValidatorBucket.of()
@@ -706,17 +736,16 @@ public class UserService {
                                 );
                             });
 
-            this.circlePort.findById(circleId)
+            this.circleRepository.findById(circleId)
                     .ifPresentOrElse(circle -> {
                         circle.getLeader().ifPresent(leader -> {
                             // Check if the leader is the leader of only one circle
-                            List<CircleDomainModel> ownCircles = this.circlePort.findByLeaderId(leader.getId());
+                            List<Circle> ownCircles = this.circleRepository.findByLeader_Id(leader.getId());
                             if (ownCircles.size() == 1) {
                                 this.userPort.removeRole(leader.getId(), Role.LEADER_CIRCLE);
                             }
                         });
-
-                        this.circlePort.updateLeader(circle.getId(), grantee);
+                        updateLeader(circle.getId(), grantee);
                     }, () -> {
                         throw new BadRequestException(
                                 ErrorCode.ROW_DOES_NOT_EXIST,
@@ -732,8 +761,8 @@ public class UserService {
                 && userUpdateRoleRequestDto.getRole().equals(Role.COMMON)
         ) {
             //TODO : 로직 수정 필요
-            if(grantee.getRole().getValue().contains("COUNCIL") || grantee.getRole().getValue().contains("LEADER_\\d+")){
-                return UserResponseDto.from(this.userPort.removeRole(granteeId, Role.COMMON).orElseThrow(
+            if(grantee.getRole().getValue().contains("COUNCIL") || grantee.getRole().getValue().matches("LEADER_\\d+")){
+                return UserResponseDto.from(removeRole(granteeId, Role.COMMON).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
                                 MessageUtil.INTERNAL_SERVER_ERROR
@@ -744,7 +773,7 @@ public class UserService {
         else if ((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
                 && userUpdateRoleRequestDto.getRole().equals(Role.LEADER_ALUMNI)
         ) {
-            UserDomainModel previousLeaderAlumni = this.userPort.findByRole("LEADER_ALUMNI")
+            User previousLeaderAlumni = this.userRepository.findByRoleAndState(Role.LEADER_ALUMNI, UserState.ACTIVE)
                     .stream().findFirst()
                     .orElseThrow(
                             () -> new InternalServerException(
@@ -752,18 +781,19 @@ public class UserService {
                                     MessageUtil.INTERNAL_SERVER_ERROR
                             ));
 
-            this.userPort.removeRole(previousLeaderAlumni.getId(), Role.LEADER_ALUMNI).orElseThrow(
+            removeRole(previousLeaderAlumni.getId(), Role.LEADER_ALUMNI).orElseThrow(
                     () -> new InternalServerException(
                             ErrorCode.INTERNAL_SERVER,
                             MessageUtil.INTERNAL_SERVER_ERROR
                     )
             );
         }
+
         /* Grant the role
          * The linked updating process is performed on previous delegation process
          * Therefore, the updating for the grantee is performed in this process
          */
-        return UserResponseDto.from(this.userPort.updateRole(granteeId, userUpdateRoleRequestDto.getRole()).orElseThrow(
+        return UserResponseDto.from(this.updateRole(granteeId, userUpdateRoleRequestDto.getRole()).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.INTERNAL_SERVER_ERROR
@@ -771,12 +801,73 @@ public class UserService {
         ));
     }
 
+    //UserPort의 removeRole 로직 서비스단으로 이동
+    //TODO : role 관련 로직 변경후 권한 삭제 코드 변경 필요
+    private Optional<User> removeRole(String id, Role targetRole) {
+        return this.userRepository.findById(id).map(
+                srcUser -> {
+                    if(srcUser.getRole().equals(targetRole)){
+                        srcUser.setRole(Role.COMMON);
+                    }
+                    else if (srcUser.getRole().getValue().contains(targetRole.getValue())) {
+                        if(targetRole.equals(Role.LEADER_CIRCLE)){
+                            String updatedRoleValue = srcUser.getRole().getValue().replace(targetRole.getValue(), "").replace("_N_","");
+                            srcUser.setRole(Role.of(updatedRoleValue));
+                        }
+                    }
+                    //학생회 겸 동아리장, 학년대표 겸 동아리장의 경우 타깃이 동아리 장만 남기는걸로 변경
+                    else if(targetRole.equals(Role.COMMON)){
+                        srcUser.setRole(Role.LEADER_CIRCLE);
+                    }
+                    return this.userRepository.save(srcUser);
+                }
+        );
+    }
+
+    private Optional<Circle> updateLeader(String circleId, User newLeader) {
+        return this.circleRepository.findById(circleId).map(
+                srcCircle -> {
+                    srcCircle.setLeader(newLeader);
+
+                    return this.circleRepository.save(srcCircle);
+                }
+        );
+    }
+
+    private Optional<User> updateRole(String id, Role newRole) {
+        return this.userRepository.findById(id).map(srcUser -> {
+            if (srcUser.getRole().equals(Role.COMMON)) {
+                srcUser.setRole(newRole);
+            } else if (newRole.equals(Role.LEADER_CIRCLE)) {
+                if (!srcUser.getRole().getValue().contains("LEADER_CIRCLE")) {
+                    String combinedRoleValue = srcUser.getRole().getValue() + "_N_" + "LEADER_CIRCLE";
+                    Role combinedRole = Role.of(combinedRoleValue.toUpperCase());
+                    srcUser.setRole(combinedRole);
+                }
+            } else if (!newRole.equals(Role.LEADER_CIRCLE) && srcUser.getRole().equals(Role.LEADER_CIRCLE)) {
+                if (newRole.equals(Role.COMMON)) {
+                    srcUser.setRole(newRole);
+                } else {
+                    String combinedRoleValue = newRole.getValue() + "_N_" + "LEADER_CIRCLE";
+                    Role combinedRole = Role.of(combinedRoleValue.toUpperCase());
+                    srcUser.setRole(combinedRole);
+                }
+            } else {
+                srcUser.setRole(newRole);
+            }
+            return this.userRepository.save(srcUser);
+        });
+    }
+
+
+
     @Transactional
     public UserResponseDto updatePassword(
             String loginUserId,
             UserUpdatePasswordRequestDto userUpdatePasswordRequestDto
     ) {
-        UserDomainModel user = this.userPort.findById(loginUserId).orElseThrow(
+        // 사용자 정보 조회
+        User user = this.userRepository.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.LOGIN_USER_NOT_FOUND
@@ -794,21 +885,16 @@ public class UserService {
                 .consistOf(PasswordFormatValidator.of(userUpdatePasswordRequestDto.getUpdatedPassword()))
                 .validate();
 
-        return UserResponseDto.from(this.userPort.updatePassword(
-                        loginUserId,
-                        this.passwordEncoder.encode(userUpdatePasswordRequestDto.getUpdatedPassword())
-                )
-                .orElseThrow(
-                        () -> new InternalServerException(
-                                ErrorCode.INTERNAL_SERVER,
-                                MessageUtil.INTERNAL_SERVER_ERROR
-                        )
-                ));
+        user.setPassword(this.passwordEncoder.encode(userUpdatePasswordRequestDto.getUpdatedPassword()));
+        User updatedUser = this.userRepository.save(user);
+
+
+        return UserResponseDto.from(updatedUser);
     }
 
     @Transactional
     public UserResponseDto leave(String loginUserId) {
-        UserDomainModel user = this.userPort.findById(loginUserId).orElseThrow(
+        User user = this.userRepository.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.LOGIN_USER_NOT_FOUND
@@ -821,22 +907,26 @@ public class UserService {
                 .consistOf(UserRoleWithoutAdminValidator.of(user.getRole(), List.of(Role.COMMON, Role.PROFESSOR)))
                 .validate();
 
-        this.lockerPort.findByUserId(loginUserId)
-                .ifPresent(lockerDomainModel -> {
-                    lockerDomainModel.returnLocker();
-                    this.lockerPort.update(lockerDomainModel.getId(), lockerDomainModel);
+        this.lockerRepository.findByUser_Id(loginUserId)
+                .ifPresent(locker -> {
+                    locker.returnLocker();
+                    this.lockerRepository.save(locker);
 
-                    this.lockerLogPort.create(
-                            lockerDomainModel.getLockerNumber(),
-                            lockerDomainModel.getLockerLocation().getName(),
-                            user,
-                            LockerLogAction.RETURN,
-                            "사용자 탈퇴"
-                    );
+                    LockerLog lockerLog = LockerLog.builder()
+                            .lockerNumber(locker.getLockerNumber())
+                            .lockerLocationName(locker.getLocation().getName())
+                            .userEmail(user.getEmail())
+                            .userName(user.getName())
+                            .action(LockerLogAction.RETURN)
+                            .message("사용자 탈퇴")
+                            .build();
+
+                    this.lockerLogRepository.save(lockerLog);
+
                 });
 
         // Change user role to NONE
-        this.userPort.updateRole(loginUserId, Role.NONE).orElseThrow(
+        this.updateRole(loginUserId, Role.NONE).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.INTERNAL_SERVER_ERROR
@@ -844,12 +934,12 @@ public class UserService {
         );
 
         // Leave from circle where user joined
-        this.circleMemberPort.findByUserId(loginUserId).forEach(
-                circleMemberDomainModel ->
-                        this.circleMemberPort.updateStatus(circleMemberDomainModel.getId(), CircleMemberStatus.LEAVE)
-        );
+        this.circleMemberRepository.findByUser_Id(loginUserId)
+                .forEach(circleMember ->
+                        this.updateStatus(circleMember.getId(), CircleMemberStatus.LEAVE)
+                );
 
-        return UserResponseDto.from(this.userPort.updateState(loginUserId, UserState.INACTIVE).orElseThrow(
+        return UserResponseDto.from(this.updateState(loginUserId, UserState.INACTIVE).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.INTERNAL_SERVER_ERROR
@@ -857,16 +947,39 @@ public class UserService {
         ));
     }
 
+
+    private Optional<CircleMember> updateStatus(String applicationId, CircleMemberStatus targetStatus) {
+        return this.circleMemberRepository.findById(applicationId).map(
+                circleMember -> {
+                    circleMember.setStatus(targetStatus);
+                    return this.circleMemberRepository.save(circleMember);
+                }
+        );
+    }
+
+    private Optional<User> updateState(String id, UserState state) {
+        return this.userRepository.findById(id).map(
+                srcUser -> {
+                    srcUser.setState(state);
+
+                    this.userRepository.save(srcUser);
+                    return srcUser;
+                }
+        );
+    }
+
+
     @Transactional
     public UserResponseDto dropUser(String loginUserId, String userId) {
-        UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
+        User requestUser = this.userRepository.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
-        UserDomainModel droppedUser = this.userPort.findById(userId).orElseThrow(
+
+        User droppedUser = this.userRepository.findById(userId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.USER_NOT_FOUND
@@ -880,28 +993,31 @@ public class UserService {
                 .consistOf(UserRoleWithoutAdminValidator.of(droppedUser.getRole(), List.of(Role.COMMON, Role.PROFESSOR)))
                 .validate();
 
-        this.lockerPort.findByUserId(userId)
-                .ifPresent(lockerDomainModel -> {
-                    lockerDomainModel.returnLocker();
-                    this.lockerPort.update(lockerDomainModel.getId(), lockerDomainModel);
+        this.lockerRepository.findByUser_Id(userId)
+                .ifPresent(locker -> {
+                    locker.returnLocker();
+                    this.lockerRepository.save(locker);
 
-                    this.lockerLogPort.create(
-                            lockerDomainModel.getLockerNumber(),
-                            lockerDomainModel.getLockerLocation().getName(),
-                            requestUser,
-                            LockerLogAction.RETURN,
-                            "사용자 추방"
-                    );
+                    LockerLog lockerLog = LockerLog.builder()
+                            .lockerNumber(locker.getLockerNumber())
+                            .lockerLocationName(locker.getLocation().getName())
+                            .userEmail(requestUser.getEmail())
+                            .userName(requestUser.getName())
+                            .action(LockerLogAction.RETURN)
+                            .message("사용자 추방")
+                            .build();
+
+                    this.lockerLogRepository.save(lockerLog);
                 });
 
-        this.userPort.updateRole(userId, Role.NONE).orElseThrow(
+        this.updateRole(userId, Role.NONE).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.INTERNAL_SERVER_ERROR
                 )
         );
 
-        return UserResponseDto.from(this.userPort.updateState(userId, UserState.DROP).orElseThrow(
+        return UserResponseDto.from(this.updateState(userId, UserState.DROP).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.INTERNAL_SERVER_ERROR
@@ -911,7 +1027,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserAdmissionResponseDto findAdmissionById(String loginUserId, String admissionId) {
-        UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
+        User requestUser = this.userRepository.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.LOGIN_USER_NOT_FOUND
@@ -924,7 +1040,7 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of()))
                 .validate();
 
-        return UserAdmissionResponseDto.from(this.userAdmissionPort.findById(admissionId).orElseThrow(
+        return UserAdmissionResponseDto.from(this.userAdmissionRepository.findById(admissionId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.USER_APPLY_NOT_FOUND
@@ -938,7 +1054,7 @@ public class UserService {
             String name,
             Integer pageNum
     ) {
-        UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
+        User requestUser = this.userRepository.findById(loginUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.LOGIN_USER_NOT_FOUND
@@ -951,20 +1067,21 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of()))
                 .validate();
 
-        return this.userAdmissionPort.findAll(UserState.AWAIT, name, pageNum)
+        return this.userAdmissionRepository.findAllWithName(UserState.AWAIT.getValue(), name, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
                 .map(UserAdmissionsResponseDto::from);
     }
 
     @Transactional
     public UserAdmissionResponseDto createAdmission(UserAdmissionCreateRequestDto userAdmissionCreateRequestDto) {
-        UserDomainModel requestUser = this.userPort.findByEmail(userAdmissionCreateRequestDto.getEmail()).orElseThrow(
+        User requestUser = this.userRepository.findByEmail(userAdmissionCreateRequestDto.getEmail()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.USER_NOT_FOUND
                 )
         );
 
-        if (this.userAdmissionPort.existsByUserId(requestUser.getId())) {
+
+        if (this.userAdmissionRepository.existsByUser_Id(requestUser.getId())) {
             throw new BadRequestException(
                     ErrorCode.ROW_ALREADY_EXIST,
                     MessageUtil.USER_ALREADY_APPLY
@@ -982,18 +1099,18 @@ public class UserService {
                 .orElse("https://caucse-s3-bucket-prod.s3.ap-northeast-2.amazonaws.com/basic_profile.png");
 
 
-        UserAdmissionDomainModel userAdmissionDomainModel = UserAdmissionDomainModel.of(
-                requestUser,
-                attachImage,
-                userAdmissionCreateRequestDto.getDescription()
-        );
+        UserAdmission userAdmission = UserAdmission.builder()
+                .user(requestUser)
+                .attachImage(attachImage)
+                .description(userAdmissionCreateRequestDto.getDescription())
+                .build();
 
         ValidatorBucket.of()
                 .consistOf(UserStateIsNotDropAndActiveValidator.of(requestUser.getState()))
-                .consistOf(ConstraintValidator.of(userAdmissionDomainModel, this.validator))
+                .consistOf(ConstraintValidator.of(userAdmission, this.validator))
                 .validate();
 
-        return UserAdmissionResponseDto.from(this.userAdmissionPort.create(userAdmissionDomainModel));
+        return UserAdmissionResponseDto.from(this.userAdmissionRepository.save(userAdmission));
     }
 
     @Transactional
@@ -1001,18 +1118,12 @@ public class UserService {
             String loginUserId,
             String admissionId
     ) {
-        UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
+        User requestUser = this.userRepository.findById(loginUserId).orElseThrow(
+                () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.LOGIN_USER_NOT_FOUND)
         );
 
-        UserAdmissionDomainModel userAdmissionDomainModel = this.userAdmissionPort.findById(admissionId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_APPLY_NOT_FOUND
-                )
+        UserAdmission userAdmission = this.userAdmissionRepository.findById(admissionId).orElseThrow(
+                () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_APPLY_NOT_FOUND)
         );
 
         ValidatorBucket.of()
@@ -1022,30 +1133,31 @@ public class UserService {
                 .validate();
 
         // Update user role to COMMON
-        this.userPort.updateRole(userAdmissionDomainModel.getUser().getId(), Role.COMMON).orElseThrow(
+        this.updateRole(userAdmission.getUser().getId(), Role.COMMON).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.ADMISSION_EXCEPTION
                 )
         );
 
+        UserAdmissionLog userAdmissionLog = UserAdmissionLog.builder()
+                .userEmail(userAdmission.getUser().getEmail())
+                .userName(userAdmission.getUser().getName())
+                .adminUserEmail(requestUser.getEmail())
+                .adminUserName(requestUser.getName())
+                .action(UserAdmissionLogAction.ACCEPT)
+                .attachImage(userAdmission.getAttachImage())
+                .description(userAdmission.getDescription())
+                .build();
         // Add admission log
-        this.userAdmissionLogPort.create(
-                userAdmissionDomainModel.getUser().getEmail(),
-                userAdmissionDomainModel.getUser().getName(),
-                requestUser.getEmail(),
-                requestUser.getName(),
-                UserAdmissionLogAction.ACCEPT,
-                userAdmissionDomainModel.getAttachImage(),
-                userAdmissionDomainModel.getDescription()
-        );
 
         // Remove the admission
-        this.userAdmissionPort.delete(userAdmissionDomainModel);
+        this.userAdmissionLogRepository.save(userAdmissionLog);
+        this.userAdmissionRepository.delete(userAdmission);
 
         return UserAdmissionResponseDto.of(
-                userAdmissionDomainModel,
-                this.userPort.updateState(userAdmissionDomainModel.getUser().getId(), UserState.ACTIVE).orElseThrow(
+                userAdmission,
+                this.updateState(userAdmission.getUser().getId(), UserState.ACTIVE).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
                                 MessageUtil.ADMISSION_EXCEPTION
@@ -1059,19 +1171,14 @@ public class UserService {
             String loginUserId,
             String admissionId
     ) {
-        UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
+        User requestUser = this.userRepository.findById(loginUserId).orElseThrow(
+                () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.LOGIN_USER_NOT_FOUND)
         );
 
-        UserAdmissionDomainModel userAdmissionDomainModel = this.userAdmissionPort.findById(admissionId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_APPLY_NOT_FOUND
-                )
+        UserAdmission userAdmission = this.userAdmissionRepository.findById(admissionId).orElseThrow(
+                () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_APPLY_NOT_FOUND)
         );
+
 
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(requestUser.getState()))
@@ -1079,21 +1186,23 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of()))
                 .validate();
 
-        this.userAdmissionLogPort.create(
-                userAdmissionDomainModel.getUser().getEmail(),
-                userAdmissionDomainModel.getUser().getName(),
-                requestUser.getEmail(),
-                requestUser.getName(),
-                UserAdmissionLogAction.REJECT,
-                userAdmissionDomainModel.getAttachImage(),
-                userAdmissionDomainModel.getDescription()
-        );
+        UserAdmissionLog userAdmissionLog = UserAdmissionLog.builder()
+                .userEmail(userAdmission.getUser().getEmail())
+                .userName(userAdmission.getUser().getName())
+                .adminUserEmail(requestUser.getEmail())
+                .adminUserName(requestUser.getName())
+                .action(UserAdmissionLogAction.REJECT)
+                .attachImage(userAdmission.getAttachImage())
+                .description(userAdmission.getDescription())
+                .build();
 
-        this.userAdmissionPort.delete(userAdmissionDomainModel);
+
+        this.userAdmissionLogRepository.save(userAdmissionLog);
+        this.userAdmissionRepository.delete(userAdmission);
 
         return UserAdmissionResponseDto.of(
-                userAdmissionDomainModel,
-                this.userPort.updateState(userAdmissionDomainModel.getUser().getId(), UserState.REJECT).orElseThrow(
+                userAdmission,
+                this.updateState(userAdmission.getUser().getId(), UserState.REJECT).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
                                 MessageUtil.ADMISSION_EXCEPTION
@@ -1101,6 +1210,35 @@ public class UserService {
                 ));
     }
 
+    //TODO: 현재 사용하지 않는 기능으로 주석처리
+    //사용 여부 결정 후 board 수정 후 도입 필요할 것으로 보임
+//    @Transactional
+//    public BoardResponseDto cre한ateFavoriteBoard(
+//            String loginUserId,
+//            String boardId
+//    ) {
+//        User user = this.userRepository.findById(loginUserId).orElseThrow(
+//                () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.LOGIN_USER_NOT_FOUND)
+//        );
+//
+//        Board board = this.boardRepository.findById(boardId).orElseThrow(
+//                () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.BOARD_NOT_FOUND)
+//        );
+//
+//        FavoriteBoard favoriteBoard = FavoriteBoard.builder()
+//                .user(user)
+//                .board(board)
+//                .build();
+//
+//        ValidatorBucket.of()
+//                .consistOf(UserStateValidator.of(user.getState()))
+//                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+//                .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD))
+//                .consistOf(ConstraintValidator.of(favoriteBoard, this.validator))
+//                .validate();
+//
+//        return BoardResponseDto.from(this.favoriteBoardRepository.save(favoriteBoard).getBoard(), user.getRole());
+//    }
     @Transactional
     public BoardResponseDto createFavoriteBoard(
             String loginUserId,
@@ -1132,33 +1270,26 @@ public class UserService {
             String loginUserId,
             String userId
     ) {
-        UserDomainModel requestUser = this.userPort.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
+        User requestUser = this.userRepository.findById(loginUserId).orElseThrow(
+            () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.LOGIN_USER_NOT_FOUND)
         );
 
-        UserDomainModel restoredUser = this.userPort.findById(userId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_NOT_FOUND
-                )
+        User restoredUser = this.userRepository.findById(userId).orElseThrow(
+                () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND)
         );
-
         ValidatorBucket.of()
                 .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of()))
                 .consistOf(UserStateIsDropOrIsInActiveValidator.of(restoredUser.getState()))
                 .validate();
 
-        this.userPort.updateRole(restoredUser.getId(), Role.COMMON).orElseThrow(
+        this.updateRole(restoredUser.getId(), Role.COMMON).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.INTERNAL_SERVER_ERROR
                 )
         );
 
-        return UserResponseDto.from(this.userPort.updateState(restoredUser.getId(), UserState.ACTIVE).orElseThrow(
+        return UserResponseDto.from(this.updateState(restoredUser.getId(), UserState.ACTIVE).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.INTERNAL_SERVER_ERROR
@@ -1169,12 +1300,11 @@ public class UserService {
     @Transactional
     public UserSignInResponseDto updateToken(String refreshToken) {
         // STEP1 : refreshToken으로 맵핑된 유저 찾기
-        UserDomainModel user = this.userPort.findByRefreshToken(refreshToken).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.INVALID_TOKEN
-                )
+        User user = this.userRepository.findById(this.getUserIdFromRefreshToken(refreshToken)).orElseThrow(
+                () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.INVALID_TOKEN)
         );
+
+        this.userRepository.findById(getUserIdFromRefreshToken(refreshToken));
 
         ValidatorBucket.of()
                 .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
@@ -1188,8 +1318,17 @@ public class UserService {
                 .build();
     }
 
+    private String getUserIdFromRefreshToken(String refreshToken) {
+        return Optional.ofNullable(redisUtils.getData(refreshToken))
+                .orElseThrow(() -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        "RefreshToken 유효성 검증 실패"));
+    }
+
     public UserSignOutResponseDto signOut(UserSignOutRequestDto userSignOutRequestDto){
-        userPort.signOut(userSignOutRequestDto.getRefreshToken(), userSignOutRequestDto.getAccessToken());
+        redisUtils.addToBlacklist(userSignOutRequestDto.getAccessToken());
+        redisUtils.deleteData(userSignOutRequestDto.getRefreshToken());
+
         return UserSignOutResponseDto.builder()
                 .message("로그아웃 성공")
                 .build();

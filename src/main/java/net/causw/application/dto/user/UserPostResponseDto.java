@@ -3,6 +3,7 @@ package net.causw.application.dto.user;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import net.causw.adapter.persistence.post.Post;
 import net.causw.domain.model.post.PostDomainModel;
 
 import java.time.LocalDateTime;
@@ -22,7 +23,7 @@ public class UserPostResponseDto {
     private LocalDateTime updatedAt;
 
     public static UserPostResponseDto of(
-            PostDomainModel post,
+            Post post,
             String boardId,
             String boardName,
             String circleId,

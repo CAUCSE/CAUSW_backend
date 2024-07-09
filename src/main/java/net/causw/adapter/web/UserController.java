@@ -392,14 +392,14 @@ public class UserController {
         return this.userService.reject(loginUserId, id);
     }
 
-    @PostMapping(value = "/favorite-boards/{boardId}")
-    @ResponseStatus(value = HttpStatus.CREATED)
-    @ApiOperation(value = "즐겨찾는 게시판 생성 API(완료)", notes = "즐겨찾는 게시판을 생성할 수 있습니다.")
-    public BoardResponseDto createFavoriteBoard(@PathVariable String boardId) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.userService.createFavoriteBoard(loginUserId, boardId);
-    }
+//    @PostMapping(value = "/favorite-boards/{boardId}")
+//    @ResponseStatus(value = HttpStatus.CREATED)
+//    @ApiOperation(value = "즐겨찾는 게시판 생성 API(완료)", notes = "즐겨찾는 게시판을 생성할 수 있습니다.")
+//    public BoardResponseDto createFavoriteBoard(@PathVariable String boardId) {
+//        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        String loginUserId = ((String) principal);
+//        return this.userService.createFavoriteBoard(loginUserId, boardId);
+//    }
 
     @PutMapping(value = "/restore/{id}")
     @ResponseStatus(value = HttpStatus.OK)

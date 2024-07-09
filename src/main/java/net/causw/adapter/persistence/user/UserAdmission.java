@@ -1,8 +1,6 @@
 package net.causw.adapter.persistence.user;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.domain.model.user.UserAdmissionDomainModel;
 
@@ -14,6 +12,8 @@ import javax.persistence.Table;
 
 @Getter
 @Entity
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "tb_user_admission")
 public class UserAdmission extends BaseEntity {

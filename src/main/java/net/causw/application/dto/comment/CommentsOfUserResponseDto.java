@@ -3,7 +3,7 @@ package net.causw.application.dto.comment;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.domain.model.comment.CommentDomainModel;
+import net.causw.adapter.persistence.comment.Comment;
 
 import java.time.LocalDateTime;
 
@@ -24,7 +24,7 @@ public class CommentsOfUserResponseDto {
     private String circleName;
 
     public static CommentsOfUserResponseDto of(
-            CommentDomainModel comment,
+            Comment comment,
             String boardId,
             String boardName,
             String postId,

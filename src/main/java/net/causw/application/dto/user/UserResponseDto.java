@@ -48,6 +48,20 @@ public class UserResponseDto {
     @ApiModelProperty(value = "리더일 경우, 동아리 이름", example = "[개발 동아리, 퍼주마,..]")
     private List<String> circleNameIfLeader;
 
+    public static UserResponseDto from(User user) {
+        return UserResponseDto.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .name(user.getName())
+                .studentId(user.getStudentId())
+                .admissionYear(user.getAdmissionYear())
+                .role(user.getRole())
+                .profileImage(user.getProfileImage())
+                .state(user.getState())
+                .build();
+    }
+
+    //Circle Service 단에서 domainmodel 이 삭제되지 않아 충돌 방지를 위해 별도 생성
     public static UserResponseDto from(UserDomainModel user) {
         return UserResponseDto.builder()
                 .id(user.getId())
@@ -62,7 +76,7 @@ public class UserResponseDto {
     }
 
     public static UserResponseDto of(
-            UserDomainModel user,
+            User user,
             List<String> circleId,
             List<String> circleName
     ) {

@@ -6,11 +6,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import net.causw.adapter.persistence.circle.CircleMember;
+import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.user.UserResponseDto;
-import net.causw.application.dto.util.CircleServiceDtoMapper;
-import net.causw.domain.model.circle.CircleMemberDomainModel;
 import net.causw.domain.model.enums.CircleMemberStatus;
-import net.causw.domain.model.user.UserDomainModel;
 
 @Getter
 @Setter
@@ -31,8 +29,8 @@ public class CircleMemberResponseDto {
     private UserResponseDto user;
 
     public static CircleMemberResponseDto from(
-            UserDomainModel user,
-            CircleMemberDomainModel circleMember
+            User user,
+            CircleMember circleMember
     ) {
         return CircleMemberResponseDto.builder()
                 .id(circleMember.getId())

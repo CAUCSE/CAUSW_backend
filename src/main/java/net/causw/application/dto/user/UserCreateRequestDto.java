@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import net.causw.adapter.persistence.user.User;
+import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.enums.UserState;
 
 @Getter
 @Setter
@@ -29,4 +32,18 @@ public class UserCreateRequestDto {
 
     @ApiModelProperty(value = "프로필 이미지 URL", example = "", required = true)
     private String profileImage;
+
+
+    public User toEntity(String encodedPassword, Role role, UserState state) {
+        return User.builder()
+                .email(email)
+                .name(name)
+                .role(role)
+                .state(state)
+                .password(encodedPassword)
+                .studentId(studentId)
+                .admissionYear(admissionYear)
+                .profileImage(profileImage)
+                .build();
+    }
 }

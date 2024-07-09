@@ -1,9 +1,6 @@
 package net.causw.adapter.persistence.user;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.locker.Locker;
@@ -22,8 +19,10 @@ import javax.persistence.Table;
 import java.util.List;
 
 @Getter
+@Builder
 @Setter
 @Entity
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "tb_user")
 public class User extends BaseEntity {

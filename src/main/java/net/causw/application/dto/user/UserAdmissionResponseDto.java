@@ -4,8 +4,8 @@ import io.swagger.annotations.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.domain.model.user.UserAdmissionDomainModel;
-import net.causw.domain.model.user.UserDomainModel;
+import net.causw.adapter.persistence.user.User;
+import net.causw.adapter.persistence.user.UserAdmission;
 
 import java.time.LocalDateTime;
 
@@ -30,28 +30,28 @@ public class UserAdmissionResponseDto {
     @ApiModelProperty(value = "마지막 업데이트된 시각", example = "2024-01-24T00:26:40.643Z")
     private LocalDateTime updatedAt;
 
-    public static UserAdmissionResponseDto from(UserAdmissionDomainModel userAdmissionDomainModel) {
+    public static UserAdmissionResponseDto from(UserAdmission userAdmission) {
         return UserAdmissionResponseDto.builder()
-                .id(userAdmissionDomainModel.getId())
-                .user(UserResponseDto.from(userAdmissionDomainModel.getUser()))
-                .attachImage(userAdmissionDomainModel.getAttachImage())
-                .description(userAdmissionDomainModel.getDescription())
-                .createdAt(userAdmissionDomainModel.getCreatedAt())
-                .updatedAt(userAdmissionDomainModel.getUpdatedAt())
+                .id(userAdmission.getId())
+                .user(UserResponseDto.from(userAdmission.getUser()))
+                .attachImage(userAdmission.getAttachImage())
+                .description(userAdmission.getDescription())
+                .createdAt(userAdmission.getCreatedAt())
+                .updatedAt(userAdmission.getUpdatedAt())
                 .build();
     }
 
     public static UserAdmissionResponseDto of(
-            UserAdmissionDomainModel userAdmissionDomainModel,
-            UserDomainModel user
+            UserAdmission userAdmission,
+            User user
     ) {
         return UserAdmissionResponseDto.builder()
-                .id(userAdmissionDomainModel.getId())
+                .id(userAdmission.getId())
                 .user(UserResponseDto.from(user))
-                .attachImage(userAdmissionDomainModel.getAttachImage())
-                .description(userAdmissionDomainModel.getDescription())
-                .createdAt(userAdmissionDomainModel.getCreatedAt())
-                .updatedAt(userAdmissionDomainModel.getUpdatedAt())
+                .attachImage(userAdmission.getAttachImage())
+                .description(userAdmission.getDescription())
+                .createdAt(userAdmission.getCreatedAt())
+                .updatedAt(userAdmission.getUpdatedAt())
                 .build();
     }
 }
