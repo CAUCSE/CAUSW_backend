@@ -1,13 +1,10 @@
 package net.causw.application.locker;
 
 import lombok.NoArgsConstructor;
-import net.causw.application.spi.FlagPort;
-import net.causw.application.spi.LockerLogPort;
-import net.causw.application.spi.LockerPort;
-import net.causw.application.spi.TextFieldPort;
-import net.causw.domain.model.locker.LockerDomainModel;
+import net.causw.adapter.persistence.locker.Locker;
+import net.causw.adapter.persistence.user.User;
+import net.causw.application.common.CommonService;
 import net.causw.domain.model.enums.Role;
-import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.validation.LockerIsDeactivatedValidator;
 import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.ValidatorBucket;
@@ -18,24 +15,18 @@ import java.util.Optional;
 @NoArgsConstructor
 public class LockerActionDisable implements LockerAction {
     @Override
-    public Optional<LockerDomainModel> updateLockerDomainModel(
-            LockerDomainModel lockerDomainModel,
-            UserDomainModel updaterDomainModel,
-            LockerPort lockerPort,
-            LockerLogPort lockerLogPort,
-            FlagPort flagPort,
-            TextFieldPort textFieldPort
+    public Optional<Locker> updateLockerDomainModel(
+            Locker locker,
+            User user,
+            LockerService lockerService,
+            CommonService commonService
     ) {
         ValidatorBucket.of()
-                .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of(Role.PRESIDENT)))
-                .consistOf(LockerIsDeactivatedValidator.of(lockerDomainModel.getIsActive()))
+                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
+                .consistOf(LockerIsDeactivatedValidator.of(locker.getIsActive()))
                 .validate();
 
-        lockerDomainModel.deactivate();
-
-        return lockerPort.update(
-                lockerDomainModel.getId(),
-                lockerDomainModel
-        );
+        locker.deactivate();
+        return Optional.of(locker);
     }
 }
