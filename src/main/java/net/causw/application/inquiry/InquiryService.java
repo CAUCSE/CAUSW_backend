@@ -19,7 +19,7 @@ import net.causw.domain.validation.ConstraintValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 @Service
 @RequiredArgsConstructor

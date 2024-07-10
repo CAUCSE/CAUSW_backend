@@ -4,9 +4,9 @@ import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import org.hibernate.annotations.ColumnDefault;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 @Getter
 @Setter
