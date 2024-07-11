@@ -54,3 +54,5 @@ Dockerfile
 docker-compose.yaml
 deploy_*.sh
 app-*.yaml
+
+*.pem
