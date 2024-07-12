@@ -1,6 +1,6 @@
 package net.causw.application.dto.board;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,19 +15,19 @@ import java.util.Optional;
 @NoArgsConstructor
 public class BoardCreateRequestDto {
 
-    @ApiModelProperty(value = "게시판 이름", example = "board_name")
+    @Schema(description = "게시판 이름", example = "board_name")
     private String name;
 
-    @ApiModelProperty(value = "게시판 설명", example = "board_description")
+    @Schema(description = "게시판 설명", example = "board_description")
     private String description;
 
-    @ApiModelProperty(value = "게시판에 글을 작성할 수 있는 권한 명단", example = "[ 'ADMIN' ]")
+    @Schema(description = "게시판에 글을 작성할 수 있는 권한 명단", example = "[ 'ADMIN' ]")
     private List<String> createRoleList;
 
-    @ApiModelProperty(value = "게시판 카테고리", example = "APP_NOTICE")
+    @Schema(description = "게시판 카테고리", example = "APP_NOTICE")
     private String category;
 
-    @ApiModelProperty(value = "게시판이 속한 동아리 id", example = "uuid 형식의 String 값입니다(nullable).")
+    @Schema(description = "게시판이 속한 동아리 id", example = "uuid 형식의 String 값입니다(nullable).")
     private String circleId;
 
     public Optional<String> getCircleId() {
