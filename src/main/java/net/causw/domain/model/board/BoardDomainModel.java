@@ -5,8 +5,8 @@ import lombok.Getter;
 import net.causw.domain.model.circle.CircleDomainModel;
 import net.causw.domain.model.enums.Role;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
