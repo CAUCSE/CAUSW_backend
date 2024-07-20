@@ -1,5 +1,6 @@
 package net.causw.adapter.persistence.user;
 
+import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.circle.CircleMember;
@@ -8,15 +9,8 @@ import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.model.enums.UserState;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Builder
@@ -41,9 +35,10 @@ public class User extends BaseEntity {
     @Column(name = "admission_year", nullable = false)
     private Integer admissionYear;
 
-    @Column(name = "role", nullable = false)
+    @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
-    private Role role;
+    @Column(name = "role", nullable = false)
+    private Set<Role> roles;
 
     @Column(name = "profile_image", length = 500, nullable = true)
     private String profileImage;
@@ -70,7 +65,7 @@ public class User extends BaseEntity {
             String password,
             String studentId,
             Integer admissionYear,
-            Role role,
+            Set<Role> roles,
             String profileImage,
             UserState state
     ) {
@@ -80,7 +75,7 @@ public class User extends BaseEntity {
         this.password = password;
         this.studentId = studentId;
         this.admissionYear = admissionYear;
-        this.role = role;
+        this.roles = roles;
         this.profileImage = profileImage;
         this.state = state;
     }
@@ -93,7 +88,7 @@ public class User extends BaseEntity {
                 userDomainModel.getPassword(),
                 userDomainModel.getStudentId(),
                 userDomainModel.getAdmissionYear(),
-                userDomainModel.getRole(),
+                userDomainModel.getRoles(),
                 userDomainModel.getProfileImage(),
                 userDomainModel.getState()
         );
