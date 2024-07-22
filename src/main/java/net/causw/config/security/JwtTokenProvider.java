@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
+import net.causw.config.security.userdetails.CustomUserDetailsService;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
@@ -15,6 +16,7 @@ import net.causw.domain.model.enums.UserState;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
@@ -29,6 +31,8 @@ public class JwtTokenProvider {
 
     @Value("${spring.jwt.secret}")
     private String secretKey;
+
+    private final CustomUserDetailsService userDetailsService;
 
     private final RedisUtils redisUtils;
 
@@ -60,9 +64,15 @@ public class JwtTokenProvider {
     }
 
     public Authentication getAuthentication(String token) {
-        String userPk = Jwts.parser().setSigningKey(this.secretKey).parseClaimsJws(token).getBody().getSubject();
-        return new UsernamePasswordAuthenticationToken(userPk, null, new ArrayList<>());
+        String userPk = getUserPk(token);
+        UserDetails userDetails = userDetailsService.loadUserByUserId(userPk);
+        return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
+
+    public String getUserPk(String token) {
+        return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
+    }
+
 
     public String resolveToken(HttpServletRequest request) {
         return request.getHeader("Authorization");
