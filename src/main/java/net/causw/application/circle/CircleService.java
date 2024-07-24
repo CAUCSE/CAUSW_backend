@@ -12,7 +12,6 @@ import net.causw.application.dto.circle.*;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.user.UserResponseDto;
 import net.causw.application.dto.util.CircleServiceDtoMapper;
-import net.causw.application.dto.util.DtoMapper;
 import net.causw.application.dto.util.StatusUtil;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -45,9 +44,10 @@ public class CircleService {
     private final PostRepository postRepository;
 
     @Transactional(readOnly = true)
-    public CircleResponseDto findById(String circleId) {
+    public CircleResponseDto findById(
+            String circleId
+    ) {
         Circle circle = getCircle(circleId);
-
         initializeValidator(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE).validate();
 
         return this.toCircleResponseDtoExtended(circle, getCircleNumMember(circleId));
@@ -58,7 +58,6 @@ public class CircleService {
         Set<Role> roles = user.getRoles();
 
         initializeUserValidator(user.getState(), roles).validate();
-
         Map<String, CircleMember> joinedCircleMap = circleMemberRepository.findByUser_Id(user.getId())
                 .stream()
                 .filter(circleMember -> circleMember.getStatus().equals(CircleMemberStatus.MEMBER))
@@ -114,7 +113,6 @@ public class CircleService {
                             MessageUtil.CIRCLE_APPLY_INVALID
                     )
             );
-
             ValidatorBucket.of()
                     .consistOf(CircleMemberStatusValidator.of(
                             circleMember.getStatus(),
@@ -122,7 +120,6 @@ public class CircleService {
                     ))
                     .validate();
         }
-
         return this.toCircleBoardsResponseDto(
                 circle,
                 getCircleNumMember(circleId),
@@ -144,7 +141,9 @@ public class CircleService {
     }
 
     @Transactional(readOnly = true)
-    public Long getNumMember(String id) {
+    public Long getNumMember(
+            String id
+    ) {
         return getCircleNumMember(getCircle(id).getId());
     }
 
@@ -155,9 +154,7 @@ public class CircleService {
             CircleMemberStatus status
     ) {
         Set<Role> roles = user.getRoles();
-
         Circle circle = getCircle(circleId);
-
         User circleLeader = getCircleLeader(circle);
 
         ValidatorBucket.of()
@@ -187,7 +184,6 @@ public class CircleService {
     @Transactional
     public CircleResponseDto create(User requestUser, CircleCreateRequestDto circleCreateRequestDto) {
         Set<Role> roles = requestUser.getRoles();
-
         User leader = userRepository.findById(circleCreateRequestDto.getLeaderId())
                 .orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -360,7 +356,6 @@ public class CircleService {
                         MessageUtil.INTERNAL_SERVER_ERROR
                 )
         ));
-
         deleteAllCircleBoard(circleId);
 
         return circleResponseDto;
@@ -398,7 +393,9 @@ public class CircleService {
     }
 
     @Transactional(readOnly = true)
-    public DuplicatedCheckResponseDto isDuplicatedName(String name) {
+    public DuplicatedCheckResponseDto isDuplicatedName(
+            String name
+    ) {
         return this.toDuplicatedCheckResponseDto(circleRepository.findByName(name).isPresent());
     }
 
@@ -445,9 +442,7 @@ public class CircleService {
         Set<Role> roles = requestUser.getRoles();
 
         User user = getUser(userId);
-
         Circle circle = getCircle(circleId);
-
         CircleMember circleMember = circleMemberRepository.findByUser_IdAndCircle_Id(userId, circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -519,7 +514,6 @@ public class CircleService {
                         MessageUtil.USER_APPLY_NOT_FOUND
                 )
         );
-
         User user = getUser(circleMember.getUser().getId());
 
         ValidatorBucket validatorBucket = ValidatorBucket.of();
@@ -556,9 +550,7 @@ public class CircleService {
         Set<Role> roles = loginUser.getRoles();
 
         User targetUser = getUser(targetUserId);
-
         Circle circle = getCircle(circleId);
-
         CircleMember restoreTargetMember = circleMemberRepository.findByUser_IdAndCircle_Id(targetUserId, circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,

@@ -1,6 +1,7 @@
 package net.causw.application.dto.circle;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,6 +14,7 @@ import lombok.Setter;
 public class CircleCreateRequestDto {
 
     @Schema(description = "동아리 이름", example = "소프트웨어학부 특별기구 ICT위원회 동문네트워크")
+    @NotBlank(message = "동아리 이름은 필수 입력값입니다.")
     private String name;
 
     @Schema(description = "동아리 메인 이미지, 없애기 가능(nullable)", example = "string")

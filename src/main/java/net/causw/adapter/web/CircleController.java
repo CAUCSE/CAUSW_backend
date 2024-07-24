@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.circle.CircleService;
 import net.causw.application.dto.circle.CirclesResponseDto;
@@ -226,7 +227,7 @@ public class CircleController {
             @ApiResponse(responseCode = "5000", description = "Circle id immediately can be used, but exception occured", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
     public CircleResponseDto create(
-            @RequestBody CircleCreateRequestDto circleCreateRequestDto,
+            @Valid @RequestBody CircleCreateRequestDto circleCreateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.circleService.create(userDetails.getUser(), circleCreateRequestDto);
@@ -275,7 +276,7 @@ public class CircleController {
     })
     public CircleResponseDto update(
             @PathVariable(name = "circleId") String circleId,
-            @RequestBody CircleUpdateRequestDto circleUpdateRequestDto,
+            @Valid @RequestBody CircleUpdateRequestDto circleUpdateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.circleService.update(userDetails.getUser(), circleId, circleUpdateRequestDto);
