@@ -6,33 +6,32 @@ import net.causw.domain.model.enums.Role;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 public class UserRoleValidator extends AbstractValidator {
 
-    private final Role requestUserRole;
+    private final Set<Role> requestUserRoles;
 
-    private final List<Role> targetRoleList;
+    private final Set<Role> targetRoleSet;
 
-    private UserRoleValidator(Role requestUserRole, List<Role> targetRoleList) {
-        this.requestUserRole = requestUserRole;
-        this.targetRoleList = targetRoleList;
+    private UserRoleValidator(Set<Role> requestUserRoles, Set<Role> targetRoleSet) {
+        this.requestUserRoles = requestUserRoles;
+        this.targetRoleSet = targetRoleSet;
     }
 
-    public static UserRoleValidator of(Role requestUserRole, List<Role> targetRoleList) {
-        return new UserRoleValidator(requestUserRole, targetRoleList);
+    public static UserRoleValidator of(Set<Role> requestUserRoles, Set<Role> targetRoleSet) {
+        return new UserRoleValidator(requestUserRoles, targetRoleSet);
     }
 
     @Override
     public void validate() {
 
-        if (EnumSet.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT).contains(this.requestUserRole)) {
+        if (this.requestUserRoles.stream().anyMatch(role -> EnumSet.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT).contains(role))) {
             return;
         }
 
-        for (Role targetRole : this.targetRoleList) {
-            if (this.requestUserRole.getValue().contains(targetRole.getValue())) {
-                return;
-            }
+        if (this.requestUserRoles.stream().anyMatch(this.targetRoleSet::contains)) {
+            return;
         }
 
         throw new UnauthorizedException(
