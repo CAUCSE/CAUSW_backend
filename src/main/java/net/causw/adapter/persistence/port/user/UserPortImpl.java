@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -90,56 +91,31 @@ public class UserPortImpl extends DomainModelMapper implements UserPort {
     public Optional<UserDomainModel> updateRole(String id, Role newRole) {
         return this.userRepository.findById(id).map(
                 srcUser -> {
-                    if(srcUser.getRole().equals(Role.COMMON)){
-                        srcUser.setRole(newRole);
+                    Set<Role> roles = srcUser.getRoles();
+                    if(roles.contains(Role.COMMON)){
+                        roles.remove(Role.COMMON);
                     }
-                    else if (newRole.equals(Role.LEADER_CIRCLE)) {
-                        if(!srcUser.getRole().getValue().contains("LEADER_CIRCLE")){
-                            String combinedRoleValue = srcUser.getRole().getValue() + "_N_" + "LEADER_CIRCLE";
-                            Role combinedRole = Role.of(combinedRoleValue.toUpperCase());
-                            srcUser.setRole(combinedRole);
-                        }
-                        else {
-                            srcUser.setRole(srcUser.getRole());
-                        }
-                    }
-                    else if(!newRole.equals(Role.LEADER_CIRCLE) && srcUser.getRole().equals(Role.LEADER_CIRCLE)){
-                        if(newRole.equals(Role.COMMON)){
-                            srcUser.setRole(newRole);
-                        } else{
-                            String combinedRoleValue = newRole.getValue() + "_N_" + "LEADER_CIRCLE";
-                            Role combinedRole = Role.of(combinedRoleValue.toUpperCase());
-                            srcUser.setRole(combinedRole);
-                        }
-                    }
-                    else {
-                        srcUser.setRole(newRole);
-                    }
+                    roles.add(newRole);
                     return this.entityToDomainModel(this.userRepository.save(srcUser));
                 }
         );
     }
+
     @Override
     public Optional<UserDomainModel> removeRole(String id, Role targetRole) {
         return this.userRepository.findById(id).map(
                 srcUser -> {
-                    if(srcUser.getRole().equals(targetRole)){
-                        srcUser.setRole(Role.COMMON);
+                    Set<Role> roles = srcUser.getRoles();
+                    if(roles.contains(targetRole)){
+                        roles.remove(targetRole);
+                        roles.add(Role.COMMON);
                     }
-                    else if (srcUser.getRole().getValue().contains(targetRole.getValue())) {
-                        if(targetRole.equals(Role.LEADER_CIRCLE)){
-                            String updatedRoleValue = srcUser.getRole().getValue().replace(targetRole.getValue(), "").replace("_N_","");
-                            srcUser.setRole(Role.of(updatedRoleValue));
-                        }
-                    }
-                    //학생회 겸 동아리장, 학년대표 겸 동아리장의 경우 타깃이 동아리 장만 남기는걸로 변경
-                    else if(targetRole.equals(Role.COMMON)){
-                        srcUser.setRole(Role.LEADER_CIRCLE);
-                    }
+                    srcUser.setRoles(roles);
                     return this.entityToDomainModel(this.userRepository.save(srcUser));
                 }
         );
     }
+
 
     @Override
     public List<UserDomainModel> findByRole(String role) {
