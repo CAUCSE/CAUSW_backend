@@ -11,11 +11,12 @@ import net.causw.application.dto.post.BoardPostsResponseDto;
 import net.causw.application.dto.post.PostCreateRequestDto;
 import net.causw.application.dto.post.PostResponseDto;
 import net.causw.application.dto.post.PostUpdateRequestDto;
+import net.causw.config.security.userdetails.CustomUserDetails;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -53,11 +54,10 @@ public class PostController {
             @ApiResponse(responseCode = "4102", description = "동아리에서 추방된 사용자입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
     })
     public PostResponseDto findPostById(
-            @PathVariable String id
+            @PathVariable String id,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.postService.findPostById(loginUserId, id);
+        return this.postService.findPostById(userDetails.getUser(), id);
     }
 
     @GetMapping
@@ -83,11 +83,10 @@ public class PostController {
     })
     public BoardPostsResponseDto findAllPost(
             @RequestParam String boardId,
-            @RequestParam(defaultValue = "0") Integer pageNum
+            @RequestParam(defaultValue = "0") Integer pageNum,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.postService.findAllPost(loginUserId, boardId, pageNum);
+        return this.postService.findAllPost(userDetails.getUser(), boardId, pageNum);
     }
 
     @GetMapping("/search")
@@ -119,22 +118,20 @@ public class PostController {
     public BoardPostsResponseDto searchPost(
             @RequestParam String boardId,
             @RequestParam(defaultValue = "") String keyword,
-            @RequestParam(defaultValue = "0") Integer pageNum
+            @RequestParam(defaultValue = "0") Integer pageNum,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.postService.searchPost(loginUserId, boardId, keyword, pageNum);
+        return this.postService.searchPost(userDetails.getUser(), boardId, keyword, pageNum);
     }
 
     @GetMapping("/app/notice")
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "앱 자체 공지사항 확인 API(프론트에 없음)", description = "현재 프론트단에 코드가 존재하지 않습니다")
     public BoardPostsResponseDto findAllAppNotice(
-            @RequestParam(defaultValue = "0") Integer pageNum
+            @RequestParam(defaultValue = "0") Integer pageNum,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.postService.findAllAppNotice(loginUserId, pageNum);
+        return this.postService.findAllAppNotice(userDetails.getUser(), pageNum);
     }
 
     @PostMapping
@@ -160,11 +157,10 @@ public class PostController {
             @ApiResponse(responseCode = "4107", description = "사용자가 해당 동아리의 동아리장이 아닙니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
     })
     public PostResponseDto createPost(
-            @RequestBody PostCreateRequestDto postCreateRequestDto
+            @RequestBody PostCreateRequestDto postCreateRequestDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.postService.createPost(loginUserId, postCreateRequestDto);
+        return this.postService.createPost(userDetails.getUser(), postCreateRequestDto);
     }
 
     @DeleteMapping(value = "/{id}")
@@ -192,11 +188,10 @@ public class PostController {
             @ApiResponse(responseCode = "5000", description = "Post id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
     public PostResponseDto deletePost(
-            @PathVariable String id
+            @PathVariable String id,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.postService.deletePost(loginUserId, id);
+        return this.postService.deletePost(userDetails.getUser(), id);
     }
 
     @PutMapping(value = "/{id}")
@@ -228,12 +223,12 @@ public class PostController {
     })
     public PostResponseDto updatePost(
             @PathVariable String id,
-            @RequestBody PostUpdateRequestDto postUpdateRequestDto
+            @RequestBody PostUpdateRequestDto postUpdateRequestDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
+
         return this.postService.updatePost(
-                loginUserId,
+                userDetails.getUser(),
                 id,
                 postUpdateRequestDto
         );
@@ -267,12 +262,11 @@ public class PostController {
             @ApiResponse(responseCode = "5000", description = "Post id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
     public PostResponseDto restorePost(
-            @PathVariable String id
+            @PathVariable String id,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
         return this.postService.restorePost(
-                loginUserId,
+                userDetails.getUser(),
                 id
         );
     }
