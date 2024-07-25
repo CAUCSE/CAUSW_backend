@@ -25,6 +25,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 // Custom Annotation을 사용하여 중복되는 @Mapping을 줄일 수 있습니다.
@@ -76,7 +77,7 @@ public interface DtoMapper{
 
     @Mapping(target = "boardId", source = "entity.id")
     @Mapping(target = "boardName", source = "entity.name")
-    BoardPostsResponseDto toBoardPostsResponseDto(Board entity, Role userRole, Boolean writable, Boolean isFavorite, Page<PostsResponseDto> post);
+    BoardPostsResponseDto toBoardPostsResponseDto(Board entity, Set<Role> userRole, Boolean writable, Boolean isFavorite, Page<PostsResponseDto> post);
 
     /** TODO: 각자 역할분담한 부분의 Dto를 위를 참고하여 아래 작성하시면 됩니다.
      *  기존에 Dto에 존재하던 of 메서드를 DtoMapper.INSTANCE.toDtoName(entity)로 대체하시면 됩니다.
