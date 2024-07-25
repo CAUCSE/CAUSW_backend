@@ -21,9 +21,9 @@ import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Date;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Component
@@ -41,10 +41,10 @@ public class JwtTokenProvider {
         this.secretKey = Base64.getEncoder().encodeToString(this.secretKey.getBytes());
     }
 
-    public String createAccessToken(String userPk, Role role, UserState userState) {
+    public String createAccessToken(String userPk, Set<Role> roles, UserState userState) {
         Date now = new Date();
         Claims claims = Jwts.claims().setSubject(userPk);
-        claims.put("role", role.getValue());
+        claims.put("roles", roles.stream().map(Role::getValue).collect(Collectors.toSet()));
         claims.put("state", userState.getValue());
 
         return Jwts.builder()
@@ -87,7 +87,9 @@ public class JwtTokenProvider {
                 throw new UnauthorizedException(ErrorCode.INVALID_JWT, "만료된 토큰입니다.");
             }
 
-            if (claims.getBody().get("role").equals(Role.NONE.getValue()) ||
+            List<String> rolesList = claims.getBody().get("roles", List.class);
+
+            if (rolesList.contains(Role.NONE.getValue()) ||
                     !claims.getBody().get("state").equals(UserState.ACTIVE.getValue())) {
                 throw new BadRequestException(ErrorCode.NEED_SIGN_IN, "다시 로그인 하세요.");
             }
