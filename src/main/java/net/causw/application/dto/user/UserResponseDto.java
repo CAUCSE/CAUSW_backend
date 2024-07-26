@@ -11,6 +11,7 @@ import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.model.enums.UserState;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -34,7 +35,7 @@ public class UserResponseDto {
     private Integer admissionYear;
 
     @Schema(description = "역할", example = "COMMON")
-    private Role role;
+    private Set<Role> roles;
 
     @Schema(description = "프로필 이미지 URL", example = "")
     private String profileImage;
@@ -55,7 +56,7 @@ public class UserResponseDto {
                 .name(user.getName())
                 .studentId(user.getStudentId())
                 .admissionYear(user.getAdmissionYear())
-                .role(user.getRole())
+                .roles(user.getRoles())
                 .profileImage(user.getProfileImage())
                 .state(user.getState())
                 .build();
@@ -69,7 +70,7 @@ public class UserResponseDto {
                 .name(user.getName())
                 .studentId(user.getStudentId())
                 .admissionYear(user.getAdmissionYear())
-                .role(user.getRole())
+                .roles(user.getRoles())
                 .profileImage(user.getProfileImage())
                 .state(user.getState())
                 .build();
@@ -86,7 +87,7 @@ public class UserResponseDto {
                 .name(user.getName())
                 .studentId(user.getStudentId())
                 .admissionYear(user.getAdmissionYear())
-                .role(user.getRole())
+                .roles(user.getRoles())
                 .profileImage(user.getProfileImage())
                 .state(user.getState())
                 .circleIdIfLeader(circleId)
