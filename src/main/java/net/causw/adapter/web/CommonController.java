@@ -49,8 +49,8 @@ public class CommonController {
     @PostMapping("/api/v1/flag")
     @ResponseStatus(value = HttpStatus.OK)
     public Boolean createFlag(
-            @RequestParam String key,
-            @RequestParam Boolean value
+            @RequestParam("key") String key,
+            @RequestParam("value") Boolean value
     ) {
         return commonService.createFlag(
                 key,
@@ -61,8 +61,8 @@ public class CommonController {
     @PutMapping("/api/v1/flag")
     @ResponseStatus(value = HttpStatus.OK)
     public Boolean updateFlag(
-            @RequestParam String key,
-            @RequestParam Boolean value
+            @RequestParam("key") String key,
+            @RequestParam("value") Boolean value
     ) {
 
         return this.commonService.updateFlag(

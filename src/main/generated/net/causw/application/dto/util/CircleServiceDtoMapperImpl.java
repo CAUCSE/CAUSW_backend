@@ -2,7 +2,9 @@ package net.causw.application.dto.util;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.annotation.processing.Generated;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
@@ -23,11 +25,12 @@ import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto.DuplicatedCheckResponseDtoBuilder;
 import net.causw.application.dto.user.UserResponseDto;
 import net.causw.application.dto.user.UserResponseDto.UserResponseDtoBuilder;
+import net.causw.domain.model.enums.Role;
 import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-07-24T21:12:24+0900",
+    date = "2024-07-26T17:11:18+0900",
     comments = "version: 1.4.2.Final, compiler: javac, environment: Java 17.0.10 (Homebrew)"
 )
 @Component
@@ -46,7 +49,10 @@ public class CircleServiceDtoMapperImpl implements CircleServiceDtoMapper {
         userResponseDto.name( entity.getName() );
         userResponseDto.studentId( entity.getStudentId() );
         userResponseDto.admissionYear( entity.getAdmissionYear() );
-        userResponseDto.role( entity.getRole() );
+        Set<Role> set = entity.getRoles();
+        if ( set != null ) {
+            userResponseDto.roles( new HashSet<Role>( set ) );
+        }
         userResponseDto.profileImage( entity.getProfileImage() );
         userResponseDto.state( entity.getState() );
 

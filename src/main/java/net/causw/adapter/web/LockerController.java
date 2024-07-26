@@ -40,7 +40,7 @@ public class LockerController {
     @Operation(summary = "사물함 조회 Api(완료)", description = "사물함 id를 바탕으로 사물함 정보를 가져오는 Api 입니다.")
     @ResponseStatus(value = HttpStatus.OK)
     public LockerResponseDto findById(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.lockerService.findById(id, userDetails.getUser());
@@ -60,7 +60,7 @@ public class LockerController {
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "사물함 상태 update Api", description = "사물함 상태를 변경하는 Api입니다.")
     public LockerResponseDto update(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @RequestBody LockerUpdateRequestDto lockerUpdateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
@@ -75,7 +75,7 @@ public class LockerController {
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "사물함 위치 이동 Api(완료)", description = "사물함의 위치를 이동시키는 Api입니다.")
     public LockerResponseDto move(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @RequestBody LockerMoveRequestDto lockerMoveRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
@@ -90,7 +90,7 @@ public class LockerController {
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "사물함 삭제 Api(완료)", description = "사물함을 삭제하는 Api입니다.")
     public LockerResponseDto delete(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.lockerService.delete(userDetails.getUser(), id);
@@ -107,7 +107,7 @@ public class LockerController {
     @Operation(summary = "사물함 특정 층별 사용가능 여부 조회 Api(완료)", description = "사물함 특정 층별 개수 정보와 사용 가능 개수를 제공하는 API입니다.")
     @ResponseStatus(value = HttpStatus.OK)
     public LockersResponseDto findByLocation(
-            @PathVariable String locationId,
+            @PathVariable("locationId") String locationId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.lockerService.findByLocation(locationId, userDetails.getUser());
@@ -127,7 +127,7 @@ public class LockerController {
     @Operation(summary = "사물함 위치 업데이트 API(완료)", description = "사물함 특정 층 업데이트 API 입니다.")
     @ResponseStatus(value = HttpStatus.OK)
     public LockerLocationResponseDto updateLocation(
-            @PathVariable String locationId,
+            @PathVariable("locationId") String locationId,
             @RequestBody LockerLocationUpdateRequestDto lockerLocationUpdateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
@@ -142,7 +142,7 @@ public class LockerController {
     @Operation(summary = "사물함 위치 삭제 API(완료)", description = "사물함 특정 층 삭제 API 입니다.")
     @ResponseStatus(value = HttpStatus.OK)
     public LockerLocationResponseDto deleteLocation(
-            @PathVariable String locationId,
+            @PathVariable("locationId") String locationId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.lockerService.deleteLocation(userDetails.getUser(), locationId);

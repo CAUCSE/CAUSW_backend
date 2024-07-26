@@ -2,6 +2,7 @@ package net.causw.application.dto.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import javax.annotation.processing.Generated;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.comment.ChildComment;
@@ -28,7 +29,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-07-24T21:12:25+0900",
+    date = "2024-07-26T17:11:18+0900",
     comments = "version: 1.4.2.Final, compiler: javac, environment: Java 17.0.10 (Homebrew)"
 )
 @Component
@@ -190,7 +191,7 @@ public class DtoMapperImpl implements DtoMapper {
     }
 
     @Override
-    public BoardPostsResponseDto toBoardPostsResponseDto(Board entity, Role userRole, Boolean writable, Boolean isFavorite, Page<PostsResponseDto> post) {
+    public BoardPostsResponseDto toBoardPostsResponseDto(Board entity, Set<Role> userRole, Boolean writable, Boolean isFavorite, Page<PostsResponseDto> post) {
         if ( entity == null && userRole == null && writable == null && isFavorite == null && post == null ) {
             return null;
         }

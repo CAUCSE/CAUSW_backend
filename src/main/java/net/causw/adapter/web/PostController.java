@@ -54,7 +54,7 @@ public class PostController {
             @ApiResponse(responseCode = "4102", description = "동아리에서 추방된 사용자입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
     })
     public PostResponseDto findPostById(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.postService.findPostById(userDetails.getUser(), id);
@@ -82,8 +82,8 @@ public class PostController {
             @ApiResponse(responseCode = "4102", description = "동아리에서 추방된 사용자입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
     })
     public BoardPostsResponseDto findAllPost(
-            @RequestParam String boardId,
-            @RequestParam(defaultValue = "0") Integer pageNum,
+            @RequestParam("boardId") String boardId,
+            @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.postService.findAllPost(userDetails.getUser(), boardId, pageNum);
@@ -116,9 +116,9 @@ public class PostController {
 //            paramType = "query"
 //    )
     public BoardPostsResponseDto searchPost(
-            @RequestParam String boardId,
-            @RequestParam(defaultValue = "") String keyword,
-            @RequestParam(defaultValue = "0") Integer pageNum,
+            @RequestParam("boardId") String boardId,
+            @RequestParam(name = "keyword", defaultValue = "") String keyword,
+            @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.postService.searchPost(userDetails.getUser(), boardId, keyword, pageNum);
@@ -128,7 +128,7 @@ public class PostController {
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "앱 자체 공지사항 확인 API(프론트에 없음)", description = "현재 프론트단에 코드가 존재하지 않습니다")
     public BoardPostsResponseDto findAllAppNotice(
-            @RequestParam(defaultValue = "0") Integer pageNum,
+            @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.postService.findAllAppNotice(userDetails.getUser(), pageNum);
@@ -188,7 +188,7 @@ public class PostController {
             @ApiResponse(responseCode = "5000", description = "Post id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
     public PostResponseDto deletePost(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.postService.deletePost(userDetails.getUser(), id);
@@ -222,7 +222,7 @@ public class PostController {
             @ApiResponse(responseCode = "5000", description = "Post id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
     public PostResponseDto updatePost(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @RequestBody PostUpdateRequestDto postUpdateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
@@ -262,7 +262,7 @@ public class PostController {
             @ApiResponse(responseCode = "5000", description = "Post id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
     public PostResponseDto restorePost(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.postService.restorePost(

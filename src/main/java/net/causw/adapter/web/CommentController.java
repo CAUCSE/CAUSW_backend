@@ -57,8 +57,8 @@ public class CommentController {
             @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     public Page<CommentResponseDto> findAllComments(
-            @RequestParam String postId,
-            @RequestParam(defaultValue = "0") Integer pageNum,
+            @RequestParam("postId") String postId,
+            @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
 
@@ -120,7 +120,7 @@ public class CommentController {
             @ApiResponse(responseCode = "5000", description = "Comment id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     public CommentResponseDto updateComment(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @RequestBody CommentUpdateRequestDto commentUpdateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
@@ -158,7 +158,7 @@ public class CommentController {
             @ApiResponse(responseCode = "5000", description = "Comment id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     public CommentResponseDto deleteComment(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.commentService.deleteComment(userDetails.getUser(), id);

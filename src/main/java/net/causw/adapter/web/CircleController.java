@@ -185,8 +185,8 @@ public class CircleController {
             @ApiResponse(responseCode = "4000", description = "소모임원을 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     public List<CircleMemberResponseDto> getUserList(
-            @PathVariable String circleId,
-            @RequestParam CircleMemberStatus circleMemberStatus,
+            @PathVariable("circleId") String circleId,
+            @RequestParam("circleMemberStatus") CircleMemberStatus circleMemberStatus,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
 

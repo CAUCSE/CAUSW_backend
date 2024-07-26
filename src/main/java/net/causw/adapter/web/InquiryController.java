@@ -18,7 +18,7 @@ public class InquiryController {
     @ResponseStatus(value = HttpStatus.OK)
     public InquiryResponseDto findById(
             @AuthenticationPrincipal String requestUserId,
-            @PathVariable String id
+            @PathVariable("id") String id
     ) {
         return this.inquiryService.findById(requestUserId,id);
     }

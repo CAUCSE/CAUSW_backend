@@ -99,7 +99,7 @@ public class BoardController {
             @ApiResponse(responseCode = "5001", description = "Board id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
     public BoardResponseDto updateBoard(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @RequestBody BoardUpdateRequestDto boardUpdateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
@@ -123,7 +123,7 @@ public class BoardController {
             @ApiResponse(responseCode = "5000", description = "Board id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
     public BoardResponseDto deleteBoard(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
 
@@ -148,7 +148,7 @@ public class BoardController {
     })
     public BoardResponseDto restoreBoard(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable String id
+            @PathVariable("id") String id
     ) {
         return this.boardService.restoreBoard(userDetails.getUser(), id);
     }

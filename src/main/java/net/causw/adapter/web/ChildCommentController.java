@@ -93,7 +93,7 @@ public class ChildCommentController {
             @ApiResponse(responseCode = "5000", description = "Comment id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     public ChildCommentResponseDto updateChildComment(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @RequestBody ChildCommentUpdateRequestDto childCommentUpdateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
@@ -127,7 +127,7 @@ public class ChildCommentController {
             @ApiResponse(responseCode = "5000", description = "Comment id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     public ChildCommentResponseDto deleteChildComment(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.childCommentService.deleteChildComment(userDetails.getUser(), id);

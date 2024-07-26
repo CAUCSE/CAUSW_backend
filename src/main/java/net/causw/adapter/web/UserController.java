@@ -60,7 +60,7 @@ public class UserController {
     })
     public UserResponseDto findByUserId(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable String userId
+            @PathVariable("id") String userId
     ) {
         return this.userService.findByUserId(userId, userDetails.getUser());
     }
@@ -90,7 +90,7 @@ public class UserController {
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "로그인한 사용자의 게시글 조회 API(완료)")
     public UserPostsResponseDto findPosts(
-            @RequestParam(defaultValue = "0") Integer pageNum,
+            @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.userService.findPosts(userDetails.getUser(), pageNum);
@@ -100,7 +100,7 @@ public class UserController {
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "로그인한 사용자의 댓글 조회 API(완료)")
     public UserCommentsResponseDto findComments(
-            @RequestParam(defaultValue = "0") Integer pageNum,
+            @RequestParam(name = "pageNum",defaultValue = "0") Integer pageNum,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
 
@@ -111,7 +111,7 @@ public class UserController {
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "유저 관리 시 사용자 이름으로 검색 API(완료)")
     public List<UserResponseDto> findByName(
-            @PathVariable String name,
+            @PathVariable("name") String name,
             @AuthenticationPrincipal CustomUserDetails userDetails
             ) {
         return this.userService.findByName(userDetails.getUser(), name);
@@ -130,9 +130,9 @@ public class UserController {
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "유저 관리 시 사용자의 상태(ACTIVE, INACTIVE 등) 에 따라 검색하는 API(완료)", description = "유저를 관리할 때 사용자가 활성, 비활성 상태인지에 따라서 분류하여 검색할 수 있습니다. \n state 는 ACTIVE, INACTIVE, AWAIT, REJECT, DROP 으로 검색가능합니다.")
     public Page<UserResponseDto> findByState(
-            @PathVariable String state,
-            @RequestParam(required = false) String name,
-            @RequestParam(defaultValue = "0") Integer pageNum,
+            @PathVariable("state") String state,
+            @RequestParam(name = "user name", required = false) String name,
+            @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
 
@@ -193,7 +193,7 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
             @ApiResponse(responseCode = "4001", description = "탈퇴한 계정의 재가입은 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
-    public DuplicatedCheckResponseDto isDuplicatedEmail(@PathVariable String email) {
+    public DuplicatedCheckResponseDto isDuplicatedEmail(@PathVariable("email") String email) {
         return this.userService.isDuplicatedEmail(email);
     }
 
@@ -252,7 +252,7 @@ public class UserController {
             @ApiResponse(responseCode = "5001", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     public UserResponseDto updateRole(
-            @PathVariable String granteeId,
+            @PathVariable("granteeId") String granteeId,
             @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
@@ -306,7 +306,7 @@ public class UserController {
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "사용자 추방 및 사물함 반환 API (완료)")
     public UserResponseDto drop(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.userService.dropUser(userDetails.getUser(), id);
@@ -322,7 +322,7 @@ public class UserController {
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "가입 대기 사용자 정보 확인 API (완료)")
     public UserAdmissionResponseDto findAdmissionById(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.userService.findAdmissionById(userDetails.getUser(), id);
@@ -333,8 +333,8 @@ public class UserController {
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "모든 가입 대기 사용자 목록 확인 API (완료)")
     public Page<UserAdmissionsResponseDto> findAllAdmissions(
-            @RequestParam(defaultValue = "0") Integer pageNum,
-            @RequestParam(required = false) String name,
+            @RequestParam(name = "pageNum",defaultValue = "0") Integer pageNum,
+            @RequestParam(name = "name", required = false) String name,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.userService.findAllAdmissions(userDetails.getUser(), name, pageNum);
@@ -370,7 +370,7 @@ public class UserController {
             @ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "application/json", schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = BadRequestException.class)))
     })
     public UserAdmissionResponseDto acceptAdmission(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.userService.accept(userDetails.getUser(), id);
@@ -396,7 +396,7 @@ public class UserController {
             @ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "application/json", schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = BadRequestException.class)))
     })
     public UserAdmissionResponseDto rejectAdmission(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
 
@@ -416,7 +416,7 @@ public class UserController {
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "사용자 복구 API(완료)", description = "복구할 사용자의 id를 넣어주세요")
     public UserResponseDto restore(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.userService.restore(userDetails.getUser(), id);
