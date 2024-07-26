@@ -11,6 +11,7 @@ import net.causw.application.comment.ChildCommentService;
 import net.causw.application.dto.comment.ChildCommentCreateRequestDto;
 import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.ChildCommentUpdateRequestDto;
+import net.causw.config.security.userdetails.CustomUserDetails;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.UnauthorizedException;
 import org.springframework.http.HttpStatus;
@@ -58,11 +59,11 @@ public class ChildCommentController {
             @ApiResponse(responseCode = "4004", description = "삭제된 동아리입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     public ChildCommentResponseDto createChildComment(
-            @RequestBody ChildCommentCreateRequestDto childCommentCreateRequestDto
+            @RequestBody ChildCommentCreateRequestDto childCommentCreateRequestDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.childCommentService.createChildComment(loginUserId, childCommentCreateRequestDto);
+
+        return this.childCommentService.createChildComment(userDetails.getUser(), childCommentCreateRequestDto);
     }
 
     @PutMapping(value = "/{id}")
@@ -93,11 +94,10 @@ public class ChildCommentController {
     })
     public ChildCommentResponseDto updateChildComment(
             @PathVariable String id,
-            @RequestBody ChildCommentUpdateRequestDto childCommentUpdateRequestDto
+            @RequestBody ChildCommentUpdateRequestDto childCommentUpdateRequestDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.childCommentService.updateChildComment(loginUserId, id, childCommentUpdateRequestDto);
+        return this.childCommentService.updateChildComment(userDetails.getUser(), id, childCommentUpdateRequestDto);
     }
 
     @DeleteMapping(value = "/{id}")
@@ -127,10 +127,9 @@ public class ChildCommentController {
             @ApiResponse(responseCode = "5000", description = "Comment id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     public ChildCommentResponseDto deleteChildComment(
-            @PathVariable String id
+            @PathVariable String id,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.childCommentService.deleteChildComment(loginUserId, id);
+        return this.childCommentService.deleteChildComment(userDetails.getUser(), id);
     }
 }
