@@ -12,6 +12,8 @@ import net.causw.domain.model.enums.Role;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -84,11 +86,10 @@ public class BoardOfCircleResponseDto {
     }
 
     // Board의 CreateRoles는 List가 ","로 이어진 형태로 존재. "," 기준으로 split해서 List<String>으로 변환 후 userRole과 비교
-    public static Boolean isWriteable(Board board, Role userRole) {
-        return Arrays.stream(
-                        board.getCreateRoles().split(","))
-                .anyMatch(str ->
-                        userRole.getValue().contains(str)
-                );
+    public static Boolean isWriteable(Board board, Set<Role> userRoles) {
+        List<String> createRolesList = Arrays.asList(board.getCreateRoles().split(","));
+        return userRoles.stream()
+                .map(Role::getValue)
+                .anyMatch(createRolesList::contains);
     }
 }
