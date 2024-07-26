@@ -448,8 +448,11 @@ public class UserService {
                 }
         );
 
+
         //DomainModel 제거과정에서 role과 state가 누락된 것에 대한 해결을 위해 user에 직접 NONE과 AWAIT 설정
-        User user = userCreateRequestDto.toEntity(passwordEncoder.encode(userCreateRequestDto.getPassword()), Role.NONE, UserState.AWAIT);
+        Set<Role> roles = new HashSet<>();
+        roles.add(Role.NONE);
+        User user = userCreateRequestDto.toEntity(passwordEncoder.encode(userCreateRequestDto.getPassword()), roles, UserState.AWAIT);
 
         this.userRepository.save(user);
 
