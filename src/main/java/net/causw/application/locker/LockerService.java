@@ -43,6 +43,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -57,11 +58,7 @@ public class LockerService {
     private final CommonService commonService;
 
     @Transactional(readOnly = true)
-    public LockerResponseDto findById(String id, String userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new BadRequestException(
-                ErrorCode.ROW_DOES_NOT_EXIST,
-                MessageUtil.LOGIN_USER_NOT_FOUND
-        ));
+    public LockerResponseDto findById(String id, User user) {
         return LockerResponseDto.of(lockerRepository.findByIdForRead(id).orElseThrow(
                         () -> new BadRequestException(
                                 ErrorCode.ROW_DOES_NOT_EXIST,
@@ -73,15 +70,11 @@ public class LockerService {
 
     @Transactional
     public LockerResponseDto create(
-            String creatorId,
+            User user,
             LockerCreateRequestDto lockerCreateRequestDto
     ) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
-
-        User user = userRepository.findById(creatorId).orElseThrow(() -> new BadRequestException(
-                ErrorCode.ROW_DOES_NOT_EXIST,
-                MessageUtil.LOGIN_USER_NOT_FOUND
-        ));
+        Set<Role> roles = user.getRoles();
 
         LockerLocation lockerLocation = lockerLocationRepository.findById(lockerCreateRequestDto.getLockerLocationId())
                 .orElseThrow(
@@ -100,8 +93,8 @@ public class LockerService {
         Locker locker = Locker.of(lockerCreateRequestDto.getLockerNumber(), true, user, lockerLocation, null);
         validatorBucket
                 .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
-                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .consistOf(ConstraintValidator.of(locker, this.validator))
                 .validate();
 
@@ -113,14 +106,11 @@ public class LockerService {
 
     @Transactional
     public LockerResponseDto update(
-            String updaterId,
+            User user,
             String lockerId,
             LockerUpdateRequestDto lockerUpdateRequestDto
     ) {
-        User user = userRepository.findById(updaterId).orElseThrow(() -> new BadRequestException(
-                ErrorCode.ROW_DOES_NOT_EXIST,
-                MessageUtil.LOGIN_USER_NOT_FOUND
-        ));
+        Set<Role> roles = user.getRoles();
 
         Locker locker = lockerRepository.findById(lockerId).orElseThrow(() -> new BadRequestException(
                 ErrorCode.ROW_DOES_NOT_EXIST,
@@ -129,7 +119,7 @@ public class LockerService {
 
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .validate();
 
         locker = this.lockerActionFactory
@@ -151,14 +141,11 @@ public class LockerService {
 
     @Transactional
     public LockerResponseDto move(
-            String updaterId,
+            User user,
             String lockerId,
             LockerMoveRequestDto lockerMoveRequestDto
     ) {
-        User user = userRepository.findById(updaterId).orElseThrow(() -> new BadRequestException(
-                ErrorCode.ROW_DOES_NOT_EXIST,
-                MessageUtil.LOGIN_USER_NOT_FOUND
-        ));
+        Set<Role> roles = user.getRoles();
 
         Locker locker = lockerRepository.findById(lockerId).orElseThrow(() -> new BadRequestException(
                 ErrorCode.ROW_DOES_NOT_EXIST,
@@ -177,8 +164,8 @@ public class LockerService {
 
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
-                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .consistOf(ConstraintValidator.of(locker, this.validator))
                 .validate();
 
@@ -193,11 +180,8 @@ public class LockerService {
     }
 
     @Transactional
-    public LockerResponseDto delete(String deleterId, String lockerId) {
-        User user = userRepository.findById(deleterId).orElseThrow(() -> new BadRequestException(
-                ErrorCode.ROW_DOES_NOT_EXIST,
-                MessageUtil.LOGIN_USER_NOT_FOUND
-        ));
+    public LockerResponseDto delete(User user, String lockerId) {
+        Set<Role> roles = user.getRoles();
 
         Locker locker = lockerRepository.findById(lockerId).orElseThrow(() -> new BadRequestException(
                 ErrorCode.ROW_DOES_NOT_EXIST,
@@ -208,8 +192,8 @@ public class LockerService {
         ValidatorBucket.of()
                 .consistOf(LockerInUseValidator.of(locker.getUser().isPresent()))
                 .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
-                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(UserRoleValidator.of(roles, Set.of(Role.PRESIDENT)))
                 .validate();
 
         lockerRepository.delete(locker);
@@ -221,14 +205,7 @@ public class LockerService {
     }
 
     @Transactional(readOnly = true)
-    public LockersResponseDto findByLocation(String locationId, String userId) {
-
-        User user = userRepository.findById(userId).orElseThrow(() -> new BadRequestException(
-                ErrorCode.ROW_DOES_NOT_EXIST,
-                MessageUtil.LOGIN_USER_NOT_FOUND
-        ));
-
-
+    public LockersResponseDto findByLocation(String locationId, User user) {
         LockerLocation lockerLocation = lockerLocationRepository.findById(locationId)
                 .orElseThrow(
                         () -> new BadRequestException(
@@ -247,16 +224,10 @@ public class LockerService {
     }
 
     @Transactional(readOnly = true)
-    public LockerLocationsResponseDto findAllLocation(String userId) {
-
-        User user = userRepository.findById(userId).orElseThrow(() -> new BadRequestException(
-                ErrorCode.ROW_DOES_NOT_EXIST,
-                MessageUtil.LOGIN_USER_NOT_FOUND
-        ));
-
+    public LockerLocationsResponseDto findAllLocation(User user) {
         LockerResponseDto myLocker = null;
-        if (!user.getRole().equals(Role.ADMIN))
-            myLocker = lockerRepository.findByUser_Id(userId)
+        if (!user.getRoles().contains(Role.ADMIN))
+            myLocker = lockerRepository.findByUser_Id(user.getId())
                     .map(locker -> LockerResponseDto.of(
                             locker,
                             user,
@@ -279,13 +250,10 @@ public class LockerService {
 
     @Transactional
     public LockerLocationResponseDto createLocation(
-            String creatorId,
+            User user,
             LockerLocationCreateRequestDto lockerLocationCreateRequestDto
     ) {
-        User user = userRepository.findById(creatorId).orElseThrow(() -> new BadRequestException(
-                ErrorCode.ROW_DOES_NOT_EXIST,
-                MessageUtil.LOGIN_USER_NOT_FOUND
-        ));
+        Set<Role> roles = user.getRoles();
 
         if (lockerLocationRepository.findByName(lockerLocationCreateRequestDto.getName()).isPresent()) {
             throw new BadRequestException(
@@ -300,8 +268,8 @@ public class LockerService {
 
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
-                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .consistOf(ConstraintValidator.of(lockerLocation, this.validator))
                 .validate();
         LockerLocation location = LockerLocation.of(lockerLocationCreateRequestDto.getName());
@@ -315,15 +283,11 @@ public class LockerService {
 
     @Transactional
     public LockerLocationResponseDto updateLocation(
-            String updaterId,
+            User user,
             String locationId,
             LockerLocationUpdateRequestDto lockerLocationRequestDto
     ) {
-        User user = userRepository.findById(updaterId).orElseThrow(() -> new BadRequestException(
-                ErrorCode.ROW_DOES_NOT_EXIST,
-                MessageUtil.LOGIN_USER_NOT_FOUND
-        ));
-
+        Set<Role> roles = user.getRoles();
         LockerLocation lockerLocation = lockerLocationRepository.findById(locationId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -346,8 +310,8 @@ public class LockerService {
 
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
-                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .consistOf(ConstraintValidator.of(lockerLocation, this.validator))
                 .validate();
 
@@ -359,12 +323,8 @@ public class LockerService {
     }
 
     @Transactional
-    public LockerLocationResponseDto deleteLocation(String deleterId, String lockerLocationId) {
-        User user = userRepository.findById(deleterId).orElseThrow(() -> new BadRequestException(
-                ErrorCode.ROW_DOES_NOT_EXIST,
-                MessageUtil.LOGIN_USER_NOT_FOUND
-        ));
-
+    public LockerLocationResponseDto deleteLocation(User user, String lockerLocationId) {
+        Set<Role> roles = user.getRoles();
         LockerLocation lockerLocation = lockerLocationRepository.findById(lockerLocationId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -381,8 +341,8 @@ public class LockerService {
 
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
-                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .validate();
 
         lockerLocationRepository.delete(lockerLocation);
@@ -407,18 +367,15 @@ public class LockerService {
 
     @Transactional
     public void setExpireAt(
-            String requestUserId,
+            User user,
             LockerExpiredAtRequestDto lockerExpiredAtRequestDto
     ) {
-        User user = userRepository.findById(requestUserId).orElseThrow(() -> new BadRequestException(
-                ErrorCode.ROW_DOES_NOT_EXIST,
-                MessageUtil.LOGIN_USER_NOT_FOUND
-        ));
+        Set<Role> roles = user.getRoles();
 
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
-                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .validate();
 
         commonService.findByKeyInTextField(StaticValue.EXPIRED_AT)
@@ -441,13 +398,9 @@ public class LockerService {
     }
 
     @Transactional
-    public void createAllLockers(String creatorId) {
+    public void createAllLockers(User user) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        User user = userRepository.findById(creatorId).orElseThrow(() -> new BadRequestException(
-                ErrorCode.ROW_DOES_NOT_EXIST,
-                MessageUtil.LOGIN_USER_NOT_FOUND
-        ));
 
         LockerLocation lockerLocationSecondFloor = LockerLocation.of("Second Floor");
         lockerLocationRepository.save(lockerLocationSecondFloor);
@@ -473,11 +426,12 @@ public class LockerService {
                     lockerLocationSecondFloor,
                     null
             );
+            Set<Role> roles = user.getRoles();
 
             validatorBucket
                     .consistOf(UserStateValidator.of(user.getState()))
-                    .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
-                    .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
+                    .consistOf(UserRoleIsNoneValidator.of(roles))
+                    .consistOf(UserRoleValidator.of(roles, Set.of()))
                     .consistOf(ConstraintValidator.of(locker, this.validator))
                     .validate();
 
