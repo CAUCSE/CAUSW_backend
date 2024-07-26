@@ -10,10 +10,12 @@ import net.causw.application.comment.CommentService;
 import net.causw.application.dto.comment.CommentCreateRequestDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.comment.CommentUpdateRequestDto;
+import net.causw.config.security.userdetails.CustomUserDetails;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.UnauthorizedException;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -56,11 +58,11 @@ public class CommentController {
     })
     public Page<CommentResponseDto> findAllComments(
             @RequestParam String postId,
-            @RequestParam(defaultValue = "0") Integer pageNum
+            @RequestParam(defaultValue = "0") Integer pageNum,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.commentService.findAllComments(loginUserId, postId, pageNum);
+
+        return this.commentService.findAllComments(userDetails.getUser(), postId, pageNum);
     }
 
     @PostMapping
@@ -86,11 +88,10 @@ public class CommentController {
             @ApiResponse(responseCode = "4004", description = "삭제된 동아리입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     public CommentResponseDto createComment(
-            @RequestBody CommentCreateRequestDto commentCreateRequestDto
+            @RequestBody CommentCreateRequestDto commentCreateRequestDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.commentService.createComment(loginUserId, commentCreateRequestDto);
+        return this.commentService.createComment(userDetails.getUser(), commentCreateRequestDto);
     }
 
     @PutMapping(value = "/{id}")
@@ -120,12 +121,11 @@ public class CommentController {
     })
     public CommentResponseDto updateComment(
             @PathVariable String id,
-            @RequestBody CommentUpdateRequestDto commentUpdateRequestDto
+            @RequestBody CommentUpdateRequestDto commentUpdateRequestDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
         return this.commentService.updateComment(
-                loginUserId,
+                userDetails.getUser(),
                 id,
                 commentUpdateRequestDto
         );
@@ -158,10 +158,9 @@ public class CommentController {
             @ApiResponse(responseCode = "5000", description = "Comment id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     public CommentResponseDto deleteComment(
-            @PathVariable String id
+            @PathVariable String id,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.commentService.deleteComment(loginUserId, id);
+        return this.commentService.deleteComment(userDetails.getUser(), id);
     }
 }
