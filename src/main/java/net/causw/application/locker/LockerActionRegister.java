@@ -36,7 +36,7 @@ public class LockerActionRegister implements LockerAction {
                 .consistOf(LockerIsDeactivatedValidator.of(locker.getIsActive()))
                 .validate();
 
-        if (!user.getRole().equals(Role.ADMIN)) {
+        if (!user.getRoles().contains(Role.ADMIN)) {
             ValidatorBucket.of()
                     .consistOf(LockerAccessValidator.of(commonService.findByKeyInFlag(LOCKER_ACCESS).orElse(false)))
                     .validate();

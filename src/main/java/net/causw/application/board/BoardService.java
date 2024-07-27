@@ -32,10 +32,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.validation.Validator;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -50,18 +48,18 @@ public class BoardService {
 
     @Transactional(readOnly = true)
     public List<BoardResponseDto> findAllBoard(
-            String loginUserId
+            User user
     ) {
-        User user = getUser(loginUserId);
+        Set<Role> roles = user.getRoles();
 
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .validate();
 
-        if (user.getRole().equals(Role.ADMIN) || user.getRole().getValue().contains("PRESIDENT")) {
+        if (roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT)) {
             return boardRepository.findByOrderByCreatedAtAsc().stream()
-                    .map(board -> toBoardResponseDto(board, user.getRole()))
+                    .map(board -> toBoardResponseDto(board, roles))
                     .collect(Collectors.toList());
         } else {
             List<Circle> joinCircles = circleMemberRepository.findByUser_Id(user.getId()).stream()
@@ -70,7 +68,7 @@ public class BoardService {
                     .collect(Collectors.toList());
             if (joinCircles.isEmpty()) {
                 return boardRepository.findByCircle_IdIsNullAndIsDeletedOrderByCreatedAtAsc(false).stream()
-                        .map(board -> toBoardResponseDto(board, user.getRole()))
+                        .map(board -> toBoardResponseDto(board, roles))
                         .collect(Collectors.toList());
             } else {
                 List<String> circleIdList = joinCircles.stream()
@@ -80,7 +78,7 @@ public class BoardService {
                 return Stream.concat(
                                 this.boardRepository.findByCircle_IdIsNullAndIsDeletedOrderByCreatedAtAsc(false).stream(),
                                 this.boardRepository.findByCircle_IdInAndIsDeletedFalseOrderByCreatedAtAsc(circleIdList).stream())
-                        .map(board -> toBoardResponseDto(board, user.getRole()))
+                        .map(board -> toBoardResponseDto(board, roles))
                         .collect(Collectors.toList());
             }
         }
@@ -88,15 +86,15 @@ public class BoardService {
 
     @Transactional
     public BoardResponseDto createBoard(
-            String loginUserId,
+            User creator,
             BoardCreateRequestDto boardCreateRequestDto
     ) {
-        User creator = getUser(loginUserId);
+        Set<Role> roles = creator.getRoles();
 
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         validatorBucket
                 .consistOf(UserStateValidator.of(creator.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(creator.getRole()));
+                .consistOf(UserRoleIsNoneValidator.of(roles));
 
         Circle circle = boardCreateRequestDto.getCircleId().map(
                 circleId -> {
@@ -104,10 +102,12 @@ public class BoardService {
 
                     validatorBucket
                             .consistOf(TargetIsDeletedValidator.of(newCircle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                            .consistOf(UserRoleValidator.of(creator.getRole(),
-                                    List.of(Role.LEADER_CIRCLE)));
+                            //동아리장이거나 관리자만 통과
+                            .consistOf(UserRoleValidator.of(roles,
+                                    Set.of(Role.LEADER_CIRCLE)));
 
-                    if (creator.getRole().getValue().contains("LEADER_CIRCLE") && !creator.getRole().getValue().contains("PRESIDENT")) {
+                    //동아리장인 경우와 회장단이 아닌경우에 아래 조건문을 실행한다.
+                    if (roles.contains(Role.LEADER_CIRCLE)) {
                         validatorBucket
                                 .consistOf(UserEqualValidator.of(
                                         newCircle.getLeader().map(User::getId).orElseThrow(
@@ -116,7 +116,7 @@ public class BoardService {
                                                         MessageUtil.NOT_CIRCLE_LEADER
                                                 )
                                         ),
-                                        loginUserId
+                                        creator.getId()
                                 ));
                     }
 
@@ -125,7 +125,7 @@ public class BoardService {
         ).orElseGet(
                 () -> {
                     validatorBucket
-                            .consistOf(UserRoleValidator.of(creator.getRole(), List.of()));
+                            .consistOf(UserRoleValidator.of(roles, Set.of()));
 
                     return null;
                 }
@@ -143,16 +143,16 @@ public class BoardService {
                 .consistOf(ConstraintValidator.of(board, this.validator))
                 .validate();
 
-        return toBoardResponseDto(boardRepository.save(board), creator.getRole());
+        return toBoardResponseDto(boardRepository.save(board), roles);
     }
 
     @Transactional
     public BoardResponseDto updateBoard(
-            String loginUserId,
+            User updater,
             String boardId,
             BoardUpdateRequestDto boardUpdateRequestDto
     ) {
-        User updater = getUser(loginUserId);
+        Set<Role> roles = updater.getRoles();
         Board board = getBoard(boardId);
 
         ValidatorBucket validatorBucket = initializeValidatorBucket(updater, board);
@@ -168,44 +168,44 @@ public class BoardService {
                 .consistOf(ConstraintValidator.of(board, this.validator))
                 .validate();
 
-        return toBoardResponseDto(boardRepository.save(board), updater.getRole());
+        return toBoardResponseDto(boardRepository.save(board), roles);
     }
 
     @Transactional
     public BoardResponseDto deleteBoard(
-            String loginUserId,
+            User deleter,
             String boardId
     ) {
-        User deleter = getUser(loginUserId);
+        Set<Role> roles = deleter.getRoles();
         Board board = getBoard(boardId);
 
         ValidatorBucket validatorBucket = initializeValidatorBucket(deleter, board);
         if (board.getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
             validatorBucket
                     .consistOf(UserRoleValidator.of(
-                            deleter.getRole(),
-                            List.of()
+                            roles,
+                            Set.of()
                     ));
         }
         validatorBucket.validate();
 
         board.setIsDeleted(true);
-        return toBoardResponseDto(boardRepository.save(board), deleter.getRole());
+        return toBoardResponseDto(boardRepository.save(board), roles);
     }
 
     @Transactional
     public BoardResponseDto restoreBoard(
-            String loginUserId,
+            User restorer,
             String boardId
     ) {
-        User restorer = getUser(loginUserId);
+        Set<Role> roles = restorer.getRoles();
         Board board = getBoard(boardId);
 
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         validatorBucket
                 .consistOf(UserStateValidator.of(restorer.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(restorer.getRole()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(TargetIsNotDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD));
 
         Optional<Circle> circles = Optional.ofNullable(board.getCircle());
@@ -213,10 +213,10 @@ public class BoardService {
                 circle -> {
                     validatorBucket
                             .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                            .consistOf(UserRoleValidator.of(restorer.getRole(),
-                                    List.of(Role.LEADER_CIRCLE)));
+                            .consistOf(UserRoleValidator.of(roles,
+                                    Set.of(Role.LEADER_CIRCLE)));
 
-                    if (restorer.getRole().getValue().contains("LEADER_CIRCLE") && !restorer.getRole().getValue().contains("PRESIDENT")) {
+                    if (roles.contains(Role.LEADER_CIRCLE)) {
                         validatorBucket
                                 .consistOf(UserEqualValidator.of(
                                         circle.getLeader().map(User::getId).orElseThrow(
@@ -230,28 +230,29 @@ public class BoardService {
                     }
                 },
                 () -> validatorBucket
-                        .consistOf(UserRoleValidator.of(restorer.getRole(), List.of()))
+                        .consistOf(UserRoleValidator.of(roles, Set.of()))
         );
 
         if (board.getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
             validatorBucket
                     .consistOf(UserRoleValidator.of(
-                            restorer.getRole(),
-                            List.of()
+                            roles,
+                            Set.of()
                     ));
         }
         validatorBucket.validate();
 
         board.setIsDeleted(false);
-        return toBoardResponseDto(boardRepository.save(board), restorer.getRole());
+        return toBoardResponseDto(boardRepository.save(board), roles);
     }
 
     private ValidatorBucket initializeValidatorBucket(User user, Board board) {
+        Set<Role> roles = user.getRoles();
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         validatorBucket
                 .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD));
 
         Optional<Circle> circles = Optional.ofNullable(board.getCircle());
@@ -259,10 +260,10 @@ public class BoardService {
                 circle -> {
                     validatorBucket
                             .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                            .consistOf(UserRoleValidator.of(user.getRole(),
-                                    List.of(Role.LEADER_CIRCLE)));
+                            .consistOf(UserRoleValidator.of(roles,
+                                    Set.of(Role.LEADER_CIRCLE)));
 
-                    if (user.getRole().getValue().contains("LEADER_CIRCLE") && !user.getRole().getValue().contains("PRESIDENT")) {
+                    if (roles.contains(Role.LEADER_CIRCLE)) {
                         validatorBucket
                                 .consistOf(UserEqualValidator.of(
                                         circle.getLeader().map(User::getId).orElseThrow(
@@ -276,14 +277,16 @@ public class BoardService {
                     }
                 },
                 () -> validatorBucket
-                        .consistOf(UserRoleValidator.of(user.getRole(), List.of()))
+                        .consistOf(UserRoleValidator.of(roles, Set.of()))
         );
         return validatorBucket;
     }
 
-    private BoardResponseDto toBoardResponseDto(Board board, Role userRole) {
-        List<String> roles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
-        Boolean writable = roles.stream().anyMatch(str -> userRole.getValue().contains(str));
+    private BoardResponseDto toBoardResponseDto(Board board, Set<Role> userRoles) {
+        List<String> roles = Arrays.asList(board.getCreateRoles().split(","));
+        Boolean writable = userRoles.stream()
+                .map(Role::getValue)
+                .anyMatch(roles::contains);
         String circleId = Optional.ofNullable(board.getCircle()).map(Circle::getId).orElse(null);
         String circleName = Optional.ofNullable(board.getCircle()).map(Circle::getName).orElse(null);
         return DtoMapper.INSTANCE.toBoardResponseDto(

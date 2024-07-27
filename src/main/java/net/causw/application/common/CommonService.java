@@ -44,12 +44,12 @@ public class CommonService {
         );
     }
 
-    public Boolean createFlag(String loginUserId, String key, Boolean value) {
+    public Boolean createFlag(String key, Boolean value) {
 
         return flagRepository.save(Flag.of(key, value)).getValue();
     }
 
-    public Boolean updateFlag(String loginUserId , String key, Boolean value) {
+    public Boolean updateFlag(String key, Boolean value) {
         return flagRepository.findByKey(key).map(
                 flag -> {
                     flag.setValue(value);

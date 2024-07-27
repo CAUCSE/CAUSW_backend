@@ -13,6 +13,7 @@ import net.causw.domain.validation.ValidatorBucket;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @NoArgsConstructor
 public class LockerActionReturn implements LockerAction {
@@ -32,7 +33,7 @@ public class LockerActionReturn implements LockerAction {
 
         if (!user.getId().equals(locker.getUser().get().getId()))
             ValidatorBucket.of()
-                    .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
+                    .consistOf(UserRoleValidator.of(user.getRoles(), Set.of()))
                     .validate();
 
         locker.returnLocker();

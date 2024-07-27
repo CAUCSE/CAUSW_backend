@@ -14,12 +14,14 @@ import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.circle.CircleUpdateRequestDto;
 import net.causw.application.dto.circle.CircleBoardsResponseDto;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
+import net.causw.config.security.userdetails.CustomUserDetails;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.CircleMemberStatus;
 import net.causw.domain.validation.ConstraintValidator;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -83,11 +85,8 @@ public class CircleController {
             @ApiResponse(responseCode = "4104", description = "대기 중인 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
             @ApiResponse(responseCode = "4109", description = "가입이 거절된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
     })
-    public List<CirclesResponseDto> findAll() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-
-        return this.circleService.findAll(currentUserId);
+    public List<CirclesResponseDto> findAll(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return this.circleService.findAll(userDetails.getUser());
     }
 
 
@@ -116,11 +115,11 @@ public class CircleController {
             @ApiResponse(responseCode = "4102", description = "추방된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
             @ApiResponse(responseCode = "4108", description = "로그인된 사용자가 가입 신청한 소모임이 아닙니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
     })
-    public CircleBoardsResponseDto findBoards(@PathVariable(name = "circleId") String circleId) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-
-        return this.circleService.findBoards(currentUserId, circleId);
+    public CircleBoardsResponseDto findBoards(
+            @PathVariable(name = "circleId") String circleId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return this.circleService.findBoards(userDetails.getUser(), circleId);
     }
 
 
@@ -186,14 +185,13 @@ public class CircleController {
             @ApiResponse(responseCode = "4000", description = "소모임원을 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     public List<CircleMemberResponseDto> getUserList(
-            @PathVariable String circleId,
-            @RequestParam CircleMemberStatus circleMemberStatus
+            @PathVariable("circleId") String circleId,
+            @RequestParam("circleMemberStatus") CircleMemberStatus circleMemberStatus,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
 
         return this.circleService.getUserList(
-                currentUserId,
+                userDetails.getUser(),
                 circleId,
                 circleMemberStatus
         );
@@ -228,12 +226,10 @@ public class CircleController {
             @ApiResponse(responseCode = "5000", description = "Circle id immediately can be used, but exception occured", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
     public CircleResponseDto create(
-            @RequestBody CircleCreateRequestDto circleCreateRequestDto
+            @RequestBody CircleCreateRequestDto circleCreateRequestDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-
-        return this.circleService.create(currentUserId, circleCreateRequestDto);
+        return this.circleService.create(userDetails.getUser(), circleCreateRequestDto);
     }
 
 
@@ -279,12 +275,10 @@ public class CircleController {
     })
     public CircleResponseDto update(
             @PathVariable(name = "circleId") String circleId,
-            @RequestBody CircleUpdateRequestDto circleUpdateRequestDto
+            @RequestBody CircleUpdateRequestDto circleUpdateRequestDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-
-        return this.circleService.update(currentUserId, circleId, circleUpdateRequestDto);
+        return this.circleService.update(userDetails.getUser(), circleId, circleUpdateRequestDto);
     }
 
 
@@ -328,12 +322,10 @@ public class CircleController {
             @ApiResponse(responseCode = "5000", description = "Circle id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
     public CircleResponseDto delete(
-            @PathVariable(name = "circleId") String circleId
+            @PathVariable(name = "circleId") String circleId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-
-        return this.circleService.delete(currentUserId, circleId);
+        return this.circleService.delete(userDetails.getUser(), circleId);
     }
 
 
@@ -378,12 +370,10 @@ public class CircleController {
             @ApiResponse(responseCode = "5000", description = "Application id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
     public CircleMemberResponseDto userApply(
-            @PathVariable(name = "circleId") String circleId
+            @PathVariable(name = "circleId") String circleId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-
-        return this.circleService.userApply(currentUserId, circleId);
+        return this.circleService.userApply(userDetails.getUser(), circleId);
     }
 
 
@@ -446,12 +436,10 @@ public class CircleController {
     @ApiResponse(responseCode = "4102", description = "추방된 사용자이거나 다른 권한 관련 오류가 발생했습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
     @ApiResponse(responseCode = "5000", description = "동아리에 대한 특정 예외가 발생했습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     public CircleMemberResponseDto leaveUser(
-            @PathVariable(name = "circleId") String circleId
+            @PathVariable(name = "circleId") String circleId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-
-        return this.circleService.leaveUser(currentUserId, circleId);
+        return this.circleService.leaveUser(userDetails.getUser(), circleId);
     }
 
 
@@ -499,13 +487,11 @@ public class CircleController {
     })
     public CircleMemberResponseDto dropUser(
             @PathVariable(name = "userId") String userId,
-            @PathVariable(name = "circleId") String circleId
+            @PathVariable(name = "circleId") String circleId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-
         return this.circleService.dropUser(
-                currentUserId,
+                userDetails.getUser(),
                 userId,
                 circleId
         );
@@ -546,12 +532,10 @@ public class CircleController {
             @ApiResponse(responseCode = "5000", description = "This circle has not circle leader or Application id checked, but exception occurred", content = @Content(schema = @Schema(implementation = InternalServerException.class)))
     })
     public CircleMemberResponseDto acceptUser(
-            @PathVariable(name = "applicationId") String applicationId
+            @PathVariable(name = "applicationId") String applicationId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-
-        return this.circleService.acceptUser(currentUserId, applicationId);
+        return this.circleService.acceptUser(userDetails.getUser(), applicationId);
     }
 
 
@@ -589,12 +573,10 @@ public class CircleController {
             @ApiResponse(responseCode = "5000", description = "This circle has not circle leader or Application id checked, but exception occurred", content = @Content(schema = @Schema(implementation = InternalServerException.class)))
     })
     public CircleMemberResponseDto rejectUser(
-            @PathVariable(name = "applicationId") String applicationId
+            @PathVariable(name = "applicationId") String applicationId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-
-        return this.circleService.rejectUser(currentUserId, applicationId);
+        return this.circleService.rejectUser(userDetails.getUser(), applicationId);
     }
 
 
@@ -642,11 +624,10 @@ public class CircleController {
     })
     public CircleMemberResponseDto restoreUser(
             @PathVariable(name = "circleId") String circleId,
-            @PathVariable(name = "userId") String userId
+            @PathVariable(name = "userId") String userId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserId = ((String) principal);
-        return this.circleService.restoreUser(currentUserId, circleId, userId);
+        return this.circleService.restoreUser(userDetails.getUser(), circleId, userId);
     }
 
 }

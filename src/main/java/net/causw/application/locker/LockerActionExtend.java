@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @NoArgsConstructor
 public class LockerActionExtend implements LockerAction {
@@ -37,7 +38,7 @@ public class LockerActionExtend implements LockerAction {
 
         if (!user.getId().equals(locker.getUser().get().getId()))
             ValidatorBucket.of()
-                    .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
+                    .consistOf(UserRoleValidator.of(user.getRoles(), Set.of()))
                     .validate();
 
         LocalDateTime expiredAtToExtend = LocalDateTime.parse(commonService.findByKeyInTextField(StaticValue.EXPIRED_AT).orElseThrow(

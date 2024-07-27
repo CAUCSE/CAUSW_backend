@@ -9,6 +9,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+import java.util.Set;
+
 @Getter
 @Builder
 public class UserDomainModel {
@@ -34,7 +36,7 @@ public class UserDomainModel {
     private Integer admissionYear;
 
     @NotNull(message = "사용자 권한이 입력되지 않았습니다.")
-    private Role role;
+    private Set<Role> roles;
 
     @NotNull(message = "사용자 상태가 입력되지 않았습니다.")
     private UserState state;
@@ -46,7 +48,7 @@ public class UserDomainModel {
             String password,
             String studentId,
             Integer admissionYear,
-            Role role,
+            Set<Role> roles,
             String profileImage,
             String refreshToken,
             UserState state
@@ -58,7 +60,7 @@ public class UserDomainModel {
                 .password(password)
                 .studentId(studentId)
                 .admissionYear(admissionYear)
-                .role(role)
+                .roles(roles)
                 .profileImage(profileImage)
                 .refreshToken(refreshToken)
                 .state(state)

@@ -37,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Validator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -52,8 +53,7 @@ public class CommentService {
     private final Validator validator;
 
     @Transactional
-    public CommentResponseDto createComment(String loginUserId, CommentCreateRequestDto commentCreateDto) {
-        User creator = getUser(loginUserId);
+    public CommentResponseDto createComment(User creator, CommentCreateRequestDto commentCreateDto) {
         Post post = getPost(commentCreateDto.getPostId());
         Comment comment = Comment.of(commentCreateDto.getContent(), false, creator, post);
 
@@ -66,8 +66,7 @@ public class CommentService {
     }
 
     @Transactional(readOnly = true)
-    public Page<CommentResponseDto> findAllComments(String loginUserId, String postId, Integer pageNum) {
-        User user = getUser(loginUserId);
+    public Page<CommentResponseDto> findAllComments(User user, String postId, Integer pageNum) {
         Post post = getPost(postId);
 
         ValidatorBucket validatorBucket = initializeValidator(user, post);
@@ -84,11 +83,11 @@ public class CommentService {
 
     @Transactional
     public CommentResponseDto updateComment(
-            String loginUserId,
+            User updater,
             String commentId,
             CommentUpdateRequestDto commentUpdateRequestDto
     ) {
-        User updater = getUser(loginUserId);
+        Set<Role> roles = updater.getRoles();
         Comment comment = getComment(commentId);
         Post post = getPost(comment.getPost().getId());
 
@@ -97,8 +96,8 @@ public class CommentService {
                 .consistOf(TargetIsDeletedValidator.of(comment.getIsDeleted(), StaticValue.DOMAIN_COMMENT))
                 .consistOf(ConstraintValidator.of(comment, this.validator))
                 .consistOf(ContentsAdminValidator.of(
-                        updater.getRole(),
-                        loginUserId,
+                        roles,
+                        updater.getId(),
                         comment.getWriter().getId(),
                         List.of()
                 ));
@@ -111,20 +110,20 @@ public class CommentService {
 
 
     @Transactional
-    public CommentResponseDto deleteComment(String loginUserId, String commentId) {
-        User deleter = getUser(loginUserId);
+    public CommentResponseDto deleteComment(User deleter, String commentId) {
+        Set<Role> roles = deleter.getRoles();
         Comment comment = getComment(commentId);
         Post post = getPost(comment.getPost().getId());
 
         ValidatorBucket validatorBucket = initializeValidator(deleter, post);
         validatorBucket
                 .consistOf(UserStateValidator.of(deleter.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(deleter.getRole()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(TargetIsDeletedValidator.of(comment.getIsDeleted(), StaticValue.DOMAIN_COMMENT));
 
         Optional<Circle> circles = Optional.ofNullable(post.getBoard().getCircle());
         circles
-                .filter(circle -> !deleter.getRole().equals(Role.ADMIN) && !deleter.getRole().getValue().contains("PRESIDENT"))
+                .filter(circle -> !roles.contains(Role.ADMIN) && !roles.contains(Role.PRESIDENT) && !roles.contains(Role.VICE_PRESIDENT))
                 .ifPresentOrElse(
                         circle -> {
                             CircleMember member = getCircleMember(deleter.getId(), circle.getId());
@@ -136,13 +135,13 @@ public class CommentService {
                                             List.of(CircleMemberStatus.MEMBER)
                                     ))
                                     .consistOf(ContentsAdminValidator.of(
-                                            deleter.getRole(),
-                                            loginUserId,
+                                            roles,
+                                            deleter.getId(),
                                             comment.getWriter().getId(),
                                             List.of(Role.LEADER_CIRCLE)
                                     ));
 
-                            if (deleter.getRole().getValue().contains("LEADER_CIRCLE") && !comment.getWriter().getId().equals(loginUserId)) {
+                            if (roles.contains(Role.LEADER_CIRCLE) && !comment.getWriter().getId().equals(deleter.getId())) {
                                 validatorBucket
                                         .consistOf(UserEqualValidator.of(
                                                 circle.getLeader().map(User::getId).orElseThrow(
@@ -152,14 +151,14 @@ public class CommentService {
 
                                                         )
                                                 ),
-                                                loginUserId
+                                                deleter.getId()
                                         ));
                             }
                         },
                         () -> validatorBucket
                                 .consistOf(ContentsAdminValidator.of(
-                                        deleter.getRole(),
-                                        loginUserId,
+                                        roles,
+                                        deleter.getId(),
                                         comment.getWriter().getId(),
                                         List.of()
                                 ))
@@ -185,15 +184,16 @@ public class CommentService {
 
     private ValidatorBucket initializeValidator(User user, Post post) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
+        Set<Role> roles = user.getRoles();
         validatorBucket
                 .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(TargetIsDeletedValidator.of(post.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
                 .consistOf(TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST));
 
         Optional<Circle> circles = Optional.ofNullable(post.getBoard().getCircle());
         circles
-                .filter(circle -> !user.getRole().equals(Role.ADMIN) && !user.getRole().getValue().contains("PRESIDENT"))
+                .filter(circle -> !roles.contains(Role.ADMIN) && !roles.contains(Role.PRESIDENT) && !roles.contains(Role.VICE_PRESIDENT))
                 .ifPresent(circle -> {
                     CircleMember member = getCircleMember(user.getId(), circle.getId());
 

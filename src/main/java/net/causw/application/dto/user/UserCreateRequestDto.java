@@ -8,6 +8,8 @@ import net.causw.adapter.persistence.user.User;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.enums.UserState;
 
+import java.util.Set;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -31,11 +33,11 @@ public class UserCreateRequestDto {
 
     @Schema(description = "프로필 이미지 URL", example = "", required = true)
     private String profileImage;
-    public User toEntity(String encodedPassword, Role role, UserState state) {
+    public User toEntity(String encodedPassword, Set<Role> roles, UserState state) {
         return User.builder()
                 .email(email)
                 .name(name)
-                .role(role)
+                .roles(roles)
                 .state(state)
                 .password(encodedPassword)
                 .studentId(studentId)

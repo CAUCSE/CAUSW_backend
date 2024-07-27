@@ -10,10 +10,12 @@ import net.causw.application.board.BoardService;
 import net.causw.application.dto.board.BoardCreateRequestDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.board.BoardUpdateRequestDto;
+import net.causw.config.security.userdetails.CustomUserDetails;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -46,10 +48,10 @@ public class BoardController {
             @ApiResponse(responseCode = "4109", description = "가입이 거절된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
             @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
-    public List<BoardResponseDto> findAllBoard() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.boardService.findAllBoard(loginUserId);
+    public List<BoardResponseDto> findAllBoard(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return this.boardService.findAllBoard(userDetails.getUser());
     }
 
     @PostMapping
@@ -72,11 +74,11 @@ public class BoardController {
             @ApiResponse(responseCode = "5000", description = "The board has circle without circle leader", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
     public BoardResponseDto createBoard(
-            @RequestBody BoardCreateRequestDto boardCreateRequestDto
+            @RequestBody BoardCreateRequestDto boardCreateRequestDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.boardService.createBoard(loginUserId, boardCreateRequestDto);
+
+        return this.boardService.createBoard(userDetails.getUser(), boardCreateRequestDto);
     }
 
     @PutMapping(value = "/{id}")
@@ -97,12 +99,11 @@ public class BoardController {
             @ApiResponse(responseCode = "5001", description = "Board id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
     public BoardResponseDto updateBoard(
-            @PathVariable String id,
-            @RequestBody BoardUpdateRequestDto boardUpdateRequestDto
+            @PathVariable("id") String id,
+            @RequestBody BoardUpdateRequestDto boardUpdateRequestDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.boardService.updateBoard(loginUserId, id, boardUpdateRequestDto);
+        return this.boardService.updateBoard(userDetails.getUser(), id, boardUpdateRequestDto);
     }
 
     @DeleteMapping(value = "/{id}")
@@ -122,11 +123,11 @@ public class BoardController {
             @ApiResponse(responseCode = "5000", description = "Board id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
     public BoardResponseDto deleteBoard(
-            @PathVariable String id
+            @PathVariable("id") String id,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.boardService.deleteBoard(loginUserId, id);
+
+        return this.boardService.deleteBoard(userDetails.getUser(), id);
     }
 
     @PutMapping(value = "/{id}/restore")
@@ -146,11 +147,9 @@ public class BoardController {
             @ApiResponse(responseCode = "5000", description = "Board id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
     public BoardResponseDto restoreBoard(
-
-            @PathVariable String id
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable("id") String id
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.boardService.restoreBoard(loginUserId, id);
+        return this.boardService.restoreBoard(userDetails.getUser(), id);
     }
 }
