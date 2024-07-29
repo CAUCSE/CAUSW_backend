@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.user.*;
 import net.causw.application.user.UserService;
@@ -153,9 +154,13 @@ public class UserController {
             @ApiResponse(responseCode = "4003", description = "비밀번호 형식이 잘못되었습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "4003", description = "입학년도를 다시 확인해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
+<<<<<<< HEAD
     public UserResponseDto signUp(
             @RequestBody UserCreateRequestDto userCreateDto
     ) {
+=======
+    public UserResponseDto signUp(@Valid @RequestBody UserCreateRequestDto userCreateDto) {
+>>>>>>> fd3bc17 (refactor: User 관련 dto에 Valid 적용)
         return this.userService.signUp(userCreateDto);
     }
 
@@ -177,7 +182,7 @@ public class UserController {
             @ApiResponse(responseCode = "4104", description = "대기 중인 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "4109", description = "가입이 거절된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
-    public UserSignInResponseDto signIn(@RequestBody UserSignInRequestDto userSignInRequestDto) {
+    public UserSignInResponseDto signIn(@Valid @RequestBody UserSignInRequestDto userSignInRequestDto) {
         return this.userService.signIn(userSignInRequestDto);
     }
 
@@ -217,12 +222,19 @@ public class UserController {
             @ApiResponse(responseCode = "4003", description = "입학년도를 다시 확인해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
+<<<<<<< HEAD
     public UserResponseDto update(
             @RequestBody UserUpdateRequestDto userUpdateDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
 
         return this.userService.update(userDetails.getUser(), userUpdateDto);
+=======
+    public UserResponseDto update(@Valid @RequestBody UserUpdateRequestDto userUpdateDto) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String loginUserId = ((String) principal);
+        return this.userService.update(loginUserId, userUpdateDto);
+>>>>>>> fd3bc17 (refactor: User 관련 dto에 Valid 적용)
     }
 
     /**
@@ -251,6 +263,7 @@ public class UserController {
             @ApiResponse(responseCode = "5000", description = "동문회장이 존재하지 않습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "5001", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
+<<<<<<< HEAD
     public UserResponseDto updateRole(
             @PathVariable("granteeId") String granteeId,
             @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto,
@@ -261,21 +274,41 @@ public class UserController {
     }
 
 
+=======
+    public UserResponseDto updateRole(@PathVariable String granteeId, @Valid @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String loginUserId = ((String) principal);
+        return this.userService.updateUserRole(loginUserId, granteeId, userUpdateRoleRequestDto);
+    }
+
+    /**
+     * 비밀번호 찾기 API
+     * @param userFindPasswordRequestDto
+     * @return
+     */
+>>>>>>> fd3bc17 (refactor: User 관련 dto에 Valid 적용)
     @PutMapping(value = "/password/find")
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "비밀번호 찾기 API (완료)", description = "비밀번호 재설정 이메일 전송 API입니다.")
-    public UserResponseDto findPassword(@RequestBody UserFindPasswordRequestDto userFindPasswordRequestDto) {
+    public UserResponseDto findPassword(@Valid @RequestBody UserFindPasswordRequestDto userFindPasswordRequestDto) {
         return this.userService.findPassword(userFindPasswordRequestDto);
     }
 
     @PutMapping(value = "/password")
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "비밀번호 업데이트 API (완료)")
+<<<<<<< HEAD
     public UserResponseDto updatePassword(
             @RequestBody UserUpdatePasswordRequestDto userUpdatePasswordRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.userService.updatePassword(userDetails.getUser(), userUpdatePasswordRequestDto);
+=======
+    public UserResponseDto updatePassword(@Valid @RequestBody UserUpdatePasswordRequestDto userUpdatePasswordRequestDto) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String loginUserId = ((String) principal);
+        return this.userService.updatePassword(loginUserId, userUpdatePasswordRequestDto);
+>>>>>>> fd3bc17 (refactor: User 관련 dto에 Valid 적용)
     }
 
     /**
@@ -351,7 +384,7 @@ public class UserController {
             @ApiResponse(responseCode = "4107", description = "이미 등록된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     public UserAdmissionResponseDto createAdmission(
-            @ModelAttribute UserAdmissionCreateRequestDto userAdmissionCreateRequestDto
+            @Valid @ModelAttribute UserAdmissionCreateRequestDto userAdmissionCreateRequestDto
     ) {
         return this.userService.createAdmission(userAdmissionCreateRequestDto);
     }
