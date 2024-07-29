@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.board.BoardService;
 import net.causw.application.dto.board.BoardCreateRequestDto;
@@ -74,7 +75,7 @@ public class BoardController {
             @ApiResponse(responseCode = "5000", description = "The board has circle without circle leader", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
     public BoardResponseDto createBoard(
-            @RequestBody BoardCreateRequestDto boardCreateRequestDto,
+            @Valid @RequestBody BoardCreateRequestDto boardCreateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
 
@@ -100,7 +101,7 @@ public class BoardController {
     })
     public BoardResponseDto updateBoard(
             @PathVariable("id") String id,
-            @RequestBody BoardUpdateRequestDto boardUpdateRequestDto,
+            @Valid @RequestBody BoardUpdateRequestDto boardUpdateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.boardService.updateBoard(userDetails.getUser(), id, boardUpdateRequestDto);
