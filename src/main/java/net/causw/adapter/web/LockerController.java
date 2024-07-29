@@ -1,6 +1,7 @@
 package net.causw.adapter.web;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.locker.LockerService;
 import net.causw.application.dto.locker.LockerExpiredAtRequestDto;
@@ -50,8 +51,12 @@ public class LockerController {
     @Operation(summary = "사물함 생성 Api(완료)", description = "사물함을 생성하는 Api입니다.")
     @ResponseStatus(value = HttpStatus.CREATED)
     public LockerResponseDto create(
+<<<<<<< HEAD
             @RequestBody LockerCreateRequestDto lockerCreateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
+=======
+            @Valid @RequestBody LockerCreateRequestDto lockerCreateRequestDto
+>>>>>>> acda2f5 (refactor: Locker 관련 dto에 Valid 적용)
     ) {
         return this.lockerService.create(userDetails.getUser(), lockerCreateRequestDto);
     }
@@ -60,9 +65,14 @@ public class LockerController {
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "사물함 상태 update Api", description = "사물함 상태를 변경하는 Api입니다.")
     public LockerResponseDto update(
+<<<<<<< HEAD
             @PathVariable("id") String id,
             @RequestBody LockerUpdateRequestDto lockerUpdateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
+=======
+            @PathVariable String id,
+            @Valid @RequestBody LockerUpdateRequestDto lockerUpdateRequestDto
+>>>>>>> acda2f5 (refactor: Locker 관련 dto에 Valid 적용)
     ) {
         return this.lockerService.update(
                 userDetails.getUser(),
@@ -75,9 +85,14 @@ public class LockerController {
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "사물함 위치 이동 Api(완료)", description = "사물함의 위치를 이동시키는 Api입니다.")
     public LockerResponseDto move(
+<<<<<<< HEAD
             @PathVariable("id") String id,
             @RequestBody LockerMoveRequestDto lockerMoveRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
+=======
+            @PathVariable String id,
+            @Valid @RequestBody LockerMoveRequestDto lockerMoveRequestDto
+>>>>>>> acda2f5 (refactor: Locker 관련 dto에 Valid 적용)
     ) {
         return this.lockerService.move(
                 userDetails.getUser(),
@@ -117,8 +132,12 @@ public class LockerController {
     @Operation(summary = "사물함 위치 생성 API(완료)", description = "사물함 특정 층 생성 API 입니다.")
     @ResponseStatus(value = HttpStatus.CREATED)
     public LockerLocationResponseDto createLocation(
+<<<<<<< HEAD
             @RequestBody LockerLocationCreateRequestDto lockerLocationCreateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
+=======
+            @Valid @RequestBody LockerLocationCreateRequestDto lockerLocationCreateRequestDto
+>>>>>>> acda2f5 (refactor: Locker 관련 dto에 Valid 적용)
     ) {
         return this.lockerService.createLocation(userDetails.getUser(), lockerLocationCreateRequestDto);
     }
@@ -127,9 +146,14 @@ public class LockerController {
     @Operation(summary = "사물함 위치 업데이트 API(완료)", description = "사물함 특정 층 업데이트 API 입니다.")
     @ResponseStatus(value = HttpStatus.OK)
     public LockerLocationResponseDto updateLocation(
+<<<<<<< HEAD
             @PathVariable("locationId") String locationId,
             @RequestBody LockerLocationUpdateRequestDto lockerLocationUpdateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
+=======
+            @PathVariable String locationId,
+            @Valid @RequestBody LockerLocationUpdateRequestDto lockerLocationUpdateRequestDto
+>>>>>>> acda2f5 (refactor: Locker 관련 dto에 Valid 적용)
     ) {
         return this.lockerService.updateLocation(
                 userDetails.getUser(),
@@ -158,8 +182,12 @@ public class LockerController {
     @Operation(summary = "사물함 만료 기한 설정 Api(완료)", description = "사물함 만료 기한을 설정하는 API입니다.(학생회장만 가능)")
     @ResponseStatus(value = HttpStatus.OK)
     public void setExpireDate(
+<<<<<<< HEAD
             @RequestBody LockerExpiredAtRequestDto lockerExpiredAtRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
+=======
+            @Valid @RequestBody LockerExpiredAtRequestDto lockerExpiredAtRequestDto
+>>>>>>> acda2f5 (refactor: Locker 관련 dto에 Valid 적용)
     ) {
         this.lockerService.setExpireAt(userDetails.getUser(), lockerExpiredAtRequestDto);
     }
