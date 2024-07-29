@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.post.PostService;
 import net.causw.application.dto.post.BoardPostsResponseDto;
@@ -157,8 +158,12 @@ public class PostController {
             @ApiResponse(responseCode = "4107", description = "사용자가 해당 동아리의 동아리장이 아닙니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
     })
     public PostResponseDto createPost(
+<<<<<<< HEAD
             @RequestBody PostCreateRequestDto postCreateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
+=======
+            @Valid @RequestBody PostCreateRequestDto postCreateRequestDto
+>>>>>>> 2251d02 (refactor: Post 관련 dto에 Valid 적용)
     ) {
         return this.postService.createPost(userDetails.getUser(), postCreateRequestDto);
     }
@@ -222,9 +227,14 @@ public class PostController {
             @ApiResponse(responseCode = "5000", description = "Post id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
     public PostResponseDto updatePost(
+<<<<<<< HEAD
             @PathVariable("id") String id,
             @RequestBody PostUpdateRequestDto postUpdateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
+=======
+            @PathVariable String id,
+            @Valid @RequestBody PostUpdateRequestDto postUpdateRequestDto
+>>>>>>> 2251d02 (refactor: Post 관련 dto에 Valid 적용)
     ) {
 
         return this.postService.updatePost(
