@@ -41,12 +41,7 @@ public class UserCreateRequestDto {
 
     @Schema(description = "프로필 이미지 URL", example = "")
     private String profileImage;
-<<<<<<< HEAD
     public User toEntity(String encodedPassword, Set<Role> roles, UserState state) {
-=======
-
-    public User toEntity(String encodedPassword, Role role, UserState state) {
->>>>>>> fd3bc17 (refactor: User 관련 dto에 Valid 적용)
         return User.builder()
                 .email(email)
                 .name(name)

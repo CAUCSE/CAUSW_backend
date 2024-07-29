@@ -54,7 +54,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ExceptionDto handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
         GlobalExceptionHandler.log.error("error message", exception);
-        return ExceptionDto.of(ErrorCode.VALIDATE_FAILURE, exception.getMessage());
+        return ExceptionDto.of(ErrorCode.VALIDATE_FAILURE, exception.getBindingResult().getAllErrors().get(0).getDefaultMessage());
     }
 
     @ExceptionHandler(value = {UnauthorizedException.class})

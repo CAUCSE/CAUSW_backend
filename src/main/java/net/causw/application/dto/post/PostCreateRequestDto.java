@@ -25,7 +25,7 @@ public class PostCreateRequestDto {
     private String content;
 
     @Schema(description = "게시판 id", example = "uuid 형식의 String 값입니다.")
-    @NotBlank // 게시판 id
+    @NotBlank(message = "게시판 id를 입력해 주세요.")
     private String boardId;
 
     @Schema(description = "첨부파일", example = "첨부파일 url 작성")

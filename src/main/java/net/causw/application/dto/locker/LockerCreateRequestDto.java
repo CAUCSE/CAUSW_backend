@@ -13,6 +13,6 @@ import lombok.Setter;
 public class LockerCreateRequestDto {
     @NotBlank(message = "사물함 번호를 입력해 주세요.")
     private Long lockerNumber;
-    @NotBlank // 사물한 위치 id TODO
+    @NotBlank(message = "사물함 위치 id를 입력해 주세요.")
     private String lockerLocationId;
 }
