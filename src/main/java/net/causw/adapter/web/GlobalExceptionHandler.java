@@ -10,6 +10,7 @@ import net.causw.domain.exceptions.ServiceUnavailableException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -47,6 +48,13 @@ public class GlobalExceptionHandler {
     public ExceptionDto handleBadHttpRequestMethodException(HttpRequestMethodNotSupportedException exception) {
         GlobalExceptionHandler.log.error("error message", exception);
         return ExceptionDto.of(ErrorCode.INVALID_HTTP_METHOD, "Invalid request http method (GET, POST, PUT, DELETE)");
+    }
+
+    @ExceptionHandler(value = {MethodArgumentNotValidException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ExceptionDto handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
+        GlobalExceptionHandler.log.error("error message", exception);
+        return ExceptionDto.of(ErrorCode.VALIDATE_FAILURE, exception.getMessage());
     }
 
     @ExceptionHandler(value = {UnauthorizedException.class})

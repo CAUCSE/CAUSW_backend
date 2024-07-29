@@ -26,6 +26,7 @@ public enum ErrorCode {
     INVALID_EXPIRE_DATE(4016),
     FLAG_NOT_AVAILABLE(4017),
     LOCKER_ACTION_ERROR(4018),
+    VALIDATE_FAILURE(4019),
 
     /**
      * 401 Unauthorized
