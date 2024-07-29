@@ -14,7 +14,11 @@ import lombok.Setter;
 public class CircleCreateRequestDto {
 
     @Schema(description = "동아리 이름", example = "소프트웨어학부 특별기구 ICT위원회 동문네트워크")
+<<<<<<< HEAD
     @NotBlank(message = "동아리 이름은 필수 입력값입니다.")
+=======
+    @NotBlank(message = "동아리 이름을 입력해 주세요.")
+>>>>>>> 8b8cf77 (refactor: @NotBlank로 변경)
     private String name;
 
     @Schema(description = "동아리 메인 이미지, 없애기 가능(nullable)", example = "string")

@@ -16,6 +16,7 @@ import net.causw.domain.exceptions.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -154,13 +155,9 @@ public class UserController {
             @ApiResponse(responseCode = "4003", description = "비밀번호 형식이 잘못되었습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "4003", description = "입학년도를 다시 확인해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
-<<<<<<< HEAD
     public UserResponseDto signUp(
-            @RequestBody UserCreateRequestDto userCreateDto
+            @Valid @RequestBody UserCreateRequestDto userCreateDto
     ) {
-=======
-    public UserResponseDto signUp(@Valid @RequestBody UserCreateRequestDto userCreateDto) {
->>>>>>> fd3bc17 (refactor: User 관련 dto에 Valid 적용)
         return this.userService.signUp(userCreateDto);
     }
 
@@ -222,19 +219,12 @@ public class UserController {
             @ApiResponse(responseCode = "4003", description = "입학년도를 다시 확인해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
-<<<<<<< HEAD
     public UserResponseDto update(
-            @RequestBody UserUpdateRequestDto userUpdateDto,
+            @Valid @RequestBody UserUpdateRequestDto userUpdateDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
 
         return this.userService.update(userDetails.getUser(), userUpdateDto);
-=======
-    public UserResponseDto update(@Valid @RequestBody UserUpdateRequestDto userUpdateDto) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.userService.update(loginUserId, userUpdateDto);
->>>>>>> fd3bc17 (refactor: User 관련 dto에 Valid 적용)
     }
 
     /**
@@ -263,30 +253,15 @@ public class UserController {
             @ApiResponse(responseCode = "5000", description = "동문회장이 존재하지 않습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "5001", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
-<<<<<<< HEAD
     public UserResponseDto updateRole(
             @PathVariable("granteeId") String granteeId,
-            @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto,
+            @Valid @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
 
         return this.userService.updateUserRole(userDetails.getUser(), granteeId, userUpdateRoleRequestDto);
     }
 
-
-=======
-    public UserResponseDto updateRole(@PathVariable String granteeId, @Valid @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.userService.updateUserRole(loginUserId, granteeId, userUpdateRoleRequestDto);
-    }
-
-    /**
-     * 비밀번호 찾기 API
-     * @param userFindPasswordRequestDto
-     * @return
-     */
->>>>>>> fd3bc17 (refactor: User 관련 dto에 Valid 적용)
     @PutMapping(value = "/password/find")
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "비밀번호 찾기 API (완료)", description = "비밀번호 재설정 이메일 전송 API입니다.")
@@ -297,18 +272,11 @@ public class UserController {
     @PutMapping(value = "/password")
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "비밀번호 업데이트 API (완료)")
-<<<<<<< HEAD
     public UserResponseDto updatePassword(
-            @RequestBody UserUpdatePasswordRequestDto userUpdatePasswordRequestDto,
+            @Valid @RequestBody UserUpdatePasswordRequestDto userUpdatePasswordRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.userService.updatePassword(userDetails.getUser(), userUpdatePasswordRequestDto);
-=======
-    public UserResponseDto updatePassword(@Valid @RequestBody UserUpdatePasswordRequestDto userUpdatePasswordRequestDto) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.userService.updatePassword(loginUserId, userUpdatePasswordRequestDto);
->>>>>>> fd3bc17 (refactor: User 관련 dto에 Valid 적용)
     }
 
     /**
