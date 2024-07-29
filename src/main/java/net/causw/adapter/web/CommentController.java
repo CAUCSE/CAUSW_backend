@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.comment.CommentService;
 import net.causw.application.dto.comment.CommentCreateRequestDto;
@@ -88,7 +89,7 @@ public class CommentController {
             @ApiResponse(responseCode = "4004", description = "삭제된 동아리입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     public CommentResponseDto createComment(
-            @RequestBody CommentCreateRequestDto commentCreateRequestDto,
+            @Valid @RequestBody CommentCreateRequestDto commentCreateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.commentService.createComment(userDetails.getUser(), commentCreateRequestDto);
@@ -121,7 +122,7 @@ public class CommentController {
     })
     public CommentResponseDto updateComment(
             @PathVariable("id") String id,
-            @RequestBody CommentUpdateRequestDto commentUpdateRequestDto,
+            @Valid @RequestBody CommentUpdateRequestDto commentUpdateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.commentService.updateComment(

@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.comment.ChildCommentService;
 import net.causw.application.dto.comment.ChildCommentCreateRequestDto;
@@ -15,10 +16,8 @@ import net.causw.config.security.userdetails.CustomUserDetails;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.UnauthorizedException;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -59,8 +58,12 @@ public class ChildCommentController {
             @ApiResponse(responseCode = "4004", description = "삭제된 동아리입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     public ChildCommentResponseDto createChildComment(
+<<<<<<< HEAD
             @RequestBody ChildCommentCreateRequestDto childCommentCreateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
+=======
+            @Valid @RequestBody ChildCommentCreateRequestDto childCommentCreateRequestDto
+>>>>>>> 2063aa8 (refactor: Comment 관련 dto에 Valid 적용)
     ) {
 
         return this.childCommentService.createChildComment(userDetails.getUser(), childCommentCreateRequestDto);
@@ -93,9 +96,14 @@ public class ChildCommentController {
             @ApiResponse(responseCode = "5000", description = "Comment id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     public ChildCommentResponseDto updateChildComment(
+<<<<<<< HEAD
             @PathVariable("id") String id,
             @RequestBody ChildCommentUpdateRequestDto childCommentUpdateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
+=======
+            @PathVariable String id,
+            @Valid @RequestBody ChildCommentUpdateRequestDto childCommentUpdateRequestDto
+>>>>>>> 2063aa8 (refactor: Comment 관련 dto에 Valid 적용)
     ) {
         return this.childCommentService.updateChildComment(userDetails.getUser(), id, childCommentUpdateRequestDto);
     }
