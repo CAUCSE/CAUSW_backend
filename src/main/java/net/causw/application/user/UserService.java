@@ -12,18 +12,13 @@ import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.user.UserAdmission;
 import net.causw.adapter.persistence.user.UserAdmissionLog;
 import net.causw.adapter.persistence.repository.BoardRepository;
-import net.causw.adapter.persistence.repository.FavoriteBoardRepository;
 import net.causw.adapter.persistence.repository.UserRepository;
-import net.causw.application.delegation.DelegationFactory;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.comment.CommentsOfUserResponseDto;
 import net.causw.application.dto.user.*;
 import net.causw.application.dto.util.DtoMapper;
-import net.causw.application.spi.CircleMemberPort;
-import net.causw.application.spi.CirclePort;
-import net.causw.application.spi.UserPort;
 import net.causw.application.storage.StorageService;
 import net.causw.config.security.JwtTokenProvider;
 import net.causw.domain.exceptions.BadRequestException;
@@ -64,9 +59,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    private final UserPort userPort;
-    private final CirclePort circlePort;
-    private final CircleMemberPort circleMemberPort;
     private final JwtTokenProvider jwtTokenProvider;
     private final StorageService storageService;
     private final GoogleMailSender googleMailSender;
@@ -86,7 +78,6 @@ public class UserService {
     private final LockerLogRepository lockerLogRepository;
     private final UserAdmissionLogRepository userAdmissionLogRepository;
     private final BoardRepository boardRepository;
-    private final FavoriteBoardRepository favoriteBoardRepository;
 
     @Transactional
     public UserResponseDto findPassword(
@@ -429,12 +420,6 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * 회원가입 메소드
-     *
-     * @param userCreateRequestDto
-     * @return UserResponseDto
-     */
     @Transactional
     public UserResponseDto signUp(UserCreateRequestDto userCreateRequestDto) {
         // Make domain model for generalized data model and validate the format of request parameter
@@ -597,14 +582,9 @@ public class UserService {
                 ))
                 .validate();
 
-        /* 권한 위임
-         * 1. 권한 위임자와 넘겨주는 권한이 같을 경우, 권한을 위임자가 동아리장일 경우 진행
-         * 2. 넘겨받을 권한이 동아리장일 경우 넘겨받을 동아리 id 저장
-         * 3. DelegationFactory를 통해 권한 위임 진행(동아리장 위임 경우 circle id를 넘겨주어서 어떤 동아리의 동아리장 권한을 위임하는 것인지 확인)
-         * */
-
 
         if (roles.contains(userUpdateRoleRequestDto.getRole())){
+            //동아리장
             String circleId = "";
             if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)) {
                 circleId = userUpdateRoleRequestDto.getCircleId()
@@ -612,11 +592,51 @@ public class UserService {
                                 ErrorCode.INVALID_PARAMETER,
                                 MessageUtil.CIRCLE_ID_REQUIRED_FOR_LEADER_DELEGATION
                         ));
+
+                //동아리가 존재하고 본인 동아리가 맞는지 circleid로 circle 조회하고
+                Circle circle = circleRepository.findByIdAndIsDeletedIsFalse(circleId)
+                        .orElseThrow(() -> new BadRequestException(
+                                ErrorCode.ROW_DOES_NOT_EXIST,
+                                MessageUtil.CIRCLE_NOT_FOUND
+                        ));
+
+                boolean isCircleLeader = circle.getLeader().map(leader -> leader.equals(grantor)).orElse(false);
+
+                this.circleMemberRepository.findByUser_IdAndCircle_Id(granteeId, circleId)
+                        .orElseThrow(() -> new BadRequestException(
+                                ErrorCode.ROW_DOES_NOT_EXIST,
+                                MessageUtil.CIRCLE_MEMBER_NOT_FOUND
+                        ));
+
+                if(isCircleLeader){
+                    removeRole(grantor, userUpdateRoleRequestDto.getRole());
+                    addRole(grantee, userUpdateRoleRequestDto.getRole());
+                    updateLeader(circleId, grantee);
+                }
+
             }
-            DelegationFactory
-                    .create(userUpdateRoleRequestDto.getRole(), this.userPort, this.circlePort, this.circleMemberPort, circleId)
-                    .delegate(grantor.getId(), granteeId);
+            //학생회장, 동문회장
+            else if(userUpdateRoleRequestDto.getRole().equals(Role.PRESIDENT)) {
+                List<User> councilList = this.userRepository.findByRoleAndState(Role.COUNCIL, UserState.ACTIVE);
+                if(!councilList.isEmpty()){
+                    councilList.forEach(user -> removeRole(user, Role.COUNCIL));
+                }
+                List<User> vicePresident = this.userRepository.findByRoleAndState(Role.VICE_PRESIDENT, UserState.ACTIVE);
+                if(!vicePresident.isEmpty()){
+                    vicePresident.forEach(user -> removeRole(user, Role.VICE_PRESIDENT));
+                }
+
+                removeRole(grantor,userUpdateRoleRequestDto.getRole());
+                addRole(grantee, userUpdateRoleRequestDto.getRole());
+
+            } else{
+                removeRole(grantor,userUpdateRoleRequestDto.getRole());
+                addRole(grantee, userUpdateRoleRequestDto.getRole());
+            }
+
         }
+
+
         /* 권한 위임
          * 1. 권한 위임자가 학생회장이거나 관리자일 경우 이면서 넘겨받을 권한이 동아리장 일때
          * 2. 동아리장 업데이트
@@ -668,10 +688,7 @@ public class UserService {
                     .ifPresentOrElse(circle -> {
                         circle.getLeader().ifPresent(leader -> {
                             // Check if the leader is the leader of only one circle
-                            List<Circle> ownCircles = this.circleRepository.findByLeader_Id(leader.getId());
-                            if (ownCircles.size() == 1) {
-                                this.userPort.removeRole(leader.getId(), Role.LEADER_CIRCLE);
-                            }
+                            removeRole(leader, Role.LEADER_CIRCLE);
                         });
                         updateLeader(circle.getId(), grantee);
                     }, () -> {
@@ -685,7 +702,6 @@ public class UserService {
         //관리자가 권한을 삭제하는 경우
         //학생회 권한 삭제일 때는 바로 삭제 가능
         //학생회라면 삭제
-        //but 동아리장 겸직일 때 어떤 권한을 삭제하는지 확인이 필요함
         else if ((roles.contains(Role.PRESIDENT) || roles.contains(Role.ADMIN))
                 && userUpdateRoleRequestDto.getRole().equals(Role.COMMON)
         ) {
@@ -715,20 +731,30 @@ public class UserService {
         return UserResponseDto.from(this.updateRole(grantee, userUpdateRoleRequestDto.getRole()));
     }
 
-    //UserPort의 removeRole 로직 서비스단으로 이동
-    //TODO : role 관련 로직 변경후 권한 삭제 코드 변경 필요
-    //유저가 존재하지 않는 경우는 위에서 처리하기 때문에 optional 삭제
+    //remove는 그냥 역할을 지우기만 한다. (역할이 아무것도 없어지면 common을 추가한다)
     private User removeRole(User targetUser, Role targetRole) {
 
         Set<Role> roles = targetUser.getRoles();
-
-        if(roles.contains(targetRole)){
+        if(targetRole.equals(Role.LEADER_CIRCLE)){
+            List<Circle> ownCircles = circleRepository.findByLeader_Id(targetUser.getId());
+            if(ownCircles.size() == 1) roles.remove(targetRole);
+        } else{
             roles.remove(targetRole);
-            //TODO: 디폴트로 common이라는 역할을 남기는 경우를 생성하고 지우기
+        }
+
+        if (roles.isEmpty()) {
             roles.add(Role.COMMON);
         }
+
         targetUser.setRoles(roles);
 
+        return this.userRepository.save(targetUser);
+    }
+
+    private User addRole(User targetUser, Role targetRole) {
+        Set<Role> roles = targetUser.getRoles();
+        roles.add(targetRole);
+        targetUser.setRoles(roles);
         return this.userRepository.save(targetUser);
     }
 
@@ -741,6 +767,7 @@ public class UserService {
                 }
         );
     }
+
 
     private User updateRole(User targetUser, Role newRole) {
         Set<Role> roles = targetUser.getRoles();
