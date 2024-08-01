@@ -29,7 +29,7 @@ public class UserUpdateRequestDto {
     private String studentId;
 
     @Schema(description = "입학년도", example = "2020")
-    @NotBlank(message = "입학 년도를 입력해 주세요.")
+    @NotNull(message = "입학 년도를 입력해 주세요.")
     private Integer admissionYear;
 
     @Schema(description = "프로필 이미지 URL", example = "")

@@ -3,6 +3,7 @@ package net.causw.application.dto.user;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,7 +37,7 @@ public class UserCreateRequestDto {
     private String studentId;
 
     @Schema(description = "입학년도", example = "2020")
-    @NotBlank(message = "입학 년도를 입력해 주세요.")
+    @NotNull(message = "입학 년도를 입력해 주세요.")
     private Integer admissionYear;
 
     @Schema(description = "프로필 이미지 URL", example = "")
