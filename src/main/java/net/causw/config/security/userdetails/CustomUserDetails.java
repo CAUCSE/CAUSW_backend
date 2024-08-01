@@ -24,7 +24,6 @@ public class CustomUserDetails implements UserDetails {
         return user.getRoles().stream()
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
                 .collect(Collectors.toList());
-//        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
     }
 
     @Override
@@ -63,5 +62,9 @@ public class CustomUserDetails implements UserDetails {
 
     public User getUser() {
         return this.user;
+    }
+
+    public UserState getUserState() {
+        return user.getState();
     }
 }
