@@ -60,7 +60,7 @@ public class UserController {
     })
     public UserResponseDto findByUserId(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable("id") String userId
+            @PathVariable("userId") String userId
     ) {
         return this.userService.findByUserId(userId, userDetails.getUser());
     }
