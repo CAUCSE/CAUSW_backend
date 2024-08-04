@@ -1,15 +1,13 @@
 package net.causw.config.security;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import net.causw.config.security.userdetails.CustomUserDetailsService;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.RedisUtils;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.model.enums.UserState;
@@ -87,8 +85,8 @@ public class JwtTokenProvider {
         try {
             Jws<Claims> claims = Jwts.parser().setSigningKey(this.secretKey).parseClaimsJws(jwtToken);
 
-            if (claims.getBody().getExpiration().before(new Date()) || redisUtils.isTokenBlacklisted(jwtToken)) {
-                throw new UnauthorizedException(ErrorCode.INVALID_JWT, "만료된 토큰입니다.");
+            if (redisUtils.isTokenBlacklisted(jwtToken)) {
+                throw new UnauthorizedException(ErrorCode.INVALID_JWT, "블랙리스트에 등록된 토큰입니다.");
             }
 
             List<String> rolesList = claims.getBody().get("roles", List.class);
@@ -99,8 +97,10 @@ public class JwtTokenProvider {
             }
             return true;
 
-        } catch (Exception e) {
-            return false;
+        } catch (ExpiredJwtException e) {
+            throw new UnauthorizedException(ErrorCode.EXPIRED_JWT, MessageUtil.EXPIRED_TOKEN);
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new UnauthorizedException(ErrorCode.INVALID_JWT, MessageUtil.INVALID_TOKEN);
         }
     }
 }
