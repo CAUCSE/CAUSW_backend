@@ -1171,7 +1171,7 @@ public class UserService {
     public UserSignInResponseDto updateToken(String refreshToken) {
         // STEP1 : refreshToken으로 맵핑된 유저 찾기
         User user = this.userRepository.findById(this.getUserIdFromRefreshToken(refreshToken)).orElseThrow(
-                () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.INVALID_TOKEN)
+                () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.INVALID_REFRESH_TOKEN)
         );
 
         this.userRepository.findById(getUserIdFromRefreshToken(refreshToken));
