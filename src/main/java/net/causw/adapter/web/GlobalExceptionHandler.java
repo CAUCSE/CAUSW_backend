@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import jakarta.validation.ConstraintViolationException;
-import java.nio.file.AccessDeniedException;
+import org.springframework.security.access.AccessDeniedException;
 
 @Component
 @Slf4j
@@ -61,6 +61,13 @@ public class GlobalExceptionHandler {
     public ExceptionDto handleServiceUnavailableException(ServiceUnavailableException exception) {
         GlobalExceptionHandler.log.error("error message", exception);
         return ExceptionDto.of(exception.getErrorCode(), exception.getMessage());
+    }
+
+    @ExceptionHandler(value = {java.nio.file.AccessDeniedException.class})
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ExceptionDto handleFileAccessDeniedException(java.nio.file.AccessDeniedException exception) {
+        GlobalExceptionHandler.log.error("error message", exception);
+        return ExceptionDto.of(ErrorCode.API_NOT_ACCESSIBLE, exception.getMessage());
     }
 
     @ExceptionHandler(value = {AccessDeniedException.class})

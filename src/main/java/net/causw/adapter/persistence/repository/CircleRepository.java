@@ -13,5 +13,6 @@ public interface CircleRepository extends JpaRepository<Circle, String> {
 
     Optional<Circle> findByName(String name);
 
+    Optional<Circle> findByIdAndIsDeletedIsFalse(String id);
     List<Circle> findAllByIsDeletedIsFalse();
 }
