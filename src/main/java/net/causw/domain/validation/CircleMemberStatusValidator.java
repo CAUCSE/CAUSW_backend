@@ -1,36 +1,33 @@
 package net.causw.domain.validation;
 
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+import lombok.Setter;
+import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.CircleMemberStatus;
+import net.causw.domain.validation.valid.CircleMemberValid;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-public class CircleMemberStatusValidator extends AbstractValidator {
-
-    private final CircleMemberStatus status;
-
-    private final List<CircleMemberStatus> statusList;
-
-    private CircleMemberStatusValidator(CircleMemberStatus status, List<CircleMemberStatus> statusList) {
-        this.status = status;
-        this.statusList = statusList;
-    }
-
-    public static CircleMemberStatusValidator of(CircleMemberStatus status, List<CircleMemberStatus> statusList) {
-        return new CircleMemberStatusValidator(status, statusList);
-    }
+@Setter
+@Component
+public class CircleMemberStatusValidator implements ConstraintValidator<CircleMemberValid, CircleMember> {
+    private List<CircleMemberStatus> statusList;
 
     @Override
-    public void validate() {
-        for (CircleMemberStatus allowedStatus : this.statusList) {
-            if (this.status.equals(allowedStatus)) {
-                return;
+    public boolean isValid(CircleMember circleMember, ConstraintValidatorContext constraintValidatorContext) {
+        CircleMemberStatus status = circleMember.getStatus();
+        for (CircleMemberStatus allowedStatus : statusList) {
+            if (status.equals(allowedStatus)) {
+                return true;
             }
         }
 
-        switch (this.status) {
+        switch (status) {
             case MEMBER:
                 throw new BadRequestException(
                         ErrorCode.ROW_ALREADY_EXIST,
@@ -59,5 +56,6 @@ public class CircleMemberStatusValidator extends AbstractValidator {
             default:
                 break;
         }
+        return false;
     }
 }
