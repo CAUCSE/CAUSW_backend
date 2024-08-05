@@ -23,11 +23,10 @@ import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.UserEqualValidator;
-import net.causw.domain.validation.UserRoleIsNoneValidator;
 import net.causw.domain.validation.UserRoleValidator;
-import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.TargetIsNotDeletedValidator;
 import net.causw.domain.validation.ValidatorBucket;
+import net.causw.domain.validation.valid.UserValid;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,14 +47,9 @@ public class BoardService {
 
     @Transactional(readOnly = true)
     public List<BoardResponseDto> findAllBoard(
-            User user
+            @UserValid User user
     ) {
         Set<Role> roles = user.getRoles();
-
-        ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles))
-                .validate();
 
         if (roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT)) {
             return boardRepository.findByOrderByCreatedAtAsc().stream()
@@ -65,7 +59,7 @@ public class BoardService {
             List<Circle> joinCircles = circleMemberRepository.findByUser_Id(user.getId()).stream()
                     .filter(circleMember -> circleMember.getStatus() == CircleMemberStatus.MEMBER)
                     .map(CircleMember::getCircle)
-                    .collect(Collectors.toList());
+                    .toList();
             if (joinCircles.isEmpty()) {
                 return boardRepository.findByCircle_IdIsNullAndIsDeletedOrderByCreatedAtAsc(false).stream()
                         .map(board -> toBoardResponseDto(board, roles))
@@ -86,47 +80,40 @@ public class BoardService {
 
     @Transactional
     public BoardResponseDto createBoard(
-            User creator,
+            @UserValid User creator,
             BoardCreateRequestDto boardCreateRequestDto
     ) {
         Set<Role> roles = creator.getRoles();
 
         ValidatorBucket validatorBucket = ValidatorBucket.of();
-        validatorBucket
-                .consistOf(UserStateValidator.of(creator.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles));
 
         Circle circle = boardCreateRequestDto.getCircleId().map(
                 circleId -> {
                     Circle newCircle = getCircle(circleId);
 
                     validatorBucket
-                            .consistOf(TargetIsDeletedValidator.of(newCircle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
+                            .consistOf(TargetIsDeletedValidator.of(newCircle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE));
                             //동아리장이거나 관리자만 통과
-                            .consistOf(UserRoleValidator.of(roles,
-                                    Set.of(Role.LEADER_CIRCLE)));
+                    new UserRoleValidator().validate(roles, Set.of(Role.LEADER_CIRCLE));
 
                     //동아리장인 경우와 회장단이 아닌경우에 아래 조건문을 실행한다.
                     if (roles.contains(Role.LEADER_CIRCLE)) {
-                        validatorBucket
-                                .consistOf(UserEqualValidator.of(
-                                        newCircle.getLeader().map(User::getId).orElseThrow(
-                                                () -> new UnauthorizedException(
-                                                        ErrorCode.API_NOT_ALLOWED,
-                                                        MessageUtil.NOT_CIRCLE_LEADER
-                                                )
-                                        ),
-                                        creator.getId()
-                                ));
+                        new UserEqualValidator().validate(
+                                creator.getId(),
+                                newCircle.getLeader().map(User::getId).orElseThrow(
+                                    () -> new UnauthorizedException(
+                                            ErrorCode.API_NOT_ALLOWED,
+                                            MessageUtil.NOT_CIRCLE_LEADER
+                                    )
+                                )
+                        );
                     }
 
                     return newCircle;
                 }
         ).orElseGet(
                 () -> {
-                    validatorBucket
-                            .consistOf(UserRoleValidator.of(roles, Set.of()));
-
+                    new UserRoleValidator().validate(roles, Set.of());
                     return null;
                 }
         );
@@ -181,11 +168,7 @@ public class BoardService {
 
         ValidatorBucket validatorBucket = initializeValidatorBucket(deleter, board);
         if (board.getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
-            validatorBucket
-                    .consistOf(UserRoleValidator.of(
-                            roles,
-                            Set.of()
-                    ));
+            new UserRoleValidator().validate(roles, Set.of());
         }
         validatorBucket.validate();
 
@@ -195,7 +178,7 @@ public class BoardService {
 
     @Transactional
     public BoardResponseDto restoreBoard(
-            User restorer,
+            @UserValid User restorer,
             String boardId
     ) {
         Set<Role> roles = restorer.getRoles();
@@ -204,41 +187,32 @@ public class BoardService {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         validatorBucket
-                .consistOf(UserStateValidator.of(restorer.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(TargetIsNotDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD));
 
         Optional<Circle> circles = Optional.ofNullable(board.getCircle());
         circles.ifPresentOrElse(
                 circle -> {
                     validatorBucket
-                            .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                            .consistOf(UserRoleValidator.of(roles,
-                                    Set.of(Role.LEADER_CIRCLE)));
+                            .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE));
+                    new UserRoleValidator().validate(roles, Set.of(Role.LEADER_CIRCLE));
 
                     if (roles.contains(Role.LEADER_CIRCLE)) {
-                        validatorBucket
-                                .consistOf(UserEqualValidator.of(
-                                        circle.getLeader().map(User::getId).orElseThrow(
-                                                () -> new UnauthorizedException(
-                                                        ErrorCode.API_NOT_ALLOWED,
-                                                        MessageUtil.NOT_CIRCLE_LEADER
-                                                )
-                                        ),
-                                        restorer.getId()
-                                ));
+                        new UserEqualValidator().validate(
+                                restorer.getId(),
+                                circle.getLeader().map(User::getId).orElseThrow(
+                                        () -> new UnauthorizedException(
+                                                ErrorCode.API_NOT_ALLOWED,
+                                                MessageUtil.NOT_CIRCLE_LEADER
+                                        )
+                                )
+                        );
                     }
                 },
-                () -> validatorBucket
-                        .consistOf(UserRoleValidator.of(roles, Set.of()))
+                () -> new UserRoleValidator().validate(roles, Set.of())
         );
 
         if (board.getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
-            validatorBucket
-                    .consistOf(UserRoleValidator.of(
-                            roles,
-                            Set.of()
-                    ));
+            new UserRoleValidator().validate(roles, Set.of());
         }
         validatorBucket.validate();
 
@@ -246,38 +220,33 @@ public class BoardService {
         return toBoardResponseDto(boardRepository.save(board), roles);
     }
 
-    private ValidatorBucket initializeValidatorBucket(User user, Board board) {
+    private ValidatorBucket initializeValidatorBucket(@UserValid User user, Board board) {
         Set<Role> roles = user.getRoles();
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         validatorBucket
-                .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD));
 
         Optional<Circle> circles = Optional.ofNullable(board.getCircle());
         circles.ifPresentOrElse(
                 circle -> {
                     validatorBucket
-                            .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                            .consistOf(UserRoleValidator.of(roles,
-                                    Set.of(Role.LEADER_CIRCLE)));
+                            .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE));
+                    new UserRoleValidator().validate(roles, Set.of(Role.LEADER_CIRCLE));
 
                     if (roles.contains(Role.LEADER_CIRCLE)) {
-                        validatorBucket
-                                .consistOf(UserEqualValidator.of(
-                                        circle.getLeader().map(User::getId).orElseThrow(
-                                                () -> new UnauthorizedException(
-                                                        ErrorCode.API_NOT_ALLOWED,
-                                                        MessageUtil.NOT_CIRCLE_LEADER
-                                                )
-                                        ),
-                                        user.getId()
-                                ));
+                        new UserEqualValidator().validate(
+                                user.getId(),
+                                circle.getLeader().map(User::getId).orElseThrow(
+                                        () -> new UnauthorizedException(
+                                                ErrorCode.API_NOT_ALLOWED,
+                                                MessageUtil.NOT_CIRCLE_LEADER
+                                        )
+                                )
+                        );
                     }
                 },
-                () -> validatorBucket
-                        .consistOf(UserRoleValidator.of(roles, Set.of()))
+                () -> new UserRoleValidator().validate(roles, Set.of())
         );
         return validatorBucket;
     }

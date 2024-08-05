@@ -6,7 +6,6 @@ import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.page.PageableFactory;
 import net.causw.adapter.persistence.repository.BoardRepository;
 import net.causw.adapter.persistence.repository.PostRepository;
-import net.causw.adapter.persistence.repository.UserRepository;
 import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.homepage.HomePageResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
@@ -16,9 +15,7 @@ import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
-import net.causw.domain.validation.UserRoleIsNoneValidator;
-import net.causw.domain.validation.UserStateValidator;
-import net.causw.domain.validation.ValidatorBucket;
+import net.causw.domain.validation.valid.UserValid;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -28,18 +25,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class HomePageService {
 
-    private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final BoardRepository boardRepository;
     private final PageableFactory pageableFactory;
 
-    public List<HomePageResponseDto> getHomePage(User user) {
+    public List<HomePageResponseDto> getHomePage(@UserValid User user) {
         Set<Role> roles = user.getRoles();
-
-        ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles))
-                .validate();
 
         List<Board> boards = boardRepository.findByCircle_IdIsNullAndIsDeletedOrderByCreatedAtAsc(false);
         if (boards.isEmpty()) {

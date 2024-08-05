@@ -13,22 +13,21 @@ import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.ChildCommentUpdateRequestDto;
 import net.causw.application.dto.util.DtoMapper;
 import net.causw.application.dto.util.StatusUtil;
+import net.causw.application.util.ServiceProxy;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
-import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.CircleMemberStatus;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
-import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.ContentsAdminValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.UserEqualValidator;
-import net.causw.domain.validation.UserRoleIsNoneValidator;
-import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
+import net.causw.domain.validation.valid.CircleMemberValid;
+import net.causw.domain.validation.valid.UserValid;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,6 +46,7 @@ public class ChildCommentService {
     private final CircleMemberRepository circleMemberRepository;
     private final PostRepository postRepository;
     private final Validator validator;
+    private final ServiceProxy serviceProxy;
 
     @Transactional
     public ChildCommentResponseDto createChildComment(User creator, ChildCommentCreateRequestDto childCommentCreateRequestDto) {
@@ -119,14 +119,10 @@ public class ChildCommentService {
                 .filter(circle -> !roles.contains(Role.ADMIN) && !roles.contains(Role.PRESIDENT) && !roles.contains(Role.VICE_PRESIDENT))
                 .ifPresentOrElse(
                         circle -> {
-                            CircleMember member = getCircleMember(deleter.getId(), circle.getId());
+                            CircleMember member = serviceProxy.getCircleMemberChildComment(deleter.getId(), circle.getId(), List.of(CircleMemberStatus.MEMBER));
 
                             validatorBucket
                                     .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                                    .consistOf(CircleMemberStatusValidator.of(
-                                            member.getStatus(),
-                                            List.of(CircleMemberStatus.MEMBER)
-                                    ))
                                     .consistOf(ContentsAdminValidator.of(
                                             roles,
                                             deleter.getId(),
@@ -142,11 +138,7 @@ public class ChildCommentService {
                                             MessageUtil.CIRCLE_WITHOUT_LEADER
                                     );
                                 }
-                                validatorBucket
-                                        .consistOf(UserEqualValidator.of(
-                                                leader.getId(),
-                                                deleter.getId()
-                                        ));
+                                new UserEqualValidator().validate(leader.getId(), deleter.getId());
                             }
                         },
                         () -> validatorBucket
@@ -169,12 +161,10 @@ public class ChildCommentService {
         );
     }
 
-    private ValidatorBucket initializeValidator(User user, Post post) {
+    private ValidatorBucket initializeValidator(@UserValid User user, Post post) {
         Set<Role> roles = user.getRoles();
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         validatorBucket
-                .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(TargetIsDeletedValidator.of(post.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
                 .consistOf(TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST));
 
@@ -182,14 +172,10 @@ public class ChildCommentService {
         circles
                 .filter(circle -> !roles.contains(Role.ADMIN) && !roles.contains(Role.PRESIDENT) && !roles.contains(Role.VICE_PRESIDENT))
                 .ifPresent(circle -> {
-                    CircleMember member = getCircleMember(user.getId(), circle.getId());
+                    serviceProxy.getCircleMemberChildComment(user.getId(), circle.getId(), List.of(CircleMemberStatus.MEMBER));
 
                     validatorBucket
-                            .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                            .consistOf(CircleMemberStatusValidator.of(
-                                    member.getStatus(),
-                                    List.of(CircleMemberStatus.MEMBER)
-                            ));
+                            .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE));
                 });
         return validatorBucket;
     }
@@ -234,10 +220,11 @@ public class ChildCommentService {
         );
     }
 
-    private CircleMember getCircleMember(String userId, String circleId) {
+    @CircleMemberValid(CircleMemberStatusValidator = true)
+    public CircleMember getCircleMember(String userId, String circleId, List<CircleMemberStatus> list) {
         return circleMemberRepository.findByUser_IdAndCircle_Id(userId, circleId).orElseThrow(
-                () -> new UnauthorizedException(
-                        ErrorCode.NOT_MEMBER,
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.CIRCLE_APPLY_INVALID
                 )
         );

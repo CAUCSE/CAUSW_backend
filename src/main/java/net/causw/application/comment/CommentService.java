@@ -14,22 +14,21 @@ import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.comment.CommentUpdateRequestDto;
 import net.causw.application.dto.util.DtoMapper;
 import net.causw.application.dto.util.StatusUtil;
+import net.causw.application.util.ServiceProxy;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
-import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.CircleMemberStatus;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
-import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.ContentsAdminValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.UserEqualValidator;
-import net.causw.domain.validation.UserRoleIsNoneValidator;
-import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
+import net.causw.domain.validation.valid.CircleMemberValid;
+import net.causw.domain.validation.valid.UserValid;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,6 +50,7 @@ public class CommentService {
     private final ChildCommentRepository childCommentRepository;
     private final PageableFactory pageableFactory;
     private final Validator validator;
+    private final ServiceProxy serviceProxy;
 
     @Transactional
     public CommentResponseDto createComment(User creator, CommentCreateRequestDto commentCreateDto) {
@@ -110,15 +110,13 @@ public class CommentService {
 
 
     @Transactional
-    public CommentResponseDto deleteComment(User deleter, String commentId) {
+    public CommentResponseDto deleteComment(@UserValid User deleter, String commentId) {
         Set<Role> roles = deleter.getRoles();
         Comment comment = getComment(commentId);
         Post post = getPost(comment.getPost().getId());
 
         ValidatorBucket validatorBucket = initializeValidator(deleter, post);
         validatorBucket
-                .consistOf(UserStateValidator.of(deleter.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(TargetIsDeletedValidator.of(comment.getIsDeleted(), StaticValue.DOMAIN_COMMENT));
 
         Optional<Circle> circles = Optional.ofNullable(post.getBoard().getCircle());
@@ -126,14 +124,10 @@ public class CommentService {
                 .filter(circle -> !roles.contains(Role.ADMIN) && !roles.contains(Role.PRESIDENT) && !roles.contains(Role.VICE_PRESIDENT))
                 .ifPresentOrElse(
                         circle -> {
-                            CircleMember member = getCircleMember(deleter.getId(), circle.getId());
+                            CircleMember member = serviceProxy.getCircleMemberComment(deleter.getId(), circle.getId(), List.of(CircleMemberStatus.MEMBER));
 
                             validatorBucket
                                     .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                                    .consistOf(CircleMemberStatusValidator.of(
-                                            member.getStatus(),
-                                            List.of(CircleMemberStatus.MEMBER)
-                                    ))
                                     .consistOf(ContentsAdminValidator.of(
                                             roles,
                                             deleter.getId(),
@@ -142,17 +136,16 @@ public class CommentService {
                                     ));
 
                             if (roles.contains(Role.LEADER_CIRCLE) && !comment.getWriter().getId().equals(deleter.getId())) {
-                                validatorBucket
-                                        .consistOf(UserEqualValidator.of(
-                                                circle.getLeader().map(User::getId).orElseThrow(
-                                                        () -> new InternalServerException(
-                                                                ErrorCode.ROW_DOES_NOT_EXIST,
-                                                                MessageUtil.CIRCLE_WITHOUT_LEADER
+                                new UserEqualValidator().validate(
+                                        deleter.getId(),
+                                        circle.getLeader().map(User::getId).orElseThrow(
+                                                () -> new InternalServerException(
+                                                        ErrorCode.ROW_DOES_NOT_EXIST,
+                                                        MessageUtil.CIRCLE_WITHOUT_LEADER
 
-                                                        )
-                                                ),
-                                                deleter.getId()
-                                        ));
+                                                )
+                                        )
+                                );
                             }
                         },
                         () -> validatorBucket
@@ -182,12 +175,10 @@ public class CommentService {
         );
     }
 
-    private ValidatorBucket initializeValidator(User user, Post post) {
+    private ValidatorBucket initializeValidator(@UserValid User user, Post post) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         Set<Role> roles = user.getRoles();
         validatorBucket
-                .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(TargetIsDeletedValidator.of(post.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
                 .consistOf(TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST));
 
@@ -195,25 +186,12 @@ public class CommentService {
         circles
                 .filter(circle -> !roles.contains(Role.ADMIN) && !roles.contains(Role.PRESIDENT) && !roles.contains(Role.VICE_PRESIDENT))
                 .ifPresent(circle -> {
-                    CircleMember member = getCircleMember(user.getId(), circle.getId());
+                    CircleMember member = serviceProxy.getCircleMemberComment(user.getId(), circle.getId(), List.of(CircleMemberStatus.MEMBER));
 
                     validatorBucket
-                            .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                            .consistOf(CircleMemberStatusValidator.of(
-                                    member.getStatus(),
-                                    List.of(CircleMemberStatus.MEMBER)
-                            ));
+                            .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE));
                 });
         return validatorBucket;
-    }
-
-    private User getUser(String userId) {
-        return userRepository.findById(userId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_NOT_FOUND
-                )
-        );
     }
 
     private Post getPost(String postId) {
@@ -234,10 +212,11 @@ public class CommentService {
         );
     }
 
-    private CircleMember getCircleMember(String userId, String circleId) {
+    @CircleMemberValid(CircleMemberStatusValidator = true)
+    public CircleMember getCircleMember(String userId, String circleId, List<CircleMemberStatus> list) {
         return circleMemberRepository.findByUser_IdAndCircle_Id(userId, circleId).orElseThrow(
-                () -> new UnauthorizedException(
-                        ErrorCode.NOT_MEMBER,
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.CIRCLE_APPLY_INVALID
                 )
         );

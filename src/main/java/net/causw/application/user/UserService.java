@@ -25,6 +25,7 @@ import net.causw.application.spi.CircleMemberPort;
 import net.causw.application.spi.CirclePort;
 import net.causw.application.spi.UserPort;
 import net.causw.application.storage.StorageService;
+import net.causw.application.util.ServiceProxy;
 import net.causw.config.security.JwtTokenProvider;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -41,12 +42,9 @@ import net.causw.domain.validation.GrantableRoleValidator;
 import net.causw.domain.validation.PasswordCorrectValidator;
 import net.causw.domain.validation.PasswordFormatValidator;
 import net.causw.domain.validation.UserRoleIsNoneValidator;
-import net.causw.domain.validation.UserRoleValidator;
-import net.causw.domain.validation.UserRoleWithoutAdminValidator;
-import net.causw.domain.validation.UserStateIsDropOrIsInActiveValidator;
-import net.causw.domain.validation.UserStateIsNotDropAndActiveValidator;
-import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
+import net.causw.domain.validation.valid.CircleMemberValid;
+import net.causw.domain.validation.valid.UserValid;
 import net.causw.infrastructure.GoogleMailSender;
 import net.causw.infrastructure.PasswordGenerator;
 import org.springframework.data.domain.Page;
@@ -73,6 +71,7 @@ public class UserService {
     private final PasswordGenerator passwordGenerator;
     private final PasswordEncoder passwordEncoder;
     private final Validator validator;
+    private final ServiceProxy serviceProxy;
 
     private final UserRepository userRepository;
     private final CircleRepository circleRepository;
@@ -87,6 +86,7 @@ public class UserService {
     private final UserAdmissionLogRepository userAdmissionLogRepository;
     private final BoardRepository boardRepository;
     private final FavoriteBoardRepository favoriteBoardRepository;
+    private final UserRoleIsNoneValidator userRoleIsNoneValidator;
 
     @Transactional
     public UserResponseDto findPassword(
@@ -113,15 +113,16 @@ public class UserService {
 
     // Find process of another user
     @Transactional(readOnly = true)
-    public UserResponseDto findByUserId(String targetUserId, User requestUser) {
+    public UserResponseDto findByUserId(
+            String targetUserId,
+            @UserValid(UserRoleValidator = true, targetRoleSet = {"LEADER_CIRCLE"}) User requestUser
+    ) {
         Set<Role> roles = requestUser.getRoles();
 
-        ValidatorBucket.of()
-                .consistOf(UserRoleIsNoneValidator.of(roles))
-                .consistOf(UserStateValidator.of(requestUser.getState()))
-                .consistOf(UserRoleValidator.of(roles,
-                        Set.of(Role.LEADER_CIRCLE)))
-                .validate();
+//        ValidatorBucket.of()
+//                .consistOf(UserRoleValidator.of(roles,
+//                        Set.of(Role.LEADER_CIRCLE)))
+//                .validate();
 
         if (roles.contains(Role.LEADER_CIRCLE)) {
             List<Circle> ownCircles = this.circleRepository.findByLeader_Id(requestUser.getId());
@@ -153,13 +154,8 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserResponseDto findCurrentUser(User requestUser) {
+    public UserResponseDto findCurrentUser(@UserValid User requestUser) {
         Set<Role> roles = requestUser.getRoles();
-
-        ValidatorBucket.of()
-                .consistOf(UserRoleIsNoneValidator.of(roles))
-                .consistOf(UserStateValidator.of(requestUser.getState()))
-                .validate();
 
         if (roles.contains(Role.LEADER_CIRCLE)) {
             List<Circle> ownCircles = this.circleRepository.findByLeader_Id(requestUser.getId());
@@ -182,14 +178,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserPostsResponseDto findPosts(User requestUser, Integer pageNum) {
-        Set<Role> roles = requestUser.getRoles();
-
-        ValidatorBucket.of()
-                .consistOf(UserRoleIsNoneValidator.of(roles))
-                .consistOf(UserStateValidator.of(requestUser.getState()))
-                .validate();
-
+    public UserPostsResponseDto findPosts(@UserValid User requestUser, Integer pageNum) {
         return UserPostsResponseDto.of(
                 requestUser,
                 this.postRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
@@ -205,14 +194,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserCommentsResponseDto findComments(User requestUser, Integer pageNum) {
-        Set<Role> roles = requestUser.getRoles();
-
-        ValidatorBucket.of()
-                .consistOf(UserRoleIsNoneValidator.of(roles))
-                .consistOf(UserStateValidator.of(requestUser.getState()))
-                .validate();
-
+    public UserCommentsResponseDto findComments(@UserValid User requestUser, Integer pageNum) {
         return UserCommentsResponseDto.of(
                 requestUser,
                 this.commentRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_COMMENT_PAGE_SIZE))
@@ -234,21 +216,22 @@ public class UserService {
                             post.getBoard().getCircle() != null ? post.getBoard().getCircle().getName() : null
                     );
                 })
-
         );
     }
 
     @Transactional(readOnly = true)
-    public List<UserResponseDto> findByName(User requestUser, String name) {
+    public List<UserResponseDto> findByName(
+            @UserValid(UserRoleValidator = true, targetRoleSet = {"LEADER_CIRCLE"}) User requestUser,
+            String name
+    ) {
         Set<Role> roles = requestUser.getRoles();
 
-        ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(requestUser.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles))
-                .consistOf(UserRoleValidator.of(roles,
-                        Set.of(Role.LEADER_CIRCLE
-                        )))
-                .validate();
+//        ValidatorBucket.of()
+//                .consistOf(UserRoleValidator.of(
+//                        roles,
+//                        Set.of(Role.LEADER_CIRCLE)
+//                ))
+//                .validate();
 
         if (roles.contains(Role.LEADER_CIRCLE)) {
             List<Circle> ownCircles = this.circleRepository.findByLeader_Id(requestUser.getId());
@@ -285,14 +268,14 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserPrivilegedResponseDto findPrivilegedUsers(User user) {
+    public UserPrivilegedResponseDto findPrivilegedUsers(
+            @UserValid(UserRoleValidator = true, targetRoleSet = {}) User user
+    ) {
         Set<Role> roles = user.getRoles();
 
-        ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles))
-                .consistOf(UserRoleValidator.of(roles, Set.of()))
-                .validate();
+//        ValidatorBucket.of()
+//                .consistOf(UserRoleValidator.of(roles, Set.of()))
+//                .validate();
 
         //todo: 현재 겸직을 고려하기 위해 _N_ 사용 중이나 port 와 domain model 삭제를 위해 배제
         //때문에 추후 userRole 관리 리팩토링 후 겸직을 고려하게 변경 필요
@@ -351,18 +334,16 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public Page<UserResponseDto> findByState(
-            User user,
+            @UserValid(UserRoleValidator = true, targetRoleSet = {}) User user,
             String state,
             String name,
             Integer pageNum
     ) {
         Set<Role> roles = user.getRoles();
 
-        ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles))
-                .consistOf(UserRoleValidator.of(roles, Set.of()))
-                .validate();
+//        ValidatorBucket.of()
+//                .consistOf(UserRoleValidator.of(roles, Set.of()))
+//                .validate();
 
         //portimpl 내부 로직 서비스단으로 이동
         Page<User> usersPage;
@@ -405,22 +386,15 @@ public class UserService {
 
 
     @Transactional(readOnly = true)
-    public List<CircleResponseDto> getCircleList(User user) {
+    public List<CircleResponseDto> getCircleList(@UserValid User user) {
         Set<Role> roles = user.getRoles();
 
-        ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles))
-                .validate();
-
-        //
         if (roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT)) {
             return this.circleRepository.findAllByIsDeletedIsFalse()
                     .stream()
                     .map(CircleResponseDto::from)
                     .collect(Collectors.toList());
         }
-
 
         return this.circleMemberRepository.findByUser_Id(user.getId())
                 .stream()
@@ -468,12 +442,7 @@ public class UserService {
 
     @Transactional
     public UserSignInResponseDto signIn(UserSignInRequestDto userSignInRequestDto) {
-        User user = userRepository.findByEmail(userSignInRequestDto.getEmail()).orElseThrow(
-                () -> new UnauthorizedException(
-                        ErrorCode.INVALID_SIGNIN,
-                        MessageUtil.EMAIL_INVALID
-                )
-        );
+        User user = serviceProxy.getUserByEmailSignIn(userSignInRequestDto.getEmail());
 
         /* Validate the input password and user state
          * The sign-in process is rejected if the user is in BLOCKED, WAIT, or INACTIVE state.
@@ -493,10 +462,6 @@ public class UserService {
                     )
             );
         }
-
-        ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(user.getState()))
-                .validate();
 
         // refreshToken은 redis에 보관
         String refreshToken = jwtTokenProvider.createRefreshToken();
@@ -530,9 +495,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponseDto update(User user, UserUpdateRequestDto userUpdateRequestDto) {
-        Set<Role> roles = user.getRoles();
-
+    public UserResponseDto update(@UserValid User user, UserUpdateRequestDto userUpdateRequestDto) {
         if (!user.getEmail().equals(userUpdateRequestDto.getEmail())) {
             userRepository.findByEmail(userUpdateRequestDto.getEmail()).ifPresent(
                     email -> {
@@ -553,8 +516,6 @@ public class UserService {
 
         // Validate the admission year range
         ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(ConstraintValidator.of(user, this.validator))
                 .consistOf(AdmissionYearValidator.of(userUpdateRequestDto.getAdmissionYear()))
                 .validate();
@@ -568,7 +529,7 @@ public class UserService {
     //TODO: 반드시 로직 수정 필요
     @Transactional
     public UserResponseDto updateUserRole(
-            User grantor,
+            @UserValid User grantor,
             String granteeId,
             UserUpdateRoleRequestDto userUpdateRoleRequestDto
     ) {
@@ -588,8 +549,6 @@ public class UserService {
          * 2) Combination of grantor role and the grantee role must be acceptable
          */
         ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(grantor.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(GrantableRoleValidator.of(
                         roles,
                         userUpdateRoleRequestDto.getRole(),
@@ -649,20 +608,7 @@ public class UserService {
                 );
             }
 
-            this.circleMemberRepository.findByUser_IdAndCircle_Id(granteeId, circleId)
-                    .ifPresentOrElse(
-                            circleMember ->
-                                    ValidatorBucket.of()
-                                            .consistOf(CircleMemberStatusValidator.of(
-                                                    circleMember.getStatus(),
-                                                    List.of(CircleMemberStatus.MEMBER)
-                                            )).validate(),
-                            () -> {
-                                throw new UnauthorizedException(
-                                        ErrorCode.NOT_MEMBER,
-                                        MessageUtil.CIRCLE_APPLY_INVALID
-                                );
-                            });
+            serviceProxy.getCircleMemberUser(granteeId, circleId, List.of(CircleMemberStatus.MEMBER));
 
             this.circleRepository.findById(circleId)
                     .ifPresentOrElse(circle -> {
@@ -757,15 +703,12 @@ public class UserService {
 
     @Transactional
     public UserResponseDto updatePassword(
-            User user,
+            @UserValid User user,
             UserUpdatePasswordRequestDto userUpdatePasswordRequestDto
     ) {
         Set<Role> roles = user.getRoles();
 
-
         ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(PasswordCorrectValidator.of(
                         this.passwordEncoder,
                         user.getPassword(),
@@ -781,15 +724,11 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponseDto leave(User user) {
-        Set<Role> roles = user.getRoles();
-
-        ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles))
-                .consistOf(UserRoleWithoutAdminValidator.of(roles, Set.of(Role.COMMON, Role.PROFESSOR)))
-                .validate();
-
+    public UserResponseDto leave(
+            @UserValid(
+                    UserRoleWithoutAdminValidator = true
+            ) User user
+    ) {
         this.lockerRepository.findByUser_Id(user.getId())
                 .ifPresent(locker -> {
                     locker.returnLocker();
@@ -848,7 +787,13 @@ public class UserService {
 
 
     @Transactional
-    public UserResponseDto dropUser(User requestUser, String userId) {
+    public UserResponseDto dropUser(
+            @UserValid(
+                    UserRoleValidator = true, targetRoleSet = {},
+                    UserRoleWithoutAdminValidator = true
+            ) User requestUser,
+            String userId
+    ) {
         Set<Role> roles = requestUser.getRoles();
 
         User droppedUser = this.userRepository.findById(userId).orElseThrow(
@@ -857,13 +802,6 @@ public class UserService {
                         MessageUtil.USER_NOT_FOUND
                 )
         );
-
-        ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(requestUser.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles))
-                .consistOf(UserRoleValidator.of(roles, Set.of()))
-                .consistOf(UserRoleWithoutAdminValidator.of(droppedUser.getRoles(), Set.of(Role.COMMON, Role.PROFESSOR)))
-                .validate();
 
         this.lockerRepository.findByUser_Id(userId)
                 .ifPresent(locker -> {
@@ -893,14 +831,15 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserAdmissionResponseDto findAdmissionById(User requestUser, String admissionId) {
+    public UserAdmissionResponseDto findAdmissionById(
+            @UserValid(UserRoleValidator = true, targetRoleSet = {}) User requestUser,
+            String admissionId
+    ) {
         Set<Role> roles = requestUser.getRoles();
 
-        ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(requestUser.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles))
-                .consistOf(UserRoleValidator.of(roles, Set.of()))
-                .validate();
+//        ValidatorBucket.of()
+//                .consistOf(UserRoleValidator.of(roles, Set.of()))
+//                .validate();
 
         return UserAdmissionResponseDto.from(this.userAdmissionRepository.findById(admissionId).orElseThrow(
                 () -> new BadRequestException(
@@ -912,17 +851,15 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public Page<UserAdmissionsResponseDto> findAllAdmissions(
-            User requestUser,
+            @UserValid(UserRoleValidator = true, targetRoleSet = {}) User requestUser,
             String name,
             Integer pageNum
     ) {
         Set<Role> roles = requestUser.getRoles();
 
-        ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(requestUser.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles))
-                .consistOf(UserRoleValidator.of(roles, Set.of()))
-                .validate();
+//        ValidatorBucket.of()
+//                .consistOf(UserRoleValidator.of(roles, Set.of()))
+//                .validate();
 
         return this.userAdmissionRepository.findAllWithName(UserState.AWAIT.getValue(), name, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
                 .map(UserAdmissionsResponseDto::from);
@@ -930,13 +867,7 @@ public class UserService {
 
     @Transactional
     public UserAdmissionResponseDto createAdmission(UserAdmissionCreateRequestDto userAdmissionCreateRequestDto) {
-        User requestUser = this.userRepository.findByEmail(userAdmissionCreateRequestDto.getEmail()).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_NOT_FOUND
-                )
-        );
-
+        User requestUser = getUserByEmail(userAdmissionCreateRequestDto.getEmail());
 
         if (this.userAdmissionRepository.existsByUser_Id(requestUser.getId())) {
             throw new BadRequestException(
@@ -963,16 +894,27 @@ public class UserService {
                 .build();
 
         ValidatorBucket.of()
-                .consistOf(UserStateIsNotDropAndActiveValidator.of(requestUser.getState()))
                 .consistOf(ConstraintValidator.of(userAdmission, this.validator))
                 .validate();
 
         return UserAdmissionResponseDto.from(this.userAdmissionRepository.save(userAdmission));
     }
 
+    @UserValid(
+            UserRolesIsNoneValidator = false,
+            UserStateValidator = false,
+            UserStateIsNotDropAndActiveValidator = true)
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.USER_NOT_FOUND
+                ));
+    }
+
     @Transactional
     public UserAdmissionResponseDto accept(
-            User requestUser,
+            @UserValid(UserRoleValidator = true, targetRoleSet = {}) User requestUser,
             String admissionId
     ) {
         Set<Role> roles = requestUser.getRoles();
@@ -981,11 +923,9 @@ public class UserService {
                 () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_APPLY_NOT_FOUND)
         );
 
-        ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(requestUser.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles))
-                .consistOf(UserRoleValidator.of(roles, Set.of()))
-                .validate();
+//        ValidatorBucket.of()
+//                .consistOf(UserRoleValidator.of(roles, Set.of()))
+//                .validate();
 
         // Update user role to COMMON
         this.updateRole(userAdmission.getUser(), Role.COMMON);
@@ -1018,7 +958,7 @@ public class UserService {
 
     @Transactional
     public UserAdmissionResponseDto reject(
-            User requestUser,
+            @UserValid(UserRoleValidator = true, targetRoleSet = {}) User requestUser,
             String admissionId
     ) {
         Set<Role> roles = requestUser.getRoles();
@@ -1026,13 +966,6 @@ public class UserService {
         UserAdmission userAdmission = this.userAdmissionRepository.findById(admissionId).orElseThrow(
                 () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_APPLY_NOT_FOUND)
         );
-
-
-        ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(requestUser.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles))
-                .consistOf(UserRoleValidator.of(roles, Set.of()))
-                .validate();
 
         UserAdmissionLog userAdmissionLog = UserAdmissionLog.builder()
                 .userEmail(userAdmission.getUser().getEmail())
@@ -1116,21 +1049,19 @@ public class UserService {
 
     @Transactional
     public UserResponseDto restore(
-            User requestUser,
+            @UserValid(
+                    UserRolesIsNoneValidator = false,
+                    UserStateValidator = false,
+                    UserRoleValidator = true,
+                    targetRoleSet = {},
+                    UserStateIsDropOrIsInActiveValidator = true
+            ) User requestUser,
             String userId
     ) {
-        Set<Role> roles = requestUser.getRoles();
-
         User restoredUser = this.userRepository.findById(userId).orElseThrow(
                 () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND)
         );
-        ValidatorBucket.of()
-                .consistOf(UserRoleValidator.of(roles, Set.of()))
-                .consistOf(UserStateIsDropOrIsInActiveValidator.of(restoredUser.getState()))
-                .validate();
-
         this.updateRole(restoredUser, Role.COMMON);
-
 
         return UserResponseDto.from(this.updateState(restoredUser.getId(), UserState.ACTIVE).orElseThrow(
                 () -> new InternalServerException(
@@ -1143,22 +1074,21 @@ public class UserService {
     @Transactional
     public UserSignInResponseDto updateToken(String refreshToken) {
         // STEP1 : refreshToken으로 맵핑된 유저 찾기
-        User user = this.userRepository.findById(this.getUserIdFromRefreshToken(refreshToken)).orElseThrow(
-                () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.INVALID_TOKEN)
-        );
-
+        User user = getUserById(refreshToken);
         this.userRepository.findById(getUserIdFromRefreshToken(refreshToken));
-
-        ValidatorBucket.of()
-                .consistOf(UserRoleIsNoneValidator.of(user.getRoles()))
-                .consistOf(UserStateValidator.of(user.getState()))
-                .validate();
 
         // STEP2 : 새로운 accessToken 제공
         String newAccessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getRoles(), user.getState());
         return UserSignInResponseDto.builder()
                 .accessToken(newAccessToken)
                 .build();
+    }
+
+    @UserValid
+    public User getUserById(String refreshToken) {
+        return userRepository.findById(getUserIdFromRefreshToken(refreshToken)).orElseThrow(
+                () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.INVALID_TOKEN)
+        );
     }
 
     private String getUserIdFromRefreshToken(String refreshToken) {
@@ -1191,12 +1121,22 @@ public class UserService {
         );
     }
 
-    private User getUser(String userId) {
-        return userRepository.findById(userId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_NOT_FOUND
+    @UserValid(UserRolesIsNoneValidator = false)
+    public User getUserByEmailSignIn(String email) {
+        return userRepository.findByEmail(email).orElseThrow(
+                () -> new UnauthorizedException(
+                        ErrorCode.INVALID_SIGNIN,
+                        MessageUtil.EMAIL_INVALID
                 )
+        );
+    }
+
+    @CircleMemberValid(CircleMemberStatusValidator = true)
+    public CircleMember getCircleMember(String granteeId, String circleId, List<CircleMemberStatus> list) {
+        return circleMemberRepository.findByUser_IdAndCircle_Id(granteeId, circleId).orElseThrow(
+                () -> new UnauthorizedException(
+                        ErrorCode.NOT_MEMBER,
+                        MessageUtil.CIRCLE_APPLY_INVALID)
         );
     }
 
