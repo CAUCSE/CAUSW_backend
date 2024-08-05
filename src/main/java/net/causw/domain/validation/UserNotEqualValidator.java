@@ -1,30 +1,39 @@
 package net.causw.domain.validation;
 
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+import lombok.Setter;
+import net.causw.adapter.persistence.user.User;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
+import net.causw.domain.validation.valid.UserValid;
+import org.springframework.stereotype.Component;
 
-public class UserNotEqualValidator extends AbstractValidator {
+@Setter
+@Component
+public class UserNotEqualValidator implements ConstraintValidator<UserValid, User> {
 
-    private final String srcUserId;
+    //TODO AOP proxy 사용할 것
+    private String targetUserId;
 
-    private final String targetUserId;
-
-    private UserNotEqualValidator(String srcUserId, String targetUserId) {
-        this.srcUserId = srcUserId;
-        this.targetUserId = targetUserId;
-    }
-
-    public static UserNotEqualValidator of(String srcUserId, String targetUserId) {
-        return new UserNotEqualValidator(srcUserId, targetUserId);
-    }
-
-    @Override
-    public void validate() {
-        if (this.srcUserId.equals(this.targetUserId)) {
+    public void validate(String srcUserId, String targetUserId) {
+        System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+        if (srcUserId.equals(targetUserId)) {
             throw new BadRequestException(
                     ErrorCode.CANNOT_PERFORMED,
                     "해당 사용자는 명령을 수행할 수 없습니다."
             );
         }
+    }
+
+    @Override
+    public boolean isValid(User user, ConstraintValidatorContext constraintValidatorContext) {
+        if (user.getId().equals(targetUserId)) {
+            throw new BadRequestException(
+                    ErrorCode.CANNOT_PERFORMED,
+                    "해당 사용자는 명령을 수행할 수 없습니다."
+            );
+        }
+        return true;
     }
 }

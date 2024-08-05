@@ -1,31 +1,26 @@
 package net.causw.domain.validation;
 
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+import net.causw.adapter.persistence.user.User;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.Role;
+import net.causw.domain.validation.valid.UserValid;
+import org.springframework.stereotype.Component;
 
 import java.util.Set;
 
-public class UserRoleWithoutAdminValidator extends AbstractValidator {
+@Component
+public class UserRoleWithoutAdminValidator implements ConstraintValidator<UserValid, User> {
 
-    private final Set<Role> requestUserRoles;
-
-    private final Set<Role> targetRoleSet;
-
-    private UserRoleWithoutAdminValidator(Set<Role> requestUserRoles, Set<Role> targetRoleSet) {
-        this.requestUserRoles = requestUserRoles;
-        this.targetRoleSet = targetRoleSet;
-    }
-
-    public static UserRoleWithoutAdminValidator of(Set<Role> requestUserRoles, Set<Role> targetRoleSet) {
-        return new UserRoleWithoutAdminValidator(requestUserRoles, targetRoleSet);
-    }
+    private final Set<Role> targetRoleSet = Set.of(Role.COMMON, Role.PROFESSOR);
 
     @Override
-    public void validate() {
+    public boolean isValid(User user, ConstraintValidatorContext constraintValidatorContext) {
         for (Role targetRole : this.targetRoleSet) {
-            if (this.requestUserRoles.contains(targetRole)) {
-                return;
+            if (user.getRoles().contains(targetRole)) {
+                return true;
             }
         }
 

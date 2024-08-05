@@ -1,30 +1,38 @@
 package net.causw.domain.validation;
 
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+import lombok.Setter;
+import net.causw.adapter.persistence.user.User;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
+import net.causw.domain.validation.valid.UserValid;
+import org.springframework.stereotype.Component;
 
-public class UserEqualValidator extends AbstractValidator {
+@Setter
+@Component
+public class UserEqualValidator implements ConstraintValidator<UserValid, User> {
 
-    private final String srcUserId;
+    //TODO AOP proxy 사용할 것
+    private String targetUserId;
 
-    private final String targetUserId;
-
-    private UserEqualValidator(String srcUserId, String targetUserId) {
-        this.srcUserId = srcUserId;
-        this.targetUserId = targetUserId;
-    }
-
-    public static UserEqualValidator of(String srcUserId, String targetUserId) {
-        return new UserEqualValidator(srcUserId, targetUserId);
-    }
-
-    @Override
-    public void validate() {
-        if (!this.srcUserId.equals(this.targetUserId)) {
+    public void validate(String srcUserId, String targetUserId) {
+        if (srcUserId.equals(targetUserId)) {
             throw new UnauthorizedException(
                     ErrorCode.API_NOT_ALLOWED,
                     "접근 권한이 없습니다."
             );
         }
+    }
+
+    @Override
+    public boolean isValid(User user, ConstraintValidatorContext constraintValidatorContext) {
+        if (user.getId().equals(targetUserId)) {
+            throw new UnauthorizedException(
+                    ErrorCode.API_NOT_ALLOWED,
+                    "접근 권한이 없습니다."
+            );
+        }
+        return true;
     }
 }
