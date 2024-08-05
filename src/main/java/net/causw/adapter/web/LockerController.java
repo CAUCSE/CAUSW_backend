@@ -16,8 +16,8 @@ import net.causw.application.dto.locker.LockerResponseDto;
 import net.causw.application.dto.locker.LockerUpdateRequestDto;
 import net.causw.config.security.userdetails.CustomUserDetails;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -39,6 +39,7 @@ public class LockerController {
     @GetMapping(value = "/{id}")
     @Operation(summary = "사물함 조회 Api(완료)", description = "사물함 id를 바탕으로 사물함 정보를 가져오는 Api 입니다.")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
     public LockerResponseDto findById(
             @PathVariable("id") String id,
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -49,6 +50,7 @@ public class LockerController {
     @PostMapping(value = "")
     @Operation(summary = "사물함 생성 Api(완료)", description = "사물함을 생성하는 Api입니다.")
     @ResponseStatus(value = HttpStatus.CREATED)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT')")
     public LockerResponseDto create(
             @RequestBody LockerCreateRequestDto lockerCreateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -58,6 +60,7 @@ public class LockerController {
 
     @PutMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
     @Operation(summary = "사물함 상태 update Api", description = "사물함 상태를 변경하는 Api입니다.")
     public LockerResponseDto update(
             @PathVariable("id") String id,
@@ -73,6 +76,7 @@ public class LockerController {
 
     @PutMapping(value = "/{id}/move")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT')")
     @Operation(summary = "사물함 위치 이동 Api(완료)", description = "사물함의 위치를 이동시키는 Api입니다.")
     public LockerResponseDto move(
             @PathVariable("id") String id,
@@ -88,6 +92,7 @@ public class LockerController {
 
     @DeleteMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT')")
     @Operation(summary = "사물함 삭제 Api(완료)", description = "사물함을 삭제하는 Api입니다.")
     public LockerResponseDto delete(
             @PathVariable("id") String id,
@@ -98,6 +103,7 @@ public class LockerController {
 
     @GetMapping(value = "/locations")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
     @Operation(summary = "사물함 층별 사용가능 여부 조회 Api(완료)", description = "사물함 층별 개수 정보와 사용 가능 개수를 제공하는 API입니다.")
     public LockerLocationsResponseDto findAllLocation(@AuthenticationPrincipal CustomUserDetails userDetails) {
         return this.lockerService.findAllLocation(userDetails.getUser());
@@ -106,6 +112,7 @@ public class LockerController {
     @GetMapping(value = "/locations/{locationId}")
     @Operation(summary = "사물함 특정 층별 사용가능 여부 조회 Api(완료)", description = "사물함 특정 층별 개수 정보와 사용 가능 개수를 제공하는 API입니다.")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
     public LockersResponseDto findByLocation(
             @PathVariable("locationId") String locationId,
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -116,6 +123,7 @@ public class LockerController {
     @PostMapping(value = "/locations")
     @Operation(summary = "사물함 위치 생성 API(완료)", description = "사물함 특정 층 생성 API 입니다.")
     @ResponseStatus(value = HttpStatus.CREATED)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT')")
     public LockerLocationResponseDto createLocation(
             @RequestBody LockerLocationCreateRequestDto lockerLocationCreateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -126,6 +134,7 @@ public class LockerController {
     @PutMapping(value = "/locations/{locationId}")
     @Operation(summary = "사물함 위치 업데이트 API(완료)", description = "사물함 특정 층 업데이트 API 입니다.")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT')")
     public LockerLocationResponseDto updateLocation(
             @PathVariable("locationId") String locationId,
             @RequestBody LockerLocationUpdateRequestDto lockerLocationUpdateRequestDto,
@@ -141,6 +150,7 @@ public class LockerController {
     @DeleteMapping(value = "/locations/{locationId}")
     @Operation(summary = "사물함 위치 삭제 API(완료)", description = "사물함 특정 층 삭제 API 입니다.")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT')")
     public LockerLocationResponseDto deleteLocation(
             @PathVariable("locationId") String locationId,
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -157,6 +167,7 @@ public class LockerController {
     @PostMapping(value = "/expire")
     @Operation(summary = "사물함 만료 기한 설정 Api(완료)", description = "사물함 만료 기한을 설정하는 API입니다.(학생회장만 가능)")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT')")
     public void setExpireDate(
             @RequestBody LockerExpiredAtRequestDto lockerExpiredAtRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -167,6 +178,7 @@ public class LockerController {
     @PostMapping(value = "/createAll")
     @Operation(summary = "사물함 전체 생성 API(관리자)" , description = "현재 존재하는 모든 사물함을 생성하는 API입니다.")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT')")
     public void createAllLockers(@AuthenticationPrincipal CustomUserDetails userDetails){
         this.lockerService.createAllLockers(userDetails.getUser());
     }
