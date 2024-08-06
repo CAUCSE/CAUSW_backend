@@ -591,15 +591,15 @@ public class UserService {
                 // 학생회장 권한을 위임하는 경우
                 if (userUpdateRoleRequestDto.getRole().equals(Role.PRESIDENT)) {
                     List<User> councilList = this.userRepository.findByRoleAndState(Role.COUNCIL, UserState.ACTIVE);
-                    if(!councilList.isEmpty()){
+                    if (!councilList.isEmpty()) {
                         councilList.forEach(user -> removeRole(user, Role.COUNCIL));
                     }
                     List<User> vicePresident = this.userRepository.findByRoleAndState(Role.VICE_PRESIDENT, UserState.ACTIVE);
-                    if(!vicePresident.isEmpty()){
+                    if (!vicePresident.isEmpty()) {
                         vicePresident.forEach(user -> removeRole(user, Role.VICE_PRESIDENT));
                     }
 
-                // 동아리장 권한을 위임하는 경우
+                    // 동아리장 권한을 위임하는 경우
                 } else if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)) {
                     circleId = userUpdateRoleRequestDto.getCircleId()
                             .orElseThrow(() -> new BadRequestException(
@@ -622,15 +622,89 @@ public class UserService {
                                     MessageUtil.CIRCLE_MEMBER_NOT_FOUND
                             ));
 
-                    if(isCircleLeader){
+                    if (isCircleLeader) {
                         removeRole(grantor, userUpdateRoleRequestDto.getRole());
                         addRole(grantee, userUpdateRoleRequestDto.getRole());
                         updateLeader(circleId, grantee);
                     }
                 }
                 // 동아리장 위임 케이스에 맞춰 수정 필요
-                removeRole(grantor,userUpdateRoleRequestDto.getRole());
+                removeRole(grantor, userUpdateRoleRequestDto.getRole());
                 addRole(grantee, userUpdateRoleRequestDto.getRole());
+            }
+            else { // 타인의 권한을 위임하는 경우
+                if (roles.contains(Role.PRESIDENT) || roles.contains(Role.ADMIN)) {
+                    if (userUpdateRoleRequestDto.getRole().equals(Role.VICE_PRESIDENT)) {
+                        List<User> previousVicePresidents = userRepository.findByRoleAndState(Role.VICE_PRESIDENT, UserState.ACTIVE);
+                        if (!previousVicePresidents.isEmpty()) {
+                            previousVicePresidents.forEach(previousVicePresident -> {
+                                this.removeRole(previousVicePresident, Role.VICE_PRESIDENT);
+                            });
+                        }
+                    } else if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)) {
+                        String circleId = userUpdateRoleRequestDto.getCircleId()
+                                .orElseThrow(() -> new BadRequestException(
+                                        ErrorCode.INVALID_PARAMETER,
+                                        MessageUtil.CIRCLE_ID_REQUIRED_FOR_LEADER_DELEGATION
+                                ));
+                        if(grantee.getRoles().equals(Role.VICE_PRESIDENT)){
+                            throw new UnauthorizedException(
+                                    ErrorCode.API_NOT_ALLOWED,
+                                    MessageUtil.CONCURRENT_JOB_IMPOSSIBLE
+
+                            );
+                        }
+
+                        this.circleMemberRepository.findByUser_IdAndCircle_Id(granteeId, circleId)
+                                .ifPresentOrElse(
+                                        circleMember ->
+                                                ValidatorBucket.of()
+                                                        .consistOf(CircleMemberStatusValidator.of(
+                                                                circleMember.getStatus(),
+                                                                List.of(CircleMemberStatus.MEMBER)
+                                                        )).validate(),
+                                        () -> {
+                                            throw new UnauthorizedException(
+                                                    ErrorCode.NOT_MEMBER,
+                                                    MessageUtil.CIRCLE_APPLY_INVALID
+                                            );
+                                        });
+
+                        this.circleRepository.findById(circleId)
+                                .ifPresentOrElse(circle -> {
+                                    circle.getLeader().ifPresent(leader -> {
+                                        // Check if the leader is the leader of only one circle
+                                        removeRole(leader, Role.LEADER_CIRCLE);
+                                    });
+                                    updateLeader(circle.getId(), grantee);
+                                }, () -> {
+                                    throw new BadRequestException(
+                                            ErrorCode.ROW_DOES_NOT_EXIST,
+                                            MessageUtil.SMALL_CLUB_NOT_FOUND
+                                    );
+                                });
+                    } else if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_ALUMNI)) {
+                        User previousLeaderAlumni = this.userRepository.findByRoleAndState(Role.LEADER_ALUMNI, UserState.ACTIVE)
+                                .stream().findFirst()
+                                .orElseThrow(
+                                        () -> new InternalServerException(
+                                                ErrorCode.INTERNAL_SERVER,
+                                                MessageUtil.INTERNAL_SERVER_ERROR
+                                        ));
+
+                        removeRole(previousLeaderAlumni, Role.LEADER_ALUMNI);
+                    } else if (userUpdateRoleRequestDto.getRole().equals(Role.COMMON)) {
+                        //TODO : 로직 수정 필요
+                        if(grantee.getRoles().contains(Role.COUNCIL)){
+                            return UserResponseDto.from(removeRole(grantee, Role.COMMON));
+                        }
+                    } else {
+                        throw new BadRequestException(
+                                ErrorCode.API_NOT_ACCESSIBLE,
+                                MessageUtil.API_NOT_ACCESSIBLE
+                        );
+                    }
+                }
             }
         }
         else {
