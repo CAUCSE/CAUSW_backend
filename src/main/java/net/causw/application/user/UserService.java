@@ -621,7 +621,7 @@ public class UserService {
                 }
                 // 위임인의 권한 삭제 및 피위임인에게 권한 위임
                 removeRole(grantor, userUpdateRoleRequestDto.getRole());
-                addRole(grantee, userUpdateRoleRequestDto.getRole());
+                updateRole(grantee, userUpdateRoleRequestDto.getRole());
             }
             else { // 타인의 권한을 위임하는 경우
                 // 학생회장, 관리자만 타인의 권한 위임 가능
@@ -689,7 +689,7 @@ public class UserService {
                     // 일반 사용자로 전환하는 경우
                     } else if (userUpdateRoleRequestDto.getRole().equals(Role.COMMON)) {
                         grantee.getRoles().clear(); // 피위임인의 권한을 모두 삭제
-                        updateRole(grantee, Role.COMMON);
+                        addRole(grantee, Role.COMMON);
 
                     } else {
                         throw new UnauthorizedException(
