@@ -590,7 +590,7 @@ public class UserService {
 
                 // 학생회장 권한을 위임하는 경우
                 if (userUpdateRoleRequestDto.getRole().equals(Role.PRESIDENT)) {
-                    updatePresident();
+                    updatePresident(grantee);
                 }
                 // 동아리장 권한을 위임하는 경우
                 else if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)) {
@@ -899,7 +899,16 @@ public class UserService {
         }
     }
 
-    private void updatePresident() {
+    private void updatePresident(User grantee) {
+        // 피위임인은 동아리장이면 안됨
+        if (grantee.getRoles().contains(Role.LEADER_CIRCLE)) {
+            throw new BadRequestException(
+                    ErrorCode.API_NOT_ALLOWED,
+                    MessageUtil.CONCURRENT_JOB_IMPOSSIBLE
+                    // 메시지는 부회장이라고 쓰여 있지만 회장도 겸직이 불가능하다고 하여 이 메시지를 사용하였습니다.
+            );
+        }
+
         // 학생회 리스트 조회 후 학생회 권한 삭제
         List<User> councilList = this.userRepository.findByRoleAndState(Role.COUNCIL, UserState.ACTIVE);
         if (!councilList.isEmpty()) {
