@@ -904,12 +904,10 @@ public class UserService {
     }
 
     private void updatePresident(User grantee) {
-        // 피위임인은 동아리장이면 안됨
-        if (grantee.getRoles().contains(Role.LEADER_CIRCLE)) {
+        if (!grantee.getRoles().contains(Role.COMMON)) {
             throw new UnauthorizedException(
                     ErrorCode.API_NOT_ALLOWED,
                     MessageUtil.CONCURRENT_JOB_IMPOSSIBLE
-                    // 메시지는 부회장이라고 쓰여 있지만 회장도 겸직이 불가능하다고 하여 이 메시지를 사용하였습니다.
             );
         }
 
