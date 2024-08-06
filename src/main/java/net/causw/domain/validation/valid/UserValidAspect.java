@@ -3,6 +3,8 @@ package net.causw.domain.validation.valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.causw.adapter.persistence.user.User;
+import net.causw.domain.exceptions.BadRequestException;
+import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.validation.*;
 import org.aspectj.lang.JoinPoint;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -27,7 +30,6 @@ public class UserValidAspect {
     private final UserRoleWithoutAdminValidator userRoleWithoutAdminValidator;
     private final UserStateIsDropOrIsInActiveValidator userStateIsDropOrIsInActiveValidator;
     private final UserStateIsNotDropAndActiveValidator userStateIsNotDropAndActiveValidator;
-    private final AdmissionYearValidator admissionYearValidator;
 
     @Pointcut("@annotation(net.causw.domain.validation.valid.UserValid)")
     public void pointCut() {}
@@ -85,6 +87,21 @@ public class UserValidAspect {
                         }
                         if (userValid.UserStateIsNotDropAndActiveValidator()) {
                             userStateIsNotDropAndActiveValidator.isValid(user, null);
+                        }
+                    } else { // User 객체에 대한 Valid가 아닐 때 (Ex. UserCreateRequestDto, UserUpdateRequestDto)
+                        if (userValid.AdmissionYearValidator()) {
+                            Object object = args[i];
+                            Method getAdmissionYear = null;
+                            try {
+                                getAdmissionYear = object.getClass().getMethod("getAdmissionYear");
+                                Integer admissionYear = (Integer) getAdmissionYear.invoke(object);
+                                new AdmissionYearValidator().isValid(admissionYear);
+                            } catch (Exception e) {
+                                throw new BadRequestException(
+                                        ErrorCode.VALUE_NOT_EXIST,
+                                        "입학 년도를 찾을 수 없습니다."
+                                );
+                            }
                         }
                     }
                 }

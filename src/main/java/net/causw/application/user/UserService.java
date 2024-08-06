@@ -410,7 +410,7 @@ public class UserService {
      * @return UserResponseDto
      */
     @Transactional
-    public UserResponseDto signUp(UserCreateRequestDto userCreateRequestDto) {
+    public UserResponseDto signUp(@UserValid(AdmissionYearValidator = true) UserCreateRequestDto userCreateRequestDto) {
         // Make domain model for generalized data model and validate the format of request parameter
 
         this.userRepository.findByEmail(userCreateRequestDto.getEmail()).ifPresent(
@@ -434,7 +434,6 @@ public class UserService {
         ValidatorBucket.of()
                 .consistOf(ConstraintValidator.of(user, this.validator))
                 .consistOf(PasswordFormatValidator.of(userCreateRequestDto.getPassword()))
-                .consistOf(AdmissionYearValidator.of(userCreateRequestDto.getAdmissionYear()))
                 .validate();
 
         return UserResponseDto.from(user);
@@ -495,7 +494,10 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponseDto update(@UserValid User user, UserUpdateRequestDto userUpdateRequestDto) {
+    public UserResponseDto update(
+            @UserValid User user,
+            @UserValid(AdmissionYearValidator = true) UserUpdateRequestDto userUpdateRequestDto
+    ) {
         if (!user.getEmail().equals(userUpdateRequestDto.getEmail())) {
             userRepository.findByEmail(userUpdateRequestDto.getEmail()).ifPresent(
                     email -> {
@@ -517,7 +519,6 @@ public class UserService {
         // Validate the admission year range
         ValidatorBucket.of()
                 .consistOf(ConstraintValidator.of(user, this.validator))
-                .consistOf(AdmissionYearValidator.of(userUpdateRequestDto.getAdmissionYear()))
                 .validate();
 
         User updatedUser = userRepository.save(user);

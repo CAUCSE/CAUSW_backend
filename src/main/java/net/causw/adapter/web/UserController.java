@@ -223,7 +223,6 @@ public class UserController {
             @Valid @RequestBody UserUpdateRequestDto userUpdateDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-
         return this.userService.update(userDetails.getUser(), userUpdateDto);
     }
 
