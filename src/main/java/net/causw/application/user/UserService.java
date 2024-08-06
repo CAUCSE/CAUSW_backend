@@ -694,9 +694,11 @@ public class UserService {
                     // 동문회장 권한을 위임하는 경우
                     } else if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_ALUMNI)) {
                         updateLeaderAlumni(grantee);
+                    // 학생회 권한을 위임하는 경우
+                    } else if (userUpdateRoleRequestDto.getRole().equals(Role.COUNCIL)) {
+                        updateRole(grantee, Role.COUNCIL);
                     // 일반 사용자로 전환하는 경우
                     } else if (userUpdateRoleRequestDto.getRole().equals(Role.COMMON)) {
-                        //TODO : 로직 수정 필요
                         if(grantee.getRoles().contains(Role.COUNCIL)){
                             return UserResponseDto.from(removeRole(grantee, Role.COMMON));
                         }
