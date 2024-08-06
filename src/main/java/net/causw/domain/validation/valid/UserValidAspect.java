@@ -27,8 +27,7 @@ public class UserValidAspect {
     private final UserRoleWithoutAdminValidator userRoleWithoutAdminValidator;
     private final UserStateIsDropOrIsInActiveValidator userStateIsDropOrIsInActiveValidator;
     private final UserStateIsNotDropAndActiveValidator userStateIsNotDropAndActiveValidator;
-    private final UserEqualValidator userEqualValidator;
-    private final UserNotEqualValidator userNotEqualValidator;
+    private final AdmissionYearValidator admissionYearValidator;
 
     @Pointcut("@annotation(net.causw.domain.validation.valid.UserValid)")
     public void pointCut() {}
@@ -86,14 +85,6 @@ public class UserValidAspect {
                         }
                         if (userValid.UserStateIsNotDropAndActiveValidator()) {
                             userStateIsNotDropAndActiveValidator.isValid(user, null);
-                        }
-                        if (userValid.UserEqualValidator()) {
-                            userEqualValidator.setTargetUserId(userValid.targetUserId());
-                            userEqualValidator.isValid(user, null);
-                        }
-                        if (userValid.UserNotEqualValidator()) {
-                            userNotEqualValidator.setTargetUserId(userValid.targetUserId());
-                            userNotEqualValidator.isValid(user, null);
                         }
                     }
                 }

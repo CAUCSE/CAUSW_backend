@@ -21,7 +21,5 @@ public @interface UserValid {
 
     boolean UserStateIsNotDropAndActiveValidator() default false;
 
-    boolean UserEqualValidator() default false;
-    boolean UserNotEqualValidator() default false;
-    String targetUserId() default "";
+    boolean AdmissionYearValidator() default false;
 }

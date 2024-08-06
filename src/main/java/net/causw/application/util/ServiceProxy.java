@@ -20,10 +20,20 @@ import java.util.List;
 public class ServiceProxy {
     private final ApplicationContext applicationContext;
 
+    /* UserService */
+
     public User getUserByEmailSignIn(String email) {
         UserService userService = applicationContext.getBean(UserService.class);
         return userService.getUserByEmailSignIn(email);
     }
+
+    //
+    public CircleMember getCircleMemberUser(String userId, String circleId, List<CircleMemberStatus> list) {
+        UserService userService = applicationContext.getBean(UserService.class);
+        return userService.getCircleMember(userId, circleId, list);
+    }
+
+    /* CircleService */
 
     // User의 Role에 상관 없이 UserEqualValidator을 실행하는 메서드 (userId == circleLeaderId)
     public Circle getCircleWithUserEqualValidator(User user, String circleId) {
@@ -67,11 +77,15 @@ public class ServiceProxy {
         return circleService.getCircleMemberOrCreate(user, circle, list);
     }
 
+    /* ChildCommentService */
+
     //
     public CircleMember getCircleMemberChildComment(String userId, String circleId, List<CircleMemberStatus> list) {
         ChildCommentService childCommentService = applicationContext.getBean(ChildCommentService.class);
         return childCommentService.getCircleMember(userId, circleId, list);
     }
+
+    /* CommentService */
 
     //
     public CircleMember getCircleMemberComment(String userId, String circleId, List<CircleMemberStatus> list) {
@@ -79,16 +93,12 @@ public class ServiceProxy {
         return commentService.getCircleMember(userId, circleId, list);
     }
 
+    /* PostService */
+
     //
     public CircleMember getCircleMemberPost(String userId, String circleId, List<CircleMemberStatus> list) {
         PostService postService = applicationContext.getBean(PostService.class);
         return postService.getCircleMember(userId, circleId, list);
-    }
-
-    //
-    public CircleMember getCircleMemberUser(String userId, String circleId, List<CircleMemberStatus> list) {
-        UserService userService = applicationContext.getBean(UserService.class);
-        return userService.getCircleMember(userId, circleId, list);
     }
 
 }

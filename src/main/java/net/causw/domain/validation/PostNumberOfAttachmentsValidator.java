@@ -7,19 +7,9 @@ import java.util.List;
 
 import static net.causw.domain.model.util.StaticValue.MAX_NUM_FILE_ATTACHMENTS;
 
-public class PostNumberOfAttachmentsValidator extends AbstractValidator {
-    private final List<String> attachmentList;
+public class PostNumberOfAttachmentsValidator {
 
-    private PostNumberOfAttachmentsValidator(List<String> attachmentList) {
-        this.attachmentList = attachmentList;
-    }
-
-    public static PostNumberOfAttachmentsValidator of(List<String> attachmentList) {
-        return new PostNumberOfAttachmentsValidator(attachmentList);
-    }
-
-    @Override
-    public void validate() {
+    public void isValid(List<String> attachmentList) {
         if (attachmentList.size() > MAX_NUM_FILE_ATTACHMENTS) {
             throw new BadRequestException(
                     ErrorCode.INVALID_PARAMETER,

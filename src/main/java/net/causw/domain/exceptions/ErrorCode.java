@@ -27,6 +27,7 @@ public enum ErrorCode {
     FLAG_NOT_AVAILABLE(4017),
     LOCKER_ACTION_ERROR(4018),
     VALIDATE_FAILURE(4019),
+    VALUE_NOT_EXIST(4020),
 
     /**
      * 401 Unauthorized

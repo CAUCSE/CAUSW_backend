@@ -31,6 +31,7 @@ import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.ValidatorBucket;
 import net.causw.domain.validation.TargetIsNotDeletedValidator;
 import net.causw.domain.validation.valid.CircleMemberValid;
+import net.causw.domain.validation.valid.PostValid;
 import net.causw.domain.validation.valid.UserValid;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -158,7 +159,7 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponseDto createPost(@UserValid User creator, PostCreateRequestDto postCreateRequestDto) {
+    public PostResponseDto createPost(@UserValid User creator, @PostValid(PostNumberOfAttachmentsValidator = true) PostCreateRequestDto postCreateRequestDto) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         Set<Role> roles = creator.getRoles();
 
@@ -178,7 +179,6 @@ public class PostService {
         );
 
         validatorBucket
-                .consistOf(PostNumberOfAttachmentsValidator.of(postCreateRequestDto.getAttachmentList()))
                 .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD));
         new UserRoleValidator().validate(
                 roles,
@@ -262,7 +262,7 @@ public class PostService {
     public PostResponseDto updatePost(
             User updater,
             String postId,
-            PostUpdateRequestDto postUpdateRequestDto
+            @PostValid(PostNumberOfAttachmentsValidator = true) PostUpdateRequestDto postUpdateRequestDto
     ) {
         Set<Role> roles = updater.getRoles();
         Post post = getPost(postId);
@@ -272,7 +272,6 @@ public class PostService {
             new UserRoleValidator().validate(roles, Set.of());
         }
         validatorBucket
-                .consistOf(PostNumberOfAttachmentsValidator.of(postUpdateRequestDto.getAttachmentList()))
                 .consistOf(TargetIsDeletedValidator.of(post.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
                 .consistOf(TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST))
                 .consistOf(ContentsAdminValidator.of(
