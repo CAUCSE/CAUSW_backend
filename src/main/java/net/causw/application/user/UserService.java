@@ -694,14 +694,12 @@ public class UserService {
                     // 동문회장 권한을 위임하는 경우
                     } else if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_ALUMNI)) {
                         updateLeaderAlumni(grantee);
-                    // 학년대표 권한을 위임하는 경우
+                    // 학년대표 또는 학생회 권한을 위임하는 경우
                     } else if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_1) || userUpdateRoleRequestDto.getRole().equals(Role.LEADER_2)
-                    || userUpdateRoleRequestDto.getRole().equals(Role.LEADER_3) || userUpdateRoleRequestDto.getRole().equals(Role.LEADER_4)) {
+                    || userUpdateRoleRequestDto.getRole().equals(Role.LEADER_3) || userUpdateRoleRequestDto.getRole().equals(Role.LEADER_4)
+                    || userUpdateRoleRequestDto.getRole().equals(Role.COUNCIL)) {
                         Role role = userUpdateRoleRequestDto.getRole();
                         updateRole(grantee, role);
-                    // 학생회 권한을 위임하는 경우
-                    } else if (userUpdateRoleRequestDto.getRole().equals(Role.COUNCIL)) {
-                        updateRole(grantee, Role.COUNCIL);
                     // 일반 사용자로 전환하는 경우
                     } else if (userUpdateRoleRequestDto.getRole().equals(Role.COMMON)) {
                         if(grantee.getRoles().contains(Role.COUNCIL)){
