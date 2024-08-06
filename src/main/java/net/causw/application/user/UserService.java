@@ -594,11 +594,7 @@ public class UserService {
                 }
                 // 동아리장 권한을 위임하는 경우
                 else if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)) {
-                    circleId = userUpdateRoleRequestDto.getCircleId()
-                            .orElseThrow(() -> new BadRequestException(
-                                    ErrorCode.INVALID_PARAMETER,
-                                    MessageUtil.CIRCLE_ID_REQUIRED_FOR_LEADER_DELEGATION
-                            ));
+                    circleId = findCircleById(userUpdateRoleRequestDto, grantee);
 
                     //동아리가 존재하고 본인 동아리가 맞는지 circleid로 circle 조회하고
                     Circle circle = circleRepository.findByIdAndIsDeletedIsFalse(circleId)
@@ -613,15 +609,6 @@ public class UserService {
                                     ErrorCode.ROW_DOES_NOT_EXIST,
                                     MessageUtil.NOT_CIRCLE_LEADER
                             ));
-
-                    // 부학생회장은 동아리장 겸직 불가
-                    if(grantee.getRoles().equals(Role.VICE_PRESIDENT)){
-                        throw new UnauthorizedException(
-                                ErrorCode.API_NOT_ALLOWED,
-                                MessageUtil.CONCURRENT_JOB_IMPOSSIBLE
-
-                        );
-                    }
 
                     // 피위임인이 해당 동아리 소속인지 확인
                     this.circleMemberRepository.findByUser_IdAndCircle_Id(granteeId, circleId)
@@ -644,21 +631,7 @@ public class UserService {
                         updateVicePresident();
                     // 동아리장 권한을 위임하는 경우
                     } else if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)) {
-                        //circleId가 있는 지 확인
-                        String circleId = userUpdateRoleRequestDto.getCircleId()
-                                .orElseThrow(() -> new BadRequestException(
-                                        ErrorCode.INVALID_PARAMETER,
-                                        MessageUtil.CIRCLE_ID_REQUIRED_FOR_LEADER_DELEGATION
-                                ));
-
-                        // 부학생회장은 동아리장 겸직 불가
-                        if(grantee.getRoles().equals(Role.VICE_PRESIDENT)){
-                            throw new UnauthorizedException(
-                                    ErrorCode.API_NOT_ALLOWED,
-                                    MessageUtil.CONCURRENT_JOB_IMPOSSIBLE
-
-                            );
-                        }
+                        String circleId = findCircleById(userUpdateRoleRequestDto, grantee);
 
                         // 피위임인이 해당 동아리 소속인지 확인
                         this.circleMemberRepository.findByUser_IdAndCircle_Id(granteeId, circleId)
@@ -876,6 +849,25 @@ public class UserService {
          * Therefore, the updating for the grantee is performed in this process
          */
         return UserResponseDto.from(this.updateRole(grantee, userUpdateRoleRequestDto.getRole()));
+    }
+
+    private String findCircleById(UserUpdateRoleRequestDto userUpdateRoleRequestDto, User grantee) {
+        String circleId;
+        // 부학생회장은 동아리장 겸직 불가
+        if(grantee.getRoles().equals(Role.VICE_PRESIDENT)){
+            throw new UnauthorizedException(
+                    ErrorCode.API_NOT_ALLOWED,
+                    MessageUtil.CONCURRENT_JOB_IMPOSSIBLE
+
+            );
+        }
+
+        circleId = userUpdateRoleRequestDto.getCircleId()
+                .orElseThrow(() -> new BadRequestException(
+                        ErrorCode.INVALID_PARAMETER,
+                        MessageUtil.CIRCLE_ID_REQUIRED_FOR_LEADER_DELEGATION
+                ));
+        return circleId;
     }
 
     private void updateLeaderAlumni(User grantee) {
