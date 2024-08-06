@@ -628,12 +628,14 @@ public class UserService {
                         updateLeader(circleId, grantee);
                     }
                 }
-                // 동아리장 위임 케이스에 맞춰 수정 필요
+                // TODO: 동아리장 위임 케이스에 맞춰 수정 필요
                 removeRole(grantor, userUpdateRoleRequestDto.getRole());
                 addRole(grantee, userUpdateRoleRequestDto.getRole());
             }
             else { // 타인의 권한을 위임하는 경우
+                // 학생회장, 관리자만 타인의 권한 위임 가능
                 if (roles.contains(Role.PRESIDENT) || roles.contains(Role.ADMIN)) {
+                    // 부학생회장 권한을 위임하는 경우
                     if (userUpdateRoleRequestDto.getRole().equals(Role.VICE_PRESIDENT)) {
                         List<User> previousVicePresidents = userRepository.findByRoleAndState(Role.VICE_PRESIDENT, UserState.ACTIVE);
                         if (!previousVicePresidents.isEmpty()) {
@@ -641,6 +643,7 @@ public class UserService {
                                 this.removeRole(previousVicePresident, Role.VICE_PRESIDENT);
                             });
                         }
+                    // 동아리장 권한을 위임하는 경우
                     } else if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)) {
                         String circleId = userUpdateRoleRequestDto.getCircleId()
                                 .orElseThrow(() -> new BadRequestException(
@@ -683,6 +686,7 @@ public class UserService {
                                             MessageUtil.SMALL_CLUB_NOT_FOUND
                                     );
                                 });
+                    // 동문회장 권한을 위임하는 경우
                     } else if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_ALUMNI)) {
                         User previousLeaderAlumni = this.userRepository.findByRoleAndState(Role.LEADER_ALUMNI, UserState.ACTIVE)
                                 .stream().findFirst()
@@ -693,6 +697,7 @@ public class UserService {
                                         ));
 
                         removeRole(previousLeaderAlumni, Role.LEADER_ALUMNI);
+                    // 일반 사용자로 전환하는 경우
                     } else if (userUpdateRoleRequestDto.getRole().equals(Role.COMMON)) {
                         //TODO : 로직 수정 필요
                         if(grantee.getRoles().contains(Role.COUNCIL)){
