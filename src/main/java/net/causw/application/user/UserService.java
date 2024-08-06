@@ -726,6 +726,13 @@ public class UserService {
                 }
             }
             // grantor, grantee의 권한 확인 후 아무 권한이 없는 경우 COMMON 부여
+            if (grantor.getRoles().isEmpty()) {
+                addRole(grantor, Role.COMMON);
+            }
+
+            if (grantee.getRoles().isEmpty()) {
+                addRole(grantee, Role.COMMON);
+            }
         }
         else {
             throw new BadRequestException(
@@ -786,7 +793,6 @@ public class UserService {
             }
 
         }
-
 
         /* 권한 위임
          * 1. 권한 위임자가 학생회장이거나 관리자일 경우 이면서 넘겨받을 권한이 동아리장 일때
