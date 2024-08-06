@@ -590,20 +590,10 @@ public class UserService {
 
                 // 학생회장 권한을 위임하는 경우
                 if (userUpdateRoleRequestDto.getRole().equals(Role.PRESIDENT)) {
-                    // 학생회 리스트 조회 후 학생회 권한 삭제
-                    List<User> councilList = this.userRepository.findByRoleAndState(Role.COUNCIL, UserState.ACTIVE);
-                    if (!councilList.isEmpty()) {
-                        councilList.forEach(user -> removeRole(user, Role.COUNCIL));
-                    }
-
-                    // 부학생회장 리스트 조회 후 부학생회장 권한 삭제
-                    List<User> vicePresident = this.userRepository.findByRoleAndState(Role.VICE_PRESIDENT, UserState.ACTIVE);
-                    if (!vicePresident.isEmpty()) {
-                        vicePresident.forEach(user -> removeRole(user, Role.VICE_PRESIDENT));
-                    }
-
-                    // 동아리장 권한을 위임하는 경우
-                } else if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)) {
+                    updatePresident();
+                }
+                // 동아리장 권한을 위임하는 경우
+                else if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)) {
                     circleId = userUpdateRoleRequestDto.getCircleId()
                             .orElseThrow(() -> new BadRequestException(
                                     ErrorCode.INVALID_PARAMETER,
@@ -624,6 +614,15 @@ public class UserService {
                                     MessageUtil.NOT_CIRCLE_LEADER
                             ));
 
+                    // 부학생회장은 동아리장 겸직 불가
+                    if(grantee.getRoles().equals(Role.VICE_PRESIDENT)){
+                        throw new UnauthorizedException(
+                                ErrorCode.API_NOT_ALLOWED,
+                                MessageUtil.CONCURRENT_JOB_IMPOSSIBLE
+
+                        );
+                    }
+
                     // 피위임인이 해당 동아리 소속인지 확인
                     this.circleMemberRepository.findByUser_IdAndCircle_Id(granteeId, circleId)
                             .orElseThrow(() -> new BadRequestException(
@@ -642,13 +641,7 @@ public class UserService {
                 if (roles.contains(Role.PRESIDENT) || roles.contains(Role.ADMIN)) {
                     // 부학생회장 권한을 위임하는 경우
                     if (userUpdateRoleRequestDto.getRole().equals(Role.VICE_PRESIDENT)) {
-                        // 부학생회장 리스트 조회 후 부학생회장 권한 삭제
-                        List<User> previousVicePresidents = userRepository.findByRoleAndState(Role.VICE_PRESIDENT, UserState.ACTIVE);
-                        if (!previousVicePresidents.isEmpty()) {
-                            previousVicePresidents.forEach(previousVicePresident -> {
-                                this.removeRole(previousVicePresident, Role.VICE_PRESIDENT);
-                            });
-                        }
+                        updateVicePresident();
                     // 동아리장 권한을 위임하는 경우
                     } else if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)) {
                         //circleId가 있는 지 확인
@@ -700,17 +693,7 @@ public class UserService {
 
                     // 동문회장 권한을 위임하는 경우
                     } else if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_ALUMNI)) {
-                        // 기존 동문회장 조회
-                        User previousLeaderAlumni = this.userRepository.findByRoleAndState(Role.LEADER_ALUMNI, UserState.ACTIVE)
-                                .stream().findFirst()
-                                .orElseThrow(
-                                        () -> new InternalServerException(
-                                                ErrorCode.INTERNAL_SERVER,
-                                                MessageUtil.INTERNAL_SERVER_ERROR
-                                        ));
-
-                        removeRole(previousLeaderAlumni, Role.LEADER_ALUMNI); // 기존 동문회장의 동문회장 권한 삭제
-
+                        updateLeaderAlumni(grantee);
                     // 일반 사용자로 전환하는 경우
                     } else if (userUpdateRoleRequestDto.getRole().equals(Role.COMMON)) {
                         //TODO : 로직 수정 필요
@@ -886,6 +869,44 @@ public class UserService {
          * Therefore, the updating for the grantee is performed in this process
          */
         return UserResponseDto.from(this.updateRole(grantee, userUpdateRoleRequestDto.getRole()));
+    }
+
+    private void updateLeaderAlumni(User grantee) {
+        // 기존 동문회장 조회
+        User previousLeaderAlumni = this.userRepository.findByRoleAndState(Role.LEADER_ALUMNI, UserState.ACTIVE)
+                .stream().findFirst()
+                .orElseThrow(
+                        () -> new InternalServerException(
+                                ErrorCode.INTERNAL_SERVER,
+                                MessageUtil.INTERNAL_SERVER_ERROR
+                        ));
+
+        removeRole(previousLeaderAlumni, Role.LEADER_ALUMNI); // 기존 동문회장의 동문회장 권한 삭제
+        updateRole(grantee, Role.LEADER_ALUMNI);
+    }
+
+    private void updateVicePresident() {
+        // 부학생회장 리스트 조회 후 부학생회장 권한 삭제
+        List<User> previousVicePresidents = userRepository.findByRoleAndState(Role.VICE_PRESIDENT, UserState.ACTIVE);
+        if (!previousVicePresidents.isEmpty()) {
+            previousVicePresidents.forEach(previousVicePresident -> {
+                this.removeRole(previousVicePresident, Role.VICE_PRESIDENT);
+            });
+        }
+    }
+
+    private void updatePresident() {
+        // 학생회 리스트 조회 후 학생회 권한 삭제
+        List<User> councilList = this.userRepository.findByRoleAndState(Role.COUNCIL, UserState.ACTIVE);
+        if (!councilList.isEmpty()) {
+            councilList.forEach(user -> removeRole(user, Role.COUNCIL));
+        }
+
+        // 부학생회장 리스트 조회 후 부학생회장 권한 삭제
+        List<User> vicePresident = this.userRepository.findByRoleAndState(Role.VICE_PRESIDENT, UserState.ACTIVE);
+        if (!vicePresident.isEmpty()) {
+            vicePresident.forEach(user -> removeRole(user, Role.VICE_PRESIDENT));
+        }
     }
 
     //remove는 그냥 역할을 지우기만 한다. (역할이 아무것도 없어지면 common을 추가한다)
