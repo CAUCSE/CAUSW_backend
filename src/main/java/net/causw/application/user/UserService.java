@@ -700,6 +700,8 @@ public class UserService {
                         if(grantee.getRoles().contains(Role.COUNCIL)){
                             return UserResponseDto.from(removeRole(grantee, Role.COMMON));
                         }
+                        grantee.getRoles().clear(); // 피위임인의 권한을 모두 삭제
+                        updateRole(grantee, Role.COMMON);
                     } else {
                         throw new BadRequestException(
                                 ErrorCode.API_NOT_ACCESSIBLE,
