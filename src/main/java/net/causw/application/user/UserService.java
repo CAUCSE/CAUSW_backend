@@ -614,21 +614,23 @@ public class UserService {
                                     MessageUtil.CIRCLE_NOT_FOUND
                             ));
 
-                    boolean isCircleLeader = circle.getLeader().map(leader -> leader.equals(grantor)).orElse(false);
+                    // 위임인이 해당 동아리의 동아리장인지 확인
+                    circle.getLeader().map(leader -> leader.equals(grantor))
+                            .orElseThrow(() -> new BadRequestException(
+                                    ErrorCode.ROW_DOES_NOT_EXIST,
+                                    MessageUtil.NOT_CIRCLE_LEADER
+                            ));
 
+                    // 피위임인이 해당 동아리 소속인지 확인
                     this.circleMemberRepository.findByUser_IdAndCircle_Id(granteeId, circleId)
                             .orElseThrow(() -> new BadRequestException(
                                     ErrorCode.ROW_DOES_NOT_EXIST,
                                     MessageUtil.CIRCLE_MEMBER_NOT_FOUND
                             ));
 
-                    if (isCircleLeader) {
-                        removeRole(grantor, userUpdateRoleRequestDto.getRole());
-                        addRole(grantee, userUpdateRoleRequestDto.getRole());
-                        updateLeader(circleId, grantee);
-                    }
+                    updateLeader(circleId, grantee); // 모두 맞다면 피위임인을 해당 동아리의 동아리장으로 위임
                 }
-                // TODO: 동아리장 위임 케이스에 맞춰 수정 필요
+                // 위임인의 권한 삭제 및 피위임인에게 권한 위임
                 removeRole(grantor, userUpdateRoleRequestDto.getRole());
                 addRole(grantee, userUpdateRoleRequestDto.getRole());
             }
