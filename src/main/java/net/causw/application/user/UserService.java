@@ -582,6 +582,63 @@ public class UserService {
                 ))
                 .validate();
 
+        // 학생회장, 동아리장, 관리자만 권한 위임 가능
+        if (roles.contains(Role.PRESIDENT) || roles.contains(Role.LEADER_CIRCLE) || roles.contains(Role.ADMIN)) {
+            // 위임인이 자신의 권한을 위임하는 경우
+            if (roles.contains(userUpdateRoleRequestDto.getRole())) {
+                String circleId = "";
+
+                // 학생회장 권한을 위임하는 경우
+                if (userUpdateRoleRequestDto.getRole().equals(Role.PRESIDENT)) {
+                    List<User> councilList = this.userRepository.findByRoleAndState(Role.COUNCIL, UserState.ACTIVE);
+                    if(!councilList.isEmpty()){
+                        councilList.forEach(user -> removeRole(user, Role.COUNCIL));
+                    }
+                    List<User> vicePresident = this.userRepository.findByRoleAndState(Role.VICE_PRESIDENT, UserState.ACTIVE);
+                    if(!vicePresident.isEmpty()){
+                        vicePresident.forEach(user -> removeRole(user, Role.VICE_PRESIDENT));
+                    }
+
+                // 동아리장 권한을 위임하는 경우
+                } else if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)) {
+                    circleId = userUpdateRoleRequestDto.getCircleId()
+                            .orElseThrow(() -> new BadRequestException(
+                                    ErrorCode.INVALID_PARAMETER,
+                                    MessageUtil.CIRCLE_ID_REQUIRED_FOR_LEADER_DELEGATION
+                            ));
+
+                    //동아리가 존재하고 본인 동아리가 맞는지 circleid로 circle 조회하고
+                    Circle circle = circleRepository.findByIdAndIsDeletedIsFalse(circleId)
+                            .orElseThrow(() -> new BadRequestException(
+                                    ErrorCode.ROW_DOES_NOT_EXIST,
+                                    MessageUtil.CIRCLE_NOT_FOUND
+                            ));
+
+                    boolean isCircleLeader = circle.getLeader().map(leader -> leader.equals(grantor)).orElse(false);
+
+                    this.circleMemberRepository.findByUser_IdAndCircle_Id(granteeId, circleId)
+                            .orElseThrow(() -> new BadRequestException(
+                                    ErrorCode.ROW_DOES_NOT_EXIST,
+                                    MessageUtil.CIRCLE_MEMBER_NOT_FOUND
+                            ));
+
+                    if(isCircleLeader){
+                        removeRole(grantor, userUpdateRoleRequestDto.getRole());
+                        addRole(grantee, userUpdateRoleRequestDto.getRole());
+                        updateLeader(circleId, grantee);
+                    }
+                }
+                // 동아리장 위임 케이스에 맞춰 수정 필요
+                removeRole(grantor,userUpdateRoleRequestDto.getRole());
+                addRole(grantee, userUpdateRoleRequestDto.getRole());
+            }
+        }
+        else {
+            throw new BadRequestException(
+                    ErrorCode.API_NOT_ACCESSIBLE,
+                    MessageUtil.API_NOT_ACCESSIBLE
+            );
+        }
 
         if (roles.contains(userUpdateRoleRequestDto.getRole())){
             //동아리장
