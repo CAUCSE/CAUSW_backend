@@ -567,7 +567,6 @@ public class UserService {
                 )
         );
 
-
         /* Validate the role
          * 1) Combination of grantor role and the role to be granted must be acceptable
          * 2) Combination of grantor role and the grantee role must be acceptable
@@ -594,6 +593,7 @@ public class UserService {
                 }
                 // 동아리장 권한을 위임하는 경우
                 else if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)) {
+                    // 피위임인이 학생회장 또는 부학생회장인지 확인 후 circleId 할당
                     circleId = checkAuthAndCircleId(userUpdateRoleRequestDto, grantee);
 
                     //동아리가 존재하고 본인 동아리가 맞는지 circleid로 circle 조회하고
@@ -720,8 +720,8 @@ public class UserService {
 
     private String checkAuthAndCircleId(UserUpdateRoleRequestDto userUpdateRoleRequestDto, User grantee) {
         String circleId;
-        // 부학생회장은 동아리장 겸직 불가
-        if(grantee.getRoles().equals(Role.VICE_PRESIDENT)){
+        // 학생회장, 부학생회장은 동아리장 겸직 불가
+        if(grantee.getRoles().equals(Role.VICE_PRESIDENT) || grantee.getRoles().equals(Role.PRESIDENT)){
             throw new UnauthorizedException(
                     ErrorCode.API_NOT_ALLOWED,
                     MessageUtil.CONCURRENT_JOB_IMPOSSIBLE
