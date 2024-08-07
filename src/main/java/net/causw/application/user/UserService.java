@@ -557,9 +557,10 @@ public class UserService {
             String granteeId,
             UserUpdateRoleRequestDto userUpdateRoleRequestDto
     ) {
-        // Load the user data from input grantor and grantee ids.
+        // 위임인의 권한을 모두 조회
         Set<Role> roles = grantor.getRoles();
 
+        // 피위임인의 Id로 피위임인 조회
         User grantee = userRepository.findById(granteeId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -596,7 +597,7 @@ public class UserService {
                     // 피위임인이 학생회장 또는 부학생회장인지 확인 후 circleId 할당
                     circleId = checkAuthAndCircleId(userUpdateRoleRequestDto, grantee);
 
-                    //동아리가 존재하고 본인 동아리가 맞는지 circleid로 circle 조회하고
+                    //동아리가 존재하면 본인 동아리가 맞는지 circleid로 circle 조회
                     Circle circle = circleRepository.findByIdAndIsDeletedIsFalse(circleId)
                             .orElseThrow(() -> new BadRequestException(
                                     ErrorCode.ROW_DOES_NOT_EXIST,
@@ -634,16 +635,6 @@ public class UserService {
                     } else if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)) {
                         String circleId = checkAuthAndCircleId(userUpdateRoleRequestDto, grantee);
 
-                        // 학생회장인 경우 동아리장 권한 위임 불가
-                        if (grantee.getRoles().contains(Role.PRESIDENT)) {
-                            throw new UnauthorizedException(
-                                    ErrorCode.API_NOT_ALLOWED,
-                                    MessageUtil.CONCURRENT_JOB_IMPOSSIBLE
-                                    // 메시지는 부회장이라고 쓰여 있지만 회장도 겸직이 불가능하다고 하여 이 메시지를 사용하였습니다.
-                                    // 메시지를 겸직 불가로 바꾸는게 좋지 않을까 생각합니다.
-                            );
-                        }
-
                         // 피위임인이 해당 동아리 소속인지 확인
                         this.circleMemberRepository.findByUser_IdAndCircle_Id(granteeId, circleId)
                                 .ifPresentOrElse(
@@ -675,23 +666,24 @@ public class UserService {
                                     );
                                 });
 
-                    // 동문회장 권한을 위임하는 경우
-                    } else if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_ALUMNI)) {
+                    } // 동문회장 권한을 위임하는 경우
+                    else if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_ALUMNI)) {
                         updateLeaderAlumni(grantee);
 
-                    // 학년대표 또는 학생회 권한을 위임하는 경우
-                    } else if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_1) || userUpdateRoleRequestDto.getRole().equals(Role.LEADER_2)
+                    } // 학년대표 또는 학생회 권한을 위임하는 경우
+                    else if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_1) || userUpdateRoleRequestDto.getRole().equals(Role.LEADER_2)
                     || userUpdateRoleRequestDto.getRole().equals(Role.LEADER_3) || userUpdateRoleRequestDto.getRole().equals(Role.LEADER_4)
                     || userUpdateRoleRequestDto.getRole().equals(Role.COUNCIL)) {
                         Role role = userUpdateRoleRequestDto.getRole();
                         updateRole(grantee, role);
 
-                    // 일반 사용자로 전환하는 경우
-                    } else if (userUpdateRoleRequestDto.getRole().equals(Role.COMMON)) {
+                    } // 일반 사용자로 전환하는 경우
+                    else if (userUpdateRoleRequestDto.getRole().equals(Role.COMMON)) {
                         grantee.getRoles().clear(); // 피위임인의 권한을 모두 삭제
                         addRole(grantee, Role.COMMON);
 
-                    } else {
+                    } // 그 외의 권한은 위임 불가
+                    else {
                         throw new UnauthorizedException(
                                 ErrorCode.API_NOT_ACCESSIBLE,
                                 MessageUtil.API_NOT_ACCESSIBLE
@@ -703,7 +695,6 @@ public class UserService {
             if (grantor.getRoles().isEmpty()) {
                 addRole(grantor, Role.COMMON);
             }
-
             if (grantee.getRoles().isEmpty()) {
                 addRole(grantee, Role.COMMON);
             }
@@ -725,7 +716,8 @@ public class UserService {
             throw new UnauthorizedException(
                     ErrorCode.API_NOT_ALLOWED,
                     MessageUtil.CONCURRENT_JOB_IMPOSSIBLE
-
+                    // 메시지는 부회장이라고 쓰여 있지만 회장도 겸직이 불가능하다고 하여 이 메시지를 사용하였습니다.
+                    // 메시지를 겸직 불가로 바꾸는게 좋지 않을까 생각합니다.
             );
         }
 
