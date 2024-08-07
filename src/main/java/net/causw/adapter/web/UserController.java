@@ -463,4 +463,10 @@ public class UserController {
     public UserSignOutResponseDto signOut(@RequestBody UserSignOutRequestDto userSignOutRequestDto){
         return userService.signOut(userSignOutRequestDto);
     }
+
+    @PostMapping()
+    @ResponseStatus(value = HttpStatus.OK)
+    public UserIdFindResponseDto findEmail(@RequestBody UserIdFindRequestDto userFindEmailRequestDto) {
+        return userService.findEmail(userFindEmailRequestDto);
+    }
 }
