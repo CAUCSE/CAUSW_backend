@@ -37,6 +37,7 @@ import static net.causw.application.dto.board.BoardOfCircleResponseDto.isWriteab
 @Service
 @RequiredArgsConstructor
 public class CircleService {
+    private final ExcelService excelService;
     private final Validator validator;
     private final CircleRepository circleRepository;
     private final CircleMemberRepository circleMemberRepository;
@@ -588,6 +589,12 @@ public class CircleService {
                 circle,
                 targetUser
         );
+    }
+
+    @Transactional(readOnly = true)
+    public void exportCircleMembersToExcel(User user, String circleId, CircleMemberStatus status, HttpServletResponse response){
+        List<CircleMemberResponseDto> members = getUserList(user, circleId, status);
+        excelService.generateCircleExcel(members, response);
     }
 
 
