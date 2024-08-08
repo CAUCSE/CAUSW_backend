@@ -64,6 +64,7 @@ public class WebSecurityConfig {
                                 "/api/v1/users/token/update",
                                 "/api/v1/storage/**",
                                 "/api/v1/users/password/find",
+                                "/api/v1/users/user-id/find",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()

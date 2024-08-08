@@ -464,9 +464,18 @@ public class UserController {
         return userService.signOut(userSignOutRequestDto);
     }
 
-    @PostMapping()
+    /**
+     * @param userFindIdRequestDto
+     * @return userFindIdRequestDto
+     * */
+    @PostMapping(value = "/user-id/find")
     @ResponseStatus(value = HttpStatus.OK)
-    public UserIdFindResponseDto findEmail(@RequestBody UserIdFindRequestDto userFindEmailRequestDto) {
-        return userService.findEmail(userFindEmailRequestDto);
+    @Operation(summary = "아이디 찾기 API" , description = "아이디를 찾기 위해 학번, 이름, 전화번호 필요")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "application/json", schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = UserFindIdResponseDto.class))),
+            @ApiResponse(responseCode = "4000", description = "해당 사용자를 찾을 수 없습니다", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
+    })
+    public UserFindIdResponseDto findEmail(@RequestBody UserFindIdRequestDto userFindIdRequestDto) {
+        return userService.findUserId(userFindIdRequestDto);
     }
 }

@@ -1204,8 +1204,19 @@ public class UserService {
                 .build();
     }
 
-    public UserIdFindResponseDto findUserId(UserIdFindRequestDto userIdFindRequestDto) {
+    public UserFindIdResponseDto findUserId(UserFindIdRequestDto userIdFindRequestDto) {
+        User user = this.userRepository.findByStudentIdAndNameAndPhoneNumber(
+                userIdFindRequestDto.getStudentId(),
+                userIdFindRequestDto.getName(),
+                userIdFindRequestDto.getPhoneNumber()
+        ).orElseThrow(() -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                MessageUtil.USER_NOT_FOUND
+        ));
 
+        return UserFindIdResponseDto.builder()
+                .email(user.getEmail())
+                .build();
     }
 
     private BoardResponseDto toBoardResponseDto(Board board, Role userRole) {

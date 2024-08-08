@@ -26,6 +26,9 @@ public class User extends BaseEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
+    @Column(name = "phone_number", nullable = true)  // 일단 null 가능하게 설정(false 로 하면 기존 데이터와 충돌 예상)
+    private String phoneNumber;
+
     @Column(name = "password", nullable = false)
     private String password;
 
