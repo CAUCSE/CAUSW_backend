@@ -649,10 +649,9 @@ public class CircleController {
     public void exportExcel(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable(name = "circleId") String circleId,
-            @RequestParam("circleMemberStatus") CircleMemberStatus circleMemberStatus,
             HttpServletResponse response
     ){
-        circleService.exportCircleMembersToExcel(userDetails.getUser(), circleId, circleMemberStatus, response);
+        circleService.exportCircleMembersToExcel(userDetails.getUser(), circleId, response);
     }
 
 }

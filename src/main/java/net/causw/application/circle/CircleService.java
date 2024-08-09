@@ -594,9 +594,13 @@ public class CircleService {
     }
 
     @Transactional(readOnly = true)
-    public void exportCircleMembersToExcel(User user, String circleId, CircleMemberStatus status, HttpServletResponse response){
-        List<CircleMemberResponseDto> members = getUserList(user, circleId, status);
-        excelService.generateCircleExcel(members, response);
+    public void exportCircleMembersToExcel(User user, String circleId, HttpServletResponse response){
+        Circle circle = getCircle(circleId);
+        String circleName = circle.getName();
+        List<CircleMemberResponseDto> awaitingMembers = getUserList(user, circleId, CircleMemberStatus.AWAIT);
+        List<CircleMemberResponseDto> activeMembers = getUserList(user, circleId, CircleMemberStatus.MEMBER);
+
+        excelService.generateCircleExcel(response, circleName, awaitingMembers, activeMembers);
     }
 
 
