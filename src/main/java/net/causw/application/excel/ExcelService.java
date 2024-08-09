@@ -11,19 +11,21 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Service
 public class ExcelService {
 
-    public void generateCircleExcel(List<CircleMemberResponseDto> userList, HttpServletResponse response) {
+    public void generateCircleExcel(HttpServletResponse response, String circleName, List<CircleMemberResponseDto> awaitingMembers, List<CircleMemberResponseDto> activeMembers) {
         try (Workbook workbook = new XSSFWorkbook()) {
-            Sheet sheet = workbook.createSheet("Circle Members");
-            createHeaderRow(sheet);
-            createDataRows(sheet, userList);
+            createSheet(workbook, "Await members", awaitingMembers);
+            createSheet(workbook, "Active members", activeMembers);
 
+            String encodedFileName = URLEncoder.encode(circleName + "_부원명단.xlsx", StandardCharsets.UTF_8.toString());
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            response.setHeader("Content-Disposition", "attachment; filename=circle_members.xlsx");
+            response.setHeader("Content-Disposition", "attachment; filename=" + encodedFileName);
 
             try (ServletOutputStream outputStream = response.getOutputStream()) {
                 workbook.write(outputStream);
@@ -33,13 +35,22 @@ public class ExcelService {
         }
     }
 
+    private void createSheet(Workbook workbook, String sheetName, List<CircleMemberResponseDto> members) {
+        Sheet sheet = workbook.createSheet(sheetName);
+        createHeaderRow(sheet);
+        createDataRows(sheet, members);
+    }
+
     private void createHeaderRow(Sheet sheet) {
         Row headerRow = sheet.createRow(0);
         Cell cell = headerRow.createCell(0);
-        cell.setCellValue("User Name");
+        cell.setCellValue("이름");
 
         cell = headerRow.createCell(1);
-        cell.setCellValue("User StudentID");
+        cell.setCellValue("학번");
+
+        cell = headerRow.createCell(2);
+        cell.setCellValue("전화번호");
 
     }
 
@@ -49,6 +60,8 @@ public class ExcelService {
             Row row = sheet.createRow(rowNum++);
             row.createCell(0).setCellValue(member.getUser().getName());
             row.createCell(1).setCellValue(member.getUser().getStudentId());
+            //전화번호
+//            row.createCell(2).setCellValue(member.getUser().());
 
         }
     }
