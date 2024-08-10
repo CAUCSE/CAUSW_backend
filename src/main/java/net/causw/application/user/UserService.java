@@ -780,7 +780,7 @@ public class UserService {
         Set<Role> roles = targetUser.getRoles();
         if(targetRole.equals(Role.LEADER_CIRCLE)){
             List<Circle> ownCircles = circleRepository.findByLeader_Id(targetUser.getId());
-            if(ownCircles.size() == 1) roles.remove(targetRole);
+            if(ownCircles.size() == 0) roles.remove(targetRole);
         } else{
             roles.remove(targetRole);
         }
