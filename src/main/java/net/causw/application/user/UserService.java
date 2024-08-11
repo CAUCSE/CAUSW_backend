@@ -605,7 +605,7 @@ public class UserService {
                             ));
 
                     // 위임인이 해당 동아리의 동아리장인지 확인
-                    circle.getLeader().map(leader -> leader.equals(grantor))
+                    circle.getLeader().filter(leader -> leader.getId().equals(grantor.getId()))
                             .orElseThrow(() -> new BadRequestException(
                                     ErrorCode.ROW_DOES_NOT_EXIST,
                                     MessageUtil.NOT_CIRCLE_LEADER
