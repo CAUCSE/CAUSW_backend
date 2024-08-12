@@ -656,9 +656,10 @@ public class UserService {
                                 .ifPresentOrElse(circle -> {
                                     circle.getLeader().ifPresent(leader -> { // 동아리장이 존재하는지 확인
                                         // 존재하는 경우 기존 동아리장의 동아리장 권한 삭제
-                                        removeRole(leader, Role.LEADER_CIRCLE);
+                                        User previousLeaderCircle = leader;
+                                        updateLeader(circle.getId(), grantee);
+                                        removeRole(previousLeaderCircle, Role.LEADER_CIRCLE);
                                     });
-                                    updateLeader(circle.getId(), grantee); // 동아리장을 피위임인으로 업데이트
                                 }, () -> {
                                     throw new BadRequestException(
                                             ErrorCode.ROW_DOES_NOT_EXIST,
