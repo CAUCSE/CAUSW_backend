@@ -717,8 +717,6 @@ public class UserService {
             throw new UnauthorizedException(
                     ErrorCode.API_NOT_ALLOWED,
                     MessageUtil.CONCURRENT_JOB_IMPOSSIBLE
-                    // 메시지는 부회장이라고 쓰여 있지만 회장도 겸직이 불가능하다고 하여 이 메시지를 사용하였습니다.
-                    // 메시지를 겸직 불가로 바꾸는게 좋지 않을까 생각합니다.
             );
         }
 
