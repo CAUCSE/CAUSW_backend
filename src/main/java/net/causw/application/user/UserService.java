@@ -207,24 +207,24 @@ public class UserService {
         return UserCommentsResponseDto.of(
                 requestUser,
                 this.commentRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_COMMENT_PAGE_SIZE))
-                .map(comment -> {
-                    Post post = this.postRepository.findById(comment.getPost().getId()).orElseThrow(
-                            () -> new BadRequestException(
-                                    ErrorCode.ROW_DOES_NOT_EXIST,
-                                    MessageUtil.POST_NOT_FOUND
-                            )
-                    );
+                        .map(comment -> {
+                            Post post = this.postRepository.findById(comment.getPost().getId()).orElseThrow(
+                                    () -> new BadRequestException(
+                                            ErrorCode.ROW_DOES_NOT_EXIST,
+                                            MessageUtil.POST_NOT_FOUND
+                                    )
+                            );
 
-                    return CommentsOfUserResponseDto.of(
-                            comment,
-                            post.getBoard().getId(),
-                            post.getBoard().getName(),
-                            post.getId(),
-                            post.getTitle(),
-                            post.getBoard().getCircle() != null ? post.getBoard().getCircle().getId() : null,
-                            post.getBoard().getCircle() != null ? post.getBoard().getCircle().getName() : null
-                    );
-                })
+                            return CommentsOfUserResponseDto.of(
+                                    comment,
+                                    post.getBoard().getId(),
+                                    post.getBoard().getName(),
+                                    post.getId(),
+                                    post.getTitle(),
+                                    post.getBoard().getCircle() != null ? post.getBoard().getCircle().getId() : null,
+                                    post.getBoard().getCircle() != null ? post.getBoard().getCircle().getName() : null
+                            );
+                        })
 
         );
     }
@@ -429,6 +429,15 @@ public class UserService {
                     throw new BadRequestException(
                             ErrorCode.ROW_ALREADY_EXIST,
                             MessageUtil.EMAIL_ALREADY_EXIST
+                    );
+                }
+        );
+
+        this.userRepository.findByNickname(userCreateRequestDto.getNickname()).ifPresent(
+                nickname -> {
+                    throw new BadRequestException(
+                            ErrorCode.ROW_ALREADY_EXIST,
+                            MessageUtil.NICKNAME_ALREADY_EXIST
                     );
                 }
         );
