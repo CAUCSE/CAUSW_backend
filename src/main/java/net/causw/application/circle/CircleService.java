@@ -22,6 +22,7 @@ import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.validation.*;
+import net.causw.domain.validation.valid.AdminValid;
 import net.causw.domain.validation.valid.CircleMemberValid;
 import net.causw.domain.validation.valid.CircleValid;
 import net.causw.domain.validation.valid.UserValid;
@@ -168,11 +169,12 @@ public class CircleService {
             CircleCreateRequestDto circleCreateRequestDto
     ) {
         Set<Role> roles = requestUser.getRoles();
-        User leader = userRepository.findById(circleCreateRequestDto.getLeaderId())
-                .orElseThrow(() -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.NEW_CIRCLE_LEADER_NOT_FOUND)
-                );
+//        User leader = userRepository.findById(circleCreateRequestDto.getLeaderId())
+//                .orElseThrow(() -> new BadRequestException(
+//                        ErrorCode.ROW_DOES_NOT_EXIST,
+//                        MessageUtil.NEW_CIRCLE_LEADER_NOT_FOUND)
+//                );
+        User leader = getLeader(circleCreateRequestDto.getLeaderId(), roles, Role.LEADER_CIRCLE);
 
         Circle circle = Circle.of(
                 circleCreateRequestDto.getName(),
@@ -199,7 +201,7 @@ public class CircleService {
         // User Role Table 분리 필요하다고 봅니다...
         ValidatorBucket.of()
                 .consistOf(ConstraintValidator.of(circle, this.validator))
-                .consistOf(GrantableRoleValidator.of(roles, Role.LEADER_CIRCLE, leader.getRoles()))
+//                .consistOf(GrantableRoleValidator.of(roles, Role.LEADER_CIRCLE, leader.getRoles()))
                 .validate();
 
         // Grant role to the LEADER
@@ -227,6 +229,16 @@ public class CircleService {
         updateCircleMemberStatus(circleMember.getId(), CircleMemberStatus.MEMBER);
 
         return this.toCircleResponseDto(circle);
+    }
+
+    @AdminValid
+    public User getLeader(String granteeId, Set<Role> granterRoles, Role targetRole) {
+        return userRepository.findById(granteeId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.USER_NOT_FOUND
+                )
+        );
     }
 
     @Transactional

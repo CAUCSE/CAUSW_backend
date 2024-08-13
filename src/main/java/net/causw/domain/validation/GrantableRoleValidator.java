@@ -1,45 +1,41 @@
 package net.causw.domain.validation;
 
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+import net.causw.adapter.persistence.user.User;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.Role;
+import net.causw.domain.validation.valid.AdminValid;
+import org.springframework.stereotype.Component;
 
 import java.util.Set;
 
+@Component
+public class GrantableRoleValidator implements ConstraintValidator<AdminValid, User> {
 
-public class GrantableRoleValidator extends AbstractValidator {
+    private Set<Role> grantorRoles;
+    private Role grantedRole;
 
-    private final Set<Role> grantorRoles;
-
-    private final Role grantedRole;
-
-    private final Set<Role> granteeRoles;
-
-    private GrantableRoleValidator(Set<Role> grantorRoles, Role grantedRole, Set<Role> granteeRoles) {
+    public void setRoles(Set<Role> grantorRoles, Role grantedRole) {
         this.grantorRoles = grantorRoles;
         this.grantedRole = grantedRole;
-        this.granteeRoles = granteeRoles;
     }
 
-    public static GrantableRoleValidator of(Set<Role> grantorRoles, Role grantedRole, Set<Role> granteeRoles) {
-        return new GrantableRoleValidator(grantorRoles, grantedRole, granteeRoles);
-    }
-
-    @Override
-    public void validate() {
+    public void validate(Set<Role> grantorRoles, Role grantedRole, Set<Role> granteeRoles) {
         /* When role of grantor is Admin
          * Granted and grantee role should not be Admin
          * Granted and grantee role should be different
          * Grantee role should not be Leader Circle or Leader Alumni
          *   => They will automatically granted while other granting process since the roles has unique user
          */
-        if (this.grantorRoles.contains(Role.ADMIN)) {
-            if (!this.granteeRoles.contains(Role.ADMIN)) {
-                if(this.grantedRole.equals(Role.LEADER_CIRCLE) || this.granteeRoles.contains(Role.LEADER_CIRCLE)){
+        if (grantorRoles.contains(Role.ADMIN)) {
+            if (!granteeRoles.contains(Role.ADMIN)) {
+                if (grantedRole.equals(Role.LEADER_CIRCLE) || granteeRoles.contains(Role.LEADER_CIRCLE)) {
                     return;
-                } else if(this.granteeRoles.contains(Role.COMMON)){
+                } else if (granteeRoles.contains(Role.COMMON)) {
                     return;
-                } else if(this.grantedRole.equals(Role.COMMON)){
+                } else if (grantedRole.equals(Role.COMMON)) {
                     return;
                 }
             }
@@ -50,14 +46,14 @@ public class GrantableRoleValidator extends AbstractValidator {
          * Grantee role should not be Leader Circle or Leader Alumni
          *   => They will automatically granted while other granting process since the roles has unique user
          */
-        else if (this.grantorRoles.contains(Role.PRESIDENT)) {
-            if (this.grantedRole != Role.ADMIN
-                    && (!this.granteeRoles.contains(Role.ADMIN) && !this.granteeRoles.contains(Role.PRESIDENT))) {
-                if(this.grantedRole.equals(Role.LEADER_CIRCLE) || this.granteeRoles.contains(Role.LEADER_CIRCLE)){
+        else if (grantorRoles.contains(Role.PRESIDENT)) {
+            if (grantedRole != Role.ADMIN
+                    && (!granteeRoles.contains(Role.ADMIN) && !granteeRoles.contains(Role.PRESIDENT))) {
+                if (grantedRole.equals(Role.LEADER_CIRCLE) || granteeRoles.contains(Role.LEADER_CIRCLE)) {
                     return;
-                } else if(this.granteeRoles.contains(Role.COMMON)){
+                } else if (granteeRoles.contains(Role.COMMON)) {
                     return;
-                } else if(this.grantedRole.equals(Role.COMMON)){
+                } else if (grantedRole.equals(Role.COMMON)) {
                     return;
                 }
             }
@@ -65,10 +61,10 @@ public class GrantableRoleValidator extends AbstractValidator {
         /* When role of grantor is Leader_Circle
          * Granted role should be Leader_Circle, and Grantee role should be Common
          */
-        else if (this.grantorRoles.contains(Role.LEADER_CIRCLE)) {
-            if(this.grantedRole.equals(Role.LEADER_CIRCLE)){
-                if(!this.granteeRoles.contains(Role.ADMIN) && !this.granteeRoles.contains(Role.PRESIDENT) && !this.granteeRoles.contains(Role.VICE_PRESIDENT)
-                        && !this.granteeRoles.contains(Role.LEADER_ALUMNI) && !this.granteeRoles.contains(Role.PROFESSOR)){
+        else if (grantorRoles.contains(Role.LEADER_CIRCLE)) {
+            if (grantedRole.equals(Role.LEADER_CIRCLE)) {
+                if (!granteeRoles.contains(Role.ADMIN) && !granteeRoles.contains(Role.PRESIDENT) && !granteeRoles.contains(Role.VICE_PRESIDENT)
+                        && !granteeRoles.contains(Role.LEADER_ALUMNI) && !granteeRoles.contains(Role.PROFESSOR)) {
                     return;
                 }
             }
@@ -76,8 +72,8 @@ public class GrantableRoleValidator extends AbstractValidator {
         /* When role of grantor is Leader_Alumni
          * Granted role should be Leader_Alumni, and Grantee role should be Common
          */
-        else if (this.grantorRoles.contains(Role.LEADER_ALUMNI)) {
-            if (this.grantedRole == Role.LEADER_ALUMNI && this.granteeRoles.contains(Role.COMMON)) {
+        else if (grantorRoles.contains(Role.LEADER_ALUMNI)) {
+            if (grantedRole == Role.LEADER_ALUMNI && granteeRoles.contains(Role.COMMON)) {
                 return;
             }
         }
@@ -86,5 +82,11 @@ public class GrantableRoleValidator extends AbstractValidator {
                 ErrorCode.GRANT_ROLE_NOT_ALLOWED,
                 String.format("권한을 부여할 수 없습니다.")
         );
+    }
+
+    @Override
+    public boolean isValid(User user, ConstraintValidatorContext constraintValidatorContext) {
+        validate(grantorRoles, grantedRole, user.getRoles());
+        return true;
     }
 }

@@ -35,17 +35,14 @@ import net.causw.domain.model.enums.*;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.RedisUtils;
 import net.causw.domain.model.util.StaticValue;
-import net.causw.domain.validation.AdmissionYearValidator;
-import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.ConstraintValidator;
-import net.causw.domain.validation.GrantableRoleValidator;
 import net.causw.domain.validation.PasswordCorrectValidator;
 import net.causw.domain.validation.PasswordFormatValidator;
 import net.causw.domain.validation.UserRoleIsNoneValidator;
 import net.causw.domain.validation.ValidatorBucket;
+import net.causw.domain.validation.valid.AdminValid;
 import net.causw.domain.validation.valid.CircleMemberValid;
 import net.causw.domain.validation.valid.UserValid;
-import net.causw.domain.validation.valid.UtilValid;
 import net.causw.infrastructure.GoogleMailSender;
 import net.causw.infrastructure.PasswordGenerator;
 import org.springframework.data.domain.Page;
@@ -529,25 +526,25 @@ public class UserService {
         // Load the user data from input grantor and grantee ids.
         Set<Role> roles = grantor.getRoles();
 
-        User grantee = userRepository.findById(granteeId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_NOT_FOUND
-                )
-        );
-
+//        User grantee = userRepository.findById(granteeId).orElseThrow(
+//                () -> new BadRequestException(
+//                        ErrorCode.ROW_DOES_NOT_EXIST,
+//                        MessageUtil.USER_NOT_FOUND
+//                )
+//        );
+        User grantee = serviceProxy.getGrantee(granteeId, roles, userUpdateRoleRequestDto.getRole());
 
         /* Validate the role
          * 1) Combination of grantor role and the role to be granted must be acceptable
          * 2) Combination of grantor role and the grantee role must be acceptable
          */
-        ValidatorBucket.of()
-                .consistOf(GrantableRoleValidator.of(
-                        roles,
-                        userUpdateRoleRequestDto.getRole(),
-                        grantee.getRoles()
-                ))
-                .validate();
+//        ValidatorBucket.of()
+//                .consistOf(GrantableRoleValidator.of(
+//                        roles,
+//                        userUpdateRoleRequestDto.getRole(),
+//                        grantee.getRoles()
+//                ))
+//                .validate();
 
         /* 권한 위임
          * 1. 권한 위임자와 넘겨주는 권한이 같을 경우, 권한을 위임자가 동아리장일 경우 진행
@@ -652,6 +649,16 @@ public class UserService {
          * Therefore, the updating for the grantee is performed in this process
          */
         return UserResponseDto.from(this.updateRole(grantee, userUpdateRoleRequestDto.getRole()));
+    }
+
+    @AdminValid
+    public User getGrantee(String granteeId, Set<Role> granterRoles, Role targetRole) {
+        return userRepository.findById(granteeId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.USER_NOT_FOUND
+                )
+        );
     }
 
     //UserPort의 removeRole 로직 서비스단으로 이동
