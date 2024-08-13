@@ -7,9 +7,7 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import lombok.RequiredArgsConstructor;
 import net.causw.domain.model.enums.ImageLocation;
 import net.causw.domain.model.util.S3Util;
-import net.causw.domain.validation.ImageLocationTypeValidator;
-import net.causw.domain.validation.UserStateValidator;
-import net.causw.domain.validation.ValidatorBucket;
+import net.causw.domain.validation.valid.UtilValid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,10 +25,7 @@ public class StorageService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
 
-    public String uploadFile(MultipartFile multipartFile, String type) {
-
-        ValidatorBucket.of()
-                .consistOf(ImageLocationTypeValidator.of(type)).validate();
+    public String uploadFile(MultipartFile multipartFile, @UtilValid(ImageLocationTypeValidator = true) String type) {
 
         ImageLocation imageLocation = ImageLocation.of(type);
 
