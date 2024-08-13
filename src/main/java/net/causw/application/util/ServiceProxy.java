@@ -10,10 +10,12 @@ import net.causw.application.comment.CommentService;
 import net.causw.application.post.PostService;
 import net.causw.application.user.UserService;
 import net.causw.domain.model.enums.CircleMemberStatus;
+import net.causw.domain.model.enums.Role;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +33,12 @@ public class ServiceProxy {
     public CircleMember getCircleMemberUser(String userId, String circleId, List<CircleMemberStatus> list) {
         UserService userService = applicationContext.getBean(UserService.class);
         return userService.getCircleMember(userId, circleId, list);
+    }
+
+    //
+    public User getGrantee(String granteeId, Set<Role> granterRoles, Role targetRole) {
+        UserService userService = applicationContext.getBean(UserService.class);
+        return userService.getGrantee(granteeId, granterRoles, targetRole);
     }
 
     /* CircleService */
@@ -75,6 +83,12 @@ public class ServiceProxy {
     public CircleMember getCircleMemberOrCreate(User user, Circle circle, List<CircleMemberStatus> list) {
         CircleService circleService = applicationContext.getBean(CircleService.class);
         return circleService.getCircleMemberOrCreate(user, circle, list);
+    }
+
+    //
+    public User getLeader(String granteeId, Set<Role> granterRoles, Role targetRole) {
+        CircleService circleService = applicationContext.getBean(CircleService.class);
+        return circleService.getLeader(granteeId, granterRoles, targetRole);
     }
 
     /* ChildCommentService */

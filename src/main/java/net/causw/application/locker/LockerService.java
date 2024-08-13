@@ -72,8 +72,6 @@ public class LockerService {
             @UserValid(UserRoleValidator = true) User user,
             LockerCreateRequestDto lockerCreateRequestDto
     ) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
         LockerLocation lockerLocation = lockerLocationRepository.findById(lockerCreateRequestDto.getLockerLocationId())
                 .orElseThrow(
                         () -> new BadRequestException(
@@ -89,9 +87,7 @@ public class LockerService {
             );
         }
         Locker locker = Locker.of(lockerCreateRequestDto.getLockerNumber(), true, user, lockerLocation, null);
-        validatorBucket
-                .consistOf(ConstraintValidator.of(locker, this.validator))
-                .validate();
+        new ConstraintValidator<Locker>().validate(locker, validator);
 
         lockerRepository.save(locker);
         lockerLogRepository.save(LockerLog.of(locker.getLockerNumber(), lockerLocation.getName(), user.getEmail(), user.getName(), LockerLogAction.ENABLE,
@@ -151,10 +147,7 @@ public class LockerService {
                 );
 
         locker.move(lockerLocation);
-
-        ValidatorBucket.of()
-                .consistOf(ConstraintValidator.of(locker, this.validator))
-                .validate();
+        new ConstraintValidator<Locker>().validate(locker, validator);
 
         lockerRepository.save(locker);
 
@@ -246,10 +239,7 @@ public class LockerService {
         LockerLocation lockerLocation = LockerLocation.of(
                 lockerLocationCreateRequestDto.getName()
         );
-
-        ValidatorBucket.of()
-                .consistOf(ConstraintValidator.of(lockerLocation, this.validator))
-                .validate();
+        new ConstraintValidator<LockerLocation>().validate(lockerLocation, validator);
         LockerLocation location = LockerLocation.of(lockerLocationCreateRequestDto.getName());
 
         return LockerLocationResponseDto.of(
@@ -265,7 +255,6 @@ public class LockerService {
             String locationId,
             LockerLocationUpdateRequestDto lockerLocationRequestDto
     ) {
-        Set<Role> roles = user.getRoles();
         LockerLocation lockerLocation = lockerLocationRepository.findById(locationId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -285,10 +274,7 @@ public class LockerService {
         lockerLocation.update(
                 lockerLocationRequestDto.getName()
         );
-
-        ValidatorBucket.of()
-                .consistOf(ConstraintValidator.of(lockerLocation, this.validator))
-                .validate();
+        new ConstraintValidator<LockerLocation>().validate(lockerLocation, validator);
 
         return LockerLocationResponseDto.of(
                 lockerLocation,
@@ -359,9 +345,6 @@ public class LockerService {
 
     @Transactional
     public void createAllLockers(User user) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
-
         LockerLocation lockerLocationSecondFloor = LockerLocation.of("Second Floor");
         lockerLocationRepository.save(lockerLocationSecondFloor);
 
@@ -371,14 +354,13 @@ public class LockerService {
         LockerLocation lockerLocationFourthFloor = LockerLocation.of("Fourth Floor");
         lockerLocationRepository.save(lockerLocationFourthFloor);
 
-        createLockerByLockerLocationAndEndLockerNumber(lockerLocationSecondFloor, validatorBucket, user, 136L);
-        createLockerByLockerLocationAndEndLockerNumber(lockerLocationThirdFloor, validatorBucket, user, 168L);
-        createLockerByLockerLocationAndEndLockerNumber(lockerLocationFourthFloor, validatorBucket, user, 32L);
+        createLockerByLockerLocationAndEndLockerNumber(lockerLocationSecondFloor, user, 136L);
+        createLockerByLockerLocationAndEndLockerNumber(lockerLocationThirdFloor, user, 168L);
+        createLockerByLockerLocationAndEndLockerNumber(lockerLocationFourthFloor, user, 32L);
     }
 
     private void createLockerByLockerLocationAndEndLockerNumber(
             LockerLocation lockerLocationSecondFloor,
-            ValidatorBucket validatorBucket,
             @UserValid(UserRoleValidator = true) User user,
             Long endNum
     ) {
@@ -392,11 +374,8 @@ public class LockerService {
                     null
             );
             Set<Role> roles = user.getRoles();
-
-            validatorBucket
-                    .consistOf(ConstraintValidator.of(locker, this.validator))
-                    .validate();
             new UserRoleValidator().validate(roles, Set.of());
+            new ConstraintValidator<Locker>().validate(locker, validator);
 
             lockerRepository.save(locker);
 

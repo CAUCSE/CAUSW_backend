@@ -190,13 +190,8 @@ public class CircleService {
                 }
         );
 
-        // user Role이 Common이 아니면 아예 안 됨. -> 권한의 중첩이 필요하다. User Role에 대한 새로운 table 생성 어떤지?
-        // https://www.inflearn.com/questions/21303/enum%EC%9D%84-list%EB%A1%9C-%EC%96%B4%EB%96%BB%EA%B2%8C-%EB%B0%9B%EB%8A%94%EC%A7%80-%EA%B6%81%EA%B8%88%ED%95%A9%EB%8B%88%EB%8B%A4
-        // User Role Table 분리 필요하다고 봅니다...
-        ValidatorBucket.of()
-                .consistOf(ConstraintValidator.of(circle, this.validator))
-//                .consistOf(GrantableRoleValidator.of(roles, Role.LEADER_CIRCLE, leader.getRoles()))
-                .validate();
+        new GrantableRoleValidator().validate(roles, Role.LEADER_CIRCLE, leader.getRoles());
+        new ConstraintValidator<Circle>().validate(circle, validator);
 
         // Grant role to the LEADER
         leader = updateRole(leader, Role.LEADER_CIRCLE);
@@ -263,10 +258,8 @@ public class CircleService {
                 circleUpdateRequestDto.getDescription()
         );
 
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-        validatorBucket
-                .consistOf(ConstraintValidator.of(circle, this.validator));
         new TargetIsDeletedValidator().validate(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE);
+        new ConstraintValidator<Circle>().validate(circle, validator);
 
         return this.toCircleResponseDto(updateCircle(circleId, circle));
     }

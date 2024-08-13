@@ -50,10 +50,10 @@ public class InquiryService {
                 )
         );
 
-        validatorBucket
-                .consistOf(UserStateValidator.of(userDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRoles()))
-                .consistOf(TargetIsDeletedValidator.of(inquiryDomainModel.getIsDeleted(), StaticValue.DOMAIN_INQUIRY));
+//        validatorBucket
+//                .consistOf(UserStateValidator.of(userDomainModel.getState()))
+//                .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRoles()))
+//                .consistOf(TargetIsDeletedValidator.of(inquiryDomainModel.getIsDeleted(), StaticValue.DOMAIN_INQUIRY));
 
         validatorBucket
                 .validate();
@@ -88,6 +88,7 @@ public class InquiryService {
         validatorBucket
                 .consistOf(ConstraintValidator.of(inquiryDomainModel, this.validator))
                 .validate();
+
 
         return InquiryResponseDto.of(
                 this.inquiryPort.create(inquiryDomainModel),

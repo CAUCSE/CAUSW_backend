@@ -25,7 +25,6 @@ import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.UserEqualValidator;
 import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.TargetIsNotDeletedValidator;
-import net.causw.domain.validation.ValidatorBucket;
 import net.causw.domain.validation.valid.UserValid;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -85,8 +84,6 @@ public class BoardService {
     ) {
         Set<Role> roles = creator.getRoles();
 
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
         Circle circle = boardCreateRequestDto.getCircleId().map(
                 circleId -> {
                     Circle newCircle = getCircle(circleId);
@@ -123,10 +120,7 @@ public class BoardService {
                 boardCreateRequestDto.getCategory(),
                 circle
         );
-
-        validatorBucket
-                .consistOf(ConstraintValidator.of(board, this.validator))
-                .validate();
+        new ConstraintValidator<Board>().validate(board, validator);
 
         return toBoardResponseDto(boardRepository.save(board), roles);
     }
@@ -140,19 +134,14 @@ public class BoardService {
         Set<Role> roles = updater.getRoles();
         Board board = getBoard(boardId);
 
-        initializeValidatorBucket(updater, board);
-
+        initializeValidator(updater, board);
         board.update(
                 boardUpdateRequestDto.getName(),
                 boardUpdateRequestDto.getDescription(),
                 String.join(",", boardUpdateRequestDto.getCreateRoleList()),
                 boardUpdateRequestDto.getCategory()
         );
-
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-        validatorBucket
-                .consistOf(ConstraintValidator.of(board, this.validator))
-                .validate();
+        new ConstraintValidator<Board>().validate(board, validator);
 
         return toBoardResponseDto(boardRepository.save(board), roles);
     }
@@ -165,7 +154,7 @@ public class BoardService {
         Set<Role> roles = deleter.getRoles();
         Board board = getBoard(boardId);
 
-        initializeValidatorBucket(deleter, board);
+        initializeValidator(deleter, board);
 
         if (board.getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
             new UserRoleValidator().validate(roles, Set.of());
@@ -212,7 +201,7 @@ public class BoardService {
         return toBoardResponseDto(boardRepository.save(board), roles);
     }
 
-    private void initializeValidatorBucket(@UserValid User user, Board board) {
+    private void initializeValidator(@UserValid User user, Board board) {
         Set<Role> roles = user.getRoles();
         new TargetIsDeletedValidator().validate(board.getIsDeleted(), StaticValue.DOMAIN_BOARD);
 

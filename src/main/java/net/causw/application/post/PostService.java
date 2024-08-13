@@ -16,19 +16,15 @@ import net.causw.application.util.ServiceProxy;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
-import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.CircleMemberStatus;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
-import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.ContentsAdminValidator;
-import net.causw.domain.validation.PostNumberOfAttachmentsValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.UserEqualValidator;
 import net.causw.domain.validation.UserRoleValidator;
-import net.causw.domain.validation.ValidatorBucket;
 import net.causw.domain.validation.TargetIsNotDeletedValidator;
 import net.causw.domain.validation.valid.CircleMemberValid;
 import net.causw.domain.validation.valid.PostValid;
@@ -58,7 +54,10 @@ public class PostService {
     private final ServiceProxy serviceProxy;
 
     @Transactional(readOnly = true)
-    public PostResponseDto findPostById(User user, String postId) {
+    public PostResponseDto findPostById(
+            @UserValid User user,
+            String postId
+    ) {
         Post post = getPost(postId);
         initializeValidator(user, post.getBoard());
         return toPostResponseDtoExtended(post, user);
@@ -66,7 +65,7 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public BoardPostsResponseDto findAllPost(
-            User user,
+            @UserValid User user,
             String boardId,
             Integer pageNum
     ) {
@@ -100,7 +99,7 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public BoardPostsResponseDto searchPost(
-            User user,
+            @UserValid User user,
             String boardId,
             String keyword,
             Integer pageNum
@@ -133,7 +132,10 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public BoardPostsResponseDto findAllAppNotice(User user, Integer pageNum) {
+    public BoardPostsResponseDto findAllAppNotice(
+            User user,
+            Integer pageNum
+    ) {
         Set<Role> roles = user.getRoles();
         Board board = boardRepository.findAppNotice().orElseThrow(
                 () -> new BadRequestException(
@@ -151,10 +153,11 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponseDto createPost(@UserValid User creator, @PostValid(PostNumberOfAttachmentsValidator = true) PostCreateRequestDto postCreateRequestDto) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
+    public PostResponseDto createPost(
+            @UserValid User creator,
+            @PostValid(PostNumberOfAttachmentsValidator = true) PostCreateRequestDto postCreateRequestDto
+    ) {
         Set<Role> roles = creator.getRoles();
-
         Board board = getBoard(postCreateRequestDto.getBoardId());
         List<String> createRoles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
         if (board.getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
@@ -170,10 +173,7 @@ public class PostService {
                 String.join(":::", postCreateRequestDto.getAttachmentList())
         );
 
-        new UserRoleValidator().validate(
-                roles,
-                createRoles.stream().map(Role::of).collect(Collectors.toSet())
-        );
+        new UserRoleValidator().validate(roles, createRoles.stream().map(Role::of).collect(Collectors.toSet()));
         new TargetIsDeletedValidator().validate(board.getIsDeleted(), StaticValue.DOMAIN_BOARD);
 
         Optional<Circle> circles = Optional.ofNullable(board.getCircle());
@@ -181,28 +181,25 @@ public class PostService {
                 .filter(circle -> !roles.contains(Role.ADMIN) && !roles.contains(Role.PRESIDENT) && !roles.contains(Role.VICE_PRESIDENT))
                 .ifPresent(
                         circle -> {
-                            CircleMember member = serviceProxy.getCircleMemberPost(creator.getId(), circle.getId(), List.of(CircleMemberStatus.MEMBER));
-
+                            serviceProxy.getCircleMemberPost(creator.getId(), circle.getId(), List.of(CircleMemberStatus.MEMBER));
                             new TargetIsDeletedValidator().validate(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE);
-
                             if (roles.contains(Role.LEADER_CIRCLE) && !createRoles.contains("COMMON")) {
                                 new UserEqualValidator().validate(creator.getId(), getCircleLeader(circle).getId());
                             }
                         }
                 );
-        validatorBucket
-                .consistOf(ConstraintValidator.of(post, this.validator))
-                .validate();
-
+        new ConstraintValidator<Post>().validate(post, validator);
         return toPostResponseDto(postRepository.save(post), creator);
     }
 
     @Transactional
-    public PostResponseDto deletePost(@UserValid User deleter, String postId) {
+    public PostResponseDto deletePost(
+            @UserValid User deleter,
+            String postId
+    ) {
         Post post = getPost(postId);
         Set<Role> roles = deleter.getRoles();
 
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
         if (post.getBoard().getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
             new UserRoleValidator().validate(roles, Set.of());
         }
@@ -213,30 +210,17 @@ public class PostService {
                 .filter(circle -> !roles.contains(Role.ADMIN) && !roles.contains(Role.PRESIDENT) && !roles.contains(Role.VICE_PRESIDENT))
                 .ifPresentOrElse(
                         circle -> {
-                            CircleMember member = serviceProxy.getCircleMemberPost(deleter.getId(), circle.getId(), List.of(CircleMemberStatus.MEMBER));
+                            serviceProxy.getCircleMemberPost(deleter.getId(), circle.getId(), List.of(CircleMemberStatus.MEMBER));
 
-                            validatorBucket
-                                    .consistOf(ContentsAdminValidator.of(
-                                            roles,
-                                            deleter.getId(),
-                                            post.getWriter().getId(),
-                                            List.of(Role.LEADER_CIRCLE)
-                                    ));
+                            new ContentsAdminValidator().validate(roles, deleter.getId(), post.getWriter().getId(), List.of(Role.LEADER_CIRCLE));
                             new TargetIsDeletedValidator().validate(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE);
 
                             if (roles.contains(Role.LEADER_CIRCLE) && !post.getWriter().getId().equals(deleter.getId())) {
                                 new UserEqualValidator().validate(deleter.getId(), getCircleLeader(circle).getId());
                             }
                         },
-                        () -> validatorBucket
-                                .consistOf(ContentsAdminValidator.of(
-                                        roles,
-                                        deleter.getId(),
-                                        post.getWriter().getId(),
-                                        List.of())
-                                )
+                        () -> new ContentsAdminValidator().validate(roles, deleter.getId(), post.getWriter().getId(), List.of())
                 );
-        validatorBucket.validate();
         post.setIsDeleted(true);
 
         return toPostResponseDto(postRepository.save(post), deleter);
@@ -244,7 +228,7 @@ public class PostService {
 
     @Transactional
     public PostResponseDto updatePost(
-            User updater,
+            @UserValid User updater,
             String postId,
             @PostValid(PostNumberOfAttachmentsValidator = true) PostUpdateRequestDto postUpdateRequestDto
     ) {
@@ -254,16 +238,8 @@ public class PostService {
         if (post.getBoard().getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
             new UserRoleValidator().validate(roles, Set.of());
         }
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-        validatorBucket
-                .consistOf(ContentsAdminValidator.of(
-                        roles,
-                        updater.getId(),
-                        post.getWriter().getId(),
-                        List.of()
-                ))
-                .consistOf(ConstraintValidator.of(post, this.validator));
-        validatorBucket.validate();
+        new ContentsAdminValidator().validate(roles, updater.getId(), post.getWriter().getId(), List.of());
+        new ConstraintValidator<Post>().validate(post, validator);
         new TargetIsDeletedValidator().validate(post.getIsDeleted(), StaticValue.DOMAIN_POST);
         new TargetIsDeletedValidator().validate(post.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD);
 
@@ -277,11 +253,13 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponseDto restorePost(@UserValid User restorer, String postId) {
+    public PostResponseDto restorePost(
+            @UserValid User restorer,
+            String postId
+    ) {
         Set<Role> roles = restorer.getRoles();
         Post post = getPost(postId);
 
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
         if (post.getBoard().getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
             new UserRoleValidator().validate(roles, Set.of());
         }
@@ -293,45 +271,23 @@ public class PostService {
                 .filter(circle -> !roles.contains(Role.ADMIN) && !roles.contains(Role.PRESIDENT) && !roles.contains(Role.VICE_PRESIDENT))
                 .ifPresentOrElse(
                         circle -> {
-                            CircleMember member = serviceProxy.getCircleMemberPost(restorer.getId(), circle.getId(), List.of(CircleMemberStatus.MEMBER));
-
-                            validatorBucket
-                                    .consistOf(ContentsAdminValidator.of(
-                                            roles,
-                                            restorer.getId(),
-                                            post.getWriter().getId(),
-                                            List.of(Role.LEADER_CIRCLE)
-                                    ));
+                            serviceProxy.getCircleMemberPost(restorer.getId(), circle.getId(), List.of(CircleMemberStatus.MEMBER));
+                            new ContentsAdminValidator().validate(roles, restorer.getId(), post.getWriter().getId(), List.of(Role.LEADER_CIRCLE));
                             new TargetIsDeletedValidator().validate(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE);
 
                             if (roles.contains(Role.LEADER_CIRCLE) && !post.getWriter().getId().equals(restorer.getId())) {
                                 new UserEqualValidator().validate(restorer.getId(), getCircleLeader(circle).getId());
                             }
                         },
-                        () -> validatorBucket
-                                .consistOf(ContentsAdminValidator.of(
-                                        roles,
-                                        restorer.getId(),
-                                        post.getWriter().getId(),
-                                        List.of()
-                                ))
+                        () -> new ContentsAdminValidator().validate(roles, restorer.getId(), post.getWriter().getId(), List.of())
                 );
 
-        validatorBucket
-                .consistOf(ContentsAdminValidator.of(
-                        roles,
-                        restorer.getId(),
-                        post.getWriter().getId(),
-                        List.of(Role.LEADER_CIRCLE)
-                ))
-                .validate();
-
+        new ContentsAdminValidator().validate(roles, restorer.getId(), post.getWriter().getId(), List.of(Role.LEADER_CIRCLE));
         post.setIsDeleted(false);
-
         return toPostResponseDtoExtended(postRepository.save(post), restorer);
     }
 
-    private void initializeValidator(@UserValid User user, Board board) {
+    private void initializeValidator(User user, Board board) {
         Set<Role> roles = user.getRoles();
 
         Optional<Circle> circles = Optional.ofNullable(board.getCircle());
@@ -339,7 +295,7 @@ public class PostService {
                 .filter(circle -> !roles.contains(Role.ADMIN) && !roles.contains(Role.PRESIDENT) && !roles.contains(Role.VICE_PRESIDENT))
                 .ifPresent(
                         circle -> {
-                            CircleMember member = serviceProxy.getCircleMemberPost(user.getId(), circle.getId(), List.of(CircleMemberStatus.MEMBER));
+                            serviceProxy.getCircleMemberPost(user.getId(), circle.getId(), List.of(CircleMemberStatus.MEMBER));
                             new TargetIsDeletedValidator().validate(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE);
                         }
                 );

@@ -13,54 +13,18 @@ import java.util.Set;
  * Post & Comment Update => The user must be the writer of the contents
  * Post & Comment Delete => The user may be the writer of the contents or administrator of the board
  */
-public class ContentsAdminValidator extends AbstractValidator {
-
-    private final Set<Role> requestUserRoles;
-
-    private final String requestUserId;
-
-    private final String writerUserId;
-
-    private final List<Role> adminRoleList;
-
-    private ContentsAdminValidator(
-            Set<Role> requestUserRoles,
-            String requestUserId,
-            String writerUserId,
-            List<Role> adminRoleList
-    ) {
-        this.requestUserRoles = requestUserRoles;
-        this.requestUserId = requestUserId;
-        this.writerUserId = writerUserId;
-        this.adminRoleList = adminRoleList;
-    }
-
-    public static ContentsAdminValidator of(
-            Set<Role> requestUserRoles,
-            String requestUserId,
-            String writerUserId,
-            List<Role> adminRoleList
-    ) {
-        return new ContentsAdminValidator(
-                requestUserRoles,
-                requestUserId,
-                writerUserId,
-                adminRoleList
-        );
-    }
-
-    @Override
-    public void validate() {
-        if (this.requestUserId.equals(this.writerUserId)) {
+public class ContentsAdminValidator {
+    public void validate(Set<Role> requestUserRoles, String requestUserId, String writerUserId, List<Role> adminRoleList) {
+        if (requestUserId.equals(writerUserId)) {
             return;
         }
 
-        if (this.requestUserRoles.stream().anyMatch(role -> EnumSet.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT).contains(role))) {
+        if (requestUserRoles.stream().anyMatch(role -> EnumSet.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT).contains(role))) {
             return;
         }
 
-        for (Role adminRole : this.adminRoleList) {
-            if (this.requestUserRoles.contains(adminRole)) {
+        for (Role adminRole : adminRoleList) {
+            if (requestUserRoles.contains(adminRole)) {
                 return;
             }
         }

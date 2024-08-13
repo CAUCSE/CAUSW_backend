@@ -35,11 +35,7 @@ import net.causw.domain.model.enums.*;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.RedisUtils;
 import net.causw.domain.model.util.StaticValue;
-import net.causw.domain.validation.ConstraintValidator;
-import net.causw.domain.validation.PasswordCorrectValidator;
-import net.causw.domain.validation.PasswordFormatValidator;
-import net.causw.domain.validation.UserRoleIsNoneValidator;
-import net.causw.domain.validation.ValidatorBucket;
+import net.causw.domain.validation.*;
 import net.causw.domain.validation.valid.AdminValid;
 import net.causw.domain.validation.valid.CircleMemberValid;
 import net.causw.domain.validation.valid.UserValid;
@@ -113,7 +109,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserResponseDto findByUserId(
             String targetUserId,
-            @UserValid(UserRoleValidator = true, targetRoleSet = {"LEADER_CIRCLE"}) User requestUser
+            @UserValid(UserRoleValidator = true, targetRoleSet = {Role.LEADER_CIRCLE}) User requestUser
     ) {
         Set<Role> roles = requestUser.getRoles();
 
@@ -214,17 +210,10 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public List<UserResponseDto> findByName(
-            @UserValid(UserRoleValidator = true, targetRoleSet = {"LEADER_CIRCLE"}) User requestUser,
+            @UserValid(UserRoleValidator = true, targetRoleSet = {Role.LEADER_CIRCLE}) User requestUser,
             String name
     ) {
         Set<Role> roles = requestUser.getRoles();
-
-//        ValidatorBucket.of()
-//                .consistOf(UserRoleValidator.of(
-//                        roles,
-//                        Set.of(Role.LEADER_CIRCLE)
-//                ))
-//                .validate();
 
         if (roles.contains(Role.LEADER_CIRCLE)) {
             List<Circle> ownCircles = this.circleRepository.findByLeader_Id(requestUser.getId());
@@ -264,12 +253,6 @@ public class UserService {
     public UserPrivilegedResponseDto findPrivilegedUsers(
             @UserValid(UserRoleValidator = true, targetRoleSet = {}) User user
     ) {
-        Set<Role> roles = user.getRoles();
-
-//        ValidatorBucket.of()
-//                .consistOf(UserRoleValidator.of(roles, Set.of()))
-//                .validate();
-
         //todo: 현재 겸직을 고려하기 위해 _N_ 사용 중이나 port 와 domain model 삭제를 위해 배제
         //때문에 추후 userRole 관리 리팩토링 후 겸직을 고려하게 변경 필요
         return UserPrivilegedResponseDto.of(
@@ -332,12 +315,6 @@ public class UserService {
             String name,
             Integer pageNum
     ) {
-        Set<Role> roles = user.getRoles();
-
-//        ValidatorBucket.of()
-//                .consistOf(UserRoleValidator.of(roles, Set.of()))
-//                .validate();
-
         //portimpl 내부 로직 서비스단으로 이동
         Page<User> usersPage;
         if ("INACTIVE_N_DROP".equals(state)) {
@@ -415,18 +392,12 @@ public class UserService {
                 }
         );
 
-
-        //DomainModel 제거과정에서 role과 state가 누락된 것에 대한 해결을 위해 user에 직접 NONE과 AWAIT 설정
         Set<Role> roles = new HashSet<>();
         roles.add(Role.NONE);
         User user = userCreateRequestDto.toEntity(passwordEncoder.encode(userCreateRequestDto.getPassword()), roles, UserState.AWAIT);
-
         this.userRepository.save(user);
 
-        // Validate password format, admission year range, and whether the email is duplicate or not
-        ValidatorBucket.of()
-                .consistOf(ConstraintValidator.of(user, this.validator))
-                .validate();
+        new ConstraintValidator<User>().validate(user, validator);
         new PasswordFormatValidator().validate(userCreateRequestDto.getPassword());
 
         return UserResponseDto.from(user);
@@ -506,9 +477,7 @@ public class UserService {
         user.setProfileImage(userUpdateRequestDto.getProfileImage());
 
         // Validate the admission year range
-        ValidatorBucket.of()
-                .consistOf(ConstraintValidator.of(user, this.validator))
-                .validate();
+        new ConstraintValidator<User>().validate(user, validator);
 
         User updatedUser = userRepository.save(user);
 
@@ -525,34 +494,19 @@ public class UserService {
     ) {
         // Load the user data from input grantor and grantee ids.
         Set<Role> roles = grantor.getRoles();
-
-//        User grantee = userRepository.findById(granteeId).orElseThrow(
-//                () -> new BadRequestException(
-//                        ErrorCode.ROW_DOES_NOT_EXIST,
-//                        MessageUtil.USER_NOT_FOUND
-//                )
-//        );
         User grantee = serviceProxy.getGrantee(granteeId, roles, userUpdateRoleRequestDto.getRole());
 
         /* Validate the role
          * 1) Combination of grantor role and the role to be granted must be acceptable
          * 2) Combination of grantor role and the grantee role must be acceptable
          */
-//        ValidatorBucket.of()
-//                .consistOf(GrantableRoleValidator.of(
-//                        roles,
-//                        userUpdateRoleRequestDto.getRole(),
-//                        grantee.getRoles()
-//                ))
-//                .validate();
+        new GrantableRoleValidator().validate(roles, userUpdateRoleRequestDto.getRole(), grantee.getRoles());
 
-        /* 권한 위임
+        /* 권한 위임                `
          * 1. 권한 위임자와 넘겨주는 권한이 같을 경우, 권한을 위임자가 동아리장일 경우 진행
          * 2. 넘겨받을 권한이 동아리장일 경우 넘겨받을 동아리 id 저장
          * 3. DelegationFactory를 통해 권한 위임 진행(동아리장 위임 경우 circle id를 넘겨주어서 어떤 동아리의 동아리장 권한을 위임하는 것인지 확인)
          * */
-
-
         if (roles.contains(userUpdateRoleRequestDto.getRole())){
             String circleId = "";
             if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)) {
@@ -827,12 +781,6 @@ public class UserService {
             @UserValid(UserRoleValidator = true, targetRoleSet = {}) User requestUser,
             String admissionId
     ) {
-        Set<Role> roles = requestUser.getRoles();
-
-//        ValidatorBucket.of()
-//                .consistOf(UserRoleValidator.of(roles, Set.of()))
-//                .validate();
-
         return UserAdmissionResponseDto.from(this.userAdmissionRepository.findById(admissionId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -847,12 +795,6 @@ public class UserService {
             String name,
             Integer pageNum
     ) {
-        Set<Role> roles = requestUser.getRoles();
-
-//        ValidatorBucket.of()
-//                .consistOf(UserRoleValidator.of(roles, Set.of()))
-//                .validate();
-
         return this.userAdmissionRepository.findAllWithName(UserState.AWAIT.getValue(), name, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
                 .map(UserAdmissionsResponseDto::from);
     }
@@ -884,10 +826,7 @@ public class UserService {
                 .attachImage(attachImage)
                 .description(userAdmissionCreateRequestDto.getDescription())
                 .build();
-
-        ValidatorBucket.of()
-                .consistOf(ConstraintValidator.of(userAdmission, this.validator))
-                .validate();
+        new ConstraintValidator<UserAdmission>().validate(userAdmission, validator);
 
         return UserAdmissionResponseDto.from(this.userAdmissionRepository.save(userAdmission));
     }
@@ -909,15 +848,9 @@ public class UserService {
             @UserValid(UserRoleValidator = true, targetRoleSet = {}) User requestUser,
             String admissionId
     ) {
-        Set<Role> roles = requestUser.getRoles();
-
         UserAdmission userAdmission = this.userAdmissionRepository.findById(admissionId).orElseThrow(
                 () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_APPLY_NOT_FOUND)
         );
-
-//        ValidatorBucket.of()
-//                .consistOf(UserRoleValidator.of(roles, Set.of()))
-//                .validate();
 
         // Update user role to COMMON
         this.updateRole(userAdmission.getUser(), Role.COMMON);
