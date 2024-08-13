@@ -5,6 +5,7 @@ import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.repository.CircleMemberRepository;
 import net.causw.adapter.persistence.repository.CircleRepository;
+import net.causw.application.dto.user.UserResponseDto;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
@@ -88,20 +89,22 @@ public class FormService {
 
     // Helper method to map Form to FormResponseDto
     private FormResponseDto toFormResponseDto(Form form) {
-//        List<QuestionResponseDto> questionResponseDtos = form.getQuestions().stream()
-//                .map(this::toQuestionResponseDto)
-//                .collect(Collectors.toList());
+        List<QuestionResponseDto> questionResponseDtos = form.getQuestions().stream()
+                .map(this::toQuestionResponseDto)
+                .collect(Collectors.toList());
 
-        return new FormResponseDto(form.getId(), form.getTitle());
+        UserResponseDto writerDto = UserResponseDto.from(form.getWriter());
+
+        return new FormResponseDto(form.getId(), form.getTitle(), writerDto, form.getAllowedGrades(), questionResponseDtos);
     }
 
-//    private QuestionResponseDto toQuestionResponseDto(Question question) {
+    private QuestionResponseDto toQuestionResponseDto(Question question) {
 //        List<OptionResponseDto> optionResponseDtos = question.getOptions().stream()
 //                .map(option -> new OptionResponseDto(option.getId(), option.getOptionText()))
 //                .collect(Collectors.toList());
-//
-//        return new QuestionResponseDto(question.getId(), question.getQuestionText(), question.isMultipleChoice(), optionResponseDtos);
-//    }
+
+        return new QuestionResponseDto(question.getId(), question.getText());
+    }
 
     private Circle getCircle(String circleId) {
         return circleRepository.findById(circleId).orElseThrow(
