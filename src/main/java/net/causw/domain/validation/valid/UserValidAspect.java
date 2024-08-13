@@ -73,8 +73,6 @@ public class UserValidAspect {
                         }
                         if (userValid.UserRoleValidator()) {
                             Set<Role> targetRoleSet = Stream.of(userValid.targetRoleSet())
-                                    .map(String::trim)
-                                    .map(Role::valueOf)
                                     .collect(Collectors.toSet());
                             userRoleValidator.setTargetRoleSet(targetRoleSet);
                             userRoleValidator.isValid(user, null);

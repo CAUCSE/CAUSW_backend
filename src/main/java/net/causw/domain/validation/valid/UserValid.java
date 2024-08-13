@@ -1,5 +1,7 @@
 package net.causw.domain.validation.valid;
 
+import net.causw.domain.model.enums.Role;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -13,7 +15,7 @@ public @interface UserValid {
     boolean UserStateValidator() default true;
 
     boolean UserRoleValidator() default false;
-    String[] targetRoleSet() default {};
+    Role[] targetRoleSet() default {};
 
     boolean UserRoleWithoutAdminValidator() default false;
 
