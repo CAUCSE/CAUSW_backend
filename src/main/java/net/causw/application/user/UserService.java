@@ -45,6 +45,7 @@ import net.causw.domain.validation.UserRoleIsNoneValidator;
 import net.causw.domain.validation.ValidatorBucket;
 import net.causw.domain.validation.valid.CircleMemberValid;
 import net.causw.domain.validation.valid.UserValid;
+import net.causw.domain.validation.valid.UtilValid;
 import net.causw.infrastructure.GoogleMailSender;
 import net.causw.infrastructure.PasswordGenerator;
 import org.springframework.data.domain.Page;
@@ -118,11 +119,6 @@ public class UserService {
             @UserValid(UserRoleValidator = true, targetRoleSet = {"LEADER_CIRCLE"}) User requestUser
     ) {
         Set<Role> roles = requestUser.getRoles();
-
-//        ValidatorBucket.of()
-//                .consistOf(UserRoleValidator.of(roles,
-//                        Set.of(Role.LEADER_CIRCLE)))
-//                .validate();
 
         if (roles.contains(Role.LEADER_CIRCLE)) {
             List<Circle> ownCircles = this.circleRepository.findByLeader_Id(requestUser.getId());
@@ -433,8 +429,8 @@ public class UserService {
         // Validate password format, admission year range, and whether the email is duplicate or not
         ValidatorBucket.of()
                 .consistOf(ConstraintValidator.of(user, this.validator))
-                .consistOf(PasswordFormatValidator.of(userCreateRequestDto.getPassword()))
                 .validate();
+        new PasswordFormatValidator().validate(userCreateRequestDto.getPassword());
 
         return UserResponseDto.from(user);
     }
@@ -446,12 +442,8 @@ public class UserService {
         /* Validate the input password and user state
          * The sign-in process is rejected if the user is in BLOCKED, WAIT, or INACTIVE state.
          */
-        ValidatorBucket.of()
-                .consistOf(PasswordCorrectValidator.of(
-                        this.passwordEncoder,
-                        user.getPassword(),
-                        userSignInRequestDto.getPassword()))
-                .validate();
+
+        new PasswordCorrectValidator(passwordEncoder).validate(user.getPassword(), userSignInRequestDto.getPassword());
 
         if (user.getState() == UserState.AWAIT) {
             userAdmissionRepository.findByUser_Id(user.getId()).orElseThrow(
@@ -707,16 +699,8 @@ public class UserService {
             @UserValid User user,
             UserUpdatePasswordRequestDto userUpdatePasswordRequestDto
     ) {
-        Set<Role> roles = user.getRoles();
-
-        ValidatorBucket.of()
-                .consistOf(PasswordCorrectValidator.of(
-                        this.passwordEncoder,
-                        user.getPassword(),
-                        userUpdatePasswordRequestDto.getOriginPassword())
-                )
-                .consistOf(PasswordFormatValidator.of(userUpdatePasswordRequestDto.getUpdatedPassword()))
-                .validate();
+        new PasswordCorrectValidator(passwordEncoder).validate(user.getPassword(), userUpdatePasswordRequestDto.getOriginPassword());
+        new PasswordFormatValidator().validate(userUpdatePasswordRequestDto.getUpdatedPassword());
 
         user.setPassword(this.passwordEncoder.encode(userUpdatePasswordRequestDto.getUpdatedPassword()));
         User updatedUser = this.userRepository.save(user);

@@ -1,28 +1,24 @@
 package net.causw.domain.validation;
 
+import jakarta.validation.ConstraintValidatorContext;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import net.causw.adapter.persistence.user.User;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
 
-public class PasswordCorrectValidator extends AbstractValidator {
+@Component
+@RequiredArgsConstructor
+public class PasswordCorrectValidator {
 
     private final PasswordEncoder passwordEncoder;
 
-    private final String srcPassword;
-    private final String dstPassword;
+    @Setter
+    private String srcPassword;
 
-    private PasswordCorrectValidator(PasswordEncoder passwordEncoder, String srcPassword, String dstPassword) {
-        this.passwordEncoder = passwordEncoder;
-        this.srcPassword = srcPassword;
-        this.dstPassword = dstPassword;
-    }
-
-    public static PasswordCorrectValidator of(PasswordEncoder passwordEncoder, String srcPassword, String dstPassword) {
-        return new PasswordCorrectValidator(passwordEncoder, srcPassword, dstPassword);
-    }
-
-    @Override
-    public void validate() {
+    public void validate(String srcPassword, String dstPassword) {
         if (!passwordEncoder.matches(dstPassword, srcPassword)) {
             throw new UnauthorizedException(
                     ErrorCode.INVALID_SIGNIN,
