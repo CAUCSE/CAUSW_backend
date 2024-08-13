@@ -53,7 +53,7 @@ public class CircleService {
             String circleId
     ) {
         Circle circle = getCircle(circleId);
-        initializeValidator(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE).validate();
+        new TargetIsDeletedValidator().validate(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE);
 
         return this.toCircleResponseDtoExtended(circle, getCircleNumMember(circleId));
     }
@@ -101,10 +101,7 @@ public class CircleService {
     ) {
         Set<Role> roles = user.getRoles();
         Circle circle = getCircle(circleId);
-
-        ValidatorBucket.of()
-                .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                .validate();
+        new TargetIsDeletedValidator().validate(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE);
 
         if (!StatusUtil.isAdminOrPresident(user)) {
             serviceProxy.getCircleMemberCircleService(user.getId(), circleId, List.of(CircleMemberStatus.MEMBER));
@@ -138,15 +135,12 @@ public class CircleService {
 
     @Transactional(readOnly = true)
     public List<CircleMemberResponseDto> getUserList(
-            @UserValid(UserRoleValidator = true, targetRoleSet = {"LEADER_CIRCLE"}) User user,
+            @UserValid(UserRoleValidator = true, targetRoleSet = {Role.LEADER_CIRCLE}) User user,
             String circleId,
             CircleMemberStatus status
     ) {
         Circle circle = serviceProxy.getCircleWithUserEqualValidator(user, circleId);
-
-        ValidatorBucket.of()
-                .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                .validate();
+        new TargetIsDeletedValidator().validate(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE);
 
         return circleMemberRepository.findByCircle_Id(circle.getId())
                 .stream()
@@ -222,7 +216,6 @@ public class CircleService {
         );
         boardRepository.save(noticeBoard);
 
-
         // Apply the leader automatically to the circle
         CircleMember circleMember = createCircleMember(leader, circle);
 
@@ -243,7 +236,7 @@ public class CircleService {
 
     @Transactional
     public CircleResponseDto update(
-            @UserValid(UserRoleValidator = true, targetRoleSet = {"LEADER_CIRCLE"}) User user,
+            @UserValid(UserRoleValidator = true, targetRoleSet = {Role.LEADER_CIRCLE}) User user,
             String circleId,
             CircleUpdateRequestDto circleUpdateRequestDto
     ) {
@@ -271,31 +264,22 @@ public class CircleService {
         );
 
         ValidatorBucket validatorBucket = ValidatorBucket.of();
-
         validatorBucket
-                .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                 .consistOf(ConstraintValidator.of(circle, this.validator));
+        new TargetIsDeletedValidator().validate(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE);
 
         return this.toCircleResponseDto(updateCircle(circleId, circle));
     }
 
     @Transactional
     public CircleResponseDto delete(
-            @UserValid(UserRoleValidator = true, targetRoleSet = {"LEADER_CIRCLE"}) User user,
+            @UserValid(UserRoleValidator = true, targetRoleSet = {Role.LEADER_CIRCLE}) User user,
             String circleId
     ) {
         Circle circle = serviceProxy.getCircleWithValidatorWithRoleCheck(user, circleId);
+        new TargetIsDeletedValidator().validate(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE);
 
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-        validatorBucket
-                .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE));
-
-        validatorBucket
-                .validate();
-
-        // Change leader role to COMMON
         User leader = getCircleLeader(circle);
-
         List<Circle> ownCircleList = circleRepository.findByLeader_Id(leader.getId());
 
         if (ownCircleList.size() == 1) {
@@ -316,10 +300,7 @@ public class CircleService {
     @Transactional
     public CircleMemberResponseDto userApply(@UserValid(StudentIsNullValidator = true) User user, String circleId) {
         Circle circle = getCircle(circleId);
-
-        ValidatorBucket.of()
-                .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                .validate();
+        new TargetIsDeletedValidator().validate(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE);
 
         CircleMember circleMember = serviceProxy.getCircleMemberOrCreate(user, circle, List.of(CircleMemberStatus.LEAVE, CircleMemberStatus.REJECT));
         updateCircleMemberStatus(circleMember.getId(), CircleMemberStatus.AWAIT);
@@ -343,10 +324,7 @@ public class CircleService {
     public CircleMemberResponseDto leaveUser(@UserValid User user, String circleId) {
         Circle circle = serviceProxy.getCircleWithUserNotEqualValidator(user, circleId);
         CircleMember circleMember = serviceProxy.getCircleMemberCircleService(user.getId(), circleId, List.of(CircleMemberStatus.MEMBER));
-
-        ValidatorBucket.of()
-                .consistOf(TargetIsDeletedValidator.of(circleMember.getCircle().getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                .validate();
+        new TargetIsDeletedValidator().validate(circleMember.getCircle().getIsDeleted(), StaticValue.DOMAIN_CIRCLE);
 
         return this.toCircleMemberResponseDto(
                 updateCircleMemberStatus(circleMember.getId(), CircleMemberStatus.LEAVE),
@@ -357,17 +335,14 @@ public class CircleService {
 
     @Transactional
     public CircleMemberResponseDto dropUser(
-            @UserValid(UserRoleValidator = true, targetRoleSet = {"LEADER_CIRCLE"}) User requestUser,
+            @UserValid(UserRoleValidator = true, targetRoleSet = {Role.LEADER_CIRCLE}) User requestUser,
             String userId,
             String circleId
     ) {
         User user = getUser(userId);
         Circle circle = serviceProxy.getCircleWithValidatorWithRoleCheckAll(requestUser, circleId);
         CircleMember circleMember = serviceProxy.getCircleMemberCircleService(user.getId(), circleId, List.of(CircleMemberStatus.MEMBER));
-
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-        validatorBucket
-                .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE));
+        new TargetIsDeletedValidator().validate(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE);
 
         return this.toCircleMemberResponseDto(
                 updateCircleMemberStatus(circleMember.getId(), CircleMemberStatus.DROP),
@@ -395,20 +370,14 @@ public class CircleService {
     }
 
     private CircleMemberResponseDto updateUserApplication(
-            @UserValid(UserRoleValidator = true, targetRoleSet = {"LEADER_CIRCLE"}) User requestUser,
+            @UserValid(UserRoleValidator = true, targetRoleSet = {Role.LEADER_CIRCLE}) User requestUser,
             String applicationId,
             CircleMemberStatus targetStatus
     ) {
         CircleMember circleMember = serviceProxy.getCircleMemberById(applicationId, List.of(CircleMemberStatus.AWAIT));
         User user = getUser(circleMember.getUser().getId());
         serviceProxy.getCircleWithValidatorWithRoleCheck(requestUser, circleMember.getCircle().getId());
-
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-        validatorBucket
-                .consistOf(TargetIsDeletedValidator.of(circleMember.getCircle().getIsDeleted(), StaticValue.DOMAIN_CIRCLE));
-
-        validatorBucket
-                .validate();
+        new TargetIsDeletedValidator().validate(circleMember.getCircle().getIsDeleted(), StaticValue.DOMAIN_CIRCLE);
 
         return this.toCircleMemberResponseDto(
                 updateCircleMemberStatus(applicationId, targetStatus),
@@ -419,17 +388,14 @@ public class CircleService {
 
     @Transactional
     public CircleMemberResponseDto restoreUser(
-            @UserValid(UserRoleValidator = true, targetRoleSet = {"LEADER_CIRCLE"}) User loginUser,
+            @UserValid(UserRoleValidator = true, targetRoleSet = {Role.LEADER_CIRCLE}) User loginUser,
             String circleId,
             String targetUserId
     ) {
         User targetUser = getUser(targetUserId);
         Circle circle = serviceProxy.getCircleWithUserEqualValidator(loginUser, circleId);
         CircleMember restoreTargetMember = serviceProxy.getCircleMemberCircleService(targetUserId, circleId, List.of(CircleMemberStatus.DROP));
-
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-        validatorBucket
-                .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE));
+        new TargetIsDeletedValidator().validate(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE);
 
         return this.toCircleMemberResponseDto(
                 updateCircleMemberStatus(restoreTargetMember.getId(), CircleMemberStatus.MEMBER),
@@ -644,16 +610,7 @@ public class CircleService {
         return boardList;
     }
 
-    // ValidatorBucket Constructor
-
-    private ValidatorBucket initializeValidator(Boolean isDeleted, String staticValue) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-        validatorBucket
-                .consistOf(TargetIsDeletedValidator.of(isDeleted, staticValue));
-        return validatorBucket;
-    }
-
-    // Dto Mapper
+    /* Dto Mapper */
 
     private UserResponseDto toUserResponseDto(User user) {
         return CircleServiceDtoMapper.INSTANCE.toUserResponseDto(user);

@@ -65,7 +65,7 @@ public class ChildCommentService {
         ValidatorBucket validatorBucket = initializeValidator(creator, post);
         validatorBucket.consistOf(ConstraintValidator.of(childComment, this.validator));
         refChildComment.ifPresent(
-                refChild -> validatorBucket.consistOf(TargetIsDeletedValidator.of(refChild.getIsDeleted(), StaticValue.DOMAIN_CHILD_COMMENT))
+                refChild -> new TargetIsDeletedValidator().validate(refChild.getIsDeleted(), StaticValue.DOMAIN_CHILD_COMMENT)
         );
         validatorBucket.validate();
 
@@ -89,7 +89,6 @@ public class ChildCommentService {
 
         ValidatorBucket validatorBucket = initializeValidator(updater, post);
         validatorBucket
-                .consistOf(TargetIsDeletedValidator.of(childComment.getIsDeleted(), StaticValue.DOMAIN_CHILD_COMMENT))
                 .consistOf(ConstraintValidator.of(childComment, this.validator))
                 .consistOf(ContentsAdminValidator.of(
                         roles,
@@ -98,6 +97,8 @@ public class ChildCommentService {
                         List.of()
                 ));
         validatorBucket.validate();
+
+        new TargetIsDeletedValidator().validate(childComment.getIsDeleted(), StaticValue.DOMAIN_CHILD_COMMENT);
 
         return toChildCommentResponseDto(
                 childCommentRepository.save(childComment),
@@ -113,7 +114,7 @@ public class ChildCommentService {
         Post post = getPost(childComment.getParentComment().getPost().getId());
 
         ValidatorBucket validatorBucket = initializeValidator(deleter, post);
-        validatorBucket.consistOf(TargetIsDeletedValidator.of(childComment.getIsDeleted(), StaticValue.DOMAIN_CHILD_COMMENT));
+        new TargetIsDeletedValidator().validate(childComment.getIsDeleted(), StaticValue.DOMAIN_CHILD_COMMENT);
         Optional<Circle> circles = Optional.ofNullable(post.getBoard().getCircle());
         circles
                 .filter(circle -> !roles.contains(Role.ADMIN) && !roles.contains(Role.PRESIDENT) && !roles.contains(Role.VICE_PRESIDENT))
@@ -122,13 +123,13 @@ public class ChildCommentService {
                             CircleMember member = serviceProxy.getCircleMemberChildComment(deleter.getId(), circle.getId(), List.of(CircleMemberStatus.MEMBER));
 
                             validatorBucket
-                                    .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                                     .consistOf(ContentsAdminValidator.of(
                                             roles,
                                             deleter.getId(),
                                             childComment.getWriter().getId(),
                                             List.of(Role.LEADER_CIRCLE)
                                     ));
+                            new TargetIsDeletedValidator().validate(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE);
 
                             if (roles.contains(Role.LEADER_CIRCLE) && !childComment.getWriter().getId().equals(deleter.getId())) {
                                 User leader = circle.getLeader().orElse(null);
@@ -163,19 +164,16 @@ public class ChildCommentService {
 
     private ValidatorBucket initializeValidator(@UserValid User user, Post post) {
         Set<Role> roles = user.getRoles();
+        new TargetIsDeletedValidator().validate(post.getIsDeleted(), StaticValue.DOMAIN_POST);
+        new TargetIsDeletedValidator().validate(post.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD);
         ValidatorBucket validatorBucket = ValidatorBucket.of();
-        validatorBucket
-                .consistOf(TargetIsDeletedValidator.of(post.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
-                .consistOf(TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST));
 
         Optional<Circle> circles = Optional.ofNullable(post.getBoard().getCircle());
         circles
                 .filter(circle -> !roles.contains(Role.ADMIN) && !roles.contains(Role.PRESIDENT) && !roles.contains(Role.VICE_PRESIDENT))
                 .ifPresent(circle -> {
                     serviceProxy.getCircleMemberChildComment(user.getId(), circle.getId(), List.of(CircleMemberStatus.MEMBER));
-
-                    validatorBucket
-                            .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE));
+                    new TargetIsDeletedValidator().validate(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE);
                 });
         return validatorBucket;
     }

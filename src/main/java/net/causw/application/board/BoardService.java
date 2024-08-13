@@ -91,10 +91,8 @@ public class BoardService {
                 circleId -> {
                     Circle newCircle = getCircle(circleId);
 
-                    validatorBucket
-                            .consistOf(TargetIsDeletedValidator.of(newCircle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE));
-                            //동아리장이거나 관리자만 통과
                     new UserRoleValidator().validate(roles, Set.of(Role.LEADER_CIRCLE));
+                    new TargetIsDeletedValidator().validate(newCircle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE);
 
                     //동아리장인 경우와 회장단이 아닌경우에 아래 조건문을 실행한다.
                     if (roles.contains(Role.LEADER_CIRCLE)) {
@@ -142,7 +140,7 @@ public class BoardService {
         Set<Role> roles = updater.getRoles();
         Board board = getBoard(boardId);
 
-        ValidatorBucket validatorBucket = initializeValidatorBucket(updater, board);
+        initializeValidatorBucket(updater, board);
 
         board.update(
                 boardUpdateRequestDto.getName(),
@@ -151,6 +149,7 @@ public class BoardService {
                 boardUpdateRequestDto.getCategory()
         );
 
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
         validatorBucket
                 .consistOf(ConstraintValidator.of(board, this.validator))
                 .validate();
@@ -166,11 +165,11 @@ public class BoardService {
         Set<Role> roles = deleter.getRoles();
         Board board = getBoard(boardId);
 
-        ValidatorBucket validatorBucket = initializeValidatorBucket(deleter, board);
+        initializeValidatorBucket(deleter, board);
+
         if (board.getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
             new UserRoleValidator().validate(roles, Set.of());
         }
-        validatorBucket.validate();
 
         board.setIsDeleted(true);
         return toBoardResponseDto(boardRepository.save(board), roles);
@@ -183,18 +182,13 @@ public class BoardService {
     ) {
         Set<Role> roles = restorer.getRoles();
         Board board = getBoard(boardId);
-
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
-        validatorBucket
-                .consistOf(TargetIsNotDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD));
+        new TargetIsNotDeletedValidator().validate(board.getIsDeleted(), StaticValue.DOMAIN_BOARD);
 
         Optional<Circle> circles = Optional.ofNullable(board.getCircle());
         circles.ifPresentOrElse(
                 circle -> {
-                    validatorBucket
-                            .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE));
                     new UserRoleValidator().validate(roles, Set.of(Role.LEADER_CIRCLE));
+                    new TargetIsDeletedValidator().validate(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE);
 
                     if (roles.contains(Role.LEADER_CIRCLE)) {
                         new UserEqualValidator().validate(
@@ -214,25 +208,19 @@ public class BoardService {
         if (board.getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
             new UserRoleValidator().validate(roles, Set.of());
         }
-        validatorBucket.validate();
-
         board.setIsDeleted(false);
         return toBoardResponseDto(boardRepository.save(board), roles);
     }
 
-    private ValidatorBucket initializeValidatorBucket(@UserValid User user, Board board) {
+    private void initializeValidatorBucket(@UserValid User user, Board board) {
         Set<Role> roles = user.getRoles();
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
-        validatorBucket
-                .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD));
+        new TargetIsDeletedValidator().validate(board.getIsDeleted(), StaticValue.DOMAIN_BOARD);
 
         Optional<Circle> circles = Optional.ofNullable(board.getCircle());
         circles.ifPresentOrElse(
                 circle -> {
-                    validatorBucket
-                            .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE));
                     new UserRoleValidator().validate(roles, Set.of(Role.LEADER_CIRCLE));
+                    new TargetIsDeletedValidator().validate(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE);
 
                     if (roles.contains(Role.LEADER_CIRCLE)) {
                         new UserEqualValidator().validate(
@@ -248,7 +236,6 @@ public class BoardService {
                 },
                 () -> new UserRoleValidator().validate(roles, Set.of())
         );
-        return validatorBucket;
     }
 
     private BoardResponseDto toBoardResponseDto(Board board, Set<Role> userRoles) {
