@@ -21,5 +21,7 @@ public @interface UserValid {
 
     boolean UserStateIsNotDropAndActiveValidator() default false;
 
+    boolean StudentIsNullValidator() default false;
+
     boolean AdmissionYearValidator() default false;
 }

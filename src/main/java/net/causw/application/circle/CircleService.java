@@ -302,16 +302,16 @@ public class CircleService {
     }
 
     @Transactional
-    public CircleMemberResponseDto userApply(@UserValid User user, String circleId) {
+    public CircleMemberResponseDto userApply(@UserValid(StudentIsNullValidator = true) User user, String circleId) {
         Circle circle = getCircle(circleId);
 
         ValidatorBucket.of()
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                .consistOf(StudentIdIsNullValidator.of(user.getStudentId()))
                 .validate();
 
         CircleMember circleMember = serviceProxy.getCircleMemberOrCreate(user, circle, List.of(CircleMemberStatus.LEAVE, CircleMemberStatus.REJECT));
         updateCircleMemberStatus(circleMember.getId(), CircleMemberStatus.AWAIT);
+        circleMemberRepository.save(circleMember);
 
         return this.toCircleMemberResponseDto(
                 circleMember,

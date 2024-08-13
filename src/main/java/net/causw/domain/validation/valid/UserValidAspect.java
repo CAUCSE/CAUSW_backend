@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -30,6 +29,7 @@ public class UserValidAspect {
     private final UserRoleWithoutAdminValidator userRoleWithoutAdminValidator;
     private final UserStateIsDropOrIsInActiveValidator userStateIsDropOrIsInActiveValidator;
     private final UserStateIsNotDropAndActiveValidator userStateIsNotDropAndActiveValidator;
+    private final StudentIdIsNullValidator studentIdIsNullValidator;
 
     @Pointcut("@annotation(net.causw.domain.validation.valid.UserValid)")
     public void pointCut() {}
@@ -87,6 +87,9 @@ public class UserValidAspect {
                         }
                         if (userValid.UserStateIsNotDropAndActiveValidator()) {
                             userStateIsNotDropAndActiveValidator.isValid(user, null);
+                        }
+                        if (userValid.StudentIsNullValidator()) {
+                            studentIdIsNullValidator.isValid(user, null);
                         }
                     } else { // User 객체에 대한 Valid가 아닐 때 (Ex. UserCreateRequestDto, UserUpdateRequestDto)
                         if (userValid.AdmissionYearValidator()) {
