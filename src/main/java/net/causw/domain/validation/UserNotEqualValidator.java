@@ -13,11 +13,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserNotEqualValidator implements ConstraintValidator<UserValid, User> {
 
-    //TODO AOP proxy 사용할 것
     private String targetUserId;
 
     public void validate(String srcUserId, String targetUserId) {
-        System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
         if (srcUserId.equals(targetUserId)) {
             throw new BadRequestException(
                     ErrorCode.CANNOT_PERFORMED,
@@ -28,12 +26,7 @@ public class UserNotEqualValidator implements ConstraintValidator<UserValid, Use
 
     @Override
     public boolean isValid(User user, ConstraintValidatorContext constraintValidatorContext) {
-        if (user.getId().equals(targetUserId)) {
-            throw new BadRequestException(
-                    ErrorCode.CANNOT_PERFORMED,
-                    "해당 사용자는 명령을 수행할 수 없습니다."
-            );
-        }
+        validate(user.getId(), targetUserId);
         return true;
     }
 }

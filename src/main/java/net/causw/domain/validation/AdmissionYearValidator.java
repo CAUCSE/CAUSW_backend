@@ -9,9 +9,6 @@ import java.util.Calendar;
 public class AdmissionYearValidator {
 
     public void isValid(Integer admissionYear) {
-        System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-        System.out.println(admissionYear);
-
         if (!validateAdmissionYear(admissionYear)) {
             throw new BadRequestException(
                     ErrorCode.INVALID_USER_DATA_REQUEST,

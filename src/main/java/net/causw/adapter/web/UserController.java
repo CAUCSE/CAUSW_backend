@@ -257,7 +257,6 @@ public class UserController {
             @Valid @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-
         return this.userService.updateUserRole(userDetails.getUser(), granteeId, userUpdateRoleRequestDto);
     }
 
