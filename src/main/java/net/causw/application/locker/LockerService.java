@@ -31,10 +31,9 @@ import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.LockerExpiredAtValidator;
 import net.causw.domain.validation.LockerInUseValidator;
-import net.causw.domain.validation.UserRoleIsNoneValidator;
 import net.causw.domain.validation.UserRoleValidator;
-import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.ValidatorBucket;
+import net.causw.domain.validation.valid.UserValid;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,11 +69,10 @@ public class LockerService {
 
     @Transactional
     public LockerResponseDto create(
-            User user,
+            @UserValid(UserRoleValidator = true) User user,
             LockerCreateRequestDto lockerCreateRequestDto
     ) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
-        Set<Role> roles = user.getRoles();
 
         LockerLocation lockerLocation = lockerLocationRepository.findById(lockerCreateRequestDto.getLockerLocationId())
                 .orElseThrow(
@@ -92,9 +90,6 @@ public class LockerService {
         }
         Locker locker = Locker.of(lockerCreateRequestDto.getLockerNumber(), true, user, lockerLocation, null);
         validatorBucket
-                .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles))
-                .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .consistOf(ConstraintValidator.of(locker, this.validator))
                 .validate();
 
@@ -106,7 +101,7 @@ public class LockerService {
 
     @Transactional
     public LockerResponseDto update(
-            User user,
+            @UserValid User user,
             String lockerId,
             LockerUpdateRequestDto lockerUpdateRequestDto
     ) {
@@ -117,14 +112,9 @@ public class LockerService {
                 MessageUtil.LOCKER_NOT_FOUND
         ));
 
-        ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles))
-                .validate();
-
         locker = this.lockerActionFactory
                 .getLockerAction(LockerLogAction.of(lockerUpdateRequestDto.getAction()))
-                .updateLockerDomainModel(
+                .updateLocker(
                         locker,
                         user,
                         this,
@@ -141,7 +131,7 @@ public class LockerService {
 
     @Transactional
     public LockerResponseDto move(
-            User user,
+            @UserValid(UserRoleValidator = true) User user,
             String lockerId,
             LockerMoveRequestDto lockerMoveRequestDto
     ) {
@@ -163,9 +153,6 @@ public class LockerService {
         locker.move(lockerLocation);
 
         ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles))
-                .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .consistOf(ConstraintValidator.of(locker, this.validator))
                 .validate();
 
@@ -180,21 +167,15 @@ public class LockerService {
     }
 
     @Transactional
-    public LockerResponseDto delete(User user, String lockerId) {
-        Set<Role> roles = user.getRoles();
-
+    public LockerResponseDto delete(
+            @UserValid(UserRoleValidator = true, targetRoleSet = {Role.PRESIDENT}) User user,
+            String lockerId
+    ) {
         Locker locker = lockerRepository.findById(lockerId).orElseThrow(() -> new BadRequestException(
                 ErrorCode.ROW_DOES_NOT_EXIST,
                 MessageUtil.LOCKER_NOT_FOUND
         ));
-
-
-        ValidatorBucket.of()
-                .consistOf(LockerInUseValidator.of(locker.getUser().isPresent()))
-                .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles))
-                .consistOf(UserRoleValidator.of(roles, Set.of(Role.PRESIDENT)))
-                .validate();
+        new LockerInUseValidator().validate(locker.getUser().isPresent());
 
         lockerRepository.delete(locker);
 
@@ -250,7 +231,7 @@ public class LockerService {
 
     @Transactional
     public LockerLocationResponseDto createLocation(
-            User user,
+            @UserValid(UserRoleValidator = true) User user,
             LockerLocationCreateRequestDto lockerLocationCreateRequestDto
     ) {
         Set<Role> roles = user.getRoles();
@@ -267,9 +248,6 @@ public class LockerService {
         );
 
         ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles))
-                .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .consistOf(ConstraintValidator.of(lockerLocation, this.validator))
                 .validate();
         LockerLocation location = LockerLocation.of(lockerLocationCreateRequestDto.getName());
@@ -283,7 +261,7 @@ public class LockerService {
 
     @Transactional
     public LockerLocationResponseDto updateLocation(
-            User user,
+            @UserValid(UserRoleValidator = true) User user,
             String locationId,
             LockerLocationUpdateRequestDto lockerLocationRequestDto
     ) {
@@ -309,9 +287,6 @@ public class LockerService {
         );
 
         ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles))
-                .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .consistOf(ConstraintValidator.of(lockerLocation, this.validator))
                 .validate();
 
@@ -323,7 +298,10 @@ public class LockerService {
     }
 
     @Transactional
-    public LockerLocationResponseDto deleteLocation(User user, String lockerLocationId) {
+    public LockerLocationResponseDto deleteLocation(
+            @UserValid(UserRoleValidator = true) User user,
+            String lockerLocationId
+    ) {
         Set<Role> roles = user.getRoles();
         LockerLocation lockerLocation = lockerLocationRepository.findById(lockerLocationId).orElseThrow(
                 () -> new BadRequestException(
@@ -338,12 +316,6 @@ public class LockerService {
                     MessageUtil.LOCKER_ALREADY_EXIST
             );
         }
-
-        ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles))
-                .consistOf(UserRoleValidator.of(roles, Set.of()))
-                .validate();
 
         lockerLocationRepository.delete(lockerLocation);
 
@@ -367,24 +339,12 @@ public class LockerService {
 
     @Transactional
     public void setExpireAt(
-            User user,
+            @UserValid(UserRoleValidator = true) User user,
             LockerExpiredAtRequestDto lockerExpiredAtRequestDto
     ) {
-        Set<Role> roles = user.getRoles();
-
-        ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles))
-                .consistOf(UserRoleValidator.of(roles, Set.of()))
-                .validate();
-
         commonService.findByKeyInTextField(StaticValue.EXPIRED_AT)
                 .ifPresentOrElse(textField -> {
-                            ValidatorBucket.of()
-                                    .consistOf(LockerExpiredAtValidator.of(
-                                            LocalDateTime.parse(textField, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")),
-                                            lockerExpiredAtRequestDto.getExpiredAt()))
-                                    .validate();
+                            new LockerExpiredAtValidator().validate(LocalDateTime.parse(textField, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")), lockerExpiredAtRequestDto.getExpiredAt());
 
                             commonService.updateTextField(
                                     StaticValue.EXPIRED_AT,
@@ -416,7 +376,12 @@ public class LockerService {
         createLockerByLockerLocationAndEndLockerNumber(lockerLocationFourthFloor, validatorBucket, user, 32L);
     }
 
-    private void createLockerByLockerLocationAndEndLockerNumber(LockerLocation lockerLocationSecondFloor, ValidatorBucket validatorBucket, User user, Long endNum) {
+    private void createLockerByLockerLocationAndEndLockerNumber(
+            LockerLocation lockerLocationSecondFloor,
+            ValidatorBucket validatorBucket,
+            @UserValid(UserRoleValidator = true) User user,
+            Long endNum
+    ) {
         for (Long lockerNumber = 1L; lockerNumber <= endNum; lockerNumber++) {
 
             Locker locker = Locker.of(
@@ -429,11 +394,9 @@ public class LockerService {
             Set<Role> roles = user.getRoles();
 
             validatorBucket
-                    .consistOf(UserStateValidator.of(user.getState()))
-                    .consistOf(UserRoleIsNoneValidator.of(roles))
-                    .consistOf(UserRoleValidator.of(roles, Set.of()))
                     .consistOf(ConstraintValidator.of(locker, this.validator))
                     .validate();
+            new UserRoleValidator().validate(roles, Set.of());
 
             lockerRepository.save(locker);
 

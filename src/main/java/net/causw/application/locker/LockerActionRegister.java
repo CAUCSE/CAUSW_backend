@@ -14,7 +14,6 @@ import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.validation.LockerAccessValidator;
 import net.causw.domain.validation.LockerInUseValidator;
 import net.causw.domain.validation.LockerIsDeactivatedValidator;
-import net.causw.domain.validation.ValidatorBucket;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -25,29 +24,17 @@ import static net.causw.domain.model.util.StaticValue.LOCKER_ACCESS;
 @NoArgsConstructor
 public class LockerActionRegister implements LockerAction {
     @Override
-    public Optional<Locker> updateLockerDomainModel(
+    public Optional<Locker> updateLocker(
             Locker locker,
             User user,
             LockerService lockerService,
             CommonService commonService
     ) {
-        ValidatorBucket.of()
-                .consistOf(LockerInUseValidator.of(locker.getUser().isPresent()))
-                .consistOf(LockerIsDeactivatedValidator.of(locker.getIsActive()))
-                .validate();
+        new LockerInUseValidator().validate(locker.getUser().isPresent());
+        new LockerIsDeactivatedValidator().validate(locker.getIsActive());
 
         if (!user.getRoles().contains(Role.ADMIN)) {
-            ValidatorBucket.of()
-                    .consistOf(LockerAccessValidator.of(commonService.findByKeyInFlag(LOCKER_ACCESS).orElse(false)))
-                    .validate();
-            //이미 등록 시 하루 제한
-            /*
-            lockerLogPort.whenRegister(updaterDomainModel).ifPresent(
-                    createdAt -> ValidatorBucket.of()
-                            .consistOf(LockerTimePassedValidator.of(createdAt))
-                            .validate()
-            );
-             */
+            new LockerAccessValidator().validate(commonService.findByKeyInFlag(LOCKER_ACCESS).orElse(false));
 
             lockerService.findByUserId(user.getId()).ifPresent(existingLocker -> {
                 existingLocker.returnLocker();

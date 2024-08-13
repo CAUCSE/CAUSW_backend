@@ -23,7 +23,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class LockerActionExtend implements LockerAction {
     @Override
-    public Optional<Locker> updateLockerDomainModel(
+    public Optional<Locker> updateLocker(
             Locker locker,
             User user,
             LockerService lockerService,
@@ -37,9 +37,7 @@ public class LockerActionExtend implements LockerAction {
         }
 
         if (!user.getId().equals(locker.getUser().get().getId()))
-            ValidatorBucket.of()
-                    .consistOf(UserRoleValidator.of(user.getRoles(), Set.of()))
-                    .validate();
+            new UserRoleValidator().validate(user.getRoles(), Set.of());
 
         LocalDateTime expiredAtToExtend = LocalDateTime.parse(commonService.findByKeyInTextField(StaticValue.EXPIRED_AT).orElseThrow(
                 () -> new InternalServerException(
@@ -49,12 +47,7 @@ public class LockerActionExtend implements LockerAction {
         ), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"));
 
         Optional.ofNullable(locker.getExpireDate()).ifPresent(expiredAt ->
-                ValidatorBucket.of()
-                        .consistOf(ExtendLockerExpiredAtValidator.of(
-                                expiredAt,
-                                expiredAtToExtend))
-                        .validate());
-
+                new ExtendLockerExpiredAtValidator().validate(expiredAt, expiredAtToExtend));
 
         locker.extendExpireDate(expiredAtToExtend);
 

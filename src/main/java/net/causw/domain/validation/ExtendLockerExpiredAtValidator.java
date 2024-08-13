@@ -5,27 +5,8 @@ import net.causw.domain.exceptions.ErrorCode;
 
 import java.time.LocalDateTime;
 
-public class ExtendLockerExpiredAtValidator extends AbstractValidator {
-    private final LocalDateTime src;
-    private final LocalDateTime dst;
-
-    private ExtendLockerExpiredAtValidator(
-            LocalDateTime src,
-            LocalDateTime dst
-    ) {
-        this.src = src;
-        this.dst = dst;
-    }
-
-    public static ExtendLockerExpiredAtValidator of(
-            LocalDateTime src,
-            LocalDateTime dst
-    ) {
-        return new ExtendLockerExpiredAtValidator(src, dst);
-    }
-
-    @Override
-    public void validate() {
+public class ExtendLockerExpiredAtValidator {
+    public void validate(LocalDateTime src, LocalDateTime dst) {
         if (src.isEqual(dst)) {
             throw new BadRequestException(
                     ErrorCode.INVALID_EXPIRE_DATE,

@@ -7,7 +7,7 @@ import net.causw.application.common.CommonService;
 import java.util.Optional;
 
 public interface LockerAction {
-    Optional<Locker> updateLockerDomainModel(
+    Optional<Locker> updateLocker(
             Locker locker,
             User user,
             LockerService lockerService,

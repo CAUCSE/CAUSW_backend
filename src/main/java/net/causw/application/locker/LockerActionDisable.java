@@ -16,16 +16,13 @@ import java.util.Set;
 @NoArgsConstructor
 public class LockerActionDisable implements LockerAction {
     @Override
-    public Optional<Locker> updateLockerDomainModel(
+    public Optional<Locker> updateLocker(
             Locker locker,
             User user,
             LockerService lockerService,
             CommonService commonService
     ) {
-        ValidatorBucket.of()
-                .consistOf(UserRoleValidator.of(user.getRoles(), Set.of()))
-                .consistOf(LockerIsDeactivatedValidator.of(locker.getIsActive()))
-                .validate();
+        new LockerIsDeactivatedValidator().validate(locker.getIsActive());
 
         locker.deactivate();
         return Optional.of(locker);

@@ -18,7 +18,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class LockerActionReturn implements LockerAction {
     @Override
-    public Optional<Locker> updateLockerDomainModel(
+    public Optional<Locker> updateLocker(
             Locker locker,
             User user,
             LockerService lockerService,
@@ -32,9 +32,7 @@ public class LockerActionReturn implements LockerAction {
         }
 
         if (!user.getId().equals(locker.getUser().get().getId()))
-            ValidatorBucket.of()
-                    .consistOf(UserRoleValidator.of(user.getRoles(), Set.of()))
-                    .validate();
+            new UserRoleValidator().validate(user.getRoles(), Set.of());
 
         locker.returnLocker();
 

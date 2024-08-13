@@ -3,19 +3,8 @@ package net.causw.domain.validation;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 
-public class LockerAccessValidator extends AbstractValidator {
-    private final Boolean flag;
-
-    private LockerAccessValidator(Boolean flag) {
-        this.flag = flag;
-    }
-
-    public static LockerAccessValidator of(Boolean flag) {
-        return new LockerAccessValidator(flag);
-    }
-
-    @Override
-    public void validate() {
+public class LockerAccessValidator {
+    public void validate(Boolean flag) {
         if (!flag) {
             throw new BadRequestException(
                     ErrorCode.FLAG_NOT_AVAILABLE,
