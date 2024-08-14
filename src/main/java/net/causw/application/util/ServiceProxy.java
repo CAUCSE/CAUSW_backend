@@ -29,13 +29,11 @@ public class ServiceProxy {
         return userService.getUserByEmailSignIn(email);
     }
 
-    //
     public CircleMember getCircleMemberUser(String userId, String circleId, List<CircleMemberStatus> list) {
         UserService userService = applicationContext.getBean(UserService.class);
         return userService.getCircleMember(userId, circleId, list);
     }
 
-    //
     public User getGrantee(String granteeId, Set<Role> granterRoles, Role targetRole) {
         UserService userService = applicationContext.getBean(UserService.class);
         return userService.getGrantee(granteeId, granterRoles, targetRole);
@@ -67,25 +65,21 @@ public class ServiceProxy {
         return circleService.getCircleWithRoleCheckAll(user, circleId);
     }
 
-    //
     public CircleMember getCircleMemberById(String applicationId, List<CircleMemberStatus> list) {
         CircleService circleService = applicationContext.getBean(CircleService.class);
         return circleService.getCircleMember(applicationId, list);
     }
 
-    //
     public CircleMember getCircleMemberCircleService(String userId, String circleId, List<CircleMemberStatus> list) {
         CircleService circleService = applicationContext.getBean(CircleService.class);
         return circleService.getCircleMember(userId, circleId, list);
     }
 
-    //
     public CircleMember getCircleMemberOrCreate(User user, Circle circle, List<CircleMemberStatus> list) {
         CircleService circleService = applicationContext.getBean(CircleService.class);
         return circleService.getCircleMemberOrCreate(user, circle, list);
     }
 
-    //
     public User getLeader(String granteeId, Set<Role> granterRoles, Role targetRole) {
         CircleService circleService = applicationContext.getBean(CircleService.class);
         return circleService.getLeader(granteeId, granterRoles, targetRole);
@@ -93,7 +87,6 @@ public class ServiceProxy {
 
     /* ChildCommentService */
 
-    //
     public CircleMember getCircleMemberChildComment(String userId, String circleId, List<CircleMemberStatus> list) {
         ChildCommentService childCommentService = applicationContext.getBean(ChildCommentService.class);
         return childCommentService.getCircleMember(userId, circleId, list);
@@ -101,7 +94,6 @@ public class ServiceProxy {
 
     /* CommentService */
 
-    //
     public CircleMember getCircleMemberComment(String userId, String circleId, List<CircleMemberStatus> list) {
         CommentService commentService = applicationContext.getBean(CommentService.class);
         return commentService.getCircleMember(userId, circleId, list);
@@ -109,7 +101,6 @@ public class ServiceProxy {
 
     /* PostService */
 
-    //
     public CircleMember getCircleMemberPost(String userId, String circleId, List<CircleMemberStatus> list) {
         PostService postService = applicationContext.getBean(PostService.class);
         return postService.getCircleMember(userId, circleId, list);
