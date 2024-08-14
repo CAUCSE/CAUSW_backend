@@ -1214,9 +1214,7 @@ public class UserService {
                 MessageUtil.USER_NOT_FOUND
         ));
 
-        return UserFindIdResponseDto.builder()
-                .email(user.getEmail())
-                .build();
+        return DtoMapper.INSTANCE.toUserfindIdResponseDto(user);
     }
 
     private BoardResponseDto toBoardResponseDto(Board board, Role userRole) {
