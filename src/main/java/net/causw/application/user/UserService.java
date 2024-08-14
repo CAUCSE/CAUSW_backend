@@ -79,8 +79,6 @@ public class UserService {
     private final LockerLogRepository lockerLogRepository;
     private final UserAdmissionLogRepository userAdmissionLogRepository;
     private final BoardRepository boardRepository;
-    private final FavoriteBoardRepository favoriteBoardRepository;
-    private final UserRoleIsNoneValidator userRoleIsNoneValidator;
 
     @Transactional
     public UserResponseDto findPassword(
