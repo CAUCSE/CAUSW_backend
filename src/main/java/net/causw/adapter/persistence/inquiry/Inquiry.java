@@ -49,6 +49,17 @@ public class Inquiry extends BaseEntity {
         this.isDeleted = isDeleted;
     }
 
+    private Inquiry(
+            String title,
+            String content,
+            User writer
+    ) {
+        this.title = title;
+        this.content = content;
+        this.writer = writer;
+        this.isDeleted = false;
+    }
+
     public static Inquiry from(InquiryDomainModel inquiryDomainModel) {
         return new Inquiry(
                 inquiryDomainModel.getId(),
@@ -57,5 +68,13 @@ public class Inquiry extends BaseEntity {
                 User.from(inquiryDomainModel.getWriter()),
                 inquiryDomainModel.getIsDeleted()
         );
+    }
+
+    public static Inquiry of(
+            String title,
+            String content,
+            User writer
+    ) {
+        return new Inquiry(title, content, writer);
     }
 }

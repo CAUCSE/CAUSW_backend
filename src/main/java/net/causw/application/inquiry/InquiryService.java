@@ -1,21 +1,18 @@
 package net.causw.application.inquiry;
 
 import lombok.RequiredArgsConstructor;
+import net.causw.adapter.persistence.inquiry.Inquiry;
+import net.causw.adapter.persistence.port.inquiry.InquiryRepository;
+import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.inquiry.InquiryCreateRequestDto;
 import net.causw.application.dto.inquiry.InquiryResponseDto;
-import net.causw.application.spi.InquiryPort;
-import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
-import net.causw.domain.model.inquiry.InquiryDomainModel;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
-import net.causw.domain.model.user.UserDomainModel;
-import net.causw.domain.validation.ValidatorBucket;
-import net.causw.domain.validation.UserStateValidator;
-import net.causw.domain.validation.UserRoleIsNoneValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.ConstraintValidator;
+import net.causw.domain.validation.valid.UserValid;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,76 +21,43 @@ import jakarta.validation.Validator;
 @Service
 @RequiredArgsConstructor
 public class InquiryService {
-
-    private final UserPort userPort;
+    private final InquiryRepository inquiryRepository;
     private final Validator validator;
-    private final InquiryPort inquiryPort;
 
     @Transactional(readOnly = true)
     public InquiryResponseDto findById(
-            String requestUserId,
+            @UserValid User user,
             String inquiryId
     ) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
-        UserDomainModel userDomainModel = this.userPort.findById(requestUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
-
-        InquiryDomainModel inquiryDomainModel = this.inquiryPort.findById(inquiryId).orElseThrow(
+        Inquiry inquiry = inquiryRepository.findById(inquiryId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.INQUIRY_NOT_FOUND
                 )
         );
-
-//        validatorBucket
-//                .consistOf(UserStateValidator.of(userDomainModel.getState()))
-//                .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRoles()))
-//                .consistOf(TargetIsDeletedValidator.of(inquiryDomainModel.getIsDeleted(), StaticValue.DOMAIN_INQUIRY));
-
-        validatorBucket
-                .validate();
+        new TargetIsDeletedValidator().validate(inquiry.getIsDeleted(), StaticValue.DOMAIN_INQUIRY);
 
         return InquiryResponseDto.of(
-                inquiryDomainModel,
-                userDomainModel
+                inquiry,
+                user
         );
     }
 
     @Transactional
-    public InquiryResponseDto create(String requestUserId, InquiryCreateRequestDto inquiryCreateRequestDto) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
-        UserDomainModel creatorDomainModel = this.userPort.findById(requestUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
-
-        validatorBucket
-                .consistOf(UserStateValidator.of(creatorDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(creatorDomainModel.getRoles()));
-
-        InquiryDomainModel inquiryDomainModel = InquiryDomainModel.of(
+    public InquiryResponseDto create(
+            @UserValid User user,
+            InquiryCreateRequestDto inquiryCreateRequestDto
+    ) {
+        Inquiry inquiry = Inquiry.of(
                 inquiryCreateRequestDto.getTitle(),
                 inquiryCreateRequestDto.getContent(),
-                creatorDomainModel
+                user
         );
-
-        validatorBucket
-                .consistOf(ConstraintValidator.of(inquiryDomainModel, this.validator))
-                .validate();
-
+        new ConstraintValidator<Inquiry>().validate(inquiry, validator);
 
         return InquiryResponseDto.of(
-                this.inquiryPort.create(inquiryDomainModel),
-                creatorDomainModel
+                inquiryRepository.save(inquiry),
+                user
         );
     }
-
 }
