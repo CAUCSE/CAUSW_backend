@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.board.BoardService;
 import net.causw.application.dto.board.BoardCreateRequestDto;
+import net.causw.application.dto.board.BoardMainResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.board.BoardUpdateRequestDto;
 import net.causw.config.security.userdetails.CustomUserDetails;
@@ -50,7 +51,7 @@ public class BoardController {
             @ApiResponse(responseCode = "4109", description = "가입이 거절된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
             @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
-    public List<BoardResponseDto> findAllBoard(
+    public List<BoardMainResponseDto> findAllBoard(
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.boardService.findAllBoard(userDetails.getUser());
