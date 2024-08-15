@@ -4,12 +4,14 @@ import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.post.Post;
+import net.causw.application.dto.board.BoardMainResponseDto;
 import net.causw.application.dto.board.BoardOfCircleResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.file.FileResponseDto;
 import net.causw.application.dto.post.BoardPostsResponseDto;
+import net.causw.application.dto.post.ContentDto;
 import net.causw.application.dto.post.PostResponseDto;
 import net.causw.application.dto.post.PostsResponseDto;
 import net.causw.domain.model.enums.Role;
@@ -106,10 +108,20 @@ public interface DtoMapper{
     @Mapping(target = "postNumComment", source = "numComment")
     BoardOfCircleResponseDto toBoardOfCircleResponseDto(Board entity, Long numComment, boolean writable);
 
+    @Mapping(target = "boardId", source = "board.id")
+    @Mapping(target = "boardName", source = "board.name")
+    @Mapping(target = "isDefault", source = "board.isDefault")
+    @Mapping(target = "contents", source = "contentDtos")
+    BoardMainResponseDto toBoardMainResponseDto(Board board, List<ContentDto> contentDtos);
+
     // Circle
 
 
     // Locker
 
+    //Post
+    @Mapping(target = "title", source = "post.title")
+    @Mapping(target = "contentId", source = "post.id")
+    ContentDto toContentDto(Post post);
 
 }
