@@ -15,6 +15,7 @@ import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,6 +39,7 @@ public class BoardController {
 
     @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
     @Operation(summary = "게시판 검색 API(완료)", description = "전체 게시판을 불러오는 api로 관리자 권한을 가진 경우 삭제된 게시판도 확인할 수 있습니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json")),
@@ -56,6 +58,7 @@ public class BoardController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
     @Operation(summary = "게시판 생성 API(완료)", description = "circleId는 현재 존재하는 circleId를 적용해야 합니다(nullable)\n" +
             "createRoleList에는 ADMIN과 PRESIDENT가 디폴트로 입력됩니다. 그 외의 권한을 별도로 입력해주세요.\n" +
             "createRoleList에 'ALL'을 입력할 경우 모든 권한을 가진 사용자가 게시글을 생성할 수 있습니다.(NONE 제외)\n" +
@@ -83,6 +86,7 @@ public class BoardController {
 
     @PutMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
     @Operation(summary = "게시판 업데이트 API(완료)", description = "id에는 board id 값을 넣어주세요")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json")),
@@ -108,6 +112,7 @@ public class BoardController {
 
     @DeleteMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
     @Operation(summary = "게시판 삭제 API(완료)", description = "id에는 board id 값을 넣어주세요")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json")),
@@ -132,6 +137,7 @@ public class BoardController {
 
     @PutMapping(value = "/{id}/restore")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
     @Operation(summary = "게시판 복구 API(완료)", description = "id에는 board id 값을 넣어주세요")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json")),
