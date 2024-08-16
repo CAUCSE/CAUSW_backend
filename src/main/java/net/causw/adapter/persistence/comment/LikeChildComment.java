@@ -12,8 +12,8 @@ import net.causw.adapter.persistence.user.User;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "tb_child_comment_like")
-public class ChildCommentLike extends BaseEntity {
+@Table(name = "tb_like_child_comment")
+public class LikeChildComment extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
@@ -22,7 +22,7 @@ public class ChildCommentLike extends BaseEntity {
     @JoinColumn(name = "child_comment_id")
     private ChildComment childComment;
 
-    private ChildCommentLike(String id,ChildComment childComment, User user) {
+    private LikeChildComment(String id, ChildComment childComment, User user) {
         super(id);
         this.childComment = childComment;
         this.user = user;

@@ -1,5 +1,4 @@
-package net.causw.adapter.persistence.comment;
-
+package net.causw.adapter.persistence.post;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -13,19 +12,19 @@ import net.causw.adapter.persistence.user.User;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "tb_comment_like")
-public class CommentLike extends BaseEntity{
+@Table(name = "tb_like_post")
+public class LikePost extends BaseEntity {
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id")
+    private Post post ;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "comment_id")
-    private Comment comment;
-
-    private CommentLike(String id, Comment comment, User user) {
+    private LikePost(String id, Post post, User user) {
         super(id);
-        this.comment = comment;
+        this.post = post;
         this.user = user;
     }
 }
