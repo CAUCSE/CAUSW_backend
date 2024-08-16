@@ -27,6 +27,11 @@ public class FavoritePost extends BaseEntity {
         this.post = post;
         this.user = user;
     }
+
+    public static  FavoritePost of(Post post, User user) {
+        return new FavoritePost(post, user);
+    }
+
 }
 
 

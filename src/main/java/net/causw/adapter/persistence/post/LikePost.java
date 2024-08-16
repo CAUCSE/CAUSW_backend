@@ -27,4 +27,9 @@ public class LikePost extends BaseEntity {
         this.post = post;
         this.user = user;
     }
+
+    public static LikePost of(Post post, User user) {
+        return new LikePost(post, user);
+    }
+
 }

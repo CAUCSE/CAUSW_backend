@@ -5,6 +5,8 @@ import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.page.PageableFactory;
+import net.causw.adapter.persistence.post.FavoritePost;
+import net.causw.adapter.persistence.post.LikePost;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.user.User;
@@ -51,6 +53,8 @@ public class PostService {
     private final CommentRepository commentRepository;
     private final ChildCommentRepository childCommentRepository;
     private final FavoriteBoardRepository favoriteBoardRepository;
+    private final PostLikeRepository postLikeRepository;
+    private final FavoritePostRepository favoritePostRepository;
     private final PageableFactory pageableFactory;
     private final Validator validator;
 
@@ -388,6 +392,38 @@ public class PostService {
         post.setIsDeleted(false);
 
         return toPostResponseDtoExtended(postRepository.save(post), restorer);
+    }
+
+    @Transactional
+    public void likePost(User user, String postId) {
+        Post post = getPost(postId);
+
+        if (isPostAlreadyLiked(user, postId)) {
+            throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.POST_ALREADY_LIKED);
+        }
+
+        LikePost likePost = LikePost.of(post, user);
+        postLikeRepository.save(likePost);
+    }
+
+    @Transactional
+    public void favoritePost(User user, String postId) {
+        Post post = getPost(postId);
+
+        if (isPostAlreadyFavorited(user, postId)) {
+            throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.POST_ALREADY_FAVORITED);
+        }
+
+        FavoritePost favoritePost = FavoritePost.of(post, user);
+        favoritePostRepository.save(favoritePost);
+    }
+
+    private boolean isPostAlreadyLiked(User user, String postId) {
+        return postLikeRepository.existsByPostIdAndUserId(postId, user.getId());
+    }
+
+    private boolean isPostAlreadyFavorited(User user, String postId) {
+        return favoritePostRepository.existsByPostIdAndUserId(postId, user.getId());
     }
 
     private ValidatorBucket initializeValidator(User user, Board board) {

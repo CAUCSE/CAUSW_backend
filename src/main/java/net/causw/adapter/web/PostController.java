@@ -297,8 +297,9 @@ public class PostController {
     })
     public void likePost(
             @PathVariable("id") String id,
-            @AuthenticationPrincipal CustomUserDetails userDetails){
-
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ){
+        this.postService.likePost(userDetails.getUser(), id);
     }
 
     @PostMapping(value ="/{id}/favorite" )
@@ -319,8 +320,9 @@ public class PostController {
     })
     public void favoritePost(
             @PathVariable("id") String id,
-            @AuthenticationPrincipal CustomUserDetails userDetails){
-
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ){
+        this.postService.favoritePost(userDetails.getUser(), id);
     }
 
 }
