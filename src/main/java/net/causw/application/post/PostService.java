@@ -179,6 +179,8 @@ public class PostService {
                 postCreateRequestDto.getContent(),
                 creator,
                 false,
+                false,
+                false,
                 board,
                 String.join(":::", postCreateRequestDto.getAttachmentList())
         );

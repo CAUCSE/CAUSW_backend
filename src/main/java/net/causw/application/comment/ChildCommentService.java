@@ -58,6 +58,7 @@ public class ChildCommentService {
         ChildComment childComment = ChildComment.of(
                 childCommentCreateRequestDto.getContent(),
                 false,
+                false,
                 refChildComment.map(refChild -> refChild.getWriter().getName()).orElse(null),
                 childCommentCreateRequestDto.getRefChildComment().orElse(null),
                 creator,
