@@ -53,7 +53,7 @@ public class PostService {
     private final CommentRepository commentRepository;
     private final ChildCommentRepository childCommentRepository;
     private final FavoriteBoardRepository favoriteBoardRepository;
-    private final PostLikeRepository postLikeRepository;
+    private final LikePostRepository likePostRepository;
     private final FavoritePostRepository favoritePostRepository;
     private final PageableFactory pageableFactory;
     private final Validator validator;
@@ -403,7 +403,7 @@ public class PostService {
         }
 
         LikePost likePost = LikePost.of(post, user);
-        postLikeRepository.save(likePost);
+        likePostRepository.save(likePost);
     }
 
     @Transactional
@@ -419,7 +419,7 @@ public class PostService {
     }
 
     private boolean isPostAlreadyLiked(User user, String postId) {
-        return postLikeRepository.existsByPostIdAndUserId(postId, user.getId());
+        return likePostRepository.existsByPostIdAndUserId(postId, user.getId());
     }
 
     private boolean isPostAlreadyFavorited(User user, String postId) {

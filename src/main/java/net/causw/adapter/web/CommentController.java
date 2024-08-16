@@ -188,8 +188,7 @@ public class CommentController {
             @PathVariable("id") String id,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-
+        this.commentService.likeComment(userDetails.getUser(), id);
     }
-
 
 }

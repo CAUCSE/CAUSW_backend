@@ -156,9 +156,7 @@ public class ChildCommentController {
             @PathVariable("id") String id,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-
+        this.childCommentService.likeChildComment(userDetails.getUser(), id);
     }
-
-
 
 }

@@ -31,9 +31,12 @@ public class MessageUtil {
     public static final String CIRCLE_DUPLICATE_NAME = "중복된 소모임 이름입니다.";
     public static final String NEW_CIRCLE_LEADER_NOT_FOUND = "등록할 동아리장을 다시 확인해주세요.";
     public static final String CIRCLE_NOT_FOUND = "해당 동아리를 찾을 수 없습니다.";
+
+    // Like & favorite
     public static final String POST_ALREADY_LIKED = "좋아요를 이미 누른 게시글 입니다.";
     public static final String POST_ALREADY_FAVORITED = "즐겨찾기를 이미 누른 게시글 입니다.";
-
+    public static final String COMMENT_ALREADY_LIKED = "좋아요를 이미 누른 댓글입니다.";
+    public static final String CHILD_COMMENT_ALREADY_LIKED = "좋아요를 이미 누른 대댓글입니다.";
 
     // Locker
     public static final String LOCKER_WRONG_POSITION = "등록된 사물함 위치가 아닙니다.";

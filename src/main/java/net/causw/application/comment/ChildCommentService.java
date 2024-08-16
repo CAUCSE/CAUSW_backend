@@ -5,6 +5,7 @@ import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
+import net.causw.adapter.persistence.comment.LikeChildComment;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.user.User;
@@ -46,6 +47,7 @@ public class ChildCommentService {
     private final UserRepository userRepository;
     private final CircleMemberRepository circleMemberRepository;
     private final PostRepository postRepository;
+    private final LikeChildCommentRepository likeChildCommentRepository;
     private final Validator validator;
 
     @Transactional
@@ -167,6 +169,22 @@ public class ChildCommentService {
                 StatusUtil.isUpdatable(childComment, deleter),
                 StatusUtil.isDeletable(childComment, deleter, post.getBoard())
         );
+    }
+
+    @Transactional
+    public void likeChildComment(User user, String childCommentId) {
+        ChildComment childComment = getChildComment(childCommentId);
+
+        if (isChildCommentAlreadyLiked(user, childCommentId)) {
+            throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.CHILD_COMMENT_ALREADY_LIKED);
+        }
+
+        LikeChildComment likeChildComment = LikeChildComment.of(childComment, user);
+        likeChildCommentRepository.save(likeChildComment);
+    }
+
+    private boolean isChildCommentAlreadyLiked(User user, String childCommentId) {
+        return likeChildCommentRepository.existsByChildCommentIdAndUserId(childCommentId, user.getId());
     }
 
     private ValidatorBucket initializeValidator(User user, Post post) {
