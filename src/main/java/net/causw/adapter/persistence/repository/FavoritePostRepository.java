@@ -9,4 +9,6 @@ public interface FavoritePostRepository extends JpaRepository<FavoritePost, Stri
     boolean existsByPostIdAndUserId(String postId, String userId);
 
     Optional<FavoritePost> findByPostIdAndUserId(String postId, String userId);
+
+    Long countByPostIdAndIsDeletedFalse(String postId);
 }

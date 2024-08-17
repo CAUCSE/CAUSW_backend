@@ -510,6 +510,7 @@ public class PostService {
         return DtoMapper.INSTANCE.toPostsResponseDto(
                 post,
                 postRepository.countAllCommentByPost_Id(post.getId()),
+                getNumOfPostLikes(post),
                 getNumOfPostLikes(post)
         );
     }
@@ -518,6 +519,7 @@ public class PostService {
         return DtoMapper.INSTANCE.toPostResponseDto(
                 post,
                 getNumOfPostLikes(post),
+                getNumOfPostFavorites(post),
                 StatusUtil.isUpdatable(post, user),
                 StatusUtil.isDeletable(post, user, post.getBoard())
         );
@@ -529,6 +531,7 @@ public class PostService {
                 findCommentsByPostIdByPage(user, post, 0),
                 postRepository.countAllCommentByPost_Id(post.getId()),
                 getNumOfPostLikes(post),
+                getNumOfPostFavorites(post),
                 StatusUtil.isUpdatable(post, user),
                 StatusUtil.isDeletable(post, user, post.getBoard())
         );
@@ -559,6 +562,10 @@ public class PostService {
 
     private Long getNumOfPostLikes(Post post){
         return likePostRepository.countByPostId(post.getId());
+    }
+
+    private Long getNumOfPostFavorites(Post post){
+        return favoritePostRepository.countByPostIdAndIsDeletedFalse(post.getId());
     }
 
     private Long getNumOfCommentLikes(Comment comment){

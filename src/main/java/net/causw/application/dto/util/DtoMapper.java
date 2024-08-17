@@ -58,7 +58,8 @@ public interface DtoMapper{
     @Mapping(target = "isAnonymous", source = "entity.isAnonymous")
     @Mapping(target = "isQuestion", source = "entity.isQuestion")
     @Mapping(target = "numLike", source = "numPostLike")
-    PostsResponseDto toPostsResponseDto(Post entity, Long numComment, Long numPostLike);
+    @Mapping(target = "numFavorite", source = "numPostFavorite")
+    PostsResponseDto toPostsResponseDto(Post entity, Long numComment, Long numPostLike, Long numPostFavorite);
 
     @CommonWriterMappings
     @Mapping(target = "boardName", source = "entity.board.name")
@@ -66,7 +67,8 @@ public interface DtoMapper{
     @Mapping(target = "isAnonymous", source = "entity.isAnonymous")
     @Mapping(target = "isQuestion", source = "entity.isQuestion")
     @Mapping(target = "numLike", source = "numPostLike")
-    PostResponseDto toPostResponseDto(Post entity, Long numPostLike, Boolean updatable, Boolean deletable);
+    @Mapping(target = "numFavorite", source = "numPostFavorite")
+    PostResponseDto toPostResponseDto(Post entity, Long numPostLike, Long numPostFavorite,  Boolean updatable, Boolean deletable);
 
     @CommonWriterMappings
     @Mapping(target = "boardName", source = "entity.board.name")
@@ -75,7 +77,8 @@ public interface DtoMapper{
     @Mapping(target = "isAnonymous", source = "entity.isAnonymous")
     @Mapping(target = "isQuestion", source = "entity.isQuestion")
     @Mapping(target = "numLike", source = "numPostLike")
-    PostResponseDto toPostResponseDtoExtended(Post entity, Page<CommentResponseDto> commentList, Long numComment, Long numPostLike, Boolean updatable, Boolean deletable);
+    @Mapping(target = "numFavorite", source = "numPostFavorite")
+    PostResponseDto toPostResponseDtoExtended(Post entity, Page<CommentResponseDto> commentList, Long numComment, Long numPostLike, Long numPostFavorite, Boolean updatable, Boolean deletable);
 
     @CommonWriterMappings
     @Mapping(target = "postId", source = "entity.post.id")

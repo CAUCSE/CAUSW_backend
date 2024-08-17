@@ -5,10 +5,7 @@ import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.page.PageableFactory;
 import net.causw.adapter.persistence.post.Post;
-import net.causw.adapter.persistence.repository.BoardRepository;
-import net.causw.adapter.persistence.repository.LikePostRepository;
-import net.causw.adapter.persistence.repository.PostRepository;
-import net.causw.adapter.persistence.repository.UserRepository;
+import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.homepage.HomePageResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
@@ -34,6 +31,7 @@ public class HomePageService {
     private final PostRepository postRepository;
     private final BoardRepository boardRepository;
     private final LikePostRepository likePostRepository;
+    private final FavoritePostRepository favoritePostRepository;
     private final PageableFactory pageableFactory;
 
     public List<HomePageResponseDto> getHomePage(User user) {
@@ -60,7 +58,8 @@ public class HomePageService {
                                 .map(post -> DtoMapper.INSTANCE.toPostsResponseDto(
                                         post,
                                         postRepository.countAllCommentByPost_Id(post.getId()),
-                                        getNumOfPostLikes(post)
+                                        getNumOfPostLikes(post),
+                                        getNumOfPostFavorites(post)
                                 )))
                 )
                 .collect(Collectors.toList());
@@ -84,5 +83,9 @@ public class HomePageService {
 
     private Long getNumOfPostLikes(Post post){
         return likePostRepository.countByPostId(post.getId());
+    }
+
+    private Long getNumOfPostFavorites(Post post){
+        return favoritePostRepository.countByPostIdAndIsDeletedFalse(post.getId());
     }
 }

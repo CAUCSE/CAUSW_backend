@@ -29,15 +29,15 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-08-17T22:51:13+0900",
+    date = "2024-08-18T00:49:35+0900",
     comments = "version: 1.4.2.Final, compiler: javac, environment: Java 17.0.10 (Oracle Corporation)"
 )
 @Component
 public class DtoMapperImpl implements DtoMapper {
 
     @Override
-    public PostsResponseDto toPostsResponseDto(Post entity, Long numComment, Long numPostLike) {
-        if ( entity == null && numComment == null && numPostLike == null ) {
+    public PostsResponseDto toPostsResponseDto(Post entity, Long numComment, Long numPostLike, Long numPostFavorite) {
+        if ( entity == null && numComment == null && numPostLike == null && numPostFavorite == null ) {
             return null;
         }
 
@@ -60,13 +60,16 @@ public class DtoMapperImpl implements DtoMapper {
         if ( numPostLike != null ) {
             postsResponseDto.numLike( numPostLike );
         }
+        if ( numPostFavorite != null ) {
+            postsResponseDto.numFavorite( numPostFavorite );
+        }
 
         return postsResponseDto.build();
     }
 
     @Override
-    public PostResponseDto toPostResponseDto(Post entity, Long numPostLike, Boolean updatable, Boolean deletable) {
-        if ( entity == null && numPostLike == null && updatable == null && deletable == null ) {
+    public PostResponseDto toPostResponseDto(Post entity, Long numPostLike, Long numPostFavorite, Boolean updatable, Boolean deletable) {
+        if ( entity == null && numPostLike == null && numPostFavorite == null && updatable == null && deletable == null ) {
             return null;
         }
 
@@ -90,6 +93,9 @@ public class DtoMapperImpl implements DtoMapper {
         if ( numPostLike != null ) {
             postResponseDto.numLike( numPostLike );
         }
+        if ( numPostFavorite != null ) {
+            postResponseDto.numFavorite( numPostFavorite );
+        }
         if ( updatable != null ) {
             postResponseDto.updatable( updatable );
         }
@@ -101,8 +107,8 @@ public class DtoMapperImpl implements DtoMapper {
     }
 
     @Override
-    public PostResponseDto toPostResponseDtoExtended(Post entity, Page<CommentResponseDto> commentList, Long numComment, Long numPostLike, Boolean updatable, Boolean deletable) {
-        if ( entity == null && commentList == null && numComment == null && numPostLike == null && updatable == null && deletable == null ) {
+    public PostResponseDto toPostResponseDtoExtended(Post entity, Page<CommentResponseDto> commentList, Long numComment, Long numPostLike, Long numPostFavorite, Boolean updatable, Boolean deletable) {
+        if ( entity == null && commentList == null && numComment == null && numPostLike == null && numPostFavorite == null && updatable == null && deletable == null ) {
             return null;
         }
 
@@ -131,6 +137,9 @@ public class DtoMapperImpl implements DtoMapper {
         }
         if ( numPostLike != null ) {
             postResponseDto.numLike( numPostLike );
+        }
+        if ( numPostFavorite != null ) {
+            postResponseDto.numFavorite( numPostFavorite );
         }
         if ( updatable != null ) {
             postResponseDto.updatable( updatable );
