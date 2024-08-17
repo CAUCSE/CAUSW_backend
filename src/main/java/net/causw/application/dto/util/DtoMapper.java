@@ -122,6 +122,6 @@ public interface DtoMapper{
     //Post
     @Mapping(target = "title", source = "post.title")
     @Mapping(target = "contentId", source = "post.id")
-    PostContentDto toContentDto(Post post);
+    PostContentDto toPostContentDto(Post post);
 
 }

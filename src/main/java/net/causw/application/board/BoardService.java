@@ -125,7 +125,7 @@ public class BoardService {
         return boards.stream()
                 .map(board -> {
                     List<PostContentDto> recentPosts = postRepository.findTop3ByBoard_IdAndIsDeletedOrderByCreatedAtDesc(board.getId(), false).stream()
-                            .map(DtoMapper.INSTANCE::toContentDto)
+                            .map(DtoMapper.INSTANCE::toPostContentDto)
                             .collect(Collectors.toList());
                     return DtoMapper.INSTANCE.toBoardMainResponseDto(board, recentPosts);
                 })
