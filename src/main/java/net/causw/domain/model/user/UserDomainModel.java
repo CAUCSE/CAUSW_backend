@@ -1,7 +1,9 @@
 package net.causw.domain.model.user;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
+import net.causw.domain.model.enums.AcademicStatus;
 import net.causw.domain.model.enums.UserState;
 import net.causw.domain.model.enums.Role;
 
@@ -9,6 +11,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -18,7 +21,7 @@ public class UserDomainModel {
 
     private String studentId;
 
-    private String profileImage;
+    private List<String> profileImages;
 
     private String refreshToken;
 
@@ -41,6 +44,28 @@ public class UserDomainModel {
     @NotNull(message = "사용자 상태가 입력되지 않았습니다.")
     private UserState state;
 
+    // 새로 추가된 필드들
+    @Schema(description = "닉네임", example = "푸앙")
+    private String nickname;
+
+    @Schema(description = "학부/학과", example = "소프트웨어학부")
+    private String major;
+
+    @Schema(description = "학적상태", example = "ENROLLED")
+    private AcademicStatus academicStatus;
+
+    @Schema(description = "현재 등록 완료된 학기", example = "6(3학년 2학기)")
+    private Integer currentCompletedSemester;
+
+    @Schema(description = "졸업시기 년", example = "2026")
+    private Integer graduationYear;
+
+    @Schema(description = "졸업시기 월", example = "2")
+    private Integer graduationMonth;
+
+    @Schema(description = "전화번호", example = "01012345678")
+    private String phoneNumber;
+
     public static UserDomainModel of(
             String id,
             String email,
@@ -49,9 +74,16 @@ public class UserDomainModel {
             String studentId,
             Integer admissionYear,
             Set<Role> roles,
-            String profileImage,
+            List<String> profileImages,
             String refreshToken,
-            UserState state
+            UserState state,
+            String nickname,
+            String major,
+            AcademicStatus academicStatus,
+            Integer currentCompletedSemester,
+            Integer graduationYear,
+            Integer graduationMonth,
+            String phoneNumber
     ) {
         return UserDomainModel.builder()
                 .id(id)
@@ -61,9 +93,16 @@ public class UserDomainModel {
                 .studentId(studentId)
                 .admissionYear(admissionYear)
                 .roles(roles)
-                .profileImage(profileImage)
+                .profileImages(profileImages)
                 .refreshToken(refreshToken)
                 .state(state)
+                .nickname(nickname)
+                .major(major)
+                .academicStatus(academicStatus)
+                .currentCompletedSemester(currentCompletedSemester)
+                .graduationYear(graduationYear)
+                .graduationMonth(graduationMonth)
+                .phoneNumber(phoneNumber)
                 .build();
     }
 
@@ -73,7 +112,14 @@ public class UserDomainModel {
             String password,
             String studentId,
             Integer admissionYear,
-            String profileImage
+            List<String> profileImages,
+            String nickname,
+            String major,
+            AcademicStatus academicStatus,
+            Integer currentCompletedSemester,
+            Integer graduationYear,
+            Integer graduationMonth,
+            String phoneNumber
     ) {
         return UserDomainModel.builder()
                 .email(email)
@@ -81,7 +127,14 @@ public class UserDomainModel {
                 .password(password)
                 .studentId(studentId)
                 .admissionYear(admissionYear)
-                .profileImage(profileImage)
+                .profileImages(profileImages)
+                .nickname(nickname)
+                .major(major)
+                .academicStatus(academicStatus)
+                .currentCompletedSemester(currentCompletedSemester)
+                .graduationYear(graduationYear)
+                .graduationMonth(graduationMonth)
+                .phoneNumber(phoneNumber)
                 .build();
     }
 
@@ -90,13 +143,27 @@ public class UserDomainModel {
             String name,
             String studentId,
             Integer admissionYear,
-            String profileImage
+            List<String> profileImages,
+            String nickname,
+            String major,
+            AcademicStatus academicStatus,
+            Integer currentCompletedSemester,
+            Integer graduationYear,
+            Integer graduationMonth,
+            String phoneNumber
     ) {
         this.email = email;
         this.name = name;
         this.studentId = studentId;
         this.admissionYear = admissionYear;
-        this.profileImage = profileImage;
+        this.profileImages = profileImages;
+        this.nickname = nickname;
+        this.major = major;
+        this.academicStatus = academicStatus;
+        this.currentCompletedSemester = currentCompletedSemester;
+        this.graduationYear = graduationYear;
+        this.graduationMonth = graduationMonth;
+        this.phoneNumber = phoneNumber;
     }
 
     public String updatePassword(String newPassword) {

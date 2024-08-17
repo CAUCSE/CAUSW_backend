@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -25,5 +27,5 @@ public class UserUpdateRequestDto {
     private Integer admissionYear;
 
     @Schema(description = "프로필 이미지 URL", example = "")
-    private String profileImage;
+    private List<String> profileImages;
 }

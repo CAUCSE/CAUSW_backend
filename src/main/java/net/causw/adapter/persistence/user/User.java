@@ -64,8 +64,9 @@ public class User extends BaseEntity {
     @Column(name = "role", nullable = false)
     private Set<Role> roles;
 
-    @Column(name = "profile_image", length = 500, nullable = true)
-    private String profileImage;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Column(name = "profile_images", length = 500, nullable = true)
+    private List<String> profileImages;
 
     @Column(name = "refresh_token", nullable = true)
     private String refreshToken;
@@ -90,7 +91,7 @@ public class User extends BaseEntity {
             String studentId,
             Integer admissionYear,
             Set<Role> roles,
-            String profileImage,
+            List<String> profileImages,
             UserState state
     ) {
         super(id);
@@ -100,7 +101,7 @@ public class User extends BaseEntity {
         this.studentId = studentId;
         this.admissionYear = admissionYear;
         this.roles = roles;
-        this.profileImage = profileImage;
+        this.profileImages = profileImages;
         this.state = state;
     }
 
@@ -113,7 +114,7 @@ public class User extends BaseEntity {
                 userDomainModel.getStudentId(),
                 userDomainModel.getAdmissionYear(),
                 userDomainModel.getRoles(),
-                userDomainModel.getProfileImage(),
+                userDomainModel.getProfileImages(),
                 userDomainModel.getState()
         );
     }
