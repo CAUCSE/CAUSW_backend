@@ -11,11 +11,10 @@ import net.causw.application.dto.board.BoardCreateRequestDto;
 import net.causw.application.dto.board.BoardMainResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.board.BoardUpdateRequestDto;
-import net.causw.application.dto.post.ContentDto;
+import net.causw.application.dto.post.PostContentDto;
 import net.causw.application.dto.util.DtoMapper;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
-import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.CircleMemberStatus;
 import net.causw.domain.model.enums.Role;
@@ -48,8 +47,47 @@ public class BoardService {
     private final CircleMemberRepository circleMemberRepository;
     private final Validator validator;
 
+
     @Transactional(readOnly = true)
-    public List<BoardMainResponseDto> findAllBoard(
+    public List<BoardResponseDto> findAllBoard(
+            User user
+    ) {
+        Set<Role> roles = user.getRoles();
+
+        ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .validate();
+
+        if (roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT)) {
+            return boardRepository.findByOrderByCreatedAtAsc().stream()
+                    .map(board -> toBoardResponseDto(board, roles))
+                    .collect(Collectors.toList());
+        } else {
+            List<Circle> joinCircles = circleMemberRepository.findByUser_Id(user.getId()).stream()
+                    .filter(circleMember -> circleMember.getStatus() == CircleMemberStatus.MEMBER)
+                    .map(CircleMember::getCircle)
+                    .collect(Collectors.toList());
+            if (joinCircles.isEmpty()) {
+                return boardRepository.findByCircle_IdIsNullAndIsDeletedOrderByCreatedAtAsc(false).stream()
+                        .map(board -> toBoardResponseDto(board, roles))
+                        .collect(Collectors.toList());
+            } else {
+                List<String> circleIdList = joinCircles.stream()
+                        .map(Circle::getId)
+                        .collect(Collectors.toList());
+
+                return Stream.concat(
+                                this.boardRepository.findByCircle_IdIsNullAndIsDeletedOrderByCreatedAtAsc(false).stream(),
+                                this.boardRepository.findByCircle_IdInAndIsDeletedFalseOrderByCreatedAtAsc(circleIdList).stream())
+                        .map(board -> toBoardResponseDto(board, roles))
+                        .collect(Collectors.toList());
+            }
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public List<BoardMainResponseDto> mainBoard(
             User user
     ) {
         Set<Role> roles = user.getRoles();
@@ -61,28 +99,34 @@ public class BoardService {
 
         List<Board> boards;
 
-        List<Circle> joinCircles = circleMemberRepository.findByUser_Id(user.getId()).stream()
+        if (roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT)) {
+            boards = boardRepository.findByOrderByCreatedAtAsc();
+        }else{
+            List<Circle> joinCircles = circleMemberRepository.findByUser_Id(user.getId()).stream()
                 .filter(circleMember -> circleMember.getStatus() == CircleMemberStatus.MEMBER)
                 .map(CircleMember::getCircle)
                 .collect(Collectors.toList());
 
-        if (joinCircles.isEmpty()) {
-            boards = boardRepository.findByCircle_IdIsNullAndIsDeletedOrderByCreatedAtAsc(false);
-        } else {
-            List<String> circleIdList = joinCircles.stream()
-                    .map(Circle::getId)
-                    .collect(Collectors.toList());
+            if (joinCircles.isEmpty()) {
+                boards = boardRepository.findByCircle_IdIsNullAndIsDeletedOrderByCreatedAtAsc(false);
+            } else {
+                List<String> circleIdList = joinCircles.stream()
+                        .map(Circle::getId)
+                        .collect(Collectors.toList());
 
-            boards = Stream.concat(
-                            boardRepository.findByCircle_IdIsNullAndIsDeletedOrderByCreatedAtAsc(false).stream(),
-                            boardRepository.findByCircle_IdInAndIsDeletedFalseOrderByCreatedAtAsc(circleIdList).stream()
-                    )
-                    .collect(Collectors.toList());
+                boards = Stream.concat(
+                                boardRepository.findByCircle_IdIsNullAndIsDeletedOrderByCreatedAtAsc(false).stream(),
+                                boardRepository.findByCircle_IdInAndIsDeletedFalseOrderByCreatedAtAsc(circleIdList).stream()
+                        )
+                        .collect(Collectors.toList());
+            }
         }
 
         return boards.stream()
                 .map(board -> {
-                    List<ContentDto> recentPosts = findRecentThreePosts(user, board.getId());
+                    List<PostContentDto> recentPosts = postRepository.findTop3ByBoard_IdAndIsDeletedOrderByCreatedAtDesc(board.getId(), false).stream()
+                            .map(DtoMapper.INSTANCE::toContentDto)
+                            .collect(Collectors.toList());
                     return DtoMapper.INSTANCE.toBoardMainResponseDto(board, recentPosts);
                 })
                 .collect(Collectors.toList());
@@ -327,22 +371,5 @@ public class BoardService {
                         MessageUtil.SMALL_CLUB_NOT_FOUND
                 )
         );
-    }
-
-    @Transactional(readOnly = true)
-    public List<ContentDto> findRecentThreePosts(User user, String boardId) {
-        Set<Role> roles = user.getRoles();
-        Board board = getBoard(boardId);
-
-        // Validator 초기화 및 검증
-        ValidatorBucket validatorBucket = initializeValidatorBucket(user, board);
-        validatorBucket.validate();
-
-        List<Post> posts = postRepository.findTop3ByBoard_IdAndIsDeletedOrderByCreatedAtDesc(boardId, false);
-
-        // DtoMapper를 사용하여 Post를 ContentDto로 변환
-        return posts.stream()
-                .map(DtoMapper.INSTANCE::toContentDto)
-                .collect(Collectors.toList());
     }
 }
