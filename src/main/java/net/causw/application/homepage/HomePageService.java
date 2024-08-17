@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.page.PageableFactory;
+import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.BoardRepository;
+import net.causw.adapter.persistence.repository.LikePostRepository;
 import net.causw.adapter.persistence.repository.PostRepository;
 import net.causw.adapter.persistence.repository.UserRepository;
 import net.causw.adapter.persistence.user.User;
@@ -31,6 +33,7 @@ public class HomePageService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final BoardRepository boardRepository;
+    private final LikePostRepository likePostRepository;
     private final PageableFactory pageableFactory;
 
     public List<HomePageResponseDto> getHomePage(User user) {
@@ -56,7 +59,8 @@ public class HomePageService {
                         postRepository.findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(board.getId(), pageableFactory.create(0, StaticValue.HOME_POST_PAGE_SIZE))
                                 .map(post -> DtoMapper.INSTANCE.toPostsResponseDto(
                                         post,
-                                        postRepository.countAllCommentByPost_Id(post.getId())
+                                        postRepository.countAllCommentByPost_Id(post.getId()),
+                                        getNumOfPostLikes(post)
                                 )))
                 )
                 .collect(Collectors.toList());
@@ -76,5 +80,9 @@ public class HomePageService {
                 circleId,
                 circleName
         );
+    }
+
+    private Long getNumOfPostLikes(Post post){
+        return likePostRepository.countByPostId(post.getId());
     }
 }
