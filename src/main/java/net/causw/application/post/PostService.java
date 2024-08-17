@@ -179,8 +179,8 @@ public class PostService {
                 postCreateRequestDto.getContent(),
                 creator,
                 false,
-                false,
-                false,
+                postCreateRequestDto.getIsAnonymous(),
+                postCreateRequestDto.getIsQuestion(),
                 board,
                 String.join(":::", postCreateRequestDto.getAttachmentList())
         );

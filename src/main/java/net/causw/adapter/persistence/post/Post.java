@@ -83,12 +83,12 @@ public class Post extends BaseEntity {
             String content,
             User writer,
             Boolean isDeleted,
-            Boolean isAnoymous,
+            Boolean isAnonymous,
             Boolean isQuestion,
             Board board,
             String attachments
     ) {
-        return new Post(title, content, attachments, writer, isDeleted, isAnoymous, isQuestion, board);
+        return new Post(title, content, attachments, writer, isDeleted, isAnonymous, isQuestion, board);
     }
 
     public void update(String title, String content, String attachments) {
