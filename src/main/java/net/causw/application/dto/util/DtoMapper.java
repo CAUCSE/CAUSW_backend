@@ -55,24 +55,32 @@ public interface DtoMapper{
     // Dto writerName 필드에 post.writer.name을 삽입한다는 의미입니다.
     @Mapping(target = "writerName", source = "entity.writer.name")
     @Mapping(target = "writerAdmissionYear", source = "entity.writer.admissionYear")
+    @Mapping(target = "isAnonymous", source = "entity.isAnonymous")
+    @Mapping(target = "isQuestion", source = "entity.isQuestion")
     PostsResponseDto toPostsResponseDto(Post entity, Long numComment);
 
     @CommonWriterMappings
     @Mapping(target = "boardName", source = "entity.board.name")
     @Mapping(target = "attachmentList", source = "entity.attachments", qualifiedByName = "attachmentsToStringList")
+    @Mapping(target = "isAnonymous", source = "entity.isAnonymous")
+    @Mapping(target = "isQuestion", source = "entity.isQuestion")
     PostResponseDto toPostResponseDto(Post entity, Boolean updatable, Boolean deletable);
 
     @CommonWriterMappings
     @Mapping(target = "boardName", source = "entity.board.name")
     @Mapping(target = "attachmentList", source = "entity.attachments", qualifiedByName = "attachmentsToStringList")
     @Mapping(target = "content", source = "entity.content")
+    @Mapping(target = "isAnonymous", source = "entity.isAnonymous")
+    @Mapping(target = "isQuestion", source = "entity.isQuestion")
     PostResponseDto toPostResponseDtoExtended(Post entity, Page<CommentResponseDto> commentList, Long numComment, Boolean updatable, Boolean deletable);
 
     @CommonWriterMappings
     @Mapping(target = "postId", source = "entity.post.id")
+    @Mapping(target = "isAnonymous", source = "entity.isAnonymous")
     CommentResponseDto toCommentResponseDto(Comment entity, Long numChildComment, List<ChildCommentResponseDto> childCommentList, Boolean updatable, Boolean deletable);
 
     @CommonWriterMappings
+    @Mapping(target = "isAnonymous", source = "entity.isAnonymous")
     ChildCommentResponseDto toChildCommentResponseDto(ChildComment entity, Boolean updatable, Boolean deletable);
 
     @Mapping(target = "boardId", source = "entity.id")

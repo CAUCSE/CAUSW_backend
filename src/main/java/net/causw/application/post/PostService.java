@@ -506,7 +506,8 @@ public class PostService {
                                 )
                                 .collect(Collectors.toList()),
                         StatusUtil.isUpdatable(comment, user),
-                        StatusUtil.isDeletable(comment, user, post.getBoard())
+                        StatusUtil.isDeletable(comment, user, post.getBoard()),
+                        comment.getIsAnonymous()
                 )
         );
     }

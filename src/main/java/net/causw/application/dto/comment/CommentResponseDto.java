@@ -1,5 +1,6 @@
 package net.causw.application.dto.comment;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,6 +26,10 @@ public class CommentResponseDto {
     private String writerProfileImage;
     private Boolean updatable;
     private Boolean deletable;
+
+    @Schema(description = "익명글 여부", example = "False")
+    private Boolean isAnonymous;
+
     private Long numChildComment;
     private List<ChildCommentResponseDto> childCommentList;
 
@@ -33,7 +38,8 @@ public class CommentResponseDto {
             Long numChildComment,
             List<ChildCommentResponseDto> childCommentList,
             boolean updatable,
-            boolean deletable
+            boolean deletable,
+            boolean isAnonymous
     ){
         return CommentResponseDto.builder()
                 .id(comment.getId())
@@ -49,6 +55,7 @@ public class CommentResponseDto {
                 .deletable(deletable)
                 .numChildComment(numChildComment)
                 .childCommentList(childCommentList)
+                .isAnonymous(isAnonymous)
                 .build();
     }
 }

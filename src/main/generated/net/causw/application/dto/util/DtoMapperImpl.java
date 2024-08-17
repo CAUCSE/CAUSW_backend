@@ -29,8 +29,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-07-30T16:39:50+0900",
-    comments = "version: 1.4.2.Final, compiler: javac, environment: Java 17.0.10 (Homebrew)"
+    date = "2024-08-17T15:49:46+0900",
+    comments = "version: 1.4.2.Final, compiler: javac, environment: Java 17.0.10 (Oracle Corporation)"
 )
 @Component
 public class DtoMapperImpl implements DtoMapper {
@@ -46,6 +46,8 @@ public class DtoMapperImpl implements DtoMapper {
         if ( entity != null ) {
             postsResponseDto.writerName( entityWriterName( entity ) );
             postsResponseDto.writerAdmissionYear( entityWriterAdmissionYear( entity ) );
+            postsResponseDto.isAnonymous( entity.getIsAnonymous() );
+            postsResponseDto.isQuestion( entity.getIsQuestion() );
             postsResponseDto.id( entity.getId() );
             postsResponseDto.title( entity.getTitle() );
             postsResponseDto.createdAt( entity.getCreatedAt() );
@@ -73,6 +75,8 @@ public class DtoMapperImpl implements DtoMapper {
             postResponseDto.writerProfileImage( entityWriterProfileImage( entity ) );
             postResponseDto.boardName( entityBoardName( entity ) );
             postResponseDto.attachmentList( attachmentsToStringList( entity.getAttachments() ) );
+            postResponseDto.isAnonymous( entity.getIsAnonymous() );
+            postResponseDto.isQuestion( entity.getIsQuestion() );
             postResponseDto.id( entity.getId() );
             postResponseDto.title( entity.getTitle() );
             postResponseDto.content( entity.getContent() );
@@ -105,6 +109,8 @@ public class DtoMapperImpl implements DtoMapper {
             postResponseDto.boardName( entityBoardName( entity ) );
             postResponseDto.attachmentList( attachmentsToStringList( entity.getAttachments() ) );
             postResponseDto.content( entity.getContent() );
+            postResponseDto.isAnonymous( entity.getIsAnonymous() );
+            postResponseDto.isQuestion( entity.getIsQuestion() );
             postResponseDto.id( entity.getId() );
             postResponseDto.title( entity.getTitle() );
             postResponseDto.isDeleted( entity.getIsDeleted() );
@@ -140,6 +146,7 @@ public class DtoMapperImpl implements DtoMapper {
             commentResponseDto.writerAdmissionYear( entityWriterAdmissionYear1( entity ) );
             commentResponseDto.writerProfileImage( entityWriterProfileImage1( entity ) );
             commentResponseDto.postId( entityPostId( entity ) );
+            commentResponseDto.isAnonymous( entity.getIsAnonymous() );
             commentResponseDto.id( entity.getId() );
             commentResponseDto.content( entity.getContent() );
             commentResponseDto.createdAt( entity.getCreatedAt() );
@@ -172,6 +179,7 @@ public class DtoMapperImpl implements DtoMapper {
             childCommentResponseDto.writerName( entityWriterName2( entity ) );
             childCommentResponseDto.writerAdmissionYear( entityWriterAdmissionYear2( entity ) );
             childCommentResponseDto.writerProfileImage( entityWriterProfileImage2( entity ) );
+            childCommentResponseDto.isAnonymous( entity.getIsAnonymous() );
             childCommentResponseDto.id( entity.getId() );
             childCommentResponseDto.content( entity.getContent() );
             childCommentResponseDto.createdAt( entity.getCreatedAt() );
@@ -432,6 +440,7 @@ public class DtoMapperImpl implements DtoMapper {
         childCommentResponseDto.isDeleted( childComment.getIsDeleted() );
         childCommentResponseDto.tagUserName( childComment.getTagUserName() );
         childCommentResponseDto.refChildComment( childComment.getRefChildComment() );
+        childCommentResponseDto.isAnonymous( childComment.getIsAnonymous() );
 
         return childCommentResponseDto.build();
     }
