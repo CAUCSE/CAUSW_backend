@@ -36,9 +36,9 @@ public class Post extends BaseEntity {
     @ColumnDefault("false")
     private Boolean isDeleted;
 
-    @Column(name = "is_anoymous", nullable = false)
+    @Column(name = "is_anonymous", nullable = false)
     @ColumnDefault("false")
-    private Boolean isAnoymous;
+    private Boolean isAnonymous;
 
     @Column(name = "is_question", nullable = false)
     @ColumnDefault("false")

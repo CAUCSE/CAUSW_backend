@@ -176,7 +176,7 @@ public class CommentService {
     public void likeComment(User user, String commentId) {
         Comment comment = getComment(commentId);
 
-        if (isCommentAlreadyLiked(user, commentId)) {
+        if (isCommentAlreadyLike(user, commentId)) {
             throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.COMMENT_ALREADY_LIKED);
         }
 
@@ -184,7 +184,7 @@ public class CommentService {
         likeCommentRepository.save(likeComment);
     }
 
-    private boolean isCommentAlreadyLiked(User user, String commentId) {
+    private boolean isCommentAlreadyLike(User user, String commentId) {
         return likeCommentRepository.existsByCommentIdAndUserId(commentId, user.getId());
     }
 

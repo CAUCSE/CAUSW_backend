@@ -176,7 +176,7 @@ public class ChildCommentService {
     public void likeChildComment(User user, String childCommentId) {
         ChildComment childComment = getChildComment(childCommentId);
 
-        if (isChildCommentAlreadyLiked(user, childCommentId)) {
+        if (isChildCommentAlreadyLike(user, childCommentId)) {
             throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.CHILD_COMMENT_ALREADY_LIKED);
         }
 
@@ -184,7 +184,7 @@ public class ChildCommentService {
         likeChildCommentRepository.save(likeChildComment);
     }
 
-    private boolean isChildCommentAlreadyLiked(User user, String childCommentId) {
+    private boolean isChildCommentAlreadyLike(User user, String childCommentId) {
         return likeChildCommentRepository.existsByChildCommentIdAndUserId(childCommentId, user.getId());
     }
 

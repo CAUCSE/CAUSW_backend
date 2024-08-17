@@ -400,7 +400,7 @@ public class PostService {
     public void likePost(User user, String postId) {
         Post post = getPost(postId);
 
-        if (isPostAlreadyLiked(user, postId)) {
+        if (isPostAlreadyLike(user, postId)) {
             throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.POST_ALREADY_LIKED);
         }
 
@@ -412,7 +412,7 @@ public class PostService {
     public void favoritePost(User user, String postId) {
         Post post = getPost(postId);
 
-        if (isPostAlreadyFavorited(user, postId)) {
+        if (isPostAlreadyFavorite(user, postId)) {
             throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.POST_ALREADY_FAVORITED);
         }
 
@@ -420,11 +420,11 @@ public class PostService {
         favoritePostRepository.save(favoritePost);
     }
 
-    private boolean isPostAlreadyLiked(User user, String postId) {
+    private boolean isPostAlreadyLike(User user, String postId) {
         return likePostRepository.existsByPostIdAndUserId(postId, user.getId());
     }
 
-    private boolean isPostAlreadyFavorited(User user, String postId) {
+    private boolean isPostAlreadyFavorite(User user, String postId) {
         return favoritePostRepository.existsByPostIdAndUserId(postId, user.getId());
     }
 
