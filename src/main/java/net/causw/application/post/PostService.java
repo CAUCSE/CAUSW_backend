@@ -416,11 +416,43 @@ public class PostService {
     public void favoritePost(User user, String postId) {
         Post post = getPost(postId);
 
-        if (isPostAlreadyFavorite(user, postId)) {
-            throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.POST_ALREADY_FAVORITED);
+        //FIXME : Validator 리팩토링 통합 후 해당 검사 로직을 해당방식으로 수정.
+        if (isPostDeleted(post)) {
+            throw new BadRequestException(ErrorCode.TARGET_DELETED, MessageUtil.POST_DELETED);
         }
 
-        FavoritePost favoritePost = FavoritePost.of(post, user);
+        FavoritePost favoritePost;
+        if (isPostAlreadyFavorite(user, postId)) {
+            favoritePost = getFavoritePost(user, postId);
+            if (favoritePost.getIsDeleted()) {
+                favoritePost.setIsDeleted(false);
+            } else {
+                throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.POST_ALREADY_FAVORITED);
+            }
+        } else {
+            favoritePost = FavoritePost.of(post, user, false);
+        }
+
+        favoritePostRepository.save(favoritePost);
+    }
+
+
+    @Transactional
+    public void cancelFavoritePost(User user, String postId) {
+        Post post = getPost(postId);
+
+        //FIXME : Validator 리팩토링 통합 후 해당 검사 로직을 해당방식으로 수정.
+        if (isPostDeleted(post)) {
+            throw new BadRequestException(ErrorCode.TARGET_DELETED, MessageUtil.POST_DELETED);
+        }
+
+        FavoritePost favoritePost = getFavoritePost(user, postId);
+        if (favoritePost.getIsDeleted()) {
+            throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.FAVORITE_POST_ALREADY_DELETED);
+        } else {
+            favoritePost.setIsDeleted(true);
+        }
+
         favoritePostRepository.save(favoritePost);
     }
 
@@ -430,6 +462,10 @@ public class PostService {
 
     private boolean isPostAlreadyFavorite(User user, String postId) {
         return favoritePostRepository.existsByPostIdAndUserId(postId, user.getId());
+    }
+
+    private boolean isPostDeleted(Post post) {
+        return post.getIsDeleted();
     }
 
     private ValidatorBucket initializeValidator(User user, Board board) {
@@ -586,4 +622,14 @@ public class PostService {
         }
         return leader;
     }
+
+    private FavoritePost getFavoritePost(User user, String postId) {
+        return favoritePostRepository.findByPostIdAndUserId(postId, user.getId()).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.FAVORITE_POST_NOT_FOUND
+                )
+        );
+    }
+
 }

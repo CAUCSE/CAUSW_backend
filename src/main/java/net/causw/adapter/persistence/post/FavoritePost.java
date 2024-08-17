@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.user.User;
+import org.hibernate.annotations.ColumnDefault;
 
 @Getter
 @Entity
@@ -22,14 +23,23 @@ public class FavoritePost extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
-    private FavoritePost(String id, Post post, User user) {
+    @Column(name = "is_deleted")
+    @ColumnDefault("false")
+    private Boolean isDeleted;
+
+    private FavoritePost(String id, Post post, User user, Boolean isDeleted) {
         super(id);
         this.post = post;
         this.user = user;
+        this.isDeleted = isDeleted;
     }
 
-    public static  FavoritePost of(Post post, User user) {
-        return new FavoritePost(post, user);
+    public static  FavoritePost of(Post post, User user, Boolean isDeleted) {
+        return new FavoritePost(post, user, isDeleted);
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 
 }
