@@ -74,6 +74,7 @@ public class ChildCommentService {
 
         return toChildCommentResponseDto(
                 childCommentRepository.save(childComment),
+                getNumOfChildCommentLikes(childComment),
                 StatusUtil.isUpdatable(childComment, creator),
                 StatusUtil.isDeletable(childComment, creator, post.getBoard())
         );
@@ -104,6 +105,7 @@ public class ChildCommentService {
 
         return toChildCommentResponseDto(
                 childCommentRepository.save(childComment),
+                getNumOfChildCommentLikes(childComment),
                 StatusUtil.isUpdatable(childComment, updater),
                 StatusUtil.isDeletable(childComment, updater, post.getBoard())
         );
@@ -167,6 +169,7 @@ public class ChildCommentService {
 
         return toChildCommentResponseDto(
                 childCommentRepository.save(childComment),
+                getNumOfChildCommentLikes(childComment),
                 StatusUtil.isUpdatable(childComment, deleter),
                 StatusUtil.isDeletable(childComment, deleter, post.getBoard())
         );
@@ -186,6 +189,10 @@ public class ChildCommentService {
 
     private boolean isChildCommentAlreadyLike(User user, String childCommentId) {
         return likeChildCommentRepository.existsByChildCommentIdAndUserId(childCommentId, user.getId());
+    }
+
+    private Long getNumOfChildCommentLikes(ChildComment childComment) {
+        return likeChildCommentRepository.countByChildCommentId(childComment.getId());
     }
 
     private ValidatorBucket initializeValidator(User user, Post post) {
@@ -213,8 +220,8 @@ public class ChildCommentService {
         return validatorBucket;
     }
 
-    private ChildCommentResponseDto toChildCommentResponseDto(ChildComment comment, Boolean updatable, Boolean deletable) {
-        return DtoMapper.INSTANCE.toChildCommentResponseDto(comment, updatable, deletable);
+    private ChildCommentResponseDto toChildCommentResponseDto(ChildComment comment, Long childCommentLike, Boolean updatable, Boolean deletable) {
+        return DtoMapper.INSTANCE.toChildCommentResponseDto(comment, childCommentLike, updatable, deletable);
     }
 
     private User getUser(String userId) {

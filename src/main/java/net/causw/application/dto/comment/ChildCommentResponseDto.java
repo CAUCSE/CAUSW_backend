@@ -30,6 +30,9 @@ public class ChildCommentResponseDto {
     @Schema(description = "익명글 여부", example = "False")
     private Boolean isAnonymous;
 
+    @Schema(description = "대댓글 종아요 수", example = "10")
+    private Long numLike;
+
     // FIXME: 리팩토링 후 삭제예정
     public static ChildCommentResponseDto of(
             ChildComment comment,

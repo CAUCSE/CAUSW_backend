@@ -45,11 +45,18 @@ public class PostResponseDto {
     @Schema(description = "답글 개수", example = "13")
     private Long numComment;
 
+    @Schema(description = "게시글 종아요 개수", example = "10")
+    private Long numLike;
+
+    @Schema(description = "게시글 즐겨찾기 개수", example = "11")
+    private Long numFavorite;
+
     @Schema(description = "익명글 여부", example = "False")
     private Boolean isAnonymous;
 
     @Schema(description = "질문글 여부", example = "False")
     private Boolean isQuestion;
+
 
     @Schema(description = "게시글 업데이트 가능여부", example = "true")
     private Boolean updatable;

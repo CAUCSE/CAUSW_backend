@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
+import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.page.PageableFactory;
 import net.causw.adapter.persistence.post.FavoritePost;
 import net.causw.adapter.persistence.post.LikePost;
@@ -55,6 +56,7 @@ public class PostService {
     private final FavoriteBoardRepository favoriteBoardRepository;
     private final LikePostRepository likePostRepository;
     private final FavoritePostRepository favoritePostRepository;
+    private final LikeChildCommentRepository likeChildCommentRepository;
     private final PageableFactory pageableFactory;
     private final Validator validator;
 
@@ -501,6 +503,7 @@ public class PostService {
                         comment.getChildCommentList().stream()
                                 .map(childComment -> DtoMapper.INSTANCE.toChildCommentResponseDto(
                                         childComment,
+                                        getNumOfChildCommentLikes(childComment),
                                         StatusUtil.isUpdatable(childComment, user),
                                         StatusUtil.isDeletable(childComment, user, post.getBoard()))
                                 )
@@ -510,6 +513,10 @@ public class PostService {
                         comment.getIsAnonymous()
                 )
         );
+    }
+
+    private Long getNumOfChildCommentLikes(ChildComment childComment) {
+        return likeChildCommentRepository.countByChildCommentId(childComment.getId());
     }
 
     private boolean isFavorite(String userId, String boardId) {

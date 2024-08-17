@@ -29,7 +29,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-08-17T15:49:46+0900",
+    date = "2024-08-17T21:57:41+0900",
     comments = "version: 1.4.2.Final, compiler: javac, environment: Java 17.0.10 (Oracle Corporation)"
 )
 @Component
@@ -168,8 +168,8 @@ public class DtoMapperImpl implements DtoMapper {
     }
 
     @Override
-    public ChildCommentResponseDto toChildCommentResponseDto(ChildComment entity, Boolean updatable, Boolean deletable) {
-        if ( entity == null && updatable == null && deletable == null ) {
+    public ChildCommentResponseDto toChildCommentResponseDto(ChildComment entity, Long numChildCommentLike, Boolean updatable, Boolean deletable) {
+        if ( entity == null && numChildCommentLike == null && updatable == null && deletable == null ) {
             return null;
         }
 
@@ -187,6 +187,9 @@ public class DtoMapperImpl implements DtoMapper {
             childCommentResponseDto.isDeleted( entity.getIsDeleted() );
             childCommentResponseDto.tagUserName( entity.getTagUserName() );
             childCommentResponseDto.refChildComment( entity.getRefChildComment() );
+        }
+        if ( numChildCommentLike != null ) {
+            childCommentResponseDto.numLike( numChildCommentLike );
         }
         if ( updatable != null ) {
             childCommentResponseDto.updatable( updatable );

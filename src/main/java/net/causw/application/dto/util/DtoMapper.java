@@ -81,7 +81,8 @@ public interface DtoMapper{
 
     @CommonWriterMappings
     @Mapping(target = "isAnonymous", source = "entity.isAnonymous")
-    ChildCommentResponseDto toChildCommentResponseDto(ChildComment entity, Boolean updatable, Boolean deletable);
+    @Mapping(target ="numLike", source = "numChildCommentLike")
+    ChildCommentResponseDto toChildCommentResponseDto(ChildComment entity, Long numChildCommentLike,  Boolean updatable, Boolean deletable);
 
     @Mapping(target = "boardId", source = "entity.id")
     @Mapping(target = "boardName", source = "entity.name")

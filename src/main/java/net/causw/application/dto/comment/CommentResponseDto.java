@@ -30,6 +30,9 @@ public class CommentResponseDto {
     @Schema(description = "익명글 여부", example = "False")
     private Boolean isAnonymous;
 
+    @Schema(description = "댓글 종아요 수", example = "10")
+    private Long numLike;
+
     private Long numChildComment;
     private List<ChildCommentResponseDto> childCommentList;
 

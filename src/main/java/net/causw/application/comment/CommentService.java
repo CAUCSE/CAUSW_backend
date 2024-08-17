@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
+import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.comment.LikeComment;
 import net.causw.adapter.persistence.page.PageableFactory;
@@ -51,6 +52,7 @@ public class CommentService {
     private final CircleMemberRepository circleMemberRepository;
     private final ChildCommentRepository childCommentRepository;
     private final LikeCommentRepository likeCommentRepository;
+    private final LikeChildCommentRepository likeChildCommentRepository;
     private final PageableFactory pageableFactory;
     private final Validator validator;
 
@@ -193,7 +195,7 @@ public class CommentService {
                 comment,
                 childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
                 comment.getChildCommentList().stream()
-                        .map(childComment -> DtoMapper.INSTANCE.toChildCommentResponseDto(childComment, StatusUtil.isUpdatable(childComment, user), StatusUtil.isDeletable(childComment, user, board)))
+                        .map(childComment -> DtoMapper.INSTANCE.toChildCommentResponseDto(childComment, getNumOfChildCommentLikes(childComment), StatusUtil.isUpdatable(childComment, user), StatusUtil.isDeletable(childComment, user, board)))
                         .collect(Collectors.toList()),
                 StatusUtil.isUpdatable(comment, user),
                 StatusUtil.isDeletable(comment, user, board)
@@ -260,4 +262,9 @@ public class CommentService {
                 )
         );
     }
+
+    private Long getNumOfChildCommentLikes(ChildComment childComment) {
+        return likeChildCommentRepository.countByChildCommentId(childComment.getId());
+    }
+
 }
