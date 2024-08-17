@@ -194,12 +194,21 @@ public class CommentService {
         return DtoMapper.INSTANCE.toCommentResponseDto(
                 comment,
                 childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
+                getNumOfCommentLikes(comment),
                 comment.getChildCommentList().stream()
                         .map(childComment -> DtoMapper.INSTANCE.toChildCommentResponseDto(childComment, getNumOfChildCommentLikes(childComment), StatusUtil.isUpdatable(childComment, user), StatusUtil.isDeletable(childComment, user, board)))
                         .collect(Collectors.toList()),
                 StatusUtil.isUpdatable(comment, user),
                 StatusUtil.isDeletable(comment, user, board)
         );
+    }
+
+    private Long getNumOfCommentLikes(Comment comment){
+        return likeCommentRepository.countByCommentId(comment.getId());
+    }
+
+    private Long getNumOfChildCommentLikes(ChildComment childComment) {
+        return likeChildCommentRepository.countByChildCommentId(childComment.getId());
     }
 
     private ValidatorBucket initializeValidator(User user, Post post) {
@@ -263,8 +272,6 @@ public class CommentService {
         );
     }
 
-    private Long getNumOfChildCommentLikes(ChildComment childComment) {
-        return likeChildCommentRepository.countByChildCommentId(childComment.getId());
-    }
+
 
 }

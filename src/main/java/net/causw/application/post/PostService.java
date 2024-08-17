@@ -5,6 +5,7 @@ import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.comment.ChildComment;
+import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.page.PageableFactory;
 import net.causw.adapter.persistence.post.FavoritePost;
 import net.causw.adapter.persistence.post.LikePost;
@@ -56,6 +57,7 @@ public class PostService {
     private final FavoriteBoardRepository favoriteBoardRepository;
     private final LikePostRepository likePostRepository;
     private final FavoritePostRepository favoritePostRepository;
+    private final LikeCommentRepository likeCommentRepository;
     private final LikeChildCommentRepository likeChildCommentRepository;
     private final PageableFactory pageableFactory;
     private final Validator validator;
@@ -500,6 +502,7 @@ public class PostService {
         ).map(comment -> CommentResponseDto.of(
                         comment,
                         childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
+                        getNumOfCommentLikes(comment),
                         comment.getChildCommentList().stream()
                                 .map(childComment -> DtoMapper.INSTANCE.toChildCommentResponseDto(
                                         childComment,
@@ -513,6 +516,10 @@ public class PostService {
                         comment.getIsAnonymous()
                 )
         );
+    }
+
+    private Long getNumOfCommentLikes(Comment comment){
+        return likeCommentRepository.countByCommentId(comment.getId());
     }
 
     private Long getNumOfChildCommentLikes(ChildComment childComment) {

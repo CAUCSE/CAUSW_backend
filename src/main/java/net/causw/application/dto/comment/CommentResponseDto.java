@@ -39,6 +39,7 @@ public class CommentResponseDto {
     public static CommentResponseDto of(
             Comment comment,
             Long numChildComment,
+            Long numCommentLike,
             List<ChildCommentResponseDto> childCommentList,
             boolean updatable,
             boolean deletable,
@@ -59,6 +60,7 @@ public class CommentResponseDto {
                 .numChildComment(numChildComment)
                 .childCommentList(childCommentList)
                 .isAnonymous(isAnonymous)
+                .numLike(numCommentLike)
                 .build();
     }
 }
