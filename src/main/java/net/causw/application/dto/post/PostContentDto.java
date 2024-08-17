@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ContentDto {
+public class PostContentDto {
     private String title;
     private String contentId;
 }

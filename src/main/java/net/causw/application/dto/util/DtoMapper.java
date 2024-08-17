@@ -11,7 +11,7 @@ import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.file.FileResponseDto;
 import net.causw.application.dto.post.BoardPostsResponseDto;
-import net.causw.application.dto.post.ContentDto;
+import net.causw.application.dto.post.PostContentDto;
 import net.causw.application.dto.post.PostResponseDto;
 import net.causw.application.dto.post.PostsResponseDto;
 import net.causw.domain.model.enums.Role;
@@ -111,8 +111,8 @@ public interface DtoMapper{
     @Mapping(target = "boardId", source = "board.id")
     @Mapping(target = "boardName", source = "board.name")
     @Mapping(target = "isDefault", source = "board.isDefault")
-    @Mapping(target = "contents", source = "contentDtos")
-    BoardMainResponseDto toBoardMainResponseDto(Board board, List<ContentDto> contentDtos);
+    @Mapping(target = "contents", source = "postContentDtos")
+    BoardMainResponseDto toBoardMainResponseDto(Board board, List<PostContentDto> postContentDtos);
 
     // Circle
 
@@ -122,6 +122,6 @@ public interface DtoMapper{
     //Post
     @Mapping(target = "title", source = "post.title")
     @Mapping(target = "contentId", source = "post.id")
-    ContentDto toContentDto(Post post);
+    PostContentDto toContentDto(Post post);
 
 }

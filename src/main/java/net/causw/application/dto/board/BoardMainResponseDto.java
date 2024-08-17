@@ -5,10 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.causw.application.dto.post.ContentDto;
+import net.causw.application.dto.post.PostContentDto;
 
 import java.util.List;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -25,5 +24,5 @@ public class BoardMainResponseDto {
     private String boardName;
 
     @Schema(description = "최근 게시글 3개", example = "board_recent_post")
-    private List<ContentDto> contents;
+    private List<PostContentDto> contents;
 }
