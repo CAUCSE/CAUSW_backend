@@ -57,7 +57,7 @@ public class CommentService {
     @Transactional
     public CommentResponseDto createComment(User creator, CommentCreateRequestDto commentCreateDto) {
         Post post = getPost(commentCreateDto.getPostId());
-        Comment comment = Comment.of(commentCreateDto.getContent(), false, false,creator, post);
+        Comment comment = Comment.of(commentCreateDto.getContent(), false, commentCreateDto.getIsAnonymous(), creator, post);
 
         ValidatorBucket validatorBucket = initializeValidator(creator, post);
         validatorBucket.
