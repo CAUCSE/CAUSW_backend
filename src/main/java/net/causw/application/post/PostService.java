@@ -520,8 +520,8 @@ public class PostService {
                 post,
                 getNumOfPostLikes(post),
                 getNumOfPostFavorites(post),
-                StatusUtil.isUpdatable(post, user),
-                StatusUtil.isDeletable(post, user, post.getBoard())
+                StatusUtil.isUpdatable(post, user, isPostHasComment(post.getId())),
+                StatusUtil.isDeletable(post, user, post.getBoard(), isPostHasComment(post.getId()))
         );
     }
 
@@ -532,8 +532,8 @@ public class PostService {
                 postRepository.countAllCommentByPost_Id(post.getId()),
                 getNumOfPostLikes(post),
                 getNumOfPostFavorites(post),
-                StatusUtil.isUpdatable(post, user),
-                StatusUtil.isDeletable(post, user, post.getBoard())
+                StatusUtil.isUpdatable(post, user, isPostHasComment(post.getId())),
+                StatusUtil.isDeletable(post, user, post.getBoard(), isPostHasComment(post.getId()))
         );
     }
 
@@ -581,6 +581,10 @@ public class PostService {
                 .stream()
                 .filter(favoriteBoard -> !favoriteBoard.getBoard().getIsDeleted())
                 .anyMatch(favoriteboard -> favoriteboard.getBoard().getId().equals(boardId));
+    }
+
+    private boolean isPostHasComment(String postId){
+        return commentRepository.existsByPostIdAndIsDeletedFalse(postId);
     }
 
     private Post getPost(String postId) {
