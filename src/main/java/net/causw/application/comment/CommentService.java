@@ -186,7 +186,7 @@ public class CommentService {
         likeCommentRepository.save(likeComment);
     }
 
-    private boolean isCommentAlreadyLike(User user, String commentId) {
+    private Boolean isCommentAlreadyLike(User user, String commentId) {
         return likeCommentRepository.existsByCommentIdAndUserId(commentId, user.getId());
     }
 

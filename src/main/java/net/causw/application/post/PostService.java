@@ -456,15 +456,15 @@ public class PostService {
         favoritePostRepository.save(favoritePost);
     }
 
-    private boolean isPostAlreadyLike(User user, String postId) {
+    private Boolean isPostAlreadyLike(User user, String postId) {
         return likePostRepository.existsByPostIdAndUserId(postId, user.getId());
     }
 
-    private boolean isPostAlreadyFavorite(User user, String postId) {
+    private Boolean isPostAlreadyFavorite(User user, String postId) {
         return favoritePostRepository.existsByPostIdAndUserId(postId, user.getId());
     }
 
-    private boolean isPostDeleted(Post post) {
+    private Boolean isPostDeleted(Post post) {
         return post.getIsDeleted();
     }
 
@@ -576,14 +576,14 @@ public class PostService {
         return likeChildCommentRepository.countByChildCommentId(childComment.getId());
     }
 
-    private boolean isFavorite(String userId, String boardId) {
+    private Boolean isFavorite(String userId, String boardId) {
         return favoriteBoardRepository.findByUser_Id(userId)
                 .stream()
                 .filter(favoriteBoard -> !favoriteBoard.getBoard().getIsDeleted())
                 .anyMatch(favoriteboard -> favoriteboard.getBoard().getId().equals(boardId));
     }
 
-    private boolean isPostHasComment(String postId){
+    private Boolean isPostHasComment(String postId){
         return commentRepository.existsByPostIdAndIsDeletedFalse(postId);
     }
 

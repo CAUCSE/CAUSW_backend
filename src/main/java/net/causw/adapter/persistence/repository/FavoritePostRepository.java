@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface FavoritePostRepository extends JpaRepository<FavoritePost, String> {
-    boolean existsByPostIdAndUserId(String postId, String userId);
+    Boolean existsByPostIdAndUserId(String postId, String userId);
 
     Optional<FavoritePost> findByPostIdAndUserId(String postId, String userId);
 

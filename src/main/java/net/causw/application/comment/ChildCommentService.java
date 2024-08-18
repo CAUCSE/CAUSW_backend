@@ -187,7 +187,7 @@ public class ChildCommentService {
         likeChildCommentRepository.save(likeChildComment);
     }
 
-    private boolean isChildCommentAlreadyLike(User user, String childCommentId) {
+    private Boolean isChildCommentAlreadyLike(User user, String childCommentId) {
         return likeChildCommentRepository.existsByChildCommentIdAndUserId(childCommentId, user.getId());
     }
 

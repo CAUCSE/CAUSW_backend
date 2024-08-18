@@ -8,11 +8,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, String> {
     Page<Comment> findByPost_IdOrderByCreatedAt(String postId, Pageable pageable);
 
-    boolean existsByPostIdAndIsDeletedFalse(String postId);
+    Boolean existsByPostIdAndIsDeletedFalse(String postId);
 
     @Query(value = "select * from tb_comment as co " +
             "join tb_post as p on co.post_id = p.id " +
