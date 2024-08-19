@@ -1255,6 +1255,19 @@ public class UserService {
                 .build();
     }
 
+    public UserFindIdResponseDto findUserId(UserFindIdRequestDto userIdFindRequestDto) {
+        User user = this.userRepository.findByStudentIdAndNameAndPhoneNumber(
+                userIdFindRequestDto.getStudentId(),
+                userIdFindRequestDto.getName(),
+                userIdFindRequestDto.getPhoneNumber()
+        ).orElseThrow(() -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                MessageUtil.USER_NOT_FOUND
+        ));
+
+        return DtoMapper.INSTANCE.toUserfindIdResponseDto(user);
+    }
+
     private BoardResponseDto toBoardResponseDto(Board board, Role userRole) {
         List<String> roles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
         Boolean writable = roles.stream().anyMatch(str -> userRole.getValue().contains(str));
@@ -1286,4 +1299,6 @@ public class UserService {
                 )
         );
     }
+
+
 }

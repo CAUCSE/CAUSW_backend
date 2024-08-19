@@ -23,14 +23,16 @@ import net.causw.application.dto.post.PostResponseDto;
 import net.causw.application.dto.post.PostResponseDto.PostResponseDtoBuilder;
 import net.causw.application.dto.post.PostsResponseDto;
 import net.causw.application.dto.post.PostsResponseDto.PostsResponseDtoBuilder;
+import net.causw.application.dto.user.UserFindIdResponseDto;
+import net.causw.application.dto.user.UserFindIdResponseDto.UserFindIdResponseDtoBuilder;
 import net.causw.domain.model.enums.Role;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-07-30T16:39:50+0900",
-    comments = "version: 1.4.2.Final, compiler: javac, environment: Java 17.0.10 (Homebrew)"
+    date = "2024-08-14T14:36:43+0900",
+    comments = "version: 1.4.2.Final, compiler: javac, environment: Java 17.0.11 (Oracle Corporation)"
 )
 @Component
 public class DtoMapperImpl implements DtoMapper {
@@ -213,6 +215,19 @@ public class DtoMapperImpl implements DtoMapper {
         }
 
         return boardPostsResponseDto.build();
+    }
+
+    @Override
+    public UserFindIdResponseDto toUserfindIdResponseDto(User entity) {
+        if ( entity == null ) {
+            return null;
+        }
+
+        UserFindIdResponseDtoBuilder userFindIdResponseDto = UserFindIdResponseDto.builder();
+
+        userFindIdResponseDto.email( entity.getEmail() );
+
+        return userFindIdResponseDto.build();
     }
 
     @Override
