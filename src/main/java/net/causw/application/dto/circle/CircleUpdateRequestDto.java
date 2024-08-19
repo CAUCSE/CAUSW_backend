@@ -16,4 +16,10 @@ public class CircleUpdateRequestDto {
 
     @Schema(description = "동아리 설명", example = "ICT위원회는 동문 네트워크 서비스를 만드는 특별기구이자 동아리입니다.")
     private String description;
+
+    @Schema(description = "동아리 회비", example = "5000")
+    private Integer circleTax;
+
+    @Schema(description = "동아리 모집인원", example = "10")
+    private Integer recruitMembers;
 }

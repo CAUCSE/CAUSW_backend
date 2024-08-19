@@ -202,6 +202,8 @@ public class CircleService {
                 circleCreateRequestDto.getMainImage(),
                 circleCreateRequestDto.getDescription(),
                 false,
+                circleCreateRequestDto.getCircleTax(),
+                circleCreateRequestDto.getRecruitMembers(),
                 leader
         );
 
@@ -275,16 +277,6 @@ public class CircleService {
             );
         }
 
-        String mainImage = circleUpdateRequestDto.getMainImage();
-        if (mainImage.isEmpty()) {
-            mainImage = circle.getMainImage();
-        }
-        circle.update(
-                circleUpdateRequestDto.getName(),
-                mainImage,
-                circleUpdateRequestDto.getDescription()
-        );
-
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         validatorBucket
@@ -307,6 +299,18 @@ public class CircleService {
 
         validatorBucket
                 .validate();
+
+        String mainImage = circleUpdateRequestDto.getMainImage();
+        if (mainImage.isEmpty()) {
+            mainImage = circle.getMainImage();
+        }
+        circle.update(
+                circleUpdateRequestDto.getName(),
+                circleUpdateRequestDto.getDescription(),
+                mainImage,
+                circleUpdateRequestDto.getCircleTax(),
+                circleUpdateRequestDto.getRecruitMembers()
+        );
 
         return this.toCircleResponseDto(updateCircle(circleId, circle));
     }
@@ -605,7 +609,6 @@ public class CircleService {
 
 
 
-    // Entity or Entity Information CRUD
 
     // Entity or Entity Information CRUD - Circle
     private Circle getCircle(String circleId) {
@@ -620,7 +623,7 @@ public class CircleService {
     private Circle updateCircle(String id, Circle circle) {
         return circleRepository.findById(id).map(
                 srcCircle -> {
-                    srcCircle.update(circle.getDescription(), circle.getName(), circle.getMainImage());
+                    srcCircle.update(circle.getName(), circle.getDescription(), circle.getMainImage(), circle.getCircleTax(), circle.getRecruitMembers());
                     return circleRepository.save(srcCircle);
                 }
         ).orElseThrow(
