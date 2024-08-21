@@ -57,25 +57,41 @@ public interface DtoMapper{
     // Dto writerName 필드에 post.writer.name을 삽입한다는 의미입니다.
     @Mapping(target = "writerName", source = "entity.writer.name")
     @Mapping(target = "writerAdmissionYear", source = "entity.writer.admissionYear")
-    PostsResponseDto toPostsResponseDto(Post entity, Long numComment);
+    @Mapping(target = "isAnonymous", source = "entity.isAnonymous")
+    @Mapping(target = "isQuestion", source = "entity.isQuestion")
+    @Mapping(target = "numLike", source = "numPostLike")
+    @Mapping(target = "numFavorite", source = "numPostFavorite")
+    PostsResponseDto toPostsResponseDto(Post entity, Long numComment, Long numPostLike, Long numPostFavorite);
 
     @CommonWriterMappings
     @Mapping(target = "boardName", source = "entity.board.name")
     @Mapping(target = "attachmentList", source = "entity.attachments", qualifiedByName = "attachmentsToStringList")
-    PostResponseDto toPostResponseDto(Post entity, Boolean updatable, Boolean deletable);
+    @Mapping(target = "isAnonymous", source = "entity.isAnonymous")
+    @Mapping(target = "isQuestion", source = "entity.isQuestion")
+    @Mapping(target = "numLike", source = "numPostLike")
+    @Mapping(target = "numFavorite", source = "numPostFavorite")
+    PostResponseDto toPostResponseDto(Post entity, Long numPostLike, Long numPostFavorite,  Boolean updatable, Boolean deletable);
 
     @CommonWriterMappings
     @Mapping(target = "boardName", source = "entity.board.name")
     @Mapping(target = "attachmentList", source = "entity.attachments", qualifiedByName = "attachmentsToStringList")
     @Mapping(target = "content", source = "entity.content")
-    PostResponseDto toPostResponseDtoExtended(Post entity, Page<CommentResponseDto> commentList, Long numComment, Boolean updatable, Boolean deletable);
+    @Mapping(target = "isAnonymous", source = "entity.isAnonymous")
+    @Mapping(target = "isQuestion", source = "entity.isQuestion")
+    @Mapping(target = "numLike", source = "numPostLike")
+    @Mapping(target = "numFavorite", source = "numPostFavorite")
+    PostResponseDto toPostResponseDtoExtended(Post entity, Page<CommentResponseDto> commentList, Long numComment, Long numPostLike, Long numPostFavorite, Boolean updatable, Boolean deletable);
 
     @CommonWriterMappings
     @Mapping(target = "postId", source = "entity.post.id")
-    CommentResponseDto toCommentResponseDto(Comment entity, Long numChildComment, List<ChildCommentResponseDto> childCommentList, Boolean updatable, Boolean deletable);
+    @Mapping(target = "isAnonymous", source = "entity.isAnonymous")
+    @Mapping(target ="numLike", source = "numCommentLike")
+    CommentResponseDto toCommentResponseDto(Comment entity, Long numChildComment, Long numCommentLike, List<ChildCommentResponseDto> childCommentList, Boolean updatable, Boolean deletable);
 
     @CommonWriterMappings
-    ChildCommentResponseDto toChildCommentResponseDto(ChildComment entity, Boolean updatable, Boolean deletable);
+    @Mapping(target = "isAnonymous", source = "entity.isAnonymous")
+    @Mapping(target ="numLike", source = "numChildCommentLike")
+    ChildCommentResponseDto toChildCommentResponseDto(ChildComment entity, Long numChildCommentLike,  Boolean updatable, Boolean deletable);
 
     @Mapping(target = "boardId", source = "entity.id")
     @Mapping(target = "boardName", source = "entity.name")

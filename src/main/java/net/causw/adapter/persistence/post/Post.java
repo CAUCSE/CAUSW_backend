@@ -36,6 +36,14 @@ public class Post extends BaseEntity {
     @ColumnDefault("false")
     private Boolean isDeleted;
 
+    @Column(name = "is_anonymous", nullable = false)
+    @ColumnDefault("false")
+    private Boolean isAnonymous;
+
+    @Column(name = "is_question", nullable = false)
+    @ColumnDefault("false")
+    private Boolean isQuestion;
+
     @ManyToOne(targetEntity = Board.class)
     @JoinColumn(name = "board_id", nullable = false)
     private Board board;
@@ -75,10 +83,12 @@ public class Post extends BaseEntity {
             String content,
             User writer,
             Boolean isDeleted,
+            Boolean isAnonymous,
+            Boolean isQuestion,
             Board board,
             String attachments
     ) {
-        return new Post(title, content, attachments, writer, isDeleted, board);
+        return new Post(title, content, attachments, writer, isDeleted, isAnonymous, isQuestion, board);
     }
 
     public void update(String title, String content, String attachments) {
