@@ -31,6 +31,15 @@ public class MessageUtil {
     public static final String CIRCLE_DUPLICATE_NAME = "중복된 소모임 이름입니다.";
     public static final String NEW_CIRCLE_LEADER_NOT_FOUND = "등록할 동아리장을 다시 확인해주세요.";
     public static final String CIRCLE_NOT_FOUND = "해당 동아리를 찾을 수 없습니다.";
+    public static final String POST_DELETED = "삭제된 게시물입니다.";
+
+    // Like & favorite
+    public static final String POST_ALREADY_LIKED = "좋아요를 이미 누른 게시글 입니다.";
+    public static final String POST_ALREADY_FAVORITED = "즐겨찾기를 이미 누른 게시글 입니다.";
+    public static final String COMMENT_ALREADY_LIKED = "좋아요를 이미 누른 댓글입니다.";
+    public static final String CHILD_COMMENT_ALREADY_LIKED = "좋아요를 이미 누른 대댓글입니다.";
+    public static final String FAVORITE_POST_NOT_FOUND = "즐겨찾기가 되어 있지 않습니다.";
+    public static final String FAVORITE_POST_ALREADY_DELETED = "즐겨찾기가 이미 취소되어 있습니다.";
 
     // Locker
     public static final String LOCKER_WRONG_POSITION = "등록된 사물함 위치가 아닙니다.";
@@ -55,7 +64,8 @@ public class MessageUtil {
     public static final String EMAIL_INVALID = "잘못된 이메일입니다.";
     public static final String USER_ALREADY_APPLY = "이미 신청한 사용자 입니다.";
     public static final String NO_APPLICATION = "신청서를 작성하지 않았습니다.";
-    public static final String CONCURRENT_JOB_IMPOSSIBLE = "부회장은 동아리장 겸직이 불가합니다.";
+    public static final String CONCURRENT_JOB_IMPOSSIBLE = "겸직이 불가합니다.";
+    public static final String NICKNAME_ALREADY_EXIST = "이미 존재하는 닉네임입니다.";
 
     // Flag
     public static final String FLAG_UPDATE_FAILED = "플래그 업데이트에 실패했습니다.";

@@ -41,9 +41,16 @@ public abstract class DomainModelMapper {
                 user.getStudentId(),
                 user.getAdmissionYear(),
                 user.getRoles(),
-                user.getProfileImage(),
+                user.getProfileImages(),
                 user.getRefreshToken(),
-                user.getState()
+                user.getState(),
+                user.getNickname(),
+                user.getMajor(),
+                user.getAcademicStatus(),
+                user.getCurrentCompletedSemester(),
+                user.getGraduationYear(),
+                user.getGraduationMonth(),
+                user.getPhoneNumber()
         );
     }
 

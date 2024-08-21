@@ -4,16 +4,16 @@ import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.post.Post;
-import net.causw.application.dto.board.BoardMainResponseDto;
+import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.board.BoardOfCircleResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.file.FileResponseDto;
 import net.causw.application.dto.post.BoardPostsResponseDto;
-import net.causw.application.dto.post.PostContentDto;
 import net.causw.application.dto.post.PostResponseDto;
 import net.causw.application.dto.post.PostsResponseDto;
+import net.causw.application.dto.user.UserFindIdResponseDto;
 import net.causw.domain.model.enums.Role;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 @Target({ElementType.METHOD})
 @Mapping(target = "writerName", source = "entity.writer.name")
 @Mapping(target = "writerAdmissionYear", source = "entity.writer.admissionYear")
-@Mapping(target = "writerProfileImage", source = "entity.writer.profileImage")
+@Mapping(target = "writerProfileImages", source = "entity.writer.profileImages")
 @interface CommonWriterMappings {}
 
 @Mapper(componentModel = "spring")
@@ -57,25 +57,41 @@ public interface DtoMapper{
     // Dto writerName 필드에 post.writer.name을 삽입한다는 의미입니다.
     @Mapping(target = "writerName", source = "entity.writer.name")
     @Mapping(target = "writerAdmissionYear", source = "entity.writer.admissionYear")
-    PostsResponseDto toPostsResponseDto(Post entity, Long numComment);
+    @Mapping(target = "isAnonymous", source = "entity.isAnonymous")
+    @Mapping(target = "isQuestion", source = "entity.isQuestion")
+    @Mapping(target = "numLike", source = "numPostLike")
+    @Mapping(target = "numFavorite", source = "numPostFavorite")
+    PostsResponseDto toPostsResponseDto(Post entity, Long numComment, Long numPostLike, Long numPostFavorite);
 
     @CommonWriterMappings
     @Mapping(target = "boardName", source = "entity.board.name")
     @Mapping(target = "attachmentList", source = "entity.attachments", qualifiedByName = "attachmentsToStringList")
-    PostResponseDto toPostResponseDto(Post entity, Boolean updatable, Boolean deletable);
+    @Mapping(target = "isAnonymous", source = "entity.isAnonymous")
+    @Mapping(target = "isQuestion", source = "entity.isQuestion")
+    @Mapping(target = "numLike", source = "numPostLike")
+    @Mapping(target = "numFavorite", source = "numPostFavorite")
+    PostResponseDto toPostResponseDto(Post entity, Long numPostLike, Long numPostFavorite,  Boolean updatable, Boolean deletable);
 
     @CommonWriterMappings
     @Mapping(target = "boardName", source = "entity.board.name")
     @Mapping(target = "attachmentList", source = "entity.attachments", qualifiedByName = "attachmentsToStringList")
     @Mapping(target = "content", source = "entity.content")
-    PostResponseDto toPostResponseDtoExtended(Post entity, Page<CommentResponseDto> commentList, Long numComment, Boolean updatable, Boolean deletable);
+    @Mapping(target = "isAnonymous", source = "entity.isAnonymous")
+    @Mapping(target = "isQuestion", source = "entity.isQuestion")
+    @Mapping(target = "numLike", source = "numPostLike")
+    @Mapping(target = "numFavorite", source = "numPostFavorite")
+    PostResponseDto toPostResponseDtoExtended(Post entity, Page<CommentResponseDto> commentList, Long numComment, Long numPostLike, Long numPostFavorite, Boolean updatable, Boolean deletable);
 
     @CommonWriterMappings
     @Mapping(target = "postId", source = "entity.post.id")
-    CommentResponseDto toCommentResponseDto(Comment entity, Long numChildComment, List<ChildCommentResponseDto> childCommentList, Boolean updatable, Boolean deletable);
+    @Mapping(target = "isAnonymous", source = "entity.isAnonymous")
+    @Mapping(target ="numLike", source = "numCommentLike")
+    CommentResponseDto toCommentResponseDto(Comment entity, Long numChildComment, Long numCommentLike, List<ChildCommentResponseDto> childCommentList, Boolean updatable, Boolean deletable);
 
     @CommonWriterMappings
-    ChildCommentResponseDto toChildCommentResponseDto(ChildComment entity, Boolean updatable, Boolean deletable);
+    @Mapping(target = "isAnonymous", source = "entity.isAnonymous")
+    @Mapping(target ="numLike", source = "numChildCommentLike")
+    ChildCommentResponseDto toChildCommentResponseDto(ChildComment entity, Long numChildCommentLike,  Boolean updatable, Boolean deletable);
 
     @Mapping(target = "boardId", source = "entity.id")
     @Mapping(target = "boardName", source = "entity.name")
@@ -87,6 +103,8 @@ public interface DtoMapper{
      */
 
     // User
+    @Mapping(target = "email", source = "entity.email")
+    UserFindIdResponseDto toUserfindIdResponseDto(User entity);
 
 
     // Board
@@ -108,20 +126,10 @@ public interface DtoMapper{
     @Mapping(target = "postNumComment", source = "numComment")
     BoardOfCircleResponseDto toBoardOfCircleResponseDto(Board entity, Long numComment, boolean writable);
 
-    @Mapping(target = "boardId", source = "board.id")
-    @Mapping(target = "boardName", source = "board.name")
-    @Mapping(target = "isDefault", source = "board.isDefault")
-    @Mapping(target = "contents", source = "postContentDtos")
-    BoardMainResponseDto toBoardMainResponseDto(Board board, List<PostContentDto> postContentDtos);
-
     // Circle
 
 
     // Locker
 
-    //Post
-    @Mapping(target = "title", source = "post.title")
-    @Mapping(target = "contentId", source = "post.id")
-    PostContentDto toPostContentDto(Post post);
 
 }

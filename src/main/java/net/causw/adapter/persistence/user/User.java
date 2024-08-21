@@ -5,6 +5,7 @@ import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.locker.Locker;
+import net.causw.domain.model.enums.AcademicStatus;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.model.enums.UserState;
@@ -26,6 +27,9 @@ public class User extends BaseEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
+    @Column(name = "phone_number", nullable = true)  // 일단 null 가능하게 설정(false 로 하면 기존 데이터와 충돌 예상)
+    private String phoneNumber;
+
     @Column(name = "password", nullable = false)
     private String password;
 
@@ -35,13 +39,34 @@ public class User extends BaseEntity {
     @Column(name = "admission_year", nullable = false)
     private Integer admissionYear;
 
+    // 새로 추가한 필드들
+    @Column(name = "nickname",unique = true, nullable = true)
+    private String nickname;
+
+    @Column(name = "major", nullable = true)
+    private String major;
+
+    @Column(name = "academic_status", nullable = true)
+    @Enumerated(EnumType.STRING)
+    private AcademicStatus academicStatus;
+
+    @Column(name = "current_completed_semester", nullable = true)
+    private Integer currentCompletedSemester;
+
+    @Column(name = "graduation_year", nullable = true)
+    private Integer graduationYear;
+
+    @Column(name = "graduation_month", nullable = true)
+    private Integer graduationMonth;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private Set<Role> roles;
 
-    @Column(name = "profile_image", length = 500, nullable = true)
-    private String profileImage;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Column(name = "profile_images", length = 500, nullable = true)
+    private List<String> profileImages;
 
     @Column(name = "refresh_token", nullable = true)
     private String refreshToken;
@@ -66,7 +91,7 @@ public class User extends BaseEntity {
             String studentId,
             Integer admissionYear,
             Set<Role> roles,
-            String profileImage,
+            List<String> profileImages,
             UserState state
     ) {
         super(id);
@@ -76,7 +101,7 @@ public class User extends BaseEntity {
         this.studentId = studentId;
         this.admissionYear = admissionYear;
         this.roles = roles;
-        this.profileImage = profileImage;
+        this.profileImages = profileImages;
         this.state = state;
     }
 
@@ -89,7 +114,7 @@ public class User extends BaseEntity {
                 userDomainModel.getStudentId(),
                 userDomainModel.getAdmissionYear(),
                 userDomainModel.getRoles(),
-                userDomainModel.getProfileImage(),
+                userDomainModel.getProfileImages(),
                 userDomainModel.getState()
         );
     }
