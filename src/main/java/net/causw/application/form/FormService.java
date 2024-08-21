@@ -3,19 +3,19 @@ package net.causw.application.form;
 import jakarta.validation.Validator;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
+import net.causw.adapter.persistence.form.Option;
 import net.causw.adapter.persistence.repository.CircleMemberRepository;
 import net.causw.adapter.persistence.repository.CircleRepository;
+import net.causw.application.dto.form.OptionResponseDto;
 import net.causw.application.dto.user.UserResponseDto;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.CircleMemberStatus;
-import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.UserEqualValidator;
-import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.ValidatorBucket;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.form.Form;
@@ -30,7 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -100,6 +100,17 @@ public class FormService {
         formRepository.save(form);
 
         return toFormResponseDto(form);
+    }
+
+    @Transactional
+    public void deleteForm(String formId, User deleter){
+        Form form = getForm(formId);
+
+        //삭제 권한은... 작성자랑... 관리자? 정도
+        //어차피 폼 생성은 관리자, 동아리장만 가능
+
+        form.setIsDeleted(true);
+        formRepository.save(form);
     }
 
     @Transactional(readOnly = true)

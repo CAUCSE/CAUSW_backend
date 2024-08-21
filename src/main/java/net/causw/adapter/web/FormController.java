@@ -23,6 +23,7 @@ public class FormController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("@securityService.activeAndNotNoneUser and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT', 'LEADER_CIRCLE')")
     public FormResponseDto createForm(
             @RequestBody FormCreateRequestDto formCreateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -34,12 +35,21 @@ public class FormController {
     @GetMapping("/{formId}")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("@securityService.activeAndNotNoneUser")
-    public FormResponseDto getForm(@PathVariable(name = "formId") String formId) {
+    public FormResponseDto findForm(@PathVariable(name = "formId") String formId) {
         if (!securityService.hasAccessToForm(formId)) {
             throw new UnauthorizedException(ErrorCode.API_NOT_ACCESSIBLE, MessageUtil.API_NOT_ACCESSIBLE);
         }
-        return formService.getForm(formId);
+        return formService.findForm(formId);
     }
 
+    @DeleteMapping("/{formId}")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@securityService.activeAndNotNoneUser and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT', 'LEADER_CIRCLE')")
+    public void deleteForm(
+            @PathVariable(name = "formId") String formId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ){
+        formService.deleteForm(formId, userDetails.getUser());
+    }
 
 }
