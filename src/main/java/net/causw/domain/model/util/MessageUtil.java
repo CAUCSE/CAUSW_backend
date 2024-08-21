@@ -64,7 +64,7 @@ public class MessageUtil {
     public static final String EMAIL_INVALID = "잘못된 이메일입니다.";
     public static final String USER_ALREADY_APPLY = "이미 신청한 사용자 입니다.";
     public static final String NO_APPLICATION = "신청서를 작성하지 않았습니다.";
-    public static final String CONCURRENT_JOB_IMPOSSIBLE = "부회장은 동아리장 겸직이 불가합니다.";
+    public static final String CONCURRENT_JOB_IMPOSSIBLE = "겸직이 불가합니다.";
     public static final String NICKNAME_ALREADY_EXIST = "이미 존재하는 닉네임입니다.";
 
     // Flag

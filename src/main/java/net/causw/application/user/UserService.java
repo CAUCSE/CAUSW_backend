@@ -523,6 +523,27 @@ public class UserService {
         return DuplicatedCheckResponseDto.from(userFoundByEmail.isPresent());
     }
 
+    /**
+     * 닉네임 중복 확인 메소드
+     *
+     * @param nickname
+     * @return DuplicatedCheckResponseDto
+     */
+    @Transactional(readOnly = true)
+    public DuplicatedCheckResponseDto isDuplicatedNickname(String nickname) {
+        Optional<User> userFoundByNickname = userRepository.findByNickname(nickname);
+        if (userFoundByNickname.isPresent()) {
+            UserState state = userFoundByNickname.get().getState();
+            if (state.equals(UserState.INACTIVE) || state.equals(UserState.DROP)) {
+                throw new BadRequestException(
+                        ErrorCode.ROW_ALREADY_EXIST,
+                        MessageUtil.USER_ALREADY_APPLY
+                );
+            }
+        }
+        return DuplicatedCheckResponseDto.from(userFoundByNickname.isPresent());
+    }
+
     @Transactional
     public UserResponseDto update(User user, UserUpdateRequestDto userUpdateRequestDto) {
         Set<Role> roles = user.getRoles();
@@ -543,7 +564,7 @@ public class UserService {
         user.setName(userUpdateRequestDto.getName());
         user.setStudentId(userUpdateRequestDto.getStudentId());
         user.setAdmissionYear(userUpdateRequestDto.getAdmissionYear());
-        user.setProfileImage(userUpdateRequestDto.getProfileImage());
+        user.setProfileImages(userUpdateRequestDto.getProfileImages());
 
         // Validate the admission year range
         ValidatorBucket.of()
@@ -566,16 +587,16 @@ public class UserService {
             String granteeId,
             UserUpdateRoleRequestDto userUpdateRoleRequestDto
     ) {
-        // Load the user data from input grantor and grantee ids.
+        // 위임인의 권한을 모두 조회
         Set<Role> roles = grantor.getRoles();
 
+        // 피위임인의 Id로 피위임인 조회
         User grantee = userRepository.findById(granteeId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.USER_NOT_FOUND
                 )
         );
-
 
         /* Validate the role
          * 1) Combination of grantor role and the role to be granted must be acceptable
@@ -591,153 +612,195 @@ public class UserService {
                 ))
                 .validate();
 
+        // 학생회장, 동아리장, 관리자만 권한 위임 가능
+        if (roles.contains(Role.PRESIDENT) || roles.contains(Role.LEADER_CIRCLE) || roles.contains(Role.ADMIN)) {
+            // 위임인이 자신의 권한을 위임하는 경우
+            if (roles.contains(userUpdateRoleRequestDto.getRole())) {
+                String circleId = "";
 
-        if (roles.contains(userUpdateRoleRequestDto.getRole())){
-            //동아리장
-            String circleId = "";
-            if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)) {
-                circleId = userUpdateRoleRequestDto.getCircleId()
-                        .orElseThrow(() -> new BadRequestException(
-                                ErrorCode.INVALID_PARAMETER,
-                                MessageUtil.CIRCLE_ID_REQUIRED_FOR_LEADER_DELEGATION
-                        ));
-
-                //동아리가 존재하고 본인 동아리가 맞는지 circleid로 circle 조회하고
-                Circle circle = circleRepository.findByIdAndIsDeletedIsFalse(circleId)
-                        .orElseThrow(() -> new BadRequestException(
-                                ErrorCode.ROW_DOES_NOT_EXIST,
-                                MessageUtil.CIRCLE_NOT_FOUND
-                        ));
-
-                boolean isCircleLeader = circle.getLeader().map(leader -> leader.equals(grantor)).orElse(false);
-
-                this.circleMemberRepository.findByUser_IdAndCircle_Id(granteeId, circleId)
-                        .orElseThrow(() -> new BadRequestException(
-                                ErrorCode.ROW_DOES_NOT_EXIST,
-                                MessageUtil.CIRCLE_MEMBER_NOT_FOUND
-                        ));
-
-                if(isCircleLeader){
-                    removeRole(grantor, userUpdateRoleRequestDto.getRole());
-                    addRole(grantee, userUpdateRoleRequestDto.getRole());
-                    updateLeader(circleId, grantee);
+                // 학생회장 권한을 위임하는 경우
+                if (userUpdateRoleRequestDto.getRole().equals(Role.PRESIDENT)) {
+                    updatePresident(grantee);
                 }
+                // 동아리장 권한을 위임하는 경우
+                else if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)) {
+                    // 피위임인이 학생회장 또는 부학생회장인지 확인 후 circleId 할당
+                    circleId = checkAuthAndCircleId(userUpdateRoleRequestDto, grantee);
 
-            }
-            //학생회장, 동문회장
-            else if(userUpdateRoleRequestDto.getRole().equals(Role.PRESIDENT)) {
-                List<User> councilList = this.userRepository.findByRoleAndState(Role.COUNCIL, UserState.ACTIVE);
-                if(!councilList.isEmpty()){
-                    councilList.forEach(user -> removeRole(user, Role.COUNCIL));
-                }
-                List<User> vicePresident = this.userRepository.findByRoleAndState(Role.VICE_PRESIDENT, UserState.ACTIVE);
-                if(!vicePresident.isEmpty()){
-                    vicePresident.forEach(user -> removeRole(user, Role.VICE_PRESIDENT));
-                }
-
-                removeRole(grantor,userUpdateRoleRequestDto.getRole());
-                addRole(grantee, userUpdateRoleRequestDto.getRole());
-
-            } else{
-                removeRole(grantor,userUpdateRoleRequestDto.getRole());
-                addRole(grantee, userUpdateRoleRequestDto.getRole());
-            }
-
-        }
-
-
-        /* 권한 위임
-         * 1. 권한 위임자가 학생회장이거나 관리자일 경우 이면서 넘겨받을 권한이 동아리장 일때
-         * 2. 동아리장 업데이트
-         * 3. 기존 동아리장의 동아리장 권한 박탈
-         * */
-        else if ((roles.contains(Role.PRESIDENT) || roles.equals(Role.ADMIN))
-                && (userUpdateRoleRequestDto.getRole().equals(Role.VICE_PRESIDENT))
-        ){
-            List<User> previousVicePresidents = userRepository.findByRoleAndState(Role.VICE_PRESIDENT, UserState.ACTIVE);
-            if (!previousVicePresidents.isEmpty()) {
-                previousVicePresidents.forEach(previousVicePresident -> {
-                    this.removeRole(previousVicePresident, Role.VICE_PRESIDENT);
-                });
-            }
-        }
-
-        else if ((roles.contains(Role.PRESIDENT) || roles.contains(Role.ADMIN))
-                && userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)
-        ) {
-            String circleId = userUpdateRoleRequestDto.getCircleId()
-                    .orElseThrow(() -> new BadRequestException(
-                            ErrorCode.INVALID_PARAMETER,
-                            MessageUtil.CIRCLE_ID_REQUIRED_FOR_LEADER_DELEGATION
-                    ));
-            if(grantee.getRoles().equals(Role.VICE_PRESIDENT)){
-                throw new UnauthorizedException(
-                        ErrorCode.API_NOT_ALLOWED,
-                        MessageUtil.CONCURRENT_JOB_IMPOSSIBLE
-
-                );
-            }
-
-            this.circleMemberRepository.findByUser_IdAndCircle_Id(granteeId, circleId)
-                    .ifPresentOrElse(
-                            circleMember ->
-                                    ValidatorBucket.of()
-                                            .consistOf(CircleMemberStatusValidator.of(
-                                                    circleMember.getStatus(),
-                                                    List.of(CircleMemberStatus.MEMBER)
-                                            )).validate(),
-                            () -> {
-                                throw new UnauthorizedException(
-                                        ErrorCode.NOT_MEMBER,
-                                        MessageUtil.CIRCLE_APPLY_INVALID
-                                );
-                            });
-
-            this.circleRepository.findById(circleId)
-                    .ifPresentOrElse(circle -> {
-                        circle.getLeader().ifPresent(leader -> {
-                            // Check if the leader is the leader of only one circle
-                            removeRole(leader, Role.LEADER_CIRCLE);
-                        });
-                        updateLeader(circle.getId(), grantee);
-                    }, () -> {
-                        throw new BadRequestException(
-                                ErrorCode.ROW_DOES_NOT_EXIST,
-                                MessageUtil.SMALL_CLUB_NOT_FOUND
-                        );
-                    });
-
-        }
-        //관리자가 권한을 삭제하는 경우
-        //학생회 권한 삭제일 때는 바로 삭제 가능
-        //학생회라면 삭제
-        else if ((roles.contains(Role.PRESIDENT) || roles.contains(Role.ADMIN))
-                && userUpdateRoleRequestDto.getRole().equals(Role.COMMON)
-        ) {
-            //TODO : 로직 수정 필요
-            if(grantee.getRoles().contains(Role.COUNCIL)){
-                return UserResponseDto.from(removeRole(grantee, Role.COMMON));
-            }
-        }
-        else if ((roles.contains(Role.PRESIDENT) || roles.contains(Role.ADMIN))
-                && userUpdateRoleRequestDto.getRole().equals(Role.LEADER_ALUMNI)
-        ) {
-            User previousLeaderAlumni = this.userRepository.findByRoleAndState(Role.LEADER_ALUMNI, UserState.ACTIVE)
-                    .stream().findFirst()
-                    .orElseThrow(
-                            () -> new InternalServerException(
-                                    ErrorCode.INTERNAL_SERVER,
-                                    MessageUtil.INTERNAL_SERVER_ERROR
+                    //동아리가 존재하면 본인 동아리가 맞는지 circleid로 circle 조회
+                    Circle circle = circleRepository.findByIdAndIsDeletedIsFalse(circleId)
+                            .orElseThrow(() -> new BadRequestException(
+                                    ErrorCode.ROW_DOES_NOT_EXIST,
+                                    MessageUtil.CIRCLE_NOT_FOUND
                             ));
 
-            removeRole(previousLeaderAlumni, Role.LEADER_ALUMNI);
+                    // 위임인이 해당 동아리의 동아리장인지 확인
+                    circle.getLeader().filter(leader -> leader.getId().equals(grantor.getId()))
+                            .orElseThrow(() -> new BadRequestException(
+                                    ErrorCode.ROW_DOES_NOT_EXIST,
+                                    MessageUtil.NOT_CIRCLE_LEADER
+                            ));
+
+                    // 피위임인이 해당 동아리 소속인지 확인
+                    this.circleMemberRepository.findByUser_IdAndCircle_Id(granteeId, circleId)
+                            .orElseThrow(() -> new BadRequestException(
+                                    ErrorCode.ROW_DOES_NOT_EXIST,
+                                    MessageUtil.CIRCLE_MEMBER_NOT_FOUND
+                            ));
+
+                    updateLeader(circleId, grantee); // 모두 맞다면 피위임인을 해당 동아리의 동아리장으로 위임
+                }
+                // 위임인의 권한 삭제 및 피위임인에게 권한 위임
+                removeRole(grantor, userUpdateRoleRequestDto.getRole());
+                updateRole(grantee, userUpdateRoleRequestDto.getRole());
+            }
+            else { // 타인의 권한을 위임하는 경우
+                // 학생회장, 관리자만 타인의 권한 위임 가능
+                if (roles.contains(Role.PRESIDENT) || roles.contains(Role.ADMIN)) {
+                    // 부학생회장 권한을 위임하는 경우
+                    if (userUpdateRoleRequestDto.getRole().equals(Role.VICE_PRESIDENT)) {
+                        updateVicePresident();
+
+                    // 동아리장 권한을 위임하는 경우
+                    } else if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)) {
+                        String circleId = checkAuthAndCircleId(userUpdateRoleRequestDto, grantee);
+
+                        // 피위임인이 해당 동아리 소속인지 확인
+                        this.circleMemberRepository.findByUser_IdAndCircle_Id(granteeId, circleId)
+                                .ifPresentOrElse(
+                                        circleMember ->
+                                                ValidatorBucket.of()
+                                                        .consistOf(CircleMemberStatusValidator.of(
+                                                                circleMember.getStatus(),
+                                                                List.of(CircleMemberStatus.MEMBER)
+                                                        )).validate(),
+                                        () -> {
+                                            throw new UnauthorizedException(
+                                                    ErrorCode.NOT_MEMBER,
+                                                    MessageUtil.CIRCLE_APPLY_INVALID
+                                            );
+                                        });
+
+                        // circleId로 동아리 조회
+                        this.circleRepository.findById(circleId)
+                                .ifPresentOrElse(circle -> {
+                                    circle.getLeader().ifPresent(leader -> { // 동아리장이 존재하는지 확인
+                                        // 존재하는 경우 기존 동아리장의 동아리장 권한 삭제
+                                        User previousLeaderCircle = leader;
+                                        updateLeader(circle.getId(), grantee);
+                                        removeRole(previousLeaderCircle, Role.LEADER_CIRCLE);
+                                    });
+                                }, () -> {
+                                    throw new BadRequestException(
+                                            ErrorCode.ROW_DOES_NOT_EXIST,
+                                            MessageUtil.SMALL_CLUB_NOT_FOUND
+                                    );
+                                });
+
+                    } // 동문회장 권한을 위임하는 경우
+                    else if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_ALUMNI)) {
+                        updateLeaderAlumni(grantee);
+
+                    } // 학년대표 또는 학생회 권한을 위임하는 경우
+                    else if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_1) || userUpdateRoleRequestDto.getRole().equals(Role.LEADER_2)
+                    || userUpdateRoleRequestDto.getRole().equals(Role.LEADER_3) || userUpdateRoleRequestDto.getRole().equals(Role.LEADER_4)
+                    || userUpdateRoleRequestDto.getRole().equals(Role.COUNCIL)) {
+                        Role role = userUpdateRoleRequestDto.getRole();
+                        updateRole(grantee, role);
+
+                    } // 일반 사용자로 전환하는 경우
+                    else if (userUpdateRoleRequestDto.getRole().equals(Role.COMMON)) {
+                        grantee.getRoles().clear(); // 피위임인의 권한을 모두 삭제
+                        addRole(grantee, Role.COMMON);
+
+                    } // 그 외의 권한은 위임 불가
+                    else {
+                        throw new UnauthorizedException(
+                                ErrorCode.API_NOT_ACCESSIBLE,
+                                MessageUtil.API_NOT_ACCESSIBLE
+                        );
+                    }
+                }
+            }
+            // grantor, grantee의 권한 확인 후 아무 권한이 없는 경우 COMMON 부여
+            if (grantor.getRoles().isEmpty()) {
+                addRole(grantor, Role.COMMON);
+            }
+            if (grantee.getRoles().isEmpty()) {
+                addRole(grantee, Role.COMMON);
+            }
+        }
+        else {
+            throw new UnauthorizedException(
+                    ErrorCode.API_NOT_ACCESSIBLE,
+                    MessageUtil.API_NOT_ACCESSIBLE
+            );
         }
 
-        /* Grant the role
-         * The linked updating process is performed on previous delegation process
-         * Therefore, the updating for the grantee is performed in this process
-         */
         return UserResponseDto.from(this.updateRole(grantee, userUpdateRoleRequestDto.getRole()));
+    }
+
+    private String checkAuthAndCircleId(UserUpdateRoleRequestDto userUpdateRoleRequestDto, User grantee) {
+        String circleId;
+        // 학생회장, 부학생회장은 동아리장 겸직 불가
+        if(grantee.getRoles().equals(Role.VICE_PRESIDENT) || grantee.getRoles().equals(Role.PRESIDENT)){
+            throw new UnauthorizedException(
+                    ErrorCode.API_NOT_ALLOWED,
+                    MessageUtil.CONCURRENT_JOB_IMPOSSIBLE
+            );
+        }
+
+        circleId = userUpdateRoleRequestDto.getCircleId()
+                .orElseThrow(() -> new BadRequestException(
+                        ErrorCode.INVALID_PARAMETER,
+                        MessageUtil.CIRCLE_ID_REQUIRED_FOR_LEADER_DELEGATION
+                ));
+        return circleId;
+    }
+
+    private void updateLeaderAlumni(User grantee) {
+        // 기존 동문회장 조회
+        User previousLeaderAlumni = this.userRepository.findByRoleAndState(Role.LEADER_ALUMNI, UserState.ACTIVE)
+                .stream().findFirst()
+                .orElseThrow(
+                        () -> new InternalServerException(
+                                ErrorCode.INTERNAL_SERVER,
+                                MessageUtil.INTERNAL_SERVER_ERROR
+                        ));
+
+        removeRole(previousLeaderAlumni, Role.LEADER_ALUMNI); // 기존 동문회장의 동문회장 권한 삭제
+        updateRole(grantee, Role.LEADER_ALUMNI);
+    }
+
+    private void updateVicePresident() {
+        // 부학생회장 리스트 조회 후 부학생회장 권한 삭제
+        List<User> previousVicePresidents = userRepository.findByRoleAndState(Role.VICE_PRESIDENT, UserState.ACTIVE);
+        if (!previousVicePresidents.isEmpty()) {
+            previousVicePresidents.forEach(previousVicePresident -> {
+                this.removeRole(previousVicePresident, Role.VICE_PRESIDENT);
+            });
+        }
+    }
+
+    private void updatePresident(User grantee) {
+        if (!grantee.getRoles().contains(Role.COMMON)) {
+            throw new UnauthorizedException(
+                    ErrorCode.API_NOT_ALLOWED,
+                    MessageUtil.CONCURRENT_JOB_IMPOSSIBLE
+            );
+        }
+
+        // 학생회 리스트 조회 후 학생회 권한 삭제
+        List<User> councilList = this.userRepository.findByRoleAndState(Role.COUNCIL, UserState.ACTIVE);
+        if (!councilList.isEmpty()) {
+            councilList.forEach(user -> removeRole(user, Role.COUNCIL));
+        }
+
+        // 부학생회장 리스트 조회 후 부학생회장 권한 삭제
+        List<User> vicePresident = this.userRepository.findByRoleAndState(Role.VICE_PRESIDENT, UserState.ACTIVE);
+        if (!vicePresident.isEmpty()) {
+            vicePresident.forEach(user -> removeRole(user, Role.VICE_PRESIDENT));
+        }
     }
 
     //remove는 그냥 역할을 지우기만 한다. (역할이 아무것도 없어지면 common을 추가한다)
@@ -746,7 +809,7 @@ public class UserService {
         Set<Role> roles = targetUser.getRoles();
         if(targetRole.equals(Role.LEADER_CIRCLE)){
             List<Circle> ownCircles = circleRepository.findByLeader_Id(targetUser.getId());
-            if(ownCircles.size() == 1) roles.remove(targetRole);
+            if(ownCircles.size() == 0) roles.remove(targetRole);
         } else{
             roles.remove(targetRole);
         }
@@ -1213,6 +1276,19 @@ public class UserService {
                 .build();
     }
 
+    public UserFindIdResponseDto findUserId(UserFindIdRequestDto userIdFindRequestDto) {
+        User user = this.userRepository.findByStudentIdAndNameAndPhoneNumber(
+                userIdFindRequestDto.getStudentId(),
+                userIdFindRequestDto.getName(),
+                userIdFindRequestDto.getPhoneNumber()
+        ).orElseThrow(() -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                MessageUtil.USER_NOT_FOUND
+        ));
+
+        return DtoMapper.INSTANCE.toUserfindIdResponseDto(user);
+    }
+
     private BoardResponseDto toBoardResponseDto(Board board, Role userRole) {
         List<String> roles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
         Boolean writable = roles.stream().anyMatch(str -> userRole.getValue().contains(str));
@@ -1244,4 +1320,6 @@ public class UserService {
                 )
         );
     }
+
+
 }

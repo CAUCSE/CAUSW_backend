@@ -9,6 +9,7 @@ import net.causw.domain.model.enums.AcademicStatus;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.enums.UserState;
 
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -33,7 +34,7 @@ public class UserCreateRequestDto {
     private Integer admissionYear;
 
     @Schema(description = "프로필 이미지 URL", example = "", required = true)
-    private String profileImage;
+    private List<String> profileImages;
 
     // 새로 추가된 필드들
     @Schema(description = "닉네임", example = "푸앙", required = true)
@@ -42,7 +43,7 @@ public class UserCreateRequestDto {
     @Schema(description = "학부/학과", example = "소프트웨어학부", required = true)
     private String major;
 
-    @Schema(description = "학적상태", example = "재학", required = true)
+    @Schema(description = "학적상태", example = "ENROLLED", required = true)
     private AcademicStatus academicStatus;
 
     @Schema(description = "현재 등록 완료된 학기", example = "6(3학년 2학기)", required = true)
@@ -66,7 +67,7 @@ public class UserCreateRequestDto {
                 .password(encodedPassword)
                 .studentId(studentId)
                 .admissionYear(admissionYear)
-                .profileImage(profileImage)
+                .profileImages(profileImages)
                 .nickname(nickname)
                 .major(major)
                 .academicStatus(academicStatus)

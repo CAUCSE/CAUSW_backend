@@ -27,6 +27,8 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     List<User> findByName(String name);
 
+    Optional<User> findByStudentIdAndNameAndPhoneNumber(String studentId, String name, String phoneNumber);
+
     @Query("SELECT u FROM User u WHERE :role MEMBER OF u.roles AND u.state = :state")
     List<User> findByRoleAndState(@Param("role") Role role, @Param("state") UserState state);
 

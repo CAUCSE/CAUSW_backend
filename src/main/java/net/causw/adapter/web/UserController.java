@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.user.*;
 import net.causw.application.user.UserService;
@@ -206,6 +207,22 @@ public class UserController {
     })
     public DuplicatedCheckResponseDto isDuplicatedEmail(@PathVariable("email") String email) {
         return this.userService.isDuplicatedEmail(email);
+    }
+
+    /**
+     * 닉네임 중복 확인 컨트롤러
+     * @param nickname
+     * @return DuplicatedCheckResponseDto
+     */
+    @GetMapping(value = "/{nickname}/is-duplicated-nickname")
+    @ResponseStatus(value = HttpStatus.OK)
+    @Operation(summary = "닉네임 중복 확인 API")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "4001", description = "탈퇴한 계정의 재가입은 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
+    })
+    public DuplicatedCheckResponseDto isDuplicatedNickname(@PathVariable("nickname") String nickname) {
+        return this.userService.isDuplicatedNickname(nickname);
     }
 
     /**
@@ -464,4 +481,19 @@ public class UserController {
     public UserSignOutResponseDto signOut(@RequestBody UserSignOutRequestDto userSignOutRequestDto){
         return userService.signOut(userSignOutRequestDto);
     }
+    /**
+     * @param userFindIdRequestDto
+     * @return userFindIdRequestDto
+     * */
+    @PostMapping(value = "/user-id/find")
+    @ResponseStatus(value = HttpStatus.OK)
+    @Operation(summary = "아이디 찾기 API" , description = "아이디를 찾기 위해 학번, 이름, 전화번호 필요")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "application/json", schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = UserFindIdResponseDto.class))),
+            @ApiResponse(responseCode = "4000", description = "해당 사용자를 찾을 수 없습니다", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
+    })
+    public UserFindIdResponseDto findUserId(@Valid @RequestBody UserFindIdRequestDto userFindIdRequestDto) {
+        return userService.findUserId(userFindIdRequestDto);
+    }
 }
+

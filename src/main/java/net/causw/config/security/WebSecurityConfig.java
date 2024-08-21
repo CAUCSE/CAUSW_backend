@@ -59,11 +59,13 @@ public class WebSecurityConfig {
                                 "/healthy",
                                 "/api/v1/users/admissions/apply",
                                 "/api/v1/users/**/is-duplicated",
+                                "/api/v1/users/**/is-duplicated-nickname",
                                 "/api/v1/users/email",
                                 "/api/v1/users/password",
                                 "/api/v1/users/token/update",
                                 "/api/v1/storage/**",
                                 "/api/v1/users/password/find",
+                                "/api/v1/users/user-id/find",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()

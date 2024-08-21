@@ -8,6 +8,7 @@ import lombok.Setter;
 import net.causw.adapter.persistence.comment.ChildComment;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -23,7 +24,7 @@ public class ChildCommentResponseDto {
     private String refChildComment;
     private String writerName;
     private Integer writerAdmissionYear;
-    private String writerProfileImage;
+    private List<String> writerProfileImages;
     private Boolean updatable;
     private Boolean deletable;
 
@@ -49,7 +50,7 @@ public class ChildCommentResponseDto {
                 .refChildComment(comment.getRefChildComment())
                 .writerName(comment.getWriter().getName())
                 .writerAdmissionYear(comment.getWriter().getAdmissionYear())
-                .writerProfileImage(comment.getWriter().getProfileImage())
+                .writerProfileImages(comment.getWriter().getProfileImages())
                 .updatable(updatable)
                 .deletable(deletable)
                 .build();

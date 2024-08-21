@@ -4,6 +4,7 @@ import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.post.Post;
+import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.board.BoardOfCircleResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.comment.ChildCommentResponseDto;
@@ -12,6 +13,7 @@ import net.causw.application.dto.file.FileResponseDto;
 import net.causw.application.dto.post.BoardPostsResponseDto;
 import net.causw.application.dto.post.PostResponseDto;
 import net.causw.application.dto.post.PostsResponseDto;
+import net.causw.application.dto.user.UserFindIdResponseDto;
 import net.causw.domain.model.enums.Role;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -33,7 +35,7 @@ import java.util.stream.Collectors;
 @Target({ElementType.METHOD})
 @Mapping(target = "writerName", source = "entity.writer.name")
 @Mapping(target = "writerAdmissionYear", source = "entity.writer.admissionYear")
-@Mapping(target = "writerProfileImage", source = "entity.writer.profileImage")
+@Mapping(target = "writerProfileImages", source = "entity.writer.profileImages")
 @interface CommonWriterMappings {}
 
 @Mapper(componentModel = "spring")
@@ -101,6 +103,8 @@ public interface DtoMapper{
      */
 
     // User
+    @Mapping(target = "email", source = "entity.email")
+    UserFindIdResponseDto toUserfindIdResponseDto(User entity);
 
 
     // Board
