@@ -37,7 +37,7 @@ public class PostResponseDto {
     private Integer writerAdmissionYear;
 
     @Schema(description = "게시글 작성자의 프로필 이미지", example = "프로필 이미지 url 작성")
-    private String writerProfileImage;
+    private List<String> writerProfileImages;
 
     @Schema(description = "첨부파일", example = "첨부파일 url 작성")
     private List<FileResponseDto> attachmentList;
@@ -78,7 +78,7 @@ public class PostResponseDto {
                 .isDeleted(post.getIsDeleted())
                 .writerName(post.getWriter().getName())
                 .writerAdmissionYear(post.getWriter().getAdmissionYear())
-                .writerProfileImage(post.getWriter().getProfileImage())
+                .writerProfileImages(post.getWriter().getProfileImages())
                 //.attachmentList(attachmentList.stream().map(FileResponseDto::from).collect(Collectors.toList()))
                 .numComment(0L)
                 .updatable(updatable)
@@ -104,7 +104,7 @@ public class PostResponseDto {
                 .isDeleted(post.getIsDeleted())
                 .writerName(post.getWriter().getName())
                 .writerAdmissionYear(post.getWriter().getAdmissionYear())
-                .writerProfileImage(post.getWriter().getProfileImage())
+                .writerProfileImages(post.getWriter().getProfileImages())
                 //.attachmentList(attachmentList.stream().map(FileResponseDto::from).collect(Collectors.toList()))
                 .numComment(numComment)
                 .updatable(updatable)

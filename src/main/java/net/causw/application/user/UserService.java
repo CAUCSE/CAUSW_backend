@@ -523,6 +523,27 @@ public class UserService {
         return DuplicatedCheckResponseDto.from(userFoundByEmail.isPresent());
     }
 
+    /**
+     * 닉네임 중복 확인 메소드
+     *
+     * @param nickname
+     * @return DuplicatedCheckResponseDto
+     */
+    @Transactional(readOnly = true)
+    public DuplicatedCheckResponseDto isDuplicatedNickname(String nickname) {
+        Optional<User> userFoundByNickname = userRepository.findByNickname(nickname);
+        if (userFoundByNickname.isPresent()) {
+            UserState state = userFoundByNickname.get().getState();
+            if (state.equals(UserState.INACTIVE) || state.equals(UserState.DROP)) {
+                throw new BadRequestException(
+                        ErrorCode.ROW_ALREADY_EXIST,
+                        MessageUtil.USER_ALREADY_APPLY
+                );
+            }
+        }
+        return DuplicatedCheckResponseDto.from(userFoundByNickname.isPresent());
+    }
+
     @Transactional
     public UserResponseDto update(User user, UserUpdateRequestDto userUpdateRequestDto) {
         Set<Role> roles = user.getRoles();
@@ -543,7 +564,7 @@ public class UserService {
         user.setName(userUpdateRequestDto.getName());
         user.setStudentId(userUpdateRequestDto.getStudentId());
         user.setAdmissionYear(userUpdateRequestDto.getAdmissionYear());
-        user.setProfileImage(userUpdateRequestDto.getProfileImage());
+        user.setProfileImages(userUpdateRequestDto.getProfileImages());
 
         // Validate the admission year range
         ValidatorBucket.of()

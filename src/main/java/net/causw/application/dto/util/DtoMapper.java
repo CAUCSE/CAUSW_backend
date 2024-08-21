@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 @Target({ElementType.METHOD})
 @Mapping(target = "writerName", source = "entity.writer.name")
 @Mapping(target = "writerAdmissionYear", source = "entity.writer.admissionYear")
-@Mapping(target = "writerProfileImage", source = "entity.writer.profileImage")
+@Mapping(target = "writerProfileImages", source = "entity.writer.profileImages")
 @interface CommonWriterMappings {}
 
 @Mapper(componentModel = "spring")
