@@ -25,7 +25,6 @@ public class Form extends BaseEntity {
     private String title;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @Enumerated(EnumType.STRING)
     @Column(name = "allowedGrades", nullable = false)
     private Set<Integer> allowedGrades;
 
@@ -34,51 +33,31 @@ public class Form extends BaseEntity {
     private List<Question> questions;
 
     @Column(name = "is_deleted")
-    @ColumnDefault("false")
     private Boolean isDeleted;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User writer;  // 작성자 정보
+    private User writer;
 
-//    @ManyToOne
-//    @JoinColumn(name = "circle_id", nullable = true)
-//    private Circle circle;
+    @ManyToOne
+    @JoinColumn(name = "circle_id")
+    private Circle circle;
 
-
-    private Form(
-            String id,
-            String title,
-            Set<Integer> allowedGrades,
-            List<Question> questions,
-            Boolean isDeleted,
-            User writer
-//            Circle circle
-    ) {
-        super(id);
-        this.title = title;
-        this.allowedGrades = allowedGrades;
-        this.questions = questions;
-        this.isDeleted = isDeleted;
-        this.writer = writer;
-//        this.circle = circle;
-    }
 
     public static Form of(
             String title,
             Set<Integer> allowedGrades,
             List<Question> questions,
-            User writer
-//            Circle circle
+            User writer,
+            Circle circle
     ) {
         return new Form(
-                null, // ID는 자동 생성되므로 null로 설정
                 title,
                 allowedGrades != null ? allowedGrades : new HashSet<>(),
                 questions,
                 false,
-                writer
-//                circle
+                writer,
+                circle
         );
     }
 

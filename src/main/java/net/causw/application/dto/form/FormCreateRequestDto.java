@@ -16,5 +16,5 @@ public class FormCreateRequestDto {
     private String title;
     private Set<Integer> allowedGrades;
     private List<QuestionCreateRequestDto> questions;
-//    private String circleId;
+    private String circleId;
 }

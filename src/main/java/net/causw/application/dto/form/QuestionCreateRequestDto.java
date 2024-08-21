@@ -11,7 +11,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class QuestionCreateRequestDto {
+    private Integer questionNumber;
     private String questionText;
-    private boolean isMultipleChoice;
-    private List<String> options;
+    private Boolean isMultiple;
+    private List<OptionCreateRequestDto> options;
 }
