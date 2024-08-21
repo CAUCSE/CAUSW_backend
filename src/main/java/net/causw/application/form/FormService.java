@@ -46,33 +46,56 @@ public class FormService {
 
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-//        Circle circle = null;
-//        if(formCreateRequestDto.getCircleId() != null){
-//            circle = getCircle(formCreateRequestDto.getCircleId());
-//
-//            CircleMember circleMember = getCircleMember(creator.getId(), circle.getId());
-//            validatorBucket
-//                    .consistOf(UserEqualValidator.of(
-//                            getCircleLeader(circle).getId(),
-//                            creator.getId()))
-//                    .consistOf(CircleMemberStatusValidator.of(
-//                            circleMember.getStatus(),
-//                            List.of(CircleMemberStatus.MEMBER)
-//                    ));
-//        }
+        Circle circle = null;
+        if(formCreateRequestDto.getCircleId() != null){
+            circle = getCircle(formCreateRequestDto.getCircleId());
+
+            CircleMember circleMember = getCircleMember(writer.getId(), circle.getId());
+            validatorBucket
+                    .consistOf(UserEqualValidator.of(
+                            getCircleLeader(circle).getId(),
+                            writer.getId()))
+                    .consistOf(CircleMemberStatusValidator.of(
+                            circleMember.getStatus(),
+                            List.of(CircleMemberStatus.MEMBER)
+                    ));
+        }
+
+        List<Question> questions = Optional.ofNullable(formCreateRequestDto.getQuestions())
+                .orElse(new ArrayList<>())
+                .stream().map(questionDto -> {
+            List<Option> options = Optional.ofNullable(questionDto.getOptions())
+                    .orElse(new ArrayList<>())
+                    .stream()
+                    .map(optionDto -> Option.of(
+                            optionDto.getOptionNumber(),
+                            optionDto.getOptionText(),
+                            null
+                    )).collect(Collectors.toList());
+
+            Question question = Question.of(
+                    questionDto.getQuestionNumber(),
+                    questionDto.getQuestionText(),
+                    questionDto.getIsMultiple(),
+                    options,
+                    null
+            );
+
+            options.forEach(option -> option.setQuestion(question));
+
+            return question;
+        }).collect(Collectors.toList());
+
 
         Form form = Form.of(
                 formCreateRequestDto.getTitle(),
                 formCreateRequestDto.getAllowedGrades(),
-                new ArrayList<>(),
-                writer
-//                circle
+                questions,
+                writer,
+                circle
         );
 
-        formCreateRequestDto.getQuestions().forEach(questionDto -> {
-            Question question = Question.of(questionDto.getQuestionText(), form);
-            form.getQuestions().add(question);
-        });
+        questions.forEach(question -> question.setForm(form));
 
         formRepository.save(form);
 
@@ -80,14 +103,13 @@ public class FormService {
     }
 
     @Transactional(readOnly = true)
-    public FormResponseDto getForm(String formId) {
-        Form form = formRepository.findById(formId)
-                .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, "Form does not exist"));
-
+    public FormResponseDto findForm(String formId) {
+        Form form = getForm(formId);
         return toFormResponseDto(form);
     }
 
-    // Helper method to map Form to FormResponseDto
+
+
     private FormResponseDto toFormResponseDto(Form form) {
         List<QuestionResponseDto> questionResponseDtos = form.getQuestions().stream()
                 .map(this::toQuestionResponseDto)
@@ -99,11 +121,24 @@ public class FormService {
     }
 
     private QuestionResponseDto toQuestionResponseDto(Question question) {
-//        List<OptionResponseDto> optionResponseDtos = question.getOptions().stream()
-//                .map(option -> new OptionResponseDto(option.getId(), option.getOptionText()))
-//                .collect(Collectors.toList());
+        List<OptionResponseDto> optionResponseDtos = question.getOptions().stream()
+                .map(this::toOptionResponseDto)
+                .collect(Collectors.toList());
 
-        return new QuestionResponseDto(question.getId(), question.getText());
+        return new QuestionResponseDto(question.getId(), question.getNumber(), question.getQuestionText(), question.getIsMultiple(), optionResponseDtos);
+    }
+
+    private OptionResponseDto toOptionResponseDto(Option option){
+        return new OptionResponseDto(option.getNumber(), option.getOptionText(), option.getIsSelected());
+    }
+
+    private Form getForm(String formId){
+        return formRepository.findById(formId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.FORM_NOT_FOUND
+                )
+        );
     }
 
     private Circle getCircle(String circleId) {
