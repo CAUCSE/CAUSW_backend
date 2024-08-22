@@ -2,6 +2,7 @@ package net.causw.adapter.web;
 
 import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.form.FormCreateRequestDto;
+import net.causw.application.dto.form.FormReplyDto;
 import net.causw.application.dto.form.FormResponseDto;
 import net.causw.application.form.FormService;
 import net.causw.config.security.SecurityService;
@@ -50,6 +51,16 @@ public class FormController {
             @AuthenticationPrincipal CustomUserDetails userDetails
     ){
         formService.deleteForm(formId, userDetails.getUser());
+    }
+
+    @PostMapping("/{formId}")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@securityService.activeAndNotNoneUser")
+    public void replyForm(
+            @RequestBody FormReplyDto formReplyDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ){
+        formService.replyForm(formReplyDto, userDetails.getUser());
     }
 
 }
