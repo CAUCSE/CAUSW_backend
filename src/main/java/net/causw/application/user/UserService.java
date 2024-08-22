@@ -1289,7 +1289,8 @@ public class UserService {
         return DtoMapper.INSTANCE.toUserfindIdResponseDto(user);
     }
 
-    public List<User> findUserByStudentId(String studentId) {
+    @Transactional(readOnly = true)
+    public List<UserResponseDto> findByStudentId(String studentId) {
         List<User> userList = this.userRepository.findByStudentIdStartingWith(studentId);
 
         if (userList.isEmpty()) {
@@ -1299,7 +1300,9 @@ public class UserService {
             );
         }
 
-        return userList;
+        return userList.stream()
+                .map(UserResponseDto::from)
+                .collect(Collectors.toList());
     }
 
     private BoardResponseDto toBoardResponseDto(Board board, Role userRole) {
