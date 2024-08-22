@@ -32,19 +32,13 @@ public class Question extends BaseEntity {
     @JoinColumn(name = "form_id", nullable = false)
     private Form form;
 
-    @Column(name = "answer")
-    private String answer;
-
     public static Question of(Integer number, String questionText, Boolean isMultiple, List<Option> options, Form form) {
-        return new Question(number, questionText, isMultiple != null ? isMultiple : false, options, form, null);
+        return new Question(number, questionText, isMultiple != null ? isMultiple : false, options, form);
     }
 
     public void setIsMultiple(Boolean isMultiple) {
         this.isMultiple = isMultiple;
     }
 
-    public void setAnswer(String answer) {
-        this.answer = answer;
-    }
 
 }
