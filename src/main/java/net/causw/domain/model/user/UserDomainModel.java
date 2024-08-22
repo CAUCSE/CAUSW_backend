@@ -1,5 +1,6 @@
 package net.causw.domain.model.user;
 
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import lombok.Builder;
 import lombok.Getter;
 import net.causw.domain.model.enums.UserState;
@@ -21,6 +22,8 @@ public class UserDomainModel {
     private String profileImage;
 
     private String refreshToken;
+
+    private Integer semester;
 
     @NotBlank(message = "사용자 이름이 입력되지 않았습니다.")
     private String name;
