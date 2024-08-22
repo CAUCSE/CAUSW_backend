@@ -43,12 +43,18 @@ public class Board extends BaseEntity {
     @ColumnDefault("false")
     private Boolean isDeleted;
 
+    @Column(name = "is_default", nullable = true)
+    @ColumnDefault("false")
+    private Boolean isDefault;
+
     @ManyToOne
     @JoinColumn(name = "circle_id", nullable = true)
     private Circle circle;
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private Set<Post> postSet;
+
+
 
     private Board(
             String id,
@@ -127,7 +133,7 @@ public class Board extends BaseEntity {
                 createRoleList.add(Role.PRESIDENT.getValue());
             }
         }
-        return new Board(name, description, String.join(",", createRoleList), category, false, circle, new HashSet<>());
+        return new Board(name, description, String.join(",", createRoleList), category, false,false, circle, new HashSet<>());
     }
 
     public void setIsDeleted(boolean isDeleted){

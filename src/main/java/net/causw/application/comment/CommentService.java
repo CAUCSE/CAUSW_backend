@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
+import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
+import net.causw.adapter.persistence.comment.LikeComment;
 import net.causw.adapter.persistence.page.PageableFactory;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.*;
@@ -49,13 +51,15 @@ public class CommentService {
     private final PostRepository postRepository;
     private final CircleMemberRepository circleMemberRepository;
     private final ChildCommentRepository childCommentRepository;
+    private final LikeCommentRepository likeCommentRepository;
+    private final LikeChildCommentRepository likeChildCommentRepository;
     private final PageableFactory pageableFactory;
     private final Validator validator;
 
     @Transactional
     public CommentResponseDto createComment(User creator, CommentCreateRequestDto commentCreateDto) {
         Post post = getPost(commentCreateDto.getPostId());
-        Comment comment = Comment.of(commentCreateDto.getContent(), false, creator, post);
+        Comment comment = Comment.of(commentCreateDto.getContent(), false, commentCreateDto.getIsAnonymous(), creator, post);
 
         ValidatorBucket validatorBucket = initializeValidator(creator, post);
         validatorBucket.
@@ -170,16 +174,41 @@ public class CommentService {
         return toCommentResponseDto(commentRepository.save(comment), deleter, post.getBoard());
     }
 
+    @Transactional
+    public void likeComment(User user, String commentId) {
+        Comment comment = getComment(commentId);
+
+        if (isCommentAlreadyLike(user, commentId)) {
+            throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.COMMENT_ALREADY_LIKED);
+        }
+
+        LikeComment likeComment = LikeComment.of(comment, user);
+        likeCommentRepository.save(likeComment);
+    }
+
+    private Boolean isCommentAlreadyLike(User user, String commentId) {
+        return likeCommentRepository.existsByCommentIdAndUserId(commentId, user.getId());
+    }
+
     private CommentResponseDto toCommentResponseDto(Comment comment, User user, Board board) {
         return DtoMapper.INSTANCE.toCommentResponseDto(
                 comment,
                 childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
+                getNumOfCommentLikes(comment),
                 comment.getChildCommentList().stream()
-                        .map(childComment -> DtoMapper.INSTANCE.toChildCommentResponseDto(childComment, StatusUtil.isUpdatable(childComment, user), StatusUtil.isDeletable(childComment, user, board)))
+                        .map(childComment -> DtoMapper.INSTANCE.toChildCommentResponseDto(childComment, getNumOfChildCommentLikes(childComment), StatusUtil.isUpdatable(childComment, user), StatusUtil.isDeletable(childComment, user, board)))
                         .collect(Collectors.toList()),
                 StatusUtil.isUpdatable(comment, user),
                 StatusUtil.isDeletable(comment, user, board)
         );
+    }
+
+    private Long getNumOfCommentLikes(Comment comment){
+        return likeCommentRepository.countByCommentId(comment.getId());
+    }
+
+    private Long getNumOfChildCommentLikes(ChildComment childComment) {
+        return likeChildCommentRepository.countByChildCommentId(childComment.getId());
     }
 
     private ValidatorBucket initializeValidator(User user, Post post) {
@@ -242,4 +271,7 @@ public class CommentService {
                 )
         );
     }
+
+
+
 }

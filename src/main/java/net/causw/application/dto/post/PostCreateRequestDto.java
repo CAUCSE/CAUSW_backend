@@ -27,6 +27,12 @@ public class PostCreateRequestDto {
     @Schema(description = "첨부파일", example = "첨부파일 url 작성")
     private List<String> attachmentList;
 
+    @Schema(description = "익명글 여부", example = "False")
+    private Boolean isAnonymous;
+
+    @Schema(description = "질문글 여부", example = "False")
+    private Boolean isQuestion;
+
     public List<String> getAttachmentList() {
         return Optional.ofNullable(this.attachmentList).orElse(List.of());
     }

@@ -4,14 +4,14 @@ import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
-import net.causw.adapter.persistence.repository.BoardRepository;
-import net.causw.adapter.persistence.repository.CircleMemberRepository;
-import net.causw.adapter.persistence.repository.CircleRepository;
-import net.causw.adapter.persistence.repository.UserRepository;
+import net.causw.adapter.persistence.post.Post;
+import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.board.BoardCreateRequestDto;
+import net.causw.application.dto.board.BoardMainResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.board.BoardUpdateRequestDto;
+import net.causw.application.dto.post.PostContentDto;
 import net.causw.application.dto.util.DtoMapper;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -40,11 +40,13 @@ import java.util.stream.Stream;
 @Service
 @RequiredArgsConstructor
 public class BoardService {
+    private final PostRepository postRepository;
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
     private final CircleRepository circleRepository;
     private final CircleMemberRepository circleMemberRepository;
     private final Validator validator;
+
 
     @Transactional(readOnly = true)
     public List<BoardResponseDto> findAllBoard(
@@ -82,6 +84,52 @@ public class BoardService {
                         .collect(Collectors.toList());
             }
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<BoardMainResponseDto> mainBoard(
+            User user
+    ) {
+        Set<Role> roles = user.getRoles();
+
+        ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .validate();
+
+        List<Board> boards;
+
+        if (roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT)) {
+            boards = boardRepository.findByOrderByCreatedAtAsc();
+        }else{
+            List<Circle> joinCircles = circleMemberRepository.findByUser_Id(user.getId()).stream()
+                .filter(circleMember -> circleMember.getStatus() == CircleMemberStatus.MEMBER)
+                .map(CircleMember::getCircle)
+                .collect(Collectors.toList());
+
+            if (joinCircles.isEmpty()) {
+                boards = boardRepository.findByCircle_IdIsNullAndIsDeletedOrderByCreatedAtAsc(false);
+            } else {
+                List<String> circleIdList = joinCircles.stream()
+                        .map(Circle::getId)
+                        .collect(Collectors.toList());
+
+                boards = Stream.concat(
+                                boardRepository.findByCircle_IdIsNullAndIsDeletedOrderByCreatedAtAsc(false).stream(),
+                                boardRepository.findByCircle_IdInAndIsDeletedFalseOrderByCreatedAtAsc(circleIdList).stream()
+                        )
+                        .collect(Collectors.toList());
+            }
+        }
+
+        return boards.stream()
+                .map(board -> {
+                    List<PostContentDto> recentPosts = postRepository.findTop3ByBoard_IdAndIsDeletedOrderByCreatedAtDesc(board.getId(), false).stream()
+                            .map(DtoMapper.INSTANCE::toPostContentDto)
+                            .collect(Collectors.toList());
+                    return DtoMapper.INSTANCE.toBoardMainResponseDto(board, recentPosts);
+                })
+                .collect(Collectors.toList());
     }
 
     @Transactional

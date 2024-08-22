@@ -4,7 +4,11 @@ import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
+import net.causw.adapter.persistence.comment.ChildComment;
+import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.page.PageableFactory;
+import net.causw.adapter.persistence.post.FavoritePost;
+import net.causw.adapter.persistence.post.LikePost;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.user.User;
@@ -51,6 +55,10 @@ public class PostService {
     private final CommentRepository commentRepository;
     private final ChildCommentRepository childCommentRepository;
     private final FavoriteBoardRepository favoriteBoardRepository;
+    private final LikePostRepository likePostRepository;
+    private final FavoritePostRepository favoritePostRepository;
+    private final LikeCommentRepository likeCommentRepository;
+    private final LikeChildCommentRepository likeChildCommentRepository;
     private final PageableFactory pageableFactory;
     private final Validator validator;
 
@@ -175,6 +183,8 @@ public class PostService {
                 postCreateRequestDto.getContent(),
                 creator,
                 false,
+                postCreateRequestDto.getIsAnonymous(),
+                postCreateRequestDto.getIsQuestion(),
                 board,
                 String.join(":::", postCreateRequestDto.getAttachmentList())
         );
@@ -390,6 +400,74 @@ public class PostService {
         return toPostResponseDtoExtended(postRepository.save(post), restorer);
     }
 
+    @Transactional
+    public void likePost(User user, String postId) {
+        Post post = getPost(postId);
+
+        if (isPostAlreadyLike(user, postId)) {
+            throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.POST_ALREADY_LIKED);
+        }
+
+        LikePost likePost = LikePost.of(post, user);
+        likePostRepository.save(likePost);
+    }
+
+    @Transactional
+    public void favoritePost(User user, String postId) {
+        Post post = getPost(postId);
+
+        //FIXME : Validator 리팩토링 통합 후 해당 검사 로직을 해당방식으로 수정.
+        if (isPostDeleted(post)) {
+            throw new BadRequestException(ErrorCode.TARGET_DELETED, MessageUtil.POST_DELETED);
+        }
+
+        FavoritePost favoritePost;
+        if (isPostAlreadyFavorite(user, postId)) {
+            favoritePost = getFavoritePost(user, postId);
+            if (favoritePost.getIsDeleted()) {
+                favoritePost.setIsDeleted(false);
+            } else {
+                throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.POST_ALREADY_FAVORITED);
+            }
+        } else {
+            favoritePost = FavoritePost.of(post, user, false);
+        }
+
+        favoritePostRepository.save(favoritePost);
+    }
+
+
+    @Transactional
+    public void cancelFavoritePost(User user, String postId) {
+        Post post = getPost(postId);
+
+        //FIXME : Validator 리팩토링 통합 후 해당 검사 로직을 해당방식으로 수정.
+        if (isPostDeleted(post)) {
+            throw new BadRequestException(ErrorCode.TARGET_DELETED, MessageUtil.POST_DELETED);
+        }
+
+        FavoritePost favoritePost = getFavoritePost(user, postId);
+        if (favoritePost.getIsDeleted()) {
+            throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.FAVORITE_POST_ALREADY_DELETED);
+        } else {
+            favoritePost.setIsDeleted(true);
+        }
+
+        favoritePostRepository.save(favoritePost);
+    }
+
+    private Boolean isPostAlreadyLike(User user, String postId) {
+        return likePostRepository.existsByPostIdAndUserId(postId, user.getId());
+    }
+
+    private Boolean isPostAlreadyFavorite(User user, String postId) {
+        return favoritePostRepository.existsByPostIdAndUserId(postId, user.getId());
+    }
+
+    private Boolean isPostDeleted(Post post) {
+        return post.getIsDeleted();
+    }
+
     private ValidatorBucket initializeValidator(User user, Board board) {
         Set<Role> roles = user.getRoles();
         ValidatorBucket validatorBucket = ValidatorBucket.of();
@@ -431,15 +509,19 @@ public class PostService {
     private PostsResponseDto toPostsResponseDto(Post post) {
         return DtoMapper.INSTANCE.toPostsResponseDto(
                 post,
-                postRepository.countAllCommentByPost_Id(post.getId())
+                postRepository.countAllCommentByPost_Id(post.getId()),
+                getNumOfPostLikes(post),
+                getNumOfPostLikes(post)
         );
     }
 
     private PostResponseDto toPostResponseDto(Post post, User user) {
         return DtoMapper.INSTANCE.toPostResponseDto(
                 post,
-                StatusUtil.isUpdatable(post, user),
-                StatusUtil.isDeletable(post, user, post.getBoard())
+                getNumOfPostLikes(post),
+                getNumOfPostFavorites(post),
+                StatusUtil.isUpdatable(post, user, isPostHasComment(post.getId())),
+                StatusUtil.isDeletable(post, user, post.getBoard(), isPostHasComment(post.getId()))
         );
     }
 
@@ -448,8 +530,10 @@ public class PostService {
                 postRepository.save(post),
                 findCommentsByPostIdByPage(user, post, 0),
                 postRepository.countAllCommentByPost_Id(post.getId()),
-                StatusUtil.isUpdatable(post, user),
-                StatusUtil.isDeletable(post, user, post.getBoard())
+                getNumOfPostLikes(post),
+                getNumOfPostFavorites(post),
+                StatusUtil.isUpdatable(post, user, isPostHasComment(post.getId())),
+                StatusUtil.isDeletable(post, user, post.getBoard(), isPostHasComment(post.getId()))
         );
     }
 
@@ -460,24 +544,47 @@ public class PostService {
         ).map(comment -> CommentResponseDto.of(
                         comment,
                         childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
+                        getNumOfCommentLikes(comment),
                         comment.getChildCommentList().stream()
                                 .map(childComment -> DtoMapper.INSTANCE.toChildCommentResponseDto(
                                         childComment,
+                                        getNumOfChildCommentLikes(childComment),
                                         StatusUtil.isUpdatable(childComment, user),
                                         StatusUtil.isDeletable(childComment, user, post.getBoard()))
                                 )
                                 .collect(Collectors.toList()),
                         StatusUtil.isUpdatable(comment, user),
-                        StatusUtil.isDeletable(comment, user, post.getBoard())
+                        StatusUtil.isDeletable(comment, user, post.getBoard()),
+                        comment.getIsAnonymous()
                 )
         );
     }
 
-    private boolean isFavorite(String userId, String boardId) {
+    private Long getNumOfPostLikes(Post post){
+        return likePostRepository.countByPostId(post.getId());
+    }
+
+    private Long getNumOfPostFavorites(Post post){
+        return favoritePostRepository.countByPostIdAndIsDeletedFalse(post.getId());
+    }
+
+    private Long getNumOfCommentLikes(Comment comment){
+        return likeCommentRepository.countByCommentId(comment.getId());
+    }
+
+    private Long getNumOfChildCommentLikes(ChildComment childComment) {
+        return likeChildCommentRepository.countByChildCommentId(childComment.getId());
+    }
+
+    private Boolean isFavorite(String userId, String boardId) {
         return favoriteBoardRepository.findByUser_Id(userId)
                 .stream()
                 .filter(favoriteBoard -> !favoriteBoard.getBoard().getIsDeleted())
                 .anyMatch(favoriteboard -> favoriteboard.getBoard().getId().equals(boardId));
+    }
+
+    private Boolean isPostHasComment(String postId){
+        return commentRepository.existsByPostIdAndIsDeletedFalse(postId);
     }
 
     private Post getPost(String postId) {
@@ -526,4 +633,14 @@ public class PostService {
         }
         return leader;
     }
+
+    private FavoritePost getFavoritePost(User user, String postId) {
+        return favoritePostRepository.findByPostIdAndUserId(postId, user.getId()).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.FAVORITE_POST_NOT_FOUND
+                )
+        );
+    }
+
 }

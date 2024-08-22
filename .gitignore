@@ -56,5 +56,4 @@ deploy_*.sh
 app-*.yaml
 
 *.pem
-
 src/main/generated/net/causw/application/dto/util/*Impl.java
