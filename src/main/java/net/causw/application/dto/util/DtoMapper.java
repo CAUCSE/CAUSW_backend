@@ -5,12 +5,14 @@ import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.user.User;
+import net.causw.application.dto.board.BoardMainResponseDto;
 import net.causw.application.dto.board.BoardOfCircleResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.file.FileResponseDto;
 import net.causw.application.dto.post.BoardPostsResponseDto;
+import net.causw.application.dto.post.PostContentDto;
 import net.causw.application.dto.post.PostResponseDto;
 import net.causw.application.dto.post.PostsResponseDto;
 import net.causw.application.dto.user.UserFindIdResponseDto;
@@ -82,6 +84,10 @@ public interface DtoMapper{
     @Mapping(target = "numFavorite", source = "numPostFavorite")
     PostResponseDto toPostResponseDtoExtended(Post entity, Page<CommentResponseDto> commentList, Long numComment, Long numPostLike, Long numPostFavorite, Boolean updatable, Boolean deletable);
 
+    @Mapping(target = "title", source = "post.title")
+    @Mapping(target = "contentId", source = "post.id")
+    PostContentDto toPostContentDto(Post post);
+
     @CommonWriterMappings
     @Mapping(target = "postId", source = "entity.post.id")
     @Mapping(target = "isAnonymous", source = "entity.isAnonymous")
@@ -121,6 +127,12 @@ public interface DtoMapper{
     @Mapping(target = "postCreatedAt", source = "post.createdAt")
     @Mapping(target = "postNumComment", source = "numComment")
     BoardOfCircleResponseDto toBoardOfCircleResponseDto(Board board, Post post, Long numComment, boolean writable);
+
+    @Mapping(target = "boardId", source = "board.id")
+    @Mapping(target = "boardName", source = "board.name")
+    @Mapping(target = "isDefault", source = "board.isDefault")
+    @Mapping(target = "contents", source = "postContentDtos")
+    BoardMainResponseDto toBoardMainResponseDto(Board board, List<PostContentDto> postContentDtos);
 
     @Mapping(target = "writable", source = "writable")
     @Mapping(target = "postNumComment", source = "numComment")
