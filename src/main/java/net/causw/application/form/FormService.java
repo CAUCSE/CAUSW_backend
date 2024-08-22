@@ -119,8 +119,8 @@ public class FormService {
     }
 
     @Transactional
-    public void replyForm(FormReplyDto formReplyDto, User writer){
-        Form form = getForm(formReplyDto.getFormId());
+    public void replyForm(String formId, FormReplyDto formReplyDto, User writer){
+        Form form = getForm(formId);
 
         for(QuestionReplyDto questionReplyDto : formReplyDto.getReplyDtos()){
             Question question = getQuestion(questionReplyDto.getQuestionId());

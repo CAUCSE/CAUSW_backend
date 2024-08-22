@@ -57,10 +57,14 @@ public class FormController {
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("@securityService.activeAndNotNoneUser")
     public void replyForm(
+            @PathVariable(name = "formId") String formId,
             @RequestBody FormReplyDto formReplyDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ){
-        formService.replyForm(formReplyDto, userDetails.getUser());
+        if (!securityService.hasAccessToForm(formId)) {
+            throw new UnauthorizedException(ErrorCode.API_NOT_ACCESSIBLE, MessageUtil.API_NOT_ACCESSIBLE);
+        }
+        formService.replyForm(formId, formReplyDto, userDetails.getUser());
     }
 
 }
