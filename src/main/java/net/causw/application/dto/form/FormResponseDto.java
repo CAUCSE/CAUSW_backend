@@ -15,7 +15,7 @@ import java.util.Set;
 @AllArgsConstructor
 public class FormResponseDto {
     @Schema(description = "신청폼 id 값", example = "uuid 형식의 String 값입니다.")
-    private String id;
+    private String formId;
 
     @Schema(description = "신청폼 제목", example = "form_example")
     private String title;
