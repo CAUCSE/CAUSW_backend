@@ -495,5 +495,19 @@ public class UserController {
     public UserFindIdResponseDto findUserId(@Valid @RequestBody UserFindIdRequestDto userFindIdRequestDto) {
         return userService.findUserId(userFindIdRequestDto);
     }
+
+    @GetMapping(value = "/studentId/{studentId}")
+    @ResponseStatus(value = HttpStatus.OK)
+    @Operation(summary = "학번으로 회원 조회 API", description = "학번 일부를 입력하면 입력 정보로 시작하는 학번의 회원 조회")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserResponseDto.class))),
+            @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4000", description = "해당 사용자를 찾을 수 없습니다", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4107", description = "접근 권한이 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+    })
+    public List<UserResponseDto> findByStudentId(@PathVariable("studentId") String studentId) {
+        return userService.findByStudentId(studentId);
+    }
 }
 
