@@ -1289,6 +1289,19 @@ public class UserService {
         return DtoMapper.INSTANCE.toUserfindIdResponseDto(user);
     }
 
+    public List<User> findUserByStudentId(String studentId) {
+        List<User> userList = this.userRepository.findByStudentIdStartingWith(studentId);
+
+        if (userList.isEmpty()) {
+            throw new BadRequestException(
+                    ErrorCode.ROW_DOES_NOT_EXIST,
+                    MessageUtil.USER_NOT_FOUND
+            );
+        }
+
+        return userList;
+    }
+
     private BoardResponseDto toBoardResponseDto(Board board, Role userRole) {
         List<String> roles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
         Boolean writable = roles.stream().anyMatch(str -> userRole.getValue().contains(str));
