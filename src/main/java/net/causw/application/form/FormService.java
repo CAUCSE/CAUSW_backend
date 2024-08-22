@@ -4,9 +4,9 @@ import jakarta.validation.Validator;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.form.Option;
-import net.causw.adapter.persistence.repository.CircleMemberRepository;
-import net.causw.adapter.persistence.repository.CircleRepository;
-import net.causw.application.dto.form.OptionResponseDto;
+import net.causw.adapter.persistence.form.Reply;
+import net.causw.adapter.persistence.repository.*;
+import net.causw.application.dto.form.*;
 import net.causw.application.dto.user.UserResponseDto;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -20,11 +20,7 @@ import net.causw.domain.validation.ValidatorBucket;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.form.Form;
 import net.causw.adapter.persistence.form.Question;
-import net.causw.adapter.persistence.repository.FormRepository;
 import net.causw.adapter.persistence.user.User;
-import net.causw.application.dto.form.FormCreateRequestDto;
-import net.causw.application.dto.form.FormResponseDto;
-import net.causw.application.dto.form.QuestionResponseDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +33,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FormService {
     private final FormRepository formRepository;
+    private final QuestionRepository questionRepository;
+    private final OptionRepository optionRepository;
     private final CircleRepository circleRepository;
+    private final ReplyRepository replyRepository;
     private final CircleMemberRepository circleMemberRepository;
     private final Validator validator;
 
@@ -107,7 +106,7 @@ public class FormService {
         Form form = getForm(formId);
 
         //삭제 권한은... 작성자랑... 관리자? 정도
-        //어차피 폼 생성은 관리자, 동아리장만 가능
+        //어차피 폼 생성은 관리자, 동아리장만 가리
 
         form.setIsDeleted(true);
         formRepository.save(form);
@@ -117,6 +116,23 @@ public class FormService {
     public FormResponseDto findForm(String formId) {
         Form form = getForm(formId);
         return toFormResponseDto(form);
+    }
+
+    @Transactional
+    public void replyForm(FormReplyDto formReplyDto, User writer){
+        Form form = getForm(formReplyDto.getFormId());
+
+        for(QuestionReplyDto questionReplyDto : formReplyDto.getReplyDtos()){
+            Question question = getQuestion(questionReplyDto.getQuestionId());
+            Reply reply = Reply.of(
+                    form,
+                    writer,
+                    question,
+                    questionReplyDto.getQuestionReply(),
+                    questionReplyDto.getSelectedOptions()
+            );
+            replyRepository.save(reply);
+        }
     }
 
 
@@ -140,7 +156,7 @@ public class FormService {
     }
 
     private OptionResponseDto toOptionResponseDto(Option option){
-        return new OptionResponseDto(option.getNumber(), option.getOptionText(), option.getIsSelected());
+        return new OptionResponseDto(option.getId(), option.getNumber(), option.getOptionText(), option.getIsSelected());
     }
 
     private Form getForm(String formId){
@@ -150,6 +166,25 @@ public class FormService {
                         MessageUtil.FORM_NOT_FOUND
                 )
         );
+    }
+
+    private Question getQuestion(String questionId){
+        return questionRepository.findById(questionId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.QUESTION_NOT_FOUND
+                )
+        );
+    }
+
+    private Option getOption(String optionId){
+        return optionRepository.findById(optionId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.OPTION_NOT_FOUND
+                )
+        );
+
     }
 
     private Circle getCircle(String circleId) {
