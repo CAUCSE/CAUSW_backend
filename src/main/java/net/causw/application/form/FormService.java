@@ -7,7 +7,7 @@ import net.causw.adapter.persistence.form.Option;
 import net.causw.adapter.persistence.form.Reply;
 import net.causw.adapter.persistence.repository.*;
 import net.causw.application.dto.form.*;
-import net.causw.application.dto.user.UserResponseDto;
+import net.causw.application.dto.util.DtoMapper;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -37,6 +38,7 @@ public class FormService {
     private final OptionRepository optionRepository;
     private final CircleRepository circleRepository;
     private final ReplyRepository replyRepository;
+    private final UserRepository userRepository;
     private final CircleMemberRepository circleMemberRepository;
     private final Validator validator;
 
@@ -98,7 +100,7 @@ public class FormService {
 
         formRepository.save(form);
 
-        return toFormResponseDto(form);
+        return DtoMapper.INSTANCE.toFormResponseDto(form);
     }
 
     @Transactional
@@ -115,7 +117,7 @@ public class FormService {
     @Transactional(readOnly = true)
     public FormResponseDto findForm(String formId) {
         Form form = getForm(formId);
-        return toFormResponseDto(form);
+        return DtoMapper.INSTANCE.toFormResponseDto(form);
     }
 
     @Transactional
@@ -136,15 +138,28 @@ public class FormService {
     }
 
 
+    //1. 각 유저별 결과를 반환(개별) -> form
+    //내가 유저 별로 나눠주고 알아서 분리해서 쓰냐 or 매번 누구의 결과를 원하는지 저쪽에서 보내냐
+    //근데 보통은 formId로 조회하니까 그 form의 모든 것을 조회하는게 좋을 거 같은데
+    //그냥 내가 유저별로 응답을 묶어서 보내면 프론트에서 페이지별로 한명씩 보여주기
+    @Transactional(readOnly = true)
+    public List<ReplyUserResponseDto> findUserReply(String formId, User user){
+        List<Reply> replies = replyRepository.findAllByFormId(formId);
 
-    private FormResponseDto toFormResponseDto(Form form) {
-        List<QuestionResponseDto> questionResponseDtos = form.getQuestions().stream()
-                .map(this::toQuestionResponseDto)
+        Map<String, List<Reply>> repliesByUser = replies.stream()
+                .collect(Collectors.groupingBy(reply -> reply.getUser().getId()));
+
+        // ReplyUserResponseDto 리스트를 생성합니다.
+        return repliesByUser.entrySet().stream()
+                .map(reply -> {
+                    User replyUser = reply.getValue().get(0).getUser();
+                    List<QuestionReplyResponseDto> questionReplies = reply.getValue().stream()
+                            .map(DtoMapper.INSTANCE::toQuestionReplyResponseDto)
+                            .collect(Collectors.toList());
+
+                    return DtoMapper.INSTANCE.toReplyUserResponseDto(replyUser, questionReplies);
+                })
                 .collect(Collectors.toList());
-
-        UserResponseDto writerDto = UserResponseDto.from(form.getWriter());
-
-        return new FormResponseDto(form.getId(), form.getTitle(), writerDto, form.getAllowedGrades(), questionResponseDtos);
     }
 
 
