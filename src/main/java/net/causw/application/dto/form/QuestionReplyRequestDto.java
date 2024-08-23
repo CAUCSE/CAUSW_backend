@@ -11,7 +11,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class QuestionReplyDto {
+public class QuestionReplyRequestDto {
     @Schema(description = "질문 id", example = "uuid 형식의 String 값입니다.")
     private String questionId;
 

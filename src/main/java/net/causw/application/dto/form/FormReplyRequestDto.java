@@ -11,7 +11,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class FormReplyDto {
+public class FormReplyRequestDto {
     @Schema(description = "질문 답변")
-    private List<QuestionReplyDto> replyDtos;
+    private List<QuestionReplyRequestDto> replyDtos;
 }

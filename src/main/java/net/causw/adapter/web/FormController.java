@@ -2,7 +2,7 @@ package net.causw.adapter.web;
 
 import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.form.FormCreateRequestDto;
-import net.causw.application.dto.form.FormReplyDto;
+import net.causw.application.dto.form.FormReplyRequestDto;
 import net.causw.application.dto.form.FormResponseDto;
 import net.causw.application.form.FormService;
 import net.causw.config.security.SecurityService;
@@ -58,13 +58,13 @@ public class FormController {
     @PreAuthorize("@securityService.activeAndNotNoneUser")
     public void replyForm(
             @PathVariable(name = "formId") String formId,
-            @RequestBody FormReplyDto formReplyDto,
+            @RequestBody FormReplyRequestDto formReplyRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ){
         if (!securityService.hasAccessToForm(formId)) {
             throw new UnauthorizedException(ErrorCode.API_NOT_ACCESSIBLE, MessageUtil.API_NOT_ACCESSIBLE);
         }
-        formService.replyForm(formId, formReplyDto, userDetails.getUser());
+        formService.replyForm(formId, formReplyRequestDto, userDetails.getUser());
     }
 
 }

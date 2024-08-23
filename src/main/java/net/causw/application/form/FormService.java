@@ -119,17 +119,17 @@ public class FormService {
     }
 
     @Transactional
-    public void replyForm(String formId, FormReplyDto formReplyDto, User writer){
+    public void replyForm(String formId, FormReplyRequestDto formReplyRequestDto, User writer){
         Form form = getForm(formId);
 
-        for(QuestionReplyDto questionReplyDto : formReplyDto.getReplyDtos()){
-            Question question = getQuestion(questionReplyDto.getQuestionId());
+        for(QuestionReplyRequestDto questionReplyRequestDto : formReplyRequestDto.getReplyDtos()){
+            Question question = getQuestion(questionReplyRequestDto.getQuestionId());
             Reply reply = Reply.of(
                     form,
                     writer,
                     question,
-                    questionReplyDto.getQuestionReply(),
-                    questionReplyDto.getSelectedOptions()
+                    questionReplyRequestDto.getQuestionReply(),
+                    questionReplyRequestDto.getSelectedOptions()
             );
             replyRepository.save(reply);
         }
@@ -147,10 +147,6 @@ public class FormService {
         return new FormResponseDto(form.getId(), form.getTitle(), writerDto, form.getAllowedGrades(), questionResponseDtos);
     }
 
-    private QuestionResponseDto toQuestionResponseDto(Question question) {
-        List<OptionResponseDto> optionResponseDtos = question.getOptions().stream()
-                .map(this::toOptionResponseDto)
-                .collect(Collectors.toList());
 
         return new QuestionResponseDto(question.getId(), question.getNumber(), question.getQuestionText(), question.getIsMultiple(), optionResponseDtos);
     }
