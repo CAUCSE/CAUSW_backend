@@ -16,6 +16,7 @@ import net.causw.application.dto.post.PostContentDto;
 import net.causw.application.dto.post.PostResponseDto;
 import net.causw.application.dto.post.PostsResponseDto;
 import net.causw.application.dto.user.UserFindIdResponseDto;
+import net.causw.application.dto.user.UserResponseDto;
 import net.causw.domain.model.enums.Role;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -111,6 +112,23 @@ public interface DtoMapper{
     // User
     @Mapping(target = "email", source = "entity.email")
     UserFindIdResponseDto toUserfindIdResponseDto(User entity);
+
+    @Mapping(target = "id", source = "entity.id")
+    @Mapping(target = "email", source = "entity.email")
+    @Mapping(target = "name", source = "entity.name")
+    @Mapping(target = "studentId", source = "entity.studentId")
+    @Mapping(target = "admissionYear", source = "entity.admissionYear")
+    @Mapping(target = "roles", source = "entity.roles")
+    @Mapping(target = "profileImages", source = "entity.profileImages")
+    @Mapping(target = "state", source = "entity.state")
+    @Mapping(target = "nickname", source = "entity.nickname")
+    @Mapping(target = "major", source = "entity.major")
+    @Mapping(target = "academicStatus", source = "entity.academicStatus")
+    @Mapping(target = "currentCompletedSemester", source = "entity.currentCompletedSemester")
+    @Mapping(target = "graduationYear", source = "entity.graduationYear")
+    @Mapping(target = "graduationMonth", source = "entity.graduationMonth")
+    @Mapping(target = "phoneNumber", source = "entity.phoneNumber")
+    UserResponseDto toUserResponseDto(User entity);
 
 
     // Board
