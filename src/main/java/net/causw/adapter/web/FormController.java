@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.form.FormCreateRequestDto;
 import net.causw.application.dto.form.FormReplyRequestDto;
 import net.causw.application.dto.form.FormResponseDto;
+import net.causw.application.dto.form.ReplyUserResponseDto;
 import net.causw.application.form.FormService;
 import net.causw.config.security.SecurityService;
 import net.causw.config.security.userdetails.CustomUserDetails;
@@ -14,6 +15,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -65,6 +68,16 @@ public class FormController {
             throw new UnauthorizedException(ErrorCode.API_NOT_ACCESSIBLE, MessageUtil.API_NOT_ACCESSIBLE);
         }
         formService.replyForm(formId, formReplyRequestDto, userDetails.getUser());
+    }
+
+    @GetMapping("/{formId}/results")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@securityService.activeAndNotNoneUser and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT', 'LEADER_CIRCLE')")
+    public List<ReplyUserResponseDto> findUserReply(
+            @PathVariable(name = "formId") String formId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ){
+        return formService.findUserReply(formId, userDetails.getUser());
     }
 
 }
