@@ -1301,8 +1301,25 @@ public class UserService {
         }
 
         return userList.stream()
-                .map(UserResponseDto::from)
+                .map(user -> {
+                    if (user.getRoles().contains(Role.LEADER_CIRCLE)) {
+                        List<String> circleIdIfLeader = getCircleIdsIfLeader(user);
+                        List<String> circleNameIfLeader = getCircleNamesIfLeader(user);
+                        return DtoMapper.INSTANCE.toUserResponseDto(user, circleIdIfLeader, circleNameIfLeader);
+                    }
+                    else {
+                        return DtoMapper.INSTANCE.toUserResponseDto(user, null, null);
+                    }
+                })
                 .collect(Collectors.toList());
+    }
+
+    private List<String> getCircleNamesIfLeader(User user) {
+        return null;
+    }
+
+    private List<String> getCircleIdsIfLeader(User user) {
+        return null;
     }
 
     private BoardResponseDto toBoardResponseDto(Board board, Role userRole) {
