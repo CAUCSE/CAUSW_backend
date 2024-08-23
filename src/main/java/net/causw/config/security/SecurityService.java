@@ -35,7 +35,7 @@ public class SecurityService {
         }
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        int userSemester = userDetails.getUser().getSemester();
+        Integer userSemester = userDetails.getUser().getCurrentCompletedSemester();
 
         Form form = formRepository.findById(formId)
                 .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.FORM_NOT_FOUND));

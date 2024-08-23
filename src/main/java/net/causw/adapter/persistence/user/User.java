@@ -71,9 +71,6 @@ public class User extends BaseEntity {
     @Column(name = "refresh_token", nullable = true)
     private String refreshToken;
 
-    @Column(name = "semester")
-    private Integer semester;
-
     @Column(name = "state", nullable = false)
     @Enumerated(EnumType.STRING)
     private UserState state;
@@ -93,7 +90,6 @@ public class User extends BaseEntity {
             String password,
             String studentId,
             Integer admissionYear,
-            Integer semester,
             Set<Role> roles,
             List<String> profileImages,
             UserState state
@@ -104,7 +100,6 @@ public class User extends BaseEntity {
         this.password = password;
         this.studentId = studentId;
         this.admissionYear = admissionYear;
-        this.semester = semester;
         this.roles = roles;
         this.profileImages = profileImages;
         this.state = state;
@@ -118,7 +113,6 @@ public class User extends BaseEntity {
                 userDomainModel.getPassword(),
                 userDomainModel.getStudentId(),
                 userDomainModel.getAdmissionYear(),
-                userDomainModel.getSemester(),
                 userDomainModel.getRoles(),
                 userDomainModel.getProfileImages(),
                 userDomainModel.getState()
