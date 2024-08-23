@@ -128,7 +128,7 @@ public interface DtoMapper{
     @Mapping(target = "graduationYear", source = "entity.graduationYear")
     @Mapping(target = "graduationMonth", source = "entity.graduationMonth")
     @Mapping(target = "phoneNumber", source = "entity.phoneNumber")
-    UserResponseDto toUserResponseDto(User entity);
+    UserResponseDto toUserResponseDto(User entity, List<String> circleIdIfLeader, List<String> circleNameIfLeader);
 
 
     // Board
