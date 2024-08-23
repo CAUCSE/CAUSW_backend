@@ -1315,7 +1315,11 @@ public class UserService {
     }
 
     private List<String> getCircleNamesIfLeader(User user) {
-        return null;
+        List<Circle> circleList = this.circleRepository.findByLeader_Id(user.getId());
+
+        return circleList.stream()
+                .map(Circle::getName)
+                .collect(Collectors.toList());
     }
 
     private List<String> getCircleIdsIfLeader(User user) {
