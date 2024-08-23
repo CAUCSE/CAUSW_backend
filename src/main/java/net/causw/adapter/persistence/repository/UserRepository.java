@@ -30,7 +30,7 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     Optional<User> findByStudentIdAndNameAndPhoneNumber(String studentId, String name, String phoneNumber);
 
-    List<User> findByStudentIdStartingWithAndStateAndAcademicStatus(String studentId, UserState userState, AcademicStatus academicStatus);
+    List<User> findByStudentIdAndStateAndAcademicStatus(String studentId, UserState userState, AcademicStatus academicStatus);
 
     @Query("SELECT u FROM User u WHERE :role MEMBER OF u.roles AND u.state = :state")
     List<User> findByRoleAndState(@Param("role") Role role, @Param("state") UserState state);
