@@ -498,7 +498,7 @@ public class UserController {
 
     @GetMapping(value = "/studentId/{studentId}")
     @ResponseStatus(value = HttpStatus.OK)
-    @Operation(summary = "학번으로 회원 조회 API", description = "학번 일부를 입력하면 입력 정보로 시작하는 학번의 회원 조회")
+    @Operation(summary = "학번으로 회원 조회 API", description = "학번 일부를 입력하면 입력 정보로 시작하는 학번의 회원 조회, 회원은 활동 중이고 재학 상태여야 함")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserResponseDto.class))),
             @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
