@@ -1323,7 +1323,11 @@ public class UserService {
     }
 
     private List<String> getCircleIdsIfLeader(User user) {
-        return null;
+        List<Circle> circleList = this.circleRepository.findByLeader_Id(user.getId());
+
+        return circleList.stream()
+                .map(Circle::getId)
+                .collect(Collectors.toList());
     }
 
     private BoardResponseDto toBoardResponseDto(Board board, Role userRole) {
