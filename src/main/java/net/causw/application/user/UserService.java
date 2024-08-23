@@ -1291,7 +1291,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public List<UserResponseDto> findByStudentId(String studentId) {
-        List<User> userList = this.userRepository.findByStudentIdStartingWith(studentId);
+        List<User> userList = this.userRepository.findByStudentIdStartingWithAndStateAndAcademicStatus(studentId);
 
         if (userList.isEmpty()) {
             throw new BadRequestException(
