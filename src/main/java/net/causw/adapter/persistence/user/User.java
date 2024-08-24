@@ -121,4 +121,10 @@ public class User extends BaseEntity {
                 userDomainModel.getState()
         );
     }
+
+    public void update(String nickname, AcademicStatus academicStatus, String profileImage) {
+        this.nickname = nickname;
+        this.academicStatus = academicStatus;
+        this.profileImage = profileImage;
+    }
 }

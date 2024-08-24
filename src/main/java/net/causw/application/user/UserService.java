@@ -548,23 +548,20 @@ public class UserService {
     public UserResponseDto update(User user, UserUpdateRequestDto userUpdateRequestDto) {
         Set<Role> roles = user.getRoles();
 
-        if (!user.getEmail().equals(userUpdateRequestDto.getEmail())) {
-            userRepository.findByEmail(userUpdateRequestDto.getEmail()).ifPresent(
-                    email -> {
+        // 닉네임이 변경되었을 때 중복 체크 (이메일 중복 체크의 경우 바뀐 기획에서 이메일 변경이 불가능하여 삭제)
+        if (!user.getNickname().equals(userUpdateRequestDto.getNickname())) {
+            userRepository.findByNickname(userUpdateRequestDto.getNickname()).ifPresent(
+                    nickname -> {
                         throw new BadRequestException(
                                 ErrorCode.ROW_ALREADY_EXIST,
-                                MessageUtil.EMAIL_ALREADY_EXIST
+                                MessageUtil.NICKNAME_ALREADY_EXIST
                         );
                     }
             );
         }
 
-        // Update user entity with requested parameters
-        user.setEmail(userUpdateRequestDto.getEmail());
-        user.setName(userUpdateRequestDto.getName());
-        user.setStudentId(userUpdateRequestDto.getStudentId());
-        user.setAdmissionYear(userUpdateRequestDto.getAdmissionYear());
-        user.setProfileImage(userUpdateRequestDto.getProfileImage());
+        //다른 서비스단과 update 방식 통일하기
+        user.update(userUpdateRequestDto.getNickname(),userUpdateRequestDto.getAcademicStatus(),userUpdateRequestDto.getProfileImage());
 
         // Validate the admission year range
         ValidatorBucket.of()
