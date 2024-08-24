@@ -258,20 +258,18 @@ public class UserService {
                                             this.circleMemberRepository.findByUser_IdAndCircle_Id(user.getId(), circle.getId())
                                                     .map(circleMemberEntity -> circleMemberEntity.getStatus() == CircleMemberStatus.MEMBER)
                                                     .orElse(false)))
-                    .map(user -> UserResponseDto.of(
+                    .map(user -> DtoMapper.INSTANCE.toUserResponseDto(
                             user,
                             ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
-                            ownCircles.stream().map(Circle::getName).collect(Collectors.toList())))
+                            ownCircles.stream().map(Circle::getId).collect(Collectors.toList())))
                     .collect(Collectors.toList());
-
         }
 
         return this.userRepository.findByName(name)
                 .stream()
                 .filter(user -> user.getState().equals(UserState.ACTIVE))
-                .map(UserResponseDto::from)
+                .map(user -> DtoMapper.INSTANCE.toUserResponseDto(user, null, null))
                 .collect(Collectors.toList());
-
     }
 
     @Transactional(readOnly = true)
