@@ -99,7 +99,10 @@ public class UserService {
                 }).orElseThrow(() -> new BadRequestException(
                 ErrorCode.ROW_DOES_NOT_EXIST,
                 MessageUtil.USER_NOT_FOUND));
-        return DtoMapper.INSTANCE.toUserResponseDto(requestUser, getCircleIdsIfLeader(requestUser), getCircleNamesIfLeader(requestUser));
+        if (requestUser.getRoles().contains(Role.LEADER_CIRCLE)) {
+            return DtoMapper.INSTANCE.toUserResponseDto(requestUser, getCircleIdsIfLeader(requestUser), getCircleNamesIfLeader(requestUser));
+        }
+        return DtoMapper.INSTANCE.toUserResponseDto(requestUser, null, null);
     }
 
     // Find process of another user
