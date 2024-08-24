@@ -1228,12 +1228,18 @@ public class UserService {
         this.updateRole(restoredUser, Role.COMMON);
 
 
-        return UserResponseDto.from(this.updateState(restoredUser.getId(), UserState.ACTIVE).orElseThrow(
-                () -> new InternalServerException(
+//        return UserResponseDto.from(this.updateState(restoredUser.getId(), UserState.ACTIVE).orElseThrow(
+//                () -> new InternalServerException(
+//                        ErrorCode.INTERNAL_SERVER,
+//                        MessageUtil.INTERNAL_SERVER_ERROR
+//                )
+//        ));
+        User entity = this.updateState(restoredUser.getId(), UserState.ACTIVE)
+                .orElseThrow(() -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.INTERNAL_SERVER_ERROR
-                )
-        ));
+                ));
+        return DtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
     }
 
     @Transactional
