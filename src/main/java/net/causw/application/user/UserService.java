@@ -873,7 +873,7 @@ public class UserService {
         user.setPassword(this.passwordEncoder.encode(userUpdatePasswordRequestDto.getUpdatedPassword()));
         User updatedUser = this.userRepository.save(user);
 
-        return UserResponseDto.from(updatedUser);
+        return DtoMapper.INSTANCE.toUserResponseDto(updatedUser, null, null);
     }
 
     @Transactional
