@@ -454,7 +454,7 @@ public class UserService {
                 .consistOf(AdmissionYearValidator.of(userCreateRequestDto.getAdmissionYear()))
                 .validate();
 
-        return UserResponseDto.from(user);
+        return DtoMapper.INSTANCE.toUserResponseDto(user, null, null);
     }
 
     @Transactional
