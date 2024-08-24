@@ -379,13 +379,13 @@ public class UserService {
                     );
                 }
 
-                return UserResponseDto.of(
+                return DtoMapper.INSTANCE.toUserResponseDto(
                         userEntity,
                         ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
                         ownCircles.stream().map(Circle::getName).collect(Collectors.toList())
                 );
             } else {
-                return UserResponseDto.from(userEntity);
+                return DtoMapper.INSTANCE.toUserResponseDto(userEntity, null, null);
             }
         });
     }
