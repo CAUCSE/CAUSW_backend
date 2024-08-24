@@ -162,15 +162,13 @@ public class UserService {
                 );
             }
 
-            return UserResponseDto.of(
+            return DtoMapper.INSTANCE.toUserResponseDto(
                     requestUser,
                     ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
                     ownCircles.stream().map(Circle::getName).collect(Collectors.toList())
-
             );
         }
-
-        return UserResponseDto.from(requestUser);
+        return DtoMapper.INSTANCE.toUserResponseDto(requestUser, null, null);
     }
 
     @Transactional(readOnly = true)
