@@ -980,12 +980,12 @@ public class UserService {
 
         this.updateRole(droppedUser, Role.NONE);
 
-        return UserResponseDto.from(this.updateState(userId, UserState.DROP).orElseThrow(
-                () -> new InternalServerException(
+        User entity = this.updateState(userId, UserState.DROP)
+                .orElseThrow(() -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.INTERNAL_SERVER_ERROR
-                )
-        ));
+                ));
+        return DtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
     }
 
     @Transactional(readOnly = true)
