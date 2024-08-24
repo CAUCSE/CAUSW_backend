@@ -913,12 +913,12 @@ public class UserService {
                         this.updateStatus(circleMember.getId(), CircleMemberStatus.LEAVE)
                 );
 
-        return UserResponseDto.from(this.updateState(user.getId(), UserState.INACTIVE).orElseThrow(
-                () -> new InternalServerException(
+        User entity = this.updateState(user.getId(), UserState.INACTIVE)
+                .orElseThrow(() -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.INTERNAL_SERVER_ERROR
-                )
-        ));
+                ));
+        return DtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
     }
 
 
