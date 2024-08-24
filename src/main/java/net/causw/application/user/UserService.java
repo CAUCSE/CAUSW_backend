@@ -135,12 +135,13 @@ public class UserService {
             }
         }
 
-        return this.userRepository.findById(targetUserId)
-                .map(UserResponseDto::from)
-                .orElseThrow(() -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_NOT_FOUND
-                ));
+        User entity = this.userRepository.findById(targetUserId)
+                .orElseThrow(() ->
+                        new BadRequestException(
+                                ErrorCode.ROW_DOES_NOT_EXIST,
+                                MessageUtil.USER_NOT_FOUND
+                        ));
+        return DtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
     }
 
     @Transactional(readOnly = true)
