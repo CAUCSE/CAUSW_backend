@@ -573,7 +573,7 @@ public class UserService {
 
         User updatedUser = userRepository.save(user);
 
-        return UserResponseDto.from(updatedUser);
+        return DtoMapper.INSTANCE.toUserResponseDto(updatedUser, null, null);
     }
 
 
