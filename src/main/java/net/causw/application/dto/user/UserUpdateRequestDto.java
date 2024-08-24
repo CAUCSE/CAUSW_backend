@@ -27,5 +27,5 @@ public class UserUpdateRequestDto {
     private Integer admissionYear;
 
     @Schema(description = "프로필 이미지 URL", example = "")
-    private List<String> profileImages;
+    private String profileImage;
 }

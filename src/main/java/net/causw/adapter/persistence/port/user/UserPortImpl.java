@@ -80,7 +80,7 @@ public class UserPortImpl extends DomainModelMapper implements UserPort {
                     srcUser.setName(userDomainModel.getName());
                     srcUser.setStudentId(userDomainModel.getStudentId());
                     srcUser.setAdmissionYear(userDomainModel.getAdmissionYear());
-                    srcUser.setProfileImages(userDomainModel.getProfileImages());
+                    srcUser.setProfileImage(userDomainModel.getProfileImage());
 
                     return this.entityToDomainModel(this.userRepository.save(srcUser));
                 }

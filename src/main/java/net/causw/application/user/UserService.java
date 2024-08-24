@@ -564,7 +564,7 @@ public class UserService {
         user.setName(userUpdateRequestDto.getName());
         user.setStudentId(userUpdateRequestDto.getStudentId());
         user.setAdmissionYear(userUpdateRequestDto.getAdmissionYear());
-        user.setProfileImages(userUpdateRequestDto.getProfileImages());
+        user.setProfileImage(userUpdateRequestDto.getProfileImage());
 
         // Validate the admission year range
         ValidatorBucket.of()

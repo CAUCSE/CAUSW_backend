@@ -18,7 +18,7 @@ public class UserCommentsResponseDto {
     private String name;
     private String studentId;
     private Integer admissionYear;
-    private List<String>  profileImages;
+    private String  profileImage;
     private Page<CommentsOfUserResponseDto> comment;
 
     public static UserCommentsResponseDto of(
@@ -31,7 +31,7 @@ public class UserCommentsResponseDto {
                 .name(user.getName())
                 .studentId(user.getStudentId())
                 .admissionYear(user.getAdmissionYear())
-                .profileImages(user.getProfileImages())
+                .profileImage(user.getProfileImage())
                 .comment(comment)
                 .build();
     }
