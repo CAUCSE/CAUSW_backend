@@ -734,7 +734,7 @@ public class UserService {
             );
         }
 
-        return UserResponseDto.from(this.updateRole(grantee, userUpdateRoleRequestDto.getRole()));
+        return DtoMapper.INSTANCE.toUserResponseDto(this.updateRole(grantee, userUpdateRoleRequestDto.getRole()), null, null);
     }
 
     private String checkAuthAndCircleId(UserUpdateRoleRequestDto userUpdateRoleRequestDto, User grantee) {
