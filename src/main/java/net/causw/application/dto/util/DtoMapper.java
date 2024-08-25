@@ -140,6 +140,12 @@ public interface DtoMapper{
     @Mapping(target = "profileImages", source = "entity.profileImages")
     UserPostsResponseDto toUserPostsResponseDto(User entity, Page<UserPostResponseDto> post);
 
+    @Mapping(target = "id", source = "entity.id")
+    @Mapping(target = "title", source = "entity.title")
+    @Mapping(target = "createdAt", source = "entity.createdAt")
+    @Mapping(target = "updatedAt", source = "entity.updatedAt")
+    UserPostResponseDto toUserPostResponseDto(Post entity, String boardId, String boardName, String circleId, String circleName, Long numComment);
+
     // Board
     BoardResponseDto toBoardResponseDto(Board entity, List<String> createRoleList, Boolean writable, String circleId, String circleName);
 
