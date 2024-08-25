@@ -16,6 +16,8 @@ import net.causw.application.dto.post.PostContentDto;
 import net.causw.application.dto.post.PostResponseDto;
 import net.causw.application.dto.post.PostsResponseDto;
 import net.causw.application.dto.user.UserFindIdResponseDto;
+import net.causw.application.dto.user.UserPostResponseDto;
+import net.causw.application.dto.user.UserPostsResponseDto;
 import net.causw.application.dto.user.UserResponseDto;
 import net.causw.domain.model.enums.Role;
 import org.mapstruct.Mapper;
@@ -130,6 +132,13 @@ public interface DtoMapper{
     @Mapping(target = "phoneNumber", source = "entity.phoneNumber")
     UserResponseDto toUserResponseDto(User entity, List<String> circleIdIfLeader, List<String> circleNameIfLeader);
 
+    @Mapping(target = "id", source = "entity.id")
+    @Mapping(target = "email", source = "entity.email")
+    @Mapping(target = "name", source = "entity.name")
+    @Mapping(target = "studentId", source = "entity.studentId")
+    @Mapping(target = "admissionYear", source = "entity.admissionYear")
+    @Mapping(target = "profileImages", source = "entity.profileImages")
+    UserPostsResponseDto toUserPostsResponseDto(User entity, Page<UserPostResponseDto> post);
 
     // Board
     BoardResponseDto toBoardResponseDto(Board entity, List<String> createRoleList, Boolean writable, String circleId, String circleName);
