@@ -1100,7 +1100,7 @@ public class UserService {
                 .consistOf(ConstraintValidator.of(userAdmission, this.validator))
                 .validate();
 
-        return UserAdmissionResponseDto.from(this.userAdmissionRepository.save(userAdmission));
+        return DtoMapper.INSTANCE.toUserAdmissionResponseDto(this.userAdmissionRepository.save(userAdmission));
     }
 
     @Transactional
