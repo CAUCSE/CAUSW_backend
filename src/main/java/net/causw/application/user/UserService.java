@@ -1180,14 +1180,14 @@ public class UserService {
         this.userAdmissionLogRepository.save(userAdmissionLog);
         this.userAdmissionRepository.delete(userAdmission);
 
-        return UserAdmissionResponseDto.of(
+        return DtoMapper.INSTANCE.toUserAdmissionResponseDto(
                 userAdmission,
-                this.updateState(userAdmission.getUser().getId(), UserState.REJECT).orElseThrow(
-                        () -> new InternalServerException(
+                this.updateState(userAdmission.getUser().getId(), UserState.REJECT)
+                        .orElseThrow(() -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
                                 MessageUtil.ADMISSION_EXCEPTION
-                        )
-                ));
+                        ))
+        );
     }
 
     //TODO: 현재 사용하지 않는 기능으로 주석처리
