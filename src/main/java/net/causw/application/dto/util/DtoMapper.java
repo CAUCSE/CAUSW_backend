@@ -10,15 +10,13 @@ import net.causw.application.dto.board.BoardOfCircleResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentResponseDto;
+import net.causw.application.dto.comment.CommentsOfUserResponseDto;
 import net.causw.application.dto.file.FileResponseDto;
 import net.causw.application.dto.post.BoardPostsResponseDto;
 import net.causw.application.dto.post.PostContentDto;
 import net.causw.application.dto.post.PostResponseDto;
 import net.causw.application.dto.post.PostsResponseDto;
-import net.causw.application.dto.user.UserFindIdResponseDto;
-import net.causw.application.dto.user.UserPostResponseDto;
-import net.causw.application.dto.user.UserPostsResponseDto;
-import net.causw.application.dto.user.UserResponseDto;
+import net.causw.application.dto.user.*;
 import net.causw.domain.model.enums.Role;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -145,6 +143,14 @@ public interface DtoMapper{
     @Mapping(target = "createdAt", source = "entity.createdAt")
     @Mapping(target = "updatedAt", source = "entity.updatedAt")
     UserPostResponseDto toUserPostResponseDto(Post entity, String boardId, String boardName, String circleId, String circleName, Long numComment);
+
+    @Mapping(target = "id", source = "entity.id")
+    @Mapping(target = "email", source = "entity.email")
+    @Mapping(target = "name", source = "entity.name")
+    @Mapping(target = "studentId", source = "entity.studentId")
+    @Mapping(target = "admissionYear", source = "entity.admissionYear")
+    @Mapping(target = "profileImages", source = "entity.profileImages")
+    UserCommentsResponseDto toUserCommentsResponseDto(User entity, Page<CommentsOfUserResponseDto> comment);
 
     // Board
     BoardResponseDto toBoardResponseDto(Board entity, List<String> createRoleList, Boolean writable, String circleId, String circleName);
