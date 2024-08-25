@@ -1,10 +1,12 @@
 package net.causw.application.dto.util;
 
 import net.causw.adapter.persistence.board.Board;
+import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.user.User;
+import net.causw.adapter.persistence.user.UserAdmission;
 import net.causw.application.dto.board.BoardMainResponseDto;
 import net.causw.application.dto.board.BoardOfCircleResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
@@ -160,6 +162,14 @@ public interface DtoMapper{
     CommentsOfUserResponseDto toCommentsOfUserResponseDto(Comment entity, String boardId, String boardName, String postId, String postName, String circleId, String circleName);
 
     UserSignInResponseDto toUserSignInResponseDto(String accessToken, String refreshToken);
+
+    @Mapping(target = "id", source = "entity.id")
+    @Mapping(target = "user", source = "entity.user")
+    @Mapping(target = "attachImage", source = "entity.attachImage")
+    @Mapping(target = "description", source = "entity.description")
+    @Mapping(target = "createdAt", source = "entity.createdAt")
+    @Mapping(target = "updatedAt", source = "entity.updatedAt")
+    UserAdmissionResponseDto toUserAdmissionResponseDto(UserAdmission entity);
 
     // Board
     BoardResponseDto toBoardResponseDto(Board entity, List<String> createRoleList, Boolean writable, String circleId, String circleName);
