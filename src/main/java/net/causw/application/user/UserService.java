@@ -1057,8 +1057,8 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .validate();
 
-        return this.userAdmissionRepository.findAllWithName(UserState.AWAIT.getValue(), name, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
-                .map(UserAdmissionsResponseDto::from);
+        return this.userAdmissionRepository.findAllWithName(UserState.AWAIT.getValue(), name, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE))
+                .map(DtoMapper.INSTANCE::toUserAdmissionsResponseDto);
     }
 
     @Transactional
