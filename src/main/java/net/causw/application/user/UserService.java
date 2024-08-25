@@ -215,18 +215,39 @@ public class UserService {
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .validate();
 
-        return UserCommentsResponseDto.of(
+//        return UserCommentsResponseDto.of(
+//                requestUser,
+//                this.commentRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_COMMENT_PAGE_SIZE))
+//                        .map(comment -> {
+//                            Post post = this.postRepository.findById(comment.getPost().getId()).orElseThrow(
+//                                    () -> new BadRequestException(
+//                                            ErrorCode.ROW_DOES_NOT_EXIST,
+//                                            MessageUtil.POST_NOT_FOUND
+//                                    )
+//                            );
+//
+//                            return CommentsOfUserResponseDto.of(
+//                                    comment,
+//                                    post.getBoard().getId(),
+//                                    post.getBoard().getName(),
+//                                    post.getId(),
+//                                    post.getTitle(),
+//                                    post.getBoard().getCircle() != null ? post.getBoard().getCircle().getId() : null,
+//                                    post.getBoard().getCircle() != null ? post.getBoard().getCircle().getName() : null
+//                            );
+//                        })
+//
+//        );
+        return DtoMapper.INSTANCE.toUserCommentsResponseDto(
                 requestUser,
                 this.commentRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_COMMENT_PAGE_SIZE))
                         .map(comment -> {
-                            Post post = this.postRepository.findById(comment.getPost().getId()).orElseThrow(
-                                    () -> new BadRequestException(
+                            Post post = this.postRepository.findById(comment.getPost().getId())
+                                    .orElseThrow(() -> new BadRequestException(
                                             ErrorCode.ROW_DOES_NOT_EXIST,
                                             MessageUtil.POST_NOT_FOUND
-                                    )
-                            );
-
-                            return CommentsOfUserResponseDto.of(
+                                    ));
+                            return DtoMapper.INSTANCE.toCommentsOfUserResponseDto(
                                     comment,
                                     post.getBoard().getId(),
                                     post.getBoard().getName(),
@@ -236,7 +257,6 @@ public class UserService {
                                     post.getBoard().getCircle() != null ? post.getBoard().getCircle().getName() : null
                             );
                         })
-
         );
     }
 
