@@ -1034,12 +1034,13 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .validate();
 
-        return UserAdmissionResponseDto.from(this.userAdmissionRepository.findById(admissionId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_APPLY_NOT_FOUND
-                )
-        ));
+        return DtoMapper.INSTANCE.toUserAdmissionResponseDto(
+                this.userAdmissionRepository.findById(admissionId)
+                        .orElseThrow(() -> new BadRequestException(
+                                ErrorCode.ROW_DOES_NOT_EXIST,
+                                MessageUtil.USER_APPLY_NOT_FOUND
+                        ))
+        );
     }
 
     @Transactional(readOnly = true)
