@@ -1309,9 +1309,7 @@ public class UserService {
         redisUtils.addToBlacklist(userSignOutRequestDto.getAccessToken());
         redisUtils.deleteData(userSignOutRequestDto.getRefreshToken());
 
-        return UserSignOutResponseDto.builder()
-                .message("로그아웃 성공")
-                .build();
+        return DtoMapper.INSTANCE.toUserSignOutResponseDto("로그아웃 성공");
     }
 
     public UserFindIdResponseDto findUserId(UserFindIdRequestDto userIdFindRequestDto) {
