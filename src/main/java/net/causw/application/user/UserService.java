@@ -1289,6 +1289,47 @@ public class UserService {
         return DtoMapper.INSTANCE.toUserfindIdResponseDto(user);
     }
 
+    @Transactional(readOnly = true)
+    public List<UserResponseDto> findByStudentId(String studentId) {
+        List<User> userList = this.userRepository.findByStudentIdAndStateAndAcademicStatus(studentId, UserState.ACTIVE, AcademicStatus.ENROLLED);
+
+        if (userList.isEmpty()) {
+            throw new BadRequestException(
+                    ErrorCode.ROW_DOES_NOT_EXIST,
+                    MessageUtil.USER_NOT_FOUND
+            );
+        }
+
+        return userList.stream()
+                .map(user -> {
+                    if (user.getRoles().contains(Role.LEADER_CIRCLE)) {
+                        List<String> circleIdIfLeader = getCircleIdsIfLeader(user);
+                        List<String> circleNameIfLeader = getCircleNamesIfLeader(user);
+                        return DtoMapper.INSTANCE.toUserResponseDto(user, circleIdIfLeader, circleNameIfLeader);
+                    }
+                    else {
+                        return DtoMapper.INSTANCE.toUserResponseDto(user, null, null);
+                    }
+                })
+                .collect(Collectors.toList());
+    }
+
+    private List<String> getCircleNamesIfLeader(User user) {
+        List<Circle> circleList = this.circleRepository.findByLeader_Id(user.getId());
+
+        return circleList.stream()
+                .map(Circle::getName)
+                .collect(Collectors.toList());
+    }
+
+    private List<String> getCircleIdsIfLeader(User user) {
+        List<Circle> circleList = this.circleRepository.findByLeader_Id(user.getId());
+
+        return circleList.stream()
+                .map(Circle::getId)
+                .collect(Collectors.toList());
+    }
+
     private BoardResponseDto toBoardResponseDto(Board board, Role userRole) {
         List<String> roles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
         Boolean writable = roles.stream().anyMatch(str -> userRole.getValue().contains(str));
