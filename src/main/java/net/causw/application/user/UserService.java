@@ -1138,15 +1138,6 @@ public class UserService {
         this.userAdmissionLogRepository.save(userAdmissionLog);
         this.userAdmissionRepository.delete(userAdmission);
 
-//        return UserAdmissionResponseDto.of(
-//                userAdmission,
-//                this.updateState(userAdmission.getUser().getId(), UserState.ACTIVE).orElseThrow(
-//                        () -> new InternalServerException(
-//                                ErrorCode.INTERNAL_SERVER,
-//                                MessageUtil.ADMISSION_EXCEPTION
-//                        )
-//                )
-//        );
         return DtoMapper.INSTANCE.toUserAdmissionResponseDto(
                 userAdmission,
                 this.updateState(userAdmission.getUser().getId(), UserState.ACTIVE)
