@@ -159,6 +159,8 @@ public interface DtoMapper{
     @Mapping(target = "isDeleted", source = "entity.isDeleted")
     CommentsOfUserResponseDto toCommentsOfUserResponseDto(Comment entity, String boardId, String boardName, String postId, String postName, String circleId, String circleName);
 
+    UserSignInResponseDto toUserSignInResponseDto(String accessToken, String refreshToken);
+
     // Board
     BoardResponseDto toBoardResponseDto(Board entity, List<String> createRoleList, Boolean writable, String circleId, String circleName);
 
