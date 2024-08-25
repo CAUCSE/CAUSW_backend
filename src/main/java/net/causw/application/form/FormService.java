@@ -24,10 +24,7 @@ import net.causw.adapter.persistence.user.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -163,11 +160,54 @@ public class FormService {
     }
 
 
-        return new QuestionResponseDto(question.getId(), question.getNumber(), question.getQuestionText(), question.getIsMultiple(), optionResponseDtos);
+    //2. 각 질문별 결과를 반환(요약)
+    //이거는 그냥 form의 질문별로 결과를 보여주면 될듯
+    @Transactional(readOnly = true)
+    public List<QuestionSummaryResponseDto> findSummaryReply(String formId, User user){
+        List<Reply> replies = replyRepository.findAllByFormId(formId);
+
+        Map<Question, List<Reply>> repliesByQuestion = replies.stream()
+                .collect(Collectors.groupingBy(Reply::getQuestion));
+
+        return repliesByQuestion.entrySet().stream()
+                .map(entry -> {
+                    Question question = entry.getKey();
+                    List<Reply> questionReplies = entry.getValue();
+
+
+                    Map<Integer, Long> optionCount = new HashMap<>();
+                    List<String> questionAnswers = new ArrayList<>();
+
+
+                    for (Reply reply : questionReplies) {
+                        //주관식 정답 저장
+                        if(reply.getQuestionAnswer() != null){
+                            questionAnswers.add(reply.getQuestionAnswer());
+                        }
+                        //객관식 정답 저장
+                        for (Integer optionNumber : reply.getSelectedOptions()) {
+                            optionCount.put(optionNumber, optionCount.getOrDefault(optionNumber, 0L) + 1);
+                        }
+                    }
+
+                    List<OptionSummaryResponseDto> optionSummaries = question.getOptions().stream()
+                            .map(option -> DtoMapper.INSTANCE.toOptionSummaryResponseDto(option, optionCount.getOrDefault(option.getNumber(), 0L)))
+                            .collect(Collectors.toList());
+
+
+                    return DtoMapper.INSTANCE.toQuestionSummaryResponseDto(question, questionAnswers, optionSummaries);
+                })
+                .collect(Collectors.toList());
     }
 
-    private OptionResponseDto toOptionResponseDto(Option option){
-        return new OptionResponseDto(option.getId(), option.getNumber(), option.getOptionText(), option.getIsSelected());
+
+    private User getUser(String userId) {
+        return userRepository.findById(userId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.USER_NOT_FOUND
+                )
+        );
     }
 
     private Form getForm(String formId){

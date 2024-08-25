@@ -154,11 +154,17 @@ public interface DtoMapper{
     @Mapping(target = "questionId", source = "reply.question.id")
     QuestionReplyResponseDto toQuestionReplyResponseDto(Reply reply);
 
-    // User 및 Reply 리스트 -> ReplyUserResponseDto로 매핑
     @Mapping(target = "userId", source = "user.id")
     @Mapping(target = "userName", source = "user.name")
     @Mapping(target = "replies", source = "replies")
     ReplyUserResponseDto toReplyUserResponseDto(User user, List<QuestionReplyResponseDto> replies);
 
 
+    OptionSummaryResponseDto toOptionSummaryResponseDto(Option option, Long selectedCount);
+
+    @Mapping(target = "questionId", source = "question.id")
+    @Mapping(target = "questionText", source = "question.questionText")
+    @Mapping(target = "questionAnswers", source = "questionAnswers")
+    @Mapping(target = "optionSummaries", source = "optionSummaries")
+    QuestionSummaryResponseDto toQuestionSummaryResponseDto(Question question, List<String> questionAnswers,List<OptionSummaryResponseDto> optionSummaries) ;
 }

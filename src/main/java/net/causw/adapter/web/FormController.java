@@ -1,10 +1,7 @@
 package net.causw.adapter.web;
 
 import lombok.RequiredArgsConstructor;
-import net.causw.application.dto.form.FormCreateRequestDto;
-import net.causw.application.dto.form.FormReplyRequestDto;
-import net.causw.application.dto.form.FormResponseDto;
-import net.causw.application.dto.form.ReplyUserResponseDto;
+import net.causw.application.dto.form.*;
 import net.causw.application.form.FormService;
 import net.causw.config.security.SecurityService;
 import net.causw.config.security.userdetails.CustomUserDetails;
@@ -80,4 +77,13 @@ public class FormController {
         return formService.findUserReply(formId, userDetails.getUser());
     }
 
+    @GetMapping("/{formId}/summary")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@securityService.activeAndNotNoneUser and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT', 'LEADER_CIRCLE')")
+    public List<QuestionSummaryResponseDto> findSummaryReply(
+            @PathVariable(name = "formId") String formId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ){
+        return formService.findSummaryReply(formId, userDetails.getUser());
+    }
 }
