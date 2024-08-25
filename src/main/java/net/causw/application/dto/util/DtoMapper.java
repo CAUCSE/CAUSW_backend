@@ -171,6 +171,17 @@ public interface DtoMapper{
     @Mapping(target = "updatedAt", source = "entity.updatedAt")
     UserAdmissionResponseDto toUserAdmissionResponseDto(UserAdmission entity);
 
+    @Mapping(target = "id", source = "entity.id")
+    @Mapping(target = "userName", source = "entity.user.name")
+    @Mapping(target = "userEmail", source = "entity.user.email")
+    @Mapping(target = "admissionYear", source = "entity.user.admissionYear")
+    @Mapping(target = "attachImage", source = "entity.attachImage")
+    @Mapping(target = "description", source = "entity.description")
+    @Mapping(target = "userState", source = "entity.user.state")
+    @Mapping(target = "createdAt", source = "entity.createdAt")
+    @Mapping(target = "updatedAt", source = "entity.updatedAt")
+    UserAdmissionsResponseDto toUserAdmissionsResponseDto(UserAdmission entity);
+
     // Board
     BoardResponseDto toBoardResponseDto(Board entity, List<String> createRoleList, Boolean writable, String circleId, String circleName);
 
