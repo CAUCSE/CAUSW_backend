@@ -190,6 +190,8 @@ public interface DtoMapper{
     @Mapping(target = "updatedAt", source = "entity.updatedAt")
     UserAdmissionsResponseDto toUserAdmissionsResponseDto(UserAdmission entity);
 
+    UserSignOutResponseDto toUserSignOutResponseDto(String message);
+
     // Board
     BoardResponseDto toBoardResponseDto(Board entity, List<String> createRoleList, Boolean writable, String circleId, String circleName);
 
