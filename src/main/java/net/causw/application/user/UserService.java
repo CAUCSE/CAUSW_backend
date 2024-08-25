@@ -180,17 +180,29 @@ public class UserService {
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .validate();
 
-        return UserPostsResponseDto.of(
+//        return UserPostsResponseDto.of(
+//                requestUser,
+//                this.postRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
+//                        .map(post -> UserPostResponseDto.of(
+//                                post,
+//                                post.getBoard().getId(),
+//                                post.getBoard().getName(),
+//                                post.getBoard().getCircle() != null ? post.getBoard().getCircle().getId() : null,
+//                                post.getBoard().getCircle() != null ? post.getBoard().getCircle().getName() : null,
+//                                this.postRepository.countAllCommentByPost_Id(post.getId())
+//                        ))
+//        );
+        return DtoMapper.INSTANCE.toUserPostsResponseDto(
                 requestUser,
-                this.postRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
-                        .map(post -> UserPostResponseDto.of(
-                                post,
-                                post.getBoard().getId(),
-                                post.getBoard().getName(),
-                                post.getBoard().getCircle() != null ? post.getBoard().getCircle().getId() : null,
-                                post.getBoard().getCircle() != null ? post.getBoard().getCircle().getName() : null,
-                                this.postRepository.countAllCommentByPost_Id(post.getId())
-                        ))
+                this.postRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE)
+                ).map(post -> DtoMapper.INSTANCE.toUserPostResponseDto(
+                        post,
+                        post.getBoard().getId(),
+                        post.getBoard().getName(),
+                        post.getBoard().getCircle() != null ? post.getBoard().getCircle().getId() : null,
+                        post.getBoard().getCircle() != null ? post.getBoard().getCircle().getName() : null,
+                        this.postRepository.countAllCommentByPost_Id(post.getId())
+                ))
         );
     }
 
