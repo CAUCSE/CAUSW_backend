@@ -1294,9 +1294,8 @@ public class UserService {
 
         // STEP2 : 새로운 accessToken 제공
         String newAccessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getRoles(), user.getState());
-        return UserSignInResponseDto.builder()
-                .accessToken(newAccessToken)
-                .build();
+
+        return DtoMapper.INSTANCE.toUserSignInResponseDto(newAccessToken, refreshToken);
     }
 
     private String getUserIdFromRefreshToken(String refreshToken) {
