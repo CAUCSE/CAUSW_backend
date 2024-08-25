@@ -525,10 +525,14 @@ public class UserService {
         String refreshToken = jwtTokenProvider.createRefreshToken();
         redisUtils.setData(refreshToken,user.getId(),StaticValue.JWT_REFRESH_TOKEN_VALID_TIME);
 
-        return UserSignInResponseDto.builder()
-                .accessToken(jwtTokenProvider.createAccessToken(user.getId(), user.getRoles(), user.getState()))
-                .refreshToken(jwtTokenProvider.createRefreshToken())
-                .build();
+//        return UserSignInResponseDto.builder()
+//                .accessToken(jwtTokenProvider.createAccessToken(user.getId(), user.getRoles(), user.getState()))
+//                .refreshToken(jwtTokenProvider.createRefreshToken())
+//                .build();
+        return DtoMapper.INSTANCE.toUserSignInResponseDto(
+                jwtTokenProvider.createAccessToken(user.getId(), user.getRoles(), user.getState()),
+                jwtTokenProvider.createRefreshToken()
+        );
     }
 
     /**
