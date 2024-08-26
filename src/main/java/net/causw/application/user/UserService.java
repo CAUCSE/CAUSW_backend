@@ -433,19 +433,25 @@ public class UserService {
                 .consistOf(UserRoleIsNoneValidator.of(roles))
                 .validate();
 
-        //
         if (roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT)) {
             return this.circleRepository.findAllByIsDeletedIsFalse()
                     .stream()
-                    .map(CircleResponseDto::from)
+                    .map(circle -> {
+                        User leader = circle.getLeader()
+                                .orElse(null);
+                        return DtoMapper.INSTANCE.toCircleResponseDto(circle, leader);
+                    })
                     .collect(Collectors.toList());
         }
-
 
         return this.circleMemberRepository.findByUser_Id(user.getId())
                 .stream()
                 .filter(circleMember -> circleMember.getStatus() == CircleMemberStatus.MEMBER && !circleMember.getCircle().getIsDeleted())
-                .map(circleMember -> CircleResponseDto.from(circleMember.getCircle()))
+                .map(circleMember -> {
+                    User leader = circleMember.getCircle().getLeader()
+                            .orElse(null);
+                    return DtoMapper.INSTANCE.toCircleResponseDto(circleMember.getCircle(), leader);
+                })
                 .collect(Collectors.toList());
     }
 
