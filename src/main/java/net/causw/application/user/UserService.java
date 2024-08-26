@@ -559,7 +559,7 @@ public class UserService {
                 );
             }
         }
-        return DuplicatedCheckResponseDto.from(userFoundByEmail.isPresent());
+        return DtoMapper.INSTANCE.toDuplicatedCheckResponseDto(userFoundByEmail.isPresent());
     }
 
     /**
