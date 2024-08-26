@@ -14,6 +14,7 @@ import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.comment.CommentsOfUserResponseDto;
+import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.file.FileResponseDto;
 import net.causw.application.dto.post.BoardPostsResponseDto;
 import net.causw.application.dto.post.PostContentDto;
@@ -163,6 +164,8 @@ public interface DtoMapper{
     CommentsOfUserResponseDto toCommentsOfUserResponseDto(Comment entity, String boardId, String boardName, String postId, String postName, String circleId, String circleName);
 
     UserSignInResponseDto toUserSignInResponseDto(String accessToken, String refreshToken);
+
+    DuplicatedCheckResponseDto toDuplicatedCheckResponseDto(Boolean result);
 
     @Mapping(target = "id", source = "entity.id")
     @Mapping(target = "user", source = "entity.user")
