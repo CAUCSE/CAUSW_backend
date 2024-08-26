@@ -580,7 +580,7 @@ public class UserService {
                 );
             }
         }
-        return DuplicatedCheckResponseDto.from(userFoundByNickname.isPresent());
+        return DtoMapper.INSTANCE.toDuplicatedCheckResponseDto(userFoundByNickname.isPresent());
     }
 
     @Transactional
