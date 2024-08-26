@@ -10,6 +10,7 @@ import net.causw.adapter.persistence.user.UserAdmission;
 import net.causw.application.dto.board.BoardMainResponseDto;
 import net.causw.application.dto.board.BoardOfCircleResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
+import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.comment.CommentsOfUserResponseDto;
@@ -218,7 +219,14 @@ public interface DtoMapper{
     BoardOfCircleResponseDto toBoardOfCircleResponseDto(Board entity, Long numComment, boolean writable);
 
     // Circle
-
+    @Mapping(target = "id", source = "entity.id")
+    @Mapping(target = "name", source = "entity.name")
+    @Mapping(target = "description", source = "entity.description")
+    @Mapping(target = "isDeleted", source = "entity.isDeleted")
+    @Mapping(target = "leaderId", source = "leader.id")
+    @Mapping(target = "leaderName", source = "leader.name")
+    @Mapping(target = "createdAt", source = "entity.createdAt")
+    CircleResponseDto toCircleResponseDto(Circle entity, User leader);
 
     // Locker
 
