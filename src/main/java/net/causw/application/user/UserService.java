@@ -180,18 +180,6 @@ public class UserService {
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .validate();
 
-//        return UserPostsResponseDto.of(
-//                requestUser,
-//                this.postRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
-//                        .map(post -> UserPostResponseDto.of(
-//                                post,
-//                                post.getBoard().getId(),
-//                                post.getBoard().getName(),
-//                                post.getBoard().getCircle() != null ? post.getBoard().getCircle().getId() : null,
-//                                post.getBoard().getCircle() != null ? post.getBoard().getCircle().getName() : null,
-//                                this.postRepository.countAllCommentByPost_Id(post.getId())
-//                        ))
-//        );
         return DtoMapper.INSTANCE.toUserPostsResponseDto(
                 requestUser,
                 this.postRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE)
@@ -215,29 +203,6 @@ public class UserService {
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .validate();
 
-//        return UserCommentsResponseDto.of(
-//                requestUser,
-//                this.commentRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_COMMENT_PAGE_SIZE))
-//                        .map(comment -> {
-//                            Post post = this.postRepository.findById(comment.getPost().getId()).orElseThrow(
-//                                    () -> new BadRequestException(
-//                                            ErrorCode.ROW_DOES_NOT_EXIST,
-//                                            MessageUtil.POST_NOT_FOUND
-//                                    )
-//                            );
-//
-//                            return CommentsOfUserResponseDto.of(
-//                                    comment,
-//                                    post.getBoard().getId(),
-//                                    post.getBoard().getName(),
-//                                    post.getId(),
-//                                    post.getTitle(),
-//                                    post.getBoard().getCircle() != null ? post.getBoard().getCircle().getId() : null,
-//                                    post.getBoard().getCircle() != null ? post.getBoard().getCircle().getName() : null
-//                            );
-//                        })
-//
-//        );
         return DtoMapper.INSTANCE.toUserCommentsResponseDto(
                 requestUser,
                 this.commentRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_COMMENT_PAGE_SIZE))
@@ -531,10 +496,6 @@ public class UserService {
         String refreshToken = jwtTokenProvider.createRefreshToken();
         redisUtils.setData(refreshToken,user.getId(),StaticValue.JWT_REFRESH_TOKEN_VALID_TIME);
 
-//        return UserSignInResponseDto.builder()
-//                .accessToken(jwtTokenProvider.createAccessToken(user.getId(), user.getRoles(), user.getState()))
-//                .refreshToken(jwtTokenProvider.createRefreshToken())
-//                .build();
         return DtoMapper.INSTANCE.toUserSignInResponseDto(
                 jwtTokenProvider.createAccessToken(user.getId(), user.getRoles(), user.getState()),
                 jwtTokenProvider.createRefreshToken()
@@ -1269,13 +1230,6 @@ public class UserService {
 
         this.updateRole(restoredUser, Role.COMMON);
 
-
-//        return UserResponseDto.from(this.updateState(restoredUser.getId(), UserState.ACTIVE).orElseThrow(
-//                () -> new InternalServerException(
-//                        ErrorCode.INTERNAL_SERVER,
-//                        MessageUtil.INTERNAL_SERVER_ERROR
-//                )
-//        ));
         User entity = this.updateState(restoredUser.getId(), UserState.ACTIVE)
                 .orElseThrow(() -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
