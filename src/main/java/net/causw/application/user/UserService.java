@@ -319,31 +319,31 @@ public class UserService {
         return UserPrivilegedResponseDto.of(
                 this.userRepository.findByRoleAndState(Role.PRESIDENT, UserState.ACTIVE)
                         .stream()
-                        .map(UserResponseDto::from)
+                        .map(president -> DtoMapper.INSTANCE.toUserResponseDto(president, null, null))
                         .collect(Collectors.toList()),
                 this.userRepository.findByRoleAndState(Role.VICE_PRESIDENT, UserState.ACTIVE)
                         .stream()
-                        .map(UserResponseDto::from)
+                        .map(vicePresident -> DtoMapper.INSTANCE.toUserResponseDto(vicePresident, null, null))
                         .collect(Collectors.toList()),
                 this.userRepository.findByRoleAndState(Role.COUNCIL, UserState.ACTIVE)
                         .stream()
-                        .map(UserResponseDto::from)
+                        .map(council -> DtoMapper.INSTANCE.toUserResponseDto(council, null, null))
                         .collect(Collectors.toList()),
                 this.userRepository.findByRoleAndState(Role.LEADER_1, UserState.ACTIVE)
                         .stream()
-                        .map(UserResponseDto::from)
+                        .map(leader1 -> DtoMapper.INSTANCE.toUserResponseDto(leader1, null, null))
                         .collect(Collectors.toList()),
                 this.userRepository.findByRoleAndState(Role.LEADER_2, UserState.ACTIVE)
                         .stream()
-                        .map(UserResponseDto::from)
+                        .map(leader2 -> DtoMapper.INSTANCE.toUserResponseDto(leader2, null, null))
                         .collect(Collectors.toList()),
                 this.userRepository.findByRoleAndState(Role.LEADER_3, UserState.ACTIVE)
                         .stream()
-                        .map(UserResponseDto::from)
+                        .map(leader3 -> DtoMapper.INSTANCE.toUserResponseDto(leader3, null, null))
                         .collect(Collectors.toList()),
                 this.userRepository.findByRoleAndState(Role.LEADER_4, UserState.ACTIVE)
                         .stream()
-                        .map(UserResponseDto::from)
+                        .map(leader4 -> DtoMapper.INSTANCE.toUserResponseDto(leader4, null, null))
                         .collect(Collectors.toList()),
                 this.userRepository.findByRoleAndState(Role.LEADER_CIRCLE, UserState.ACTIVE)
                         .stream()
@@ -355,7 +355,7 @@ public class UserService {
                                         MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER
                                 );
                             }
-                            return UserResponseDto.of(
+                            return DtoMapper.INSTANCE.toUserResponseDto(
                                     userDomainModel,
                                     ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
                                     ownCircles.stream().map(Circle::getName).collect(Collectors.toList())
@@ -364,7 +364,7 @@ public class UserService {
                         .collect(Collectors.toList()),
                 this.userRepository.findByRoleAndState(Role.LEADER_ALUMNI, UserState.ACTIVE)
                         .stream()
-                        .map(UserResponseDto::from)
+                        .map(alumni -> DtoMapper.INSTANCE.toUserResponseDto(alumni, null, null))
                         .collect(Collectors.toList())
         );
     }
