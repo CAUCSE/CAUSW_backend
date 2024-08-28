@@ -258,7 +258,7 @@ public class UserService {
                     .map(user -> DtoMapper.INSTANCE.toUserResponseDto(
                             user,
                             ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
-                            ownCircles.stream().map(Circle::getId).collect(Collectors.toList())))
+                            ownCircles.stream().map(Circle::getName).collect(Collectors.toList())))
                     .collect(Collectors.toList());
         }
 
