@@ -316,7 +316,7 @@ public class UserService {
 
         //todo: 현재 겸직을 고려하기 위해 _N_ 사용 중이나 port 와 domain model 삭제를 위해 배제
         //때문에 추후 userRole 관리 리팩토링 후 겸직을 고려하게 변경 필요
-        return UserPrivilegedResponseDto.of(
+        return DtoMapper.INSTANCE.toUserPrivilegedResponseDto(
                 this.userRepository.findByRoleAndState(Role.PRESIDENT, UserState.ACTIVE)
                         .stream()
                         .map(president -> DtoMapper.INSTANCE.toUserResponseDto(president, null, null))
