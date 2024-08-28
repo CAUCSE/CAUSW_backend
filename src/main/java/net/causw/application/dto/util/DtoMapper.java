@@ -31,6 +31,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -165,10 +166,17 @@ public interface DtoMapper{
             List<UserResponseDto> president,
             List<UserResponseDto> vicePresident,
             List<UserResponseDto> council,
-            List<UserResponseDto> leaderGrade,
+            List<UserResponseDto> leaderGrade1,
+            List<UserResponseDto> leaderGrade2,
+            List<UserResponseDto> leaderGrade3,
+            List<UserResponseDto> leaderGrade4,
             List<UserResponseDto> leaderCircle,
             List<UserResponseDto> alumni
     ) {
+        List<UserResponseDto> leaderGrade = new LinkedList<>(leaderGrade1);
+        leaderGrade.addAll(leaderGrade2);
+        leaderGrade.addAll(leaderGrade3);
+        leaderGrade.addAll(leaderGrade4);
         return UserPrivilegedResponseDto.builder()
                 .presidentUser(president)
                 .vicePresidentUser(vicePresident)
