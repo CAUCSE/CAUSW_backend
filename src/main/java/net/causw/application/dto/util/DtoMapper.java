@@ -22,9 +22,7 @@ import net.causw.application.dto.post.PostResponseDto;
 import net.causw.application.dto.post.PostsResponseDto;
 import net.causw.application.dto.user.*;
 import net.causw.domain.model.enums.Role;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Named;
+import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 import org.springframework.data.domain.Page;
 
@@ -162,6 +160,24 @@ public interface DtoMapper{
     @Mapping(target = "updatedAt", source = "entity.updatedAt")
     @Mapping(target = "isDeleted", source = "entity.isDeleted")
     CommentsOfUserResponseDto toCommentsOfUserResponseDto(Comment entity, String boardId, String boardName, String postId, String postName, String circleId, String circleName);
+
+    default UserPrivilegedResponseDto toUserPrivilegedResponseDto(
+            List<UserResponseDto> president,
+            List<UserResponseDto> vicePresident,
+            List<UserResponseDto> council,
+            List<UserResponseDto> leaderGrade,
+            List<UserResponseDto> leaderCircle,
+            List<UserResponseDto> alumni
+    ) {
+        return UserPrivilegedResponseDto.builder()
+                .presidentUser(president)
+                .vicePresidentUser(vicePresident)
+                .councilUsers(council)
+                .leaderGradeUsers(leaderGrade)
+                .leaderCircleUsers(leaderCircle)
+                .leaderAlumni(alumni)
+                .build();
+    }
 
     UserSignInResponseDto toUserSignInResponseDto(String accessToken, String refreshToken);
 
