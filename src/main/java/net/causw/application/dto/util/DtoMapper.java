@@ -132,6 +132,7 @@ public interface DtoMapper{
     @Mapping(target = "graduationMonth", source = "entity.graduationMonth")
     @Mapping(target = "phoneNumber", source = "entity.phoneNumber")
     UserResponseDto toUserResponseDto(User entity, List<String> circleIdIfLeader, List<String> circleNameIfLeader);
+    // circleIdIfLeader, circleNameIfLeader는 경우에 따라 null을 할당합니다.(기존 UserResponseDto.from을 사용하는 경우)
 
     @Mapping(target = "id", source = "entity.id")
     @Mapping(target = "email", source = "entity.email")
