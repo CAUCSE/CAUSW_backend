@@ -83,15 +83,22 @@ public class UserService {
     public UserResponseDto findPassword(
             UserFindPasswordRequestDto userFindPasswordRequestDto
     ) {
-        User requestUser = userRepository.findByEmailAndNameAndStudentId(userFindPasswordRequestDto.getEmail(), userFindPasswordRequestDto.getName(), userFindPasswordRequestDto.getStudentId())
-                .orElseThrow(() -> new BadRequestException(
+        User requestUser = userRepository.findByEmailAndNameAndStudentIdAndPhoneNumber(
+                    userFindPasswordRequestDto.getEmail(),
+                    userFindPasswordRequestDto.getName(),
+                    userFindPasswordRequestDto.getStudentId(),
+                    userFindPasswordRequestDto.getPhoneNumber()
+                ).orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.USER_NOT_FOUND
                 ));
-
+        // 임시 비밀번호 생성
         String newPassword = this.passwordGenerator.generate();
+
+        // 메일 전송
         this.googleMailSender.sendNewPasswordMail(requestUser.getEmail(), newPassword);
 
+        // 비밀번호 변경 (db save)
         this.userRepository.findById(requestUser.getId()).map(
                 srcUser -> {
                     srcUser.setPassword(passwordEncoder.encode(newPassword));
@@ -99,6 +106,7 @@ public class UserService {
                 }).orElseThrow(() -> new BadRequestException(
                 ErrorCode.ROW_DOES_NOT_EXIST,
                 MessageUtil.USER_NOT_FOUND));
+
         return UserResponseDto.from(requestUser);
     }
 
