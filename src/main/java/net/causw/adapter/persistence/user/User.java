@@ -53,6 +53,13 @@ public class User extends BaseEntity {
     @Column(name = "current_completed_semester", nullable = true)
     private Integer currentCompletedSemester;
 
+    @Column(name = "academic_status_note", nullable = true)
+    private String academicStatusNote;
+
+    @OneToMany(mappedBy = "user")
+    @Column(name = "user_academic_record_admission_list", nullable = true)
+    private List<UserAcademicRecordAdmission> userAcademicRecordAdmissionList;
+
     @Column(name = "graduation_year", nullable = true)
     private Integer graduationYear;
 
