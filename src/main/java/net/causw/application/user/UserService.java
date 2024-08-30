@@ -185,10 +185,7 @@ public class UserService {
                 this.postRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE)
                 ).map(post -> DtoMapper.INSTANCE.toUserPostResponseDto(
                         post,
-                        post.getBoard().getId(),
-                        post.getBoard().getName(),
-                        post.getBoard().getCircle() != null ? post.getBoard().getCircle().getId() : null,
-                        post.getBoard().getCircle() != null ? post.getBoard().getCircle().getName() : null,
+                        post.getBoard(),
                         this.postRepository.countAllCommentByPost_Id(post.getId())
                 ))
         );

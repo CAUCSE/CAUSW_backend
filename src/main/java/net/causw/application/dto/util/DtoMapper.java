@@ -144,9 +144,13 @@ public interface DtoMapper{
 
     @Mapping(target = "id", source = "entity.id")
     @Mapping(target = "title", source = "entity.title")
+    @Mapping(target = "boardId", source = "board.id")
+    @Mapping(target = "boardName", source = "board.name")
+    @Mapping(target = "circleId", source = "board.circle.id")
+    @Mapping(target = "circleName", source = "board.circle.name")
     @Mapping(target = "createdAt", source = "entity.createdAt")
     @Mapping(target = "updatedAt", source = "entity.updatedAt")
-    UserPostResponseDto toUserPostResponseDto(Post entity, String boardId, String boardName, String circleId, String circleName, Long numComment);
+    UserPostResponseDto toUserPostResponseDto(Post entity, Board board, Long numComment);
 
     @Mapping(target = "id", source = "entity.id")
     @Mapping(target = "email", source = "entity.email")
