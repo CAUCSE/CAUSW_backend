@@ -549,7 +549,7 @@ public class UserService {
         Set<Role> roles = user.getRoles();
 
         // 닉네임이 변경되었을 때 중복 체크 (이메일 중복 체크의 경우 바뀐 기획에서 이메일 변경이 불가능하여 삭제)
-        if (!user.getNickname().equals(userUpdateRequestDto.getNickname())) {
+        if (user.getNickname() == null || !user.getNickname().equals(userUpdateRequestDto.getNickname())) {
             userRepository.findByNickname(userUpdateRequestDto.getNickname()).ifPresent(
                     nickname -> {
                         throw new BadRequestException(
