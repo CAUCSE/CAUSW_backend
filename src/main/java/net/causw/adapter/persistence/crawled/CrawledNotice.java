@@ -8,8 +8,8 @@ import net.causw.adapter.persistence.base.BaseEntity;
 
 @Getter
 @Entity
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_crawled_notice")
 public class CrawledNotice extends BaseEntity {
     @Column(name = "title", nullable = false)

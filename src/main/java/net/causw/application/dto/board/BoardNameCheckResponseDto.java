@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class BoardNameCheckResponseDto {
     Boolean isPresent;
 }
