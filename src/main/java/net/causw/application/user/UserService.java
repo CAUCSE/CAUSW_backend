@@ -190,7 +190,28 @@ public class UserService {
                 this.postRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE)
                 ).map(post -> DtoMapper.INSTANCE.toPostsResponseDto(
                         post,
-                        this.postRepository.countAllCommentByPost_Id(post.getId()),
+                        getNumOfComment(post),
+                        getNumOfPostLikes(post),
+                        getNumOfPostFavorites(post)
+                ))
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public UserPostsResponseDto findFavoritePosts(User requestUser, Integer pageNum) {
+        Set<Role> roles = requestUser.getRoles();
+
+        ValidatorBucket.of()
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(UserStateValidator.of(requestUser.getState()))
+                .validate();
+
+        return DtoMapper.INSTANCE.toUserPostsResponseDto(
+                requestUser,
+                this.postRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE)
+                ).map(post -> DtoMapper.INSTANCE.toPostsResponseDto(
+                        post,
+                        getNumOfComment(post),
                         getNumOfPostLikes(post),
                         getNumOfPostFavorites(post)
                 ))
@@ -1362,6 +1383,10 @@ public class UserService {
                         MessageUtil.BOARD_NOT_FOUND
                 )
         );
+    }
+
+    private Long getNumOfComment(Post post) {
+        return this.postRepository.countAllCommentByPost_Id(post.getId());
     }
 
     private Long getNumOfPostLikes(Post post){
