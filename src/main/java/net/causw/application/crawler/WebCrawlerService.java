@@ -54,7 +54,7 @@ public class WebCrawlerService {
             // 작성자 추출
             String author = detailDoc.select("div.header > div > span").get(3).text();
             // 본문 내용 추출
-            String content = detailDoc.select("div.detail > div.fr-view").text();
+            String content = detailDoc.select("div.fr-view").outerHtml();
 
             // CrawledNotice 객체 생성
             CrawledNotice notice = CrawledNotice.of(
