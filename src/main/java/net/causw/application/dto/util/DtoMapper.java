@@ -1,26 +1,28 @@
 package net.causw.application.dto.util;
 
 import net.causw.adapter.persistence.board.Board;
+import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.user.User;
+import net.causw.adapter.persistence.user.UserAdmission;
 import net.causw.application.dto.board.BoardMainResponseDto;
 import net.causw.application.dto.board.BoardOfCircleResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
+import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentResponseDto;
+import net.causw.application.dto.comment.CommentsOfUserResponseDto;
+import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.file.FileResponseDto;
 import net.causw.application.dto.post.BoardPostsResponseDto;
 import net.causw.application.dto.post.PostContentDto;
 import net.causw.application.dto.post.PostResponseDto;
 import net.causw.application.dto.post.PostsResponseDto;
-import net.causw.application.dto.user.UserFindIdResponseDto;
-import net.causw.application.dto.user.UserResponseDto;
+import net.causw.application.dto.user.*;
 import net.causw.domain.model.enums.Role;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Named;
+import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 import org.springframework.data.domain.Page;
 
@@ -29,6 +31,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -60,6 +63,7 @@ public interface DtoMapper{
     // Dto writerName 필드에 post.writer.name을 삽입한다는 의미입니다.
     @Mapping(target = "writerName", source = "entity.writer.name")
     @Mapping(target = "writerAdmissionYear", source = "entity.writer.admissionYear")
+    @Mapping(target = "content", source = "entity.content")
     @Mapping(target = "isAnonymous", source = "entity.isAnonymous")
     @Mapping(target = "isQuestion", source = "entity.isQuestion")
     @Mapping(target = "numLike", source = "numPostLike")
@@ -129,7 +133,99 @@ public interface DtoMapper{
     @Mapping(target = "graduationMonth", source = "entity.graduationMonth")
     @Mapping(target = "phoneNumber", source = "entity.phoneNumber")
     UserResponseDto toUserResponseDto(User entity, List<String> circleIdIfLeader, List<String> circleNameIfLeader);
+    // circleIdIfLeader, circleNameIfLeader는 경우에 따라 null을 할당합니다.(기존 UserResponseDto.from을 사용하는 경우)
 
+    @Mapping(target = "id", source = "entity.id")
+    @Mapping(target = "email", source = "entity.email")
+    @Mapping(target = "name", source = "entity.name")
+    @Mapping(target = "studentId", source = "entity.studentId")
+    @Mapping(target = "admissionYear", source = "entity.admissionYear")
+    @Mapping(target = "profileImages", source = "entity.profileImages")
+    @Mapping(target = "posts", source = "post")
+    UserPostsResponseDto toUserPostsResponseDto(User entity, Page<PostsResponseDto> post);
+
+    @Mapping(target = "id", source = "entity.id")
+    @Mapping(target = "title", source = "entity.title")
+    @Mapping(target = "boardId", source = "board.id")
+    @Mapping(target = "boardName", source = "board.name")
+    @Mapping(target = "circleId", source = "board.circle.id")
+    @Mapping(target = "circleName", source = "board.circle.name")
+    @Mapping(target = "createdAt", source = "entity.createdAt")
+    @Mapping(target = "updatedAt", source = "entity.updatedAt")
+    UserPostResponseDto toUserPostResponseDto(Post entity, Board board, Long numComment);
+
+    @Mapping(target = "id", source = "entity.id")
+    @Mapping(target = "email", source = "entity.email")
+    @Mapping(target = "name", source = "entity.name")
+    @Mapping(target = "studentId", source = "entity.studentId")
+    @Mapping(target = "admissionYear", source = "entity.admissionYear")
+    @Mapping(target = "profileImages", source = "entity.profileImages")
+    UserCommentsResponseDto toUserCommentsResponseDto(User entity, Page<CommentsOfUserResponseDto> comment);
+
+    @Mapping(target = "id", source = "entity.id")
+    @Mapping(target = "content", source = "entity.content")
+    @Mapping(target = "createdAt", source = "entity.createdAt")
+    @Mapping(target = "updatedAt", source = "entity.updatedAt")
+    @Mapping(target = "isDeleted", source = "entity.isDeleted")
+    CommentsOfUserResponseDto toCommentsOfUserResponseDto(Comment entity, String boardId, String boardName, String postId, String postName, String circleId, String circleName);
+
+    default UserPrivilegedResponseDto toUserPrivilegedResponseDto(
+            List<UserResponseDto> president,
+            List<UserResponseDto> vicePresident,
+            List<UserResponseDto> council,
+            List<UserResponseDto> leaderGrade1,
+            List<UserResponseDto> leaderGrade2,
+            List<UserResponseDto> leaderGrade3,
+            List<UserResponseDto> leaderGrade4,
+            List<UserResponseDto> leaderCircle,
+            List<UserResponseDto> alumni
+    ) {
+        List<UserResponseDto> leaderGrade = new LinkedList<>(leaderGrade1);
+        leaderGrade.addAll(leaderGrade2);
+        leaderGrade.addAll(leaderGrade3);
+        leaderGrade.addAll(leaderGrade4);
+        return UserPrivilegedResponseDto.builder()
+                .presidentUser(president)
+                .vicePresidentUser(vicePresident)
+                .councilUsers(council)
+                .leaderGradeUsers(leaderGrade)
+                .leaderCircleUsers(leaderCircle)
+                .leaderAlumni(alumni)
+                .build();
+    }
+
+    UserSignInResponseDto toUserSignInResponseDto(String accessToken, String refreshToken);
+
+    DuplicatedCheckResponseDto toDuplicatedCheckResponseDto(Boolean result);
+
+    @Mapping(target = "id", source = "entity.id")
+    @Mapping(target = "user", source = "entity.user")
+    @Mapping(target = "attachImage", source = "entity.attachImage")
+    @Mapping(target = "description", source = "entity.description")
+    @Mapping(target = "createdAt", source = "entity.createdAt")
+    @Mapping(target = "updatedAt", source = "entity.updatedAt")
+    UserAdmissionResponseDto toUserAdmissionResponseDto(UserAdmission entity);
+
+    @Mapping(target = "id", source = "entity.id")
+    @Mapping(target = "user", source = "user")
+    @Mapping(target = "attachImage", source = "entity.attachImage")
+    @Mapping(target = "description", source = "entity.description")
+    @Mapping(target = "createdAt", source = "entity.createdAt")
+    @Mapping(target = "updatedAt", source = "entity.updatedAt")
+    UserAdmissionResponseDto toUserAdmissionResponseDto(UserAdmission entity, User user);
+
+    @Mapping(target = "id", source = "entity.id")
+    @Mapping(target = "userName", source = "entity.user.name")
+    @Mapping(target = "userEmail", source = "entity.user.email")
+    @Mapping(target = "admissionYear", source = "entity.user.admissionYear")
+    @Mapping(target = "attachImage", source = "entity.attachImage")
+    @Mapping(target = "description", source = "entity.description")
+    @Mapping(target = "userState", source = "entity.user.state")
+    @Mapping(target = "createdAt", source = "entity.createdAt")
+    @Mapping(target = "updatedAt", source = "entity.updatedAt")
+    UserAdmissionsResponseDto toUserAdmissionsResponseDto(UserAdmission entity);
+
+    UserSignOutResponseDto toUserSignOutResponseDto(String message);
 
     // Board
     BoardResponseDto toBoardResponseDto(Board entity, List<String> createRoleList, Boolean writable, String circleId, String circleName);
@@ -157,7 +253,14 @@ public interface DtoMapper{
     BoardOfCircleResponseDto toBoardOfCircleResponseDto(Board entity, Long numComment, boolean writable);
 
     // Circle
-
+    @Mapping(target = "id", source = "entity.id")
+    @Mapping(target = "name", source = "entity.name")
+    @Mapping(target = "description", source = "entity.description")
+    @Mapping(target = "isDeleted", source = "entity.isDeleted")
+    @Mapping(target = "leaderId", source = "leader.id")
+    @Mapping(target = "leaderName", source = "leader.name")
+    @Mapping(target = "createdAt", source = "entity.createdAt")
+    CircleResponseDto toCircleResponseDto(Circle entity, User leader);
 
     // Locker
 
