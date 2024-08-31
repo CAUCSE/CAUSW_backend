@@ -21,7 +21,7 @@ public class BoardCreateRequestDto {
     @Schema(description = "게시판 설명", example = "board_description")
     private String description;
 
-    @Schema(description = "게시판에 글을 작성할 수 있는 권한 명단", example = "[ 'ADMIN' ]")
+    @Schema(description = "게시판에 글을 작성할 수 있는 권한 명단", example = "[ 'COMMON' ] <- 배열로 보내주셔야 합니다. ")
     private List<String> createRoleList;
 
     @Schema(description = "게시판 카테고리", example = "APP_NOTICE")

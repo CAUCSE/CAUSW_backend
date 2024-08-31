@@ -6,6 +6,7 @@ import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.board.BoardMainResponseDto;
+import net.causw.application.dto.board.BoardNameCheckResponseDto;
 import net.causw.application.dto.board.BoardOfCircleResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.comment.ChildCommentResponseDto;
@@ -133,6 +134,10 @@ public interface DtoMapper{
 
     // Board
     BoardResponseDto toBoardResponseDto(Board entity, List<String> createRoleList, Boolean writable, String circleId, String circleName);
+
+    @Mapping(target = "isPresent", source = "isPresent")
+    BoardNameCheckResponseDto toBoardNameCheckResponseDto(Boolean isPresent);
+
 
     @Mapping(target = "id", source = "board.id")
     @Mapping(target = "name", source = "board.name")

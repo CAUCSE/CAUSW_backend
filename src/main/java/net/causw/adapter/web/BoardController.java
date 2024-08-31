@@ -7,10 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.board.BoardService;
-import net.causw.application.dto.board.BoardCreateRequestDto;
-import net.causw.application.dto.board.BoardMainResponseDto;
-import net.causw.application.dto.board.BoardResponseDto;
-import net.causw.application.dto.board.BoardUpdateRequestDto;
+import net.causw.application.dto.board.*;
 import net.causw.config.security.userdetails.CustomUserDetails;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.InternalServerException;
@@ -75,6 +72,17 @@ public class BoardController {
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.boardService.mainBoard(userDetails.getUser());
+    }
+
+
+    @PostMapping("/check")
+    @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
+    @Operation(summary = "게시판 이름 중복 체크 API(완료)", description = "게시판 이름 중복 체크 api로 중복된 이름이 존재할 경우 isPresent가 true, 없을 경우 False로 반환됩니다.")
+    public BoardNameCheckResponseDto checkBoardName(
+            @RequestBody BoardNameCheckRequestDto boardNameCheckRequestDto
+    ) {
+        return this.boardService.checkBoardName(boardNameCheckRequestDto);
     }
 
     @PostMapping
