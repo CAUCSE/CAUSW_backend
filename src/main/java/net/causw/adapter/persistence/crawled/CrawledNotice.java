@@ -12,6 +12,9 @@ import net.causw.adapter.persistence.base.BaseEntity;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_crawled_notice")
 public class CrawledNotice extends BaseEntity {
+    @Column(name = "type", nullable = false)
+    private String type;
+
     @Column(name = "title", nullable = false)
     private String title;
 
@@ -24,16 +27,17 @@ public class CrawledNotice extends BaseEntity {
     @Column(name = "author", nullable = false)
     private String author;
 
-    @Column(name = "notice_date", nullable = false)
-    private String noticeDate;
+    @Column(name = "announce_date", nullable = false)
+    private String announceDate;
 
     public static CrawledNotice of(
+            String type,
             String title,
             String content,
             String link,
             String author,
-            String noticeDate
+            String announceDate
     ) {
-        return new CrawledNotice(title, content, link, author, noticeDate);
+        return new CrawledNotice(type, title, content, link, author, announceDate);
     }
 }
