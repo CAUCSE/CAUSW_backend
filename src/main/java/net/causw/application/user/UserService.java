@@ -47,7 +47,9 @@ import net.causw.domain.validation.ValidatorBucket;
 import net.causw.infrastructure.GoogleMailSender;
 import net.causw.infrastructure.PasswordGenerator;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -74,6 +76,7 @@ public class UserService {
     private final PostRepository postRepository;
     private final PageableFactory pageableFactory;
     private final CommentRepository commentRepository;
+    private final ChildCommentRepository childCommentRepository;
     private final UserAdmissionRepository userAdmissionRepository;
     private final RedisUtils redisUtils;
     private final LockerRepository lockerRepository;
@@ -210,6 +213,40 @@ public class UserService {
                 requestUser,
                 this.postRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE)
                 ).map(post -> DtoMapper.INSTANCE.toPostsResponseDto(
+                        post,
+                        getNumOfComment(post),
+                        getNumOfPostLikes(post),
+                        getNumOfPostFavorites(post)
+                ))
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public UserPostsResponseDto findCommentedPosts(User requestUser, Integer pageNum) {
+        Set<Role> roles = requestUser.getRoles();
+
+        ValidatorBucket.of()
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(UserStateValidator.of(requestUser.getState()))
+                .validate();
+
+        Pageable pageable = this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE / 2 + 5);
+
+        Page<Post> postsFromComments = this.commentRepository.findPostsByUserId(requestUser.getId(), pageable);
+        Page<Post> postsFromChildComments = this.childCommentRepository.findPostsByUserId(requestUser.getId(), pageable);
+
+        //Comment와 ChildComment의 Post 중복 제거
+        Set<Post> combinedPosts = new HashSet<>();
+        combinedPosts.addAll(postsFromComments.getContent());
+        combinedPosts.addAll(postsFromChildComments.getContent());
+
+        //Set에서 Page로 타입 변환
+        List<Post> combinedPostsList = new ArrayList<>(combinedPosts);
+        Page<Post> combinedPostsPage = new PageImpl<>(combinedPostsList, pageable, combinedPostsList.size());
+
+        return DtoMapper.INSTANCE.toUserPostsResponseDto(
+                requestUser,
+                combinedPostsPage.map(post -> DtoMapper.INSTANCE.toPostsResponseDto(
                         post,
                         getNumOfComment(post),
                         getNumOfPostLikes(post),
