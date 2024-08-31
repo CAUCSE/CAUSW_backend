@@ -4,5 +4,7 @@ package net.causw.adapter.persistence.repository;
 import net.causw.adapter.persistence.crawled.CrawledNotice;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 public interface CrawledNoticeRepository extends JpaRepository<CrawledNotice, String> {
 }
