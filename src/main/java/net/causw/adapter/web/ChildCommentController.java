@@ -140,7 +140,7 @@ public class ChildCommentController {
     @PostMapping(value = "/{id}/like")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
-    @Operation(summary = "대댓글 좋아요 저장 API(작업중)", description = "특정 유저가 특정 대댓글에 좋아요를 누른 걸 저장하는 Api 입니다.")
+    @Operation(summary = "대댓글 좋아요 저장 API(완료)", description = "특정 유저가 특정 대댓글에 좋아요를 누른 걸 저장하는 Api 입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Created", content = @Content(mediaType = "application/json")),
             @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
