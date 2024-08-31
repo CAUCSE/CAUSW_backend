@@ -92,16 +92,29 @@ public class UserController {
         return this.userService.findCurrentUser(userDetails.getUser());
     }
 
+    //FIXME: findMyWrittenPost로 대체(동일 기능), 리팩토링 통합 완료 후 삭제 예정
     @GetMapping(value = "/posts")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
-    @Operation(summary = "로그인한 사용자의 게시글 조회 API(완료)")
+    @Operation(summary = "(구)로그인한 사용자의 게시글 조회 API(삭제 예정 -> posts/written으로 변경)")
     public UserPostsResponseDto findPosts(
             @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.userService.findPosts(userDetails.getUser(), pageNum);
     }
+
+    @GetMapping(value = "/posts/written")
+    @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
+    @Operation(summary = "로그인한 사용자가 작성한 게시글 기록 조회 API(완료)")
+    public UserPostsResponseDto findMyWrittenPosts(
+            @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return this.userService.findPosts(userDetails.getUser(), pageNum);
+    }
+
 
     @GetMapping(value = "/comments")
     @ResponseStatus(value = HttpStatus.OK)
@@ -111,7 +124,6 @@ public class UserController {
             @RequestParam(name = "pageNum",defaultValue = "0") Integer pageNum,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-
         return this.userService.findComments(userDetails.getUser(), pageNum);
     }
 

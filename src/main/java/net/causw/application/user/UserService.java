@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
+import net.causw.adapter.persistence.comment.ChildComment;
+import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.locker.LockerLog;
 import net.causw.adapter.persistence.page.PageableFactory;
 import net.causw.adapter.persistence.post.Post;
@@ -78,6 +80,8 @@ public class UserService {
     private final LockerLogRepository lockerLogRepository;
     private final UserAdmissionLogRepository userAdmissionLogRepository;
     private final BoardRepository boardRepository;
+    private final FavoritePostRepository favoritePostRepository;
+    private final LikePostRepository likePostRepository;
 
     @Transactional
     public UserResponseDto findPassword(
@@ -181,17 +185,15 @@ public class UserService {
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .validate();
 
-        return UserPostsResponseDto.of(
+        return DtoMapper.INSTANCE.toUserPostsResponseDto(
                 requestUser,
-                this.postRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
-                        .map(post -> UserPostResponseDto.of(
-                                post,
-                                post.getBoard().getId(),
-                                post.getBoard().getName(),
-                                post.getBoard().getCircle() != null ? post.getBoard().getCircle().getId() : null,
-                                post.getBoard().getCircle() != null ? post.getBoard().getCircle().getName() : null,
-                                this.postRepository.countAllCommentByPost_Id(post.getId())
-                        ))
+                this.postRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE)
+                ).map(post -> DtoMapper.INSTANCE.toPostsResponseDto(
+                        post,
+                        this.postRepository.countAllCommentByPost_Id(post.getId()),
+                        getNumOfPostLikes(post),
+                        getNumOfPostFavorites(post)
+                ))
         );
     }
 
@@ -1362,5 +1364,12 @@ public class UserService {
         );
     }
 
+    private Long getNumOfPostLikes(Post post){
+        return likePostRepository.countByPostId(post.getId());
+    }
+
+    private Long getNumOfPostFavorites(Post post){
+        return favoritePostRepository.countByPostIdAndIsDeletedFalse(post.getId());
+    }
 
 }

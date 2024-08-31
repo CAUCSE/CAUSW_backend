@@ -1,9 +1,11 @@
 package net.causw.application.dto.user;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import net.causw.adapter.persistence.user.User;
+import net.causw.application.dto.post.PostsResponseDto;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -18,11 +20,14 @@ public class UserPostsResponseDto {
     private String studentId;
     private Integer admissionYear;
     private List<String> profileImages;
-    private Page<UserPostResponseDto> post;
+
+    @Schema(description = "간락화된 게시글 정보들입니다")
+    private Page<PostsResponseDto> posts;
+
 
     public static UserPostsResponseDto of(
             User user,
-            Page<UserPostResponseDto> post
+            Page<PostsResponseDto> post
     ) {
         return UserPostsResponseDto.builder()
                 .id(user.getId())
@@ -31,7 +36,7 @@ public class UserPostsResponseDto {
                 .studentId(user.getStudentId())
                 .admissionYear(user.getAdmissionYear())
                 .profileImages(user.getProfileImages())
-                .post(post)
+                .posts(post)
                 .build();
     }
 }
