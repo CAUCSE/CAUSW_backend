@@ -69,6 +69,10 @@ dependencies {
 
     implementation 'javax.xml.bind:jaxb-api:2.3.1'
 
+
+    // Apache POI for Excel file generation
+    implementation 'org.apache.poi:poi-ooxml:5.2.3'
+
 }
 
 test {
