@@ -28,8 +28,8 @@ public class WebCrawlerService {
     private final LatestCrawlRepository latestCrawlRepository;
 
 
-    //    @Scheduled(cron = "0 0 * * * *") // 매 시각 0분 0초에 실행 (배표용)
-    @Scheduled(fixedRate = 5000) // 5초마다 실행 (테스트용)
+//    @Scheduled(fixedRate = 5000) // 5초마다 실행 (테스트용)
+    @Scheduled(cron = "0 0 * * * *") // 매 시각 0분 0초에 실행 (배포용)
     @Transactional
     public void crawlAndSaveCAUSWNoticeSite() throws IOException {
         String baseUrl = "https://cse.cau.ac.kr/sub05/sub0501.php?offset=";
