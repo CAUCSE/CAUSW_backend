@@ -13,6 +13,13 @@ public class MessageUtil {
     public static final String INVALID_TOKEN = "잘못된 AccessToken 입니다";
     public static final String EXPIRED_TOKEN = "만료된 AccessToken 입니다";
 
+    // Form
+    public static final String FORM_NOT_FOUND = "신청 폼을 찾을 수 없습니다.";
+    public static final String QUESTION_NOT_FOUND = "질문을 찾을 수 없습니다.";
+    public static final String OPTION_NOT_FOUND = "해당 문항을 찾을 수 없습니다.";
+
+
+
     // Circle & Post
     public static final String NOT_CIRCLE_LEADER = "사용자가 해당 동아리의 동아리장이 아닙니다.";
     public static final String NOT_CIRCLE_MEMBER = "로그인된 사용자가 동아리 멤버가 아닙니다.";

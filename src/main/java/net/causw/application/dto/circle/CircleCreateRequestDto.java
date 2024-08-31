@@ -23,4 +23,10 @@ public class CircleCreateRequestDto {
 
     @Schema(description = "동아리장 ID", example = "UUID 형식의 동아리장 ID(PK) String 값입니다.")
     private String leaderId;
+
+    @Schema(description = "동아리 회비", example = "5000")
+    private Integer circleTax;
+
+    @Schema(description = "동아리 모집인원", example = "10")
+    private Integer recruitMembers;
 }
