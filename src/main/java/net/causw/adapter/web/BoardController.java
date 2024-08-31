@@ -78,7 +78,13 @@ public class BoardController {
     @PostMapping("/check")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
-    @Operation(summary = "게시판 이름 중복 체크 API(완료)", description = "게시판 이름 중복 체크 api로 중복된 이름이 존재할 경우 isPresent가 true, 없을 경우 False로 반환됩니다.")
+    @Operation(summary = "게시판 이름 중복 체크 API(완료)", description = "게시판 이름 중복 체크 api로 중복된 이름이 존재할 경우 isPresent가 true, 없을 경우 false로 반환됩니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+    })
+
     public BoardNameCheckResponseDto checkBoardName(
             @RequestBody BoardNameCheckRequestDto boardNameCheckRequestDto
     ) {
