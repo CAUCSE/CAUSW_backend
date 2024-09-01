@@ -24,17 +24,7 @@ import net.causw.domain.model.enums.CircleMemberStatus;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
-import net.causw.domain.validation.CircleMemberStatusValidator;
-import net.causw.domain.validation.ConstraintValidator;
-import net.causw.domain.validation.ContentsAdminValidator;
-import net.causw.domain.validation.PostNumberOfAttachmentsValidator;
-import net.causw.domain.validation.TargetIsDeletedValidator;
-import net.causw.domain.validation.UserEqualValidator;
-import net.causw.domain.validation.UserRoleIsNoneValidator;
-import net.causw.domain.validation.UserRoleValidator;
-import net.causw.domain.validation.UserStateValidator;
-import net.causw.domain.validation.ValidatorBucket;
-import net.causw.domain.validation.TargetIsNotDeletedValidator;
+import net.causw.domain.validation.*;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -403,6 +393,11 @@ public class PostService {
     @Transactional
     public void likePost(User user, String postId) {
         Post post = getPost(postId);
+
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+        validatorBucket
+                .consistOf(UserStateIsDeletedValidator.of(post.getWriter().getState()))
+                .validate();
 
         if (isPostAlreadyLike(user, postId)) {
             throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.POST_ALREADY_LIKED);
