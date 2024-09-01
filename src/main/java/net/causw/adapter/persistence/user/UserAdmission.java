@@ -27,6 +27,9 @@ public class UserAdmission extends BaseEntity {
     @Column(name = "description", nullable = true)
     private String description;
 
+    @Column(name = "rejectReason",nullable = true)
+    private String rejectReason;
+
     private UserAdmission(
             String id,
             User user,
