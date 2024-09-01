@@ -20,7 +20,7 @@ public interface UserAdmissionRepository extends JpaRepository<UserAdmission, St
             "WHERE u.state = :user_state ORDER BY ua.created_at DESC", nativeQuery = true)
     Page<UserAdmission> findAll(@Param("user_state") String userState, Pageable pageable);
 
-    @Query(value = "SELECT ua.user_id,ua.image,ua.description,ua.updated_at,ua.created_at, u.id, u.name, u.state  " +
+    @Query(value = "SELECT ua.user_id,ua.image,ua.reject_reason,ua.description,ua.updated_at,ua.created_at, u.id, u.name, u.state  " +
             "FROM tb_user_admission AS ua " +
             "LEFT JOIN tb_user AS u ON ua.user_id = u.id " +
             "WHERE u.state = :user_state AND (:name IS NULL OR u.name LIKE %:name%) ORDER BY ua.created_at DESC", nativeQuery = true)
