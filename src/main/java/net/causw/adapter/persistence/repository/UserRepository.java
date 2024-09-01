@@ -28,6 +28,11 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     List<User> findByName(String name);
 
+    @Query("SELECT u " +
+            "FROM User u " +
+            "WHERE u.state = 'INACTIVE'")
+    List<User> findInactiveUser();
+
     Optional<User> findByStudentIdAndNameAndPhoneNumber(String studentId, String name, String phoneNumber);
 
     List<User> findByStudentIdAndStateAndAcademicStatus(String studentId, UserState userState, AcademicStatus academicStatus);

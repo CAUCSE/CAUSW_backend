@@ -46,12 +46,14 @@ import net.causw.infrastructure.GoogleMailSender;
 import net.causw.infrastructure.PasswordGenerator;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.validation.Validator;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -924,6 +926,19 @@ public class UserService {
         ));
     }
 
+    @Scheduled(cron = "0 0 0 * * ?")
+    public void deleteUser() {
+        List<User> users = userRepository.findInactiveUser();
+
+        for (User user : users) {
+            System.out.println(user.getEmail());
+            LocalDateTime dueDate = LocalDateTime.now().minusYears(5);
+            if (user.getUpdatedAt().isBefore(dueDate)) {
+                user.delete();
+                userRepository.save(user);
+            }
+        }
+    }
 
     private Optional<CircleMember> updateStatus(String applicationId, CircleMemberStatus targetStatus) {
         return this.circleMemberRepository.findById(applicationId).map(
