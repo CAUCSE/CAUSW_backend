@@ -211,13 +211,13 @@ public class UserService {
 
         return DtoMapper.INSTANCE.toUserPostsResponseDto(
                 requestUser,
-                this.postRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE)
-                ).map(post -> DtoMapper.INSTANCE.toPostsResponseDto(
-                        post,
-                        getNumOfComment(post),
-                        getNumOfPostLikes(post),
-                        getNumOfPostFavorites(post)
-                ))
+                this.favoritePostRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
+                        .map(favoritePost -> DtoMapper.INSTANCE.toPostsResponseDto(
+                                favoritePost.getPost(),
+                                getNumOfComment(favoritePost.getPost()),
+                                getNumOfPostLikes(favoritePost.getPost()),
+                                getNumOfPostFavorites(favoritePost.getPost())
+                        ))
         );
     }
 
