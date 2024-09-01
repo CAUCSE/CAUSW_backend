@@ -240,8 +240,9 @@ public class UserService {
         combinedPosts.addAll(postsFromComments.getContent());
         combinedPosts.addAll(postsFromChildComments.getContent());
 
-        //Set에서 Page로 타입 변환
+        //Set에서 Page로 타입 변환 및 정렬
         List<Post> combinedPostsList = new ArrayList<>(combinedPosts);
+        combinedPostsList.sort((post1, post2) -> post2.getCreatedAt().compareTo(post1.getCreatedAt()));
         Page<Post> combinedPostsPage = new PageImpl<>(combinedPostsList, pageable, combinedPostsList.size());
 
         return DtoMapper.INSTANCE.toUserPostsResponseDto(
