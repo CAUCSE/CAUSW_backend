@@ -1001,12 +1001,14 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .validate();
 
-        return UserAdmissionResponseDto.from(this.userAdmissionRepository.findById(admissionId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_APPLY_NOT_FOUND
+        return DtoMapper.INSTANCE.toUserAdmissionResponseDto(
+                this.userAdmissionRepository.findById(admissionId).orElseThrow(
+                        () -> new BadRequestException(
+                                ErrorCode.ROW_DOES_NOT_EXIST,
+                                MessageUtil.USER_APPLY_NOT_FOUND
+                        )
                 )
-        ));
+        );
     }
 
     @Transactional(readOnly = true)
@@ -1024,7 +1026,7 @@ public class UserService {
                 .validate();
 
         return this.userAdmissionRepository.findAllWithName(UserState.AWAIT.getValue(), name, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
-                .map(UserAdmissionsResponseDto::from);
+                .map(DtoMapper.INSTANCE::toUserAdmissionsResponseDto);
     }
 
     @Transactional
@@ -1066,7 +1068,7 @@ public class UserService {
                 .consistOf(ConstraintValidator.of(userAdmission, this.validator))
                 .validate();
 
-        return UserAdmissionResponseDto.from(this.userAdmissionRepository.save(userAdmission));
+        return DtoMapper.INSTANCE.toUserAdmissionResponseDto(this.userAdmissionRepository.save(userAdmission));
     }
 
     @Transactional
@@ -1104,7 +1106,7 @@ public class UserService {
         this.userAdmissionLogRepository.save(userAdmissionLog);
         this.userAdmissionRepository.delete(userAdmission);
 
-        return UserAdmissionResponseDto.of(
+        return DtoMapper.INSTANCE.toUserAdmissionResponseDto(
                 userAdmission,
                 this.updateState(userAdmission.getUser().getId(), UserState.ACTIVE).orElseThrow(
                         () -> new InternalServerException(
@@ -1147,7 +1149,7 @@ public class UserService {
         this.userAdmissionLogRepository.save(userAdmissionLog);
         this.userAdmissionRepository.delete(userAdmission);
 
-        return UserAdmissionResponseDto.of(
+        return DtoMapper.INSTANCE.toUserAdmissionResponseDto(
                 userAdmission,
                 this.updateState(userAdmission.getUser().getId(), UserState.REJECT).orElseThrow(
                         () -> new InternalServerException(
