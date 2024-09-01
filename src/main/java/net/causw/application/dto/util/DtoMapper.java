@@ -5,6 +5,7 @@ import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.user.User;
+import net.causw.adapter.persistence.user.UserAdmission;
 import net.causw.application.dto.board.BoardMainResponseDto;
 import net.causw.application.dto.board.BoardOfCircleResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
@@ -15,6 +16,8 @@ import net.causw.application.dto.post.BoardPostsResponseDto;
 import net.causw.application.dto.post.PostContentDto;
 import net.causw.application.dto.post.PostResponseDto;
 import net.causw.application.dto.post.PostsResponseDto;
+import net.causw.application.dto.user.UserAdmissionResponseDto;
+import net.causw.application.dto.user.UserAdmissionsResponseDto;
 import net.causw.application.dto.user.UserFindIdResponseDto;
 import net.causw.application.dto.user.UserResponseDto;
 import net.causw.domain.model.enums.Role;
@@ -161,5 +164,34 @@ public interface DtoMapper{
 
     // Locker
 
+    // UserAdmission
+    @Mapping(target = "id", source = "entity.id")
+    @Mapping(target = "user", source = "entity.user")
+    @Mapping(target = "attachImage", source = "entity.attachImage")
+    @Mapping(target = "description", source = "entity.description")
+    @Mapping(target = "createdAt", source = "entity.createdAt")
+    @Mapping(target = "updatedAt", source = "entity.updatedAt")
+    @Mapping(target = "rejectReason", source = "entity.rejectReason")
+    UserAdmissionResponseDto toUserAdmissionResponseDto(UserAdmission entity);
 
+    @Mapping(target = "id", source = "entity.id")
+    @Mapping(target = "user", source = "user")
+    @Mapping(target = "attachImage", source = "entity.attachImage")
+    @Mapping(target = "description", source = "entity.description")
+    @Mapping(target = "createdAt", source = "entity.createdAt")
+    @Mapping(target = "updatedAt", source = "entity.updatedAt")
+    @Mapping(target = "rejectReason", source = "entity.rejectReason")
+    UserAdmissionResponseDto toUserAdmissionResponseDto(UserAdmission entity, User user);
+
+    @Mapping(target = "id", source = "entity.id")
+    @Mapping(target = "userName", source = "entity.user.name")
+    @Mapping(target = "userEmail", source = "entity.user.email")
+    @Mapping(target = "admissionYear", source = "entity.user.admissionYear")
+    @Mapping(target = "attachImage", source = "entity.attachImage")
+    @Mapping(target = "description", source = "entity.description")
+    @Mapping(target = "userState", source = "entity.user.state")
+    @Mapping(target = "createdAt", source = "entity.createdAt")
+    @Mapping(target = "updatedAt", source = "entity.updatedAt")
+    @Mapping(target = "studentId", source = "entity.user.studentId")
+    UserAdmissionsResponseDto toUserAdmissionsResponseDto(UserAdmission entity);
 }
