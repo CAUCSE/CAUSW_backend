@@ -196,13 +196,13 @@ public interface DtoMapper{
 
     DuplicatedCheckResponseDto toDuplicatedCheckResponseDto(Boolean result);
 
-    @Mapping(target = "id", source = "entity.id")
-    @Mapping(target = "user", source = "entity.user")
-    @Mapping(target = "attachImage", source = "entity.attachImage")
-    @Mapping(target = "description", source = "entity.description")
-    @Mapping(target = "createdAt", source = "entity.createdAt")
-    @Mapping(target = "updatedAt", source = "entity.updatedAt")
-    UserAdmissionResponseDto toUserAdmissionResponseDto(UserAdmission entity);
+    @Mapping(target = "id", source = "userAdmission.id")
+    @Mapping(target = "user", source = "userAdmission.user")
+    @Mapping(target = "attachImage", source = "userAdmission.attachImage")
+    @Mapping(target = "description", source = "userAdmission.description")
+    @Mapping(target = "createdAt", source = "userAdmission.createdAt")
+    @Mapping(target = "updatedAt", source = "userAdmission.updatedAt")
+    UserAdmissionResponseDto toUserAdmissionResponseDto(UserAdmission userAdmission);
 
     @Mapping(target = "id", source = "entity.id")
     @Mapping(target = "user", source = "user")
