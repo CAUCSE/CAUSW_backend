@@ -152,13 +152,13 @@ public interface DtoMapper{
     @Mapping(target = "updatedAt", source = "post.updatedAt")
     UserPostResponseDto toUserPostResponseDto(Post post, Board board, Long numComment);
 
-    @Mapping(target = "id", source = "entity.id")
-    @Mapping(target = "email", source = "entity.email")
-    @Mapping(target = "name", source = "entity.name")
-    @Mapping(target = "studentId", source = "entity.studentId")
-    @Mapping(target = "admissionYear", source = "entity.admissionYear")
-    @Mapping(target = "profileImages", source = "entity.profileImages")
-    UserCommentsResponseDto toUserCommentsResponseDto(User entity, Page<CommentsOfUserResponseDto> comment);
+    @Mapping(target = "id", source = "user.id")
+    @Mapping(target = "email", source = "user.email")
+    @Mapping(target = "name", source = "user.name")
+    @Mapping(target = "studentId", source = "user.studentId")
+    @Mapping(target = "admissionYear", source = "user.admissionYear")
+    @Mapping(target = "profileImages", source = "user.profileImages")
+    UserCommentsResponseDto toUserCommentsResponseDto(User user, Page<CommentsOfUserResponseDto> comment);
 
     @Mapping(target = "id", source = "entity.id")
     @Mapping(target = "content", source = "entity.content")
