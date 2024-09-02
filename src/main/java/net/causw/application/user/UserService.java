@@ -928,16 +928,14 @@ public class UserService {
 
     @Scheduled(cron = "0 0 0 * * ?")
     public void deleteUser() {
-        List<User> users = userRepository.findInactiveUser();
+        LocalDateTime dueDate = LocalDateTime.now().minusYears(5);
 
-        for (User user : users) {
-            System.out.println(user.getEmail());
-            LocalDateTime dueDate = LocalDateTime.now().minusYears(5);
-            if (user.getUpdatedAt().isBefore(dueDate)) {
-                user.delete();
-                userRepository.save(user);
-            }
-        }
+        userRepository.findAllByState(UserState.INACTIVE).stream()
+                .filter(user -> user.getUpdatedAt().isBefore(dueDate))
+                .forEach(user -> {
+                    user.delete();
+                    userRepository.save(user);
+                });
     }
 
     private Optional<CircleMember> updateStatus(String applicationId, CircleMemberStatus targetStatus) {

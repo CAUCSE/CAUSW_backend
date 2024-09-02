@@ -28,10 +28,7 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     List<User> findByName(String name);
 
-    @Query("SELECT u " +
-            "FROM User u " +
-            "WHERE u.state = 'INACTIVE'")
-    List<User> findInactiveUser();
+    List<User> findAllByState(UserState state);
 
     Optional<User> findByStudentIdAndNameAndPhoneNumber(String studentId, String name, String phoneNumber);
 
