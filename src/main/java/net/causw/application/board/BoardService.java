@@ -128,7 +128,7 @@ public class BoardService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public BoardNameCheckResponseDto checkBoardName (
             BoardNameCheckRequestDto boardNameCheckRequestDto
     ) {
