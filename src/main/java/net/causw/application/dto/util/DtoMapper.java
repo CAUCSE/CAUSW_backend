@@ -160,12 +160,12 @@ public interface DtoMapper{
     @Mapping(target = "profileImages", source = "user.profileImages")
     UserCommentsResponseDto toUserCommentsResponseDto(User user, Page<CommentsOfUserResponseDto> comment);
 
-    @Mapping(target = "id", source = "entity.id")
-    @Mapping(target = "content", source = "entity.content")
-    @Mapping(target = "createdAt", source = "entity.createdAt")
-    @Mapping(target = "updatedAt", source = "entity.updatedAt")
-    @Mapping(target = "isDeleted", source = "entity.isDeleted")
-    CommentsOfUserResponseDto toCommentsOfUserResponseDto(Comment entity, String boardId, String boardName, String postId, String postName, String circleId, String circleName);
+    @Mapping(target = "id", source = "comment.id")
+    @Mapping(target = "content", source = "comment.content")
+    @Mapping(target = "createdAt", source = "comment.createdAt")
+    @Mapping(target = "updatedAt", source = "comment.updatedAt")
+    @Mapping(target = "isDeleted", source = "comment.isDeleted")
+    CommentsOfUserResponseDto toCommentsOfUserResponseDto(Comment comment, String boardId, String boardName, String postId, String postName, String circleId, String circleName);
 
     default UserPrivilegedResponseDto toUserPrivilegedResponseDto(
             List<UserResponseDto> president,
