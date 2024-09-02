@@ -58,7 +58,7 @@ public class User extends BaseEntity {
 
     @OneToMany(mappedBy = "user")
     @Column(name = "user_academic_record_admission_list", nullable = true)
-    private List<UserAcademicRecordAdmission> userAcademicRecordAdmissionList;
+    private List<UserAcademicRecordApplication> userAcademicRecordApplicationList;
 
     @Column(name = "graduation_year", nullable = true)
     private Integer graduationYear;
