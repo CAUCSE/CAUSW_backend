@@ -1259,7 +1259,8 @@ public class UserService {
         return Optional.ofNullable(redisUtils.getData(refreshToken))
                 .orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "RefreshToken 유효성 검증 실패"));
+                        MessageUtil.INVALID_REFRESH_TOKEN
+                        ));
     }
 
     public UserSignOutResponseDto signOut(UserSignOutRequestDto userSignOutRequestDto){
