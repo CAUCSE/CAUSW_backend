@@ -2,6 +2,7 @@ package net.causw.domain.validation;
 
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
+import net.causw.domain.model.util.MessageUtil;
 
 import java.time.LocalDateTime;
 
@@ -29,7 +30,7 @@ public class ExtendLockerExpiredAtValidator extends AbstractValidator {
         if (src.isEqual(dst)) {
             throw new BadRequestException(
                     ErrorCode.INVALID_EXPIRE_DATE,
-                    "아직 반납기한을 확장할 수 없습니다."
+                    MessageUtil.LOCKER_ALREADY_EXTENDED
             );
         }
     }
