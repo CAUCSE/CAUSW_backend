@@ -6,6 +6,9 @@ import jakarta.persistence.Table;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -21,14 +24,14 @@ public class CrawledNotice extends BaseEntity {
     @Column(columnDefinition = "TEXT", name = "content", nullable = false)
     private String content;
 
-    @Column(name = "link", nullable = false)
+    @Column(name = "link", nullable = false, unique = true)
     private String link;
 
     @Column(name = "author", nullable = false)
     private String author;
 
     @Column(name = "announce_date", nullable = false)
-    private String announceDate;
+    private LocalDate announceDate;
 
     public static CrawledNotice of(
             String type,
@@ -38,6 +41,9 @@ public class CrawledNotice extends BaseEntity {
             String author,
             String announceDate
     ) {
-        return new CrawledNotice(type, title, content, link, author, announceDate);
+        // String -> LocalDate
+        LocalDate parsedDate = LocalDate.parse(announceDate, DateTimeFormatter.ISO_LOCAL_DATE);
+
+        return new CrawledNotice(type, title, content, link, author, parsedDate);
     }
 }

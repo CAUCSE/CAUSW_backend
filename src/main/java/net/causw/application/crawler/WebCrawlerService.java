@@ -87,14 +87,16 @@ public class WebCrawlerService {
             }
             // DB save
             if (!notices.isEmpty()) {
-                // DB save
+                // 새로운 공지사항이 하나라도 있으면 저장
                 crawledNoticeRepository.saveAll(notices);
 
                 // 첫 페이지의 첫 번째 공지사항을 저장
                 if (pageNum == 1) {
                     if (recentNoticeLink == null) {
+                        // 처음 크롤링하는 경우엔 url save
                         latestCrawlRepository.save(LatestCrawl.of(notices.get(0).getLink(), CrawlCategory.CAU_SW_NOTICE));
                     } else {
+                        // 최신 공지 URL 업데이트
                         latestCrawlRepository.updateLatestUrlByCategory(notices.get(0).getLink(), CrawlCategory.CAU_SW_NOTICE);
                     }
                 }
@@ -102,7 +104,7 @@ public class WebCrawlerService {
                 // 공지가 하나도 없으면 종료
                 isNew = false;
             }
-            // 다음 페이지로 이동 (while true 내부)
+            // 다음 페이지로 이동
             pageNum++;
         }
     }
