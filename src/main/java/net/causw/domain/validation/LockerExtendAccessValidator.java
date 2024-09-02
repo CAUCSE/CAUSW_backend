@@ -2,6 +2,7 @@ package net.causw.domain.validation;
 
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
+import net.causw.domain.model.util.MessageUtil;
 
 public class LockerExtendAccessValidator extends AbstractValidator {
     private final Boolean flag;
@@ -19,8 +20,7 @@ public class LockerExtendAccessValidator extends AbstractValidator {
         if (!flag) {
             throw new BadRequestException(
                     ErrorCode.FLAG_NOT_AVAILABLE,
-                    "사물함 연장 신청 기간이 아닙니다. 공지를 확인해주세요."
-            );
+                    MessageUtil.LOCKER_EXTEND_NOT_ALLOWED);
         }
     }
 }
