@@ -134,13 +134,13 @@ public interface DtoMapper{
     UserResponseDto toUserResponseDto(User user, List<String> circleIdIfLeader, List<String> circleNameIfLeader);
     // circleIdIfLeader, circleNameIfLeader는 경우에 따라 null을 할당합니다.(기존 UserResponseDto.from을 사용하는 경우)
 
-    @Mapping(target = "id", source = "entity.id")
-    @Mapping(target = "email", source = "entity.email")
-    @Mapping(target = "name", source = "entity.name")
-    @Mapping(target = "studentId", source = "entity.studentId")
-    @Mapping(target = "admissionYear", source = "entity.admissionYear")
-    @Mapping(target = "profileImages", source = "entity.profileImages")
-    UserPostsResponseDto toUserPostsResponseDto(User entity, Page<UserPostResponseDto> post);
+    @Mapping(target = "id", source = "user.id")
+    @Mapping(target = "email", source = "user.email")
+    @Mapping(target = "name", source = "user.name")
+    @Mapping(target = "studentId", source = "user.studentId")
+    @Mapping(target = "admissionYear", source = "user.admissionYear")
+    @Mapping(target = "profileImages", source = "user.profileImages")
+    UserPostsResponseDto toUserPostsResponseDto(User user, Page<UserPostResponseDto> post);
 
     @Mapping(target = "id", source = "entity.id")
     @Mapping(target = "title", source = "entity.title")
