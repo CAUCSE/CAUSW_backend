@@ -212,16 +212,16 @@ public interface DtoMapper{
     @Mapping(target = "updatedAt", source = "userAdmission.updatedAt")
     UserAdmissionResponseDto toUserAdmissionResponseDto(UserAdmission userAdmission, User user);
 
-    @Mapping(target = "id", source = "entity.id")
-    @Mapping(target = "userName", source = "entity.user.name")
-    @Mapping(target = "userEmail", source = "entity.user.email")
-    @Mapping(target = "admissionYear", source = "entity.user.admissionYear")
-    @Mapping(target = "attachImage", source = "entity.attachImage")
-    @Mapping(target = "description", source = "entity.description")
-    @Mapping(target = "userState", source = "entity.user.state")
-    @Mapping(target = "createdAt", source = "entity.createdAt")
-    @Mapping(target = "updatedAt", source = "entity.updatedAt")
-    UserAdmissionsResponseDto toUserAdmissionsResponseDto(UserAdmission entity);
+    @Mapping(target = "id", source = "userAdmission.id")
+    @Mapping(target = "userName", source = "userAdmission.user.name")
+    @Mapping(target = "userEmail", source = "userAdmission.user.email")
+    @Mapping(target = "admissionYear", source = "userAdmission.user.admissionYear")
+    @Mapping(target = "attachImage", source = "userAdmission.attachImage")
+    @Mapping(target = "description", source = "userAdmission.description")
+    @Mapping(target = "userState", source = "userAdmission.user.state")
+    @Mapping(target = "createdAt", source = "userAdmission.createdAt")
+    @Mapping(target = "updatedAt", source = "userAdmission.updatedAt")
+    UserAdmissionsResponseDto toUserAdmissionsResponseDto(UserAdmission userAdmission);
 
     UserSignOutResponseDto toUserSignOutResponseDto(String message);
 
