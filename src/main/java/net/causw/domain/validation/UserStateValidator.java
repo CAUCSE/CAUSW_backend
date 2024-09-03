@@ -32,6 +32,13 @@ public class UserStateValidator extends AbstractValidator {
             );
         }
 
+        if (this.userState == UserState.DELETED) {
+            throw new UnauthorizedException(
+                    ErrorCode.DELETED_USER,
+                    "삭제된 사용자 입니다."
+            );
+        }
+
         if (this.userState == UserState.AWAIT) {
             throw new UnauthorizedException(
                     ErrorCode.AWAITING_USER,

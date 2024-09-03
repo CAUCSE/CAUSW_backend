@@ -26,6 +26,8 @@ public enum ErrorCode {
     INVALID_EXPIRE_DATE(4016),
     FLAG_NOT_AVAILABLE(4017),
     LOCKER_ACTION_ERROR(4018),
+    DTO_VALIDATION_FAILED(4019),
+
 
     /**
      * 401 Unauthorized
@@ -41,7 +43,7 @@ public enum ErrorCode {
     NOT_MEMBER(4108),
     REJECT_USER(4109),
     EXPIRED_JWT(4110),
-    VALIDATION_FAILED(4111),
+    DELETED_USER(4111),
 
     /**
      * 500 Internal Server Error
