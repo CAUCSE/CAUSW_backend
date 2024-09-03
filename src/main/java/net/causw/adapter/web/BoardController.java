@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.board.BoardService;
 import net.causw.application.dto.board.*;
@@ -116,7 +117,7 @@ public class BoardController {
             @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
     })
     public BoardResponseDto createNormalBoard(
-            @RequestBody NormalBoardCreateRequestDto normalBoardCreateRequestDto,
+            @Valid @RequestBody NormalBoardCreateRequestDto normalBoardCreateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();

@@ -41,6 +41,7 @@ public enum ErrorCode {
     NOT_MEMBER(4108),
     REJECT_USER(4109),
     EXPIRED_JWT(4110),
+    VALIDATION_FAILED(4111),
 
     /**
      * 500 Internal Server Error
@@ -50,7 +51,7 @@ public enum ErrorCode {
     /**
      * 503 Service Unavailable Error
      */
-    SERVICE_UNAVAILABLE(5030);
+    SERVICE_UNAVAILABLE(5030), ;
 
     private int code;
 

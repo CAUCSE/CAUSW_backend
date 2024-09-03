@@ -10,8 +10,8 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class NormalBoardCreateRequestDto {
-    @NotBlank
-    @NotNull
+    @NotBlank(message = "게시판 이름은 필수 입력 값입니다.")
+    @NotNull(message = "게시판 이름은 필수 입력 값입니다.")
     @Schema(description = "게시판 이름", example = "백준 질문 게시판")
     private String boardName;
 }
