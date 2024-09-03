@@ -52,7 +52,7 @@ public class InquiryService {
 
         validatorBucket
                 .consistOf(UserStateValidator.of(userDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
+                .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRoles()))
                 .consistOf(TargetIsDeletedValidator.of(inquiryDomainModel.getIsDeleted(), StaticValue.DOMAIN_INQUIRY));
 
         validatorBucket
@@ -77,7 +77,7 @@ public class InquiryService {
 
         validatorBucket
                 .consistOf(UserStateValidator.of(creatorDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(creatorDomainModel.getRole()));
+                .consistOf(UserRoleIsNoneValidator.of(creatorDomainModel.getRoles()));
 
         InquiryDomainModel inquiryDomainModel = InquiryDomainModel.of(
                 inquiryCreateRequestDto.getTitle(),

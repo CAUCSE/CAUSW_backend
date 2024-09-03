@@ -30,7 +30,7 @@ public class InquiryResponseDto {
         boolean updatable = false;
         boolean deletable = false;
 
-        if (user.getRole() == Role.ADMIN || inquiry.getWriter().getId().equals(user.getId())) {
+        if (user.getRoles().contains(Role.ADMIN) || inquiry.getWriter().getId().equals(user.getId())) {
             updatable = true;
             deletable = true;
         }

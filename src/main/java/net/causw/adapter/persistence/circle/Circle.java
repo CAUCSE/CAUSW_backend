@@ -1,19 +1,18 @@
 package net.causw.adapter.persistence.circle;
 
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.causw.adapter.persistence.form.Form;
+import net.causw.adapter.persistence.form.Question;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.domain.model.circle.CircleDomainModel;
 import org.hibernate.annotations.ColumnDefault;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import java.util.List;
 import java.util.Optional;
 
 @Getter
@@ -35,9 +34,22 @@ public class Circle extends BaseEntity {
     @ColumnDefault("false")
     private Boolean isDeleted;
 
+
+    @Column(name = "circle_tax")
+    private Integer circleTax;
+
+    @Column(name = "recruit_members")
+    private Integer recruitMembers;
+
     @OneToOne
     @JoinColumn(name = "leader_id")
     private User leader;
+
+
+
+//
+//    @OneToMany(mappedBy = "circle", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<Form> forms;
 
     public Optional<User> getLeader() {
         return Optional.ofNullable(this.leader);
@@ -48,6 +60,8 @@ public class Circle extends BaseEntity {
             String name,
             String mainImage,
             String description,
+            Integer circleTax,
+            Integer recuritMembers,
             Boolean isDeleted,
             User leader
     ) {
@@ -55,6 +69,8 @@ public class Circle extends BaseEntity {
         this.name = name;
         this.mainImage = mainImage;
         this.description = description;
+        this.circleTax = circleTax;
+        this.recruitMembers = recuritMembers;
         this.isDeleted = isDeleted;
         this.leader = leader;
     }
@@ -65,6 +81,8 @@ public class Circle extends BaseEntity {
                 circleDomainModel.getName(),
                 circleDomainModel.getMainImage(),
                 circleDomainModel.getDescription(),
+                circleDomainModel.getCircleTax(),
+                circleDomainModel.getRecruitMembers(),
                 circleDomainModel.getIsDeleted(),
                 circleDomainModel.getLeader().map(User::from).orElse(null)
         );
@@ -75,15 +93,19 @@ public class Circle extends BaseEntity {
             String mainImage,
             String description,
             Boolean isDeleted,
+            Integer circleTax,
+            Integer recuritMembers,
             User leader
     ) {
-        return new Circle(name, mainImage, description, isDeleted, leader);
+        return new Circle(name, mainImage, description, isDeleted, circleTax, recuritMembers, leader);
     }
 
-    public void update(String description, String name, String mainImage){
+    public void update(String name, String description, String mainImage, Integer circleTax, Integer recuritMembers){
         this.description = description;
         this.name = name;
         this.mainImage = mainImage;
+        this.circleTax = circleTax;
+        this.recruitMembers = recuritMembers;
     }
 
     public void setLeader(User leader){

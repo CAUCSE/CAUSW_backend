@@ -2,7 +2,6 @@ package net.causw.application.user;
 
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
-import net.causw.adapter.persistence.board.FavoriteBoard;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.locker.LockerLog;
@@ -12,50 +11,30 @@ import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.user.UserAdmission;
 import net.causw.adapter.persistence.user.UserAdmissionLog;
-import net.causw.adapter.persistence.board.Board;
-import net.causw.adapter.persistence.board.FavoriteBoard;
-import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.repository.BoardRepository;
-import net.causw.adapter.persistence.repository.FavoriteBoardRepository;
 import net.causw.adapter.persistence.repository.UserRepository;
-import net.causw.adapter.persistence.user.User;
-import net.causw.application.delegation.DelegationFactory;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.comment.CommentsOfUserResponseDto;
 import net.causw.application.dto.user.*;
 import net.causw.application.dto.util.DtoMapper;
-import net.causw.application.spi.CircleMemberPort;
-import net.causw.application.spi.CirclePort;
-import net.causw.application.spi.CommentPort;
-import net.causw.application.spi.LockerLogPort;
-import net.causw.application.spi.LockerPort;
-import net.causw.application.spi.PostPort;
-import net.causw.application.spi.UserAdmissionLogPort;
-import net.causw.application.spi.UserAdmissionPort;
-import net.causw.application.spi.UserPort;
 import net.causw.application.storage.StorageService;
 import net.causw.config.security.JwtTokenProvider;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
-import net.causw.domain.model.circle.CircleDomainModel;
 import net.causw.domain.model.enums.*;
-import net.causw.domain.model.post.PostDomainModel;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.RedisUtils;
 import net.causw.domain.model.util.StaticValue;
-import net.causw.domain.model.user.UserAdmissionDomainModel;
-import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.validation.AdmissionYearValidator;
 import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.GrantableRoleValidator;
 import net.causw.domain.validation.PasswordCorrectValidator;
 import net.causw.domain.validation.PasswordFormatValidator;
-import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.UserRoleIsNoneValidator;
 import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.UserRoleWithoutAdminValidator;
@@ -72,19 +51,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.validation.Validator;
-import java.util.ArrayList;
+
+import java.util.*;
 import java.util.Arrays;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    private final UserPort userPort;
-    private final CirclePort circlePort;
-    private final CircleMemberPort circleMemberPort;
     private final JwtTokenProvider jwtTokenProvider;
     private final StorageService storageService;
     private final GoogleMailSender googleMailSender;
@@ -104,7 +78,6 @@ public class UserService {
     private final LockerLogRepository lockerLogRepository;
     private final UserAdmissionLogRepository userAdmissionLogRepository;
     private final BoardRepository boardRepository;
-    private final FavoriteBoardRepository favoriteBoardRepository;
 
     @Transactional
     public UserResponseDto findPassword(
@@ -131,23 +104,18 @@ public class UserService {
 
     // Find process of another user
     @Transactional(readOnly = true)
-    public UserResponseDto findByUserId(String targetUserId, String loginUserId) {
-        User requestUser = this.userRepository.findById(loginUserId)
-                .orElseThrow(() -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                ));
-
+    public UserResponseDto findByUserId(String targetUserId, User requestUser) {
+        Set<Role> roles = requestUser.getRoles();
 
         ValidatorBucket.of()
-                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(UserStateValidator.of(requestUser.getState()))
-                .consistOf(UserRoleValidator.of(requestUser.getRole(),
-                        List.of(Role.LEADER_CIRCLE)))
+                .consistOf(UserRoleValidator.of(roles,
+                        Set.of(Role.LEADER_CIRCLE)))
                 .validate();
 
-        if (requestUser.getRole().getValue().contains("LEADER_CIRCLE")) {
-            List<Circle> ownCircles = this.circleRepository.findByLeader_Id(loginUserId);
+        if (roles.contains(Role.LEADER_CIRCLE)) {
+            List<Circle> ownCircles = this.circleRepository.findByLeader_Id(requestUser.getId());
             if (ownCircles.isEmpty()) {
                 throw new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
@@ -176,20 +144,16 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserResponseDto findCurrentUser(String loginUserId) {
-        User requestUser = this.userRepository.findById(loginUserId)
-                .orElseThrow(() -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_NOT_FOUND
-                ));
+    public UserResponseDto findCurrentUser(User requestUser) {
+        Set<Role> roles = requestUser.getRoles();
 
         ValidatorBucket.of()
-                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .validate();
 
-        if (requestUser.getRole().getValue().contains("LEADER_CIRCLE")) {
-            List<Circle> ownCircles = this.circleRepository.findByLeader_Id(loginUserId);
+        if (roles.contains(Role.LEADER_CIRCLE)) {
+            List<Circle> ownCircles = this.circleRepository.findByLeader_Id(requestUser.getId());
             if (ownCircles.isEmpty()) {
                 throw new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
@@ -209,21 +173,17 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserPostsResponseDto findPosts(String loginUserId, Integer pageNum) {
-        User requestUser = this.userRepository.findById(loginUserId)
-                .orElseThrow(() -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_NOT_FOUND
-                ));
+    public UserPostsResponseDto findPosts(User requestUser, Integer pageNum) {
+        Set<Role> roles = requestUser.getRoles();
 
         ValidatorBucket.of()
-                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .validate();
 
         return UserPostsResponseDto.of(
                 requestUser,
-                this.postRepository.findByUserId(loginUserId, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
+                this.postRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
                         .map(post -> UserPostResponseDto.of(
                                 post,
                                 post.getBoard().getId(),
@@ -236,61 +196,53 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserCommentsResponseDto findComments(String loginUserId, Integer pageNum) {
-        User requestUser = this.userRepository.findById(loginUserId)
-                .orElseThrow(() -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_NOT_FOUND
-                ));
+    public UserCommentsResponseDto findComments(User requestUser, Integer pageNum) {
+        Set<Role> roles = requestUser.getRoles();
 
         ValidatorBucket.of()
-                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .validate();
 
         return UserCommentsResponseDto.of(
                 requestUser,
-                this.commentRepository.findByUserId(loginUserId, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_COMMENT_PAGE_SIZE))
-                .map(comment -> {
-                    Post post = this.postRepository.findById(comment.getPost().getId()).orElseThrow(
-                            () -> new BadRequestException(
-                                    ErrorCode.ROW_DOES_NOT_EXIST,
-                                    MessageUtil.POST_NOT_FOUND
-                            )
-                    );
+                this.commentRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_COMMENT_PAGE_SIZE))
+                        .map(comment -> {
+                            Post post = this.postRepository.findById(comment.getPost().getId()).orElseThrow(
+                                    () -> new BadRequestException(
+                                            ErrorCode.ROW_DOES_NOT_EXIST,
+                                            MessageUtil.POST_NOT_FOUND
+                                    )
+                            );
 
-                    return CommentsOfUserResponseDto.of(
-                            comment,
-                            post.getBoard().getId(),
-                            post.getBoard().getName(),
-                            post.getId(),
-                            post.getTitle(),
-                            post.getBoard().getCircle() != null ? post.getBoard().getCircle().getId() : null,
-                            post.getBoard().getCircle() != null ? post.getBoard().getCircle().getName() : null
-                    );
-                })
+                            return CommentsOfUserResponseDto.of(
+                                    comment,
+                                    post.getBoard().getId(),
+                                    post.getBoard().getName(),
+                                    post.getId(),
+                                    post.getTitle(),
+                                    post.getBoard().getCircle() != null ? post.getBoard().getCircle().getId() : null,
+                                    post.getBoard().getCircle() != null ? post.getBoard().getCircle().getName() : null
+                            );
+                        })
 
         );
     }
 
     @Transactional(readOnly = true)
-    public List<UserResponseDto> findByName(String loginUserId, String name) {
-        User requestUser = this.userRepository.findById(loginUserId)
-                .orElseThrow(() -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_NOT_FOUND
-                ));
+    public List<UserResponseDto> findByName(User requestUser, String name) {
+        Set<Role> roles = requestUser.getRoles();
 
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(requestUser.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
-                .consistOf(UserRoleValidator.of(requestUser.getRole(),
-                        List.of(Role.LEADER_CIRCLE
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(UserRoleValidator.of(roles,
+                        Set.of(Role.LEADER_CIRCLE
                         )))
                 .validate();
 
-        if (requestUser.getRole().getValue().contains("LEADER_CIRCLE")) {
-            List<Circle> ownCircles = this.circleRepository.findByLeader_Id(loginUserId);
+        if (roles.contains(Role.LEADER_CIRCLE)) {
+            List<Circle> ownCircles = this.circleRepository.findByLeader_Id(requestUser.getId());
             if (ownCircles.isEmpty()) {
                 throw new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
@@ -324,16 +276,13 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserPrivilegedResponseDto findPrivilegedUsers(String loginUserId) {
-        User user = this.userRepository.findById(loginUserId)
-                .orElseThrow(() -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                ));
+    public UserPrivilegedResponseDto findPrivilegedUsers(User user) {
+        Set<Role> roles = user.getRoles();
+
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
-                .consistOf(UserRoleValidator.of(user.getRole(), List.of()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .validate();
 
         //todo: 현재 겸직을 고려하기 위해 _N_ 사용 중이나 port 와 domain model 삭제를 위해 배제
@@ -370,7 +319,7 @@ public class UserService {
                 this.userRepository.findByRoleAndState(Role.LEADER_CIRCLE, UserState.ACTIVE)
                         .stream()
                         .map(userDomainModel -> {
-                            List<Circle> ownCircles = this.circleRepository.findByLeader_Id(loginUserId);
+                            List<Circle> ownCircles = this.circleRepository.findByLeader_Id(user.getId());
                             if (ownCircles.isEmpty()) {
                                 throw new InternalServerException(
                                         ErrorCode.INTERNAL_SERVER,
@@ -393,21 +342,17 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public Page<UserResponseDto> findByState(
-            String loginUserId,
+            User user,
             String state,
             String name,
             Integer pageNum
     ) {
-        User user = this.userRepository.findById(loginUserId)
-                .orElseThrow(() -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_NOT_FOUND
-                ));
+        Set<Role> roles = user.getRoles();
 
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
-                .consistOf(UserRoleValidator.of(user.getRole(), List.of()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .validate();
 
         //portimpl 내부 로직 서비스단으로 이동
@@ -428,7 +373,7 @@ public class UserService {
         }
 
         return usersPage.map(userEntity -> {
-            if (userEntity.getRole().getValue().contains("LEADER_CIRCLE") && !"INACTIVE_N_DROP".equals(state)) {
+            if (userEntity.getRoles().contains(Role.LEADER_CIRCLE) && !"INACTIVE_N_DROP".equals(state)) {
                 List<Circle> ownCircles = circleRepository.findByLeader_Id(userEntity.getId());
                 if (ownCircles.isEmpty()) {
                     throw new InternalServerException(
@@ -451,19 +396,16 @@ public class UserService {
 
 
     @Transactional(readOnly = true)
-    public List<CircleResponseDto> getCircleList(String loginUserId) {
-        User user = this.userRepository.findById(loginUserId)
-                .orElseThrow(() -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_NOT_FOUND
-                ));
+    public List<CircleResponseDto> getCircleList(User user) {
+        Set<Role> roles = user.getRoles();
 
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .validate();
 
-        if (user.getRole().equals(Role.ADMIN) || user.getRole().getValue().contains("PRESIDENT")) {
+        //
+        if (roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT)) {
             return this.circleRepository.findAllByIsDeletedIsFalse()
                     .stream()
                     .map(CircleResponseDto::from)
@@ -478,12 +420,6 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * 회원가입 메소드
-     *
-     * @param userCreateRequestDto
-     * @return UserResponseDto
-     */
     @Transactional
     public UserResponseDto signUp(UserCreateRequestDto userCreateRequestDto) {
         // Make domain model for generalized data model and validate the format of request parameter
@@ -497,8 +433,20 @@ public class UserService {
                 }
         );
 
+        this.userRepository.findByNickname(userCreateRequestDto.getNickname()).ifPresent(
+                nickname -> {
+                    throw new BadRequestException(
+                            ErrorCode.ROW_ALREADY_EXIST,
+                            MessageUtil.NICKNAME_ALREADY_EXIST
+                    );
+                }
+        );
+
+
         //DomainModel 제거과정에서 role과 state가 누락된 것에 대한 해결을 위해 user에 직접 NONE과 AWAIT 설정
-        User user = userCreateRequestDto.toEntity(passwordEncoder.encode(userCreateRequestDto.getPassword()), Role.NONE, UserState.AWAIT);
+        Set<Role> roles = new HashSet<>();
+        roles.add(Role.NONE);
+        User user = userCreateRequestDto.toEntity(passwordEncoder.encode(userCreateRequestDto.getPassword()), roles, UserState.AWAIT);
 
         this.userRepository.save(user);
 
@@ -549,7 +497,7 @@ public class UserService {
         redisUtils.setData(refreshToken,user.getId(),StaticValue.JWT_REFRESH_TOKEN_VALID_TIME);
 
         return UserSignInResponseDto.builder()
-                .accessToken(jwtTokenProvider.createAccessToken(user.getId(), user.getRole(), user.getState()))
+                .accessToken(jwtTokenProvider.createAccessToken(user.getId(), user.getRoles(), user.getState()))
                 .refreshToken(jwtTokenProvider.createRefreshToken())
                 .build();
     }
@@ -576,25 +524,30 @@ public class UserService {
     }
 
     /**
-     * 사용자 정보 업데이트 메소드
+     * 닉네임 중복 확인 메소드
      *
-     * @param loginUserId
-     * @param userUpdateRequestDto
-     * @return UserResponseDto
+     * @param nickname
+     * @return DuplicatedCheckResponseDto
      */
+    @Transactional(readOnly = true)
+    public DuplicatedCheckResponseDto isDuplicatedNickname(String nickname) {
+        Optional<User> userFoundByNickname = userRepository.findByNickname(nickname);
+        if (userFoundByNickname.isPresent()) {
+            UserState state = userFoundByNickname.get().getState();
+            if (state.equals(UserState.INACTIVE) || state.equals(UserState.DROP)) {
+                throw new BadRequestException(
+                        ErrorCode.ROW_ALREADY_EXIST,
+                        MessageUtil.USER_ALREADY_APPLY
+                );
+            }
+        }
+        return DuplicatedCheckResponseDto.from(userFoundByNickname.isPresent());
+    }
+
     @Transactional
-    public UserResponseDto update(String loginUserId, UserUpdateRequestDto userUpdateRequestDto) {
-        // First, load the user data from input user id
-        User user = this.userRepository.findById(loginUserId)
-                .orElseThrow(() -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_NOT_FOUND
-                ));
+    public UserResponseDto update(User user, UserUpdateRequestDto userUpdateRequestDto) {
+        Set<Role> roles = user.getRoles();
 
-
-        /* The user requested changing the email if the request email is different from the original one
-         * Then, validate it whether the requested email is duplicated or not
-         */
         if (!user.getEmail().equals(userUpdateRequestDto.getEmail())) {
             userRepository.findByEmail(userUpdateRequestDto.getEmail()).ifPresent(
                     email -> {
@@ -611,12 +564,12 @@ public class UserService {
         user.setName(userUpdateRequestDto.getName());
         user.setStudentId(userUpdateRequestDto.getStudentId());
         user.setAdmissionYear(userUpdateRequestDto.getAdmissionYear());
-        user.setProfileImage(userUpdateRequestDto.getProfileImage());
+        user.setProfileImages(userUpdateRequestDto.getProfileImages());
 
         // Validate the admission year range
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(ConstraintValidator.of(user, this.validator))
                 .consistOf(AdmissionYearValidator.of(userUpdateRequestDto.getAdmissionYear()))
                 .validate();
@@ -626,27 +579,18 @@ public class UserService {
         return UserResponseDto.from(updatedUser);
     }
 
-    /**
-     * 사용자 권한 업데이트 메소드
-     *
-     * @param loginUserId
-     * @param granteeId
-     * @param userUpdateRoleRequestDto
-     * @return UserResponseDto
-     */
+
+    //TODO: 반드시 로직 수정 필요
     @Transactional
     public UserResponseDto updateUserRole(
-            String loginUserId,
+            User grantor,
             String granteeId,
             UserUpdateRoleRequestDto userUpdateRoleRequestDto
     ) {
-        // Load the user data from input grantor and grantee ids.
-        User grantor = userRepository.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
+        // 위임인의 권한을 모두 조회
+        Set<Role> roles = grantor.getRoles();
+
+        // 피위임인의 Id로 피위임인 조회
         User grantee = userRepository.findById(granteeId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -654,174 +598,236 @@ public class UserService {
                 )
         );
 
-
         /* Validate the role
          * 1) Combination of grantor role and the role to be granted must be acceptable
          * 2) Combination of grantor role and the grantee role must be acceptable
          */
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(grantor.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(grantor.getRole()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(GrantableRoleValidator.of(
-                        grantor.getRole(),
+                        roles,
                         userUpdateRoleRequestDto.getRole(),
-                        grantee.getRole()
+                        grantee.getRoles()
                 ))
                 .validate();
 
-        /* 권한 위임
-         * 1. 권한 위임자와 넘겨주는 권한이 같을 경우, 권한을 위임자가 동아리장일 경우 진행
-         * 2. 넘겨받을 권한이 동아리장일 경우 넘겨받을 동아리 id 저장
-         * 3. DelegationFactory를 통해 권한 위임 진행(동아리장 위임 경우 circle id를 넘겨주어서 어떤 동아리의 동아리장 권한을 위임하는 것인지 확인)
-         * */
+        // 학생회장, 동아리장, 관리자만 권한 위임 가능
+        if (roles.contains(Role.PRESIDENT) || roles.contains(Role.LEADER_CIRCLE) || roles.contains(Role.ADMIN)) {
+            // 위임인이 자신의 권한을 위임하는 경우
+            if (roles.contains(userUpdateRoleRequestDto.getRole())) {
+                String circleId = "";
 
+                // 학생회장 권한을 위임하는 경우
+                if (userUpdateRoleRequestDto.getRole().equals(Role.PRESIDENT)) {
+                    updatePresident(grantee);
+                }
+                // 동아리장 권한을 위임하는 경우
+                else if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)) {
+                    // 피위임인이 학생회장 또는 부학생회장인지 확인 후 circleId 할당
+                    circleId = checkAuthAndCircleId(userUpdateRoleRequestDto, grantee);
 
-        if (grantor.getRole().getValue().contains(userUpdateRoleRequestDto.getRole().getValue())){
-            String circleId = "";
-            if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)) {
-                circleId = userUpdateRoleRequestDto.getCircleId()
-                        .orElseThrow(() -> new BadRequestException(
-                                ErrorCode.INVALID_PARAMETER,
-                                MessageUtil.CIRCLE_ID_REQUIRED_FOR_LEADER_DELEGATION
-                        ));
-            }
-            DelegationFactory
-                    .create(userUpdateRoleRequestDto.getRole(), this.userPort, this.circlePort, this.circleMemberPort, circleId)
-                    .delegate(loginUserId, granteeId);
-        }
-        /* 권한 위임
-         * 1. 권한 위임자가 학생회장이거나 관리자일 경우 이면서 넘겨받을 권한이 동아리장 일때
-         * 2. 동아리장 업데이트
-         * 3. 기존 동아리장의 동아리장 권한 박탈
-         * */
-        else if ((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
-                && (userUpdateRoleRequestDto.getRole().equals(Role.VICE_PRESIDENT))
-        ){
-            List<User> previousVicePresidents = userRepository.findByRoleAndState(Role.VICE_PRESIDENT, UserState.ACTIVE);
-            if (!previousVicePresidents.isEmpty()) {
-                previousVicePresidents.forEach(previousVicePresident -> {
-                    this.removeRole(previousVicePresident.getId(), Role.VICE_PRESIDENT);
-                });
-            }
-        }
-
-        else if ((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
-                && userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)
-        ) {
-            String circleId = userUpdateRoleRequestDto.getCircleId()
-                    .orElseThrow(() -> new BadRequestException(
-                            ErrorCode.INVALID_PARAMETER,
-                            MessageUtil.CIRCLE_ID_REQUIRED_FOR_LEADER_DELEGATION
-                    ));
-            if(grantee.getRole().equals(Role.VICE_PRESIDENT)){
-                throw new UnauthorizedException(
-                        ErrorCode.API_NOT_ALLOWED,
-                        MessageUtil.CONCURRENT_JOB_IMPOSSIBLE
-
-                );
-            }
-
-            this.circleMemberRepository.findByUser_IdAndCircle_Id(granteeId, circleId)
-                    .ifPresentOrElse(
-                            circleMember ->
-                                    ValidatorBucket.of()
-                                            .consistOf(CircleMemberStatusValidator.of(
-                                                    circleMember.getStatus(),
-                                                    List.of(CircleMemberStatus.MEMBER)
-                                            )).validate(),
-                            () -> {
-                                throw new UnauthorizedException(
-                                        ErrorCode.NOT_MEMBER,
-                                        MessageUtil.CIRCLE_APPLY_INVALID
-                                );
-                            });
-
-            this.circleRepository.findById(circleId)
-                    .ifPresentOrElse(circle -> {
-                        circle.getLeader().ifPresent(leader -> {
-                            // Check if the leader is the leader of only one circle
-                            List<Circle> ownCircles = this.circleRepository.findByLeader_Id(leader.getId());
-                            if (ownCircles.size() == 1) {
-                                this.userPort.removeRole(leader.getId(), Role.LEADER_CIRCLE);
-                            }
-                        });
-                        updateLeader(circle.getId(), grantee);
-                    }, () -> {
-                        throw new BadRequestException(
-                                ErrorCode.ROW_DOES_NOT_EXIST,
-                                MessageUtil.SMALL_CLUB_NOT_FOUND
-                        );
-                    });
-
-        }
-        //관리자가 권한을 삭제하는 경우
-        //학생회 권한 삭제일 때는 바로 삭제 가능
-        //but 동아리장 겸직일 때 어떤 권한을 삭제하는지 확인이 필요함
-        else if ((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
-                && userUpdateRoleRequestDto.getRole().equals(Role.COMMON)
-        ) {
-            //TODO : 로직 수정 필요
-            if(grantee.getRole().getValue().contains("COUNCIL") || grantee.getRole().getValue().matches("LEADER_\\d+")){
-                return UserResponseDto.from(removeRole(granteeId, Role.COMMON).orElseThrow(
-                        () -> new InternalServerException(
-                                ErrorCode.INTERNAL_SERVER,
-                                MessageUtil.INTERNAL_SERVER_ERROR
-                        )
-                ));
-            }
-        }
-        else if ((grantor.getRole().equals(Role.PRESIDENT) || grantor.getRole().equals(Role.ADMIN))
-                && userUpdateRoleRequestDto.getRole().equals(Role.LEADER_ALUMNI)
-        ) {
-            User previousLeaderAlumni = this.userRepository.findByRoleAndState(Role.LEADER_ALUMNI, UserState.ACTIVE)
-                    .stream().findFirst()
-                    .orElseThrow(
-                            () -> new InternalServerException(
-                                    ErrorCode.INTERNAL_SERVER,
-                                    MessageUtil.INTERNAL_SERVER_ERROR
+                    //동아리가 존재하면 본인 동아리가 맞는지 circleid로 circle 조회
+                    Circle circle = circleRepository.findByIdAndIsDeletedIsFalse(circleId)
+                            .orElseThrow(() -> new BadRequestException(
+                                    ErrorCode.ROW_DOES_NOT_EXIST,
+                                    MessageUtil.CIRCLE_NOT_FOUND
                             ));
 
-            removeRole(previousLeaderAlumni.getId(), Role.LEADER_ALUMNI).orElseThrow(
-                    () -> new InternalServerException(
-                            ErrorCode.INTERNAL_SERVER,
-                            MessageUtil.INTERNAL_SERVER_ERROR
-                    )
+                    // 위임인이 해당 동아리의 동아리장인지 확인
+                    circle.getLeader().filter(leader -> leader.getId().equals(grantor.getId()))
+                            .orElseThrow(() -> new BadRequestException(
+                                    ErrorCode.ROW_DOES_NOT_EXIST,
+                                    MessageUtil.NOT_CIRCLE_LEADER
+                            ));
+
+                    // 피위임인이 해당 동아리 소속인지 확인
+                    this.circleMemberRepository.findByUser_IdAndCircle_Id(granteeId, circleId)
+                            .orElseThrow(() -> new BadRequestException(
+                                    ErrorCode.ROW_DOES_NOT_EXIST,
+                                    MessageUtil.CIRCLE_MEMBER_NOT_FOUND
+                            ));
+
+                    updateLeader(circleId, grantee); // 모두 맞다면 피위임인을 해당 동아리의 동아리장으로 위임
+                }
+                // 위임인의 권한 삭제 및 피위임인에게 권한 위임
+                removeRole(grantor, userUpdateRoleRequestDto.getRole());
+                updateRole(grantee, userUpdateRoleRequestDto.getRole());
+            }
+            else { // 타인의 권한을 위임하는 경우
+                // 학생회장, 관리자만 타인의 권한 위임 가능
+                if (roles.contains(Role.PRESIDENT) || roles.contains(Role.ADMIN)) {
+                    // 부학생회장 권한을 위임하는 경우
+                    if (userUpdateRoleRequestDto.getRole().equals(Role.VICE_PRESIDENT)) {
+                        updateVicePresident();
+
+                    // 동아리장 권한을 위임하는 경우
+                    } else if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_CIRCLE)) {
+                        String circleId = checkAuthAndCircleId(userUpdateRoleRequestDto, grantee);
+
+                        // 피위임인이 해당 동아리 소속인지 확인
+                        this.circleMemberRepository.findByUser_IdAndCircle_Id(granteeId, circleId)
+                                .ifPresentOrElse(
+                                        circleMember ->
+                                                ValidatorBucket.of()
+                                                        .consistOf(CircleMemberStatusValidator.of(
+                                                                circleMember.getStatus(),
+                                                                List.of(CircleMemberStatus.MEMBER)
+                                                        )).validate(),
+                                        () -> {
+                                            throw new UnauthorizedException(
+                                                    ErrorCode.NOT_MEMBER,
+                                                    MessageUtil.CIRCLE_APPLY_INVALID
+                                            );
+                                        });
+
+                        // circleId로 동아리 조회
+                        this.circleRepository.findById(circleId)
+                                .ifPresentOrElse(circle -> {
+                                    circle.getLeader().ifPresent(leader -> { // 동아리장이 존재하는지 확인
+                                        // 존재하는 경우 기존 동아리장의 동아리장 권한 삭제
+                                        User previousLeaderCircle = leader;
+                                        updateLeader(circle.getId(), grantee);
+                                        removeRole(previousLeaderCircle, Role.LEADER_CIRCLE);
+                                    });
+                                }, () -> {
+                                    throw new BadRequestException(
+                                            ErrorCode.ROW_DOES_NOT_EXIST,
+                                            MessageUtil.SMALL_CLUB_NOT_FOUND
+                                    );
+                                });
+
+                    } // 동문회장 권한을 위임하는 경우
+                    else if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_ALUMNI)) {
+                        updateLeaderAlumni(grantee);
+
+                    } // 학년대표 또는 학생회 권한을 위임하는 경우
+                    else if (userUpdateRoleRequestDto.getRole().equals(Role.LEADER_1) || userUpdateRoleRequestDto.getRole().equals(Role.LEADER_2)
+                    || userUpdateRoleRequestDto.getRole().equals(Role.LEADER_3) || userUpdateRoleRequestDto.getRole().equals(Role.LEADER_4)
+                    || userUpdateRoleRequestDto.getRole().equals(Role.COUNCIL)) {
+                        Role role = userUpdateRoleRequestDto.getRole();
+                        updateRole(grantee, role);
+
+                    } // 일반 사용자로 전환하는 경우
+                    else if (userUpdateRoleRequestDto.getRole().equals(Role.COMMON)) {
+                        grantee.getRoles().clear(); // 피위임인의 권한을 모두 삭제
+                        addRole(grantee, Role.COMMON);
+
+                    } // 그 외의 권한은 위임 불가
+                    else {
+                        throw new UnauthorizedException(
+                                ErrorCode.API_NOT_ACCESSIBLE,
+                                MessageUtil.API_NOT_ACCESSIBLE
+                        );
+                    }
+                }
+            }
+            // grantor, grantee의 권한 확인 후 아무 권한이 없는 경우 COMMON 부여
+            if (grantor.getRoles().isEmpty()) {
+                addRole(grantor, Role.COMMON);
+            }
+            if (grantee.getRoles().isEmpty()) {
+                addRole(grantee, Role.COMMON);
+            }
+        }
+        else {
+            throw new UnauthorizedException(
+                    ErrorCode.API_NOT_ACCESSIBLE,
+                    MessageUtil.API_NOT_ACCESSIBLE
             );
         }
 
-        /* Grant the role
-         * The linked updating process is performed on previous delegation process
-         * Therefore, the updating for the grantee is performed in this process
-         */
-        return UserResponseDto.from(this.updateRole(granteeId, userUpdateRoleRequestDto.getRole()).orElseThrow(
-                () -> new InternalServerException(
-                        ErrorCode.INTERNAL_SERVER,
-                        MessageUtil.INTERNAL_SERVER_ERROR
-                )
-        ));
+        return UserResponseDto.from(this.updateRole(grantee, userUpdateRoleRequestDto.getRole()));
     }
 
-    //UserPort의 removeRole 로직 서비스단으로 이동
-    //TODO : role 관련 로직 변경후 권한 삭제 코드 변경 필요
-    private Optional<User> removeRole(String id, Role targetRole) {
-        return this.userRepository.findById(id).map(
-                srcUser -> {
-                    if(srcUser.getRole().equals(targetRole)){
-                        srcUser.setRole(Role.COMMON);
-                    }
-                    else if (srcUser.getRole().getValue().contains(targetRole.getValue())) {
-                        if(targetRole.equals(Role.LEADER_CIRCLE)){
-                            String updatedRoleValue = srcUser.getRole().getValue().replace(targetRole.getValue(), "").replace("_N_","");
-                            srcUser.setRole(Role.of(updatedRoleValue));
-                        }
-                    }
-                    //학생회 겸 동아리장, 학년대표 겸 동아리장의 경우 타깃이 동아리 장만 남기는걸로 변경
-                    else if(targetRole.equals(Role.COMMON)){
-                        srcUser.setRole(Role.LEADER_CIRCLE);
-                    }
-                    return this.userRepository.save(srcUser);
-                }
-        );
+    private String checkAuthAndCircleId(UserUpdateRoleRequestDto userUpdateRoleRequestDto, User grantee) {
+        String circleId;
+        // 학생회장, 부학생회장은 동아리장 겸직 불가
+        if(grantee.getRoles().equals(Role.VICE_PRESIDENT) || grantee.getRoles().equals(Role.PRESIDENT)){
+            throw new UnauthorizedException(
+                    ErrorCode.API_NOT_ALLOWED,
+                    MessageUtil.CONCURRENT_JOB_IMPOSSIBLE
+            );
+        }
+
+        circleId = userUpdateRoleRequestDto.getCircleId()
+                .orElseThrow(() -> new BadRequestException(
+                        ErrorCode.INVALID_PARAMETER,
+                        MessageUtil.CIRCLE_ID_REQUIRED_FOR_LEADER_DELEGATION
+                ));
+        return circleId;
+    }
+
+    private void updateLeaderAlumni(User grantee) {
+        // 기존 동문회장 조회
+        User previousLeaderAlumni = this.userRepository.findByRoleAndState(Role.LEADER_ALUMNI, UserState.ACTIVE)
+                .stream().findFirst()
+                .orElseThrow(
+                        () -> new InternalServerException(
+                                ErrorCode.INTERNAL_SERVER,
+                                MessageUtil.INTERNAL_SERVER_ERROR
+                        ));
+
+        removeRole(previousLeaderAlumni, Role.LEADER_ALUMNI); // 기존 동문회장의 동문회장 권한 삭제
+        updateRole(grantee, Role.LEADER_ALUMNI);
+    }
+
+    private void updateVicePresident() {
+        // 부학생회장 리스트 조회 후 부학생회장 권한 삭제
+        List<User> previousVicePresidents = userRepository.findByRoleAndState(Role.VICE_PRESIDENT, UserState.ACTIVE);
+        if (!previousVicePresidents.isEmpty()) {
+            previousVicePresidents.forEach(previousVicePresident -> {
+                this.removeRole(previousVicePresident, Role.VICE_PRESIDENT);
+            });
+        }
+    }
+
+    private void updatePresident(User grantee) {
+        if (!grantee.getRoles().contains(Role.COMMON)) {
+            throw new UnauthorizedException(
+                    ErrorCode.API_NOT_ALLOWED,
+                    MessageUtil.CONCURRENT_JOB_IMPOSSIBLE
+            );
+        }
+
+        // 학생회 리스트 조회 후 학생회 권한 삭제
+        List<User> councilList = this.userRepository.findByRoleAndState(Role.COUNCIL, UserState.ACTIVE);
+        if (!councilList.isEmpty()) {
+            councilList.forEach(user -> removeRole(user, Role.COUNCIL));
+        }
+
+        // 부학생회장 리스트 조회 후 부학생회장 권한 삭제
+        List<User> vicePresident = this.userRepository.findByRoleAndState(Role.VICE_PRESIDENT, UserState.ACTIVE);
+        if (!vicePresident.isEmpty()) {
+            vicePresident.forEach(user -> removeRole(user, Role.VICE_PRESIDENT));
+        }
+    }
+
+    //remove는 그냥 역할을 지우기만 한다. (역할이 아무것도 없어지면 common을 추가한다)
+    private User removeRole(User targetUser, Role targetRole) {
+
+        Set<Role> roles = targetUser.getRoles();
+        if(targetRole.equals(Role.LEADER_CIRCLE)){
+            List<Circle> ownCircles = circleRepository.findByLeader_Id(targetUser.getId());
+            if(ownCircles.size() == 0) roles.remove(targetRole);
+        } else{
+            roles.remove(targetRole);
+        }
+
+        if (roles.isEmpty()) {
+            roles.add(Role.COMMON);
+        }
+
+        targetUser.setRoles(roles);
+
+        return this.userRepository.save(targetUser);
+    }
+
+    private User addRole(User targetUser, Role targetRole) {
+        Set<Role> roles = targetUser.getRoles();
+        roles.add(targetRole);
+        targetUser.setRoles(roles);
+        return this.userRepository.save(targetUser);
     }
 
     private Optional<Circle> updateLeader(String circleId, User newLeader) {
@@ -834,49 +840,31 @@ public class UserService {
         );
     }
 
-    private Optional<User> updateRole(String id, Role newRole) {
-        return this.userRepository.findById(id).map(srcUser -> {
-            if (srcUser.getRole().equals(Role.COMMON)) {
-                srcUser.setRole(newRole);
-            } else if (newRole.equals(Role.LEADER_CIRCLE)) {
-                if (!srcUser.getRole().getValue().contains("LEADER_CIRCLE")) {
-                    String combinedRoleValue = srcUser.getRole().getValue() + "_N_" + "LEADER_CIRCLE";
-                    Role combinedRole = Role.of(combinedRoleValue.toUpperCase());
-                    srcUser.setRole(combinedRole);
-                }
-            } else if (!newRole.equals(Role.LEADER_CIRCLE) && srcUser.getRole().equals(Role.LEADER_CIRCLE)) {
-                if (newRole.equals(Role.COMMON)) {
-                    srcUser.setRole(newRole);
-                } else {
-                    String combinedRoleValue = newRole.getValue() + "_N_" + "LEADER_CIRCLE";
-                    Role combinedRole = Role.of(combinedRoleValue.toUpperCase());
-                    srcUser.setRole(combinedRole);
-                }
-            } else {
-                srcUser.setRole(newRole);
-            }
-            return this.userRepository.save(srcUser);
-        });
+
+    private User updateRole(User targetUser, Role newRole) {
+        Set<Role> roles = targetUser.getRoles();
+
+        //common이 포함되어 있을때는 common을 지우고 새로운 역할 추가
+        if(roles.contains(Role.COMMON)){
+            roles.remove(Role.COMMON);
+        }
+        roles.add(newRole);
+        return this.userRepository.save(targetUser);
     }
 
 
 
     @Transactional
     public UserResponseDto updatePassword(
-            String loginUserId,
+            User user,
             UserUpdatePasswordRequestDto userUpdatePasswordRequestDto
     ) {
-        // 사용자 정보 조회
-        User user = this.userRepository.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
+        Set<Role> roles = user.getRoles();
+
 
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(PasswordCorrectValidator.of(
                         this.passwordEncoder,
                         user.getPassword(),
@@ -888,26 +876,20 @@ public class UserService {
         user.setPassword(this.passwordEncoder.encode(userUpdatePasswordRequestDto.getUpdatedPassword()));
         User updatedUser = this.userRepository.save(user);
 
-
         return UserResponseDto.from(updatedUser);
     }
 
     @Transactional
-    public UserResponseDto leave(String loginUserId) {
-        User user = this.userRepository.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
+    public UserResponseDto leave(User user) {
+        Set<Role> roles = user.getRoles();
 
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
-                .consistOf(UserRoleWithoutAdminValidator.of(user.getRole(), List.of(Role.COMMON, Role.PROFESSOR)))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(UserRoleWithoutAdminValidator.of(roles, Set.of(Role.COMMON, Role.PROFESSOR)))
                 .validate();
 
-        this.lockerRepository.findByUser_Id(loginUserId)
+        this.lockerRepository.findByUser_Id(user.getId())
                 .ifPresent(locker -> {
                     locker.returnLocker();
                     this.lockerRepository.save(locker);
@@ -926,20 +908,15 @@ public class UserService {
                 });
 
         // Change user role to NONE
-        this.updateRole(loginUserId, Role.NONE).orElseThrow(
-                () -> new InternalServerException(
-                        ErrorCode.INTERNAL_SERVER,
-                        MessageUtil.INTERNAL_SERVER_ERROR
-                )
-        );
+        this.updateRole(user, Role.NONE);
 
         // Leave from circle where user joined
-        this.circleMemberRepository.findByUser_Id(loginUserId)
+        this.circleMemberRepository.findByUser_Id(user.getId())
                 .forEach(circleMember ->
                         this.updateStatus(circleMember.getId(), CircleMemberStatus.LEAVE)
                 );
 
-        return UserResponseDto.from(this.updateState(loginUserId, UserState.INACTIVE).orElseThrow(
+        return UserResponseDto.from(this.updateState(user.getId(), UserState.INACTIVE).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.INTERNAL_SERVER_ERROR
@@ -970,14 +947,8 @@ public class UserService {
 
 
     @Transactional
-    public UserResponseDto dropUser(String loginUserId, String userId) {
-        User requestUser = this.userRepository.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
-
+    public UserResponseDto dropUser(User requestUser, String userId) {
+        Set<Role> roles = requestUser.getRoles();
 
         User droppedUser = this.userRepository.findById(userId).orElseThrow(
                 () -> new BadRequestException(
@@ -988,9 +959,9 @@ public class UserService {
 
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(requestUser.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
-                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of()))
-                .consistOf(UserRoleWithoutAdminValidator.of(droppedUser.getRole(), List.of(Role.COMMON, Role.PROFESSOR)))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(UserRoleValidator.of(roles, Set.of()))
+                .consistOf(UserRoleWithoutAdminValidator.of(droppedUser.getRoles(), Set.of(Role.COMMON, Role.PROFESSOR)))
                 .validate();
 
         this.lockerRepository.findByUser_Id(userId)
@@ -1010,12 +981,7 @@ public class UserService {
                     this.lockerLogRepository.save(lockerLog);
                 });
 
-        this.updateRole(userId, Role.NONE).orElseThrow(
-                () -> new InternalServerException(
-                        ErrorCode.INTERNAL_SERVER,
-                        MessageUtil.INTERNAL_SERVER_ERROR
-                )
-        );
+        this.updateRole(droppedUser, Role.NONE);
 
         return UserResponseDto.from(this.updateState(userId, UserState.DROP).orElseThrow(
                 () -> new InternalServerException(
@@ -1026,18 +992,13 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserAdmissionResponseDto findAdmissionById(String loginUserId, String admissionId) {
-        User requestUser = this.userRepository.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
+    public UserAdmissionResponseDto findAdmissionById(User requestUser, String admissionId) {
+        Set<Role> roles = requestUser.getRoles();
 
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(requestUser.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
-                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .validate();
 
         return UserAdmissionResponseDto.from(this.userAdmissionRepository.findById(admissionId).orElseThrow(
@@ -1050,21 +1011,16 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public Page<UserAdmissionsResponseDto> findAllAdmissions(
-            String loginUserId,
+            User requestUser,
             String name,
             Integer pageNum
     ) {
-        User requestUser = this.userRepository.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.LOGIN_USER_NOT_FOUND
-                )
-        );
+        Set<Role> roles = requestUser.getRoles();
 
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(requestUser.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
-                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .validate();
 
         return this.userAdmissionRepository.findAllWithName(UserState.AWAIT.getValue(), name, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
@@ -1115,12 +1071,10 @@ public class UserService {
 
     @Transactional
     public UserAdmissionResponseDto accept(
-            String loginUserId,
+            User requestUser,
             String admissionId
     ) {
-        User requestUser = this.userRepository.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.LOGIN_USER_NOT_FOUND)
-        );
+        Set<Role> roles = requestUser.getRoles();
 
         UserAdmission userAdmission = this.userAdmissionRepository.findById(admissionId).orElseThrow(
                 () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_APPLY_NOT_FOUND)
@@ -1128,17 +1082,12 @@ public class UserService {
 
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(requestUser.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
-                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .validate();
 
         // Update user role to COMMON
-        this.updateRole(userAdmission.getUser().getId(), Role.COMMON).orElseThrow(
-                () -> new InternalServerException(
-                        ErrorCode.INTERNAL_SERVER,
-                        MessageUtil.ADMISSION_EXCEPTION
-                )
-        );
+        this.updateRole(userAdmission.getUser(), Role.COMMON);
 
         UserAdmissionLog userAdmissionLog = UserAdmissionLog.builder()
                 .userEmail(userAdmission.getUser().getEmail())
@@ -1168,12 +1117,10 @@ public class UserService {
 
     @Transactional
     public UserAdmissionResponseDto reject(
-            String loginUserId,
+            User requestUser,
             String admissionId
     ) {
-        User requestUser = this.userRepository.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.LOGIN_USER_NOT_FOUND)
-        );
+        Set<Role> roles = requestUser.getRoles();
 
         UserAdmission userAdmission = this.userAdmissionRepository.findById(admissionId).orElseThrow(
                 () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_APPLY_NOT_FOUND)
@@ -1182,8 +1129,8 @@ public class UserService {
 
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(requestUser.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
-                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .validate();
 
         UserAdmissionLog userAdmissionLog = UserAdmissionLog.builder()
@@ -1239,55 +1186,50 @@ public class UserService {
 //
 //        return BoardResponseDto.from(this.favoriteBoardRepository.save(favoriteBoard).getBoard(), user.getRole());
 //    }
-    @Transactional
-    public BoardResponseDto createFavoriteBoard(
-            String loginUserId,
-            String boardId
-    ) {
-        User user = getUser(loginUserId);
-        Board board = getBoard(boardId);
-
-        FavoriteBoard favoriteBoard = FavoriteBoard.of(
-                user,
-                board
-        );
-
-        ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
-                .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD))
-                .consistOf(ConstraintValidator.of(favoriteBoard, this.validator))
-                .validate();
-
-        return toBoardResponseDto(
-                favoriteBoardRepository.save(favoriteBoard).getBoard(),
-                user.getRole()
-        );
-    }
+    //사용하지 않는 기능으로 주석처리
+//    @Transactional
+//    public BoardResponseDto createFavoriteBoard(
+//            String loginUserId,
+//            String boardId
+//    ) {
+//        User user = getUser(loginUserId);
+//        Board board = getBoard(boardId);
+//
+//        FavoriteBoard favoriteBoard = FavoriteBoard.of(
+//                user,
+//                board
+//        );
+//
+//        ValidatorBucket.of()
+//                .consistOf(UserStateValidator.of(user.getState()))
+//                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+//                .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD))
+//                .consistOf(ConstraintValidator.of(favoriteBoard, this.validator))
+//                .validate();
+//
+//        return toBoardResponseDto(
+//                favoriteBoardRepository.save(favoriteBoard).getBoard(),
+//                user.getRole()
+//        );
+//    }
 
     @Transactional
     public UserResponseDto restore(
-            String loginUserId,
+            User requestUser,
             String userId
     ) {
-        User requestUser = this.userRepository.findById(loginUserId).orElseThrow(
-            () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.LOGIN_USER_NOT_FOUND)
-        );
+        Set<Role> roles = requestUser.getRoles();
 
         User restoredUser = this.userRepository.findById(userId).orElseThrow(
                 () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND)
         );
         ValidatorBucket.of()
-                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of()))
+                .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .consistOf(UserStateIsDropOrIsInActiveValidator.of(restoredUser.getState()))
                 .validate();
 
-        this.updateRole(restoredUser.getId(), Role.COMMON).orElseThrow(
-                () -> new InternalServerException(
-                        ErrorCode.INTERNAL_SERVER,
-                        MessageUtil.INTERNAL_SERVER_ERROR
-                )
-        );
+        this.updateRole(restoredUser, Role.COMMON);
+
 
         return UserResponseDto.from(this.updateState(restoredUser.getId(), UserState.ACTIVE).orElseThrow(
                 () -> new InternalServerException(
@@ -1301,18 +1243,18 @@ public class UserService {
     public UserSignInResponseDto updateToken(String refreshToken) {
         // STEP1 : refreshToken으로 맵핑된 유저 찾기
         User user = this.userRepository.findById(this.getUserIdFromRefreshToken(refreshToken)).orElseThrow(
-                () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.INVALID_TOKEN)
+                () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.INVALID_REFRESH_TOKEN)
         );
 
         this.userRepository.findById(getUserIdFromRefreshToken(refreshToken));
 
         ValidatorBucket.of()
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+                .consistOf(UserRoleIsNoneValidator.of(user.getRoles()))
                 .consistOf(UserStateValidator.of(user.getState()))
                 .validate();
 
         // STEP2 : 새로운 accessToken 제공
-        String newAccessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getRole(), user.getState());
+        String newAccessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getRoles(), user.getState());
         return UserSignInResponseDto.builder()
                 .accessToken(newAccessToken)
                 .build();
@@ -1332,6 +1274,60 @@ public class UserService {
         return UserSignOutResponseDto.builder()
                 .message("로그아웃 성공")
                 .build();
+    }
+
+    public UserFindIdResponseDto findUserId(UserFindIdRequestDto userIdFindRequestDto) {
+        User user = this.userRepository.findByStudentIdAndNameAndPhoneNumber(
+                userIdFindRequestDto.getStudentId(),
+                userIdFindRequestDto.getName(),
+                userIdFindRequestDto.getPhoneNumber()
+        ).orElseThrow(() -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                MessageUtil.USER_NOT_FOUND
+        ));
+
+        return DtoMapper.INSTANCE.toUserfindIdResponseDto(user);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserResponseDto> findByStudentId(String studentId) {
+        List<User> userList = this.userRepository.findByStudentIdAndStateAndAcademicStatus(studentId, UserState.ACTIVE, AcademicStatus.ENROLLED);
+
+        if (userList.isEmpty()) {
+            throw new BadRequestException(
+                    ErrorCode.ROW_DOES_NOT_EXIST,
+                    MessageUtil.USER_NOT_FOUND
+            );
+        }
+
+        return userList.stream()
+                .map(user -> {
+                    if (user.getRoles().contains(Role.LEADER_CIRCLE)) {
+                        List<String> circleIdIfLeader = getCircleIdsIfLeader(user);
+                        List<String> circleNameIfLeader = getCircleNamesIfLeader(user);
+                        return DtoMapper.INSTANCE.toUserResponseDto(user, circleIdIfLeader, circleNameIfLeader);
+                    }
+                    else {
+                        return DtoMapper.INSTANCE.toUserResponseDto(user, null, null);
+                    }
+                })
+                .collect(Collectors.toList());
+    }
+
+    private List<String> getCircleNamesIfLeader(User user) {
+        List<Circle> circleList = this.circleRepository.findByLeader_Id(user.getId());
+
+        return circleList.stream()
+                .map(Circle::getName)
+                .collect(Collectors.toList());
+    }
+
+    private List<String> getCircleIdsIfLeader(User user) {
+        List<Circle> circleList = this.circleRepository.findByLeader_Id(user.getId());
+
+        return circleList.stream()
+                .map(Circle::getId)
+                .collect(Collectors.toList());
     }
 
     private BoardResponseDto toBoardResponseDto(Board board, Role userRole) {
@@ -1365,4 +1361,6 @@ public class UserService {
                 )
         );
     }
+
+
 }

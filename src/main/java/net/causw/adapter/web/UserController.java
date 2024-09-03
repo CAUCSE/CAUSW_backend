@@ -5,15 +5,19 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.user.*;
 import net.causw.application.user.UserService;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.circle.CircleResponseDto;
+import net.causw.config.security.SecurityService;
+import net.causw.config.security.userdetails.CustomUserDetails;
 import net.causw.domain.exceptions.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -37,6 +41,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+    private final SecurityService securityService;
 
     /**
      * 사용자 고유 id 값으로 사용자 정보를 조회하는 API
@@ -45,6 +50,7 @@ public class UserController {
      */
     @GetMapping(value = "/{userId}")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT', 'LEADER_CIRCLE')")
     @Operation(summary = "사용자 정보 조회 API (완료)",
             description = "userId에는 사용자 고유 id 값을 입력해주세요.")
     @ApiResponses({
@@ -57,10 +63,11 @@ public class UserController {
             @ApiResponse(responseCode = "5000", description = "소모임장이 아닙니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "4108", description = "해당 유저는 소모임 회원이 아닙니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
-    public UserResponseDto findByUserId(@PathVariable String userId) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.userService.findByUserId(userId, loginUserId);
+    public UserResponseDto findByUserId(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable("userId") String userId
+    ) {
+        return this.userService.findByUserId(userId, userDetails.getUser());
     }
 
     /**
@@ -69,6 +76,7 @@ public class UserController {
      */
     @GetMapping(value = "/me")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
     @Operation(summary = "로그인한 사용자 정보 조회 API (완료)",
             description = "현재 로그인한 사용자의 정보를 조회합니다.")
     @ApiResponses({
@@ -78,58 +86,68 @@ public class UserController {
             @ApiResponse(responseCode = "4102", description = "추방된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "5000", description = "소모임장이 아닙니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
-    public UserResponseDto findCurrentUser() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.userService.findCurrentUser(loginUserId);
+    public UserResponseDto findCurrentUser(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return this.userService.findCurrentUser(userDetails.getUser());
     }
 
     @GetMapping(value = "/posts")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
     @Operation(summary = "로그인한 사용자의 게시글 조회 API(완료)")
-    public UserPostsResponseDto findPosts(@RequestParam(defaultValue = "0") Integer pageNum) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.userService.findPosts(loginUserId, pageNum);
+    public UserPostsResponseDto findPosts(
+            @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return this.userService.findPosts(userDetails.getUser(), pageNum);
     }
 
     @GetMapping(value = "/comments")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
     @Operation(summary = "로그인한 사용자의 댓글 조회 API(완료)")
-    public UserCommentsResponseDto findComments(@RequestParam(defaultValue = "0") Integer pageNum) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.userService.findComments(loginUserId, pageNum);
+    public UserCommentsResponseDto findComments(
+            @RequestParam(name = "pageNum",defaultValue = "0") Integer pageNum,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+
+        return this.userService.findComments(userDetails.getUser(), pageNum);
     }
 
     @GetMapping(value = "/name/{name}")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT', 'LEADER_CIRCLE')")
     @Operation(summary = "유저 관리 시 사용자 이름으로 검색 API(완료)")
-    public List<UserResponseDto> findByName(@PathVariable String name) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.userService.findByName(loginUserId, name);
+    public List<UserResponseDto> findByName(
+            @PathVariable("name") String name,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return this.userService.findByName(userDetails.getUser(), name);
     }
 
     @GetMapping(value = "/privileged")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT')")
     @Operation(summary = "특별한 권한을 가진 사용자 목록 확인 API(완료)", description = "학생회장, 부학생회장, 학생회, 학년대표, 동문회장 역할을 가지는 사용자를 반환합니다. \n 권한 역임을 할 수 있기 때문에 중복되는 사용자가 존재합니다.(ex. PRESIDENT_N_LEADER_CIRCLE)")
-    public UserPrivilegedResponseDto findPrivilegedUsers() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.userService.findPrivilegedUsers(loginUserId);
+    public UserPrivilegedResponseDto findPrivilegedUsers(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return this.userService.findPrivilegedUsers(userDetails.getUser());
     }
 
     @GetMapping(value = "/state/{state}")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT')")
     @Operation(summary = "유저 관리 시 사용자의 상태(ACTIVE, INACTIVE 등) 에 따라 검색하는 API(완료)", description = "유저를 관리할 때 사용자가 활성, 비활성 상태인지에 따라서 분류하여 검색할 수 있습니다. \n state 는 ACTIVE, INACTIVE, AWAIT, REJECT, DROP 으로 검색가능합니다.")
     public Page<UserResponseDto> findByState(
-            @PathVariable String state,
-            @RequestParam(required = false) String name,
-            @RequestParam(defaultValue = "0") Integer pageNum) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.userService.findByState(loginUserId, state, name, pageNum);
+            @PathVariable("state") String state,
+            @RequestParam(name = "user name", required = false) String name,
+            @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+
+        return this.userService.findByState(userDetails.getUser(), state, name, pageNum);
     }
 
     /**
@@ -144,9 +162,12 @@ public class UserController {
             @ApiResponse(responseCode = "201", description = "Created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserResponseDto.class))),
             @ApiResponse(responseCode = "4001", description = "중복된 이메일입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "4003", description = "비밀번호 형식이 잘못되었습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-            @ApiResponse(responseCode = "4003", description = "입학년도를 다시 확인해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
+            @ApiResponse(responseCode = "4003", description = "입학년도를 다시 확인해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4001", description = "이미 존재하는 닉네임입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
-    public UserResponseDto signUp(@RequestBody UserCreateRequestDto userCreateDto) {
+    public UserResponseDto signUp(
+            @RequestBody UserCreateRequestDto userCreateDto
+    ) {
         return this.userService.signUp(userCreateDto);
     }
 
@@ -184,8 +205,24 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
             @ApiResponse(responseCode = "4001", description = "탈퇴한 계정의 재가입은 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
-    public DuplicatedCheckResponseDto isDuplicatedEmail(@PathVariable String email) {
+    public DuplicatedCheckResponseDto isDuplicatedEmail(@PathVariable("email") String email) {
         return this.userService.isDuplicatedEmail(email);
+    }
+
+    /**
+     * 닉네임 중복 확인 컨트롤러
+     * @param nickname
+     * @return DuplicatedCheckResponseDto
+     */
+    @GetMapping(value = "/{nickname}/is-duplicated-nickname")
+    @ResponseStatus(value = HttpStatus.OK)
+    @Operation(summary = "닉네임 중복 확인 API")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "4001", description = "탈퇴한 계정의 재가입은 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
+    })
+    public DuplicatedCheckResponseDto isDuplicatedNickname(@PathVariable("nickname") String nickname) {
+        return this.userService.isDuplicatedNickname(nickname);
     }
 
     /**
@@ -195,6 +232,7 @@ public class UserController {
      */
     @PutMapping
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
     @Operation(summary = "사용자 정보 업데이트 API (완료)")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
@@ -208,10 +246,12 @@ public class UserController {
             @ApiResponse(responseCode = "4003", description = "입학년도를 다시 확인해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
-    public UserResponseDto update(@RequestBody UserUpdateRequestDto userUpdateDto) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.userService.update(loginUserId, userUpdateDto);
+    public UserResponseDto update(
+            @RequestBody UserUpdateRequestDto userUpdateDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+
+        return this.userService.update(userDetails.getUser(), userUpdateDto);
     }
 
     /**
@@ -222,6 +262,7 @@ public class UserController {
      */
     @PutMapping(value = "/{granteeId}/role")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','LEADER_CIRCLE')")
     @Operation(summary = "역할 업데이트 API(완료)", description = "grantorId 에는 관리자의 고유 id값, granteeId 에는 권한이 업데이트될 사용자의 고유 id 값을 넣어주세요")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
@@ -240,19 +281,16 @@ public class UserController {
             @ApiResponse(responseCode = "5000", description = "동문회장이 존재하지 않습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "5001", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
-    public UserResponseDto updateRole(@PathVariable String granteeId, @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.userService.updateUserRole(loginUserId, granteeId, userUpdateRoleRequestDto);
+    public UserResponseDto updateRole(
+            @PathVariable("granteeId") String granteeId,
+            @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+
+        return this.userService.updateUserRole(userDetails.getUser(), granteeId, userUpdateRoleRequestDto);
     }
 
-    /**
-     * 비밀번호 찾기 API
-     * @param email
-     * @param name
-     * @param studentId
-     * @return
-     */
+
     @PutMapping(value = "/password/find")
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "비밀번호 찾기 API (완료)", description = "비밀번호 재설정 이메일 전송 API입니다.")
@@ -262,11 +300,13 @@ public class UserController {
 
     @PutMapping(value = "/password")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
     @Operation(summary = "비밀번호 업데이트 API (완료)")
-    public UserResponseDto updatePassword(@RequestBody UserUpdatePasswordRequestDto userUpdatePasswordRequestDto) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.userService.updatePassword(loginUserId, userUpdatePasswordRequestDto);
+    public UserResponseDto updatePassword(
+            @RequestBody UserUpdatePasswordRequestDto userUpdatePasswordRequestDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return this.userService.updatePassword(userDetails.getUser(), userUpdatePasswordRequestDto);
     }
 
     /**
@@ -276,6 +316,7 @@ public class UserController {
      */
     @DeleteMapping
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('COMMON','PROFESSOR')")
     @Operation(summary = "사용자 탈퇴 API (완료)")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
@@ -288,49 +329,51 @@ public class UserController {
             @ApiResponse(responseCode = "4107", description = "접근 권한이 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
-    public UserResponseDto leave() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.userService.leave(loginUserId);
+    public UserResponseDto leave(@AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        return this.userService.leave(userDetails.getUser());
     }
 
     @PutMapping(value = "{id}/drop")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT')")
     @Operation(summary = "사용자 추방 및 사물함 반환 API (완료)")
-    public UserResponseDto drop(@PathVariable String id) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.userService.dropUser(loginUserId, id);
+    public UserResponseDto drop(
+            @PathVariable("id") String id,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return this.userService.dropUser(userDetails.getUser(), id);
     }
     @GetMapping(value = "/circles")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
     @Operation(summary = "사용자가 속한 동아리 목록 불러오기 API(완료)" , description = "관리자, 학생회장인 경우 모든 동아리 불러오기")
-    public List<CircleResponseDto> getCircleList() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.userService.getCircleList(loginUserId);
+    public List<CircleResponseDto> getCircleList(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return this.userService.getCircleList(userDetails.getUser());
     }
 
     @GetMapping(value = "/admissions/{id}")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT')")
     @Operation(summary = "가입 대기 사용자 정보 확인 API (완료)")
-    public UserAdmissionResponseDto findAdmissionById(@PathVariable String id) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.userService.findAdmissionById(loginUserId, id);
+    public UserAdmissionResponseDto findAdmissionById(
+            @PathVariable("id") String id,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return this.userService.findAdmissionById(userDetails.getUser(), id);
     }
 
 
     @GetMapping(value = "/admissions")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT')")
     @Operation(summary = "모든 가입 대기 사용자 목록 확인 API (완료)")
     public Page<UserAdmissionsResponseDto> findAllAdmissions(
-            @RequestParam(defaultValue = "0") Integer pageNum,
-            @RequestParam(required = false) String name
+            @RequestParam(name = "pageNum",defaultValue = "0") Integer pageNum,
+            @RequestParam(name = "name", required = false) String name,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.userService.findAllAdmissions(loginUserId, name, pageNum);
+        return this.userService.findAllAdmissions(userDetails.getUser(), name, pageNum);
     }
 
     @PostMapping(value = "/admissions/apply")
@@ -350,6 +393,7 @@ public class UserController {
     }
 
     @PutMapping(value = "/admissions/{id}/accept")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT')")
     @Operation(summary = "신청 승인 API (완료)", description = "id 에는 승인 고유 id 값(admission id)을 넣어주세요.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "application/json", schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = String.class))),
@@ -362,10 +406,11 @@ public class UserController {
             @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "application/json", schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "application/json", schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = BadRequestException.class)))
     })
-    public UserAdmissionResponseDto acceptAdmission(@PathVariable String id) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.userService.accept(loginUserId, id);
+    public UserAdmissionResponseDto acceptAdmission(
+            @PathVariable("id") String id,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return this.userService.accept(userDetails.getUser(), id);
     }
 
     /**
@@ -374,6 +419,7 @@ public class UserController {
      * @return
      */
     @PutMapping(value = "/admissions/{id}/reject")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT')")
     @Operation(summary = "신청 거절 API (완료)", description = "id 에는 승인 고유 id 값(admission id)을 넣어주세요.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "application/json", schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = String.class))),
@@ -387,10 +433,12 @@ public class UserController {
             @ApiResponse(responseCode = "4107", description = "접근 권한이 없습니다.", content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "application/json", schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "application/json", schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = BadRequestException.class)))
     })
-    public UserAdmissionResponseDto rejectAdmission(@PathVariable String id) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.userService.reject(loginUserId, id);
+    public UserAdmissionResponseDto rejectAdmission(
+            @PathVariable("id") String id,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+
+        return this.userService.reject(userDetails.getUser(), id);
     }
 
 //    @PostMapping(value = "/favorite-boards/{boardId}")
@@ -404,11 +452,13 @@ public class UserController {
 
     @PutMapping(value = "/restore/{id}")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT')")
     @Operation(summary = "사용자 복구 API(완료)", description = "복구할 사용자의 id를 넣어주세요")
-    public UserResponseDto restore(@PathVariable String id) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.userService.restore(loginUserId, id);
+    public UserResponseDto restore(
+            @PathVariable("id") String id,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return this.userService.restore(userDetails.getUser(), id);
     }
 
     @PutMapping(value = "/token/update")
@@ -431,4 +481,33 @@ public class UserController {
     public UserSignOutResponseDto signOut(@RequestBody UserSignOutRequestDto userSignOutRequestDto){
         return userService.signOut(userSignOutRequestDto);
     }
+    /**
+     * @param userFindIdRequestDto
+     * @return userFindIdRequestDto
+     * */
+    @PostMapping(value = "/user-id/find")
+    @ResponseStatus(value = HttpStatus.OK)
+    @Operation(summary = "아이디 찾기 API" , description = "아이디를 찾기 위해 학번, 이름, 전화번호 필요")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "application/json", schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = UserFindIdResponseDto.class))),
+            @ApiResponse(responseCode = "4000", description = "해당 사용자를 찾을 수 없습니다", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
+    })
+    public UserFindIdResponseDto findUserId(@Valid @RequestBody UserFindIdRequestDto userFindIdRequestDto) {
+        return userService.findUserId(userFindIdRequestDto);
+    }
+
+    @GetMapping(value = "/studentId/{studentId}")
+    @ResponseStatus(value = HttpStatus.OK)
+    @Operation(summary = "학번으로 회원 조회 API", description = "학번을 입력하면 학번이 일치하는 회원 조회, 회원은 활동 중이고 재학 상태여야 함")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserResponseDto.class))),
+            @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4000", description = "해당 사용자를 찾을 수 없습니다", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4107", description = "접근 권한이 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+    })
+    public List<UserResponseDto> findByStudentId(@PathVariable("studentId") String studentId) {
+        return userService.findByStudentId(studentId);
+    }
 }
+

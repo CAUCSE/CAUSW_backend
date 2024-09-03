@@ -1,5 +1,6 @@
 package net.causw.application.circle;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
@@ -14,6 +15,7 @@ import net.causw.application.dto.user.UserResponseDto;
 import net.causw.application.dto.util.CircleServiceDtoMapper;
 import net.causw.application.dto.util.DtoMapper;
 import net.causw.application.dto.util.StatusUtil;
+import net.causw.application.excel.ExcelService;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
@@ -37,6 +39,7 @@ import static net.causw.application.dto.board.BoardOfCircleResponseDto.isWriteab
 @Service
 @RequiredArgsConstructor
 public class CircleService {
+    private final ExcelService excelService;
     private final Validator validator;
     private final CircleRepository circleRepository;
     private final CircleMemberRepository circleMemberRepository;
@@ -54,10 +57,10 @@ public class CircleService {
     }
 
     @Transactional(readOnly = true)
-    public List<CirclesResponseDto> findAll(String currentUserId) {
-        User user = getUser(currentUserId);
+    public List<CirclesResponseDto> findAll(User user) {
+        Set<Role> roles = user.getRoles();
 
-        initializeUserValidator(user.getState(), user.getRole()).validate();
+        initializeUserValidator(user.getState(), roles).validate();
 
         Map<String, CircleMember> joinedCircleMap = circleMemberRepository.findByUser_Id(user.getId())
                 .stream()
@@ -95,21 +98,20 @@ public class CircleService {
 
     @Transactional(readOnly = true)
     public CircleBoardsResponseDto findBoards(
-            String currentUserId,
+            User user,
             String circleId
     ) {
-        User user = getUser(currentUserId);
-
+        Set<Role> roles = user.getRoles();
         Circle circle = getCircle(circleId);
 
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                 .validate();
 
         if (!StatusUtil.isAdminOrPresident(user)) {
-            CircleMember circleMember = circleMemberRepository.findByUser_IdAndCircle_Id(currentUserId, circleId).orElseThrow(
+            CircleMember circleMember = circleMemberRepository.findByUser_IdAndCircle_Id(user.getId(), circleId).orElseThrow(
                     () -> new BadRequestException(
                             ErrorCode.ROW_DOES_NOT_EXIST,
                             MessageUtil.CIRCLE_APPLY_INVALID
@@ -132,13 +134,13 @@ public class CircleService {
                         .map(board -> postRepository.findTop1ByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(board.getId())
                                     .map(post -> this.toBoardOfCircleResponseDtoExtended(
                                             board,
-                                            user.getRole(),
+                                            roles,
                                             post,
                                             postRepository.countAllCommentByPost_Id(post.getId())
                                     )).orElse(
                                         this.toBoardOfCircleResponseDto(
                                                     board,
-                                                    user.getRole()
+                                                    roles
                                             ))
                         ).collect(Collectors.toList())
         );
@@ -151,11 +153,11 @@ public class CircleService {
 
     @Transactional(readOnly = true)
     public List<CircleMemberResponseDto> getUserList(
-            String currentUserId,
+            User user,
             String circleId,
             CircleMemberStatus status
     ) {
-        User user = getUser(currentUserId);
+        Set<Role> roles = user.getRoles();
 
         Circle circle = getCircle(circleId);
 
@@ -163,10 +165,10 @@ public class CircleService {
 
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                .consistOf(UserRoleValidator.of(user.getRole(),
-                        List.of(Role.LEADER_CIRCLE)))
+                .consistOf(UserRoleValidator.of(roles,
+                        Set.of(Role.LEADER_CIRCLE)))
                 .consistOf(UserEqualValidator.of(user.getId(), circleLeader.getId()))
                 .validate();
 
@@ -186,8 +188,8 @@ public class CircleService {
     }
 
     @Transactional
-    public CircleResponseDto create(String userId, CircleCreateRequestDto circleCreateRequestDto) {
-        User requestUser = getUser(userId);
+    public CircleResponseDto create(User requestUser, CircleCreateRequestDto circleCreateRequestDto) {
+        Set<Role> roles = requestUser.getRoles();
 
         User leader = userRepository.findById(circleCreateRequestDto.getLeaderId())
                 .orElseThrow(() -> new BadRequestException(
@@ -200,6 +202,8 @@ public class CircleService {
                 circleCreateRequestDto.getMainImage(),
                 circleCreateRequestDto.getDescription(),
                 false,
+                circleCreateRequestDto.getCircleTax(),
+                circleCreateRequestDto.getRecruitMembers(),
                 leader
         );
 
@@ -220,19 +224,14 @@ public class CircleService {
         // User Role Table 분리 필요하다고 봅니다...
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(requestUser.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(ConstraintValidator.of(circle, this.validator))
-                .consistOf(UserRoleValidator.of(requestUser.getRole(), List.of()))
-                .consistOf(GrantableRoleValidator.of(requestUser.getRole(), Role.LEADER_CIRCLE, leader.getRole()))
+                .consistOf(UserRoleValidator.of(roles, Set.of()))
+                .consistOf(GrantableRoleValidator.of(roles, Role.LEADER_CIRCLE, leader.getRoles()))
                 .validate();
 
         // Grant role to the LEADER
-        leader = updateUserRole(circleCreateRequestDto.getLeaderId(), Role.LEADER_CIRCLE).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.INTERNAL_SERVER,
-                        MessageUtil.INTERNAL_SERVER_ERROR
-                )
-        );
+        leader = updateRole(leader, Role.LEADER_CIRCLE);
 
         // Create circle
         circleRepository.save(circle);
@@ -260,13 +259,12 @@ public class CircleService {
 
     @Transactional
     public CircleResponseDto update(
-            String userId,
+            User user,
             String circleId,
             CircleUpdateRequestDto circleUpdateRequestDto
     ) {
         Circle circle = getCircle(circleId);
-
-        User user = getUser(userId);
+        Set<Role> roles = user.getRoles();
 
         if (!circle.getName().equals(circleUpdateRequestDto.getName())) {
             circleRepository.findByName(circleUpdateRequestDto.getName()).ifPresent(
@@ -279,62 +277,64 @@ public class CircleService {
             );
         }
 
-        String mainImage = circleUpdateRequestDto.getMainImage();
-        if (mainImage.isEmpty()) {
-            mainImage = circle.getMainImage();
-        }
-        circle.update(
-                circleUpdateRequestDto.getName(),
-                mainImage,
-                circleUpdateRequestDto.getDescription()
-        );
-
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         validatorBucket
                 .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                 .consistOf(ConstraintValidator.of(circle, this.validator))
                 .consistOf(UserRoleValidator.of(
-                        user.getRole(),
-                        List.of(Role.LEADER_CIRCLE)
+                        roles,
+                        Set.of(Role.LEADER_CIRCLE)
                 ));
 
-        if (user.getRole().getValue().contains("LEADER_CIRCLE")) {
+        if (roles.contains(Role.LEADER_CIRCLE)) {
             validatorBucket
                     .consistOf(UserEqualValidator.of(
                             getCircleLeader(circle).getId(),
-                            userId
+                            user.getId()
                     ));
         }
 
         validatorBucket
                 .validate();
 
+        String mainImage = circleUpdateRequestDto.getMainImage();
+        if (mainImage.isEmpty()) {
+            mainImage = circle.getMainImage();
+        }
+        circle.update(
+                circleUpdateRequestDto.getName(),
+                circleUpdateRequestDto.getDescription(),
+                mainImage,
+                circleUpdateRequestDto.getCircleTax(),
+                circleUpdateRequestDto.getRecruitMembers()
+        );
+
         return this.toCircleResponseDto(updateCircle(circleId, circle));
     }
 
     @Transactional
     public CircleResponseDto delete(
-            String requestUserId,
+            User user,
             String circleId
     ) {
         Circle circle = getCircle(circleId);
 
-        User user = getUser(requestUserId);
+        Set<Role> roles = user.getRoles();;
 
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         validatorBucket
                 .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                 .consistOf(UserRoleValidator.of(
-                        user.getRole(),
-                        List.of(Role.LEADER_CIRCLE)
+                        roles,
+                        Set.of(Role.LEADER_CIRCLE)
                 ));
 
-        if (user.getRole().getValue().contains("LEADER_CIRCLE")) {
+        if (roles.contains(Role.LEADER_CIRCLE)) {
             User leader = circle.getLeader().orElse(null);
             if (leader == null) {
                 throw new InternalServerException(
@@ -358,12 +358,7 @@ public class CircleService {
         List<Circle> ownCircleList = circleRepository.findByLeader_Id(leader.getId());
 
         if (ownCircleList.size() == 1) {
-            removeUserRole(leader.getId(), Role.LEADER_CIRCLE).orElseThrow(
-                    () -> new InternalServerException(
-                            ErrorCode.INTERNAL_SERVER,
-                            MessageUtil.INTERNAL_SERVER_ERROR
-                    )
-            );
+            this.removeRole(leader, Role.LEADER_CIRCLE);
         }
 
         CircleResponseDto circleResponseDto = this.toCircleResponseDto(deleteCircle(circleId).orElseThrow(
@@ -379,14 +374,13 @@ public class CircleService {
     }
 
     @Transactional
-    public CircleMemberResponseDto userApply(String userId, String circleId) {
+    public CircleMemberResponseDto userApply(User user, String circleId) {
         Circle circle = getCircle(circleId);
-
-        User user = getUser(userId);
+        Set<Role> roles = user.getRoles();
 
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                 .consistOf(StudentIdIsNullValidator.of(user.getStudentId()))
                 .validate();
@@ -416,12 +410,12 @@ public class CircleService {
     }
 
     @Transactional
-    public CircleMemberResponseDto leaveUser(String userId, String circleId) {
-        User user = getUser(userId);
+    public CircleMemberResponseDto leaveUser(User user, String circleId) {
+        Set<Role> roles = user.getRoles();
 
         Circle circle = getCircle(circleId);
 
-        CircleMember circleMember = circleMemberRepository.findByUser_IdAndCircle_Id(userId, circleId).orElseThrow(
+        CircleMember circleMember = circleMemberRepository.findByUser_IdAndCircle_Id(user.getId(), circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.CIRCLE_APPLY_INVALID
@@ -430,7 +424,7 @@ public class CircleService {
 
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(TargetIsDeletedValidator.of(circleMember.getCircle().getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
                 .consistOf(CircleMemberStatusValidator.of(
                         circleMember.getStatus(),
@@ -438,7 +432,8 @@ public class CircleService {
                 ))
                 .consistOf(UserNotEqualValidator.of(
                         getCircleLeader(circle).getId(),
-                        userId))
+                        user.getId())
+                )
                 .validate();
 
         return this.toCircleMemberResponseDto(
@@ -450,11 +445,11 @@ public class CircleService {
 
     @Transactional
     public CircleMemberResponseDto dropUser(
-            String requestUserId,
+            User requestUser,
             String userId,
             String circleId
     ) {
-        User requestUser = getUser(requestUserId);
+        Set<Role> roles = requestUser.getRoles();
 
         User user = getUser(userId);
 
@@ -470,16 +465,16 @@ public class CircleService {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         validatorBucket
                 .consistOf(UserStateValidator.of(requestUser.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                .consistOf(UserRoleValidator.of(requestUser.getRole(),
-                        List.of(Role.LEADER_CIRCLE)));
+                .consistOf(UserRoleValidator.of(roles,
+                        Set.of(Role.LEADER_CIRCLE)));
 
-        if (requestUser.getRole().getValue().contains("LEADER_CIRCLE")) {
+        if (roles.contains(Role.LEADER_CIRCLE)) {
             validatorBucket
                     .consistOf(UserEqualValidator.of(
                             getCircleLeader(circle).getId(),
-                            requestUserId
+                            requestUser.getId()
                     ));
         }
 
@@ -501,29 +496,29 @@ public class CircleService {
     }
 
     @Transactional
-    public CircleMemberResponseDto acceptUser(String requestUserId, String applicationId) {
+    public CircleMemberResponseDto acceptUser(User requestUser, String applicationId) {
         return this.updateUserApplication(
-                requestUserId,
+                requestUser,
                 applicationId,
                 CircleMemberStatus.MEMBER
         );
     }
 
     @Transactional
-    public CircleMemberResponseDto rejectUser(String requestUserId, String applicationId) {
+    public CircleMemberResponseDto rejectUser(User requestUser, String applicationId) {
         return updateUserApplication(
-                requestUserId,
+                requestUser,
                 applicationId,
                 CircleMemberStatus.REJECT
         );
     }
 
     private CircleMemberResponseDto updateUserApplication(
-            String requestUserId,
+            User requestUser,
             String applicationId,
             CircleMemberStatus targetStatus
     ) {
-        User requestUser = getUser(requestUserId);
+        Set<Role> roles = requestUser.getRoles();
 
         CircleMember circleMember = circleMemberRepository.findById(applicationId).orElseThrow(
                 () -> new BadRequestException(
@@ -537,16 +532,16 @@ public class CircleService {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         validatorBucket
                 .consistOf(UserStateValidator.of(requestUser.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(requestUser.getRole()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(TargetIsDeletedValidator.of(circleMember.getCircle().getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                .consistOf(UserRoleValidator.of(requestUser.getRole(),
-                        List.of(Role.LEADER_CIRCLE)));
+                .consistOf(UserRoleValidator.of(roles,
+                        Set.of(Role.LEADER_CIRCLE)));
 
-        if (requestUser.getRole().getValue().contains("LEADER_CIRCLE")) {
+        if (roles.contains(Role.LEADER_CIRCLE)) {
             validatorBucket
                     .consistOf(UserEqualValidator.of(
                             getCircleLeader(circleMember.getCircle()).getId(),
-                            requestUserId));
+                            requestUser.getId()));
         }
 
         validatorBucket
@@ -564,8 +559,8 @@ public class CircleService {
     }
 
     @Transactional
-    public CircleMemberResponseDto restoreUser(String loginUserId, String circleId, String targetUserId) {
-        User loginUser = getUser(loginUserId);
+    public CircleMemberResponseDto restoreUser(User loginUser, String circleId, String targetUserId) {
+        Set<Role> roles = loginUser.getRoles();
 
         User targetUser = getUser(targetUserId);
 
@@ -581,12 +576,12 @@ public class CircleService {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         validatorBucket
                 .consistOf(UserStateValidator.of(loginUser.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(loginUser.getRole()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                .consistOf(UserRoleValidator.of(loginUser.getRole(),
-                        List.of(Role.LEADER_CIRCLE)))
+                .consistOf(UserRoleValidator.of(roles,
+                        Set.of(Role.LEADER_CIRCLE)))
                 .consistOf(UserEqualValidator.of(
-                        loginUserId,
+                        loginUser.getId(),
                         getCircleLeader(circle).getId()
                 ));
         validatorBucket
@@ -602,9 +597,18 @@ public class CircleService {
         );
     }
 
+    @Transactional(readOnly = true)
+    public void exportCircleMembersToExcel(User user, String circleId, HttpServletResponse response){
+        Circle circle = getCircle(circleId);
+        String circleName = circle.getName();
+        List<CircleMemberResponseDto> awaitingMembers = getUserList(user, circleId, CircleMemberStatus.AWAIT);
+        List<CircleMemberResponseDto> activeMembers = getUserList(user, circleId, CircleMemberStatus.MEMBER);
+
+        excelService.generateCircleExcel(response, circleName, awaitingMembers, activeMembers);
+    }
 
 
-    // Entity or Entity Information CRUD
+
 
     // Entity or Entity Information CRUD - Circle
     private Circle getCircle(String circleId) {
@@ -619,7 +623,7 @@ public class CircleService {
     private Circle updateCircle(String id, Circle circle) {
         return circleRepository.findById(id).map(
                 srcCircle -> {
-                    srcCircle.update(circle.getDescription(), circle.getName(), circle.getMainImage());
+                    srcCircle.update(circle.getName(), circle.getDescription(), circle.getMainImage(), circle.getCircleTax(), circle.getRecruitMembers());
                     return circleRepository.save(srcCircle);
                 }
         ).orElseThrow(
@@ -693,58 +697,28 @@ public class CircleService {
         );
     }
 
-    private Optional<User> updateUserRole(String userId, Role newRole) {
-        return this.userRepository.findById(userId).map(
-                srcUser -> {
-                    if(srcUser.getRole().equals(Role.COMMON)){
-                        srcUser.setRole(newRole);
-                    }
-                    else if (newRole.equals(Role.LEADER_CIRCLE)) {
-                        if(!srcUser.getRole().getValue().contains("LEADER_CIRCLE")){
-                            String combinedRoleValue = srcUser.getRole().getValue() + "_N_" + "LEADER_CIRCLE";
-                            Role combinedRole = Role.of(combinedRoleValue.toUpperCase());
-                            srcUser.setRole(combinedRole);
-                        }
-                        else {
-                            srcUser.setRole(srcUser.getRole());
-                        }
-                    }
-                    else if(srcUser.getRole().equals(Role.LEADER_CIRCLE)){
-                        if(newRole.equals(Role.COMMON)){
-                            srcUser.setRole(newRole);
-                        } else{
-                            String combinedRoleValue = newRole.getValue() + "_N_" + "LEADER_CIRCLE";
-                            Role combinedRole = Role.of(combinedRoleValue.toUpperCase());
-                            srcUser.setRole(combinedRole);
-                        }
-                    }
-                    else {
-                        srcUser.setRole(newRole);
-                    }
-                    return userRepository.save(srcUser);
-                }
-        );
+    private User updateRole(User targetUser, Role newRole) {
+        Set<Role> roles = targetUser.getRoles();
+
+        //common이 포함되어 있을때는 common을 지우고 새로운 역할 추가
+        if(roles.contains(Role.COMMON)){
+            roles.remove(Role.COMMON);
+        }
+        roles.add(newRole);
+        return this.userRepository.save(targetUser);
     }
 
-    private Optional<User> removeUserRole(String userId, Role targetRole) {
-        return userRepository.findById(userId).map(
-                srcUser -> {
-                    if(srcUser.getRole().equals(targetRole)){
-                        srcUser.setRole(Role.COMMON);
-                    }
-                    else if (srcUser.getRole().getValue().contains(targetRole.getValue())) {
-                        if(targetRole.equals(Role.LEADER_CIRCLE)){
-                            String updatedRoleValue = srcUser.getRole().getValue().replace(targetRole.getValue(), "").replace("_N_","");
-                            srcUser.setRole(Role.of(updatedRoleValue));
-                        }
-                    }
-                    //학생회 겸 동아리장, 학년대표 겸 동아리장의 경우 타깃이 동아리 장만 남기는걸로 변경
-                    else if(targetRole.equals(Role.COMMON)){
-                        srcUser.setRole(Role.LEADER_CIRCLE);
-                    }
-                    return userRepository.save(srcUser);
-                }
-        );
+    private User removeRole(User targetUser, Role targetRole) {
+        Set<Role> roles = targetUser.getRoles();
+
+        if(roles.contains(targetRole)){
+            roles.remove(targetRole);
+            //TODO: 디폴트로 common이라는 역할을 남기는 경우를 생성하고 지우기
+            roles.add(Role.COMMON);
+        }
+        targetUser.setRoles(roles);
+
+        return this.userRepository.save(targetUser);
     }
 
     // Entity or Entity Information CRUD - Board
@@ -774,11 +748,11 @@ public class CircleService {
         return validatorBucket;
     }
 
-    private ValidatorBucket initializeUserValidator(UserState state, Role role) {
+    private ValidatorBucket initializeUserValidator(UserState state, Set<Role> roles) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         validatorBucket
                 .consistOf(UserStateValidator.of(state))
-                .consistOf(UserRoleIsNoneValidator.of(role));
+                .consistOf(UserRoleIsNoneValidator.of(roles));
         return validatorBucket;
     }
 
@@ -804,17 +778,17 @@ public class CircleService {
         return CircleServiceDtoMapper.INSTANCE.toCirclesResponseDtoExtended(circle, numMember, joinedAt);
     }
 
-    private BoardOfCircleResponseDto toBoardOfCircleResponseDto(Board board, Role userRole) {
+    private BoardOfCircleResponseDto toBoardOfCircleResponseDto(Board board, Set<Role> userRoles) {
         return CircleServiceDtoMapper.INSTANCE.toBoardOfCircleResponseDto(
                 board,
-                isWriteable(board, userRole)
+                isWriteable(board, userRoles)
         );
     }
 
-    private BoardOfCircleResponseDto toBoardOfCircleResponseDtoExtended(Board board, Role userRole, Post post, Long numComment) {
+    private BoardOfCircleResponseDto toBoardOfCircleResponseDtoExtended(Board board, Set<Role> userRoles, Post post, Long numComment) {
         return CircleServiceDtoMapper.INSTANCE.toBoardOfCircleResponseDtoExtended(
                 board,
-                isWriteable(board, userRole),
+                isWriteable(board, userRoles),
                 post,
                 numComment
         );

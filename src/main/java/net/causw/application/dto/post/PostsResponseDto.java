@@ -30,6 +30,18 @@ public class PostsResponseDto {
     @Schema(description = "답글 개수", example = "13")
     private Long numComment;
 
+    @Schema(description = "게시글 종아요 개수", example = "10")
+    private Long numLike;
+
+    @Schema(description = "게시글 즐겨찾기 개수", example = "11")
+    private Long numFavorite;
+
+    @Schema(description = "익명글 여부", example = "False")
+    private Boolean isAnonymous;
+
+    @Schema(description = "질문글 여부", example = "False")
+    private Boolean isQuestion;
+
     @Schema(description = "게시글 생성 시간", example = "2024-01-26T18:40:40.643Z")
     private LocalDateTime createdAt;
 

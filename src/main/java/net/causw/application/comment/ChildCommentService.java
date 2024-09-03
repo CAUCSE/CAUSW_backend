@@ -5,6 +5,7 @@ import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
+import net.causw.adapter.persistence.comment.LikeChildComment;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.user.User;
@@ -35,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Validator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -45,17 +47,18 @@ public class ChildCommentService {
     private final UserRepository userRepository;
     private final CircleMemberRepository circleMemberRepository;
     private final PostRepository postRepository;
+    private final LikeChildCommentRepository likeChildCommentRepository;
     private final Validator validator;
 
     @Transactional
-    public ChildCommentResponseDto createChildComment(String creatorId, ChildCommentCreateRequestDto childCommentCreateRequestDto) {
-        User creator = getUser(creatorId);
+    public ChildCommentResponseDto createChildComment(User creator, ChildCommentCreateRequestDto childCommentCreateRequestDto) {
         Comment parentComment = getComment(childCommentCreateRequestDto.getParentCommentId());
         Post post = getPost(parentComment.getPost().getId());
         Optional<ChildComment> refChildComment = childCommentCreateRequestDto.getRefChildComment().map(this::getChildComment);
         ChildComment childComment = ChildComment.of(
                 childCommentCreateRequestDto.getContent(),
                 false,
+                childCommentCreateRequestDto.getIsAnonymous(),
                 refChildComment.map(refChild -> refChild.getWriter().getName()).orElse(null),
                 childCommentCreateRequestDto.getRefChildComment().orElse(null),
                 creator,
@@ -71,6 +74,7 @@ public class ChildCommentService {
 
         return toChildCommentResponseDto(
                 childCommentRepository.save(childComment),
+                getNumOfChildCommentLikes(childComment),
                 StatusUtil.isUpdatable(childComment, creator),
                 StatusUtil.isDeletable(childComment, creator, post.getBoard())
         );
@@ -78,11 +82,11 @@ public class ChildCommentService {
 
     @Transactional
     public ChildCommentResponseDto updateChildComment(
-            String updaterId,
+            User updater,
             String childCommentId,
             ChildCommentUpdateRequestDto childCommentUpdateRequestDto
     ) {
-        User updater = getUser(updaterId);
+        Set<Role> roles = updater.getRoles();
         ChildComment childComment = getChildComment(childCommentId);
         Post post = getPost(childComment.getParentComment().getPost().getId());
         childComment.update(childCommentUpdateRequestDto.getContent());
@@ -92,8 +96,8 @@ public class ChildCommentService {
                 .consistOf(TargetIsDeletedValidator.of(childComment.getIsDeleted(), StaticValue.DOMAIN_CHILD_COMMENT))
                 .consistOf(ConstraintValidator.of(childComment, this.validator))
                 .consistOf(ContentsAdminValidator.of(
-                        updater.getRole(),
-                        updaterId,
+                        roles,
+                        updater.getId(),
                         childComment.getWriter().getId(),
                         List.of()
                 ));
@@ -101,14 +105,15 @@ public class ChildCommentService {
 
         return toChildCommentResponseDto(
                 childCommentRepository.save(childComment),
+                getNumOfChildCommentLikes(childComment),
                 StatusUtil.isUpdatable(childComment, updater),
                 StatusUtil.isDeletable(childComment, updater, post.getBoard())
         );
     }
 
     @Transactional
-    public ChildCommentResponseDto deleteChildComment(String deleterId, String childCommentId) {
-        User deleter = getUser(deleterId);
+    public ChildCommentResponseDto deleteChildComment(User deleter, String childCommentId) {
+        Set<Role> roles = deleter.getRoles();
         ChildComment childComment = getChildComment(childCommentId);
         Post post = getPost(childComment.getParentComment().getPost().getId());
 
@@ -116,10 +121,10 @@ public class ChildCommentService {
         validatorBucket.consistOf(TargetIsDeletedValidator.of(childComment.getIsDeleted(), StaticValue.DOMAIN_CHILD_COMMENT));
         Optional<Circle> circles = Optional.ofNullable(post.getBoard().getCircle());
         circles
-                .filter(circle -> !deleter.getRole().equals(Role.ADMIN) && !deleter.getRole().getValue().contains("PRESIDENT"))
+                .filter(circle -> !roles.contains(Role.ADMIN) && !roles.contains(Role.PRESIDENT) && !roles.contains(Role.VICE_PRESIDENT))
                 .ifPresentOrElse(
                         circle -> {
-                            CircleMember member = getCircleMember(deleterId, circle.getId());
+                            CircleMember member = getCircleMember(deleter.getId(), circle.getId());
 
                             validatorBucket
                                     .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
@@ -128,13 +133,13 @@ public class ChildCommentService {
                                             List.of(CircleMemberStatus.MEMBER)
                                     ))
                                     .consistOf(ContentsAdminValidator.of(
-                                            deleter.getRole(),
-                                            deleterId,
+                                            roles,
+                                            deleter.getId(),
                                             childComment.getWriter().getId(),
                                             List.of(Role.LEADER_CIRCLE)
                                     ));
 
-                            if (deleter.getRole().getValue().contains("LEADER_CIRCLE") && !childComment.getWriter().getId().equals(deleterId)) {
+                            if (roles.contains(Role.LEADER_CIRCLE) && !childComment.getWriter().getId().equals(deleter.getId())) {
                                 User leader = circle.getLeader().orElse(null);
                                 if (leader == null) {
                                     throw new InternalServerException(
@@ -145,14 +150,14 @@ public class ChildCommentService {
                                 validatorBucket
                                         .consistOf(UserEqualValidator.of(
                                                 leader.getId(),
-                                                deleterId
+                                                deleter.getId()
                                         ));
                             }
                         },
                         () -> validatorBucket
                                 .consistOf(ContentsAdminValidator.of(
-                                        deleter.getRole(),
-                                        deleterId,
+                                        roles,
+                                        deleter.getId(),
                                         childComment.getWriter().getId(),
                                         List.of()
                                 ))
@@ -164,22 +169,44 @@ public class ChildCommentService {
 
         return toChildCommentResponseDto(
                 childCommentRepository.save(childComment),
+                getNumOfChildCommentLikes(childComment),
                 StatusUtil.isUpdatable(childComment, deleter),
                 StatusUtil.isDeletable(childComment, deleter, post.getBoard())
         );
     }
 
+    @Transactional
+    public void likeChildComment(User user, String childCommentId) {
+        ChildComment childComment = getChildComment(childCommentId);
+
+        if (isChildCommentAlreadyLike(user, childCommentId)) {
+            throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.CHILD_COMMENT_ALREADY_LIKED);
+        }
+
+        LikeChildComment likeChildComment = LikeChildComment.of(childComment, user);
+        likeChildCommentRepository.save(likeChildComment);
+    }
+
+    private Boolean isChildCommentAlreadyLike(User user, String childCommentId) {
+        return likeChildCommentRepository.existsByChildCommentIdAndUserId(childCommentId, user.getId());
+    }
+
+    private Long getNumOfChildCommentLikes(ChildComment childComment) {
+        return likeChildCommentRepository.countByChildCommentId(childComment.getId());
+    }
+
     private ValidatorBucket initializeValidator(User user, Post post) {
+        Set<Role> roles = user.getRoles();
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         validatorBucket
                 .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(TargetIsDeletedValidator.of(post.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
                 .consistOf(TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST));
 
         Optional<Circle> circles = Optional.ofNullable(post.getBoard().getCircle());
         circles
-                .filter(circle -> !user.getRole().equals(Role.ADMIN) && !user.getRole().getValue().contains("PRESIDENT"))
+                .filter(circle -> !roles.contains(Role.ADMIN) && !roles.contains(Role.PRESIDENT) && !roles.contains(Role.VICE_PRESIDENT))
                 .ifPresent(circle -> {
                     CircleMember member = getCircleMember(user.getId(), circle.getId());
 
@@ -193,8 +220,8 @@ public class ChildCommentService {
         return validatorBucket;
     }
 
-    private ChildCommentResponseDto toChildCommentResponseDto(ChildComment comment, Boolean updatable, Boolean deletable) {
-        return DtoMapper.INSTANCE.toChildCommentResponseDto(comment, updatable, deletable);
+    private ChildCommentResponseDto toChildCommentResponseDto(ChildComment comment, Long childCommentLike, Boolean updatable, Boolean deletable) {
+        return DtoMapper.INSTANCE.toChildCommentResponseDto(comment, childCommentLike, updatable, deletable);
     }
 
     private User getUser(String userId) {

@@ -11,6 +11,7 @@ import net.causw.domain.validation.ValidatorBucket;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @NoArgsConstructor
 public class LockerActionDisable implements LockerAction {
@@ -22,7 +23,7 @@ public class LockerActionDisable implements LockerAction {
             CommonService commonService
     ) {
         ValidatorBucket.of()
-                .consistOf(UserRoleValidator.of(user.getRole(), List.of(Role.PRESIDENT)))
+                .consistOf(UserRoleValidator.of(user.getRoles(), Set.of()))
                 .consistOf(LockerIsDeactivatedValidator.of(locker.getIsActive()))
                 .validate();
 

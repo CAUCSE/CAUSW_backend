@@ -37,13 +37,26 @@ public class PostResponseDto {
     private Integer writerAdmissionYear;
 
     @Schema(description = "게시글 작성자의 프로필 이미지", example = "프로필 이미지 url 작성")
-    private String writerProfileImage;
+    private List<String> writerProfileImages;
 
     @Schema(description = "첨부파일", example = "첨부파일 url 작성")
     private List<FileResponseDto> attachmentList;
 
     @Schema(description = "답글 개수", example = "13")
     private Long numComment;
+
+    @Schema(description = "게시글 종아요 개수", example = "10")
+    private Long numLike;
+
+    @Schema(description = "게시글 즐겨찾기 개수", example = "11")
+    private Long numFavorite;
+
+    @Schema(description = "익명글 여부", example = "False")
+    private Boolean isAnonymous;
+
+    @Schema(description = "질문글 여부", example = "False")
+    private Boolean isQuestion;
+
 
     @Schema(description = "게시글 업데이트 가능여부", example = "true")
     private Boolean updatable;
@@ -78,7 +91,7 @@ public class PostResponseDto {
                 .isDeleted(post.getIsDeleted())
                 .writerName(post.getWriter().getName())
                 .writerAdmissionYear(post.getWriter().getAdmissionYear())
-                .writerProfileImage(post.getWriter().getProfileImage())
+                .writerProfileImages(post.getWriter().getProfileImages())
                 //.attachmentList(attachmentList.stream().map(FileResponseDto::from).collect(Collectors.toList()))
                 .numComment(0L)
                 .updatable(updatable)
@@ -104,7 +117,7 @@ public class PostResponseDto {
                 .isDeleted(post.getIsDeleted())
                 .writerName(post.getWriter().getName())
                 .writerAdmissionYear(post.getWriter().getAdmissionYear())
-                .writerProfileImage(post.getWriter().getProfileImage())
+                .writerProfileImages(post.getWriter().getProfileImages())
                 //.attachmentList(attachmentList.stream().map(FileResponseDto::from).collect(Collectors.toList()))
                 .numComment(numComment)
                 .updatable(updatable)

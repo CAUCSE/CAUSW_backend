@@ -8,7 +8,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, String> {
@@ -16,7 +18,7 @@ public interface PostRepository extends JpaRepository<Post, String> {
     Page<Post> findAllByBoard_IdAndIsDeletedOrderByCreatedAtDesc(String boardId, Pageable pageable, boolean IsDeleted);
     Page<Post> findAllByBoard_IdOrderByCreatedAtDesc(String boardId, Pageable pageable);
     Optional<Post> findTop1ByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(String boardId);
-
+    List<Post> findTop3ByBoard_IdAndIsDeletedOrderByCreatedAtDesc(String boardId, Boolean isDeleted);
 
     //해당 동아리의 동아리장, 관리자, 학생회장인 경우 삭제여부와 관계없이 모든 게시글 검색
     @Query(value = "SELECT * " +
@@ -28,7 +30,8 @@ public interface PostRepository extends JpaRepository<Post, String> {
     @Query(value = "SELECT * " +
             "FROM tb_post AS p " +
             "WHERE p.title LIKE CONCAT('%', :title, '%')AND p.board_id = :boardId AND p.is_deleted = :isDeleted ORDER BY p.created_at DESC", nativeQuery = true)
-    Page<Post> searchByTitle(@Param("title") String title, @Param("boardId") String boardId, Pageable pageable, boolean isDeleted);
+
+    Page<Post> searchByTitle(@Param("title") String title, @Param("boardId") String boardId, Pageable pageable, @Param("isDeleted") boolean isDeleted);
 
 
     @Query(value = "SELECT * FROM tb_post AS p " +

@@ -36,7 +36,7 @@ public class LockerActionRegister implements LockerAction {
                 .consistOf(LockerIsDeactivatedValidator.of(locker.getIsActive()))
                 .validate();
 
-        if (!user.getRole().equals(Role.ADMIN)) {
+        if (!user.getRoles().contains(Role.ADMIN)) {
             ValidatorBucket.of()
                     .consistOf(LockerAccessValidator.of(commonService.findByKeyInFlag(LOCKER_ACCESS).orElse(false)))
                     .validate();
@@ -57,7 +57,7 @@ public class LockerActionRegister implements LockerAction {
                         user.getEmail(),
                         user.getName(),
                         LockerLogAction.RETURN,
-                        ""
+                        "사물함 반납"
                 );
             });
         }

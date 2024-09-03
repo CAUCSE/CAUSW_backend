@@ -17,7 +17,7 @@ public class StorageController {
 
     @PostMapping("")
     public FileResponseDto post(
-            @RequestPart("file") MultipartFile multipartFile, @RequestParam String type) {
+            @RequestPart("file") MultipartFile multipartFile, @RequestParam("type") String type) {
         return FileResponseDto.from(storageService.uploadFile(multipartFile,type));
     }
 }

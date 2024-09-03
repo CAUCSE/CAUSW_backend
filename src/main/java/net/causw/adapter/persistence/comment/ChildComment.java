@@ -29,6 +29,10 @@ public class ChildComment extends BaseEntity {
     @ColumnDefault("false")
     private Boolean isDeleted;
 
+    @Column(name = "is_anonymous", nullable = false)
+    @ColumnDefault("false")
+    private Boolean isAnonymous;
+
     @Column(name = "tag_user_name")
     private String tagUserName;
 
@@ -80,12 +84,13 @@ public class ChildComment extends BaseEntity {
     public static ChildComment of(
             String content,
             Boolean isDeleted,
+            Boolean isAnonymous,
             String tagUserName,
             String refChildComment,
             User writer,
             Comment parentComment
     ) {
-        return new ChildComment(content, isDeleted, tagUserName, refChildComment, writer, parentComment);
+        return new ChildComment(content, isDeleted, isAnonymous, tagUserName, refChildComment, writer, parentComment);
     }
 
     public void delete(){

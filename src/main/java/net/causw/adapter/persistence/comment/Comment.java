@@ -33,6 +33,10 @@ public class Comment extends BaseEntity {
     @ColumnDefault("false")
     private Boolean isDeleted;
 
+    @Column(name = "is_anonymous", nullable = false)
+    @ColumnDefault("false")
+    private Boolean isAnonymous;
+
     @ManyToOne(targetEntity = User.class)
     @JoinColumn(name = "user_id", nullable = false)
     private User writer;
@@ -62,8 +66,8 @@ public class Comment extends BaseEntity {
         );
     }
 
-    public static Comment of(String content, Boolean isDeleted, User writer, Post post) {
-        return new Comment(content, isDeleted, writer, post, new ArrayList<>());
+    public static Comment of(String content, Boolean isDeleted, Boolean isAnonymous, User writer, Post post) {
+        return new Comment(content, isDeleted, isAnonymous, writer, post, new ArrayList<>());
     }
 
     public void setChildCommentList(List<ChildComment> childCommentList) {

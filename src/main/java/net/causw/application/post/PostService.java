@@ -4,7 +4,11 @@ import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
+import net.causw.adapter.persistence.comment.ChildComment;
+import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.page.PageableFactory;
+import net.causw.adapter.persistence.post.FavoritePost;
+import net.causw.adapter.persistence.post.LikePost;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.user.User;
@@ -36,10 +40,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.validation.Validator;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -53,12 +55,15 @@ public class PostService {
     private final CommentRepository commentRepository;
     private final ChildCommentRepository childCommentRepository;
     private final FavoriteBoardRepository favoriteBoardRepository;
+    private final LikePostRepository likePostRepository;
+    private final FavoritePostRepository favoritePostRepository;
+    private final LikeCommentRepository likeCommentRepository;
+    private final LikeChildCommentRepository likeChildCommentRepository;
     private final PageableFactory pageableFactory;
     private final Validator validator;
 
     @Transactional(readOnly = true)
-    public PostResponseDto findPostById(String loginUserId, String postId) {
-        User user = getUser(loginUserId);
+    public PostResponseDto findPostById(User user, String postId) {
         Post post = getPost(postId);
 
         ValidatorBucket validatorBucket = initializeValidator(user, post.getBoard());
@@ -69,34 +74,34 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public BoardPostsResponseDto findAllPost(
-            String loginUserId,
+            User user,
             String boardId,
             Integer pageNum
     ) {
-        User user = getUser(loginUserId);
+        Set<Role> roles = user.getRoles();
         Board board = getBoard(boardId);
 
         ValidatorBucket validatorBucket = initializeValidator(user, board);
         validatorBucket.validate();
 
         boolean isCircleLeader = false;
-        if (user.getRole().getValue().contains("LEADER_CIRCLE")) {
-            isCircleLeader = getCircleLeader(board.getCircle()).getId().equals(loginUserId);
+        if (roles.contains(Role.LEADER_CIRCLE)) {
+            isCircleLeader = getCircleLeader(board.getCircle()).getId().equals(user.getId());
         }
 
-        if (isCircleLeader || user.getRole().equals(Role.ADMIN) || user.getRole().getValue().contains("PRESIDENT")) {
+        if (isCircleLeader || roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT)) {
             return toBoardPostsResponseDto(
                     board,
-                    user.getRole(),
-                    isFavorite(loginUserId, board.getId()),
+                    roles,
+                    isFavorite(user.getId(), board.getId()),
                     postRepository.findAllByBoard_IdOrderByCreatedAtDesc(boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
                             .map(this::toPostsResponseDto)
             );
         } else {
             return toBoardPostsResponseDto(
                     board,
-                    user.getRole(),
-                    isFavorite(loginUserId, board.getId()),
+                    roles,
+                    isFavorite(user.getId(), board.getId()),
                     postRepository.findAllByBoard_IdAndIsDeletedOrderByCreatedAtDesc(boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), false)
                             .map(this::toPostsResponseDto)
             );
@@ -105,12 +110,12 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public BoardPostsResponseDto searchPost(
-            String loginUserId,
+            User user,
             String boardId,
             String keyword,
             Integer pageNum
     ) {
-        User user = getUser(loginUserId);
+        Set<Role> roles = user.getRoles();
         Board board = getBoard(boardId);
 
         ValidatorBucket validatorBucket = initializeValidator(user, board);
@@ -119,30 +124,30 @@ public class PostService {
                 .validate();
 
         boolean isCircleLeader = false;
-        if (user.getRole().getValue().contains("LEADER_CIRCLE")) {
-            isCircleLeader = getCircleLeader(board.getCircle()).getId().equals(loginUserId);
+        if (roles.contains(Role.LEADER_CIRCLE)) {
+            isCircleLeader = getCircleLeader(board.getCircle()).getId().equals(user.getId());
         }
 
-        if (isCircleLeader || user.getRole().equals(Role.ADMIN) || user.getRole().getValue().contains("PRESIDENT")) {
+        if (isCircleLeader || roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT) || roles.contains(Role.VICE_PRESIDENT)) {
             return toBoardPostsResponseDto(
                     board,
-                    user.getRole(),
-                    isFavorite(loginUserId, board.getId()),
+                    roles,
+                    isFavorite(user.getId(), board.getId()),
                     postRepository.findAllByBoard_IdOrderByCreatedAtDesc(boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
                             .map(this::toPostsResponseDto));
         } else {
             return toBoardPostsResponseDto(
                     board,
-                    user.getRole(),
-                    isFavorite(loginUserId, board.getId()),
+                    roles,
+                    isFavorite(user.getId(), board.getId()),
                     postRepository.searchByTitle(keyword, boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), false)
                             .map(this::toPostsResponseDto));
         }
     }
 
     @Transactional(readOnly = true)
-    public BoardPostsResponseDto findAllAppNotice(String loginUserId, Integer pageNum) {
-        User user = getUser(loginUserId);
+    public BoardPostsResponseDto findAllAppNotice(User user, Integer pageNum) {
+        Set<Role> roles = user.getRoles();
         Board board = boardRepository.findAppNotice().orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -152,24 +157,24 @@ public class PostService {
 
         return toBoardPostsResponseDto(
                 board,
-                user.getRole(),
-                isFavorite(loginUserId, board.getId()),
+                roles,
+                isFavorite(user.getId(), board.getId()),
                 postRepository.findAllByBoard_IdOrderByCreatedAtDesc(board.getId(), pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
                         .map(this::toPostsResponseDto));
     }
 
     @Transactional
-    public PostResponseDto createPost(String loginUserId, PostCreateRequestDto postCreateRequestDto) {
+    public PostResponseDto createPost(User creator, PostCreateRequestDto postCreateRequestDto) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
+        Set<Role> roles = creator.getRoles();
 
-        User creator = getUser(loginUserId);
         Board board = getBoard(postCreateRequestDto.getBoardId());
         List<String> createRoles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
         if (board.getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
             validatorBucket
                     .consistOf(UserRoleValidator.of(
-                            creator.getRole(),
-                            List.of()
+                            roles,
+                            Set.of()
                     ));
         }
 
@@ -178,25 +183,27 @@ public class PostService {
                 postCreateRequestDto.getContent(),
                 creator,
                 false,
+                postCreateRequestDto.getIsAnonymous(),
+                postCreateRequestDto.getIsQuestion(),
                 board,
                 String.join(":::", postCreateRequestDto.getAttachmentList())
         );
 
         validatorBucket
                 .consistOf(UserStateValidator.of(creator.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(creator.getRole()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(PostNumberOfAttachmentsValidator.of(postCreateRequestDto.getAttachmentList()))
                 .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD))
                 .consistOf(UserRoleValidator.of(
-                        creator.getRole(),
+                        roles,
                         createRoles.stream()
                                 .map(Role::of)
-                                .collect(Collectors.toList())
+                                .collect(Collectors.toSet())
                 ));
 
         Optional<Circle> circles = Optional.ofNullable(board.getCircle());
         circles
-                .filter(circle -> !creator.getRole().equals(Role.ADMIN) && !creator.getRole().getValue().contains("PRESIDENT"))
+                .filter(circle -> !roles.contains(Role.ADMIN) && !roles.contains(Role.PRESIDENT) && !roles.contains(Role.VICE_PRESIDENT))
                 .ifPresent(
                         circle -> {
                             CircleMember member = getCircleMember(creator.getId(), circle.getId());
@@ -208,11 +215,11 @@ public class PostService {
                                             List.of(CircleMemberStatus.MEMBER)
                                     ));
 
-                            if (creator.getRole().getValue().contains("LEADER_CIRCLE") && !createRoles.contains("COMMON")) {
+                            if (roles.contains(Role.LEADER_CIRCLE) && !createRoles.contains("COMMON")) {
                                 validatorBucket
                                         .consistOf(UserEqualValidator.of(
                                                 getCircleLeader(circle).getId(),
-                                                loginUserId
+                                                creator.getId()
                                         ));
                             }
                         }
@@ -225,26 +232,26 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponseDto deletePost(String loginUserId, String postId) {
-        User deleter = getUser(loginUserId);
+    public PostResponseDto deletePost(User deleter, String postId) {
         Post post = getPost(postId);
+        Set<Role> roles = deleter.getRoles();
 
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         if (post.getBoard().getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
             validatorBucket
                     .consistOf(UserRoleValidator.of(
-                            deleter.getRole(),
-                            List.of()
+                            roles,
+                            Set.of()
                     ));
         }
         validatorBucket
                 .consistOf(UserStateValidator.of(deleter.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(deleter.getRole()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST));
 
         Optional<Circle> circles = Optional.ofNullable(post.getBoard().getCircle());
         circles
-                .filter(circle -> !deleter.getRole().equals(Role.ADMIN) && !deleter.getRole().getValue().contains("PRESIDENT"))
+                .filter(circle -> !roles.contains(Role.ADMIN) && !roles.contains(Role.PRESIDENT) && !roles.contains(Role.VICE_PRESIDENT))
                 .ifPresentOrElse(
                         circle -> {
                             CircleMember member = getCircleMember(deleter.getId(), circle.getId());
@@ -255,24 +262,24 @@ public class PostService {
                                             member.getStatus(),
                                             List.of(CircleMemberStatus.MEMBER)
                                     )).consistOf(ContentsAdminValidator.of(
-                                            deleter.getRole(),
-                                            loginUserId,
+                                            roles,
+                                            deleter.getId(),
                                             post.getWriter().getId(),
                                             List.of(Role.LEADER_CIRCLE)
                                     ));
 
-                            if (deleter.getRole().getValue().contains("LEADER_CIRCLE") && !post.getWriter().getId().equals(loginUserId)) {
+                            if (roles.contains(Role.LEADER_CIRCLE) && !post.getWriter().getId().equals(deleter.getId())) {
                                 validatorBucket
                                         .consistOf(UserEqualValidator.of(
                                                 getCircleLeader(circle).getId(),
-                                                loginUserId
+                                                deleter.getId()
                                         ));
                             }
                         },
                         () -> validatorBucket
                                 .consistOf(ContentsAdminValidator.of(
-                                        deleter.getRole(),
-                                        loginUserId,
+                                        roles,
+                                        deleter.getId(),
                                         post.getWriter().getId(),
                                         List.of())
                                 )
@@ -286,19 +293,19 @@ public class PostService {
 
     @Transactional
     public PostResponseDto updatePost(
-            String loginUserId,
+            User updater,
             String postId,
             PostUpdateRequestDto postUpdateRequestDto
     ) {
-        User updater = getUser(loginUserId);
+        Set<Role> roles = updater.getRoles();
         Post post = getPost(postId);
 
         ValidatorBucket validatorBucket = initializeValidator(updater, post.getBoard());
         if (post.getBoard().getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
             validatorBucket
                     .consistOf(UserRoleValidator.of(
-                            updater.getRole(),
-                            List.of()
+                            roles,
+                            Set.of()
                     ));
         }
         validatorBucket
@@ -306,8 +313,8 @@ public class PostService {
                 .consistOf(TargetIsDeletedValidator.of(post.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
                 .consistOf(TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST))
                 .consistOf(ContentsAdminValidator.of(
-                        updater.getRole(),
-                        loginUserId,
+                        roles,
+                        updater.getId(),
                         post.getWriter().getId(),
                         List.of()
                 ))
@@ -324,27 +331,27 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponseDto restorePost(String loginUserId, String postId) {
-        User restorer = getUser(loginUserId);
+    public PostResponseDto restorePost(User restorer, String postId) {
+        Set<Role> roles = restorer.getRoles();
         Post post = getPost(postId);
 
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         if (post.getBoard().getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
             validatorBucket
                     .consistOf(UserRoleValidator.of(
-                            restorer.getRole(),
-                            List.of()
+                            roles,
+                            Set.of()
                     ));
         }
         validatorBucket
                 .consistOf(UserStateValidator.of(restorer.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(restorer.getRole()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(TargetIsDeletedValidator.of(post.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
                 .consistOf(TargetIsNotDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST));
 
         Optional<Circle> circles = Optional.ofNullable(post.getBoard().getCircle());
         circles
-                .filter(circle -> !restorer.getRole().equals(Role.ADMIN) && !restorer.getRole().getValue().contains("PRESIDENT"))
+                .filter(circle -> !roles.contains(Role.ADMIN) && !roles.contains(Role.PRESIDENT) && !roles.contains(Role.VICE_PRESIDENT))
                 .ifPresentOrElse(
                         circle -> {
                             CircleMember member = getCircleMember(restorer.getId(), circle.getId());
@@ -356,24 +363,24 @@ public class PostService {
                                             List.of(CircleMemberStatus.MEMBER)
                                     ))
                                     .consistOf(ContentsAdminValidator.of(
-                                            restorer.getRole(),
-                                            loginUserId,
+                                            roles,
+                                            restorer.getId(),
                                             post.getWriter().getId(),
                                             List.of(Role.LEADER_CIRCLE)
                                     ));
 
-                            if (restorer.getRole().getValue().contains("LEADER_CIRCLE") && !post.getWriter().getId().equals(loginUserId)) {
+                            if (roles.contains(Role.LEADER_CIRCLE) && !post.getWriter().getId().equals(restorer.getId())) {
                                 validatorBucket
                                         .consistOf(UserEqualValidator.of(
                                                 getCircleLeader(circle).getId(),
-                                                loginUserId
+                                                restorer.getId()
                                         ));
                             }
                         },
                         () -> validatorBucket
                                 .consistOf(ContentsAdminValidator.of(
-                                        restorer.getRole(),
-                                        loginUserId,
+                                        roles,
+                                        restorer.getId(),
                                         post.getWriter().getId(),
                                         List.of()
                                 ))
@@ -381,8 +388,8 @@ public class PostService {
 
         validatorBucket
                 .consistOf(ContentsAdminValidator.of(
-                        restorer.getRole(),
-                        loginUserId,
+                        roles,
+                        restorer.getId(),
                         post.getWriter().getId(),
                         List.of(Role.LEADER_CIRCLE)
                 ))
@@ -393,15 +400,84 @@ public class PostService {
         return toPostResponseDtoExtended(postRepository.save(post), restorer);
     }
 
+    @Transactional
+    public void likePost(User user, String postId) {
+        Post post = getPost(postId);
+
+        if (isPostAlreadyLike(user, postId)) {
+            throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.POST_ALREADY_LIKED);
+        }
+
+        LikePost likePost = LikePost.of(post, user);
+        likePostRepository.save(likePost);
+    }
+
+    @Transactional
+    public void favoritePost(User user, String postId) {
+        Post post = getPost(postId);
+
+        //FIXME : Validator 리팩토링 통합 후 해당 검사 로직을 해당방식으로 수정.
+        if (isPostDeleted(post)) {
+            throw new BadRequestException(ErrorCode.TARGET_DELETED, MessageUtil.POST_DELETED);
+        }
+
+        FavoritePost favoritePost;
+        if (isPostAlreadyFavorite(user, postId)) {
+            favoritePost = getFavoritePost(user, postId);
+            if (favoritePost.getIsDeleted()) {
+                favoritePost.setIsDeleted(false);
+            } else {
+                throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.POST_ALREADY_FAVORITED);
+            }
+        } else {
+            favoritePost = FavoritePost.of(post, user, false);
+        }
+
+        favoritePostRepository.save(favoritePost);
+    }
+
+
+    @Transactional
+    public void cancelFavoritePost(User user, String postId) {
+        Post post = getPost(postId);
+
+        //FIXME : Validator 리팩토링 통합 후 해당 검사 로직을 해당방식으로 수정.
+        if (isPostDeleted(post)) {
+            throw new BadRequestException(ErrorCode.TARGET_DELETED, MessageUtil.POST_DELETED);
+        }
+
+        FavoritePost favoritePost = getFavoritePost(user, postId);
+        if (favoritePost.getIsDeleted()) {
+            throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.FAVORITE_POST_ALREADY_DELETED);
+        } else {
+            favoritePost.setIsDeleted(true);
+        }
+
+        favoritePostRepository.save(favoritePost);
+    }
+
+    private Boolean isPostAlreadyLike(User user, String postId) {
+        return likePostRepository.existsByPostIdAndUserId(postId, user.getId());
+    }
+
+    private Boolean isPostAlreadyFavorite(User user, String postId) {
+        return favoritePostRepository.existsByPostIdAndUserId(postId, user.getId());
+    }
+
+    private Boolean isPostDeleted(Post post) {
+        return post.getIsDeleted();
+    }
+
     private ValidatorBucket initializeValidator(User user, Board board) {
+        Set<Role> roles = user.getRoles();
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         validatorBucket
                 .consistOf(UserStateValidator.of(user.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(user.getRole()));
+                .consistOf(UserRoleIsNoneValidator.of(roles));
 
         Optional<Circle> circles = Optional.ofNullable(board.getCircle());
         circles
-                .filter(circle -> !user.getRole().equals(Role.ADMIN) && !user.getRole().getValue().contains("PRESIDENT"))
+                .filter(circle -> !roles.contains(Role.ADMIN) && !roles.contains(Role.PRESIDENT) && !roles.contains(Role.VICE_PRESIDENT))
                 .ifPresent(
                         circle -> {
                             CircleMember member = getCircleMember(user.getId(), circle.getId());
@@ -416,12 +492,14 @@ public class PostService {
         return validatorBucket;
     }
 
-    private BoardPostsResponseDto toBoardPostsResponseDto(Board board, Role userRole, boolean isFavorite, Page<PostsResponseDto> post) {
-        List<String> roles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
-        Boolean writable = roles.stream().anyMatch(str -> userRole.getValue().contains(str));
+    private BoardPostsResponseDto toBoardPostsResponseDto(Board board, Set<Role> userRoles, boolean isFavorite, Page<PostsResponseDto> post) {
+        List<String> roles = Arrays.asList(board.getCreateRoles().split(","));
+        Boolean writable = userRoles.stream()
+                .map(Role::getValue)
+                .anyMatch(roles::contains);
         return DtoMapper.INSTANCE.toBoardPostsResponseDto(
                 board,
-                userRole,
+                userRoles,
                 writable,
                 isFavorite,
                 post
@@ -431,15 +509,19 @@ public class PostService {
     private PostsResponseDto toPostsResponseDto(Post post) {
         return DtoMapper.INSTANCE.toPostsResponseDto(
                 post,
-                postRepository.countAllCommentByPost_Id(post.getId())
+                postRepository.countAllCommentByPost_Id(post.getId()),
+                getNumOfPostLikes(post),
+                getNumOfPostLikes(post)
         );
     }
 
     private PostResponseDto toPostResponseDto(Post post, User user) {
         return DtoMapper.INSTANCE.toPostResponseDto(
                 post,
-                StatusUtil.isUpdatable(post, user),
-                StatusUtil.isDeletable(post, user, post.getBoard())
+                getNumOfPostLikes(post),
+                getNumOfPostFavorites(post),
+                StatusUtil.isUpdatable(post, user, isPostHasComment(post.getId())),
+                StatusUtil.isDeletable(post, user, post.getBoard(), isPostHasComment(post.getId()))
         );
     }
 
@@ -448,8 +530,10 @@ public class PostService {
                 postRepository.save(post),
                 findCommentsByPostIdByPage(user, post, 0),
                 postRepository.countAllCommentByPost_Id(post.getId()),
-                StatusUtil.isUpdatable(post, user),
-                StatusUtil.isDeletable(post, user, post.getBoard())
+                getNumOfPostLikes(post),
+                getNumOfPostFavorites(post),
+                StatusUtil.isUpdatable(post, user, isPostHasComment(post.getId())),
+                StatusUtil.isDeletable(post, user, post.getBoard(), isPostHasComment(post.getId()))
         );
     }
 
@@ -460,24 +544,47 @@ public class PostService {
         ).map(comment -> CommentResponseDto.of(
                         comment,
                         childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
+                        getNumOfCommentLikes(comment),
                         comment.getChildCommentList().stream()
                                 .map(childComment -> DtoMapper.INSTANCE.toChildCommentResponseDto(
                                         childComment,
+                                        getNumOfChildCommentLikes(childComment),
                                         StatusUtil.isUpdatable(childComment, user),
                                         StatusUtil.isDeletable(childComment, user, post.getBoard()))
                                 )
                                 .collect(Collectors.toList()),
                         StatusUtil.isUpdatable(comment, user),
-                        StatusUtil.isDeletable(comment, user, post.getBoard())
+                        StatusUtil.isDeletable(comment, user, post.getBoard()),
+                        comment.getIsAnonymous()
                 )
         );
     }
 
-    private boolean isFavorite(String userId, String boardId) {
+    private Long getNumOfPostLikes(Post post){
+        return likePostRepository.countByPostId(post.getId());
+    }
+
+    private Long getNumOfPostFavorites(Post post){
+        return favoritePostRepository.countByPostIdAndIsDeletedFalse(post.getId());
+    }
+
+    private Long getNumOfCommentLikes(Comment comment){
+        return likeCommentRepository.countByCommentId(comment.getId());
+    }
+
+    private Long getNumOfChildCommentLikes(ChildComment childComment) {
+        return likeChildCommentRepository.countByChildCommentId(childComment.getId());
+    }
+
+    private Boolean isFavorite(String userId, String boardId) {
         return favoriteBoardRepository.findByUser_Id(userId)
                 .stream()
                 .filter(favoriteBoard -> !favoriteBoard.getBoard().getIsDeleted())
                 .anyMatch(favoriteboard -> favoriteboard.getBoard().getId().equals(boardId));
+    }
+
+    private Boolean isPostHasComment(String postId){
+        return commentRepository.existsByPostIdAndIsDeletedFalse(postId);
     }
 
     private Post getPost(String postId) {
@@ -526,4 +633,14 @@ public class PostService {
         }
         return leader;
     }
+
+    private FavoritePost getFavoritePost(User user, String postId) {
+        return favoritePostRepository.findByPostIdAndUserId(postId, user.getId()).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.FAVORITE_POST_NOT_FOUND
+                )
+        );
+    }
+
 }

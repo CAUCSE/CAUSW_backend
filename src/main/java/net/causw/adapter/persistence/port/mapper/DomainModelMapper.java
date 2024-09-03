@@ -40,10 +40,17 @@ public abstract class DomainModelMapper {
                 user.getPassword(),
                 user.getStudentId(),
                 user.getAdmissionYear(),
-                user.getRole(),
-                user.getProfileImage(),
+                user.getRoles(),
+                user.getProfileImages(),
                 user.getRefreshToken(),
-                user.getState()
+                user.getState(),
+                user.getNickname(),
+                user.getMajor(),
+                user.getAcademicStatus(),
+                user.getCurrentCompletedSemester(),
+                user.getGraduationYear(),
+                user.getGraduationMonth(),
+                user.getPhoneNumber()
         );
     }
 
@@ -93,7 +100,9 @@ public abstract class DomainModelMapper {
                 circle.getIsDeleted(),
                 circle.getLeader().map(this::entityToDomainModel).orElse(null),
                 circle.getCreatedAt(),
-                circle.getUpdatedAt()
+                circle.getUpdatedAt(),
+                circle.getCircleTax(),
+                circle.getRecruitMembers()
         );
     }
 
