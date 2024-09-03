@@ -39,7 +39,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
-public class UserController {zoom
+public class UserController {
     private final UserService userService;
     private final SecurityService securityService;
 
