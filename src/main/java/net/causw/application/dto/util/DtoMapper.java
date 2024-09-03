@@ -251,14 +251,14 @@ public interface DtoMapper{
     BoardOfCircleResponseDto toBoardOfCircleResponseDto(Board entity, Long numComment, boolean writable);
 
     // Circle
-    @Mapping(target = "id", source = "entity.id")
-    @Mapping(target = "name", source = "entity.name")
-    @Mapping(target = "description", source = "entity.description")
-    @Mapping(target = "isDeleted", source = "entity.isDeleted")
+    @Mapping(target = "id", source = "circle.id")
+    @Mapping(target = "name", source = "circle.name")
+    @Mapping(target = "description", source = "circle.description")
+    @Mapping(target = "isDeleted", source = "circle.isDeleted")
     @Mapping(target = "leaderId", source = "leader.id")
     @Mapping(target = "leaderName", source = "leader.name")
-    @Mapping(target = "createdAt", source = "entity.createdAt")
-    CircleResponseDto toCircleResponseDto(Circle entity, User leader);
+    @Mapping(target = "createdAt", source = "circle.createdAt")
+    CircleResponseDto toCircleResponseDto(Circle circle, User leader);
 
     // Locker
 
