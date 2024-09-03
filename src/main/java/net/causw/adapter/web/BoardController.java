@@ -104,6 +104,8 @@ public class BoardController {
 
     @PostMapping(value = "/normal")
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
+    @Operation(summary = "일반 게시판 생성 API(완료)", description = "별도의 신청 없이 생성할 수 있는 게시판을 만드는 API입니다. 게시판의 이름을 전달 받습니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Created", content = @Content(mediaType = "application/json")),
             @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
@@ -114,11 +116,11 @@ public class BoardController {
             @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
     })
     public BoardResponseDto createNormalBoard(
-            @RequestBody NormalBoardCreateRequestDto normalBoardCreateRequestDto
-            ) {
+            @RequestBody NormalBoardCreateRequestDto normalBoardCreateRequestDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String loginUserId = ((String) principal);
-        return this.boardService.createNormalBoard(loginUserId, normalBoardCreateRequestDto);
+        return this.boardService.createNormalBoard(userDetails.getUser(), normalBoardCreateRequestDto);
     }
 
 

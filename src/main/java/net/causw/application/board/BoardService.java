@@ -193,10 +193,9 @@ public class BoardService {
 
     @Transactional
     public BoardResponseDto createNormalBoard(
-            String loginUserId,
+            User creator,
             NormalBoardCreateRequestDto normalBoardCreateRequestDto
     ) {
-        User creator = getUser(loginUserId);
 
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         validatorBucket
