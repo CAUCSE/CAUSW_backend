@@ -204,13 +204,13 @@ public interface DtoMapper{
     @Mapping(target = "updatedAt", source = "userAdmission.updatedAt")
     UserAdmissionResponseDto toUserAdmissionResponseDto(UserAdmission userAdmission);
 
-    @Mapping(target = "id", source = "entity.id")
+    @Mapping(target = "id", source = "userAdmission.id")
     @Mapping(target = "user", source = "user")
-    @Mapping(target = "attachImage", source = "entity.attachImage")
-    @Mapping(target = "description", source = "entity.description")
-    @Mapping(target = "createdAt", source = "entity.createdAt")
-    @Mapping(target = "updatedAt", source = "entity.updatedAt")
-    UserAdmissionResponseDto toUserAdmissionResponseDto(UserAdmission entity, User user);
+    @Mapping(target = "attachImage", source = "userAdmission.attachImage")
+    @Mapping(target = "description", source = "userAdmission.description")
+    @Mapping(target = "createdAt", source = "userAdmission.createdAt")
+    @Mapping(target = "updatedAt", source = "userAdmission.updatedAt")
+    UserAdmissionResponseDto toUserAdmissionResponseDto(UserAdmission userAdmission, User user);
 
     @Mapping(target = "id", source = "entity.id")
     @Mapping(target = "userName", source = "entity.user.name")
