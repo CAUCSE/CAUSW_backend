@@ -12,6 +12,7 @@ import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.board.BoardCreateRequestDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.board.BoardUpdateRequestDto;
+import net.causw.application.dto.board.NormalBoardCreateRequestDto;
 import net.causw.application.dto.util.DtoMapper;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -145,6 +146,28 @@ public class BoardService {
 
         return toBoardResponseDto(boardRepository.save(board), creator.getRole());
     }
+
+    @Transactional
+    public BoardResponseDto createNormalBoard(
+            String loginUserId,
+            NormalBoardCreateRequestDto normalBoardCreateRequestDto
+    ) {
+        User creator = getUser(loginUserId);
+
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+        validatorBucket
+                .consistOf(UserStateValidator.of(creator.getState()))   // 활성화된 사용자인지 확인
+                .consistOf(UserRoleIsNoneValidator.of(creator.getRole())); // 권한이 없는 사용자인지 확인
+
+        Board board = Board.fromName(normalBoardCreateRequestDto.getBoardName());
+
+        validatorBucket
+                .consistOf(ConstraintValidator.of(board, this.validator))
+                .validate();
+
+        return toBoardResponseDto(boardRepository.save(board), creator.getRole());
+    }
+
 
     @Transactional
     public BoardResponseDto updateBoard(

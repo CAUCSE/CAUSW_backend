@@ -15,10 +15,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Getter
@@ -128,6 +126,14 @@ public class Board extends BaseEntity {
             }
         }
         return new Board(name, description, String.join(",", createRoleList), category, false, circle, new HashSet<>());
+    }
+
+    // 일반 게시판 생성
+    public static Board fromName(String name){
+        List<String> createRoleList = Arrays.stream(Role.values())
+                .map(Role::getValue).collect(Collectors.toList());
+        createRoleList.remove(Role.NONE.getValue());
+        return new Board(name, "자유 게시판", String.join(",", createRoleList), "자유 게시판", false, null, new HashSet<>());
     }
 
     public void setIsDeleted(boolean isDeleted){
