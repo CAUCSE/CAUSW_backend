@@ -12,7 +12,8 @@ public enum UserState {
     ACTIVE("ACTIVE"),
     INACTIVE("INACTIVE"),
     REJECT("REJECT"),
-    DROP("DROP");
+    DROP("DROP"),
+    DELETED("DELETED");
 
     private final String value;
 

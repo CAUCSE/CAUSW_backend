@@ -28,6 +28,8 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     List<User> findByName(String name);
 
+    List<User> findAllByState(UserState state);
+
     Optional<User> findByStudentIdAndNameAndPhoneNumber(String studentId, String name, String phoneNumber);
 
     List<User> findByStudentIdAndStateAndAcademicStatus(String studentId, UserState userState, AcademicStatus academicStatus);
