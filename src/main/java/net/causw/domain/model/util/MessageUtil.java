@@ -57,8 +57,11 @@ public class MessageUtil {
     public static final String LOCKER_ALREADY_EXIST = "사물함 위치에 사물함이 존재합니다.";
     public static final String LOCKER_RETURN_TIME_NOT_SET = "사물함 반납 시간이 설정되지 않았습니다.";
     public static final String LOCKER_UNUSED = "사용 중인 사물함이 아닙니다.";
+    public static final String LOCKER_USED = "사용 중인 사물함입니다.";
     public static final String LOCKER_DELETED = "사물함 삭제";
     public static final String LOCKER_ACTION_ERROR = "사물함 액션 실행 중 에러가 발생하였습니다.";
+    public static final String LOCKER_EXTEND_NOT_ALLOWED = "사물함 연장 신청 기간이 아닙니다. 공지를 확인해주세요.";
+    public static final String LOCKER_INVALID_EXPIRE_DATE = "잘못된 반납일 입니다.";
 
 
     // User

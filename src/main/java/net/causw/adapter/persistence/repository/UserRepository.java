@@ -18,7 +18,7 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, String> {
     List<User> findAll();
 
-    Optional<User> findByEmailAndNameAndStudentId(String email, String name, String studentId);
+    Optional<User> findByEmailAndNameAndStudentIdAndPhoneNumber(String email, String name, String studentId, String phoneNumber);
 
     Optional<User> findByEmail(String email);
 
@@ -27,6 +27,8 @@ public interface UserRepository extends JpaRepository<User, String> {
     Optional<User> findById(String id);
 
     List<User> findByName(String name);
+
+    List<User> findAllByState(UserState state);
 
     Optional<User> findByStudentIdAndNameAndPhoneNumber(String studentId, String name, String phoneNumber);
 

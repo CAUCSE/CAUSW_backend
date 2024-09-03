@@ -2,6 +2,7 @@ package net.causw.domain.validation;
 
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
+import net.causw.domain.model.util.MessageUtil;
 
 import java.time.LocalDateTime;
 
@@ -29,7 +30,7 @@ public class LockerExpiredAtValidator extends AbstractValidator {
         if (src.isAfter(dst)) {
             throw new BadRequestException(
                     ErrorCode.INVALID_EXPIRE_DATE,
-                    "잘못된 반납날 입니다."
+                    MessageUtil.LOCKER_INVALID_EXPIRE_DATE
             );
         }
     }

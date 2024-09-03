@@ -4,8 +4,6 @@ import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
-import net.causw.adapter.persistence.comment.ChildComment;
-import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.locker.LockerLog;
 import net.causw.adapter.persistence.page.PageableFactory;
 import net.causw.adapter.persistence.post.Post;
@@ -50,12 +48,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.validation.Validator;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -90,15 +90,22 @@ public class UserService {
     public UserResponseDto findPassword(
             UserFindPasswordRequestDto userFindPasswordRequestDto
     ) {
-        User requestUser = userRepository.findByEmailAndNameAndStudentId(userFindPasswordRequestDto.getEmail(), userFindPasswordRequestDto.getName(), userFindPasswordRequestDto.getStudentId())
-                .orElseThrow(() -> new BadRequestException(
+        User requestUser = userRepository.findByEmailAndNameAndStudentIdAndPhoneNumber(
+                    userFindPasswordRequestDto.getEmail(),
+                    userFindPasswordRequestDto.getName(),
+                    userFindPasswordRequestDto.getStudentId(),
+                    userFindPasswordRequestDto.getPhoneNumber()
+                ).orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.USER_NOT_FOUND
                 ));
-
+        // 임시 비밀번호 생성
         String newPassword = this.passwordGenerator.generate();
+
+        // 메일 전송
         this.googleMailSender.sendNewPasswordMail(requestUser.getEmail(), newPassword);
 
+        // 비밀번호 변경 (db save)
         this.userRepository.findById(requestUser.getId()).map(
                 srcUser -> {
                     srcUser.setPassword(passwordEncoder.encode(newPassword));
@@ -106,6 +113,7 @@ public class UserService {
                 }).orElseThrow(() -> new BadRequestException(
                 ErrorCode.ROW_DOES_NOT_EXIST,
                 MessageUtil.USER_NOT_FOUND));
+
         return UserResponseDto.from(requestUser);
     }
 
@@ -985,6 +993,17 @@ public class UserService {
         ));
     }
 
+    @Scheduled(cron = "0 0 0 * * ?")
+    public void deleteUser() {
+        LocalDateTime dueDate = LocalDateTime.now().minusYears(5);
+
+        userRepository.findAllByState(UserState.INACTIVE).stream()
+                .filter(user -> user.getUpdatedAt().isBefore(dueDate))
+                .forEach(user -> {
+                    user.delete();
+                    userRepository.save(user);
+                });
+    }
 
     private Optional<CircleMember> updateStatus(String applicationId, CircleMemberStatus targetStatus) {
         return this.circleMemberRepository.findById(applicationId).map(
