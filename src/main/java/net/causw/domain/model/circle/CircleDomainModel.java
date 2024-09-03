@@ -31,6 +31,9 @@ public class CircleDomainModel {
 
     private LocalDateTime updatedAt;
 
+    private Integer circleTax;
+    private Integer recruitMembers;
+
     public static CircleDomainModel of(
             String id,
             String name,
@@ -39,7 +42,9 @@ public class CircleDomainModel {
             Boolean isDeleted,
             UserDomainModel leader,
             LocalDateTime createdAt,
-            LocalDateTime updatedAt
+            LocalDateTime updatedAt,
+            Integer circleTax,
+            Integer recruitMembers
     ) {
         return CircleDomainModel.builder()
                 .id(id)
@@ -50,6 +55,8 @@ public class CircleDomainModel {
                 .leader(leader)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
+                .circleTax(circleTax)
+                .recruitMembers(recruitMembers)
                 .build();
     }
 
@@ -70,11 +77,15 @@ public class CircleDomainModel {
     public void update(
             String name,
             String mainImage,
-            String description
+            String description,
+            Integer circleTax,
+            Integer recruitMembers
     ) {
         this.name = name;
         this.mainImage = mainImage;
         this.description = description;
+        this.circleTax = circleTax;
+        this.recruitMembers = recruitMembers;
     }
 
     public Optional<UserDomainModel> getLeader() {

@@ -4,10 +4,15 @@ import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
+import net.causw.adapter.persistence.form.Form;
+import net.causw.adapter.persistence.form.Option;
+import net.causw.adapter.persistence.form.Question;
+import net.causw.adapter.persistence.form.Reply;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.user.UserAdmission;
 import net.causw.application.dto.board.BoardMainResponseDto;
+import net.causw.application.dto.board.BoardNameCheckResponseDto;
 import net.causw.application.dto.board.BoardOfCircleResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.circle.CircleResponseDto;
@@ -16,6 +21,7 @@ import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.comment.CommentsOfUserResponseDto;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.file.FileResponseDto;
+import net.causw.application.dto.form.*;
 import net.causw.application.dto.post.BoardPostsResponseDto;
 import net.causw.application.dto.post.PostContentDto;
 import net.causw.application.dto.post.PostResponseDto;
@@ -228,6 +234,10 @@ public interface DtoMapper{
     // Board
     BoardResponseDto toBoardResponseDto(Board entity, List<String> createRoleList, Boolean writable, String circleId, String circleName);
 
+    @Mapping(target = "isPresent", source = "isPresent")
+    BoardNameCheckResponseDto toBoardNameCheckResponseDto(Boolean isPresent);
+
+
     @Mapping(target = "id", source = "board.id")
     @Mapping(target = "name", source = "board.name")
     @Mapping(target = "writable", source = "writable")
@@ -262,5 +272,23 @@ public interface DtoMapper{
 
     // Locker
 
+    // Form
+    FormResponseDto toFormResponseDto(Form form);
 
+    @Mapping(target = "questionId", source = "reply.question.id")
+    QuestionReplyResponseDto toQuestionReplyResponseDto(Reply reply);
+
+    @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "userName", source = "user.name")
+    @Mapping(target = "replies", source = "replies")
+    ReplyUserResponseDto toReplyUserResponseDto(User user, List<QuestionReplyResponseDto> replies);
+
+
+    OptionSummaryResponseDto toOptionSummaryResponseDto(Option option, Long selectedCount);
+
+    @Mapping(target = "questionId", source = "question.id")
+    @Mapping(target = "questionText", source = "question.questionText")
+    @Mapping(target = "questionAnswers", source = "questionAnswers")
+    @Mapping(target = "optionSummaries", source = "optionSummaries")
+    QuestionSummaryResponseDto toQuestionSummaryResponseDto(Question question, List<String> questionAnswers,List<OptionSummaryResponseDto> optionSummaries) ;
 }

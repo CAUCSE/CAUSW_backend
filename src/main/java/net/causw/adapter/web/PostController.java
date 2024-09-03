@@ -85,8 +85,8 @@ public class PostController {
             @ApiResponse(responseCode = "4102", description = "동아리에서 추방된 사용자입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
     })
     public BoardPostsResponseDto findAllPost(
-            @RequestParam("boardId") String boardId,
-            @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
+            @RequestParam("boardId") String boardId, // 게시판 id
+            @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum, // PageNation
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.postService.findAllPost(userDetails.getUser(), boardId, pageNum);

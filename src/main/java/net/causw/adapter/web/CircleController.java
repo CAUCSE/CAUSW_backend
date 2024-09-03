@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.circle.CircleService;
 import net.causw.application.dto.circle.CirclesResponseDto;
@@ -23,8 +24,6 @@ import net.causw.domain.validation.ConstraintValidator;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,7 +35,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.security.Security;
 import java.util.List;
 
 
@@ -642,6 +640,18 @@ public class CircleController {
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.circleService.restoreUser(userDetails.getUser(), circleId, userId);
+    }
+
+
+    @GetMapping(value = "/{circleId}/users/excel")
+    @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT','LEADER_CIRCLE')")
+    public void exportExcel(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable(name = "circleId") String circleId,
+            HttpServletResponse response
+    ){
+        circleService.exportCircleMembersToExcel(userDetails.getUser(), circleId, response);
     }
 
 }

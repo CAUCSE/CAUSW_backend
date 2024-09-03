@@ -13,4 +13,5 @@ public class UserFindPasswordRequestDto {
     private String email;
     private String name;
     private String studentId;
+    private String phoneNumber;
 }
