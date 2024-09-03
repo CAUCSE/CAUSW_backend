@@ -68,18 +68,21 @@ public class PostService {
             String boardId,
             Integer pageNum
     ) {
-        Set<Role> roles = user.getRoles();
-        Board board = getBoard(boardId);
+        Set<Role> roles = user.getRoles();  // 사용자의 역할 가져오기
+        Board board = getBoard(boardId);    // 게시판 정보 가져오기
 
+        // 유효성 검사 초기화 및 실행
         ValidatorBucket validatorBucket = initializeValidator(user, board);
         validatorBucket.validate();
 
+        // 동아리 리더 여부 확인
         boolean isCircleLeader = false;
         if (roles.contains(Role.LEADER_CIRCLE)) {
             isCircleLeader = getCircleLeader(board.getCircle()).getId().equals(user.getId());
         }
 
         if (isCircleLeader || roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT)) {
+            // 게시글 조회: 리더, 관리자, 회장인 경우 삭제된 게시글도 포함하여 조회
             return toBoardPostsResponseDto(
                     board,
                     roles,
@@ -88,6 +91,7 @@ public class PostService {
                             .map(this::toPostsResponseDto)
             );
         } else {
+            // 일반 사용자는 삭제되지 않은 게시글만 조회
             return toBoardPostsResponseDto(
                     board,
                     roles,

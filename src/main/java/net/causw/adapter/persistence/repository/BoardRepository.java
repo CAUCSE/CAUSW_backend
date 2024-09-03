@@ -21,4 +21,6 @@ public interface BoardRepository extends JpaRepository<Board, String> {
 
     @Query(value = "SELECT * FROM tb_board WHERE tb_board.category = 'APP_NOTICE'", nativeQuery = true)
     Optional<Board> findAppNotice();
+
+    Boolean existsByName(String name);
 }
