@@ -70,6 +70,7 @@ public class UserCreateRequestDto {
                 .password(encodedPassword)
                 .studentId(studentId)
                 .admissionYear(admissionYear)
+                .attachImages(attachImages)
                 .profileImage(profileImage)
                 .nickname(nickname)
                 .major(major)
