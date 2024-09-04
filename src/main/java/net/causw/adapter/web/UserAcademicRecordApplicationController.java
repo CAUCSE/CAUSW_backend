@@ -165,7 +165,7 @@ public class UserAcademicRecordApplicationController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody @Valid CreateUserAcademicRecordApplicationRequestDto createUserAcademicRecordApplicationRequestDto
     ) {
-
+        return null;
     }
 
     /**
@@ -181,7 +181,7 @@ public class UserAcademicRecordApplicationController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody @Valid CreateUserAcademicRecordApplicationRequestDto createUserAcademicRecordApplicationRequestDto
     ) {
-
+        return null;
     }
 
 }
