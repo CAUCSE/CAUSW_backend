@@ -26,7 +26,7 @@ public class UserAcademicRecordInfoResponseDto {
     private AcademicStatus academicStatus;
 
     @Schema(description = "본 학기 기준 등록 완료 학기 차수", example = "5")
-    private Integer currentSemester;
+    private Integer currentCompleteSemester;
 
     @Schema(description = "비고", example = "관리자 추가 비고사항")
     private String note;

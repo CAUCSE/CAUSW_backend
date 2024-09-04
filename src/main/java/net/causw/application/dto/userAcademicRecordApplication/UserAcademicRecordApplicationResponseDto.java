@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -22,7 +23,7 @@ public class UserAcademicRecordApplicationResponseDto {
     @Schema(description = "첨부 이미지 URL 리스트")
     private List<String> attachedImageUrlList;
 
-    @Schema(description = "허가 날짜", example = "2024-08-01")
-    private LocalDate permissionDate;
+    @Schema(description = "변경 날짜", example = "2024-08-01")
+    private LocalDateTime changeDate;
 
 }

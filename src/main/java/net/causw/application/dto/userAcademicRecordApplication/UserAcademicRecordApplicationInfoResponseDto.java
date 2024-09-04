@@ -30,7 +30,7 @@ public class UserAcademicRecordApplicationInfoResponseDto {
     private AcademicStatus targetAcademicStatus;
 
     @Schema(description = "변경 타겟 본 학기 기준 등록 완료 학기 차수", example = "5")
-    private Integer targetCurrentSemester;
+    private Integer targetCompletedSemester;
 
     @Schema(description = "비고", example = "관리자 추가 비고사항")
     private String note;

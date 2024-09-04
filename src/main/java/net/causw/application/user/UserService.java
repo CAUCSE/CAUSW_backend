@@ -28,6 +28,7 @@ import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.*;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.RedisUtils;
+import net.causw.domain.model.enums.FileType;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.validation.AdmissionYearValidator;
 import net.causw.domain.validation.CircleMemberStatusValidator;
@@ -1047,7 +1048,7 @@ public class UserService {
         String attachImage = userAdmissionCreateRequestDto.getAttachImage()
                 .map(multipartFile -> {
                     if (multipartFile != null) {
-                        return storageService.uploadFile(multipartFile, "USER_ADMISSION");
+                        return storageService.uploadFile(multipartFile, FileType.USER_ADMISSION.getDirectory());
                     } else {
                         return null; // 업로드 시도하지 않고 null 반환
                     }

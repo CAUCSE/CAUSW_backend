@@ -71,6 +71,13 @@ public class MessageUtil {
     public static final String FLAG_UPDATE_FAILED = "플래그 업데이트에 실패했습니다.";
     public static final String FLAG_ALREADY_EXIST = "이미 존재하는 플래그 입니다.";
 
+    // UserAcademicRecord
+    public static final String USER_ACADEMIC_RECORD_APPLICATION_NOT_FOUND = "해당 사용자의 학적 변경 신청을 찾을 수 없습니다.";
+    public static final String USER_ACADEMIC_RECORD_APPLICATION_AND_USER_NOT_MATCH = "해당 사용자의 학적 변경 신청이 아닙니다.";
+    public static final String INVALID_ACADEMIC_RECORD_REQUEST_STATUS = "유효하지 않은 학적 인증 변경 목표 상태입니다. (ACCEPT, REJECT 로만 변경이 가능합니다.)";
+
+    public static final String ADMIN_UPDATE_ACADEMIC_RECORD_MESSAGE = "관리자 업데이트",
+
     // 500
     public static final String INTERNAL_SERVER_ERROR = "Internal Server Error";
 }

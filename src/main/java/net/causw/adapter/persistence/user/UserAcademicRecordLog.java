@@ -7,7 +7,7 @@ import net.causw.domain.model.enums.AcademicRecordRequestStatus;
 import net.causw.domain.model.enums.AcademicStatus;
 
 @Getter
-@Builder
+@Builder(access = AccessLevel.PROTECTED)
 @Entity
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -16,18 +16,18 @@ public class UserAcademicRecordLog extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "controlled_user_id", nullable = false)
-    private User controlledUserId;
+    private User controlledUser;
 
     @ManyToOne
     @JoinColumn(name = "target_user_id", nullable = false)
-    private User targetUserId;
+    private User targetUser;
 
     @Column(name = "prior_academic_record_application_id", nullable = false)
     private AcademicStatus targetAcademicRecordStatus;
 
     @ManyToOne
     @JoinColumn(name = "target_user_academic_record_application_id", nullable = true)
-    private UserAcademicRecordApplication targetUserAcademicRecordApplicationId;
+    private UserAcademicRecordApplication targetUserAcademicRecordApplication;
 
     @Column(name = "target_academic_record_request_status", nullable = true)
     private AcademicRecordRequestStatus targetAcademicRecordRequestStatus;
@@ -35,4 +35,63 @@ public class UserAcademicRecordLog extends BaseEntity {
     @Column(name = "note", nullable = true)
     private String note;
 
+    public static UserAcademicRecordLog createWithApplicationAndNote(
+            User controlledUser,
+            User targetUser,
+            AcademicStatus targetAcademicRecordStatus,
+            UserAcademicRecordApplication targetUserAcademicRecordApplication,
+            AcademicRecordRequestStatus targetAcademicRecordRequestStatus,
+            String note
+    ) {
+        return UserAcademicRecordLog.builder()
+                .controlledUser(controlledUser)
+                .targetUser(targetUser)
+                .targetAcademicRecordStatus(targetAcademicRecordStatus)
+                .targetUserAcademicRecordApplication(targetUserAcademicRecordApplication)
+                .targetAcademicRecordRequestStatus(targetAcademicRecordRequestStatus)
+                .note(note)
+                .build();
+    }
+
+    public static UserAcademicRecordLog createWithApplication(
+            User controlledUser,
+            User targetUser,
+            AcademicStatus targetAcademicRecordStatus,
+            UserAcademicRecordApplication targetUserAcademicRecordApplication,
+            AcademicRecordRequestStatus targetAcademicRecordRequestStatus
+    ) {
+        return UserAcademicRecordLog.builder()
+                .controlledUser(controlledUser)
+                .targetUser(targetUser)
+                .targetAcademicRecordStatus(targetAcademicRecordStatus)
+                .targetUserAcademicRecordApplication(targetUserAcademicRecordApplication)
+                .targetAcademicRecordRequestStatus(targetAcademicRecordRequestStatus)
+                .build();
+    }
+
+    public static UserAcademicRecordLog createWithNote(
+            User controlledUser,
+            User targetUser,
+            AcademicStatus targetAcademicRecordStatus,
+            String note
+    ) {
+        return UserAcademicRecordLog.builder()
+                .controlledUser(controlledUser)
+                .targetUser(targetUser)
+                .targetAcademicRecordStatus(targetAcademicRecordStatus)
+                .note(note)
+                .build();
+    }
+
+    public static UserAcademicRecordLog create(
+            User controlledUser,
+            User targetUser,
+            AcademicStatus targetAcademicRecordStatus
+    ) {
+        return UserAcademicRecordLog.builder()
+                .controlledUser(controlledUser)
+                .targetUser(targetUser)
+                .targetAcademicRecordStatus(targetAcademicRecordStatus)
+                .build();
+    }
 }

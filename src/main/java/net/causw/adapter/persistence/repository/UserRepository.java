@@ -4,6 +4,7 @@ import net.causw.adapter.persistence.user.User;
 import net.causw.domain.model.enums.AcademicStatus;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.enums.UserState;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,7 +17,11 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, String> {
+
     List<User> findAll();
+
+    @NotNull
+    Page<User> findAll(@NotNull Pageable pageable);
 
     Optional<User> findByEmailAndNameAndStudentId(String email, String name, String studentId);
 
