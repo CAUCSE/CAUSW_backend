@@ -76,8 +76,14 @@ public class MessageUtil {
     public static final String USER_ACADEMIC_RECORD_APPLICATION_AND_USER_NOT_MATCH = "해당 사용자의 학적 변경 신청이 아닙니다.";
     public static final String INVALID_ACADEMIC_RECORD_REQUEST_STATUS = "유효하지 않은 학적 인증 변경 목표 상태입니다. (ACCEPT, REJECT 로만 변경이 가능합니다.)";
 
-    public static final String ADMIN_UPDATE_ACADEMIC_RECORD_MESSAGE = "관리자 업데이트",
+    public static final String ADMIN_UPDATE_ACADEMIC_RECORD_MESSAGE = "관리자 업데이트";
+
+    // UuidFile
+    public static final String FILE_NOT_FOUND = "파일을 찾을 수 없습니다.";
+
 
     // 500
     public static final String INTERNAL_SERVER_ERROR = "Internal Server Error";
+    public static final String FILE_UPLOAD_FAIL = "파일 업로드에 실패했습니다.";
+    public static final String FILE_DELETE_FAIL = "파일 삭제에 실패했습니다.";
 }

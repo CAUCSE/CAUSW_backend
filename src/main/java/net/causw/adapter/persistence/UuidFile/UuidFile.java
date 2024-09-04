@@ -3,7 +3,7 @@ package net.causw.adapter.persistence.UuidFile;
 import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
-import net.causw.domain.model.enums.FileType;
+import net.causw.domain.model.enums.FilePath;
 
 @Getter
 @Entity
@@ -13,11 +13,26 @@ import net.causw.domain.model.enums.FileType;
 @Table(name = "uuid_file")
 public class UuidFile extends BaseEntity {
 
+    @Column(name = "uuid", unique = true, nullable = false)
+    private String uuid;
+
+    @Column(name = "file_key", unique = true, nullable = false)
+    private String fileKey;
+
     @Column(name = "file_url", unique = true, nullable = false)
     private String fileUrl;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "directory", nullable = false)
-    private FileType fileType;
+    @Column(name = "file_path", nullable = false)
+    private FilePath filePath;
+
+    public static UuidFile of(String uuid, String fileKey, String fileUrl, FilePath filePath) {
+        return UuidFile.builder()
+                .uuid(uuid)
+                .fileKey(fileKey)
+                .fileUrl(fileUrl)
+                .filePath(filePath)
+                .build();
+    }
 
 }

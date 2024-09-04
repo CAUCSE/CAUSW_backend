@@ -19,7 +19,7 @@ import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.comment.CommentsOfUserResponseDto;
 import net.causw.application.dto.user.*;
 import net.causw.application.dto.util.DtoMapper;
-import net.causw.application.storage.StorageService;
+import net.causw.application.uuidFile.UuidFileService;
 import net.causw.config.security.JwtTokenProvider;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -28,7 +28,6 @@ import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.*;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.RedisUtils;
-import net.causw.domain.model.enums.FileType;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.validation.AdmissionYearValidator;
 import net.causw.domain.validation.CircleMemberStatusValidator;
@@ -61,7 +60,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserService {
     private final JwtTokenProvider jwtTokenProvider;
-    private final StorageService storageService;
+    private final UuidFileService uuidFileService;
     private final GoogleMailSender googleMailSender;
     private final PasswordGenerator passwordGenerator;
     private final PasswordEncoder passwordEncoder;
@@ -1048,7 +1047,7 @@ public class UserService {
         String attachImage = userAdmissionCreateRequestDto.getAttachImage()
                 .map(multipartFile -> {
                     if (multipartFile != null) {
-                        return storageService.uploadFile(multipartFile, FileType.USER_ADMISSION.getDirectory());
+                        return uuidFileService.saveFile(multipartFile, FilePath.USER_ADMISSION).getFileUrl();
                     } else {
                         return null; // 업로드 시도하지 않고 null 반환
                     }

@@ -47,6 +47,8 @@ public enum ErrorCode {
      * 500 Internal Server Error
      */
     INTERNAL_SERVER(5000),
+    FILE_UPLOAD_FAIL(5001),
+    FILE_DELETE_FAIL(5002),
 
     /**
      * 503 Service Unavailable Error
