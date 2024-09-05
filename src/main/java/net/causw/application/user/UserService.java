@@ -45,7 +45,9 @@ import net.causw.domain.validation.ValidatorBucket;
 import net.causw.infrastructure.GoogleMailSender;
 import net.causw.infrastructure.PasswordGenerator;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -74,12 +76,15 @@ public class UserService {
     private final PostRepository postRepository;
     private final PageableFactory pageableFactory;
     private final CommentRepository commentRepository;
+    private final ChildCommentRepository childCommentRepository;
     private final UserAdmissionRepository userAdmissionRepository;
     private final RedisUtils redisUtils;
     private final LockerRepository lockerRepository;
     private final LockerLogRepository lockerLogRepository;
     private final UserAdmissionLogRepository userAdmissionLogRepository;
     private final BoardRepository boardRepository;
+    private final FavoritePostRepository favoritePostRepository;
+    private final LikePostRepository likePostRepository;
 
     @Transactional
     public UserResponseDto findPassword(
@@ -193,10 +198,67 @@ public class UserService {
         return DtoMapper.INSTANCE.toUserPostsResponseDto(
                 requestUser,
                 this.postRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE)
-                ).map(post -> DtoMapper.INSTANCE.toUserPostResponseDto(
+                ).map(post -> DtoMapper.INSTANCE.toPostsResponseDto(
                         post,
-                        post.getBoard(),
-                        this.postRepository.countAllCommentByPost_Id(post.getId())
+                        getNumOfComment(post),
+                        getNumOfPostLikes(post),
+                        getNumOfPostFavorites(post)
+                ))
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public UserPostsResponseDto findFavoritePosts(User requestUser, Integer pageNum) {
+        Set<Role> roles = requestUser.getRoles();
+
+        ValidatorBucket.of()
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(UserStateValidator.of(requestUser.getState()))
+                .validate();
+
+        return DtoMapper.INSTANCE.toUserPostsResponseDto(
+                requestUser,
+                this.favoritePostRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
+                        .map(favoritePost -> DtoMapper.INSTANCE.toPostsResponseDto(
+                                favoritePost.getPost(),
+                                getNumOfComment(favoritePost.getPost()),
+                                getNumOfPostLikes(favoritePost.getPost()),
+                                getNumOfPostFavorites(favoritePost.getPost())
+                        ))
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public UserPostsResponseDto findCommentedPosts(User requestUser, Integer pageNum) {
+        Set<Role> roles = requestUser.getRoles();
+
+        ValidatorBucket.of()
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(UserStateValidator.of(requestUser.getState()))
+                .validate();
+
+        Pageable pageable = this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE / 2 + 5);
+
+        Page<Post> postsFromComments = this.commentRepository.findPostsByUserId(requestUser.getId(), pageable);
+        Page<Post> postsFromChildComments = this.childCommentRepository.findPostsByUserId(requestUser.getId(), pageable);
+
+        //Comment와 ChildComment의 Post 중복 제거
+        Set<Post> combinedPosts = new HashSet<>();
+        combinedPosts.addAll(postsFromComments.getContent());
+        combinedPosts.addAll(postsFromChildComments.getContent());
+
+        //Set에서 Page로 타입 변환 및 정렬
+        List<Post> combinedPostsList = new ArrayList<>(combinedPosts);
+        combinedPostsList.sort((post1, post2) -> post2.getCreatedAt().compareTo(post1.getCreatedAt()));
+        Page<Post> combinedPostsPage = new PageImpl<>(combinedPostsList, pageable, combinedPostsList.size());
+
+        return DtoMapper.INSTANCE.toUserPostsResponseDto(
+                requestUser,
+                combinedPostsPage.map(post -> DtoMapper.INSTANCE.toPostsResponseDto(
+                        post,
+                        getNumOfComment(post),
+                        getNumOfPostLikes(post),
+                        getNumOfPostFavorites(post)
                 ))
         );
     }
@@ -1377,5 +1439,16 @@ public class UserService {
         );
     }
 
+    private Long getNumOfComment(Post post) {
+        return this.postRepository.countAllCommentByPost_Id(post.getId());
+    }
+
+    private Long getNumOfPostLikes(Post post){
+        return likePostRepository.countByPostId(post.getId());
+    }
+
+    private Long getNumOfPostFavorites(Post post){
+        return favoritePostRepository.countByPostIdAndIsDeletedFalse(post.getId());
+    }
 
 }
