@@ -45,6 +45,10 @@ public class Board extends BaseEntity {
     @ColumnDefault("false")
     private Boolean isDefault;
 
+    @Column(name = "is_anonymous allowed", nullable = false)
+    @ColumnDefault("true")
+    private Boolean is_anonymous_allowed;
+
     @ManyToOne
     @JoinColumn(name = "circle_id", nullable = true)
     private Circle circle;
@@ -106,6 +110,7 @@ public class Board extends BaseEntity {
             String description,
             List<String> createRoleList,
             String category,
+            Boolean is_anonymous_allowed,
             Circle circle
     ) {
         if (createRoleList != null) {
@@ -130,16 +135,9 @@ public class Board extends BaseEntity {
                 createRoleList.add(Role.PRESIDENT.getValue());
             }
         }
-        return new Board(name, description, String.join(",", createRoleList), category, false,false, circle, new HashSet<>());
+        return new Board(name, description, String.join(",", createRoleList), category, false, false, is_anonymous_allowed, circle, new HashSet<>());
     }
 
-    // 일반 게시판 생성
-    public static Board fromName(String name){
-        List<String> createRoleList = Arrays.stream(Role.values())
-                .map(Role::getValue).collect(Collectors.toList());
-        createRoleList.remove(Role.NONE.getValue());
-        return new Board(name, "자유 게시판", String.join(",", createRoleList), "NORMAL", false, false, null, new HashSet<>());
-    }
 
     public void setIsDeleted(boolean isDeleted){
         this.isDeleted = isDeleted;
