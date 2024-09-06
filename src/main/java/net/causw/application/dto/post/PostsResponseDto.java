@@ -21,6 +21,9 @@ public class PostsResponseDto {
     @Schema(description = "게시글 제목", example = "게시글의 제목입니다.")
     private String title;
 
+    @Schema(description = "게시글 내용", example = "게시글의 내용입니다.")
+    private String content;
+
     @Schema(description = "게시글 작성자 이름", example = "관리자")
     private String writerName;
 

@@ -1,25 +1,34 @@
 package net.causw.application.dto.util;
 
 import net.causw.adapter.persistence.board.Board;
+import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
+import net.causw.adapter.persistence.form.Form;
+import net.causw.adapter.persistence.form.Option;
+import net.causw.adapter.persistence.form.Question;
+import net.causw.adapter.persistence.form.Reply;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.user.User;
+import net.causw.adapter.persistence.user.UserAdmission;
 import net.causw.application.dto.board.BoardMainResponseDto;
+import net.causw.application.dto.board.BoardNameCheckResponseDto;
 import net.causw.application.dto.board.BoardOfCircleResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
+import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentResponseDto;
+import net.causw.application.dto.comment.CommentsOfUserResponseDto;
+import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.file.FileResponseDto;
+import net.causw.application.dto.form.*;
 import net.causw.application.dto.post.BoardPostsResponseDto;
 import net.causw.application.dto.post.PostContentDto;
 import net.causw.application.dto.post.PostResponseDto;
 import net.causw.application.dto.post.PostsResponseDto;
-import net.causw.application.dto.user.UserFindIdResponseDto;
+import net.causw.application.dto.user.*;
 import net.causw.domain.model.enums.Role;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Named;
+import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 import org.springframework.data.domain.Page;
 
@@ -28,6 +37,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -35,10 +45,10 @@ import java.util.stream.Collectors;
 // Custom Annotation을 사용하여 중복되는 @Mapping을 줄일 수 있습니다.
 @Retention(RetentionPolicy.CLASS)
 @Target({ElementType.METHOD})
-@Mapping(target = "writerName", source = "entity.writer.name")
-@Mapping(target = "writerAdmissionYear", source = "entity.writer.admissionYear")
-@Mapping(target = "writerProfileImage", source = "entity.writer.profileImage")
-@interface CommonWriterMappings {}
+@Mapping(target = "writerName", source = "post.writer.name")
+@Mapping(target = "writerAdmissionYear", source = "post.writer.admissionYear")
+@Mapping(target = "writerProfileImage", source = "post.writer.profileImage")
+@interface CommonPostWriterMappings {}
 
 @Mapper(componentModel = "spring")
 public interface DtoMapper{
@@ -57,47 +67,52 @@ public interface DtoMapper{
     }
 
     // Dto writerName 필드에 post.writer.name을 삽입한다는 의미입니다.
-    @Mapping(target = "writerName", source = "entity.writer.name")
-    @Mapping(target = "writerAdmissionYear", source = "entity.writer.admissionYear")
-    @Mapping(target = "isAnonymous", source = "entity.isAnonymous")
-    @Mapping(target = "isQuestion", source = "entity.isQuestion")
+    @Mapping(target = "writerName", source = "post.writer.name")
+    @Mapping(target = "writerAdmissionYear", source = "post.writer.admissionYear")
+    @Mapping(target = "content", source = "post.content")
+    @Mapping(target = "isAnonymous", source = "post.isAnonymous")
+    @Mapping(target = "isQuestion", source = "post.isQuestion")
     @Mapping(target = "numLike", source = "numPostLike")
     @Mapping(target = "numFavorite", source = "numPostFavorite")
-    PostsResponseDto toPostsResponseDto(Post entity, Long numComment, Long numPostLike, Long numPostFavorite);
+    PostsResponseDto toPostsResponseDto(Post post, Long numComment, Long numPostLike, Long numPostFavorite);
 
-    @CommonWriterMappings
-    @Mapping(target = "boardName", source = "entity.board.name")
-    @Mapping(target = "attachmentList", source = "entity.attachments", qualifiedByName = "attachmentsToStringList")
-    @Mapping(target = "isAnonymous", source = "entity.isAnonymous")
-    @Mapping(target = "isQuestion", source = "entity.isQuestion")
+    @CommonPostWriterMappings
+    @Mapping(target = "boardName", source = "post.board.name")
+    @Mapping(target = "attachmentList", source = "post.attachments", qualifiedByName = "attachmentsToStringList")
+    @Mapping(target = "isAnonymous", source = "post.isAnonymous")
+    @Mapping(target = "isQuestion", source = "post.isQuestion")
     @Mapping(target = "numLike", source = "numPostLike")
     @Mapping(target = "numFavorite", source = "numPostFavorite")
-    PostResponseDto toPostResponseDto(Post entity, Long numPostLike, Long numPostFavorite,  Boolean updatable, Boolean deletable);
+    PostResponseDto toPostResponseDto(Post post, Long numPostLike, Long numPostFavorite,  Boolean updatable, Boolean deletable);
 
-    @CommonWriterMappings
-    @Mapping(target = "boardName", source = "entity.board.name")
-    @Mapping(target = "attachmentList", source = "entity.attachments", qualifiedByName = "attachmentsToStringList")
-    @Mapping(target = "content", source = "entity.content")
-    @Mapping(target = "isAnonymous", source = "entity.isAnonymous")
-    @Mapping(target = "isQuestion", source = "entity.isQuestion")
+    @CommonPostWriterMappings
+    @Mapping(target = "boardName", source = "post.board.name")
+    @Mapping(target = "attachmentList", source = "post.attachments", qualifiedByName = "attachmentsToStringList")
+    @Mapping(target = "content", source = "post.content")
+    @Mapping(target = "isAnonymous", source = "post.isAnonymous")
+    @Mapping(target = "isQuestion", source = "post.isQuestion")
     @Mapping(target = "numLike", source = "numPostLike")
     @Mapping(target = "numFavorite", source = "numPostFavorite")
-    PostResponseDto toPostResponseDtoExtended(Post entity, Page<CommentResponseDto> commentList, Long numComment, Long numPostLike, Long numPostFavorite, Boolean updatable, Boolean deletable);
+    PostResponseDto toPostResponseDtoExtended(Post post, Page<CommentResponseDto> commentList, Long numComment, Long numPostLike, Long numPostFavorite, Boolean updatable, Boolean deletable);
 
     @Mapping(target = "title", source = "post.title")
     @Mapping(target = "contentId", source = "post.id")
     PostContentDto toPostContentDto(Post post);
 
-    @CommonWriterMappings
-    @Mapping(target = "postId", source = "entity.post.id")
-    @Mapping(target = "isAnonymous", source = "entity.isAnonymous")
+    @Mapping(target = "writerName", source = "comment.writer.name")
+    @Mapping(target = "writerAdmissionYear", source = "comment.writer.admissionYear")
+    @Mapping(target = "writerProfileImage", source = "comment.writer.profileImage")
+    @Mapping(target = "postId", source = "comment.post.id")
+    @Mapping(target = "isAnonymous", source = "comment.isAnonymous")
     @Mapping(target ="numLike", source = "numCommentLike")
-    CommentResponseDto toCommentResponseDto(Comment entity, Long numChildComment, Long numCommentLike, List<ChildCommentResponseDto> childCommentList, Boolean updatable, Boolean deletable);
+    CommentResponseDto toCommentResponseDto(Comment comment, Long numChildComment, Long numCommentLike, List<ChildCommentResponseDto> childCommentList, Boolean updatable, Boolean deletable);
 
-    @CommonWriterMappings
-    @Mapping(target = "isAnonymous", source = "entity.isAnonymous")
+    @Mapping(target = "writerName", source = "childComment.writer.name")
+    @Mapping(target = "writerAdmissionYear", source = "childComment.writer.admissionYear")
+    @Mapping(target = "writerProfileImage", source = "childComment.writer.profileImage")
+    @Mapping(target = "isAnonymous", source = "childComment.isAnonymous")
     @Mapping(target ="numLike", source = "numChildCommentLike")
-    ChildCommentResponseDto toChildCommentResponseDto(ChildComment entity, Long numChildCommentLike,  Boolean updatable, Boolean deletable);
+    ChildCommentResponseDto toChildCommentResponseDto(ChildComment childComment, Long numChildCommentLike, Boolean updatable, Boolean deletable);
 
     @Mapping(target = "boardId", source = "entity.id")
     @Mapping(target = "boardName", source = "entity.name")
@@ -109,12 +124,123 @@ public interface DtoMapper{
      */
 
     // User
-    @Mapping(target = "email", source = "entity.email")
-    UserFindIdResponseDto toUserfindIdResponseDto(User entity);
+    @Mapping(target = "email", source = "user.email")
+    UserFindIdResponseDto toUserfindIdResponseDto(User user);
 
+    @Mapping(target = "id", source = "user.id")
+    @Mapping(target = "email", source = "user.email")
+    @Mapping(target = "name", source = "user.name")
+    @Mapping(target = "studentId", source = "user.studentId")
+    @Mapping(target = "admissionYear", source = "user.admissionYear")
+    @Mapping(target = "roles", source = "user.roles")
+    @Mapping(target = "profileImage", source = "user.profileImage")
+    @Mapping(target = "state", source = "user.state")
+    @Mapping(target = "nickname", source = "user.nickname")
+    @Mapping(target = "major", source = "user.major")
+    @Mapping(target = "academicStatus", source = "user.academicStatus")
+    @Mapping(target = "currentCompletedSemester", source = "user.currentCompletedSemester")
+    @Mapping(target = "graduationYear", source = "user.graduationYear")
+    @Mapping(target = "graduationMonth", source = "user.graduationMonth")
+    @Mapping(target = "phoneNumber", source = "user.phoneNumber")
+    UserResponseDto toUserResponseDto(User user, List<String> circleIdIfLeader, List<String> circleNameIfLeader);
+    // circleIdIfLeader, circleNameIfLeader는 경우에 따라 null을 할당합니다.(기존 UserResponseDto.from을 사용하는 경우)
+
+    @Mapping(target = "id", source = "user.id")
+    @Mapping(target = "email", source = "user.email")
+    @Mapping(target = "name", source = "user.name")
+    @Mapping(target = "studentId", source = "user.studentId")
+    @Mapping(target = "admissionYear", source = "user.admissionYear")
+    @Mapping(target = "profileImage", source = "user.profileImage")
+    @Mapping(target = "posts", source = "post")
+    UserPostsResponseDto toUserPostsResponseDto(User user, Page<PostsResponseDto> post);
+
+
+    @Mapping(target = "id", source = "post.id")
+    @Mapping(target = "title", source = "post.title")
+    @Mapping(target = "boardId", source = "board.id")
+    @Mapping(target = "boardName", source = "board.name")
+    @Mapping(target = "circleId", source = "board.circle.id")
+    @Mapping(target = "circleName", source = "board.circle.name")
+    @Mapping(target = "createdAt", source = "post.createdAt")
+    @Mapping(target = "updatedAt", source = "post.updatedAt")
+    UserPostResponseDto toUserPostResponseDto(Post post, Board board, Long numComment);
+
+    @Mapping(target = "id", source = "user.id")
+    @Mapping(target = "email", source = "user.email")
+    @Mapping(target = "name", source = "user.name")
+    @Mapping(target = "studentId", source = "user.studentId")
+    @Mapping(target = "admissionYear", source = "user.admissionYear")
+    @Mapping(target = "profileImage", source = "user.profileImage")
+    UserCommentsResponseDto toUserCommentsResponseDto(User user, Page<CommentsOfUserResponseDto> comment);
+
+    @Mapping(target = "id", source = "comment.id")
+    @Mapping(target = "content", source = "comment.content")
+    @Mapping(target = "createdAt", source = "comment.createdAt")
+    @Mapping(target = "updatedAt", source = "comment.updatedAt")
+    @Mapping(target = "isDeleted", source = "comment.isDeleted")
+    CommentsOfUserResponseDto toCommentsOfUserResponseDto(Comment comment, String boardId, String boardName, String postId, String postName, String circleId, String circleName);
+    default UserPrivilegedResponseDto toUserPrivilegedResponseDto(
+            List<UserResponseDto> president,
+            List<UserResponseDto> vicePresident,
+            List<UserResponseDto> council,
+            List<UserResponseDto> leaderGrade1,
+            List<UserResponseDto> leaderGrade2,
+            List<UserResponseDto> leaderGrade3,
+            List<UserResponseDto> leaderGrade4,
+            List<UserResponseDto> leaderCircle,
+            List<UserResponseDto> alumni
+    ) {
+        List<UserResponseDto> leaderGrade = new LinkedList<>(leaderGrade1);
+        leaderGrade.addAll(leaderGrade2);
+        leaderGrade.addAll(leaderGrade3);
+        leaderGrade.addAll(leaderGrade4);
+        return UserPrivilegedResponseDto.builder()
+                .presidentUser(president)
+                .vicePresidentUser(vicePresident)
+                .councilUsers(council)
+                .leaderGradeUsers(leaderGrade)
+                .leaderCircleUsers(leaderCircle)
+                .leaderAlumni(alumni)
+                .build();
+    }
+
+    UserSignInResponseDto toUserSignInResponseDto(String accessToken, String refreshToken);
+
+    DuplicatedCheckResponseDto toDuplicatedCheckResponseDto(Boolean result);
+    @Mapping(target = "id", source = "userAdmission.id")
+    @Mapping(target = "user", source = "userAdmission.user")
+    @Mapping(target = "attachImage", source = "userAdmission.attachImage")
+    @Mapping(target = "description", source = "userAdmission.description")
+    @Mapping(target = "createdAt", source = "userAdmission.createdAt")
+    @Mapping(target = "updatedAt", source = "userAdmission.updatedAt")
+    UserAdmissionResponseDto toUserAdmissionResponseDto(UserAdmission userAdmission);
+
+    @Mapping(target = "id", source = "userAdmission.id")
+    @Mapping(target = "user", source = "user")
+    @Mapping(target = "attachImage", source = "userAdmission.attachImage")
+    @Mapping(target = "description", source = "userAdmission.description")
+    @Mapping(target = "createdAt", source = "userAdmission.createdAt")
+    @Mapping(target = "updatedAt", source = "userAdmission.updatedAt")
+    UserAdmissionResponseDto toUserAdmissionResponseDto(UserAdmission userAdmission, User user);
+
+    @Mapping(target = "id", source = "userAdmission.id")
+    @Mapping(target = "userName", source = "userAdmission.user.name")
+    @Mapping(target = "userEmail", source = "userAdmission.user.email")
+    @Mapping(target = "admissionYear", source = "userAdmission.user.admissionYear")
+    @Mapping(target = "attachImage", source = "userAdmission.attachImage")
+    @Mapping(target = "description", source = "userAdmission.description")
+    @Mapping(target = "userState", source = "userAdmission.user.state")
+    @Mapping(target = "createdAt", source = "userAdmission.createdAt")
+    @Mapping(target = "updatedAt", source = "userAdmission.updatedAt")
+    UserAdmissionsResponseDto toUserAdmissionsResponseDto(UserAdmission userAdmission);
+
+    UserSignOutResponseDto toUserSignOutResponseDto(String message);
 
     // Board
     BoardResponseDto toBoardResponseDto(Board entity, List<String> createRoleList, Boolean writable, String circleId, String circleName);
+
+    @Mapping(target = "isPresent", source = "isPresent")
+    BoardNameCheckResponseDto toBoardNameCheckResponseDto(Boolean isPresent);
 
     @Mapping(target = "id", source = "board.id")
     @Mapping(target = "name", source = "board.name")
@@ -139,9 +265,34 @@ public interface DtoMapper{
     BoardOfCircleResponseDto toBoardOfCircleResponseDto(Board entity, Long numComment, boolean writable);
 
     // Circle
-
+    @Mapping(target = "id", source = "circle.id")
+    @Mapping(target = "name", source = "circle.name")
+    @Mapping(target = "description", source = "circle.description")
+    @Mapping(target = "isDeleted", source = "circle.isDeleted")
+    @Mapping(target = "leaderId", source = "leader.id")
+    @Mapping(target = "leaderName", source = "leader.name")
+    @Mapping(target = "createdAt", source = "circle.createdAt")
+    CircleResponseDto toCircleResponseDto(Circle circle, User leader);
 
     // Locker
 
+    // Form
+    FormResponseDto toFormResponseDto(Form form);
 
+    @Mapping(target = "questionId", source = "reply.question.id")
+    QuestionReplyResponseDto toQuestionReplyResponseDto(Reply reply);
+
+    @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "userName", source = "user.name")
+    @Mapping(target = "replies", source = "replies")
+    ReplyUserResponseDto toReplyUserResponseDto(User user, List<QuestionReplyResponseDto> replies);
+
+
+    OptionSummaryResponseDto toOptionSummaryResponseDto(Option option, Long selectedCount);
+
+    @Mapping(target = "questionId", source = "question.id")
+    @Mapping(target = "questionText", source = "question.questionText")
+    @Mapping(target = "questionAnswers", source = "questionAnswers")
+    @Mapping(target = "optionSummaries", source = "optionSummaries")
+    QuestionSummaryResponseDto toQuestionSummaryResponseDto(Question question, List<String> questionAnswers,List<OptionSummaryResponseDto> optionSummaries) ;
 }

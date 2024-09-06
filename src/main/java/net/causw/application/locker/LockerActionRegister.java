@@ -57,7 +57,7 @@ public class LockerActionRegister implements LockerAction {
                         user.getEmail(),
                         user.getName(),
                         LockerLogAction.RETURN,
-                        ""
+                        "사물함 반납"
                 );
             });
         }

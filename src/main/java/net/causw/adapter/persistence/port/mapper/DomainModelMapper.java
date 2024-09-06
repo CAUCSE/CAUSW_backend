@@ -101,7 +101,9 @@ public abstract class DomainModelMapper {
                 circle.getIsDeleted(),
                 circle.getLeader().map(this::entityToDomainModel).orElse(null),
                 circle.getCreatedAt(),
-                circle.getUpdatedAt()
+                circle.getUpdatedAt(),
+                circle.getCircleTax(),
+                circle.getRecruitMembers()
         );
     }
 

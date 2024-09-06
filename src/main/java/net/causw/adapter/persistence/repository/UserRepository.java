@@ -1,6 +1,7 @@
 package net.causw.adapter.persistence.repository;
 
 import net.causw.adapter.persistence.user.User;
+import net.causw.domain.model.enums.AcademicStatus;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.enums.UserState;
 import org.springframework.data.domain.Page;
@@ -17,7 +18,7 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, String> {
     List<User> findAll();
 
-    Optional<User> findByEmailAndNameAndStudentId(String email, String name, String studentId);
+    Optional<User> findByEmailAndNameAndStudentIdAndPhoneNumber(String email, String name, String studentId, String phoneNumber);
 
     Optional<User> findByEmail(String email);
 
@@ -27,7 +28,11 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     List<User> findByName(String name);
 
+    List<User> findAllByState(UserState state);
+
     Optional<User> findByStudentIdAndNameAndPhoneNumber(String studentId, String name, String phoneNumber);
+
+    List<User> findByStudentIdAndStateAndAcademicStatus(String studentId, UserState userState, AcademicStatus academicStatus);
 
     @Query("SELECT u FROM User u WHERE :role MEMBER OF u.roles AND u.state = :state")
     List<User> findByRoleAndState(@Param("role") Role role, @Param("state") UserState state);

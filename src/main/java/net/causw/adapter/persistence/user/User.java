@@ -108,6 +108,19 @@ public class User extends BaseEntity {
         this.state = state;
     }
 
+    public void delete() {
+        this.email = "deleted_" + this.getId();
+        this.name = "탈퇴한 사용자";
+        this.phoneNumber = null;
+        this.studentId = null;
+        this.nickname = null;
+        this.major = null;
+        this.profileImage = null;
+        this.graduationYear = null;
+        this.graduationMonth = null;
+        this.state = UserState.DELETED;
+    }
+
     public static User from(UserDomainModel userDomainModel) {
         return new User(
                 userDomainModel.getId(),

@@ -29,7 +29,7 @@ public class ExtendLockerExpiredAtValidator extends AbstractValidator {
         if (src.isEqual(dst)) {
             throw new BadRequestException(
                     ErrorCode.INVALID_EXPIRE_DATE,
-                    "아직 반납기한을 확장할 수 없습니다."
+                    "이미 사물함 반납을 연장하였습니다."
             );
         }
     }

@@ -39,6 +39,12 @@ public class CircleResponseDto {
     @Schema(description = "동아리장 이름", example = "정상제")
     private String leaderName;
 
+    @Schema(description = "동아리 회비", example = "5000")
+    private Integer circleTax;
+
+    @Schema(description = "동아리 모집인원", example = "10")
+    private Integer recruitMembers;
+
     @Schema(description = "동아리원 숫자", example = "7")
     private Long numMember;
 
@@ -83,6 +89,8 @@ public class CircleResponseDto {
                 .mainImage(circle.getMainImage())
                 .description(circle.getDescription())
                 .isDeleted(circle.getIsDeleted())
+                .circleTax(circle.getCircleTax())
+                .recruitMembers(circle.getRecruitMembers())
                 .leaderId(circle.getLeader().map(User::getId).orElse(null))
                 .leaderName(circle.getLeader().map(User::getName).orElse(null))
                 .createdAt(circle.getCreatedAt())
@@ -96,6 +104,8 @@ public class CircleResponseDto {
                 .mainImage(circle.getMainImage())
                 .description(circle.getDescription())
                 .isDeleted(circle.getIsDeleted())
+                .circleTax(circle.getCircleTax())
+                .recruitMembers(circle.getRecruitMembers())
                 .leaderId(circle.getLeader().map(User::getId).orElse(null))
                 .leaderName(circle.getLeader().map(User::getName).orElse(null))
                 .numMember(numMember)
