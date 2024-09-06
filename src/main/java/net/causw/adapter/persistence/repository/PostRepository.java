@@ -33,14 +33,16 @@ public interface PostRepository extends JpaRepository<Post, String> {
 
     Page<Post> searchByTitle(@Param("title") String title, @Param("boardId") String boardId, Pageable pageable, @Param("isDeleted") boolean isDeleted);
 
-
-    @Query(value = "SELECT * FROM tb_post AS p " +
-            "JOIN tb_board AS b ON p.board_id = b.id " +
-            "LEFT JOIN tb_circle AS c ON c.id = b.circle_id " +
-            "LEFT JOIN tb_circle_member AS cm ON p.user_id = cm.user_id AND c.id = cm.circle_id " +
-            "WHERE p.user_id = :user_id AND p.is_deleted = false AND b.is_deleted = false " +
-            "AND (c.id is NULL " +
-            "OR (cm.status = 'MEMBER' AND c.is_deleted = false)) ORDER BY p.created_at DESC", nativeQuery = true)
+    // 특정 사용자가 작성한 게시글 검색
+    @Query("SELECT p " +
+            "FROM Post p " +
+            "JOIN p.board b " +
+            "LEFT JOIN b.circle c " +
+            "LEFT JOIN CircleMember cm ON p.writer.id = cm.user.id AND c.id = cm.circle.id " +
+            "WHERE p.writer.id = :user_id AND p.isDeleted = false AND b.isDeleted = false " +
+            "AND (c.id IS NULL " +
+            "OR (cm.status = 'MEMBER' AND c.isDeleted = false)) " +
+            "ORDER BY p.createdAt DESC")
     Page<Post> findByUserId(@Param("user_id") String userId, Pageable pageable);
 
     // 게시물에 작성된 모든 댓글(댓글+대댓글)의 수 세기

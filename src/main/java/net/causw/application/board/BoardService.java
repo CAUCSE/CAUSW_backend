@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
-import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.board.*;
@@ -129,6 +128,15 @@ public class BoardService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public BoardNameCheckResponseDto checkBoardName (
+            BoardNameCheckRequestDto boardNameCheckRequestDto
+    ) {
+        String boardName = boardNameCheckRequestDto.getName();
+
+        return DtoMapper.INSTANCE.toBoardNameCheckResponseDto(boardRepository.existsByName(boardName));
+    }
+
     @Transactional
     public BoardResponseDto createBoard(
             User creator,
@@ -184,9 +192,9 @@ public class BoardService {
                 circle
         );
 
-        validatorBucket
-                .consistOf(ConstraintValidator.of(board, this.validator))
-                .validate();
+//        validatorBucket
+//                .consistOf(ConstraintValidator.of(board, this.validator))
+//                .validate();
 
         return toBoardResponseDto(boardRepository.save(board), roles);
     }

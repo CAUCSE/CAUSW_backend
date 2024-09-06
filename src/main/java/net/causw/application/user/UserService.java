@@ -45,13 +45,17 @@ import net.causw.domain.validation.ValidatorBucket;
 import net.causw.infrastructure.GoogleMailSender;
 import net.causw.infrastructure.PasswordGenerator;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.validation.Validator;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -72,26 +76,36 @@ public class UserService {
     private final PostRepository postRepository;
     private final PageableFactory pageableFactory;
     private final CommentRepository commentRepository;
+    private final ChildCommentRepository childCommentRepository;
     private final UserAdmissionRepository userAdmissionRepository;
     private final RedisUtils redisUtils;
     private final LockerRepository lockerRepository;
     private final LockerLogRepository lockerLogRepository;
     private final UserAdmissionLogRepository userAdmissionLogRepository;
     private final BoardRepository boardRepository;
+    private final FavoritePostRepository favoritePostRepository;
+    private final LikePostRepository likePostRepository;
 
     @Transactional
     public UserResponseDto findPassword(
             UserFindPasswordRequestDto userFindPasswordRequestDto
     ) {
-        User requestUser = userRepository.findByEmailAndNameAndStudentId(userFindPasswordRequestDto.getEmail(), userFindPasswordRequestDto.getName(), userFindPasswordRequestDto.getStudentId())
-                .orElseThrow(() -> new BadRequestException(
+        User requestUser = userRepository.findByEmailAndNameAndStudentIdAndPhoneNumber(
+                    userFindPasswordRequestDto.getEmail(),
+                    userFindPasswordRequestDto.getName(),
+                    userFindPasswordRequestDto.getStudentId(),
+                    userFindPasswordRequestDto.getPhoneNumber()
+                ).orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.USER_NOT_FOUND
                 ));
-
+        // 임시 비밀번호 생성
         String newPassword = this.passwordGenerator.generate();
+
+        // 메일 전송
         this.googleMailSender.sendNewPasswordMail(requestUser.getEmail(), newPassword);
 
+        // 비밀번호 변경 (db save)
         this.userRepository.findById(requestUser.getId()).map(
                 srcUser -> {
                     srcUser.setPassword(passwordEncoder.encode(newPassword));
@@ -99,7 +113,8 @@ public class UserService {
                 }).orElseThrow(() -> new BadRequestException(
                 ErrorCode.ROW_DOES_NOT_EXIST,
                 MessageUtil.USER_NOT_FOUND));
-        return UserResponseDto.from(requestUser);
+
+        return DtoMapper.INSTANCE.toUserResponseDto(requestUser, getCircleIdsIfLeader(requestUser), getCircleNamesIfLeader(requestUser));
     }
 
     // Find process of another user
@@ -135,12 +150,13 @@ public class UserService {
             }
         }
 
-        return this.userRepository.findById(targetUserId)
-                .map(UserResponseDto::from)
-                .orElseThrow(() -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_NOT_FOUND
-                ));
+        User entity = this.userRepository.findById(targetUserId)
+                .orElseThrow(() ->
+                        new BadRequestException(
+                                ErrorCode.ROW_DOES_NOT_EXIST,
+                                MessageUtil.USER_NOT_FOUND
+                        ));
+        return DtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
     }
 
     @Transactional(readOnly = true)
@@ -161,15 +177,13 @@ public class UserService {
                 );
             }
 
-            return UserResponseDto.of(
+            return DtoMapper.INSTANCE.toUserResponseDto(
                     requestUser,
                     ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
                     ownCircles.stream().map(Circle::getName).collect(Collectors.toList())
-
             );
         }
-
-        return UserResponseDto.from(requestUser);
+        return DtoMapper.INSTANCE.toUserResponseDto(requestUser, null, null);
     }
 
     @Transactional(readOnly = true)
@@ -181,17 +195,71 @@ public class UserService {
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .validate();
 
-        return UserPostsResponseDto.of(
+        return DtoMapper.INSTANCE.toUserPostsResponseDto(
                 requestUser,
-                this.postRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
-                        .map(post -> UserPostResponseDto.of(
-                                post,
-                                post.getBoard().getId(),
-                                post.getBoard().getName(),
-                                post.getBoard().getCircle() != null ? post.getBoard().getCircle().getId() : null,
-                                post.getBoard().getCircle() != null ? post.getBoard().getCircle().getName() : null,
-                                this.postRepository.countAllCommentByPost_Id(post.getId())
+                this.postRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE)
+                ).map(post -> DtoMapper.INSTANCE.toPostsResponseDto(
+                        post,
+                        getNumOfComment(post),
+                        getNumOfPostLikes(post),
+                        getNumOfPostFavorites(post)
+                ))
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public UserPostsResponseDto findFavoritePosts(User requestUser, Integer pageNum) {
+        Set<Role> roles = requestUser.getRoles();
+
+        ValidatorBucket.of()
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(UserStateValidator.of(requestUser.getState()))
+                .validate();
+
+        return DtoMapper.INSTANCE.toUserPostsResponseDto(
+                requestUser,
+                this.favoritePostRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
+                        .map(favoritePost -> DtoMapper.INSTANCE.toPostsResponseDto(
+                                favoritePost.getPost(),
+                                getNumOfComment(favoritePost.getPost()),
+                                getNumOfPostLikes(favoritePost.getPost()),
+                                getNumOfPostFavorites(favoritePost.getPost())
                         ))
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public UserPostsResponseDto findCommentedPosts(User requestUser, Integer pageNum) {
+        Set<Role> roles = requestUser.getRoles();
+
+        ValidatorBucket.of()
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(UserStateValidator.of(requestUser.getState()))
+                .validate();
+
+        Pageable pageable = this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE / 2 + 5);
+
+        Page<Post> postsFromComments = this.commentRepository.findPostsByUserId(requestUser.getId(), pageable);
+        Page<Post> postsFromChildComments = this.childCommentRepository.findPostsByUserId(requestUser.getId(), pageable);
+
+        //Comment와 ChildComment의 Post 중복 제거
+        Set<Post> combinedPosts = new HashSet<>();
+        combinedPosts.addAll(postsFromComments.getContent());
+        combinedPosts.addAll(postsFromChildComments.getContent());
+
+        //Set에서 Page로 타입 변환 및 정렬
+        List<Post> combinedPostsList = new ArrayList<>(combinedPosts);
+        combinedPostsList.sort((post1, post2) -> post2.getCreatedAt().compareTo(post1.getCreatedAt()));
+        Page<Post> combinedPostsPage = new PageImpl<>(combinedPostsList, pageable, combinedPostsList.size());
+
+        return DtoMapper.INSTANCE.toUserPostsResponseDto(
+                requestUser,
+                combinedPostsPage.map(post -> DtoMapper.INSTANCE.toPostsResponseDto(
+                        post,
+                        getNumOfComment(post),
+                        getNumOfPostLikes(post),
+                        getNumOfPostFavorites(post)
+                ))
         );
     }
 
@@ -204,18 +272,16 @@ public class UserService {
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .validate();
 
-        return UserCommentsResponseDto.of(
+        return DtoMapper.INSTANCE.toUserCommentsResponseDto(
                 requestUser,
                 this.commentRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_COMMENT_PAGE_SIZE))
                         .map(comment -> {
-                            Post post = this.postRepository.findById(comment.getPost().getId()).orElseThrow(
-                                    () -> new BadRequestException(
+                            Post post = this.postRepository.findById(comment.getPost().getId())
+                                    .orElseThrow(() -> new BadRequestException(
                                             ErrorCode.ROW_DOES_NOT_EXIST,
                                             MessageUtil.POST_NOT_FOUND
-                                    )
-                            );
-
-                            return CommentsOfUserResponseDto.of(
+                                    ));
+                            return DtoMapper.INSTANCE.toCommentsOfUserResponseDto(
                                     comment,
                                     post.getBoard().getId(),
                                     post.getBoard().getName(),
@@ -225,7 +291,6 @@ public class UserService {
                                     post.getBoard().getCircle() != null ? post.getBoard().getCircle().getName() : null
                             );
                         })
-
         );
     }
 
@@ -259,20 +324,18 @@ public class UserService {
                                             this.circleMemberRepository.findByUser_IdAndCircle_Id(user.getId(), circle.getId())
                                                     .map(circleMemberEntity -> circleMemberEntity.getStatus() == CircleMemberStatus.MEMBER)
                                                     .orElse(false)))
-                    .map(user -> UserResponseDto.of(
+                    .map(user -> DtoMapper.INSTANCE.toUserResponseDto(
                             user,
                             ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
                             ownCircles.stream().map(Circle::getName).collect(Collectors.toList())))
                     .collect(Collectors.toList());
-
         }
 
         return this.userRepository.findByName(name)
                 .stream()
                 .filter(user -> user.getState().equals(UserState.ACTIVE))
-                .map(UserResponseDto::from)
+                .map(user -> DtoMapper.INSTANCE.toUserResponseDto(user, null, null))
                 .collect(Collectors.toList());
-
     }
 
     @Transactional(readOnly = true)
@@ -287,34 +350,34 @@ public class UserService {
 
         //todo: 현재 겸직을 고려하기 위해 _N_ 사용 중이나 port 와 domain model 삭제를 위해 배제
         //때문에 추후 userRole 관리 리팩토링 후 겸직을 고려하게 변경 필요
-        return UserPrivilegedResponseDto.of(
+        return DtoMapper.INSTANCE.toUserPrivilegedResponseDto(
                 this.userRepository.findByRoleAndState(Role.PRESIDENT, UserState.ACTIVE)
                         .stream()
-                        .map(UserResponseDto::from)
+                        .map(president -> DtoMapper.INSTANCE.toUserResponseDto(president, null, null))
                         .collect(Collectors.toList()),
                 this.userRepository.findByRoleAndState(Role.VICE_PRESIDENT, UserState.ACTIVE)
                         .stream()
-                        .map(UserResponseDto::from)
+                        .map(vicePresident -> DtoMapper.INSTANCE.toUserResponseDto(vicePresident, null, null))
                         .collect(Collectors.toList()),
                 this.userRepository.findByRoleAndState(Role.COUNCIL, UserState.ACTIVE)
                         .stream()
-                        .map(UserResponseDto::from)
+                        .map(council -> DtoMapper.INSTANCE.toUserResponseDto(council, null, null))
                         .collect(Collectors.toList()),
                 this.userRepository.findByRoleAndState(Role.LEADER_1, UserState.ACTIVE)
                         .stream()
-                        .map(UserResponseDto::from)
+                        .map(leader1 -> DtoMapper.INSTANCE.toUserResponseDto(leader1, null, null))
                         .collect(Collectors.toList()),
                 this.userRepository.findByRoleAndState(Role.LEADER_2, UserState.ACTIVE)
                         .stream()
-                        .map(UserResponseDto::from)
+                        .map(leader2 -> DtoMapper.INSTANCE.toUserResponseDto(leader2, null, null))
                         .collect(Collectors.toList()),
                 this.userRepository.findByRoleAndState(Role.LEADER_3, UserState.ACTIVE)
                         .stream()
-                        .map(UserResponseDto::from)
+                        .map(leader3 -> DtoMapper.INSTANCE.toUserResponseDto(leader3, null, null))
                         .collect(Collectors.toList()),
                 this.userRepository.findByRoleAndState(Role.LEADER_4, UserState.ACTIVE)
                         .stream()
-                        .map(UserResponseDto::from)
+                        .map(leader4 -> DtoMapper.INSTANCE.toUserResponseDto(leader4, null, null))
                         .collect(Collectors.toList()),
                 this.userRepository.findByRoleAndState(Role.LEADER_CIRCLE, UserState.ACTIVE)
                         .stream()
@@ -326,7 +389,7 @@ public class UserService {
                                         MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER
                                 );
                             }
-                            return UserResponseDto.of(
+                            return DtoMapper.INSTANCE.toUserResponseDto(
                                     userDomainModel,
                                     ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
                                     ownCircles.stream().map(Circle::getName).collect(Collectors.toList())
@@ -335,7 +398,7 @@ public class UserService {
                         .collect(Collectors.toList()),
                 this.userRepository.findByRoleAndState(Role.LEADER_ALUMNI, UserState.ACTIVE)
                         .stream()
-                        .map(UserResponseDto::from)
+                        .map(alumni -> DtoMapper.INSTANCE.toUserResponseDto(alumni, null, null))
                         .collect(Collectors.toList())
         );
     }
@@ -382,13 +445,13 @@ public class UserService {
                     );
                 }
 
-                return UserResponseDto.of(
+                return DtoMapper.INSTANCE.toUserResponseDto(
                         userEntity,
                         ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
                         ownCircles.stream().map(Circle::getName).collect(Collectors.toList())
                 );
             } else {
-                return UserResponseDto.from(userEntity);
+                return DtoMapper.INSTANCE.toUserResponseDto(userEntity, null, null);
             }
         });
     }
@@ -404,19 +467,25 @@ public class UserService {
                 .consistOf(UserRoleIsNoneValidator.of(roles))
                 .validate();
 
-        //
         if (roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT)) {
             return this.circleRepository.findAllByIsDeletedIsFalse()
                     .stream()
-                    .map(CircleResponseDto::from)
+                    .map(circle -> {
+                        User leader = circle.getLeader()
+                                .orElse(null);
+                        return DtoMapper.INSTANCE.toCircleResponseDto(circle, leader);
+                    })
                     .collect(Collectors.toList());
         }
-
 
         return this.circleMemberRepository.findByUser_Id(user.getId())
                 .stream()
                 .filter(circleMember -> circleMember.getStatus() == CircleMemberStatus.MEMBER && !circleMember.getCircle().getIsDeleted())
-                .map(circleMember -> CircleResponseDto.from(circleMember.getCircle()))
+                .map(circleMember -> {
+                    User leader = circleMember.getCircle().getLeader()
+                            .orElse(null);
+                    return DtoMapper.INSTANCE.toCircleResponseDto(circleMember.getCircle(), leader);
+                })
                 .collect(Collectors.toList());
     }
 
@@ -457,7 +526,7 @@ public class UserService {
                 .consistOf(AdmissionYearValidator.of(userCreateRequestDto.getAdmissionYear()))
                 .validate();
 
-        return UserResponseDto.from(user);
+        return DtoMapper.INSTANCE.toUserResponseDto(user, null, null);
     }
 
     @Transactional
@@ -496,10 +565,10 @@ public class UserService {
         String refreshToken = jwtTokenProvider.createRefreshToken();
         redisUtils.setData(refreshToken,user.getId(),StaticValue.JWT_REFRESH_TOKEN_VALID_TIME);
 
-        return UserSignInResponseDto.builder()
-                .accessToken(jwtTokenProvider.createAccessToken(user.getId(), user.getRoles(), user.getState()))
-                .refreshToken(jwtTokenProvider.createRefreshToken())
-                .build();
+        return DtoMapper.INSTANCE.toUserSignInResponseDto(
+                jwtTokenProvider.createAccessToken(user.getId(), user.getRoles(), user.getState()),
+                jwtTokenProvider.createRefreshToken()
+        );
     }
 
     /**
@@ -520,7 +589,7 @@ public class UserService {
                 );
             }
         }
-        return DuplicatedCheckResponseDto.from(userFoundByEmail.isPresent());
+        return DtoMapper.INSTANCE.toDuplicatedCheckResponseDto(userFoundByEmail.isPresent());
     }
 
     /**
@@ -541,7 +610,7 @@ public class UserService {
                 );
             }
         }
-        return DuplicatedCheckResponseDto.from(userFoundByNickname.isPresent());
+        return DtoMapper.INSTANCE.toDuplicatedCheckResponseDto(userFoundByNickname.isPresent());
     }
 
     @Transactional
@@ -576,7 +645,7 @@ public class UserService {
 
         User updatedUser = userRepository.save(user);
 
-        return UserResponseDto.from(updatedUser);
+        return DtoMapper.INSTANCE.toUserResponseDto(updatedUser, null, null);
     }
 
 
@@ -737,7 +806,7 @@ public class UserService {
             );
         }
 
-        return UserResponseDto.from(this.updateRole(grantee, userUpdateRoleRequestDto.getRole()));
+        return DtoMapper.INSTANCE.toUserResponseDto(this.updateRole(grantee, userUpdateRoleRequestDto.getRole()), null, null);
     }
 
     private String checkAuthAndCircleId(UserUpdateRoleRequestDto userUpdateRoleRequestDto, User grantee) {
@@ -876,7 +945,7 @@ public class UserService {
         user.setPassword(this.passwordEncoder.encode(userUpdatePasswordRequestDto.getUpdatedPassword()));
         User updatedUser = this.userRepository.save(user);
 
-        return UserResponseDto.from(updatedUser);
+        return DtoMapper.INSTANCE.toUserResponseDto(updatedUser, null, null);
     }
 
     @Transactional
@@ -916,14 +985,25 @@ public class UserService {
                         this.updateStatus(circleMember.getId(), CircleMemberStatus.LEAVE)
                 );
 
-        return UserResponseDto.from(this.updateState(user.getId(), UserState.INACTIVE).orElseThrow(
-                () -> new InternalServerException(
+        User entity = this.updateState(user.getId(), UserState.INACTIVE)
+                .orElseThrow(() -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.INTERNAL_SERVER_ERROR
-                )
-        ));
+                ));
+        return DtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
     }
 
+    @Scheduled(cron = "0 0 0 * * ?")
+    public void deleteUser() {
+        LocalDateTime dueDate = LocalDateTime.now().minusYears(5);
+
+        userRepository.findAllByState(UserState.INACTIVE).stream()
+                .filter(user -> user.getUpdatedAt().isBefore(dueDate))
+                .forEach(user -> {
+                    user.delete();
+                    userRepository.save(user);
+                });
+    }
 
     private Optional<CircleMember> updateStatus(String applicationId, CircleMemberStatus targetStatus) {
         return this.circleMemberRepository.findById(applicationId).map(
@@ -983,12 +1063,12 @@ public class UserService {
 
         this.updateRole(droppedUser, Role.NONE);
 
-        return UserResponseDto.from(this.updateState(userId, UserState.DROP).orElseThrow(
-                () -> new InternalServerException(
+        User entity = this.updateState(userId, UserState.DROP)
+                .orElseThrow(() -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.INTERNAL_SERVER_ERROR
-                )
-        ));
+                ));
+        return DtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
     }
 
     @Transactional(readOnly = true)
@@ -1001,12 +1081,13 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .validate();
 
-        return UserAdmissionResponseDto.from(this.userAdmissionRepository.findById(admissionId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_APPLY_NOT_FOUND
-                )
-        ));
+        return DtoMapper.INSTANCE.toUserAdmissionResponseDto(
+                this.userAdmissionRepository.findById(admissionId)
+                        .orElseThrow(() -> new BadRequestException(
+                                ErrorCode.ROW_DOES_NOT_EXIST,
+                                MessageUtil.USER_APPLY_NOT_FOUND
+                        ))
+        );
     }
 
     @Transactional(readOnly = true)
@@ -1023,8 +1104,8 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .validate();
 
-        return this.userAdmissionRepository.findAllWithName(UserState.AWAIT.getValue(), name, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
-                .map(UserAdmissionsResponseDto::from);
+        return this.userAdmissionRepository.findAllWithName(UserState.AWAIT.getValue(), name, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE))
+                .map(DtoMapper.INSTANCE::toUserAdmissionsResponseDto);
     }
 
     @Transactional
@@ -1066,7 +1147,7 @@ public class UserService {
                 .consistOf(ConstraintValidator.of(userAdmission, this.validator))
                 .validate();
 
-        return UserAdmissionResponseDto.from(this.userAdmissionRepository.save(userAdmission));
+        return DtoMapper.INSTANCE.toUserAdmissionResponseDto(this.userAdmissionRepository.save(userAdmission));
     }
 
     @Transactional
@@ -1104,14 +1185,13 @@ public class UserService {
         this.userAdmissionLogRepository.save(userAdmissionLog);
         this.userAdmissionRepository.delete(userAdmission);
 
-        return UserAdmissionResponseDto.of(
+        return DtoMapper.INSTANCE.toUserAdmissionResponseDto(
                 userAdmission,
-                this.updateState(userAdmission.getUser().getId(), UserState.ACTIVE).orElseThrow(
-                        () -> new InternalServerException(
+                this.updateState(userAdmission.getUser().getId(), UserState.ACTIVE)
+                        .orElseThrow(() -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
                                 MessageUtil.ADMISSION_EXCEPTION
-                        )
-                )
+                        ))
         );
     }
 
@@ -1147,14 +1227,14 @@ public class UserService {
         this.userAdmissionLogRepository.save(userAdmissionLog);
         this.userAdmissionRepository.delete(userAdmission);
 
-        return UserAdmissionResponseDto.of(
+        return DtoMapper.INSTANCE.toUserAdmissionResponseDto(
                 userAdmission,
-                this.updateState(userAdmission.getUser().getId(), UserState.REJECT).orElseThrow(
-                        () -> new InternalServerException(
+                this.updateState(userAdmission.getUser().getId(), UserState.REJECT)
+                        .orElseThrow(() -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
                                 MessageUtil.ADMISSION_EXCEPTION
-                        )
-                ));
+                        ))
+        );
     }
 
     //TODO: 현재 사용하지 않는 기능으로 주석처리
@@ -1230,13 +1310,12 @@ public class UserService {
 
         this.updateRole(restoredUser, Role.COMMON);
 
-
-        return UserResponseDto.from(this.updateState(restoredUser.getId(), UserState.ACTIVE).orElseThrow(
-                () -> new InternalServerException(
+        User entity = this.updateState(restoredUser.getId(), UserState.ACTIVE)
+                .orElseThrow(() -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.INTERNAL_SERVER_ERROR
-                )
-        ));
+                ));
+        return DtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
     }
 
     @Transactional
@@ -1255,25 +1334,23 @@ public class UserService {
 
         // STEP2 : 새로운 accessToken 제공
         String newAccessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getRoles(), user.getState());
-        return UserSignInResponseDto.builder()
-                .accessToken(newAccessToken)
-                .build();
+
+        return DtoMapper.INSTANCE.toUserSignInResponseDto(newAccessToken, refreshToken);
     }
 
     private String getUserIdFromRefreshToken(String refreshToken) {
         return Optional.ofNullable(redisUtils.getData(refreshToken))
                 .orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "RefreshToken 유효성 검증 실패"));
+                        MessageUtil.INVALID_REFRESH_TOKEN
+                        ));
     }
 
     public UserSignOutResponseDto signOut(UserSignOutRequestDto userSignOutRequestDto){
         redisUtils.addToBlacklist(userSignOutRequestDto.getAccessToken());
         redisUtils.deleteData(userSignOutRequestDto.getRefreshToken());
 
-        return UserSignOutResponseDto.builder()
-                .message("로그아웃 성공")
-                .build();
+        return DtoMapper.INSTANCE.toUserSignOutResponseDto("로그아웃 성공");
     }
 
     public UserFindIdResponseDto findUserId(UserFindIdRequestDto userIdFindRequestDto) {
@@ -1362,5 +1439,16 @@ public class UserService {
         );
     }
 
+    private Long getNumOfComment(Post post) {
+        return this.postRepository.countAllCommentByPost_Id(post.getId());
+    }
+
+    private Long getNumOfPostLikes(Post post){
+        return likePostRepository.countByPostId(post.getId());
+    }
+
+    private Long getNumOfPostFavorites(Post post){
+        return favoritePostRepository.countByPostIdAndIsDeletedFalse(post.getId());
+    }
 
 }
