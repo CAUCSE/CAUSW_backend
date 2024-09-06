@@ -2,6 +2,7 @@ package net.causw.application.board;
 
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
+import net.causw.adapter.persistence.board.BoardApply;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.repository.*;
@@ -208,15 +209,26 @@ public class BoardService {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         validatorBucket
                 .consistOf(UserStateValidator.of(creator.getState()))   // 활성화된 사용자인지 확인
-                .consistOf(UserRoleIsNoneValidator.of(creator.getRoles())); // 권한이 없는 사용자인지 확인
+                .consistOf(UserRoleIsNoneValidator.of(creator.getRoles())) // 권한이 없는 사용자인지 확인
+                .consistOf(UserRoleValidator.of(creator.getRoles(), Set.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT))); // 권한이 관리자, 학생회장, 부학생회장 중 하나인지 확인
 
-        Board board = Board.fromName(normalBoardCreateRequestDto.getBoardName());
+
+        // 로그인 유저의 권한이 관리자, 학생회장, 부학생회장 중 하나인 경우
+        // 아무런 조건 없이 게시판을 생성할 수 있음
+        Board newBoard = Board.of(
+                normalBoardCreateRequestDto.getBoardName(),
+                normalBoardCreateRequestDto.getDescription(),
+                normalBoardCreateRequestDto.getCreateRoleList(),
+                StaticValue.BOARD_NAME_APP_NOTICE,
+                null
+        );
+
 
         validatorBucket
-                .consistOf(ConstraintValidator.of(board, this.validator))
+                .consistOf(ConstraintValidator.of(newBoard, this.validator))
                 .validate();
 
-        return toBoardResponseDto(boardRepository.save(board), creator.getRoles());
+        return toBoardResponseDto(boardRepository.save(newBoard), creator.getRoles());
     }
 
 

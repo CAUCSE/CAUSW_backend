@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_board")
 public class Board extends BaseEntity {
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", nullable = false, unique = true)
     private String name;
 
     @Column(name = "description", nullable = true)
@@ -37,11 +37,11 @@ public class Board extends BaseEntity {
     @Column(name = "category", nullable = false)
     private String category;
 
-    @Column(name = "is_deleted")
+    @Column(name = "is_deleted", nullable = false)
     @ColumnDefault("false")
     private Boolean isDeleted;
 
-    @Column(name = "is_default", nullable = true)
+    @Column(name = "is_default", nullable = false)
     @ColumnDefault("false")
     private Boolean isDefault;
 
@@ -51,7 +51,6 @@ public class Board extends BaseEntity {
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private Set<Post> postSet;
-
 
 
     private Board(
@@ -117,7 +116,7 @@ public class Board extends BaseEntity {
                 createRoleList.addAll(
                         Arrays.stream(Role.values())
                                 .map(Role::getValue)
-                                .collect(Collectors.toList())
+                                .toList()
                 );
                 createRoleList.remove(Role.NONE.getValue());
                 createRoleList.remove("ALL");
