@@ -38,8 +38,11 @@ public class UserResponseDto {
     @Schema(description = "역할", example = "COMMON")
     private Set<Role> roles;
 
+    @Schema(description = "학부생 인증 이미지 URL", example = "")
+    private List<String> attachImages;
+
     @Schema(description = "프로필 이미지 URL", example = "")
-    private List<String> profileImages;
+    private String profileImage;
 
     @Schema(description = "상태", example = "AWAIT")
     private UserState state;
@@ -80,7 +83,8 @@ public class UserResponseDto {
                 .studentId(user.getStudentId())
                 .admissionYear(user.getAdmissionYear())
                 .roles(user.getRoles())
-                .profileImages(user.getProfileImages())
+                .attachImages(user.getAttachImages())
+                .profileImage(user.getProfileImage())
                 .state(user.getState())
                 .nickname(user.getNickname())
                 .major(user.getMajor())
@@ -101,7 +105,8 @@ public class UserResponseDto {
                 .studentId(user.getStudentId())
                 .admissionYear(user.getAdmissionYear())
                 .roles(user.getRoles())
-                .profileImages(user.getProfileImages())
+                .attachImages(user.getAttachImages())
+                .profileImage(user.getProfileImage())
                 .state(user.getState())
                 .nickname(user.getNickname())
                 .major(user.getMajor())
@@ -125,7 +130,8 @@ public class UserResponseDto {
                 .studentId(user.getStudentId())
                 .admissionYear(user.getAdmissionYear())
                 .roles(user.getRoles())
-                .profileImages(user.getProfileImages())
+                .attachImages(user.getAttachImages())
+                .profileImage(user.getProfileImage())
                 .state(user.getState())
                 .circleIdIfLeader(circleId)
                 .circleNameIfLeader(circleName)

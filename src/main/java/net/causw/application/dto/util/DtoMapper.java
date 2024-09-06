@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
 @Target({ElementType.METHOD})
 @Mapping(target = "writerName", source = "post.writer.name")
 @Mapping(target = "writerAdmissionYear", source = "post.writer.admissionYear")
-@Mapping(target = "writerProfileImages", source = "post.writer.profileImages")
+@Mapping(target = "writerProfileImage", source = "post.writer.profileImage")
 @interface CommonPostWriterMappings {}
 
 @Mapper(componentModel = "spring")
@@ -101,7 +101,7 @@ public interface DtoMapper{
 
     @Mapping(target = "writerName", source = "comment.writer.name")
     @Mapping(target = "writerAdmissionYear", source = "comment.writer.admissionYear")
-    @Mapping(target = "writerProfileImages", source = "comment.writer.profileImages")
+    @Mapping(target = "writerProfileImage", source = "comment.writer.profileImage")
     @Mapping(target = "postId", source = "comment.post.id")
     @Mapping(target = "isAnonymous", source = "comment.isAnonymous")
     @Mapping(target ="numLike", source = "numCommentLike")
@@ -109,7 +109,7 @@ public interface DtoMapper{
 
     @Mapping(target = "writerName", source = "childComment.writer.name")
     @Mapping(target = "writerAdmissionYear", source = "childComment.writer.admissionYear")
-    @Mapping(target = "writerProfileImages", source = "childComment.writer.profileImages")
+    @Mapping(target = "writerProfileImage", source = "childComment.writer.profileImage")
     @Mapping(target = "isAnonymous", source = "childComment.isAnonymous")
     @Mapping(target ="numLike", source = "numChildCommentLike")
     ChildCommentResponseDto toChildCommentResponseDto(ChildComment childComment, Long numChildCommentLike, Boolean updatable, Boolean deletable);
@@ -133,7 +133,7 @@ public interface DtoMapper{
     @Mapping(target = "studentId", source = "user.studentId")
     @Mapping(target = "admissionYear", source = "user.admissionYear")
     @Mapping(target = "roles", source = "user.roles")
-    @Mapping(target = "profileImages", source = "user.profileImages")
+    @Mapping(target = "profileImage", source = "user.profileImage")
     @Mapping(target = "state", source = "user.state")
     @Mapping(target = "nickname", source = "user.nickname")
     @Mapping(target = "major", source = "user.major")
@@ -150,7 +150,7 @@ public interface DtoMapper{
     @Mapping(target = "name", source = "user.name")
     @Mapping(target = "studentId", source = "user.studentId")
     @Mapping(target = "admissionYear", source = "user.admissionYear")
-    @Mapping(target = "profileImages", source = "user.profileImages")
+    @Mapping(target = "profileImage", source = "user.profileImage")
     @Mapping(target = "posts", source = "post")
     UserPostsResponseDto toUserPostsResponseDto(User user, Page<PostsResponseDto> post);
 
@@ -170,7 +170,7 @@ public interface DtoMapper{
     @Mapping(target = "name", source = "user.name")
     @Mapping(target = "studentId", source = "user.studentId")
     @Mapping(target = "admissionYear", source = "user.admissionYear")
-    @Mapping(target = "profileImages", source = "user.profileImages")
+    @Mapping(target = "profileImage", source = "user.profileImage")
     UserCommentsResponseDto toUserCommentsResponseDto(User user, Page<CommentsOfUserResponseDto> comment);
 
     @Mapping(target = "id", source = "comment.id")
@@ -241,7 +241,6 @@ public interface DtoMapper{
 
     @Mapping(target = "isPresent", source = "isPresent")
     BoardNameCheckResponseDto toBoardNameCheckResponseDto(Boolean isPresent);
-
 
     @Mapping(target = "id", source = "board.id")
     @Mapping(target = "name", source = "board.name")

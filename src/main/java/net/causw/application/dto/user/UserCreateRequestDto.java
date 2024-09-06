@@ -34,7 +34,10 @@ public class UserCreateRequestDto {
     private Integer admissionYear;
 
     @Schema(description = "프로필 이미지 URL", example = "", required = true)
-    private List<String> profileImages;
+    private String profileImage;
+
+    @Schema(description = "학부생 인증 이미지", example = "", required = true)
+    private List<String> attachImages;
 
     // 새로 추가된 필드들
     @Schema(description = "닉네임", example = "푸앙", required = true)
@@ -67,7 +70,8 @@ public class UserCreateRequestDto {
                 .password(encodedPassword)
                 .studentId(studentId)
                 .admissionYear(admissionYear)
-                .profileImages(profileImages)
+                .attachImages(attachImages)
+                .profileImage(profileImage)
                 .nickname(nickname)
                 .major(major)
                 .academicStatus(academicStatus)

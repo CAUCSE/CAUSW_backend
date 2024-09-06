@@ -19,7 +19,7 @@ public class UserPostsResponseDto {
     private String name;
     private String studentId;
     private Integer admissionYear;
-    private List<String> profileImages;
+    private String profileImage;
 
     @Schema(description = "간락화된 게시글 정보들입니다")
     private Page<PostsResponseDto> posts;
@@ -35,7 +35,7 @@ public class UserPostsResponseDto {
                 .name(user.getName())
                 .studentId(user.getStudentId())
                 .admissionYear(user.getAdmissionYear())
-                .profileImages(user.getProfileImages())
+                .profileImage(user.getProfileImage())
                 .posts(post)
                 .build();
     }

@@ -65,8 +65,11 @@ public class User extends BaseEntity {
     private Set<Role> roles;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @Column(name = "profile_images", length = 500, nullable = true)
-    private List<String> profileImages;
+    @Column(name = "attach_images", length = 500, nullable = true)
+    private List<String> attachImages;
+
+    @Column(name = "profile_image", length = 500, nullable = true)
+    private String profileImage;
 
     @Column(name = "refresh_token", nullable = true)
     private String refreshToken;
@@ -91,7 +94,7 @@ public class User extends BaseEntity {
             String studentId,
             Integer admissionYear,
             Set<Role> roles,
-            List<String> profileImages,
+            String profileImage,
             UserState state
     ) {
         super(id);
@@ -101,7 +104,7 @@ public class User extends BaseEntity {
         this.studentId = studentId;
         this.admissionYear = admissionYear;
         this.roles = roles;
-        this.profileImages = profileImages;
+        this.profileImage = profileImage;
         this.state = state;
     }
 
@@ -112,7 +115,7 @@ public class User extends BaseEntity {
         this.studentId = null;
         this.nickname = null;
         this.major = null;
-        this.profileImages = null;
+        this.profileImage = null;
         this.graduationYear = null;
         this.graduationMonth = null;
         this.state = UserState.DELETED;
@@ -127,8 +130,14 @@ public class User extends BaseEntity {
                 userDomainModel.getStudentId(),
                 userDomainModel.getAdmissionYear(),
                 userDomainModel.getRoles(),
-                userDomainModel.getProfileImages(),
+                userDomainModel.getProfileImage(),
                 userDomainModel.getState()
         );
+    }
+
+    public void update(String nickname, AcademicStatus academicStatus, String profileImage) {
+        this.nickname = nickname;
+        this.academicStatus = academicStatus;
+        this.profileImage = profileImage;
     }
 }
