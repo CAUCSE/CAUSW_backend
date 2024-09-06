@@ -26,6 +26,7 @@ public enum ErrorCode {
     INVALID_EXPIRE_DATE(4016),
     FLAG_NOT_AVAILABLE(4017),
     LOCKER_ACTION_ERROR(4018),
+    VALIDATION_FAILED(4019),
 
     /**
      * 401 Unauthorized
@@ -33,7 +34,7 @@ public enum ErrorCode {
     API_NOT_ACCESSIBLE(4100),
     INVALID_SIGNIN(4101),
     BLOCKED_USER(4102),
-    INACTIVE_USER(4103),
+    INACTIVE_USER(4103),            // User is not activated
     AWAITING_USER(4104),
     INVALID_JWT(4105),
     GRANT_ROLE_NOT_ALLOWED(4106),
@@ -41,7 +42,6 @@ public enum ErrorCode {
     NOT_MEMBER(4108),
     REJECT_USER(4109),
     EXPIRED_JWT(4110),
-    VALIDATION_FAILED(4111),
 
     /**
      * 500 Internal Server Error
@@ -53,7 +53,7 @@ public enum ErrorCode {
      */
     SERVICE_UNAVAILABLE(5030), ;
 
-    private int code;
+    private final int code;
 
     ErrorCode(int code) {
         this.code = code;
