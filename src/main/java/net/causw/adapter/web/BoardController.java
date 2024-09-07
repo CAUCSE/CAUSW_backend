@@ -166,7 +166,7 @@ public class BoardController {
     @GetMapping(value = "/apply/list")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
-    @Operation(summary = "게시판 생성 신청 조회", description = "게시판 생성 신청 목록을 조회하는 API입니다.")
+    @Operation(summary = "게시판 생성 신청 조회(완료)", description = "게시판 생성 신청 목록을 조회하는 API입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Created", content = @Content(mediaType = "application/json")),
             @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
@@ -176,8 +176,10 @@ public class BoardController {
             @ApiResponse(responseCode = "4109", description = "가입이 거절된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
             @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
     })
-    public List<NormalBoardAppliesResponseDto> findAllBoardApply() {
-
+    public List<NormalBoardAppliesResponseDto> findAllBoardApply(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return this.boardService.findAllBoardApply(userDetails.getUser());
     }
 
 
