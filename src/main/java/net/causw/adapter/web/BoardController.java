@@ -87,7 +87,7 @@ public class BoardController {
     })
 
     public BoardNameCheckResponseDto checkBoardName(
-            @RequestBody BoardNameCheckRequestDto boardNameCheckRequestDto
+            @Valid @RequestBody BoardNameCheckRequestDto boardNameCheckRequestDto
     ) {
         return this.boardService.checkBoardName(boardNameCheckRequestDto);
     }
@@ -184,7 +184,7 @@ public class BoardController {
     })
     public BoardResponseDto updateBoard(
             @PathVariable("id") String id,
-            @RequestBody BoardUpdateRequestDto boardUpdateRequestDto,
+            @Valid @RequestBody BoardUpdateRequestDto boardUpdateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.boardService.updateBoard(userDetails.getUser(), id, boardUpdateRequestDto);
