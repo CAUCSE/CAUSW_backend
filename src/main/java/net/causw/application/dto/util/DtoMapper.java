@@ -269,6 +269,9 @@ public interface DtoMapper{
     @Mapping(target = "user", source = "boardApply.user")
     NormalBoardApplyResponseDto toNormalBoardApplyResponseDto(BoardApply boardApply);
 
+    @Mapping(target = "boardName", source = "boardApply.boardName")
+    NormalBoardAppliesResponseDto toNormalBoardAppliesResponseDto(BoardApply boardApply);
+
     // Circle
     @Mapping(target = "id", source = "circle.id")
     @Mapping(target = "name", source = "circle.name")
