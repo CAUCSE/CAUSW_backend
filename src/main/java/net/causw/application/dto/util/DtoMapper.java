@@ -264,7 +264,7 @@ public interface DtoMapper{
 
     @Mapping(target = "boardName", source = "boardApply.boardName")
     @Mapping(target = "description", source = "boardApply.description")
-    @Mapping(target = "createRoleList", source = "boardApply.createRoles")
+    @Mapping(target = "createRoles", source = "boardApply.createRoles")
     @Mapping(target = "isAnonymousAllowed", source = "boardApply.isAnonymousAllowed")
     @Mapping(target = "user", source = "boardApply.user")
     NormalBoardApplyResponseDto toNormalBoardApplyResponseDto(BoardApply boardApply);
