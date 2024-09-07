@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.post.PostService;
 import net.causw.application.dto.post.BoardPostsResponseDto;
@@ -162,7 +163,7 @@ public class PostController {
             @ApiResponse(responseCode = "4107", description = "사용자가 해당 동아리의 동아리장이 아닙니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
     })
     public PostResponseDto createPost(
-            @RequestBody PostCreateRequestDto postCreateRequestDto,
+            @Valid @RequestBody PostCreateRequestDto postCreateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.postService.createPost(userDetails.getUser(), postCreateRequestDto);
@@ -230,7 +231,7 @@ public class PostController {
     })
     public PostResponseDto updatePost(
             @PathVariable("id") String id,
-            @RequestBody PostUpdateRequestDto postUpdateRequestDto,
+            @Valid @RequestBody PostUpdateRequestDto postUpdateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
 
