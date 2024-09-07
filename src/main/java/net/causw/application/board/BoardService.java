@@ -217,7 +217,7 @@ public class BoardService {
                 normalBoardApplyRequestDto.getBoardName(),
                 normalBoardApplyRequestDto.getDescription(),
                 StaticValue.BOARD_NAME_APP_FREE,
-                normalBoardApplyRequestDto.getIsAnonymous()
+                normalBoardApplyRequestDto.getIsAnonymousAllowed()
         );
 
         validatorBucket
@@ -247,7 +247,7 @@ public class BoardService {
                 normalBoardCreateRequestDto.getDescription(),
                 normalBoardCreateRequestDto.getCreateRoleList(),
                 StaticValue.BOARD_NAME_APP_NOTICE,
-                normalBoardCreateRequestDto.getIsAnonymous(),
+                normalBoardCreateRequestDto.getIsAnonymousAllowed(),
                 null
         );
 
