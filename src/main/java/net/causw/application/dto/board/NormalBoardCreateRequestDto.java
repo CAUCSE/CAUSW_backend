@@ -14,7 +14,6 @@ import java.util.List;
 @Builder
 public class NormalBoardCreateRequestDto {
     @NotBlank(message = "게시판 이름은 필수 입력 값입니다.")
-    @NotNull(message = "게시판 이름은 필수 입력 값입니다.")
     @Schema(description = "게시판 이름", example = "백준 질문 게시판")
     private String boardName;
 
@@ -22,7 +21,6 @@ public class NormalBoardCreateRequestDto {
     private String description;
 
     @NotEmpty(message = "권한 명단은 비어 있을 수 없습니다.")
-    @NotNull(message = "권한 명단은 필수 입력 값입니다.")
     @Schema(description = "게시판에 글을 작성할 수 있는 권한 명단", example = "[ 'ADMIN' ] -> 배열로 받아야함")
     private List<@NotBlank String> createRoleList;
 
