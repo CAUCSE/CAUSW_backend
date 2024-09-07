@@ -34,7 +34,7 @@ public class BoardApply extends BaseEntity {
     private Boolean isAccepted;
 
     @Column(name = "is_annonymous_allowed", nullable = false)
-    @ColumnDefault("true")
+    @ColumnDefault("false")
     private Boolean isAnonymousAllowed;
 
     public static BoardApply of(

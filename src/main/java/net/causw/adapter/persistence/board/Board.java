@@ -46,7 +46,7 @@ public class Board extends BaseEntity {
     private Boolean isDefault;
 
     @Column(name = "is_anonymous allowed", nullable = false)
-    @ColumnDefault("true")
+    @ColumnDefault("false")
     private Boolean is_anonymous_allowed;
 
     @ManyToOne

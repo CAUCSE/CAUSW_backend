@@ -28,5 +28,5 @@ public class NormalBoardCreateRequestDto {
 
     @NotNull(message = "익명 허용 여부는 필수 입력 값입니다.")
     @Schema(description = "익명 허용 여부", example = "true -> boolean으로 받아야함")
-    private Boolean isAnonymous;
+    private Boolean isAnonymousAllowed;
 }
