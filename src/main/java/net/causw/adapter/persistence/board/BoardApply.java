@@ -13,7 +13,7 @@ import org.hibernate.annotations.ColumnDefault;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_board_apply")
 public class BoardApply extends BaseEntity {
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
