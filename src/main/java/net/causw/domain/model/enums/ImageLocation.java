@@ -10,6 +10,8 @@ public enum ImageLocation {
     USER_ADMISSION("USER_ADMISSION"),
     CIRCLE_PROFILE("CIRCLE_PROFILE"),
     POST("POST"),
+    CALENDAR("CALENDAR"),
+    EVENT("EVENT"),
     ETC("ETC");
 
     private final String value;
