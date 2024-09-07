@@ -267,9 +267,10 @@ public class BoardService {
                 .consistOf(UserRoleValidator.of(user.getRoles(), Set.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT))); // 권한이 관리자, 학생회장, 부학생회장 중 하나인지 확인
 
         // 관리자, 학생회장, 부학생회장만 게시판 관리 기능 사용 가능
-
-
-
+        return this.boardApplyRepository.findAll()
+                .stream()
+                .map(DtoMapper.INSTANCE::toNormalBoardApplyResponseDto)
+                .collect(Collectors.toList());
     }
 
 
