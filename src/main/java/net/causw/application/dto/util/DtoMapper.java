@@ -1,6 +1,7 @@
 package net.causw.application.dto.util;
 
 import net.causw.adapter.persistence.board.Board;
+import net.causw.adapter.persistence.board.BoardApply;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
@@ -11,10 +12,7 @@ import net.causw.adapter.persistence.form.Reply;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.user.UserAdmission;
-import net.causw.application.dto.board.BoardMainResponseDto;
-import net.causw.application.dto.board.BoardNameCheckResponseDto;
-import net.causw.application.dto.board.BoardOfCircleResponseDto;
-import net.causw.application.dto.board.BoardResponseDto;
+import net.causw.application.dto.board.*;
 import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentResponseDto;
@@ -263,6 +261,13 @@ public interface DtoMapper{
     @Mapping(target = "writable", source = "writable")
     @Mapping(target = "postNumComment", source = "numComment")
     BoardOfCircleResponseDto toBoardOfCircleResponseDto(Board entity, Long numComment, boolean writable);
+
+    @Mapping(target = "boardName", source = "boardApply.boardName")
+    @Mapping(target = "description", source = "boardApply.description")
+    @Mapping(target = "createRoleList", source = "boardApply.createRoles")
+    @Mapping(target = "isAnonymousAllowed", source = "boardApply.isAnonymousAllowed")
+    @Mapping(target = "user", source = "boardApply.user")
+    NormalBoardApplyResponseDto toNormalBoardApplyResponseDto(BoardApply boardApply);
 
     // Circle
     @Mapping(target = "id", source = "circle.id")
