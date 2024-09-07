@@ -25,8 +25,8 @@ public class NormalBoardApplyResponseDto {
     private String description;
 
     @NotEmpty(message = "권한 명단은 비어 있을 수 없습니다.")
-    @Schema(description = "게시판에 글을 작성할 수 있는 권한 명단", example = "[ 'ADMIN' ] -> 배열로 받아야함")
-    private List<@NotBlank String> createRoleList;
+    @Schema(description = "게시판에 글을 작성할 수 있는 권한 명단(항상 ALL로 고정)", example = "ALL")
+    private String createRoles;
 
     @NotNull(message = "익명 허용 여부는 필수 입력 값입니다.")
     @Schema(description = "익명 허용 여부", example = "true -> boolean으로 받아야함")
