@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface BoardApplyRepository extends JpaRepository<BoardApply, String> {
     List<BoardApply> findAll();
+
+    BoardApply findByBoardName(String boardName);
 }
