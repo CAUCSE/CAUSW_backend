@@ -259,7 +259,7 @@ public class BoardService {
     }
 
     @Transactional(readOnly = true)
-    public List<NormalBoardApplyResponseDto> findAllBoardApply(User user) {
+    public List<NormalBoardAppliesResponseDto> findAllBoardApply(User user) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         validatorBucket
                 .consistOf(UserStateValidator.of(user.getState()))   // 활성화된 사용자인지 확인
@@ -269,7 +269,7 @@ public class BoardService {
         // 관리자, 학생회장, 부학생회장만 게시판 관리 기능 사용 가능
         return this.boardApplyRepository.findAll()
                 .stream()
-                .map(DtoMapper.INSTANCE::toNormalBoardApplyResponseDto)
+                .map(DtoMapper.INSTANCE::toNormalBoardAppliesResponseDto)
                 .collect(Collectors.toList());
     }
 
