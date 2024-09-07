@@ -244,6 +244,7 @@ public class CircleService {
                         .map(Role::getValue)
                         .collect(Collectors.toList()),
                 "동아리 공지 게시판",
+                false,
                 circle
         );
         boardRepository.save(noticeBoard);

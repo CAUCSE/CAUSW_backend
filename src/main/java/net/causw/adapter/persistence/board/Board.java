@@ -15,10 +15,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Getter
@@ -27,7 +25,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_board")
 public class Board extends BaseEntity {
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", nullable = false, unique = true)
     private String name;
 
     @Column(name = "description", nullable = true)
@@ -39,13 +37,17 @@ public class Board extends BaseEntity {
     @Column(name = "category", nullable = false)
     private String category;
 
-    @Column(name = "is_deleted")
+    @Column(name = "is_deleted", nullable = false)
     @ColumnDefault("false")
     private Boolean isDeleted;
 
-    @Column(name = "is_default", nullable = true)
+    @Column(name = "is_default", nullable = false)
     @ColumnDefault("false")
     private Boolean isDefault;
+
+    @Column(name = "is_anonymous_allowed", nullable = false)
+    @ColumnDefault("false")
+    private Boolean is_anonymous_allowed;
 
     @ManyToOne
     @JoinColumn(name = "circle_id", nullable = true)
@@ -53,7 +55,6 @@ public class Board extends BaseEntity {
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private Set<Post> postSet;
-
 
 
     private Board(
@@ -109,6 +110,7 @@ public class Board extends BaseEntity {
             String description,
             List<String> createRoleList,
             String category,
+            Boolean is_anonymous_allowed,
             Circle circle
     ) {
         if (createRoleList != null) {
@@ -119,7 +121,7 @@ public class Board extends BaseEntity {
                 createRoleList.addAll(
                         Arrays.stream(Role.values())
                                 .map(Role::getValue)
-                                .collect(Collectors.toList())
+                                .toList()
                 );
                 createRoleList.remove(Role.NONE.getValue());
                 createRoleList.remove("ALL");
@@ -133,8 +135,9 @@ public class Board extends BaseEntity {
                 createRoleList.add(Role.PRESIDENT.getValue());
             }
         }
-        return new Board(name, description, String.join(",", createRoleList), category, false,false, circle, new HashSet<>());
+        return new Board(name, description, String.join(",", createRoleList), category, false, false, is_anonymous_allowed, circle, new HashSet<>());
     }
+
 
     public void setIsDeleted(boolean isDeleted){
         this.isDeleted = isDeleted;

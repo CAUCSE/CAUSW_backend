@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.board.BoardService;
 import net.causw.application.dto.board.*;
@@ -91,13 +92,38 @@ public class BoardController {
         return this.boardService.checkBoardName(boardNameCheckRequestDto);
     }
 
-    @PostMapping
+//    @PostMapping
+//    @ResponseStatus(HttpStatus.CREATED)
+//    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
+//    @Operation(summary = "게시판 생성 API(완료)", description = "circleId는 현재 존재하는 circleId를 적용해야 합니다(nullable)\n" +
+//            "createRoleList에는 ADMIN과 PRESIDENT가 디폴트로 입력됩니다. 그 외의 권한을 별도로 입력해주세요.\n" +
+//            "createRoleList에 'ALL'을 입력할 경우 모든 권한을 가진 사용자가 게시글을 생성할 수 있습니다.(NONE 제외)\n" +
+//            "아무것도 입력하지 않을 경우에는 ADMIN과 PRESIDENT가 자동으로 입력됩니다.")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "201", description = "Created", content = @Content(mediaType = "application/json")),
+//            @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+//            @ApiResponse(responseCode = "4102", description = "추방된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+//            @ApiResponse(responseCode = "4103", description = "비활성화된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+//            @ApiResponse(responseCode = "4104", description = "대기 중인 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+//            @ApiResponse(responseCode = "4109", description = "가입이 거절된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+//            @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+//            @ApiResponse(responseCode = "4004", description = "삭제된 동아리입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+//            @ApiResponse(responseCode = "4107", description = "게시판을 생성할 수 있는 권한이 아닙니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+//            @ApiResponse(responseCode = "4000", description = "동아리를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+//            @ApiResponse(responseCode = "5000", description = "The board has circle without circle leader", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
+//    })
+//    public BoardResponseDto createBoard(
+//            @RequestBody BoardCreateRequestDto boardCreateRequestDto,
+//            @AuthenticationPrincipal CustomUserDetails userDetails
+//    ) {
+//
+//        return this.boardService.createBoard(userDetails.getUser(), boardCreateRequestDto);
+//    }
+
+    @PostMapping(value = "/apply")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
-    @Operation(summary = "게시판 생성 API(완료)", description = "circleId는 현재 존재하는 circleId를 적용해야 합니다(nullable)\n" +
-            "createRoleList에는 ADMIN과 PRESIDENT가 디폴트로 입력됩니다. 그 외의 권한을 별도로 입력해주세요.\n" +
-            "createRoleList에 'ALL'을 입력할 경우 모든 권한을 가진 사용자가 게시글을 생성할 수 있습니다.(NONE 제외)\n" +
-            "아무것도 입력하지 않을 경우에는 ADMIN과 PRESIDENT가 자동으로 입력됩니다.")
+    @Operation(summary = "게시판 신청 API(완료)", description = "게시판을 신청하는 API입니다. 권한 정보가 필요 없습니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Created", content = @Content(mediaType = "application/json")),
             @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
@@ -106,18 +132,37 @@ public class BoardController {
             @ApiResponse(responseCode = "4104", description = "대기 중인 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
             @ApiResponse(responseCode = "4109", description = "가입이 거절된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
             @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-            @ApiResponse(responseCode = "4004", description = "삭제된 동아리입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-            @ApiResponse(responseCode = "4107", description = "게시판을 생성할 수 있는 권한이 아닙니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
-            @ApiResponse(responseCode = "4000", description = "동아리를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-            @ApiResponse(responseCode = "5000", description = "The board has circle without circle leader", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
-    public BoardResponseDto createBoard(
-            @RequestBody BoardCreateRequestDto boardCreateRequestDto,
+    public void applyBoard(
+            @Valid @RequestBody NormalBoardApplyRequestDto normalBoardApplyRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-
-        return this.boardService.createBoard(userDetails.getUser(), boardCreateRequestDto);
+        this.boardService.applyNormalBoard(userDetails.getUser(), normalBoardApplyRequestDto);
     }
+
+
+    
+    @PostMapping(value = "/normal")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
+    @Operation(summary = "일반 게시판 생성 API(완료)", description = "별도의 신청 없이 생성할 수 있는 게시판을 만드는 API입니다. 게시판의 이름을 전달 받습니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Created", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4102", description = "추방된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+            @ApiResponse(responseCode = "4103", description = "비활성화된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+            @ApiResponse(responseCode = "4104", description = "대기 중인 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+            @ApiResponse(responseCode = "4109", description = "가입이 거절된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+            @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+    })
+    public BoardResponseDto createNormalBoard(
+            @Valid @RequestBody NormalBoardCreateRequestDto normalBoardCreateRequestDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return this.boardService.createNormalBoard(userDetails.getUser(), normalBoardCreateRequestDto);
+    }
+
 
     @PutMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)

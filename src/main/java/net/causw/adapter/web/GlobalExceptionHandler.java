@@ -9,7 +9,9 @@ import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.exceptions.ServiceUnavailableException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -17,10 +19,27 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.security.access.AccessDeniedException;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 @Component
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    @ExceptionHandler(value = {MethodArgumentNotValidException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ExceptionDto handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
+        Map<String, String> errors = new HashMap<>();
+        exception.getBindingResult().getFieldErrors().forEach(error ->
+                errors.put(error.getField(), error.getDefaultMessage())
+        );
+
+        GlobalExceptionHandler.log.error("Validation error", exception);
+        return ExceptionDto.of(ErrorCode.VALIDATION_FAILED, errors.toString());
+    }
+
+
     @ExceptionHandler(value = {BadRequestException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ExceptionDto handleBadRequestException(BadRequestException exception) {

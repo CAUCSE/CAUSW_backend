@@ -6,6 +6,8 @@ public class StaticValue {
     public static final String CONTENT_DELETED_COMMENT = "삭제된 댓글입니다";
     public static final String BOARD_NAME_APP_NOTICE = "APP_NOTICE";
 
+    public static final String BOARD_NAME_APP_FREE = "APP_FREE";
+
     public static final Integer CAUSW_CREATED = 1972;
     public static final Integer MAX_NUM_FILE_ATTACHMENTS = 3;
 

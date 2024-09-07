@@ -2,6 +2,7 @@ package net.causw.application.board;
 
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
+import net.causw.adapter.persistence.board.BoardApply;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.repository.*;
@@ -41,6 +42,7 @@ public class BoardService {
     private final UserRepository userRepository;
     private final CircleRepository circleRepository;
     private final CircleMemberRepository circleMemberRepository;
+    private final BoardApplyRepository boardApplyRepository;
     private final Validator validator;
 
 
@@ -137,67 +139,125 @@ public class BoardService {
         return DtoMapper.INSTANCE.toBoardNameCheckResponseDto(boardRepository.existsByName(boardName));
     }
 
+    // 동아리 게시판 생성에서 재사용 예정인데 일단 안쓰므로 주석 처리.
+//    @Transactional
+//    public BoardResponseDto createBoard(
+//            User creator,
+//            BoardCreateRequestDto boardCreateRequestDto
+//    ) {
+//        Set<Role> roles = creator.getRoles();
+//
+//        ValidatorBucket validatorBucket = ValidatorBucket.of();
+//        validatorBucket
+//                .consistOf(UserStateValidator.of(creator.getState()))
+//                .consistOf(UserRoleIsNoneValidator.of(roles));
+//
+//        Circle circle = boardCreateRequestDto.getCircleId().map(
+//                circleId -> {
+//                    Circle newCircle = getCircle(circleId);
+//
+//                    validatorBucket
+//                            .consistOf(TargetIsDeletedValidator.of(newCircle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
+//                            //동아리장이거나 관리자만 통과
+//                            .consistOf(UserRoleValidator.of(roles,
+//                                    Set.of(Role.LEADER_CIRCLE)));
+//
+//                    //동아리장인 경우와 회장단이 아닌경우에 아래 조건문을 실행한다.
+//                    if (roles.contains(Role.LEADER_CIRCLE)) {
+//                        validatorBucket
+//                                .consistOf(UserEqualValidator.of(
+//                                        newCircle.getLeader().map(User::getId).orElseThrow(
+//                                                () -> new UnauthorizedException(
+//                                                        ErrorCode.API_NOT_ALLOWED,
+//                                                        MessageUtil.NOT_CIRCLE_LEADER
+//                                                )
+//                                        ),
+//                                        creator.getId()
+//                                ));
+//                    }
+//
+//                    return newCircle;
+//                }
+//        ).orElseGet(
+//                () -> {
+//                    validatorBucket
+//                            .consistOf(UserRoleValidator.of(roles, Set.of()));
+//
+//                    return null;
+//                }
+//        );
+
+//        Board board = Board.of(
+//                boardCreateRequestDto.getName(),
+//                boardCreateRequestDto.getDescription(),
+//                boardCreateRequestDto.getCreateRoleList(),
+//                boardCreateRequestDto.getCategory(),
+//                circle
+//        );
+//
+////        validatorBucket
+////                .consistOf(ConstraintValidator.of(board, this.validator))
+////                .validate();
+//
+//        return toBoardResponseDto(boardRepository.save(board), roles);
+//    }
+
     @Transactional
-    public BoardResponseDto createBoard(
+    public void applyNormalBoard(
             User creator,
-            BoardCreateRequestDto boardCreateRequestDto
+            NormalBoardApplyRequestDto normalBoardApplyRequestDto
     ) {
-        Set<Role> roles = creator.getRoles();
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+        validatorBucket
+                .consistOf(UserStateValidator.of(creator.getState()))   // 활성화된 사용자인지 확인
+                .consistOf(UserRoleIsNoneValidator.of(creator.getRoles())); // 권한이 없는 사용자인지 확인
+
+        BoardApply newBoardApply = BoardApply.of(
+                creator,
+                normalBoardApplyRequestDto.getBoardName(),
+                normalBoardApplyRequestDto.getDescription(),
+                StaticValue.BOARD_NAME_APP_FREE,
+                normalBoardApplyRequestDto.getIsAnonymousAllowed()
+        );
+
+        validatorBucket
+                .consistOf(ConstraintValidator.of(newBoardApply, this.validator))
+                .validate();
+
+        boardApplyRepository.save(newBoardApply);
+    }
+
+    @Transactional
+    public BoardResponseDto createNormalBoard(
+            User creator,
+            NormalBoardCreateRequestDto normalBoardCreateRequestDto
+    ) {
 
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         validatorBucket
-                .consistOf(UserStateValidator.of(creator.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles));
+                .consistOf(UserStateValidator.of(creator.getState()))   // 활성화된 사용자인지 확인
+                .consistOf(UserRoleIsNoneValidator.of(creator.getRoles())) // 권한이 없는 사용자인지 확인
+                .consistOf(UserRoleValidator.of(creator.getRoles(), Set.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT))); // 권한이 관리자, 학생회장, 부학생회장 중 하나인지 확인
 
-        Circle circle = boardCreateRequestDto.getCircleId().map(
-                circleId -> {
-                    Circle newCircle = getCircle(circleId);
 
-                    validatorBucket
-                            .consistOf(TargetIsDeletedValidator.of(newCircle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                            //동아리장이거나 관리자만 통과
-                            .consistOf(UserRoleValidator.of(roles,
-                                    Set.of(Role.LEADER_CIRCLE)));
-
-                    //동아리장인 경우와 회장단이 아닌경우에 아래 조건문을 실행한다.
-                    if (roles.contains(Role.LEADER_CIRCLE)) {
-                        validatorBucket
-                                .consistOf(UserEqualValidator.of(
-                                        newCircle.getLeader().map(User::getId).orElseThrow(
-                                                () -> new UnauthorizedException(
-                                                        ErrorCode.API_NOT_ALLOWED,
-                                                        MessageUtil.NOT_CIRCLE_LEADER
-                                                )
-                                        ),
-                                        creator.getId()
-                                ));
-                    }
-
-                    return newCircle;
-                }
-        ).orElseGet(
-                () -> {
-                    validatorBucket
-                            .consistOf(UserRoleValidator.of(roles, Set.of()));
-
-                    return null;
-                }
+        // 로그인 유저의 권한이 관리자, 학생회장, 부학생회장 중 하나인 경우
+        // 아무런 조건 없이 게시판을 생성할 수 있음
+        Board newBoard = Board.of(
+                normalBoardCreateRequestDto.getBoardName(),
+                normalBoardCreateRequestDto.getDescription(),
+                normalBoardCreateRequestDto.getCreateRoleList(),
+                StaticValue.BOARD_NAME_APP_NOTICE,
+                normalBoardCreateRequestDto.getIsAnonymousAllowed(),
+                null
         );
 
-        Board board = Board.of(
-                boardCreateRequestDto.getName(),
-                boardCreateRequestDto.getDescription(),
-                boardCreateRequestDto.getCreateRoleList(),
-                boardCreateRequestDto.getCategory(),
-                circle
-        );
+        validatorBucket
+                .consistOf(ConstraintValidator.of(newBoard, this.validator))
+                .validate();
 
-//        validatorBucket
-//                .consistOf(ConstraintValidator.of(board, this.validator))
-//                .validate();
-
-        return toBoardResponseDto(boardRepository.save(board), roles);
+        return toBoardResponseDto(boardRepository.save(newBoard), creator.getRoles());
     }
+
 
     @Transactional
     public BoardResponseDto updateBoard(
