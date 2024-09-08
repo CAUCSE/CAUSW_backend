@@ -3,6 +3,7 @@ package net.causw.adapter.web;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.event.EventCreateRequestDto;
 import net.causw.application.dto.event.EventResponseDto;
@@ -42,7 +43,7 @@ public class EventController {
     })
     @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT')")
     public EventResponseDto createEvent(
-            @ModelAttribute EventCreateRequestDto eventCreateRequestDto) {
+            @Valid @ModelAttribute EventCreateRequestDto eventCreateRequestDto) {
         return eventService.createEvent(eventCreateRequestDto);
     }
 
@@ -58,7 +59,7 @@ public class EventController {
     @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT')")
     public EventResponseDto updateEvent(
             @PathVariable("eventId") String eventId,
-            @ModelAttribute EventUpdateRequestDto eventUpdateRequestDto) {
+            @Valid @ModelAttribute EventUpdateRequestDto eventUpdateRequestDto) {
         return eventService.updateEvent(eventId, eventUpdateRequestDto);
     }
 

@@ -3,6 +3,7 @@ package net.causw.adapter.web;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.calendar.CalendarService;
 import net.causw.application.dto.calendar.CalendarCreateRequestDto;
@@ -73,7 +74,7 @@ public class CalendarController {
             @ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "application/json", schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = BadRequestException.class)))
     })
     public CalendarResponseDto createCalendar(
-            @ModelAttribute CalendarCreateRequestDto calendarCreateRequestDto) {
+            @Valid @ModelAttribute CalendarCreateRequestDto calendarCreateRequestDto) {
         return calendarService.createCalendar(calendarCreateRequestDto);
     }
 
@@ -89,7 +90,7 @@ public class CalendarController {
     })
     public CalendarResponseDto updateCalendar(
             @PathVariable("calendarId") String calendarId,
-            @ModelAttribute CalendarUpdateRequestDto calendarUpdateRequestDto) {
+            @Valid @ModelAttribute CalendarUpdateRequestDto calendarUpdateRequestDto) {
         return calendarService.updateCalendar(calendarId, calendarUpdateRequestDto);
     }
 }
