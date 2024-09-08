@@ -289,12 +289,29 @@ public class BoardService {
     }
 
     @Transactional
-    public BoardResponseDto accept(User user, NormalBoardApplyResponseDto normalBoardApplyResponseDto) {
+    public void accept(User user, NormalBoardApplyResponseDto normalBoardApplyResponseDto) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         validatorBucket
                 .consistOf(UserStateValidator.of(user.getState()))   // 활성화된 사용자인지 확인
                 .consistOf(UserRoleIsNoneValidator.of(user.getRoles())) // 권한이 없는 사용자인지 확인
                 .consistOf(UserRoleValidator.of(user.getRoles(), Set.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT))); // 권한이 관리자, 학생회장, 부학생회장 중 하나인지 확인
+
+        BoardApply boardApply = this.boardApplyRepository.findByBoardName(normalBoardApplyResponseDto.getBoardName());
+        boardApply.updateAcceptStatus(BoardApplyStatus.ACCEPTED);
+        this.boardApplyRepository.save(boardApply);
+
+        List<String> createRoleList = new ArrayList<>();
+        createRoleList.add("ALL");
+        Board newBoard = Board.of(
+                normalBoardApplyResponseDto.getBoardName(),
+                normalBoardApplyResponseDto.getDescription(),
+                createRoleList,
+                StaticValue.BOARD_NAME_APP_NOTICE,
+                normalBoardApplyResponseDto.getIsAnonymousAllowed(),
+                null
+        );
+
+        this.boardRepository.save(newBoard);
     }
 
 
