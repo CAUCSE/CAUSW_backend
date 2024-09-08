@@ -297,6 +297,20 @@ public class BoardService {
                 .consistOf(UserRoleValidator.of(user.getRoles(), Set.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT))); // 권한이 관리자, 학생회장, 부학생회장 중 하나인지 확인
 
         BoardApply boardApply = this.boardApplyRepository.findByBoardName(normalBoardApplyResponseDto.getBoardName());
+        if (boardApply.getAcceptStatus() == BoardApplyStatus.ACCEPTED) {
+            throw new BadRequestException(
+                    ErrorCode.CANNOT_PERFORMED,
+                    MessageUtil.APPLY_ALREADY_ACCEPTED
+            );
+        }
+
+        if (boardApply.getAcceptStatus() == BoardApplyStatus.REJECT) {
+            throw new BadRequestException(
+                    ErrorCode.CANNOT_PERFORMED,
+                    MessageUtil.APPLY_ALREADY_REJECTED
+            );
+        }
+
         boardApply.updateAcceptStatus(BoardApplyStatus.ACCEPTED); // 해당 boardApply의 상태를 ACCEPTED로 변경
         this.boardApplyRepository.save(boardApply);
 

@@ -48,6 +48,10 @@ public class MessageUtil {
     public static final String FAVORITE_POST_NOT_FOUND = "즐겨찾기가 되어 있지 않습니다.";
     public static final String FAVORITE_POST_ALREADY_DELETED = "즐겨찾기가 이미 취소되어 있습니다.";
 
+    // BoardApply
+    public static final String APPLY_ALREADY_ACCEPTED = "이미 승인된 게시판 신청입니다.";
+    public static final String APPLY_ALREADY_REJECTED = "이미 거부된 게시판 신청입니다.";
+
     // Locker
     public static final String LOCKER_WRONG_POSITION = "등록된 사물함 위치가 아닙니다.";
     public static final String LOCKER_FIRST_CREATED = "사물함 최초 생성";
