@@ -293,7 +293,7 @@ public class BoardService {
     }
 
     @Transactional
-    public void accept(User user, NormalBoardApplyResponseDto normalBoardApplyResponseDto) {
+    public NormalBoardApplyResponseDto accept(User user, NormalBoardApplyResponseDto normalBoardApplyResponseDto) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         validatorBucket
                 .consistOf(UserStateValidator.of(user.getState()))   // 활성화된 사용자인지 확인
@@ -335,10 +335,12 @@ public class BoardService {
         );
 
         this.boardRepository.save(newBoard);
+
+        return DtoMapper.INSTANCE.toNormalBoardApplyResponseDto(boardApply);
     }
 
     @Transactional
-    public void reject(User user, NormalBoardApplyResponseDto normalBoardApplyResponseDto) {
+    public NormalBoardApplyResponseDto reject(User user, NormalBoardApplyResponseDto normalBoardApplyResponseDto) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         validatorBucket
                 .consistOf(UserStateValidator.of(user.getState()))   // 활성화된 사용자인지 확인
@@ -367,6 +369,8 @@ public class BoardService {
 
         boardApply.updateAcceptStatus(BoardApplyStatus.REJECT); // 해당 boardApply의 상태를 REJECT로 변경
         this.boardApplyRepository.save(boardApply);
+
+        return DtoMapper.INSTANCE.toNormalBoardApplyResponseDto(boardApply);
     }
 
     @Transactional
