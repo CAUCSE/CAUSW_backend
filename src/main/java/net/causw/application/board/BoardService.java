@@ -275,7 +275,7 @@ public class BoardService {
     }
 
     @Transactional(readOnly = true)
-    public NormalBoardApplyResponseDto findBoardApplyByBoardName(User user, String boardName) {
+    public NormalBoardApplyResponseDto findBoardApplyByBoardName(User user, String applyId) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         validatorBucket
                 .consistOf(UserStateValidator.of(user.getState()))   // 활성화된 사용자인지 확인
@@ -284,7 +284,11 @@ public class BoardService {
 
         // 관리자, 학생회장, 부학생회장만 게시판 관리 기능 사용 가능
         return DtoMapper.INSTANCE.toNormalBoardApplyResponseDto(
-                this.boardApplyRepository.findByBoardName(boardName)
+                this.boardApplyRepository.findById(applyId)
+                        .orElseThrow(() -> new BadRequestException(
+                                ErrorCode.ROW_DOES_NOT_EXIST,
+                                MessageUtil.APPLY_NOT_FOUND
+                        ))
         );
     }
 
@@ -296,7 +300,12 @@ public class BoardService {
                 .consistOf(UserRoleIsNoneValidator.of(user.getRoles())) // 권한이 없는 사용자인지 확인
                 .consistOf(UserRoleValidator.of(user.getRoles(), Set.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT))); // 권한이 관리자, 학생회장, 부학생회장 중 하나인지 확인
 
-        BoardApply boardApply = this.boardApplyRepository.findByBoardName(normalBoardApplyResponseDto.getBoardName());
+        BoardApply boardApply = this.boardApplyRepository.findById(normalBoardApplyResponseDto.getId())
+                .orElseThrow(() -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.APPLY_NOT_FOUND
+                ));
+
         if (boardApply.getAcceptStatus() == BoardApplyStatus.ACCEPTED) { // 해당 신청이 이미 승인된 경우
             throw new BadRequestException(
                     ErrorCode.CANNOT_PERFORMED,
@@ -336,7 +345,12 @@ public class BoardService {
                 .consistOf(UserRoleIsNoneValidator.of(user.getRoles())) // 권한이 없는 사용자인지 확인
                 .consistOf(UserRoleValidator.of(user.getRoles(), Set.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT))); // 권한이 관리자, 학생회장, 부학생회장 중 하나인지 확인
 
-        BoardApply boardApply = this.boardApplyRepository.findByBoardName(normalBoardApplyResponseDto.getBoardName());
+        BoardApply boardApply = this.boardApplyRepository.findById(normalBoardApplyResponseDto.getId())
+                .orElseThrow(() -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.APPLY_NOT_FOUND
+                ));
+
         if (boardApply.getAcceptStatus() == BoardApplyStatus.ACCEPTED) { // 해당 신청이 이미 승인된 경우
             throw new BadRequestException(
                     ErrorCode.CANNOT_PERFORMED,

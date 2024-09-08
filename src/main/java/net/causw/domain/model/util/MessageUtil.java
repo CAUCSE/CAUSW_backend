@@ -51,6 +51,7 @@ public class MessageUtil {
     // BoardApply
     public static final String APPLY_ALREADY_ACCEPTED = "이미 승인된 게시판 신청입니다.";
     public static final String APPLY_ALREADY_REJECTED = "이미 거부된 게시판 신청입니다.";
+    public static final String APPLY_NOT_FOUND = "게시판 신청을 찾을 수 없습니다.";
 
     // Locker
     public static final String LOCKER_WRONG_POSITION = "등록된 사물함 위치가 아닙니다.";

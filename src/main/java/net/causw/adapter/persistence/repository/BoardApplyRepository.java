@@ -6,10 +6,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BoardApplyRepository extends JpaRepository<BoardApply, String> {
     List<BoardApply> findAllByAcceptStatus(BoardApplyStatus boardApplyStatus);
 
-    BoardApply findByBoardName(String boardName);
+    Optional<BoardApply> findById(String id);
 }
