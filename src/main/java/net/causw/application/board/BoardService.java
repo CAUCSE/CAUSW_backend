@@ -297,11 +297,11 @@ public class BoardService {
                 .consistOf(UserRoleValidator.of(user.getRoles(), Set.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT))); // 권한이 관리자, 학생회장, 부학생회장 중 하나인지 확인
 
         BoardApply boardApply = this.boardApplyRepository.findByBoardName(normalBoardApplyResponseDto.getBoardName());
-        boardApply.updateAcceptStatus(BoardApplyStatus.ACCEPTED);
+        boardApply.updateAcceptStatus(BoardApplyStatus.ACCEPTED); // 해당 boardApply의 상태를 ACCEPTED로 변경
         this.boardApplyRepository.save(boardApply);
 
         List<String> createRoleList = new ArrayList<>();
-        createRoleList.add("ALL");
+        createRoleList.add("ALL"); // 일반 사용자의 게시판 신청은 항상 글 작성 권한이 '상관없음'임
         Board newBoard = Board.of(
                 normalBoardApplyResponseDto.getBoardName(),
                 normalBoardApplyResponseDto.getDescription(),
