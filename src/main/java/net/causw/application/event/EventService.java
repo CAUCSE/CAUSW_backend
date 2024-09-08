@@ -12,6 +12,7 @@ import net.causw.application.storage.StorageService;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.util.MessageUtil;
+import net.causw.domain.model.util.StaticValue;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +38,7 @@ public class EventService {
 
     @Transactional
     public EventResponseDto createEvent(EventCreateRequestDto eventCreateRequestDto) {
-        if (eventRepository.findByIsDeletedIsFalse().size() >= 10) {
+        if (eventRepository.findByIsDeletedIsFalse().size() >= StaticValue.MAX_NUM_EVENT) {
             throw new BadRequestException(
                     ErrorCode.CANNOT_PERFORMED,
                     MessageUtil.EVENT_MAX_CREATED
