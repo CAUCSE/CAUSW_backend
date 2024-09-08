@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.user.User;
+import net.causw.domain.model.enums.BoardApplyStatus;
 import org.hibernate.annotations.ColumnDefault;
 
 
@@ -29,9 +30,9 @@ public class BoardApply extends BaseEntity {
     @Column(name = "category", nullable = false)
     private String category;
 
-    @Column(name = "is_accepted", nullable = false)
-    @ColumnDefault("false")
-    private Boolean isAccepted;
+    @Column(name = "acceptStatus", nullable = false)
+    @ColumnDefault("AWAIT")
+    private BoardApplyStatus acceptStatus;
 
     @Column(name = "is_annonymous_allowed", nullable = false)
     @ColumnDefault("false")
@@ -55,7 +56,7 @@ public class BoardApply extends BaseEntity {
                 description,
                 "ALL", // 모든 권한. 이렇게 넘기면 Board.of에서 List.of에 넣어서 일관된 처리
                 category,
-                false,
+                BoardApplyStatus.AWAIT,
                 true
         );
     }
