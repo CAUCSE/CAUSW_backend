@@ -61,4 +61,8 @@ public class BoardApply extends BaseEntity {
         );
     }
 
+    public void updateAcceptStatus(BoardApplyStatus status) {
+        this.acceptStatus = status;
+    }
+
 }
