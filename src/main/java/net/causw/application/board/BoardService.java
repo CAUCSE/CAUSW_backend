@@ -13,6 +13,7 @@ import net.causw.application.dto.util.DtoMapper;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
+import net.causw.domain.model.enums.BoardApplyStatus;
 import net.causw.domain.model.enums.CircleMemberStatus;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.util.MessageUtil;
@@ -267,7 +268,7 @@ public class BoardService {
                 .consistOf(UserRoleValidator.of(user.getRoles(), Set.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT))); // 권한이 관리자, 학생회장, 부학생회장 중 하나인지 확인
 
         // 관리자, 학생회장, 부학생회장만 게시판 관리 기능 사용 가능
-        return this.boardApplyRepository.findAll()
+        return this.boardApplyRepository.findAllByAcceptStatus(BoardApplyStatus.AWAIT)
                 .stream()
                 .map(DtoMapper.INSTANCE::toNormalBoardAppliesResponseDto)
                 .collect(Collectors.toList());
