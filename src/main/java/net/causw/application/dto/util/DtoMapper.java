@@ -262,6 +262,7 @@ public interface DtoMapper{
     @Mapping(target = "postNumComment", source = "numComment")
     BoardOfCircleResponseDto toBoardOfCircleResponseDto(Board entity, Long numComment, boolean writable);
 
+    @Mapping(target = "id", source = "boardApply.id")
     @Mapping(target = "boardName", source = "boardApply.boardName")
     @Mapping(target = "description", source = "boardApply.description")
     @Mapping(target = "createRoles", source = "boardApply.createRoles")
@@ -269,6 +270,7 @@ public interface DtoMapper{
     @Mapping(target = "user", source = "boardApply.user")
     NormalBoardApplyResponseDto toNormalBoardApplyResponseDto(BoardApply boardApply);
 
+    @Mapping(target = "id", source = "boardApply.id")
     @Mapping(target = "boardName", source = "boardApply.boardName")
     NormalBoardAppliesResponseDto toNormalBoardAppliesResponseDto(BoardApply boardApply);
 
