@@ -37,6 +37,12 @@ public interface UserAcademicRecordDtoMapper {
     @UserCommonWriterMappings
     UserAcademicRecordListResponseDto toUserAcademicRecordListResponseDto(User user);
 
+    @Mapping(target = "userId", source = "userAcademicRecordApplication.user.id")
+    @Mapping(target = "userName", source = "userAcademicRecordApplication.user.name")
+    @Mapping(target = "studentId", source = "userAcademicRecordApplication.user.studentId")
+    @Mapping(target = "userAcademicRecordApplicationId", source = "userAcademicRecordApplication.id")
+    UserAcademicRecordApplicationListResponseDto toUserAcademicRecordApplicationListResponseDto(UserAcademicRecordApplication userAcademicRecordApplication);
+
     @UserCommonWriterMappings
     @Mapping(target = "academicStatus", source = "user.academicStatus")
     @Mapping(target = "currentCompleteSemester", source = "user.currentCompletedSemester")

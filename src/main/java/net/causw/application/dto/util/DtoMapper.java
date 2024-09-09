@@ -140,7 +140,7 @@ public interface DtoMapper{
     @Mapping(target = "academicStatus", source = "user.academicStatus")
     @Mapping(target = "currentCompletedSemester", source = "user.currentCompletedSemester")
     @Mapping(target = "graduationYear", source = "user.graduationYear")
-    @Mapping(target = "graduationMonth", source = "user.graduationMonth")
+    @Mapping(target = "graduationType", source = "user.graduationType")
     @Mapping(target = "phoneNumber", source = "user.phoneNumber")
     UserResponseDto toUserResponseDto(User user, List<String> circleIdIfLeader, List<String> circleNameIfLeader);
     // circleIdIfLeader, circleNameIfLeader는 경우에 따라 null을 할당합니다.(기존 UserResponseDto.from을 사용하는 경우)

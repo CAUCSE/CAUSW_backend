@@ -11,13 +11,11 @@ import net.causw.application.dto.user.*;
 import net.causw.application.user.UserService;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.circle.CircleResponseDto;
-import net.causw.config.security.SecurityService;
 import net.causw.config.security.userdetails.CustomUserDetails;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.UnauthorizedException;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -34,16 +32,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-
-
-
-
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
-    private final SecurityService securityService;
 
     /**
      * 사용자 고유 id 값으로 사용자 정보를 조회하는 API

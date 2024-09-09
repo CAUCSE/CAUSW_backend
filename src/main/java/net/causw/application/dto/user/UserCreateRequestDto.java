@@ -46,6 +46,7 @@ public class UserCreateRequestDto {
     @Schema(description = "학부/학과", example = "소프트웨어학부", required = true)
     private String major;
 
+    /*
     @Schema(description = "학적상태", example = "ENROLLED", required = true)
     private AcademicStatus academicStatus;
 
@@ -57,6 +58,8 @@ public class UserCreateRequestDto {
 
     @Schema(description = "졸업시기 월", example = "2", required = true)
     private Integer graduationMonth;
+
+     */
 
     @Schema(description = "전화번호", example = "01012345678", required = true)
     private String phoneNumber;
@@ -74,10 +77,12 @@ public class UserCreateRequestDto {
                 .profileImage(profileImage)
                 .nickname(nickname)
                 .major(major)
-                .academicStatus(academicStatus)
+                .academicStatus(AcademicStatus.UNDETERMINED)
+                /**
                 .currentCompletedSemester(currentCompletedSemester)
                 .graduationYear(graduationYear)
                 .graduationMonth(graduationMonth)
+                    */
                 .phoneNumber(phoneNumber)
                 .build();
     }

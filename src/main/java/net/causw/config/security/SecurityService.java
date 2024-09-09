@@ -16,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -80,10 +81,14 @@ public class SecurityService {
         }
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        Set<Role> userRoleSet = userDetails.getUser().getRoles();
-        return userRoleSet.contains(Role.ADMIN) ||
-                userRoleSet.contains(Role.PRESIDENT) ||
-                userRoleSet.contains(Role.VICE_PRESIDENT);
+        Set<String> userRoleSet = userDetails.getUser().getRoles()
+                .stream()
+                .map(Role::getValue)
+                .collect(Collectors.toSet());
+
+        return userRoleSet.contains(Role.ADMIN.getValue()) ||
+                userRoleSet.contains(Role.PRESIDENT.getValue()) ||
+                userRoleSet.contains(Role.VICE_PRESIDENT.getValue());
     }
 
     public boolean isAdminOrPresidentOrVicePresidentOrCircleLeader() {
@@ -93,12 +98,15 @@ public class SecurityService {
         }
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        Set<Role> userRoleSet = userDetails.getUser().getRoles();
+        Set<String> userRoleSet = userDetails.getUser().getRoles()
+                .stream()
+                .map(Role::getValue)
+                .collect(Collectors.toSet());
 
-        return userRoleSet.contains(Role.ADMIN) ||
-                userRoleSet.contains(Role.PRESIDENT) ||
-                userRoleSet.contains(Role.VICE_PRESIDENT) ||
-                userRoleSet.contains(Role.LEADER_CIRCLE);
+        return userRoleSet.contains(Role.ADMIN.getValue()) ||
+                userRoleSet.contains(Role.PRESIDENT.getValue()) ||
+                userRoleSet.contains(Role.VICE_PRESIDENT.getValue()) ||
+                userRoleSet.contains(Role.LEADER_CIRCLE.getValue());
     }
 
     private int convertSemesterToGrade(int semester) {

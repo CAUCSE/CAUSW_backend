@@ -24,9 +24,11 @@ public class UserAcademicRecordApplication extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "academic_record_request_status", nullable = false)
     private AcademicRecordRequestStatus academicRecordRequestStatus;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "target_academic_status", nullable = false)
     private AcademicStatus targetAcademicStatus;
 

@@ -6,6 +6,7 @@ import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.locker.Locker;
 import net.causw.domain.model.enums.AcademicStatus;
+import net.causw.domain.model.enums.GraduationType;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.model.enums.UserState;
@@ -59,8 +60,9 @@ public class User extends BaseEntity {
     @Column(name = "graduation_year", nullable = true)
     private Integer graduationYear;
 
-    @Column(name = "graduation_month", nullable = true)
-    private Integer graduationMonth;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "graduation_type", nullable = true)
+    private GraduationType graduationType;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
@@ -120,7 +122,7 @@ public class User extends BaseEntity {
         this.major = null;
         this.profileImage = null;
         this.graduationYear = null;
-        this.graduationMonth = null;
+        this.graduationType = null;
         this.state = UserState.DELETED;
     }
 

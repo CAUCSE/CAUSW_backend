@@ -32,7 +32,7 @@ public class Semester extends BaseEntity {
     private Boolean isCurrent;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "update_user_id")
+    @JoinColumn(name = "update_user_id", nullable = false)
     private User updateUser;
 
     public void updateIsCurrent(Boolean isCurrent) {

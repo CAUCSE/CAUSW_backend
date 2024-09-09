@@ -10,7 +10,7 @@ import net.causw.domain.model.enums.FilePath;
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "uuid_file")
+@Table(name = "tb_uuid_file")
 public class UuidFile extends BaseEntity {
 
     @Column(name = "uuid", unique = true, nullable = false)

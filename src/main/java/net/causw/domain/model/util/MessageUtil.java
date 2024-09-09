@@ -94,6 +94,9 @@ public class MessageUtil {
     public static final String FILE_UPLOAD_NOT_ALLOWED = "파일 업로드가 허용되지 않습니다.";
     public static final String FILE_UPLOAD_REQUIRED = "파일 업로드가 필요합니다.";
     public static final String USER_ACADEMIC_RECORD_APPLICATION_DUPLICATED = "대기 중인 학적 인증 신청이 두 개 이상 존재합니다.";
+    public static final String TARGET_CURRENT_COMPLETED_SEMESTER_NOT_EXIST = "목표 현재 학기가 필요합니다.";
+    public static final String GRADUATION_INFORMATION_NOT_EXIST = "졸업 정보가 필요합니다.";
+    public static final String USER_NOTE_NOW_ALLOWED = "사용자가 노트를 작성할 수 없습니다.";
 
     // UuidFile
     public static final String FILE_NOT_FOUND = "파일을 찾을 수 없습니다.";

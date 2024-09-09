@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -49,9 +50,9 @@ public class UserAcademicRecordApplicationService {
                 .map(this::toUserAcademicRecordListResponseDto);
     }
 
-    public Page<UserAcademicRecordListResponseDto> getAllUserAwaitingAcademicRecordPage(Pageable pageable) {
+    public Page<UserAcademicRecordApplicationListResponseDto> getAllUserAwaitingAcademicRecordPage(Pageable pageable) {
         return userAcademicRecordApplicationRepository.findAllByAcademicRecordRequestStatus(pageable, AcademicRecordRequestStatus.AWAIT)
-                .map(userAcademicRecordApplication -> toUserAcademicRecordListResponseDto(userAcademicRecordApplication.getUser()));
+                .map(this::toUserAcademicRecordApplicationListResponseDto);
     }
 
     @Transactional
@@ -66,8 +67,17 @@ public class UserAcademicRecordApplicationService {
                 Semester.of(priorSemester.getSemesterYear() + 1, SemesterType.FIRST, user);
         semesterRepository.save(currentSemester);
 
-        List<User> userList = userRepository.findAllByTwoAcademicStatus(AcademicStatus.ENROLLED, AcademicStatus.LEAVE_OF_ABSENCE)
-                .stream().peek((u) -> u.setAcademicStatus(AcademicStatus.UNDETERMINED)).toList();
+
+        List<User> userList = userRepository.findByAcademicStatusInOrAcademicStatusIsNull(
+                List.of(
+                        AcademicStatus.ENROLLED,
+                        AcademicStatus.LEAVE_OF_ABSENCE
+                ))
+                .stream()
+                .peek(
+                        (u) -> u.setAcademicStatus(AcademicStatus.UNDETERMINED)
+                )
+                .toList();
 
         userRepository.saveAll(userList);
 
@@ -116,6 +126,16 @@ public class UserAcademicRecordApplicationService {
 
     @Transactional
     public Void updateUserAcademicStatus(User controllerUser, UpdateUserAcademicStatusRequestDto updateUserAcademicStatusRequestDto) {
+        if (updateUserAcademicStatusRequestDto.getTargetAcademicStatus().equals(AcademicStatus.ENROLLED)) {
+            if (updateUserAcademicStatusRequestDto.getTargetCompletedSemester() == null) {
+                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.TARGET_CURRENT_COMPLETED_SEMESTER_NOT_EXIST);
+            }
+        } else if (updateUserAcademicStatusRequestDto.getTargetAcademicStatus().equals(AcademicStatus.GRADUATED)) {
+            if (updateUserAcademicStatusRequestDto.getTargetGraduationYear() == null || updateUserAcademicStatusRequestDto.getTargetGraduationType() == null) {
+                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.GRADUATION_INFORMATION_NOT_EXIST);
+            }
+        }
+
         User targetUser = userRepository.findById(updateUserAcademicStatusRequestDto.getTargetUserId())
                 .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND
                 ));
@@ -189,7 +209,12 @@ public class UserAcademicRecordApplicationService {
         return null;
     }
 
-    public Void createUserAcademicRecordApplication(User user, CreateUserAcademicRecordApplicationRequestDto createUserAcademicRecordApplicationRequestDto, List<MultipartFile> imageFileList) {
+    @Transactional
+    public Void createUserAcademicRecordApplication(
+            User user,
+            CreateUserAcademicRecordApplicationRequestDto createUserAcademicRecordApplicationRequestDto,
+            List<MultipartFile> imageFileList
+    ) {
         List<UuidFile> uuidFileList = null;
 
         if (!imageFileList.isEmpty()) {
@@ -198,25 +223,60 @@ public class UserAcademicRecordApplicationService {
                     .toList();
         }
 
-        UserAcademicRecordApplication userAcademicRecordApplication = UserAcademicRecordApplication.createApplication(
-                user,
-                createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus(),
-                createUserAcademicRecordApplicationRequestDto.getTargetCompletedSemester(),
-                createUserAcademicRecordApplicationRequestDto.getNote(),
-                uuidFileList
-        );
+        UserAcademicRecordLog userAcademicRecordLog;
 
-        UserAcademicRecordLog userAcademicRecordLog = UserAcademicRecordLog.createWithApplicationAndNote(
-                user,
-                user,
-                createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus(),
-                userAcademicRecordApplication,
-                AcademicRecordRequestStatus.AWAIT,
-                StaticValue.USER_APPLIED + createUserAcademicRecordApplicationRequestDto.getNote()
-        );
+        if (createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus().equals(AcademicStatus.ENROLLED)) {
+            if (createUserAcademicRecordApplicationRequestDto.getTargetCompletedSemester() == null) {
+                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.TARGET_CURRENT_COMPLETED_SEMESTER_NOT_EXIST);
+            }
+            UserAcademicRecordApplication userAcademicRecordApplication = UserAcademicRecordApplication.createApplication(
+                    user,
+                    createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus(),
+                    createUserAcademicRecordApplicationRequestDto.getTargetCompletedSemester(),
+                    createUserAcademicRecordApplicationRequestDto.getNote(),
+                    uuidFileList
+            );
 
-        userAcademicRecordApplicationRepository.save(userAcademicRecordApplication);
-        userRepository.save(userAcademicRecordApplication.getUser());
+            userAcademicRecordApplicationRepository.save(userAcademicRecordApplication);
+
+            userAcademicRecordLog = UserAcademicRecordLog.createWithApplicationAndNote(
+                    user,
+                    user,
+                    createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus(),
+                    userAcademicRecordApplication,
+                    AcademicRecordRequestStatus.AWAIT,
+                    StaticValue.USER_APPLIED + createUserAcademicRecordApplicationRequestDto.getNote()
+            );
+        } else {
+            if (createUserAcademicRecordApplicationRequestDto.getNote() != null) {
+                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.USER_NOTE_NOW_ALLOWED);
+            }
+            if (createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus().equals(AcademicStatus.GRADUATED)) {
+                if (createUserAcademicRecordApplicationRequestDto.getGraduationYear() == null || createUserAcademicRecordApplicationRequestDto.getGraduationType() == null) {
+                    throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.GRADUATION_INFORMATION_NOT_EXIST);
+                }
+                user.setGraduationYear(createUserAcademicRecordApplicationRequestDto.getGraduationYear());
+                user.setGraduationType(createUserAcademicRecordApplicationRequestDto.getGraduationType());
+                userAcademicRecordLog = UserAcademicRecordLog.createWithGraduationWithNote(
+                        user,
+                        user,
+                        createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus(),
+                        createUserAcademicRecordApplicationRequestDto.getGraduationYear(),
+                        createUserAcademicRecordApplicationRequestDto.getGraduationType(),
+                        StaticValue.USER_APPLIED
+                );
+            } else {
+                userAcademicRecordLog = UserAcademicRecordLog.createWithNote(
+                        user,
+                        user,
+                        createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus(),
+                        StaticValue.USER_APPLIED
+                );
+            }
+            user.setAcademicStatus(createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus());
+        }
+
+        userRepository.save(user);
         userAcademicRecordLogRepository.save(userAcademicRecordLog);
 
         return null;
@@ -300,6 +360,10 @@ public class UserAcademicRecordApplicationService {
     // DTO Mapper private method
     private UserAcademicRecordListResponseDto toUserAcademicRecordListResponseDto(User user) {
         return UserAcademicRecordDtoMapper.INSTANCE.toUserAcademicRecordListResponseDto(user);
+    }
+
+    private UserAcademicRecordApplicationListResponseDto toUserAcademicRecordApplicationListResponseDto(UserAcademicRecordApplication userAcademicRecordApplication) {
+        return UserAcademicRecordDtoMapper.INSTANCE.toUserAcademicRecordApplicationListResponseDto(userAcademicRecordApplication);
     }
 
     private UserAcademicRecordInfoResponseDto toUserAcademicRecordInfoResponseDto(User user, List<UserAcademicRecordLog> userAcademicRecordLogList) {
