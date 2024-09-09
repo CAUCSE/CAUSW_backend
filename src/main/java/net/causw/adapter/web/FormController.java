@@ -1,5 +1,6 @@
 package net.causw.adapter.web;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.form.*;
 import net.causw.application.form.FormService;
@@ -28,7 +29,7 @@ public class FormController {
             "@securityService.isAdminOrPresidentOrVicePresidentOrCircleLeader() and " +
             "@securityService.isAcademicRecordCertified()")
     public FormResponseDto createForm(
-            @RequestBody FormCreateRequestDto formCreateRequestDto,
+            @Valid @RequestBody FormCreateRequestDto formCreateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     )
     {
@@ -62,7 +63,7 @@ public class FormController {
     @PreAuthorize("@securityService.activeAndNotNoneUser and @securityService.isAcademicRecordCertified()")
     public void replyForm(
             @PathVariable(name = "formId") String formId,
-            @RequestBody FormReplyRequestDto formReplyRequestDto,
+            @Valid @RequestBody FormReplyRequestDto formReplyRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ){
         if (!securityService.hasAccessToForm(formId)) {

@@ -12,6 +12,8 @@ public enum FilePath {
     USER_ACADEMIC_RECORD_APPLICATION("user/academic-record-application"),
     CIRCLE_PROFILE("circle/profile"),
     POST("post"),
+    CALENDAR("calendar"),
+    EVENT("event"),
     ETC("etc");
 
     private final String directory;

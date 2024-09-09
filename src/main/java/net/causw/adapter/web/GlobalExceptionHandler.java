@@ -19,26 +19,17 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.security.access.AccessDeniedException;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 @Component
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
     @ExceptionHandler(value = {MethodArgumentNotValidException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ExceptionDto handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
-        Map<String, String> errors = new HashMap<>();
-        exception.getBindingResult().getFieldErrors().forEach(error ->
-                errors.put(error.getField(), error.getDefaultMessage())
-        );
-
-        GlobalExceptionHandler.log.error("Validation error", exception);
-        return ExceptionDto.of(ErrorCode.VALIDATION_FAILED, errors.toString());
+        GlobalExceptionHandler.log.error("error message", exception);
+        return ExceptionDto.of(ErrorCode.VALIDATION_FAILED, exception.getBindingResult().getAllErrors().get(0).getDefaultMessage());
     }
-
 
     @ExceptionHandler(value = {BadRequestException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)

@@ -18,7 +18,11 @@ public class MessageUtil {
     public static final String QUESTION_NOT_FOUND = "질문을 찾을 수 없습니다.";
     public static final String OPTION_NOT_FOUND = "해당 문항을 찾을 수 없습니다.";
 
-
+    // Calendar & Event
+    public static final String CALENDAR_NOT_FOUND = "캘린더를 찾을 수 없습니다.";
+    public static final String CALENDAR_ALREADY_EXIST = "이미 존재하는 캘린더 입니다.";
+    public static final String EVENT_NOT_FOUND = "이벤트를 찾을 수 없습니다.";
+    public static final String EVENT_MAX_CREATED = "10개의 이벤트가 이미 존재합니다.";
 
     // Circle & Post
     public static final String NOT_CIRCLE_LEADER = "사용자가 해당 동아리의 동아리장이 아닙니다.";

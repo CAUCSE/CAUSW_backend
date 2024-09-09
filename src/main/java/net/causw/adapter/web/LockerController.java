@@ -1,6 +1,7 @@
 package net.causw.adapter.web;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.locker.LockerService;
 import net.causw.application.dto.locker.LockerExpiredAtRequestDto;
@@ -54,7 +55,7 @@ public class LockerController {
             "@securityService.isAdminOrPresidentOrVicePresident() and " +
             "@securityService.isAcademicRecordCertified()")
     public LockerResponseDto create(
-            @RequestBody LockerCreateRequestDto lockerCreateRequestDto,
+            @Valid @RequestBody LockerCreateRequestDto lockerCreateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.lockerService.create(userDetails.getUser(), lockerCreateRequestDto);
@@ -66,7 +67,7 @@ public class LockerController {
     @Operation(summary = "사물함 상태 update Api", description = "사물함 상태를 변경하는 Api입니다.")
     public LockerResponseDto update(
             @PathVariable("id") String id,
-            @RequestBody LockerUpdateRequestDto lockerUpdateRequestDto,
+            @Valid @RequestBody LockerUpdateRequestDto lockerUpdateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.lockerService.update(
@@ -84,7 +85,7 @@ public class LockerController {
     @Operation(summary = "사물함 위치 이동 Api(완료)", description = "사물함의 위치를 이동시키는 Api입니다.")
     public LockerResponseDto move(
             @PathVariable("id") String id,
-            @RequestBody LockerMoveRequestDto lockerMoveRequestDto,
+            @Valid @RequestBody LockerMoveRequestDto lockerMoveRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.lockerService.move(
@@ -135,7 +136,7 @@ public class LockerController {
             "@securityService.isAdminOrPresidentOrVicePresident() and " +
             "@securityService.isAcademicRecordCertified()")
     public LockerLocationResponseDto createLocation(
-            @RequestBody LockerLocationCreateRequestDto lockerLocationCreateRequestDto,
+            @Valid @RequestBody LockerLocationCreateRequestDto lockerLocationCreateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.lockerService.createLocation(userDetails.getUser(), lockerLocationCreateRequestDto);
@@ -149,7 +150,7 @@ public class LockerController {
             "@securityService.isAcademicRecordCertified()")
     public LockerLocationResponseDto updateLocation(
             @PathVariable("locationId") String locationId,
-            @RequestBody LockerLocationUpdateRequestDto lockerLocationUpdateRequestDto,
+            @Valid @RequestBody LockerLocationUpdateRequestDto lockerLocationUpdateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.lockerService.updateLocation(
@@ -188,7 +189,7 @@ public class LockerController {
             "@securityService.isAdminOrPresidentOrVicePresident() and " +
             "@securityService.isAcademicRecordCertified()")
     public void setExpireDate(
-            @RequestBody LockerExpiredAtRequestDto lockerExpiredAtRequestDto,
+            @Valid @RequestBody LockerExpiredAtRequestDto lockerExpiredAtRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         this.lockerService.setExpireAt(userDetails.getUser(), lockerExpiredAtRequestDto);

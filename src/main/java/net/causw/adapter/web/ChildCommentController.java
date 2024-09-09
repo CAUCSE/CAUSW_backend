@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.comment.ChildCommentService;
 import net.causw.application.dto.comment.ChildCommentCreateRequestDto;
@@ -61,7 +62,7 @@ public class ChildCommentController {
             @ApiResponse(responseCode = "4004", description = "삭제된 동아리입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     public ChildCommentResponseDto createChildComment(
-            @RequestBody ChildCommentCreateRequestDto childCommentCreateRequestDto,
+            @Valid @RequestBody ChildCommentCreateRequestDto childCommentCreateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
 
@@ -97,7 +98,7 @@ public class ChildCommentController {
     })
     public ChildCommentResponseDto updateChildComment(
             @PathVariable("id") String id,
-            @RequestBody ChildCommentUpdateRequestDto childCommentUpdateRequestDto,
+            @Valid @RequestBody ChildCommentUpdateRequestDto childCommentUpdateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.childCommentService.updateChildComment(userDetails.getUser(), id, childCommentUpdateRequestDto);

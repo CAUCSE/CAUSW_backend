@@ -86,7 +86,7 @@ public class BoardController {
             @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
     })
     public BoardNameCheckResponseDto checkBoardName(
-            @RequestBody BoardNameCheckRequestDto boardNameCheckRequestDto
+            @Valid @RequestBody BoardNameCheckRequestDto boardNameCheckRequestDto
     ) {
         return this.boardService.checkBoardName(boardNameCheckRequestDto);
     }
@@ -183,7 +183,7 @@ public class BoardController {
     })
     public BoardResponseDto updateBoard(
             @PathVariable("id") String id,
-            @RequestBody BoardUpdateRequestDto boardUpdateRequestDto,
+            @Valid @RequestBody BoardUpdateRequestDto boardUpdateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.boardService.updateBoard(userDetails.getUser(), id, boardUpdateRequestDto);

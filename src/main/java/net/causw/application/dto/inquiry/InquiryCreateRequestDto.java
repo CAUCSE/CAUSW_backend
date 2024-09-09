@@ -1,5 +1,6 @@
 package net.causw.application.dto.inquiry;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,6 +11,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class InquiryCreateRequestDto {
+    @NotBlank(message = "설문 제목을 입력해 주세요.")
     private String title;
+    @NotBlank(message = "설문 내용을 입력해 주세요.")
     private String content;
 }
