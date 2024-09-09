@@ -19,37 +19,37 @@ import java.util.List;
 
 @Retention(RetentionPolicy.CLASS)
 @Target({ElementType.METHOD})
-@interface UserAcademicRecordCommonWriterMappings {}
+@Mapping(target = "userId", source = "user.id")
+@Mapping(target = "userName", source = "user.name")
+@Mapping(target = "studentId", source = "user.studentId")
+@interface UserCommonWriterMappings {}
 
 @Mapper(componentModel = "spring")
 public interface UserAcademicRecordDtoMapper {
 
     UserAcademicRecordDtoMapper INSTANCE = Mappers.getMapper(UserAcademicRecordDtoMapper.class);
 
-    @UserAcademicRecordCommonWriterMappings
-    @Mapping(target = "userId", source = "user.id")
-    @Mapping(target = "userName", source = "user.name")
-    @Mapping(target = "studentId", source = "user.studentId")
+    @Named("mapUuidFileListToFileUrlList")
+    default List<String> mapUuidFileListToFileUrlList(List<UuidFile> uuidFileList) {
+        return uuidFileList.stream().map(UuidFile::getFileUrl).toList();
+    }
+
+    @UserCommonWriterMappings
     UserAcademicRecordListResponseDto toUserAcademicRecordListResponseDto(User user);
 
-    @UserAcademicRecordCommonWriterMappings
-    @Mapping(target = "userId", source = "user.id")
-    @Mapping(target = "userName", source = "user.name")
-    @Mapping(target = "studentId", source = "user.studentId")
+    @UserCommonWriterMappings
     @Mapping(target = "academicStatus", source = "user.academicStatus")
     @Mapping(target = "currentCompleteSemester", source = "user.currentCompletedSemester")
     @Mapping(target = "note", source = "user.academicStatusNote")
     @Mapping(target = "userAcademicRecordApplicationResponseDtoList", source = "userAcademicRecordApplicationResponseDtoList")
     UserAcademicRecordInfoResponseDto toUserAcademicRecordInfoResponseDto(User user, List<UserAcademicRecordApplicationResponseDto> userAcademicRecordApplicationResponseDtoList);
 
-    @UserAcademicRecordCommonWriterMappings
     @Mapping(target = "targetAcademicStatus", source = "userAcademicRecordLog.targetAcademicRecordStatus")
     @Mapping(target = "userNote", source = "userAcademicRecordLog.note")
     @Mapping(target = "attachedImageUrlList", source = "userAcademicRecordLog.targetUserAcademicRecordApplication.uuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
     @Mapping(target = "changeDate", source = "userAcademicRecordLog.updatedAt")
     UserAcademicRecordApplicationResponseDto toUserAcademicRecordApplicationResponseDto(UserAcademicRecordLog userAcademicRecordLog);
 
-    @UserAcademicRecordCommonWriterMappings
     @Mapping(target = "userId", source = "userAcademicRecordApplication.user.id")
     @Mapping(target = "userName", source = "userAcademicRecordApplication.user.name")
     @Mapping(target = "studentId", source = "userAcademicRecordApplication.user.studentId")
@@ -61,7 +61,6 @@ public interface UserAcademicRecordDtoMapper {
     @Mapping(target = "rejectMessage", source = "userAcademicRecordApplication.rejectMessage")
     UserAcademicRecordApplicationInfoResponseDto toUserAcademicRecordApplicationInfoResponseDto(UserAcademicRecordApplication userAcademicRecordApplication);
 
-    @UserAcademicRecordCommonWriterMappings
     @Mapping(target = "currentSemesterYear", source = "semester.semesterYear")
     @Mapping(target = "currentSemesterType", source = "semester.semesterType")
     @Mapping(target = "isRejected", source = "isRejected")
@@ -72,8 +71,5 @@ public interface UserAcademicRecordDtoMapper {
     @Mapping(target = "attachedImageUrlList", source = "userAcademicRecordApplication.uuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
     CurrentUserAcademicRecordApplicationResponseDto toCurrentUserAcademicRecordResponseDto(Semester semester, UserAcademicRecordApplication userAcademicRecordApplication, Boolean isRejected);
 
-    @Named("mapUuidFileListToFileUrlList")
-    default List<String> mapUuidFileListToFileUrlList(List<UuidFile> uuidFileList) {
-        return uuidFileList.stream().map(UuidFile::getFileUrl).toList();
-    }
+
 }
