@@ -49,6 +49,7 @@ public enum ErrorCode {
     INTERNAL_SERVER(5000),
     FILE_UPLOAD_FAIL(5001),
     FILE_DELETE_FAIL(5002),
+    ROW_IS_DUPLICATED(5003),
 
     /**
      * 503 Service Unavailable Error

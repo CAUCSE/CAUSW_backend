@@ -50,6 +50,11 @@ public interface UserRepository extends JpaRepository<User, String> {
             "FROM tb_user AS u " +
             "WHERE u.state IN :state AND (COALESCE(:name, '') = '' OR u.name LIKE CONCAT('%', :name, '%')) ORDER BY u.created_at DESC" , nativeQuery = true)
     Page<User> findByStateInAndNameContaining(@Param("state")List<String> states, @Param("name")String name, Pageable pageable);
+
+    @Query(value = "SELECT * " +
+            "FROM tb_user AS u " +
+            "WHERE u.academic_status = :academicStatus1 OR u.academic_status = :academicStatus2 ORDER BY u.created_at DESC", nativeQuery = true)
+    List<User> findAllByTwoAcademicStatus(AcademicStatus academicStatus1, AcademicStatus academicStatus2);
 }
 
 

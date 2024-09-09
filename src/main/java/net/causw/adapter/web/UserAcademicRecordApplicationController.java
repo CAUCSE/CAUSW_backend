@@ -3,9 +3,11 @@ package net.causw.adapter.web;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import net.causw.application.dto.semester.CurrentSemesterResponseDto;
 import net.causw.application.dto.userAcademicRecordApplication.*;
 import net.causw.application.userAcademicRecord.UserAcademicRecordApplicationService;
 import net.causw.config.security.userdetails.CustomUserDetails;
+import net.causw.domain.model.enums.AcademicStatus;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +15,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/users/academic-record")
@@ -20,6 +25,15 @@ import org.springframework.web.bind.annotation.*;
 public class UserAcademicRecordApplicationController {
 
     private final UserAcademicRecordApplicationService userAcademicRecordApplicationService;
+
+    @GetMapping("/semester/current")
+    @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
+    @Operation(summary = "현재 학기 조회",
+            description = "현재 학기를 조회합니다.")
+    public CurrentSemesterResponseDto getCurrentSemesterYearAndType() {
+        return userAcademicRecordApplicationService.getCurrentSemesterYearAndType();
+    }
 
     /**
      * 전체 유저의 학적 정보 목록 조회
@@ -62,8 +76,10 @@ public class UserAcademicRecordApplicationController {
     @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN', 'PRESIDENT', 'VICE_PRESIDENT')")
     @Operation(summary = "재학 인증 일괄 요청",
             description = "전체 유저의 재학 인증을 요청합니다.")
-    public Void requestAllUserAcademicRecordApplication() {
-        return null;
+    public Void requestAllUserAcademicRecordApplication(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return userAcademicRecordApplicationService.requestAllUserAcademicRecordApplication(userDetails.getUser());
     }
 
     /**
@@ -137,7 +153,7 @@ public class UserAcademicRecordApplicationController {
     /**
      * 유저 학적 인증 승인 상태 변경(승인/거부)
      * @param userDetails
-     * @param updateUserAcademicRecordApplicationRequestDto
+     * @param updateUserAcademicRecordApplicationStateRequestDto
      * @return UpdateUserAcademicRecordApplicationRequestDto
      */
     @PutMapping("/application/admin")
@@ -147,13 +163,46 @@ public class UserAcademicRecordApplicationController {
             description = "유저 학적 인증 승인 상태를 변경합니다.")
     public Void updateUserAcademicRecordApplicationStatus(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestBody @Valid UpdateUserAcademicRecordApplicationRequestDto updateUserAcademicRecordApplicationRequestDto
+            @RequestBody @Valid UpdateUserAcademicRecordApplicationStateRequestDto updateUserAcademicRecordApplicationStateRequestDto
     ) {
-        return userAcademicRecordApplicationService.updateUserAcademicRecordApplicationStatus(userDetails.getUser(), updateUserAcademicRecordApplicationRequestDto);
+        return userAcademicRecordApplicationService.updateUserAcademicRecordApplicationStatus(userDetails.getUser(), updateUserAcademicRecordApplicationStateRequestDto);
     }
 
     /**
-     *
+     * 사용자 본인의 학적 증빙 상태 조회
+     * @param userDetails
+     */
+    @GetMapping("current")
+    @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
+    @Operation(summary = "사용자 본인의 학적 증빙 상태 조회",
+            description = "사용자 본인의 학적 증빙 상태를 조회합니다.")
+    public AcademicStatus getCurrentUserAcademicRecord(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return userAcademicRecordApplicationService.getCurrentUserAcademicRecord(userDetails.getUser());
+    }
+
+    /**
+     * 사용자 본인의 학적 증빙 제출 서류 조회(승인 대기/거절 중인 것만)
+     * @param userDetails
+     */
+    @GetMapping("current/not-accepted")
+    @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
+    @Operation(summary = "사용자 본인의 학적 증빙 제출 서류 조회(승인 대기/거절 중인 것만)",
+            description = "사용자 본인의 대기/거절 중인 학적 증빙 제출 서류를 조회합니다.")
+    public CurrentUserAcademicRecordApplicationResponseDto getCurrentUserAcademicRecordApplication(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return userAcademicRecordApplicationService.getCurrentUserAcademicRecordApplication(userDetails.getUser());
+    }
+
+    /**
+     * 사용자 본인의 학적 증빙 서류 제출
+     * @param userDetails
+     * @param createUserAcademicRecordApplicationRequestDto
+     * @param imageFileList
      * @return
      */
     @PostMapping("/application/create")
@@ -163,13 +212,17 @@ public class UserAcademicRecordApplicationController {
             description = "사용자 본인의 학적 증비 서류를 제출합니다.")
     public Void createUserAcademicRecordApplication(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestBody @Valid CreateUserAcademicRecordApplicationRequestDto createUserAcademicRecordApplicationRequestDto
+            @RequestPart @Valid CreateUserAcademicRecordApplicationRequestDto createUserAcademicRecordApplicationRequestDto,
+            @RequestPart List<MultipartFile> imageFileList
     ) {
-        return null;
+        return userAcademicRecordApplicationService.createUserAcademicRecordApplication(userDetails.getUser(), createUserAcademicRecordApplicationRequestDto, imageFileList);
     }
 
     /**
-     *
+     * 사용자 본인의 학적 증빙 서류 수정
+     * @param userDetails
+     * @param createUserAcademicRecordApplicationRequestDto
+     * @param imageFileList
      * @return
      */
     @PutMapping("/application/update")
@@ -179,9 +232,10 @@ public class UserAcademicRecordApplicationController {
             description = "사용자 본인의 학적 증빙 서류를 수정합니다.")
     public Void updateUserAcademicRecordApplication(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestBody @Valid CreateUserAcademicRecordApplicationRequestDto createUserAcademicRecordApplicationRequestDto
+            @RequestPart @Valid CreateUserAcademicRecordApplicationRequestDto createUserAcademicRecordApplicationRequestDto,
+            @RequestPart List<MultipartFile> imageFileList
     ) {
-        return null;
+        return userAcademicRecordApplicationService.updateUserAcademicRecordApplication(userDetails.getUser(), createUserAcademicRecordApplicationRequestDto, imageFileList);
     }
 
 }

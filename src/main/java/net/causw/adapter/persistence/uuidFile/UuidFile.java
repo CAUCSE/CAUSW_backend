@@ -1,4 +1,4 @@
-package net.causw.adapter.persistence.UuidFile;
+package net.causw.adapter.persistence.uuidFile;
 
 import jakarta.persistence.*;
 import lombok.*;

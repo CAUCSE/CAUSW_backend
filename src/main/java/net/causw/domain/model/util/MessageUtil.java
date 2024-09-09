@@ -78,8 +78,19 @@ public class MessageUtil {
 
     public static final String ADMIN_UPDATE_ACADEMIC_RECORD_MESSAGE = "관리자 업데이트";
 
+    // UserAcademicRecordApplication
+    public static final String INVALID_TARGET_COMPLETED_SEMESTER = "유효하지 않은 목표 학기입니다.";
+    public static final String INVALID_TARGET_ACADEMIC_STATUS = "유효하지 않은 목표 학적 상태입니다.";
+    public static final String FILE_UPLOAD_NOT_ALLOWED = "파일 업로드가 허용되지 않습니다.";
+    public static final String FILE_UPLOAD_REQUIRED = "파일 업로드가 필요합니다.";
+    public static final String USER_ACADEMIC_RECORD_APPLICATION_DUPLICATED = "대기 중인 학적 인증 신청이 두 개 이상 존재합니다.";
+
     // UuidFile
     public static final String FILE_NOT_FOUND = "파일을 찾을 수 없습니다.";
+
+    // Semester
+    public static final String PRIOR_SEMESTER_NOT_FOUND = "이전 학기를 찾을 수 없습니다.";
+    public static final String ACTIVE_SEMESTER_IS_DUPLICATED = "활성화된 학기가 중복되어 있습니다.";
 
 
     // 500

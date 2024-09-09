@@ -1,6 +1,6 @@
 package net.causw.adapter.persistence.repository;
 
-import net.causw.adapter.persistence.UuidFile.UuidFile;
+import net.causw.adapter.persistence.uuidFile.UuidFile;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
