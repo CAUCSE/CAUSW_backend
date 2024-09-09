@@ -1,9 +1,11 @@
 package net.causw.application.dto.util;
 
 import net.causw.adapter.persistence.board.Board;
+import net.causw.adapter.persistence.calendar.Calendar;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
+import net.causw.adapter.persistence.event.Event;
 import net.causw.adapter.persistence.form.Form;
 import net.causw.adapter.persistence.form.Option;
 import net.causw.adapter.persistence.form.Question;
@@ -15,11 +17,15 @@ import net.causw.application.dto.board.BoardMainResponseDto;
 import net.causw.application.dto.board.BoardNameCheckResponseDto;
 import net.causw.application.dto.board.BoardOfCircleResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
+import net.causw.application.dto.calendar.CalendarResponseDto;
+import net.causw.application.dto.calendar.CalendarsResponseDto;
 import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.comment.CommentsOfUserResponseDto;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
+import net.causw.application.dto.event.EventResponseDto;
+import net.causw.application.dto.event.EventsResponseDto;
 import net.causw.application.dto.file.FileResponseDto;
 import net.causw.application.dto.form.*;
 import net.causw.application.dto.post.BoardPostsResponseDto;
@@ -36,6 +42,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -295,4 +303,26 @@ public interface DtoMapper{
     @Mapping(target = "questionAnswers", source = "questionAnswers")
     @Mapping(target = "optionSummaries", source = "optionSummaries")
     QuestionSummaryResponseDto toQuestionSummaryResponseDto(Question question, List<String> questionAnswers,List<OptionSummaryResponseDto> optionSummaries) ;
+
+    // Calendar
+    @Mapping(source = "createdAt", target = "createdAt", qualifiedByName = "formatDateTime")
+    @Mapping(source = "updatedAt", target = "updatedAt", qualifiedByName = "formatDateTime")
+    CalendarResponseDto toCalendarResponseDto(Calendar calendar);
+
+    @Mapping(target = "calendars", source = "calendars")
+    CalendarsResponseDto toCalendarsResponseDto(Integer count, List<CalendarResponseDto> calendars);
+
+    // Event
+    @Mapping(source = "createdAt", target = "createdAt", qualifiedByName = "formatDateTime")
+    @Mapping(source = "updatedAt", target = "updatedAt", qualifiedByName = "formatDateTime")
+    EventResponseDto toEventResponseDto(Event event);
+
+    @Named("formatDateTime")
+    default String formatDateTime(LocalDateTime dateTime) {
+        if (dateTime == null) return null;
+        return dateTime.format(DateTimeFormatter.ofPattern("yyyy.MM.dd."));
+    }
+
+    @Mapping(target = "events", source = "events")
+    EventsResponseDto toEventsResponseDto(Integer count, List<EventResponseDto> events);
 }
