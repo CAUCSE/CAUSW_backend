@@ -37,7 +37,7 @@ public class CommentController {
 
     @GetMapping(params = "postId")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.isAcademicRecordCertified()")
     @Operation(summary = "댓글 조회 API(완료)", description = "해당 게시글의 전체 댓글을 불러오는 api입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json")),
@@ -69,7 +69,7 @@ public class CommentController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.isAcademicRecordCertified()")
     @Operation(summary = "댓글 생성 API(완료)", description = "댓글을 생성하는 api입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Created", content = @Content(mediaType = "application/json")),
@@ -99,7 +99,7 @@ public class CommentController {
 
     @PutMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.isAcademicRecordCertified()")
     @Operation(summary = "댓글 수정 API(완료)", description = "댓글을 수정하는 api입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json")),
@@ -137,7 +137,7 @@ public class CommentController {
 
     @DeleteMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.isAcademicRecordCertified()")
     @Operation(summary = "댓글 삭제 API(완료)", description = "댓글을 삭제하는 api입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json")),
@@ -171,7 +171,7 @@ public class CommentController {
 
     @PostMapping(value = "/{id}/like")
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.isAcademicRecordCertified()")
     @Operation(summary = "댓글 좋아요 저장 API(완료)", description = "특정 유저가 특정 댓글에 좋아요를 누른 걸 저장하는 Api 입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Created", content = @Content(mediaType = "application/json")),

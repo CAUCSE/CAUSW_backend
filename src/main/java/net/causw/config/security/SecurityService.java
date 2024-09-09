@@ -86,6 +86,21 @@ public class SecurityService {
                 userRoleSet.contains(Role.VICE_PRESIDENT);
     }
 
+    public boolean isAdminOrPresidentOrVicePresidentOrCircleLeader() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        Set<Role> userRoleSet = userDetails.getUser().getRoles();
+
+        return userRoleSet.contains(Role.ADMIN) ||
+                userRoleSet.contains(Role.PRESIDENT) ||
+                userRoleSet.contains(Role.VICE_PRESIDENT) ||
+                userRoleSet.contains(Role.LEADER_CIRCLE);
+    }
+
     private int convertSemesterToGrade(int semester) {
         return (semester + 1) / 2;
     }

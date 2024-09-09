@@ -36,7 +36,7 @@ public class ChildCommentController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.isAcademicRecordCertified()")
     @Operation(summary = "대댓글 생성 API(완료)", description = "대댓글을 생성하는 api입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Created", content = @Content(mediaType = "application/json")),
@@ -70,7 +70,7 @@ public class ChildCommentController {
 
     @PutMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.isAcademicRecordCertified()")
     @Operation(summary = "대댓글 수정 API", description = "특정 대댓글을 수정하는 API입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json")),
@@ -105,7 +105,7 @@ public class ChildCommentController {
 
     @DeleteMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.isAcademicRecordCertified()")
     @Operation(summary = "대댓글 삭제 API", description = "특정 대댓글을 삭제하는 API입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json")),
@@ -139,7 +139,7 @@ public class ChildCommentController {
 
     @PostMapping(value = "/{id}/like")
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.isAcademicRecordCertified()")
     @Operation(summary = "대댓글 좋아요 저장 API(완료)", description = "특정 유저가 특정 대댓글에 좋아요를 누른 걸 저장하는 Api 입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Created", content = @Content(mediaType = "application/json")),
