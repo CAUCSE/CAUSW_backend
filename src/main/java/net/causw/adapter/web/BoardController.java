@@ -199,7 +199,7 @@ public class BoardController {
             @PathVariable("id") String id,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return this.boardService.findBoardApplyByBoardName(userDetails.getUser(), id);
+        return this.boardService.findBoardApplyByApplyId(userDetails.getUser(), id);
     }
 
     @PutMapping(value = "/apply/{applyId}/accept")

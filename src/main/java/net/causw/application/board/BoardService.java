@@ -276,7 +276,7 @@ public class BoardService {
     }
 
     @Transactional(readOnly = true)
-    public NormalBoardApplyResponseDto findBoardApplyByBoardName(User user, String applyId) {
+    public NormalBoardApplyResponseDto findBoardApplyByApplyId(User user, String applyId) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         validatorBucket
                 .consistOf(UserStateValidator.of(user.getState()))   // 활성화된 사용자인지 확인
