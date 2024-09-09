@@ -4,9 +4,11 @@ import net.causw.adapter.persistence.semester.Semester;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.user.UserAcademicRecordApplication;
 import net.causw.adapter.persistence.user.UserAcademicRecordLog;
+import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.userAcademicRecordApplication.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
 import java.lang.annotation.ElementType;
@@ -43,7 +45,7 @@ public interface UserAcademicRecordDtoMapper {
     @UserAcademicRecordCommonWriterMappings
     @Mapping(target = "targetAcademicStatus", source = "userAcademicRecordLog.targetAcademicRecordStatus")
     @Mapping(target = "userNote", source = "userAcademicRecordLog.note")
-    @Mapping(target = "attachedImageUrlList", source = "userAcademicRecordLog.targetUserAcademicRecordApplication.uuidFileList.stream().map(UuidFile::getUrl).toList()")
+    @Mapping(target = "attachedImageUrlList", source = "userAcademicRecordLog.targetUserAcademicRecordApplication.uuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
     @Mapping(target = "changeDate", source = "userAcademicRecordLog.updatedAt")
     UserAcademicRecordApplicationResponseDto toUserAcademicRecordApplicationResponseDto(UserAcademicRecordLog userAcademicRecordLog);
 
@@ -52,10 +54,10 @@ public interface UserAcademicRecordDtoMapper {
     @Mapping(target = "userName", source = "userAcademicRecordApplication.user.name")
     @Mapping(target = "studentId", source = "userAcademicRecordApplication.user.studentId")
     @Mapping(target = "academicRecordRequestStatus", source = "userAcademicRecordApplication.academicRecordRequestStatus")
-    @Mapping(target = "targetAcademicStatus", source = "userAcademicRecordApplication.targetAcademicRecordStatus")
+    @Mapping(target = "targetAcademicStatus", source = "userAcademicRecordApplication.targetAcademicStatus")
     @Mapping(target = "targetCompletedSemester", source = "userAcademicRecordApplication.targetCompletedSemester")
     @Mapping(target = "note", source = "userAcademicRecordApplication.note")
-    @Mapping(target = "attachedImageUrlList", source = "userAcademicRecordApplication.uuidFileList.stream().map(UuidFile::getUrl).toList()")
+    @Mapping(target = "attachedImageUrlList", source = "userAcademicRecordApplication.uuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
     @Mapping(target = "rejectMessage", source = "userAcademicRecordApplication.rejectMessage")
     UserAcademicRecordApplicationInfoResponseDto toUserAcademicRecordApplicationInfoResponseDto(UserAcademicRecordApplication userAcademicRecordApplication);
 
@@ -67,6 +69,11 @@ public interface UserAcademicRecordDtoMapper {
     @Mapping(target = "targetAcademicStatus", source = "userAcademicRecordApplication.targetAcademicStatus")
     @Mapping(target = "targetCompletedSemester", source = "userAcademicRecordApplication.targetCompletedSemester")
     @Mapping(target = "userNote", source = "userAcademicRecordApplication.note")
-    @Mapping(target = "attachedImageUrlList", source = "userAcademicRecordApplication.uuidFileList.stream().map(UuidFile::getUrl).toList()")
+    @Mapping(target = "attachedImageUrlList", source = "userAcademicRecordApplication.uuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
     CurrentUserAcademicRecordApplicationResponseDto toCurrentUserAcademicRecordResponseDto(Semester semester, UserAcademicRecordApplication userAcademicRecordApplication, Boolean isRejected);
+
+    @Named("mapUuidFileListToFileUrlList")
+    default List<String> mapUuidFileListToFileUrlList(List<UuidFile> uuidFileList) {
+        return uuidFileList.stream().map(UuidFile::getFileUrl).toList();
+    }
 }
