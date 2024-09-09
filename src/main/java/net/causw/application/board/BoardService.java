@@ -9,6 +9,7 @@ import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.board.*;
 import net.causw.application.dto.post.PostContentDto;
+import net.causw.application.dto.user.UserResponseDto;
 import net.causw.application.dto.util.DtoMapper;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -283,13 +284,13 @@ public class BoardService {
                 .consistOf(UserRoleValidator.of(user.getRoles(), Set.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT))); // 권한이 관리자, 학생회장, 부학생회장 중 하나인지 확인
 
         // 관리자, 학생회장, 부학생회장만 게시판 관리 기능 사용 가능
+        BoardApply boardApply = this.boardApplyRepository.findById(applyId)
+                .orElseThrow(() -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.APPLY_NOT_FOUND
+                ));
         return DtoMapper.INSTANCE.toNormalBoardApplyResponseDto(
-                this.boardApplyRepository.findById(applyId)
-                        .orElseThrow(() -> new BadRequestException(
-                                ErrorCode.ROW_DOES_NOT_EXIST,
-                                MessageUtil.APPLY_NOT_FOUND
-                        ))
-        );
+                boardApply, DtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null));
     }
 
     @Transactional
@@ -325,7 +326,9 @@ public class BoardService {
 
         List<String> createRoleList = new ArrayList<>();
         createRoleList.add("ALL"); // 일반 사용자의 게시판 신청은 항상 글 작성 권한이 '상관없음'임
-        NormalBoardApplyResponseDto normalBoardApplyResponseDto = DtoMapper.INSTANCE.toNormalBoardApplyResponseDto(boardApply);
+        UserResponseDto userResponseDto = DtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null);
+        NormalBoardApplyResponseDto normalBoardApplyResponseDto =
+                DtoMapper.INSTANCE.toNormalBoardApplyResponseDto(boardApply, userResponseDto);
         Board newBoard = Board.of(
                 normalBoardApplyResponseDto.getBoardName(),
                 normalBoardApplyResponseDto.getDescription(),
@@ -337,7 +340,7 @@ public class BoardService {
 
         this.boardRepository.save(newBoard);
 
-        return DtoMapper.INSTANCE.toNormalBoardApplyResponseDto(boardApply);
+        return DtoMapper.INSTANCE.toNormalBoardApplyResponseDto(boardApply, userResponseDto);
     }
 
     @Transactional
@@ -371,7 +374,9 @@ public class BoardService {
         boardApply.updateAcceptStatus(BoardApplyStatus.REJECT); // 해당 boardApply의 상태를 REJECT로 변경
         this.boardApplyRepository.save(boardApply);
 
-        return DtoMapper.INSTANCE.toNormalBoardApplyResponseDto(boardApply);
+        return DtoMapper.INSTANCE.toNormalBoardApplyResponseDto(
+                boardApply,
+                DtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null));
     }
 
     @Transactional

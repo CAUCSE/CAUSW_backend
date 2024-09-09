@@ -8,9 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.causw.adapter.persistence.user.User;
-
-import java.util.List;
+import net.causw.application.dto.user.UserResponseDto;
 
 @Getter
 @NoArgsConstructor
@@ -37,5 +35,5 @@ public class NormalBoardApplyResponseDto {
 
     @NotEmpty(message = "게시판 생성 신청자는 비어있을 수 없습니다.")
     @Schema(description = "게시판 생성 신청자", example = "게시판 생성 신청 User 객체를 반환합니다.")
-    private User user;
+    private UserResponseDto user;
 }
