@@ -231,7 +231,7 @@ public class UserController {
             @ApiResponse(responseCode = "4001", description = "이미 존재하는 닉네임입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     public UserResponseDto signUp(
-            @RequestBody UserCreateRequestDto userCreateDto
+            @Valid @RequestBody UserCreateRequestDto userCreateDto
     ) {
         return this.userService.signUp(userCreateDto);
     }
@@ -313,7 +313,7 @@ public class UserController {
             @ApiResponse(responseCode = "4001", description = "이미 존재하는 닉네임입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     public UserResponseDto update(
-            @RequestBody UserUpdateRequestDto userUpdateDto,
+            @Valid @RequestBody UserUpdateRequestDto userUpdateDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
 
@@ -349,7 +349,7 @@ public class UserController {
     })
     public UserResponseDto updateRole(
             @PathVariable("granteeId") String granteeId,
-            @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto,
+            @Valid @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
 
@@ -360,7 +360,7 @@ public class UserController {
     @PutMapping(value = "/password/find")
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "비밀번호 찾기 API (완료)", description = "비밀번호 재설정 이메일 전송 API입니다.")
-    public UserResponseDto findPassword(@RequestBody UserFindPasswordRequestDto userFindPasswordRequestDto) {
+    public UserResponseDto findPassword(@Valid @RequestBody UserFindPasswordRequestDto userFindPasswordRequestDto) {
         return this.userService.findPassword(userFindPasswordRequestDto);
     }
 
@@ -369,7 +369,7 @@ public class UserController {
     @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
     @Operation(summary = "비밀번호 업데이트 API (완료)")
     public UserResponseDto updatePassword(
-            @RequestBody UserUpdatePasswordRequestDto userUpdatePasswordRequestDto,
+            @Valid @RequestBody UserUpdatePasswordRequestDto userUpdatePasswordRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.userService.updatePassword(userDetails.getUser(), userUpdatePasswordRequestDto);
@@ -453,7 +453,7 @@ public class UserController {
             @ApiResponse(responseCode = "4107", description = "이미 등록된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     public UserAdmissionResponseDto createAdmission(
-            @ModelAttribute UserAdmissionCreateRequestDto userAdmissionCreateRequestDto
+            @Valid @ModelAttribute UserAdmissionCreateRequestDto userAdmissionCreateRequestDto
     ) {
         return this.userService.createAdmission(userAdmissionCreateRequestDto);
     }
@@ -534,7 +534,7 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserSignInResponseDto.class))),
             @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
-    public UserSignInResponseDto updateToken(@RequestBody UserUpdateTokenRequestDto userUpdateTokenRequestDto) {
+    public UserSignInResponseDto updateToken(@Valid @RequestBody UserUpdateTokenRequestDto userUpdateTokenRequestDto) {
         return this.userService.updateToken(userUpdateTokenRequestDto.getRefreshToken());
     }
 
@@ -544,7 +544,7 @@ public class UserController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "application/json", schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = UserSignInResponseDto.class)))
     })
-    public UserSignOutResponseDto signOut(@RequestBody UserSignOutRequestDto userSignOutRequestDto){
+    public UserSignOutResponseDto signOut(@Valid @RequestBody UserSignOutRequestDto userSignOutRequestDto){
         return userService.signOut(userSignOutRequestDto);
     }
     /**
