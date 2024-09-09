@@ -1,6 +1,7 @@
 package net.causw.adapter.persistence.repository;
 
 import net.causw.adapter.persistence.comment.Comment;
+import net.causw.adapter.persistence.post.Post;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,5 +26,11 @@ public interface CommentRepository extends JpaRepository<Comment, String> {
             "and (c.id is null or (c.is_deleted = false and cm.status = 'MEMBER')) ORDER BY p.created_at DESC", nativeQuery = true)
     Page<Comment> findByUserId(@Param("user_id") String userId, Pageable pageable);
 
+    @Query("SELECT DISTINCT p " +
+            "FROM Comment c " +
+            "JOIN c.post p " +
+            "WHERE c.writer.id = :userId AND c.isDeleted = false " +
+            "ORDER BY p.createdAt DESC")
+    Page<Post> findPostsByUserId(@Param("userId") String userId, Pageable pageable);
 
 }

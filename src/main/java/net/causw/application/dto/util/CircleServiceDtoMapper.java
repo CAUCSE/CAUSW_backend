@@ -52,11 +52,13 @@ public interface CircleServiceDtoMapper {
 
     @CircleCommonWriterMappings
     @Mapping(target = "isJoined", constant = "false")
+    @Mapping(target = "isDeleted", source = "entity.isDeleted")
     CirclesResponseDto toCirclesResponseDto(Circle entity, Long numMember);
 
 
     @CircleCommonWriterMappings
     @Mapping(target = "isJoined", constant = "true")
+    @Mapping(target = "isDeleted", source = "entity.isDeleted")
     CirclesResponseDto toCirclesResponseDtoExtended(Circle entity, Long numMember, LocalDateTime joinedAt);
 
 

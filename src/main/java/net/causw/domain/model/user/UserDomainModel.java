@@ -21,7 +21,9 @@ public class UserDomainModel {
 
     private String studentId;
 
-    private List<String> profileImages;
+    private List<String> attachImages;
+
+    private String profileImage;
 
     private String refreshToken;
 
@@ -74,7 +76,8 @@ public class UserDomainModel {
             String studentId,
             Integer admissionYear,
             Set<Role> roles,
-            List<String> profileImages,
+            List<String> attachImages,
+            String profileImage,
             String refreshToken,
             UserState state,
             String nickname,
@@ -93,7 +96,8 @@ public class UserDomainModel {
                 .studentId(studentId)
                 .admissionYear(admissionYear)
                 .roles(roles)
-                .profileImages(profileImages)
+                .attachImages(attachImages)
+                .profileImage(profileImage)
                 .refreshToken(refreshToken)
                 .state(state)
                 .nickname(nickname)
@@ -112,7 +116,8 @@ public class UserDomainModel {
             String password,
             String studentId,
             Integer admissionYear,
-            List<String> profileImages,
+            List<String> attachImages,
+            String profileImage,
             String nickname,
             String major,
             AcademicStatus academicStatus,
@@ -127,7 +132,8 @@ public class UserDomainModel {
                 .password(password)
                 .studentId(studentId)
                 .admissionYear(admissionYear)
-                .profileImages(profileImages)
+                .attachImages(attachImages)
+                .profileImage(profileImage)
                 .nickname(nickname)
                 .major(major)
                 .academicStatus(academicStatus)
@@ -143,7 +149,8 @@ public class UserDomainModel {
             String name,
             String studentId,
             Integer admissionYear,
-            List<String> profileImages,
+            List<String> attachImages,
+            String profileImage,
             String nickname,
             String major,
             AcademicStatus academicStatus,
@@ -156,7 +163,8 @@ public class UserDomainModel {
         this.name = name;
         this.studentId = studentId;
         this.admissionYear = admissionYear;
-        this.profileImages = profileImages;
+        this.attachImages = attachImages;
+        this.profileImage = profileImage;
         this.nickname = nickname;
         this.major = major;
         this.academicStatus = academicStatus;

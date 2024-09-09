@@ -1,5 +1,6 @@
 package net.causw.application.circle;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
@@ -14,6 +15,7 @@ import net.causw.application.dto.user.UserResponseDto;
 import net.causw.application.dto.util.CircleServiceDtoMapper;
 import net.causw.application.dto.util.DtoMapper;
 import net.causw.application.dto.util.StatusUtil;
+import net.causw.application.excel.ExcelService;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
@@ -37,6 +39,7 @@ import static net.causw.application.dto.board.BoardOfCircleResponseDto.isWriteab
 @Service
 @RequiredArgsConstructor
 public class CircleService {
+    private final ExcelService excelService;
     private final Validator validator;
     private final CircleRepository circleRepository;
     private final CircleMemberRepository circleMemberRepository;
@@ -199,6 +202,8 @@ public class CircleService {
                 circleCreateRequestDto.getMainImage(),
                 circleCreateRequestDto.getDescription(),
                 false,
+                circleCreateRequestDto.getCircleTax(),
+                circleCreateRequestDto.getRecruitMembers(),
                 leader
         );
 
@@ -239,6 +244,7 @@ public class CircleService {
                         .map(Role::getValue)
                         .collect(Collectors.toList()),
                 "동아리 공지 게시판",
+                false,
                 circle
         );
         boardRepository.save(noticeBoard);
@@ -272,16 +278,6 @@ public class CircleService {
             );
         }
 
-        String mainImage = circleUpdateRequestDto.getMainImage();
-        if (mainImage.isEmpty()) {
-            mainImage = circle.getMainImage();
-        }
-        circle.update(
-                circleUpdateRequestDto.getName(),
-                mainImage,
-                circleUpdateRequestDto.getDescription()
-        );
-
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
         validatorBucket
@@ -304,6 +300,18 @@ public class CircleService {
 
         validatorBucket
                 .validate();
+
+        String mainImage = circleUpdateRequestDto.getMainImage();
+        if (mainImage.isEmpty()) {
+            mainImage = circle.getMainImage();
+        }
+        circle.update(
+                circleUpdateRequestDto.getName(),
+                circleUpdateRequestDto.getDescription(),
+                mainImage,
+                circleUpdateRequestDto.getCircleTax(),
+                circleUpdateRequestDto.getRecruitMembers()
+        );
 
         return this.toCircleResponseDto(updateCircle(circleId, circle));
     }
@@ -590,9 +598,18 @@ public class CircleService {
         );
     }
 
+    @Transactional(readOnly = true)
+    public void exportCircleMembersToExcel(User user, String circleId, HttpServletResponse response){
+        Circle circle = getCircle(circleId);
+        String circleName = circle.getName();
+        List<CircleMemberResponseDto> awaitingMembers = getUserList(user, circleId, CircleMemberStatus.AWAIT);
+        List<CircleMemberResponseDto> activeMembers = getUserList(user, circleId, CircleMemberStatus.MEMBER);
+
+        excelService.generateCircleExcel(response, circleName, awaitingMembers, activeMembers);
+    }
 
 
-    // Entity or Entity Information CRUD
+
 
     // Entity or Entity Information CRUD - Circle
     private Circle getCircle(String circleId) {
@@ -607,7 +624,7 @@ public class CircleService {
     private Circle updateCircle(String id, Circle circle) {
         return circleRepository.findById(id).map(
                 srcCircle -> {
-                    srcCircle.update(circle.getDescription(), circle.getName(), circle.getMainImage());
+                    srcCircle.update(circle.getName(), circle.getDescription(), circle.getMainImage(), circle.getCircleTax(), circle.getRecruitMembers());
                     return circleRepository.save(srcCircle);
                 }
         ).orElseThrow(

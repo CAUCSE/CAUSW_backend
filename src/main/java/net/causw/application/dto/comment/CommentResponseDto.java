@@ -23,7 +23,7 @@ public class CommentResponseDto {
     private String postId;
     private String writerName;
     private Integer writerAdmissionYear;
-    private List<String> writerProfileImages;
+    private String writerProfileImage;
     private Boolean updatable;
     private Boolean deletable;
 
@@ -54,7 +54,7 @@ public class CommentResponseDto {
                 .postId(comment.getPost().getId())
                 .writerName(comment.getWriter().getName())
                 .writerAdmissionYear(comment.getWriter().getAdmissionYear())
-                .writerProfileImages(comment.getWriter().getProfileImages())
+                .writerProfileImage(comment.getWriter().getProfileImage())
                 .updatable(updatable)
                 .deletable(deletable)
                 .numChildComment(numChildComment)

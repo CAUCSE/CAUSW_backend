@@ -20,6 +20,8 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     List<User> findAll();
 
+    Optional<User> findByEmailAndNameAndStudentIdAndPhoneNumber(String email, String name, String studentId, String phoneNumber);
+
     @NotNull
     Page<User> findAll(@NotNull Pageable pageable);
 
@@ -32,6 +34,8 @@ public interface UserRepository extends JpaRepository<User, String> {
     Optional<User> findById(String id);
 
     List<User> findByName(String name);
+
+    List<User> findAllByState(UserState state);
 
     Optional<User> findByStudentIdAndNameAndPhoneNumber(String studentId, String name, String phoneNumber);
 

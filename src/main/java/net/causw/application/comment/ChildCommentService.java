@@ -22,14 +22,7 @@ import net.causw.domain.model.enums.CircleMemberStatus;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
-import net.causw.domain.validation.CircleMemberStatusValidator;
-import net.causw.domain.validation.ConstraintValidator;
-import net.causw.domain.validation.ContentsAdminValidator;
-import net.causw.domain.validation.TargetIsDeletedValidator;
-import net.causw.domain.validation.UserEqualValidator;
-import net.causw.domain.validation.UserRoleIsNoneValidator;
-import net.causw.domain.validation.UserStateValidator;
-import net.causw.domain.validation.ValidatorBucket;
+import net.causw.domain.validation.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,7 +59,9 @@ public class ChildCommentService {
         );
 
         ValidatorBucket validatorBucket = initializeValidator(creator, post);
-        validatorBucket.consistOf(ConstraintValidator.of(childComment, this.validator));
+        validatorBucket
+                .consistOf(ConstraintValidator.of(childComment, this.validator))
+                .consistOf(UserStateIsDeletedValidator.of(parentComment.getWriter().getState()));
         refChildComment.ifPresent(
                 refChild -> validatorBucket.consistOf(TargetIsDeletedValidator.of(refChild.getIsDeleted(), StaticValue.DOMAIN_CHILD_COMMENT))
         );
@@ -178,6 +173,11 @@ public class ChildCommentService {
     @Transactional
     public void likeChildComment(User user, String childCommentId) {
         ChildComment childComment = getChildComment(childCommentId);
+
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+        validatorBucket
+                .consistOf(UserStateIsDeletedValidator.of(childComment.getWriter().getState()))
+                .validate();
 
         if (isChildCommentAlreadyLike(user, childCommentId)) {
             throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.CHILD_COMMENT_ALREADY_LIKED);
