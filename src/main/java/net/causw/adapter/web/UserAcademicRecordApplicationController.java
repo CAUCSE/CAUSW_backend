@@ -42,8 +42,8 @@ public class UserAcademicRecordApplicationController {
      */
     @GetMapping("/list/active-users")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN', 'PRESIDENT', 'VICE_PRESIDENT')")
-    @Operation(summary = "전체 유저의 학적 정보 목록 조회",
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and securityService.isAdminOrPresidentOrVicePresident()")
+    @Operation(summary = "전체 유저의 학적 정보 목록 조회(관리자용)",
             description = "전체 유저의 학적 정보 목록을 조회합니다.")
     public Page<UserAcademicRecordListResponseDto> getAllUserAcademicRecordPage(
             @ParameterObject Pageable pageable
@@ -58,8 +58,8 @@ public class UserAcademicRecordApplicationController {
      */
     @GetMapping("/list/await")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN', 'PRESIDENT', 'VICE_PRESIDENT')")
-    @Operation(summary = "전체 학적 인증 승인 대기 목록 조회",
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and securityService.isAdminOrPresidentOrVicePresident()")
+    @Operation(summary = "전체 학적 인증 승인 대기 목록 조회(관리자용)",
             description = "전체 학적 인증 승인 대기 목록 조회합니다.")
     public Page<UserAcademicRecordListResponseDto> getAllUserAwaitingAcademicRecordPage(
             @ParameterObject Pageable pageable
@@ -73,8 +73,8 @@ public class UserAcademicRecordApplicationController {
      */
     @PutMapping("/request-all")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN', 'PRESIDENT', 'VICE_PRESIDENT')")
-    @Operation(summary = "재학 인증 일괄 요청",
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and securityService.isAdminOrPresidentOrVicePresident()")
+    @Operation(summary = "재학 인증 일괄 요청(관리자용)",
             description = "전체 유저의 재학 인증을 요청합니다.")
     public Void requestAllUserAcademicRecordApplication(
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -89,8 +89,8 @@ public class UserAcademicRecordApplicationController {
      */
     @GetMapping("/record/{userId}")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN', 'PRESIDENT', 'VICE_PRESIDENT')")
-    @Operation(summary = "유저 학적 정보 상세 보기",
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and securityService.isAdminOrPresidentOrVicePresident()")
+    @Operation(summary = "유저 학적 정보 상세 보기(관리자용)",
             description = "유저 학적 정보 상세를 조회합니다.")
     public UserAcademicRecordInfoResponseDto getUserAcademicRecordInfo(
             @PathVariable("userId") String userId
@@ -106,7 +106,9 @@ public class UserAcademicRecordApplicationController {
      */
     @PutMapping("/record/{userId}")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN', 'PRESIDENT', 'VICE_PRESIDENT')")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and securityService.isAdminOrPresidentOrVicePresident()")
+    @Operation(summary = "유저 학적 정보 노트 변경(관리자용)",
+            description = "유저 학적 정보 노트를 변경합니다.")
     public Void updateUserAcademicRecordNote(
             @PathVariable("userId") String userId,
             @RequestBody String note
@@ -122,8 +124,8 @@ public class UserAcademicRecordApplicationController {
      */
     @GetMapping("/application/{userId}/{applicationId}")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN', 'PRESIDENT', 'VICE_PRESIDENT')")
-    @Operation(summary = "유저 학적 승인 요청 상세 보기",
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and securityService.isAdminOrPresidentOrVicePresident()")
+    @Operation(summary = "유저 학적 승인 요청 상세 보기(관리자용)",
             description = "유저 학적 승인 요청 상세를 조회합니다.")
     public UserAcademicRecordApplicationInfoResponseDto getUserAcademicRecordApplicationInfo(
             @PathVariable("userId") String userId,
@@ -140,8 +142,8 @@ public class UserAcademicRecordApplicationController {
      */
     @PutMapping("/update")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN', 'PRESIDENT', 'VICE_PRESIDENT')")
-    @Operation(summary = "유저 학적 정보 상태 변경",
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and securityService.isAdminOrPresidentOrVicePresident()")
+    @Operation(summary = "유저 학적 정보 상태 변경(관리자용)",
             description = "유저 학적 정보 상태를 변경합니다.")
     public Void updateUserAcademicStatus(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -158,8 +160,8 @@ public class UserAcademicRecordApplicationController {
      */
     @PutMapping("/application/admin")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN', 'PRESIDENT', 'VICE_PRESIDENT')")
-    @Operation(summary = "유저 학적 인증 승인 상태 변경(승인/거부)",
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and securityService.isAdminOrPresidentOrVicePresident()")
+    @Operation(summary = "유저 학적 인증 승인 상태 변경(승인/거부)(관리자용)",
             description = "유저 학적 인증 승인 상태를 변경합니다.")
     public Void updateUserAcademicRecordApplicationStatus(
             @AuthenticationPrincipal CustomUserDetails userDetails,
