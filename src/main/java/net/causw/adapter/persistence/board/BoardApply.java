@@ -30,7 +30,7 @@ public class BoardApply extends BaseEntity {
     @Column(name = "category", nullable = false)
     private String category;
 
-    @Column(name = "acceptStatus", nullable = false)
+    @Column(name = "accept_status", nullable = false)
     @ColumnDefault("AWAIT")
     private BoardApplyStatus acceptStatus;
 
