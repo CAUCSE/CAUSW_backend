@@ -165,7 +165,7 @@ public class BoardController {
 
     @GetMapping(value = "/apply/list")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT')")
     @Operation(summary = "게시판 생성 신청 조회(완료)", description = "게시판 생성 신청 목록을 조회하는 API입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json")),
@@ -184,7 +184,7 @@ public class BoardController {
 
     @GetMapping(value = "/apply/{id}")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT')")
     @Operation(summary = "게시판 생성 신청 단일 조회(완료)", description = "단일 게시판 생성 신청 내역을 조회하는 API입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json")),
@@ -204,7 +204,7 @@ public class BoardController {
 
     @PutMapping(value = "/apply/{applyId}/accept")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT')")
     @Operation(summary = "게시판 생성 신청 승인(완료)", description = "게시판 생성 신청을 승인하는 API입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json")),
@@ -225,7 +225,7 @@ public class BoardController {
 
     @PutMapping(value = "/apply/{applyId}/reject")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT')")
     @Operation(summary = "게시판 생성 신청 거부(완료)", description = "게시판 생성 신청을 거부하는 API입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json")),

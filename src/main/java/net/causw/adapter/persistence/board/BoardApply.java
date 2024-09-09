@@ -31,6 +31,7 @@ public class BoardApply extends BaseEntity {
     private String category;
 
     @Column(name = "accept_status", nullable = false)
+    @Enumerated(EnumType.STRING)
     @ColumnDefault("AWAIT")
     private BoardApplyStatus acceptStatus;
 
