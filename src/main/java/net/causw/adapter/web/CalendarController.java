@@ -25,7 +25,7 @@ public class CalendarController {
 
     @GetMapping
     @Operation(summary = "캘린더 조회 API", description = "캘린더 조회 API 입니다.")
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT')")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.academicRecordCertified() and @securityService.adminOrPresidentOrVicePresident")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
             @ApiResponse(responseCode = "4000", description = "캘린더를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
@@ -39,7 +39,7 @@ public class CalendarController {
 
     @GetMapping("/{calendarId}")
     @Operation(summary = "캘린더 단일 조회 API", description = "캘린더 단일 조회 API 입니다.")
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT')")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.academicRecordCertified() and @securityService.adminOrPresidentOrVicePresident")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
             @ApiResponse(responseCode = "4000", description = "캘린더를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
@@ -52,6 +52,7 @@ public class CalendarController {
     }
 
     @GetMapping("/home")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.academicRecordCertified()")
     @Operation(summary = "홈페이지 캘린더 조회 API", description = "홈페이지 캘린더 조회 API 입니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
@@ -67,7 +68,7 @@ public class CalendarController {
     @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)
     @Operation(summary = "캘린더 생성 API", description = "캘린더 생성 API 입니다.")
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT')")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.academicRecordCertified() and @securityService.adminOrPresidentOrVicePresident")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "CREATED", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
             @ApiResponse(responseCode = "4001", description = "이미 존재하는 캘린더 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
@@ -82,7 +83,7 @@ public class CalendarController {
 
     @PutMapping("/{calendarId}")
     @Operation(summary = "캘린더 수정 API", description = "캘린더 수정 API 입니다.")
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT')")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.academicRecordCertified() and @securityService.adminOrPresidentOrVicePresident")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "CREATED", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
             @ApiResponse(responseCode = "4000", description = "캘린더를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
