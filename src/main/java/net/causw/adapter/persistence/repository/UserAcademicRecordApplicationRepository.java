@@ -1,7 +1,6 @@
 package net.causw.adapter.persistence.repository;
 
-import io.lettuce.core.Value;
-import net.causw.adapter.persistence.user.UserAcademicRecordApplication;
+import net.causw.adapter.persistence.userAcademicRecord.UserAcademicRecordApplication;
 import net.causw.domain.model.enums.AcademicRecordRequestStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

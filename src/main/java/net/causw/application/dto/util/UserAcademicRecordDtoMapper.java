@@ -2,8 +2,8 @@ package net.causw.application.dto.util;
 
 import net.causw.adapter.persistence.semester.Semester;
 import net.causw.adapter.persistence.user.User;
-import net.causw.adapter.persistence.user.UserAcademicRecordApplication;
-import net.causw.adapter.persistence.user.UserAcademicRecordLog;
+import net.causw.adapter.persistence.userAcademicRecord.UserAcademicRecordApplication;
+import net.causw.adapter.persistence.userAcademicRecord.UserAcademicRecordLog;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.userAcademicRecordApplication.*;
 import org.mapstruct.Mapper;

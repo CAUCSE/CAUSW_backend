@@ -5,8 +5,8 @@ import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.semester.Semester;
 import net.causw.adapter.persistence.user.User;
-import net.causw.adapter.persistence.user.UserAcademicRecordApplication;
-import net.causw.adapter.persistence.user.UserAcademicRecordLog;
+import net.causw.adapter.persistence.userAcademicRecord.UserAcademicRecordApplication;
+import net.causw.adapter.persistence.userAcademicRecord.UserAcademicRecordLog;
 import net.causw.application.dto.semester.CurrentSemesterResponseDto;
 import net.causw.application.dto.userAcademicRecordApplication.*;
 import net.causw.application.dto.util.SemesterDtoMapper;
@@ -27,7 +27,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service

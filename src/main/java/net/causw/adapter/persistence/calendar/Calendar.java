@@ -21,7 +21,7 @@ public class Calendar extends BaseEntity {
     private Integer month;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "calendar_id", nullable = false)
+    @JoinColumn(name = "uuid_file_id", nullable = false)
     private UuidFile uuidFile;
 
     public static Calendar of(
