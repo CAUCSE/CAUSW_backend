@@ -17,11 +17,11 @@ jobs:
       - name: Checkout branch
         uses: actions/checkout@v3
 
-      # java 버전 세팅(JDK 17)
-      - name: Set up JDK 17
+      # java 버전 세팅(JDK 11)
+      - name: Set up JDK 11
         uses: actions/setup-java@v3
         with:
-          java-version: '17'
+          java-version: '11'
           distribution: 'zulu'
 
       # git ignore한 yml 파일들 github secret에서 복사해 오기
