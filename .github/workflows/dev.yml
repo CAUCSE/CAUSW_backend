@@ -27,8 +27,8 @@ jobs:
       # git ignore한 yml 파일들 github secret에서 복사해 오기
       - name: Copy secret
         env:
-          APPLICATION_FILE: ${{ secrets.APPLICATION }}
-          APPLICATION-DEV_FILE: ${{secrets.APPLICATION-DEV}}
+          APPLICATION_FILE: ${{ secrets.APPLICATION_PROFILE_DEV }}
+          APPLICATION-DEV_FILE: ${{secrets.APPLICATION_DEV}}
           DIR: ./src/main/resources
 
           APPLICATION_FILE_NAME: application.yml
@@ -100,4 +100,3 @@ jobs:
             sudo fuser -k -n tcp 8080
             sleep 15
             sudo nohup java -jar /home/ubuntu/app/*.jar > ./nohup.out 2>&1 &
-
