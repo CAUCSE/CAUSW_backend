@@ -28,16 +28,16 @@ jobs:
       - name: Copy secret
         env:
           APPLICATION_FILE: ${{ secrets.APPLICATION_PROFILE_DEV }}
-          APPLICATION-DEV_FILE: ${{secrets.APPLICATION_DEV}}
+          APPLICATION_DEV_FILE: ${{ secrets.APPLICATION_DEV }}
           DIR: ./src/main/resources
 
           APPLICATION_FILE_NAME: application.yml
-          APPLICATION-DEV_FILE_NAME: application-dev.yml
+          APPLICATION_DEV_FILE_NAME: application-dev.yml
         run: |
           touch $DIR/$APPLICATION_FILE_NAME
-          touch $DIR/$APPLICATION-DEV_FILE_NAME
+          touch $DIR/$APPLICATION_DEV_FILE_NAME
           echo "$APPLICATION_FILE" > $DIR/$APPLICATION_FILE_NAME
-          echo "$APPLICATION-DEV_FILE" > $DIR/$APPLICATION-DEV_FILE_NAME
+          echo "$APPLICATION_DEV_FILE" > $DIR/$APPLICATION_DEV_FILE_NAME
 
       # gradlew 실행 권한 부여
       - name: Run chmod to make gradlew executable
@@ -77,6 +77,16 @@ jobs:
           username: ${{ secrets.EC2_USER_DEV }}
           source: "*.jar"
           target: "/home/ubuntu/app"
+
+# 전체 프로젝트 코드 Github Actions에서 어떻게 Build 되고, 업로드 될 지 Debugging 원할 시 주석 해제
+#      - name: Upload project code
+#        uses: appleboy/scp-action@master
+#        with:
+#          key: ${{ secrets.EC2_KEY_DEV }}
+#          host: ${{ secrets.EC2_HOST_DEV }}
+#          username: ${{ secrets.EC2_USER_DEV }}
+#          target: /home/ubuntu/app/spring_source
+#          source: .
 
       # Redis Server 구동
       - name: Start redis-server
