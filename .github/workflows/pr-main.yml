@@ -28,16 +28,16 @@ jobs:
       - name: Copy secret
         env:
           APPLICATION_FILE: ${{ secrets.APPLICATION_PROFILE_PROD }}
-          APPLICATION-PROD_FILE: ${{secrets.APPLICATION_PROD}}
+          APPLICATION_PROD_FILE: ${{secrets.APPLICATION_PROD}}
           DIR: ./src/main/resources
 
           APPLICATION_FILE_NAME: application.yml
-          APPLICATION-PROD_FILE_NAME: application-prod.yml
+          APPLICATION_PROD_FILE_NAME: application-prod.yml
         run: |
           touch $DIR/$APPLICATION_FILE_NAME
-          touch $DIR/$APPLICATION-PROD_FILE_NAME
+          touch $DIR/$APPLICATION_PROD_FILE_NAME
           echo "$APPLICATION_FILE" > $DIR/$APPLICATION_FILE_NAME
-          echo "$APPLICATION-PROD_FILE" > $DIR/$APPLICATION-PROD_FILE_NAME
+          echo "$APPLICATION_PROD_FILE" > $DIR/$APPLICATION_PROD_FILE_NAME
 
       # gradlew 실행 권한 부여
       - name: Run chmod to make gradlew executable
