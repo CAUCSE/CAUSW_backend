@@ -2,6 +2,9 @@ package net.causw.adapter.web;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.userCouncilFee.CreateUserCouncilFeeRequestDto;
 import net.causw.application.dto.userCouncilFee.UserCouncilFeeListResponseDto;
@@ -71,9 +74,9 @@ public class UserCouncilFeeController {
         description = "학생회비 납부자를 등록합니다.")
     public void registerUserCouncilFee(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestBody CreateUserCouncilFeeRequestDto createUserCouncilFeeRequestDto
+            @RequestBody @Valid CreateUserCouncilFeeRequestDto createUserCouncilFeeRequestDto
     ) {
-        userCouncilFeeService.registerUserCouncilFee(userDetails.getUser(), createUserCouncilFeeRequestDto);
+        userCouncilFeeService.creatUserCouncilFee(userDetails.getUser(), createUserCouncilFeeRequestDto);
     }
 
     @PutMapping("/update")
@@ -85,11 +88,14 @@ public class UserCouncilFeeController {
         description = "학생회비 납부자를 수정합니다.")
     public void updateUserCouncilFee(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestHeader String userId,
-            @RequestHeader String userCouncilFeeId,
-            @RequestBody CreateUserCouncilFeeRequestDto createUserCouncilFeeRequestDto
+            @RequestHeader @Pattern(
+                    regexp = "^[0-9a-fA-F]{32}$",
+                    message = "대상 사용자 고유 id 값은 대시(-) 없이 32자리의 UUID 형식이어야 합니다."
+            )
+            @NotBlank(message = "대상 사용자 고유 id 값은 필수 입력 값입니다.") String userCouncilFeeId,
+            @RequestBody @Valid CreateUserCouncilFeeRequestDto createUserCouncilFeeRequestDto
     ) {
-        userCouncilFeeService.updateUserCouncilFee(userDetails.getUser(), userId, userCouncilFeeId, createUserCouncilFeeRequestDto);
+        userCouncilFeeService.updateUserCouncilFee(userDetails.getUser(), userCouncilFeeId, createUserCouncilFeeRequestDto);
     }
 
     @DeleteMapping("/delete")
@@ -142,7 +148,7 @@ public class UserCouncilFeeController {
     public Boolean isCurrentSemesterAppliedBySelf(
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return userCouncilFeeService.isCurrentSemesterApplied(userDetails.getUser());
+        return userCouncilFeeService.isCurrentSemesterAppliedBySelf(userDetails.getUser());
     }
 
 }

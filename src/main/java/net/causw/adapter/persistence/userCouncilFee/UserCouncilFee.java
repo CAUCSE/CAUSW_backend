@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.user.User;
+import net.causw.domain.exceptions.BadRequestException;
+import net.causw.domain.exceptions.ErrorCode;
+import net.causw.domain.model.util.MessageUtil;
 
 @Getter
 @Entity
@@ -35,4 +38,67 @@ public class UserCouncilFee extends BaseEntity {
 
     @Column(name = "refunded_at", nullable = true)
     private Integer refundedAt;
+
+    public void update(
+            Boolean isJoinedService,
+            User user,
+            CouncilFeeFakeUser councilFeeFakeUser,
+            Integer paidAt,
+            Integer numOfPaidSemester,
+            Boolean isRefunded,
+            Integer refundedAt
+    ) {
+        valid(isJoinedService, user, councilFeeFakeUser, paidAt, numOfPaidSemester, isRefunded, refundedAt);
+        this.isJoinedService = isJoinedService;
+        this.user = user;
+        this.councilFeeFakeUser = councilFeeFakeUser;
+        this.paidAt = paidAt;
+        this.numOfPaidSemester = numOfPaidSemester;
+        this.isRefunded = isRefunded;
+        this.refundedAt = refundedAt;
+    }
+
+    private static void valid(
+            Boolean isJoinedService,
+            User user,
+            CouncilFeeFakeUser councilFeeFakeUser,
+            Integer paidAt,
+            Integer numOfPaidSemester,
+            Boolean isRefunded,
+            Integer refundedAt
+    ) {
+        if (
+                (user == null ^ councilFeeFakeUser == null) ||
+                        (isJoinedService && user == null) ||
+                        (!isJoinedService && councilFeeFakeUser == null) ||
+                        paidAt == null ||
+                        numOfPaidSemester == null ||
+                        isRefunded == null ||
+                        (isRefunded && refundedAt == null)
+        ) {
+            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_USER_COUNCIL_FEE_INFO);
+        }
+    }
+
+    public static UserCouncilFee of(
+            Boolean isJoinedService,
+            User user,
+            CouncilFeeFakeUser councilFeeFakeUser,
+            Integer paidAt,
+            Integer numOfPaidSemester,
+            Boolean isRefunded,
+            Integer refundedAt
+    ) {
+        valid(isJoinedService, user, councilFeeFakeUser, paidAt, numOfPaidSemester, isRefunded, refundedAt);
+        return UserCouncilFee.builder()
+                .isJoinedService(isJoinedService)
+                .user(user)
+                .councilFeeFakeUser(councilFeeFakeUser)
+                .paidAt(paidAt)
+                .numOfPaidSemester(numOfPaidSemester)
+                .isRefunded(isRefunded)
+                .refundedAt(refundedAt)
+                .build();
+    }
+
 }
