@@ -29,6 +29,14 @@ public class SemesterService {
         return toCurrentSemesterResponseDto(currentSemesterList.get(0));
     }
 
+    public Semester getCurrentSemesterEntity() {
+        List<Semester> currentSemesterList = semesterRepository.findAllByIsCurrent(true);
+        if (currentSemesterList.isEmpty()) {
+            return null;
+        }
+        return currentSemesterList.get(0);
+    }
+
     public List<CurrentSemesterResponseDto> getSemesterList() {
         List<Semester> semesterList = semesterRepository.findAll();
         return semesterList.stream()

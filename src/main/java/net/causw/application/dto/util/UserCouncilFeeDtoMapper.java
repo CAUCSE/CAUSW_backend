@@ -52,14 +52,13 @@ public interface UserCouncilFeeDtoMapper {
     @Mapping(target = "graduationType", source = "user.graduationType")
     @Mapping(target = "phoneNumber", source = "user.phoneNumber")
     @Mapping(target = "joinedAt", source = "user.createdAt")
-    @Mapping(target = "approvedAt", source = "approvedAt")
     @Mapping(target = "paidAt", source = "userCouncilFee.paidAt")
     @Mapping(target = "numOfPaidSemester", source = "userCouncilFee.numOfPaidSemester")
     @Mapping(target = "isRefunded", source = "userCouncilFee.isRefunded")
     @Mapping(target = "refundedAt", source = "userCouncilFee.refundedAt")
     @Mapping(target = "restOfSemester", source = "restOfSemester")
     @Mapping(target = "isAppliedThisSemester", source = "isAppliedThisSemester")
-    UserCouncilFeeResponseDto toUserCouncilFeeResponseDto(UserCouncilFee userCouncilFee, User user, LocalDate approvedAt, Integer restOfSemester, Boolean isAppliedThisSemester);
+    UserCouncilFeeResponseDto toUserCouncilFeeResponseDto(UserCouncilFee userCouncilFee, User user, Integer restOfSemester, Boolean isAppliedThisSemester);
 
     @Mapping(target = "userCouncilFeeId", source = "userCouncilFee.id")
     @Mapping(target = "isJoinedService", source = "userCouncilFee.isJoinedService")

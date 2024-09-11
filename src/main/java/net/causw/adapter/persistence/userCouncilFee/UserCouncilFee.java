@@ -23,7 +23,7 @@ public class UserCouncilFee extends BaseEntity {
     @JoinColumn(name = "user_id", unique = true, nullable = true)
     private User user;
 
-    @OneToOne
+    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
     @JoinColumn(name = "council_fee_fake_fee", unique = true, nullable = true)
     private CouncilFeeFakeUser councilFeeFakeUser;
 

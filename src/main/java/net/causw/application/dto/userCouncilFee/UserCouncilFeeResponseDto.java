@@ -59,9 +59,6 @@ public class UserCouncilFeeResponseDto {
     @Schema(description = "동문 네트워크 가입일(서비스 가입 시만 존재)", example = "2021-01-01")
     private LocalDate joinedAt;
 
-    @Schema(description = "동문 네트워크 가입 승인일(서비스 가입 시만 존재)", example = "2021-01-01")
-    private LocalDate approvedAt;
-
     @Schema(description = "납부 시점 학기", example = "1")
     private Integer paidAt;
 

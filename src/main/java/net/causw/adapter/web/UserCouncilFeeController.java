@@ -52,7 +52,7 @@ public class UserCouncilFeeController {
         return userCouncilFeeService.getUserCouncilFeeList(pageable);
     }
 
-    @GetMapping("/info/{userId}")
+    @GetMapping("/info/{userCouncilFeeId}")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("@securityService.activeAndNotNoneUser() and " +
             "@securityService.academicRecordCertified() and " +
@@ -60,19 +60,19 @@ public class UserCouncilFeeController {
     @Operation(summary = "학생회비 납부자 상세 조회",
         description = "학생회비 납부자 상세 정보를 조회합니다.")
     public UserCouncilFeeResponseDto getUserCouncilFeeInfo(
-            @PathVariable(value = "userId") String userId
+            @PathVariable(value = "userCouncilFeeId") String userCouncilFeeId
     ) {
-        return userCouncilFeeService.getUserCouncilFeeInfo(userId);
+        return userCouncilFeeService.getUserCouncilFeeInfo(userCouncilFeeId);
     }
 
-    @PostMapping("/register")
+    @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("@securityService.activeAndNotNoneUser() and " +
             "@securityService.academicRecordCertified() and " +
             "@securityService.adminOrPresidentOrVicePresident()")
     @Operation(summary = "학생회비 납부자 등록",
         description = "학생회비 납부자를 등록합니다.")
-    public void registerUserCouncilFee(
+    public void createUserCouncilFee(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody @Valid CreateUserCouncilFeeRequestDto createUserCouncilFeeRequestDto
     ) {
@@ -107,10 +107,9 @@ public class UserCouncilFeeController {
         description = "학생회비 납부자를 삭제합니다.")
     public void deleteUserCouncilFee(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestHeader String userId,
             @RequestHeader String userCouncilFeeId
     ) {
-       userCouncilFeeService.deleteUserCouncilFee(userDetails.getUser(), userId, userCouncilFeeId);
+       userCouncilFeeService.deleteUserCouncilFee(userDetails.getUser(), userCouncilFeeId);
     }
 
     @GetMapping("/getUserIdByStudentId")
