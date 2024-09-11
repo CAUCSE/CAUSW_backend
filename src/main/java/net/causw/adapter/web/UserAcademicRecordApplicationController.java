@@ -69,21 +69,6 @@ public class UserAcademicRecordApplicationController {
     }
 
     /**
-     * 재학 인증 일괄 요청
-     * @return Void
-     */
-    @PutMapping("/request-all")
-    @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.isAdminOrPresidentOrVicePresident()")
-    @Operation(summary = "재학 인증 일괄 요청(관리자용)",
-            description = "전체 유저의 재학 인증을 요청합니다.")
-    public Void requestAllUserAcademicRecordApplication(
-            @AuthenticationPrincipal CustomUserDetails userDetails
-    ) {
-        return userAcademicRecordApplicationService.requestAllUserAcademicRecordApplication(userDetails.getUser());
-    }
-
-    /**
      * 유저 학적 정보 상세 보기
      * @param userId
      * @return UserAcademicRecordInfoResponseDto

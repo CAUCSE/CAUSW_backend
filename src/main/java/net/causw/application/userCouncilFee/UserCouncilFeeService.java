@@ -34,6 +34,7 @@ public class UserCouncilFeeService {
     private final UserCouncilFeeLogRepository userCouncilFeeLogRepository;
     private final SemesterService semesterService;
 
+    // TODO: excel export 구현
     public void exportUserCouncilFeeToExcel(HttpServletResponse response) {
     }
 

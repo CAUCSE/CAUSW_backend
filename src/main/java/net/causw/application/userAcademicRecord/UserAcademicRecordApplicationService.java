@@ -54,35 +54,6 @@ public class UserAcademicRecordApplicationService {
                 .map(this::toUserAcademicRecordApplicationListResponseDto);
     }
 
-    @Transactional
-    public Void requestAllUserAcademicRecordApplication(User user) {
-        Semester priorSemester = getCurrentSemester();
-
-        priorSemester.updateIsCurrent(false);
-        semesterRepository.save(priorSemester);
-
-        Semester currentSemester = (priorSemester.getSemesterType().equals(SemesterType.FIRST)) ?
-                Semester.of(priorSemester.getSemesterYear(), SemesterType.SECOND, user) :
-                Semester.of(priorSemester.getSemesterYear() + 1, SemesterType.FIRST, user);
-        semesterRepository.save(currentSemester);
-
-
-        List<User> userList = userRepository.findByAcademicStatusInOrAcademicStatusIsNull(
-                List.of(
-                        AcademicStatus.ENROLLED,
-                        AcademicStatus.LEAVE_OF_ABSENCE
-                ))
-                .stream()
-                .peek(
-                        (u) -> u.setAcademicStatus(AcademicStatus.UNDETERMINED)
-                )
-                .toList();
-
-        userRepository.saveAll(userList);
-
-        return null;
-    }
-
     public UserAcademicRecordInfoResponseDto getUserAcademicRecordInfo(String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND

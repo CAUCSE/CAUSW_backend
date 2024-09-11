@@ -48,6 +48,13 @@ public class CouncilFeeFakeUser extends BaseEntity {
     @Column(name = "graduation_type", nullable = true)
     private GraduationType graduationType;
 
+    public void setCurrentCompletedSemester(Integer currentCompletedSemester) {
+        if (this.academicStatus.equals(AcademicStatus.ENROLLED) && currentCompletedSemester == null) {
+            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_COUNCIL_FEE_FAKE_USER_INFO);
+        }
+        this.currentCompletedSemester = currentCompletedSemester;
+    }
+
     public void update(
             String name,
             String studentId,
