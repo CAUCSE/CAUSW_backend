@@ -8,6 +8,7 @@ import net.causw.domain.model.enums.AcademicStatus;
 import net.causw.domain.model.enums.GraduationType;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Builder

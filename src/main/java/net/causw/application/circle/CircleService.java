@@ -13,9 +13,8 @@ import net.causw.application.dto.circle.*;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.user.UserResponseDto;
 import net.causw.application.dto.util.CircleServiceDtoMapper;
-import net.causw.application.dto.util.DtoMapper;
 import net.causw.application.dto.util.StatusUtil;
-import net.causw.application.excel.ExcelService;
+import net.causw.application.excel.CircleExcelService;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
@@ -39,7 +38,7 @@ import static net.causw.application.dto.board.BoardOfCircleResponseDto.isWriteab
 @Service
 @RequiredArgsConstructor
 public class CircleService {
-    private final ExcelService excelService;
+    private final CircleExcelService circleExcelService;
     private final Validator validator;
     private final CircleRepository circleRepository;
     private final CircleMemberRepository circleMemberRepository;
@@ -605,7 +604,7 @@ public class CircleService {
         List<CircleMemberResponseDto> awaitingMembers = getUserList(user, circleId, CircleMemberStatus.AWAIT);
         List<CircleMemberResponseDto> activeMembers = getUserList(user, circleId, CircleMemberStatus.MEMBER);
 
-        excelService.generateCircleExcel(response, circleName, awaitingMembers, activeMembers);
+        circleExcelService.generateCircleExcel(response, circleName, awaitingMembers, activeMembers);
     }
 
 

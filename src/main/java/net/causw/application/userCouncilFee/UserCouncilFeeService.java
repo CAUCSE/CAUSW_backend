@@ -14,6 +14,8 @@ import net.causw.application.dto.userCouncilFee.CreateUserCouncilFeeRequestDto;
 import net.causw.application.dto.userCouncilFee.UserCouncilFeeListResponseDto;
 import net.causw.application.dto.userCouncilFee.UserCouncilFeeResponseDto;
 import net.causw.application.dto.util.UserCouncilFeeDtoMapper;
+import net.causw.application.excel.CircleExcelService;
+import net.causw.application.excel.CouncilFeeExcelService;
 import net.causw.application.semester.SemesterService;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -24,24 +26,37 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class UserCouncilFeeService {
 
     private final UserCouncilFeeRepository userCouncilFeeRepository;
+    private final CouncilFeeExcelService councilFeeExcelService;
     private final UserRepository userRepository;
     private final UserCouncilFeeLogRepository userCouncilFeeLogRepository;
     private final SemesterService semesterService;
 
-    // TODO: excel export 구현
     public void exportUserCouncilFeeToExcel(HttpServletResponse response) {
+        Semester semester = semesterService.getCurrentSemesterEntity();
+
+        String fileName = semester.getSemesterYear().toString() + "-" + semester.getSemesterType().getValue() + "_학생회비_납부자_현황";
+
+        List<UserCouncilFeeResponseDto> userCouncilFeeResponseDtoList = userCouncilFeeRepository.findAll()
+                        .stream().map(userCouncilFee -> (userCouncilFee.getIsJoinedService()) ?
+                                toUserCouncilFeeResponseDto(userCouncilFee, userCouncilFee.getUser(), getRestOfSemester(userCouncilFee), getIsAppliedCurrentSemester(userCouncilFee)) :
+                                toUserCouncilFeeResponseDtoReduced(userCouncilFee, userCouncilFee.getCouncilFeeFakeUser(), getRestOfSemester(userCouncilFee), getIsAppliedCurrentSemester(userCouncilFee))
+                        ).toList();
+
+        councilFeeExcelService.generateExcel(response, fileName, userCouncilFeeResponseDtoList);
     }
 
     public Page<UserCouncilFeeListResponseDto> getUserCouncilFeeList(Pageable pageable) {
         return userCouncilFeeRepository.findAll(pageable)
                 .map(userCouncilFee -> (userCouncilFee.getIsJoinedService()) ?
-                        toUserCouncilFeeListResponseDtoReduced(userCouncilFee, userCouncilFee.getUser()) :
+                        toUserCouncilFeeListResponseDto(userCouncilFee, userCouncilFee.getUser()) :
                         toUserCouncilFeeListResponseDtoReduced(userCouncilFee, userCouncilFee.getCouncilFeeFakeUser())
                 );
     }
@@ -51,7 +66,7 @@ public class UserCouncilFeeService {
                 .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_COUNCIL_FEE_NOT_FOUND));
 
         if (userCouncilFee.getIsJoinedService()) {
-            return toUserCouncilFeeResponseDtoReduced(
+            return toUserCouncilFeeResponseDto(
                     userCouncilFee,
                     userCouncilFee.getUser(),
                     getRestOfSemester(userCouncilFee),
@@ -293,7 +308,7 @@ public class UserCouncilFeeService {
     }
 
     // Dto Mapper private method
-    private UserCouncilFeeListResponseDto toUserCouncilFeeListResponseDtoReduced(UserCouncilFee userCouncilFee, User user) {
+    private UserCouncilFeeListResponseDto toUserCouncilFeeListResponseDto(UserCouncilFee userCouncilFee, User user) {
         return UserCouncilFeeDtoMapper.INSTANCE.toUserCouncilFeeListResponseDto(userCouncilFee, user);
     }
 
@@ -301,7 +316,7 @@ public class UserCouncilFeeService {
         return UserCouncilFeeDtoMapper.INSTANCE.toUserCouncilFeeListResponseDtoReduced(userCouncilFee, councilFeeFakeUser);
     }
 
-    private UserCouncilFeeResponseDto toUserCouncilFeeResponseDtoReduced(UserCouncilFee userCouncilFee, User user, Integer restOfSemester, Boolean isAppliedThisSemester) {
+    private UserCouncilFeeResponseDto toUserCouncilFeeResponseDto(UserCouncilFee userCouncilFee, User user, Integer restOfSemester, Boolean isAppliedThisSemester) {
         return UserCouncilFeeDtoMapper.INSTANCE.toUserCouncilFeeResponseDto(userCouncilFee, user, restOfSemester, isAppliedThisSemester);
     }
 

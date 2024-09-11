@@ -22,7 +22,7 @@ import java.time.LocalDate;
 public class UserCouncilFeeLog extends BaseEntity {
 
     @ManyToOne
-    @Column(name = "controlled_user_id", nullable = false)
+    @JoinColumn(name = "controlled_user_id", nullable = false)
     private User controlledUser;
 
     @Enumerated(EnumType.STRING)
@@ -30,22 +30,22 @@ public class UserCouncilFeeLog extends BaseEntity {
     private LogType logType;
 
     @ManyToOne
-    @Column(name = "target_user_council_fee_id", nullable = false)
+    @JoinColumn(name = "target_user_council_fee_id", nullable = false)
     private UserCouncilFee targetUserCouncilFee;
 
     @Column(name = "target_is_joined_service", nullable = false)
     private Boolean targetIsJoinedService;
 
     @ManyToOne
-    @Column(name = "target_user_id", nullable = true)
+    @JoinColumn(name = "target_user_id", nullable = true)
     private User targetUser;
 
     @ManyToOne
-    @Column(name = "target_council_fee_fake_user_id", nullable = true)
+    @JoinColumn(name = "target_council_fee_fake_user_id", nullable = true)
     private CouncilFeeFakeUser targetCouncilFeeFakeUser;
 
     @ManyToOne
-    @Column(name = "time_of_semester_id", nullable = false)
+    @JoinColumn(name = "time_of_semester_id", nullable = false)
     private Semester timeOfSemester;
 
     @Column(name = "time_of_semester_year", nullable = false)
