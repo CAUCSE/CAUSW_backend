@@ -9,10 +9,12 @@ import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.board.*;
 import net.causw.application.dto.post.PostContentDto;
+import net.causw.application.dto.user.UserResponseDto;
 import net.causw.application.dto.util.DtoMapper;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
+import net.causw.domain.model.enums.BoardApplyStatus;
 import net.causw.domain.model.enums.CircleMemberStatus;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.util.MessageUtil;
@@ -258,6 +260,100 @@ public class BoardService {
         return toBoardResponseDto(boardRepository.save(newBoard), creator.getRoles());
     }
 
+    @Transactional(readOnly = true)
+    public List<NormalBoardAppliesResponseDto> findAllBoardApply() {
+        // 관리자, 학생회장, 부학생회장만 게시판 관리 기능 사용 가능
+        return this.boardApplyRepository.findAllByAcceptStatus(BoardApplyStatus.AWAIT)
+                .stream()
+                .map(DtoMapper.INSTANCE::toNormalBoardAppliesResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public NormalBoardApplyResponseDto findBoardApplyByApplyId(String applyId) {
+        // 관리자, 학생회장, 부학생회장만 게시판 관리 기능 사용 가능
+        BoardApply boardApply = this.boardApplyRepository.findById(applyId)
+                .orElseThrow(() -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.APPLY_NOT_FOUND
+                ));
+        return DtoMapper.INSTANCE.toNormalBoardApplyResponseDto(
+                boardApply, DtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null));
+    }
+
+    @Transactional
+    public NormalBoardApplyResponseDto accept(String boardApplyId) {
+        BoardApply boardApply = this.boardApplyRepository.findById(boardApplyId)
+                .orElseThrow(() -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.APPLY_NOT_FOUND
+                ));
+
+        if (boardApply.getAcceptStatus() == BoardApplyStatus.ACCEPTED) { // 해당 신청이 이미 승인된 경우
+            throw new BadRequestException(
+                    ErrorCode.CANNOT_PERFORMED,
+                    MessageUtil.APPLY_ALREADY_ACCEPTED
+            );
+        }
+
+        if (boardApply.getAcceptStatus() == BoardApplyStatus.REJECT) { // 해당 신청이 이미 거부된 경우
+            throw new BadRequestException(
+                    ErrorCode.CANNOT_PERFORMED,
+                    MessageUtil.APPLY_ALREADY_REJECTED
+            );
+        }
+
+        boardApply.updateAcceptStatus(BoardApplyStatus.ACCEPTED); // 해당 boardApply의 상태를 ACCEPTED로 변경
+        this.boardApplyRepository.save(boardApply);
+
+        List<String> createRoleList = new ArrayList<>();
+        createRoleList.add("ALL"); // 일반 사용자의 게시판 신청은 항상 글 작성 권한이 '상관없음'임
+        UserResponseDto userResponseDto = DtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null);
+        NormalBoardApplyResponseDto normalBoardApplyResponseDto =
+                DtoMapper.INSTANCE.toNormalBoardApplyResponseDto(boardApply, userResponseDto);
+        Board newBoard = Board.of(
+                normalBoardApplyResponseDto.getBoardName(),
+                normalBoardApplyResponseDto.getDescription(),
+                createRoleList,
+                StaticValue.BOARD_NAME_APP_NOTICE,
+                normalBoardApplyResponseDto.getIsAnonymousAllowed(),
+                null
+        );
+
+        this.boardRepository.save(newBoard);
+
+        return DtoMapper.INSTANCE.toNormalBoardApplyResponseDto(boardApply, userResponseDto);
+    }
+
+    @Transactional
+    public NormalBoardApplyResponseDto reject(String boardApplyId) {
+        BoardApply boardApply = this.boardApplyRepository.findById(boardApplyId)
+                .orElseThrow(() -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.APPLY_NOT_FOUND
+                ));
+
+        if (boardApply.getAcceptStatus() == BoardApplyStatus.ACCEPTED) { // 해당 신청이 이미 승인된 경우
+            throw new BadRequestException(
+                    ErrorCode.CANNOT_PERFORMED,
+                    MessageUtil.APPLY_ALREADY_ACCEPTED
+            );
+        }
+
+        if (boardApply.getAcceptStatus() == BoardApplyStatus.REJECT) { // 해당 신청이 이미 거부된 경우
+            throw new BadRequestException(
+                    ErrorCode.CANNOT_PERFORMED,
+                    MessageUtil.APPLY_ALREADY_REJECTED
+            );
+        }
+
+        boardApply.updateAcceptStatus(BoardApplyStatus.REJECT); // 해당 boardApply의 상태를 REJECT로 변경
+        this.boardApplyRepository.save(boardApply);
+
+        return DtoMapper.INSTANCE.toNormalBoardApplyResponseDto(
+                boardApply,
+                DtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null));
+    }
 
     @Transactional
     public BoardResponseDto updateBoard(
