@@ -33,7 +33,6 @@ public class NormalBoardApplyResponseDto {
     @Schema(description = "익명 허용 여부", example = "true -> boolean으로 받아야함")
     private Boolean isAnonymousAllowed;
 
-    @NotEmpty(message = "게시판 생성 신청자는 비어있을 수 없습니다.")
     @Schema(description = "게시판 생성 신청자", example = "게시판 생성 신청 User 객체를 반환합니다.")
     private UserResponseDto user;
 }
