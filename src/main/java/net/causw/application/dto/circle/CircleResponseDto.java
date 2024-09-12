@@ -51,6 +51,12 @@ public class CircleResponseDto {
     @Schema(description = "동아리 생성 일시", example = "2024-02-04T16:11:02.342644")
     private LocalDateTime createdAt;
 
+    @Schema(description = "동아리 모집 종료 날짜", example = "2024-10-10")
+    private LocalDateTime recruitEndDate;
+
+    @Schema(description = "동아리 모집 여부", example = "false")
+    private Boolean isRecruit;
+
 //
 //    public static CircleResponseDto from(CircleDomainModel circle) {
 //        return CircleResponseDto.builder()
