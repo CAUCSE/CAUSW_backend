@@ -11,6 +11,8 @@ import net.causw.application.dto.board.*;
 import net.causw.application.dto.post.PostContentDto;
 import net.causw.application.dto.user.UserResponseDto;
 import net.causw.application.dto.util.DtoMapper;
+import net.causw.application.dto.util.PostDtoMapper;
+import net.causw.application.dto.util.UserDtoMapper;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
@@ -125,7 +127,7 @@ public class BoardService {
         return boards.stream()
                 .map(board -> {
                     List<PostContentDto> recentPosts = postRepository.findTop3ByBoard_IdAndIsDeletedOrderByCreatedAtDesc(board.getId(), false).stream()
-                            .map(DtoMapper.INSTANCE::toPostContentDto)
+                            .map(PostDtoMapper.INSTANCE::toPostContentDto)
                             .collect(Collectors.toList());
                     return DtoMapper.INSTANCE.toBoardMainResponseDto(board, recentPosts);
                 })
@@ -278,7 +280,7 @@ public class BoardService {
                         MessageUtil.APPLY_NOT_FOUND
                 ));
         return DtoMapper.INSTANCE.toNormalBoardApplyResponseDto(
-                boardApply, DtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null));
+                boardApply, UserDtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null));
     }
 
     @Transactional
@@ -308,7 +310,7 @@ public class BoardService {
 
         List<String> createRoleList = new ArrayList<>();
         createRoleList.add("ALL"); // 일반 사용자의 게시판 신청은 항상 글 작성 권한이 '상관없음'임
-        UserResponseDto userResponseDto = DtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null);
+        UserResponseDto userResponseDto = UserDtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null);
         NormalBoardApplyResponseDto normalBoardApplyResponseDto =
                 DtoMapper.INSTANCE.toNormalBoardApplyResponseDto(boardApply, userResponseDto);
         Board newBoard = Board.of(
@@ -352,7 +354,7 @@ public class BoardService {
 
         return DtoMapper.INSTANCE.toNormalBoardApplyResponseDto(
                 boardApply,
-                DtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null));
+                UserDtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null));
     }
 
     @Transactional

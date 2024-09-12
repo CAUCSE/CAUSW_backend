@@ -6,6 +6,7 @@ import net.causw.adapter.persistence.repository.UuidFileRepository;
 import net.causw.application.storage.StorageManager;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
+import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.model.enums.FilePath;
 import net.causw.domain.model.util.MessageUtil;
 import org.springframework.stereotype.Service;
@@ -39,6 +40,10 @@ public class UuidFileService extends StorageManager {
 
     @Transactional
     public UuidFile saveFile(MultipartFile file, FilePath filePath) {
+        if (file == null) {
+            throw new InternalServerException(ErrorCode.INTERNAL_SERVER, MessageUtil.FILE_IS_NULL);
+        }
+
         String uuid = UUID.randomUUID().toString();
 
         Map<StorageManager.FileInfo, String> fileInfoStringMap = super.uploadFile(file, filePath, uuid);
@@ -54,25 +59,43 @@ public class UuidFileService extends StorageManager {
     }
 
     @Transactional
-    public UuidFile updateFile(UuidFile priorUuidFile, MultipartFile file, FilePath filePath) {
-        this.deleteFile(priorUuidFile);
-        return this.saveFile(file, filePath);
-    }
-
-    @Transactional
-    public List<UuidFile> updateFileList(List<UuidFile> priorUuidFileList, List<MultipartFile> fileList, FilePath filePath) {
-        for (UuidFile priorUuidFile : priorUuidFileList) {
-            this.deleteFile(priorUuidFile);
-        }
-
+    public List<UuidFile> saveFileList(List<MultipartFile> fileList, FilePath filePath) {
         return fileList.stream()
                 .map(file -> this.saveFile(file, filePath))
                 .toList();
     }
 
     @Transactional
+    public UuidFile updateFile(UuidFile priorUuidFile, MultipartFile file, FilePath filePath) {
+        if (priorUuidFile != null) {
+            this.deleteFile(priorUuidFile);
+        }
+        return this.saveFile(file, filePath);
+    }
+
+    @Transactional
+    public List<UuidFile> updateFileList(List<UuidFile> priorUuidFileList, List<MultipartFile> fileList, FilePath filePath) {
+        if (!priorUuidFileList.isEmpty()) {
+            this.deleteFileList(priorUuidFileList);
+        }
+
+        return this.saveFileList(fileList, filePath);
+    }
+
+    @Transactional
     public void deleteFile(UuidFile uuidFile) {
+        if (uuidFile == null) {
+            throw new InternalServerException(ErrorCode.INTERNAL_SERVER, MessageUtil.FILE_NOT_FOUND);
+        }
+
         super.deleteFile(uuidFile.getFileKey());
         uuidFileRepository.delete(uuidFile);
+    }
+
+    @Transactional
+    public void deleteFileList(List<UuidFile> uuidFileList) {
+        for (UuidFile uuidFile : uuidFileList) {
+            this.deleteFile(uuidFile);
+        }
     }
 }

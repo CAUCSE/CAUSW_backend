@@ -22,24 +22,4 @@ public class UserPostResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public static UserPostResponseDto of(
-            Post post,
-            String boardId,
-            String boardName,
-            String circleId,
-            String circleName,
-            Long numComment
-    ) {
-        return UserPostResponseDto.builder()
-                .id(post.getId())
-                .title(post.getTitle())
-                .boardId(boardId)
-                .boardName(boardName)
-                .circleId(circleId)
-                .circleName(circleName)
-                .numComment(numComment)
-                .createdAt(post.getCreatedAt())
-                .updatedAt(post.getUpdatedAt())
-                .build();
-    }
 }

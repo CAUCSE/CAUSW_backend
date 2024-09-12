@@ -28,7 +28,7 @@ import java.util.Set;
 @interface CommonPostWriterMappings {}
 
 @Mapper(componentModel = "spring")
-public interface PostDtoMapper {
+public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
 
     PostDtoMapper INSTANCE = Mappers.getMapper(PostDtoMapper.class);
 
@@ -42,18 +42,20 @@ public interface PostDtoMapper {
     @Mapping(target = "numFavorite", source = "numPostFavorite")
     PostsResponseDto toPostsResponseDto(Post post, Long numComment, Long numPostLike, Long numPostFavorite);
 
-    @CommonPostWriterMappings
+    @Mapping(target = "writerName", source = "post.writer.name")
+    @Mapping(target = "writerAdmissionYear", source = "post.writer.admissionYear")
     @Mapping(target = "boardName", source = "post.board.name")
-    @Mapping(target = "fileUrlList", source = "post.uuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
+    @Mapping(target = "fileUrlList", source = "post.attachImageUuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
     @Mapping(target = "isAnonymous", source = "post.isAnonymous")
     @Mapping(target = "isQuestion", source = "post.isQuestion")
     @Mapping(target = "numLike", source = "numPostLike")
     @Mapping(target = "numFavorite", source = "numPostFavorite")
     PostResponseDto toPostResponseDto(Post post, Long numPostLike, Long numPostFavorite, Boolean updatable, Boolean deletable);
 
-    @CommonPostWriterMappings
+    @Mapping(target = "writerName", source = "post.writer.name")
+    @Mapping(target = "writerAdmissionYear", source = "post.writer.admissionYear")
     @Mapping(target = "boardName", source = "post.board.name")
-    @Mapping(target = "fileUrlList", source = "post.uuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
+    @Mapping(target = "fileUrlList", source = "post.attachImageUuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
     @Mapping(target = "content", source = "post.content")
     @Mapping(target = "isAnonymous", source = "post.isAnonymous")
     @Mapping(target = "isQuestion", source = "post.isQuestion")

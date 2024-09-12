@@ -28,16 +28,4 @@ public class CircleMemberResponseDto {
     @Schema(description = "유저 정보")
     private UserResponseDto user;
 
-    public static CircleMemberResponseDto from(
-            User user,
-            CircleMember circleMember
-    ) {
-        return CircleMemberResponseDto.builder()
-                .id(circleMember.getId())
-                .status(circleMember.getStatus())
-                .circle(CircleResponseDto.from(circleMember.getCircle()))
-                .user(UserResponseDto.from(user))
-                .build();
-    }
-
 }

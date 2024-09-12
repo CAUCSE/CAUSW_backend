@@ -23,8 +23,8 @@ public class Circle extends BaseEntity {
     private String name;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "uuid_file_id", nullable = true)
-    private UuidFile uuidFile;
+    @JoinColumn(name = "circle_main_image_uuid_file", nullable = true)
+    private UuidFile circleMainImageUuidFile;
 
     @Column(name = "description", nullable = true)
     private String description;
@@ -56,7 +56,7 @@ public class Circle extends BaseEntity {
     private Circle(
             String id,
             String name,
-            UuidFile uuidFile,
+            UuidFile circleMainImageUuidFile,
             String description,
             Integer circleTax,
             Integer recruitMembers,
@@ -65,7 +65,7 @@ public class Circle extends BaseEntity {
     ) {
         super(id);
         this.name = name;
-        this.uuidFile = uuidFile;
+        this.circleMainImageUuidFile = circleMainImageUuidFile;
         this.description = description;
         this.circleTax = circleTax;
         this.recruitMembers = recruitMembers;
@@ -98,10 +98,10 @@ public class Circle extends BaseEntity {
         return new Circle(name, uuidFile, description, isDeleted, circleTax, recuritMembers, leader);
     }
 
-    public void update(String name, String description, UuidFile uuidFile, Integer circleTax, Integer recruitMembers){
+    public void update(String name, String description, UuidFile circleMainImageUuidFile, Integer circleTax, Integer recruitMembers){
         this.description = description;
         this.name = name;
-        this.uuidFile = uuidFile;
+        this.circleMainImageUuidFile = circleMainImageUuidFile;
         this.circleTax = circleTax;
         this.recruitMembers = recruitMembers;
     }

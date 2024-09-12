@@ -19,24 +19,9 @@ public class UserPostsResponseDto {
     private String name;
     private String studentId;
     private Integer admissionYear;
-    private String profileImage;
+    private String profileImageUrl;
 
     @Schema(description = "간락화된 게시글 정보들입니다")
     private Page<PostsResponseDto> posts;
 
-
-    public static UserPostsResponseDto of(
-            User user,
-            Page<PostsResponseDto> post
-    ) {
-        return UserPostsResponseDto.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .name(user.getName())
-                .studentId(user.getStudentId())
-                .admissionYear(user.getAdmissionYear())
-                .profileImage(user.getProfileImage())
-                .posts(post)
-                .build();
-    }
 }

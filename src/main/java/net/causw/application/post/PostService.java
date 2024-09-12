@@ -325,7 +325,7 @@ public class PostService {
         validatorBucket.validate();
 
         List<UuidFile> uuidFileList = uuidFileService.updateFileList(
-                post.getUuidFileList(),
+                post.getAttachImageUuidFileList(),
                 postUpdateRequestDto.getMultipartFileList(),
                 FilePath.POST
         );

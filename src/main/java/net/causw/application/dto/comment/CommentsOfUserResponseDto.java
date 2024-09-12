@@ -23,27 +23,4 @@ public class CommentsOfUserResponseDto {
     private String circleId;
     private String circleName;
 
-    public static CommentsOfUserResponseDto of(
-            Comment comment,
-            String boardId,
-            String boardName,
-            String postId,
-            String postName,
-            String circleId,
-            String circleName
-    ) {
-        return CommentsOfUserResponseDto.builder()
-                .id(comment.getId())
-                .content(comment.getContent())
-                .createdAt(comment.getCreatedAt())
-                .updatedAt(comment.getUpdatedAt())
-                .isDeleted(comment.getIsDeleted())
-                .boardId(boardId)
-                .boardName(boardName)
-                .postId(postId)
-                .postName(postName)
-                .circleId(circleId)
-                .circleName(circleName)
-                .build();
-    }
 }

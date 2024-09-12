@@ -10,6 +10,7 @@ import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.homepage.HomePageResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.util.DtoMapper;
+import net.causw.application.dto.util.PostDtoMapper;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.enums.Role;
@@ -55,7 +56,7 @@ public class HomePageService {
                 .map(board -> HomePageResponseDto.of(
                         toBoardResponseDto(board, roles),
                         postRepository.findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(board.getId(), pageableFactory.create(0, StaticValue.HOME_POST_PAGE_SIZE))
-                                .map(post -> DtoMapper.INSTANCE.toPostsResponseDto(
+                                .map(post -> PostDtoMapper.INSTANCE.toPostsResponseDto(
                                         post,
                                         postRepository.countAllCommentByPost_Id(post.getId()),
                                         getNumOfPostLikes(post),

@@ -16,10 +16,4 @@ public class DuplicatedCheckResponseDto {
     @Schema(description = "중복 여부 boolean 값", example = "true")
     private Boolean result;
 
-    public static DuplicatedCheckResponseDto from(boolean result) {
-        return DuplicatedCheckResponseDto.builder()
-                .result(result)
-                .build();
-    }
-
 }

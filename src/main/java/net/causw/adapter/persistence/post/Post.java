@@ -25,7 +25,7 @@ public class Post extends BaseEntity {
 
     @OneToMany(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "post_id", nullable = true)
-    private List<UuidFile> uuidFileList;
+    private List<UuidFile> attachImageUuidFileList;
 
     @ManyToOne(targetEntity = User.class)
     @JoinColumn(name = "user_id", nullable = false)
@@ -54,7 +54,7 @@ public class Post extends BaseEntity {
             User writer,
             Boolean isDeleted,
             Board board,
-            List<UuidFile> uuidFileList
+            List<UuidFile> attachImageUuidFileList
     ) {
         super(id);
         this.title = title;
@@ -62,7 +62,7 @@ public class Post extends BaseEntity {
         this.writer = writer;
         this.isDeleted = isDeleted;
         this.board = board;
-        this.uuidFileList = uuidFileList;
+        this.attachImageUuidFileList = attachImageUuidFileList;
     }
 
     public static Post from(PostDomainModel postDomainModel) {
@@ -90,10 +90,10 @@ public class Post extends BaseEntity {
         return new Post(title, content, uuidFileList, writer, isDeleted, isAnonymous, isQuestion, board);
     }
 
-    public void update(String title, String content, List<UuidFile> uuidFileList) {
+    public void update(String title, String content, List<UuidFile> attachImageUuidFileList) {
         this.title = title;
         this.content = content;
-        this.uuidFileList = uuidFileList;
+        this.attachImageUuidFileList = attachImageUuidFileList;
     }
 
     public void setIsDeleted(Boolean isDeleted) {

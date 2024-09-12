@@ -8,6 +8,7 @@ import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.user.UserAdmission;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -21,7 +22,7 @@ public class UserAdmissionResponseDto {
     private UserResponseDto user;
 
     @Schema(description = "첨부 이미지")
-    private String attachImage;
+    private List<String> attachImageUrlList;
 
     @Schema(description = "자기소개 글 (255자 이내)", example = "안녕하세요! 코딩을 좋아하는 신입생 이예빈입니다.")
     private String description;
@@ -32,29 +33,4 @@ public class UserAdmissionResponseDto {
     @Schema(description = "마지막 업데이트된 시각", example = "2024-01-24T00:26:40.643Z")
     private LocalDateTime updatedAt;
 
-
-    public static UserAdmissionResponseDto from(UserAdmission userAdmission) {
-        return UserAdmissionResponseDto.builder()
-                .id(userAdmission.getId())
-                .user(UserResponseDto.from(userAdmission.getUser()))
-                .attachImage(userAdmission.getAttachImage())
-                .description(userAdmission.getDescription())
-                .createdAt(userAdmission.getCreatedAt())
-                .updatedAt(userAdmission.getUpdatedAt())
-                .build();
-    }
-
-    public static UserAdmissionResponseDto of(
-            UserAdmission userAdmission,
-            User user
-    ) {
-        return UserAdmissionResponseDto.builder()
-                .id(userAdmission.getId())
-                .user(UserResponseDto.from(user))
-                .attachImage(userAdmission.getAttachImage())
-                .description(userAdmission.getDescription())
-                .createdAt(userAdmission.getCreatedAt())
-                .updatedAt(userAdmission.getUpdatedAt())
-                .build();
-    }
 }

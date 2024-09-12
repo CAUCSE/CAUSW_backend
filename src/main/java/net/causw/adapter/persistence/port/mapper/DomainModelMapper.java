@@ -41,8 +41,7 @@ public abstract class DomainModelMapper {
                 user.getStudentId(),
                 user.getAdmissionYear(),
                 user.getRoles(),
-                user.getAttachImages(),
-                user.getProfileImage(),
+                user.getProfileImageUuidFile(),
                 user.getRefreshToken(),
                 user.getState(),
                 user.getNickname(),
@@ -59,7 +58,7 @@ public abstract class DomainModelMapper {
         return UserAdmissionDomainModel.of(
                 userAdmission.getId(),
                 this.entityToDomainModel(userAdmission.getUser()),
-                userAdmission.getAttachImage(),
+                userAdmission.getAttachImageUuidFileList(),
                 userAdmission.getDescription(),
                 userAdmission.getCreatedAt(),
                 userAdmission.getUpdatedAt()
@@ -96,7 +95,7 @@ public abstract class DomainModelMapper {
         return CircleDomainModel.of(
                 circle.getId(),
                 circle.getName(),
-                circle.getMainImage(),
+                circle.getCircleMainImageUuidFile(),
                 circle.getDescription(),
                 circle.getIsDeleted(),
                 circle.getLeader().map(this::entityToDomainModel).orElse(null),
@@ -177,7 +176,7 @@ public abstract class DomainModelMapper {
                 inquiry.getId(),
                 inquiry.getTitle(),
                 inquiry.getContent(),
-                this.entityToDomainModel(inquiry.getWriter()),
+                inquiry.getWriter(),
                 inquiry.getIsDeleted(),
                 inquiry.getCreatedAt(),
                 inquiry.getUpdatedAt()

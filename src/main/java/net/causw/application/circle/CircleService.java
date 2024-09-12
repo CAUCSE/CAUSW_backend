@@ -307,8 +307,8 @@ public class CircleService {
                 .validate();
 
         UuidFile uuidFile = (circleUpdateRequestDto.getMainImage().isEmpty() || circleUpdateRequestDto.getMainImage() == null) ?
-                circle.getUuidFile() :
-                uuidFileService.updateFile(circle.getUuidFile(), circleUpdateRequestDto.getMainImage(), FilePath.CIRCLE_PROFILE);
+                circle.getCircleMainImageUuidFile() :
+                uuidFileService.updateFile(circle.getCircleMainImageUuidFile(), circleUpdateRequestDto.getMainImage(), FilePath.CIRCLE_PROFILE);
 
         circle.update(
                 circleUpdateRequestDto.getName(),
@@ -629,7 +629,7 @@ public class CircleService {
     private Circle updateCircle(String id, Circle circle) {
         return circleRepository.findById(id).map(
                 srcCircle -> {
-                    srcCircle.update(circle.getName(), circle.getDescription(), circle.getUuidFile(), circle.getCircleTax(), circle.getRecruitMembers());
+                    srcCircle.update(circle.getName(), circle.getDescription(), circle.getCircleMainImageUuidFile(), circle.getCircleTax(), circle.getRecruitMembers());
                     return circleRepository.save(srcCircle);
                 }
         ).orElseThrow(

@@ -10,6 +10,7 @@ import java.util.Optional;
 
 @Component
 public class InquiryPortImpl extends DomainModelMapper implements InquiryPort {
+    /*
     private final InquiryRepository inquiryRepository;
 
     public InquiryPortImpl(InquiryRepository inquiryRepository) {
@@ -25,4 +26,6 @@ public class InquiryPortImpl extends DomainModelMapper implements InquiryPort {
     public InquiryDomainModel create(InquiryDomainModel inquiryDomainModel) {
         return this.entityToDomainModel(this.inquiryRepository.save(Inquiry.from(inquiryDomainModel)));
     }
+
+     */
 }

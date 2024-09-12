@@ -2,19 +2,11 @@ package net.causw.application.dto.user;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.causw.adapter.persistence.user.User;
-import net.causw.domain.model.enums.AcademicStatus;
-import net.causw.domain.model.enums.Role;
-import net.causw.domain.model.enums.UserState;
-
-import java.util.List;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -43,14 +35,6 @@ public class UserCreateRequestDto {
     @Schema(description = "입학년도", example = "2020")
     private Integer admissionYear;
 
-    @NotBlank(message = "프로필 이미지를 선택해 주세요.")
-    @Schema(description = "프로필 이미지 URL", example = "")
-    private String profileImage;
-
-    @NotEmpty(message = "학부생 인증 이미지를 선택해 주세요.")
-    @Schema(description = "학부생 인증 이미지", example = "")
-    private List<String> attachImages;
-
     @NotBlank(message = "닉네임을 입력해 주세요.")
     @Schema(description = "닉네임", example = "푸앙")
     private String nickname;
@@ -62,21 +46,4 @@ public class UserCreateRequestDto {
     @Schema(description = "전화번호", example = "01012345678", requiredMode = Schema.RequiredMode.REQUIRED)
     private String phoneNumber;
 
-    public User toEntity(String encodedPassword, Set<Role> roles, UserState state) {
-        return User.builder()
-                .email(email)
-                .name(name)
-                .roles(roles)
-                .state(state)
-                .password(encodedPassword)
-                .studentId(studentId)
-                .admissionYear(admissionYear)
-                .attachImages(attachImages)
-                .profileImage(profileImage)
-                .nickname(nickname)
-                .major(major)
-                .academicStatus(AcademicStatus.UNDETERMINED)
-                .phoneNumber(phoneNumber)
-                .build();
-    }
 }

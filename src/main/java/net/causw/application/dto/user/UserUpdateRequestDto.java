@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.causw.domain.model.enums.AcademicStatus;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -37,8 +38,8 @@ public class UserUpdateRequestDto {
     private Integer admissionYear;
 
     @NotEmpty(message = "학부생 인증 이미지를 선택해 주세요.")
-    @Schema(description = "프로필 이미지 URL", example = "")
-    private String profileImage;
+    @Schema(description = "프로필 이미지", example = "")
+    private MultipartFile multipartFileProfileImage;
 
     @NotBlank(message = "닉네임을 입력해 주세요.")
     @Schema(description = "닉네임", example = "푸앙")

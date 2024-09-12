@@ -21,7 +21,7 @@ public class UserAdmission extends BaseEntity {
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "user_admission_id", nullable = true)
-    private List<UuidFile> uuidFileList;
+    private List<UuidFile> attachImageUuidFileList;
 
     @Column(name = "description", nullable = true)
     private String description;
@@ -29,12 +29,12 @@ public class UserAdmission extends BaseEntity {
     private UserAdmission(
             String id,
             User user,
-            List<UuidFile> uuidFileList,
+            List<UuidFile> attachImageUuidFileList,
             String description
     ) {
         super(id);
         this.user = user;
-        this.uuidFileList = uuidFileList;
+        this.attachImageUuidFileList = attachImageUuidFileList;
         this.description = description;
     }
 
@@ -45,5 +45,13 @@ public class UserAdmission extends BaseEntity {
                 userAdmissionDomainModel.getUuidFileList(),
                 userAdmissionDomainModel.getDescription()
         );
+    }
+
+    public static UserAdmission of(User requestUser, List<UuidFile> attachImageUuidFileList, String description) {
+        return UserAdmission.builder()
+                .user(requestUser)
+                .attachImageUuidFileList(attachImageUuidFileList)
+                .description(description)
+                .build();
     }
 }

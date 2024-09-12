@@ -2,6 +2,7 @@ package net.causw.domain.model.inquiry;
 
 import lombok.Builder;
 import lombok.Getter;
+import net.causw.adapter.persistence.user.User;
 import net.causw.domain.model.user.UserDomainModel;
 
 import jakarta.validation.constraints.NotBlank;
@@ -19,7 +20,7 @@ public class InquiryDomainModel {
     private String content;
 
     @NotNull(message = "작성자가 입력되지 않았습니다.")
-    private UserDomainModel writer;
+    private User writer;
 
     @NotNull(message = "문의글 상태가 입력되지 않았습니다.")
     private Boolean isDeleted;
@@ -32,7 +33,7 @@ public class InquiryDomainModel {
             String id,
             String title,
             String content,
-            UserDomainModel writer,
+            User writer,
             Boolean isDeleted,
             LocalDateTime createdAt,
             LocalDateTime updatedAt
@@ -51,7 +52,7 @@ public class InquiryDomainModel {
     public static InquiryDomainModel of(
             String title,
             String content,
-            UserDomainModel writer
+            User writer
     ) {
         return InquiryDomainModel.builder()
                 .title(title)

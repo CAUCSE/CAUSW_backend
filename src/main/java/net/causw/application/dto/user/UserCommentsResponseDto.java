@@ -18,21 +18,7 @@ public class UserCommentsResponseDto {
     private String name;
     private String studentId;
     private Integer admissionYear;
-    private String  profileImage;
+    private String  profileImageUrl;
     private Page<CommentsOfUserResponseDto> comment;
 
-    public static UserCommentsResponseDto of(
-            User user,
-            Page<CommentsOfUserResponseDto> comment
-    ) {
-        return UserCommentsResponseDto.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .name(user.getName())
-                .studentId(user.getStudentId())
-                .admissionYear(user.getAdmissionYear())
-                .profileImage(user.getProfileImage())
-                .comment(comment)
-                .build();
-    }
 }

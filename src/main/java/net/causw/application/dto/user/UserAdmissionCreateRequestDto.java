@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Optional;
 
 @Getter
@@ -26,9 +27,6 @@ public class UserAdmissionCreateRequestDto {
     private String description;
 
     @Schema(description = "이미지")
-    private MultipartFile attachImage;
+    private List<MultipartFile> attachImageMultiPartFileList;
 
-    public Optional<MultipartFile> getAttachImage() {
-        return Optional.ofNullable(this.attachImage);
-    }
 }
