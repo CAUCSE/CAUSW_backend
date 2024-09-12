@@ -21,7 +21,7 @@ import java.util.List;
 @Table(name = "tb_user_academic_record_admission")
 public class UserAcademicRecordApplication extends BaseEntity {
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
@@ -39,7 +39,7 @@ public class UserAcademicRecordApplication extends BaseEntity {
     @Column(name = "note", nullable = true)
     private String note;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_academic_record_application_id", nullable = true)
     private List<UuidFile> uuidFileList;
 

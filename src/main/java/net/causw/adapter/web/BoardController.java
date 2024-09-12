@@ -38,7 +38,7 @@ public class BoardController {
 
     @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.isAcademicRecordCertified()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시판 검색 API(완료)", description = "전체 게시판을 불러오는 api로 관리자 권한을 가진 경우 삭제된 게시판도 확인할 수 있습니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json")),
@@ -58,7 +58,7 @@ public class BoardController {
 
     @GetMapping("/main")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.isAcademicRecordCertified()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시판 검색 API(완료)", description = "전체 게시판을 불러오는 api로 관리자 권한을 가진 경우 삭제된 게시판도 확인할 수 있습니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json")),
@@ -78,7 +78,7 @@ public class BoardController {
 
     @PostMapping("/check")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.isAcademicRecordCertified()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시판 이름 중복 체크 API(완료)", description = "게시판 이름 중복 체크 api로 중복된 이름이 존재할 경우 isPresent가 true, 없을 경우 false로 반환됩니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json")),
@@ -121,7 +121,7 @@ public class BoardController {
 
     @PostMapping(value = "/apply")
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.isAcademicRecordCertified()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시판 신청 API(완료)", description = "게시판을 신청하는 API입니다. 권한 정보가 필요 없습니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Created", content = @Content(mediaType = "application/json")),
@@ -143,7 +143,7 @@ public class BoardController {
     
     @PostMapping(value = "/normal")
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.isAcademicRecordCertified()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "일반 게시판 생성 API(완료)", description = "별도의 신청 없이 생성할 수 있는 게시판을 만드는 API입니다. 게시판의 이름을 전달 받습니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Created", content = @Content(mediaType = "application/json")),
@@ -165,7 +165,7 @@ public class BoardController {
 
     @PutMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.isAcademicRecordCertified()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시판 업데이트 API(완료)", description = "id에는 board id 값을 넣어주세요")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json")),
@@ -191,7 +191,7 @@ public class BoardController {
 
     @DeleteMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.isAcademicRecordCertified()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시판 삭제 API(완료)", description = "id에는 board id 값을 넣어주세요")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json")),
@@ -216,7 +216,7 @@ public class BoardController {
 
     @PutMapping(value = "/{id}/restore")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.isAcademicRecordCertified()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시판 복구 API(완료)", description = "id에는 board id 값을 넣어주세요")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json")),

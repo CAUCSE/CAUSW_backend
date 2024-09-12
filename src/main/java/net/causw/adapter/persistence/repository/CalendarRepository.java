@@ -10,7 +10,7 @@ import java.util.Optional;
 @Repository
 public interface CalendarRepository extends JpaRepository<Calendar, String> {
 
-    List<Calendar> findByYearOrderByMonthAsc(int year);
+    List<Calendar> findByYearOrderByMonthDesc(int year);
 
     Optional<Calendar> findFirstByOrderByYearDescMonthDesc();
 
