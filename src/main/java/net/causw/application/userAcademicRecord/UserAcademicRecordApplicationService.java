@@ -5,8 +5,8 @@ import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.semester.Semester;
 import net.causw.adapter.persistence.user.User;
-import net.causw.adapter.persistence.user.UserAcademicRecordApplication;
-import net.causw.adapter.persistence.user.UserAcademicRecordLog;
+import net.causw.adapter.persistence.userAcademicRecord.UserAcademicRecordApplication;
+import net.causw.adapter.persistence.userAcademicRecord.UserAcademicRecordLog;
 import net.causw.application.dto.semester.CurrentSemesterResponseDto;
 import net.causw.application.dto.userAcademicRecordApplication.*;
 import net.causw.application.dto.util.SemesterDtoMapper;
@@ -27,7 +27,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -53,35 +52,6 @@ public class UserAcademicRecordApplicationService {
     public Page<UserAcademicRecordApplicationListResponseDto> getAllUserAwaitingAcademicRecordPage(Pageable pageable) {
         return userAcademicRecordApplicationRepository.findAllByAcademicRecordRequestStatus(pageable, AcademicRecordRequestStatus.AWAIT)
                 .map(this::toUserAcademicRecordApplicationListResponseDto);
-    }
-
-    @Transactional
-    public Void requestAllUserAcademicRecordApplication(User user) {
-        Semester priorSemester = getCurrentSemester();
-
-        priorSemester.updateIsCurrent(false);
-        semesterRepository.save(priorSemester);
-
-        Semester currentSemester = (priorSemester.getSemesterType().equals(SemesterType.FIRST)) ?
-                Semester.of(priorSemester.getSemesterYear(), SemesterType.SECOND, user) :
-                Semester.of(priorSemester.getSemesterYear() + 1, SemesterType.FIRST, user);
-        semesterRepository.save(currentSemester);
-
-
-        List<User> userList = userRepository.findByAcademicStatusInOrAcademicStatusIsNull(
-                List.of(
-                        AcademicStatus.ENROLLED,
-                        AcademicStatus.LEAVE_OF_ABSENCE
-                ))
-                .stream()
-                .peek(
-                        (u) -> u.setAcademicStatus(AcademicStatus.UNDETERMINED)
-                )
-                .toList();
-
-        userRepository.saveAll(userList);
-
-        return null;
     }
 
     public UserAcademicRecordInfoResponseDto getUserAcademicRecordInfo(String userId) {

@@ -59,4 +59,7 @@ public interface UserRepository extends JpaRepository<User, String> {
             " tb_user AS u " +
             "WHERE u.academic_status IN :statuses OR u.academic_status IS NULL", nativeQuery = true)
     List<User> findByAcademicStatusInOrAcademicStatusIsNull(@Param("statuses") List<AcademicStatus> statuses);
+
+    Optional<User> findByStudentId(String studentId);
+
 }

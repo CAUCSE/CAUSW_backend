@@ -1,8 +1,9 @@
-package net.causw.adapter.persistence.user;
+package net.causw.adapter.persistence.userAcademicRecord;
 
 import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
+import net.causw.adapter.persistence.user.User;
 import net.causw.domain.model.enums.AcademicRecordRequestStatus;
 import net.causw.domain.model.enums.AcademicStatus;
 import net.causw.domain.model.enums.GraduationType;
@@ -10,7 +11,7 @@ import net.causw.domain.model.enums.GraduationType;
 @Getter
 @Builder(access = AccessLevel.PROTECTED)
 @Entity
-@AllArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "tb_user_academic_record_log")
 public class UserAcademicRecordLog extends BaseEntity {
