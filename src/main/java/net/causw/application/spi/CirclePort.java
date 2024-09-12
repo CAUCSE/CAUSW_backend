@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CirclePort {
+    /*
     Optional<CircleDomainModel> findById(String id);
 
     List<CircleDomainModel> findByLeaderId(String leaderId);
@@ -22,4 +23,6 @@ public interface CirclePort {
     Optional<CircleDomainModel> updateLeader(String id, UserDomainModel newLeader);
 
     Optional<CircleDomainModel> delete(String id);
+
+     */
 }

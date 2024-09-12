@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public interface CircleMemberPort {
+    /*
     Optional<CircleMemberDomainModel> findById(String id);
 
     List<CircleMemberDomainModel> findByUserId(String userId);
@@ -27,4 +28,6 @@ public interface CircleMemberPort {
     CircleMemberDomainModel create(UserDomainModel userDomainModel, CircleDomainModel circleDomainModel);
 
     Optional<CircleMemberDomainModel> updateStatus(String applicationId, CircleMemberStatus targetStatus);
+
+     */
 }

@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 @Component
 public class CirclePortImpl extends DomainModelMapper implements CirclePort {
+    /*
     private final CircleRepository circleRepository;
 
     public CirclePortImpl(CircleRepository circleRepository) {
@@ -82,4 +83,6 @@ public class CirclePortImpl extends DomainModelMapper implements CirclePort {
                 }
         );
     }
+
+     */
 }
