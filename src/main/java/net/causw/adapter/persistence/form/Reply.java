@@ -10,6 +10,7 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
+@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_reply")
@@ -34,6 +35,12 @@ public class Reply extends BaseEntity {
     private List<Integer> selectedOptions;
 
     public static Reply of(Form form, User user, Question question, String questionAnswer, List<Integer> selectedOptions) {
-        return new Reply(form, user, question, questionAnswer, selectedOptions);
+        return Reply.builder()
+                .form(form)
+                .user(user)
+                .question(question)
+                .questionAnswer(questionAnswer)
+                .selectedOptions(selectedOptions)
+                .build();
     }
 }

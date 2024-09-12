@@ -17,6 +17,7 @@ import jakarta.persistence.Table;
 @Getter
 @Builder
 @Entity
+@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "TB_LOCKER_LOG")
@@ -48,13 +49,13 @@ public class LockerLog extends BaseEntity {
             LockerLogAction action,
             String message
     ) {
-        return new LockerLog(
-                lockerNumber,
-                lockerLocationName,
-                userEmail,
-                userName,
-                action,
-                message
-        );
+        return LockerLog.builder()
+                .lockerNumber(lockerNumber)
+                .lockerLocationName(lockerLocationName)
+                .userEmail(userEmail)
+                .userName(userName)
+                .action(action)
+                .message(message)
+                .build();
     }
 }

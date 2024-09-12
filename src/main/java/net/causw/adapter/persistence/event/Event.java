@@ -8,6 +8,7 @@ import org.hibernate.annotations.ColumnDefault;
 
 @Getter
 @Entity
+@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_event")
@@ -29,7 +30,11 @@ public class Event extends BaseEntity {
             UuidFile uuidFile,
             Boolean isDeleted
     ) {
-        return new Event(url, uuidFile, isDeleted);
+        return Event.builder()
+                .url(url)
+                .uuidFile(uuidFile)
+                .isDeleted(isDeleted)
+                .build();
     }
 
     public void update(String url, UuidFile uuidFile) {

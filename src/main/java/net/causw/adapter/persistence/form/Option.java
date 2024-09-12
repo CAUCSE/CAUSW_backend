@@ -8,6 +8,7 @@ import org.hibernate.annotations.ColumnDefault;
 @Getter
 @Setter
 @Entity
+@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_option")
@@ -26,7 +27,12 @@ public class Option extends BaseEntity {
     private Question question;
 
     public static Option of(Integer number, String text, Question question) {
-        return new Option(number, text, false, question);
+        return Option.builder()
+                .number(number)
+                .optionText(text)
+                .isSelected(false)
+                .question(question)
+                .build();
     }
 
     public void setIsSelected(Boolean isSelected) {

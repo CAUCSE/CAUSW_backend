@@ -11,6 +11,7 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
+@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_question")
@@ -33,7 +34,13 @@ public class Question extends BaseEntity {
     private Form form;
 
     public static Question of(Integer number, String questionText, Boolean isMultiple, List<Option> options, Form form) {
-        return new Question(number, questionText, isMultiple != null ? isMultiple : false, options, form);
+        return Question.builder()
+                .number(number)
+                .questionText(questionText)
+                .isMultiple(isMultiple)
+                .options(options)
+                .form(form)
+                .build();
     }
 
     public void setIsMultiple(Boolean isMultiple) {

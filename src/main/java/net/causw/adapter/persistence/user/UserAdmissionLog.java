@@ -10,7 +10,7 @@ import java.util.List;
 
 @Getter
 @Entity
-@Builder
+@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_user_admission_log")

@@ -1,16 +1,8 @@
 package net.causw.adapter.persistence.locker;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import net.causw.adapter.persistence.comment.Comment;
-import net.causw.adapter.persistence.post.Post;
+import lombok.*;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.base.BaseEntity;
-import net.causw.domain.model.locker.LockerDomainModel;
-import net.causw.domain.model.locker.LockerLocationDomainModel;
-import net.causw.domain.model.user.UserDomainModel;
 import org.hibernate.annotations.ColumnDefault;
 
 import jakarta.persistence.Column;
@@ -20,11 +12,11 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Optional;
 
 @Getter
 @Entity
+@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "TB_LOCKER")
@@ -47,30 +39,6 @@ public class Locker extends BaseEntity {
     @JoinColumn(name = "location_id", nullable = false)
     private LockerLocation location;
 
-    private Locker(
-            String id,
-            Long lockerNumber,
-            Boolean isActive,
-            User user,
-            LockerLocation location
-    ) {
-        super(id);
-        this.lockerNumber = lockerNumber;
-        this.isActive = isActive;
-        this.user = user;
-        this.location = location;
-    }
-
-    public static Locker from(LockerDomainModel lockerDomainModel) {
-        return new Locker(
-                lockerDomainModel.getId(),
-                lockerDomainModel.getLockerNumber(),
-                lockerDomainModel.getIsActive(),
-                lockerDomainModel.getUser().map(User::from).orElse(null),
-                LockerLocation.from(lockerDomainModel.getLockerLocation())
-        );
-    }
-
     public static Locker of(
             Long lockerNumber,
             Boolean isActive,
@@ -78,13 +46,13 @@ public class Locker extends BaseEntity {
             LockerLocation location,
             LocalDateTime expireDate
     ) {
-        return new Locker(
-                lockerNumber,
-                isActive,
-                expireDate,
-                user,
-                location
-        );
+        return Locker.builder()
+                .lockerNumber(lockerNumber)
+                .isActive(isActive)
+                .user(user)
+                .location(location)
+                .expireDate(expireDate)
+                .build();
     }
 
 

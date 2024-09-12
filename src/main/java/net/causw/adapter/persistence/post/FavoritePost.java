@@ -1,16 +1,14 @@
 package net.causw.adapter.persistence.post;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.user.User;
 import org.hibernate.annotations.ColumnDefault;
 
 @Getter
 @Entity
+@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_favorite_post")
@@ -27,15 +25,12 @@ public class FavoritePost extends BaseEntity {
     @ColumnDefault("false")
     private Boolean isDeleted;
 
-    private FavoritePost(String id, Post post, User user, Boolean isDeleted) {
-        super(id);
-        this.post = post;
-        this.user = user;
-        this.isDeleted = isDeleted;
-    }
-
     public static  FavoritePost of(Post post, User user, Boolean isDeleted) {
-        return new FavoritePost(post, user, isDeleted);
+        return FavoritePost.builder()
+                .post(post)
+                .user(user)
+                .isDeleted(isDeleted)
+                .build();
     }
 
     public void setIsDeleted(Boolean isDeleted) {

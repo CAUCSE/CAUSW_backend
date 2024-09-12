@@ -158,7 +158,6 @@ public class BoardController {
             @Valid @RequestBody NormalBoardCreateRequestDto normalBoardCreateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return this.boardService.createNormalBoard(userDetails.getUser(), normalBoardCreateRequestDto);
     }
 

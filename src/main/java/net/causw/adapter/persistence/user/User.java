@@ -10,14 +10,13 @@ import net.causw.application.dto.user.UserCreateRequestDto;
 import net.causw.domain.model.enums.AcademicStatus;
 import net.causw.domain.model.enums.GraduationType;
 import net.causw.domain.model.enums.Role;
-import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.model.enums.UserState;
 
 import java.util.List;
 import java.util.Set;
 
 @Getter
-@Builder
+@Builder(access = AccessLevel.PROTECTED)
 @Setter
 @Entity
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -91,28 +90,6 @@ public class User extends BaseEntity {
     @JoinColumn(name = "user_circle_id", nullable = true)
     private List<CircleMember> circleMemberList;
 
-    private User(
-            String id,
-            String email,
-            String name,
-            String password,
-            String studentId,
-            Integer admissionYear,
-            Set<Role> roles,
-            UuidFile profileImageUuidFile,
-            UserState state
-    ) {
-        super(id);
-        this.email = email;
-        this.name = name;
-        this.password = password;
-        this.studentId = studentId;
-        this.admissionYear = admissionYear;
-        this.roles = roles;
-        this.profileImageUuidFile = profileImageUuidFile;
-        this.state = state;
-    }
-
     public void delete() {
         this.email = "deleted_" + this.getId();
         this.name = "탈퇴한 사용자";
@@ -124,20 +101,6 @@ public class User extends BaseEntity {
         this.graduationYear = null;
         this.graduationType = null;
         this.state = UserState.DELETED;
-    }
-
-    public static User from(UserDomainModel userDomainModel) {
-        return new User(
-                userDomainModel.getId(),
-                userDomainModel.getEmail(),
-                userDomainModel.getName(),
-                userDomainModel.getPassword(),
-                userDomainModel.getStudentId(),
-                userDomainModel.getAdmissionYear(),
-                userDomainModel.getRoles(),
-                userDomainModel.getUuidFile(),
-                userDomainModel.getState()
-        );
     }
 
     public static User from (

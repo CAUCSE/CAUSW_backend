@@ -1,20 +1,17 @@
 package net.causw.adapter.persistence.circle;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
-import net.causw.domain.model.circle.CircleDomainModel;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.util.Optional;
 
 @Getter
 @Entity
+@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_circle")
@@ -53,38 +50,6 @@ public class Circle extends BaseEntity {
         return Optional.ofNullable(this.leader);
     }
 
-    private Circle(
-            String id,
-            String name,
-            UuidFile circleMainImageUuidFile,
-            String description,
-            Integer circleTax,
-            Integer recruitMembers,
-            Boolean isDeleted,
-            User leader
-    ) {
-        super(id);
-        this.name = name;
-        this.circleMainImageUuidFile = circleMainImageUuidFile;
-        this.description = description;
-        this.circleTax = circleTax;
-        this.recruitMembers = recruitMembers;
-        this.isDeleted = isDeleted;
-        this.leader = leader;
-    }
-
-    public static Circle from(CircleDomainModel circleDomainModel) {
-        return new Circle(
-                circleDomainModel.getId(),
-                circleDomainModel.getName(),
-                circleDomainModel.getUuidFile(),
-                circleDomainModel.getDescription(),
-                circleDomainModel.getCircleTax(),
-                circleDomainModel.getRecruitMembers(),
-                circleDomainModel.getIsDeleted(),
-                circleDomainModel.getLeader().map(User::from).orElse(null)
-        );
-    }
 
     public static Circle of(
             String name,
@@ -92,10 +57,18 @@ public class Circle extends BaseEntity {
             String description,
             Boolean isDeleted,
             Integer circleTax,
-            Integer recuritMembers,
+            Integer recruitMembers,
             User leader
     ) {
-        return new Circle(name, uuidFile, description, isDeleted, circleTax, recuritMembers, leader);
+        return Circle.builder()
+                .name(name)
+                .circleMainImageUuidFile(uuidFile)
+                .description(description)
+                .isDeleted(isDeleted)
+                .circleTax(circleTax)
+                .recruitMembers(recruitMembers)
+                .leader(leader)
+                .build();
     }
 
     public void update(String name, String description, UuidFile circleMainImageUuidFile, Integer circleTax, Integer recruitMembers){

@@ -1,15 +1,13 @@
 package net.causw.adapter.persistence.calendar;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 
 @Getter
 @Entity
+@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_calendar")
@@ -21,20 +19,24 @@ public class Calendar extends BaseEntity {
     private Integer month;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "uuid_file_id", nullable = false)
-    private UuidFile uuidFile;
+    @JoinColumn(name = "attach_image_uuid_file_id", nullable = false)
+    private UuidFile attachImageUuidFile;
 
     public static Calendar of(
             Integer year,
             Integer month,
-            UuidFile uuidFile
+            UuidFile attachImageUuidFile
     ) {
-        return new Calendar(year, month, uuidFile);
+        return Calendar.builder()
+                .year(year)
+                .month(month)
+                .attachImageUuidFile(attachImageUuidFile)
+                .build();
     }
 
-    public void update(Integer year, Integer month, UuidFile uuidFile) {
+    public void update(Integer year, Integer month, UuidFile attachImageUuidFile) {
         this.year = year;
         this.month = month;
-        this.uuidFile = uuidFile;
+        this.attachImageUuidFile = attachImageUuidFile;
     }
 }

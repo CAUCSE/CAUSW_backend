@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.adapter.persistence.post.Post;
-import net.causw.domain.model.post.PostDomainModel;
 
 import java.time.LocalDateTime;
 

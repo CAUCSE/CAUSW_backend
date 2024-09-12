@@ -6,13 +6,13 @@ import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
-import net.causw.domain.model.post.PostDomainModel;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.util.List;
 
 @Getter
 @Entity
+@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_post")
@@ -47,36 +47,6 @@ public class Post extends BaseEntity {
     @JoinColumn(name = "board_id", nullable = false)
     private Board board;
 
-    private Post(
-            String id,
-            String title,
-            String content,
-            User writer,
-            Boolean isDeleted,
-            Board board,
-            List<UuidFile> attachImageUuidFileList
-    ) {
-        super(id);
-        this.title = title;
-        this.content = content;
-        this.writer = writer;
-        this.isDeleted = isDeleted;
-        this.board = board;
-        this.attachImageUuidFileList = attachImageUuidFileList;
-    }
-
-    public static Post from(PostDomainModel postDomainModel) {
-        return new Post(
-                postDomainModel.getId(),
-                postDomainModel.getTitle(),
-                postDomainModel.getContent(),
-                User.from(postDomainModel.getWriter()),
-                postDomainModel.getIsDeleted(),
-                Board.from(postDomainModel.getBoard()),
-                postDomainModel.getUuidFileList()
-        );
-    }
-
     public static Post of(
             String title,
             String content,
@@ -87,7 +57,16 @@ public class Post extends BaseEntity {
             Board board,
             List<UuidFile> uuidFileList
     ) {
-        return new Post(title, content, uuidFileList, writer, isDeleted, isAnonymous, isQuestion, board);
+        return Post.builder()
+                .title(title)
+                .content(content)
+                .attachImageUuidFileList(uuidFileList)
+                .writer(writer)
+                .isDeleted(isDeleted)
+                .isAnonymous(isAnonymous)
+                .isQuestion(isQuestion)
+                .board(board)
+                .build();
     }
 
     public void update(String title, String content, List<UuidFile> attachImageUuidFileList) {

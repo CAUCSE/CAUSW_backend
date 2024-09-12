@@ -4,14 +4,13 @@ import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
-import net.causw.domain.model.user.UserAdmissionDomainModel;
 
 import java.util.List;
 
 @Getter
 @Entity
-@Builder
-@AllArgsConstructor
+@Builder(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "tb_user_admission")
 public class UserAdmission extends BaseEntity {
@@ -25,27 +24,6 @@ public class UserAdmission extends BaseEntity {
 
     @Column(name = "description", nullable = true)
     private String description;
-
-    private UserAdmission(
-            String id,
-            User user,
-            List<UuidFile> attachImageUuidFileList,
-            String description
-    ) {
-        super(id);
-        this.user = user;
-        this.attachImageUuidFileList = attachImageUuidFileList;
-        this.description = description;
-    }
-
-    public static UserAdmission from(UserAdmissionDomainModel userAdmissionDomainModel) {
-        return new UserAdmission(
-                userAdmissionDomainModel.getId(),
-                User.from(userAdmissionDomainModel.getUser()),
-                userAdmissionDomainModel.getUuidFileList(),
-                userAdmissionDomainModel.getDescription()
-        );
-    }
 
     public static UserAdmission of(User requestUser, List<UuidFile> attachImageUuidFileList, String description) {
         return UserAdmission.builder()
