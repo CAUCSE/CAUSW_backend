@@ -27,7 +27,7 @@ public class CalendarService {
 
     @Transactional(readOnly = true)
     public CalendarsResponseDto findCalendarByYear(Integer year) {
-        List<CalendarResponseDto> calendars = calendarRepository.findByYearOrderByMonthAsc(year).stream()
+        List<CalendarResponseDto> calendars = calendarRepository.findByYearOrderByMonthDesc(year).stream()
                 .map(DtoMapper.INSTANCE::toCalendarResponseDto)
                 .toList();
 

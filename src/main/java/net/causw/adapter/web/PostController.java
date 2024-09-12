@@ -37,7 +37,7 @@ public class PostController {
     private final PostService postService;
     @GetMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.isAcademicRecordCertified()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시글 열람 API(완료)", description = "게시판에서 게시글을 선택했을 때 게시글을 열람할 수 있습니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
@@ -65,7 +65,7 @@ public class PostController {
 
     @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.isAcademicRecordCertified()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시글 전체 조회 API(완료)",
             description = "전체 게시글을 불러오는 API로 페이지 별로 불러올 수 있습니다. 현재 한 페이지당 20개의 게시글이 조회 가능합니다. 1페이지는 value값이 0입니다.")
     @ApiResponses({
@@ -95,7 +95,7 @@ public class PostController {
 
     @GetMapping("/search")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.isAcademicRecordCertified()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시글 검색 API(완료)",
             description = "게시글을 검색하는 API로 제목의 연관검색어로 검색 가능합니다.")
     @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
@@ -141,7 +141,7 @@ public class PostController {
 
     @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.isAcademicRecordCertified()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시글 생성 API(완료)",
             description = "게시글을 생성하는 API로 각 게시판의 createrolelist에 따라서 작성할 수 있는 권한이 달라집니다.")
     @ApiResponses({
@@ -171,7 +171,7 @@ public class PostController {
 
     @DeleteMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.isAcademicRecordCertified()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시글 삭제 API(완료)",
             description = "게시글을 삭제하는 API로 작성자 본인이나 해당 게시판이 속한 동아리의 동아리장, 관리자, 학생회장의 경우 삭제 가능합니다.")
     @ApiResponses({
@@ -203,7 +203,7 @@ public class PostController {
 
     @PutMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.isAcademicRecordCertified()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시글 업데이트 API(완료)",
             description = "게시글을 업데이트하는 API로 작성자 본인이나 해당 게시판이 속한 동아리의 동아리장, 관리자, 학생회장의 경우 업데이트 가능합니다.")
     @ApiResponses({
@@ -244,7 +244,7 @@ public class PostController {
 
     @PutMapping(value = "/{id}/restore")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.isAcademicRecordCertified()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시글 복구 API(완료)",
             description = "게시글을 복구하는 API로 작성자 본인이나 해당 게시판이 속한 동아리의 동아리장, 관리자, 학생회장의 경우 복구 가능합니다.")
     @ApiResponses({
@@ -282,7 +282,7 @@ public class PostController {
 
     @PostMapping(value ="/{id}/like" )
     @ResponseStatus(value = HttpStatus.CREATED)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.isAcademicRecordCertified()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시글 좋아요 저장 API(완료)",
             description = "특정 유저가 특정 게시글에 좋아요를 누른 걸 저장하는 Api 입니다.")
     @ApiResponses({
@@ -305,7 +305,7 @@ public class PostController {
 
     @PostMapping(value ="/{id}/favorite" )
     @ResponseStatus(value = HttpStatus.CREATED)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.isAcademicRecordCertified()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시글 즐겨찾기 저장 API(완료)",
             description = "특정 유저가 특정 게시글에 즐겨찾기를 누른 걸 저장하는 Api 입니다.")
     @ApiResponses({
@@ -329,7 +329,7 @@ public class PostController {
 
     @PutMapping(value ="/{id}/favorite" )
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and @securityService.isAcademicRecordCertified()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시글 즐겨찾기 취소 API(완료)",
             description = "특정 유저가 특정 게시글에 즐겨찾기를 누른 걸 취소하는 Api 입니다.")
     @ApiResponses({

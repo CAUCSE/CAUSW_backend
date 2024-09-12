@@ -74,6 +74,10 @@ public class SecurityService {
         } else return !academicStatus.equals(AcademicStatus.UNDETERMINED);
     }
 
+    public boolean isActiveAndNotNoneUserAndAcademicRecordCertified() {
+        return isActiveAndNotNoneUser() && isAcademicRecordCertified();
+    }
+
     public boolean isAdminOrPresidentOrVicePresident() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
