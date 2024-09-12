@@ -15,7 +15,7 @@ public class Event extends BaseEntity {
     @Column(name = "url", nullable = false)
     private String url;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "uuid_file_id", nullable = false)
     private UuidFile uuidFile;
 
