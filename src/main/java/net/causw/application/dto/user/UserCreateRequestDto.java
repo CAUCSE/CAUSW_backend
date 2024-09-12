@@ -43,7 +43,6 @@ public class UserCreateRequestDto {
     @Schema(description = "입학년도", example = "2020")
     private Integer admissionYear;
 
-    @NotBlank(message = "프로필 이미지를 선택해 주세요.")
     @Schema(description = "프로필 이미지 URL", example = "")
     private String profileImage;
 
