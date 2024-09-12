@@ -1,13 +1,12 @@
 package net.causw.adapter.persistence.calendar;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.causw.adapter.persistence.base.BaseEntity;
+import net.causw.adapter.persistence.uuidFile.UuidFile;
 
 @Getter
 @Entity
@@ -21,20 +20,21 @@ public class Calendar extends BaseEntity {
     @Column(name = "month", nullable = false)
     private Integer month;
 
-    @Column(name = "image", nullable = false)
-    private String image;
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "calendar_id", nullable = false)
+    private UuidFile uuidFile;
 
     public static Calendar of(
             Integer year,
             Integer month,
-            String image
+            UuidFile uuidFile
     ) {
-        return new Calendar(year, month, image);
+        return new Calendar(year, month, uuidFile);
     }
 
-    public void update(Integer year, Integer month, String image) {
+    public void update(Integer year, Integer month, UuidFile uuidFile) {
         this.year = year;
         this.month = month;
-        this.image = image;
+        this.uuidFile = uuidFile;
     }
 }

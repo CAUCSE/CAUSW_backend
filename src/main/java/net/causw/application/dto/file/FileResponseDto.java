@@ -1,6 +1,5 @@
 package net.causw.application.dto.file;
 
-//import com.google.cloud.storage.Blob;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;

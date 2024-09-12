@@ -59,24 +59,7 @@ public class UserCreateRequestDto {
     @Schema(description = "학부/학과", example = "소프트웨어학부")
     private String major;
 
-    @NotNull(message = "학적 상태를 선택해 주세요.")
-    @Schema(description = "학적상태", example = "ENROLLED")
-    private AcademicStatus academicStatus;
-
-    @NotNull(message = "현재 등록 완료된 학기를 선택해 주세요.")
-    @Schema(description = "현재 등록 완료된 학기", example = "6(3학년 2학기)")
-    private Integer currentCompletedSemester;
-
-    @NotNull(message = "졸업시기 년을 선택해 주세요.")
-    @Schema(description = "졸업시기 년", example = "2026")
-    private Integer graduationYear;
-
-    @NotNull(message = "졸업시기 월을 선택해 주세요.")
-    @Schema(description = "졸업시기 월", example = "2")
-    private Integer graduationMonth;
-
-    @NotBlank(message = "전화번호를 입력해 주세요.")
-    @Schema(description = "전화번호", example = "01012345678")
+    @Schema(description = "전화번호", example = "01012345678", requiredMode = Schema.RequiredMode.REQUIRED)
     private String phoneNumber;
 
     public User toEntity(String encodedPassword, Set<Role> roles, UserState state) {
@@ -92,10 +75,7 @@ public class UserCreateRequestDto {
                 .profileImage(profileImage)
                 .nickname(nickname)
                 .major(major)
-                .academicStatus(academicStatus)
-                .currentCompletedSemester(currentCompletedSemester)
-                .graduationYear(graduationYear)
-                .graduationMonth(graduationMonth)
+                .academicStatus(AcademicStatus.UNDETERMINED)
                 .phoneNumber(phoneNumber)
                 .build();
     }

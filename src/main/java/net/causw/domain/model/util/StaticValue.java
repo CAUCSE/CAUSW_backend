@@ -51,4 +51,8 @@ public class StaticValue {
 
     // Text Field
     public static final String EXPIRED_AT = "EXPIRE_DATE";
+
+    // UserAcademicRecordApplication
+    public static final String USER_APPLIED = "[사용자 신청]";
+    public static final String USER_CLOSED = "인증 서류 재제출로 인한 신청 서류 종료";
 }

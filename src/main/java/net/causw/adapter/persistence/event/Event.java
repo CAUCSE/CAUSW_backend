@@ -1,10 +1,9 @@
 package net.causw.adapter.persistence.event;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
+import net.causw.adapter.persistence.uuidFile.UuidFile;
 import org.hibernate.annotations.ColumnDefault;
 
 @Getter
@@ -16,8 +15,9 @@ public class Event extends BaseEntity {
     @Column(name = "url", nullable = false)
     private String url;
 
-    @Column(name = "image", nullable = false)
-    private String image;
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "event_id", nullable = false)
+    private UuidFile uuidFile;
 
     @Setter
     @Column(name = "is_deleted")
@@ -26,14 +26,14 @@ public class Event extends BaseEntity {
 
     public static Event of(
             String url,
-            String image,
+            UuidFile uuidFile,
             Boolean isDeleted
     ) {
-        return new Event(url, image, isDeleted);
+        return new Event(url, uuidFile, isDeleted);
     }
 
-    public void update(String url, String image) {
+    public void update(String url, UuidFile uuidFile) {
         this.url = url;
-        this.image = image;
+        this.uuidFile = uuidFile;
     }
 }

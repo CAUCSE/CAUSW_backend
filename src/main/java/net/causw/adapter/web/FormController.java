@@ -25,7 +25,8 @@ public class FormController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("@securityService.activeAndNotNoneUser and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT', 'LEADER_CIRCLE')")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
     public FormResponseDto createForm(
             @Valid @RequestBody FormCreateRequestDto formCreateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -36,7 +37,7 @@ public class FormController {
 
     @GetMapping("/{formId}")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("@securityService.activeAndNotNoneUser")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     public FormResponseDto findForm(@PathVariable(name = "formId") String formId) {
         if (!securityService.hasAccessToForm(formId)) {
             throw new UnauthorizedException(ErrorCode.API_NOT_ACCESSIBLE, MessageUtil.API_NOT_ACCESSIBLE);
@@ -46,7 +47,8 @@ public class FormController {
 
     @DeleteMapping("/{formId}")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("@securityService.activeAndNotNoneUser and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT', 'LEADER_CIRCLE')")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
     public void deleteForm(
             @PathVariable(name = "formId") String formId,
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -56,7 +58,7 @@ public class FormController {
 
     @PostMapping("/{formId}")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("@securityService.activeAndNotNoneUser")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     public void replyForm(
             @PathVariable(name = "formId") String formId,
             @Valid @RequestBody FormReplyRequestDto formReplyRequestDto,
@@ -70,7 +72,8 @@ public class FormController {
 
     @GetMapping("/{formId}/results")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("@securityService.activeAndNotNoneUser and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT', 'LEADER_CIRCLE')")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
     public List<ReplyUserResponseDto> findUserReply(
             @PathVariable(name = "formId") String formId,
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -80,7 +83,8 @@ public class FormController {
 
     @GetMapping("/{formId}/summary")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("@securityService.activeAndNotNoneUser and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT', 'LEADER_CIRCLE')")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
     public List<QuestionSummaryResponseDto> findSummaryReply(
             @PathVariable(name = "formId") String formId,
             @AuthenticationPrincipal CustomUserDetails userDetails

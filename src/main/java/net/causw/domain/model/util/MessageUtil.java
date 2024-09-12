@@ -85,6 +85,33 @@ public class MessageUtil {
     public static final String FLAG_UPDATE_FAILED = "플래그 업데이트에 실패했습니다.";
     public static final String FLAG_ALREADY_EXIST = "이미 존재하는 플래그 입니다.";
 
+    // UserAcademicRecord
+    public static final String USER_ACADEMIC_RECORD_APPLICATION_NOT_FOUND = "해당 사용자의 학적 변경 신청을 찾을 수 없습니다.";
+    public static final String USER_ACADEMIC_RECORD_APPLICATION_AND_USER_NOT_MATCH = "해당 사용자의 학적 변경 신청이 아닙니다.";
+    public static final String INVALID_ACADEMIC_RECORD_REQUEST_STATUS = "유효하지 않은 학적 인증 변경 목표 상태입니다. (ACCEPT, REJECT 로만 변경이 가능합니다.)";
+
+    public static final String ADMIN_UPDATE_ACADEMIC_RECORD_MESSAGE = "관리자 업데이트";
+
+    // UserAcademicRecordApplication
+    public static final String INVALID_TARGET_COMPLETED_SEMESTER = "유효하지 않은 목표 학기입니다.";
+    public static final String INVALID_TARGET_ACADEMIC_STATUS = "유효하지 않은 목표 학적 상태입니다.";
+    public static final String FILE_UPLOAD_NOT_ALLOWED = "파일 업로드가 허용되지 않습니다.";
+    public static final String FILE_UPLOAD_REQUIRED = "파일 업로드가 필요합니다.";
+    public static final String USER_ACADEMIC_RECORD_APPLICATION_DUPLICATED = "대기 중인 학적 인증 신청이 두 개 이상 존재합니다.";
+    public static final String TARGET_CURRENT_COMPLETED_SEMESTER_NOT_EXIST = "목표 현재 학기가 필요합니다.";
+    public static final String GRADUATION_INFORMATION_NOT_EXIST = "졸업 정보가 필요합니다.";
+    public static final String USER_NOTE_NOW_ALLOWED = "사용자가 노트를 작성할 수 없습니다.";
+
+    // UuidFile
+    public static final String FILE_NOT_FOUND = "파일을 찾을 수 없습니다.";
+
+    // Semester
+    public static final String PRIOR_SEMESTER_NOT_FOUND = "이전 학기를 찾을 수 없습니다.";
+    public static final String ACTIVE_SEMESTER_IS_DUPLICATED = "활성화된 학기가 중복되어 있습니다.";
+
+
     // 500
     public static final String INTERNAL_SERVER_ERROR = "Internal Server Error";
+    public static final String FILE_UPLOAD_FAIL = "파일 업로드에 실패했습니다.";
+    public static final String FILE_DELETE_FAIL = "파일 삭제에 실패했습니다.";
 }

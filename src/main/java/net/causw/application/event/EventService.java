@@ -3,14 +3,16 @@ package net.causw.application.event;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.event.Event;
 import net.causw.adapter.persistence.repository.EventRepository;
+import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.event.EventCreateRequestDto;
 import net.causw.application.dto.event.EventResponseDto;
 import net.causw.application.dto.event.EventUpdateRequestDto;
 import net.causw.application.dto.event.EventsResponseDto;
 import net.causw.application.dto.util.DtoMapper;
-import net.causw.application.storage.StorageService;
+import net.causw.application.uuidFile.UuidFileService;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
+import net.causw.domain.model.enums.FilePath;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
 import org.springframework.stereotype.Service;
@@ -22,7 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class EventService {
     private final EventRepository eventRepository;
-    private final StorageService storageService;
+    private final UuidFileService uuidFileService;
 
     @Transactional(readOnly = true)
     public EventsResponseDto findEvents() {
@@ -45,11 +47,13 @@ public class EventService {
             );
         }
 
+        UuidFile uuidFile = uuidFileService.saveFile(eventCreateRequestDto.getImage(), FilePath.EVENT);
+
         return DtoMapper.INSTANCE.toEventResponseDto(
                 eventRepository.save(
                         Event.of(
                                 eventCreateRequestDto.getUrl(),
-                                storageService.uploadFile(eventCreateRequestDto.getImage(), "EVENT"),
+                                uuidFile,
                                 false
                         )
                 )
@@ -59,9 +63,10 @@ public class EventService {
     @Transactional
     public EventResponseDto updateEvent(String eventId, EventUpdateRequestDto eventUpdateRequestDto) {
         Event event = getEvent(eventId);
+        UuidFile uuidFile = uuidFileService.saveFile(eventUpdateRequestDto.getImage(), FilePath.EVENT);
         event.update(
                 eventUpdateRequestDto.getUrl(),
-                storageService.uploadFile(eventUpdateRequestDto.getImage(), "EVENT")
+                uuidFile
         );
         return DtoMapper.INSTANCE.toEventResponseDto(eventRepository.save(event));
     }

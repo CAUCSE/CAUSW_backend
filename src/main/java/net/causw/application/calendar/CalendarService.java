@@ -3,14 +3,16 @@ package net.causw.application.calendar;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.calendar.Calendar;
 import net.causw.adapter.persistence.repository.CalendarRepository;
+import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.calendar.CalendarCreateRequestDto;
 import net.causw.application.dto.calendar.CalendarResponseDto;
 import net.causw.application.dto.calendar.CalendarUpdateRequestDto;
 import net.causw.application.dto.calendar.CalendarsResponseDto;
 import net.causw.application.dto.util.DtoMapper;
-import net.causw.application.storage.StorageService;
+import net.causw.application.uuidFile.UuidFileService;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
+import net.causw.domain.model.enums.FilePath;
 import net.causw.domain.model.util.MessageUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,11 +23,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CalendarService {
     private final CalendarRepository calendarRepository;
-    private final StorageService storageService;
+    private final UuidFileService uuidFileService;
 
     @Transactional(readOnly = true)
     public CalendarsResponseDto findCalendarByYear(Integer year) {
-        List<CalendarResponseDto> calendars = calendarRepository.findByYearOrderByMonthAsc(year).stream()
+        List<CalendarResponseDto> calendars = calendarRepository.findByYearOrderByMonthDesc(year).stream()
                 .map(DtoMapper.INSTANCE::toCalendarResponseDto)
                 .toList();
 
@@ -58,6 +60,8 @@ public class CalendarService {
 
     @Transactional
     public CalendarResponseDto createCalendar(CalendarCreateRequestDto calendarCreateRequestDto) {
+        UuidFile uuidFile = uuidFileService.saveFile(calendarCreateRequestDto.getImage(), FilePath.CALENDAR);
+
         calendarRepository.findByYearAndMonth(calendarCreateRequestDto.getYear(), calendarCreateRequestDto.getMonth())
                 .ifPresent(calendar -> {
                     throw new BadRequestException(
@@ -71,7 +75,7 @@ public class CalendarService {
                         Calendar.of(
                                 calendarCreateRequestDto.getYear(),
                                 calendarCreateRequestDto.getMonth(),
-                                storageService.uploadFile(calendarCreateRequestDto.getImage(), "CALENDAR")
+                                uuidFile
                         )
                 )
         );
@@ -86,10 +90,14 @@ public class CalendarService {
                 )
         );
 
+        uuidFileService.deleteFile(calendar.getUuidFile());
+
+        UuidFile uuidFile = uuidFileService.saveFile(calendarUpdateRequestDto.getImage(), FilePath.CALENDAR);
+
         calendar.update(
                 calendarUpdateRequestDto.getYear(),
                 calendarUpdateRequestDto.getMonth(),
-                storageService.uploadFile(calendarUpdateRequestDto.getImage(), "CALENDAR")
+                uuidFile
         );
 
         return DtoMapper.INSTANCE.toCalendarResponseDto(calendarRepository.save(calendar));

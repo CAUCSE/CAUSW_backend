@@ -13,6 +13,7 @@ import net.causw.adapter.persistence.form.Reply;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.user.UserAdmission;
+import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.board.BoardMainResponseDto;
 import net.causw.application.dto.board.BoardNameCheckResponseDto;
 import net.causw.application.dto.board.BoardOfCircleResponseDto;
@@ -72,6 +73,16 @@ public interface DtoMapper{
         return Arrays.stream(attachments.split(":::"))
                 .map(FileResponseDto::from)
                 .collect(Collectors.toList());
+    }
+
+    @Named("mapUuidFileListToFileUrlList")
+    default List<String> mapUuidFileListToFileUrlList(List<UuidFile> uuidFileList) {
+        return uuidFileList.stream().map(UuidFile::getFileUrl).toList();
+    }
+
+    @Named("mapUuidFileToFileUrl")
+    default String mapUuidFileToFileUrl(UuidFile uuidFile) {
+        return uuidFile.getFileUrl();
     }
 
     // Dto writerName 필드에 post.writer.name을 삽입한다는 의미입니다.
@@ -148,7 +159,7 @@ public interface DtoMapper{
     @Mapping(target = "academicStatus", source = "user.academicStatus")
     @Mapping(target = "currentCompletedSemester", source = "user.currentCompletedSemester")
     @Mapping(target = "graduationYear", source = "user.graduationYear")
-    @Mapping(target = "graduationMonth", source = "user.graduationMonth")
+    @Mapping(target = "graduationType", source = "user.graduationType")
     @Mapping(target = "phoneNumber", source = "user.phoneNumber")
     UserResponseDto toUserResponseDto(User user, List<String> circleIdIfLeader, List<String> circleNameIfLeader);
     // circleIdIfLeader, circleNameIfLeader는 경우에 따라 null을 할당합니다.(기존 UserResponseDto.from을 사용하는 경우)
@@ -307,6 +318,7 @@ public interface DtoMapper{
     // Calendar
     @Mapping(source = "createdAt", target = "createdAt", qualifiedByName = "formatDateTime")
     @Mapping(source = "updatedAt", target = "updatedAt", qualifiedByName = "formatDateTime")
+    @Mapping(target = "image", source = "calendar.uuidFile", qualifiedByName = "mapUuidFileToFileUrl")
     CalendarResponseDto toCalendarResponseDto(Calendar calendar);
 
     @Mapping(target = "calendars", source = "calendars")
@@ -315,6 +327,7 @@ public interface DtoMapper{
     // Event
     @Mapping(source = "createdAt", target = "createdAt", qualifiedByName = "formatDateTime")
     @Mapping(source = "updatedAt", target = "updatedAt", qualifiedByName = "formatDateTime")
+    @Mapping(target = "image", source = "event.uuidFile", qualifiedByName = "mapUuidFileToFileUrl")
     EventResponseDto toEventResponseDto(Event event);
 
     @Named("formatDateTime")
