@@ -39,6 +39,9 @@ public class UserAdmissionLog extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private UserAdmissionLogAction action;
 
+    @Column(name = "rejectReason",nullable = true)
+    private String rejectReason;
+
     public static UserAdmissionLog of(
             String userEmail,
             String userName,
@@ -46,7 +49,8 @@ public class UserAdmissionLog extends BaseEntity {
             String adminUserName,
             UserAdmissionLogAction action,
             String attachImage,
-            String description
+            String description,
+            String rejectReason
     ) {
         return new UserAdmissionLog(
                 userEmail,
@@ -55,7 +59,8 @@ public class UserAdmissionLog extends BaseEntity {
                 adminUserName,
                 attachImage,
                 description,
-                action
+                action,
+                rejectReason
         );
     }
 }

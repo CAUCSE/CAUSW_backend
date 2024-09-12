@@ -1175,6 +1175,7 @@ public class UserService {
                 .action(UserAdmissionLogAction.ACCEPT)
                 .attachImage(userAdmission.getAttachImage())
                 .description(userAdmission.getDescription())
+                .rejectReason(userAdmission.getRejectReason())
                 .build();
         // Add admission log
 
@@ -1218,6 +1219,7 @@ public class UserService {
                 .action(UserAdmissionLogAction.REJECT)
                 .attachImage(userAdmission.getAttachImage())
                 .description(userAdmission.getDescription())
+                .rejectReason(userAdmission.getRejectReason())
                 .build();
 
 
