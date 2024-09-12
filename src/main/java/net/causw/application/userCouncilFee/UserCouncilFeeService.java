@@ -20,6 +20,7 @@ import net.causw.application.semester.SemesterService;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.enums.AcademicStatus;
+import net.causw.domain.model.enums.GraduationType;
 import net.causw.domain.model.enums.LogType;
 import net.causw.domain.model.util.MessageUtil;
 import org.springframework.data.domain.Page;
@@ -172,6 +173,13 @@ public class UserCouncilFeeService {
                     getIsAppliedCurrentSemester(userCouncilFee)
             );
         } else {
+            this.validCouncilFeeFakeUserInfo(
+                    createUserCouncilFeeRequestDto.getAcademicStatus(),
+                    createUserCouncilFeeRequestDto.getCurrentCompletedSemester(),
+                    createUserCouncilFeeRequestDto.getGraduationYear(),
+                    createUserCouncilFeeRequestDto.getGraduationType()
+            );
+
             CouncilFeeFakeUser targetCouncilFeeFakeUser = CouncilFeeFakeUser.of(
                     createUserCouncilFeeRequestDto.getUserName(),
                     createUserCouncilFeeRequestDto.getStudentId(),
@@ -310,6 +318,14 @@ public class UserCouncilFeeService {
             );
         } else {
             CouncilFeeFakeUser councilFeeFakeUser = userCouncilFee.getCouncilFeeFakeUser();
+
+            this.validCouncilFeeFakeUserInfo(
+                    createUserCouncilFeeRequestDto.getAcademicStatus(),
+                    createUserCouncilFeeRequestDto.getCurrentCompletedSemester(),
+                    createUserCouncilFeeRequestDto.getGraduationYear(),
+                    createUserCouncilFeeRequestDto.getGraduationType()
+            );
+
             councilFeeFakeUser.update(
                     createUserCouncilFeeRequestDto.getUserName(),
                     createUserCouncilFeeRequestDto.getStudentId(),
@@ -466,6 +482,18 @@ public class UserCouncilFeeService {
             throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_USER_COUNCIL_FEE_INFO);
         }
     }
+
+    private void validCouncilFeeFakeUserInfo(AcademicStatus academicStatus, Integer currentCompletedSemester, Integer graduationYear, GraduationType graduationType) {
+        if (
+                (academicStatus.equals(AcademicStatus.ENROLLED) && currentCompletedSemester == null) ||
+                        (academicStatus.equals(AcademicStatus.GRADUATED) && ( graduationYear == null || graduationType == null ))
+        ) {
+            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_COUNCIL_FEE_FAKE_USER_INFO);
+        }
+    }
+
+
+
 
     // Dto Mapper private method
     private UserCouncilFeeListResponseDto toUserCouncilFeeListResponseDto(UserCouncilFee userCouncilFee, User user) {

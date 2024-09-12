@@ -49,9 +49,6 @@ public class CouncilFeeFakeUser extends BaseEntity {
     private GraduationType graduationType;
 
     public void setCurrentCompletedSemester(Integer currentCompletedSemester) {
-        if (this.academicStatus.equals(AcademicStatus.ENROLLED) && currentCompletedSemester == null) {
-            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_COUNCIL_FEE_FAKE_USER_INFO);
-        }
         this.currentCompletedSemester = currentCompletedSemester;
     }
 
@@ -66,13 +63,6 @@ public class CouncilFeeFakeUser extends BaseEntity {
             Integer graduationYear,
             GraduationType graduationType
     ) {
-        if (
-                (academicStatus.equals(AcademicStatus.ENROLLED) && currentCompletedSemester == null) ||
-                        (academicStatus.equals(AcademicStatus.GRADUATED) && ( graduationYear == null || graduationType == null ))
-        ) {
-            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_COUNCIL_FEE_FAKE_USER_INFO);
-        }
-
         this.name = name;
         this.studentId = studentId;
         this.phoneNumber = phoneNumber;
@@ -96,12 +86,6 @@ public class CouncilFeeFakeUser extends BaseEntity {
             Integer graduationYear,
             GraduationType graduationType
     ) {
-        if (
-                (academicStatus.equals(AcademicStatus.ENROLLED) && currentCompletedSemester == null) ||
-                        (academicStatus.equals(AcademicStatus.GRADUATED) && ( graduationYear == null || graduationType == null ))
-        ) {
-            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_COUNCIL_FEE_FAKE_USER_INFO);
-        }
         return CouncilFeeFakeUser.builder()
                 .name(name)
                 .studentId(studentId)

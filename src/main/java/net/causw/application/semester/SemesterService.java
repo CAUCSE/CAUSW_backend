@@ -9,8 +9,11 @@ import net.causw.adapter.persistence.userCouncilFee.UserCouncilFee;
 import net.causw.application.dto.semester.CreateSemesterRequestDto;
 import net.causw.application.dto.semester.CurrentSemesterResponseDto;
 import net.causw.application.dto.util.SemesterDtoMapper;
+import net.causw.domain.exceptions.BadRequestException;
+import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.enums.AcademicStatus;
 import net.causw.domain.model.enums.SemesterType;
+import net.causw.domain.model.util.MessageUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -102,8 +105,13 @@ public class SemesterService {
                 .stream()
                 .map(UserCouncilFee::getCouncilFeeFakeUser)
                 .filter(councilFeeFakeUser -> councilFeeFakeUser.getAcademicStatus().equals(AcademicStatus.ENROLLED))
-                .peek(councilFeeFakeUser -> councilFeeFakeUser.setCurrentCompletedSemester(
-                        councilFeeFakeUser.getCurrentCompletedSemester() + 1))
+                .peek(councilFeeFakeUser -> {
+                    validAcademicStatusAndCurrentCompletedSemester(councilFeeFakeUser.getAcademicStatus(),
+                            councilFeeFakeUser.getCurrentCompletedSemester() + 1
+                    );
+                    councilFeeFakeUser.setCurrentCompletedSemester(
+                        councilFeeFakeUser.getCurrentCompletedSemester() + 1);
+                })
                 .toList();
 
         councilFeeFakeUserRepository.saveAll(councilFeeFakeUserList);
@@ -116,5 +124,12 @@ public class SemesterService {
 
     private CurrentSemesterResponseDto toCurrentSemesterResponseDto(Semester semester) {
         return SemesterDtoMapper.INSTANCE.toCurrentSemesterResponseDto(semester);
+    }
+
+    // Private Methods
+    public void validAcademicStatusAndCurrentCompletedSemester(AcademicStatus academicStatus, Integer currentCompletedSemester) {
+        if (academicStatus.equals(AcademicStatus.ENROLLED) && currentCompletedSemester == null) {
+            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_COUNCIL_FEE_FAKE_USER_INFO);
+        }
     }
 }
