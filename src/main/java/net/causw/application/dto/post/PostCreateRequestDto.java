@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,8 +30,8 @@ public class PostCreateRequestDto {
     @Schema(description = "게시판 id", example = "uuid 형식의 String 값입니다.")
     private String boardId;
 
-    @Schema(description = "첨부파일", example = "첨부파일 url 작성")
-    private List<String> attachmentList;
+    @Schema(description = "첨부파일", example = "첨부파일")
+    private List<MultipartFile> multipartFileList;
 
     @NotNull(message = "익명글 여부를 선택해 주세요.")
     @Schema(description = "익명글 여부", example = "False")
@@ -40,7 +41,4 @@ public class PostCreateRequestDto {
     @Schema(description = "질문글 여부", example = "False")
     private Boolean isQuestion;
 
-    public List<String> getAttachmentList() {
-        return Optional.ofNullable(this.attachmentList).orElse(List.of());
-    }
 }
