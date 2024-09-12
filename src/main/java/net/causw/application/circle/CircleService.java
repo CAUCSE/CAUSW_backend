@@ -213,7 +213,9 @@ public class CircleService {
                 false,
                 circleCreateRequestDto.getCircleTax(),
                 circleCreateRequestDto.getRecruitMembers(),
-                leader
+                leader,
+                circleCreateRequestDto.getRecruitEndDate(),
+                circleCreateRequestDto.getIsRecruit()
         );
 
         /* Check if the request user is president or admin
@@ -320,7 +322,9 @@ public class CircleService {
                 circleUpdateRequestDto.getDescription(),
                 uuidFile,
                 circleUpdateRequestDto.getCircleTax(),
-                circleUpdateRequestDto.getRecruitMembers()
+                circleUpdateRequestDto.getRecruitMembers(),
+                circleUpdateRequestDto.getRecruitEndDate(),
+                circleUpdateRequestDto.getIsRecruit()
         );
 
         return this.toCircleResponseDto(updateCircle(circleId, circle));
@@ -634,7 +638,7 @@ public class CircleService {
     private Circle updateCircle(String id, Circle circle) {
         return circleRepository.findById(id).map(
                 srcCircle -> {
-                    srcCircle.update(circle.getName(), circle.getDescription(), circle.getCircleMainImageUuidFile(), circle.getCircleTax(), circle.getRecruitMembers());
+                    srcCircle.update(circle.getName(), circle.getDescription(), circle.getCircleMainImageUuidFile(), circle.getCircleTax(), circle.getRecruitMembers(), circle.getRecruitEndDate(), circle.getIsRecruit());
                     return circleRepository.save(srcCircle);
                 }
         ).orElseThrow(

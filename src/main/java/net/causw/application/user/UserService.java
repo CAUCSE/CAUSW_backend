@@ -629,7 +629,7 @@ public class UserService {
         //다른 서비스단과 update 방식 통일하기
         UuidFile profileImageUuidFile = (profileImage == null) ?
                 null :
-                uuidFileService.updateFile(user.getProfileImageUuidFile(), userUpdateRequestDto.getMultipartFileProfileImage(), FilePath.USER_PROFILE);
+                uuidFileService.updateFile(user.getProfileImageUuidFile(), profileImage, FilePath.USER_PROFILE);
 
         user.update(userUpdateRequestDto.getNickname(), userUpdateRequestDto.getAcademicStatus(), profileImageUuidFile);
 

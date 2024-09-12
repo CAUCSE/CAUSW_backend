@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 public class CircleUpdateRequestDto {
@@ -25,4 +27,10 @@ public class CircleUpdateRequestDto {
     @Schema(description = "동아리 모집인원", example = "10")
     @Positive(message = "동아리 모집인원은 0보다 커야 합니다.")
     private Integer recruitMembers;
+
+    @Schema(description = "동아리 모집 종료 날짜", example = "2024-10-10")
+    private LocalDateTime recruitEndDate;
+
+    @Schema(description = "동아리 모집 여부", example = "false")
+    private Boolean isRecruit;
 }

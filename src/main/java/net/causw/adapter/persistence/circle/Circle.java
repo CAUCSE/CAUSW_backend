@@ -7,6 +7,7 @@ import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Getter
@@ -36,47 +37,53 @@ public class Circle extends BaseEntity {
     @Column(name = "recruit_members")
     private Integer recruitMembers;
 
+    @Column(name = "recruit_end_date")
+    private LocalDateTime recruitEndDate;
+
+    @Column(name = "is_recruit")
+    @ColumnDefault("false")
+    private Boolean isRecruit;
+
     @OneToOne
     @JoinColumn(name = "leader_id")
     private User leader;
-
-
-
-//
-//    @OneToMany(mappedBy = "circle", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<Form> forms;
 
     public Optional<User> getLeader() {
         return Optional.ofNullable(this.leader);
     }
 
-
     public static Circle of(
             String name,
-            UuidFile uuidFile,
+            UuidFile circleMainImageUuidFile,
             String description,
             Boolean isDeleted,
             Integer circleTax,
             Integer recruitMembers,
-            User leader
+            User leader,
+            LocalDateTime recruitEndDate,
+            Boolean isRecruit
     ) {
         return Circle.builder()
                 .name(name)
-                .circleMainImageUuidFile(uuidFile)
+                .circleMainImageUuidFile(circleMainImageUuidFile)
                 .description(description)
                 .isDeleted(isDeleted)
                 .circleTax(circleTax)
                 .recruitMembers(recruitMembers)
                 .leader(leader)
+                .recruitEndDate(recruitEndDate)
+                .isRecruit(isRecruit)
                 .build();
     }
 
-    public void update(String name, String description, UuidFile circleMainImageUuidFile, Integer circleTax, Integer recruitMembers){
+    public void update(String name, String description, UuidFile circleMainImageUuidFile, Integer circleTax, Integer recruitMembers, LocalDateTime recruitEndDate, Boolean isRecruit) {
         this.description = description;
         this.name = name;
         this.circleMainImageUuidFile = circleMainImageUuidFile;
         this.circleTax = circleTax;
         this.recruitMembers = recruitMembers;
+        this.recruitEndDate = recruitEndDate;
+        this.isRecruit = isRecruit;
     }
 
     public void setLeader(User leader){

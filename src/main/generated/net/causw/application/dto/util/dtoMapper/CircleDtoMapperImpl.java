@@ -30,7 +30,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-09-13T04:50:36+0900",
+    date = "2024-09-13T05:58:23+0900",
     comments = "version: 1.4.2.Final, compiler: javac, environment: Java 17.0.12 (Azul Systems, Inc.)"
 )
 @Component
@@ -81,6 +81,8 @@ public class CircleDtoMapperImpl implements CircleDtoMapper {
         circleResponseDto.circleTax( circle.getCircleTax() );
         circleResponseDto.recruitMembers( circle.getRecruitMembers() );
         circleResponseDto.createdAt( circle.getCreatedAt() );
+        circleResponseDto.recruitEndDate( circle.getRecruitEndDate() );
+        circleResponseDto.isRecruit( circle.getIsRecruit() );
 
         circleResponseDto.leaderId( circle.getLeader().map(User::getId).orElse(null) );
         circleResponseDto.leaderName( circle.getLeader().map(User::getName).orElse(null) );
@@ -105,6 +107,8 @@ public class CircleDtoMapperImpl implements CircleDtoMapper {
             circleResponseDto.circleTax( circle.getCircleTax() );
             circleResponseDto.recruitMembers( circle.getRecruitMembers() );
             circleResponseDto.createdAt( circle.getCreatedAt() );
+            circleResponseDto.recruitEndDate( circle.getRecruitEndDate() );
+            circleResponseDto.isRecruit( circle.getIsRecruit() );
         }
         if ( numMember != null ) {
             circleResponseDto.numMember( numMember );
@@ -130,6 +134,8 @@ public class CircleDtoMapperImpl implements CircleDtoMapper {
             circlesResponseDto.name( circle.getName() );
             circlesResponseDto.description( circle.getDescription() );
             circlesResponseDto.createdAt( circle.getCreatedAt() );
+            circlesResponseDto.recruitEndDate( circle.getRecruitEndDate() );
+            circlesResponseDto.isRecruit( circle.getIsRecruit() );
         }
         if ( numMember != null ) {
             circlesResponseDto.numMember( numMember );
@@ -156,6 +162,8 @@ public class CircleDtoMapperImpl implements CircleDtoMapper {
             circlesResponseDto.name( circle.getName() );
             circlesResponseDto.description( circle.getDescription() );
             circlesResponseDto.createdAt( circle.getCreatedAt() );
+            circlesResponseDto.recruitEndDate( circle.getRecruitEndDate() );
+            circlesResponseDto.isRecruit( circle.getIsRecruit() );
         }
         if ( numMember != null ) {
             circlesResponseDto.numMember( numMember );
@@ -283,6 +291,8 @@ public class CircleDtoMapperImpl implements CircleDtoMapper {
             circleResponseDto.createdAt( circle.getCreatedAt() );
             circleResponseDto.circleTax( circle.getCircleTax() );
             circleResponseDto.recruitMembers( circle.getRecruitMembers() );
+            circleResponseDto.recruitEndDate( circle.getRecruitEndDate() );
+            circleResponseDto.isRecruit( circle.getIsRecruit() );
         }
         if ( leader != null ) {
             circleResponseDto.leaderId( leader.getId() );
