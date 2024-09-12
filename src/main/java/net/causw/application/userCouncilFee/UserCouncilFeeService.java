@@ -1,6 +1,7 @@
 package net.causw.application.userCouncilFee;
 
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.constraints.AssertTrue;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.repository.UserCouncilFeeLogRepository;
 import net.causw.adapter.persistence.repository.UserCouncilFeeRepository;
@@ -14,11 +15,11 @@ import net.causw.application.dto.userCouncilFee.CreateUserCouncilFeeRequestDto;
 import net.causw.application.dto.userCouncilFee.UserCouncilFeeListResponseDto;
 import net.causw.application.dto.userCouncilFee.UserCouncilFeeResponseDto;
 import net.causw.application.dto.util.UserCouncilFeeDtoMapper;
-import net.causw.application.excel.CircleExcelService;
 import net.causw.application.excel.CouncilFeeExcelService;
 import net.causw.application.semester.SemesterService;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
+import net.causw.domain.model.enums.AcademicStatus;
 import net.causw.domain.model.enums.LogType;
 import net.causw.domain.model.util.MessageUtil;
 import org.springframework.data.domain.Page;
@@ -84,6 +85,54 @@ public class UserCouncilFeeService {
 
     @Transactional
     public void creatUserCouncilFee(User user, CreateUserCouncilFeeRequestDto createUserCouncilFeeRequestDto) {
+        // isJoinedService가 true일 때 userId가 존재해야 합니다.
+        if ( (createUserCouncilFeeRequestDto.getUserId() == null) != createUserCouncilFeeRequestDto.getIsJoinedService() ) {
+            throw new BadRequestException(ErrorCode.INVALID_USER_DATA_REQUEST, MessageUtil.INVALID_USER_COUNCIL_FEE_INFO);
+        }
+
+        // userId가 존재하지 않으면 Fake User 정보 값은 유효한 값이 존재해야 하며, userId가 있으면 Fake User 정보 값들은 null이어야 합니다.
+        if (createUserCouncilFeeRequestDto.getUserId() == null) {
+            // userId가 없으면 다른 값들이 모두 적절하게 설정되어 있어야 함
+            boolean isUserNameValid = createUserCouncilFeeRequestDto.getUserName() != null;
+            boolean isStudentIdValid = createUserCouncilFeeRequestDto.getStudentId() != null;
+            boolean isAdmissionYearValid = createUserCouncilFeeRequestDto.getAdmissionYear() != null && createUserCouncilFeeRequestDto.getAdmissionYear() > 0;
+            boolean isMajorValid = createUserCouncilFeeRequestDto.getMajor() != null;
+            boolean isAcademicStatusValid = createUserCouncilFeeRequestDto.getAcademicStatus() != null;
+            if (createUserCouncilFeeRequestDto.getAcademicStatus() != null) {
+                if (createUserCouncilFeeRequestDto.getAcademicStatus().equals(AcademicStatus.ENROLLED)) {
+                    isAcademicStatusValid = createUserCouncilFeeRequestDto.getCurrentCompletedSemester() != null && createUserCouncilFeeRequestDto.getCurrentCompletedSemester() > 0;
+                } else if (createUserCouncilFeeRequestDto.getAcademicStatus().equals(AcademicStatus.GRADUATED)) {
+                    isAcademicStatusValid = createUserCouncilFeeRequestDto.getGraduationYear() != null && createUserCouncilFeeRequestDto.getGraduationYear() > 0 && createUserCouncilFeeRequestDto.getGraduationType() != null;
+                }
+            }
+            boolean isPhoneNumberValid = createUserCouncilFeeRequestDto.getPhoneNumber() != null;
+
+            if (!isUserNameValid || !isStudentIdValid || !isAdmissionYearValid || !isMajorValid || !isAcademicStatusValid || !isPhoneNumberValid) {
+                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_COUNCIL_FEE_FAKE_USER_INFO);
+            }
+        } else {
+                // userId가 있으면 다른 값들은 null이어야 함
+                boolean isUserNameNull = createUserCouncilFeeRequestDto.getUserName() == null;
+                boolean isStudentIdNull = createUserCouncilFeeRequestDto.getStudentId() == null;
+                boolean isAdmissionYearNull = createUserCouncilFeeRequestDto.getAdmissionYear() == null;
+                boolean isMajorNull = createUserCouncilFeeRequestDto.getMajor() == null;
+                boolean isAcademicStatusNull = createUserCouncilFeeRequestDto.getAcademicStatus() == null;
+                boolean isCurrentCompletedSemesterNull = createUserCouncilFeeRequestDto.getCurrentCompletedSemester() == null;
+                boolean isGraduationYearNull = createUserCouncilFeeRequestDto.getGraduationYear() == null;
+                boolean isGraduationTypeNull = createUserCouncilFeeRequestDto.getGraduationType() == null;
+                boolean isPhoneNumberNull = createUserCouncilFeeRequestDto.getPhoneNumber() == null;
+
+                if (!isUserNameNull || !isStudentIdNull || !isAdmissionYearNull || !isMajorNull || !isAcademicStatusNull || !isCurrentCompletedSemesterNull || !isGraduationYearNull || !isGraduationTypeNull || !isPhoneNumberNull) {
+                    throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_USER_COUNCIL_FEE_INFO);
+                }
+        }
+
+        // isRefunded가 true일 때 refundedAt 값은 null이 아니고 자연수여야 합니다.
+        if (createUserCouncilFeeRequestDto.getIsRefunded() || (createUserCouncilFeeRequestDto.getIsRefunded() && createUserCouncilFeeRequestDto.getRefundedAt() == null)) {
+            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_USER_COUNCIL_FEE_INFO);
+        }
+
+
         UserCouncilFee userCouncilFee;
         UserCouncilFeeLog userCouncilFeeLog;
 
@@ -152,6 +201,54 @@ public class UserCouncilFeeService {
 
     @Transactional
     public void updateUserCouncilFee(User user, String userCouncilFeeId, CreateUserCouncilFeeRequestDto createUserCouncilFeeRequestDto) {
+        // isJoinedService가 true일 때 userId가 존재해야 합니다.
+        if ( (createUserCouncilFeeRequestDto.getUserId() == null) != createUserCouncilFeeRequestDto.getIsJoinedService() ) {
+            throw new BadRequestException(ErrorCode.INVALID_USER_DATA_REQUEST, MessageUtil.INVALID_USER_COUNCIL_FEE_INFO);
+        }
+
+        // userId가 존재하지 않으면 Fake User 정보 값은 유효한 값이 존재해야 하며, userId가 있으면 Fake User 정보 값들은 null이어야 합니다.
+        if (createUserCouncilFeeRequestDto.getUserId() == null) {
+            // userId가 없으면 다른 값들이 모두 적절하게 설정되어 있어야 함
+            boolean isUserNameValid = createUserCouncilFeeRequestDto.getUserName() != null;
+            boolean isStudentIdValid = createUserCouncilFeeRequestDto.getStudentId() != null;
+            boolean isAdmissionYearValid = createUserCouncilFeeRequestDto.getAdmissionYear() != null && createUserCouncilFeeRequestDto.getAdmissionYear() > 0;
+            boolean isMajorValid = createUserCouncilFeeRequestDto.getMajor() != null;
+            boolean isAcademicStatusValid = createUserCouncilFeeRequestDto.getAcademicStatus() != null;
+            if (createUserCouncilFeeRequestDto.getAcademicStatus() != null) {
+                if (createUserCouncilFeeRequestDto.getAcademicStatus().equals(AcademicStatus.ENROLLED)) {
+                    isAcademicStatusValid = createUserCouncilFeeRequestDto.getCurrentCompletedSemester() != null && createUserCouncilFeeRequestDto.getCurrentCompletedSemester() > 0;
+                } else if (createUserCouncilFeeRequestDto.getAcademicStatus().equals(AcademicStatus.GRADUATED)) {
+                    isAcademicStatusValid = createUserCouncilFeeRequestDto.getGraduationYear() != null && createUserCouncilFeeRequestDto.getGraduationYear() > 0 && createUserCouncilFeeRequestDto.getGraduationType() != null;
+                }
+            }
+            boolean isPhoneNumberValid = createUserCouncilFeeRequestDto.getPhoneNumber() != null;
+
+            if (!isUserNameValid || !isStudentIdValid || !isAdmissionYearValid || !isMajorValid || !isAcademicStatusValid || !isPhoneNumberValid) {
+                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_COUNCIL_FEE_FAKE_USER_INFO);
+            }
+        } else {
+            // userId가 있으면 다른 값들은 null이어야 함
+            boolean isUserNameNull = createUserCouncilFeeRequestDto.getUserName() == null;
+            boolean isStudentIdNull = createUserCouncilFeeRequestDto.getStudentId() == null;
+            boolean isAdmissionYearNull = createUserCouncilFeeRequestDto.getAdmissionYear() == null;
+            boolean isMajorNull = createUserCouncilFeeRequestDto.getMajor() == null;
+            boolean isAcademicStatusNull = createUserCouncilFeeRequestDto.getAcademicStatus() == null;
+            boolean isCurrentCompletedSemesterNull = createUserCouncilFeeRequestDto.getCurrentCompletedSemester() == null;
+            boolean isGraduationYearNull = createUserCouncilFeeRequestDto.getGraduationYear() == null;
+            boolean isGraduationTypeNull = createUserCouncilFeeRequestDto.getGraduationType() == null;
+            boolean isPhoneNumberNull = createUserCouncilFeeRequestDto.getPhoneNumber() == null;
+
+            if (!isUserNameNull || !isStudentIdNull || !isAdmissionYearNull || !isMajorNull || !isAcademicStatusNull || !isCurrentCompletedSemesterNull || !isGraduationYearNull || !isGraduationTypeNull || !isPhoneNumberNull) {
+                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_USER_COUNCIL_FEE_INFO);
+            }
+        }
+
+        // isRefunded가 true일 때 refundedAt 값은 null이 아니고 자연수여야 합니다.
+        if (createUserCouncilFeeRequestDto.getIsRefunded() || (createUserCouncilFeeRequestDto.getIsRefunded() && createUserCouncilFeeRequestDto.getRefundedAt() == null)) {
+            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_USER_COUNCIL_FEE_INFO);
+        }
+
+
         UserCouncilFee userCouncilFee = userCouncilFeeRepository.findById(userCouncilFeeId)
                 .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_COUNCIL_FEE_NOT_FOUND));
 

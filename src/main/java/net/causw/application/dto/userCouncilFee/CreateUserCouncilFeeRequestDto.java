@@ -1,7 +1,6 @@
 package net.causw.application.dto.userCouncilFee;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
@@ -66,46 +65,4 @@ public class CreateUserCouncilFeeRequestDto {
     @Schema(description = "환불 시점(isRefunded가 true일 때만 존재", requiredMode = Schema.RequiredMode.NOT_REQUIRED, example = "2021-01-01")
     private Integer refundedAt;
 
-    @AssertTrue(message = "isJoinedService가 true일 때 userId가 존재해야 합니다.")
-    public boolean isValidUserOrFakeUser() {
-        return (this.userId == null) != this.isJoinedService;
-    }
-
-    @AssertTrue(message = "userId가 존재하지 않으면 Fake User 정보 값은 유효한 값이 존재해야 하며, userId가 있으면 Fake User 정보 값들은 null이어야 합니다.")
-    public boolean isValidFakeUserInfo() {
-        // userId가 없으면 다른 값들이 모두 적절하게 설정되어 있어야 함
-        if (this.userId == null) {
-            boolean isUserNameValid = this.userName != null;
-            boolean isStudentIdValid = this.studentId != null;
-            boolean isAdmissionYearValid = this.admissionYear != null && this.admissionYear > 0;
-            boolean isMajorValid = this.major != null;
-            boolean isAcademicStatusValid = this.academicStatus != null;
-            if (this.academicStatus != null) {
-                if (this.academicStatus.equals(AcademicStatus.ENROLLED)) {
-                    isAcademicStatusValid = this.currentCompletedSemester != null && this.currentCompletedSemester > 0;
-                } else if (this.academicStatus.equals(AcademicStatus.GRADUATED)) {
-                    isAcademicStatusValid = this.graduationYear != null && this.graduationYear > 0 && this.graduationType != null;
-                }
-            }
-            boolean isPhoneNumberValid = this.phoneNumber != null;
-
-            return isUserNameValid && isStudentIdValid && isAdmissionYearValid && isMajorValid && isAcademicStatusValid && isPhoneNumberValid;
-        }
-
-        // userId가 있으면 다른 값들은 null이어야 함
-        return this.userName == null &&
-                this.studentId == null &&
-                this.admissionYear == null &&
-                this.major == null &&
-                this.academicStatus == null &&
-                this.currentCompletedSemester == null &&
-                this.graduationYear == null &&
-                this.graduationType == null &&
-                this.phoneNumber == null;
-    }
-
-    @AssertTrue(message = "isRefunded가 true일 때 refundedAt 값은 null이 아니고 자연수여야 합니다.")
-    public boolean isValidRefundedAt() {
-        return !this.isRefunded || (this.refundedAt != null && this.refundedAt > 0);
-    }
 }
