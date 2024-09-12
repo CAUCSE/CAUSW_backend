@@ -9,6 +9,7 @@ import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.model.enums.FilePath;
 import net.causw.domain.model.util.MessageUtil;
+import net.causw.domain.model.util.StaticValue;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -40,9 +41,8 @@ public class UuidFileService extends StorageManager {
 
     @Transactional
     public UuidFile saveFile(MultipartFile file, FilePath filePath) {
-        if (file == null) {
-            throw new InternalServerException(ErrorCode.INTERNAL_SERVER, MessageUtil.FILE_IS_NULL);
-        }
+        this.validateFileIsNull(file);
+        this.validateFileSize(file, filePath);
 
         String uuid = UUID.randomUUID().toString();
 
@@ -60,6 +60,8 @@ public class UuidFileService extends StorageManager {
 
     @Transactional
     public List<UuidFile> saveFileList(List<MultipartFile> fileList, FilePath filePath) {
+        this.validateFileListIsEmpty(fileList);
+        this.validateFileListSize(fileList, filePath);
         return fileList.stream()
                 .map(file -> this.saveFile(file, filePath))
                 .toList();
@@ -98,4 +100,95 @@ public class UuidFileService extends StorageManager {
             this.deleteFile(uuidFile);
         }
     }
+
+    private void validateFileIsNull(MultipartFile file) {
+        if (file == null) {
+            throw new InternalServerException(ErrorCode.INTERNAL_SERVER, MessageUtil.FILE_IS_NULL);
+        }
+    }
+
+    private void validateFileListIsEmpty(List<MultipartFile> fileList) {
+        if (fileList.isEmpty()) {
+            throw new InternalServerException(ErrorCode.INTERNAL_SERVER, MessageUtil.FILE_IS_NULL);
+        }
+    }
+
+    // 파일 크기 검증
+    private void validateFileSize(MultipartFile file, FilePath filePath) {
+        if (filePath.equals(FilePath.USER_PROFILE)) {
+            if (file.getSize() > StaticValue.USER_PROFILE_IMAGE_SIZE) {
+                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.FILE_SIZE_EXCEEDED);
+            }
+        } else if (filePath.equals(FilePath.USER_ADMISSION)) {
+            if (file.getSize() > StaticValue.USER_ADMISSION_IMAGE_SIZE) {
+                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.FILE_SIZE_EXCEEDED);
+            }
+        } else if (filePath.equals(FilePath.USER_ACADEMIC_RECORD_APPLICATION)) {
+            if (file.getSize() > StaticValue.USER_ACADEMIC_RECORD_APPLICATION_IMAGE_SIZE) {
+                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.FILE_SIZE_EXCEEDED);
+            }
+        } else if (filePath.equals(FilePath.CIRCLE_PROFILE)) {
+            if (file.getSize() > StaticValue.CIRCLE_PROFILE_IMAGE_SIZE) {
+                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.FILE_SIZE_EXCEEDED);
+            }
+        } else if (filePath.equals(FilePath.POST)) {
+            if (file.getSize() > StaticValue.POST_IMAGE_SIZE) {
+                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.FILE_SIZE_EXCEEDED);
+            }
+        } else if (filePath.equals(FilePath.CALENDAR)) {
+            if (file.getSize() > StaticValue.CALENDAR_IMAGE_SIZE) {
+                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.FILE_SIZE_EXCEEDED);
+            }
+        } else if (filePath.equals(FilePath.EVENT)) {
+            if (file.getSize() > StaticValue.EVENT_IMAGE_SIZE) {
+                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.FILE_SIZE_EXCEEDED);
+            }
+        } else if (filePath.equals(FilePath.ETC)) {
+            if (file.getSize() > StaticValue.ETC_FILE_SIZE) {
+                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.FILE_SIZE_EXCEEDED);
+            }
+        } else {
+            throw new InternalServerException(ErrorCode.INTERNAL_SERVER, MessageUtil.INVALID_FILE_PATH);
+        }
+    }
+
+    // 파일 개수 검증
+    private void validateFileListSize(List<MultipartFile> fileList, FilePath filePath) {
+        if (filePath.equals(FilePath.USER_PROFILE)) {
+            if (fileList.size() > StaticValue.MAX_NUM_USER_PROFILE_IMAGE) {
+                throw new BadRequestException(ErrorCode.INVALID_FILE_EXTENSION, MessageUtil.NUMBER_OF_FILES_EXCEEDED);
+            }
+        } else if (filePath.equals(FilePath.USER_ADMISSION)) {
+            if (fileList.size() > StaticValue.MAX_NUM_USER_ADMISSION_IMAGE) {
+                throw new BadRequestException(ErrorCode.INVALID_FILE_EXTENSION, MessageUtil.NUMBER_OF_FILES_EXCEEDED);
+            }
+        } else if (filePath.equals(FilePath.USER_ACADEMIC_RECORD_APPLICATION)) {
+            if (fileList.size() > StaticValue.MAX_NUM_USER_ACADEMIC_RECORD_APPLICATION_IMAGE) {
+                throw new BadRequestException(ErrorCode.INVALID_FILE_EXTENSION, MessageUtil.NUMBER_OF_FILES_EXCEEDED);
+            }
+        } else if (filePath.equals(FilePath.CIRCLE_PROFILE)) {
+            if (fileList.size() > StaticValue.MAX_NUM_CIRCLE_PROFILE_IMAGE) {
+                throw new BadRequestException(ErrorCode.INVALID_FILE_EXTENSION, MessageUtil.NUMBER_OF_FILES_EXCEEDED);
+            }
+        } else if (filePath.equals(FilePath.POST)) {
+            if (fileList.size() > StaticValue.MAX_NUM_POST_IMAGE) {
+                throw new BadRequestException(ErrorCode.INVALID_FILE_EXTENSION, MessageUtil.NUMBER_OF_FILES_EXCEEDED);
+            }
+        } else if (filePath.equals(FilePath.CALENDAR)) {
+            if (fileList.size() > StaticValue.MAX_NUM_CALENDAR_IMAGE) {
+                throw new BadRequestException(ErrorCode.INVALID_FILE_EXTENSION, MessageUtil.NUMBER_OF_FILES_EXCEEDED);
+            }
+        } else if (filePath.equals(FilePath.EVENT)) {
+            if (fileList.size() > StaticValue.MAX_NUM_EVENT_IMAGE) {
+                throw new BadRequestException(ErrorCode.INVALID_FILE_EXTENSION, MessageUtil.NUMBER_OF_FILES_EXCEEDED);
+            }
+        } else if (filePath.equals(FilePath.ETC)) {
+            if (fileList.size() > StaticValue.MAX_NUM_ETC_FILE) {
+                throw new BadRequestException(ErrorCode.INVALID_FILE_EXTENSION, MessageUtil.NUMBER_OF_FILES_EXCEEDED);
+            }
+        } else {
+            throw new InternalServerException(ErrorCode.INTERNAL_SERVER, MessageUtil.INVALID_FILE_PATH);
+        }
+    }
+
 }
