@@ -103,7 +103,9 @@ public abstract class DomainModelMapper {
                 circle.getCreatedAt(),
                 circle.getUpdatedAt(),
                 circle.getCircleTax(),
-                circle.getRecruitMembers()
+                circle.getRecruitMembers(),
+                circle.getRecruitEndDate(),
+                circle.getIsRecruit()
         );
     }
 
