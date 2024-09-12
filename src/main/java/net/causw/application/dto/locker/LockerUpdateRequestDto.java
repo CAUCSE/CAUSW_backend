@@ -1,5 +1,6 @@
 package net.causw.application.dto.locker;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,6 +15,7 @@ import java.util.Optional;
 @NoArgsConstructor
 public class LockerUpdateRequestDto {
 
+    @NotBlank(message = "활성화 여부를 선택해 주세요.")
     @Schema(description = "Action to perform on the locker", allowableValues = {"ENABLE", "DISABLE", "REGISTER", "RETURN", "EXTEND"}, example = "REGISTER")
     private String action;
 

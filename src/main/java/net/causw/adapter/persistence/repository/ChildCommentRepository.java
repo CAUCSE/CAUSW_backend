@@ -1,6 +1,7 @@
 package net.causw.adapter.persistence.repository;
 
 import net.causw.adapter.persistence.comment.ChildComment;
+import net.causw.adapter.persistence.post.Post;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,4 +20,11 @@ public interface ChildCommentRepository extends JpaRepository<ChildComment, Stri
     @Query("select c from ChildComment c where c.parentComment.id = :parentCommentId")
     List<ChildComment> findByParentComment_Id(@Param("parentCommentId") String parentCommentId);
 
+    @Query("SELECT DISTINCT p " +
+            "FROM ChildComment cc " +
+            "JOIN cc.parentComment c " +
+            "JOIN c.post p " +
+            "WHERE cc.writer.id = :userId AND cc.isDeleted = false " +
+            "ORDER BY p.createdAt DESC")
+    Page<Post> findPostsByUserId(@Param("userId") String userId, Pageable pageable);
 }

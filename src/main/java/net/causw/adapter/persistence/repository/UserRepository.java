@@ -4,6 +4,7 @@ import net.causw.adapter.persistence.user.User;
 import net.causw.domain.model.enums.AcademicStatus;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.enums.UserState;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,7 +17,13 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, String> {
+
     List<User> findAll();
+
+    Optional<User> findByEmailAndNameAndStudentIdAndPhoneNumber(String email, String name, String studentId, String phoneNumber);
+
+    @NotNull
+    Page<User> findAll(@NotNull Pageable pageable);
 
     Optional<User> findByEmailAndNameAndStudentId(String email, String name, String studentId);
 
@@ -27,6 +34,8 @@ public interface UserRepository extends JpaRepository<User, String> {
     Optional<User> findById(String id);
 
     List<User> findByName(String name);
+
+    List<User> findAllByState(UserState state);
 
     Optional<User> findByStudentIdAndNameAndPhoneNumber(String studentId, String name, String phoneNumber);
 
@@ -45,16 +54,9 @@ public interface UserRepository extends JpaRepository<User, String> {
             "FROM tb_user AS u " +
             "WHERE u.state IN :state AND (COALESCE(:name, '') = '' OR u.name LIKE CONCAT('%', :name, '%')) ORDER BY u.created_at DESC" , nativeQuery = true)
     Page<User> findByStateInAndNameContaining(@Param("state")List<String> states, @Param("name")String name, Pageable pageable);
+
+    @Query(value = "SELECT * FROM" +
+            " tb_user AS u " +
+            "WHERE u.academic_status IN :statuses OR u.academic_status IS NULL", nativeQuery = true)
+    List<User> findByAcademicStatusInOrAcademicStatusIsNull(@Param("statuses") List<AcademicStatus> statuses);
 }
-
-
-
-
-
-
-
-
-
-
-
-

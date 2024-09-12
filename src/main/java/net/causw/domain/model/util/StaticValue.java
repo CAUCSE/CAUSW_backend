@@ -6,6 +6,8 @@ public class StaticValue {
     public static final String CONTENT_DELETED_COMMENT = "삭제된 댓글입니다";
     public static final String BOARD_NAME_APP_NOTICE = "APP_NOTICE";
 
+    public static final String BOARD_NAME_APP_FREE = "APP_FREE";
+
     public static final Integer CAUSW_CREATED = 1972;
     public static final Integer MAX_NUM_FILE_ATTACHMENTS = 3;
 
@@ -16,6 +18,9 @@ public class StaticValue {
     public static final Integer HOME_POST_PAGE_SIZE = 3;
     public final static Integer USER_LIST_PAGE_SIZE = 30;
 
+    // Event
+    public static final Integer MAX_NUM_EVENT = 10;
+
     // JWT Token
     public static final Long JWT_ACCESS_TOKEN_VALID_TIME = 1000L * 60 * 30;    // 30min
     public static final Long JWT_REFRESH_TOKEN_VALID_TIME = 1000L * 60 * 60 * 24 * 7;   // 7day
@@ -25,7 +30,6 @@ public class StaticValue {
     public static final String SWAGGER_API_NAME = "CAU_SW API";
     public static final String SWAGGER_API_VERSION = "0.0.1";
     public static final String SWAGGER_API_DESCRIPTION = "2024 RENEW ver. 중앙대학교 소프트웨어학부 동문네트워크 BACKEND API 스웨거 문서입니다.";
-
 
     // S3 Configuration
     public static final Long ATTACHMENT_LIMIT_SIZE = (long) (50 * 1024 * 1024);
@@ -43,7 +47,12 @@ public class StaticValue {
 
     // Flag
     public static final String LOCKER_ACCESS = "LOCKER_ACCESS";
+    public static final String LOCKER_EXTEND = "LOCKER_EXTEND";
 
     // Text Field
     public static final String EXPIRED_AT = "EXPIRE_DATE";
+
+    // UserAcademicRecordApplication
+    public static final String USER_APPLIED = "[사용자 신청]";
+    public static final String USER_CLOSED = "인증 서류 재제출로 인한 신청 서류 종료";
 }

@@ -13,6 +13,17 @@ public class MessageUtil {
     public static final String INVALID_TOKEN = "잘못된 AccessToken 입니다";
     public static final String EXPIRED_TOKEN = "만료된 AccessToken 입니다";
 
+    // Form
+    public static final String FORM_NOT_FOUND = "신청 폼을 찾을 수 없습니다.";
+    public static final String QUESTION_NOT_FOUND = "질문을 찾을 수 없습니다.";
+    public static final String OPTION_NOT_FOUND = "해당 문항을 찾을 수 없습니다.";
+
+    // Calendar & Event
+    public static final String CALENDAR_NOT_FOUND = "캘린더를 찾을 수 없습니다.";
+    public static final String CALENDAR_ALREADY_EXIST = "이미 존재하는 캘린더 입니다.";
+    public static final String EVENT_NOT_FOUND = "이벤트를 찾을 수 없습니다.";
+    public static final String EVENT_MAX_CREATED = "10개의 이벤트가 이미 존재합니다.";
+
     // Circle & Post
     public static final String NOT_CIRCLE_LEADER = "사용자가 해당 동아리의 동아리장이 아닙니다.";
     public static final String NOT_CIRCLE_MEMBER = "로그인된 사용자가 동아리 멤버가 아닙니다.";
@@ -50,8 +61,11 @@ public class MessageUtil {
     public static final String LOCKER_ALREADY_EXIST = "사물함 위치에 사물함이 존재합니다.";
     public static final String LOCKER_RETURN_TIME_NOT_SET = "사물함 반납 시간이 설정되지 않았습니다.";
     public static final String LOCKER_UNUSED = "사용 중인 사물함이 아닙니다.";
+    public static final String LOCKER_USED = "사용 중인 사물함입니다.";
     public static final String LOCKER_DELETED = "사물함 삭제";
     public static final String LOCKER_ACTION_ERROR = "사물함 액션 실행 중 에러가 발생하였습니다.";
+    public static final String LOCKER_EXTEND_NOT_ALLOWED = "사물함 연장 신청 기간이 아닙니다. 공지를 확인해주세요.";
+    public static final String LOCKER_INVALID_EXPIRE_DATE = "잘못된 반납일 입니다.";
 
 
     // User
@@ -71,6 +85,33 @@ public class MessageUtil {
     public static final String FLAG_UPDATE_FAILED = "플래그 업데이트에 실패했습니다.";
     public static final String FLAG_ALREADY_EXIST = "이미 존재하는 플래그 입니다.";
 
+    // UserAcademicRecord
+    public static final String USER_ACADEMIC_RECORD_APPLICATION_NOT_FOUND = "해당 사용자의 학적 변경 신청을 찾을 수 없습니다.";
+    public static final String USER_ACADEMIC_RECORD_APPLICATION_AND_USER_NOT_MATCH = "해당 사용자의 학적 변경 신청이 아닙니다.";
+    public static final String INVALID_ACADEMIC_RECORD_REQUEST_STATUS = "유효하지 않은 학적 인증 변경 목표 상태입니다. (ACCEPT, REJECT 로만 변경이 가능합니다.)";
+
+    public static final String ADMIN_UPDATE_ACADEMIC_RECORD_MESSAGE = "관리자 업데이트";
+
+    // UserAcademicRecordApplication
+    public static final String INVALID_TARGET_COMPLETED_SEMESTER = "유효하지 않은 목표 학기입니다.";
+    public static final String INVALID_TARGET_ACADEMIC_STATUS = "유효하지 않은 목표 학적 상태입니다.";
+    public static final String FILE_UPLOAD_NOT_ALLOWED = "파일 업로드가 허용되지 않습니다.";
+    public static final String FILE_UPLOAD_REQUIRED = "파일 업로드가 필요합니다.";
+    public static final String USER_ACADEMIC_RECORD_APPLICATION_DUPLICATED = "대기 중인 학적 인증 신청이 두 개 이상 존재합니다.";
+    public static final String TARGET_CURRENT_COMPLETED_SEMESTER_NOT_EXIST = "목표 현재 학기가 필요합니다.";
+    public static final String GRADUATION_INFORMATION_NOT_EXIST = "졸업 정보가 필요합니다.";
+    public static final String USER_NOTE_NOW_ALLOWED = "사용자가 노트를 작성할 수 없습니다.";
+
+    // UuidFile
+    public static final String FILE_NOT_FOUND = "파일을 찾을 수 없습니다.";
+
+    // Semester
+    public static final String PRIOR_SEMESTER_NOT_FOUND = "이전 학기를 찾을 수 없습니다.";
+    public static final String ACTIVE_SEMESTER_IS_DUPLICATED = "활성화된 학기가 중복되어 있습니다.";
+
+
     // 500
     public static final String INTERNAL_SERVER_ERROR = "Internal Server Error";
+    public static final String FILE_UPLOAD_FAIL = "파일 업로드에 실패했습니다.";
+    public static final String FILE_DELETE_FAIL = "파일 삭제에 실패했습니다.";
 }

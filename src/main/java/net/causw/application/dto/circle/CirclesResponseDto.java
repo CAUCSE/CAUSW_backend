@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import net.causw.adapter.persistence.circle.Circle;
+import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.util.CircleServiceDtoMapper;
 import net.causw.domain.model.circle.CircleDomainModel;
 import net.causw.domain.model.user.UserDomainModel;
@@ -38,6 +39,9 @@ public class CirclesResponseDto {
     @Schema(description = "동아리원 숫자", example = "7")
     private Long numMember;
 
+    @Schema(description = "동아리 삭제 여부", example = "false")
+    private Boolean isDeleted;
+
     @Schema(description = "유저의 동아리 가입 여부\n(User Role ADMIN 일 시 항상 true)", example = "false")
     private Boolean isJoined;
 
@@ -48,37 +52,39 @@ public class CirclesResponseDto {
     private LocalDateTime joinedAt;
 
     public static CirclesResponseDto from(
-            CircleDomainModel circleDomainModel,
+            Circle circle,
             Long numMember
     ) {
         return CirclesResponseDto.builder()
-                .id(circleDomainModel.getId())
-                .name(circleDomainModel.getName())
-                .mainImage(circleDomainModel.getMainImage())
-                .description(circleDomainModel.getDescription())
-                .leaderId(circleDomainModel.getLeader().map(UserDomainModel::getId).orElse(null))
-                .leaderName(circleDomainModel.getLeader().map(UserDomainModel::getName).orElse(null))
+                .id(circle.getId())
+                .name(circle.getName())
+                .mainImage(circle.getMainImage())
+                .description(circle.getDescription())
+                .leaderId(circle.getLeader().map(User::getId).orElse(null))
+                .leaderName(circle.getLeader().map(User::getName).orElse(null))
                 .numMember(numMember)
                 .isJoined(false)
-                .createdAt(circleDomainModel.getCreatedAt())
+                .isDeleted(circle.getIsDeleted())
+                .createdAt(circle.getCreatedAt())
                 .build();
     }
 
     public static CirclesResponseDto from(
-            CircleDomainModel circleDomainModel,
+            Circle circle,
             Long numMember,
             LocalDateTime joinedAt
     ) {
         return CirclesResponseDto.builder()
-                .id(circleDomainModel.getId())
-                .name(circleDomainModel.getName())
-                .mainImage(circleDomainModel.getMainImage())
-                .description(circleDomainModel.getDescription())
-                .leaderId(circleDomainModel.getLeader().map(UserDomainModel::getId).orElse(null))
-                .leaderName(circleDomainModel.getLeader().map(UserDomainModel::getName).orElse(null))
+                .id(circle.getId())
+                .name(circle.getName())
+                .mainImage(circle.getMainImage())
+                .description(circle.getDescription())
+                .leaderId(circle.getLeader().map(User::getId).orElse(null))
+                .leaderName(circle.getLeader().map(User::getName).orElse(null))
                 .numMember(numMember)
                 .isJoined(true)
-                .createdAt(circleDomainModel.getCreatedAt())
+                .isDeleted(circle.getIsDeleted())
+                .createdAt(circle.getCreatedAt())
                 .joinedAt(joinedAt)
                 .build();
     }

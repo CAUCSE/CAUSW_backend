@@ -6,6 +6,7 @@ import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.locker.Locker;
 import net.causw.domain.model.enums.AcademicStatus;
+import net.causw.domain.model.enums.GraduationType;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.model.enums.UserState;
@@ -17,7 +18,7 @@ import java.util.Set;
 @Builder
 @Setter
 @Entity
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "tb_user")
 public class User extends BaseEntity {
@@ -53,11 +54,15 @@ public class User extends BaseEntity {
     @Column(name = "current_completed_semester", nullable = true)
     private Integer currentCompletedSemester;
 
+    @Column(name = "academic_status_note", nullable = true)
+    private String academicStatusNote;
+
     @Column(name = "graduation_year", nullable = true)
     private Integer graduationYear;
 
-    @Column(name = "graduation_month", nullable = true)
-    private Integer graduationMonth;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "graduation_type", nullable = true)
+    private GraduationType graduationType;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
@@ -65,8 +70,11 @@ public class User extends BaseEntity {
     private Set<Role> roles;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @Column(name = "profile_images", length = 500, nullable = true)
-    private List<String> profileImages;
+    @Column(name = "attach_images", length = 500, nullable = true)
+    private List<String> attachImages;
+
+    @Column(name = "profile_image", length = 500, nullable = true)
+    private String profileImage;
 
     @Column(name = "refresh_token", nullable = true)
     private String refreshToken;
@@ -91,7 +99,7 @@ public class User extends BaseEntity {
             String studentId,
             Integer admissionYear,
             Set<Role> roles,
-            List<String> profileImages,
+            String profileImage,
             UserState state
     ) {
         super(id);
@@ -101,8 +109,21 @@ public class User extends BaseEntity {
         this.studentId = studentId;
         this.admissionYear = admissionYear;
         this.roles = roles;
-        this.profileImages = profileImages;
+        this.profileImage = profileImage;
         this.state = state;
+    }
+
+    public void delete() {
+        this.email = "deleted_" + this.getId();
+        this.name = "탈퇴한 사용자";
+        this.phoneNumber = null;
+        this.studentId = null;
+        this.nickname = null;
+        this.major = null;
+        this.profileImage = null;
+        this.graduationYear = null;
+        this.graduationType = null;
+        this.state = UserState.DELETED;
     }
 
     public static User from(UserDomainModel userDomainModel) {
@@ -114,8 +135,14 @@ public class User extends BaseEntity {
                 userDomainModel.getStudentId(),
                 userDomainModel.getAdmissionYear(),
                 userDomainModel.getRoles(),
-                userDomainModel.getProfileImages(),
+                userDomainModel.getProfileImage(),
                 userDomainModel.getState()
         );
+    }
+
+    public void update(String nickname, AcademicStatus academicStatus, String profileImage) {
+        this.nickname = nickname;
+        this.academicStatus = academicStatus;
+        this.profileImage = profileImage;
     }
 }

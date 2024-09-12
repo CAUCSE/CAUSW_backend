@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public interface UserPort {
 
-    Optional<UserDomainModel> findForPassword(String email, String name, String studentId);
+    Optional<UserDomainModel> findForPassword(String email, String name, String studentId, String phoneNumber);
 
     Optional<UserDomainModel> findById(String id);
 
