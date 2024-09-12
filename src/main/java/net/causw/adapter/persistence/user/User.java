@@ -5,6 +5,7 @@ import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.locker.Locker;
+import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.domain.model.enums.AcademicStatus;
 import net.causw.domain.model.enums.GraduationType;
 import net.causw.domain.model.enums.Role;
@@ -69,12 +70,10 @@ public class User extends BaseEntity {
     @Column(name = "role", nullable = false)
     private Set<Role> roles;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @Column(name = "attach_images", length = 500, nullable = true)
-    private List<String> attachImages;
-
-    @Column(name = "profile_image", length = 500, nullable = true)
-    private String profileImage;
+    // 프로필 이미지
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @JoinColumn(name = "profile_image_id", nullable = true)
+    private UuidFile uuidFile;
 
     @Column(name = "refresh_token", nullable = true)
     private String refreshToken;
@@ -99,7 +98,7 @@ public class User extends BaseEntity {
             String studentId,
             Integer admissionYear,
             Set<Role> roles,
-            String profileImage,
+            UuidFile uuidFile,
             UserState state
     ) {
         super(id);
@@ -109,7 +108,7 @@ public class User extends BaseEntity {
         this.studentId = studentId;
         this.admissionYear = admissionYear;
         this.roles = roles;
-        this.profileImage = profileImage;
+        this.uuidFile = uuidFile;
         this.state = state;
     }
 
@@ -120,7 +119,7 @@ public class User extends BaseEntity {
         this.studentId = null;
         this.nickname = null;
         this.major = null;
-        this.profileImage = null;
+        this.uuidFile = null;
         this.graduationYear = null;
         this.graduationType = null;
         this.state = UserState.DELETED;
@@ -135,14 +134,14 @@ public class User extends BaseEntity {
                 userDomainModel.getStudentId(),
                 userDomainModel.getAdmissionYear(),
                 userDomainModel.getRoles(),
-                userDomainModel.getProfileImage(),
+                userDomainModel.getUuidFile(),
                 userDomainModel.getState()
         );
     }
 
-    public void update(String nickname, AcademicStatus academicStatus, String profileImage) {
+    public void update(String nickname, AcademicStatus academicStatus, UuidFile uuidFile) {
         this.nickname = nickname;
         this.academicStatus = academicStatus;
-        this.profileImage = profileImage;
+        this.uuidFile = uuidFile;
     }
 }

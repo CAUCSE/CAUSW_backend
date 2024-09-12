@@ -1,17 +1,15 @@
 package net.causw.adapter.persistence.post;
 
+import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.board.Board;
+import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.domain.model.post.PostDomainModel;
 import org.hibernate.annotations.ColumnDefault;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import java.util.List;
 
 @Getter
 @Entity
@@ -25,8 +23,9 @@ public class Post extends BaseEntity {
     @Column(columnDefinition = "TEXT", name = "content", nullable = false)
     private String content;
 
-    @Column(name = "attachments", length = 1500)
-    private String attachments;
+    @OneToMany(cascade = CascadeType.REMOVE)
+    @JoinColumn(name = "post_id", nullable = true)
+    private List<UuidFile> uuidFileList;
 
     @ManyToOne(targetEntity = User.class)
     @JoinColumn(name = "user_id", nullable = false)
@@ -55,7 +54,7 @@ public class Post extends BaseEntity {
             User writer,
             Boolean isDeleted,
             Board board,
-            String attachments
+            List<UuidFile> uuidFileList
     ) {
         super(id);
         this.title = title;
@@ -63,7 +62,7 @@ public class Post extends BaseEntity {
         this.writer = writer;
         this.isDeleted = isDeleted;
         this.board = board;
-        this.attachments = attachments;
+        this.uuidFileList = uuidFileList;
     }
 
     public static Post from(PostDomainModel postDomainModel) {
@@ -74,7 +73,7 @@ public class Post extends BaseEntity {
                 User.from(postDomainModel.getWriter()),
                 postDomainModel.getIsDeleted(),
                 Board.from(postDomainModel.getBoard()),
-                String.join(":::", postDomainModel.getAttachmentList())
+                postDomainModel.getUuidFileList()
         );
     }
 
@@ -86,15 +85,15 @@ public class Post extends BaseEntity {
             Boolean isAnonymous,
             Boolean isQuestion,
             Board board,
-            String attachments
+            List<UuidFile> uuidFileList
     ) {
-        return new Post(title, content, attachments, writer, isDeleted, isAnonymous, isQuestion, board);
+        return new Post(title, content, uuidFileList, writer, isDeleted, isAnonymous, isQuestion, board);
     }
 
-    public void update(String title, String content, String attachments) {
+    public void update(String title, String content, List<UuidFile> uuidFileList) {
         this.title = title;
         this.content = content;
-        this.attachments = attachments;
+        this.uuidFileList = uuidFileList;
     }
 
     public void setIsDeleted(Boolean isDeleted) {

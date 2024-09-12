@@ -2,6 +2,7 @@ package net.causw.domain.model.post;
 
 import lombok.Builder;
 import lombok.Getter;
+import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.model.board.BoardDomainModel;
 
@@ -30,7 +31,7 @@ public class PostDomainModel {
     @NotNull(message = "게시판이 입력되지 않았습니다.")
     private BoardDomainModel board;
 
-    private List<String> attachmentList;
+    private List<UuidFile> uuidFileList;
 
     private LocalDateTime createdAt;
 
@@ -45,7 +46,7 @@ public class PostDomainModel {
             BoardDomainModel board,
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
-            List<String> attachmentList
+            List<UuidFile> uuidFileList
     ) {
         return PostDomainModel.builder()
                 .id(id)
@@ -56,7 +57,7 @@ public class PostDomainModel {
                 .board(board)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
-                .attachmentList(attachmentList)
+                .uuidFileList(uuidFileList)
                 .build();
     }
 
@@ -65,24 +66,24 @@ public class PostDomainModel {
             String content,
             UserDomainModel writer,
             BoardDomainModel board,
-            List<String> attachmentList
+            List<UuidFile> uuidFileList
     ) {
         return PostDomainModel.builder()
                 .title(title)
                 .content(content)
                 .writer(writer)
                 .board(board)
-                .attachmentList(attachmentList)
+                .uuidFileList(uuidFileList)
                 .build();
     }
 
     public void update(
             String title,
             String content,
-            List<String> attachmentList
+            List<UuidFile> uuidFileList
     ) {
         this.title = title;
         this.content = content;
-        this.attachmentList = attachmentList;
+        this.uuidFileList = uuidFileList;
     }
 }

@@ -3,6 +3,7 @@ package net.causw.domain.model.user;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
+import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.domain.model.enums.AcademicStatus;
 import net.causw.domain.model.enums.GraduationType;
 import net.causw.domain.model.enums.UserState;
@@ -22,9 +23,7 @@ public class UserDomainModel {
 
     private String studentId;
 
-    private List<String> attachImages;
-
-    private String profileImage;
+    private UuidFile uuidFile;
 
     private String refreshToken;
 
@@ -77,8 +76,7 @@ public class UserDomainModel {
             String studentId,
             Integer admissionYear,
             Set<Role> roles,
-            List<String> attachImages,
-            String profileImage,
+            UuidFile uuidFile,
             String refreshToken,
             UserState state,
             String nickname,
@@ -97,8 +95,7 @@ public class UserDomainModel {
                 .studentId(studentId)
                 .admissionYear(admissionYear)
                 .roles(roles)
-                .attachImages(attachImages)
-                .profileImage(profileImage)
+                .uuidFile(uuidFile)
                 .refreshToken(refreshToken)
                 .state(state)
                 .nickname(nickname)
@@ -117,8 +114,7 @@ public class UserDomainModel {
             String password,
             String studentId,
             Integer admissionYear,
-            List<String> attachImages,
-            String profileImage,
+            UuidFile uuidFile,
             String nickname,
             String major,
             AcademicStatus academicStatus,
@@ -133,8 +129,7 @@ public class UserDomainModel {
                 .password(password)
                 .studentId(studentId)
                 .admissionYear(admissionYear)
-                .attachImages(attachImages)
-                .profileImage(profileImage)
+                .uuidFile(uuidFile)
                 .nickname(nickname)
                 .major(major)
                 .academicStatus(academicStatus)
@@ -150,8 +145,7 @@ public class UserDomainModel {
             String name,
             String studentId,
             Integer admissionYear,
-            List<String> attachImages,
-            String profileImage,
+            UuidFile uuidFile,
             String nickname,
             String major,
             AcademicStatus academicStatus,
@@ -164,8 +158,7 @@ public class UserDomainModel {
         this.name = name;
         this.studentId = studentId;
         this.admissionYear = admissionYear;
-        this.attachImages = attachImages;
-        this.profileImage = profileImage;
+        this.uuidFile = uuidFile;
         this.nickname = nickname;
         this.major = major;
         this.academicStatus = academicStatus;
