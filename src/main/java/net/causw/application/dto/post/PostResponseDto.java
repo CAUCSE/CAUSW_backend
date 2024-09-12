@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.adapter.persistence.post.Post;
-import net.causw.application.dto.file.FileResponseDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import org.springframework.data.domain.Page;
 

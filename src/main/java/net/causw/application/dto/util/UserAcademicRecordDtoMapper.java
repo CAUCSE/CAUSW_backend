@@ -4,11 +4,9 @@ import net.causw.adapter.persistence.semester.Semester;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.userAcademicRecord.UserAcademicRecordApplication;
 import net.causw.adapter.persistence.userAcademicRecord.UserAcademicRecordLog;
-import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.userAcademicRecordApplication.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
 import java.lang.annotation.ElementType;

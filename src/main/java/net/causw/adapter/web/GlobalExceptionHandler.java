@@ -9,7 +9,6 @@ import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.exceptions.ServiceUnavailableException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;

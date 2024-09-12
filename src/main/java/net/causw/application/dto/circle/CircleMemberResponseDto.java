@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.adapter.persistence.circle.CircleMember;
-import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.user.UserResponseDto;
 import net.causw.domain.model.enums.CircleMemberStatus;
 

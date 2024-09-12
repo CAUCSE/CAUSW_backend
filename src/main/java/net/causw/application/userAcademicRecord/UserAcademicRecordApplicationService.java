@@ -18,7 +18,6 @@ import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.model.enums.AcademicRecordRequestStatus;
 import net.causw.domain.model.enums.AcademicStatus;
 import net.causw.domain.model.enums.FilePath;
-import net.causw.domain.model.enums.SemesterType;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
 import org.springframework.data.domain.Page;

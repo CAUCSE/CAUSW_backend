@@ -13,7 +13,6 @@ import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.S3Util;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -61,7 +60,7 @@ public class StorageManager {
 
     protected enum FileInfo {
         FILE_URL,
-        FILE_KEY;
+        FILE_KEY
     }
 
 }

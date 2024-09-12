@@ -1,7 +1,6 @@
 package net.causw.application.userCouncilFee;
 
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.AssertTrue;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.repository.UserCouncilFeeLogRepository;
 import net.causw.adapter.persistence.repository.UserCouncilFeeRepository;

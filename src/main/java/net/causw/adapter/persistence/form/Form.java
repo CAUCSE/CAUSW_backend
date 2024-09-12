@@ -5,11 +5,7 @@ import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.user.User;
-import net.causw.application.dto.form.QuestionCreateRequestDto;
-import org.hibernate.annotations.ColumnDefault;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 

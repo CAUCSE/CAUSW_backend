@@ -15,6 +15,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class LockerExpiredAtRequestDto {
     @NotBlank(message = "사용 만료일을 입력해 주세요.")
-    @Schema(description = "Expiration date and time", example = "2024-09-01T11:41", required = true)
+    @Schema(description = "Expiration date and time", example = "2024-09-01T11:41", requiredMode = Schema.RequiredMode.REQUIRED)
     private LocalDateTime expiredAt;
 }

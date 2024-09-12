@@ -5,14 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.adapter.persistence.board.Board;
-import net.causw.adapter.persistence.circle.Circle;
-import net.causw.domain.model.enums.Role;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 @Getter
 @Setter

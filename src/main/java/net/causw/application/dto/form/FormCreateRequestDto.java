@@ -4,7 +4,6 @@ package net.causw.application.dto.form;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
-import net.causw.adapter.persistence.circle.Circle;
 
 import java.util.List;
 import java.util.Set;

@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.application.dto.util.CircleServiceDtoMapper;
 
 @Getter
 @Setter

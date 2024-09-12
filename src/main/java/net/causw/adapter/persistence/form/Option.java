@@ -3,7 +3,6 @@ package net.causw.adapter.persistence.form;
 import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
-import org.hibernate.annotations.ColumnDefault;
 
 @Getter
 @Setter

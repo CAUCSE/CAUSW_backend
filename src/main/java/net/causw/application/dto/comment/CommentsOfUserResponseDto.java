@@ -3,7 +3,6 @@ package net.causw.application.dto.comment;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.adapter.persistence.comment.Comment;
 
 import java.time.LocalDateTime;
 

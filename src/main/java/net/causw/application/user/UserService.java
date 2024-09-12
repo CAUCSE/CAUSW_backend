@@ -11,13 +11,10 @@ import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.user.UserAdmission;
 import net.causw.adapter.persistence.user.UserAdmissionLog;
-import net.causw.adapter.persistence.repository.BoardRepository;
-import net.causw.adapter.persistence.repository.UserRepository;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.circle.CircleResponseDto;
-import net.causw.application.dto.comment.CommentsOfUserResponseDto;
 import net.causw.application.dto.user.*;
 import net.causw.application.dto.util.DtoMapper;
 import net.causw.application.dto.util.PostDtoMapper;
@@ -60,7 +57,6 @@ import jakarta.validation.Validator;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.Arrays;
 import java.util.stream.Collectors;
 
 @Service
@@ -876,7 +872,7 @@ public class UserService {
         Set<Role> roles = targetUser.getRoles();
         if(targetRole.equals(Role.LEADER_CIRCLE)){
             List<Circle> ownCircles = circleRepository.findByLeader_Id(targetUser.getId());
-            if(ownCircles.size() == 0) roles.remove(targetRole);
+            if(ownCircles.isEmpty()) roles.remove(targetRole);
         } else{
             roles.remove(targetRole);
         }

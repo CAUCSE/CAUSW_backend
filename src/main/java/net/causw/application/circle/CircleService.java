@@ -328,7 +328,7 @@ public class CircleService {
     ) {
         Circle circle = getCircle(circleId);
 
-        Set<Role> roles = user.getRoles();;
+        Set<Role> roles = user.getRoles();
 
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         validatorBucket

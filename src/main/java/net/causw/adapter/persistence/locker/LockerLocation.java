@@ -21,7 +21,7 @@ public class LockerLocation extends BaseEntity {
         return LockerLocation.builder()
                 .name(name)
                 .build();
-    };
+    }
 
     public void update(String name){
         this.name = name;

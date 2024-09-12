@@ -5,7 +5,6 @@ import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import org.hibernate.annotations.ColumnDefault;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Getter

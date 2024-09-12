@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.adapter.persistence.circle.Circle;
-import net.causw.adapter.persistence.user.User;
 
 import java.time.LocalDateTime;
 

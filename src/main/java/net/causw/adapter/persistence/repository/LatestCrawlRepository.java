@@ -1,6 +1,5 @@
 package net.causw.adapter.persistence.repository;
 
-import jakarta.transaction.Transactional;
 import net.causw.adapter.persistence.crawled.LatestCrawl;
 import net.causw.domain.model.enums.CrawlCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
