@@ -5,14 +5,17 @@ import lombok.Getter;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import net.causw.adapter.persistence.uuidFile.UuidFile;
+
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Builder
 public class UserAdmissionDomainModel {
     private String id;
 
-    private String attachImage;
+    private List<UuidFile> uuidFileList;
 
     @Size(max = 255, message = "소개글은 255글자이상으로 작성할 수 없습니다.")
     private String description;
@@ -27,7 +30,7 @@ public class UserAdmissionDomainModel {
     public static UserAdmissionDomainModel of(
             String id,
             UserDomainModel user,
-            String attachImage,
+            List<UuidFile> uuidFileList,
             String description,
             LocalDateTime createdAt,
             LocalDateTime updatedAt
@@ -35,7 +38,7 @@ public class UserAdmissionDomainModel {
         return UserAdmissionDomainModel.builder()
                 .id(id)
                 .user(user)
-                .attachImage(attachImage)
+                .uuidFileList(uuidFileList)
                 .description(description)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
@@ -44,12 +47,12 @@ public class UserAdmissionDomainModel {
 
     public static UserAdmissionDomainModel of(
             UserDomainModel user,
-            String attachImage,
+            List<UuidFile> uuidFileList,
             String description
     ) {
         return UserAdmissionDomainModel.builder()
                 .user(user)
-                .attachImage(attachImage)
+                .uuidFileList(uuidFileList)
                 .description(description)
                 .build();
     }

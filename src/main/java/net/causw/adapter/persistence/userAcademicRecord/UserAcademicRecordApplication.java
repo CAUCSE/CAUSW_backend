@@ -39,7 +39,7 @@ public class UserAcademicRecordApplication extends BaseEntity {
     @Column(name = "note", nullable = true)
     private String note;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "user_academic_record_application_id", nullable = true)
     private List<UuidFile> uuidFileList;
 
