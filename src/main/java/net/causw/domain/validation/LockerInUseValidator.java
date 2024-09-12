@@ -2,6 +2,7 @@ package net.causw.domain.validation;
 
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
+import net.causw.domain.model.util.MessageUtil;
 
 public class LockerInUseValidator extends AbstractValidator {
     private final Boolean isInUse;
@@ -19,7 +20,7 @@ public class LockerInUseValidator extends AbstractValidator {
         if (isInUse) {
             throw new BadRequestException(
                     ErrorCode.CANNOT_PERFORMED,
-                    "사용 중인 사물함입니다."
+                    MessageUtil.LOCKER_USED
             );
         }
     }

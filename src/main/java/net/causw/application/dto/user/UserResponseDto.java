@@ -8,6 +8,7 @@ import lombok.Setter;
 import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.util.CircleServiceDtoMapper;
 import net.causw.domain.model.enums.AcademicStatus;
+import net.causw.domain.model.enums.GraduationType;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.model.enums.UserState;
@@ -38,8 +39,11 @@ public class UserResponseDto {
     @Schema(description = "역할", example = "COMMON")
     private Set<Role> roles;
 
+    @Schema(description = "학부생 인증 이미지 URL", example = "")
+    private List<String> attachImages;
+
     @Schema(description = "프로필 이미지 URL", example = "")
-    private List<String> profileImages;
+    private String profileImage;
 
     @Schema(description = "상태", example = "AWAIT")
     private UserState state;
@@ -67,7 +71,7 @@ public class UserResponseDto {
     private Integer graduationYear;
 
     @Schema(description = "졸업시기 월", example = "2")
-    private Integer graduationMonth;
+    private GraduationType graduationType;
 
     @Schema(description = "전화번호", example = "01012345678")
     private String phoneNumber;
@@ -80,14 +84,15 @@ public class UserResponseDto {
                 .studentId(user.getStudentId())
                 .admissionYear(user.getAdmissionYear())
                 .roles(user.getRoles())
-                .profileImages(user.getProfileImages())
+                .attachImages(user.getAttachImages())
+                .profileImage(user.getProfileImage())
                 .state(user.getState())
                 .nickname(user.getNickname())
                 .major(user.getMajor())
                 .academicStatus(user.getAcademicStatus())
                 .currentCompletedSemester(user.getCurrentCompletedSemester())
                 .graduationYear(user.getGraduationYear())
-                .graduationMonth(user.getGraduationMonth())
+                .graduationType(user.getGraduationType())
                 .phoneNumber(user.getPhoneNumber())
                 .build();
     }
@@ -101,14 +106,15 @@ public class UserResponseDto {
                 .studentId(user.getStudentId())
                 .admissionYear(user.getAdmissionYear())
                 .roles(user.getRoles())
-                .profileImages(user.getProfileImages())
+                .attachImages(user.getAttachImages())
+                .profileImage(user.getProfileImage())
                 .state(user.getState())
                 .nickname(user.getNickname())
                 .major(user.getMajor())
                 .academicStatus(user.getAcademicStatus())
                 .currentCompletedSemester(user.getCurrentCompletedSemester())
                 .graduationYear(user.getGraduationYear())
-                .graduationMonth(user.getGraduationMonth())
+                .graduationType(user.getGraduationType())
                 .phoneNumber(user.getPhoneNumber())
                 .build();
     }
@@ -125,7 +131,8 @@ public class UserResponseDto {
                 .studentId(user.getStudentId())
                 .admissionYear(user.getAdmissionYear())
                 .roles(user.getRoles())
-                .profileImages(user.getProfileImages())
+                .attachImages(user.getAttachImages())
+                .profileImage(user.getProfileImage())
                 .state(user.getState())
                 .circleIdIfLeader(circleId)
                 .circleNameIfLeader(circleName)
@@ -134,7 +141,7 @@ public class UserResponseDto {
                 .academicStatus(user.getAcademicStatus())
                 .currentCompletedSemester(user.getCurrentCompletedSemester())
                 .graduationYear(user.getGraduationYear())
-                .graduationMonth(user.getGraduationMonth())
+                .graduationType(user.getGraduationType())
                 .phoneNumber(user.getPhoneNumber())
                 .build();
     }

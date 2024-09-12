@@ -40,8 +40,8 @@ public class UserPortImpl extends DomainModelMapper implements UserPort {
     }
 
     @Override
-    public Optional<UserDomainModel> findForPassword(String email, String name, String studentId) {
-        return this.userRepository.findByEmailAndNameAndStudentId(email, name, studentId).map(this::entityToDomainModel);
+    public Optional<UserDomainModel> findForPassword(String email, String name, String studentId, String phoneNumber) {
+        return this.userRepository.findByEmailAndNameAndStudentIdAndPhoneNumber(email, name, studentId, phoneNumber).map(this::entityToDomainModel);
     }
 
     @Override
@@ -80,7 +80,7 @@ public class UserPortImpl extends DomainModelMapper implements UserPort {
                     srcUser.setName(userDomainModel.getName());
                     srcUser.setStudentId(userDomainModel.getStudentId());
                     srcUser.setAdmissionYear(userDomainModel.getAdmissionYear());
-                    srcUser.setProfileImages(userDomainModel.getProfileImages());
+                    srcUser.setProfileImage(userDomainModel.getProfileImage());
 
                     return this.entityToDomainModel(this.userRepository.save(srcUser));
                 }

@@ -24,7 +24,7 @@ public class ChildCommentResponseDto {
     private String refChildComment;
     private String writerName;
     private Integer writerAdmissionYear;
-    private List<String> writerProfileImages;
+    private String writerProfileImage;
     private Boolean updatable;
     private Boolean deletable;
 
@@ -50,7 +50,7 @@ public class ChildCommentResponseDto {
                 .refChildComment(comment.getRefChildComment())
                 .writerName(comment.getWriter().getName())
                 .writerAdmissionYear(comment.getWriter().getAdmissionYear())
-                .writerProfileImages(comment.getWriter().getProfileImages())
+                .writerProfileImage(comment.getWriter().getProfileImage())
                 .updatable(updatable)
                 .deletable(deletable)
                 .build();

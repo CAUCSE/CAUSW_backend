@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.circle.CircleService;
 import net.causw.application.dto.circle.CirclesResponseDto;
@@ -51,6 +52,7 @@ public class CircleController {
      */
     @GetMapping(value = "/{circleId}")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "동아리 정보 조회 API / findById (완료)", description = "circleId에는 동아리 고유 id 값(PK)을 입력해주세요.")
 //    @ApiImplicitParam(name = "circleId",
 //            value = "동아리 ID",
@@ -74,7 +76,7 @@ public class CircleController {
      */
     @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "전체 동아리 정보 조회 API / findAll (완료)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CircleResponseDto.class, type = "array"))),
@@ -97,7 +99,7 @@ public class CircleController {
      */
     @GetMapping("/{circleId}/boards")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "동아리 소속 게시판 조회 API / findBoards (완료)", description = "circleId에는 동아리 고유 id 값(PK)을 입력해주세요.")
 //    @ApiImplicitParam(name = "circleId",
 //            value = "동아리 ID",
@@ -131,7 +133,8 @@ public class CircleController {
      */
     @GetMapping(value = "/{circleId}/num-member")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT','LEADER_CIRCLE')")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
     @Operation(summary = "동아리원 숫자 조회 API / getNumMember (완료)", description = "circleId에는 동아리 고유 id 값(PK)을 입력해주세요.")
 //    @ApiImplicitParam(name = "circleId",
 //            value = "동아리 ID",
@@ -156,7 +159,8 @@ public class CircleController {
      */
     @GetMapping(value = "/{circleId}/users")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT','LEADER_CIRCLE')")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
     @Operation(summary = "동아리원 상태별 조회 API / getUserList (완료)", description = "circleId에는 동아리 고유 id 값(PK), circleMemberStatus 엔 조회하고자 하는 동아리원의 상태를 입력해주세요.")
 //    @ApiImplicitParams(
 //            {
@@ -208,7 +212,8 @@ public class CircleController {
      */
     @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT')")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
     @Operation(
             summary = "동아리 생성 API / create (완료)",
             description = "생성하고자 하는 동아리의 정보를 입력해주세요. 동아리장의 권한은 일반 유저만 가능하며, 생성 요청은 관리자(admin), 학생회장(president)만 가능합니다."
@@ -230,7 +235,7 @@ public class CircleController {
             @ApiResponse(responseCode = "5000", description = "Circle id immediately can be used, but exception occured", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
     public CircleResponseDto create(
-            @RequestBody CircleCreateRequestDto circleCreateRequestDto,
+            @Valid @RequestBody CircleCreateRequestDto circleCreateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.circleService.create(userDetails.getUser(), circleCreateRequestDto);
@@ -245,7 +250,8 @@ public class CircleController {
      */
     @PutMapping(value = "/{circleId}")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT','LEADER_CIRCLE')")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
     @Operation(
             summary = "동아리 수정 API / update (완료)",
             description = "circleId 에는 수정하고자 하는 동아리의 UUID 형식의 ID String 값을 입력해주세요.\n" +
@@ -280,7 +286,7 @@ public class CircleController {
     })
     public CircleResponseDto update(
             @PathVariable(name = "circleId") String circleId,
-            @RequestBody CircleUpdateRequestDto circleUpdateRequestDto,
+            @Valid @RequestBody CircleUpdateRequestDto circleUpdateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.circleService.update(userDetails.getUser(), circleId, circleUpdateRequestDto);
@@ -294,7 +300,8 @@ public class CircleController {
      */
     @DeleteMapping(value = "/{circleId}")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT','LEADER_CIRCLE')")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
     @Operation(
             summary = "동아리 삭제 API",
             description = "동아리 삭제 API 입니다.\n" +
@@ -342,7 +349,7 @@ public class CircleController {
      */
     @GetMapping(value = "/{circleId}/applications")
     @ResponseStatus(value = HttpStatus.CREATED)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(
             summary = "사용자 동아리 지원 API",
             description = "사용자가 동아리에 지원하는 API 입니다.\n" +
@@ -401,6 +408,7 @@ public class CircleController {
 //                    ),
 //            }
 //    )
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "동아리 이름 중복 검사 API",
             description = "동아리 이름 중복 검사 API 입니다. 이름 기준으로 검사하면 String 형식으로 동아리 이름을 넣어주세요.")
     @ApiResponse(
@@ -420,7 +428,7 @@ public class CircleController {
      */
     @PutMapping(value = "/{circleId}/users/leave")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(
             summary = "동아리 탈퇴 API",
             description = "현재 로그인 된 유저 기준으로 동아리에서 탈퇴합니다.\n" +
@@ -459,7 +467,8 @@ public class CircleController {
      */
     @PutMapping(value = "/{circleId}/users/{userId}/drop")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT','LEADER_CIRCLE')")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
 //    @ApiImplicitParams(
 //            {
 //                    @ApiImplicitParam(name = "userId",
@@ -514,7 +523,8 @@ public class CircleController {
      */
     @PutMapping(value = "/applications/{applicationId}/accept")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT','LEADER_CIRCLE')")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
 //    @ApiImplicitParams(
 //            {
 //                    @ApiImplicitParam(name = "applicationId",
@@ -556,7 +566,8 @@ public class CircleController {
      */
     @PutMapping(value = "/applications/{applicationId}/reject")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT','LEADER_CIRCLE')")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
 //    @ApiImplicitParams(
 //            {
 //                    @ApiImplicitParam(name = "applicationId",
@@ -599,7 +610,8 @@ public class CircleController {
      */
     @PutMapping(value = "/{circleId}/users/{userId}/restore")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT','LEADER_CIRCLE')")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
 //    @ApiImplicitParams(
 //            {
 //                    @ApiImplicitParam(name = "circleId",
@@ -645,7 +657,8 @@ public class CircleController {
 
     @GetMapping(value = "/{circleId}/users/excel")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT','LEADER_CIRCLE')")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
     public void exportExcel(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable(name = "circleId") String circleId,

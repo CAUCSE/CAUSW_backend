@@ -1,5 +1,6 @@
 package net.causw.adapter.web;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.inquiry.InquiryService;
 import net.causw.application.dto.inquiry.InquiryCreateRequestDto;
@@ -27,7 +28,7 @@ public class InquiryController {
     @ResponseStatus(value = HttpStatus.CREATED)
     public InquiryResponseDto create(
             @AuthenticationPrincipal String requestUserId,
-            @RequestBody InquiryCreateRequestDto inquiryCreateRequestDto
+            @Valid @RequestBody InquiryCreateRequestDto inquiryCreateRequestDto
     ) {
         return this.inquiryService.create(requestUserId, inquiryCreateRequestDto);
     }

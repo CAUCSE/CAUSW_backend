@@ -1,6 +1,7 @@
 package net.causw.application.dto.circle;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 @Setter
 public class CircleUpdateRequestDto {
 
+    @NotBlank(message = "동아리 이름을 입력해 주세요.")
     @Schema(description = "동아리 이름", example = "소프트웨어학부 특별기구 ICT위원회 동문 네트워크")
     private String name;
 
