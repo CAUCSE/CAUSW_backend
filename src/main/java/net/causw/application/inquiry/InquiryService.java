@@ -2,19 +2,15 @@ package net.causw.application.inquiry;
 
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.inquiry.Inquiry;
-import net.causw.adapter.persistence.port.inquiry.InquiryRepository;
+import net.causw.adapter.persistence.repository.InquiryRepository;
 import net.causw.adapter.persistence.repository.UserRepository;
 import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.inquiry.InquiryCreateRequestDto;
 import net.causw.application.dto.inquiry.InquiryResponseDto;
-import net.causw.application.spi.InquiryPort;
-import net.causw.application.spi.UserPort;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
-import net.causw.domain.model.inquiry.InquiryDomainModel;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
-import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.validation.ValidatorBucket;
 import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.UserRoleIsNoneValidator;
@@ -29,9 +25,7 @@ import jakarta.validation.Validator;
 @RequiredArgsConstructor
 public class InquiryService {
 
-    private final UserPort userPort;
     private final Validator validator;
-    private final InquiryPort inquiryPort;
     private final UserRepository userRepository;
     private final InquiryRepository inquiryRepository;
 

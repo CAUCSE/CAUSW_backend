@@ -5,9 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.causw.adapter.persistence.inquiry.Inquiry;
 import net.causw.adapter.persistence.user.User;
-import net.causw.domain.model.inquiry.InquiryDomainModel;
 import net.causw.domain.model.enums.Role;
-import net.causw.domain.model.user.UserDomainModel;
 
 import java.time.LocalDateTime;
 

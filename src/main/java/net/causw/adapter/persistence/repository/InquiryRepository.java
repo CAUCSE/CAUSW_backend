@@ -1,4 +1,4 @@
-package net.causw.adapter.persistence.port.inquiry;
+package net.causw.adapter.persistence.repository;
 
 import net.causw.adapter.persistence.inquiry.Inquiry;
 import org.springframework.data.jpa.repository.JpaRepository;
