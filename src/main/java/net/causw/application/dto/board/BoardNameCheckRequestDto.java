@@ -13,7 +13,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BoardNameCheckRequestDto {
-    @NotNull
-    @NotBlank
+    @NotBlank(message = "게시판 이름은 필수 입력 값입니다.")
     private String name;
 }
