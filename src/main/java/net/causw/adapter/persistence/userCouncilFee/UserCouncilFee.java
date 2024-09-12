@@ -24,7 +24,7 @@ public class UserCouncilFee extends BaseEntity {
     private User user;
 
     @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
-    @JoinColumn(name = "council_fee_fake_fee", unique = true, nullable = true)
+    @JoinColumn(name = "council_fee_fake_user_id", unique = true, nullable = true)
     private CouncilFeeFakeUser councilFeeFakeUser;
 
     @Column(name = "is_paid", nullable = false)
