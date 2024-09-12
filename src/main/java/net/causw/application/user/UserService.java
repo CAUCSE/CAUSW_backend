@@ -16,9 +16,10 @@ import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.user.*;
-import net.causw.application.dto.util.DtoMapper;
-import net.causw.application.dto.util.PostDtoMapper;
-import net.causw.application.dto.util.UserDtoMapper;
+import net.causw.application.dto.util.dtoMapper.BoardDtoMapper;
+import net.causw.application.dto.util.dtoMapper.CircleDtoMapper;
+import net.causw.application.dto.util.dtoMapper.PostDtoMapper;
+import net.causw.application.dto.util.dtoMapper.UserDtoMapper;
 import net.causw.application.uuidFile.UuidFileService;
 import net.causw.config.security.JwtTokenProvider;
 import net.causw.domain.exceptions.BadRequestException;
@@ -472,7 +473,7 @@ public class UserService {
                     .map(circle -> {
                         User leader = circle.getLeader()
                                 .orElse(null);
-                        return DtoMapper.INSTANCE.toCircleResponseDto(circle, leader);
+                        return CircleDtoMapper.INSTANCE.toCircleResponseDto(circle, leader);
                     })
                     .collect(Collectors.toList());
         }
@@ -483,7 +484,7 @@ public class UserService {
                 .map(circleMember -> {
                     User leader = circleMember.getCircle().getLeader()
                             .orElse(null);
-                    return DtoMapper.INSTANCE.toCircleResponseDto(circleMember.getCircle(), leader);
+                    return CircleDtoMapper.INSTANCE.toCircleResponseDto(circleMember.getCircle(), leader);
                 })
                 .collect(Collectors.toList());
     }
@@ -1168,7 +1169,7 @@ public class UserService {
                 requestUser.getEmail(),
                 requestUser.getName(),
                 UserAdmissionLogAction.ACCEPT,
-                userAdmission.getAttachImageUuidFileList(),
+                userAdmission.getUserAdmissionAttachImageUuidFileList(),
                 userAdmission.getDescription()
         );
         // Add admission log
@@ -1211,7 +1212,7 @@ public class UserService {
                 requestUser.getEmail(),
                 requestUser.getName(),
                 UserAdmissionLogAction.REJECT,
-                userAdmission.getAttachImageUuidFileList(),
+                userAdmission.getUserAdmissionAttachImageUuidFileList(),
                 userAdmission.getDescription()
         );
         // Add admission log
@@ -1405,7 +1406,7 @@ public class UserService {
         Boolean writable = roles.stream().anyMatch(str -> userRole.getValue().contains(str));
         String circleId = Optional.ofNullable(board.getCircle()).map(Circle::getId).orElse(null);
         String circleName = Optional.ofNullable(board.getCircle()).map(Circle::getName).orElse(null);
-        return DtoMapper.INSTANCE.toBoardResponseDto(
+        return BoardDtoMapper.INSTANCE.toBoardResponseDto(
                 board,
                 roles,
                 writable,

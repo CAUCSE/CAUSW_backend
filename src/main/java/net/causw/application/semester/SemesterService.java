@@ -8,7 +8,7 @@ import net.causw.adapter.persistence.userCouncilFee.CouncilFeeFakeUser;
 import net.causw.adapter.persistence.userCouncilFee.UserCouncilFee;
 import net.causw.application.dto.semester.CreateSemesterRequestDto;
 import net.causw.application.dto.semester.CurrentSemesterResponseDto;
-import net.causw.application.dto.util.SemesterDtoMapper;
+import net.causw.application.dto.util.dtoMapper.SemesterDtoMapper;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.enums.AcademicStatus;

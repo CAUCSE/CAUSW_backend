@@ -13,7 +13,7 @@ import net.causw.adapter.persistence.userCouncilFee.UserCouncilFeeLog;
 import net.causw.application.dto.userCouncilFee.CreateUserCouncilFeeRequestDto;
 import net.causw.application.dto.userCouncilFee.UserCouncilFeeListResponseDto;
 import net.causw.application.dto.userCouncilFee.UserCouncilFeeResponseDto;
-import net.causw.application.dto.util.UserCouncilFeeDtoMapper;
+import net.causw.application.dto.util.dtoMapper.UserCouncilFeeDtoMapper;
 import net.causw.application.excel.CouncilFeeExcelService;
 import net.causw.application.semester.SemesterService;
 import net.causw.domain.exceptions.BadRequestException;

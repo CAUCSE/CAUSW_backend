@@ -1,4 +1,4 @@
-package net.causw.application.dto.util;
+package net.causw.application.dto.util.dtoMapper;
 
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.post.Post;
@@ -7,6 +7,7 @@ import net.causw.application.dto.post.BoardPostsResponseDto;
 import net.causw.application.dto.post.PostContentDto;
 import net.causw.application.dto.post.PostResponseDto;
 import net.causw.application.dto.post.PostsResponseDto;
+import net.causw.application.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 import net.causw.domain.model.enums.Role;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -45,7 +46,7 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "writerName", source = "post.writer.name")
     @Mapping(target = "writerAdmissionYear", source = "post.writer.admissionYear")
     @Mapping(target = "boardName", source = "post.board.name")
-    @Mapping(target = "fileUrlList", source = "post.attachImageUuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
+    @Mapping(target = "fileUrlList", source = "post.postAttachImageUuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
     @Mapping(target = "isAnonymous", source = "post.isAnonymous")
     @Mapping(target = "isQuestion", source = "post.isQuestion")
     @Mapping(target = "numLike", source = "numPostLike")
@@ -55,7 +56,7 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "writerName", source = "post.writer.name")
     @Mapping(target = "writerAdmissionYear", source = "post.writer.admissionYear")
     @Mapping(target = "boardName", source = "post.board.name")
-    @Mapping(target = "fileUrlList", source = "post.attachImageUuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
+    @Mapping(target = "fileUrlList", source = "post.postAttachImageUuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
     @Mapping(target = "content", source = "post.content")
     @Mapping(target = "isAnonymous", source = "post.isAnonymous")
     @Mapping(target = "isQuestion", source = "post.isQuestion")

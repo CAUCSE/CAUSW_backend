@@ -10,9 +10,9 @@ import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.board.*;
 import net.causw.application.dto.post.PostContentDto;
 import net.causw.application.dto.user.UserResponseDto;
-import net.causw.application.dto.util.DtoMapper;
-import net.causw.application.dto.util.PostDtoMapper;
-import net.causw.application.dto.util.UserDtoMapper;
+import net.causw.application.dto.util.dtoMapper.BoardDtoMapper;
+import net.causw.application.dto.util.dtoMapper.PostDtoMapper;
+import net.causw.application.dto.util.dtoMapper.UserDtoMapper;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
@@ -129,7 +129,7 @@ public class BoardService {
                     List<PostContentDto> recentPosts = postRepository.findTop3ByBoard_IdAndIsDeletedOrderByCreatedAtDesc(board.getId(), false).stream()
                             .map(PostDtoMapper.INSTANCE::toPostContentDto)
                             .collect(Collectors.toList());
-                    return DtoMapper.INSTANCE.toBoardMainResponseDto(board, recentPosts);
+                    return BoardDtoMapper.INSTANCE.toBoardMainResponseDto(board, recentPosts);
                 })
                 .collect(Collectors.toList());
     }
@@ -140,7 +140,7 @@ public class BoardService {
     ) {
         String boardName = boardNameCheckRequestDto.getName();
 
-        return DtoMapper.INSTANCE.toBoardNameCheckResponseDto(boardRepository.existsByName(boardName));
+        return BoardDtoMapper.INSTANCE.toBoardNameCheckResponseDto(boardRepository.existsByName(boardName));
     }
 
     // 동아리 게시판 생성에서 재사용 예정인데 일단 안쓰므로 주석 처리.
@@ -267,7 +267,7 @@ public class BoardService {
         // 관리자, 학생회장, 부학생회장만 게시판 관리 기능 사용 가능
         return this.boardApplyRepository.findAllByAcceptStatus(BoardApplyStatus.AWAIT)
                 .stream()
-                .map(DtoMapper.INSTANCE::toNormalBoardAppliesResponseDto)
+                .map(BoardDtoMapper.INSTANCE::toNormalBoardAppliesResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -279,7 +279,7 @@ public class BoardService {
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.APPLY_NOT_FOUND
                 ));
-        return DtoMapper.INSTANCE.toNormalBoardApplyResponseDto(
+        return BoardDtoMapper.INSTANCE.toNormalBoardApplyResponseDto(
                 boardApply, UserDtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null));
     }
 
@@ -312,7 +312,7 @@ public class BoardService {
         createRoleList.add("ALL"); // 일반 사용자의 게시판 신청은 항상 글 작성 권한이 '상관없음'임
         UserResponseDto userResponseDto = UserDtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null);
         NormalBoardApplyResponseDto normalBoardApplyResponseDto =
-                DtoMapper.INSTANCE.toNormalBoardApplyResponseDto(boardApply, userResponseDto);
+                BoardDtoMapper.INSTANCE.toNormalBoardApplyResponseDto(boardApply, userResponseDto);
         Board newBoard = Board.of(
                 normalBoardApplyResponseDto.getBoardName(),
                 normalBoardApplyResponseDto.getDescription(),
@@ -324,7 +324,7 @@ public class BoardService {
 
         this.boardRepository.save(newBoard);
 
-        return DtoMapper.INSTANCE.toNormalBoardApplyResponseDto(boardApply, userResponseDto);
+        return BoardDtoMapper.INSTANCE.toNormalBoardApplyResponseDto(boardApply, userResponseDto);
     }
 
     @Transactional
@@ -352,7 +352,7 @@ public class BoardService {
         boardApply.updateAcceptStatus(BoardApplyStatus.REJECT); // 해당 boardApply의 상태를 REJECT로 변경
         this.boardApplyRepository.save(boardApply);
 
-        return DtoMapper.INSTANCE.toNormalBoardApplyResponseDto(
+        return BoardDtoMapper.INSTANCE.toNormalBoardApplyResponseDto(
                 boardApply,
                 UserDtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null));
     }
@@ -500,7 +500,7 @@ public class BoardService {
                 .anyMatch(roles::contains);
         String circleId = Optional.ofNullable(board.getCircle()).map(Circle::getId).orElse(null);
         String circleName = Optional.ofNullable(board.getCircle()).map(Circle::getName).orElse(null);
-        return DtoMapper.INSTANCE.toBoardResponseDto(
+        return BoardDtoMapper.INSTANCE.toBoardResponseDto(
                 board,
                 roles,
                 writable,

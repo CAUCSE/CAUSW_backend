@@ -13,7 +13,7 @@ import net.causw.application.dto.board.BoardOfCircleResponseDto;
 import net.causw.application.dto.circle.*;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.user.UserResponseDto;
-import net.causw.application.dto.util.CircleServiceDtoMapper;
+import net.causw.application.dto.util.dtoMapper.CircleDtoMapper;
 import net.causw.application.dto.util.StatusUtil;
 import net.causw.application.excel.CircleExcelService;
 import net.causw.application.uuidFile.UuidFileService;
@@ -765,34 +765,34 @@ public class CircleService {
     // Dto Mapper
 
     private UserResponseDto toUserResponseDto(User user) {
-        return CircleServiceDtoMapper.INSTANCE.toUserResponseDto(user);
+        return CircleDtoMapper.INSTANCE.toUserResponseDto(user);
     }
 
     private CircleResponseDto toCircleResponseDto(Circle circle) {
-        return CircleServiceDtoMapper.INSTANCE.toCircleResponseDto(circle);
+        return CircleDtoMapper.INSTANCE.toCircleResponseDto(circle);
     }
 
     private CircleResponseDto toCircleResponseDtoExtended(Circle circle, Long numMember) {
-        return CircleServiceDtoMapper.INSTANCE.toCircleResponseDtoExtended(circle, numMember);
+        return CircleDtoMapper.INSTANCE.toCircleResponseDtoExtended(circle, numMember);
     }
 
     private CirclesResponseDto toCirclesResponseDto(Circle circle, Long numMember) {
-        return CircleServiceDtoMapper.INSTANCE.toCirclesResponseDto(circle, numMember);
+        return CircleDtoMapper.INSTANCE.toCirclesResponseDto(circle, numMember);
     }
 
     private CirclesResponseDto toCirclesResponseDtoExtended(Circle circle, Long numMember, LocalDateTime joinedAt) {
-        return CircleServiceDtoMapper.INSTANCE.toCirclesResponseDtoExtended(circle, numMember, joinedAt);
+        return CircleDtoMapper.INSTANCE.toCirclesResponseDtoExtended(circle, numMember, joinedAt);
     }
 
     private BoardOfCircleResponseDto toBoardOfCircleResponseDto(Board board, Set<Role> userRoles) {
-        return CircleServiceDtoMapper.INSTANCE.toBoardOfCircleResponseDto(
+        return CircleDtoMapper.INSTANCE.toBoardOfCircleResponseDto(
                 board,
                 isWriteable(board, userRoles)
         );
     }
 
     private BoardOfCircleResponseDto toBoardOfCircleResponseDtoExtended(Board board, Set<Role> userRoles, Post post, Long numComment) {
-        return CircleServiceDtoMapper.INSTANCE.toBoardOfCircleResponseDtoExtended(
+        return CircleDtoMapper.INSTANCE.toBoardOfCircleResponseDtoExtended(
                 board,
                 isWriteable(board, userRoles),
                 post,
@@ -801,11 +801,11 @@ public class CircleService {
     }
 
     private CircleBoardsResponseDto toCircleBoardsResponseDto(Circle circle, Long numMember, List<BoardOfCircleResponseDto> boardList) {
-        return CircleServiceDtoMapper.INSTANCE.toCircleBoardsResponseDto(this.toCircleResponseDtoExtended(circle, numMember), boardList);
+        return CircleDtoMapper.INSTANCE.toCircleBoardsResponseDto(this.toCircleResponseDtoExtended(circle, numMember), boardList);
     }
 
     private CircleMemberResponseDto toCircleMemberResponseDto(CircleMember circleMember, CircleResponseDto circleResponseDto, UserResponseDto userResponseDto) {
-        return CircleServiceDtoMapper.INSTANCE.toCircleMemberResponseDto(circleMember, circleResponseDto, userResponseDto);
+        return CircleDtoMapper.INSTANCE.toCircleMemberResponseDto(circleMember, circleResponseDto, userResponseDto);
     }
 
     private CircleMemberResponseDto toCircleMemberResponseDto(CircleMember circleMember, Circle circle, User user) {
@@ -817,6 +817,6 @@ public class CircleService {
     }
 
     private DuplicatedCheckResponseDto toDuplicatedCheckResponseDto(Boolean isDuplicated) {
-        return CircleServiceDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(isDuplicated);
+        return CircleDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(isDuplicated);
     }
 }

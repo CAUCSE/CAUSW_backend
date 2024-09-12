@@ -8,7 +8,7 @@ import net.causw.application.dto.calendar.CalendarCreateRequestDto;
 import net.causw.application.dto.calendar.CalendarResponseDto;
 import net.causw.application.dto.calendar.CalendarUpdateRequestDto;
 import net.causw.application.dto.calendar.CalendarsResponseDto;
-import net.causw.application.dto.util.DtoMapper;
+import net.causw.application.dto.util.dtoMapper.CalendarDtoMapper;
 import net.causw.application.uuidFile.UuidFileService;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -28,10 +28,10 @@ public class CalendarService {
     @Transactional(readOnly = true)
     public CalendarsResponseDto findCalendarByYear(Integer year) {
         List<CalendarResponseDto> calendars = calendarRepository.findByYearOrderByMonthDesc(year).stream()
-                .map(DtoMapper.INSTANCE::toCalendarResponseDto)
+                .map(CalendarDtoMapper.INSTANCE::toCalendarResponseDto)
                 .toList();
 
-        return DtoMapper.INSTANCE.toCalendarsResponseDto(
+        return CalendarDtoMapper.INSTANCE.toCalendarsResponseDto(
                 calendars.size(),
                 calendars
         );
@@ -39,7 +39,7 @@ public class CalendarService {
 
     @Transactional(readOnly = true)
     public CalendarResponseDto findCalendar(String calendarId) {
-        return DtoMapper.INSTANCE.toCalendarResponseDto(
+        return CalendarDtoMapper.INSTANCE.toCalendarResponseDto(
                 calendarRepository.findById(calendarId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -51,7 +51,7 @@ public class CalendarService {
     @Transactional(readOnly = true)
     public CalendarResponseDto findCalendar() {
         return calendarRepository.findFirstByOrderByYearDescMonthDesc()
-                .map(DtoMapper.INSTANCE::toCalendarResponseDto)
+                .map(CalendarDtoMapper.INSTANCE::toCalendarResponseDto)
                 .orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.CALENDAR_NOT_FOUND
@@ -70,7 +70,7 @@ public class CalendarService {
                     );
                 });
 
-        return DtoMapper.INSTANCE.toCalendarResponseDto(
+        return CalendarDtoMapper.INSTANCE.toCalendarResponseDto(
                 calendarRepository.save(
                         Calendar.of(
                                 calendarCreateRequestDto.getYear(),
@@ -90,7 +90,7 @@ public class CalendarService {
                 )
         );
 
-        UuidFile uuidFile = uuidFileService.updateFile(calendar.getAttachImageUuidFile(), calendarUpdateRequestDto.getImage(), FilePath.CALENDAR);
+        UuidFile uuidFile = uuidFileService.updateFile(calendar.getCalendarAttachImageUuidFile(), calendarUpdateRequestDto.getImage(), FilePath.CALENDAR);
 
         calendar.update(
                 calendarUpdateRequestDto.getYear(),
@@ -98,6 +98,6 @@ public class CalendarService {
                 uuidFile
         );
 
-        return DtoMapper.INSTANCE.toCalendarResponseDto(calendarRepository.save(calendar));
+        return CalendarDtoMapper.INSTANCE.toCalendarResponseDto(calendarRepository.save(calendar));
     }
 }

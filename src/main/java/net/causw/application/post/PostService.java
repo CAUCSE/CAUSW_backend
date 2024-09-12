@@ -15,8 +15,8 @@ import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.post.*;
-import net.causw.application.dto.util.DtoMapper;
-import net.causw.application.dto.util.PostDtoMapper;
+import net.causw.application.dto.util.dtoMapper.CommentDtoMapper;
+import net.causw.application.dto.util.dtoMapper.PostDtoMapper;
 import net.causw.application.dto.util.StatusUtil;
 import net.causw.application.uuidFile.UuidFileService;
 import net.causw.domain.exceptions.BadRequestException;
@@ -325,7 +325,7 @@ public class PostService {
         validatorBucket.validate();
 
         List<UuidFile> uuidFileList = uuidFileService.updateFileList(
-                post.getAttachImageUuidFileList(),
+                post.getPostAttachImageUuidFileList(),
                 postUpdateRequestDto.getMultipartFileList(),
                 FilePath.POST
         );
@@ -560,7 +560,7 @@ public class PostService {
                         childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
                         getNumOfCommentLikes(comment),
                         comment.getChildCommentList().stream()
-                                .map(childComment -> DtoMapper.INSTANCE.toChildCommentResponseDto(
+                                .map(childComment -> CommentDtoMapper.INSTANCE.toChildCommentResponseDto(
                                         childComment,
                                         getNumOfChildCommentLikes(childComment),
                                         StatusUtil.isUpdatable(childComment, user),

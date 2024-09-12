@@ -14,7 +14,7 @@ import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.comment.CommentCreateRequestDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.comment.CommentUpdateRequestDto;
-import net.causw.application.dto.util.DtoMapper;
+import net.causw.application.dto.util.dtoMapper.CommentDtoMapper;
 import net.causw.application.dto.util.StatusUtil;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -189,12 +189,12 @@ public class CommentService {
     }
 
     private CommentResponseDto toCommentResponseDto(Comment comment, User user, Board board) {
-        return DtoMapper.INSTANCE.toCommentResponseDto(
+        return CommentDtoMapper.INSTANCE.toCommentResponseDto(
                 comment,
                 childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
                 getNumOfCommentLikes(comment),
                 comment.getChildCommentList().stream()
-                        .map(childComment -> DtoMapper.INSTANCE.toChildCommentResponseDto(childComment, getNumOfChildCommentLikes(childComment), StatusUtil.isUpdatable(childComment, user), StatusUtil.isDeletable(childComment, user, board)))
+                        .map(childComment -> CommentDtoMapper.INSTANCE.toChildCommentResponseDto(childComment, getNumOfChildCommentLikes(childComment), StatusUtil.isUpdatable(childComment, user), StatusUtil.isDeletable(childComment, user, board)))
                         .collect(Collectors.toList()),
                 StatusUtil.isUpdatable(comment, user),
                 StatusUtil.isDeletable(comment, user, board)

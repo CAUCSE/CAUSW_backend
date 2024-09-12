@@ -29,7 +29,7 @@ public class UserAdmissionLog extends BaseEntity {
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "user_admission_log_id", nullable = true)
-    private List<UuidFile> attachImageUuidFileList;
+    private List<UuidFile> userAdmissionLogAttachImageUuidFileList;
 
     @Column(name = "description")
     private String description;
@@ -44,7 +44,7 @@ public class UserAdmissionLog extends BaseEntity {
             String adminUserEmail,
             String adminUserName,
             UserAdmissionLogAction action,
-            List<UuidFile> attachImageUuidFileList,
+            List<UuidFile> userAdmissionLogAttachImageUuidFileList,
             String description
     ) {
         return UserAdmissionLog.builder()
@@ -53,7 +53,7 @@ public class UserAdmissionLog extends BaseEntity {
                 .adminUserEmail(adminUserEmail)
                 .adminUserName(adminUserName)
                 .action(action)
-                .attachImageUuidFileList(attachImageUuidFileList)
+                .userAdmissionLogAttachImageUuidFileList(userAdmissionLogAttachImageUuidFileList)
                 .description(description)
                 .build(
         );

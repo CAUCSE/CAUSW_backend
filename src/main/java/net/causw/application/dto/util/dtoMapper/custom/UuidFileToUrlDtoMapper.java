@@ -1,4 +1,4 @@
-package net.causw.application.dto.util;
+package net.causw.application.dto.util.dtoMapper.custom;
 
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import org.mapstruct.Mapper;

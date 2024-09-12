@@ -9,8 +9,8 @@ import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.homepage.HomePageResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
-import net.causw.application.dto.util.DtoMapper;
-import net.causw.application.dto.util.PostDtoMapper;
+import net.causw.application.dto.util.dtoMapper.BoardDtoMapper;
+import net.causw.application.dto.util.dtoMapper.PostDtoMapper;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.enums.Role;
@@ -73,7 +73,7 @@ public class HomePageService {
                 .anyMatch(roles::contains);
         String circleId = Optional.ofNullable(board.getCircle()).map(Circle::getId).orElse(null);
         String circleName = Optional.ofNullable(board.getCircle()).map(Circle::getName).orElse(null);
-        return DtoMapper.INSTANCE.toBoardResponseDto(
+        return BoardDtoMapper.INSTANCE.toBoardResponseDto(
                 board,
                 roles,
                 writable,

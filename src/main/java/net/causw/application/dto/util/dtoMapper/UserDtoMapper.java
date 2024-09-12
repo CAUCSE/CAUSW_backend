@@ -1,4 +1,4 @@
-package net.causw.application.dto.util;
+package net.causw.application.dto.util.dtoMapper;
 
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.comment.Comment;
@@ -9,6 +9,7 @@ import net.causw.application.dto.comment.CommentsOfUserResponseDto;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.post.PostsResponseDto;
 import net.causw.application.dto.user.*;
+import net.causw.application.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
@@ -109,7 +110,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 
     @Mapping(target = "id", source = "userAdmission.id")
     @Mapping(target = "user", source = "userAdmission.user")
-    @Mapping(target = "attachImageUrlList", source = "userAdmission.attachImageUuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
+    @Mapping(target = "attachImageUrlList", source = "userAdmission.userAdmissionAttachImageUuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
     @Mapping(target = "description", source = "userAdmission.description")
     @Mapping(target = "createdAt", source = "userAdmission.createdAt")
     @Mapping(target = "updatedAt", source = "userAdmission.updatedAt")
@@ -117,7 +118,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 
     @Mapping(target = "id", source = "userAdmission.id")
     @Mapping(target = "user", source = "user")
-    @Mapping(target = "attachImageUrlList", source = "userAdmission.attachImageUuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
+    @Mapping(target = "attachImageUrlList", source = "userAdmission.userAdmissionAttachImageUuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
     @Mapping(target = "description", source = "userAdmission.description")
     @Mapping(target = "createdAt", source = "userAdmission.createdAt")
     @Mapping(target = "updatedAt", source = "userAdmission.updatedAt")
@@ -127,7 +128,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "userName", source = "userAdmission.user.name")
     @Mapping(target = "userEmail", source = "userAdmission.user.email")
     @Mapping(target = "admissionYear", source = "userAdmission.user.admissionYear")
-    @Mapping(target = "attachImageUrlList", source = "userAdmission.attachImageUuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
+    @Mapping(target = "attachImageUrlList", source = "userAdmission.userAdmissionAttachImageUuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
     @Mapping(target = "description", source = "userAdmission.description")
     @Mapping(target = "userState", source = "userAdmission.user.state")
     @Mapping(target = "createdAt", source = "userAdmission.createdAt")

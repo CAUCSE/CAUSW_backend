@@ -17,8 +17,8 @@ public class Event extends BaseEntity {
     private String url;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "uuid_file_id", nullable = false)
-    private UuidFile uuidFile;
+    @JoinColumn(name = "event_image_uuid_file_id", nullable = false)
+    private UuidFile eventImageUuidFile;
 
     @Setter
     @Column(name = "is_deleted")
@@ -27,18 +27,18 @@ public class Event extends BaseEntity {
 
     public static Event of(
             String url,
-            UuidFile uuidFile,
+            UuidFile eventImageUuidFile,
             Boolean isDeleted
     ) {
         return Event.builder()
                 .url(url)
-                .uuidFile(uuidFile)
+                .eventImageUuidFile(eventImageUuidFile)
                 .isDeleted(isDeleted)
                 .build();
     }
 
-    public void update(String url, UuidFile uuidFile) {
+    public void update(String url, UuidFile eventImageUuidFile) {
         this.url = url;
-        this.uuidFile = uuidFile;
+        this.eventImageUuidFile = eventImageUuidFile;
     }
 }

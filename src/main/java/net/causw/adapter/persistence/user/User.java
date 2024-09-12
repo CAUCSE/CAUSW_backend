@@ -72,7 +72,7 @@ public class User extends BaseEntity {
 
     // 프로필 이미지
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "profile_image_uuid_file", nullable = true)
+    @JoinColumn(name = "profile_image_uuid_file_id", nullable = true)
     private UuidFile profileImageUuidFile;
 
     @Column(name = "refresh_token", nullable = true)

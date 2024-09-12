@@ -19,24 +19,24 @@ public class Calendar extends BaseEntity {
     private Integer month;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "attach_image_uuid_file_id", nullable = false)
-    private UuidFile attachImageUuidFile;
+    @JoinColumn(name = "calendar_attach_image_uuid_file_id", nullable = false)
+    private UuidFile calendarAttachImageUuidFile;
 
     public static Calendar of(
             Integer year,
             Integer month,
-            UuidFile attachImageUuidFile
+            UuidFile calendarAttachImageUuidFile
     ) {
         return Calendar.builder()
                 .year(year)
                 .month(month)
-                .attachImageUuidFile(attachImageUuidFile)
+                .calendarAttachImageUuidFile(calendarAttachImageUuidFile)
                 .build();
     }
 
-    public void update(Integer year, Integer month, UuidFile attachImageUuidFile) {
+    public void update(Integer year, Integer month, UuidFile calendarAttachImageUuidFile) {
         this.year = year;
         this.month = month;
-        this.attachImageUuidFile = attachImageUuidFile;
+        this.calendarAttachImageUuidFile = calendarAttachImageUuidFile;
     }
 }

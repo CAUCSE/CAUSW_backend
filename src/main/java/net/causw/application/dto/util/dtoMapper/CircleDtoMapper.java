@@ -1,4 +1,4 @@
-package net.causw.application.dto.util;
+package net.causw.application.dto.util.dtoMapper;
 
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
@@ -12,6 +12,7 @@ import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.circle.CirclesResponseDto;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.user.UserResponseDto;
+import net.causw.application.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
@@ -31,9 +32,9 @@ import java.util.List;
 @interface CircleCommonWriterMappings {}
 
 @Mapper(componentModel = "spring")
-public interface CircleServiceDtoMapper extends UuidFileToUrlDtoMapper {
+public interface CircleDtoMapper extends UuidFileToUrlDtoMapper {
 
-    CircleServiceDtoMapper INSTANCE = Mappers.getMapper(CircleServiceDtoMapper.class);
+    CircleDtoMapper INSTANCE = Mappers.getMapper(CircleDtoMapper.class);
 
     // User
     UserResponseDto toUserResponseDto(User user);
@@ -81,5 +82,15 @@ public interface CircleServiceDtoMapper extends UuidFileToUrlDtoMapper {
     CircleMemberResponseDto toCircleMemberResponseDto(CircleMember board, CircleResponseDto circle, UserResponseDto user);
 
     DuplicatedCheckResponseDto toDuplicatedCheckResponseDto(Boolean result);
+
+    @Mapping(target = "id", source = "circle.id")
+    @Mapping(target = "name", source = "circle.name")
+    @Mapping(target = "description", source = "circle.description")
+    @Mapping(target = "isDeleted", source = "circle.isDeleted")
+    @Mapping(target = "leaderId", source = "leader.id")
+    @Mapping(target = "leaderName", source = "leader.name")
+    @Mapping(target = "createdAt", source = "circle.createdAt")
+    CircleResponseDto toCircleResponseDto(Circle circle, User leader);
+
 
 }

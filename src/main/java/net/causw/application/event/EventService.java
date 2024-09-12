@@ -8,7 +8,7 @@ import net.causw.application.dto.event.EventCreateRequestDto;
 import net.causw.application.dto.event.EventResponseDto;
 import net.causw.application.dto.event.EventUpdateRequestDto;
 import net.causw.application.dto.event.EventsResponseDto;
-import net.causw.application.dto.util.DtoMapper;
+import net.causw.application.dto.util.dtoMapper.EventDtoMapper;
 import net.causw.application.uuidFile.UuidFileService;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -29,10 +29,10 @@ public class EventService {
     @Transactional(readOnly = true)
     public EventsResponseDto findEvents() {
         List<EventResponseDto> events = eventRepository.findByIsDeletedIsFalse().stream()
-                .map(DtoMapper.INSTANCE::toEventResponseDto)
+                .map(EventDtoMapper.INSTANCE::toEventResponseDto)
                 .toList();
 
-        return DtoMapper.INSTANCE.toEventsResponseDto(
+        return EventDtoMapper.INSTANCE.toEventsResponseDto(
                 events.size(),
                 events
         );
@@ -49,7 +49,7 @@ public class EventService {
 
         UuidFile uuidFile = uuidFileService.saveFile(eventCreateRequestDto.getImage(), FilePath.EVENT);
 
-        return DtoMapper.INSTANCE.toEventResponseDto(
+        return EventDtoMapper.INSTANCE.toEventResponseDto(
                 eventRepository.save(
                         Event.of(
                                 eventCreateRequestDto.getUrl(),
@@ -68,14 +68,14 @@ public class EventService {
                 eventUpdateRequestDto.getUrl(),
                 uuidFile
         );
-        return DtoMapper.INSTANCE.toEventResponseDto(eventRepository.save(event));
+        return EventDtoMapper.INSTANCE.toEventResponseDto(eventRepository.save(event));
     }
 
     @Transactional
     public EventResponseDto deleteEvent(String eventId) {
         Event event = getEvent(eventId);
         event.setIsDeleted(true);
-        return DtoMapper.INSTANCE.toEventResponseDto(eventRepository.save(event));
+        return EventDtoMapper.INSTANCE.toEventResponseDto(eventRepository.save(event));
     }
 
     private Event getEvent(String eventId) {

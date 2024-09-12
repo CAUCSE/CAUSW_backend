@@ -1,10 +1,11 @@
-package net.causw.application.dto.util;
+package net.causw.application.dto.util.dtoMapper;
 
 import net.causw.adapter.persistence.semester.Semester;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.userAcademicRecord.UserAcademicRecordApplication;
 import net.causw.adapter.persistence.userAcademicRecord.UserAcademicRecordLog;
 import net.causw.application.dto.userAcademicRecordApplication.*;
+import net.causw.application.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
@@ -45,7 +46,7 @@ public interface UserAcademicRecordDtoMapper extends UuidFileToUrlDtoMapper {
 
     @Mapping(target = "targetAcademicStatus", source = "userAcademicRecordLog.targetAcademicRecordStatus")
     @Mapping(target = "userNote", source = "userAcademicRecordLog.note")
-    @Mapping(target = "attachedImageUrlList", source = "userAcademicRecordLog.targetUserAcademicRecordApplication.uuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
+    @Mapping(target = "attachedImageUrlList", source = "userAcademicRecordLog.targetUserAcademicRecordApplication.userAcademicRecordAttachImageUuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
     @Mapping(target = "changeDate", source = "userAcademicRecordLog.updatedAt")
     UserAcademicRecordApplicationResponseDto toUserAcademicRecordApplicationResponseDto(UserAcademicRecordLog userAcademicRecordLog);
 
@@ -56,7 +57,7 @@ public interface UserAcademicRecordDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "targetAcademicStatus", source = "userAcademicRecordApplication.targetAcademicStatus")
     @Mapping(target = "targetCompletedSemester", source = "userAcademicRecordApplication.targetCompletedSemester")
     @Mapping(target = "note", source = "userAcademicRecordApplication.note")
-    @Mapping(target = "attachedImageUrlList", source = "userAcademicRecordApplication.uuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
+    @Mapping(target = "attachedImageUrlList", source = "userAcademicRecordApplication.userAcademicRecordAttachImageUuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
     @Mapping(target = "rejectMessage", source = "userAcademicRecordApplication.rejectMessage")
     UserAcademicRecordApplicationInfoResponseDto toUserAcademicRecordApplicationInfoResponseDto(UserAcademicRecordApplication userAcademicRecordApplication);
 
@@ -67,7 +68,7 @@ public interface UserAcademicRecordDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "targetAcademicStatus", source = "userAcademicRecordApplication.targetAcademicStatus")
     @Mapping(target = "targetCompletedSemester", source = "userAcademicRecordApplication.targetCompletedSemester")
     @Mapping(target = "userNote", source = "userAcademicRecordApplication.note")
-    @Mapping(target = "attachedImageUrlList", source = "userAcademicRecordApplication.uuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
+    @Mapping(target = "attachedImageUrlList", source = "userAcademicRecordApplication.userAcademicRecordAttachImageUuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
     CurrentUserAcademicRecordApplicationResponseDto toCurrentUserAcademicRecordResponseDto(Semester semester, UserAcademicRecordApplication userAcademicRecordApplication, Boolean isRejected);
 
 

@@ -1,4 +1,4 @@
-package net.causw.application.dto.util;
+package net.causw.application.dto.util.dtoMapper;
 
 import net.causw.adapter.persistence.semester.Semester;
 import net.causw.application.dto.semester.CurrentSemesterResponseDto;
