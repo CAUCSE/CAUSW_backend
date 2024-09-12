@@ -44,7 +44,8 @@ public class EventController {
             @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and @securityService.adminOrPresidentOrVicePresident")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
     public EventResponseDto createEvent(
             @Valid @ModelAttribute EventCreateRequestDto eventCreateRequestDto) {
         return eventService.createEvent(eventCreateRequestDto);
@@ -59,7 +60,8 @@ public class EventController {
             @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and @securityService.adminOrPresidentOrVicePresident")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
     public EventResponseDto updateEvent(
             @PathVariable("eventId") String eventId,
             @Valid @ModelAttribute EventUpdateRequestDto eventUpdateRequestDto) {
@@ -75,7 +77,8 @@ public class EventController {
             @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and @securityService.adminOrPresidentOrVicePresident")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
     public EventResponseDto deleteEvent(@PathVariable("eventId") String eventId) {
         return eventService.deleteEvent(eventId);
     }
