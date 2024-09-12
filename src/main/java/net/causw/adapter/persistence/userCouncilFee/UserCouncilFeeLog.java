@@ -21,7 +21,7 @@ import java.time.LocalDate;
 @Table(name = "tb_user_council_fee_log")
 public class UserCouncilFeeLog extends BaseEntity {
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "controlled_user_id", nullable = false)
     private User controlledUser;
 
@@ -29,22 +29,22 @@ public class UserCouncilFeeLog extends BaseEntity {
     @Column(name = "update_type", nullable = false)
     private LogType logType;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "target_user_council_fee_id", nullable = false)
     private UserCouncilFee targetUserCouncilFee;
 
     @Column(name = "target_is_joined_service", nullable = false)
     private Boolean targetIsJoinedService;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "target_user_id", nullable = true)
     private User targetUser;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "target_council_fee_fake_user_id", nullable = true)
     private CouncilFeeFakeUser targetCouncilFeeFakeUser;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "time_of_semester_id", nullable = false)
     private Semester timeOfSemester;
 
