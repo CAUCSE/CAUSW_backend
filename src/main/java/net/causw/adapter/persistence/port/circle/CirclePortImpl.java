@@ -54,7 +54,7 @@ public class CirclePortImpl extends DomainModelMapper implements CirclePort {
     public Optional<CircleDomainModel> update(String id, CircleDomainModel circleDomainModel) {
         return this.circleRepository.findById(id).map(
                 srcCircle -> {
-                    srcCircle.update(circleDomainModel.getDescription(), circleDomainModel.getName(), circleDomainModel.getMainImage(), circleDomainModel.getCircleTax(), circleDomainModel.getRecruitMembers());
+                    srcCircle.update(circleDomainModel.getDescription(), circleDomainModel.getName(), circleDomainModel.getMainImage(), circleDomainModel.getCircleTax(), circleDomainModel.getRecruitMembers(), circleDomainModel.getRecruitEndDate(), circleDomainModel.getIsRecruit());
 
                     return this.entityToDomainModel(this.circleRepository.save(srcCircle));
                 }

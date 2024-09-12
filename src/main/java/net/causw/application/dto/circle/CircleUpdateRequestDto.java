@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 public class CircleUpdateRequestDto {
@@ -22,4 +24,10 @@ public class CircleUpdateRequestDto {
 
     @Schema(description = "동아리 모집인원", example = "10")
     private Integer recruitMembers;
+
+    @Schema(description = "동아리 모집 종료 날짜", example = "2024-10-10")
+    private LocalDateTime recruitEndDate;
+
+    @Schema(description = "동아리 모집 여부", example = "false")
+    private Boolean isRecruit;
 }

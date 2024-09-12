@@ -5,14 +5,12 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.causw.adapter.persistence.form.Form;
-import net.causw.adapter.persistence.form.Question;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.domain.model.circle.CircleDomainModel;
 import org.hibernate.annotations.ColumnDefault;
 
-import java.util.List;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Getter
@@ -34,22 +32,22 @@ public class Circle extends BaseEntity {
     @ColumnDefault("false")
     private Boolean isDeleted;
 
-
     @Column(name = "circle_tax")
     private Integer circleTax;
 
     @Column(name = "recruit_members")
     private Integer recruitMembers;
 
+    @Column(name = "recruit_end_date")
+    private LocalDateTime recruitEndDate;
+
+    @Column(name = "is_recruit")
+    @ColumnDefault("false")
+    private Boolean isRecruit;
+
     @OneToOne
     @JoinColumn(name = "leader_id")
     private User leader;
-
-
-
-//
-//    @OneToMany(mappedBy = "circle", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<Form> forms;
 
     public Optional<User> getLeader() {
         return Optional.ofNullable(this.leader);
@@ -61,18 +59,22 @@ public class Circle extends BaseEntity {
             String mainImage,
             String description,
             Integer circleTax,
-            Integer recuritMembers,
+            Integer recruitMembers,
             Boolean isDeleted,
-            User leader
+            User leader,
+            LocalDateTime recruitEndDate,
+            Boolean isRecruit
     ) {
         super(id);
         this.name = name;
         this.mainImage = mainImage;
         this.description = description;
         this.circleTax = circleTax;
-        this.recruitMembers = recuritMembers;
+        this.recruitMembers = recruitMembers;
         this.isDeleted = isDeleted;
         this.leader = leader;
+        this.recruitEndDate = recruitEndDate;
+        this.isRecruit = isRecruit;
     }
 
     public static Circle from(CircleDomainModel circleDomainModel) {
@@ -84,7 +86,9 @@ public class Circle extends BaseEntity {
                 circleDomainModel.getCircleTax(),
                 circleDomainModel.getRecruitMembers(),
                 circleDomainModel.getIsDeleted(),
-                circleDomainModel.getLeader().map(User::from).orElse(null)
+                circleDomainModel.getLeader().map(User::from).orElse(null),
+                circleDomainModel.getRecruitEndDate(),
+                circleDomainModel.getIsRecruit()
         );
     }
 
@@ -94,18 +98,22 @@ public class Circle extends BaseEntity {
             String description,
             Boolean isDeleted,
             Integer circleTax,
-            Integer recuritMembers,
-            User leader
+            Integer recruitMembers,
+            User leader,
+            LocalDateTime recruitEndDate,
+            Boolean isRecruit
     ) {
-        return new Circle(name, mainImage, description, isDeleted, circleTax, recuritMembers, leader);
+        return new Circle(name, mainImage, description, isDeleted, circleTax, recruitMembers, recruitEndDate, isRecruit, leader);
     }
 
-    public void update(String name, String description, String mainImage, Integer circleTax, Integer recuritMembers){
+    public void update(String name, String description, String mainImage, Integer circleTax, Integer recruitMembers, LocalDateTime recruitEndDate, Boolean isRecruit) {
         this.description = description;
         this.name = name;
         this.mainImage = mainImage;
         this.circleTax = circleTax;
-        this.recruitMembers = recuritMembers;
+        this.recruitMembers = recruitMembers;
+        this.recruitEndDate = recruitEndDate;
+        this.isRecruit = isRecruit;
     }
 
     public void setLeader(User leader){

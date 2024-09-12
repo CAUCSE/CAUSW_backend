@@ -6,6 +6,7 @@ import net.causw.domain.model.user.UserDomainModel;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -34,6 +35,10 @@ public class CircleDomainModel {
     private Integer circleTax;
     private Integer recruitMembers;
 
+    private LocalDateTime recruitEndDate;
+
+    private Boolean isRecruit;
+
     public static CircleDomainModel of(
             String id,
             String name,
@@ -44,7 +49,9 @@ public class CircleDomainModel {
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
             Integer circleTax,
-            Integer recruitMembers
+            Integer recruitMembers,
+            LocalDateTime recruitEndDate,
+            Boolean isRecruit
     ) {
         return CircleDomainModel.builder()
                 .id(id)
@@ -57,6 +64,8 @@ public class CircleDomainModel {
                 .updatedAt(updatedAt)
                 .circleTax(circleTax)
                 .recruitMembers(recruitMembers)
+                .recruitEndDate(recruitEndDate)
+                .isRecruit(isRecruit)
                 .build();
     }
 
