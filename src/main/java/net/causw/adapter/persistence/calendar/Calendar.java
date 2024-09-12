@@ -20,7 +20,7 @@ public class Calendar extends BaseEntity {
     @Column(name = "month", nullable = false)
     private Integer month;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "uuid_file_id", nullable = false)
     private UuidFile uuidFile;
 

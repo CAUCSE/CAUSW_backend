@@ -2,6 +2,7 @@ package net.causw.domain.model.circle;
 
 import lombok.Builder;
 import lombok.Getter;
+import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.domain.model.user.UserDomainModel;
 
 import jakarta.validation.constraints.NotBlank;
@@ -16,7 +17,7 @@ public class CircleDomainModel {
 
     private String description;
 
-    private String mainImage;
+    private UuidFile uuidFile;
 
     @NotBlank(message = "소모임 이름이 입력되지 않았습니다.")
     private String name;
@@ -32,12 +33,13 @@ public class CircleDomainModel {
     private LocalDateTime updatedAt;
 
     private Integer circleTax;
+
     private Integer recruitMembers;
 
     public static CircleDomainModel of(
             String id,
             String name,
-            String mainImage,
+            UuidFile uuidFile,
             String description,
             Boolean isDeleted,
             UserDomainModel leader,
@@ -49,7 +51,7 @@ public class CircleDomainModel {
         return CircleDomainModel.builder()
                 .id(id)
                 .name(name)
-                .mainImage(mainImage)
+                .uuidFile(uuidFile)
                 .description(description)
                 .isDeleted(isDeleted)
                 .leader(leader)
@@ -62,13 +64,13 @@ public class CircleDomainModel {
 
     public static CircleDomainModel of(
             String name,
-            String mainImage,
+            UuidFile uuidFile,
             String description,
             UserDomainModel leader
     ) {
         return CircleDomainModel.builder()
                 .name(name)
-                .mainImage(mainImage)
+                .uuidFile(uuidFile)
                 .description(description)
                 .leader(leader)
                 .build();
@@ -76,13 +78,13 @@ public class CircleDomainModel {
 
     public void update(
             String name,
-            String mainImage,
+            UuidFile uuidFile,
             String description,
             Integer circleTax,
             Integer recruitMembers
     ) {
         this.name = name;
-        this.mainImage = mainImage;
+        this.uuidFile = uuidFile;
         this.description = description;
         this.circleTax = circleTax;
         this.recruitMembers = recruitMembers;
