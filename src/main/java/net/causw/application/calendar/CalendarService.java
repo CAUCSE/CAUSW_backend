@@ -90,9 +90,7 @@ public class CalendarService {
                 )
         );
 
-        uuidFileService.deleteFile(calendar.getUuidFile());
-
-        UuidFile uuidFile = uuidFileService.saveFile(calendarUpdateRequestDto.getImage(), FilePath.CALENDAR);
+        UuidFile uuidFile = uuidFileService.updateFile(calendar.getAttachImageUuidFile(), calendarUpdateRequestDto.getImage(), FilePath.CALENDAR);
 
         calendar.update(
                 calendarUpdateRequestDto.getYear(),

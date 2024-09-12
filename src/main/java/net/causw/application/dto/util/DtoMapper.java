@@ -150,7 +150,7 @@ public interface DtoMapper extends UuidFileToUrlDtoMapper {
     // Calendar
     @Mapping(source = "createdAt", target = "createdAt", qualifiedByName = "formatDateTime")
     @Mapping(source = "updatedAt", target = "updatedAt", qualifiedByName = "formatDateTime")
-    @Mapping(target = "image", source = "calendar.uuidFile", qualifiedByName = "mapUuidFileToFileUrl")
+    @Mapping(target = "image", source = "calendar.attachImageUuidFile", qualifiedByName = "mapUuidFileToFileUrl")
     CalendarResponseDto toCalendarResponseDto(Calendar calendar);
 
     @Mapping(target = "calendars", source = "calendars")

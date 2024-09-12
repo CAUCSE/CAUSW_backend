@@ -957,14 +957,14 @@ public class UserService {
                     locker.returnLocker();
                     this.lockerRepository.save(locker);
 
-                    LockerLog lockerLog = LockerLog.builder()
-                            .lockerNumber(locker.getLockerNumber())
-                            .lockerLocationName(locker.getLocation().getName())
-                            .userEmail(user.getEmail())
-                            .userName(user.getName())
-                            .action(LockerLogAction.RETURN)
-                            .message("사용자 탈퇴")
-                            .build();
+                    LockerLog lockerLog = LockerLog.of(
+                            locker.getLockerNumber(),
+                            locker.getLocation().getName(),
+                            user.getEmail(),
+                            user.getName(),
+                            LockerLogAction.RETURN,
+                            "사용자 탈퇴"
+                    );
 
                     this.lockerLogRepository.save(lockerLog);
 
@@ -1043,14 +1043,14 @@ public class UserService {
                     locker.returnLocker();
                     this.lockerRepository.save(locker);
 
-                    LockerLog lockerLog = LockerLog.builder()
-                            .lockerNumber(locker.getLockerNumber())
-                            .lockerLocationName(locker.getLocation().getName())
-                            .userEmail(requestUser.getEmail())
-                            .userName(requestUser.getName())
-                            .action(LockerLogAction.RETURN)
-                            .message("사용자 추방")
-                            .build();
+                    LockerLog lockerLog = LockerLog.of(
+                            locker.getLockerNumber(),
+                            locker.getLocation().getName(),
+                            droppedUser.getEmail(),
+                            droppedUser.getName(),
+                            LockerLogAction.RETURN,
+                            "사용자 추방"
+                    );
 
                     this.lockerLogRepository.save(lockerLog);
                 });
