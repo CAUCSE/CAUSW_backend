@@ -261,13 +261,7 @@ public class BoardService {
     }
 
     @Transactional(readOnly = true)
-    public List<NormalBoardAppliesResponseDto> findAllBoardApply(User user) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-        validatorBucket
-                .consistOf(UserStateValidator.of(user.getState()))   // 활성화된 사용자인지 확인
-                .consistOf(UserRoleIsNoneValidator.of(user.getRoles())) // 권한이 없는 사용자인지 확인
-                .consistOf(UserRoleValidator.of(user.getRoles(), Set.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT))); // 권한이 관리자, 학생회장, 부학생회장 중 하나인지 확인
-
+    public List<NormalBoardAppliesResponseDto> findAllBoardApply() {
         // 관리자, 학생회장, 부학생회장만 게시판 관리 기능 사용 가능
         return this.boardApplyRepository.findAllByAcceptStatus(BoardApplyStatus.AWAIT)
                 .stream()
@@ -276,13 +270,7 @@ public class BoardService {
     }
 
     @Transactional(readOnly = true)
-    public NormalBoardApplyResponseDto findBoardApplyByApplyId(User user, String applyId) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-        validatorBucket
-                .consistOf(UserStateValidator.of(user.getState()))   // 활성화된 사용자인지 확인
-                .consistOf(UserRoleIsNoneValidator.of(user.getRoles())) // 권한이 없는 사용자인지 확인
-                .consistOf(UserRoleValidator.of(user.getRoles(), Set.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT))); // 권한이 관리자, 학생회장, 부학생회장 중 하나인지 확인
-
+    public NormalBoardApplyResponseDto findBoardApplyByApplyId(String applyId) {
         // 관리자, 학생회장, 부학생회장만 게시판 관리 기능 사용 가능
         BoardApply boardApply = this.boardApplyRepository.findById(applyId)
                 .orElseThrow(() -> new BadRequestException(
@@ -294,13 +282,7 @@ public class BoardService {
     }
 
     @Transactional
-    public NormalBoardApplyResponseDto accept(User user, String boardApplyId) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-        validatorBucket
-                .consistOf(UserStateValidator.of(user.getState()))   // 활성화된 사용자인지 확인
-                .consistOf(UserRoleIsNoneValidator.of(user.getRoles())) // 권한이 없는 사용자인지 확인
-                .consistOf(UserRoleValidator.of(user.getRoles(), Set.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT))); // 권한이 관리자, 학생회장, 부학생회장 중 하나인지 확인
-
+    public NormalBoardApplyResponseDto accept(String boardApplyId) {
         BoardApply boardApply = this.boardApplyRepository.findById(boardApplyId)
                 .orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -344,13 +326,7 @@ public class BoardService {
     }
 
     @Transactional
-    public NormalBoardApplyResponseDto reject(User user, String boardApplyId) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-        validatorBucket
-                .consistOf(UserStateValidator.of(user.getState()))   // 활성화된 사용자인지 확인
-                .consistOf(UserRoleIsNoneValidator.of(user.getRoles())) // 권한이 없는 사용자인지 확인
-                .consistOf(UserRoleValidator.of(user.getRoles(), Set.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT))); // 권한이 관리자, 학생회장, 부학생회장 중 하나인지 확인
-
+    public NormalBoardApplyResponseDto reject(String boardApplyId) {
         BoardApply boardApply = this.boardApplyRepository.findById(boardApplyId)
                 .orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,

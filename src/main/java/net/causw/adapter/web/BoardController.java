@@ -176,10 +176,8 @@ public class BoardController {
             @ApiResponse(responseCode = "4109", description = "가입이 거절된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
             @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
     })
-    public List<NormalBoardAppliesResponseDto> findAllBoardApply(
-            @AuthenticationPrincipal CustomUserDetails userDetails
-    ) {
-        return this.boardService.findAllBoardApply(userDetails.getUser());
+    public List<NormalBoardAppliesResponseDto> findAllBoardApply() {
+        return this.boardService.findAllBoardApply();
     }
 
     @GetMapping(value = "/apply/{id}")
@@ -196,10 +194,9 @@ public class BoardController {
             @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
     })
     public NormalBoardApplyResponseDto findBoardApplyById(
-            @PathVariable("id") String id,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @PathVariable("id") String id
     ) {
-        return this.boardService.findBoardApplyByApplyId(userDetails.getUser(), id);
+        return this.boardService.findBoardApplyByApplyId(id);
     }
 
     @PutMapping(value = "/apply/{applyId}/accept")
@@ -217,10 +214,9 @@ public class BoardController {
             @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
     })
     public NormalBoardApplyResponseDto acceptApply(
-            @PathVariable("applyId") String applyId,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @PathVariable("applyId") String applyId
     ) {
-        return this.boardService.accept(userDetails.getUser(), applyId);
+        return this.boardService.accept(applyId);
     }
 
     @PutMapping(value = "/apply/{applyId}/reject")
@@ -238,10 +234,9 @@ public class BoardController {
             @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
     })
     public NormalBoardApplyResponseDto rejectApply(
-            @PathVariable("applyId") String applyId,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @PathVariable("applyId") String applyId
     ) {
-        return this.boardService.reject(userDetails.getUser(), applyId);
+        return this.boardService.reject(applyId);
     }
 
 
