@@ -8,6 +8,7 @@ import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.user.User;
+import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.board.BoardOfCircleResponseDto;
 import net.causw.application.dto.circle.*;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
@@ -15,10 +16,12 @@ import net.causw.application.dto.user.UserResponseDto;
 import net.causw.application.dto.util.CircleServiceDtoMapper;
 import net.causw.application.dto.util.StatusUtil;
 import net.causw.application.excel.CircleExcelService;
+import net.causw.application.uuidFile.UuidFileService;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.model.enums.CircleMemberStatus;
+import net.causw.domain.model.enums.FilePath;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.enums.UserState;
 import net.causw.domain.model.util.MessageUtil;
@@ -45,6 +48,7 @@ public class CircleService {
     private final UserRepository userRepository;
     private final BoardRepository boardRepository;
     private final PostRepository postRepository;
+    private final UuidFileService uuidFileService;
 
     @Transactional(readOnly = true)
     public CircleResponseDto findById(String circleId) {
@@ -196,9 +200,11 @@ public class CircleService {
                         MessageUtil.NEW_CIRCLE_LEADER_NOT_FOUND)
                 );
 
+        UuidFile uuidFile = uuidFileService.saveFile(circleCreateRequestDto.getMainImage(), FilePath.CIRCLE_PROFILE);
+
         Circle circle = Circle.of(
                 circleCreateRequestDto.getName(),
-                circleCreateRequestDto.getMainImage(),
+                uuidFile,
                 circleCreateRequestDto.getDescription(),
                 false,
                 circleCreateRequestDto.getCircleTax(),
@@ -300,14 +306,14 @@ public class CircleService {
         validatorBucket
                 .validate();
 
-        String mainImage = circleUpdateRequestDto.getMainImage();
-        if (mainImage.isEmpty()) {
-            mainImage = circle.getMainImage();
-        }
+        UuidFile uuidFile = (circleUpdateRequestDto.getMainImage().isEmpty() || circleUpdateRequestDto.getMainImage() == null) ?
+                circle.getUuidFile() :
+                uuidFileService.updateFile(circle.getUuidFile(), circleUpdateRequestDto.getMainImage(), FilePath.CIRCLE_PROFILE);
+
         circle.update(
                 circleUpdateRequestDto.getName(),
                 circleUpdateRequestDto.getDescription(),
-                mainImage,
+                uuidFile,
                 circleUpdateRequestDto.getCircleTax(),
                 circleUpdateRequestDto.getRecruitMembers()
         );
@@ -623,7 +629,7 @@ public class CircleService {
     private Circle updateCircle(String id, Circle circle) {
         return circleRepository.findById(id).map(
                 srcCircle -> {
-                    srcCircle.update(circle.getName(), circle.getDescription(), circle.getMainImage(), circle.getCircleTax(), circle.getRecruitMembers());
+                    srcCircle.update(circle.getName(), circle.getDescription(), circle.getUuidFile(), circle.getCircleTax(), circle.getRecruitMembers());
                     return circleRepository.save(srcCircle);
                 }
         ).orElseThrow(

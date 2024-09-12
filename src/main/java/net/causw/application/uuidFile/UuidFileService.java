@@ -53,6 +53,12 @@ public class UuidFileService extends StorageManager {
     }
 
     @Transactional
+    public UuidFile updateFile(UuidFile priorUuidFile, MultipartFile file, FilePath filePath) {
+        this.deleteFile(priorUuidFile);
+        return this.saveFile(file, filePath);
+    }
+
+    @Transactional
     public void deleteFile(UuidFile uuidFile) {
         super.deleteFile(uuidFile.getFileKey());
         uuidFileRepository.delete(uuidFile);
