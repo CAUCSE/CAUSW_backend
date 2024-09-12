@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 import net.causw.domain.model.enums.AcademicStatus;
+import net.causw.domain.model.enums.GraduationType;
 import net.causw.domain.model.enums.UserState;
 import net.causw.domain.model.enums.Role;
 
@@ -63,7 +64,7 @@ public class UserDomainModel {
     private Integer graduationYear;
 
     @Schema(description = "졸업시기 월", example = "2")
-    private Integer graduationMonth;
+    private GraduationType graduationType;
 
     @Schema(description = "전화번호", example = "01012345678")
     private String phoneNumber;
@@ -85,7 +86,7 @@ public class UserDomainModel {
             AcademicStatus academicStatus,
             Integer currentCompletedSemester,
             Integer graduationYear,
-            Integer graduationMonth,
+            GraduationType graduationType,
             String phoneNumber
     ) {
         return UserDomainModel.builder()
@@ -105,7 +106,7 @@ public class UserDomainModel {
                 .academicStatus(academicStatus)
                 .currentCompletedSemester(currentCompletedSemester)
                 .graduationYear(graduationYear)
-                .graduationMonth(graduationMonth)
+                .graduationType(graduationType)
                 .phoneNumber(phoneNumber)
                 .build();
     }
@@ -123,7 +124,7 @@ public class UserDomainModel {
             AcademicStatus academicStatus,
             Integer currentCompletedSemester,
             Integer graduationYear,
-            Integer graduationMonth,
+            GraduationType graduationType,
             String phoneNumber
     ) {
         return UserDomainModel.builder()
@@ -139,7 +140,7 @@ public class UserDomainModel {
                 .academicStatus(academicStatus)
                 .currentCompletedSemester(currentCompletedSemester)
                 .graduationYear(graduationYear)
-                .graduationMonth(graduationMonth)
+                .graduationType(graduationType)
                 .phoneNumber(phoneNumber)
                 .build();
     }
@@ -156,7 +157,7 @@ public class UserDomainModel {
             AcademicStatus academicStatus,
             Integer currentCompletedSemester,
             Integer graduationYear,
-            Integer graduationMonth,
+            GraduationType graduationType,
             String phoneNumber
     ) {
         this.email = email;
@@ -170,7 +171,7 @@ public class UserDomainModel {
         this.academicStatus = academicStatus;
         this.currentCompletedSemester = currentCompletedSemester;
         this.graduationYear = graduationYear;
-        this.graduationMonth = graduationMonth;
+        this.graduationType = graduationType;
         this.phoneNumber = phoneNumber;
     }
 

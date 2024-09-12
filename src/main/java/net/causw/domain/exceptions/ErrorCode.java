@@ -27,6 +27,7 @@ public enum ErrorCode {
     FLAG_NOT_AVAILABLE(4017),
     LOCKER_ACTION_ERROR(4018),
     VALIDATION_FAILED(4019),
+    INVALID_ACADEMIC_RECORD_REQUEST_STATUS(4020),
 
     /**
      * 401 Unauthorized
@@ -48,6 +49,9 @@ public enum ErrorCode {
      * 500 Internal Server Error
      */
     INTERNAL_SERVER(5000),
+    FILE_UPLOAD_FAIL(5001),
+    FILE_DELETE_FAIL(5002),
+    ROW_IS_DUPLICATED(5003),
 
     /**
      * 503 Service Unavailable Error

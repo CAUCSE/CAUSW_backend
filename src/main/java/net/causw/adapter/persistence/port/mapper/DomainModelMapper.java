@@ -50,7 +50,7 @@ public abstract class DomainModelMapper {
                 user.getAcademicStatus(),
                 user.getCurrentCompletedSemester(),
                 user.getGraduationYear(),
-                user.getGraduationMonth(),
+                user.getGraduationType(),
                 user.getPhoneNumber()
         );
     }
