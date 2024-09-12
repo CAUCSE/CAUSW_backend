@@ -31,45 +31,34 @@ import java.util.List;
 @Mapping(target = "leaderName", expression = "java(circle.getLeader().map(User::getName).orElse(null))")
 @interface CircleCommonWriterMappings {}
 
-@Retention(RetentionPolicy.CLASS)
-@Target({ElementType.METHOD})
-@Mapping(target = "mainImage", expression = "java(circle.getUuidFile().getFileUrl().orElse(null))")
-@interface CircleMainImageWriterMappings {}
-
-
 @Mapper(componentModel = "spring")
-public interface CircleServiceDtoMapper {
+public interface CircleServiceDtoMapper extends UuidFileToUrlDtoMapper {
 
     CircleServiceDtoMapper INSTANCE = Mappers.getMapper(CircleServiceDtoMapper.class);
-
-    @Named("mapUuidFileToFileUrl")
-    default String mapUuidFileToFileUrl(Circle circle) {
-        return circle.getUuidFile().getFileUrl();
-    }
 
     // User
     UserResponseDto toUserResponseDto(User user);
 
     // Circle
     @CircleCommonWriterMappings
-    @CircleMainImageWriterMappings
+    @Mapping(target = "mainImage", source = "circle.uuidFile", qualifiedByName = "mapUuidFileToFileUrl")
     CircleResponseDto toCircleResponseDto(Circle circle);
 
 
     @CircleCommonWriterMappings
-    @CircleMainImageWriterMappings
+    @Mapping(target = "mainImage", source = "circle.uuidFile", qualifiedByName = "mapUuidFileToFileUrl")
     CircleResponseDto toCircleResponseDtoExtended(Circle circle, Long numMember);
 
 
     @CircleCommonWriterMappings
-    @CircleMainImageWriterMappings
+    @Mapping(target = "mainImage", source = "circle.uuidFile", qualifiedByName = "mapUuidFileToFileUrl")
     @Mapping(target = "isJoined", constant = "false")
     @Mapping(target = "isDeleted", source = "circle.isDeleted")
     CirclesResponseDto toCirclesResponseDto(Circle circle, Long numMember);
 
 
     @CircleCommonWriterMappings
-    @CircleMainImageWriterMappings
+    @Mapping(target = "mainImage", source = "circle.uuidFile", qualifiedByName = "mapUuidFileToFileUrl")
     @Mapping(target = "isJoined", constant = "true")
     @Mapping(target = "isDeleted", source = "circle.isDeleted")
     CirclesResponseDto toCirclesResponseDtoExtended(Circle circle, Long numMember, LocalDateTime joinedAt);

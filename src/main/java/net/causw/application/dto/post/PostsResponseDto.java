@@ -54,36 +54,4 @@ public class PostsResponseDto {
     @Schema(description = "게시글 삭제여부", example = "false")
     private Boolean isDeleted;
 
-    // FIXME: 리팩토링 후 삭제예정
-    public static PostsResponseDto of(
-            PostDomainModel post,
-            Long numComment
-    ) {
-        return PostsResponseDto.builder()
-                .id(post.getId())
-                .title(post.getTitle())
-                .writerName(post.getWriter().getName())
-                .writerAdmissionYear(post.getWriter().getAdmissionYear())
-                .numComment(numComment)
-                .createdAt(post.getCreatedAt())
-                .updatedAt(post.getUpdatedAt())
-                .isDeleted(post.getIsDeleted())
-                .build();
-    }
-
-    public static PostsResponseDto of(
-            Post post,
-            Long numComment
-    ) {
-        return PostsResponseDto.builder()
-                .id(post.getId())
-                .title(post.getTitle())
-                .writerName(post.getWriter().getName())
-                .writerAdmissionYear(post.getWriter().getAdmissionYear())
-                .numComment(numComment)
-                .createdAt(post.getCreatedAt())
-                .updatedAt(post.getUpdatedAt())
-                .isDeleted(post.getIsDeleted())
-                .build();
-    }
 }

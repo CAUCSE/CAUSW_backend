@@ -49,14 +49,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-// Custom Annotation을 사용하여 중복되는 @Mapping을 줄일 수 있습니다.
-@Retention(RetentionPolicy.CLASS)
-@Target({ElementType.METHOD})
-@Mapping(target = "writerName", source = "post.writer.name")
-@Mapping(target = "writerAdmissionYear", source = "post.writer.admissionYear")
-@Mapping(target = "writerProfileImage", source = "post.writer.profileImage")
-@interface CommonPostWriterMappings {}
-
 @Mapper(componentModel = "spring")
 public interface DtoMapper{
 
@@ -83,38 +75,7 @@ public interface DtoMapper{
         return uuidFile.getFileUrl();
     }
 
-    // Dto writerName 필드에 post.writer.name을 삽입한다는 의미입니다.
-    @Mapping(target = "writerName", source = "post.writer.name")
-    @Mapping(target = "writerAdmissionYear", source = "post.writer.admissionYear")
-    @Mapping(target = "content", source = "post.content")
-    @Mapping(target = "isAnonymous", source = "post.isAnonymous")
-    @Mapping(target = "isQuestion", source = "post.isQuestion")
-    @Mapping(target = "numLike", source = "numPostLike")
-    @Mapping(target = "numFavorite", source = "numPostFavorite")
-    PostsResponseDto toPostsResponseDto(Post post, Long numComment, Long numPostLike, Long numPostFavorite);
 
-    @CommonPostWriterMappings
-    @Mapping(target = "boardName", source = "post.board.name")
-    @Mapping(target = "attachmentList", source = "post.attachments", qualifiedByName = "attachmentsToStringList")
-    @Mapping(target = "isAnonymous", source = "post.isAnonymous")
-    @Mapping(target = "isQuestion", source = "post.isQuestion")
-    @Mapping(target = "numLike", source = "numPostLike")
-    @Mapping(target = "numFavorite", source = "numPostFavorite")
-    PostResponseDto toPostResponseDto(Post post, Long numPostLike, Long numPostFavorite,  Boolean updatable, Boolean deletable);
-
-    @CommonPostWriterMappings
-    @Mapping(target = "boardName", source = "post.board.name")
-    @Mapping(target = "attachmentList", source = "post.attachments", qualifiedByName = "attachmentsToStringList")
-    @Mapping(target = "content", source = "post.content")
-    @Mapping(target = "isAnonymous", source = "post.isAnonymous")
-    @Mapping(target = "isQuestion", source = "post.isQuestion")
-    @Mapping(target = "numLike", source = "numPostLike")
-    @Mapping(target = "numFavorite", source = "numPostFavorite")
-    PostResponseDto toPostResponseDtoExtended(Post post, Page<CommentResponseDto> commentList, Long numComment, Long numPostLike, Long numPostFavorite, Boolean updatable, Boolean deletable);
-
-    @Mapping(target = "title", source = "post.title")
-    @Mapping(target = "contentId", source = "post.id")
-    PostContentDto toPostContentDto(Post post);
 
     @Mapping(target = "writerName", source = "comment.writer.name")
     @Mapping(target = "writerAdmissionYear", source = "comment.writer.admissionYear")
@@ -131,9 +92,6 @@ public interface DtoMapper{
     @Mapping(target ="numLike", source = "numChildCommentLike")
     ChildCommentResponseDto toChildCommentResponseDto(ChildComment childComment, Long numChildCommentLike, Boolean updatable, Boolean deletable);
 
-    @Mapping(target = "boardId", source = "entity.id")
-    @Mapping(target = "boardName", source = "entity.name")
-    BoardPostsResponseDto toBoardPostsResponseDto(Board entity, Set<Role> userRole, Boolean writable, Boolean isFavorite, Page<PostsResponseDto> post);
 
     /** TODO: 각자 역할분담한 부분의 Dto를 위를 참고하여 아래 작성하시면 됩니다.
      *  기존에 Dto에 존재하던 of 메서드를 DtoMapper.INSTANCE.toDtoName(entity)로 대체하시면 됩니다.

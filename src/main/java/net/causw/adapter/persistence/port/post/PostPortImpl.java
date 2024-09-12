@@ -13,6 +13,7 @@ import java.util.Optional;
 
 @Component
 public class PostPortImpl extends DomainModelMapper implements PostPort {
+    /*
     private final PostRepository postRepository;
     private final PageableFactory pageableFactory;
 
@@ -112,4 +113,6 @@ public class PostPortImpl extends DomainModelMapper implements PostPort {
                 }
         );
     }
+
+     */
 }

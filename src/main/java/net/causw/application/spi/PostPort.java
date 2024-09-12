@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import java.util.Optional;
 
 public interface PostPort {
+    /*
     Optional<PostDomainModel> findPostById(String id);
 
     Long countAllComment(String postId);
@@ -32,4 +33,6 @@ public interface PostPort {
     Page<PostDomainModel> findPostByUserId(String userId, Integer pageNum);
 
     Optional<PostDomainModel> restorePost(String id, PostDomainModel postDomainModel);
+
+     */
 }

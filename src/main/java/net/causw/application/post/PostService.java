@@ -12,15 +12,19 @@ import net.causw.adapter.persistence.post.LikePost;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.user.User;
+import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.post.*;
 import net.causw.application.dto.util.DtoMapper;
+import net.causw.application.dto.util.PostDtoMapper;
 import net.causw.application.dto.util.StatusUtil;
+import net.causw.application.uuidFile.UuidFileService;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.CircleMemberStatus;
+import net.causw.domain.model.enums.FilePath;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
@@ -51,6 +55,7 @@ public class PostService {
     private final LikeChildCommentRepository likeChildCommentRepository;
     private final PageableFactory pageableFactory;
     private final Validator validator;
+    private final UuidFileService uuidFileService;
 
     @Transactional(readOnly = true)
     public PostResponseDto findPostById(User user, String postId) {
@@ -172,6 +177,10 @@ public class PostService {
                     ));
         }
 
+        List<UuidFile> uuidFileList = postCreateRequestDto.getMultipartFileList().stream()
+                .map(multipartFile -> uuidFileService.saveFile(multipartFile, FilePath.POST))
+                .toList();
+
         Post post = Post.of(
                 postCreateRequestDto.getTitle(),
                 postCreateRequestDto.getContent(),
@@ -180,13 +189,13 @@ public class PostService {
                 postCreateRequestDto.getIsAnonymous(),
                 postCreateRequestDto.getIsQuestion(),
                 board,
-                String.join(":::", postCreateRequestDto.getAttachmentList())
+                uuidFileList
         );
 
         validatorBucket
                 .consistOf(UserStateValidator.of(creator.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(roles))
-                .consistOf(PostNumberOfAttachmentsValidator.of(postCreateRequestDto.getAttachmentList()))
+                .consistOf(PostNumberOfAttachmentsValidator.of(postCreateRequestDto.getMultipartFileList()))
                 .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD))
                 .consistOf(UserRoleValidator.of(
                         roles,
@@ -303,7 +312,7 @@ public class PostService {
                     ));
         }
         validatorBucket
-                .consistOf(PostNumberOfAttachmentsValidator.of(postUpdateRequestDto.getAttachmentList()))
+                .consistOf(PostNumberOfAttachmentsValidator.of(postUpdateRequestDto.getMultipartFileList()))
                 .consistOf(TargetIsDeletedValidator.of(post.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
                 .consistOf(TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST))
                 .consistOf(ContentsAdminValidator.of(
@@ -315,10 +324,16 @@ public class PostService {
                 .consistOf(ConstraintValidator.of(post, this.validator));
         validatorBucket.validate();
 
+        List<UuidFile> uuidFileList = uuidFileService.updateFileList(
+                post.getUuidFileList(),
+                postUpdateRequestDto.getMultipartFileList(),
+                FilePath.POST
+        );
+
         post.update(
                 postUpdateRequestDto.getTitle(),
                 postUpdateRequestDto.getContent(),
-                String.join(":::", postUpdateRequestDto.getAttachmentList())
+                uuidFileList
         );
 
         return toPostResponseDtoExtended(post, updater);
@@ -496,7 +511,7 @@ public class PostService {
         Boolean writable = userRoles.stream()
                 .map(Role::getValue)
                 .anyMatch(roles::contains);
-        return DtoMapper.INSTANCE.toBoardPostsResponseDto(
+        return PostDtoMapper.INSTANCE.toBoardPostsResponseDto(
                 board,
                 userRoles,
                 writable,
@@ -506,7 +521,7 @@ public class PostService {
     }
 
     private PostsResponseDto toPostsResponseDto(Post post) {
-        return DtoMapper.INSTANCE.toPostsResponseDto(
+        return PostDtoMapper.INSTANCE.toPostsResponseDto(
                 post,
                 postRepository.countAllCommentByPost_Id(post.getId()),
                 getNumOfPostLikes(post),
@@ -515,7 +530,7 @@ public class PostService {
     }
 
     private PostResponseDto toPostResponseDto(Post post, User user) {
-        return DtoMapper.INSTANCE.toPostResponseDto(
+        return PostDtoMapper.INSTANCE.toPostResponseDto(
                 post,
                 getNumOfPostLikes(post),
                 getNumOfPostFavorites(post),
@@ -525,7 +540,7 @@ public class PostService {
     }
 
     private PostResponseDto toPostResponseDtoExtended(Post post, User user) {
-        return DtoMapper.INSTANCE.toPostResponseDtoExtended(
+        return PostDtoMapper.INSTANCE.toPostResponseDtoExtended(
                 postRepository.save(post),
                 findCommentsByPostIdByPage(user, post, 0),
                 postRepository.countAllCommentByPost_Id(post.getId()),

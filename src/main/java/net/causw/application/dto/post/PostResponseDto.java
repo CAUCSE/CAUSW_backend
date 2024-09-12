@@ -40,7 +40,7 @@ public class PostResponseDto {
     private String writerProfileImage;
 
     @Schema(description = "첨부파일", example = "첨부파일 url 작성")
-    private List<FileResponseDto> attachmentList;
+    private List<String> fileUrlList;
 
     @Schema(description = "답글 개수", example = "13")
     private Long numComment;
@@ -56,7 +56,6 @@ public class PostResponseDto {
 
     @Schema(description = "질문글 여부", example = "False")
     private Boolean isQuestion;
-
 
     @Schema(description = "게시글 업데이트 가능여부", example = "true")
     private Boolean updatable;
@@ -76,56 +75,4 @@ public class PostResponseDto {
     @Schema(description = "게시판 이름", example = "게시판 이름입니다.")
     private String boardName;
 
-    // FIXME: 리팩토링 후 삭제예정
-    // 생성, 삭제
-    public static PostResponseDto of(
-            Post post,
-            boolean updatable,
-            boolean deletable
-    ) {
-        //List<String> attachmentList = post.getAttachments().map(attachments -> Arrays.asList(attachments.split(":::"))).orElse(List.of());
-        return PostResponseDto.builder()
-                .id(post.getId())
-                .title(post.getTitle())
-                .content(post.getContent())
-                .isDeleted(post.getIsDeleted())
-                .writerName(post.getWriter().getName())
-                .writerAdmissionYear(post.getWriter().getAdmissionYear())
-                .writerProfileImage(post.getWriter().getProfileImage())
-                //.attachmentList(attachmentList.stream().map(FileResponseDto::from).collect(Collectors.toList()))
-                .numComment(0L)
-                .updatable(updatable)
-                .deletable(deletable)
-                .createdAt(post.getCreatedAt())
-                .updatedAt(post.getUpdatedAt())
-                .build();
-    }
-
-    // 조회, 수정, 복원
-    public static PostResponseDto of(
-            Post post,
-            Page<CommentResponseDto> commentList,
-            Long numComment,
-            boolean updatable,
-            boolean deletable
-    ) {
-        //List<String> attachmentList = post.getAttachments().map(attachments -> Arrays.asList(attachments.split(":::"))).orElse(List.of());
-        return PostResponseDto.builder()
-                .id(post.getId())
-                .title(post.getTitle())
-                .content(post.getContent())
-                .isDeleted(post.getIsDeleted())
-                .writerName(post.getWriter().getName())
-                .writerAdmissionYear(post.getWriter().getAdmissionYear())
-                .writerProfileImage(post.getWriter().getProfileImage())
-                //.attachmentList(attachmentList.stream().map(FileResponseDto::from).collect(Collectors.toList()))
-                .numComment(numComment)
-                .updatable(updatable)
-                .deletable(deletable)
-                .createdAt(post.getCreatedAt())
-                .updatedAt(post.getUpdatedAt())
-                .commentList(commentList)
-                .boardName(post.getBoard().getName())
-                .build();
-    }
 }

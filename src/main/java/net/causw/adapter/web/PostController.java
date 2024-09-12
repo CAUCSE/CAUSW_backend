@@ -26,7 +26,9 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/posts")
 public class PostController {
+
     private final PostService postService;
+
     @GetMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")

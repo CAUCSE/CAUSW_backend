@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -56,6 +57,17 @@ public class UuidFileService extends StorageManager {
     public UuidFile updateFile(UuidFile priorUuidFile, MultipartFile file, FilePath filePath) {
         this.deleteFile(priorUuidFile);
         return this.saveFile(file, filePath);
+    }
+
+    @Transactional
+    public List<UuidFile> updateFileList(List<UuidFile> priorUuidFileList, List<MultipartFile> fileList, FilePath filePath) {
+        for (UuidFile priorUuidFile : priorUuidFileList) {
+            this.deleteFile(priorUuidFile);
+        }
+
+        return fileList.stream()
+                .map(file -> this.saveFile(file, filePath))
+                .toList();
     }
 
     @Transactional

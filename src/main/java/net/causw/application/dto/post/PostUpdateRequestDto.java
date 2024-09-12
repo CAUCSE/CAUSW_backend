@@ -26,6 +26,6 @@ public class PostUpdateRequestDto {
     private String content;
 
     @Schema(description = "첨부파일", example = "첨부파일")
-    private List<MultipartFile> attachmentList;
+    private List<MultipartFile> multipartFileList;
 
 }

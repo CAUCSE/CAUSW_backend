@@ -25,14 +25,9 @@ import java.util.List;
 @interface UserCommonWriterMappings {}
 
 @Mapper(componentModel = "spring")
-public interface UserAcademicRecordDtoMapper {
+public interface UserAcademicRecordDtoMapper extends UuidFileToUrlDtoMapper {
 
     UserAcademicRecordDtoMapper INSTANCE = Mappers.getMapper(UserAcademicRecordDtoMapper.class);
-
-    @Named("mapUuidFileListToFileUrlList")
-    default List<String> mapUuidFileListToFileUrlList(List<UuidFile> uuidFileList) {
-        return uuidFileList.stream().map(UuidFile::getFileUrl).toList();
-    }
 
     @UserCommonWriterMappings
     UserAcademicRecordListResponseDto toUserAcademicRecordListResponseDto(User user);
