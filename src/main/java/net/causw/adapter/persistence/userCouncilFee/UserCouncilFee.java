@@ -48,7 +48,6 @@ public class UserCouncilFee extends BaseEntity {
             Boolean isRefunded,
             Integer refundedAt
     ) {
-        valid(isJoinedService, user, councilFeeFakeUser, paidAt, numOfPaidSemester, isRefunded, refundedAt);
         this.isJoinedService = isJoinedService;
         this.user = user;
         this.councilFeeFakeUser = councilFeeFakeUser;
@@ -56,28 +55,6 @@ public class UserCouncilFee extends BaseEntity {
         this.numOfPaidSemester = numOfPaidSemester;
         this.isRefunded = isRefunded;
         this.refundedAt = refundedAt;
-    }
-
-    private static void valid(
-            Boolean isJoinedService,
-            User user,
-            CouncilFeeFakeUser councilFeeFakeUser,
-            Integer paidAt,
-            Integer numOfPaidSemester,
-            Boolean isRefunded,
-            Integer refundedAt
-    ) {
-        if (
-                (user == null ^ councilFeeFakeUser == null) ||
-                        (isJoinedService && user == null) ||
-                        (!isJoinedService && councilFeeFakeUser == null) ||
-                        paidAt == null ||
-                        numOfPaidSemester == null ||
-                        isRefunded == null ||
-                        (isRefunded && refundedAt == null)
-        ) {
-            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_USER_COUNCIL_FEE_INFO);
-        }
     }
 
     public static UserCouncilFee of(
@@ -89,7 +66,6 @@ public class UserCouncilFee extends BaseEntity {
             Boolean isRefunded,
             Integer refundedAt
     ) {
-        valid(isJoinedService, user, councilFeeFakeUser, paidAt, numOfPaidSemester, isRefunded, refundedAt);
         return UserCouncilFee.builder()
                 .isJoinedService(isJoinedService)
                 .user(user)
