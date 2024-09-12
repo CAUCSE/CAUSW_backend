@@ -1,6 +1,7 @@
 package net.causw.application.dto.util;
 
 import net.causw.adapter.persistence.board.Board;
+import net.causw.adapter.persistence.board.BoardApply;
 import net.causw.adapter.persistence.calendar.Calendar;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.comment.ChildComment;
@@ -13,11 +14,8 @@ import net.causw.adapter.persistence.form.Reply;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.user.UserAdmission;
+import net.causw.application.dto.board.*;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
-import net.causw.application.dto.board.BoardMainResponseDto;
-import net.causw.application.dto.board.BoardNameCheckResponseDto;
-import net.causw.application.dto.board.BoardOfCircleResponseDto;
-import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.calendar.CalendarResponseDto;
 import net.causw.application.dto.calendar.CalendarsResponseDto;
 import net.causw.application.dto.circle.CircleResponseDto;
@@ -282,6 +280,18 @@ public interface DtoMapper{
     @Mapping(target = "writable", source = "writable")
     @Mapping(target = "postNumComment", source = "numComment")
     BoardOfCircleResponseDto toBoardOfCircleResponseDto(Board entity, Long numComment, boolean writable);
+
+    @Mapping(target = "id", source = "boardApply.id")
+    @Mapping(target = "boardName", source = "boardApply.boardName")
+    @Mapping(target = "description", source = "boardApply.description")
+    @Mapping(target = "createRoles", source = "boardApply.createRoles")
+    @Mapping(target = "isAnonymousAllowed", source = "boardApply.isAnonymousAllowed")
+    @Mapping(target = "user", source = "user")
+    NormalBoardApplyResponseDto toNormalBoardApplyResponseDto(BoardApply boardApply, UserResponseDto user);
+
+    @Mapping(target = "id", source = "boardApply.id")
+    @Mapping(target = "boardName", source = "boardApply.boardName")
+    NormalBoardAppliesResponseDto toNormalBoardAppliesResponseDto(BoardApply boardApply);
 
     // Circle
     @Mapping(target = "id", source = "circle.id")
