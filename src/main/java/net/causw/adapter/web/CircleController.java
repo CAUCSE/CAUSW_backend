@@ -29,6 +29,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -235,10 +236,12 @@ public class CircleController {
             @ApiResponse(responseCode = "5000", description = "Circle id immediately can be used, but exception occured", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
     public CircleResponseDto create(
-            @ModelAttribute @Valid CircleCreateRequestDto circleCreateRequestDto,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestPart(value = "circleCreateRequestDto") @Valid CircleCreateRequestDto circleCreateRequestDto,
+            @RequestPart(value = "mainImage", required = false) MultipartFile mainImage
+
     ) {
-        return this.circleService.create(userDetails.getUser(), circleCreateRequestDto);
+        return this.circleService.create(userDetails.getUser(), circleCreateRequestDto, mainImage);
     }
 
 
@@ -285,11 +288,13 @@ public class CircleController {
             @ApiResponse(responseCode = "5000", description = "Circle id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
     public CircleResponseDto update(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable(name = "circleId") String circleId,
-            @ModelAttribute @Valid CircleUpdateRequestDto circleUpdateRequestDto,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @RequestPart(value = "circleUpdateRequestDto") @Valid CircleUpdateRequestDto circleUpdateRequestDto,
+            @RequestPart(value = "mainImage", required = false) MultipartFile mainImage
+
     ) {
-        return this.circleService.update(userDetails.getUser(), circleId, circleUpdateRequestDto);
+        return this.circleService.update(userDetails.getUser(), circleId, circleUpdateRequestDto, mainImage);
     }
 
 

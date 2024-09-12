@@ -25,7 +25,4 @@ public class UserAdmissionCreateRequestDto {
     @Schema(description = "자기소개 글 (255자 이내)", example = "안녕하세요! 코딩을 좋아하는 신입생 이예빈입니다.")
     private String description;
 
-    @Schema(description = "이미지")
-    private List<MultipartFile> attachImageMultiPartFileList;
-
 }

@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.user.*;
 import net.causw.application.user.UserService;
@@ -14,22 +15,14 @@ import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.config.security.userdetails.CustomUserDetails;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.UnauthorizedException;
+import net.causw.domain.model.util.MessageUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -311,11 +304,12 @@ public class UserController {
             @ApiResponse(responseCode = "4001", description = "이미 존재하는 닉네임입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     public UserResponseDto update(
-            @ModelAttribute @Valid UserUpdateRequestDto userUpdateDto,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestPart(value = "userUpdateDto") @Valid UserUpdateRequestDto userUpdateDto,
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
     ) {
 
-        return this.userService.update(userDetails.getUser(), userUpdateDto);
+        return this.userService.update(userDetails.getUser(), userUpdateDto, profileImage);
     }
 
     /**
@@ -458,9 +452,10 @@ public class UserController {
             @ApiResponse(responseCode = "4107", description = "이미 등록된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     public UserAdmissionResponseDto createAdmission(
-            @ModelAttribute @Valid UserAdmissionCreateRequestDto userAdmissionCreateRequestDto
+            @RequestPart(value = "userAdmissionCreateRequestDto") @Valid UserAdmissionCreateRequestDto userAdmissionCreateRequestDto,
+            @RequestPart(value = "userAdmissionAttachImageList") @NotBlank(message = MessageUtil.IMAGE_MUST_NOT_NULL) List<MultipartFile> userAdmissionAttachImageList
     ) {
-        return this.userService.createAdmission(userAdmissionCreateRequestDto);
+        return this.userService.createAdmission(userAdmissionCreateRequestDto, userAdmissionAttachImageList);
     }
 
     @PutMapping(value = "/admissions/{id}/accept")

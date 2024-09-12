@@ -112,6 +112,7 @@ public class MessageUtil {
     // UuidFile
     public static final String FILE_NOT_FOUND = "파일을 찾을 수 없습니다.";
     public static final String FILE_IS_NULL = "파일이 비어있습니다.";
+    public static final String IMAGE_MUST_NOT_NULL = "이미지는 필수입니다.";
 
     // Semester
     public static final String PRIOR_SEMESTER_NOT_FOUND = "이전 학기를 찾을 수 없습니다.";

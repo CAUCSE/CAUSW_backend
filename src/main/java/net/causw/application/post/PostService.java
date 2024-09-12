@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.validation.Validator;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -163,7 +164,7 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponseDto createPost(User creator, PostCreateRequestDto postCreateRequestDto) {
+    public PostResponseDto createPost(User creator, PostCreateRequestDto postCreateRequestDto, List<MultipartFile> attachImageList) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         Set<Role> roles = creator.getRoles();
 
@@ -177,7 +178,9 @@ public class PostService {
                     ));
         }
 
-        List<UuidFile> uuidFileList = postCreateRequestDto.getMultipartFileList().stream()
+        List<UuidFile> uuidFileList = (attachImageList == null || attachImageList.isEmpty()) ?
+                new ArrayList<>() :
+                attachImageList.stream()
                 .map(multipartFile -> uuidFileService.saveFile(multipartFile, FilePath.POST))
                 .toList();
 
@@ -195,7 +198,7 @@ public class PostService {
         validatorBucket
                 .consistOf(UserStateValidator.of(creator.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(roles))
-                .consistOf(PostNumberOfAttachmentsValidator.of(postCreateRequestDto.getMultipartFileList()))
+                .consistOf(PostNumberOfAttachmentsValidator.of(attachImageList))
                 .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD))
                 .consistOf(UserRoleValidator.of(
                         roles,
@@ -298,7 +301,8 @@ public class PostService {
     public PostResponseDto updatePost(
             User updater,
             String postId,
-            PostUpdateRequestDto postUpdateRequestDto
+            PostUpdateRequestDto postUpdateRequestDto,
+            List<MultipartFile> attachImageList
     ) {
         Set<Role> roles = updater.getRoles();
         Post post = getPost(postId);
@@ -312,7 +316,7 @@ public class PostService {
                     ));
         }
         validatorBucket
-                .consistOf(PostNumberOfAttachmentsValidator.of(postUpdateRequestDto.getMultipartFileList()))
+                .consistOf(PostNumberOfAttachmentsValidator.of(attachImageList))
                 .consistOf(TargetIsDeletedValidator.of(post.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
                 .consistOf(TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST))
                 .consistOf(ContentsAdminValidator.of(
@@ -324,9 +328,11 @@ public class PostService {
                 .consistOf(ConstraintValidator.of(post, this.validator));
         validatorBucket.validate();
 
-        List<UuidFile> uuidFileList = uuidFileService.updateFileList(
+        List<UuidFile> uuidFileList = (attachImageList == null || attachImageList.isEmpty()) ?
+                post.getPostAttachImageUuidFileList() :
+                uuidFileService.updateFileList(
                 post.getPostAttachImageUuidFileList(),
-                postUpdateRequestDto.getMultipartFileList(),
+                attachImageList,
                 FilePath.POST
         );
 

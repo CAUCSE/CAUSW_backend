@@ -22,7 +22,4 @@ public class CalendarUpdateRequestDto {
     @Schema(description = "월", example = "9")
     private Integer month;
 
-    @NotNull(message = "캘린더 이미지는 필수 입력값 입니다.")
-    @Schema(description = "이미지")
-    private MultipartFile image;
 }

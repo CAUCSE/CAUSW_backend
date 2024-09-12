@@ -35,10 +35,6 @@ public class UserUpdateRequestDto {
     @Schema(description = "입학년도", example = "2020")
     private Integer admissionYear;
 
-    @NotEmpty(message = "학부생 인증 이미지를 선택해 주세요.")
-    @Schema(description = "프로필 이미지", example = "")
-    private MultipartFile multipartFileProfileImage;
-
     @NotBlank(message = "닉네임을 입력해 주세요.")
     @Schema(description = "닉네임", example = "푸앙")
     private String nickname;

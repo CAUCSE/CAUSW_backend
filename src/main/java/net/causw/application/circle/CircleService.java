@@ -31,6 +31,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.validation.Validator;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -191,7 +193,7 @@ public class CircleService {
     }
 
     @Transactional
-    public CircleResponseDto create(User requestUser, CircleCreateRequestDto circleCreateRequestDto) {
+    public CircleResponseDto create(User requestUser, CircleCreateRequestDto circleCreateRequestDto, MultipartFile mainImage) {
         Set<Role> roles = requestUser.getRoles();
 
         User leader = userRepository.findById(circleCreateRequestDto.getLeaderId())
@@ -200,7 +202,9 @@ public class CircleService {
                         MessageUtil.NEW_CIRCLE_LEADER_NOT_FOUND)
                 );
 
-        UuidFile uuidFile = uuidFileService.saveFile(circleCreateRequestDto.getMainImage(), FilePath.CIRCLE_PROFILE);
+        UuidFile uuidFile = (mainImage.isEmpty()) ?
+                null :
+                uuidFileService.saveFile(mainImage, FilePath.CIRCLE_PROFILE);
 
         Circle circle = Circle.of(
                 circleCreateRequestDto.getName(),
@@ -267,7 +271,8 @@ public class CircleService {
     public CircleResponseDto update(
             User user,
             String circleId,
-            CircleUpdateRequestDto circleUpdateRequestDto
+            CircleUpdateRequestDto circleUpdateRequestDto,
+            MultipartFile mainImage
     ) {
         Circle circle = getCircle(circleId);
         Set<Role> roles = user.getRoles();
@@ -306,9 +311,9 @@ public class CircleService {
         validatorBucket
                 .validate();
 
-        UuidFile uuidFile = (circleUpdateRequestDto.getMainImage().isEmpty() || circleUpdateRequestDto.getMainImage() == null) ?
+        UuidFile uuidFile = mainImage.isEmpty() ?
                 circle.getCircleMainImageUuidFile() :
-                uuidFileService.updateFile(circle.getCircleMainImageUuidFile(), circleUpdateRequestDto.getMainImage(), FilePath.CIRCLE_PROFILE);
+                uuidFileService.updateFile(circle.getCircleMainImageUuidFile(), mainImage, FilePath.CIRCLE_PROFILE);
 
         circle.update(
                 circleUpdateRequestDto.getName(),

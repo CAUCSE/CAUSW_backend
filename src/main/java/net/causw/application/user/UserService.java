@@ -55,6 +55,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.validation.Validator;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -610,7 +611,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponseDto update(User user, UserUpdateRequestDto userUpdateRequestDto) {
+    public UserResponseDto update(User user, UserUpdateRequestDto userUpdateRequestDto, MultipartFile profileImage) {
         Set<Role> roles = user.getRoles();
 
         // 닉네임이 변경되었을 때 중복 체크 (이메일 중복 체크의 경우 바뀐 기획에서 이메일 변경이 불가능하여 삭제)
@@ -626,7 +627,9 @@ public class UserService {
         }
 
         //다른 서비스단과 update 방식 통일하기
-        UuidFile profileImageUuidFile = uuidFileService.updateFile(user.getProfileImageUuidFile(), userUpdateRequestDto.getMultipartFileProfileImage(), FilePath.USER_PROFILE);
+        UuidFile profileImageUuidFile = (profileImage == null) ?
+                null :
+                uuidFileService.updateFile(user.getProfileImageUuidFile(), userUpdateRequestDto.getMultipartFileProfileImage(), FilePath.USER_PROFILE);
 
         user.update(userUpdateRequestDto.getNickname(), userUpdateRequestDto.getAcademicStatus(), profileImageUuidFile);
 
@@ -1104,7 +1107,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserAdmissionResponseDto createAdmission(UserAdmissionCreateRequestDto userAdmissionCreateRequestDto) {
+    public UserAdmissionResponseDto createAdmission(UserAdmissionCreateRequestDto userAdmissionCreateRequestDto, List<MultipartFile> userAdmissionAttachImageList) {
         User requestUser = this.userRepository.findByEmail(userAdmissionCreateRequestDto.getEmail()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -1120,14 +1123,14 @@ public class UserService {
             );
         }
 
-        if (userAdmissionCreateRequestDto.getAttachImageMultiPartFileList().isEmpty()) {
+        if (userAdmissionAttachImageList.isEmpty()) {
             throw new BadRequestException(
                     ErrorCode.INVALID_PARAMETER,
                     MessageUtil.USER_ADMISSION_MUST_HAVE_IMAGE
             );
         }
 
-        List<UuidFile> uuidFileList = uuidFileService.saveFileList(userAdmissionCreateRequestDto.getAttachImageMultiPartFileList(), FilePath.USER_ADMISSION);
+        List<UuidFile> uuidFileList = uuidFileService.saveFileList(userAdmissionAttachImageList, FilePath.USER_ADMISSION);
 
         UserAdmission userAdmission = UserAdmission.of(
                 requestUser,

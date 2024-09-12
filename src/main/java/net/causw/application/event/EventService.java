@@ -17,6 +17,7 @@ import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -39,7 +40,7 @@ public class EventService {
     }
 
     @Transactional
-    public EventResponseDto createEvent(EventCreateRequestDto eventCreateRequestDto) {
+    public EventResponseDto createEvent(EventCreateRequestDto eventCreateRequestDto, MultipartFile eventImage) {
         if (eventRepository.findByIsDeletedIsFalse().size() >= StaticValue.MAX_NUM_EVENT) {
             throw new BadRequestException(
                     ErrorCode.CANNOT_PERFORMED,
@@ -47,7 +48,7 @@ public class EventService {
             );
         }
 
-        UuidFile uuidFile = uuidFileService.saveFile(eventCreateRequestDto.getImage(), FilePath.EVENT);
+        UuidFile uuidFile = uuidFileService.saveFile(eventImage, FilePath.EVENT);
 
         return EventDtoMapper.INSTANCE.toEventResponseDto(
                 eventRepository.save(
@@ -61,9 +62,13 @@ public class EventService {
     }
 
     @Transactional
-    public EventResponseDto updateEvent(String eventId, EventUpdateRequestDto eventUpdateRequestDto) {
+    public EventResponseDto updateEvent(String eventId, EventUpdateRequestDto eventUpdateRequestDto, MultipartFile eventImage) {
         Event event = getEvent(eventId);
-        UuidFile uuidFile = uuidFileService.saveFile(eventUpdateRequestDto.getImage(), FilePath.EVENT);
+
+        UuidFile uuidFile = (eventImage.isEmpty()) ?
+                event.getEventImageUuidFile() :
+                uuidFileService.saveFile(eventImage, FilePath.EVENT);
+
         event.update(
                 eventUpdateRequestDto.getUrl(),
                 uuidFile

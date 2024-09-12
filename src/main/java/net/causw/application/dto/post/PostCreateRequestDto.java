@@ -29,9 +29,6 @@ public class PostCreateRequestDto {
     @Schema(description = "게시판 id", example = "uuid 형식의 String 값입니다.")
     private String boardId;
 
-    @Schema(description = "첨부파일", example = "첨부파일")
-    private List<MultipartFile> multipartFileList;
-
     @NotNull(message = "익명글 여부를 선택해 주세요.")
     @Schema(description = "익명글 여부", example = "False")
     private Boolean isAnonymous;

@@ -16,6 +16,7 @@ import net.causw.domain.model.enums.FilePath;
 import net.causw.domain.model.util.MessageUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -59,8 +60,8 @@ public class CalendarService {
     }
 
     @Transactional
-    public CalendarResponseDto createCalendar(CalendarCreateRequestDto calendarCreateRequestDto) {
-        UuidFile uuidFile = uuidFileService.saveFile(calendarCreateRequestDto.getImage(), FilePath.CALENDAR);
+    public CalendarResponseDto createCalendar(CalendarCreateRequestDto calendarCreateRequestDto, MultipartFile image) {
+        UuidFile uuidFile = uuidFileService.saveFile(image, FilePath.CALENDAR);
 
         calendarRepository.findByYearAndMonth(calendarCreateRequestDto.getYear(), calendarCreateRequestDto.getMonth())
                 .ifPresent(calendar -> {
@@ -82,7 +83,7 @@ public class CalendarService {
     }
 
     @Transactional
-    public CalendarResponseDto updateCalendar(String calendarId, CalendarUpdateRequestDto calendarUpdateRequestDto) {
+    public CalendarResponseDto updateCalendar(String calendarId, CalendarUpdateRequestDto calendarUpdateRequestDto, MultipartFile image) {
         Calendar calendar = calendarRepository.findById(calendarId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -90,7 +91,7 @@ public class CalendarService {
                 )
         );
 
-        UuidFile uuidFile = uuidFileService.updateFile(calendar.getCalendarAttachImageUuidFile(), calendarUpdateRequestDto.getImage(), FilePath.CALENDAR);
+        UuidFile uuidFile = uuidFileService.updateFile(calendar.getCalendarAttachImageUuidFile(), image, FilePath.CALENDAR);
 
         calendar.update(
                 calendarUpdateRequestDto.getYear(),

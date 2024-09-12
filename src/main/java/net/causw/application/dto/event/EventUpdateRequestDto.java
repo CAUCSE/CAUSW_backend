@@ -19,7 +19,4 @@ public class EventUpdateRequestDto {
     @Schema(description = "이벤트 URL")
     private String url;
 
-    @NotNull(message = "이벤트 배너 이미지는 필수 입력값 입니다.")
-    @Schema(description = "이미지")
-    private MultipartFile image;
 }

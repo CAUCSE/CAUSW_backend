@@ -21,6 +21,9 @@ import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -157,10 +160,11 @@ public class PostController {
             @ApiResponse(responseCode = "4107", description = "사용자가 해당 동아리의 동아리장이 아닙니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
     })
     public PostResponseDto createPost(
-            @ModelAttribute @Valid PostCreateRequestDto postCreateRequestDto,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestPart(value = "postCreateRequestDto") @Valid PostCreateRequestDto postCreateRequestDto,
+            @RequestPart(value = "attachImageList", required = false) List<MultipartFile> attachImageList
     ) {
-        return this.postService.createPost(userDetails.getUser(), postCreateRequestDto);
+        return this.postService.createPost(userDetails.getUser(), postCreateRequestDto, attachImageList);
     }
 
     @DeleteMapping(value = "/{id}")
@@ -224,15 +228,17 @@ public class PostController {
             @ApiResponse(responseCode = "5000", description = "Post id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
     public PostResponseDto updatePost(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("id") String id,
-            @ModelAttribute @Valid PostUpdateRequestDto postUpdateRequestDto,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @RequestPart(value = "postUpdateRequestDto") @Valid PostUpdateRequestDto postUpdateRequestDto,
+            @RequestPart(value = "attachImageList", required = false) List<MultipartFile> attachImageList
     ) {
 
         return this.postService.updatePost(
                 userDetails.getUser(),
                 id,
-                postUpdateRequestDto
+                postUpdateRequestDto,
+                attachImageList
         );
     }
 
