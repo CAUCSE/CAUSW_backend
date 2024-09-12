@@ -25,23 +25,23 @@ public class CouncilFeeFakeUser extends BaseEntity {
     @Column(name = "student_id", nullable = false)
     private String studentId;
 
-    @Column(name = "email", nullable = false)
+    @Column(name = "phone_number", nullable = false)
     private String phoneNumber;
 
     @Column(name = "admission_year", nullable = false)
     private Integer admissionYear;
 
-    @Column(name = "nickname", nullable = false)
+    @Column(name = "major", nullable = false)
     private String major;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "major", nullable = false)
+    @Column(name = "academic_status", nullable = false)
     private AcademicStatus academicStatus;
 
     @Column(name = "current_completed_semester", nullable = true)
     private Integer currentCompletedSemester;
 
-    @Column(name = "academic_status_note", nullable = true)
+    @Column(name = "graduation_year", nullable = true)
     private Integer graduationYear;
 
     @Enumerated(EnumType.STRING)
@@ -49,9 +49,6 @@ public class CouncilFeeFakeUser extends BaseEntity {
     private GraduationType graduationType;
 
     public void setCurrentCompletedSemester(Integer currentCompletedSemester) {
-        if (this.academicStatus.equals(AcademicStatus.ENROLLED) && currentCompletedSemester == null) {
-            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_COUNCIL_FEE_FAKE_USER_INFO);
-        }
         this.currentCompletedSemester = currentCompletedSemester;
     }
 
@@ -66,13 +63,6 @@ public class CouncilFeeFakeUser extends BaseEntity {
             Integer graduationYear,
             GraduationType graduationType
     ) {
-        if (
-                (academicStatus.equals(AcademicStatus.ENROLLED) && currentCompletedSemester == null) ||
-                        (academicStatus.equals(AcademicStatus.GRADUATED) && ( graduationYear == null || graduationType == null ))
-        ) {
-            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_COUNCIL_FEE_FAKE_USER_INFO);
-        }
-
         this.name = name;
         this.studentId = studentId;
         this.phoneNumber = phoneNumber;
@@ -96,12 +86,6 @@ public class CouncilFeeFakeUser extends BaseEntity {
             Integer graduationYear,
             GraduationType graduationType
     ) {
-        if (
-                (academicStatus.equals(AcademicStatus.ENROLLED) && currentCompletedSemester == null) ||
-                        (academicStatus.equals(AcademicStatus.GRADUATED) && ( graduationYear == null || graduationType == null ))
-        ) {
-            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_COUNCIL_FEE_FAKE_USER_INFO);
-        }
         return CouncilFeeFakeUser.builder()
                 .name(name)
                 .studentId(studentId)
