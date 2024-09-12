@@ -5,15 +5,12 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.causw.adapter.persistence.form.Form;
-import net.causw.adapter.persistence.form.Question;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.domain.model.circle.CircleDomainModel;
 import org.hibernate.annotations.ColumnDefault;
 
-import java.util.List;
 import java.util.Optional;
 
 @Getter

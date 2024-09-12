@@ -16,8 +16,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class CircleResponseDto {
 
-
-
     @Schema(description = "동아리 ID", example = "UUID 형식의 동아리 고유 ID String 값 입니다.")
     private String id;
 
@@ -86,7 +84,7 @@ public class CircleResponseDto {
         return CircleResponseDto.builder()
                 .id(circle.getId())
                 .name(circle.getName())
-                .mainImage(circle.getMainImage())
+                .mainImage(circle.getUuidFile().getFileUrl())
                 .description(circle.getDescription())
                 .isDeleted(circle.getIsDeleted())
                 .circleTax(circle.getCircleTax())
@@ -101,7 +99,7 @@ public class CircleResponseDto {
         return CircleResponseDto.builder()
                 .id(circle.getId())
                 .name(circle.getName())
-                .mainImage(circle.getMainImage())
+                .mainImage(circle.getUuidFile().getFileUrl())
                 .description(circle.getDescription())
                 .isDeleted(circle.getIsDeleted())
                 .circleTax(circle.getCircleTax())

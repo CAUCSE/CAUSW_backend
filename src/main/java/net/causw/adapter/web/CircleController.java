@@ -7,6 +7,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.circle.CircleService;
 import net.causw.application.dto.circle.CirclesResponseDto;
@@ -23,18 +26,10 @@ import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.CircleMemberStatus;
 import net.causw.domain.validation.ConstraintValidator;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -65,7 +60,13 @@ public class CircleController {
             @ApiResponse(responseCode = "4000", description = "소모임을 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "4004", description = "삭제된 {동아리명} 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
-    public CircleResponseDto findById(@PathVariable(name = "circleId") String circleId) {
+    public CircleResponseDto findById(
+            @PathVariable(name = "circleId")
+            @Pattern(
+                    regexp = "^[0-9a-fA-F]{32}$",
+                    message = "동아리장 id 값은 대시(-) 없이 32자리의 UUID 형식이어야 합니다."
+            ) String circleId
+    ) {
         return this.circleService.findById(circleId);
     }
 
@@ -87,7 +88,9 @@ public class CircleController {
             @ApiResponse(responseCode = "4104", description = "대기 중인 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
             @ApiResponse(responseCode = "4109", description = "가입이 거절된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
     })
-    public List<CirclesResponseDto> findAll(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    public List<CirclesResponseDto> findAll(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
         return this.circleService.findAll(userDetails.getUser());
     }
 
@@ -119,7 +122,11 @@ public class CircleController {
             @ApiResponse(responseCode = "4108", description = "로그인된 사용자가 가입 신청한 소모임이 아닙니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
     })
     public CircleBoardsResponseDto findBoards(
-            @PathVariable(name = "circleId") String circleId,
+            @PathVariable(name = "circleId")
+            @Pattern(
+                    regexp = "^[0-9a-fA-F]{32}$",
+                    message = "동아리장 id 값은 대시(-) 없이 32자리의 UUID 형식이어야 합니다."
+            ) String circleId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.circleService.findBoards(userDetails.getUser(), circleId);
@@ -146,7 +153,13 @@ public class CircleController {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Long.class))),
             @ApiResponse(responseCode = "4000", description = "소모임을 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
-    public Long getNumMember(@PathVariable(name = "circleId") String circleId) {
+    public Long getNumMember(
+            @PathVariable(name = "circleId")
+            @Pattern(
+                    regexp = "^[0-9a-fA-F]{32}$",
+                    message = "동아리장 id 값은 대시(-) 없이 32자리의 UUID 형식이어야 합니다."
+            ) String circleId
+    ) {
         return this.circleService.getNumMember(circleId);
     }
 
@@ -192,8 +205,12 @@ public class CircleController {
             @ApiResponse(responseCode = "4000", description = "소모임원을 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     public List<CircleMemberResponseDto> getUserList(
-            @PathVariable("circleId") String circleId,
-            @RequestParam("circleMemberStatus") CircleMemberStatus circleMemberStatus,
+            @PathVariable("circleId")
+            @Pattern(
+                    regexp = "^[0-9a-fA-F]{32}$",
+                    message = "동아리장 id 값은 대시(-) 없이 32자리의 UUID 형식이어야 합니다."
+            ) String circleId,
+            @RequestParam("circleMemberStatus") @NotNull(message = "동아리원 상태는 null이 아니어야 합니다.") CircleMemberStatus circleMemberStatus,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
 
@@ -210,7 +227,7 @@ public class CircleController {
      * @param  circleCreateRequestDto 동아리 생성 정보
      * @return Long
      */
-    @PostMapping
+    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @ResponseStatus(value = HttpStatus.CREATED)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
             "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
@@ -235,7 +252,7 @@ public class CircleController {
             @ApiResponse(responseCode = "5000", description = "Circle id immediately can be used, but exception occured", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
     public CircleResponseDto create(
-            @Valid @RequestBody CircleCreateRequestDto circleCreateRequestDto,
+            @ModelAttribute @Valid CircleCreateRequestDto circleCreateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.circleService.create(userDetails.getUser(), circleCreateRequestDto);
@@ -248,7 +265,7 @@ public class CircleController {
      * @param  circleUpdateRequestDto 동아리 생성 정보
      * @return Long
      */
-    @PutMapping(value = "/{circleId}")
+    @PutMapping(value = "/{circleId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
             "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
@@ -285,8 +302,12 @@ public class CircleController {
             @ApiResponse(responseCode = "5000", description = "Circle id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
     public CircleResponseDto update(
-            @PathVariable(name = "circleId") String circleId,
-            @Valid @RequestBody CircleUpdateRequestDto circleUpdateRequestDto,
+            @PathVariable(name = "circleId")
+            @Pattern(
+                    regexp = "^[0-9a-fA-F]{32}$",
+                    message = "동아리장 id 값은 대시(-) 없이 32자리의 UUID 형식이어야 합니다."
+            ) String circleId,
+            @ModelAttribute @Valid CircleUpdateRequestDto circleUpdateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.circleService.update(userDetails.getUser(), circleId, circleUpdateRequestDto);
@@ -335,7 +356,11 @@ public class CircleController {
             @ApiResponse(responseCode = "5000", description = "Circle id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
     public CircleResponseDto delete(
-            @PathVariable(name = "circleId") String circleId,
+            @PathVariable(name = "circleId")
+            @Pattern(
+                    regexp = "^[0-9a-fA-F]{32}$",
+                    message = "동아리장 id 값은 대시(-) 없이 32자리의 UUID 형식이어야 합니다."
+            ) String circleId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.circleService.delete(userDetails.getUser(), circleId);
@@ -384,7 +409,11 @@ public class CircleController {
             @ApiResponse(responseCode = "5000", description = "Application id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
     public CircleMemberResponseDto userApply(
-            @PathVariable(name = "circleId") String circleId,
+            @PathVariable(name = "circleId")
+            @Pattern(
+                    regexp = "^[0-9a-fA-F]{32}$",
+                    message = "동아리장 id 값은 대시(-) 없이 32자리의 UUID 형식이어야 합니다."
+            ) String circleId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.circleService.userApply(userDetails.getUser(), circleId);
@@ -416,7 +445,9 @@ public class CircleController {
             description = "OK",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = DuplicatedCheckResponseDto.class))
     )
-    public DuplicatedCheckResponseDto isDuplicatedName(@PathVariable(name = "circleName") String circleName) {
+    public DuplicatedCheckResponseDto isDuplicatedName(
+            @PathVariable(name = "circleName") @NotBlank(message = "동아리명은 공백이 아니어야 합니다.") String circleName
+    ) {
         return this.circleService.isDuplicatedName(circleName);
     }
 
@@ -452,7 +483,11 @@ public class CircleController {
     @ApiResponse(responseCode = "4102", description = "추방된 사용자이거나 다른 권한 관련 오류가 발생했습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
     @ApiResponse(responseCode = "5000", description = "동아리에 대한 특정 예외가 발생했습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     public CircleMemberResponseDto leaveUser(
-            @PathVariable(name = "circleId") String circleId,
+            @PathVariable(name = "circleId")
+            @Pattern(
+                    regexp = "^[0-9a-fA-F]{32}$",
+                    message = "동아리장 id 값은 대시(-) 없이 32자리의 UUID 형식이어야 합니다."
+            ) String circleId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.circleService.leaveUser(userDetails.getUser(), circleId);
@@ -504,8 +539,16 @@ public class CircleController {
             @ApiResponse(responseCode = "5000", description = "Application id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
     public CircleMemberResponseDto dropUser(
-            @PathVariable(name = "userId") String userId,
-            @PathVariable(name = "circleId") String circleId,
+            @PathVariable(name = "userId")
+            @Pattern(
+                    regexp = "^[0-9a-fA-F]{32}$",
+                    message = "동아리장 id 값은 대시(-) 없이 32자리의 UUID 형식이어야 합니다."
+            ) String userId,
+            @PathVariable(name = "circleId")
+            @Pattern(
+                    regexp = "^[0-9a-fA-F]{32}$",
+                    message = "동아리장 id 값은 대시(-) 없이 32자리의 UUID 형식이어야 합니다."
+            ) String circleId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.circleService.dropUser(
@@ -552,7 +595,11 @@ public class CircleController {
             @ApiResponse(responseCode = "5000", description = "This circle has not circle leader or Application id checked, but exception occurred", content = @Content(schema = @Schema(implementation = InternalServerException.class)))
     })
     public CircleMemberResponseDto acceptUser(
-            @PathVariable(name = "applicationId") String applicationId,
+            @PathVariable(name = "applicationId")
+            @Pattern(
+                    regexp = "^[0-9a-fA-F]{32}$",
+                    message = "동아리장 id 값은 대시(-) 없이 32자리의 UUID 형식이어야 합니다."
+            ) String applicationId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.circleService.acceptUser(userDetails.getUser(), applicationId);
@@ -595,7 +642,11 @@ public class CircleController {
             @ApiResponse(responseCode = "5000", description = "This circle has not circle leader or Application id checked, but exception occurred", content = @Content(schema = @Schema(implementation = InternalServerException.class)))
     })
     public CircleMemberResponseDto rejectUser(
-            @PathVariable(name = "applicationId") String applicationId,
+            @PathVariable(name = "applicationId")
+            @Pattern(
+                    regexp = "^[0-9a-fA-F]{32}$",
+                    message = "동아리장 id 값은 대시(-) 없이 32자리의 UUID 형식이어야 합니다."
+            ) String applicationId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.circleService.rejectUser(userDetails.getUser(), applicationId);
@@ -647,8 +698,16 @@ public class CircleController {
             @ApiResponse(responseCode = "5000", description = "This circle has not circle leader or Application id checked, but exception occurred", content = @Content(schema = @Schema(implementation = InternalServerException.class)))
     })
     public CircleMemberResponseDto restoreUser(
-            @PathVariable(name = "circleId") String circleId,
-            @PathVariable(name = "userId") String userId,
+            @PathVariable(name = "circleId")
+            @Pattern(
+                    regexp = "^[0-9a-fA-F]{32}$",
+                    message = "동아리장 id 값은 대시(-) 없이 32자리의 UUID 형식이어야 합니다."
+            ) String circleId,
+            @PathVariable(name = "userId")
+            @Pattern(
+                    regexp = "^[0-9a-fA-F]{32}$",
+                    message = "동아리장 id 값은 대시(-) 없이 32자리의 UUID 형식이어야 합니다."
+            ) String userId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.circleService.restoreUser(userDetails.getUser(), circleId, userId);
@@ -661,7 +720,11 @@ public class CircleController {
             "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
     public void exportExcel(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable(name = "circleId") String circleId,
+            @PathVariable(name = "circleId")
+            @Pattern(
+                    regexp = "^[0-9a-fA-F]{32}$",
+                    message = "동아리장 id 값은 대시(-) 없이 32자리의 UUID 형식이어야 합니다."
+            ) String circleId,
             HttpServletResponse response
     ){
         circleService.exportCircleMembersToExcel(userDetails.getUser(), circleId, response);

@@ -14,6 +14,7 @@ import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.user.UserResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
 import java.lang.annotation.ElementType;
@@ -26,58 +27,70 @@ import java.util.List;
 // Custom Annotation을 사용하여 중복되는 @Mapping을 줄일 수 있습니다.
 @Retention(RetentionPolicy.CLASS)
 @Target({ElementType.METHOD})
-@Mapping(target = "leaderId", expression = "java(entity.getLeader().map(User::getId).orElse(null))")
-@Mapping(target = "leaderName", expression = "java(entity.getLeader().map(User::getName).orElse(null))")
+@Mapping(target = "leaderId", expression = "java(circle.getLeader().map(User::getId).orElse(null))")
+@Mapping(target = "leaderName", expression = "java(circle.getLeader().map(User::getName).orElse(null))")
 @interface CircleCommonWriterMappings {}
+
+@Retention(RetentionPolicy.CLASS)
+@Target({ElementType.METHOD})
+@Mapping(target = "mainImage", expression = "java(circle.getUuidFile().getFileUrl().orElse(null))")
+@interface CircleMainImageWriterMappings {}
+
 
 @Mapper(componentModel = "spring")
 public interface CircleServiceDtoMapper {
 
     CircleServiceDtoMapper INSTANCE = Mappers.getMapper(CircleServiceDtoMapper.class);
 
+    @Named("mapUuidFileToFileUrl")
+    default String mapUuidFileToFileUrl(Circle circle) {
+        return circle.getUuidFile().getFileUrl();
+    }
 
     // User
-    UserResponseDto toUserResponseDto(User entity);
+    UserResponseDto toUserResponseDto(User user);
 
     // Circle
+    @CircleCommonWriterMappings
+    @CircleMainImageWriterMappings
+    CircleResponseDto toCircleResponseDto(Circle circle);
 
 
     @CircleCommonWriterMappings
-    CircleResponseDto toCircleResponseDto(Circle entity);
+    @CircleMainImageWriterMappings
+    CircleResponseDto toCircleResponseDtoExtended(Circle circle, Long numMember);
 
 
     @CircleCommonWriterMappings
-    CircleResponseDto toCircleResponseDtoExtended(Circle entity, Long numMember);
-
-
-    @CircleCommonWriterMappings
+    @CircleMainImageWriterMappings
     @Mapping(target = "isJoined", constant = "false")
-    @Mapping(target = "isDeleted", source = "entity.isDeleted")
-    CirclesResponseDto toCirclesResponseDto(Circle entity, Long numMember);
+    @Mapping(target = "isDeleted", source = "circle.isDeleted")
+    CirclesResponseDto toCirclesResponseDto(Circle circle, Long numMember);
 
 
     @CircleCommonWriterMappings
+    @CircleMainImageWriterMappings
     @Mapping(target = "isJoined", constant = "true")
-    @Mapping(target = "isDeleted", source = "entity.isDeleted")
-    CirclesResponseDto toCirclesResponseDtoExtended(Circle entity, Long numMember, LocalDateTime joinedAt);
+    @Mapping(target = "isDeleted", source = "circle.isDeleted")
+    CirclesResponseDto toCirclesResponseDtoExtended(Circle circle, Long numMember, LocalDateTime joinedAt);
 
 
     @Mapping(target = "postNumComment", constant = "0L")
-    BoardOfCircleResponseDto toBoardOfCircleResponseDto(Board entity, Boolean writeable);
+    BoardOfCircleResponseDto toBoardOfCircleResponseDto(Board board, Boolean writeable);
 
-    @Mapping(target = "id", source = "entity.id")
-    @Mapping(target = "isDeleted", source = "entity.isDeleted")
+    @Mapping(target = "id", source = "board.id")
+    @Mapping(target = "isDeleted", source = "board.isDeleted")
     @Mapping(target = "postId", source = "post.id")
     @Mapping(target = "postTitle", source = "post.title")
     @Mapping(target = "postWriterName", source = "post.writer.name")
     @Mapping(target = "postWriterStudentId", source = "post.writer.studentId")
     @Mapping(target = "postCreatedAt", source = "post.createdAt")
-    BoardOfCircleResponseDto toBoardOfCircleResponseDtoExtended(Board entity, Boolean writeable, Post post, Long postNumComment);
+    BoardOfCircleResponseDto toBoardOfCircleResponseDtoExtended(Board board, Boolean writeable, Post post, Long postNumComment);
 
     CircleBoardsResponseDto toCircleBoardsResponseDto(CircleResponseDto circle, List<BoardOfCircleResponseDto> boardList);
 
-    @Mapping(target = "id", source = "entity.id")
-    CircleMemberResponseDto toCircleMemberResponseDto(CircleMember entity, CircleResponseDto circle, UserResponseDto user);
+    @Mapping(target = "id", source = "board.id")
+    CircleMemberResponseDto toCircleMemberResponseDto(CircleMember board, CircleResponseDto circle, UserResponseDto user);
 
     DuplicatedCheckResponseDto toDuplicatedCheckResponseDto(Boolean result);
 
