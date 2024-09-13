@@ -21,7 +21,7 @@ import java.util.List;
 @Table(name = "tb_user_academic_record_admission")
 public class UserAcademicRecordApplication extends BaseEntity {
 
-    @ManyToOne(cascade = CascadeType.PERSIST)
+    @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 

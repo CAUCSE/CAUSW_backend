@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -184,15 +185,16 @@ public class UserAcademicRecordApplicationService {
             CreateUserAcademicRecordApplicationRequestDto createUserAcademicRecordApplicationRequestDto,
             List<MultipartFile> imageFileList
     ) {
-        List<UuidFile> uuidFileList = null;
-
-        if (!imageFileList.isEmpty()) {
-            uuidFileList = imageFileList.stream()
-                    .map((MultipartFile file) -> uuidFileService.saveFile(file, FilePath.USER_ACADEMIC_RECORD_APPLICATION))
-                    .toList();
-        }
+        List<UuidFile> uuidFileList = (imageFileList.isEmpty()) ?
+                new ArrayList<>() :
+                uuidFileService.saveFileList(imageFileList, FilePath.USER_ACADEMIC_RECORD_APPLICATION);
 
         UserAcademicRecordLog userAcademicRecordLog;
+
+        // User 엔티티가 영속성 컨텍스트에 없는 경우, merge로 다시 연결
+        if (user != null) {
+            user = userRepository.save(user);
+        }
 
         if (createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus().equals(AcademicStatus.ENROLLED)) {
             if (createUserAcademicRecordApplicationRequestDto.getTargetCompletedSemester() == null) {
@@ -278,6 +280,11 @@ public class UserAcademicRecordApplicationService {
             CreateUserAcademicRecordApplicationRequestDto createUserAcademicRecordApplicationRequestDto,
             List<MultipartFile> imageFileList
     ) {
+        // User 엔티티가 영속성 컨텍스트에 없는 경우, merge로 다시 연결
+        if (user != null) {
+            user = userRepository.save(user);
+        }
+
         UserAcademicRecordApplication priorUserAcademicRecordApplication = getRecentAwaitOrRejectUserAcademicRecordApplication(user);
 
         if (!priorUserAcademicRecordApplication.getAcademicRecordRequestStatus().equals(AcademicRecordRequestStatus.REJECT)) {
