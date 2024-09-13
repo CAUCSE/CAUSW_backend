@@ -28,11 +28,9 @@ public class StorageManager {
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
 
-    protected Map<FileInfo, String> uploadFile(MultipartFile multipartFile, FilePath filePath, String uuid) {
+    protected Map<FileInfo, String> uploadFile(MultipartFile multipartFile, String rawFileName, String extension, FilePath filePath, String uuid) {
 
-        String fileName = S3Util.buildFileName(Objects.requireNonNull(multipartFile.getOriginalFilename()));
-
-        String fileKey = filePath.getDirectory() + "/" + fileName + uuid;
+        String fileKey = this.buildFileKey(uuid, rawFileName, extension, filePath);
 
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentType(multipartFile.getContentType());
@@ -56,6 +54,10 @@ public class StorageManager {
         } catch (Exception e) {
             throw new InternalServerException(ErrorCode.FILE_DELETE_FAIL, MessageUtil.FILE_DELETE_FAIL + e.getMessage());
         }
+    }
+
+    private String buildFileKey(String uuid, String rawFileName, String extension, FilePath filePath) {
+        return filePath.getDirectory() + "/" + rawFileName + "_" + uuid + "." + extension;
     }
 
     protected enum FileInfo {

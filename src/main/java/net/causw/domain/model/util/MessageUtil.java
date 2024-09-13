@@ -117,6 +117,9 @@ public class MessageUtil {
     public static final String INVALID_FILE_PATH = "유효하지 않은 파일 경로입니다.";
     public static final String FILE_SIZE_EXCEEDED = "파일 크기가 초과되었습니다.";
     public static final String NUMBER_OF_FILES_EXCEEDED = "파일 개수가 초과되었습니다.";
+    public static final String FILE_NAME_IS_NULL = "파일 이름이 비어있습니다.";
+    public static final String FILE_EXTENSION_IS_NULL = "파일 확장자가 비어있습니다.";
+    public static final String INVALID_FILE_EXTENSION = "유효하지 않은 파일 확장자입니다.";
 
     // Semester
     public static final String PRIOR_SEMESTER_NOT_FOUND = "이전 학기를 찾을 수 없습니다.";

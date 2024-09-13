@@ -1,17 +1,20 @@
 package net.causw.application.uuidFile;
 
 import com.amazonaws.services.s3.AmazonS3Client;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.adapter.persistence.repository.UuidFileRepository;
 import net.causw.application.storage.StorageManager;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
+import net.causw.domain.model.enums.FileExtensionType;
 import net.causw.domain.model.enums.FilePath;
 import net.causw.domain.model.util.MessageUtil;
-import net.causw.domain.model.util.StaticValue;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -29,29 +32,36 @@ public class UuidFileService extends StorageManager {
         this.uuidFileRepository = uuidFileRepository;
     }
 
-    public UuidFile findUuidFileById(String id) {
+    public UuidFile findUuidFileById(@NotBlank String id) {
         return uuidFileRepository.findById(id).orElseThrow(
                 () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.FILE_NOT_FOUND));
     }
 
-    public UuidFile findUuidFileByFileUrl(String fileUrl) {
+    public UuidFile findUuidFileByFileUrl(@NotBlank String fileUrl) {
         return uuidFileRepository.findByFileUrl(fileUrl).orElseThrow(
                 () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.FILE_NOT_FOUND));
     }
 
     @Transactional
-    public UuidFile saveFile(MultipartFile file, FilePath filePath) {
-        this.validateFileIsNull(file);
-        this.validateFileSize(file, filePath);
+    public UuidFile saveFile(@NotNull MultipartFile file, @NotNull FilePath filePath) {
+        this.validateFile(file, filePath);
 
         String uuid = UUID.randomUUID().toString();
 
-        Map<StorageManager.FileInfo, String> fileInfoStringMap = super.uploadFile(file, filePath, uuid);
+        String originFileName = file.getOriginalFilename();
+
+        String rawFileName = this.getRawFileName(originFileName);
+        String extension = this.getExtension(originFileName);
+
+
+        Map<StorageManager.FileInfo, String> fileInfoStringMap = super.uploadFile(file, rawFileName, extension, filePath, uuid);
 
         UuidFile uuidFile = UuidFile.of(
                 uuid,
                 fileInfoStringMap.get(FileInfo.FILE_KEY),
                 fileInfoStringMap.get(FileInfo.FILE_URL),
+                rawFileName,
+                extension,
                 filePath
         );
 
@@ -59,8 +69,7 @@ public class UuidFileService extends StorageManager {
     }
 
     @Transactional
-    public List<UuidFile> saveFileList(List<MultipartFile> fileList, FilePath filePath) {
-        this.validateFileListIsEmpty(fileList);
+    public List<UuidFile> saveFileList(@NotNull List<MultipartFile> fileList, @NotNull FilePath filePath) {
         this.validateFileListSize(fileList, filePath);
         return fileList.stream()
                 .map(file -> this.saveFile(file, filePath))
@@ -68,7 +77,7 @@ public class UuidFileService extends StorageManager {
     }
 
     @Transactional
-    public UuidFile updateFile(UuidFile priorUuidFile, MultipartFile file, FilePath filePath) {
+    public UuidFile updateFile(UuidFile priorUuidFile, @NotNull MultipartFile file, @NotNull FilePath filePath) {
         if (priorUuidFile != null) {
             this.deleteFile(priorUuidFile);
         }
@@ -85,7 +94,7 @@ public class UuidFileService extends StorageManager {
     }
 
     @Transactional
-    public void deleteFile(UuidFile uuidFile) {
+    public void deleteFile(@NotNull UuidFile uuidFile) {
         if (uuidFile == null) {
             throw new InternalServerException(ErrorCode.INTERNAL_SERVER, MessageUtil.FILE_NOT_FOUND);
         }
@@ -95,99 +104,62 @@ public class UuidFileService extends StorageManager {
     }
 
     @Transactional
-    public void deleteFileList(List<UuidFile> uuidFileList) {
+    public void deleteFileList(@NotNull List<UuidFile> uuidFileList) {
         for (UuidFile uuidFile : uuidFileList) {
             this.deleteFile(uuidFile);
         }
     }
 
-    private void validateFileIsNull(MultipartFile file) {
+    // Private Methods
+    private String getRawFileName(String originFileName) {
+        if (originFileName == null) {
+            throw new BadRequestException(ErrorCode.INVALID_FILE_EXTENSION, MessageUtil.FILE_NAME_IS_NULL);
+        }
+        return StringUtils.stripFilenameExtension(originFileName);
+    }
+
+    private String getExtension(String originFileName) {
+        String extension = StringUtils.getFilenameExtension(originFileName);
+        if (extension == null) {
+            throw new BadRequestException(ErrorCode.INVALID_FILE_EXTENSION, MessageUtil.FILE_EXTENSION_IS_NULL);
+        }
+        return extension;
+    }
+
+    // 파일 크기, 확장자, Null 검증
+    private void validateFile(MultipartFile file, FilePath filePath) {
         if (file == null) {
-            throw new InternalServerException(ErrorCode.INTERNAL_SERVER, MessageUtil.FILE_IS_NULL);
+            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.FILE_IS_NULL);
         }
-    }
 
-    private void validateFileListIsEmpty(List<MultipartFile> fileList) {
-        if (fileList.isEmpty()) {
-            throw new InternalServerException(ErrorCode.INTERNAL_SERVER, MessageUtil.FILE_IS_NULL);
+        String extension = this.getExtension(file.getOriginalFilename()).toUpperCase();
+
+        if (file.getSize() > filePath.getMaxFileSize()) {
+            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.FILE_SIZE_EXCEEDED);
         }
-    }
 
-    // 파일 크기 검증
-    private void validateFileSize(MultipartFile file, FilePath filePath) {
-        if (filePath.equals(FilePath.USER_PROFILE)) {
-            if (file.getSize() > StaticValue.USER_PROFILE_IMAGE_SIZE) {
-                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.FILE_SIZE_EXCEEDED);
+        boolean isValidExtension = false;
+        for (FileExtensionType fileExtensionType : filePath.getFileExtensionList()) {
+            for (String extensionType : fileExtensionType.getExtensionList()) {
+                if (extension.equals(extensionType)) {
+                    isValidExtension = true;
+                    break;
+                }
             }
-        } else if (filePath.equals(FilePath.USER_ADMISSION)) {
-            if (file.getSize() > StaticValue.USER_ADMISSION_IMAGE_SIZE) {
-                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.FILE_SIZE_EXCEEDED);
-            }
-        } else if (filePath.equals(FilePath.USER_ACADEMIC_RECORD_APPLICATION)) {
-            if (file.getSize() > StaticValue.USER_ACADEMIC_RECORD_APPLICATION_IMAGE_SIZE) {
-                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.FILE_SIZE_EXCEEDED);
-            }
-        } else if (filePath.equals(FilePath.CIRCLE_PROFILE)) {
-            if (file.getSize() > StaticValue.CIRCLE_PROFILE_IMAGE_SIZE) {
-                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.FILE_SIZE_EXCEEDED);
-            }
-        } else if (filePath.equals(FilePath.POST)) {
-            if (file.getSize() > StaticValue.POST_IMAGE_SIZE) {
-                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.FILE_SIZE_EXCEEDED);
-            }
-        } else if (filePath.equals(FilePath.CALENDAR)) {
-            if (file.getSize() > StaticValue.CALENDAR_IMAGE_SIZE) {
-                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.FILE_SIZE_EXCEEDED);
-            }
-        } else if (filePath.equals(FilePath.EVENT)) {
-            if (file.getSize() > StaticValue.EVENT_IMAGE_SIZE) {
-                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.FILE_SIZE_EXCEEDED);
-            }
-        } else if (filePath.equals(FilePath.ETC)) {
-            if (file.getSize() > StaticValue.ETC_FILE_SIZE) {
-                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.FILE_SIZE_EXCEEDED);
-            }
-        } else {
-            throw new InternalServerException(ErrorCode.INTERNAL_SERVER, MessageUtil.INVALID_FILE_PATH);
+        }
+        if (!isValidExtension) {
+            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_FILE_EXTENSION);
         }
     }
 
     // 파일 개수 검증
     private void validateFileListSize(List<MultipartFile> fileList, FilePath filePath) {
-        if (filePath.equals(FilePath.USER_PROFILE)) {
-            if (fileList.size() > StaticValue.MAX_NUM_USER_PROFILE_IMAGE) {
-                throw new BadRequestException(ErrorCode.INVALID_FILE_EXTENSION, MessageUtil.NUMBER_OF_FILES_EXCEEDED);
-            }
-        } else if (filePath.equals(FilePath.USER_ADMISSION)) {
-            if (fileList.size() > StaticValue.MAX_NUM_USER_ADMISSION_IMAGE) {
-                throw new BadRequestException(ErrorCode.INVALID_FILE_EXTENSION, MessageUtil.NUMBER_OF_FILES_EXCEEDED);
-            }
-        } else if (filePath.equals(FilePath.USER_ACADEMIC_RECORD_APPLICATION)) {
-            if (fileList.size() > StaticValue.MAX_NUM_USER_ACADEMIC_RECORD_APPLICATION_IMAGE) {
-                throw new BadRequestException(ErrorCode.INVALID_FILE_EXTENSION, MessageUtil.NUMBER_OF_FILES_EXCEEDED);
-            }
-        } else if (filePath.equals(FilePath.CIRCLE_PROFILE)) {
-            if (fileList.size() > StaticValue.MAX_NUM_CIRCLE_PROFILE_IMAGE) {
-                throw new BadRequestException(ErrorCode.INVALID_FILE_EXTENSION, MessageUtil.NUMBER_OF_FILES_EXCEEDED);
-            }
-        } else if (filePath.equals(FilePath.POST)) {
-            if (fileList.size() > StaticValue.MAX_NUM_POST_IMAGE) {
-                throw new BadRequestException(ErrorCode.INVALID_FILE_EXTENSION, MessageUtil.NUMBER_OF_FILES_EXCEEDED);
-            }
-        } else if (filePath.equals(FilePath.CALENDAR)) {
-            if (fileList.size() > StaticValue.MAX_NUM_CALENDAR_IMAGE) {
-                throw new BadRequestException(ErrorCode.INVALID_FILE_EXTENSION, MessageUtil.NUMBER_OF_FILES_EXCEEDED);
-            }
-        } else if (filePath.equals(FilePath.EVENT)) {
-            if (fileList.size() > StaticValue.MAX_NUM_EVENT_IMAGE) {
-                throw new BadRequestException(ErrorCode.INVALID_FILE_EXTENSION, MessageUtil.NUMBER_OF_FILES_EXCEEDED);
-            }
-        } else if (filePath.equals(FilePath.ETC)) {
-            if (fileList.size() > StaticValue.MAX_NUM_ETC_FILE) {
-                throw new BadRequestException(ErrorCode.INVALID_FILE_EXTENSION, MessageUtil.NUMBER_OF_FILES_EXCEEDED);
-            }
-        } else {
-            throw new InternalServerException(ErrorCode.INTERNAL_SERVER, MessageUtil.INVALID_FILE_PATH);
+        if (fileList.isEmpty()) {
+            throw new InternalServerException(ErrorCode.INTERNAL_SERVER, MessageUtil.FILE_IS_NULL);
+        }
+
+        if (fileList.size() > filePath.getMaxFileCount()) {
+            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.NUMBER_OF_FILES_EXCEEDED);
         }
     }
 
