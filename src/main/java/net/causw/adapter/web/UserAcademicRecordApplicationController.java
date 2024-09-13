@@ -220,7 +220,7 @@ public class UserAcademicRecordApplicationController {
      * @param imageFileList
      * @return
      */
-    @PutMapping(value = "/application/update", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PutMapping(value = "/application/update")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
     @Operation(summary = "사용자 본인의 학적 증빙 서류 수정",

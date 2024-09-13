@@ -136,7 +136,7 @@ public class PostController {
         return this.postService.findAllAppNotice(userDetails.getUser(), pageNum);
     }
 
-    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시글 생성 API(완료)",
@@ -199,7 +199,7 @@ public class PostController {
         return this.postService.deletePost(userDetails.getUser(), id);
     }
 
-    @PutMapping(value = "/{id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PutMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시글 업데이트 API(완료)",

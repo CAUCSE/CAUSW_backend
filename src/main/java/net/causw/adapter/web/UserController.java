@@ -286,7 +286,7 @@ public class UserController {
      * @param userUpdateDto
      * @return UserResponseDto
      */
-    @PutMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PutMapping
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "사용자 정보 업데이트 API (완료)")

@@ -211,7 +211,7 @@ public class CircleController {
      * @param  circleCreateRequestDto 동아리 생성 정보
      * @return Long
      */
-    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
             "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
@@ -251,7 +251,7 @@ public class CircleController {
      * @param  circleUpdateRequestDto 동아리 생성 정보
      * @return Long
      */
-    @PutMapping(value = "/{circleId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PutMapping(value = "/{circleId}")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
             "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
