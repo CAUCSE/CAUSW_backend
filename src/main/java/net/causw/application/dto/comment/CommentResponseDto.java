@@ -54,7 +54,7 @@ public class CommentResponseDto {
                 .postId(comment.getPost().getId())
                 .writerName(comment.getWriter().getName())
                 .writerAdmissionYear(comment.getWriter().getAdmissionYear())
-                .writerProfileImage(comment.getWriter().getProfileImage())
+                .writerProfileImage(comment.getWriter().getProfileImageUuidFile().getFileUrl())
                 .updatable(updatable)
                 .deletable(deletable)
                 .numChildComment(numChildComment)

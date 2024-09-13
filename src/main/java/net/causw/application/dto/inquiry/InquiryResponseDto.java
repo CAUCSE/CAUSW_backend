@@ -3,9 +3,9 @@ package net.causw.application.dto.inquiry;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.domain.model.inquiry.InquiryDomainModel;
+import net.causw.adapter.persistence.inquiry.Inquiry;
+import net.causw.adapter.persistence.user.User;
 import net.causw.domain.model.enums.Role;
-import net.causw.domain.model.user.UserDomainModel;
 
 import java.time.LocalDateTime;
 
@@ -24,13 +24,13 @@ public class InquiryResponseDto {
     private LocalDateTime updatedAt;
 
     public static InquiryResponseDto of(
-            InquiryDomainModel inquiry,
-            UserDomainModel user
+            Inquiry inquiry,
+            User user
     ){
         boolean updatable = false;
         boolean deletable = false;
 
-        if (user.getRoles().contains(Role.ADMIN) || inquiry.getWriter().getId().equals(user.getId())) {
+        if (inquiry.getWriter().getRoles().contains(Role.ADMIN) || user.getId().equals(inquiry.getWriter().getId())) {
             updatable = true;
             deletable = true;
         }

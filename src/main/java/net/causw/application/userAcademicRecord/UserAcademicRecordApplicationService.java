@@ -9,8 +9,8 @@ import net.causw.adapter.persistence.userAcademicRecord.UserAcademicRecordApplic
 import net.causw.adapter.persistence.userAcademicRecord.UserAcademicRecordLog;
 import net.causw.application.dto.semester.CurrentSemesterResponseDto;
 import net.causw.application.dto.userAcademicRecordApplication.*;
-import net.causw.application.dto.util.SemesterDtoMapper;
-import net.causw.application.dto.util.UserAcademicRecordDtoMapper;
+import net.causw.application.dto.util.dtoMapper.SemesterDtoMapper;
+import net.causw.application.dto.util.dtoMapper.UserAcademicRecordDtoMapper;
 import net.causw.application.uuidFile.UuidFileService;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -18,7 +18,6 @@ import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.model.enums.AcademicRecordRequestStatus;
 import net.causw.domain.model.enums.AcademicStatus;
 import net.causw.domain.model.enums.FilePath;
-import net.causw.domain.model.enums.SemesterType;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
 import org.springframework.data.domain.Page;

@@ -5,17 +5,18 @@ import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.locker.Locker;
+import net.causw.adapter.persistence.uuidFile.UuidFile;
+import net.causw.application.dto.user.UserCreateRequestDto;
 import net.causw.domain.model.enums.AcademicStatus;
 import net.causw.domain.model.enums.GraduationType;
 import net.causw.domain.model.enums.Role;
-import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.model.enums.UserState;
 
 import java.util.List;
 import java.util.Set;
 
 @Getter
-@Builder
+@Builder(access = AccessLevel.PROTECTED)
 @Setter
 @Entity
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -28,13 +29,13 @@ public class User extends BaseEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "phone_number", nullable = true)  // 일단 null 가능하게 설정(false 로 하면 기존 데이터와 충돌 예상)
+    @Column(name = "phone_number", unique = true, nullable = true)  // 일단 null 가능하게 설정(false 로 하면 기존 데이터와 충돌 예상)
     private String phoneNumber;
 
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "student_id", nullable = true)
+    @Column(name = "student_id", unique = true, nullable = true)
     private String studentId;
 
     @Column(name = "admission_year", nullable = false)
@@ -47,7 +48,7 @@ public class User extends BaseEntity {
     @Column(name = "major", nullable = true)
     private String major;
 
-    @Column(name = "academic_status", nullable = true)
+    @Column(name = "academic_status", nullable = false)
     @Enumerated(EnumType.STRING)
     private AcademicStatus academicStatus;
 
@@ -69,12 +70,10 @@ public class User extends BaseEntity {
     @Column(name = "role", nullable = false)
     private Set<Role> roles;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @Column(name = "attach_images", length = 500, nullable = true)
-    private List<String> attachImages;
-
-    @Column(name = "profile_image", length = 500, nullable = true)
-    private String profileImage;
+    // 프로필 이미지
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @JoinColumn(name = "profile_image_uuid_file_id", nullable = true)
+    private UuidFile profileImageUuidFile;
 
     @Column(name = "refresh_token", nullable = true)
     private String refreshToken;
@@ -91,28 +90,6 @@ public class User extends BaseEntity {
     @JoinColumn(name = "user_circle_id", nullable = true)
     private List<CircleMember> circleMemberList;
 
-    private User(
-            String id,
-            String email,
-            String name,
-            String password,
-            String studentId,
-            Integer admissionYear,
-            Set<Role> roles,
-            String profileImage,
-            UserState state
-    ) {
-        super(id);
-        this.email = email;
-        this.name = name;
-        this.password = password;
-        this.studentId = studentId;
-        this.admissionYear = admissionYear;
-        this.roles = roles;
-        this.profileImage = profileImage;
-        this.state = state;
-    }
-
     public void delete() {
         this.email = "deleted_" + this.getId();
         this.name = "탈퇴한 사용자";
@@ -120,29 +97,34 @@ public class User extends BaseEntity {
         this.studentId = null;
         this.nickname = null;
         this.major = null;
-        this.profileImage = null;
+        this.profileImageUuidFile = null;
         this.graduationYear = null;
         this.graduationType = null;
         this.state = UserState.DELETED;
     }
 
-    public static User from(UserDomainModel userDomainModel) {
-        return new User(
-                userDomainModel.getId(),
-                userDomainModel.getEmail(),
-                userDomainModel.getName(),
-                userDomainModel.getPassword(),
-                userDomainModel.getStudentId(),
-                userDomainModel.getAdmissionYear(),
-                userDomainModel.getRoles(),
-                userDomainModel.getProfileImage(),
-                userDomainModel.getState()
-        );
+    public static User from (
+            UserCreateRequestDto userCreateRequestDto,
+            String encodedPassword
+    ) {
+        return User.builder()
+                .email(userCreateRequestDto.getEmail())
+                .name(userCreateRequestDto.getName())
+                .roles(Set.of(Role.NONE))
+                .state(UserState.AWAIT)
+                .password(encodedPassword)
+                .studentId(userCreateRequestDto.getStudentId())
+                .admissionYear(userCreateRequestDto.getAdmissionYear())
+                .nickname(userCreateRequestDto.getNickname())
+                .major(userCreateRequestDto.getMajor())
+                .academicStatus(AcademicStatus.UNDETERMINED)
+                .phoneNumber(userCreateRequestDto.getPhoneNumber())
+                .build();
     }
 
-    public void update(String nickname, AcademicStatus academicStatus, String profileImage) {
+    public void update(String nickname, AcademicStatus academicStatus, UuidFile profileImageUuidFile) {
         this.nickname = nickname;
         this.academicStatus = academicStatus;
-        this.profileImage = profileImage;
+        this.profileImageUuidFile = profileImageUuidFile;
     }
 }

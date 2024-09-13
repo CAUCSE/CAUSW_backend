@@ -11,6 +11,7 @@ import jakarta.persistence.Table;
 @Getter
 @Setter
 @Entity
+@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "TB_FLAG")
@@ -26,9 +27,9 @@ public class Flag extends BaseEntity {
             String key,
             Boolean value
     ) {
-        return new Flag(
-                key,
-                value
-        );
+        return Flag.builder()
+                .key(key)
+                .value(value)
+                .build();
     }
 }

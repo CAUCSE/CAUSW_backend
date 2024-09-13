@@ -3,7 +3,6 @@ package net.causw.application.excel;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 import net.causw.application.dto.circle.CircleMemberResponseDto;
-import net.causw.application.dto.userCouncilFee.UserCouncilFeeResponseDto;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.model.util.MessageUtil;

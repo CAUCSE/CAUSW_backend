@@ -39,9 +39,9 @@ public class UserAcademicRecordApplication extends BaseEntity {
     @Column(name = "note", nullable = true)
     private String note;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "user_academic_record_application_id", nullable = true)
-    private List<UuidFile> uuidFileList;
+    private List<UuidFile> userAcademicRecordAttachImageUuidFileList;
 
     @Column(name = "reject_message", nullable = true)
     private String rejectMessage;
@@ -62,7 +62,7 @@ public class UserAcademicRecordApplication extends BaseEntity {
             AcademicStatus academicStatus,
             Integer targetCompletedSemester,
             String note,
-            List<UuidFile> uuidFileList
+            List<UuidFile> userAcademicRecordAttachImageUuidFileList
     ) {
         UserAcademicRecordApplication userAcademicRecordApplication = UserAcademicRecordApplication.builder()
                 .user(user)
@@ -70,21 +70,21 @@ public class UserAcademicRecordApplication extends BaseEntity {
                 .targetAcademicStatus(academicStatus)
                 .targetCompletedSemester(targetCompletedSemester)
                 .note(note)
-                .uuidFileList(uuidFileList)
+                .userAcademicRecordAttachImageUuidFileList(userAcademicRecordAttachImageUuidFileList)
                 .build();
 
         if (academicStatus.equals(AcademicStatus.ENROLLED)) {
             if (targetCompletedSemester == null || targetCompletedSemester < 1) {
                 throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_TARGET_COMPLETED_SEMESTER);
             }
-            if (uuidFileList == null || uuidFileList.isEmpty()) {
+            if (userAcademicRecordAttachImageUuidFileList == null || userAcademicRecordAttachImageUuidFileList.isEmpty()) {
                 throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.FILE_UPLOAD_REQUIRED);
             }
         } else {
             if (targetCompletedSemester != null) {
                 throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_TARGET_COMPLETED_SEMESTER);
             }
-            if (uuidFileList != null) {
+            if (userAcademicRecordAttachImageUuidFileList != null) {
                 throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.FILE_UPLOAD_NOT_ALLOWED);
             }
             userAcademicRecordApplication.getUser().setAcademicStatus(academicStatus);

@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.event.EventCreateRequestDto;
 import net.causw.application.dto.event.EventResponseDto;
@@ -13,8 +14,10 @@ import net.causw.application.dto.event.EventUpdateRequestDto;
 import net.causw.application.dto.event.EventsResponseDto;
 import net.causw.application.event.EventService;
 import net.causw.domain.exceptions.BadRequestException;
+import net.causw.domain.model.util.MessageUtil;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -47,8 +50,10 @@ public class EventController {
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
             "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
     public EventResponseDto createEvent(
-            @Valid @ModelAttribute EventCreateRequestDto eventCreateRequestDto) {
-        return eventService.createEvent(eventCreateRequestDto);
+            @RequestPart(value = "eventCreateRequestDto") @Valid EventCreateRequestDto eventCreateRequestDto,
+            @RequestPart(value = "eventImage") @NotBlank(message = MessageUtil.IMAGE_MUST_NOT_NULL) MultipartFile eventImage
+            ) {
+        return eventService.createEvent(eventCreateRequestDto, eventImage);
     }
 
     @PutMapping("/{eventId}")
@@ -64,8 +69,10 @@ public class EventController {
             "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
     public EventResponseDto updateEvent(
             @PathVariable("eventId") String eventId,
-            @Valid @ModelAttribute EventUpdateRequestDto eventUpdateRequestDto) {
-        return eventService.updateEvent(eventId, eventUpdateRequestDto);
+            @RequestPart(value = "eventUpdateRequestDto") @Valid EventUpdateRequestDto eventUpdateRequestDto,
+            @RequestPart(value = "eventImage", required = false) MultipartFile eventImage
+    ) {
+        return eventService.updateEvent(eventId, eventUpdateRequestDto, eventImage);
     }
 
     @DeleteMapping("/{eventId}")

@@ -85,6 +85,9 @@ public class MessageUtil {
     public static final String NO_APPLICATION = "신청서를 작성하지 않았습니다.";
     public static final String CONCURRENT_JOB_IMPOSSIBLE = "겸직이 불가합니다.";
     public static final String NICKNAME_ALREADY_EXIST = "이미 존재하는 닉네임입니다.";
+    public static final String USER_ADMISSION_MUST_HAVE_IMAGE = "입학 증빙 사진은 필수 입니다.";
+    public static final String STUDENT_ID_ALREADY_EXIST = "이미 존재하는 학번입니다.";
+    public static final String PHONE_NUMBER_ALREADY_EXIST = "이미 존재하는 전화번호입니다.";
 
     // Flag
     public static final String FLAG_UPDATE_FAILED = "플래그 업데이트에 실패했습니다.";
@@ -109,6 +112,14 @@ public class MessageUtil {
 
     // UuidFile
     public static final String FILE_NOT_FOUND = "파일을 찾을 수 없습니다.";
+    public static final String FILE_IS_NULL = "파일이 비어있습니다.";
+    public static final String IMAGE_MUST_NOT_NULL = "이미지는 필수입니다.";
+    public static final String INVALID_FILE_PATH = "유효하지 않은 파일 경로입니다.";
+    public static final String FILE_SIZE_EXCEEDED = "파일 크기가 초과되었습니다.";
+    public static final String NUMBER_OF_FILES_EXCEEDED = "파일 개수가 초과되었습니다.";
+    public static final String FILE_NAME_IS_NULL = "파일 이름이 비어있습니다.";
+    public static final String FILE_EXTENSION_IS_NULL = "파일 확장자가 비어있습니다.";
+    public static final String INVALID_FILE_EXTENSION = "유효하지 않은 파일 확장자입니다.";
 
     // Semester
     public static final String PRIOR_SEMESTER_NOT_FOUND = "이전 학기를 찾을 수 없습니다.";

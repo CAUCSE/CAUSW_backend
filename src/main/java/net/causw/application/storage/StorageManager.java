@@ -10,10 +10,8 @@ import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.model.enums.FilePath;
 import net.causw.domain.model.util.MessageUtil;
-import net.causw.domain.model.util.S3Util;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -29,11 +27,9 @@ public class StorageManager {
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
 
-    protected Map<FileInfo, String> uploadFile(MultipartFile multipartFile, FilePath filePath, String uuid) {
+    protected Map<FileInfo, String> uploadFile(MultipartFile multipartFile, String rawFileName, String extension, FilePath filePath, String uuid) {
 
-        String fileName = S3Util.buildFileName(Objects.requireNonNull(multipartFile.getOriginalFilename()));
-
-        String fileKey = filePath.getDirectory() + "/" + fileName + uuid;
+        String fileKey = this.buildFileKey(uuid, rawFileName, extension, filePath);
 
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentType(multipartFile.getContentType());
@@ -59,9 +55,13 @@ public class StorageManager {
         }
     }
 
+    private String buildFileKey(String uuid, String rawFileName, String extension, FilePath filePath) {
+        return filePath.getDirectory() + "/" + rawFileName + "_" + uuid + "." + extension;
+    }
+
     protected enum FileInfo {
         FILE_URL,
-        FILE_KEY;
+        FILE_KEY
     }
 
 }

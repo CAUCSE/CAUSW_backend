@@ -17,24 +17,21 @@ import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/posts")
 public class PostController {
+
     private final PostService postService;
+
     @GetMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
@@ -139,7 +136,7 @@ public class PostController {
         return this.postService.findAllAppNotice(userDetails.getUser(), pageNum);
     }
 
-    @PostMapping
+    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @ResponseStatus(value = HttpStatus.CREATED)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시글 생성 API(완료)",
@@ -163,10 +160,11 @@ public class PostController {
             @ApiResponse(responseCode = "4107", description = "사용자가 해당 동아리의 동아리장이 아닙니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
     })
     public PostResponseDto createPost(
-            @Valid @RequestBody PostCreateRequestDto postCreateRequestDto,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestPart(value = "postCreateRequestDto") @Valid PostCreateRequestDto postCreateRequestDto,
+            @RequestPart(value = "attachImageList", required = false) List<MultipartFile> attachImageList
     ) {
-        return this.postService.createPost(userDetails.getUser(), postCreateRequestDto);
+        return this.postService.createPost(userDetails.getUser(), postCreateRequestDto, attachImageList);
     }
 
     @DeleteMapping(value = "/{id}")
@@ -201,7 +199,7 @@ public class PostController {
         return this.postService.deletePost(userDetails.getUser(), id);
     }
 
-    @PutMapping(value = "/{id}")
+    @PutMapping(value = "/{id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시글 업데이트 API(완료)",
@@ -230,15 +228,17 @@ public class PostController {
             @ApiResponse(responseCode = "5000", description = "Post id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
     public PostResponseDto updatePost(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("id") String id,
-            @Valid @RequestBody PostUpdateRequestDto postUpdateRequestDto,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @RequestPart(value = "postUpdateRequestDto") @Valid PostUpdateRequestDto postUpdateRequestDto,
+            @RequestPart(value = "attachImageList", required = false) List<MultipartFile> attachImageList
     ) {
 
         return this.postService.updatePost(
                 userDetails.getUser(),
                 id,
-                postUpdateRequestDto
+                postUpdateRequestDto,
+                attachImageList
         );
     }
 

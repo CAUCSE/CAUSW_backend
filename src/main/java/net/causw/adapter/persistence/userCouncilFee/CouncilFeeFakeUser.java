@@ -6,11 +6,8 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
-import net.causw.domain.exceptions.BadRequestException;
-import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.enums.AcademicStatus;
 import net.causw.domain.model.enums.GraduationType;
-import net.causw.domain.model.util.MessageUtil;
 
 @Getter
 @Entity

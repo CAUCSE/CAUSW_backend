@@ -22,15 +22,23 @@ public class UuidFile extends BaseEntity {
     @Column(name = "file_url", unique = true, nullable = false)
     private String fileUrl;
 
+    @Column(name = "raw_file_name", nullable = false)
+    private String rawFileName;
+
+    @Column(name = "extension", nullable = false)
+    private String extension;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "file_path", nullable = false)
     private FilePath filePath;
 
-    public static UuidFile of(String uuid, String fileKey, String fileUrl, FilePath filePath) {
+    public static UuidFile of(String uuid, String fileKey, String fileUrl, String rawFileName, String extension, FilePath filePath) {
         return UuidFile.builder()
                 .uuid(uuid)
                 .fileKey(fileKey)
                 .fileUrl(fileUrl)
+                .rawFileName(rawFileName)
+                .extension(extension)
                 .filePath(filePath)
                 .build();
     }

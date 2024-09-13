@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.calendar.CalendarService;
 import net.causw.application.dto.calendar.CalendarCreateRequestDto;
@@ -13,9 +14,11 @@ import net.causw.application.dto.calendar.CalendarResponseDto;
 import net.causw.application.dto.calendar.CalendarUpdateRequestDto;
 import net.causw.application.dto.calendar.CalendarsResponseDto;
 import net.causw.domain.exceptions.BadRequestException;
+import net.causw.domain.model.util.MessageUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -80,8 +83,10 @@ public class CalendarController {
             @ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     public CalendarResponseDto createCalendar(
-            @Valid @ModelAttribute CalendarCreateRequestDto calendarCreateRequestDto) {
-        return calendarService.createCalendar(calendarCreateRequestDto);
+            @RequestPart @Valid CalendarCreateRequestDto calendarCreateRequestDto,
+            @RequestPart(value = "image") @NotNull(message = MessageUtil.IMAGE_MUST_NOT_NULL) MultipartFile image
+            ) {
+        return calendarService.createCalendar(calendarCreateRequestDto, image);
     }
 
     @PutMapping("/{calendarId}")
@@ -97,7 +102,9 @@ public class CalendarController {
     })
     public CalendarResponseDto updateCalendar(
             @PathVariable("calendarId") String calendarId,
-            @Valid @ModelAttribute CalendarUpdateRequestDto calendarUpdateRequestDto) {
-        return calendarService.updateCalendar(calendarId, calendarUpdateRequestDto);
+            @RequestPart @Valid CalendarUpdateRequestDto calendarUpdateRequestDto,
+            @RequestPart(value = "image") @NotNull(message = MessageUtil.IMAGE_MUST_NOT_NULL) MultipartFile image
+    ) {
+        return calendarService.updateCalendar(calendarId, calendarUpdateRequestDto, image);
     }
 }

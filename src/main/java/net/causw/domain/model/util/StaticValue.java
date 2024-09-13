@@ -31,11 +31,27 @@ public class StaticValue {
     public static final String SWAGGER_API_VERSION = "0.0.1";
     public static final String SWAGGER_API_DESCRIPTION = "2024 RENEW ver. 중앙대학교 소프트웨어학부 동문네트워크 BACKEND API 스웨거 문서입니다.";
 
-    // S3 Configuration
-    public static final Long ATTACHMENT_LIMIT_SIZE = (long) (50 * 1024 * 1024);
-    public static final Long IMAGE_LIMIT_SIZE = (long) (20 * 1024 * 1024);
-    public static final String GCS_PUBLIC_LINK_PREFIX = "https://storage.googleapis.com/";
-    public static final List<String> IMAGE_EXTENSION_LIST = List.of("JPEG", "JPG", "PNG");
+    // UuidFile
+    // 파일 당 크기 제한
+    public static final Long USER_PROFILE_IMAGE_SIZE = (long) (10 * 1024 * 1024);
+    public static final Long USER_ADMISSION_IMAGE_SIZE = (long) (10 * 1024 * 1024);
+    public static final Long USER_ACADEMIC_RECORD_APPLICATION_IMAGE_SIZE = (long) (10 * 1024 * 1024);
+    public static final Long CIRCLE_PROFILE_IMAGE_SIZE = (long) (10 * 1024 * 1024);
+    public static final Long POST_IMAGE_SIZE = (long) (10 * 1024 * 1024);
+    public static final Long CALENDAR_IMAGE_SIZE = (long) (50 * 1024 * 1024);
+    public static final Long EVENT_IMAGE_SIZE = (long) (50 * 1024 * 1024);
+    public static final Long ETC_FILE_SIZE = (long) (100 * 1024 * 1024);
+    // 파일 개수 제한
+    public static final Integer MAX_NUM_USER_PROFILE_IMAGE = 1;
+    public static final Integer MAX_NUM_USER_ADMISSION_IMAGE = 5;
+    public static final Integer MAX_NUM_USER_ACADEMIC_RECORD_APPLICATION_IMAGE = 5;
+    public static final Integer MAX_NUM_CIRCLE_PROFILE_IMAGE = 1;
+    public static final Integer MAX_NUM_POST_IMAGE = 10;
+    public static final Integer MAX_NUM_CALENDAR_IMAGE = 1;
+    public static final Integer MAX_NUM_EVENT_IMAGE = 1;
+    public static final Integer MAX_NUM_ETC_FILE = 10;
+    // 파일 확장자 제한
+    public static final List<String> IMAGE_FILE_EXTENSION_LIST = List.of("JPEG", "JPG", "PNG");
 
     // Domain
     public static final String DOMAIN_BOARD = "게시판";

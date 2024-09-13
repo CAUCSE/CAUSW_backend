@@ -10,6 +10,7 @@ import org.hibernate.annotations.ColumnDefault;
 
 @Getter
 @Entity
+@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_board_apply")
@@ -51,15 +52,15 @@ public class BoardApply extends BaseEntity {
             description = "";
         }
 
-        return new BoardApply(
-                user,
-                boardName,
-                description,
-                "ALL", // 모든 권한. 이렇게 넘기면 Board.of에서 List.of에 넣어서 일관된 처리
-                category,
-                BoardApplyStatus.AWAIT,
-                true
-        );
+        return BoardApply.builder()
+                .user(user)
+                .boardName(boardName)
+                .description(description)
+                .createRoles("ALL") // 모든 권한. 이렇게 넘기면 Board.of에서 List.of에 넣어서 일관된 처리
+                .category(category)
+                .acceptStatus(BoardApplyStatus.AWAIT)
+                .isAnonymousAllowed(isAnonymousAllowed)
+                .build();
     }
 
     public void updateAcceptStatus(BoardApplyStatus status) {

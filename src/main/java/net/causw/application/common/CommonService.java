@@ -5,20 +5,9 @@ import net.causw.adapter.persistence.flag.Flag;
 import net.causw.adapter.persistence.repository.FlagRepository;
 import net.causw.adapter.persistence.repository.TextFieldRepository;
 import net.causw.adapter.persistence.textfield.TextField;
-import net.causw.application.spi.FlagPort;
-import net.causw.application.spi.UserPort;
-import net.causw.domain.exceptions.BadRequestException;
-import net.causw.domain.exceptions.ErrorCode;
-import net.causw.domain.exceptions.InternalServerException;
-import net.causw.domain.model.enums.Role;
-import net.causw.domain.model.user.UserDomainModel;
-import net.causw.domain.model.util.MessageUtil;
-import net.causw.domain.validation.UserRoleValidator;
-import net.causw.domain.validation.ValidatorBucket;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
-import java.util.List;
 import java.util.Optional;
 
 @Service

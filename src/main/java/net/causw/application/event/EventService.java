@@ -8,7 +8,7 @@ import net.causw.application.dto.event.EventCreateRequestDto;
 import net.causw.application.dto.event.EventResponseDto;
 import net.causw.application.dto.event.EventUpdateRequestDto;
 import net.causw.application.dto.event.EventsResponseDto;
-import net.causw.application.dto.util.DtoMapper;
+import net.causw.application.dto.util.dtoMapper.EventDtoMapper;
 import net.causw.application.uuidFile.UuidFileService;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -17,6 +17,7 @@ import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -29,17 +30,17 @@ public class EventService {
     @Transactional(readOnly = true)
     public EventsResponseDto findEvents() {
         List<EventResponseDto> events = eventRepository.findByIsDeletedIsFalse().stream()
-                .map(DtoMapper.INSTANCE::toEventResponseDto)
+                .map(EventDtoMapper.INSTANCE::toEventResponseDto)
                 .toList();
 
-        return DtoMapper.INSTANCE.toEventsResponseDto(
+        return EventDtoMapper.INSTANCE.toEventsResponseDto(
                 events.size(),
                 events
         );
     }
 
     @Transactional
-    public EventResponseDto createEvent(EventCreateRequestDto eventCreateRequestDto) {
+    public EventResponseDto createEvent(EventCreateRequestDto eventCreateRequestDto, MultipartFile eventImage) {
         if (eventRepository.findByIsDeletedIsFalse().size() >= StaticValue.MAX_NUM_EVENT) {
             throw new BadRequestException(
                     ErrorCode.CANNOT_PERFORMED,
@@ -47,9 +48,9 @@ public class EventService {
             );
         }
 
-        UuidFile uuidFile = uuidFileService.saveFile(eventCreateRequestDto.getImage(), FilePath.EVENT);
+        UuidFile uuidFile = uuidFileService.saveFile(eventImage, FilePath.EVENT);
 
-        return DtoMapper.INSTANCE.toEventResponseDto(
+        return EventDtoMapper.INSTANCE.toEventResponseDto(
                 eventRepository.save(
                         Event.of(
                                 eventCreateRequestDto.getUrl(),
@@ -61,21 +62,25 @@ public class EventService {
     }
 
     @Transactional
-    public EventResponseDto updateEvent(String eventId, EventUpdateRequestDto eventUpdateRequestDto) {
+    public EventResponseDto updateEvent(String eventId, EventUpdateRequestDto eventUpdateRequestDto, MultipartFile eventImage) {
         Event event = getEvent(eventId);
-        UuidFile uuidFile = uuidFileService.saveFile(eventUpdateRequestDto.getImage(), FilePath.EVENT);
+
+        UuidFile uuidFile = (eventImage.isEmpty()) ?
+                event.getEventImageUuidFile() :
+                uuidFileService.saveFile(eventImage, FilePath.EVENT);
+
         event.update(
                 eventUpdateRequestDto.getUrl(),
                 uuidFile
         );
-        return DtoMapper.INSTANCE.toEventResponseDto(eventRepository.save(event));
+        return EventDtoMapper.INSTANCE.toEventResponseDto(eventRepository.save(event));
     }
 
     @Transactional
     public EventResponseDto deleteEvent(String eventId) {
         Event event = getEvent(eventId);
         event.setIsDeleted(true);
-        return DtoMapper.INSTANCE.toEventResponseDto(eventRepository.save(event));
+        return EventDtoMapper.INSTANCE.toEventResponseDto(eventRepository.save(event));
     }
 
     private Event getEvent(String eventId) {

@@ -1,6 +1,5 @@
 package net.causw.adapter.persistence.userCouncilFee;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;

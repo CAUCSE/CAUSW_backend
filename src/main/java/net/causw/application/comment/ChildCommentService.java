@@ -12,7 +12,7 @@ import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.comment.ChildCommentCreateRequestDto;
 import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.ChildCommentUpdateRequestDto;
-import net.causw.application.dto.util.DtoMapper;
+import net.causw.application.dto.util.dtoMapper.CommentDtoMapper;
 import net.causw.application.dto.util.StatusUtil;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -221,7 +221,7 @@ public class ChildCommentService {
     }
 
     private ChildCommentResponseDto toChildCommentResponseDto(ChildComment comment, Long childCommentLike, Boolean updatable, Boolean deletable) {
-        return DtoMapper.INSTANCE.toChildCommentResponseDto(comment, childCommentLike, updatable, deletable);
+        return CommentDtoMapper.INSTANCE.toChildCommentResponseDto(comment, childCommentLike, updatable, deletable);
     }
 
     private User getUser(String userId) {

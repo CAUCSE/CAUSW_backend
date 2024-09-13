@@ -5,7 +5,6 @@ import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.Role;
 
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Set;
 
 public class UserRoleValidator extends AbstractValidator {

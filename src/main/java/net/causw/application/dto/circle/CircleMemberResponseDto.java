@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.adapter.persistence.circle.CircleMember;
-import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.user.UserResponseDto;
 import net.causw.domain.model.enums.CircleMemberStatus;
 
@@ -27,17 +25,5 @@ public class CircleMemberResponseDto {
 
     @Schema(description = "유저 정보")
     private UserResponseDto user;
-
-    public static CircleMemberResponseDto from(
-            User user,
-            CircleMember circleMember
-    ) {
-        return CircleMemberResponseDto.builder()
-                .id(circleMember.getId())
-                .status(circleMember.getStatus())
-                .circle(CircleResponseDto.from(circleMember.getCircle()))
-                .user(UserResponseDto.from(user))
-                .build();
-    }
 
 }

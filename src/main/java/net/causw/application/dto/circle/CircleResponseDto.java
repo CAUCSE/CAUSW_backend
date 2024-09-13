@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.adapter.persistence.circle.Circle;
-import net.causw.adapter.persistence.user.User;
 
 import java.time.LocalDateTime;
 
@@ -15,8 +13,6 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 public class CircleResponseDto {
-
-
 
     @Schema(description = "동아리 ID", example = "UUID 형식의 동아리 고유 ID String 값 입니다.")
     private String id;
@@ -57,65 +53,4 @@ public class CircleResponseDto {
     @Schema(description = "동아리 모집 여부", example = "false")
     private Boolean isRecruit;
 
-//
-//    public static CircleResponseDto from(CircleDomainModel circle) {
-//        return CircleResponseDto.builder()
-//                .id(circle.getId())
-//                .name(circle.getName())
-//                .mainImage(circle.getMainImage())
-//                .description(circle.getDescription())
-//                .isDeleted(circle.getIsDeleted())
-//                .leaderId(circle.getLeader().map(UserDomainModel::getId).orElse(null))
-//                .leaderName(circle.getLeader().map(UserDomainModel::getName).orElse(null))
-//                .createdAt(circle.getCreatedAt())
-//                .build();
-//    }
-//
-//    public static CircleResponseDto from(CircleDomainModel circle, Long numMember) {
-//        return CircleResponseDto.builder()
-//                .id(circle.getId())
-//                .name(circle.getName())
-//                .mainImage(circle.getMainImage())
-//                .description(circle.getDescription())
-//                .isDeleted(circle.getIsDeleted())
-//                .leaderId(circle.getLeader().map(UserDomainModel::getId).orElse(null))
-//                .leaderName(circle.getLeader().map(UserDomainModel::getName).orElse(null))
-//                .numMember(numMember)
-//                .createdAt(circle.getCreatedAt())
-//                .build();
-//    }
-//
-//
-
-    //circle domainmodel 삭제 작업 중 충돌을 방지하기 위해 별도 생성
-    public static CircleResponseDto from(Circle circle) {
-        return CircleResponseDto.builder()
-                .id(circle.getId())
-                .name(circle.getName())
-                .mainImage(circle.getMainImage())
-                .description(circle.getDescription())
-                .isDeleted(circle.getIsDeleted())
-                .circleTax(circle.getCircleTax())
-                .recruitMembers(circle.getRecruitMembers())
-                .leaderId(circle.getLeader().map(User::getId).orElse(null))
-                .leaderName(circle.getLeader().map(User::getName).orElse(null))
-                .createdAt(circle.getCreatedAt())
-                .build();
-    }
-
-    public static CircleResponseDto from(Circle circle, Long numMember) {
-        return CircleResponseDto.builder()
-                .id(circle.getId())
-                .name(circle.getName())
-                .mainImage(circle.getMainImage())
-                .description(circle.getDescription())
-                .isDeleted(circle.getIsDeleted())
-                .circleTax(circle.getCircleTax())
-                .recruitMembers(circle.getRecruitMembers())
-                .leaderId(circle.getLeader().map(User::getId).orElse(null))
-                .leaderName(circle.getLeader().map(User::getName).orElse(null))
-                .numMember(numMember)
-                .createdAt(circle.getCreatedAt())
-                .build();
-    }
 }

@@ -2,15 +2,13 @@ package net.causw.adapter.persistence.comment;
 
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.user.User;
 
 @Getter
 @Entity
+@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_like_comment")
@@ -23,13 +21,10 @@ public class LikeComment extends BaseEntity{
     @JoinColumn(name = "user_id")
     private User user;
 
-    private LikeComment(String id, Comment comment, User user) {
-        super(id);
-        this.comment = comment;
-        this.user = user;
-    }
-
     public static LikeComment of(Comment comment, User user) {
-        return new LikeComment(comment, user);
+        return LikeComment.builder()
+                .comment(comment)
+                .user(user)
+                .build();
     }
 }

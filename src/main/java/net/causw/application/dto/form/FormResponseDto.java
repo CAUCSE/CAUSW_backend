@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.user.UserResponseDto;
 
 import java.util.List;
