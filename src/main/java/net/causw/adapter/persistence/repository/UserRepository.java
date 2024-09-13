@@ -1,5 +1,6 @@
 package net.causw.adapter.persistence.repository;
 
+import jakarta.validation.constraints.Pattern;
 import net.causw.adapter.persistence.user.User;
 import net.causw.domain.model.enums.AcademicStatus;
 import net.causw.domain.model.enums.Role;
@@ -62,4 +63,5 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     Optional<User> findByStudentId(String studentId);
 
+    Optional<User> findByPhoneNumber(@Pattern(regexp = "^01(?:0|1|[6-9])(\\d{3}|\\d{4})\\d{4}$", message = "전화번호 형식에 맞지 않습니다.") String phoneNumber);
 }

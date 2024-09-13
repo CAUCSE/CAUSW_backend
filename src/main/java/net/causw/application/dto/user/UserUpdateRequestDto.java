@@ -1,10 +1,7 @@
 package net.causw.application.dto.user;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,11 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserUpdateRequestDto {
-
-    @Email(message = "이메일 형식에 맞지 않습니다.")
-    @NotBlank(message = "이메일을 입력해 주세요.")
-    @Schema(description = "이메일", example = "yebin@cau.ac.kr")
-    private String email;
 
     @NotBlank(message = "이름을 입력해 주세요.")
     @Schema(description = "이름", example = "이에빈")
@@ -61,5 +53,6 @@ public class UserUpdateRequestDto {
 
     @NotBlank(message = "전화번호를 입력해 주세요.")
     @Schema(description = "전화번호", example = "01012345678")
+    @Pattern(regexp = "^01(?:0|1|[6-9])(\\d{3}|\\d{4})\\d{4}$", message = "전화번호 형식에 맞지 않습니다.")
     private String phoneNumber;
 }

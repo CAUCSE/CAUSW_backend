@@ -512,6 +512,24 @@ public class UserService {
                 }
         );
 
+        this.userRepository.findByStudentId(userCreateRequestDto.getStudentId()).ifPresent(
+                studentId -> {
+                    throw new BadRequestException(
+                            ErrorCode.ROW_ALREADY_EXIST,
+                            MessageUtil.STUDENT_ID_ALREADY_EXIST
+                    );
+                }
+        );
+
+        this.userRepository.findByPhoneNumber(userCreateRequestDto.getPhoneNumber()).ifPresent(
+                phoneNumber -> {
+                    throw new BadRequestException(
+                            ErrorCode.ROW_ALREADY_EXIST,
+                            MessageUtil.PHONE_NUMBER_ALREADY_EXIST
+                    );
+                }
+        );
+
         User user = User.from(userCreateRequestDto, passwordEncoder.encode(userCreateRequestDto.getPassword()));
 
         this.userRepository.save(user);
@@ -625,6 +643,24 @@ public class UserService {
                     }
             );
         }
+
+        this.userRepository.findByStudentId(userUpdateRequestDto.getStudentId()).ifPresent(
+                studentId -> {
+                    throw new BadRequestException(
+                            ErrorCode.ROW_ALREADY_EXIST,
+                            MessageUtil.STUDENT_ID_ALREADY_EXIST
+                    );
+                }
+        );
+
+        this.userRepository.findByPhoneNumber(userUpdateRequestDto.getPhoneNumber()).ifPresent(
+                phoneNumber -> {
+                    throw new BadRequestException(
+                            ErrorCode.ROW_ALREADY_EXIST,
+                            MessageUtil.PHONE_NUMBER_ALREADY_EXIST
+                    );
+                }
+        );
 
         //다른 서비스단과 update 방식 통일하기
         UuidFile profileImageUuidFile = (profileImage == null) ?

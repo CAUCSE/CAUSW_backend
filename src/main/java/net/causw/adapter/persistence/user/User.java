@@ -29,13 +29,13 @@ public class User extends BaseEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "phone_number", nullable = true)  // 일단 null 가능하게 설정(false 로 하면 기존 데이터와 충돌 예상)
+    @Column(name = "phone_number", unique = true, nullable = true)  // 일단 null 가능하게 설정(false 로 하면 기존 데이터와 충돌 예상)
     private String phoneNumber;
 
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "student_id", nullable = true)
+    @Column(name = "student_id", unique = true, nullable = true)
     private String studentId;
 
     @Column(name = "admission_year", nullable = false)
@@ -48,7 +48,7 @@ public class User extends BaseEntity {
     @Column(name = "major", nullable = true)
     private String major;
 
-    @Column(name = "academic_status", nullable = true)
+    @Column(name = "academic_status", nullable = false)
     @Enumerated(EnumType.STRING)
     private AcademicStatus academicStatus;
 
