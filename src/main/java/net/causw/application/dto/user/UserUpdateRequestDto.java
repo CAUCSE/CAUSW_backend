@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.causw.domain.model.enums.AcademicStatus;
-import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter

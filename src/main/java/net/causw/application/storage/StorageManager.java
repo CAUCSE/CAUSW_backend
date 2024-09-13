@@ -10,7 +10,6 @@ import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.model.enums.FilePath;
 import net.causw.domain.model.util.MessageUtil;
-import net.causw.domain.model.util.S3Util;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
