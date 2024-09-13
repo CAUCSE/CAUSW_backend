@@ -121,6 +121,7 @@ public interface DtoMapper{
     @Mapping(target = "writerProfileImage", source = "comment.writer.profileImage")
     @Mapping(target = "postId", source = "comment.post.id")
     @Mapping(target = "isAnonymous", source = "comment.isAnonymous")
+    @Mapping(target = "childCommentList", source = "childCommentList")
     @Mapping(target ="numLike", source = "numCommentLike")
     CommentResponseDto toCommentResponseDto(Comment comment, Long numChildComment, Long numCommentLike, List<ChildCommentResponseDto> childCommentList, Boolean updatable, Boolean deletable);
 
@@ -128,7 +129,7 @@ public interface DtoMapper{
     @Mapping(target = "writerAdmissionYear", source = "childComment.writer.admissionYear")
     @Mapping(target = "writerProfileImage", source = "childComment.writer.profileImage")
     @Mapping(target = "isAnonymous", source = "childComment.isAnonymous")
-    @Mapping(target ="numLike", source = "numChildCommentLike")
+    @Mapping(target = "numLike", source = "numChildCommentLike")
     ChildCommentResponseDto toChildCommentResponseDto(ChildComment childComment, Long numChildCommentLike, Boolean updatable, Boolean deletable);
 
     @Mapping(target = "boardId", source = "entity.id")

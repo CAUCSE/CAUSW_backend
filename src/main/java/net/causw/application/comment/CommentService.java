@@ -194,7 +194,12 @@ public class CommentService {
                 childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
                 getNumOfCommentLikes(comment),
                 comment.getChildCommentList().stream()
-                        .map(childComment -> DtoMapper.INSTANCE.toChildCommentResponseDto(childComment, getNumOfChildCommentLikes(childComment), StatusUtil.isUpdatable(childComment, user), StatusUtil.isDeletable(childComment, user, board)))
+                        .map(childComment -> DtoMapper.INSTANCE.toChildCommentResponseDto(
+                                childComment,
+                                getNumOfChildCommentLikes(childComment),
+                                StatusUtil.isUpdatable(childComment, user),
+                                StatusUtil.isDeletable(childComment, user, board))
+                        )
                         .collect(Collectors.toList()),
                 StatusUtil.isUpdatable(comment, user),
                 StatusUtil.isDeletable(comment, user, board)
