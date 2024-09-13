@@ -54,7 +54,6 @@ public class ChildCommentDomainModel {
             String content,
             Boolean isDeleted,
             String tagUserName,
-            String refChildComment,
             UserDomainModel writer,
             CommentDomainModel parentComment,
             LocalDateTime createdAt,
@@ -65,7 +64,6 @@ public class ChildCommentDomainModel {
                 .content(content)
                 .isDeleted(isDeleted)
                 .tagUserName(tagUserName)
-                .refChildComment(refChildComment)
                 .writer(writer)
                 .parentComment(parentComment)
                 .createdAt(createdAt)

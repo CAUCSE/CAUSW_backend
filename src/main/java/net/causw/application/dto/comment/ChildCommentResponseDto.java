@@ -8,7 +8,6 @@ import lombok.Setter;
 import net.causw.adapter.persistence.comment.ChildComment;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 @Setter
@@ -20,8 +19,6 @@ public class ChildCommentResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Boolean isDeleted;
-    private String tagUserName;
-    private String refChildComment;
     private String writerName;
     private Integer writerAdmissionYear;
     private String writerProfileImage;
@@ -46,8 +43,6 @@ public class ChildCommentResponseDto {
                 .createdAt(comment.getCreatedAt())
                 .updatedAt(comment.getUpdatedAt())
                 .isDeleted(comment.getIsDeleted())
-                .tagUserName(comment.getTagUserName())
-                .refChildComment(comment.getRefChildComment())
                 .writerName(comment.getWriter().getName())
                 .writerAdmissionYear(comment.getWriter().getAdmissionYear())
                 .writerProfileImage(comment.getWriter().getProfileImage())

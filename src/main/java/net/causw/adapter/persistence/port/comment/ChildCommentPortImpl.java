@@ -32,7 +32,8 @@ public class ChildCommentPortImpl extends DomainModelMapper implements ChildComm
 
     @Override
     public ChildCommentDomainModel create(ChildCommentDomainModel childCommentDomainModel, PostDomainModel postDomainModel) {
-        return this.entityToDomainModel(this.childCommentRepository.save(ChildComment.from(childCommentDomainModel, postDomainModel)));
+//        return this.entityToDomainModel(this.childCommentRepository.save(ChildComment.from(childCommentDomainModel, postDomainModel)));
+        return null;
     }
 
     @Override

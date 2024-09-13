@@ -142,7 +142,6 @@ public abstract class DomainModelMapper {
                 comment.getContent(),
                 comment.getIsDeleted(),
                 comment.getTagUserName(),
-                comment.getRefChildComment(),
                 this.entityToDomainModel(comment.getWriter()),
                 this.entityToDomainModel(comment.getParentComment()),
                 comment.getCreatedAt(),

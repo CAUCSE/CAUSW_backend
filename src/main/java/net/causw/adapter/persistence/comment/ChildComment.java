@@ -6,8 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.base.BaseEntity;
-import net.causw.domain.model.comment.ChildCommentDomainModel;
-import net.causw.domain.model.post.PostDomainModel;
 import org.hibernate.annotations.ColumnDefault;
 
 import jakarta.persistence.Column;
@@ -36,9 +34,6 @@ public class ChildComment extends BaseEntity {
     @Column(name = "tag_user_name")
     private String tagUserName;
 
-    @Column(name = "ref_child_comment")
-    private String refChildComment;
-
     @ManyToOne(targetEntity = User.class)
     @JoinColumn(name = "user_id", nullable = false)
     private User writer;
@@ -51,46 +46,43 @@ public class ChildComment extends BaseEntity {
             String id,
             String content,
             Boolean isDeleted,
-            String tagUserName,
-            String refChildComment,
+            Boolean isAnonymous,
             User writer,
             Comment parentComment
     ) {
         super(id);
         this.content = content;
         this.isDeleted = isDeleted;
-        this.tagUserName = tagUserName;
-        this.refChildComment = refChildComment;
+        this.isAnonymous = isAnonymous;
         this.writer = writer;
         this.parentComment = parentComment;
     }
 
-
-    public static ChildComment from(
-            ChildCommentDomainModel childCommentDomainModel,
-            PostDomainModel postDomainModel
+    public ChildComment(
+            String content,
+            Boolean isDeleted,
+            Boolean isAnonymous,
+            User writer,
+            Comment parentComment
     ) {
-        return new ChildComment(
-                childCommentDomainModel.getId(),
-                childCommentDomainModel.getContent(),
-                childCommentDomainModel.getIsDeleted(),
-                childCommentDomainModel.getTagUserName(),
-                childCommentDomainModel.getRefChildComment(),
-                User.from(childCommentDomainModel.getWriter()),
-                Comment.from(childCommentDomainModel.getParentComment(), postDomainModel)
-        );
+        this.content = content;
+        this.isDeleted = isDeleted;
+        this.isAnonymous = isAnonymous;
+        this.writer = writer;
+        this.parentComment = parentComment;
     }
 
     public static ChildComment of(
             String content,
             Boolean isDeleted,
             Boolean isAnonymous,
-            String tagUserName,
-            String refChildComment,
+//            String tagUserName,
+//            String refChildComment,
             User writer,
             Comment parentComment
     ) {
-        return new ChildComment(content, isDeleted, isAnonymous, tagUserName, refChildComment, writer, parentComment);
+//        return new ChildComment(content, isDeleted, isAnonymous, tagUserName, refChildComment, writer, parentComment);
+        return new ChildComment(content, isDeleted, isAnonymous, writer, parentComment);
     }
 
     public void delete(){
@@ -101,7 +93,6 @@ public class ChildComment extends BaseEntity {
     public void update(String content, String tagUserName, String refChildComment){
         this.content = content;
         this.tagUserName = tagUserName;
-        this.refChildComment = refChildComment;
     }
 
     public void update(String content){
