@@ -18,8 +18,6 @@ public class ChildCommentResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Boolean isDeleted;
-    private String tagUserName;
-    private String refChildComment;
     private String writerName;
     private Integer writerAdmissionYear;
     private String writerProfileImage;
@@ -31,5 +29,4 @@ public class ChildCommentResponseDto {
 
     @Schema(description = "대댓글 종아요 수", example = "10")
     private Long numLike;
-
 }

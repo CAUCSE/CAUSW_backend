@@ -47,13 +47,10 @@ public class ChildCommentService {
     public ChildCommentResponseDto createChildComment(User creator, ChildCommentCreateRequestDto childCommentCreateRequestDto) {
         Comment parentComment = getComment(childCommentCreateRequestDto.getParentCommentId());
         Post post = getPost(parentComment.getPost().getId());
-        Optional<ChildComment> refChildComment = childCommentCreateRequestDto.getRefChildComment().map(this::getChildComment);
         ChildComment childComment = ChildComment.of(
                 childCommentCreateRequestDto.getContent(),
                 false,
                 childCommentCreateRequestDto.getIsAnonymous(),
-                refChildComment.map(refChild -> refChild.getWriter().getName()).orElse(null),
-                childCommentCreateRequestDto.getRefChildComment().orElse(null),
                 creator,
                 parentComment
         );
@@ -62,9 +59,7 @@ public class ChildCommentService {
         validatorBucket
                 .consistOf(ConstraintValidator.of(childComment, this.validator))
                 .consistOf(UserStateIsDeletedValidator.of(parentComment.getWriter().getState()));
-        refChildComment.ifPresent(
-                refChild -> validatorBucket.consistOf(TargetIsDeletedValidator.of(refChild.getIsDeleted(), StaticValue.DOMAIN_CHILD_COMMENT))
-        );
+
         validatorBucket.validate();
 
         return toChildCommentResponseDto(
