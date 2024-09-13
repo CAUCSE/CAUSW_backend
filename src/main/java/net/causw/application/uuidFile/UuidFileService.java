@@ -132,7 +132,7 @@ public class UuidFileService extends StorageManager {
             throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.FILE_IS_NULL);
         }
 
-        String extension = this.getExtension(file.getOriginalFilename()).toUpperCase();
+        String extension = this.getExtension(file.getOriginalFilename()).toLowerCase();
 
         if (file.getSize() > filePath.getMaxFileSize()) {
             throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.FILE_SIZE_EXCEEDED);
@@ -148,7 +148,7 @@ public class UuidFileService extends StorageManager {
             }
         }
         if (!isValidExtension) {
-            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_FILE_EXTENSION);
+            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_FILE_EXTENSION + "확장자: " + extension);
         }
     }
 
@@ -159,7 +159,7 @@ public class UuidFileService extends StorageManager {
         }
 
         if (fileList.size() > filePath.getMaxFileCount()) {
-            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.NUMBER_OF_FILES_EXCEEDED);
+            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.NUMBER_OF_FILES_EXCEEDED + "파일 개수: " + fileList.size());
         }
     }
 

@@ -83,7 +83,7 @@ public class CalendarController {
             @ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     public CalendarResponseDto createCalendar(
-            @RequestPart @Valid CalendarCreateRequestDto calendarCreateRequestDto,
+            @RequestPart(value = "calendarCreateRequestDto") @Valid CalendarCreateRequestDto calendarCreateRequestDto,
             @RequestPart(value = "image") @NotNull(message = MessageUtil.IMAGE_MUST_NOT_NULL) MultipartFile image
             ) {
         return calendarService.createCalendar(calendarCreateRequestDto, image);
@@ -102,7 +102,7 @@ public class CalendarController {
     })
     public CalendarResponseDto updateCalendar(
             @PathVariable("calendarId") String calendarId,
-            @RequestPart @Valid CalendarUpdateRequestDto calendarUpdateRequestDto,
+            @RequestPart(value = "calendarUpdateRequestDto") @Valid CalendarUpdateRequestDto calendarUpdateRequestDto,
             @RequestPart(value = "image") @NotNull(message = MessageUtil.IMAGE_MUST_NOT_NULL) MultipartFile image
     ) {
         return calendarService.updateCalendar(calendarId, calendarUpdateRequestDto, image);

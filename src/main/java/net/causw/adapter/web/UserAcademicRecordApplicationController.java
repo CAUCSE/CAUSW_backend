@@ -200,7 +200,7 @@ public class UserAcademicRecordApplicationController {
      * @param imageFileList
      * @return
      */
-    @PostMapping(value = "/application/create", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PostMapping(value = "/application/create")
     @ResponseStatus(value = HttpStatus.CREATED)
     @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
     @Operation(summary = "사용자 본인의 학적 증빙 서류 제출",
