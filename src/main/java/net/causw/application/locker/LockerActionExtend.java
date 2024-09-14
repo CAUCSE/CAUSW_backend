@@ -2,13 +2,11 @@ package net.causw.application.locker;
 
 import lombok.NoArgsConstructor;
 import net.causw.adapter.persistence.locker.Locker;
-import net.causw.adapter.persistence.locker.LockerLog;
 import net.causw.adapter.persistence.user.User;
 import net.causw.application.common.CommonService;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
-import net.causw.domain.model.enums.LockerLogAction;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
@@ -16,7 +14,6 @@ import net.causw.domain.validation.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 

@@ -5,13 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.adapter.persistence.board.Board;
-import net.causw.domain.model.enums.Role;
 import org.springframework.data.domain.Page;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 @Getter
 @Setter
@@ -34,20 +28,4 @@ public class BoardPostsResponseDto {
     @Schema(description = "게시글 정보입니다")
     private Page<PostsResponseDto> post;
 
-    // FIXME: 리팩토링 후 삭제예정
-    public static BoardPostsResponseDto of(
-            Board board,
-            Role userRole,
-            Boolean isFavorite,
-            Page<PostsResponseDto> post
-    ) {
-        List<String> roles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
-        return BoardPostsResponseDto.builder()
-                .boardId(board.getId())
-                .boardName(board.getName())
-                .writable(roles.stream().anyMatch(str -> userRole.getValue().contains(str)))
-                .isFavorite(isFavorite)
-                .post(post)
-                .build();
-    }
 }

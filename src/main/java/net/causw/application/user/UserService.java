@@ -11,14 +11,15 @@ import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.user.UserAdmission;
 import net.causw.adapter.persistence.user.UserAdmissionLog;
-import net.causw.adapter.persistence.repository.BoardRepository;
-import net.causw.adapter.persistence.repository.UserRepository;
+import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.circle.CircleResponseDto;
-import net.causw.application.dto.comment.CommentsOfUserResponseDto;
 import net.causw.application.dto.user.*;
-import net.causw.application.dto.util.DtoMapper;
+import net.causw.application.dto.util.dtoMapper.BoardDtoMapper;
+import net.causw.application.dto.util.dtoMapper.CircleDtoMapper;
+import net.causw.application.dto.util.dtoMapper.PostDtoMapper;
+import net.causw.application.dto.util.dtoMapper.UserDtoMapper;
 import net.causw.application.uuidFile.UuidFileService;
 import net.causw.config.security.JwtTokenProvider;
 import net.causw.domain.exceptions.BadRequestException;
@@ -54,10 +55,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.validation.Validator;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.Arrays;
 import java.util.stream.Collectors;
 
 @Service
@@ -114,7 +115,7 @@ public class UserService {
                 ErrorCode.ROW_DOES_NOT_EXIST,
                 MessageUtil.USER_NOT_FOUND));
 
-        return DtoMapper.INSTANCE.toUserResponseDto(requestUser, getCircleIdsIfLeader(requestUser), getCircleNamesIfLeader(requestUser));
+        return UserDtoMapper.INSTANCE.toUserResponseDto(requestUser, getCircleIdsIfLeader(requestUser), getCircleNamesIfLeader(requestUser));
     }
 
     // Find process of another user
@@ -156,7 +157,7 @@ public class UserService {
                                 ErrorCode.ROW_DOES_NOT_EXIST,
                                 MessageUtil.USER_NOT_FOUND
                         ));
-        return DtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
+        return UserDtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
     }
 
     @Transactional(readOnly = true)
@@ -177,13 +178,13 @@ public class UserService {
                 );
             }
 
-            return DtoMapper.INSTANCE.toUserResponseDto(
+            return UserDtoMapper.INSTANCE.toUserResponseDto(
                     requestUser,
                     ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
                     ownCircles.stream().map(Circle::getName).collect(Collectors.toList())
             );
         }
-        return DtoMapper.INSTANCE.toUserResponseDto(requestUser, null, null);
+        return UserDtoMapper.INSTANCE.toUserResponseDto(requestUser, null, null);
     }
 
     @Transactional(readOnly = true)
@@ -195,10 +196,10 @@ public class UserService {
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .validate();
 
-        return DtoMapper.INSTANCE.toUserPostsResponseDto(
+        return UserDtoMapper.INSTANCE.toUserPostsResponseDto(
                 requestUser,
                 this.postRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE)
-                ).map(post -> DtoMapper.INSTANCE.toPostsResponseDto(
+                ).map(post -> PostDtoMapper.INSTANCE.toPostsResponseDto(
                         post,
                         getNumOfComment(post),
                         getNumOfPostLikes(post),
@@ -216,10 +217,10 @@ public class UserService {
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .validate();
 
-        return DtoMapper.INSTANCE.toUserPostsResponseDto(
+        return UserDtoMapper.INSTANCE.toUserPostsResponseDto(
                 requestUser,
                 this.favoritePostRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
-                        .map(favoritePost -> DtoMapper.INSTANCE.toPostsResponseDto(
+                        .map(favoritePost -> PostDtoMapper.INSTANCE.toPostsResponseDto(
                                 favoritePost.getPost(),
                                 getNumOfComment(favoritePost.getPost()),
                                 getNumOfPostLikes(favoritePost.getPost()),
@@ -252,9 +253,9 @@ public class UserService {
         combinedPostsList.sort((post1, post2) -> post2.getCreatedAt().compareTo(post1.getCreatedAt()));
         Page<Post> combinedPostsPage = new PageImpl<>(combinedPostsList, pageable, combinedPostsList.size());
 
-        return DtoMapper.INSTANCE.toUserPostsResponseDto(
+        return UserDtoMapper.INSTANCE.toUserPostsResponseDto(
                 requestUser,
-                combinedPostsPage.map(post -> DtoMapper.INSTANCE.toPostsResponseDto(
+                combinedPostsPage.map(post -> PostDtoMapper.INSTANCE.toPostsResponseDto(
                         post,
                         getNumOfComment(post),
                         getNumOfPostLikes(post),
@@ -272,7 +273,7 @@ public class UserService {
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .validate();
 
-        return DtoMapper.INSTANCE.toUserCommentsResponseDto(
+        return UserDtoMapper.INSTANCE.toUserCommentsResponseDto(
                 requestUser,
                 this.commentRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_COMMENT_PAGE_SIZE))
                         .map(comment -> {
@@ -281,7 +282,7 @@ public class UserService {
                                             ErrorCode.ROW_DOES_NOT_EXIST,
                                             MessageUtil.POST_NOT_FOUND
                                     ));
-                            return DtoMapper.INSTANCE.toCommentsOfUserResponseDto(
+                            return UserDtoMapper.INSTANCE.toCommentsOfUserResponseDto(
                                     comment,
                                     post.getBoard().getId(),
                                     post.getBoard().getName(),
@@ -324,7 +325,7 @@ public class UserService {
                                             this.circleMemberRepository.findByUser_IdAndCircle_Id(user.getId(), circle.getId())
                                                     .map(circleMemberEntity -> circleMemberEntity.getStatus() == CircleMemberStatus.MEMBER)
                                                     .orElse(false)))
-                    .map(user -> DtoMapper.INSTANCE.toUserResponseDto(
+                    .map(user -> UserDtoMapper.INSTANCE.toUserResponseDto(
                             user,
                             ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
                             ownCircles.stream().map(Circle::getName).collect(Collectors.toList())))
@@ -334,7 +335,7 @@ public class UserService {
         return this.userRepository.findByName(name)
                 .stream()
                 .filter(user -> user.getState().equals(UserState.ACTIVE))
-                .map(user -> DtoMapper.INSTANCE.toUserResponseDto(user, null, null))
+                .map(user -> UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null))
                 .collect(Collectors.toList());
     }
 
@@ -350,34 +351,34 @@ public class UserService {
 
         //todo: 현재 겸직을 고려하기 위해 _N_ 사용 중이나 port 와 domain model 삭제를 위해 배제
         //때문에 추후 userRole 관리 리팩토링 후 겸직을 고려하게 변경 필요
-        return DtoMapper.INSTANCE.toUserPrivilegedResponseDto(
+        return UserDtoMapper.INSTANCE.toUserPrivilegedResponseDto(
                 this.userRepository.findByRoleAndState(Role.PRESIDENT, UserState.ACTIVE)
                         .stream()
-                        .map(president -> DtoMapper.INSTANCE.toUserResponseDto(president, null, null))
+                        .map(president -> UserDtoMapper.INSTANCE.toUserResponseDto(president, null, null))
                         .collect(Collectors.toList()),
                 this.userRepository.findByRoleAndState(Role.VICE_PRESIDENT, UserState.ACTIVE)
                         .stream()
-                        .map(vicePresident -> DtoMapper.INSTANCE.toUserResponseDto(vicePresident, null, null))
+                        .map(vicePresident -> UserDtoMapper.INSTANCE.toUserResponseDto(vicePresident, null, null))
                         .collect(Collectors.toList()),
                 this.userRepository.findByRoleAndState(Role.COUNCIL, UserState.ACTIVE)
                         .stream()
-                        .map(council -> DtoMapper.INSTANCE.toUserResponseDto(council, null, null))
+                        .map(council -> UserDtoMapper.INSTANCE.toUserResponseDto(council, null, null))
                         .collect(Collectors.toList()),
                 this.userRepository.findByRoleAndState(Role.LEADER_1, UserState.ACTIVE)
                         .stream()
-                        .map(leader1 -> DtoMapper.INSTANCE.toUserResponseDto(leader1, null, null))
+                        .map(leader1 -> UserDtoMapper.INSTANCE.toUserResponseDto(leader1, null, null))
                         .collect(Collectors.toList()),
                 this.userRepository.findByRoleAndState(Role.LEADER_2, UserState.ACTIVE)
                         .stream()
-                        .map(leader2 -> DtoMapper.INSTANCE.toUserResponseDto(leader2, null, null))
+                        .map(leader2 -> UserDtoMapper.INSTANCE.toUserResponseDto(leader2, null, null))
                         .collect(Collectors.toList()),
                 this.userRepository.findByRoleAndState(Role.LEADER_3, UserState.ACTIVE)
                         .stream()
-                        .map(leader3 -> DtoMapper.INSTANCE.toUserResponseDto(leader3, null, null))
+                        .map(leader3 -> UserDtoMapper.INSTANCE.toUserResponseDto(leader3, null, null))
                         .collect(Collectors.toList()),
                 this.userRepository.findByRoleAndState(Role.LEADER_4, UserState.ACTIVE)
                         .stream()
-                        .map(leader4 -> DtoMapper.INSTANCE.toUserResponseDto(leader4, null, null))
+                        .map(leader4 -> UserDtoMapper.INSTANCE.toUserResponseDto(leader4, null, null))
                         .collect(Collectors.toList()),
                 this.userRepository.findByRoleAndState(Role.LEADER_CIRCLE, UserState.ACTIVE)
                         .stream()
@@ -389,7 +390,7 @@ public class UserService {
                                         MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER
                                 );
                             }
-                            return DtoMapper.INSTANCE.toUserResponseDto(
+                            return UserDtoMapper.INSTANCE.toUserResponseDto(
                                     userDomainModel,
                                     ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
                                     ownCircles.stream().map(Circle::getName).collect(Collectors.toList())
@@ -398,7 +399,7 @@ public class UserService {
                         .collect(Collectors.toList()),
                 this.userRepository.findByRoleAndState(Role.LEADER_ALUMNI, UserState.ACTIVE)
                         .stream()
-                        .map(alumni -> DtoMapper.INSTANCE.toUserResponseDto(alumni, null, null))
+                        .map(alumni -> UserDtoMapper.INSTANCE.toUserResponseDto(alumni, null, null))
                         .collect(Collectors.toList())
         );
     }
@@ -445,13 +446,13 @@ public class UserService {
                     );
                 }
 
-                return DtoMapper.INSTANCE.toUserResponseDto(
+                return UserDtoMapper.INSTANCE.toUserResponseDto(
                         userEntity,
                         ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
                         ownCircles.stream().map(Circle::getName).collect(Collectors.toList())
                 );
             } else {
-                return DtoMapper.INSTANCE.toUserResponseDto(userEntity, null, null);
+                return UserDtoMapper.INSTANCE.toUserResponseDto(userEntity, null, null);
             }
         });
     }
@@ -473,7 +474,7 @@ public class UserService {
                     .map(circle -> {
                         User leader = circle.getLeader()
                                 .orElse(null);
-                        return DtoMapper.INSTANCE.toCircleResponseDto(circle, leader);
+                        return CircleDtoMapper.INSTANCE.toCircleResponseDto(circle, leader);
                     })
                     .collect(Collectors.toList());
         }
@@ -484,7 +485,7 @@ public class UserService {
                 .map(circleMember -> {
                     User leader = circleMember.getCircle().getLeader()
                             .orElse(null);
-                    return DtoMapper.INSTANCE.toCircleResponseDto(circleMember.getCircle(), leader);
+                    return CircleDtoMapper.INSTANCE.toCircleResponseDto(circleMember.getCircle(), leader);
                 })
                 .collect(Collectors.toList());
     }
@@ -511,11 +512,25 @@ public class UserService {
                 }
         );
 
+        this.userRepository.findByStudentId(userCreateRequestDto.getStudentId()).ifPresent(
+                studentId -> {
+                    throw new BadRequestException(
+                            ErrorCode.ROW_ALREADY_EXIST,
+                            MessageUtil.STUDENT_ID_ALREADY_EXIST
+                    );
+                }
+        );
 
-        //DomainModel 제거과정에서 role과 state가 누락된 것에 대한 해결을 위해 user에 직접 NONE과 AWAIT 설정
-        Set<Role> roles = new HashSet<>();
-        roles.add(Role.NONE);
-        User user = userCreateRequestDto.toEntity(passwordEncoder.encode(userCreateRequestDto.getPassword()), roles, UserState.AWAIT);
+        this.userRepository.findByPhoneNumber(userCreateRequestDto.getPhoneNumber()).ifPresent(
+                phoneNumber -> {
+                    throw new BadRequestException(
+                            ErrorCode.ROW_ALREADY_EXIST,
+                            MessageUtil.PHONE_NUMBER_ALREADY_EXIST
+                    );
+                }
+        );
+
+        User user = User.from(userCreateRequestDto, passwordEncoder.encode(userCreateRequestDto.getPassword()));
 
         this.userRepository.save(user);
 
@@ -526,7 +541,7 @@ public class UserService {
                 .consistOf(AdmissionYearValidator.of(userCreateRequestDto.getAdmissionYear()))
                 .validate();
 
-        return DtoMapper.INSTANCE.toUserResponseDto(user, null, null);
+        return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
     }
 
     @Transactional
@@ -565,7 +580,7 @@ public class UserService {
         String refreshToken = jwtTokenProvider.createRefreshToken();
         redisUtils.setData(refreshToken,user.getId(),StaticValue.JWT_REFRESH_TOKEN_VALID_TIME);
 
-        return DtoMapper.INSTANCE.toUserSignInResponseDto(
+        return UserDtoMapper.INSTANCE.toUserSignInResponseDto(
                 jwtTokenProvider.createAccessToken(user.getId(), user.getRoles(), user.getState()),
                 jwtTokenProvider.createRefreshToken()
         );
@@ -589,7 +604,7 @@ public class UserService {
                 );
             }
         }
-        return DtoMapper.INSTANCE.toDuplicatedCheckResponseDto(userFoundByEmail.isPresent());
+        return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(userFoundByEmail.isPresent());
     }
 
     /**
@@ -610,11 +625,11 @@ public class UserService {
                 );
             }
         }
-        return DtoMapper.INSTANCE.toDuplicatedCheckResponseDto(userFoundByNickname.isPresent());
+        return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(userFoundByNickname.isPresent());
     }
 
     @Transactional
-    public UserResponseDto update(User user, UserUpdateRequestDto userUpdateRequestDto) {
+    public UserResponseDto update(User user, UserUpdateRequestDto userUpdateRequestDto, MultipartFile profileImage) {
         Set<Role> roles = user.getRoles();
 
         // 닉네임이 변경되었을 때 중복 체크 (이메일 중복 체크의 경우 바뀐 기획에서 이메일 변경이 불가능하여 삭제)
@@ -629,8 +644,30 @@ public class UserService {
             );
         }
 
+        this.userRepository.findByStudentId(userUpdateRequestDto.getStudentId()).ifPresent(
+                studentId -> {
+                    throw new BadRequestException(
+                            ErrorCode.ROW_ALREADY_EXIST,
+                            MessageUtil.STUDENT_ID_ALREADY_EXIST
+                    );
+                }
+        );
+
+        this.userRepository.findByPhoneNumber(userUpdateRequestDto.getPhoneNumber()).ifPresent(
+                phoneNumber -> {
+                    throw new BadRequestException(
+                            ErrorCode.ROW_ALREADY_EXIST,
+                            MessageUtil.PHONE_NUMBER_ALREADY_EXIST
+                    );
+                }
+        );
+
         //다른 서비스단과 update 방식 통일하기
-        user.update(userUpdateRequestDto.getNickname(),userUpdateRequestDto.getAcademicStatus(),userUpdateRequestDto.getProfileImage());
+        UuidFile profileImageUuidFile = (profileImage == null) ?
+                null :
+                uuidFileService.updateFile(user.getProfileImageUuidFile(), profileImage, FilePath.USER_PROFILE);
+
+        user.update(userUpdateRequestDto.getNickname(), userUpdateRequestDto.getAcademicStatus(), profileImageUuidFile);
 
         // Validate the admission year range
         ValidatorBucket.of()
@@ -642,7 +679,7 @@ public class UserService {
 
         User updatedUser = userRepository.save(user);
 
-        return DtoMapper.INSTANCE.toUserResponseDto(updatedUser, null, null);
+        return UserDtoMapper.INSTANCE.toUserResponseDto(updatedUser, null, null);
     }
 
 
@@ -803,7 +840,7 @@ public class UserService {
             );
         }
 
-        return DtoMapper.INSTANCE.toUserResponseDto(this.updateRole(grantee, userUpdateRoleRequestDto.getRole()), null, null);
+        return UserDtoMapper.INSTANCE.toUserResponseDto(this.updateRole(grantee, userUpdateRoleRequestDto.getRole()), null, null);
     }
 
     private String checkAuthAndCircleId(UserUpdateRoleRequestDto userUpdateRoleRequestDto, User grantee) {
@@ -875,7 +912,7 @@ public class UserService {
         Set<Role> roles = targetUser.getRoles();
         if(targetRole.equals(Role.LEADER_CIRCLE)){
             List<Circle> ownCircles = circleRepository.findByLeader_Id(targetUser.getId());
-            if(ownCircles.size() == 0) roles.remove(targetRole);
+            if(ownCircles.isEmpty()) roles.remove(targetRole);
         } else{
             roles.remove(targetRole);
         }
@@ -942,7 +979,7 @@ public class UserService {
         user.setPassword(this.passwordEncoder.encode(userUpdatePasswordRequestDto.getUpdatedPassword()));
         User updatedUser = this.userRepository.save(user);
 
-        return DtoMapper.INSTANCE.toUserResponseDto(updatedUser, null, null);
+        return UserDtoMapper.INSTANCE.toUserResponseDto(updatedUser, null, null);
     }
 
     @Transactional
@@ -960,14 +997,14 @@ public class UserService {
                     locker.returnLocker();
                     this.lockerRepository.save(locker);
 
-                    LockerLog lockerLog = LockerLog.builder()
-                            .lockerNumber(locker.getLockerNumber())
-                            .lockerLocationName(locker.getLocation().getName())
-                            .userEmail(user.getEmail())
-                            .userName(user.getName())
-                            .action(LockerLogAction.RETURN)
-                            .message("사용자 탈퇴")
-                            .build();
+                    LockerLog lockerLog = LockerLog.of(
+                            locker.getLockerNumber(),
+                            locker.getLocation().getName(),
+                            user.getEmail(),
+                            user.getName(),
+                            LockerLogAction.RETURN,
+                            "사용자 탈퇴"
+                    );
 
                     this.lockerLogRepository.save(lockerLog);
 
@@ -987,7 +1024,7 @@ public class UserService {
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.INTERNAL_SERVER_ERROR
                 ));
-        return DtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
+        return UserDtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
     }
 
     @Scheduled(cron = "0 0 0 * * ?")
@@ -1046,14 +1083,14 @@ public class UserService {
                     locker.returnLocker();
                     this.lockerRepository.save(locker);
 
-                    LockerLog lockerLog = LockerLog.builder()
-                            .lockerNumber(locker.getLockerNumber())
-                            .lockerLocationName(locker.getLocation().getName())
-                            .userEmail(requestUser.getEmail())
-                            .userName(requestUser.getName())
-                            .action(LockerLogAction.RETURN)
-                            .message("사용자 추방")
-                            .build();
+                    LockerLog lockerLog = LockerLog.of(
+                            locker.getLockerNumber(),
+                            locker.getLocation().getName(),
+                            droppedUser.getEmail(),
+                            droppedUser.getName(),
+                            LockerLogAction.RETURN,
+                            "사용자 추방"
+                    );
 
                     this.lockerLogRepository.save(lockerLog);
                 });
@@ -1065,7 +1102,7 @@ public class UserService {
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.INTERNAL_SERVER_ERROR
                 ));
-        return DtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
+        return UserDtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
     }
 
     @Transactional(readOnly = true)
@@ -1078,7 +1115,7 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .validate();
 
-        return DtoMapper.INSTANCE.toUserAdmissionResponseDto(
+        return UserDtoMapper.INSTANCE.toUserAdmissionResponseDto(
                 this.userAdmissionRepository.findById(admissionId)
                         .orElseThrow(() -> new BadRequestException(
                                 ErrorCode.ROW_DOES_NOT_EXIST,
@@ -1102,11 +1139,11 @@ public class UserService {
                 .validate();
 
         return this.userAdmissionRepository.findAllWithName(UserState.AWAIT.getValue(), name, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE))
-                .map(DtoMapper.INSTANCE::toUserAdmissionsResponseDto);
+                .map(UserDtoMapper.INSTANCE::toUserAdmissionsResponseDto);
     }
 
     @Transactional
-    public UserAdmissionResponseDto createAdmission(UserAdmissionCreateRequestDto userAdmissionCreateRequestDto) {
+    public UserAdmissionResponseDto createAdmission(UserAdmissionCreateRequestDto userAdmissionCreateRequestDto, List<MultipartFile> userAdmissionAttachImageList) {
         User requestUser = this.userRepository.findByEmail(userAdmissionCreateRequestDto.getEmail()).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -1122,29 +1159,27 @@ public class UserService {
             );
         }
 
-        String attachImage = userAdmissionCreateRequestDto.getAttachImage()
-                .map(multipartFile -> {
-                    if (multipartFile != null) {
-                        return uuidFileService.saveFile(multipartFile, FilePath.USER_ADMISSION).getFileUrl();
-                    } else {
-                        return null; // 업로드 시도하지 않고 null 반환
-                    }
-                })
-                .orElse("https://caucse-s3-bucket-prod.s3.ap-northeast-2.amazonaws.com/basic_profile.png");
+        if (userAdmissionAttachImageList.isEmpty()) {
+            throw new BadRequestException(
+                    ErrorCode.INVALID_PARAMETER,
+                    MessageUtil.USER_ADMISSION_MUST_HAVE_IMAGE
+            );
+        }
 
+        List<UuidFile> uuidFileList = uuidFileService.saveFileList(userAdmissionAttachImageList, FilePath.USER_ADMISSION);
 
-        UserAdmission userAdmission = UserAdmission.builder()
-                .user(requestUser)
-                .attachImage(attachImage)
-                .description(userAdmissionCreateRequestDto.getDescription())
-                .build();
+        UserAdmission userAdmission = UserAdmission.of(
+                requestUser,
+                uuidFileList,
+                userAdmissionCreateRequestDto.getDescription()
+        );
 
         ValidatorBucket.of()
                 .consistOf(UserStateIsNotDropAndActiveValidator.of(requestUser.getState()))
                 .consistOf(ConstraintValidator.of(userAdmission, this.validator))
                 .validate();
 
-        return DtoMapper.INSTANCE.toUserAdmissionResponseDto(this.userAdmissionRepository.save(userAdmission));
+        return UserDtoMapper.INSTANCE.toUserAdmissionResponseDto(this.userAdmissionRepository.save(userAdmission));
     }
 
     @Transactional
@@ -1167,23 +1202,23 @@ public class UserService {
         // Update user role to COMMON
         this.updateRole(userAdmission.getUser(), Role.COMMON);
 
-        UserAdmissionLog userAdmissionLog = UserAdmissionLog.builder()
-                .userEmail(userAdmission.getUser().getEmail())
-                .userName(userAdmission.getUser().getName())
-                .adminUserEmail(requestUser.getEmail())
-                .adminUserName(requestUser.getName())
-                .action(UserAdmissionLogAction.ACCEPT)
-                .attachImage(userAdmission.getAttachImage())
-                .description(userAdmission.getDescription())
-                .rejectReason(null)
-                .build();
+        UserAdmissionLog userAdmissionLog = UserAdmissionLog.of(
+                userAdmission.getUser().getEmail(),
+                userAdmission.getUser().getName(),
+                requestUser.getEmail(),
+                requestUser.getName(),
+                UserAdmissionLogAction.ACCEPT,
+                userAdmission.getUserAdmissionAttachImageUuidFileList(),
+                userAdmission.getDescription(),
+                null
+        );
         // Add admission log
 
         // Remove the admission
         this.userAdmissionLogRepository.save(userAdmissionLog);
         this.userAdmissionRepository.delete(userAdmission);
 
-        return DtoMapper.INSTANCE.toUserAdmissionResponseDto(
+        return UserDtoMapper.INSTANCE.toUserAdmissionResponseDto(
                 userAdmissionLog,
                 this.updateState(userAdmission.getUser().getId(), UserState.ACTIVE)
                         .orElseThrow(() -> new InternalServerException(
@@ -1212,23 +1247,24 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .validate();
 
-        UserAdmissionLog userAdmissionLog = UserAdmissionLog.builder()
-                .userEmail(userAdmission.getUser().getEmail())
-                .userName(userAdmission.getUser().getName())
-                .adminUserEmail(requestUser.getEmail())
-                .adminUserName(requestUser.getName())
-                .action(UserAdmissionLogAction.REJECT)
-                .attachImage(userAdmission.getAttachImage())
-                .description(userAdmission.getDescription())
-                .rejectReason(rejectReason)
-                .build();
+        UserAdmissionLog userAdmissionLog = UserAdmissionLog.of(
+                userAdmission.getUser().getEmail(),
+                userAdmission.getUser().getName(),
+                requestUser.getEmail(),
+                requestUser.getName(),
+                UserAdmissionLogAction.REJECT,
+                userAdmission.getUserAdmissionAttachImageUuidFileList(),
+                userAdmission.getDescription(),
+                rejectReason
+        );
+        // Add admission log
 
 
         this.userAdmissionLogRepository.save(userAdmissionLog);
         this.userAdmissionRepository.delete(userAdmission);
         requestUser.updateRejectionOrDropReason(rejectReason);
 
-        return DtoMapper.INSTANCE.toUserAdmissionResponseDto(
+        return UserDtoMapper.INSTANCE.toUserAdmissionResponseDto(
                 userAdmissionLog,
                 this.updateState(userAdmission.getUser().getId(), UserState.REJECT)
                         .orElseThrow(() -> new InternalServerException(
@@ -1316,7 +1352,7 @@ public class UserService {
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.INTERNAL_SERVER_ERROR
                 ));
-        return DtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
+        return UserDtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
     }
 
     @Transactional
@@ -1336,7 +1372,7 @@ public class UserService {
         // STEP2 : 새로운 accessToken 제공
         String newAccessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getRoles(), user.getState());
 
-        return DtoMapper.INSTANCE.toUserSignInResponseDto(newAccessToken, refreshToken);
+        return UserDtoMapper.INSTANCE.toUserSignInResponseDto(newAccessToken, refreshToken);
     }
 
     private String getUserIdFromRefreshToken(String refreshToken) {
@@ -1351,7 +1387,7 @@ public class UserService {
         redisUtils.addToBlacklist(userSignOutRequestDto.getAccessToken());
         redisUtils.deleteData(userSignOutRequestDto.getRefreshToken());
 
-        return DtoMapper.INSTANCE.toUserSignOutResponseDto("로그아웃 성공");
+        return UserDtoMapper.INSTANCE.toUserSignOutResponseDto("로그아웃 성공");
     }
 
     public UserFindIdResponseDto findUserId(UserFindIdRequestDto userIdFindRequestDto) {
@@ -1364,7 +1400,7 @@ public class UserService {
                 MessageUtil.USER_NOT_FOUND
         ));
 
-        return DtoMapper.INSTANCE.toUserfindIdResponseDto(user);
+        return UserDtoMapper.INSTANCE.toUserfindIdResponseDto(user);
     }
 
     @Transactional(readOnly = true)
@@ -1383,10 +1419,10 @@ public class UserService {
                     if (user.getRoles().contains(Role.LEADER_CIRCLE)) {
                         List<String> circleIdIfLeader = getCircleIdsIfLeader(user);
                         List<String> circleNameIfLeader = getCircleNamesIfLeader(user);
-                        return DtoMapper.INSTANCE.toUserResponseDto(user, circleIdIfLeader, circleNameIfLeader);
+                        return UserDtoMapper.INSTANCE.toUserResponseDto(user, circleIdIfLeader, circleNameIfLeader);
                     }
                     else {
-                        return DtoMapper.INSTANCE.toUserResponseDto(user, null, null);
+                        return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
                     }
                 })
                 .collect(Collectors.toList());
@@ -1413,7 +1449,7 @@ public class UserService {
         Boolean writable = roles.stream().anyMatch(str -> userRole.getValue().contains(str));
         String circleId = Optional.ofNullable(board.getCircle()).map(Circle::getId).orElse(null);
         String circleName = Optional.ofNullable(board.getCircle()).map(Circle::getName).orElse(null);
-        return DtoMapper.INSTANCE.toBoardResponseDto(
+        return BoardDtoMapper.INSTANCE.toBoardResponseDto(
                 board,
                 roles,
                 writable,

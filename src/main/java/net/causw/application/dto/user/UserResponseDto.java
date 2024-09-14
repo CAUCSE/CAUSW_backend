@@ -5,12 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.adapter.persistence.user.User;
-import net.causw.application.dto.util.CircleServiceDtoMapper;
 import net.causw.domain.model.enums.AcademicStatus;
 import net.causw.domain.model.enums.GraduationType;
 import net.causw.domain.model.enums.Role;
-import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.model.enums.UserState;
 import java.util.List;
 import java.util.Set;
@@ -39,11 +36,8 @@ public class UserResponseDto {
     @Schema(description = "역할", example = "COMMON")
     private Set<Role> roles;
 
-    @Schema(description = "학부생 인증 이미지 URL", example = "")
-    private List<String> attachImages;
-
     @Schema(description = "프로필 이미지 URL", example = "")
-    private String profileImage;
+    private String profileImageUrl;
 
     @Schema(description = "상태", example = "AWAIT")
     private UserState state;
@@ -75,75 +69,5 @@ public class UserResponseDto {
 
     @Schema(description = "전화번호", example = "01012345678")
     private String phoneNumber;
-
-    public static UserResponseDto from(User user) {
-        return UserResponseDto.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .name(user.getName())
-                .studentId(user.getStudentId())
-                .admissionYear(user.getAdmissionYear())
-                .roles(user.getRoles())
-                .attachImages(user.getAttachImages())
-                .profileImage(user.getProfileImage())
-                .state(user.getState())
-                .nickname(user.getNickname())
-                .major(user.getMajor())
-                .academicStatus(user.getAcademicStatus())
-                .currentCompletedSemester(user.getCurrentCompletedSemester())
-                .graduationYear(user.getGraduationYear())
-                .graduationType(user.getGraduationType())
-                .phoneNumber(user.getPhoneNumber())
-                .build();
-    }
-
-    //Circle Service 단에서 domainmodel 이 삭제되지 않아 충돌 방지를 위해 별도 생성
-    public static UserResponseDto from(UserDomainModel user) {
-        return UserResponseDto.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .name(user.getName())
-                .studentId(user.getStudentId())
-                .admissionYear(user.getAdmissionYear())
-                .roles(user.getRoles())
-                .attachImages(user.getAttachImages())
-                .profileImage(user.getProfileImage())
-                .state(user.getState())
-                .nickname(user.getNickname())
-                .major(user.getMajor())
-                .academicStatus(user.getAcademicStatus())
-                .currentCompletedSemester(user.getCurrentCompletedSemester())
-                .graduationYear(user.getGraduationYear())
-                .graduationType(user.getGraduationType())
-                .phoneNumber(user.getPhoneNumber())
-                .build();
-    }
-
-    public static UserResponseDto of(
-            User user,
-            List<String> circleId,
-            List<String> circleName
-    ) {
-        return UserResponseDto.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .name(user.getName())
-                .studentId(user.getStudentId())
-                .admissionYear(user.getAdmissionYear())
-                .roles(user.getRoles())
-                .attachImages(user.getAttachImages())
-                .profileImage(user.getProfileImage())
-                .state(user.getState())
-                .circleIdIfLeader(circleId)
-                .circleNameIfLeader(circleName)
-                .nickname(user.getNickname())
-                .major(user.getMajor())
-                .academicStatus(user.getAcademicStatus())
-                .currentCompletedSemester(user.getCurrentCompletedSemester())
-                .graduationYear(user.getGraduationYear())
-                .graduationType(user.getGraduationType())
-                .phoneNumber(user.getPhoneNumber())
-                .build();
-    }
 
 }

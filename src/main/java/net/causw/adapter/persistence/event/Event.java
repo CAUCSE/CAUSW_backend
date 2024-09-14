@@ -8,6 +8,7 @@ import org.hibernate.annotations.ColumnDefault;
 
 @Getter
 @Entity
+@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_event")
@@ -15,9 +16,9 @@ public class Event extends BaseEntity {
     @Column(name = "url", nullable = false)
     private String url;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "event_id", nullable = false)
-    private UuidFile uuidFile;
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @JoinColumn(name = "event_image_uuid_file_id", nullable = false)
+    private UuidFile eventImageUuidFile;
 
     @Setter
     @Column(name = "is_deleted")
@@ -26,14 +27,18 @@ public class Event extends BaseEntity {
 
     public static Event of(
             String url,
-            UuidFile uuidFile,
+            UuidFile eventImageUuidFile,
             Boolean isDeleted
     ) {
-        return new Event(url, uuidFile, isDeleted);
+        return Event.builder()
+                .url(url)
+                .eventImageUuidFile(eventImageUuidFile)
+                .isDeleted(isDeleted)
+                .build();
     }
 
-    public void update(String url, UuidFile uuidFile) {
+    public void update(String url, UuidFile eventImageUuidFile) {
         this.url = url;
-        this.uuidFile = uuidFile;
+        this.eventImageUuidFile = eventImageUuidFile;
     }
 }

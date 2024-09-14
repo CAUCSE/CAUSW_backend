@@ -4,7 +4,6 @@ import lombok.*;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.base.BaseEntity;
-import net.causw.domain.model.board.BoardDomainModel;
 import net.causw.domain.model.enums.Role;
 import org.hibernate.annotations.ColumnDefault;
 
@@ -21,6 +20,7 @@ import java.util.stream.Collectors;
 
 @Getter
 @Entity
+@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_board")
@@ -75,36 +75,6 @@ public class Board extends BaseEntity {
         this.circle = circle;
     }
 
-    private Board(
-            String name,
-            String description,
-            String createRoles,
-            String category,
-            Boolean isDeleted,
-            Circle circle
-    ) {
-        this.name = name;
-        this.description = description;
-        this.createRoles = createRoles;
-        this.category = category;
-        this.isDeleted = isDeleted;
-        this.circle = circle;
-    }
-
-    public static Board from(BoardDomainModel boardDomainModel) {
-        Circle circle = boardDomainModel.getCircle().map(Circle::from).orElse(null);
-
-        return new Board(
-                boardDomainModel.getId(),
-                boardDomainModel.getName(),
-                boardDomainModel.getDescription(),
-                String.join(",", boardDomainModel.getCreateRoleList()),
-                boardDomainModel.getCategory(),
-                boardDomainModel.getIsDeleted(),
-                circle
-        );
-    }
-
     public static Board of(
             String name,
             String description,
@@ -135,9 +105,19 @@ public class Board extends BaseEntity {
                 createRoleList.add(Role.PRESIDENT.getValue());
             }
         }
-        return new Board(name, description, String.join(",", createRoleList), category, false, false, is_anonymous_allowed, circle, new HashSet<>());
-    }
 
+        return Board.builder()
+                .name(name)
+                .description(description)
+                .createRoles(String.join(",", createRoleList))
+                .category(category)
+                .isDeleted(false)
+                .isDefault(false)
+                .is_anonymous_allowed(is_anonymous_allowed)
+                .circle(circle)
+                .postSet(new HashSet<>())
+                .build();
+    }
 
     public void setIsDeleted(boolean isDeleted){
         this.isDeleted = isDeleted;

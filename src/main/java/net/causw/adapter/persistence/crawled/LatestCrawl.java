@@ -1,15 +1,13 @@
 package net.causw.adapter.persistence.crawled;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.domain.model.enums.CrawlCategory;
 
 @Getter
 @Entity
+@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_latest_crawl")
@@ -25,7 +23,10 @@ public class LatestCrawl extends BaseEntity {
             String latestUrl,
             CrawlCategory crawlCategory
     ) {
-        return new LatestCrawl(latestUrl, crawlCategory);
+        return LatestCrawl.builder()
+                .latestUrl(latestUrl)
+                .crawlCategory(crawlCategory)
+                .build();
     }
 }
 

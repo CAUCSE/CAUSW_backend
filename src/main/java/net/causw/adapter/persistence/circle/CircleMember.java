@@ -16,6 +16,7 @@ import jakarta.persistence.Table;
 @Getter
 @Setter
 @Entity
+@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_circle_member")
@@ -33,6 +34,10 @@ public class CircleMember extends BaseEntity {
     private User user;
 
     public static CircleMember of(CircleMemberStatus status, Circle circle, User user) {
-        return new CircleMember(status, circle, user);
+        return CircleMember.builder()
+                .status(status)
+                .circle(circle)
+                .user(user)
+                .build();
     }
 }

@@ -12,15 +12,19 @@ import net.causw.adapter.persistence.post.LikePost;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.user.User;
+import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.post.*;
-import net.causw.application.dto.util.DtoMapper;
+import net.causw.application.dto.util.dtoMapper.CommentDtoMapper;
+import net.causw.application.dto.util.dtoMapper.PostDtoMapper;
 import net.causw.application.dto.util.StatusUtil;
+import net.causw.application.uuidFile.UuidFileService;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.CircleMemberStatus;
+import net.causw.domain.model.enums.FilePath;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
@@ -30,6 +34,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.validation.Validator;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -51,6 +56,7 @@ public class PostService {
     private final LikeChildCommentRepository likeChildCommentRepository;
     private final PageableFactory pageableFactory;
     private final Validator validator;
+    private final UuidFileService uuidFileService;
 
     @Transactional(readOnly = true)
     public PostResponseDto findPostById(User user, String postId) {
@@ -158,7 +164,7 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponseDto createPost(User creator, PostCreateRequestDto postCreateRequestDto) {
+    public PostResponseDto createPost(User creator, PostCreateRequestDto postCreateRequestDto, List<MultipartFile> attachImageList) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         Set<Role> roles = creator.getRoles();
 
@@ -172,6 +178,12 @@ public class PostService {
                     ));
         }
 
+        List<UuidFile> uuidFileList = (attachImageList == null || attachImageList.isEmpty()) ?
+                new ArrayList<>() :
+                attachImageList.stream()
+                .map(multipartFile -> uuidFileService.saveFile(multipartFile, FilePath.POST))
+                .toList();
+
         Post post = Post.of(
                 postCreateRequestDto.getTitle(),
                 postCreateRequestDto.getContent(),
@@ -180,13 +192,13 @@ public class PostService {
                 postCreateRequestDto.getIsAnonymous(),
                 postCreateRequestDto.getIsQuestion(),
                 board,
-                String.join(":::", postCreateRequestDto.getAttachmentList())
+                uuidFileList
         );
 
         validatorBucket
                 .consistOf(UserStateValidator.of(creator.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(roles))
-                .consistOf(PostNumberOfAttachmentsValidator.of(postCreateRequestDto.getAttachmentList()))
+                .consistOf(PostNumberOfAttachmentsValidator.of(attachImageList))
                 .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD))
                 .consistOf(UserRoleValidator.of(
                         roles,
@@ -289,7 +301,8 @@ public class PostService {
     public PostResponseDto updatePost(
             User updater,
             String postId,
-            PostUpdateRequestDto postUpdateRequestDto
+            PostUpdateRequestDto postUpdateRequestDto,
+            List<MultipartFile> attachImageList
     ) {
         Set<Role> roles = updater.getRoles();
         Post post = getPost(postId);
@@ -303,7 +316,7 @@ public class PostService {
                     ));
         }
         validatorBucket
-                .consistOf(PostNumberOfAttachmentsValidator.of(postUpdateRequestDto.getAttachmentList()))
+                .consistOf(PostNumberOfAttachmentsValidator.of(attachImageList))
                 .consistOf(TargetIsDeletedValidator.of(post.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
                 .consistOf(TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST))
                 .consistOf(ContentsAdminValidator.of(
@@ -315,10 +328,18 @@ public class PostService {
                 .consistOf(ConstraintValidator.of(post, this.validator));
         validatorBucket.validate();
 
+        List<UuidFile> uuidFileList = (attachImageList == null || attachImageList.isEmpty()) ?
+                post.getPostAttachImageUuidFileList() :
+                uuidFileService.updateFileList(
+                post.getPostAttachImageUuidFileList(),
+                attachImageList,
+                FilePath.POST
+        );
+
         post.update(
                 postUpdateRequestDto.getTitle(),
                 postUpdateRequestDto.getContent(),
-                String.join(":::", postUpdateRequestDto.getAttachmentList())
+                uuidFileList
         );
 
         return toPostResponseDtoExtended(post, updater);
@@ -496,7 +517,7 @@ public class PostService {
         Boolean writable = userRoles.stream()
                 .map(Role::getValue)
                 .anyMatch(roles::contains);
-        return DtoMapper.INSTANCE.toBoardPostsResponseDto(
+        return PostDtoMapper.INSTANCE.toBoardPostsResponseDto(
                 board,
                 userRoles,
                 writable,
@@ -506,7 +527,7 @@ public class PostService {
     }
 
     private PostsResponseDto toPostsResponseDto(Post post) {
-        return DtoMapper.INSTANCE.toPostsResponseDto(
+        return PostDtoMapper.INSTANCE.toPostsResponseDto(
                 post,
                 postRepository.countAllCommentByPost_Id(post.getId()),
                 getNumOfPostLikes(post),
@@ -515,7 +536,7 @@ public class PostService {
     }
 
     private PostResponseDto toPostResponseDto(Post post, User user) {
-        return DtoMapper.INSTANCE.toPostResponseDto(
+        return PostDtoMapper.INSTANCE.toPostResponseDto(
                 post,
                 getNumOfPostLikes(post),
                 getNumOfPostFavorites(post),
@@ -525,7 +546,7 @@ public class PostService {
     }
 
     private PostResponseDto toPostResponseDtoExtended(Post post, User user) {
-        return DtoMapper.INSTANCE.toPostResponseDtoExtended(
+        return PostDtoMapper.INSTANCE.toPostResponseDtoExtended(
                 postRepository.save(post),
                 findCommentsByPostIdByPage(user, post, 0),
                 postRepository.countAllCommentByPost_Id(post.getId()),
@@ -545,7 +566,7 @@ public class PostService {
                         childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
                         getNumOfCommentLikes(comment),
                         comment.getChildCommentList().stream()
-                                .map(childComment -> DtoMapper.INSTANCE.toChildCommentResponseDto(
+                                .map(childComment -> CommentDtoMapper.INSTANCE.toChildCommentResponseDto(
                                         childComment,
                                         getNumOfChildCommentLikes(childComment),
                                         StatusUtil.isUpdatable(childComment, user),

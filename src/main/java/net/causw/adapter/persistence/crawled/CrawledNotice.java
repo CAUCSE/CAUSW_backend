@@ -11,6 +11,7 @@ import java.time.format.DateTimeFormatter;
 
 @Getter
 @Entity
+@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_crawled_notice")
@@ -48,6 +49,13 @@ public class CrawledNotice extends BaseEntity {
             title = title.replace("NEW", "").trim();
         }
 
-        return new CrawledNotice(type, title, content, link, author, parsedDate);
+        return CrawledNotice.builder()
+                .type(type)
+                .title(title)
+                .content(content)
+                .link(link)
+                .author(author)
+                .announceDate(parsedDate)
+                .build();
     }
 }

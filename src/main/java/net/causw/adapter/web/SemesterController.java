@@ -40,21 +40,37 @@ public class SemesterController {
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "학기 생성(개발 테스트 및 관리자용)", description = "새로운 학기를 생성합니다.")
-    public Void createSemester(
+    public void createSemester(
             @RequestBody CreateSemesterRequestDto createSemesterRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return semesterService.createSemester(createSemesterRequestDto, userDetails.getUser());
+        semesterService.createSemester(createSemesterRequestDto, userDetails.getUser());
+    }
+
+    /**
+     * 다음 학기 생성(재학 인증 일괄 요청)
+     * @param userDetails
+     */
+    @PostMapping("/create/next")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and " +
+            "@securityService.isAcademicRecordCertified() and " +
+            "hasAnyRole('ROLE_ADMIN', 'ROLE_PRESIDENT', 'ROLE_VICE_PRESIDENT')")
+    @Operation(summary = "다음 학기 생성(재학 인증 일괄 요청)", description = "다음 학기를 생성합니다. 자동으로 재학 인증도 일괄 요청 됩니다.")
+    public void createNextSemester(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        semesterService.createNextSemester(userDetails.getUser());
     }
 
     @DeleteMapping("/{semesterId}")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "학기 삭제(개발 테스트 및 관리자용)", description = "특정 학기를 삭제합니다.")
-    public Void deleteSemester(
+    public void deleteSemester(
             @PathVariable(value = "semesterId") String semesterId
     ) {
-        return semesterService.deleteSemester(semesterId);
+        semesterService.deleteSemester(semesterId);
     }
 
 

@@ -33,18 +33,6 @@ public class LockerResponseDto {
                 .build();
     }
 
-//    public static LockerResponseDto of(LockerDomainModel locker, UserDomainModel user) {
-//        return LockerResponseDto.builder()
-//                .id(locker.getId())
-//                .lockerNumber(String.valueOf(locker.getLockerNumber()))
-//                .isActive(locker.getIsActive())
-//                .isMine(locker.getUser().map(UserDomainModel::getId).orElse("").equals(user.getId()))
-//                .expireAt(Optional.ofNullable(locker.getExpiredAt()).map(
-//                        expire -> expire.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"))).orElse(null))
-//                .updatedAt(locker.getUpdatedAt())
-//                .build();
-//    }
-
     public static LockerResponseDto of(
             Locker locker,
             User user,

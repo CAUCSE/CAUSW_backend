@@ -1,18 +1,16 @@
 package net.causw.adapter.persistence.user;
 
+import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
+import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.domain.model.enums.UserAdmissionLogAction;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Table;
+import java.util.List;
 
 @Getter
 @Entity
-@Builder
+@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_user_admission_log")
@@ -29,8 +27,9 @@ public class UserAdmissionLog extends BaseEntity {
     @Column(name = "admin_user_name", nullable = false)
     private String adminUserName;
 
-    @Column(name = "image", length = 500)
-    private String attachImage;
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @JoinColumn(name = "user_admission_log_id", nullable = true)
+    private List<UuidFile> userAdmissionLogAttachImageUuidFileList;
 
     @Column(name = "description")
     private String description;
@@ -48,19 +47,20 @@ public class UserAdmissionLog extends BaseEntity {
             String adminUserEmail,
             String adminUserName,
             UserAdmissionLogAction action,
-            String attachImage,
+            List<UuidFile> userAdmissionLogAttachImageUuidFileList,
             String description,
             String rejectReason
     ) {
-        return new UserAdmissionLog(
-                userEmail,
-                userName,
-                adminUserEmail,
-                adminUserName,
-                attachImage,
-                description,
-                action,
-                rejectReason
+        return UserAdmissionLog.builder()
+                .userEmail(userEmail)
+                .userName(userName)
+                .adminUserEmail(adminUserEmail)
+                .adminUserName(adminUserName)
+                .action(action)
+                .userAdmissionLogAttachImageUuidFileList(userAdmissionLogAttachImageUuidFileList)
+                .description(description)
+                .rejectReason(rejectReason)
+                .build(
         );
     }
 }

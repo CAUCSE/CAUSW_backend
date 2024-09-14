@@ -8,18 +8,20 @@ import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.user.User;
+import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.board.BoardOfCircleResponseDto;
 import net.causw.application.dto.circle.*;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.user.UserResponseDto;
-import net.causw.application.dto.util.CircleServiceDtoMapper;
-import net.causw.application.dto.util.DtoMapper;
+import net.causw.application.dto.util.dtoMapper.CircleDtoMapper;
 import net.causw.application.dto.util.StatusUtil;
-import net.causw.application.excel.ExcelService;
+import net.causw.application.excel.CircleExcelService;
+import net.causw.application.uuidFile.UuidFileService;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.model.enums.CircleMemberStatus;
+import net.causw.domain.model.enums.FilePath;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.enums.UserState;
 import net.causw.domain.model.util.MessageUtil;
@@ -29,6 +31,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.validation.Validator;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -39,13 +43,14 @@ import static net.causw.application.dto.board.BoardOfCircleResponseDto.isWriteab
 @Service
 @RequiredArgsConstructor
 public class CircleService {
-    private final ExcelService excelService;
+    private final CircleExcelService circleExcelService;
     private final Validator validator;
     private final CircleRepository circleRepository;
     private final CircleMemberRepository circleMemberRepository;
     private final UserRepository userRepository;
     private final BoardRepository boardRepository;
     private final PostRepository postRepository;
+    private final UuidFileService uuidFileService;
 
     @Transactional(readOnly = true)
     public CircleResponseDto findById(String circleId) {
@@ -188,7 +193,7 @@ public class CircleService {
     }
 
     @Transactional
-    public CircleResponseDto create(User requestUser, CircleCreateRequestDto circleCreateRequestDto) {
+    public CircleResponseDto create(User requestUser, CircleCreateRequestDto circleCreateRequestDto, MultipartFile mainImage) {
         Set<Role> roles = requestUser.getRoles();
 
         User leader = userRepository.findById(circleCreateRequestDto.getLeaderId())
@@ -197,14 +202,20 @@ public class CircleService {
                         MessageUtil.NEW_CIRCLE_LEADER_NOT_FOUND)
                 );
 
+        UuidFile uuidFile = (mainImage.isEmpty()) ?
+                null :
+                uuidFileService.saveFile(mainImage, FilePath.CIRCLE_PROFILE);
+
         Circle circle = Circle.of(
                 circleCreateRequestDto.getName(),
-                circleCreateRequestDto.getMainImage(),
+                uuidFile,
                 circleCreateRequestDto.getDescription(),
                 false,
                 circleCreateRequestDto.getCircleTax(),
                 circleCreateRequestDto.getRecruitMembers(),
-                leader
+                leader,
+                circleCreateRequestDto.getRecruitEndDate(),
+                circleCreateRequestDto.getIsRecruit()
         );
 
         /* Check if the request user is president or admin
@@ -262,7 +273,8 @@ public class CircleService {
     public CircleResponseDto update(
             User user,
             String circleId,
-            CircleUpdateRequestDto circleUpdateRequestDto
+            CircleUpdateRequestDto circleUpdateRequestDto,
+            MultipartFile mainImage
     ) {
         Circle circle = getCircle(circleId);
         Set<Role> roles = user.getRoles();
@@ -301,16 +313,18 @@ public class CircleService {
         validatorBucket
                 .validate();
 
-        String mainImage = circleUpdateRequestDto.getMainImage();
-        if (mainImage.isEmpty()) {
-            mainImage = circle.getMainImage();
-        }
+        UuidFile uuidFile = mainImage.isEmpty() ?
+                circle.getCircleMainImageUuidFile() :
+                uuidFileService.updateFile(circle.getCircleMainImageUuidFile(), mainImage, FilePath.CIRCLE_PROFILE);
+
         circle.update(
                 circleUpdateRequestDto.getName(),
                 circleUpdateRequestDto.getDescription(),
-                mainImage,
+                uuidFile,
                 circleUpdateRequestDto.getCircleTax(),
-                circleUpdateRequestDto.getRecruitMembers()
+                circleUpdateRequestDto.getRecruitMembers(),
+                circleUpdateRequestDto.getRecruitEndDate(),
+                circleUpdateRequestDto.getIsRecruit()
         );
 
         return this.toCircleResponseDto(updateCircle(circleId, circle));
@@ -323,7 +337,7 @@ public class CircleService {
     ) {
         Circle circle = getCircle(circleId);
 
-        Set<Role> roles = user.getRoles();;
+        Set<Role> roles = user.getRoles();
 
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         validatorBucket
@@ -605,7 +619,7 @@ public class CircleService {
         List<CircleMemberResponseDto> awaitingMembers = getUserList(user, circleId, CircleMemberStatus.AWAIT);
         List<CircleMemberResponseDto> activeMembers = getUserList(user, circleId, CircleMemberStatus.MEMBER);
 
-        excelService.generateCircleExcel(response, circleName, awaitingMembers, activeMembers);
+        circleExcelService.generateCircleExcel(response, circleName, awaitingMembers, activeMembers);
     }
 
 
@@ -624,7 +638,7 @@ public class CircleService {
     private Circle updateCircle(String id, Circle circle) {
         return circleRepository.findById(id).map(
                 srcCircle -> {
-                    srcCircle.update(circle.getName(), circle.getDescription(), circle.getMainImage(), circle.getCircleTax(), circle.getRecruitMembers());
+                    srcCircle.update(circle.getName(), circle.getDescription(), circle.getCircleMainImageUuidFile(), circle.getCircleTax(), circle.getRecruitMembers(), circle.getRecruitEndDate(), circle.getIsRecruit());
                     return circleRepository.save(srcCircle);
                 }
         ).orElseThrow(
@@ -760,34 +774,34 @@ public class CircleService {
     // Dto Mapper
 
     private UserResponseDto toUserResponseDto(User user) {
-        return CircleServiceDtoMapper.INSTANCE.toUserResponseDto(user);
+        return CircleDtoMapper.INSTANCE.toUserResponseDto(user);
     }
 
     private CircleResponseDto toCircleResponseDto(Circle circle) {
-        return CircleServiceDtoMapper.INSTANCE.toCircleResponseDto(circle);
+        return CircleDtoMapper.INSTANCE.toCircleResponseDto(circle);
     }
 
     private CircleResponseDto toCircleResponseDtoExtended(Circle circle, Long numMember) {
-        return CircleServiceDtoMapper.INSTANCE.toCircleResponseDtoExtended(circle, numMember);
+        return CircleDtoMapper.INSTANCE.toCircleResponseDtoExtended(circle, numMember);
     }
 
     private CirclesResponseDto toCirclesResponseDto(Circle circle, Long numMember) {
-        return CircleServiceDtoMapper.INSTANCE.toCirclesResponseDto(circle, numMember);
+        return CircleDtoMapper.INSTANCE.toCirclesResponseDto(circle, numMember);
     }
 
     private CirclesResponseDto toCirclesResponseDtoExtended(Circle circle, Long numMember, LocalDateTime joinedAt) {
-        return CircleServiceDtoMapper.INSTANCE.toCirclesResponseDtoExtended(circle, numMember, joinedAt);
+        return CircleDtoMapper.INSTANCE.toCirclesResponseDtoExtended(circle, numMember, joinedAt);
     }
 
     private BoardOfCircleResponseDto toBoardOfCircleResponseDto(Board board, Set<Role> userRoles) {
-        return CircleServiceDtoMapper.INSTANCE.toBoardOfCircleResponseDto(
+        return CircleDtoMapper.INSTANCE.toBoardOfCircleResponseDto(
                 board,
                 isWriteable(board, userRoles)
         );
     }
 
     private BoardOfCircleResponseDto toBoardOfCircleResponseDtoExtended(Board board, Set<Role> userRoles, Post post, Long numComment) {
-        return CircleServiceDtoMapper.INSTANCE.toBoardOfCircleResponseDtoExtended(
+        return CircleDtoMapper.INSTANCE.toBoardOfCircleResponseDtoExtended(
                 board,
                 isWriteable(board, userRoles),
                 post,
@@ -796,11 +810,11 @@ public class CircleService {
     }
 
     private CircleBoardsResponseDto toCircleBoardsResponseDto(Circle circle, Long numMember, List<BoardOfCircleResponseDto> boardList) {
-        return CircleServiceDtoMapper.INSTANCE.toCircleBoardsResponseDto(this.toCircleResponseDtoExtended(circle, numMember), boardList);
+        return CircleDtoMapper.INSTANCE.toCircleBoardsResponseDto(this.toCircleResponseDtoExtended(circle, numMember), boardList);
     }
 
     private CircleMemberResponseDto toCircleMemberResponseDto(CircleMember circleMember, CircleResponseDto circleResponseDto, UserResponseDto userResponseDto) {
-        return CircleServiceDtoMapper.INSTANCE.toCircleMemberResponseDto(circleMember, circleResponseDto, userResponseDto);
+        return CircleDtoMapper.INSTANCE.toCircleMemberResponseDto(circleMember, circleResponseDto, userResponseDto);
     }
 
     private CircleMemberResponseDto toCircleMemberResponseDto(CircleMember circleMember, Circle circle, User user) {
@@ -812,6 +826,6 @@ public class CircleService {
     }
 
     private DuplicatedCheckResponseDto toDuplicatedCheckResponseDto(Boolean isDuplicated) {
-        return CircleServiceDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(isDuplicated);
+        return CircleDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(isDuplicated);
     }
 }

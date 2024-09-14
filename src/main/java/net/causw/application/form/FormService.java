@@ -7,7 +7,7 @@ import net.causw.adapter.persistence.form.Option;
 import net.causw.adapter.persistence.form.Reply;
 import net.causw.adapter.persistence.repository.*;
 import net.causw.application.dto.form.*;
-import net.causw.application.dto.util.DtoMapper;
+import net.causw.application.dto.util.dtoMapper.FormDtoMapper;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
@@ -97,7 +97,7 @@ public class FormService {
 
         formRepository.save(form);
 
-        return DtoMapper.INSTANCE.toFormResponseDto(form);
+        return FormDtoMapper.INSTANCE.toFormResponseDto(form);
     }
 
     @Transactional
@@ -114,7 +114,7 @@ public class FormService {
     @Transactional(readOnly = true)
     public FormResponseDto findForm(String formId) {
         Form form = getForm(formId);
-        return DtoMapper.INSTANCE.toFormResponseDto(form);
+        return FormDtoMapper.INSTANCE.toFormResponseDto(form);
     }
 
     @Transactional
@@ -151,10 +151,10 @@ public class FormService {
                 .map(reply -> {
                     User replyUser = reply.getValue().get(0).getUser();
                     List<QuestionReplyResponseDto> questionReplies = reply.getValue().stream()
-                            .map(DtoMapper.INSTANCE::toQuestionReplyResponseDto)
+                            .map(FormDtoMapper.INSTANCE::toQuestionReplyResponseDto)
                             .collect(Collectors.toList());
 
-                    return DtoMapper.INSTANCE.toReplyUserResponseDto(replyUser, questionReplies);
+                    return FormDtoMapper.INSTANCE.toReplyUserResponseDto(replyUser, questionReplies);
                 })
                 .collect(Collectors.toList());
     }
@@ -191,11 +191,11 @@ public class FormService {
                     }
 
                     List<OptionSummaryResponseDto> optionSummaries = question.getOptions().stream()
-                            .map(option -> DtoMapper.INSTANCE.toOptionSummaryResponseDto(option, optionCount.getOrDefault(option.getNumber(), 0L)))
+                            .map(option -> FormDtoMapper.INSTANCE.toOptionSummaryResponseDto(option, optionCount.getOrDefault(option.getNumber(), 0L)))
                             .collect(Collectors.toList());
 
 
-                    return DtoMapper.INSTANCE.toQuestionSummaryResponseDto(question, questionAnswers, optionSummaries);
+                    return FormDtoMapper.INSTANCE.toQuestionSummaryResponseDto(question, questionAnswers, optionSummaries);
                 })
                 .collect(Collectors.toList());
     }

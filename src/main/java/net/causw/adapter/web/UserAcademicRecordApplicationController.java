@@ -71,22 +71,6 @@ public class UserAcademicRecordApplicationController {
     }
 
     /**
-     * 재학 인증 일괄 요청
-     * @return Void
-     */
-    @PutMapping("/request-all")
-    @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
-    @Operation(summary = "재학 인증 일괄 요청(관리자용)",
-            description = "전체 유저의 재학 인증을 요청합니다.")
-    public Void requestAllUserAcademicRecordApplication(
-            @AuthenticationPrincipal CustomUserDetails userDetails
-    ) {
-        return userAcademicRecordApplicationService.requestAllUserAcademicRecordApplication(userDetails.getUser());
-    }
-
-    /**
      * 유저 학적 정보 상세 보기
      * @param userId
      * @return UserAcademicRecordInfoResponseDto
@@ -216,7 +200,7 @@ public class UserAcademicRecordApplicationController {
      * @param imageFileList
      * @return
      */
-    @PostMapping(value = "/application/create", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PostMapping(value = "/application/create")
     @ResponseStatus(value = HttpStatus.CREATED)
     @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
     @Operation(summary = "사용자 본인의 학적 증빙 서류 제출",
@@ -236,7 +220,7 @@ public class UserAcademicRecordApplicationController {
      * @param imageFileList
      * @return
      */
-    @PutMapping(value = "/application/update", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PutMapping(value = "/application/update")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
     @Operation(summary = "사용자 본인의 학적 증빙 서류 수정",

@@ -5,12 +5,12 @@ import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.semester.Semester;
 import net.causw.adapter.persistence.user.User;
-import net.causw.adapter.persistence.user.UserAcademicRecordApplication;
-import net.causw.adapter.persistence.user.UserAcademicRecordLog;
+import net.causw.adapter.persistence.userAcademicRecord.UserAcademicRecordApplication;
+import net.causw.adapter.persistence.userAcademicRecord.UserAcademicRecordLog;
 import net.causw.application.dto.semester.CurrentSemesterResponseDto;
 import net.causw.application.dto.userAcademicRecordApplication.*;
-import net.causw.application.dto.util.SemesterDtoMapper;
-import net.causw.application.dto.util.UserAcademicRecordDtoMapper;
+import net.causw.application.dto.util.dtoMapper.SemesterDtoMapper;
+import net.causw.application.dto.util.dtoMapper.UserAcademicRecordDtoMapper;
 import net.causw.application.uuidFile.UuidFileService;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -18,7 +18,6 @@ import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.model.enums.AcademicRecordRequestStatus;
 import net.causw.domain.model.enums.AcademicStatus;
 import net.causw.domain.model.enums.FilePath;
-import net.causw.domain.model.enums.SemesterType;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
 import org.springframework.data.domain.Page;
@@ -53,35 +52,6 @@ public class UserAcademicRecordApplicationService {
     public Page<UserAcademicRecordApplicationListResponseDto> getAllUserAwaitingAcademicRecordPage(Pageable pageable) {
         return userAcademicRecordApplicationRepository.findAllByAcademicRecordRequestStatus(pageable, AcademicRecordRequestStatus.AWAIT)
                 .map(this::toUserAcademicRecordApplicationListResponseDto);
-    }
-
-    @Transactional
-    public Void requestAllUserAcademicRecordApplication(User user) {
-        Semester priorSemester = getCurrentSemester();
-
-        priorSemester.updateIsCurrent(false);
-        semesterRepository.save(priorSemester);
-
-        Semester currentSemester = (priorSemester.getSemesterType().equals(SemesterType.FIRST)) ?
-                Semester.of(priorSemester.getSemesterYear(), SemesterType.SECOND, user) :
-                Semester.of(priorSemester.getSemesterYear() + 1, SemesterType.FIRST, user);
-        semesterRepository.save(currentSemester);
-
-
-        List<User> userList = userRepository.findByAcademicStatusInOrAcademicStatusIsNull(
-                List.of(
-                        AcademicStatus.ENROLLED,
-                        AcademicStatus.LEAVE_OF_ABSENCE
-                ))
-                .stream()
-                .peek(
-                        (u) -> u.setAcademicStatus(AcademicStatus.UNDETERMINED)
-                )
-                .toList();
-
-        userRepository.saveAll(userList);
-
-        return null;
     }
 
     public UserAcademicRecordInfoResponseDto getUserAcademicRecordInfo(String userId) {
@@ -215,15 +185,16 @@ public class UserAcademicRecordApplicationService {
             CreateUserAcademicRecordApplicationRequestDto createUserAcademicRecordApplicationRequestDto,
             List<MultipartFile> imageFileList
     ) {
-        List<UuidFile> uuidFileList = null;
-
-        if (!imageFileList.isEmpty()) {
-            uuidFileList = imageFileList.stream()
-                    .map((MultipartFile file) -> uuidFileService.saveFile(file, FilePath.USER_ACADEMIC_RECORD_APPLICATION))
-                    .toList();
-        }
+        List<UuidFile> uuidFileList = (imageFileList.isEmpty()) ?
+                new ArrayList<>() :
+                uuidFileService.saveFileList(imageFileList, FilePath.USER_ACADEMIC_RECORD_APPLICATION);
 
         UserAcademicRecordLog userAcademicRecordLog;
+
+        // User 엔티티가 영속성 컨텍스트에 없는 경우, merge로 다시 연결
+        if (user != null) {
+            user = userRepository.save(user);
+        }
 
         if (createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus().equals(AcademicStatus.ENROLLED)) {
             if (createUserAcademicRecordApplicationRequestDto.getTargetCompletedSemester() == null) {
@@ -309,6 +280,11 @@ public class UserAcademicRecordApplicationService {
             CreateUserAcademicRecordApplicationRequestDto createUserAcademicRecordApplicationRequestDto,
             List<MultipartFile> imageFileList
     ) {
+        // User 엔티티가 영속성 컨텍스트에 없는 경우, merge로 다시 연결
+        if (user != null) {
+            user = userRepository.save(user);
+        }
+
         UserAcademicRecordApplication priorUserAcademicRecordApplication = getRecentAwaitOrRejectUserAcademicRecordApplication(user);
 
         if (!priorUserAcademicRecordApplication.getAcademicRecordRequestStatus().equals(AcademicRecordRequestStatus.REJECT)) {

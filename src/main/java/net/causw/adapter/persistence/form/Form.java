@@ -5,17 +5,14 @@ import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.user.User;
-import net.causw.application.dto.form.QuestionCreateRequestDto;
-import org.hibernate.annotations.ColumnDefault;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 @Getter
 @Setter
 @Entity
+@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_form")
@@ -25,9 +22,8 @@ public class Form extends BaseEntity {
     private String title;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @Column(name = "allowedGrades", nullable = false)
+    @Column(name = "allowed_grades", nullable = false)
     private Set<Integer> allowedGrades;
-
 
     @OneToMany(mappedBy = "form", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Question> questions;
@@ -51,14 +47,14 @@ public class Form extends BaseEntity {
             User writer,
             Circle circle
     ) {
-        return new Form(
-                title,
-                allowedGrades != null ? allowedGrades : new HashSet<>(),
-                questions,
-                false,
-                writer,
-                circle
-        );
+        return Form.builder()
+                .title(title)
+                .allowedGrades(allowedGrades)
+                .questions(questions)
+                .isDeleted(false)
+                .writer(writer)
+                .circle(circle)
+                .build();
     }
 
     public void update(String title, Set<Integer> allowedGrades, List<Question> questions) {
