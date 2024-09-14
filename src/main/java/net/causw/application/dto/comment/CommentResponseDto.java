@@ -45,31 +45,4 @@ public class CommentResponseDto {
     @Schema(description = "대댓글 DTO 리스트", example ="대댓글 DTO 리스트 입니다.")
     private List<ChildCommentResponseDto> childCommentList;
 
-    public static CommentResponseDto of(
-            Comment comment,
-            Long numChildComment,
-            Long numCommentLike,
-            List<ChildCommentResponseDto> childCommentList,
-            boolean updatable,
-            boolean deletable,
-            boolean isAnonymous
-    ){
-        return CommentResponseDto.builder()
-                .id(comment.getId())
-                .content(comment.getContent())
-                .createdAt(comment.getCreatedAt())
-                .updatedAt(comment.getUpdatedAt())
-                .isDeleted(comment.getIsDeleted())
-                .postId(comment.getPost().getId())
-                .writerName(comment.getWriter().getName())
-                .writerAdmissionYear(comment.getWriter().getAdmissionYear())
-                .writerProfileImage(comment.getWriter().getProfileImageUuidFile()!=null ? comment.getWriter().getProfileImageUuidFile().getFileUrl() : null)
-                .updatable(updatable)
-                .deletable(deletable)
-                .numChildComment(numChildComment)
-                .childCommentList(childCommentList)
-                .isAnonymous(isAnonymous)
-                .numLike(numCommentLike)
-                .build();
-    }
 }
