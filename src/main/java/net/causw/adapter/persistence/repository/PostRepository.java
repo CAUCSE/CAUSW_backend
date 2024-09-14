@@ -44,6 +44,10 @@ public interface PostRepository extends JpaRepository<Post, String> {
             "ORDER BY p.createdAt DESC")
     Page<Post> findByUserId(@Param("user_id") String userId, Pageable pageable);
 
+    // fetch join으로 Board까지 가져오기
+    @Query(value = "SELECT DISTINCT p FROM Post p JOIN FETCH p.board WHERE p.id = :id")
+    Optional<Post> findById(@Param("id") String id);
+
     // 게시물에 작성된 모든 댓글(댓글+대댓글)의 수 세기
     @Query(value = "SELECT COUNT(DISTINCT c.id) + COUNT(DISTINCT cc.id) - COUNT(DISTINCT CASE WHEN c.is_deleted = true AND NOT cc.is_deleted IS NULL THEN c.id END)" +
             "FROM tb_post AS p " +

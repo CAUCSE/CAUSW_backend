@@ -536,16 +536,6 @@ public class PostService {
         );
     }
 
-    private PostResponseDto toPostResponseDto(Post post, User user) {
-        return PostDtoMapper.INSTANCE.toPostResponseDto(
-                post,
-                getNumOfPostLikes(post),
-                getNumOfPostFavorites(post),
-                StatusUtil.isUpdatable(post, user, isPostHasComment(post.getId())),
-                StatusUtil.isDeletable(post, user, post.getBoard(), isPostHasComment(post.getId()))
-        );
-    }
-
     private PostResponseDto toPostResponseDtoExtended(Post post, User user) {
         return PostDtoMapper.INSTANCE.toPostResponseDtoExtended(
                 postRepository.save(post),
