@@ -91,6 +91,9 @@ public class User extends BaseEntity {
     @JoinColumn(name = "user_circle_id", nullable = true)
     private List<CircleMember> circleMemberList;
 
+    @Column(name = "rejectionOrDropReason",nullable = true)
+    private String rejectionOrDropReason;
+
     private User(
             String id,
             String email,
@@ -144,5 +147,9 @@ public class User extends BaseEntity {
         this.nickname = nickname;
         this.academicStatus = academicStatus;
         this.profileImage = profileImage;
+    }
+
+    public void updateRejectionOrDropReason(String reason) {
+        this.rejectionOrDropReason = reason;
     }
 }
