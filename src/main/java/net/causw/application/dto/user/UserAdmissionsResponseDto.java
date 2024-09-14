@@ -16,7 +16,7 @@ public class UserAdmissionsResponseDto {
     private String userName;
     private String userEmail;
     private Integer admissionYear;
-    private String attachImage;
+//    private String attachImage;
     private String description;
     private UserState userState;
     private LocalDateTime createdAt;

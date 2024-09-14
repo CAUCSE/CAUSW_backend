@@ -15,7 +15,7 @@ public class UserAdmissionLogPortImpl implements UserAdmissionLogPort {
     }
 
     @Override
-    public void create(String userEmail, String userName, String adminUserEmail, String adminUserName, UserAdmissionLogAction action, String attachImage, String description) {
+    public void create(String userEmail, String userName, String adminUserEmail, String adminUserName, UserAdmissionLogAction action, String attachImage, String description, String rejectReason) {
         this.userAdmissionLogRepository.save(
                 UserAdmissionLog.of(
                         userEmail,
@@ -24,7 +24,8 @@ public class UserAdmissionLogPortImpl implements UserAdmissionLogPort {
                         adminUserName,
                         action,
                         attachImage,
-                        description
+                        description,
+                        rejectReason
                 )
         );
     }
