@@ -505,10 +505,11 @@ public class UserController {
     })
     public UserAdmissionResponseDto rejectAdmission(
             @PathVariable("id") String id,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody String rejectReason
     ) {
 
-        return this.userService.reject(userDetails.getUser(), id);
+        return this.userService.reject(userDetails.getUser(), id, rejectReason);
     }
 
 //    @PostMapping(value = "/favorite-boards/{boardId}")

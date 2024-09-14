@@ -1175,7 +1175,7 @@ public class UserService {
                 .action(UserAdmissionLogAction.ACCEPT)
                 .attachImage(userAdmission.getAttachImage())
                 .description(userAdmission.getDescription())
-                .rejectReason(userAdmission.getRejectReason())
+                .rejectReason(null)
                 .build();
         // Add admission log
 
@@ -1184,7 +1184,7 @@ public class UserService {
         this.userAdmissionRepository.delete(userAdmission);
 
         return DtoMapper.INSTANCE.toUserAdmissionResponseDto(
-                userAdmission,
+                userAdmissionLog,
                 this.updateState(userAdmission.getUser().getId(), UserState.ACTIVE)
                         .orElseThrow(() -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
@@ -1196,7 +1196,8 @@ public class UserService {
     @Transactional
     public UserAdmissionResponseDto reject(
             User requestUser,
-            String admissionId
+            String admissionId,
+            String rejectReason
     ) {
         Set<Role> roles = requestUser.getRoles();
 
@@ -1219,15 +1220,16 @@ public class UserService {
                 .action(UserAdmissionLogAction.REJECT)
                 .attachImage(userAdmission.getAttachImage())
                 .description(userAdmission.getDescription())
-                .rejectReason(userAdmission.getRejectReason())
+                .rejectReason(rejectReason)
                 .build();
 
 
         this.userAdmissionLogRepository.save(userAdmissionLog);
         this.userAdmissionRepository.delete(userAdmission);
+        requestUser.updateRejectionOrDropReason(rejectReason);
 
         return DtoMapper.INSTANCE.toUserAdmissionResponseDto(
-                userAdmission,
+                userAdmissionLog,
                 this.updateState(userAdmission.getUser().getId(), UserState.REJECT)
                         .orElseThrow(() -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
