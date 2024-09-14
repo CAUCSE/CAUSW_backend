@@ -51,6 +51,7 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "isQuestion", source = "post.isQuestion")
     @Mapping(target = "numLike", source = "numPostLike")
     @Mapping(target = "numFavorite", source = "numPostFavorite")
+    @Mapping(target = "numComment", constant = "0L")
     PostResponseDto toPostResponseDto(Post post, Long numPostLike, Long numPostFavorite, Boolean updatable, Boolean deletable);
 
     @Mapping(target = "writerName", source = "post.writer.name")
@@ -62,7 +63,8 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "isQuestion", source = "post.isQuestion")
     @Mapping(target = "numLike", source = "numPostLike")
     @Mapping(target = "numFavorite", source = "numPostFavorite")
-    PostResponseDto toPostResponseDtoExtended(Post post, Page<CommentResponseDto> commentList, Long numComment, Long numPostLike, Long numPostFavorite, Boolean updatable, Boolean deletable);
+    PostResponseDto toPostResponseDtoExtended(Post post, Page<CommentResponseDto> commentList, Long numComment, Long numPostLike,
+                                              Long numPostFavorite, Boolean isPostLike, Boolean isPostFavorite, Boolean updatable, Boolean deletable);
 
     @Mapping(target = "title", source = "post.title")
     @Mapping(target = "contentId", source = "post.id")
