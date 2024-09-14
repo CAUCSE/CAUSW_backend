@@ -93,28 +93,6 @@ public class User extends BaseEntity {
     @Column(name = "rejectionOrDropReason",nullable = true)
     private String rejectionOrDropReason;
 
-    private User(
-            String id,
-            String email,
-            String name,
-            String password,
-            String studentId,
-            Integer admissionYear,
-            Set<Role> roles,
-            String profileImage,
-            UserState state
-    ) {
-        super(id);
-        this.email = email;
-        this.name = name;
-        this.password = password;
-        this.studentId = studentId;
-        this.admissionYear = admissionYear;
-        this.roles = roles;
-        this.profileImage = profileImage;
-        this.state = state;
-    }
-
     public void delete() {
         this.email = "deleted_" + this.getId();
         this.name = "탈퇴한 사용자";
