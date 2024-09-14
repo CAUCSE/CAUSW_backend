@@ -282,6 +282,22 @@ public class UserController {
     }
 
     /**
+     * 학번 중복 확인 컨트롤러
+     * @param studentId
+     * @return DuplicatedCheckResponseDto
+     */
+    @GetMapping(value = "/{studentId}/is-duplicated-student-id")
+    @ResponseStatus(value = HttpStatus.OK)
+    @Operation(summary = "닉네임 중복 확인 API")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "4001", description = "탈퇴한 계정의 재가입은 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
+    })
+    public DuplicatedCheckResponseDto isDuplicatedStudentId(@PathVariable("studentId") String studentId) {
+        return this.userService.isDuplicatedStudentId(studentId);
+    }
+
+    /**
      * 사용자 정보 업데이트 컨트롤러
      * @param userUpdateDto
      * @return UserResponseDto
