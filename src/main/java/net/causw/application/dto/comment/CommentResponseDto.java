@@ -23,7 +23,10 @@ public class CommentResponseDto {
     private String postId;
     private String writerName;
     private Integer writerAdmissionYear;
+
+    @Schema(description = "작성자 사진이 저장되어 있는 URL 주소(없으면 Null 반환)", example = "http://test/123")
     private String writerProfileImage;
+
     private Boolean updatable;
     private Boolean deletable;
 
@@ -54,7 +57,7 @@ public class CommentResponseDto {
                 .postId(comment.getPost().getId())
                 .writerName(comment.getWriter().getName())
                 .writerAdmissionYear(comment.getWriter().getAdmissionYear())
-                .writerProfileImage(comment.getWriter().getProfileImageUuidFile().getFileUrl())
+                .writerProfileImage(comment.getWriter().getProfileImageUuidFile()!=null ? comment.getWriter().getProfileImageUuidFile().getFileUrl() : null)
                 .updatable(updatable)
                 .deletable(deletable)
                 .numChildComment(numChildComment)
