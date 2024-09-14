@@ -32,9 +32,6 @@ public class ChildComment extends BaseEntity {
     @Column(name = "tag_user_name")
     private String tagUserName;
 
-    @Column(name = "ref_child_comment")
-    private String refChildComment;
-
     @ManyToOne(targetEntity = User.class)
     @JoinColumn(name = "user_id", nullable = false)
     private User writer;
@@ -47,8 +44,6 @@ public class ChildComment extends BaseEntity {
             String content,
             Boolean isDeleted,
             Boolean isAnonymous,
-            String tagUserName,
-            String refChildComment,
             User writer,
             Comment parentComment
     ) {
@@ -56,8 +51,6 @@ public class ChildComment extends BaseEntity {
                 .content(content)
                 .isDeleted(isDeleted)
                 .isAnonymous(isAnonymous)
-                .tagUserName(tagUserName)
-                .refChildComment(refChildComment)
                 .writer(writer)
                 .parentComment(parentComment)
                 .build();
