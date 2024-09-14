@@ -5,6 +5,7 @@ import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.user.UserAdmission;
+import net.causw.adapter.persistence.user.UserAdmissionLog;
 import net.causw.application.dto.comment.CommentsOfUserResponseDto;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.post.PostsResponseDto;
@@ -41,6 +42,9 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "graduationYear", source = "user.graduationYear")
     @Mapping(target = "graduationType", source = "user.graduationType")
     @Mapping(target = "phoneNumber", source = "user.phoneNumber")
+    @Mapping(target = "rejectionOrDropReason", source = "user.rejectionOrDropReason")
+    @Mapping(target = "createdAt", source = "user.createdAt")
+    @Mapping(target = "updatedAt", source = "user.updatedAt")
     UserResponseDto toUserResponseDto(User user, List<String> circleIdIfLeader, List<String> circleNameIfLeader);
     // circleIdIfLeader, circleNameIfLeader는 경우에 따라 null을 할당합니다.(기존 UserResponseDto.from을 사용하는 경우)
 
@@ -124,6 +128,15 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "updatedAt", source = "userAdmission.updatedAt")
     UserAdmissionResponseDto toUserAdmissionResponseDto(UserAdmission userAdmission, User user);
 
+    @Mapping(target = "id", source = "userAdmissionLog.id")
+    @Mapping(target = "user", source = "user")
+    @Mapping(target = "description", source = "userAdmissionLog.description")
+    @Mapping(target = "attachImageUrlList", source = "userAdmissionLog.userAdmissionLogAttachImageUuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
+    @Mapping(target = "createdAt", source = "userAdmissionLog.createdAt")
+    @Mapping(target = "updatedAt", source = "userAdmissionLog.updatedAt")
+    @Mapping(target = "rejectReason", source = "userAdmissionLog.rejectReason")
+    UserAdmissionResponseDto toUserAdmissionResponseDto(UserAdmissionLog userAdmissionLog, User user);
+
     @Mapping(target = "id", source = "userAdmission.id")
     @Mapping(target = "userName", source = "userAdmission.user.name")
     @Mapping(target = "userEmail", source = "userAdmission.user.email")
@@ -133,6 +146,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "userState", source = "userAdmission.user.state")
     @Mapping(target = "createdAt", source = "userAdmission.createdAt")
     @Mapping(target = "updatedAt", source = "userAdmission.updatedAt")
+    @Mapping(target = "studentId", source = "userAdmission.user.id")
     UserAdmissionsResponseDto toUserAdmissionsResponseDto(UserAdmission userAdmission);
 
     UserSignOutResponseDto toUserSignOutResponseDto(String message);
