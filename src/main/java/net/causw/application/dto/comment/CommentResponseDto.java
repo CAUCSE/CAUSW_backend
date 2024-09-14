@@ -33,10 +33,16 @@ public class CommentResponseDto {
     @Schema(description = "익명글 여부", example = "False")
     private Boolean isAnonymous;
 
+    @Schema(description = "로그인한 유저가 댓글에 좋아요를 이미 누른지 여부", example = "False")
+    private Boolean isCommentLike;
+
     @Schema(description = "댓글 종아요 수", example = "10")
     private Long numLike;
 
+    @Schema(description = "대댓글 수", example ="5")
     private Long numChildComment;
+
+    @Schema(description = "대댓글 DTO 리스트", example ="대댓글 DTO 리스트 입니다.")
     private List<ChildCommentResponseDto> childCommentList;
 
     public static CommentResponseDto of(
