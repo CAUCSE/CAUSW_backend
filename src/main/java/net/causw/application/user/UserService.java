@@ -988,12 +988,7 @@ public class UserService {
         Set<Role> roles = requestuser.getRoles();
 
         //삭제할 유저
-        User deleteUser = this.userRepository.findById(userId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_NOT_FOUND
-                )
-        );
+        User deleteUser = getUser(userId);
 
         //관리자 or 대표만 삭제 가능
         ValidatorBucket.of()
