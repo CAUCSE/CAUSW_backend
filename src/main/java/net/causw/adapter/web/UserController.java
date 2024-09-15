@@ -291,7 +291,8 @@ public class UserController {
     @Operation(summary = "닉네임 중복 확인 API")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
-            @ApiResponse(responseCode = "4001", description = "탈퇴한 계정의 재가입은 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
+            @ApiResponse(responseCode = "4001", description = "탈퇴한 계정의 재가입은 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     public DuplicatedCheckResponseDto isDuplicatedStudentId(@PathVariable("studentId") String studentId) {
         return this.userService.isDuplicatedStudentId(studentId);
