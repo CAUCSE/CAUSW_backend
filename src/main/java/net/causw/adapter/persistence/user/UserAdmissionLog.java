@@ -38,6 +38,9 @@ public class UserAdmissionLog extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private UserAdmissionLogAction action;
 
+    @Column(name = "rejectReason",nullable = true)
+    private String rejectReason;
+
     public static UserAdmissionLog of(
             String userEmail,
             String userName,
@@ -45,7 +48,8 @@ public class UserAdmissionLog extends BaseEntity {
             String adminUserName,
             UserAdmissionLogAction action,
             List<UuidFile> userAdmissionLogAttachImageUuidFileList,
-            String description
+            String description,
+            String rejectReason
     ) {
         return UserAdmissionLog.builder()
                 .userEmail(userEmail)
@@ -55,6 +59,7 @@ public class UserAdmissionLog extends BaseEntity {
                 .action(action)
                 .userAdmissionLogAttachImageUuidFileList(userAdmissionLogAttachImageUuidFileList)
                 .description(description)
+                .rejectReason(rejectReason)
                 .build(
         );
     }

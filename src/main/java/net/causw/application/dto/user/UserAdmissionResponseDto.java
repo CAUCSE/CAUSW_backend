@@ -31,4 +31,6 @@ public class UserAdmissionResponseDto {
     @Schema(description = "마지막 업데이트된 시각", example = "2024-01-24T00:26:40.643Z")
     private LocalDateTime updatedAt;
 
+    @Schema(description = "거부 사유", example = "양식과 다른 사진을 제출하여 거절되었습니다")
+    private String rejectReason;
 }

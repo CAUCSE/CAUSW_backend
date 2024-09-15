@@ -394,6 +394,28 @@ public class UserController {
         return this.userService.leave(userDetails.getUser());
     }
 
+    /**
+     * 유저 삭제 컨트롤러
+     * @param
+     * @return
+     */
+    @DeleteMapping(value = "{id}/delete")
+    @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
+    @Operation(summary = "사용자 삭제 API (완료)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4107", description = "접근 권한이 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
+    })
+    public UserResponseDto delete(@PathVariable("id") String id, @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        return this.userService.eraseUserData(userDetails.getUser(), id);
+    }
+
     @PutMapping(value = "{id}/drop")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
@@ -401,9 +423,10 @@ public class UserController {
     @Operation(summary = "사용자 추방 및 사물함 반환 API (완료)")
     public UserResponseDto drop(
             @PathVariable("id") String id,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody String dropReason
     ) {
-        return this.userService.dropUser(userDetails.getUser(), id);
+        return this.userService.dropUser(userDetails.getUser(), id, dropReason);
     }
     @GetMapping(value = "/circles")
     @ResponseStatus(value = HttpStatus.OK)
@@ -503,10 +526,11 @@ public class UserController {
     })
     public UserAdmissionResponseDto rejectAdmission(
             @PathVariable("id") String id,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody String rejectReason
     ) {
 
-        return this.userService.reject(userDetails.getUser(), id);
+        return this.userService.reject(userDetails.getUser(), id, rejectReason);
     }
 
 //    @PostMapping(value = "/favorite-boards/{boardId}")
