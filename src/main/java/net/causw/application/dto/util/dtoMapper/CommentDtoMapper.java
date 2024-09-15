@@ -23,14 +23,14 @@ public interface CommentDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "isAnonymous", source = "comment.isAnonymous")
     @Mapping(target ="numLike", source = "numCommentLike")
     @Mapping(target = "childCommentList", source = "childCommentList")
-    CommentResponseDto toCommentResponseDto(Comment comment, Long numChildComment, Long numCommentLike, List<ChildCommentResponseDto> childCommentList, Boolean updatable, Boolean deletable);
+    CommentResponseDto toCommentResponseDto(Comment comment, Long numChildComment, Long numCommentLike, Boolean isCommentLike, List<ChildCommentResponseDto> childCommentList, Boolean updatable, Boolean deletable);
 
     @Mapping(target = "writerName", source = "childComment.writer.name")
     @Mapping(target = "writerAdmissionYear", source = "childComment.writer.admissionYear")
     @Mapping(target = "writerProfileImage", source = "childComment.writer.profileImageUuidFile", qualifiedByName = "mapUuidFileToFileUrl")
     @Mapping(target = "isAnonymous", source = "childComment.isAnonymous")
     @Mapping(target ="numLike", source = "numChildCommentLike")
-    ChildCommentResponseDto toChildCommentResponseDto(ChildComment childComment, Long numChildCommentLike, Boolean updatable, Boolean deletable);
+    ChildCommentResponseDto toChildCommentResponseDto(ChildComment childComment, Long numChildCommentLike, Boolean isChildCommentLike, Boolean updatable, Boolean deletable);
 
 
 }
