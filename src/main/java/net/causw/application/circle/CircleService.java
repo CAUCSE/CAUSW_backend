@@ -6,8 +6,14 @@ import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.post.Post;
-import net.causw.adapter.persistence.repository.*;
+import net.causw.adapter.persistence.repository.board.BoardRepository;
+import net.causw.adapter.persistence.repository.circle.CircleMemberRepository;
+import net.causw.adapter.persistence.repository.circle.CircleRepository;
+import net.causw.adapter.persistence.repository.post.PostRepository;
+import net.causw.adapter.persistence.repository.user.UserRepository;
+import net.causw.adapter.persistence.repository.uuidFile.CircleMainImageRepository;
 import net.causw.adapter.persistence.user.User;
+import net.causw.adapter.persistence.uuidFile.CircleMainImage;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.board.BoardOfCircleResponseDto;
 import net.causw.application.dto.circle.*;
@@ -51,6 +57,7 @@ public class CircleService {
     private final BoardRepository boardRepository;
     private final PostRepository postRepository;
     private final UuidFileService uuidFileService;
+    private final CircleMainImageRepository circleMainImageRepository;
 
     @Transactional(readOnly = true)
     public CircleResponseDto findById(String circleId) {
@@ -313,21 +320,43 @@ public class CircleService {
         validatorBucket
                 .validate();
 
-        UuidFile uuidFile = mainImage.isEmpty() ?
-                circle.getCircleMainImageUuidFile() :
-                uuidFileService.updateFile(circle.getCircleMainImageUuidFile(), mainImage, FilePath.CIRCLE_PROFILE);
+
+        // 이미지가 없을 경우 기존 이미지를 삭제, 이미지가 있을 경우 새로운 이미지로 교체 (Circle의 이미지는 not null임)
+        CircleMainImage circleMainImage = null;
+
+        if (mainImage.isEmpty()) {
+            if (circle.getCircleMainImage() != null) {
+                uuidFileService.deleteFile(circle.getCircleMainImage().getUuidFile());
+                circleMainImageRepository.delete(circle.getCircleMainImage());
+            }
+        } else {
+            if (circle.getCircleMainImage() == null) {
+                circleMainImage = CircleMainImage.of(
+                        circle,
+                        uuidFileService.saveFile(mainImage, FilePath.CIRCLE_PROFILE)
+                );
+            } else {
+                circleMainImage = circle.getCircleMainImage().updateUuidFileAndReturnSelf(
+                        uuidFileService.updateFile(
+                                circle.getCircleMainImage().getUuidFile(),
+                                mainImage,
+                                FilePath.CIRCLE_PROFILE
+                        )
+                );
+            }
+        }
 
         circle.update(
                 circleUpdateRequestDto.getName(),
                 circleUpdateRequestDto.getDescription(),
-                uuidFile,
+                circleMainImage,
                 circleUpdateRequestDto.getCircleTax(),
                 circleUpdateRequestDto.getRecruitMembers(),
                 circleUpdateRequestDto.getRecruitEndDate(),
                 circleUpdateRequestDto.getIsRecruit()
         );
 
-        return this.toCircleResponseDto(updateCircle(circleId, circle));
+        return this.toCircleResponseDto(circleRepository.save(circle));
     }
 
     @Transactional
@@ -633,19 +662,6 @@ public class CircleService {
                         MessageUtil.SMALL_CLUB_NOT_FOUND
                 )
         );
-    }
-
-    private Circle updateCircle(String id, Circle circle) {
-        return circleRepository.findById(id).map(
-                srcCircle -> {
-                    srcCircle.update(circle.getName(), circle.getDescription(), circle.getCircleMainImageUuidFile(), circle.getCircleTax(), circle.getRecruitMembers(), circle.getRecruitEndDate(), circle.getIsRecruit());
-                    return circleRepository.save(srcCircle);
-                }
-        ).orElseThrow(
-                () -> new InternalServerException(
-                        ErrorCode.INTERNAL_SERVER,
-                        MessageUtil.INTERNAL_SERVER_ERROR
-                ));
     }
 
     private Optional<Circle> deleteCircle(String id) {

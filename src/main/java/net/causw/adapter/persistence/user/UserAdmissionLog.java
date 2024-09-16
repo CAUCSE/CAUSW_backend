@@ -3,6 +3,7 @@ package net.causw.adapter.persistence.user;
 import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
+import net.causw.adapter.persistence.uuidFile.UserAdmissionLogAttachImage;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.domain.model.enums.UserAdmissionLogAction;
 
@@ -27,9 +28,8 @@ public class UserAdmissionLog extends BaseEntity {
     @Column(name = "admin_user_name", nullable = false)
     private String adminUserName;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "user_admission_log_id", nullable = true)
-    private List<UuidFile> userAdmissionLogAttachImageUuidFileList;
+    @OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "userAdmissionLog")
+    private List<UserAdmissionLogAttachImage> userAdmissionLogAttachImageList;
 
     @Column(name = "description")
     private String description;
@@ -51,16 +51,26 @@ public class UserAdmissionLog extends BaseEntity {
             String description,
             String rejectReason
     ) {
-        return UserAdmissionLog.builder()
+        UserAdmissionLog userAdmissionLog = UserAdmissionLog.builder()
                 .userEmail(userEmail)
                 .userName(userName)
                 .adminUserEmail(adminUserEmail)
                 .adminUserName(adminUserName)
                 .action(action)
-                .userAdmissionLogAttachImageUuidFileList(userAdmissionLogAttachImageUuidFileList)
                 .description(description)
                 .rejectReason(rejectReason)
-                .build(
-        );
+                .build();
+
+        List<UserAdmissionLogAttachImage> userAdmissionLogAttachImageList = userAdmissionLogAttachImageUuidFileList.stream()
+                .map(uuidFile -> UserAdmissionLogAttachImage.of(userAdmissionLog, uuidFile))
+                .toList();
+
+        userAdmissionLog.setUserAdmissionLogAttachImageList(userAdmissionLogAttachImageList);
+
+        return userAdmissionLog;
+    }
+
+    private void setUserAdmissionLogAttachImageList(List<UserAdmissionLogAttachImage> userAdmissionLogAttachImageList) {
+        this.userAdmissionLogAttachImageList = userAdmissionLogAttachImageList;
     }
 }

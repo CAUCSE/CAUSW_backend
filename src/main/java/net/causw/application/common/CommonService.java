@@ -2,8 +2,8 @@ package net.causw.application.common;
 
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.flag.Flag;
-import net.causw.adapter.persistence.repository.FlagRepository;
-import net.causw.adapter.persistence.repository.TextFieldRepository;
+import net.causw.adapter.persistence.repository.flag.FlagRepository;
+import net.causw.adapter.persistence.repository.textField.TextFieldRepository;
 import net.causw.adapter.persistence.textfield.TextField;
 import org.springframework.stereotype.Service;
 

@@ -2,8 +2,8 @@ package net.causw.application.inquiry;
 
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.inquiry.Inquiry;
-import net.causw.adapter.persistence.repository.InquiryRepository;
-import net.causw.adapter.persistence.repository.UserRepository;
+import net.causw.adapter.persistence.repository.inquiry.InquiryRepository;
+import net.causw.adapter.persistence.repository.user.UserRepository;
 import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.inquiry.InquiryCreateRequestDto;
 import net.causw.application.dto.inquiry.InquiryResponseDto;

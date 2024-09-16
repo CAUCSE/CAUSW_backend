@@ -3,6 +3,7 @@ package net.causw.adapter.persistence.userAcademicRecord;
 import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.user.User;
+import net.causw.adapter.persistence.uuidFile.UserAcademicRecordApplicationAttachImage;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.domain.exceptions.BadRequestException;
@@ -39,9 +40,8 @@ public class UserAcademicRecordApplication extends BaseEntity {
     @Column(name = "note", nullable = true)
     private String note;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "user_academic_record_application_id", nullable = true)
-    private List<UuidFile> userAcademicRecordAttachImageUuidFileList;
+    @OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "userAcademicRecordApplication")
+    private List<UserAcademicRecordApplicationAttachImage> userAcademicRecordAttachImageList;
 
     @Column(name = "reject_message", nullable = true)
     private String rejectMessage;
@@ -57,7 +57,7 @@ public class UserAcademicRecordApplication extends BaseEntity {
         }
     }
 
-    public static UserAcademicRecordApplication createApplication(
+    public static UserAcademicRecordApplication of(
             User user,
             AcademicStatus academicStatus,
             Integer targetCompletedSemester,
@@ -70,7 +70,6 @@ public class UserAcademicRecordApplication extends BaseEntity {
                 .targetAcademicStatus(academicStatus)
                 .targetCompletedSemester(targetCompletedSemester)
                 .note(note)
-                .userAcademicRecordAttachImageUuidFileList(userAcademicRecordAttachImageUuidFileList)
                 .build();
 
         if (academicStatus.equals(AcademicStatus.ENROLLED)) {
@@ -91,7 +90,17 @@ public class UserAcademicRecordApplication extends BaseEntity {
             userAcademicRecordApplication.updateApplicationRequestStatus(AcademicRecordRequestStatus.ACCEPT, null);
         }
 
+        List<UserAcademicRecordApplicationAttachImage> userAcademicRecordApplicationAttachImageList = userAcademicRecordAttachImageUuidFileList.stream()
+                .map(uuidFile -> UserAcademicRecordApplicationAttachImage.of(userAcademicRecordApplication, uuidFile))
+                .toList();
+
+        userAcademicRecordApplication.setUserAcademicRecordAttachImageList(userAcademicRecordApplicationAttachImageList);
+
         return userAcademicRecordApplication;
+    }
+
+    private void setUserAcademicRecordAttachImageList(List<UserAcademicRecordApplicationAttachImage> userAcademicRecordAttachImageList) {
+        this.userAcademicRecordAttachImageList = userAcademicRecordAttachImageList;
     }
 
 }

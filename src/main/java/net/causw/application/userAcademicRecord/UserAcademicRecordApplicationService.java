@@ -1,8 +1,11 @@
 package net.causw.application.userAcademicRecord;
 
 import lombok.RequiredArgsConstructor;
+import net.causw.adapter.persistence.repository.semester.SemesterRepository;
+import net.causw.adapter.persistence.repository.user.UserRepository;
+import net.causw.adapter.persistence.repository.userAcademicRecord.UserAcademicRecordApplicationRepository;
+import net.causw.adapter.persistence.repository.userAcademicRecord.UserAcademicRecordLogRepository;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
-import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.semester.Semester;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.userAcademicRecord.UserAcademicRecordApplication;
@@ -200,7 +203,7 @@ public class UserAcademicRecordApplicationService {
             if (createUserAcademicRecordApplicationRequestDto.getTargetCompletedSemester() == null) {
                 throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.TARGET_CURRENT_COMPLETED_SEMESTER_NOT_EXIST);
             }
-            UserAcademicRecordApplication userAcademicRecordApplication = UserAcademicRecordApplication.createApplication(
+            UserAcademicRecordApplication userAcademicRecordApplication = UserAcademicRecordApplication.of(
                     user,
                     createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus(),
                     createUserAcademicRecordApplicationRequestDto.getTargetCompletedSemester(),

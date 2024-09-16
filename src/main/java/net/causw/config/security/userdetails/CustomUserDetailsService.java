@@ -2,7 +2,7 @@ package net.causw.config.security.userdetails;
 
 import lombok.AllArgsConstructor;
 import net.causw.adapter.persistence.user.User;
-import net.causw.adapter.persistence.repository.UserRepository;
+import net.causw.adapter.persistence.repository.user.UserRepository;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.util.MessageUtil;

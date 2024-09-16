@@ -3,6 +3,7 @@ package net.causw.adapter.persistence.event;
 import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
+import net.causw.adapter.persistence.uuidFile.EventAttachImage;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import org.hibernate.annotations.ColumnDefault;
 
@@ -16,9 +17,9 @@ public class Event extends BaseEntity {
     @Column(name = "url", nullable = false)
     private String url;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "event_image_uuid_file_id", nullable = false)
-    private UuidFile eventImageUuidFile;
+    @OneToOne(cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, mappedBy = "event")
+    @JoinColumn(nullable = false)
+    private EventAttachImage eventAttachImage;
 
     @Setter
     @Column(name = "is_deleted")
@@ -30,15 +31,27 @@ public class Event extends BaseEntity {
             UuidFile eventImageUuidFile,
             Boolean isDeleted
     ) {
-        return Event.builder()
+        Event event = Event.builder()
                 .url(url)
-                .eventImageUuidFile(eventImageUuidFile)
                 .isDeleted(isDeleted)
                 .build();
+
+        EventAttachImage eventAttachImage = EventAttachImage.of(
+                event,
+                eventImageUuidFile
+        );
+
+        event.setEventImageUuidFile(eventAttachImage);
+
+        return event;
     }
 
-    public void update(String url, UuidFile eventImageUuidFile) {
+    public void update(String url, EventAttachImage eventAttachImage) {
         this.url = url;
-        this.eventImageUuidFile = eventImageUuidFile;
+        this.eventAttachImage = eventAttachImage;
+    }
+
+    private void setEventImageUuidFile(EventAttachImage eventAttachImage) {
+        this.eventAttachImage = eventAttachImage;
     }
 }

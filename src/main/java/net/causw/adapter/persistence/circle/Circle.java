@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.base.BaseEntity;
+import net.causw.adapter.persistence.uuidFile.CircleMainImage;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import org.hibernate.annotations.ColumnDefault;
 
@@ -20,9 +21,8 @@ public class Circle extends BaseEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "circle_main_image_uuid_file", nullable = true)
-    private UuidFile circleMainImageUuidFile;
+    @OneToOne(cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, mappedBy = "circle")
+    private CircleMainImage circleMainImage;
 
     @Column(name = "description", nullable = true)
     private String description;
@@ -54,7 +54,7 @@ public class Circle extends BaseEntity {
 
     public static Circle of(
             String name,
-            UuidFile circleMainImageUuidFile,
+            UuidFile uuidFile,
             String description,
             Boolean isDeleted,
             Integer circleTax,
@@ -63,9 +63,8 @@ public class Circle extends BaseEntity {
             LocalDateTime recruitEndDate,
             Boolean isRecruit
     ) {
-        return Circle.builder()
+        Circle circle = Circle.builder()
                 .name(name)
-                .circleMainImageUuidFile(circleMainImageUuidFile)
                 .description(description)
                 .isDeleted(isDeleted)
                 .circleTax(circleTax)
@@ -74,12 +73,25 @@ public class Circle extends BaseEntity {
                 .recruitEndDate(recruitEndDate)
                 .isRecruit(isRecruit)
                 .build();
+
+        if (uuidFile == null) {
+            return circle;
+        }
+
+        CircleMainImage circleMainImage = CircleMainImage.of(
+                circle,
+                uuidFile
+        );
+
+        circle.setCircleMainImageUuidFile(circleMainImage);
+
+        return circle;
     }
 
-    public void update(String name, String description, UuidFile circleMainImageUuidFile, Integer circleTax, Integer recruitMembers, LocalDateTime recruitEndDate, Boolean isRecruit) {
+    public void update(String name, String description, CircleMainImage circleMainImage, Integer circleTax, Integer recruitMembers, LocalDateTime recruitEndDate, Boolean isRecruit) {
         this.description = description;
         this.name = name;
-        this.circleMainImageUuidFile = circleMainImageUuidFile;
+        this.circleMainImage = circleMainImage;
         this.circleTax = circleTax;
         this.recruitMembers = recruitMembers;
         this.recruitEndDate = recruitEndDate;
@@ -93,5 +105,9 @@ public class Circle extends BaseEntity {
     public void delete(){
         this.isDeleted = true;
         this.leader = null;
+    }
+
+    private void setCircleMainImageUuidFile(CircleMainImage circleMainImage) {
+        this.circleMainImage = circleMainImage;
     }
 }

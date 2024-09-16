@@ -4,7 +4,7 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
-import net.causw.adapter.persistence.repository.UuidFileRepository;
+import net.causw.adapter.persistence.repository.uuidFile.UuidFileRepository;
 import net.causw.application.storage.StorageManager;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -108,6 +108,11 @@ public class UuidFileService extends StorageManager {
         for (UuidFile uuidFile : uuidFileList) {
             this.deleteFile(uuidFile);
         }
+    }
+
+    public void deleteFileNotUsed() {
+        List<UuidFile> uuidFileList;
+
     }
 
     // Private Methods
