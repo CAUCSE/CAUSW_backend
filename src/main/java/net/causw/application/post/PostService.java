@@ -346,18 +346,18 @@ public class PostService {
         // post는 이미지가 nullable임 -> 이미지 null로 요청 시 기존 이미지 삭제
         List<PostAttachImage> postAttachImageList = new ArrayList<>();
 
-        if (!post.getPostAttachImageList().isEmpty()) {
-            uuidFileService.deleteFileList(post.getPostAttachImageList().stream().map(PostAttachImage::getUuidFile).collect(Collectors.toList()));
-            postAttachImageRepository.deleteAll(post.getPostAttachImageList());
-        }
-
         if (!attachImageList.isEmpty()) {
+            postAttachImageList = uuidFileService.updateFileList(
+                    post.getPostAttachImageList().stream().map(PostAttachImage::getUuidFile).collect(Collectors.toList()),
+                            attachImageList, FilePath.POST
+                    ).stream()
+                    .map(uuidFile -> PostAttachImage.of(post, uuidFile))
+                    .toList();
+        } else {
             uuidFileService.deleteFileList(post.getPostAttachImageList().stream().map(PostAttachImage::getUuidFile).collect(Collectors.toList()));
-
-            postAttachImageList = attachImageList.stream().map(
-                    attachImage -> PostAttachImage.of(post, uuidFileService.saveFile(attachImage, FilePath.POST))
-            ).toList();
         }
+
+        postAttachImageRepository.deleteAll(post.getPostAttachImageList());
 
         post.update(
                 postUpdateRequestDto.getTitle(),

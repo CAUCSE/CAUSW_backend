@@ -197,6 +197,8 @@ public class UserAcademicRecordApplicationService {
         // User 엔티티가 영속성 컨텍스트에 없는 경우, merge로 다시 연결
         if (user != null) {
             user = userRepository.save(user);
+        } else {
+            throw new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND);
         }
 
         if (createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus().equals(AcademicStatus.ENROLLED)) {
