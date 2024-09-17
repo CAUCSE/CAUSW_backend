@@ -1,5 +1,6 @@
 package net.causw.domain.model.util;
 
+import net.causw.application.dto.form.FormResponseDto;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,18 @@ public class RedisUtils {
 
     public void deleteData(String key){
         redisTemplate.delete(key);
+    }
+
+    public void setCacheData(String key, FormResponseDto value, Long expiredTime) {
+        redisTemplate.opsForValue().set("form:" + key, value, expiredTime, TimeUnit.MILLISECONDS);
+    }
+
+    public Object getCacheData(String key) {
+        return redisTemplate.opsForValue().get("form:" + key);
+    }
+
+    public void deleteCacheData(String key) {
+        redisTemplate.delete("form:" + key);
     }
 
     public void addToBlacklist(String token) {
