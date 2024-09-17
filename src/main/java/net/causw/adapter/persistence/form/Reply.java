@@ -27,7 +27,8 @@ public class Reply extends BaseEntity {
     @JoinColumn(name = "question_id", nullable = false)
     private Question question;
 
-    @Column(name = "question_answer")
+    @Lob
+    @Column(name = "question_answer", columnDefinition = "TEXT")
     private String questionAnswer;
 
     @ElementCollection(fetch = FetchType.EAGER)
