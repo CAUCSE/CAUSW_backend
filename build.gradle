@@ -77,6 +77,9 @@ dependencies {
     // Apache POI for Excel file generation
     implementation 'org.apache.poi:poi-ooxml:5.2.3'
 
+    // kafka
+    implementation 'org.springframework.kafka:spring-kafka'
+
 }
 
 test {
