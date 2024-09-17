@@ -5,14 +5,15 @@ import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.user.User;
+import net.causw.domain.model.enums.AcademicStatus;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 @Getter
 @Setter
 @Entity
-@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_form")
@@ -22,14 +23,22 @@ public class Form extends BaseEntity {
     private String title;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @Column(name = "allowed_grades", nullable = false)
+    @Column(name = "allowedGrades", nullable = false)
     private Set<Integer> allowedGrades;
+
 
     @OneToMany(mappedBy = "form", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Question> questions;
 
     @Column(name = "is_deleted")
     private Boolean isDeleted;
+
+    @Column(name = "allowed_academic_status", nullable = true)
+    @Enumerated(EnumType.STRING)
+    private AcademicStatus allowedAcademicStatus;
+
+    @Column(name = "is_paid")
+    private Boolean isPaid;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
@@ -44,23 +53,29 @@ public class Form extends BaseEntity {
             String title,
             Set<Integer> allowedGrades,
             List<Question> questions,
+            AcademicStatus allowedAcademicStatus,
+            Boolean isPaid,
             User writer,
             Circle circle
     ) {
-        return Form.builder()
-                .title(title)
-                .allowedGrades(allowedGrades)
-                .questions(questions)
-                .isDeleted(false)
-                .writer(writer)
-                .circle(circle)
-                .build();
+        return new Form(
+                title,
+                allowedGrades != null ? allowedGrades : new HashSet<>(),
+                questions,
+                false,
+                allowedAcademicStatus,
+                isPaid,
+                writer,
+                circle
+        );
     }
 
-    public void update(String title, Set<Integer> allowedGrades, List<Question> questions) {
+    public void update(String title, Set<Integer> allowedGrades, List<Question> questions, AcademicStatus allowedAcademicStatus, Boolean isPaid) {
         this.title = title;
         this.allowedGrades = allowedGrades;
         this.questions = questions;
+        this.allowedAcademicStatus = allowedAcademicStatus;
+        this.isPaid = isPaid;
     }
 
     public void setIsDeleted(Boolean isDeleted) {
