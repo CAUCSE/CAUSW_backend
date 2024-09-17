@@ -1,31 +1,33 @@
-package net.causw.adapter.persistence.uuidFile;
+package net.causw.adapter.persistence.uuidFile.joinEntity;
 
 import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.circle.Circle;
+import net.causw.adapter.persistence.uuidFile.UuidFile;
 
 @Getter
-@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "tb_circle_main_image_uuid_file")
-public class CircleMainImage extends BaseEntity {
+@Table(name = "tb_circle_main_image_uuid_file",
+indexes = {
+    @Index(name = "idx_circle_main_image_circle_id", columnList = "circle_id"),
+    @Index(name = "idx_circle_main_image_uuid_file_id", columnList = "uuid_file_id")
+})
+public class CircleMainImage extends JoinEntity {
 
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "circle_id", nullable = false)
     private Circle circle;
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "uuid_file_id", nullable = false)
-    private UuidFile uuidFile;
+    private CircleMainImage(Circle circle, UuidFile uuidFile) {
+        super(uuidFile);
+        this.circle = circle;
+    }
 
     public static CircleMainImage of(Circle circle, UuidFile uuidFile) {
-        return CircleMainImage.builder()
-            .circle(circle)
-            .uuidFile(uuidFile)
-            .build();
+        return new CircleMainImage(circle, uuidFile);
     }
 
     public CircleMainImage updateUuidFileAndReturnSelf(UuidFile uuidFile) {

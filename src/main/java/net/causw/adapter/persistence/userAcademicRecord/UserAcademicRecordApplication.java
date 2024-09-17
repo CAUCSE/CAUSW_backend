@@ -3,7 +3,7 @@ package net.causw.adapter.persistence.userAcademicRecord;
 import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.user.User;
-import net.causw.adapter.persistence.uuidFile.UserAcademicRecordApplicationAttachImage;
+import net.causw.adapter.persistence.uuidFile.joinEntity.UserAcademicRecordApplicationAttachImage;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.domain.exceptions.BadRequestException;

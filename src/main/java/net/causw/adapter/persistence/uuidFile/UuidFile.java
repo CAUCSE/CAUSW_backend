@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.domain.model.enums.FilePath;
+import org.hibernate.annotations.ColumnDefault;
 
 @Getter
 @Entity
@@ -32,6 +33,11 @@ public class UuidFile extends BaseEntity {
     @Column(name = "file_path", nullable = false)
     private FilePath filePath;
 
+    @ColumnDefault("true")
+    @Builder.Default
+    @Column(name = "is_used", nullable = false)
+    private Boolean isUsed = Boolean.TRUE;
+
     public static UuidFile of(String uuid, String fileKey, String fileUrl, String rawFileName, String extension, FilePath filePath) {
         return UuidFile.builder()
                 .uuid(uuid)
@@ -41,6 +47,10 @@ public class UuidFile extends BaseEntity {
                 .extension(extension)
                 .filePath(filePath)
                 .build();
+    }
+
+    public void setIsUsed(Boolean isUsed) {
+        this.isUsed = isUsed;
     }
 
 }

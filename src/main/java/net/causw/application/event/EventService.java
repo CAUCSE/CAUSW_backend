@@ -3,7 +3,7 @@ package net.causw.application.event;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.event.Event;
 import net.causw.adapter.persistence.repository.event.EventRepository;
-import net.causw.adapter.persistence.uuidFile.EventAttachImage;
+import net.causw.adapter.persistence.uuidFile.joinEntity.EventAttachImage;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.event.EventCreateRequestDto;
 import net.causw.application.dto.event.EventResponseDto;

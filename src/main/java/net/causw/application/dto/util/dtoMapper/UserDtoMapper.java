@@ -33,7 +33,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "studentId", source = "user.studentId")
     @Mapping(target = "admissionYear", source = "user.admissionYear")
     @Mapping(target = "roles", source = "user.roles")
-    @Mapping(target = "profileImageUrl", source = "user.profileImageUuidFile", qualifiedByName = "mapUuidFileToFileUrl")
+    @Mapping(target = "profileImageUrl", source = "user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
     @Mapping(target = "state", source = "user.state")
     @Mapping(target = "nickname", source = "user.nickname")
     @Mapping(target = "major", source = "user.major")
@@ -53,7 +53,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "name", source = "user.name")
     @Mapping(target = "studentId", source = "user.studentId")
     @Mapping(target = "admissionYear", source = "user.admissionYear")
-    @Mapping(target = "profileImageUrl", source = "user.profileImageUuidFile", qualifiedByName = "mapUuidFileToFileUrl")
+    @Mapping(target = "profileImageUrl", source = "user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
     @Mapping(target = "posts", source = "post")
     UserPostsResponseDto toUserPostsResponseDto(User user, Page<PostsResponseDto> post);
 
@@ -73,7 +73,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "name", source = "user.name")
     @Mapping(target = "studentId", source = "user.studentId")
     @Mapping(target = "admissionYear", source = "user.admissionYear")
-    @Mapping(target = "profileImageUrl", source = "user.profileImageUuidFile", qualifiedByName = "mapUuidFileToFileUrl")
+    @Mapping(target = "profileImageUrl", source = "user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
     UserCommentsResponseDto toUserCommentsResponseDto(User user, Page<CommentsOfUserResponseDto> comment);
 
     @Mapping(target = "id", source = "comment.id")
@@ -114,7 +114,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 
     @Mapping(target = "id", source = "userAdmission.id")
     @Mapping(target = "user", source = "userAdmission.user")
-    @Mapping(target = "attachImageUrlList", source = "userAdmission.userAdmissionAttachImageUuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
+    @Mapping(target = "attachImageUrlList", source = "userAdmission.userAdmissionAttachImageList", qualifiedByName = "mapUuidFileListToFileUrlList")
     @Mapping(target = "description", source = "userAdmission.description")
     @Mapping(target = "createdAt", source = "userAdmission.createdAt")
     @Mapping(target = "updatedAt", source = "userAdmission.updatedAt")
@@ -122,7 +122,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 
     @Mapping(target = "id", source = "userAdmission.id")
     @Mapping(target = "user", source = "user")
-    @Mapping(target = "attachImageUrlList", source = "userAdmission.userAdmissionAttachImageUuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
+    @Mapping(target = "attachImageUrlList", source = "userAdmission.userAdmissionAttachImageList", qualifiedByName = "mapUuidFileListToFileUrlList")
     @Mapping(target = "description", source = "userAdmission.description")
     @Mapping(target = "createdAt", source = "userAdmission.createdAt")
     @Mapping(target = "updatedAt", source = "userAdmission.updatedAt")
@@ -131,7 +131,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "id", source = "userAdmissionLog.id")
     @Mapping(target = "user", source = "user")
     @Mapping(target = "description", source = "userAdmissionLog.description")
-    @Mapping(target = "attachImageUrlList", source = "userAdmissionLog.userAdmissionLogAttachImageUuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
+    @Mapping(target = "attachImageUrlList", source = "userAdmissionLog.userAdmissionLogAttachImageList", qualifiedByName = "mapUuidFileListToFileUrlList")
     @Mapping(target = "createdAt", source = "userAdmissionLog.createdAt")
     @Mapping(target = "updatedAt", source = "userAdmissionLog.updatedAt")
     @Mapping(target = "rejectReason", source = "userAdmissionLog.rejectReason")
@@ -141,7 +141,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "userName", source = "userAdmission.user.name")
     @Mapping(target = "userEmail", source = "userAdmission.user.email")
     @Mapping(target = "admissionYear", source = "userAdmission.user.admissionYear")
-    @Mapping(target = "attachImageUrlList", source = "userAdmission.userAdmissionAttachImageUuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
+    @Mapping(target = "attachImageUrlList", source = "userAdmission.userAdmissionAttachImageList", qualifiedByName = "mapUuidFileListToFileUrlList")
     @Mapping(target = "description", source = "userAdmission.description")
     @Mapping(target = "userState", source = "userAdmission.user.state")
     @Mapping(target = "createdAt", source = "userAdmission.createdAt")

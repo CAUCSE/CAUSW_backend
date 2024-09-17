@@ -13,7 +13,7 @@ import net.causw.adapter.persistence.repository.post.PostRepository;
 import net.causw.adapter.persistence.repository.user.UserRepository;
 import net.causw.adapter.persistence.repository.uuidFile.CircleMainImageRepository;
 import net.causw.adapter.persistence.user.User;
-import net.causw.adapter.persistence.uuidFile.CircleMainImage;
+import net.causw.adapter.persistence.uuidFile.joinEntity.CircleMainImage;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.board.BoardOfCircleResponseDto;
 import net.causw.application.dto.circle.*;

@@ -77,6 +77,13 @@ dependencies {
     // Apache POI for Excel file generation
     implementation 'org.apache.poi:poi-ooxml:5.2.3'
 
+    // Spring Batch
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
+    // Retry 관련
+    // https://mvnrepository.com/artifact/org.springframework.retry/spring-retry
+    implementation 'org.springframework.retry:spring-retry:1.0.3.RELEASE'
+
+
 }
 
 test {

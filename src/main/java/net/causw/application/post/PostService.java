@@ -7,7 +7,7 @@ import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.repository.uuidFile.PostAttachImageRepository;
-import net.causw.adapter.persistence.uuidFile.PostAttachImage;
+import net.causw.adapter.persistence.uuidFile.joinEntity.PostAttachImage;
 import net.causw.application.pageable.PageableFactory;
 import net.causw.adapter.persistence.post.FavoritePost;
 import net.causw.adapter.persistence.post.LikePost;

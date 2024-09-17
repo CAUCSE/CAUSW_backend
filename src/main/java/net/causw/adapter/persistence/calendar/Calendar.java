@@ -3,7 +3,7 @@ package net.causw.adapter.persistence.calendar;
 import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
-import net.causw.adapter.persistence.uuidFile.CalendarAttachImage;
+import net.causw.adapter.persistence.uuidFile.joinEntity.CalendarAttachImage;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 
 @Getter

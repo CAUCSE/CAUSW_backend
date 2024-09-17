@@ -6,8 +6,8 @@ import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.locker.LockerLog;
 import net.causw.adapter.persistence.repository.uuidFile.UserProfileImageRepository;
-import net.causw.adapter.persistence.uuidFile.UserAdmissionAttachImage;
-import net.causw.adapter.persistence.uuidFile.UserProfileImage;
+import net.causw.adapter.persistence.uuidFile.joinEntity.UserAdmissionAttachImage;
+import net.causw.adapter.persistence.uuidFile.joinEntity.UserProfileImage;
 import net.causw.application.pageable.PageableFactory;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.board.BoardRepository;
@@ -594,7 +594,7 @@ public class UserService {
 
         // refreshToken은 redis에 보관
         String refreshToken = jwtTokenProvider.createRefreshToken();
-        redisUtils.setData(refreshToken,user.getId(),StaticValue.JWT_REFRESH_TOKEN_VALID_TIME);
+        redisUtils.setRefreshTokenData(refreshToken, user.getId(), StaticValue.JWT_REFRESH_TOKEN_VALID_TIME);
 
         return UserDtoMapper.INSTANCE.toUserSignInResponseDto(
                 jwtTokenProvider.createAccessToken(user.getId(), user.getRoles(), user.getState()),
@@ -1462,7 +1462,7 @@ public class UserService {
     }
 
     private String getUserIdFromRefreshToken(String refreshToken) {
-        return Optional.ofNullable(redisUtils.getData(refreshToken))
+        return Optional.ofNullable(redisUtils.getRefreshTokenData(refreshToken))
                 .orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.INVALID_REFRESH_TOKEN
@@ -1471,7 +1471,7 @@ public class UserService {
 
     public UserSignOutResponseDto signOut(UserSignOutRequestDto userSignOutRequestDto){
         redisUtils.addToBlacklist(userSignOutRequestDto.getAccessToken());
-        redisUtils.deleteData(userSignOutRequestDto.getRefreshToken());
+        redisUtils.deleteRefreshTokenData(userSignOutRequestDto.getRefreshToken());
 
         return UserDtoMapper.INSTANCE.toUserSignOutResponseDto("로그아웃 성공");
     }

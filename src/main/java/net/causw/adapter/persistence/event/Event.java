@@ -3,7 +3,7 @@ package net.causw.adapter.persistence.event;
 import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
-import net.causw.adapter.persistence.uuidFile.EventAttachImage;
+import net.causw.adapter.persistence.uuidFile.joinEntity.EventAttachImage;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import org.hibernate.annotations.ColumnDefault;
 

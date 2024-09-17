@@ -3,7 +3,7 @@ package net.causw.adapter.persistence.user;
 import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
-import net.causw.adapter.persistence.uuidFile.UserAdmissionLogAttachImage;
+import net.causw.adapter.persistence.uuidFile.joinEntity.UserAdmissionLogAttachImage;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.domain.model.enums.UserAdmissionLogAction;
 

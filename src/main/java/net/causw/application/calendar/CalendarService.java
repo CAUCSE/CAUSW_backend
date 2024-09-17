@@ -3,7 +3,7 @@ package net.causw.application.calendar;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.calendar.Calendar;
 import net.causw.adapter.persistence.repository.calendar.CalendarRepository;
-import net.causw.adapter.persistence.uuidFile.CalendarAttachImage;
+import net.causw.adapter.persistence.uuidFile.joinEntity.CalendarAttachImage;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.calendar.CalendarCreateRequestDto;
 import net.causw.application.dto.calendar.CalendarResponseDto;

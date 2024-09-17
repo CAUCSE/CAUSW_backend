@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import net.causw.adapter.persistence.repository.uuidFile.CalendarAttachImageRepository;
 import net.causw.adapter.persistence.repository.uuidFile.CircleMainImageRepository;
-import net.causw.adapter.persistence.uuidFile.CalendarAttachImage;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.adapter.persistence.repository.uuidFile.UuidFileRepository;
 import net.causw.application.storage.StorageManager;
@@ -15,6 +14,8 @@ import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.model.enums.FileExtensionType;
 import net.causw.domain.model.enums.FilePath;
 import net.causw.domain.model.util.MessageUtil;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -117,11 +118,7 @@ public class UuidFileService extends StorageManager {
         }
     }
 
-    public void deleteFileNotUsed() {
-        List<UuidFile> uuidFileList = uuidFileRepository.findUnusedUuidFileList();
 
-        uuidFileRepository.deleteAll(uuidFileList);
-    }
 
     // Private Methods
     private String getRawFileName(String originFileName) {
