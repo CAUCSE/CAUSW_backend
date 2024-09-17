@@ -14,6 +14,7 @@ import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.CircleMemberStatus;
 import net.causw.domain.model.util.MessageUtil;
+import net.causw.domain.model.util.RedisUtils;
 import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.UserEqualValidator;
 import net.causw.domain.validation.ValidatorBucket;
@@ -37,7 +38,9 @@ public class FormService {
     private final ReplyRepository replyRepository;
     private final UserRepository userRepository;
     private final CircleMemberRepository circleMemberRepository;
+    private final RedisUtils redisUtils;
     private final Validator validator;
+
 
     @Transactional
     public FormResponseDto createForm(User writer, FormCreateRequestDto formCreateRequestDto) {
@@ -89,6 +92,8 @@ public class FormService {
                 formCreateRequestDto.getTitle(),
                 formCreateRequestDto.getAllowedGrades(),
                 questions,
+                formCreateRequestDto.getAllowedAcademicStatus(),
+                formCreateRequestDto.getIsPaid(),
                 writer,
                 circle
         );
@@ -113,8 +118,17 @@ public class FormService {
 
     @Transactional(readOnly = true)
     public FormResponseDto findForm(String formId) {
+        FormResponseDto cachedForm = (FormResponseDto) redisUtils.getCacheData("form:" + formId);
+        if (cachedForm != null) {
+            return cachedForm;
+        }
+
         Form form = getForm(formId);
-        return FormDtoMapper.INSTANCE.toFormResponseDto(form);
+        FormResponseDto formResponseDto = FormDtoMapper.INSTANCE.toFormResponseDto(form);
+
+        redisUtils.setCacheData("form:" + formId, formResponseDto, 600000L); // 10분 캐싱
+
+        return formResponseDto;
     }
 
     @Transactional
