@@ -87,7 +87,6 @@ dependencies {
     // https://mvnrepository.com/artifact/org.springframework.retry/spring-retry
     implementation 'org.springframework.retry:spring-retry:1.0.3.RELEASE'
 
-
 }
 
 test {
