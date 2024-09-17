@@ -7,6 +7,7 @@ import net.causw.adapter.persistence.uuidFile.*;
 import net.causw.adapter.persistence.uuidFile.joinEntity.*;
 import net.causw.domain.model.util.RedisUtils;
 import net.causw.domain.model.util.StaticValue;
+import org.springframework.batch.core.StepExecution;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
@@ -34,11 +35,18 @@ public class CleanUnusedUuidFileService {
     private final UserProfileImageRepository userProfileImageRepository;
 
 
-    public void initIsUsedUuidFileIntegration() {
+    public void initIsUsedUuidFileIntegration(StepExecution stepExecution) {
         Boolean isLast = false;
         do {
             isLast = initIsUsedUuidFile();
         } while (!isLast);
+
+        stepExecution.getJobExecution().getExecutionContext().putInt(
+                "dataRow",
+                getPriorPageNum("uuidFile") * StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE
+        );
+
+        redisUtils.setPageNumData("uuidFile", -1, StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
     }
 
     @Transactional
@@ -53,14 +61,26 @@ public class CleanUnusedUuidFileService {
         uuidFileRepository.saveAll(uuidFilePage);
         pageNum++;
         redisUtils.setPageNumData("uuidFile", pageNum, StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
-        return !uuidFilePage.isLast();
+        return !uuidFilePage.isLast() ||
+                uuidFilePage.isEmpty() ||
+                uuidFilePage.getTotalElements() == 0 ||
+                uuidFilePage.getTotalPages() == 0 ||
+                uuidFilePage.getSize() == 0 ||
+                !uuidFilePage.hasNext();
     }
 
-    public void checkIsUsedWithCalendarAttachImageIntegration() {
+    public void checkIsUsedWithCalendarAttachImageIntegration(StepExecution stepExecution) {
         Boolean isLast = false;
         do {
             isLast = checkIsUsedWithCalendarAttachImage();
         } while (!isLast);
+
+        stepExecution.getJobExecution().getExecutionContext().putInt(
+                "dataRow",
+                getPriorPageNum("calendarAttachImage") * StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE
+        );
+
+        redisUtils.setPageNumData("calendarAttachImage", -1, StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
     }
 
     @Transactional
@@ -76,14 +96,26 @@ public class CleanUnusedUuidFileService {
         uuidFileRepository.saveAll(uuidFileSet);
         pageNum++;
         redisUtils.setPageNumData("calendarAttachImage", pageNum, StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
-        return !calendarAttachImagePage.isLast();
+        return  !calendarAttachImagePage.isLast() ||
+                calendarAttachImagePage.isEmpty() ||
+                calendarAttachImagePage.getTotalElements() == 0 ||
+                calendarAttachImagePage.getTotalPages() == 0 ||
+                calendarAttachImagePage.getSize() == 0 ||
+                !calendarAttachImagePage.hasNext();
     }
 
-    public void checkIsUsedWithCircleMainImageIntegration() {
+    public void checkIsUsedWithCircleMainImageIntegration(StepExecution stepExecution) {
         Boolean isLast = false;
         do {
             isLast = checkIsUsedWithCircleMainImage();
         } while (!isLast);
+
+        stepExecution.getJobExecution().getExecutionContext().putInt(
+                "dataRow",
+                getPriorPageNum("circleMainImage") * StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE
+        );
+
+        redisUtils.setPageNumData("circleMainImage", -1, StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
     }
 
     @Transactional
@@ -99,14 +131,26 @@ public class CleanUnusedUuidFileService {
         uuidFileRepository.saveAll(uuidFileSet);
         pageNum++;
         redisUtils.setPageNumData("circleMainImage", pageNum, StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
-        return !circleMainImagePage.isLast();
+        return  !circleMainImagePage.isLast() ||
+                circleMainImagePage.isEmpty() ||
+                circleMainImagePage.getTotalElements() == 0 ||
+                circleMainImagePage.getTotalPages() == 0 ||
+                circleMainImagePage.getSize() == 0 ||
+                !circleMainImagePage.hasNext();
     }
 
-    public void checkIsUsedWithEventAttachImageIntegration() {
+    public void checkIsUsedWithEventAttachImageIntegration(StepExecution stepExecution) {
         Boolean isLast = false;
         do {
             isLast = checkIsUsedWithEventAttachImage();
         } while (!isLast);
+
+        stepExecution.getJobExecution().getExecutionContext().putInt(
+                "dataRow",
+                getPriorPageNum("eventAttachImage") * StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE
+        );
+
+        redisUtils.setPageNumData("eventAttachImage", -1, StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
     }
 
     @Transactional
@@ -122,14 +166,26 @@ public class CleanUnusedUuidFileService {
         uuidFileRepository.saveAll(uuidFileSet);
         pageNum++;
         redisUtils.setPageNumData("eventAttachImage", pageNum, StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
-        return !eventAttachImagePage.isLast();
+        return !eventAttachImagePage.isLast() ||
+                eventAttachImagePage.isEmpty() ||
+                eventAttachImagePage.getTotalElements() == 0 ||
+                eventAttachImagePage.getTotalPages() == 0 ||
+                eventAttachImagePage.getSize() == 0 ||
+                !eventAttachImagePage.hasNext();
     }
 
-    public void checkIsUsedWithPostAttachImageIntegration() {
+    public void checkIsUsedWithPostAttachImageIntegration(StepExecution stepExecution) {
         Boolean isLast = false;
         do {
             isLast = checkIsUsedWithPostAttachImage();
         } while (!isLast);
+
+        stepExecution.getJobExecution().getExecutionContext().putInt(
+                "dataRow",
+                getPriorPageNum("postAttachImage") * StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE
+        );
+
+        redisUtils.setPageNumData("postAttachImage", -1, StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
     }
 
     @Transactional
@@ -145,14 +201,26 @@ public class CleanUnusedUuidFileService {
         uuidFileRepository.saveAll(uuidFileSet);
         pageNum++;
         redisUtils.setPageNumData("postAttachImage", pageNum, StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
-        return !postAttachImagePage.isLast();
+        return !postAttachImagePage.isLast() ||
+                postAttachImagePage.isEmpty() ||
+                postAttachImagePage.getTotalElements() == 0 ||
+                postAttachImagePage.getTotalPages() == 0 ||
+                postAttachImagePage.getSize() == 0 ||
+                !postAttachImagePage.hasNext();
     }
 
-    public void checkIsUsedWithUserAcademicRecordApplicationAttachImageIntegration() {
+    public void checkIsUsedWithUserAcademicRecordApplicationAttachImageIntegration(StepExecution stepExecution) {
         Boolean isLast = false;
         do {
             isLast = checkIsUsedWithUserAcademicRecordApplicationAttachImage();
         } while (!isLast);
+
+        stepExecution.getJobExecution().getExecutionContext().putInt(
+                "dataRow",
+                getPriorPageNum("userAcademicRecordApplicationAttachImage") * StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE
+        );
+
+        redisUtils.setPageNumData("userAcademicRecordApplicationAttachImage", -1, StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
     }
 
     @Transactional
@@ -168,14 +236,26 @@ public class CleanUnusedUuidFileService {
         uuidFileRepository.saveAll(uuidFileSet);
         pageNum++;
         redisUtils.setPageNumData("userAcademicRecordApplicationAttachImage", pageNum, StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
-        return !userAcademicRecordApplicationAttachImagePage.isLast();
+        return !userAcademicRecordApplicationAttachImagePage.isLast() ||
+                userAcademicRecordApplicationAttachImagePage.isEmpty() ||
+                userAcademicRecordApplicationAttachImagePage.getTotalElements() == 0 ||
+                userAcademicRecordApplicationAttachImagePage.getTotalPages() == 0 ||
+                userAcademicRecordApplicationAttachImagePage.getSize() == 0 ||
+                !userAcademicRecordApplicationAttachImagePage.hasNext();
     }
 
-    public void checkIsUsedWithUserAdmissionAttachImageIntegration() {
+    public void checkIsUsedWithUserAdmissionAttachImageIntegration(StepExecution stepExecution) {
         Boolean isLast = false;
         do {
             isLast = checkIsUsedWithUserAdmissionAttachImage();
         } while (!isLast);
+
+        stepExecution.getJobExecution().getExecutionContext().putInt(
+                "dataRow",
+                getPriorPageNum("userAdmissionAttachImage") * StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE
+        );
+
+        redisUtils.setPageNumData("userAdmissionAttachImage", -1, StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
     }
 
     @Transactional
@@ -191,14 +271,26 @@ public class CleanUnusedUuidFileService {
         uuidFileRepository.saveAll(uuidFileSet);
         pageNum++;
         redisUtils.setPageNumData("userAdmissionAttachImage", pageNum, StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
-        return !userAdmissionAttachImagePage.isLast();
+        return !userAdmissionAttachImagePage.isLast() ||
+                userAdmissionAttachImagePage.isEmpty() ||
+                userAdmissionAttachImagePage.getTotalElements() == 0 ||
+                userAdmissionAttachImagePage.getTotalPages() == 0 ||
+                userAdmissionAttachImagePage.getSize() == 0 ||
+                !userAdmissionAttachImagePage.hasNext();
     }
 
-    public void checkIsUsedWithUserAdmissionLogAttachImageIntegration() {
+    public void checkIsUsedWithUserAdmissionLogAttachImageIntegration(StepExecution stepExecution) {
         Boolean isLast = false;
         do {
             isLast = checkIsUsedWithUserAdmissionLogAttachImage();
         } while (!isLast);
+
+        stepExecution.getJobExecution().getExecutionContext().putInt(
+                "dataRow",
+                getPriorPageNum("userAdmissionLog") * StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE
+        );
+
+        redisUtils.setPageNumData("userAdmissionLog", -1, StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
     }
 
     @Transactional
@@ -214,14 +306,26 @@ public class CleanUnusedUuidFileService {
         uuidFileRepository.saveAll(uuidFileSet);
         pageNum++;
         redisUtils.setPageNumData("userAdmissionLog", pageNum, StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
-        return !userAdmissionLogAttachImagePage.isLast();
+        return !userAdmissionLogAttachImagePage.isLast() ||
+                userAdmissionLogAttachImagePage.isEmpty() ||
+                userAdmissionLogAttachImagePage.getTotalElements() == 0 ||
+                userAdmissionLogAttachImagePage.getTotalPages() == 0 ||
+                userAdmissionLogAttachImagePage.getSize() == 0 ||
+                !userAdmissionLogAttachImagePage.hasNext();
     }
 
-    public void checkIsUsedWithUserProfileImageIntegration() {
+    public void checkIsUsedWithUserProfileImageIntegration(StepExecution stepExecution) {
         Boolean isLast = false;
         do {
             isLast = checkIsUsedWithUserProfileImage();
         } while (!isLast);
+
+        stepExecution.getJobExecution().getExecutionContext().putInt(
+                "dataRow",
+                getPriorPageNum("userProfileImage") * StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE
+        );
+
+        redisUtils.setPageNumData("userProfileImage", -1, StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
     }
 
     @Transactional
@@ -237,19 +341,27 @@ public class CleanUnusedUuidFileService {
         uuidFileRepository.saveAll(uuidFileSet);
         pageNum++;
         redisUtils.setPageNumData("userProfileImage", pageNum, StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
-        return !userProfileImagePage.isLast();
+        return !userProfileImagePage.isLast() ||
+                userProfileImagePage.isEmpty() ||
+                userProfileImagePage.getTotalElements() == 0 ||
+                userProfileImagePage.getTotalPages() == 0 ||
+                userProfileImagePage.getSize() == 0 ||
+                !userProfileImagePage.hasNext();
     }
 
     @Transactional
-    public void deleteFileNotUsed() {
+    public void deleteFileNotUsed(StepExecution stepExecution) {
         List<UuidFile> uuidFileList = uuidFileRepository.findAllByIsUsed(false);
-        log.error("Delete not used file: {}", uuidFileList.size());
+
+        int deletedFileCount = uuidFileList.size();
+        log.info("Delete not used file: {}", uuidFileList.size());
         uuidFileRepository.deleteAll(uuidFileList);
+        stepExecution.getJobExecution().getExecutionContext().putInt("deletedFileCount", deletedFileCount);
     }
 
     private Integer getPriorPageNum(String tableName) {
         Integer priorPageNum = redisUtils.getPageNumData(tableName);
-        if (priorPageNum == null) {
+        if (priorPageNum == null || priorPageNum < 0) {
             priorPageNum = 0;
         }
         return priorPageNum;

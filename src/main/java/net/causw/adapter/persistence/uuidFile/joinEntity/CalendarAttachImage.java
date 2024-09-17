@@ -16,7 +16,7 @@ indexes = {
 })
 public class CalendarAttachImage extends JoinEntity {
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "calendar_id", nullable = false)
     private Calendar calendar;
 

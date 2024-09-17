@@ -16,7 +16,7 @@ indexes = {
 })
 public class EventAttachImage extends JoinEntity {
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id", nullable = false)
     private Event event;
 

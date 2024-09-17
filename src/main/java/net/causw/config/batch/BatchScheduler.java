@@ -1,4 +1,4 @@
-package net.causw.config.batch.scheduling;
+package net.causw.config.batch;
 
 import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 @EnableScheduling
 @RequiredArgsConstructor
 public class BatchScheduler {
+
 
     private final JobLauncher jobLauncher;
 

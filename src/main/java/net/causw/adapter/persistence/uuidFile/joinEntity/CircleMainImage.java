@@ -16,7 +16,7 @@ indexes = {
 })
 public class CircleMainImage extends JoinEntity {
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "circle_id", nullable = false)
     private Circle circle;
 

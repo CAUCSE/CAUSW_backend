@@ -16,7 +16,7 @@ indexes = {
 })
 public class UserAcademicRecordApplicationAttachImage extends JoinEntity {
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_academic_record_application_id", nullable = false)
     private UserAcademicRecordApplication userAcademicRecordApplication;
 

@@ -16,7 +16,7 @@ indexes = {
 })
 public class PostAttachImage extends JoinEntity {
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
