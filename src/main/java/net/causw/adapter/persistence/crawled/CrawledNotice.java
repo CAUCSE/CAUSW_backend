@@ -34,13 +34,17 @@ public class CrawledNotice extends BaseEntity {
     @Column(name = "announce_date", nullable = false)
     private LocalDate announceDate;
 
+    @Column(name = "image_link", nullable = true)
+    private String imageLink;
+
     public static CrawledNotice of(
             String type,
             String title,
             String content,
             String link,
             String author,
-            String announceDate
+            String announceDate,
+            String imageLink
     ) {
         // String -> LocalDate
         LocalDate parsedDate = LocalDate.parse(announceDate, DateTimeFormatter.ISO_LOCAL_DATE);
@@ -56,6 +60,7 @@ public class CrawledNotice extends BaseEntity {
                 .link(link)
                 .author(author)
                 .announceDate(parsedDate)
+                .imageLink(imageLink)
                 .build();
     }
 }

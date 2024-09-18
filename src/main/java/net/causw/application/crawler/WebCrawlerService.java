@@ -27,12 +27,13 @@ public class WebCrawlerService {
     private final CrawledNoticeRepository crawledNoticeRepository;
     private final LatestCrawlRepository latestCrawlRepository;
 
+    private final String cauSwBaseUrl = "https://cse.cau.ac.kr/sub05/sub0501.php?offset="; // CAU 소프트웨어학부 공지사항 크롤링 주소
 
-//    @Scheduled(fixedRate = 5000) // 5초마다 실행 (테스트용)
-    @Scheduled(cron = "0 0 * * * *") // 매 시각 0분 0초에 실행 (배포용)
+
+//    @Scheduled(cron = "0 0 * * * *") // 매 시각 0분 0초에 실행 (배포용)
+    @Scheduled(fixedRate = 5000) // 5초마다 실행 (테스트용)
     @Transactional
     public void crawlAndSaveCAUSWNoticeSite() throws IOException {
-        String baseUrl = "https://cse.cau.ac.kr/sub05/sub0501.php?offset=";
         int pageNum = 1;
 
         // 최신 URL 가져오기
@@ -42,7 +43,7 @@ public class WebCrawlerService {
 
         boolean isNew = true;
         while (isNew) {
-            String url = baseUrl + pageNum;
+            String url = cauSwBaseUrl + pageNum;
             Document doc = Jsoup.connect(url).get();
             Elements rows = doc.select("table.table-basic tbody tr");
 
@@ -72,6 +73,7 @@ public class WebCrawlerService {
                 String announceDate = detailDoc.select("div.header > div > span").get(1).text();    // 작성일 추출
                 String author = detailDoc.select("div.header > div > span").get(3).text();  // 작성자 추출
                 String content = detailDoc.select("div.fr-view").outerHtml();   // 본문 내용 추출
+                String imgElement = detailDoc.select("div.fr-view > p > img").attr("abs:src");  // 절대경로로 이미지 추출
 
                 // CrawledNotice 객체 생성
                 CrawledNotice notice = CrawledNotice.of(
@@ -80,7 +82,8 @@ public class WebCrawlerService {
                         content,
                         absoluteLink,
                         author,
-                        announceDate
+                        announceDate,
+                        imgElement
                 );
                 notices.add(notice);
 
