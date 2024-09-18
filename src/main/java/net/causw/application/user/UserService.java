@@ -628,6 +628,21 @@ public class UserService {
         return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(userFoundByNickname.isPresent());
     }
 
+    @Transactional(readOnly = true)
+    public DuplicatedCheckResponseDto isDuplicatedStudentId(String studentId) {
+        Optional<User> userFoundByStudentId = userRepository.findByStudentId(studentId);
+        if (userFoundByStudentId.isPresent()) {
+            UserState state = userFoundByStudentId.get().getState();
+            if (state.equals(UserState.INACTIVE) || state.equals(UserState.DROP)) {
+                throw new BadRequestException(
+                        ErrorCode.ROW_ALREADY_EXIST,
+                        MessageUtil.USER_ALREADY_APPLY
+                );
+            }
+        }
+        return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(userFoundByStudentId.isPresent());
+    }
+
     @Transactional
     public UserResponseDto update(User user, UserUpdateRequestDto userUpdateRequestDto, MultipartFile profileImage) {
         Set<Role> roles = user.getRoles();
