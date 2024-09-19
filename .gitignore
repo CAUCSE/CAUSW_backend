@@ -58,3 +58,5 @@ app-*.yaml
 
 *.pem
 src/main/generated/net/causw/application/dto/util/*Impl.java
+src/main/generated/net/causw/application/dto/util/dtoMapper/*Impl.java
+src/main/generated/net/causw/application/dto/util/dtoMapper/custom/*Impl.java

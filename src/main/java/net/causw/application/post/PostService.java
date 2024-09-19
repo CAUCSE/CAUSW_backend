@@ -13,6 +13,7 @@ import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
+import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.post.*;
 import net.causw.application.dto.util.dtoMapper.CommentDtoMapper;
@@ -234,7 +235,7 @@ public class PostService {
                 .consistOf(ConstraintValidator.of(post, this.validator))
                 .validate();
 
-        return toPostResponseDto(postRepository.save(post), creator);
+        return toPostResponseDtoExtended(postRepository.save(post), creator);
     }
 
     @Transactional
@@ -294,7 +295,7 @@ public class PostService {
 
         post.setIsDeleted(true);
 
-        return toPostResponseDto(postRepository.save(post), deleter);
+        return toPostResponseDtoExtended(postRepository.save(post), deleter);
     }
 
     @Transactional
@@ -535,16 +536,6 @@ public class PostService {
         );
     }
 
-    private PostResponseDto toPostResponseDto(Post post, User user) {
-        return PostDtoMapper.INSTANCE.toPostResponseDto(
-                post,
-                getNumOfPostLikes(post),
-                getNumOfPostFavorites(post),
-                StatusUtil.isUpdatable(post, user, isPostHasComment(post.getId())),
-                StatusUtil.isDeletable(post, user, post.getBoard(), isPostHasComment(post.getId()))
-        );
-    }
-
     private PostResponseDto toPostResponseDtoExtended(Post post, User user) {
         return PostDtoMapper.INSTANCE.toPostResponseDtoExtended(
                 postRepository.save(post),
@@ -552,6 +543,8 @@ public class PostService {
                 postRepository.countAllCommentByPost_Id(post.getId()),
                 getNumOfPostLikes(post),
                 getNumOfPostFavorites(post),
+                isPostAlreadyLike(user, post.getId()),
+                isPostAlreadyFavorite(user, post.getId()),
                 StatusUtil.isUpdatable(post, user, isPostHasComment(post.getId())),
                 StatusUtil.isDeletable(post, user, post.getBoard(), isPostHasComment(post.getId()))
         );
@@ -561,22 +554,31 @@ public class PostService {
         return commentRepository.findByPost_IdOrderByCreatedAt(
                 post.getId(),
                 pageableFactory.create(pageNum, StaticValue.DEFAULT_COMMENT_PAGE_SIZE)
-        ).map(comment -> CommentResponseDto.of(
-                        comment,
-                        childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
-                        getNumOfCommentLikes(comment),
-                        comment.getChildCommentList().stream()
-                                .map(childComment -> CommentDtoMapper.INSTANCE.toChildCommentResponseDto(
-                                        childComment,
-                                        getNumOfChildCommentLikes(childComment),
-                                        StatusUtil.isUpdatable(childComment, user),
-                                        StatusUtil.isDeletable(childComment, user, post.getBoard()))
-                                )
-                                .collect(Collectors.toList()),
-                        StatusUtil.isUpdatable(comment, user),
-                        StatusUtil.isDeletable(comment, user, post.getBoard()),
-                        comment.getIsAnonymous()
-                )
+            ).map(comment -> toCommentResponseDto(comment, user, post.getBoard()));
+
+    }
+
+    private CommentResponseDto toCommentResponseDto(Comment comment, User user, Board board) {
+        return CommentDtoMapper.INSTANCE.toCommentResponseDto(
+                comment,
+                childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
+                getNumOfCommentLikes(comment),
+                isCommentAlreadyLike(user, comment.getId()),
+                comment.getChildCommentList().stream()
+                        .map(childComment -> toChildCommentResponseDto(childComment, user, board))
+                        .collect(Collectors.toList()),
+                StatusUtil.isUpdatable(comment, user),
+                StatusUtil.isDeletable(comment, user, board)
+        );
+    }
+
+    private ChildCommentResponseDto toChildCommentResponseDto(ChildComment childComment, User user, Board board) {
+        return CommentDtoMapper.INSTANCE.toChildCommentResponseDto(
+                childComment,
+                getNumOfChildCommentLikes(childComment),
+                isChildCommentAlreadyLike(user, childComment.getId()),
+                StatusUtil.isUpdatable(childComment, user),
+                StatusUtil.isDeletable(childComment, user, board)
         );
     }
 
@@ -605,6 +607,14 @@ public class PostService {
 
     private Boolean isPostHasComment(String postId){
         return commentRepository.existsByPostIdAndIsDeletedFalse(postId);
+    }
+
+    private Boolean isCommentAlreadyLike(User user, String commentId) {
+        return likeCommentRepository.existsByCommentIdAndUserId(commentId, user.getId());
+    }
+
+    private Boolean isChildCommentAlreadyLike(User user, String childCommentId) {
+        return likeChildCommentRepository.existsByChildCommentIdAndUserId(childCommentId, user.getId());
     }
 
     private Post getPost(String postId) {

@@ -1,6 +1,7 @@
 package net.causw.application.dto.user;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,6 +10,10 @@ import net.causw.domain.model.enums.AcademicStatus;
 import net.causw.domain.model.enums.GraduationType;
 import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.enums.UserState;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -69,5 +74,14 @@ public class UserResponseDto {
 
     @Schema(description = "전화번호", example = "01012345678")
     private String phoneNumber;
+
+    @Schema(description = "가입 거부 OR DROP 이유", example = "부적절한 행위로 DROP")
+    private String rejectionOrDropReason;
+
+    @Schema(description = "생성일자", example = "2024-03-24")
+    private LocalDateTime createdAt;
+
+    @Schema(description = "수정일자", example = "2024-08-24")
+    private LocalDateTime updatedAt;
 
 }

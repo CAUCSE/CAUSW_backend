@@ -628,6 +628,21 @@ public class UserService {
         return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(userFoundByNickname.isPresent());
     }
 
+    @Transactional(readOnly = true)
+    public DuplicatedCheckResponseDto isDuplicatedStudentId(String studentId) {
+        Optional<User> userFoundByStudentId = userRepository.findByStudentId(studentId);
+        if (userFoundByStudentId.isPresent()) {
+            UserState state = userFoundByStudentId.get().getState();
+            if (state.equals(UserState.INACTIVE) || state.equals(UserState.DROP)) {
+                throw new BadRequestException(
+                        ErrorCode.ROW_ALREADY_EXIST,
+                        MessageUtil.USER_ALREADY_APPLY
+                );
+            }
+        }
+        return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(userFoundByStudentId.isPresent());
+    }
+
     @Transactional
     public UserResponseDto update(User user, UserUpdateRequestDto userUpdateRequestDto, MultipartFile profileImage) {
         Set<Role> roles = user.getRoles();
@@ -982,6 +997,51 @@ public class UserService {
         return UserDtoMapper.INSTANCE.toUserResponseDto(updatedUser, null, null);
     }
 
+    //유저정보 완전 삭제
+    @Transactional
+    public UserResponseDto eraseUserData(User requestuser, String userId) {
+        Set<Role> roles = requestuser.getRoles();
+
+        //삭제할 유저
+        User deleteUser = getUser(userId);
+
+        //관리자 or 대표만 삭제 가능
+        ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(requestuser.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(UserRoleWithoutAdminValidator.of(roles, Set.of(Role.ADMIN, Role.PRESIDENT)))
+                .validate();
+
+        //사용중인 사물함이 있을경우 사물함 반환처리
+        this.lockerRepository.findByUser_Id(deleteUser.getId())
+                .ifPresent(locker -> {
+                    locker.returnLocker();
+                    this.lockerRepository.save(locker);
+
+                    LockerLog lockerLog = LockerLog.of(
+                            locker.getLockerNumber(),
+                            locker.getLocation().getName(),
+                            deleteUser.getEmail(),
+                            deleteUser.getName(),
+                            LockerLogAction.RETURN,
+                            "사용자 탈퇴"
+                    );
+
+                    this.lockerLogRepository.save(lockerLog);
+
+                });
+
+        // 가입된 동아리가 있다면 탈퇴
+        this.circleMemberRepository.findByUser_Id(deleteUser.getId())
+                .forEach(circleMember ->
+                        this.updateStatus(circleMember.getId(), CircleMemberStatus.LEAVE)
+                );
+
+        this.userRepository.delete(deleteUser);
+
+        return UserDtoMapper.INSTANCE.toUserResponseDto(deleteUser, null, null);
+    }
+
     @Transactional
     public UserResponseDto leave(User user) {
         Set<Role> roles = user.getRoles();
@@ -1061,7 +1121,7 @@ public class UserService {
 
 
     @Transactional
-    public UserResponseDto dropUser(User requestUser, String userId) {
+    public UserResponseDto dropUser(User requestUser, String userId, String dropReason) {
         Set<Role> roles = requestUser.getRoles();
 
         User droppedUser = this.userRepository.findById(userId).orElseThrow(
@@ -1102,6 +1162,9 @@ public class UserService {
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.INTERNAL_SERVER_ERROR
                 ));
+        entity.updateRejectionOrDropReason(dropReason);
+        this.userRepository.save(requestUser);
+
         return UserDtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
     }
 
@@ -1209,7 +1272,8 @@ public class UserService {
                 requestUser.getName(),
                 UserAdmissionLogAction.ACCEPT,
                 userAdmission.getUserAdmissionAttachImageUuidFileList(),
-                userAdmission.getDescription()
+                userAdmission.getDescription(),
+                null
         );
         // Add admission log
 
@@ -1218,7 +1282,7 @@ public class UserService {
         this.userAdmissionRepository.delete(userAdmission);
 
         return UserDtoMapper.INSTANCE.toUserAdmissionResponseDto(
-                userAdmission,
+                userAdmissionLog,
                 this.updateState(userAdmission.getUser().getId(), UserState.ACTIVE)
                         .orElseThrow(() -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
@@ -1230,7 +1294,8 @@ public class UserService {
     @Transactional
     public UserAdmissionResponseDto reject(
             User requestUser,
-            String admissionId
+            String admissionId,
+            String rejectReason
     ) {
         Set<Role> roles = requestUser.getRoles();
 
@@ -1252,16 +1317,19 @@ public class UserService {
                 requestUser.getName(),
                 UserAdmissionLogAction.REJECT,
                 userAdmission.getUserAdmissionAttachImageUuidFileList(),
-                userAdmission.getDescription()
+                userAdmission.getDescription(),
+                rejectReason
         );
         // Add admission log
 
 
         this.userAdmissionLogRepository.save(userAdmissionLog);
         this.userAdmissionRepository.delete(userAdmission);
+        requestUser.updateRejectionOrDropReason(rejectReason);
+        this.userRepository.save(requestUser);
 
         return UserDtoMapper.INSTANCE.toUserAdmissionResponseDto(
-                userAdmission,
+                userAdmissionLog,
                 this.updateState(userAdmission.getUser().getId(), UserState.REJECT)
                         .orElseThrow(() -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,

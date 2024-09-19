@@ -11,6 +11,7 @@ import net.causw.adapter.persistence.page.PageableFactory;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.user.User;
+import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentCreateRequestDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.comment.CommentUpdateRequestDto;
@@ -188,21 +189,31 @@ public class CommentService {
         return likeCommentRepository.existsByCommentIdAndUserId(commentId, user.getId());
     }
 
+    private Boolean isChildCommentAlreadyLike(User user, String childCommentId) {
+        return likeChildCommentRepository.existsByChildCommentIdAndUserId(childCommentId, user.getId());
+    }
+
     private CommentResponseDto toCommentResponseDto(Comment comment, User user, Board board) {
         return CommentDtoMapper.INSTANCE.toCommentResponseDto(
                 comment,
                 childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
                 getNumOfCommentLikes(comment),
+                isCommentAlreadyLike(user, comment.getId()),
                 comment.getChildCommentList().stream()
-                        .map(childComment -> CommentDtoMapper.INSTANCE.toChildCommentResponseDto(
-                                childComment,
-                                getNumOfChildCommentLikes(childComment),
-                                StatusUtil.isUpdatable(childComment, user),
-                                StatusUtil.isDeletable(childComment, user, board))
-                        )
+                        .map(childComment -> toChildCommentResponseDto(childComment, user, board))
                         .collect(Collectors.toList()),
                 StatusUtil.isUpdatable(comment, user),
                 StatusUtil.isDeletable(comment, user, board)
+        );
+    }
+
+    private ChildCommentResponseDto toChildCommentResponseDto(ChildComment childComment, User user, Board board) {
+        return CommentDtoMapper.INSTANCE.toChildCommentResponseDto(
+                childComment,
+                getNumOfChildCommentLikes(childComment),
+                isChildCommentAlreadyLike(user, childComment.getId()),
+                StatusUtil.isUpdatable(childComment, user),
+                StatusUtil.isDeletable(childComment, user, board)
         );
     }
 
@@ -274,7 +285,5 @@ public class CommentService {
                 )
         );
     }
-
-
 
 }

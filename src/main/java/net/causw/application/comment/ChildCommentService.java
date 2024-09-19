@@ -1,6 +1,7 @@
 package net.causw.application.comment;
 
 import lombok.RequiredArgsConstructor;
+import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.comment.ChildComment;
@@ -64,9 +65,8 @@ public class ChildCommentService {
 
         return toChildCommentResponseDto(
                 childCommentRepository.save(childComment),
-                getNumOfChildCommentLikes(childComment),
-                StatusUtil.isUpdatable(childComment, creator),
-                StatusUtil.isDeletable(childComment, creator, post.getBoard())
+                creator,
+                post.getBoard()
         );
     }
 
@@ -95,9 +95,8 @@ public class ChildCommentService {
 
         return toChildCommentResponseDto(
                 childCommentRepository.save(childComment),
-                getNumOfChildCommentLikes(childComment),
-                StatusUtil.isUpdatable(childComment, updater),
-                StatusUtil.isDeletable(childComment, updater, post.getBoard())
+                updater,
+                post.getBoard()
         );
     }
 
@@ -159,9 +158,8 @@ public class ChildCommentService {
 
         return toChildCommentResponseDto(
                 childCommentRepository.save(childComment),
-                getNumOfChildCommentLikes(childComment),
-                StatusUtil.isUpdatable(childComment, deleter),
-                StatusUtil.isDeletable(childComment, deleter, post.getBoard())
+                deleter,
+                post.getBoard()
         );
     }
 
@@ -215,8 +213,14 @@ public class ChildCommentService {
         return validatorBucket;
     }
 
-    private ChildCommentResponseDto toChildCommentResponseDto(ChildComment comment, Long childCommentLike, Boolean updatable, Boolean deletable) {
-        return CommentDtoMapper.INSTANCE.toChildCommentResponseDto(comment, childCommentLike, updatable, deletable);
+    private ChildCommentResponseDto  toChildCommentResponseDto(ChildComment childComment, User user, Board board) {
+        return CommentDtoMapper.INSTANCE.toChildCommentResponseDto(
+                childComment,
+                getNumOfChildCommentLikes(childComment),
+                isChildCommentAlreadyLike(user, childComment.getId()),
+                StatusUtil.isUpdatable(childComment, user),
+                StatusUtil.isDeletable(childComment, user, board)
+        );
     }
 
     private User getUser(String userId) {

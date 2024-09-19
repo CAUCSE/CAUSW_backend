@@ -21,5 +21,6 @@ public class UserAdmissionsResponseDto {
     private UserState userState;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String studentId;
 
 }

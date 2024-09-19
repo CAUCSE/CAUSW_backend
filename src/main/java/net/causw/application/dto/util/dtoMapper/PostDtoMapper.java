@@ -47,22 +47,13 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "writerAdmissionYear", source = "post.writer.admissionYear")
     @Mapping(target = "boardName", source = "post.board.name")
     @Mapping(target = "fileUrlList", source = "post.postAttachImageUuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
-    @Mapping(target = "isAnonymous", source = "post.isAnonymous")
-    @Mapping(target = "isQuestion", source = "post.isQuestion")
-    @Mapping(target = "numLike", source = "numPostLike")
-    @Mapping(target = "numFavorite", source = "numPostFavorite")
-    PostResponseDto toPostResponseDto(Post post, Long numPostLike, Long numPostFavorite, Boolean updatable, Boolean deletable);
-
-    @Mapping(target = "writerName", source = "post.writer.name")
-    @Mapping(target = "writerAdmissionYear", source = "post.writer.admissionYear")
-    @Mapping(target = "boardName", source = "post.board.name")
-    @Mapping(target = "fileUrlList", source = "post.postAttachImageUuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
     @Mapping(target = "content", source = "post.content")
     @Mapping(target = "isAnonymous", source = "post.isAnonymous")
     @Mapping(target = "isQuestion", source = "post.isQuestion")
     @Mapping(target = "numLike", source = "numPostLike")
     @Mapping(target = "numFavorite", source = "numPostFavorite")
-    PostResponseDto toPostResponseDtoExtended(Post post, Page<CommentResponseDto> commentList, Long numComment, Long numPostLike, Long numPostFavorite, Boolean updatable, Boolean deletable);
+    PostResponseDto toPostResponseDtoExtended(Post post, Page<CommentResponseDto> commentList, Long numComment, Long numPostLike,
+                                              Long numPostFavorite, Boolean isPostLike, Boolean isPostFavorite, Boolean updatable, Boolean deletable);
 
     @Mapping(target = "title", source = "post.title")
     @Mapping(target = "contentId", source = "post.id")
