@@ -60,6 +60,7 @@ public class WebSecurityConfig {
                                 "/api/v1/users/admissions/apply",
                                 "/api/v1/users/**/is-duplicated",
                                 "/api/v1/users/**/is-duplicated-nickname",
+                                "/api/v1/users/**/is-duplicated-student-id",
                                 "/api/v1/users/email",
                                 "/api/v1/users/password",
                                 "/api/v1/users/token/update",
