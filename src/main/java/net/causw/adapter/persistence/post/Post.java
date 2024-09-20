@@ -9,6 +9,7 @@ import net.causw.adapter.persistence.uuidFile.joinEntity.PostAttachImage;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -25,7 +26,8 @@ public class Post extends BaseEntity {
     private String content;
 
     @OneToMany(cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, mappedBy = "post")
-    private List<PostAttachImage> postAttachImageList;
+    @Builder.Default
+    private List<PostAttachImage> postAttachImageList = new ArrayList<>();
 
     @ManyToOne(targetEntity = User.class)
     @JoinColumn(name = "user_id", nullable = false)
