@@ -14,6 +14,7 @@ import net.causw.adapter.persistence.repository.form.ReplyRepository;
 import net.causw.adapter.persistence.repository.user.UserRepository;
 import net.causw.application.dto.form.*;
 import net.causw.application.dto.util.dtoMapper.FormDtoMapper;
+import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
@@ -32,7 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
+@MeasureTime
 @Service
 @RequiredArgsConstructor
 public class FormService {

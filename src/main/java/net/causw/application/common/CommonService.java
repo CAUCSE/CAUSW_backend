@@ -5,11 +5,12 @@ import net.causw.adapter.persistence.flag.Flag;
 import net.causw.adapter.persistence.repository.flag.FlagRepository;
 import net.causw.adapter.persistence.repository.textField.TextFieldRepository;
 import net.causw.adapter.persistence.textfield.TextField;
+import net.causw.domain.aop.annotation.MeasureTime;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
 import java.util.Optional;
-
+@MeasureTime
 @Service
 @RequiredArgsConstructor
 public class CommonService {

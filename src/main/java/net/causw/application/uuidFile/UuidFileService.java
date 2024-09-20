@@ -8,6 +8,7 @@ import net.causw.adapter.persistence.repository.uuidFile.CircleMainImageReposito
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.adapter.persistence.repository.uuidFile.UuidFileRepository;
 import net.causw.application.storage.StorageManager;
+import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
@@ -22,7 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
+@MeasureTime
 @Service
 @Transactional(readOnly = true)
 public class UuidFileService extends StorageManager {

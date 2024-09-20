@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.causw.adapter.persistence.repository.uuidFile.*;
 import net.causw.adapter.persistence.uuidFile.*;
 import net.causw.adapter.persistence.uuidFile.joinEntity.*;
+import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.model.util.RedisUtils;
 import net.causw.domain.model.util.StaticValue;
 import org.springframework.batch.core.StepExecution;
@@ -16,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
+@MeasureTime
 @Slf4j
 @Component
 @RequiredArgsConstructor
