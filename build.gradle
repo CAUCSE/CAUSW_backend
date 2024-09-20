@@ -73,6 +73,9 @@ dependencies {
     // h2 database(테스트용)
     runtimeOnly 'com.h2database:h2'
 
+    // monitoring
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
 
     // Apache POI for Excel file generation
     implementation 'org.apache.poi:poi-ooxml:5.2.3'
