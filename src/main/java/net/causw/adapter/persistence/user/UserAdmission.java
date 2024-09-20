@@ -6,6 +6,7 @@ import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.uuidFile.joinEntity.UserAdmissionAttachImage;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -20,7 +21,8 @@ public class UserAdmission extends BaseEntity {
     private User user;
 
     @OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "userAdmission")
-    private List<UserAdmissionAttachImage> userAdmissionAttachImageList;
+    @Builder.Default
+    private List<UserAdmissionAttachImage> userAdmissionAttachImageList = new ArrayList<>();
 
     @Column(name = "description", nullable = true)
     private String description;

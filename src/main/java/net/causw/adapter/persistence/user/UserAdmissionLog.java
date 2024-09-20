@@ -7,6 +7,7 @@ import net.causw.adapter.persistence.uuidFile.joinEntity.UserAdmissionLogAttachI
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.domain.model.enums.UserAdmissionLogAction;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -29,7 +30,8 @@ public class UserAdmissionLog extends BaseEntity {
     private String adminUserName;
 
     @OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "userAdmissionLog")
-    private List<UserAdmissionLogAttachImage> userAdmissionLogAttachImageList;
+    @Builder.Default
+    private List<UserAdmissionLogAttachImage> userAdmissionLogAttachImageList = new ArrayList<>();
 
     @Column(name = "description")
     private String description;

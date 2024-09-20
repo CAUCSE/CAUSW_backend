@@ -12,6 +12,7 @@ import net.causw.domain.model.enums.AcademicRecordRequestStatus;
 import net.causw.domain.model.enums.AcademicStatus;
 import net.causw.domain.model.util.MessageUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -41,7 +42,8 @@ public class UserAcademicRecordApplication extends BaseEntity {
     private String note;
 
     @OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "userAcademicRecordApplication")
-    private List<UserAcademicRecordApplicationAttachImage> userAcademicRecordAttachImageList;
+    @Builder.Default
+    private List<UserAcademicRecordApplicationAttachImage> userAcademicRecordAttachImageList = new ArrayList<>();
 
     @Column(name = "reject_message", nullable = true)
     private String rejectMessage;
