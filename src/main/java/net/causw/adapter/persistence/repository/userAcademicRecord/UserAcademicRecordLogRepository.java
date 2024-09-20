@@ -10,6 +10,6 @@ import java.util.List;
 @Repository
 public interface UserAcademicRecordLogRepository extends JpaRepository<UserAcademicRecordLog, String> {
 
-    List<UserAcademicRecordLog> findAllByTargetUser(User user);
+    List<UserAcademicRecordLog> findAllByTargetUserStudentIdAndTargetUserEmailAndTargetUserName(String targetUserStudentId, String targetUserEmail, String targetUserName);
 
 }

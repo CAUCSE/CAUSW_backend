@@ -46,7 +46,7 @@ public interface UserAcademicRecordDtoMapper extends UuidFileToUrlDtoMapper {
 
     @Mapping(target = "targetAcademicStatus", source = "userAcademicRecordLog.targetAcademicRecordStatus")
     @Mapping(target = "userNote", source = "userAcademicRecordLog.note")
-    @Mapping(target = "attachedImageUrlList", source = "userAcademicRecordLog.targetUserAcademicRecordApplication.userAcademicRecordAttachImageList", qualifiedByName = "mapUuidFileListToFileUrlList")
+    @Mapping(target = "attachedImageUrlList", source = "userAcademicRecordLog.userAcademicRecordLogAttachImageList", qualifiedByName = "mapUuidFileListToFileUrlList")
     @Mapping(target = "changeDate", source = "userAcademicRecordLog.updatedAt")
     UserAcademicRecordApplicationResponseDto toUserAcademicRecordApplicationResponseDto(UserAcademicRecordLog userAcademicRecordLog);
 
