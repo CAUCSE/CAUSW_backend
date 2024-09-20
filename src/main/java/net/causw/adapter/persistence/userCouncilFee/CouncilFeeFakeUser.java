@@ -1,9 +1,6 @@
 package net.causw.adapter.persistence.userCouncilFee;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.domain.model.enums.AcademicStatus;
@@ -14,6 +11,7 @@ import net.causw.domain.model.enums.GraduationType;
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Table(name = "tb_council_fee_fake_user")
 public class CouncilFeeFakeUser extends BaseEntity {
 
     @Column(name = "name", nullable = false)
