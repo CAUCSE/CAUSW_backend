@@ -64,4 +64,6 @@ public interface UserRepository extends JpaRepository<User, String> {
     Optional<User> findByStudentId(String studentId);
 
     Optional<User> findByPhoneNumber(@Pattern(regexp = "^01(?:0|1|[6-9])(\\d{3}|\\d{4})\\d{4}$", message = "전화번호 형식에 맞지 않습니다.") String phoneNumber);
+
+    Boolean existsByStudentId(String studentId);
 }

@@ -10,9 +10,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
-import net.causw.application.dto.userCouncilFee.CreateUserCouncilFeeRequestDto;
-import net.causw.application.dto.userCouncilFee.UserCouncilFeeListResponseDto;
-import net.causw.application.dto.userCouncilFee.UserCouncilFeeResponseDto;
+import net.causw.application.dto.userCouncilFee.*;
 import net.causw.application.userCouncilFee.UserCouncilFeeService;
 import net.causw.config.security.userdetails.CustomUserDetails;
 import net.causw.domain.exceptions.BadRequestException;
@@ -84,12 +82,12 @@ public class UserCouncilFeeController {
         return userCouncilFeeService.getUserCouncilFeeInfo(userCouncilFeeId);
     }
 
-    @PostMapping("/create")
+    @PostMapping("/create-user")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
             "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
-    @Operation(summary = "학생회비 납부자 등록",
-        description = "학생회비 납부자를 등록합니다.")
+    @Operation(summary = "학생회비 납부자 등록(가입 유저 대상)",
+        description = "동문네트워크 가입자 대상으로 학생회비 납부자를 등록합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "학생회비 납부자 등록 완료", content = @Content),
             @ApiResponse(responseCode = "4000", description = MessageUtil.INVALID_USER_COUNCIL_FEE_INFO, content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
@@ -98,18 +96,65 @@ public class UserCouncilFeeController {
             @ApiResponse(responseCode = "4013", description = MessageUtil.API_NOT_ACCESSIBLE, content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "5000", description = MessageUtil.INTERNAL_SERVER_ERROR, content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
-    public void createUserCouncilFee(
+    public void createUserCouncilFeeWithUser(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestBody @Valid CreateUserCouncilFeeRequestDto createUserCouncilFeeRequestDto
+            @RequestBody @Valid CreateUserCouncilFeeWithUserRequestDto createUserCouncilFeeWithUserRequestDto
     ) {
-        userCouncilFeeService.creatUserCouncilFee(userDetails.getUser(), createUserCouncilFeeRequestDto);
+        userCouncilFeeService.creatUserCouncilFeeWithUser(userDetails.getUser(), createUserCouncilFeeWithUserRequestDto);
     }
 
-    @PutMapping("/update")
+    @PostMapping("/create-fake-user")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
+    @Operation(summary = "학생회비 납부자 등록(미가입자 대상)",
+        description = "동문네트워크 미 가입자 대상으로 학생회비 납부자를 등록합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "학생회비 납부자 등록 완료", content = @Content),
+            @ApiResponse(responseCode = "4000", description = MessageUtil.INVALID_USER_COUNCIL_FEE_INFO, content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4003", description = MessageUtil.INVALID_USER_COUNCIL_FEE_INFO, content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4003", description = MessageUtil.INVALID_COUNCIL_FEE_FAKE_USER_INFO, content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4013", description = MessageUtil.API_NOT_ACCESSIBLE, content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "5000", description = MessageUtil.INTERNAL_SERVER_ERROR, content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
+    })
+    public void createUserCouncilFeeWithFakeUser(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody @Valid CreateUserCouncilFeeWithFakeUserRequestDto createUserCouncilFeeRequestDto
+    ) {
+        userCouncilFeeService.creatUserCouncilFeeWithFakeUser(userDetails.getUser(), createUserCouncilFeeRequestDto);
+    }
+
+    @PutMapping("/update-user")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
             "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
-    @Operation(summary = "학생회비 납부자 수정",
+    @Operation(summary = "학생회비 납부자 수정(가입 유저 대상)",
+        description = "학생회비 납부자를 수정합니다.(가입 유저 대상)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "학생회비 납부자 수정 완료", content = @Content),
+            @ApiResponse(responseCode = "4000", description = MessageUtil.INVALID_USER_COUNCIL_FEE_INFO, content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4003", description = MessageUtil.INVALID_USER_COUNCIL_FEE_INFO, content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4003", description = MessageUtil.INVALID_COUNCIL_FEE_FAKE_USER_INFO, content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4013", description = MessageUtil.API_NOT_ACCESSIBLE, content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "5000", description = MessageUtil.INTERNAL_SERVER_ERROR, content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
+    })
+    public void updateUserCouncilFeeWithUser(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestHeader @Pattern(
+                    regexp = "^[0-9a-fA-F]{32}$",
+                    message = "대상 사용자 고유 id 값은 대시(-) 없이 32자리의 UUID 형식이어야 합니다."
+            )
+            @NotBlank(message = "대상 사용자 고유 id 값은 필수 입력 값입니다.") String userCouncilFeeId,
+            @RequestBody @Valid CreateUserCouncilFeeWithUserRequestDto createUserCouncilFeeWithUserRequestDto
+    ) {
+        userCouncilFeeService.updateUserCouncilFeeWithUser(userDetails.getUser(), userCouncilFeeId, createUserCouncilFeeWithUserRequestDto);
+    }
+
+    @PutMapping("/update-fake-user")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
+    @Operation(summary = "학생회비 납부자 수정(미가입자 대상)",
         description = "학생회비 납부자를 수정합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "학생회비 납부자 수정 완료", content = @Content),
@@ -119,16 +164,16 @@ public class UserCouncilFeeController {
             @ApiResponse(responseCode = "4013", description = MessageUtil.API_NOT_ACCESSIBLE, content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "5000", description = MessageUtil.INTERNAL_SERVER_ERROR, content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
-    public void updateUserCouncilFee(
+    public void updateUserCouncilFeeWithFakeUser(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestHeader @Pattern(
                     regexp = "^[0-9a-fA-F]{32}$",
                     message = "대상 사용자 고유 id 값은 대시(-) 없이 32자리의 UUID 형식이어야 합니다."
             )
             @NotBlank(message = "대상 사용자 고유 id 값은 필수 입력 값입니다.") String userCouncilFeeId,
-            @RequestBody @Valid CreateUserCouncilFeeRequestDto createUserCouncilFeeRequestDto
+            @RequestBody @Valid CreateUserCouncilFeeWithFakeUserRequestDto createUserCouncilFeeRequestDto
     ) {
-        userCouncilFeeService.updateUserCouncilFee(userDetails.getUser(), userCouncilFeeId, createUserCouncilFeeRequestDto);
+        userCouncilFeeService.updateUserCouncilFeeWithFakeUser(userDetails.getUser(), userCouncilFeeId, createUserCouncilFeeRequestDto);
     }
 
     @DeleteMapping("/delete")
@@ -197,6 +242,22 @@ public class UserCouncilFeeController {
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return userCouncilFeeService.isCurrentSemesterAppliedBySelf(userDetails.getUser());
+    }
+
+    @GetMapping("/isCurrentSemesterApplied/self/info")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
+    @Operation(summary = "본인이 현재 학생회비 적용 학기인지 여부 상세 조회",
+        description = "본인이 현재 학생회비 적용 학기인지 여부를 상세 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Boolean.class))),
+            @ApiResponse(responseCode = "4000", description = MessageUtil.USER_NOT_FOUND, content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "5000", description = MessageUtil.INTERNAL_SERVER_ERROR, content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
+    })
+    public CurrentUserCouncilFeeResponseDto isCurrentSemesterAppliedBySelfInfo(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return userCouncilFeeService.isCurrentSemesterAppliedBySelfInfo(userDetails.getUser());
     }
 
 }

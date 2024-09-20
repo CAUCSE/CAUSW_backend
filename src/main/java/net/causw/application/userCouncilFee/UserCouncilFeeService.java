@@ -10,16 +10,12 @@ import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.userCouncilFee.CouncilFeeFakeUser;
 import net.causw.adapter.persistence.userCouncilFee.UserCouncilFee;
 import net.causw.adapter.persistence.userCouncilFee.UserCouncilFeeLog;
-import net.causw.application.dto.userCouncilFee.CreateUserCouncilFeeRequestDto;
-import net.causw.application.dto.userCouncilFee.UserCouncilFeeListResponseDto;
-import net.causw.application.dto.userCouncilFee.UserCouncilFeeResponseDto;
+import net.causw.application.dto.userCouncilFee.*;
 import net.causw.application.dto.util.dtoMapper.UserCouncilFeeDtoMapper;
 import net.causw.application.excel.CouncilFeeExcelService;
 import net.causw.application.semester.SemesterService;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
-import net.causw.domain.model.enums.AcademicStatus;
-import net.causw.domain.model.enums.GraduationType;
 import net.causw.domain.model.enums.CouncilFeeLogType;
 import net.causw.domain.model.util.MessageUtil;
 import org.springframework.data.domain.Page;
@@ -84,289 +80,181 @@ public class UserCouncilFeeService {
     }
 
     @Transactional
-    public void creatUserCouncilFee(User user, CreateUserCouncilFeeRequestDto createUserCouncilFeeRequestDto) {
-        // isJoinedService가 true일 때 userId가 존재해야 합니다.
-        if ( (createUserCouncilFeeRequestDto.getUserId() == null) != createUserCouncilFeeRequestDto.getIsJoinedService() ) {
-            throw new BadRequestException(ErrorCode.INVALID_USER_DATA_REQUEST, MessageUtil.INVALID_USER_COUNCIL_FEE_INFO);
+    public void creatUserCouncilFeeWithUser(User user, CreateUserCouncilFeeWithUserRequestDto createUserCouncilFeeWithUserRequestDto) {
+        User controlledUser = userRepository.findById(user.getId())
+                .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND));
+
+        User targetUser = userRepository.findById(createUserCouncilFeeWithUserRequestDto.getUserId())
+                .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND));
+
+        if (createUserCouncilFeeWithUserRequestDto.getIsRefunded() && createUserCouncilFeeWithUserRequestDto.getRefundedAt() == null) {
+            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.REFUND_DATE_IS_NULL);
         }
 
-        // userId가 존재하지 않으면 Fake User 정보 값은 유효한 값이 존재해야 하며, userId가 있으면 Fake User 정보 값들은 null이어야 합니다.
-        if (createUserCouncilFeeRequestDto.getUserId() == null) {
-            // userId가 없으면 다른 값들이 모두 적절하게 설정되어 있어야 함
-            boolean isUserNameValid = createUserCouncilFeeRequestDto.getUserName() != null;
-            boolean isStudentIdValid = createUserCouncilFeeRequestDto.getStudentId() != null;
-            boolean isAdmissionYearValid = createUserCouncilFeeRequestDto.getAdmissionYear() != null && createUserCouncilFeeRequestDto.getAdmissionYear() > 0;
-            boolean isMajorValid = createUserCouncilFeeRequestDto.getMajor() != null;
-            boolean isAcademicStatusValid = createUserCouncilFeeRequestDto.getAcademicStatus() != null;
-            if (createUserCouncilFeeRequestDto.getAcademicStatus() != null) {
-                if (createUserCouncilFeeRequestDto.getAcademicStatus().equals(AcademicStatus.ENROLLED)) {
-                    isAcademicStatusValid = createUserCouncilFeeRequestDto.getCurrentCompletedSemester() != null && createUserCouncilFeeRequestDto.getCurrentCompletedSemester() > 0;
-                } else if (createUserCouncilFeeRequestDto.getAcademicStatus().equals(AcademicStatus.GRADUATED)) {
-                    isAcademicStatusValid = createUserCouncilFeeRequestDto.getGraduationYear() != null && createUserCouncilFeeRequestDto.getGraduationYear() > 0 && createUserCouncilFeeRequestDto.getGraduationType() != null;
-                }
-            }
-            boolean isPhoneNumberValid = createUserCouncilFeeRequestDto.getPhoneNumber() != null;
+        UserCouncilFee userCouncilFee = UserCouncilFee.of(
+                true,
+                targetUser,
+                null,
+                createUserCouncilFeeWithUserRequestDto.getPaidAt(),
+                createUserCouncilFeeWithUserRequestDto.getNumOfPaidSemester(),
+                createUserCouncilFeeWithUserRequestDto.getIsRefunded(),
+                createUserCouncilFeeWithUserRequestDto.getRefundedAt()
+        );
 
-            if (!isUserNameValid || !isStudentIdValid || !isAdmissionYearValid || !isMajorValid || !isAcademicStatusValid || !isPhoneNumberValid) {
-                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_COUNCIL_FEE_FAKE_USER_INFO);
-            }
-        } else {
-                // userId가 있으면 다른 값들은 null이어야 함
-                boolean isUserNameNull = createUserCouncilFeeRequestDto.getUserName() == null;
-                boolean isStudentIdNull = createUserCouncilFeeRequestDto.getStudentId() == null;
-                boolean isAdmissionYearNull = createUserCouncilFeeRequestDto.getAdmissionYear() == null;
-                boolean isMajorNull = createUserCouncilFeeRequestDto.getMajor() == null;
-                boolean isAcademicStatusNull = createUserCouncilFeeRequestDto.getAcademicStatus() == null;
-                boolean isCurrentCompletedSemesterNull = createUserCouncilFeeRequestDto.getCurrentCompletedSemester() == null;
-                boolean isGraduationYearNull = createUserCouncilFeeRequestDto.getGraduationYear() == null;
-                boolean isGraduationTypeNull = createUserCouncilFeeRequestDto.getGraduationType() == null;
-                boolean isPhoneNumberNull = createUserCouncilFeeRequestDto.getPhoneNumber() == null;
-
-                if (!isUserNameNull || !isStudentIdNull || !isAdmissionYearNull || !isMajorNull || !isAcademicStatusNull || !isCurrentCompletedSemesterNull || !isGraduationYearNull || !isGraduationTypeNull || !isPhoneNumberNull) {
-                    throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_USER_COUNCIL_FEE_INFO);
-                }
-        }
-
-        // isRefunded가 true일 때 refundedAt 값은 null이 아니고 자연수여야 합니다.
-        if ((createUserCouncilFeeRequestDto.getIsRefunded() && createUserCouncilFeeRequestDto.getRefundedAt() == null)) {
-            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_USER_COUNCIL_FEE_INFO);
-        }
-
-
-        UserCouncilFee userCouncilFee;
-        UserCouncilFeeLog userCouncilFeeLog;
-
-        Semester semester = semesterService.getCurrentSemesterEntity();
-
-        if (createUserCouncilFeeRequestDto.getIsJoinedService()) {
-            User targetUser = userRepository.findById(createUserCouncilFeeRequestDto.getUserId())
-                    .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND));
-
-            this.validUserCouncilFeeInfo(
-                    createUserCouncilFeeRequestDto.getIsJoinedService(),
-                    targetUser,
-                    null,
-                    createUserCouncilFeeRequestDto.getPaidAt(),
-                    createUserCouncilFeeRequestDto.getNumOfPaidSemester(),
-                    createUserCouncilFeeRequestDto.getIsRefunded(),
-                    createUserCouncilFeeRequestDto.getRefundedAt()
-            );
-
-            userCouncilFee = UserCouncilFee.of(
-                    createUserCouncilFeeRequestDto.getIsJoinedService(),
-                    targetUser,
-                    null,
-                    createUserCouncilFeeRequestDto.getPaidAt(),
-                    createUserCouncilFeeRequestDto.getNumOfPaidSemester(),
-                    createUserCouncilFeeRequestDto.getIsRefunded(),
-                    createUserCouncilFeeRequestDto.getRefundedAt()
-            );
-
-            userCouncilFeeLog = UserCouncilFeeLog.fromUser(
-                    user,
-                    CouncilFeeLogType.CREATE,
-                    userCouncilFee,
-                    semester,
-                    targetUser,
-                    getRestOfSemester(userCouncilFee),
-                    getIsAppliedCurrentSemester(userCouncilFee)
-            );
-        } else {
-            this.validCouncilFeeFakeUserInfo(
-                    createUserCouncilFeeRequestDto.getAcademicStatus(),
-                    createUserCouncilFeeRequestDto.getCurrentCompletedSemester(),
-                    createUserCouncilFeeRequestDto.getGraduationYear(),
-                    createUserCouncilFeeRequestDto.getGraduationType()
-            );
-
-            CouncilFeeFakeUser targetCouncilFeeFakeUser = CouncilFeeFakeUser.of(
-                    createUserCouncilFeeRequestDto.getUserName(),
-                    createUserCouncilFeeRequestDto.getStudentId(),
-                    createUserCouncilFeeRequestDto.getPhoneNumber(),
-                    createUserCouncilFeeRequestDto.getAdmissionYear(),
-                    createUserCouncilFeeRequestDto.getMajor(),
-                    createUserCouncilFeeRequestDto.getAcademicStatus(),
-                    createUserCouncilFeeRequestDto.getCurrentCompletedSemester(),
-                    createUserCouncilFeeRequestDto.getGraduationYear(),
-                    createUserCouncilFeeRequestDto.getGraduationType()
-            );
-
-            this.validUserCouncilFeeInfo(
-                    createUserCouncilFeeRequestDto.getIsJoinedService(),
-                    null,
-                    targetCouncilFeeFakeUser,
-                    createUserCouncilFeeRequestDto.getPaidAt(),
-                    createUserCouncilFeeRequestDto.getNumOfPaidSemester(),
-                    createUserCouncilFeeRequestDto.getIsRefunded(),
-                    createUserCouncilFeeRequestDto.getRefundedAt()
-            );
-
-            userCouncilFee = UserCouncilFee.of(
-                    createUserCouncilFeeRequestDto.getIsJoinedService(),
-                    null,
-                    targetCouncilFeeFakeUser,
-                    createUserCouncilFeeRequestDto.getPaidAt(),
-                    createUserCouncilFeeRequestDto.getNumOfPaidSemester(),
-                    createUserCouncilFeeRequestDto.getIsRefunded(),
-                    createUserCouncilFeeRequestDto.getRefundedAt()
-            );
-
-            userCouncilFeeLog = UserCouncilFeeLog.fromCouncilFeeFakeUser(
-                    user,
-                    CouncilFeeLogType.CREATE,
-                    userCouncilFee,
-                    semester,
-                    targetCouncilFeeFakeUser,
-                    getRestOfSemester(userCouncilFee),
-                    getIsAppliedCurrentSemester(userCouncilFee)
-            );
-        }
+        UserCouncilFeeLog userCouncilFeeLog = UserCouncilFeeLog.fromUser(
+                controlledUser,
+                CouncilFeeLogType.CREATE,
+                userCouncilFee,
+                semesterService.getCurrentSemesterEntity(),
+                targetUser,
+                getRestOfSemester(userCouncilFee),
+                getIsAppliedCurrentSemester(userCouncilFee)
+        );
 
         userCouncilFeeRepository.save(userCouncilFee);
         userCouncilFeeLogRepository.save(userCouncilFeeLog);
     }
 
     @Transactional
-    public void updateUserCouncilFee(User user, String userCouncilFeeId, CreateUserCouncilFeeRequestDto createUserCouncilFeeRequestDto) {
-        // isJoinedService가 true일 때 userId가 존재해야 합니다.
-        if ( (createUserCouncilFeeRequestDto.getUserId() == null) != createUserCouncilFeeRequestDto.getIsJoinedService() ) {
-            throw new BadRequestException(ErrorCode.INVALID_USER_DATA_REQUEST, MessageUtil.INVALID_USER_COUNCIL_FEE_INFO);
+    public void creatUserCouncilFeeWithFakeUser(User user, CreateUserCouncilFeeWithFakeUserRequestDto createUserCouncilFeeRequestDto) {
+        User controlledUser = userRepository.findById(user.getId())
+                .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND));
+
+        if (userRepository.existsByStudentId(createUserCouncilFeeRequestDto.getStudentId())) {
+            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.USER_ALREADY_EXISTS);
         }
 
-        // userId가 존재하지 않으면 Fake User 정보 값은 유효한 값이 존재해야 하며, userId가 있으면 Fake User 정보 값들은 null이어야 합니다.
-        if (createUserCouncilFeeRequestDto.getUserId() == null) {
-            // userId가 없으면 다른 값들이 모두 적절하게 설정되어 있어야 함
-            boolean isUserNameValid = createUserCouncilFeeRequestDto.getUserName() != null;
-            boolean isStudentIdValid = createUserCouncilFeeRequestDto.getStudentId() != null;
-            boolean isAdmissionYearValid = createUserCouncilFeeRequestDto.getAdmissionYear() != null && createUserCouncilFeeRequestDto.getAdmissionYear() > 0;
-            boolean isMajorValid = createUserCouncilFeeRequestDto.getMajor() != null;
-            boolean isAcademicStatusValid = createUserCouncilFeeRequestDto.getAcademicStatus() != null;
-            if (createUserCouncilFeeRequestDto.getAcademicStatus() != null) {
-                if (createUserCouncilFeeRequestDto.getAcademicStatus().equals(AcademicStatus.ENROLLED)) {
-                    isAcademicStatusValid = createUserCouncilFeeRequestDto.getCurrentCompletedSemester() != null && createUserCouncilFeeRequestDto.getCurrentCompletedSemester() > 0;
-                } else if (createUserCouncilFeeRequestDto.getAcademicStatus().equals(AcademicStatus.GRADUATED)) {
-                    isAcademicStatusValid = createUserCouncilFeeRequestDto.getGraduationYear() != null && createUserCouncilFeeRequestDto.getGraduationYear() > 0 && createUserCouncilFeeRequestDto.getGraduationType() != null;
-                }
-            }
-            boolean isPhoneNumberValid = createUserCouncilFeeRequestDto.getPhoneNumber() != null;
-
-            if (!isUserNameValid || !isStudentIdValid || !isAdmissionYearValid || !isMajorValid || !isAcademicStatusValid || !isPhoneNumberValid) {
-                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_COUNCIL_FEE_FAKE_USER_INFO);
-            }
-        } else {
-            // userId가 있으면 다른 값들은 null이어야 함
-            boolean isUserNameNull = createUserCouncilFeeRequestDto.getUserName() == null;
-            boolean isStudentIdNull = createUserCouncilFeeRequestDto.getStudentId() == null;
-            boolean isAdmissionYearNull = createUserCouncilFeeRequestDto.getAdmissionYear() == null;
-            boolean isMajorNull = createUserCouncilFeeRequestDto.getMajor() == null;
-            boolean isAcademicStatusNull = createUserCouncilFeeRequestDto.getAcademicStatus() == null;
-            boolean isCurrentCompletedSemesterNull = createUserCouncilFeeRequestDto.getCurrentCompletedSemester() == null;
-            boolean isGraduationYearNull = createUserCouncilFeeRequestDto.getGraduationYear() == null;
-            boolean isGraduationTypeNull = createUserCouncilFeeRequestDto.getGraduationType() == null;
-            boolean isPhoneNumberNull = createUserCouncilFeeRequestDto.getPhoneNumber() == null;
-
-            if (!isUserNameNull || !isStudentIdNull || !isAdmissionYearNull || !isMajorNull || !isAcademicStatusNull || !isCurrentCompletedSemesterNull || !isGraduationYearNull || !isGraduationTypeNull || !isPhoneNumberNull) {
-                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_USER_COUNCIL_FEE_INFO);
-            }
+        if (createUserCouncilFeeRequestDto.getIsRefunded() && createUserCouncilFeeRequestDto.getRefundedAt() == null) {
+            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.REFUND_DATE_IS_NULL);
         }
 
-        // isRefunded가 true일 때 refundedAt 값은 null이 아니고 자연수여야 합니다.
-        if ((createUserCouncilFeeRequestDto.getIsRefunded() && createUserCouncilFeeRequestDto.getRefundedAt() == null)) {
-            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_USER_COUNCIL_FEE_INFO);
-        }
+        CouncilFeeFakeUser councilFeeFakeUser = CouncilFeeFakeUser.of(
+                createUserCouncilFeeRequestDto.getUserName(),
+                createUserCouncilFeeRequestDto.getStudentId(),
+                createUserCouncilFeeRequestDto.getPhoneNumber(),
+                createUserCouncilFeeRequestDto.getAdmissionYear(),
+                createUserCouncilFeeRequestDto.getMajor(),
+                createUserCouncilFeeRequestDto.getAcademicStatus(),
+                createUserCouncilFeeRequestDto.getCurrentCompletedSemester(),
+                createUserCouncilFeeRequestDto.getGraduationYear(),
+                createUserCouncilFeeRequestDto.getGraduationType()
+        );
 
+        UserCouncilFee userCouncilFee = UserCouncilFee.of(
+                false,
+                null,
+                councilFeeFakeUser,
+                createUserCouncilFeeRequestDto.getPaidAt(),
+                createUserCouncilFeeRequestDto.getNumOfPaidSemester(),
+                createUserCouncilFeeRequestDto.getIsRefunded(),
+                createUserCouncilFeeRequestDto.getRefundedAt()
+        );
+
+        UserCouncilFeeLog userCouncilFeeLog = UserCouncilFeeLog.fromCouncilFeeFakeUser(
+                controlledUser,
+                CouncilFeeLogType.CREATE,
+                userCouncilFee,
+                semesterService.getCurrentSemesterEntity(),
+                councilFeeFakeUser,
+                getRestOfSemester(userCouncilFee),
+                getIsAppliedCurrentSemester(userCouncilFee)
+        );
+
+        userCouncilFeeRepository.save(userCouncilFee);
+        userCouncilFeeLogRepository.save(userCouncilFeeLog);
+    }
+
+
+
+    @Transactional
+    public void updateUserCouncilFeeWithUser(User user, String userCouncilFeeId, CreateUserCouncilFeeWithUserRequestDto createUserCouncilFeeWithUserRequestDto) {
+        User controlledUser = userRepository.findById(user.getId())
+                .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND));
 
         UserCouncilFee userCouncilFee = userCouncilFeeRepository.findById(userCouncilFeeId)
                 .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_COUNCIL_FEE_NOT_FOUND));
 
-        UserCouncilFeeLog userCouncilFeeLog;
+        User targetUser = userRepository.findById(createUserCouncilFeeWithUserRequestDto.getUserId())
+                .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND));
 
-        Semester semester = semesterService.getCurrentSemesterEntity();
-
-        if (createUserCouncilFeeRequestDto.getIsJoinedService()) {
-            this.validUserCouncilFeeInfo(
-                    createUserCouncilFeeRequestDto.getIsJoinedService(),
-                    userRepository.findById(createUserCouncilFeeRequestDto.getUserId())
-                            .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND)),
-                    null,
-                    createUserCouncilFeeRequestDto.getPaidAt(),
-                    createUserCouncilFeeRequestDto.getNumOfPaidSemester(),
-                    createUserCouncilFeeRequestDto.getIsRefunded(),
-                    createUserCouncilFeeRequestDto.getRefundedAt()
-            );
-
-            userCouncilFee.update(
-                    createUserCouncilFeeRequestDto.getIsJoinedService(),
-                    userRepository.findById(createUserCouncilFeeRequestDto.getUserId())
-                            .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND)),
-                    null,
-                    createUserCouncilFeeRequestDto.getPaidAt(),
-                    createUserCouncilFeeRequestDto.getNumOfPaidSemester(),
-                    createUserCouncilFeeRequestDto.getIsRefunded(),
-                    createUserCouncilFeeRequestDto.getRefundedAt()
-            );
-
-            userCouncilFeeLog = UserCouncilFeeLog.fromUser(
-                    user,
-                    CouncilFeeLogType.UPDATE,
-                    userCouncilFee,
-                    semester,
-                    userCouncilFee.getUser(),
-                    getRestOfSemester(userCouncilFee),
-                    getIsAppliedCurrentSemester(userCouncilFee)
-            );
-        } else {
-            CouncilFeeFakeUser councilFeeFakeUser = userCouncilFee.getCouncilFeeFakeUser();
-
-            this.validCouncilFeeFakeUserInfo(
-                    createUserCouncilFeeRequestDto.getAcademicStatus(),
-                    createUserCouncilFeeRequestDto.getCurrentCompletedSemester(),
-                    createUserCouncilFeeRequestDto.getGraduationYear(),
-                    createUserCouncilFeeRequestDto.getGraduationType()
-            );
-
-            councilFeeFakeUser.update(
-                    createUserCouncilFeeRequestDto.getUserName(),
-                    createUserCouncilFeeRequestDto.getStudentId(),
-                    createUserCouncilFeeRequestDto.getPhoneNumber(),
-                    createUserCouncilFeeRequestDto.getAdmissionYear(),
-                    createUserCouncilFeeRequestDto.getMajor(),
-                    createUserCouncilFeeRequestDto.getAcademicStatus(),
-                    createUserCouncilFeeRequestDto.getCurrentCompletedSemester(),
-                    createUserCouncilFeeRequestDto.getGraduationYear(),
-                    createUserCouncilFeeRequestDto.getGraduationType()
-            );
-
-            this.validUserCouncilFeeInfo(
-                    createUserCouncilFeeRequestDto.getIsJoinedService(),
-                    null,
-                    councilFeeFakeUser,
-                    createUserCouncilFeeRequestDto.getPaidAt(),
-                    createUserCouncilFeeRequestDto.getNumOfPaidSemester(),
-                    createUserCouncilFeeRequestDto.getIsRefunded(),
-                    createUserCouncilFeeRequestDto.getRefundedAt()
-            );
-
-            userCouncilFee.update(
-                    createUserCouncilFeeRequestDto.getIsJoinedService(),
-                    null,
-                    councilFeeFakeUser,
-                    createUserCouncilFeeRequestDto.getPaidAt(),
-                    createUserCouncilFeeRequestDto.getNumOfPaidSemester(),
-                    createUserCouncilFeeRequestDto.getIsRefunded(),
-                    createUserCouncilFeeRequestDto.getRefundedAt()
-            );
-
-            userCouncilFeeLog = UserCouncilFeeLog.fromCouncilFeeFakeUser(
-                    user,
-                    CouncilFeeLogType.UPDATE,
-                    userCouncilFee,
-                    semester,
-                    councilFeeFakeUser,
-                    getRestOfSemester(userCouncilFee),
-                    getIsAppliedCurrentSemester(userCouncilFee)
-            );
+        if (createUserCouncilFeeWithUserRequestDto.getIsRefunded() && createUserCouncilFeeWithUserRequestDto.getRefundedAt() == null) {
+            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.REFUND_DATE_IS_NULL);
         }
+
+
+        userCouncilFee.update(
+                true,
+                targetUser,
+                null,
+                createUserCouncilFeeWithUserRequestDto.getPaidAt(),
+                createUserCouncilFeeWithUserRequestDto.getNumOfPaidSemester(),
+                createUserCouncilFeeWithUserRequestDto.getIsRefunded(),
+                createUserCouncilFeeWithUserRequestDto.getRefundedAt()
+        );
+
+        UserCouncilFeeLog userCouncilFeeLog = UserCouncilFeeLog.fromUser(
+                controlledUser,
+                CouncilFeeLogType.UPDATE,
+                userCouncilFee,
+                semesterService.getCurrentSemesterEntity(),
+                targetUser,
+                getRestOfSemester(userCouncilFee),
+                getIsAppliedCurrentSemester(userCouncilFee)
+        );
+
+        userCouncilFeeRepository.save(userCouncilFee);
+        userCouncilFeeLogRepository.save(userCouncilFeeLog);
+    }
+
+    @Transactional
+    public void updateUserCouncilFeeWithFakeUser(User user, String userCouncilFeeId, CreateUserCouncilFeeWithFakeUserRequestDto createUserCouncilFeeWithFakeUserRequestDto) {
+        User controlledUser = userRepository.findById(user.getId())
+                .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND));
+
+        if (userRepository.existsByStudentId(createUserCouncilFeeWithFakeUserRequestDto.getStudentId())) {
+            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.USER_ALREADY_EXISTS);
+        }
+
+        if (createUserCouncilFeeWithFakeUserRequestDto.getIsRefunded() && createUserCouncilFeeWithFakeUserRequestDto.getRefundedAt() == null) {
+            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.REFUND_DATE_IS_NULL);
+        }
+
+        UserCouncilFee userCouncilFee = userCouncilFeeRepository.findById(userCouncilFeeId)
+                .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_COUNCIL_FEE_NOT_FOUND));
+
+        CouncilFeeFakeUser councilFeeFakeUser = userCouncilFee.getCouncilFeeFakeUser();
+
+        councilFeeFakeUser.update(
+                createUserCouncilFeeWithFakeUserRequestDto.getUserName(),
+                createUserCouncilFeeWithFakeUserRequestDto.getStudentId(),
+                createUserCouncilFeeWithFakeUserRequestDto.getPhoneNumber(),
+                createUserCouncilFeeWithFakeUserRequestDto.getAdmissionYear(),
+                createUserCouncilFeeWithFakeUserRequestDto.getMajor(),
+                createUserCouncilFeeWithFakeUserRequestDto.getAcademicStatus(),
+                createUserCouncilFeeWithFakeUserRequestDto.getCurrentCompletedSemester(),
+                createUserCouncilFeeWithFakeUserRequestDto.getGraduationYear(),
+                createUserCouncilFeeWithFakeUserRequestDto.getGraduationType()
+        );
+
+        userCouncilFee.update(
+                false,
+                null,
+                councilFeeFakeUser,
+                createUserCouncilFeeWithFakeUserRequestDto.getPaidAt(),
+                createUserCouncilFeeWithFakeUserRequestDto.getNumOfPaidSemester(),
+                createUserCouncilFeeWithFakeUserRequestDto.getIsRefunded(),
+                createUserCouncilFeeWithFakeUserRequestDto.getRefundedAt()
+        );
+
+        UserCouncilFeeLog userCouncilFeeLog = UserCouncilFeeLog.fromCouncilFeeFakeUser(
+                controlledUser,
+                CouncilFeeLogType.UPDATE,
+                userCouncilFee,
+                semesterService.getCurrentSemesterEntity(),
+                councilFeeFakeUser,
+                getRestOfSemester(userCouncilFee),
+                getIsAppliedCurrentSemester(userCouncilFee)
+        );
 
         userCouncilFeeRepository.save(userCouncilFee);
         userCouncilFeeLogRepository.save(userCouncilFeeLog);
@@ -374,6 +262,9 @@ public class UserCouncilFeeService {
 
     @Transactional
     public void deleteUserCouncilFee(User user, String userCouncilFeeId) {
+        User controlledUser = userRepository.findById(user.getId())
+                .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND));
+
         UserCouncilFee userCouncilFee = userCouncilFeeRepository.findById(userCouncilFeeId)
                 .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_COUNCIL_FEE_NOT_FOUND));
 
@@ -383,7 +274,7 @@ public class UserCouncilFeeService {
 
         if (userCouncilFee.getIsJoinedService()) {
             userCouncilFeeLog = UserCouncilFeeLog.fromUser(
-                    user,
+                    controlledUser,
                     CouncilFeeLogType.DELETE,
                     userCouncilFee,
                     semester,
@@ -421,10 +312,24 @@ public class UserCouncilFeeService {
     }
 
     public Boolean isCurrentSemesterAppliedBySelf(User user) {
-        UserCouncilFee userCouncilFee = userCouncilFeeRepository.findByUserAndIsRefunded(user, false)
+        UserCouncilFee userCouncilFee = userCouncilFeeRepository.findByUser(user)
                 .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_COUNCIL_FEE_NOT_FOUND));
+        if (userCouncilFee.getIsRefunded()) {
+            return false;
+        }
 
         return getIsAppliedCurrentSemester(userCouncilFee);
+    }
+
+    public CurrentUserCouncilFeeResponseDto isCurrentSemesterAppliedBySelfInfo(User user) {
+        UserCouncilFee userCouncilFee = userCouncilFeeRepository.findByUser(user)
+                .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_COUNCIL_FEE_NOT_FOUND));
+
+        if (userCouncilFee.getIsRefunded()) {
+            return toCurrentUserCouncilFeeResponseDto(userCouncilFee, 0, false);
+        }
+
+        return toCurrentUserCouncilFeeResponseDto(userCouncilFee, getRestOfSemester(userCouncilFee), getIsAppliedCurrentSemester(userCouncilFee));
     }
 
     // Private method
@@ -460,40 +365,6 @@ public class UserCouncilFeeService {
         return isAppliedThisSemester;
     }
 
-    private void validUserCouncilFeeInfo(
-            Boolean isJoinedService,
-            User user,
-            CouncilFeeFakeUser councilFeeFakeUser,
-            Integer paidAt,
-            Integer numOfPaidSemester,
-            Boolean isRefunded,
-            Integer refundedAt
-    ) {
-        if (
-                (user == null ^ councilFeeFakeUser == null) ||
-                        (isJoinedService && user == null) ||
-                        (!isJoinedService && councilFeeFakeUser == null) ||
-                        paidAt == null ||
-                        numOfPaidSemester == null ||
-                        isRefunded == null ||
-                        (isRefunded && refundedAt == null)
-        ) {
-            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_USER_COUNCIL_FEE_INFO);
-        }
-    }
-
-    private void validCouncilFeeFakeUserInfo(AcademicStatus academicStatus, Integer currentCompletedSemester, Integer graduationYear, GraduationType graduationType) {
-        if (
-                (academicStatus.equals(AcademicStatus.ENROLLED) && currentCompletedSemester == null) ||
-                        (academicStatus.equals(AcademicStatus.GRADUATED) && ( graduationYear == null || graduationType == null ))
-        ) {
-            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_COUNCIL_FEE_FAKE_USER_INFO);
-        }
-    }
-
-
-
-
     // Dto Mapper private method
     private UserCouncilFeeListResponseDto toUserCouncilFeeListResponseDto(UserCouncilFee userCouncilFee, User user) {
         return UserCouncilFeeDtoMapper.INSTANCE.toUserCouncilFeeListResponseDto(userCouncilFee, user);
@@ -509,5 +380,9 @@ public class UserCouncilFeeService {
 
     private UserCouncilFeeResponseDto toUserCouncilFeeResponseDtoReduced(UserCouncilFee userCouncilFee, CouncilFeeFakeUser councilFeeFakeUser, Integer restOfSemester, Boolean isAppliedThisSemester) {
         return UserCouncilFeeDtoMapper.INSTANCE.toUserCouncilFeeResponseDtoReduced(userCouncilFee, councilFeeFakeUser, restOfSemester, isAppliedThisSemester);
+    }
+
+    private CurrentUserCouncilFeeResponseDto toCurrentUserCouncilFeeResponseDto(UserCouncilFee userCouncilFee, Integer restOfSemester, Boolean isAppliedThisSemester) {
+        return UserCouncilFeeDtoMapper.INSTANCE.toCurrentUserCouncilFeeResponseDto(userCouncilFee, restOfSemester, isAppliedThisSemester);
     }
 }
