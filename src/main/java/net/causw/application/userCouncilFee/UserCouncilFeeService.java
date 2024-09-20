@@ -20,7 +20,7 @@ import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.enums.AcademicStatus;
 import net.causw.domain.model.enums.GraduationType;
-import net.causw.domain.model.enums.LogType;
+import net.causw.domain.model.enums.CouncilFeeLogType;
 import net.causw.domain.model.util.MessageUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -164,7 +164,7 @@ public class UserCouncilFeeService {
 
             userCouncilFeeLog = UserCouncilFeeLog.fromUser(
                     user,
-                    LogType.CREATE,
+                    CouncilFeeLogType.CREATE,
                     userCouncilFee,
                     semester,
                     targetUser,
@@ -213,7 +213,7 @@ public class UserCouncilFeeService {
 
             userCouncilFeeLog = UserCouncilFeeLog.fromCouncilFeeFakeUser(
                     user,
-                    LogType.CREATE,
+                    CouncilFeeLogType.CREATE,
                     userCouncilFee,
                     semester,
                     targetCouncilFeeFakeUser,
@@ -308,7 +308,7 @@ public class UserCouncilFeeService {
 
             userCouncilFeeLog = UserCouncilFeeLog.fromUser(
                     user,
-                    LogType.UPDATE,
+                    CouncilFeeLogType.UPDATE,
                     userCouncilFee,
                     semester,
                     userCouncilFee.getUser(),
@@ -359,7 +359,7 @@ public class UserCouncilFeeService {
 
             userCouncilFeeLog = UserCouncilFeeLog.fromCouncilFeeFakeUser(
                     user,
-                    LogType.UPDATE,
+                    CouncilFeeLogType.UPDATE,
                     userCouncilFee,
                     semester,
                     councilFeeFakeUser,
@@ -384,7 +384,7 @@ public class UserCouncilFeeService {
         if (userCouncilFee.getIsJoinedService()) {
             userCouncilFeeLog = UserCouncilFeeLog.fromUser(
                     user,
-                    LogType.DELETE,
+                    CouncilFeeLogType.DELETE,
                     userCouncilFee,
                     semester,
                     userCouncilFee.getUser(),
@@ -394,7 +394,7 @@ public class UserCouncilFeeService {
         } else {
             userCouncilFeeLog = UserCouncilFeeLog.fromCouncilFeeFakeUser(
                     user,
-                    LogType.DELETE,
+                    CouncilFeeLogType.DELETE,
                     userCouncilFee,
                     semester,
                     userCouncilFee.getCouncilFeeFakeUser(),

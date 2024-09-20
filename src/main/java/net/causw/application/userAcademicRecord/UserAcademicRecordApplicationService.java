@@ -62,7 +62,11 @@ public class UserAcademicRecordApplicationService {
                 .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND
                 ));
 
-        List<UserAcademicRecordLog> userAcademicRecordLogList = userAcademicRecordLogRepository.findAllByTargetUser(user);
+        List<UserAcademicRecordLog> userAcademicRecordLogList = userAcademicRecordLogRepository.findAllByTargetUserStudentIdAndTargetUserEmailAndTargetUserName(
+                user.getStudentId(),
+                user.getEmail(),
+                user.getName()
+        );
 
         return toUserAcademicRecordInfoResponseDto(user, userAcademicRecordLogList);
     }
@@ -115,7 +119,7 @@ public class UserAcademicRecordApplicationService {
 
         targetUser.setAcademicStatus(updateUserAcademicStatusRequestDto.getTargetAcademicStatus());
 
-        UserAcademicRecordLog userAcademicRecordLog = UserAcademicRecordLog.createWithNote(
+        UserAcademicRecordLog userAcademicRecordLog = UserAcademicRecordLog.create(
                 controllerUser,
                 targetUser,
                 updateUserAcademicStatusRequestDto.getTargetAcademicStatus(),
@@ -155,25 +159,15 @@ public class UserAcademicRecordApplicationService {
             }
         }
 
-        UserAcademicRecordLog userAcademicRecordLog;
-        if (userAcademicRecordApplication.getNote().isEmpty()) {
-            userAcademicRecordLog = UserAcademicRecordLog.createWithApplication(
-                    controllerUser,
-                    targetUser,
-                    userAcademicRecordApplication.getTargetAcademicStatus(),
-                    userAcademicRecordApplication,
-                    updateUserAcademicRecordApplicationStateRequestDto.getTargetAcademicRecordRequestStatus()
-            );
-        } else {
-            userAcademicRecordLog = UserAcademicRecordLog.createWithApplicationAndNote(
-                    controllerUser,
-                    targetUser,
-                    userAcademicRecordApplication.getTargetAcademicStatus(),
-                    userAcademicRecordApplication,
-                    updateUserAcademicRecordApplicationStateRequestDto.getTargetAcademicRecordRequestStatus(),
-                    userAcademicRecordApplication.getNote()
-            );
-        }
+        UserAcademicRecordLog userAcademicRecordLog = UserAcademicRecordLog.createWithApplication(
+                controllerUser,
+                targetUser,
+                userAcademicRecordApplication.getTargetAcademicStatus(),
+                userAcademicRecordApplication,
+                updateUserAcademicRecordApplicationStateRequestDto.getTargetAcademicRecordRequestStatus(),
+                userAcademicRecordApplication.getNote(),
+                updateUserAcademicRecordApplicationStateRequestDto.getRejectMessage()
+        );
 
         userRepository.save(targetUser);
         userAcademicRecordApplicationRepository.save(userAcademicRecordApplication);
@@ -215,13 +209,14 @@ public class UserAcademicRecordApplicationService {
 
             userAcademicRecordApplicationRepository.save(userAcademicRecordApplication);
 
-            userAcademicRecordLog = UserAcademicRecordLog.createWithApplicationAndNote(
+            userAcademicRecordLog = UserAcademicRecordLog.createWithApplication(
                     user,
                     user,
                     createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus(),
                     userAcademicRecordApplication,
                     AcademicRecordRequestStatus.AWAIT,
-                    StaticValue.USER_APPLIED + createUserAcademicRecordApplicationRequestDto.getNote()
+                    StaticValue.USER_APPLIED + createUserAcademicRecordApplicationRequestDto.getNote(),
+                    null
             );
         } else {
             if (createUserAcademicRecordApplicationRequestDto.getNote() != null) {
@@ -233,7 +228,7 @@ public class UserAcademicRecordApplicationService {
                 }
                 user.setGraduationYear(createUserAcademicRecordApplicationRequestDto.getGraduationYear());
                 user.setGraduationType(createUserAcademicRecordApplicationRequestDto.getGraduationType());
-                userAcademicRecordLog = UserAcademicRecordLog.createWithGraduationWithNote(
+                userAcademicRecordLog = UserAcademicRecordLog.createWithGraduation(
                         user,
                         user,
                         createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus(),
@@ -242,7 +237,7 @@ public class UserAcademicRecordApplicationService {
                         StaticValue.USER_APPLIED
                 );
             } else {
-                userAcademicRecordLog = UserAcademicRecordLog.createWithNote(
+                userAcademicRecordLog = UserAcademicRecordLog.create(
                         user,
                         user,
                         createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus(),
