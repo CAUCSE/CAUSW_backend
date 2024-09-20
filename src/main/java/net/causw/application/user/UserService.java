@@ -675,24 +675,6 @@ public class UserService {
             );
         }
 
-        this.userRepository.findByStudentId(userUpdateRequestDto.getStudentId()).ifPresent(
-                studentId -> {
-                    throw new BadRequestException(
-                            ErrorCode.ROW_ALREADY_EXIST,
-                            MessageUtil.STUDENT_ID_ALREADY_EXIST
-                    );
-                }
-        );
-
-        this.userRepository.findByPhoneNumber(userUpdateRequestDto.getPhoneNumber()).ifPresent(
-                phoneNumber -> {
-                    throw new BadRequestException(
-                            ErrorCode.ROW_ALREADY_EXIST,
-                            MessageUtil.PHONE_NUMBER_ALREADY_EXIST
-                    );
-                }
-        );
-
         // User profile 이미지 nullable임 -> null로 요청 시 기존 이미지 삭제
         UserProfileImage userProfileImage = null;
 
