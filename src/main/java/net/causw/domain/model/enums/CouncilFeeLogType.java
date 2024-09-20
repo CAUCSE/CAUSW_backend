@@ -1,6 +1,6 @@
 package net.causw.domain.model.enums;
 
-public enum LogType {
+public enum CouncilFeeLogType {
     CREATE,
     UPDATE,
     DELETE

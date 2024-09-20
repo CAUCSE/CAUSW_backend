@@ -7,7 +7,7 @@ import net.causw.adapter.persistence.semester.Semester;
 import net.causw.adapter.persistence.user.User;
 import net.causw.domain.model.enums.AcademicStatus;
 import net.causw.domain.model.enums.GraduationType;
-import net.causw.domain.model.enums.LogType;
+import net.causw.domain.model.enums.CouncilFeeLogType;
 import net.causw.domain.model.enums.SemesterType;
 
 import java.time.LocalDate;
@@ -20,32 +20,21 @@ import java.time.LocalDate;
 @Table(name = "tb_user_council_fee_log")
 public class UserCouncilFeeLog extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "controlled_user_id", nullable = false)
-    private User controlledUser;
+    @Column(name = "controlled_user_email", nullable = false)
+    private String controlledUserEmail;
+
+    @Column(name = "controlled_user_name", nullable = false)
+    private String controlledUserName;
+
+    @Column(name = "controlled_user_student_id", nullable = false)
+    private String controlledUserStudentId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "update_type", nullable = false)
-    private LogType logType;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "target_user_council_fee_id", nullable = false)
-    private UserCouncilFee targetUserCouncilFee;
+    private CouncilFeeLogType councilFeeLogType;
 
     @Column(name = "target_is_joined_service", nullable = false)
     private Boolean targetIsJoinedService;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "target_user_id", nullable = true)
-    private User targetUser;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "target_council_fee_fake_user_id", nullable = true)
-    private CouncilFeeFakeUser targetCouncilFeeFakeUser;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "time_of_semester_id", nullable = false)
-    private Semester timeOfSemester;
 
     @Column(name = "time_of_semester_year", nullable = false)
     private Integer timeOfSemesterYear;
@@ -106,7 +95,7 @@ public class UserCouncilFeeLog extends BaseEntity {
 
     public static UserCouncilFeeLog fromUser(
             User controlledUser,
-            LogType logType,
+            CouncilFeeLogType councilFeeLogType,
             UserCouncilFee userCouncilFee,
             Semester semester,
             User targetUser,
@@ -114,12 +103,11 @@ public class UserCouncilFeeLog extends BaseEntity {
             Boolean isAppliedThisSemester
     ) {
         return UserCouncilFeeLog.builder()
-                .controlledUser(controlledUser)
-                .logType(logType)
-                .targetUserCouncilFee(userCouncilFee)
+                .controlledUserEmail(controlledUser.getEmail())
+                .controlledUserName(controlledUser.getName())
+                .controlledUserStudentId(controlledUser.getStudentId())
+                .councilFeeLogType(councilFeeLogType)
                 .targetIsJoinedService(userCouncilFee.getIsJoinedService())
-                .targetUser(targetUser)
-                .timeOfSemester(semester)
                 .timeOfSemesterYear(semester.getSemesterYear())
                 .timeOfSemesterType(semester.getSemesterType())
                 .email(targetUser.getEmail())
@@ -144,7 +132,7 @@ public class UserCouncilFeeLog extends BaseEntity {
 
     public static UserCouncilFeeLog fromCouncilFeeFakeUser(
             User controlledUser,
-            LogType logType,
+            CouncilFeeLogType councilFeeLogType,
             UserCouncilFee userCouncilFee,
             Semester semester,
             CouncilFeeFakeUser targetCouncilFeeFakeUser,
@@ -152,12 +140,11 @@ public class UserCouncilFeeLog extends BaseEntity {
             Boolean isAppliedThisSemester
     ) {
         return UserCouncilFeeLog.builder()
-                .controlledUser(controlledUser)
-                .logType(logType)
-                .targetUserCouncilFee(userCouncilFee)
+                .controlledUserEmail(controlledUser.getEmail())
+                .controlledUserName(controlledUser.getName())
+                .controlledUserStudentId(controlledUser.getStudentId())
+                .councilFeeLogType(councilFeeLogType)
                 .targetIsJoinedService(userCouncilFee.getIsJoinedService())
-                .targetCouncilFeeFakeUser(targetCouncilFeeFakeUser)
-                .timeOfSemester(semester)
                 .timeOfSemesterYear(semester.getSemesterYear())
                 .timeOfSemesterType(semester.getSemesterType())
                 .userName(targetCouncilFeeFakeUser.getName())
