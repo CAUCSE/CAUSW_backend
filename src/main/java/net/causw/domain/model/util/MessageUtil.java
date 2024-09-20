@@ -137,4 +137,5 @@ public class MessageUtil {
     public static final String FILE_UPLOAD_FAIL = "파일 업로드에 실패했습니다.";
     public static final String FILE_DELETE_FAIL = "파일 삭제에 실패했습니다.";
     public static final String FAIL_TO_GENERATE_EXCEL_FILE = "엑셀 파일 생성에 실패했습니다.";
+    public static final String BATCH_FAIL = "[배치 실행에 실패했습니다.]";
 }

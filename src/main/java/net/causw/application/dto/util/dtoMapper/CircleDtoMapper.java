@@ -41,24 +41,24 @@ public interface CircleDtoMapper extends UuidFileToUrlDtoMapper {
 
     // Circle
     @CircleCommonWriterMappings
-    @Mapping(target = "mainImage", source = "circle.circleMainImageUuidFile", qualifiedByName = "mapUuidFileToFileUrl")
+    @Mapping(target = "mainImage", source = "circle.circleMainImage", qualifiedByName = "mapUuidFileToFileUrl")
     CircleResponseDto toCircleResponseDto(Circle circle);
 
 
     @CircleCommonWriterMappings
-    @Mapping(target = "mainImage", source = "circle.circleMainImageUuidFile", qualifiedByName = "mapUuidFileToFileUrl")
+    @Mapping(target = "mainImage", source = "circle.circleMainImage", qualifiedByName = "mapUuidFileToFileUrl")
     CircleResponseDto toCircleResponseDtoExtended(Circle circle, Long numMember);
 
 
     @CircleCommonWriterMappings
-    @Mapping(target = "mainImage", source = "circle.circleMainImageUuidFile", qualifiedByName = "mapUuidFileToFileUrl")
+    @Mapping(target = "mainImage", source = "circle.circleMainImage", qualifiedByName = "mapUuidFileToFileUrl")
     @Mapping(target = "isJoined", constant = "false")
     @Mapping(target = "isDeleted", source = "circle.isDeleted")
     CirclesResponseDto toCirclesResponseDto(Circle circle, Long numMember);
 
 
     @CircleCommonWriterMappings
-    @Mapping(target = "mainImage", source = "circle.circleMainImageUuidFile", qualifiedByName = "mapUuidFileToFileUrl")
+    @Mapping(target = "mainImage", source = "circle.circleMainImage", qualifiedByName = "mapUuidFileToFileUrl")
     @Mapping(target = "isJoined", constant = "true")
     @Mapping(target = "isDeleted", source = "circle.isDeleted")
     CirclesResponseDto toCirclesResponseDtoExtended(Circle circle, Long numMember, LocalDateTime joinedAt);

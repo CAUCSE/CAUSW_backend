@@ -1,8 +1,11 @@
 package net.causw.application.userAcademicRecord;
 
 import lombok.RequiredArgsConstructor;
+import net.causw.adapter.persistence.repository.semester.SemesterRepository;
+import net.causw.adapter.persistence.repository.user.UserRepository;
+import net.causw.adapter.persistence.repository.userAcademicRecord.UserAcademicRecordApplicationRepository;
+import net.causw.adapter.persistence.repository.userAcademicRecord.UserAcademicRecordLogRepository;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
-import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.semester.Semester;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.userAcademicRecord.UserAcademicRecordApplication;
@@ -194,13 +197,15 @@ public class UserAcademicRecordApplicationService {
         // User 엔티티가 영속성 컨텍스트에 없는 경우, merge로 다시 연결
         if (user != null) {
             user = userRepository.save(user);
+        } else {
+            throw new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND);
         }
 
         if (createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus().equals(AcademicStatus.ENROLLED)) {
             if (createUserAcademicRecordApplicationRequestDto.getTargetCompletedSemester() == null) {
                 throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.TARGET_CURRENT_COMPLETED_SEMESTER_NOT_EXIST);
             }
-            UserAcademicRecordApplication userAcademicRecordApplication = UserAcademicRecordApplication.createApplication(
+            UserAcademicRecordApplication userAcademicRecordApplication = UserAcademicRecordApplication.of(
                     user,
                     createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus(),
                     createUserAcademicRecordApplicationRequestDto.getTargetCompletedSemester(),

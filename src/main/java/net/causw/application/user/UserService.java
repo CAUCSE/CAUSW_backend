@@ -5,9 +5,24 @@ import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.locker.LockerLog;
-import net.causw.adapter.persistence.page.PageableFactory;
+import net.causw.adapter.persistence.repository.uuidFile.UserProfileImageRepository;
+import net.causw.adapter.persistence.uuidFile.joinEntity.UserAdmissionAttachImage;
+import net.causw.adapter.persistence.uuidFile.joinEntity.UserProfileImage;
+import net.causw.application.pageable.PageableFactory;
 import net.causw.adapter.persistence.post.Post;
-import net.causw.adapter.persistence.repository.*;
+import net.causw.adapter.persistence.repository.board.BoardRepository;
+import net.causw.adapter.persistence.repository.circle.CircleMemberRepository;
+import net.causw.adapter.persistence.repository.circle.CircleRepository;
+import net.causw.adapter.persistence.repository.comment.ChildCommentRepository;
+import net.causw.adapter.persistence.repository.comment.CommentRepository;
+import net.causw.adapter.persistence.repository.locker.LockerLogRepository;
+import net.causw.adapter.persistence.repository.locker.LockerRepository;
+import net.causw.adapter.persistence.repository.post.FavoritePostRepository;
+import net.causw.adapter.persistence.repository.post.LikePostRepository;
+import net.causw.adapter.persistence.repository.post.PostRepository;
+import net.causw.adapter.persistence.repository.user.UserAdmissionLogRepository;
+import net.causw.adapter.persistence.repository.user.UserAdmissionRepository;
+import net.causw.adapter.persistence.repository.user.UserRepository;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.user.UserAdmission;
 import net.causw.adapter.persistence.user.UserAdmissionLog;
@@ -86,6 +101,7 @@ public class UserService {
     private final BoardRepository boardRepository;
     private final FavoritePostRepository favoritePostRepository;
     private final LikePostRepository likePostRepository;
+    private final UserProfileImageRepository userProfileImageRepository;
 
     @Transactional
     public UserResponseDto findPassword(
@@ -578,7 +594,7 @@ public class UserService {
 
         // refreshToken은 redis에 보관
         String refreshToken = jwtTokenProvider.createRefreshToken();
-        redisUtils.setData(refreshToken,user.getId(),StaticValue.JWT_REFRESH_TOKEN_VALID_TIME);
+        redisUtils.setRefreshTokenData(refreshToken, user.getId(), StaticValue.JWT_REFRESH_TOKEN_VALID_TIME);
 
         return UserDtoMapper.INSTANCE.toUserSignInResponseDto(
                 jwtTokenProvider.createAccessToken(user.getId(), user.getRoles(), user.getState()),
@@ -677,12 +693,32 @@ public class UserService {
                 }
         );
 
-        //다른 서비스단과 update 방식 통일하기
-        UuidFile profileImageUuidFile = (profileImage == null) ?
-                null :
-                uuidFileService.updateFile(user.getProfileImageUuidFile(), profileImage, FilePath.USER_PROFILE);
+        // User profile 이미지 nullable임 -> null로 요청 시 기존 이미지 삭제
+        UserProfileImage userProfileImage = null;
 
-        user.update(userUpdateRequestDto.getNickname(), userUpdateRequestDto.getAcademicStatus(), profileImageUuidFile);
+        if (profileImage.isEmpty()) {
+            if (user.getUserProfileImage() != null) {
+                uuidFileService.deleteFile(user.getUserProfileImage().getUuidFile());
+                userProfileImageRepository.delete(user.getUserProfileImage());
+            }
+        } else {
+            if (user.getUserProfileImage() == null) {
+                userProfileImage = UserProfileImage.of(
+                        user,
+                        uuidFileService.saveFile(profileImage, FilePath.USER_PROFILE)
+                );
+            } else {
+                userProfileImage = user.getUserProfileImage().updateUuidFileAndReturnSelf(
+                        uuidFileService.updateFile(
+                                user.getUserProfileImage().getUuidFile(),
+                                profileImage,
+                                FilePath.USER_PROFILE
+                        )
+                );
+            }
+        }
+
+        user.update(userUpdateRequestDto.getNickname(), userUpdateRequestDto.getAcademicStatus(), userProfileImage);
 
         // Validate the admission year range
         ValidatorBucket.of()
@@ -1265,17 +1301,17 @@ public class UserService {
         // Update user role to COMMON
         this.updateRole(userAdmission.getUser(), Role.COMMON);
 
+        // Add admission log
         UserAdmissionLog userAdmissionLog = UserAdmissionLog.of(
                 userAdmission.getUser().getEmail(),
                 userAdmission.getUser().getName(),
                 requestUser.getEmail(),
                 requestUser.getName(),
                 UserAdmissionLogAction.ACCEPT,
-                userAdmission.getUserAdmissionAttachImageUuidFileList(),
+                userAdmission.getUserAdmissionAttachImageList().stream().map(UserAdmissionAttachImage::getUuidFile).toList(),
                 userAdmission.getDescription(),
                 null
         );
-        // Add admission log
 
         // Remove the admission
         this.userAdmissionLogRepository.save(userAdmissionLog);
@@ -1316,12 +1352,13 @@ public class UserService {
                 requestUser.getEmail(),
                 requestUser.getName(),
                 UserAdmissionLogAction.REJECT,
-                userAdmission.getUserAdmissionAttachImageUuidFileList(),
+                userAdmission.getUserAdmissionAttachImageList().stream().map(UserAdmissionAttachImage::getUuidFile).toList(),
                 userAdmission.getDescription(),
                 rejectReason
         );
-        // Add admission log
 
+
+        // Add admission log
 
         this.userAdmissionLogRepository.save(userAdmissionLog);
         this.userAdmissionRepository.delete(userAdmission);
@@ -1341,7 +1378,7 @@ public class UserService {
     //TODO: 현재 사용하지 않는 기능으로 주석처리
     //사용 여부 결정 후 board 수정 후 도입 필요할 것으로 보임
 //    @Transactional
-//    public BoardResponseDto cre한ateFavoriteBoard(
+//    public BoardResponseDto createFavoriteBoard(
 //            String loginUserId,
 //            String boardId
 //    ) {
@@ -1440,7 +1477,7 @@ public class UserService {
     }
 
     private String getUserIdFromRefreshToken(String refreshToken) {
-        return Optional.ofNullable(redisUtils.getData(refreshToken))
+        return Optional.ofNullable(redisUtils.getRefreshTokenData(refreshToken))
                 .orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.INVALID_REFRESH_TOKEN
@@ -1449,7 +1486,7 @@ public class UserService {
 
     public UserSignOutResponseDto signOut(UserSignOutRequestDto userSignOutRequestDto){
         redisUtils.addToBlacklist(userSignOutRequestDto.getAccessToken());
-        redisUtils.deleteData(userSignOutRequestDto.getRefreshToken());
+        redisUtils.deleteRefreshTokenData(userSignOutRequestDto.getRefreshToken());
 
         return UserDtoMapper.INSTANCE.toUserSignOutResponseDto("로그아웃 성공");
     }

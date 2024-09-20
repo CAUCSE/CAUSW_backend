@@ -3,8 +3,10 @@ package net.causw.application.uuidFile;
 import com.amazonaws.services.s3.AmazonS3Client;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import net.causw.adapter.persistence.repository.uuidFile.CalendarAttachImageRepository;
+import net.causw.adapter.persistence.repository.uuidFile.CircleMainImageRepository;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
-import net.causw.adapter.persistence.repository.UuidFileRepository;
+import net.causw.adapter.persistence.repository.uuidFile.UuidFileRepository;
 import net.causw.application.storage.StorageManager;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -26,10 +28,14 @@ import java.util.UUID;
 public class UuidFileService extends StorageManager {
 
     private final UuidFileRepository uuidFileRepository;
+    private final CalendarAttachImageRepository calendarAttachImageRepository;
+    private final CircleMainImageRepository circleMainImageRepository;
 
-    public UuidFileService(AmazonS3Client amazonS3Client, UuidFileRepository uuidFileRepository) {
+    public UuidFileService(AmazonS3Client amazonS3Client, UuidFileRepository uuidFileRepository, CalendarAttachImageRepository calendarAttachImageRepository, CircleMainImageRepository circleMainImageRepository) {
         super(amazonS3Client);
         this.uuidFileRepository = uuidFileRepository;
+        this.calendarAttachImageRepository = calendarAttachImageRepository;
+        this.circleMainImageRepository = circleMainImageRepository;
     }
 
     public UuidFile findUuidFileById(@NotBlank String id) {
@@ -109,6 +115,8 @@ public class UuidFileService extends StorageManager {
             this.deleteFile(uuidFile);
         }
     }
+
+
 
     // Private Methods
     private String getRawFileName(String originFileName) {

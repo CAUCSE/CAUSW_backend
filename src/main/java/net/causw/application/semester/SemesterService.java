@@ -1,7 +1,10 @@
 package net.causw.application.semester;
 
 import lombok.RequiredArgsConstructor;
-import net.causw.adapter.persistence.repository.*;
+import net.causw.adapter.persistence.repository.semester.SemesterRepository;
+import net.causw.adapter.persistence.repository.user.UserRepository;
+import net.causw.adapter.persistence.repository.userCouncilFee.CouncilFeeFakeUserRepository;
+import net.causw.adapter.persistence.repository.userCouncilFee.UserCouncilFeeRepository;
 import net.causw.adapter.persistence.semester.Semester;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.userCouncilFee.CouncilFeeFakeUser;

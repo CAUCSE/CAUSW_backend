@@ -5,9 +5,11 @@ import lombok.*;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.board.Board;
+import net.causw.adapter.persistence.uuidFile.joinEntity.PostAttachImage;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -23,9 +25,9 @@ public class Post extends BaseEntity {
     @Column(columnDefinition = "TEXT", name = "content", nullable = false)
     private String content;
 
-    @OneToMany(cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "post_id", nullable = true)
-    private List<UuidFile> postAttachImageUuidFileList;
+    @OneToMany(cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, mappedBy = "post")
+    @Builder.Default
+    private List<PostAttachImage> postAttachImageList = new ArrayList<>();
 
     @ManyToOne(targetEntity = User.class)
     @JoinColumn(name = "user_id", nullable = false)
@@ -57,25 +59,40 @@ public class Post extends BaseEntity {
             Board board,
             List<UuidFile> postAttachImageUuidFileList
     ) {
-        return Post.builder()
+        Post post = Post.builder()
                 .title(title)
                 .content(content)
-                .postAttachImageUuidFileList(postAttachImageUuidFileList)
                 .writer(writer)
                 .isDeleted(isDeleted)
                 .isAnonymous(isAnonymous)
                 .isQuestion(isQuestion)
                 .board(board)
                 .build();
+
+        if (postAttachImageUuidFileList.isEmpty()) {
+            return post;
+        }
+
+        List<PostAttachImage> postAttachImageList = postAttachImageUuidFileList.stream()
+                .map(uuidFile -> PostAttachImage.of(post, uuidFile))
+                .toList();
+
+        post.setPostAttachFileList(postAttachImageList);
+
+        return post;
     }
 
-    public void update(String title, String content, List<UuidFile> postAttachImageUuidFileList) {
+    public void update(String title, String content, List<PostAttachImage> postAttachImageList) {
         this.title = title;
         this.content = content;
-        this.postAttachImageUuidFileList = postAttachImageUuidFileList;
+        this.postAttachImageList = postAttachImageList;
     }
 
     public void setIsDeleted(Boolean isDeleted) {
         this.isDeleted = isDeleted;
+    }
+
+    private void setPostAttachFileList(List<PostAttachImage> postAttachImageList) {
+        this.postAttachImageList = postAttachImageList;
     }
 }

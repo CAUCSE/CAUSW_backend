@@ -2,9 +2,9 @@ package net.causw.application.userCouncilFee;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import net.causw.adapter.persistence.repository.UserCouncilFeeLogRepository;
-import net.causw.adapter.persistence.repository.UserCouncilFeeRepository;
-import net.causw.adapter.persistence.repository.UserRepository;
+import net.causw.adapter.persistence.repository.userCouncilFee.UserCouncilFeeLogRepository;
+import net.causw.adapter.persistence.repository.userCouncilFee.UserCouncilFeeRepository;
+import net.causw.adapter.persistence.repository.user.UserRepository;
 import net.causw.adapter.persistence.semester.Semester;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.userCouncilFee.CouncilFeeFakeUser;

@@ -18,7 +18,7 @@ public interface CommentDtoMapper extends UuidFileToUrlDtoMapper {
 
     @Mapping(target = "writerName", source = "comment.writer.name")
     @Mapping(target = "writerAdmissionYear", source = "comment.writer.admissionYear")
-    @Mapping(target = "writerProfileImage", source = "comment.writer.profileImageUuidFile", qualifiedByName = "mapUuidFileToFileUrl")
+    @Mapping(target = "writerProfileImage", source = "comment.writer.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
     @Mapping(target = "postId", source = "comment.post.id")
     @Mapping(target = "isAnonymous", source = "comment.isAnonymous")
     @Mapping(target ="numLike", source = "numCommentLike")
@@ -27,7 +27,7 @@ public interface CommentDtoMapper extends UuidFileToUrlDtoMapper {
 
     @Mapping(target = "writerName", source = "childComment.writer.name")
     @Mapping(target = "writerAdmissionYear", source = "childComment.writer.admissionYear")
-    @Mapping(target = "writerProfileImage", source = "childComment.writer.profileImageUuidFile", qualifiedByName = "mapUuidFileToFileUrl")
+    @Mapping(target = "writerProfileImage", source = "childComment.writer.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
     @Mapping(target = "isAnonymous", source = "childComment.isAnonymous")
     @Mapping(target ="numLike", source = "numChildCommentLike")
     ChildCommentResponseDto toChildCommentResponseDto(ChildComment childComment, Long numChildCommentLike, Boolean isChildCommentLike, Boolean updatable, Boolean deletable);
