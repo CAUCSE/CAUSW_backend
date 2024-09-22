@@ -32,6 +32,7 @@ import net.causw.application.dto.util.dtoMapper.CommentDtoMapper;
 import net.causw.application.dto.util.dtoMapper.PostDtoMapper;
 import net.causw.application.dto.util.StatusUtil;
 import net.causw.application.uuidFile.UuidFileService;
+import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
@@ -51,7 +52,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
+@MeasureTime
 @Service
 @RequiredArgsConstructor
 public class PostService {

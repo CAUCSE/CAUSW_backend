@@ -5,6 +5,7 @@ import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.repository.circle.CircleMemberRepository;
 import net.causw.adapter.persistence.user.User;
+import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.model.enums.CircleMemberStatus;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
+@MeasureTime
 @Service
 @RequiredArgsConstructor
 public class CircleMemberService {
