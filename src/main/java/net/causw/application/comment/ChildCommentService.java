@@ -20,6 +20,7 @@ import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.ChildCommentUpdateRequestDto;
 import net.causw.application.dto.util.dtoMapper.CommentDtoMapper;
 import net.causw.application.dto.util.StatusUtil;
+import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
@@ -36,7 +37,7 @@ import jakarta.validation.Validator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
+@MeasureTime
 @Service
 @RequiredArgsConstructor
 public class ChildCommentService {

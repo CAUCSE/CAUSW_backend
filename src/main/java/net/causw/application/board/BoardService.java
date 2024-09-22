@@ -18,6 +18,7 @@ import net.causw.application.dto.user.UserResponseDto;
 import net.causw.application.dto.util.dtoMapper.BoardDtoMapper;
 import net.causw.application.dto.util.dtoMapper.PostDtoMapper;
 import net.causw.application.dto.util.dtoMapper.UserDtoMapper;
+import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
@@ -42,7 +43,7 @@ import jakarta.validation.Validator;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
+@MeasureTime
 @Service
 @RequiredArgsConstructor
 public class BoardService {

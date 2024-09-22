@@ -15,6 +15,7 @@ import net.causw.application.dto.userAcademicRecordApplication.*;
 import net.causw.application.dto.util.dtoMapper.SemesterDtoMapper;
 import net.causw.application.dto.util.dtoMapper.UserAcademicRecordDtoMapper;
 import net.causw.application.uuidFile.UuidFileService;
+import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
@@ -31,7 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
-
+@MeasureTime
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor

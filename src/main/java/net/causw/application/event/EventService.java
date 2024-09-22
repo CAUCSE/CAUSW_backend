@@ -11,6 +11,7 @@ import net.causw.application.dto.event.EventUpdateRequestDto;
 import net.causw.application.dto.event.EventsResponseDto;
 import net.causw.application.dto.util.dtoMapper.EventDtoMapper;
 import net.causw.application.uuidFile.UuidFileService;
+import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.enums.FilePath;
@@ -21,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-
+@MeasureTime
 @Service
 @RequiredArgsConstructor
 public class EventService {

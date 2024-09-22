@@ -3,6 +3,7 @@ package net.causw.application.excel;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 import net.causw.application.dto.circle.CircleMemberResponseDto;
+import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.model.util.MessageUtil;
@@ -17,7 +18,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-
+@MeasureTime
 @Service
 public class CircleExcelService extends ExcelAbstractService<CircleMemberResponseDto> {
 

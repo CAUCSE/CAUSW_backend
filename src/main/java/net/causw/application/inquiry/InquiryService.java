@@ -7,6 +7,7 @@ import net.causw.adapter.persistence.repository.user.UserRepository;
 import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.inquiry.InquiryCreateRequestDto;
 import net.causw.application.dto.inquiry.InquiryResponseDto;
+import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.util.MessageUtil;
@@ -20,7 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.validation.Validator;
-
+@MeasureTime
 @Service
 @RequiredArgsConstructor
 public class InquiryService {

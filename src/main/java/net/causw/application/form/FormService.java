@@ -14,6 +14,7 @@ import net.causw.adapter.persistence.repository.form.ReplyRepository;
 import net.causw.adapter.persistence.repository.user.UserRepository;
 import net.causw.application.dto.form.*;
 import net.causw.application.dto.util.dtoMapper.FormDtoMapper;
+import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
@@ -32,7 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
+@MeasureTime
 @Service
 @RequiredArgsConstructor
 public class FormService {
@@ -49,21 +50,6 @@ public class FormService {
     public FormResponseDto createForm(User writer, FormCreateRequestDto formCreateRequestDto) {
 
         ValidatorBucket validatorBucket = ValidatorBucket.of();
-
-        Circle circle = null;
-        if(formCreateRequestDto.getCircleId() != null){
-            circle = getCircle(formCreateRequestDto.getCircleId());
-
-            CircleMember circleMember = getCircleMember(writer.getId(), circle.getId());
-            validatorBucket
-                    .consistOf(UserEqualValidator.of(
-                            getCircleLeader(circle).getId(),
-                            writer.getId()))
-                    .consistOf(CircleMemberStatusValidator.of(
-                            circleMember.getStatus(),
-                            List.of(CircleMemberStatus.MEMBER)
-                    ));
-        }
 
         List<Question> questions = Optional.ofNullable(formCreateRequestDto.getQuestions())
                 .orElse(new ArrayList<>())
@@ -94,6 +80,63 @@ public class FormService {
         Form form = Form.of(
                 formCreateRequestDto.getTitle(),
                 formCreateRequestDto.getAllowedGrades(),
+                questions,
+                writer,
+                null
+        );
+
+        questions.forEach(question -> question.setForm(form));
+
+        formRepository.save(form);
+
+        return FormDtoMapper.INSTANCE.toFormResponseDto(form);
+    }
+
+    @Transactional
+    public FormResponseDto createCircleRecruitForm(User writer, CircleRecruitFormCreateRequestDto circleRecruitFormCreateRequestDto) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
+        Circle circle = getCircle(circleRecruitFormCreateRequestDto.getCircleId());
+
+        CircleMember circleMember = getCircleMember(writer.getId(), circle.getId());
+        validatorBucket
+                .consistOf(UserEqualValidator.of(
+                        getCircleLeader(circle).getId(),
+                        writer.getId()))
+                .consistOf(CircleMemberStatusValidator.of(
+                        circleMember.getStatus(),
+                        List.of(CircleMemberStatus.MEMBER)
+                ));
+
+        List<Question> questions = Optional.ofNullable(circleRecruitFormCreateRequestDto.getQuestions())
+                .orElse(new ArrayList<>())
+                .stream().map(questionDto -> {
+                    List<Option> options = Optional.ofNullable(questionDto.getOptions())
+                            .orElse(new ArrayList<>())
+                            .stream()
+                            .map(optionDto -> Option.of(
+                                    optionDto.getOptionNumber(),
+                                    optionDto.getOptionText(),
+                                    null
+                            )).collect(Collectors.toList());
+
+                    Question question = Question.of(
+                            questionDto.getQuestionNumber(),
+                            questionDto.getQuestionText(),
+                            questionDto.getIsMultiple(),
+                            options,
+                            null
+                    );
+
+                    options.forEach(option -> option.setQuestion(question));
+
+                    return question;
+                }).collect(Collectors.toList());
+
+
+        Form form = Form.of(
+                circleRecruitFormCreateRequestDto.getTitle(),
+                circleRecruitFormCreateRequestDto.getAllowedGrades(),
                 questions,
                 writer,
                 circle
