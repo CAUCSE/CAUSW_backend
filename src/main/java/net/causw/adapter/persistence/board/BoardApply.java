@@ -33,7 +33,7 @@ public class BoardApply extends BaseEntity {
 
     @Column(name = "accept_status", nullable = false)
     @Enumerated(EnumType.STRING)
-    @ColumnDefault("AWAIT")
+    @ColumnDefault("'AWAIT'")
     private BoardApplyStatus acceptStatus;
 
     @Column(name = "is_annonymous_allowed", nullable = false)

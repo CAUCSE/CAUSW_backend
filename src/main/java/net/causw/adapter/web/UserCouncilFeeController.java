@@ -250,7 +250,7 @@ public class UserCouncilFeeController {
     @Operation(summary = "본인이 현재 학생회비 적용 학기인지 여부 상세 조회",
         description = "본인이 현재 학생회비 적용 학기인지 여부를 상세 조회합니다.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Boolean.class))),
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CurrentUserCouncilFeeResponseDto.class))),
             @ApiResponse(responseCode = "4000", description = MessageUtil.USER_NOT_FOUND, content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "5000", description = MessageUtil.INTERNAL_SERVER_ERROR, content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
