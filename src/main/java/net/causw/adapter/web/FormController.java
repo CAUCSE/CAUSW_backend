@@ -1,5 +1,6 @@
 package net.causw.adapter.web;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.form.*;
@@ -25,6 +26,7 @@ public class FormController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "신청서 생성", description = "신청서를 생성합니다.")
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
             "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
     public FormResponseDto createForm(
@@ -35,8 +37,22 @@ public class FormController {
         return formService.createForm(userDetails.getUser(), formCreateRequestDto);
     }
 
+    @PostMapping("/circle-recruit")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "동아리 모집 신청서 생성", description = "동아리 모집 신청서를 생성합니다.")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
+    public FormResponseDto createCircleRecruitForm(
+            @Valid @RequestBody CircleRecruitFormCreateRequestDto circleRecruitFormCreateRequestDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    )
+    {
+        return formService.createCircleRecruitForm(userDetails.getUser(), circleRecruitFormCreateRequestDto);
+    }
+
     @GetMapping("/{formId}")
     @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "신청서 조회", description = "신청서를 조회합니다.")
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     public FormResponseDto findForm(@PathVariable(name = "formId") String formId) {
         if (!securityService.hasAccessToForm(formId)) {
@@ -47,6 +63,7 @@ public class FormController {
 
     @DeleteMapping("/{formId}")
     @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "신청서 삭제", description = "신청서를 삭제합니다.")
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
             "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
     public void deleteForm(
@@ -58,6 +75,7 @@ public class FormController {
 
     @PostMapping("/{formId}")
     @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "신청서 작성", description = "신청서를 작성합니다.")
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     public void replyForm(
             @PathVariable(name = "formId") String formId,
@@ -72,6 +90,7 @@ public class FormController {
 
     @GetMapping("/{formId}/results")
     @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "신청서 결과 조회", description = "신청서 결과를 조회합니다.")
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
             "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
     public List<ReplyUserResponseDto> findUserReply(
@@ -83,6 +102,7 @@ public class FormController {
 
     @GetMapping("/{formId}/summary")
     @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "신청서 결과 요약 조회", description = "신청서 결과를 요약 조회합니다.")
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
             "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
     public List<QuestionSummaryResponseDto> findSummaryReply(
