@@ -26,19 +26,16 @@ public class Form extends BaseEntity {
     @Column(name = "allowedGrades", nullable = false)
     private Set<Integer> allowedGrades;
 
-
     @OneToMany(mappedBy = "form", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Question> questions;
 
     @Column(name = "is_deleted")
     private Boolean isDeleted;
 
+    @ElementCollection(fetch = FetchType.EAGER)
     @Column(name = "allowed_academic_status", nullable = true)
     @Enumerated(EnumType.STRING)
-    private AcademicStatus allowedAcademicStatus;
-
-    @Column(name = "is_paid")
-    private Boolean isPaid;
+    private Set<AcademicStatus> allowedAcademicStatus;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
@@ -53,8 +50,7 @@ public class Form extends BaseEntity {
             String title,
             Set<Integer> allowedGrades,
             List<Question> questions,
-            AcademicStatus allowedAcademicStatus,
-            Boolean isPaid,
+            Set<AcademicStatus> allowedAcademicStatus,
             User writer,
             Circle circle
     ) {
@@ -64,21 +60,15 @@ public class Form extends BaseEntity {
                 questions,
                 false,
                 allowedAcademicStatus,
-                isPaid,
                 writer,
                 circle
         );
     }
 
-    public void update(String title, Set<Integer> allowedGrades, List<Question> questions, AcademicStatus allowedAcademicStatus, Boolean isPaid) {
+    public void update(String title, Set<Integer> allowedGrades, List<Question> questions, Set<AcademicStatus> allowedAcademicStatus) {
         this.title = title;
         this.allowedGrades = allowedGrades;
         this.questions = questions;
         this.allowedAcademicStatus = allowedAcademicStatus;
-        this.isPaid = isPaid;
-    }
-
-    public void setIsDeleted(Boolean isDeleted) {
-        this.isDeleted = isDeleted;
     }
 }

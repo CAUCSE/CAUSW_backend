@@ -23,11 +23,7 @@ public class FormCreateRequestDto {
     private Set<Integer> allowedGrades;
 
     @Schema(description = "신청서 작성 가능 학적 상태")
-    private AcademicStatus allowedAcademicStatus;
-
-    @Schema(description = "학생회비 납부 여부")
-    private Boolean isPaid;
-
+    private Set<AcademicStatus> allowedAcademicStatus;
 
     @NotEmpty(message = "질문을 입력해 주세요.")
     @Schema(description = "질문")
