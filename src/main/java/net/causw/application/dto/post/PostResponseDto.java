@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import net.causw.application.dto.comment.CommentResponseDto;
+import net.causw.application.dto.form.FormResponseDto;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
@@ -78,5 +79,8 @@ public class PostResponseDto {
 
     @Schema(description = "게시판 이름", example = "게시판 이름입니다.")
     private String boardName;
+
+    @Schema(description = "게시글의 신청서 정보")
+    private FormResponseDto formResponseDto;
 
 }

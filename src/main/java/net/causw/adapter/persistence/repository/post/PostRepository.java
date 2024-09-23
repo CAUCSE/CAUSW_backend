@@ -29,7 +29,6 @@ public interface PostRepository extends JpaRepository<Post, String> {
     @Query(value = "SELECT * " +
             "FROM tb_post AS p " +
             "WHERE p.title LIKE CONCAT('%', :title, '%')AND p.board_id = :boardId AND p.is_deleted = :isDeleted ORDER BY p.created_at DESC", nativeQuery = true)
-
     Page<Post> searchByTitle(@Param("title") String title, @Param("boardId") String boardId, Pageable pageable, @Param("isDeleted") boolean isDeleted);
 
     // 특정 사용자가 작성한 게시글 검색

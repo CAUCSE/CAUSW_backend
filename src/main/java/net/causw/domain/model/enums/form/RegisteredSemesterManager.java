@@ -3,6 +3,7 @@ package net.causw.domain.model.enums.form;
 import lombok.Getter;
 
 import java.util.EnumSet;
+import java.util.List;
 
 @Getter
 public class RegisteredSemesterManager {
@@ -39,6 +40,16 @@ public class RegisteredSemesterManager {
         for (String registeredSemester : registeredSemesterArray) {
             this.registeredSemesterEnumSet.add(RegisteredSemester.valueOf(registeredSemester));
         }
+    }
+
+    public static RegisteredSemesterManager from (
+            List<RegisteredSemester> registeredSemesterList
+    ) {
+        RegisteredSemesterManager registeredSemesterManager = new RegisteredSemesterManager();
+        for (RegisteredSemester registeredSemester : registeredSemesterList) {
+            registeredSemesterManager.enableRegisteredSemester(registeredSemester);
+        }
+        return registeredSemesterManager;
     }
 
 }

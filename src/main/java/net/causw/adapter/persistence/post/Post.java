@@ -35,8 +35,9 @@ public class Post extends BaseEntity {
     private User writer;
 
     @Column(name = "is_deleted")
+    @Builder.Default
     @ColumnDefault("false")
-    private Boolean isDeleted;
+    private Boolean isDeleted = false;
 
     @Column(name = "is_anonymous", nullable = false)
     @ColumnDefault("false")
@@ -58,20 +59,20 @@ public class Post extends BaseEntity {
             String title,
             String content,
             User writer,
-            Boolean isDeleted,
             Boolean isAnonymous,
             Boolean isQuestion,
             Board board,
+            Form form,
             List<UuidFile> postAttachImageUuidFileList
     ) {
         Post post = Post.builder()
                 .title(title)
                 .content(content)
                 .writer(writer)
-                .isDeleted(isDeleted)
                 .isAnonymous(isAnonymous)
                 .isQuestion(isQuestion)
                 .board(board)
+                .form(form)
                 .build();
 
         if (postAttachImageUuidFileList.isEmpty()) {
@@ -87,14 +88,16 @@ public class Post extends BaseEntity {
         return post;
     }
 
-    public void update(String title, String content, List<PostAttachImage> postAttachImageList) {
+    public void update(String title, String content, Form form, List<PostAttachImage> postAttachImageList) {
         this.title = title;
         this.content = content;
+        this.form = form;
         this.postAttachImageList = postAttachImageList;
     }
 
     public void setIsDeleted(Boolean isDeleted) {
         this.isDeleted = isDeleted;
+        this.form.setIsDeleted(isDeleted);
     }
 
     private void setPostAttachFileList(List<PostAttachImage> postAttachImageList) {

@@ -13,8 +13,12 @@ import java.util.List;
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "tb_reply")
+@Table(name = "tb_reply",
+        indexes = {
+                @Index(name = "form_id_index", columnList = "form_id")
+})
 public class Reply extends BaseEntity {
+
     @ManyToOne
     @JoinColumn(name = "form_id", nullable = false)
     private Form form;
@@ -27,7 +31,7 @@ public class Reply extends BaseEntity {
     @JoinColumn(name = "question_id", nullable = false)
     private Question question;
 
-    @Lob
+    @Lob // 텍스트 대용량 처리
     @Column(name = "question_answer", columnDefinition = "TEXT")
     private String questionAnswer;
 

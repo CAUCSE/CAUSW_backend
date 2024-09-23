@@ -65,7 +65,8 @@ public class HomePageService {
                                         post,
                                         postRepository.countAllCommentByPost_Id(post.getId()),
                                         getNumOfPostLikes(post),
-                                        getNumOfPostFavorites(post)
+                                        getNumOfPostFavorites(post),
+                                        post.getForm() != null
                                 )))
                 )
                 .collect(Collectors.toList());

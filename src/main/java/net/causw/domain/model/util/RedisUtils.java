@@ -37,18 +37,6 @@ public class RedisUtils {
         redisTemplate.delete(redisKey);
     }
 
-    public void setCacheData(String key, FormResponseDto value, Long expiredTime) {
-        redisTemplate.opsForValue().set("form:" + key, value, expiredTime, TimeUnit.MILLISECONDS);
-    }
-
-    public Object getCacheData(String key) {
-        return redisTemplate.opsForValue().get("form:" + key);
-    }
-
-    public void deleteCacheData(String key) {
-        redisTemplate.delete("form:" + key);
-    }
-
     public void addToBlacklist(String token) {
         String redisKey = "Blacklist" + token;
         redisTemplate.opsForValue().set(redisKey, "BLACKLISTED", StaticValue.JWT_ACCESS_TOKEN_VALID_TIME, TimeUnit.SECONDS);

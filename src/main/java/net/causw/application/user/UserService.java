@@ -229,7 +229,8 @@ public class UserService {
                         post,
                         getNumOfComment(post),
                         getNumOfPostLikes(post),
-                        getNumOfPostFavorites(post)
+                        getNumOfPostFavorites(post),
+                        post.getForm() != null
                 ))
         );
     }
@@ -250,7 +251,8 @@ public class UserService {
                                 favoritePost.getPost(),
                                 getNumOfComment(favoritePost.getPost()),
                                 getNumOfPostLikes(favoritePost.getPost()),
-                                getNumOfPostFavorites(favoritePost.getPost())
+                                getNumOfPostFavorites(favoritePost.getPost()),
+                                favoritePost.getPost().getForm() != null
                         ))
         );
     }
@@ -285,7 +287,8 @@ public class UserService {
                         post,
                         getNumOfComment(post),
                         getNumOfPostLikes(post),
-                        getNumOfPostFavorites(post)
+                        getNumOfPostFavorites(post),
+                        post.getForm() != null
                 ))
         );
     }

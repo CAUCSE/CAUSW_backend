@@ -57,8 +57,6 @@ public class FormService {
     @Transactional
     public FormResponseDto createForm(User writer, FormCreateRequestDto formCreateRequestDto) {
 
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-
         List<Question> questions = Optional.ofNullable(formCreateRequestDto.getQuestions())
                 .orElse(new ArrayList<>())
                 .stream().map(questionDto -> {

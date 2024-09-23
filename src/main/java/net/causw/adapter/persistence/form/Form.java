@@ -44,7 +44,7 @@ public class Form extends BaseEntity {
     @Column(name = "is_allowed_registered", nullable = true)
     private String EnrolledRegisteredSemester;
 
-    @Column(name = "is_need_council_fee_paid", nullable = false)
+    @Column(name = "is_need_council_fee_paid", nullable = true)
     private Boolean isNeedCouncilFeePaid;
 
     @Column(name = "is_need_council_fee_paid", nullable = false)
@@ -55,6 +55,10 @@ public class Form extends BaseEntity {
 
     @Column(name = "is_allowed_graduation", nullable = false)
     private Boolean isAllowedGraduation;
+
+    @OneToMany(mappedBy = "form", cascade = { CascadeType.REMOVE }, orphanRemoval = true)
+    @Builder.Default
+    private List<Reply> replies = new ArrayList<>();
 
     public EnumSet<RegisteredSemester> getEnrolledRegisteredSemester() {
         RegisteredSemesterManager registeredSemesterManager = new RegisteredSemesterManager();
@@ -118,7 +122,10 @@ public class Form extends BaseEntity {
                         isAllowedEnrolled ?
                                 enrolledRegisteredSemester.serialize()
                                 : null)
-                .isNeedCouncilFeePaid(isNeedCouncilFeePaid)
+                .isNeedCouncilFeePaid(
+                        isAllowedEnrolled ?
+                                isNeedCouncilFeePaid
+                                : null)
                 .isAllowedLeaveOfAbsence(isAllowedLeaveOfAbsence)
                 .LeaveOfAbsenceRegisteredSemester(
                         isAllowedLeaveOfAbsence ?
@@ -150,6 +157,10 @@ public class Form extends BaseEntity {
                 leaveOfAbsenceRegisteredSemester.serialize()
                 : null;
         this.isAllowedGraduation = isAllowedGraduation;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 
 }

@@ -10,7 +10,10 @@ import net.causw.adapter.persistence.base.BaseEntity;
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "tb_option")
+@Table(name = "tb_option",
+        indexes = {
+                @Index(name = "question_id_index", columnList = "question_id")
+})
 public class Option extends BaseEntity {
     @Column(name = "number", nullable = false)
     private Integer number;

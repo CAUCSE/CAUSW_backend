@@ -3,13 +3,11 @@ package net.causw.application.dto.post;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import net.causw.application.dto.form.FormCreateRequestDto;
 
 @Getter
-public class PostCreateRequestDto {
+public class PostCreateWithFormRequestDto {
 
     @NotBlank(message = "게시글 제목을 입력해 주세요.")
     @Schema(description = "게시글 제목", example = "공지사항입니다.")
@@ -30,5 +28,9 @@ public class PostCreateRequestDto {
     @NotNull(message = "질문글 여부를 선택해 주세요.")
     @Schema(description = "질문글 여부", example = "False")
     private Boolean isQuestion;
+
+    @NotNull(message = "신청서 생성 요청 정보를 입력해 주세요.")
+    @Schema(description = "신청서 생성 요청 정보")
+    private FormCreateRequestDto formCreateRequestDto;
 
 }
