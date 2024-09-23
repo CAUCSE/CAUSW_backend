@@ -53,7 +53,6 @@ public class FormService {
     private final UserRepository userRepository;
     private final CircleMemberRepository circleMemberRepository;
     private final RedisUtils redisUtils;
-    private final Validator validator;
 
 
     @Transactional

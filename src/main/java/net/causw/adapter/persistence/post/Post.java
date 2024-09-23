@@ -2,6 +2,7 @@ package net.causw.adapter.persistence.post;
 
 import jakarta.persistence.*;
 import lombok.*;
+import net.causw.adapter.persistence.form.Form;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.board.Board;
@@ -48,6 +49,10 @@ public class Post extends BaseEntity {
     @ManyToOne(targetEntity = Board.class)
     @JoinColumn(name = "board_id", nullable = false)
     private Board board;
+
+    @OneToOne(cascade = { CascadeType.REMOVE, CascadeType.PERSIST })
+    @JoinColumn(name = "form_id", nullable = true, unique = true)
+    private Form form;
 
     public static Post of(
             String title,
