@@ -5,7 +5,9 @@ import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.user.User;
+import net.causw.domain.model.enums.AcademicStatus;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -31,6 +33,11 @@ public class Form extends BaseEntity {
     @Column(name = "is_deleted")
     private Boolean isDeleted;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Column(name = "allowed_academic_status", nullable = true)
+    @Enumerated(EnumType.STRING)
+    private Set<AcademicStatus> allowedAcademicStatus;
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User writer;
@@ -44,26 +51,25 @@ public class Form extends BaseEntity {
             String title,
             Set<Integer> allowedGrades,
             List<Question> questions,
+            Set<AcademicStatus> allowedAcademicStatus,
             User writer,
             Circle circle
     ) {
-        return Form.builder()
-                .title(title)
-                .allowedGrades(allowedGrades)
-                .questions(questions)
-                .isDeleted(false)
-                .writer(writer)
-                .circle(circle)
-                .build();
+        return new Form(
+                title,
+                allowedGrades != null ? allowedGrades : new HashSet<>(),
+                questions,
+                false,
+                allowedAcademicStatus,
+                writer,
+                circle
+        );
     }
 
-    public void update(String title, Set<Integer> allowedGrades, List<Question> questions) {
+    public void update(String title, Set<Integer> allowedGrades, List<Question> questions, Set<AcademicStatus> allowedAcademicStatus) {
         this.title = title;
         this.allowedGrades = allowedGrades;
         this.questions = questions;
-    }
-
-    public void setIsDeleted(Boolean isDeleted) {
-        this.isDeleted = isDeleted;
+        this.allowedAcademicStatus = allowedAcademicStatus;
     }
 }

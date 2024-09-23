@@ -18,9 +18,6 @@ public class Option extends BaseEntity {
     @Column(name = "option_text", nullable = false)
     private String optionText;
 
-    @Column(name = "is_selected", nullable = false)
-    private Boolean isSelected;
-
     @ManyToOne
     @JoinColumn(name = "question_id", nullable = false)
     private Question question;
@@ -29,12 +26,7 @@ public class Option extends BaseEntity {
         return Option.builder()
                 .number(number)
                 .optionText(text)
-                .isSelected(false)
                 .question(question)
                 .build();
-    }
-
-    public void setIsSelected(Boolean isSelected) {
-        this.isSelected = isSelected;
     }
 }

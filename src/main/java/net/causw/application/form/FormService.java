@@ -2,10 +2,12 @@ package net.causw.application.form;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Validator;
+import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.form.Option;
 import net.causw.adapter.persistence.form.Reply;
+import net.causw.adapter.persistence.repository.board.BoardRepository;
 import net.causw.adapter.persistence.repository.circle.CircleMemberRepository;
 import net.causw.adapter.persistence.repository.circle.CircleRepository;
 import net.causw.adapter.persistence.repository.form.FormRepository;
@@ -21,9 +23,12 @@ import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.CircleMemberStatus;
+import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.util.MessageUtil;
+import net.causw.domain.model.util.RedisUtils;
 import net.causw.domain.validation.CircleMemberStatusValidator;
 import net.causw.domain.validation.UserEqualValidator;
+import net.causw.domain.validation.UserRoleValidator;
 import net.causw.domain.validation.ValidatorBucket;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.form.Form;
@@ -42,11 +47,14 @@ public class FormService {
     private final FormRepository formRepository;
     private final QuestionRepository questionRepository;
     private final OptionRepository optionRepository;
+    private final BoardRepository boardRepository;
     private final CircleRepository circleRepository;
     private final ReplyRepository replyRepository;
     private final UserRepository userRepository;
     private final CircleMemberRepository circleMemberRepository;
+    private final RedisUtils redisUtils;
     private final Validator validator;
+
 
     @Transactional
     public FormResponseDto createForm(User writer, FormCreateRequestDto formCreateRequestDto) {
@@ -65,13 +73,14 @@ public class FormService {
                             null
                     )).collect(Collectors.toList());
 
-            Question question = Question.of(
-                    questionDto.getQuestionNumber(),
-                    questionDto.getQuestionText(),
-                    questionDto.getIsMultiple(),
-                    options,
-                    null
-            );
+                    Question question = Question.of(
+                            questionDto.getQuestionNumber(),
+                            questionDto.getQuestionType(),
+                            questionDto.getQuestionText(),
+                            questionDto.getIsMultiple(),
+                            options,
+                            null
+                    );
 
             options.forEach(option -> option.setQuestion(question));
 
@@ -83,6 +92,7 @@ public class FormService {
                 formCreateRequestDto.getTitle(),
                 formCreateRequestDto.getAllowedGrades(),
                 questions,
+                formCreateRequestDto.getAllowedAcademicStatus(),
                 writer,
                 null
         );
@@ -124,6 +134,7 @@ public class FormService {
 
                     Question question = Question.of(
                             questionDto.getQuestionNumber(),
+                            questionDto.getQuestionType(),
                             questionDto.getQuestionText(),
                             questionDto.getIsMultiple(),
                             options,
@@ -140,12 +151,12 @@ public class FormService {
                 circleRecruitFormCreateRequestDto.getTitle(),
                 circleRecruitFormCreateRequestDto.getAllowedGrades(),
                 questions,
+                circleRecruitFormCreateRequestDto.getAllowedAcademicStatus(),
                 writer,
                 circle
         );
 
         questions.forEach(question -> question.setForm(form));
-
         formRepository.save(form);
 
         return FormDtoMapper.INSTANCE.toFormResponseDto(form);
@@ -163,14 +174,33 @@ public class FormService {
     }
 
     public FormResponseDto findForm(String formId) {
+        FormResponseDto cachedForm = (FormResponseDto) redisUtils.getCacheData("form:" + formId);
+        if (cachedForm != null) {
+            return cachedForm;
+        }
+
         Form form = getForm(formId);
-        return FormDtoMapper.INSTANCE.toFormResponseDto(form);
+        FormResponseDto formResponseDto = FormDtoMapper.INSTANCE.toFormResponseDto(form);
+
+        redisUtils.setCacheData("form:" + formId, formResponseDto, 600000L); // 10분 캐싱
+
+        return formResponseDto;
     }
 
     @Transactional
     public void replyForm(String formId, FormReplyRequestDto formReplyRequestDto, User writer){
-        Form form = getForm(formId);
+        Board board = getBoard(formReplyRequestDto.getBoardId());
+        List<String> createRoles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
 
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+        validatorBucket.consistOf(UserRoleValidator.of(
+                writer.getRoles(),
+                createRoles.stream()
+                        .map(Role::of)
+                        .collect(Collectors.toSet())
+        ));
+
+        Form form = getForm(formId);
         for(QuestionReplyRequestDto questionReplyRequestDto : formReplyRequestDto.getReplyDtos()){
             Question question = getQuestion(questionReplyRequestDto.getQuestionId());
             Reply reply = Reply.of(
@@ -304,6 +334,15 @@ public class FormService {
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.SMALL_CLUB_NOT_FOUND
+                )
+        );
+    }
+
+    private Board getBoard(String boardId) {
+        return boardRepository.findById(boardId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.BOARD_NOT_FOUND
                 )
         );
     }

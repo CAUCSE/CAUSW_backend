@@ -27,9 +27,4 @@ public class FormResponseDto {
 
     @Schema(description = "신청서 질문")
     private List<QuestionResponseDto> questions;
-
-
-
-
-
 }

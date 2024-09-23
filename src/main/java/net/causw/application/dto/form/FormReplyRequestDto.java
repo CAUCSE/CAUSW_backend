@@ -14,4 +14,7 @@ import java.util.List;
 public class FormReplyRequestDto {
     @Schema(description = "질문 답변")
     private List<QuestionReplyRequestDto> replyDtos;
+
+    @Schema(description = "게시판 id")
+    private String boardId;
 }
