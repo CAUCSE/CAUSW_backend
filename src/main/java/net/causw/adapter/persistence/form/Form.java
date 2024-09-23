@@ -14,6 +14,7 @@ import java.util.Set;
 @Getter
 @Setter
 @Entity
+@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_form")
@@ -23,7 +24,7 @@ public class Form extends BaseEntity {
     private String title;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @Column(name = "allowedGrades", nullable = false)
+    @Column(name = "allowed_grades", nullable = false)
     private Set<Integer> allowedGrades;
 
     @OneToMany(mappedBy = "form", cascade = CascadeType.ALL, orphanRemoval = true)
