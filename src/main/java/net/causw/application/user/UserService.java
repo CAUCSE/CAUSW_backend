@@ -1,5 +1,6 @@
 package net.causw.application.user;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
@@ -8,6 +9,7 @@ import net.causw.adapter.persistence.locker.LockerLog;
 import net.causw.adapter.persistence.repository.uuidFile.UserProfileImageRepository;
 import net.causw.adapter.persistence.uuidFile.joinEntity.UserAdmissionAttachImage;
 import net.causw.adapter.persistence.uuidFile.joinEntity.UserProfileImage;
+import net.causw.application.excel.UserExcelService;
 import net.causw.application.pageable.PageableFactory;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.board.BoardRepository;
@@ -103,6 +105,7 @@ public class UserService {
     private final FavoritePostRepository favoritePostRepository;
     private final LikePostRepository likePostRepository;
     private final UserProfileImageRepository userProfileImageRepository;
+    private final UserExcelService userExcelService;
 
     @Transactional
     public UserResponseDto findPassword(
@@ -1519,6 +1522,81 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    public void exportUserListToExcel(HttpServletResponse response) {
+        String fileName = LocalDateTime.now().toString() + "_사용자명단.xlsx";
+
+        LinkedHashMap<String, List<UserResponseDto>> sheetDataMap = new LinkedHashMap<>();
+
+        List<UserResponseDto> activeUserList = userRepository.findAllByState(UserState.ACTIVE)
+                .stream()
+                .map(user -> {
+                            if (user.getRoles().contains(Role.LEADER_CIRCLE)) {
+                                List<String> circleIdIfLeader = getCircleIdsIfLeader(user);
+                                List<String> circleNameIfLeader = getCircleNamesIfLeader(user);
+                                return UserDtoMapper.INSTANCE.toUserResponseDto(user, circleIdIfLeader, circleNameIfLeader);
+                            } else {
+                                return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
+                            }
+                }).toList();
+
+        List<UserResponseDto> inactiveUserList = userRepository.findAllByState(UserState.INACTIVE)
+                .stream()
+                .map(user -> {
+                            if (user.getRoles().contains(Role.LEADER_CIRCLE)) {
+                                List<String> circleIdIfLeader = getCircleIdsIfLeader(user);
+                                List<String> circleNameIfLeader = getCircleNamesIfLeader(user);
+                                return UserDtoMapper.INSTANCE.toUserResponseDto(user, circleIdIfLeader, circleNameIfLeader);
+                            } else {
+                                return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
+                            }
+                }).toList();
+
+        List<UserResponseDto> awaitUserList = userRepository.findAllByState(UserState.AWAIT)
+                .stream()
+                .map(user -> {
+                            if (user.getRoles().contains(Role.LEADER_CIRCLE)) {
+                                List<String> circleIdIfLeader = getCircleIdsIfLeader(user);
+                                List<String> circleNameIfLeader = getCircleNamesIfLeader(user);
+                                return UserDtoMapper.INSTANCE.toUserResponseDto(user, circleIdIfLeader, circleNameIfLeader);
+                            } else {
+                                return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
+                            }
+                }).toList();
+
+        List<UserResponseDto> rejectUserList = userRepository.findAllByState(UserState.REJECT)
+                .stream()
+                .map(user -> {
+                    if (user.getRoles().contains(Role.LEADER_CIRCLE)) {
+                        List<String> circleIdIfLeader = getCircleIdsIfLeader(user);
+                        List<String> circleNameIfLeader = getCircleNamesIfLeader(user);
+                        return UserDtoMapper.INSTANCE.toUserResponseDto(user, circleIdIfLeader, circleNameIfLeader);
+                    } else {
+                        return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
+                    }
+                }).toList();
+
+        List<UserResponseDto> dropUserList = userRepository.findAllByState(UserState.DROP)
+                .stream()
+                .map(user -> {
+                            if (user.getRoles().contains(Role.LEADER_CIRCLE)) {
+                                List<String> circleIdIfLeader = getCircleIdsIfLeader(user);
+                                List<String> circleNameIfLeader = getCircleNamesIfLeader(user);
+                                return UserDtoMapper.INSTANCE.toUserResponseDto(user, circleIdIfLeader, circleNameIfLeader);
+                            } else {
+                                return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
+                            }
+                }).toList();
+
+        sheetDataMap.put("활성 유저", activeUserList);
+        sheetDataMap.put("가입 대기 유저", awaitUserList);
+        sheetDataMap.put("가입 거절 유저", rejectUserList);
+        sheetDataMap.put("탈퇴 유저", inactiveUserList);
+        sheetDataMap.put("추방 유저", dropUserList);
+
+        userExcelService.generateExcel(response, fileName, sheetDataMap);
+    }
+
+    // private methods
     private List<String> getCircleNamesIfLeader(User user) {
         List<Circle> circleList = this.circleRepository.findByLeader_Id(user.getId());
 
@@ -1578,5 +1656,4 @@ public class UserService {
     private Long getNumOfPostFavorites(Post post){
         return favoritePostRepository.countByPostIdAndIsDeletedFalse(post.getId());
     }
-
 }

@@ -29,7 +29,7 @@ public class UserAcademicRecordApplicationController {
 
     @GetMapping("/export")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and " +
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
             "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
     @Operation(summary = "학적 정보 엑셀 파일로 내보내기(관리자용)",
             description = "학적 정보를 엑셀 파일로 내보냅니다.")

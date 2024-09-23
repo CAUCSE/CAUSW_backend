@@ -22,8 +22,7 @@ public abstract class ExcelAbstractService<T> implements ExcelService<T> {
             HttpServletResponse response,
             String fileName,
             LinkedHashMap<String, List<T>> sheetNameDataMap
-            )
-    {
+    ) {
         try (Workbook workbook = new XSSFWorkbook()) {
             for (String sheetName : sheetNameDataMap.keySet()) {
                 createSheet(workbook, sheetName, sheetNameDataMap.get(sheetName));

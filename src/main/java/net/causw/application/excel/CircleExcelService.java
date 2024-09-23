@@ -18,7 +18,7 @@ public class CircleExcelService extends ExcelAbstractService<ExportCircleMemberT
         Row headerRow = sheet.createRow(0);
 
         Cell cell = headerRow.createCell(0);
-        cell.setCellValue("아이디(이메일");
+        cell.setCellValue("아이디(이메일)");
 
         cell = headerRow.createCell(1);
         cell.setCellValue("이름");
