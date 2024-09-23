@@ -1,6 +1,7 @@
 package net.causw.adapter.web;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.form.*;
@@ -110,5 +111,17 @@ public class FormController {
             @AuthenticationPrincipal CustomUserDetails userDetails
     ){
         return formService.findSummaryReply(formId, userDetails.getUser());
+    }
+
+    @GetMapping("/{formId}/export")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "신청서 결과 엑셀 다운로드", description = "신청서 결과를 엑셀로 다운로드합니다.")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
+    public void exportFormResult(
+            @PathVariable(name = "formId") String formId,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            HttpServletResponse response
+    ){
+        formService.exportFormResult(formId, userDetails.getUser(), response);
     }
 }

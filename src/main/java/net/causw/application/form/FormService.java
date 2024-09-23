@@ -1,5 +1,6 @@
 package net.causw.application.form;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Validator;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
 @MeasureTime
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class FormService {
     private final FormRepository formRepository;
     private final QuestionRepository questionRepository;
@@ -160,7 +162,6 @@ public class FormService {
         formRepository.save(form);
     }
 
-    @Transactional(readOnly = true)
     public FormResponseDto findForm(String formId) {
         Form form = getForm(formId);
         return FormDtoMapper.INSTANCE.toFormResponseDto(form);
@@ -188,7 +189,6 @@ public class FormService {
     //내가 유저 별로 나눠주고 알아서 분리해서 쓰냐 or 매번 누구의 결과를 원하는지 저쪽에서 보내냐
     //근데 보통은 formId로 조회하니까 그 form의 모든 것을 조회하는게 좋을 거 같은데
     //그냥 내가 유저별로 응답을 묶어서 보내면 프론트에서 페이지별로 한명씩 보여주기
-    @Transactional(readOnly = true)
     public List<ReplyUserResponseDto> findUserReply(String formId, User user){
         List<Reply> replies = replyRepository.findAllByFormId(formId);
 
@@ -211,7 +211,6 @@ public class FormService {
 
     //2. 각 질문별 결과를 반환(요약)
     //이거는 그냥 form의 질문별로 결과를 보여주면 될듯
-    @Transactional(readOnly = true)
     public List<QuestionSummaryResponseDto> findSummaryReply(String formId, User user){
         List<Reply> replies = replyRepository.findAllByFormId(formId);
 
@@ -249,7 +248,20 @@ public class FormService {
                 .collect(Collectors.toList());
     }
 
+    public void exportFormResult(String formId, User user, HttpServletResponse response) {
+        Form form = getForm(formId);
 
+        if (!form.getWriter().getId().equals(user.getId())) {
+            throw new UnauthorizedException(
+                    ErrorCode.API_NOT_ACCESSIBLE,
+                    MessageUtil.API_NOT_ACCESSIBLE
+            );
+        }
+
+
+    }
+
+    // private methods
     private User getUser(String userId) {
         return userRepository.findById(userId).orElseThrow(
                 () -> new BadRequestException(
