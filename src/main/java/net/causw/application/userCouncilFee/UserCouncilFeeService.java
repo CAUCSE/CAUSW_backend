@@ -24,7 +24,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+
 @MeasureTime
 @Service
 @RequiredArgsConstructor
@@ -48,7 +51,14 @@ public class UserCouncilFeeService {
                                 toUserCouncilFeeResponseDtoReduced(userCouncilFee, userCouncilFee.getCouncilFeeFakeUser(), getRestOfSemester(userCouncilFee), getIsAppliedCurrentSemester(userCouncilFee))
                         ).toList();
 
-        councilFeeExcelService.generateExcel(response, fileName, userCouncilFeeResponseDtoList);
+        LinkedHashMap<String, List<UserCouncilFeeResponseDto>> sheetNameDataMap = new LinkedHashMap<>();
+        sheetNameDataMap.put("학생회비 납부자 현황", userCouncilFeeResponseDtoList);
+
+        councilFeeExcelService.generateExcel(
+                response,
+                fileName,
+                sheetNameDataMap
+        );
     }
 
     public Page<UserCouncilFeeListResponseDto> getUserCouncilFeeList(Pageable pageable) {
