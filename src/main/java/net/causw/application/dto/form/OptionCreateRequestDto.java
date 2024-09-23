@@ -18,8 +18,4 @@ public class OptionCreateRequestDto {
     @NotBlank(message = "객관식 내용을 입력해 주세요.")
     @Schema(description = "객관식 내용", example = "1번 선지입니다.")
     private String optionText;
-
-    @NotNull(message = "객관식 선택 여부를 선택해 주세요.")
-    @Schema(description = "객관식 선택 여부", defaultValue = "false")
-    private Boolean isSelected;
 }
