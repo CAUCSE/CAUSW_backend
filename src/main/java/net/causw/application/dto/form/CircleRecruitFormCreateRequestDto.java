@@ -4,8 +4,7 @@ package net.causw.application.dto.form;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
-import net.causw.domain.model.enums.AcademicStatus;
-import net.causw.domain.model.enums.AcademicStatus;
+import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
 
 import java.util.List;
 import java.util.Set;

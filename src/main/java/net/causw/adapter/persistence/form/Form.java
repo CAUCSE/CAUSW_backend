@@ -4,10 +4,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.circle.Circle;
-import net.causw.domain.model.enums.AcademicStatus;
-import net.causw.domain.model.enums.FormType;
-import net.causw.domain.model.enums.RegisteredSemester;
-import net.causw.domain.model.enums.RegisteredSemesterManager;
+import net.causw.domain.model.enums.form.FormType;
+import net.causw.domain.model.enums.form.RegisteredSemester;
+import net.causw.domain.model.enums.form.RegisteredSemesterManager;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.util.*;

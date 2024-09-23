@@ -1,4 +1,4 @@
-package net.causw.domain.model.enums;
+package net.causw.domain.model.enums.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

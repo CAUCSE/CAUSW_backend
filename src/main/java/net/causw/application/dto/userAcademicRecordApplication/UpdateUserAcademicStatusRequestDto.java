@@ -5,8 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import lombok.Getter;
-import net.causw.domain.model.enums.AcademicStatus;
-import net.causw.domain.model.enums.GraduationType;
+import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.domain.model.enums.user.GraduationType;
 
 @Getter
 public class UpdateUserAcademicStatusRequestDto {

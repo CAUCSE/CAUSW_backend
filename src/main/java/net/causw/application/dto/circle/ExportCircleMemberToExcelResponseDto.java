@@ -5,8 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.domain.model.enums.AcademicStatus;
-import net.causw.domain.model.enums.GraduationType;
+import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.domain.model.enums.user.GraduationType;
 
 import java.time.LocalDateTime;
 

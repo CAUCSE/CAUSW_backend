@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import net.causw.domain.model.enums.QuestionType;
+import net.causw.domain.model.enums.form.QuestionType;
 
 import java.util.List;
 

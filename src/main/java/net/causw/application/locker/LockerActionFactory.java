@@ -2,7 +2,7 @@ package net.causw.application.locker;
 
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
-import net.causw.domain.model.enums.LockerLogAction;
+import net.causw.domain.model.enums.locker.LockerLogAction;
 import net.causw.domain.model.util.MessageUtil;
 import org.springframework.stereotype.Component;
 

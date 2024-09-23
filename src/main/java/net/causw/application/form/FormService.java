@@ -1,7 +1,6 @@
 package net.causw.application.form;
 
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Validator;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
@@ -22,8 +21,8 @@ import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
-import net.causw.domain.model.enums.CircleMemberStatus;
-import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.enums.circle.CircleMemberStatus;
+import net.causw.domain.model.enums.user.Role;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.RedisUtils;
 import net.causw.domain.validation.CircleMemberStatusValidator;

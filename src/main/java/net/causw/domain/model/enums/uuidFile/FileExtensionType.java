@@ -1,4 +1,4 @@
-package net.causw.domain.model.enums;
+package net.causw.domain.model.enums.uuidFile;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

@@ -8,7 +8,7 @@ import net.causw.application.dto.post.PostContentDto;
 import net.causw.application.dto.post.PostResponseDto;
 import net.causw.application.dto.post.PostsResponseDto;
 import net.causw.application.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
-import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.enums.user.Role;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;

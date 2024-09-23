@@ -4,8 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import net.causw.domain.model.enums.AcademicRecordRequestStatus;
-import net.causw.domain.model.enums.AcademicStatus;
+import net.causw.domain.model.enums.userAcademicRecord.AcademicRecordRequestStatus;
+import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
 
 import java.util.List;
 

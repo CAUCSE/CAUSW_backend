@@ -3,7 +3,7 @@ package net.causw.adapter.persistence.form;
 import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
-import net.causw.domain.model.enums.QuestionType;
+import net.causw.domain.model.enums.form.QuestionType;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.util.List;

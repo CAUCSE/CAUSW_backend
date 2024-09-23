@@ -22,7 +22,7 @@ import net.causw.config.security.userdetails.CustomUserDetails;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
-import net.causw.domain.model.enums.CircleMemberStatus;
+import net.causw.domain.model.enums.circle.CircleMemberStatus;
 import net.causw.domain.validation.ConstraintValidator;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;

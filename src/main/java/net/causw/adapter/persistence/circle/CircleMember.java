@@ -3,7 +3,7 @@ package net.causw.adapter.persistence.circle;
 import lombok.*;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.base.BaseEntity;
-import net.causw.domain.model.enums.CircleMemberStatus;
+import net.causw.domain.model.enums.circle.CircleMemberStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

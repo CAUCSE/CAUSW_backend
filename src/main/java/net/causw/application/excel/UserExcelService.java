@@ -2,7 +2,7 @@ package net.causw.application.excel;
 
 import net.causw.application.dto.user.UserResponseDto;
 import net.causw.domain.aop.annotation.MeasureTime;
-import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.enums.user.Role;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;

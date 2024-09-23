@@ -6,7 +6,7 @@ import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.repository.circle.CircleMemberRepository;
 import net.causw.adapter.persistence.user.User;
 import net.causw.domain.aop.annotation.MeasureTime;
-import net.causw.domain.model.enums.CircleMemberStatus;
+import net.causw.domain.model.enums.circle.CircleMemberStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

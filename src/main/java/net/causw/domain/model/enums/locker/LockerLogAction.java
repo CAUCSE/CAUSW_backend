@@ -1,4 +1,4 @@
-package net.causw.domain.model.enums;
+package net.causw.domain.model.enums.locker;
 
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;

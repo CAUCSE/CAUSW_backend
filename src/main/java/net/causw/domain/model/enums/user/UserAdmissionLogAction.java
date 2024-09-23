@@ -1,4 +1,4 @@
-package net.causw.domain.model.enums;
+package net.causw.domain.model.enums.user;
 
 public enum UserAdmissionLogAction {
     ACCEPT("accept"),

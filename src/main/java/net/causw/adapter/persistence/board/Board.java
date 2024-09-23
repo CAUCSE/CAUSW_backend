@@ -4,7 +4,7 @@ import lombok.*;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.base.BaseEntity;
-import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.enums.user.Role;
 import org.hibernate.annotations.ColumnDefault;
 
 import jakarta.persistence.CascadeType;

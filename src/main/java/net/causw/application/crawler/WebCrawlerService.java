@@ -6,7 +6,7 @@ import net.causw.adapter.persistence.crawled.LatestCrawl;
 import net.causw.adapter.persistence.repository.crawled.CrawledNoticeRepository;
 import net.causw.adapter.persistence.repository.crawled.LatestCrawlRepository;
 import net.causw.domain.aop.annotation.MeasureTime;
-import net.causw.domain.model.enums.CrawlCategory;
+import net.causw.domain.model.enums.crawl.CrawlCategory;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;

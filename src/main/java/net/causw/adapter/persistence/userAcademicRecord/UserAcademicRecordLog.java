@@ -5,9 +5,9 @@ import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.uuidFile.joinEntity.UserAcademicRecordLogAttachImage;
-import net.causw.domain.model.enums.AcademicRecordRequestStatus;
-import net.causw.domain.model.enums.AcademicStatus;
-import net.causw.domain.model.enums.GraduationType;
+import net.causw.domain.model.enums.userAcademicRecord.AcademicRecordRequestStatus;
+import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.domain.model.enums.user.GraduationType;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -17,7 +17,7 @@ import net.causw.application.semester.SemesterService;
 import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
-import net.causw.domain.model.enums.CouncilFeeLogType;
+import net.causw.domain.model.enums.userCouncilFee.CouncilFeeLogType;
 import net.causw.domain.model.util.MessageUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,7 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 @MeasureTime
 @Service

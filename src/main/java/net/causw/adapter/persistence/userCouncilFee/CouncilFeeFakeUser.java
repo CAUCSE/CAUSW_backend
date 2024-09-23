@@ -3,8 +3,8 @@ package net.causw.adapter.persistence.userCouncilFee;
 import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
-import net.causw.domain.model.enums.AcademicStatus;
-import net.causw.domain.model.enums.GraduationType;
+import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.domain.model.enums.user.GraduationType;
 
 @Getter
 @Entity
