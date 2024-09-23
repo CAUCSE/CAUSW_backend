@@ -105,9 +105,9 @@ public interface CircleDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "isAppliedThisSemester", source = "isAppliedThisSemester")
     @Mapping(target = "paidAt", source = "userCouncilFee.paidAt")
     @Mapping(target = "paidSemester", source = "userCouncilFee.numOfPaidSemester")
-    @Mapping(target = "appliedSemester", source = "userCouncilFee.appliedSemester")
+    @Mapping(target = "appliedSemester", source = "appliedSemester")
     @Mapping(target = "restOfSemester", source = "restOfSemester")
     @Mapping(target = "isRefunded", source = "userCouncilFee.isRefunded")
-    ExportCircleMemberToExcelResponseDto toExportCircleMemberToExcelResponseDto(User user, UserCouncilFee userCouncilFee, Integer restOfSemester, Boolean isAppliedThisSemester);
+    ExportCircleMemberToExcelResponseDto toExportCircleMemberToExcelResponseDto(User user, UserCouncilFee userCouncilFee, Integer restOfSemester, Boolean isAppliedThisSemester, Integer appliedSemester);
 
 }

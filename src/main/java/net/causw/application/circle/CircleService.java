@@ -926,7 +926,7 @@ public class CircleService {
     }
 
     private ExportCircleMemberToExcelResponseDto toExportCircleMemberToExcelResponseDto(User user, UserCouncilFee userCouncilFee, Integer restOfSemester, Boolean isAppliedThisSemester){
-        return CircleDtoMapper.INSTANCE.toExportCircleMemberToExcelResponseDto(user, userCouncilFee, restOfSemester, isAppliedThisSemester);
+        return CircleDtoMapper.INSTANCE.toExportCircleMemberToExcelResponseDto(user, userCouncilFee, restOfSemester, isAppliedThisSemester, userCouncilFee.getNumOfPaidSemester() - restOfSemester);
     }
 
 }

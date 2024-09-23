@@ -662,10 +662,17 @@ public class UserService {
 
     @Transactional
     public UserResponseDto update(User user, UserUpdateRequestDto userUpdateRequestDto, MultipartFile profileImage) {
-        Set<Role> roles = user.getRoles();
+        User srcUser = userRepository.findById(user.getId()).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.USER_NOT_FOUND
+                )
+        );
+
+        Set<Role> roles = srcUser.getRoles();
 
         // 닉네임이 변경되었을 때 중복 체크 (이메일 중복 체크의 경우 바뀐 기획에서 이메일 변경이 불가능하여 삭제)
-        if (user.getNickname() == null || !user.getNickname().equals(userUpdateRequestDto.getNickname())) {
+        if (srcUser.getNickname() == null || !srcUser.getNickname().equals(userUpdateRequestDto.getNickname())) {
             userRepository.findByNickname(userUpdateRequestDto.getNickname()).ifPresent(
                     nickname -> {
                         throw new BadRequestException(
@@ -681,19 +688,19 @@ public class UserService {
 
         if (profileImage.isEmpty()) {
             if (user.getUserProfileImage() != null) {
-                uuidFileService.deleteFile(user.getUserProfileImage().getUuidFile());
-                userProfileImageRepository.delete(user.getUserProfileImage());
+                uuidFileService.deleteFile(srcUser.getUserProfileImage().getUuidFile());
+                userProfileImageRepository.delete(srcUser.getUserProfileImage());
             }
         } else {
-            if (user.getUserProfileImage() == null) {
+            if (srcUser.getUserProfileImage() == null) {
                 userProfileImage = UserProfileImage.of(
                         user,
                         uuidFileService.saveFile(profileImage, FilePath.USER_PROFILE)
                 );
             } else {
-                userProfileImage = user.getUserProfileImage().updateUuidFileAndReturnSelf(
+                userProfileImage = srcUser.getUserProfileImage().updateUuidFileAndReturnSelf(
                         uuidFileService.updateFile(
-                                user.getUserProfileImage().getUuidFile(),
+                                srcUser.getUserProfileImage().getUuidFile(),
                                 profileImage,
                                 FilePath.USER_PROFILE
                         )
@@ -701,17 +708,17 @@ public class UserService {
             }
         }
 
-        user.update(userUpdateRequestDto.getNickname(), userUpdateRequestDto.getAcademicStatus(), userProfileImage);
+        srcUser.update(userUpdateRequestDto.getNickname(), userUpdateRequestDto.getAcademicStatus(), userProfileImage);
 
         // Validate the admission year range
         ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserStateValidator.of(srcUser.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(roles))
-                .consistOf(ConstraintValidator.of(user, this.validator))
+                .consistOf(ConstraintValidator.of(srcUser, this.validator))
                 .consistOf(AdmissionYearValidator.of(userUpdateRequestDto.getAdmissionYear()))
                 .validate();
 
-        User updatedUser = userRepository.save(user);
+        User updatedUser = userRepository.save(srcUser);
 
         return UserDtoMapper.INSTANCE.toUserResponseDto(updatedUser, null, null);
     }
