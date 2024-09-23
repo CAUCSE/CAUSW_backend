@@ -25,19 +25,6 @@ public class FormController {
     private final FormService formService;
     private final SecurityService securityService;
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "신청서 생성", description = "신청서를 생성합니다.")
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
-    public FormResponseDto createForm(
-            @Valid @RequestBody FormCreateRequestDto formCreateRequestDto,
-            @AuthenticationPrincipal CustomUserDetails userDetails
-    )
-    {
-        return formService.createForm(userDetails.getUser(), formCreateRequestDto);
-    }
-
     @PostMapping("/circle-recruit")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "동아리 모집 신청서 생성", description = "동아리 모집 신청서를 생성합니다.")

@@ -16,7 +16,10 @@ import java.util.*;
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "tb_form")
+@Table(name = "tb_form",
+        indexes = {
+                @Index(name = "circle_id_index", columnList = "circle_id")
+})
 public class Form extends BaseEntity {
 
     @Column(name = "form_type", nullable = false)

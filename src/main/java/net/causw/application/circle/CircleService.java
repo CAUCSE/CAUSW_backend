@@ -5,10 +5,14 @@ import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
+import net.causw.adapter.persistence.form.Form;
+import net.causw.adapter.persistence.form.Option;
+import net.causw.adapter.persistence.form.Question;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.board.BoardRepository;
 import net.causw.adapter.persistence.repository.circle.CircleMemberRepository;
 import net.causw.adapter.persistence.repository.circle.CircleRepository;
+import net.causw.adapter.persistence.repository.form.FormRepository;
 import net.causw.adapter.persistence.repository.post.PostRepository;
 import net.causw.adapter.persistence.repository.user.UserRepository;
 import net.causw.adapter.persistence.repository.userCouncilFee.UserCouncilFeeRepository;
@@ -20,6 +24,8 @@ import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.board.BoardOfCircleResponseDto;
 import net.causw.application.dto.circle.*;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
+import net.causw.application.dto.form.CircleRecruitFormCreateRequestDto;
+import net.causw.application.dto.form.FormCreateRequestDto;
 import net.causw.application.dto.user.UserResponseDto;
 import net.causw.application.dto.util.dtoMapper.CircleDtoMapper;
 import net.causw.application.dto.util.StatusUtil;
@@ -30,6 +36,7 @@ import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.model.enums.circle.CircleMemberStatus;
+import net.causw.domain.model.enums.form.RegisteredSemesterManager;
 import net.causw.domain.model.enums.uuidFile.FilePath;
 import net.causw.domain.model.enums.user.Role;
 import net.causw.domain.model.enums.user.UserState;
@@ -62,6 +69,7 @@ public class CircleService {
     private final UuidFileService uuidFileService;
     private final CircleMainImageRepository circleMainImageRepository;
     private final UserCouncilFeeRepository userCouncilFeeRepository;
+    private final FormRepository formRepository;
 
     @Transactional(readOnly = true)
     public CircleResponseDto findById(String circleId) {
@@ -698,6 +706,62 @@ public class CircleService {
         circleExcelService.generateExcel(response, circleName + "_부원명단", sheetNameDataMap);
     }
 
+    @Transactional
+    public void createApplicationForm(User writer, String circleId, FormCreateRequestDto formCreateRequestDto) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
+        Circle circle = getCircle(circleId);
+        CircleMember circleMember = circleMemberRepository.findByUser_IdAndCircle_Id(writer.getId(), circleId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.CIRCLE_APPLY_INVALID
+                )
+        );
+
+        validatorBucket
+                .consistOf(UserEqualValidator.of(
+                        getCircleLeader(circle).getId(),
+                        writer.getId()))
+                .consistOf(CircleMemberStatusValidator.of(
+                        circleMember.getStatus(),
+                        List.of(CircleMemberStatus.MEMBER)
+                ));
+
+        formRepository.save(generateForm(formCreateRequestDto, circle));
+    }
+
+    @Transactional
+    public void updateApplicationForm(User writer, String circleId, FormCreateRequestDto formCreateRequestDto) {
+        Circle circle = getCircle(circleId);
+        CircleMember circleMember = circleMemberRepository.findByUser_IdAndCircle_Id(writer.getId(), circleId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.CIRCLE_APPLY_INVALID
+                )
+        );
+
+        ValidatorBucket.of()
+                .consistOf(UserEqualValidator.of(
+                        getCircleLeader(circle).getId(),
+                        writer.getId()))
+                .consistOf(CircleMemberStatusValidator.of(
+                        circleMember.getStatus(),
+                        List.of(CircleMemberStatus.MEMBER)
+                ))
+                .validate();
+
+        Form form = formRepository.findByCircle(circle).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.FORM_NOT_FOUND
+                )
+        );
+
+        formRepository.delete(form);
+
+        formRepository.save(generateForm(formCreateRequestDto, circle));
+    }
+
 
 
 
@@ -815,6 +879,56 @@ public class CircleService {
                     ));
         }
         return boardList;
+    }
+
+    private Form generateForm(FormCreateRequestDto formCreateRequestDto, Circle circle) {
+        List<Question> questionList = Optional.ofNullable(formCreateRequestDto.getQuestions())
+                .orElse(new ArrayList<>())
+                .stream().map(questionDto -> {
+                    List<Option> options = Optional.ofNullable(questionDto.getOptions())
+                            .orElse(new ArrayList<>())
+                            .stream()
+                            .map(optionDto -> Option.of(
+                                    optionDto.getOptionNumber(),
+                                    optionDto.getOptionText(),
+                                    null
+                            )).collect(Collectors.toList());
+
+                    Question question = Question.of(
+                            questionDto.getQuestionNumber(),
+                            questionDto.getQuestionType(),
+                            questionDto.getQuestionText(),
+                            questionDto.getIsMultiple(),
+                            options,
+                            null
+                    );
+
+                    options.forEach(option -> option.setQuestion(question));
+
+                    return question;
+                }).toList();
+
+        return Form.createCircleApplicationForm(
+                formCreateRequestDto.getTitle(),
+                questionList,
+                circle,
+                formCreateRequestDto.getIsAllowedEnrolled(),
+                formCreateRequestDto.getIsAllowedEnrolled() ?
+                        RegisteredSemesterManager.from(
+                                formCreateRequestDto.getEnrolledRegisteredSemesterList()
+                        )
+                        : null,
+                formCreateRequestDto.getIsAllowedEnrolled() ?
+                        formCreateRequestDto.getIsNeedCouncilFeePaid()
+                        : null,
+                formCreateRequestDto.getIsAllowedLeaveOfAbsence(),
+                formCreateRequestDto.getIsAllowedLeaveOfAbsence() ?
+                        RegisteredSemesterManager.from(
+                                formCreateRequestDto.getLeaveOfAbsenceRegisteredSemesterList()
+                        )
+                        : null,
+                formCreateRequestDto.getIsAllowedGraduation()
+        );
     }
 
     // ValidatorBucket Constructor

@@ -18,6 +18,8 @@ import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.circle.CircleUpdateRequestDto;
 import net.causw.application.dto.circle.CircleBoardsResponseDto;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
+import net.causw.application.dto.form.CircleRecruitFormCreateRequestDto;
+import net.causw.application.dto.form.FormCreateRequestDto;
 import net.causw.config.security.userdetails.CustomUserDetails;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.InternalServerException;
@@ -670,6 +672,30 @@ public class CircleController {
             HttpServletResponse response
     ){
         circleService.exportCircleMembersToExcel(circleId, response);
+    }
+
+    @PostMapping(value = "/{circleId}/apply/application")
+    @ResponseStatus(value = HttpStatus.CREATED)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "hasAnyRole('LEADER_CIRCLE')")
+    public void createApplicationForm(
+            @PathVariable(name = "circleId") String circleId,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody FormCreateRequestDto formCreateRequestDto
+    ) {
+        circleService.createApplicationForm(userDetails.getUser(), circleId, formCreateRequestDto);
+    }
+
+    @PutMapping(value = "/{circleId}/apply/application")
+    @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "hasAnyRole('LEADER_CIRCLE')")
+    public void updateApplicationForm(
+            @PathVariable(name = "circleId") String circleId,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody FormCreateRequestDto formCreateRequestDto
+    ) {
+        circleService.updateApplicationForm(userDetails.getUser(), circleId, formCreateRequestDto);
     }
 
 }
