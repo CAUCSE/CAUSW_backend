@@ -17,7 +17,17 @@ public interface FormDtoMapper {
 
     FormDtoMapper INSTANCE = Mappers.getMapper(FormDtoMapper.class);
 
+    @Mapping(target = "formId", source = "form.id")
+    @Mapping(target = "questions", source = "form.questions")
     FormResponseDto toFormResponseDto(Form form);
+
+    @Mapping(target = "questionNumber", source = "question.number")
+    @Mapping(target = "isMultiple", source = "question.isMultiple")
+    @Mapping(target = "options", source = "question.options")
+    QuestionResponseDto toQuestionResponseDto(Question question);
+
+    @Mapping(target = "optionNumber", source = "option.number")
+    OptionResponseDto toOptionResponseDto(Option option);
 
     @Mapping(target = "questionId", source = "reply.question.id")
     QuestionReplyResponseDto toQuestionReplyResponseDto(Reply reply);
@@ -26,7 +36,6 @@ public interface FormDtoMapper {
     @Mapping(target = "userName", source = "user.name")
     @Mapping(target = "replies", source = "replies")
     ReplyUserResponseDto toReplyUserResponseDto(User user, List<QuestionReplyResponseDto> replies);
-
 
     OptionSummaryResponseDto toOptionSummaryResponseDto(Option option, Long selectedCount);
 
