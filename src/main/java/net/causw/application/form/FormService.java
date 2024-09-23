@@ -6,6 +6,7 @@ import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.form.Option;
 import net.causw.adapter.persistence.form.Reply;
+import net.causw.adapter.persistence.repository.board.BoardRepository;
 import net.causw.adapter.persistence.repository.circle.CircleMemberRepository;
 import net.causw.adapter.persistence.repository.circle.CircleRepository;
 import net.causw.adapter.persistence.repository.form.FormRepository;
@@ -131,6 +132,7 @@ public class FormService {
 
                     Question question = Question.of(
                             questionDto.getQuestionNumber(),
+                            questionDto.getQuestionType(),
                             questionDto.getQuestionText(),
                             questionDto.getIsMultiple(),
                             options,
@@ -147,6 +149,7 @@ public class FormService {
                 circleRecruitFormCreateRequestDto.getTitle(),
                 circleRecruitFormCreateRequestDto.getAllowedGrades(),
                 questions,
+                circleRecruitFormCreateRequestDto.getAllowedAcademicStatus(),
                 writer,
                 circle
         );

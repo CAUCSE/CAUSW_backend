@@ -4,6 +4,8 @@ package net.causw.application.dto.form;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
+import net.causw.domain.model.enums.AcademicStatus;
+import net.causw.domain.model.enums.AcademicStatus;
 
 import java.util.List;
 import java.util.Set;
@@ -20,6 +22,9 @@ public class CircleRecruitFormCreateRequestDto {
     @NotEmpty(message = "신청서를 작성할 수 있는 학년을 입력해 주세요.")
     @Schema(description = "신청서 작성 가능 학년")
     private Set<Integer> allowedGrades;
+
+    @Schema(description = "신청서 작성 가능 학적 상태")
+    private Set<AcademicStatus> allowedAcademicStatus;
 
     @NotEmpty(message = "질문을 입력해 주세요.")
     @Schema(description = "질문")
