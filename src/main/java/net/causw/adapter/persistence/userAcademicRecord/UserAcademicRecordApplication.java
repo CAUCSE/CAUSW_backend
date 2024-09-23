@@ -20,7 +20,7 @@ import java.util.List;
 @Entity
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "tb_user_academic_record_admission")
+@Table(name = "tb_user_academic_record_application")
 public class UserAcademicRecordApplication extends BaseEntity {
 
     @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
