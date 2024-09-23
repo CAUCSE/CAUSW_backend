@@ -1,6 +1,7 @@
 package net.causw.adapter.web;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.semester.CurrentSemesterResponseDto;
@@ -25,6 +26,18 @@ import java.util.List;
 public class UserAcademicRecordApplicationController {
 
     private final UserAcademicRecordApplicationService userAcademicRecordApplicationService;
+
+    @GetMapping("/export")
+    @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and " +
+            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
+    @Operation(summary = "학적 정보 엑셀 파일로 내보내기(관리자용)",
+            description = "학적 정보를 엑셀 파일로 내보냅니다.")
+    public void exportUserAcademicRecord(
+            HttpServletResponse response
+    ) {
+        userAcademicRecordApplicationService.exportUserAcademicRecordListToExcel(response);
+    }
 
     @GetMapping("/semester/current")
     @ResponseStatus(value = HttpStatus.OK)

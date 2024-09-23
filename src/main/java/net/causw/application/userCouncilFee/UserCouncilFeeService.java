@@ -24,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +44,7 @@ public class UserCouncilFeeService {
     public void exportUserCouncilFeeToExcel(HttpServletResponse response) {
         Semester semester = semesterService.getCurrentSemesterEntity();
 
-        String fileName = semester.getSemesterYear().toString() + "-" + semester.getSemesterType().getValue() + "_학생회비_납부자_현황";
+        String fileName = LocalDateTime.now() + "_" + semester.getSemesterYear().toString() + "-" + semester.getSemesterType().getValue() + "_학생회비_납부자_현황";
 
         List<UserCouncilFeeResponseDto> userCouncilFeeResponseDtoList = userCouncilFeeRepository.findAll()
                         .stream().map(userCouncilFee -> (userCouncilFee.getIsJoinedService()) ?

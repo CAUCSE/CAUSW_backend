@@ -693,6 +693,7 @@ public class CircleService {
         sheetNameDataMap.put("활성 동아리원", activeUserDtoList);
         sheetNameDataMap.put("가입 대기 동아리원", activeUserDtoList);
 
+        String fileName = LocalDateTime.now().toString() + "_" + circleName + "_부원명단";
 
         circleExcelService.generateExcel(response, circleName + "_부원명단", sheetNameDataMap);
     }
