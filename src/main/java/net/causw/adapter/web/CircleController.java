@@ -530,8 +530,7 @@ public class CircleController {
      */
     @PutMapping(value = "/applications/{applicationId}/accept")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
 //    @ApiImplicitParams(
 //            {
 //                    @ApiImplicitParam(name = "applicationId",
