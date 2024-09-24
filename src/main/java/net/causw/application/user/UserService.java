@@ -1,5 +1,6 @@
 package net.causw.application.user;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
@@ -8,6 +9,7 @@ import net.causw.adapter.persistence.locker.LockerLog;
 import net.causw.adapter.persistence.repository.uuidFile.UserProfileImageRepository;
 import net.causw.adapter.persistence.uuidFile.joinEntity.UserAdmissionAttachImage;
 import net.causw.adapter.persistence.uuidFile.joinEntity.UserProfileImage;
+import net.causw.application.excel.UserExcelService;
 import net.causw.application.pageable.PageableFactory;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.board.BoardRepository;
@@ -103,6 +105,7 @@ public class UserService {
     private final FavoritePostRepository favoritePostRepository;
     private final LikePostRepository likePostRepository;
     private final UserProfileImageRepository userProfileImageRepository;
+    private final UserExcelService userExcelService;
 
     @Transactional
     public UserResponseDto findPassword(
@@ -662,10 +665,17 @@ public class UserService {
 
     @Transactional
     public UserResponseDto update(User user, UserUpdateRequestDto userUpdateRequestDto, MultipartFile profileImage) {
-        Set<Role> roles = user.getRoles();
+        User srcUser = userRepository.findById(user.getId()).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.USER_NOT_FOUND
+                )
+        );
+
+        Set<Role> roles = srcUser.getRoles();
 
         // 닉네임이 변경되었을 때 중복 체크 (이메일 중복 체크의 경우 바뀐 기획에서 이메일 변경이 불가능하여 삭제)
-        if (user.getNickname() == null || !user.getNickname().equals(userUpdateRequestDto.getNickname())) {
+        if (srcUser.getNickname() == null || !srcUser.getNickname().equals(userUpdateRequestDto.getNickname())) {
             userRepository.findByNickname(userUpdateRequestDto.getNickname()).ifPresent(
                     nickname -> {
                         throw new BadRequestException(
@@ -681,19 +691,19 @@ public class UserService {
 
         if (profileImage.isEmpty()) {
             if (user.getUserProfileImage() != null) {
-                uuidFileService.deleteFile(user.getUserProfileImage().getUuidFile());
-                userProfileImageRepository.delete(user.getUserProfileImage());
+                uuidFileService.deleteFile(srcUser.getUserProfileImage().getUuidFile());
+                userProfileImageRepository.delete(srcUser.getUserProfileImage());
             }
         } else {
-            if (user.getUserProfileImage() == null) {
+            if (srcUser.getUserProfileImage() == null) {
                 userProfileImage = UserProfileImage.of(
                         user,
                         uuidFileService.saveFile(profileImage, FilePath.USER_PROFILE)
                 );
             } else {
-                userProfileImage = user.getUserProfileImage().updateUuidFileAndReturnSelf(
+                userProfileImage = srcUser.getUserProfileImage().updateUuidFileAndReturnSelf(
                         uuidFileService.updateFile(
-                                user.getUserProfileImage().getUuidFile(),
+                                srcUser.getUserProfileImage().getUuidFile(),
                                 profileImage,
                                 FilePath.USER_PROFILE
                         )
@@ -701,17 +711,17 @@ public class UserService {
             }
         }
 
-        user.update(userUpdateRequestDto.getNickname(), userUpdateRequestDto.getAcademicStatus(), userProfileImage);
+        srcUser.update(userUpdateRequestDto.getNickname(), userUpdateRequestDto.getAcademicStatus(), userProfileImage);
 
         // Validate the admission year range
         ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserStateValidator.of(srcUser.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(roles))
-                .consistOf(ConstraintValidator.of(user, this.validator))
+                .consistOf(ConstraintValidator.of(srcUser, this.validator))
                 .consistOf(AdmissionYearValidator.of(userUpdateRequestDto.getAdmissionYear()))
                 .validate();
 
-        User updatedUser = userRepository.save(user);
+        User updatedUser = userRepository.save(srcUser);
 
         return UserDtoMapper.INSTANCE.toUserResponseDto(updatedUser, null, null);
     }
@@ -1512,6 +1522,81 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    public void exportUserListToExcel(HttpServletResponse response) {
+        String fileName = LocalDateTime.now().toString() + "_사용자명단.xlsx";
+
+        LinkedHashMap<String, List<UserResponseDto>> sheetDataMap = new LinkedHashMap<>();
+
+        List<UserResponseDto> activeUserList = userRepository.findAllByState(UserState.ACTIVE)
+                .stream()
+                .map(user -> {
+                            if (user.getRoles().contains(Role.LEADER_CIRCLE)) {
+                                List<String> circleIdIfLeader = getCircleIdsIfLeader(user);
+                                List<String> circleNameIfLeader = getCircleNamesIfLeader(user);
+                                return UserDtoMapper.INSTANCE.toUserResponseDto(user, circleIdIfLeader, circleNameIfLeader);
+                            } else {
+                                return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
+                            }
+                }).toList();
+
+        List<UserResponseDto> inactiveUserList = userRepository.findAllByState(UserState.INACTIVE)
+                .stream()
+                .map(user -> {
+                            if (user.getRoles().contains(Role.LEADER_CIRCLE)) {
+                                List<String> circleIdIfLeader = getCircleIdsIfLeader(user);
+                                List<String> circleNameIfLeader = getCircleNamesIfLeader(user);
+                                return UserDtoMapper.INSTANCE.toUserResponseDto(user, circleIdIfLeader, circleNameIfLeader);
+                            } else {
+                                return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
+                            }
+                }).toList();
+
+        List<UserResponseDto> awaitUserList = userRepository.findAllByState(UserState.AWAIT)
+                .stream()
+                .map(user -> {
+                            if (user.getRoles().contains(Role.LEADER_CIRCLE)) {
+                                List<String> circleIdIfLeader = getCircleIdsIfLeader(user);
+                                List<String> circleNameIfLeader = getCircleNamesIfLeader(user);
+                                return UserDtoMapper.INSTANCE.toUserResponseDto(user, circleIdIfLeader, circleNameIfLeader);
+                            } else {
+                                return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
+                            }
+                }).toList();
+
+        List<UserResponseDto> rejectUserList = userRepository.findAllByState(UserState.REJECT)
+                .stream()
+                .map(user -> {
+                    if (user.getRoles().contains(Role.LEADER_CIRCLE)) {
+                        List<String> circleIdIfLeader = getCircleIdsIfLeader(user);
+                        List<String> circleNameIfLeader = getCircleNamesIfLeader(user);
+                        return UserDtoMapper.INSTANCE.toUserResponseDto(user, circleIdIfLeader, circleNameIfLeader);
+                    } else {
+                        return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
+                    }
+                }).toList();
+
+        List<UserResponseDto> dropUserList = userRepository.findAllByState(UserState.DROP)
+                .stream()
+                .map(user -> {
+                            if (user.getRoles().contains(Role.LEADER_CIRCLE)) {
+                                List<String> circleIdIfLeader = getCircleIdsIfLeader(user);
+                                List<String> circleNameIfLeader = getCircleNamesIfLeader(user);
+                                return UserDtoMapper.INSTANCE.toUserResponseDto(user, circleIdIfLeader, circleNameIfLeader);
+                            } else {
+                                return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
+                            }
+                }).toList();
+
+        sheetDataMap.put("활성 유저", activeUserList);
+        sheetDataMap.put("가입 대기 유저", awaitUserList);
+        sheetDataMap.put("가입 거절 유저", rejectUserList);
+        sheetDataMap.put("탈퇴 유저", inactiveUserList);
+        sheetDataMap.put("추방 유저", dropUserList);
+
+        userExcelService.generateExcel(response, fileName, sheetDataMap);
+    }
+
+    // private methods
     private List<String> getCircleNamesIfLeader(User user) {
         List<Circle> circleList = this.circleRepository.findByLeader_Id(user.getId());
 
@@ -1571,5 +1656,4 @@ public class UserService {
     private Long getNumOfPostFavorites(Post post){
         return favoritePostRepository.countByPostIdAndIsDeletedFalse(post.getId());
     }
-
 }

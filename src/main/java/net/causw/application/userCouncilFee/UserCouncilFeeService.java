@@ -24,7 +24,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+
 @MeasureTime
 @Service
 @RequiredArgsConstructor
@@ -40,7 +44,7 @@ public class UserCouncilFeeService {
     public void exportUserCouncilFeeToExcel(HttpServletResponse response) {
         Semester semester = semesterService.getCurrentSemesterEntity();
 
-        String fileName = semester.getSemesterYear().toString() + "-" + semester.getSemesterType().getValue() + "_학생회비_납부자_현황";
+        String fileName = LocalDateTime.now() + "_" + semester.getSemesterYear().toString() + "-" + semester.getSemesterType().getValue() + "_학생회비_납부자_현황";
 
         List<UserCouncilFeeResponseDto> userCouncilFeeResponseDtoList = userCouncilFeeRepository.findAll()
                         .stream().map(userCouncilFee -> (userCouncilFee.getIsJoinedService()) ?
@@ -48,7 +52,14 @@ public class UserCouncilFeeService {
                                 toUserCouncilFeeResponseDtoReduced(userCouncilFee, userCouncilFee.getCouncilFeeFakeUser(), getRestOfSemester(userCouncilFee), getIsAppliedCurrentSemester(userCouncilFee))
                         ).toList();
 
-        councilFeeExcelService.generateExcel(response, fileName, userCouncilFeeResponseDtoList);
+        LinkedHashMap<String, List<UserCouncilFeeResponseDto>> sheetNameDataMap = new LinkedHashMap<>();
+        sheetNameDataMap.put("학생회비 납부자 현황", userCouncilFeeResponseDtoList);
+
+        councilFeeExcelService.generateExcel(
+                response,
+                fileName,
+                sheetNameDataMap
+        );
     }
 
     public Page<UserCouncilFeeListResponseDto> getUserCouncilFeeList(Pageable pageable) {

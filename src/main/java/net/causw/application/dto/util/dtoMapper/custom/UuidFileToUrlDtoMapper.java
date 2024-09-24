@@ -14,8 +14,9 @@ public interface UuidFileToUrlDtoMapper {
     default String mapUuidFileToFileUrl (JoinEntity joinEntity) {
         if (joinEntity == null) {
             return null;
+        } else {
+            return joinEntity.getUuidFile() == null ? null : joinEntity.getUuidFile().getFileUrl();
         }
-        return joinEntity.getUuidFile().getFileUrl();
     }
 
     @Named(value = "mapUuidFileListToFileUrlList")
