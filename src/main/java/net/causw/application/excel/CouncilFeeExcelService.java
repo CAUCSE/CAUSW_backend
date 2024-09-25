@@ -13,64 +13,6 @@ import java.util.List;
 public class CouncilFeeExcelService extends ExcelAbstractService<UserCouncilFeeResponseDto> {
 
     @Override
-    public void createHeaderRow(Sheet sheet) {
-        Row headerRow = sheet.createRow(0);
-        Cell cell = headerRow.createCell(0);
-        cell.setCellValue("동문네트워크 서비스 가입 여부");
-
-        cell = headerRow.createCell(1);
-        cell.setCellValue("이메일(아이디)");
-
-        cell = headerRow.createCell(2);
-        cell.setCellValue("이름");
-
-        cell = headerRow.createCell(3);
-        cell.setCellValue("학번");
-
-        cell = headerRow.createCell(4);
-        cell.setCellValue("입학년도");
-
-        cell = headerRow.createCell(5);
-        cell.setCellValue("전공");
-
-        cell = headerRow.createCell(6);
-        cell.setCellValue("학적상태");
-
-        cell = headerRow.createCell(7);
-        cell.setCellValue("등록 완료 학기");
-
-        cell = headerRow.createCell(8);
-        cell.setCellValue("졸업년도");
-
-        cell = headerRow.createCell(9);
-        cell.setCellValue("졸업 유형");
-
-        cell = headerRow.createCell(10);
-        cell.setCellValue("전화번호");
-
-        cell = headerRow.createCell(11);
-        cell.setCellValue("동문 네트워크 가입일");
-
-        cell = headerRow.createCell(12);
-        cell.setCellValue("납부 시점 학기");
-
-        cell = headerRow.createCell(13);
-        cell.setCellValue("납부한 학기 수");
-
-        cell = headerRow.createCell(14);
-        cell.setCellValue("환불 여부");
-
-        cell = headerRow.createCell(15);
-        cell.setCellValue("환불 시점");
-
-        cell = headerRow.createCell(16);
-        cell.setCellValue("잔여 학생회비 적용 학기");
-
-        cell = headerRow.createCell(17);
-        cell.setCellValue("본 학기 학생회비 적용 여부");
-    }
-
-    @Override
     public void createDataRows(Sheet sheet, List<UserCouncilFeeResponseDto> dataList) {
         int rowNum = 1;
         for (UserCouncilFeeResponseDto userCouncilFeeResponseDto : dataList) {

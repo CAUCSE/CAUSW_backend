@@ -38,7 +38,7 @@ public class CreateUserCouncilFeeWithFakeUserRequestDto {
 
     @Schema(description = "전화번호", requiredMode = Schema.RequiredMode.REQUIRED, example = "010-1234-5678")
     @Pattern(
-            regexp = "^01(?:0|1|[6-9])-(\\d{3}|\\d{4})-\\d{4}$",
+            regexp = "^01(?:0|1|[6-9])(\\d{3}|\\d{4})\\d{4}$",
             message = "전화번호는 010으로 시작하는 11자리의 숫자 형식이어야 합니다."
     )
     private String phoneNumber;

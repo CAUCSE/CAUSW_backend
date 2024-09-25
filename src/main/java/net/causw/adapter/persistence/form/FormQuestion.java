@@ -17,7 +17,7 @@ import java.util.List;
         indexes = {
         @Index(name = "form_id_index", columnList = "form_id")
 })
-public class Question extends BaseEntity {
+public class FormQuestion extends BaseEntity {
 
     @Column(name = "number", nullable = false)
     private Integer number;
@@ -33,20 +33,20 @@ public class Question extends BaseEntity {
     @ColumnDefault("false")
     private Boolean isMultiple;
 
-    @OneToMany(mappedBy = "question",cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Option> options;
+    @OneToMany(mappedBy = "question",cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, orphanRemoval = true)
+    private List<FormQuestionOption> formQuestionOptionList;
 
     @ManyToOne
     @JoinColumn(name = "form_id", nullable = false)
     private Form form;
 
-    public static Question of(Integer number, QuestionType questionType, String questionText, Boolean isMultiple, List<Option> options, Form form) {
-        return Question.builder()
+    public static FormQuestion of(Integer number, QuestionType questionType, String questionText, Boolean isMultiple, List<FormQuestionOption> formQuestionOptionList, Form form) {
+        return FormQuestion.builder()
                 .number(number)
                 .questionType(questionType)
                 .questionText(questionText)
                 .isMultiple(isMultiple)
-                .options(options)
+                .formQuestionOptionList(formQuestionOptionList)
                 .form(form)
                 .build();
     }

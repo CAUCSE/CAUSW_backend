@@ -6,16 +6,13 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import net.causw.application.dto.comment.CommentResponseDto;
-import net.causw.application.dto.form.FormResponseDto;
+import net.causw.application.dto.form.response.FormResponseDto;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Getter
-@Setter
 @Builder
-@AllArgsConstructor
 public class PostResponseDto {
     @Schema(description = "게시글 id", example = "uuid 형식의 String 값입니다.")
     private String id;

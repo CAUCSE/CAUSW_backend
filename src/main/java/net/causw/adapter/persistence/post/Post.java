@@ -18,7 +18,11 @@ import java.util.List;
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "tb_post")
+@Table(name = "tb_post", indexes = {
+        @Index(name = "board_id_index", columnList = "board_id"),
+        @Index(name = "user_id_index", columnList = "user_id"),
+        @Index(name = "form_id_index", columnList = "form_id")
+})
 public class Post extends BaseEntity {
     @Column(name = "title", nullable = false)
     private String title;

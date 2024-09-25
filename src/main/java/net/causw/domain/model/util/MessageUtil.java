@@ -12,11 +12,19 @@ public class MessageUtil {
     public static final String INVALID_REFRESH_TOKEN = "RefreshToken 유효성 검증 실패";
     public static final String INVALID_TOKEN = "잘못된 AccessToken 입니다";
     public static final String EXPIRED_TOKEN = "만료된 AccessToken 입니다";
+    public static final String DOES_NOT_HAVE_PERMISSION = "권한이 없습니다.";
 
     // Form
+    public static final String INVALID_QUESTION_INFO = "유효하지 않은 문항 정보입니다.";
     public static final String FORM_NOT_FOUND = "신청 폼을 찾을 수 없습니다.";
     public static final String QUESTION_NOT_FOUND = "질문을 찾을 수 없습니다.";
     public static final String OPTION_NOT_FOUND = "해당 문항을 찾을 수 없습니다.";
+    public static final String NOT_ALLOWED_TO_REPLY_FORM = "답변이 허용되지 않은 사용자입니다.";
+    public static final String INVALID_REPLY_INFO = "유효하지 않은 신청서 답변 정보입니다.";
+    public static final String ALREADY_REPLIED = "이미 답변한 신청서입니다.";
+    public static final String NOT_ALLOWED_TO_ACCESS_REPLY = "신청서 답변을 조회할 수 없는 사용자입니다.";
+    public static final String FORM_CLOSED = "신청 기간이 종료되었습니다.";
+    public static final String FORM_ALREADY_CLOSED = "이미 종료된 신청서입니다.";
 
     // Calendar & Event
     public static final String CALENDAR_NOT_FOUND = "캘린더를 찾을 수 없습니다.";
@@ -140,4 +148,5 @@ public class MessageUtil {
     public static final String FILE_DELETE_FAIL = "파일 삭제에 실패했습니다.";
     public static final String FAIL_TO_GENERATE_EXCEL_FILE = "엑셀 파일 생성에 실패했습니다.";
     public static final String BATCH_FAIL = "[배치 실행에 실패했습니다.]";
+
 }

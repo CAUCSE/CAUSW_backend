@@ -34,22 +34,6 @@ public class SecurityService {
                         .noneMatch(authority -> authority.getAuthority().equals("ROLE_NONE"));
     }
 
-    public boolean hasAccessToForm(String formId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return false;
-        }
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-
-        Integer userSemester = userDetails.getUser().getCurrentCompletedSemester();
-        AcademicStatus academicStatus = userDetails.getUser().getAcademicStatus();
-
-        Form form = formRepository.findById(formId)
-                .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.FORM_NOT_FOUND));
-
-        return form.getAllowedGrades().contains(convertSemesterToGrade(userSemester)) && form.getAllowedAcademicStatus().contains(academicStatus);
-    }
-
     public boolean isAcademicRecordCertified() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {

@@ -1,4 +1,4 @@
-package net.causw.application.dto.form;
+package net.causw.application.dto.form.request.create;
 
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -6,11 +6,8 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import net.causw.domain.model.enums.form.RegisteredSemester;
-import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
 
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 
 @Getter
 public class FormCreateRequestDto {
@@ -20,7 +17,7 @@ public class FormCreateRequestDto {
 
     @NotEmpty(message = "질문을 입력해 주세요.")
     @Schema(description = "질문", requiredMode = Schema.RequiredMode.REQUIRED)
-    private List<QuestionCreateRequestDto> questions;
+    private List<QuestionCreateRequestDto> questionCreateRequestDtoList;
 
     @NotNull(message = "재학생 답변 허용 여부를 선택해 주세요.")
     @Schema(description = "재학생 답변 허용 여부", example = "ture", requiredMode = Schema.RequiredMode.REQUIRED)

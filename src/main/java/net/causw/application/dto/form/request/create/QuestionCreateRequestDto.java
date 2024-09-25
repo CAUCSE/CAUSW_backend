@@ -1,4 +1,4 @@
-package net.causw.application.dto.form;
+package net.causw.application.dto.form.request.create;
 
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -10,14 +10,7 @@ import net.causw.domain.model.enums.form.QuestionType;
 import java.util.List;
 
 @Getter
-@Setter
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
 public class QuestionCreateRequestDto {
-    @NotNull(message = "질문 번호를 입력해 주세요.")
-    @Schema(description = "질문 번호", example = "1")
-    private Integer questionNumber;
 
     @NotBlank(message = "질문 내용을 입력해 주세요.")
     @Schema(description = "질문 종류", example = "SUBJECTIVE")
@@ -32,5 +25,5 @@ public class QuestionCreateRequestDto {
     private Boolean isMultiple;
 
     @Schema(description = "객관식")
-    private List<OptionCreateRequestDto> options;
+    private List<OptionCreateRequestDto> optionCreateRequestDtoList;
 }

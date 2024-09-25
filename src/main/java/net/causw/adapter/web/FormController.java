@@ -4,13 +4,19 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import net.causw.application.dto.form.*;
+import net.causw.application.dto.form.response.reply.ReplyPageResponseDto;
+import net.causw.application.dto.form.response.reply.ReplyResponseDto;
+import net.causw.application.dto.form.request.FormReplyRequestDto;
+import net.causw.application.dto.form.response.QuestionSummaryResponseDto;
 import net.causw.application.form.FormService;
 import net.causw.config.security.SecurityService;
 import net.causw.config.security.userdetails.CustomUserDetails;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.util.MessageUtil;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -24,30 +30,6 @@ import java.util.List;
 public class FormController {
     private final FormService formService;
     private final SecurityService securityService;
-
-    @PostMapping("/circle-recruit")
-    @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "동아리 모집 신청서 생성", description = "동아리 모집 신청서를 생성합니다.")
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
-    public FormResponseDto createCircleRecruitForm(
-            @Valid @RequestBody CircleRecruitFormCreateRequestDto circleRecruitFormCreateRequestDto,
-            @AuthenticationPrincipal CustomUserDetails userDetails
-    )
-    {
-        return formService.createCircleRecruitForm(userDetails.getUser(), circleRecruitFormCreateRequestDto);
-    }
-
-    @GetMapping("/{formId}")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "신청서 조회", description = "신청서를 조회합니다.")
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
-    public FormResponseDto findForm(@PathVariable(name = "formId") String formId) {
-        if (!securityService.hasAccessToForm(formId)) {
-            throw new UnauthorizedException(ErrorCode.API_NOT_ACCESSIBLE, MessageUtil.API_NOT_ACCESSIBLE);
-        }
-        return formService.findForm(formId);
-    }
 
     @DeleteMapping("/{formId}")
     @ResponseStatus(HttpStatus.OK)
@@ -70,29 +52,25 @@ public class FormController {
             @Valid @RequestBody FormReplyRequestDto formReplyRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ){
-        if (!securityService.hasAccessToForm(formId)) {
-            throw new UnauthorizedException(ErrorCode.API_NOT_ACCESSIBLE, MessageUtil.API_NOT_ACCESSIBLE);
-        }
         formService.replyForm(formId, formReplyRequestDto, userDetails.getUser());
     }
 
     @GetMapping("/{formId}/results")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "신청서 결과 조회", description = "신청서 결과를 조회합니다.")
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
-    public List<ReplyUserResponseDto> findUserReply(
+    @Operation(summary = "신청서 결과 전체 페이징 조회", description = "신청서 결과 전체를 페이징으로 조회합니다. 게시글의 신청서는 게시글 작성자만, 동아리 신청서는 동아리장만 조회가 가능합니다.")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
+    public ReplyPageResponseDto findAllReplyPageByForm(
             @PathVariable(name = "formId") String formId,
+            @ParameterObject Pageable pageable,
             @AuthenticationPrincipal CustomUserDetails userDetails
-    ){
-        return formService.findUserReply(formId, userDetails.getUser());
+    ) {
+        return formService.findAllReplyPageByForm(formId, pageable, userDetails.getUser());
     }
 
     @GetMapping("/{formId}/summary")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "신청서 결과 요약 조회", description = "신청서 결과를 요약 조회합니다.")
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     public List<QuestionSummaryResponseDto> findSummaryReply(
             @PathVariable(name = "formId") String formId,
             @AuthenticationPrincipal CustomUserDetails userDetails

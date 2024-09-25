@@ -1,6 +1,5 @@
 package net.causw.application.post;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
@@ -8,13 +7,15 @@ import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.form.Form;
-import net.causw.adapter.persistence.form.Option;
-import net.causw.adapter.persistence.form.Question;
+import net.causw.adapter.persistence.form.FormQuestionOption;
+import net.causw.adapter.persistence.form.FormQuestion;
 import net.causw.adapter.persistence.repository.form.FormRepository;
 import net.causw.adapter.persistence.repository.uuidFile.PostAttachImageRepository;
 import net.causw.adapter.persistence.uuidFile.joinEntity.PostAttachImage;
-import net.causw.application.dto.form.FormCreateRequestDto;
-import net.causw.application.dto.form.FormResponseDto;
+import net.causw.application.dto.form.request.create.FormCreateRequestDto;
+import net.causw.application.dto.form.response.FormResponseDto;
+import net.causw.application.dto.form.response.OptionResponseDto;
+import net.causw.application.dto.form.response.QuestionResponseDto;
 import net.causw.application.dto.util.dtoMapper.FormDtoMapper;
 import net.causw.application.pageable.PageableFactory;
 import net.causw.adapter.persistence.post.FavoritePost;
@@ -46,6 +47,7 @@ import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.circle.CircleMemberStatus;
+import net.causw.domain.model.enums.form.QuestionType;
 import net.causw.domain.model.enums.form.RegisteredSemesterManager;
 import net.causw.domain.model.enums.uuidFile.FilePath;
 import net.causw.domain.model.enums.user.Role;
@@ -60,6 +62,7 @@ import jakarta.validation.Validator;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 @MeasureTime
 @Service
@@ -690,44 +693,68 @@ public class PostService {
     }
 
     private Form generateForm(FormCreateRequestDto formCreateRequestDto) {
-        List<Question> questionList = Optional.ofNullable(formCreateRequestDto.getQuestions())
+        AtomicReference<Integer> questionNumber = new AtomicReference<>(1);
+
+        List<FormQuestion> formQuestionList = Optional.ofNullable(formCreateRequestDto.getQuestionCreateRequestDtoList())
                 .orElse(new ArrayList<>())
                 .stream()
                 .map(
                         questionCreateRequestDto -> {
 
-                            List<Option> optionList = Optional.ofNullable(questionCreateRequestDto.getOptions())
+                            AtomicReference<Integer> optionNumber = new AtomicReference<>(1);
+
+                            List<FormQuestionOption> formQuestionOptionList = Optional.ofNullable(questionCreateRequestDto.getOptionCreateRequestDtoList())
                                     .orElse(new ArrayList<>())
                                     .stream()
                                     .map(
-                                            optionCreateRequestDto -> Option.of(
-                                                    optionCreateRequestDto.getOptionNumber(),
+                                            optionCreateRequestDto -> FormQuestionOption.of(
+                                                    optionNumber.getAndSet(optionNumber.get() + 1),
                                                     optionCreateRequestDto.getOptionText(),
                                                     null
                                             )
                                     ).toList();
 
-                            Question question = Question.of(
-                                    questionCreateRequestDto.getQuestionNumber(),
+                            if (questionCreateRequestDto.getQuestionType().equals(QuestionType.OBJECTIVE)) {
+                                if (questionCreateRequestDto.getIsMultiple() == null ||
+                                        questionCreateRequestDto.getOptionCreateRequestDtoList().isEmpty()
+                                ) {
+                                    throw new BadRequestException(
+                                            ErrorCode.INVALID_PARAMETER,
+                                            MessageUtil.INVALID_QUESTION_INFO
+                                    );
+                                }
+                            } else {
+                                if (questionCreateRequestDto.getIsMultiple() != null ||
+                                        !questionCreateRequestDto.getOptionCreateRequestDtoList().isEmpty()
+                                ) {
+                                    throw new BadRequestException(
+                                            ErrorCode.INVALID_PARAMETER,
+                                            MessageUtil.INVALID_QUESTION_INFO
+                                    );
+                                }
+                            }
+
+                            FormQuestion formQuestion = FormQuestion.of(
+                                    questionNumber.getAndSet(questionNumber.get() + 1),
                                     questionCreateRequestDto.getQuestionType(),
                                     questionCreateRequestDto.getQuestionText(),
                                     questionCreateRequestDto.getIsMultiple(),
-                                    optionList,
+                                    formQuestionOptionList,
                                     null
                             );
 
-                            optionList.forEach(option -> option.setQuestion(question));
+                            formQuestionOptionList.forEach(option -> option.setFormQuestion(formQuestion));
 
-                            return question;
+                            return formQuestion;
                         }
                 ).toList();
 
         return Form.createPostForm(
                 formCreateRequestDto.getTitle(),
-                questionList,
+                formQuestionList,
                 formCreateRequestDto.getIsAllowedEnrolled(),
                 formCreateRequestDto.getIsAllowedEnrolled() ?
-                        RegisteredSemesterManager.from(
+                        RegisteredSemesterManager.fromEnumList(
                                 formCreateRequestDto.getEnrolledRegisteredSemesterList()
                         )
                         : null,
@@ -736,7 +763,7 @@ public class PostService {
                         : null,
                 formCreateRequestDto.getIsAllowedLeaveOfAbsence(),
                 formCreateRequestDto.getIsAllowedLeaveOfAbsence() ?
-                        RegisteredSemesterManager.from(
+                        RegisteredSemesterManager.fromEnumList(
                                 formCreateRequestDto.getLeaveOfAbsenceRegisteredSemesterList()
                         )
                         : null,
@@ -910,7 +937,25 @@ public class PostService {
     }
 
     private FormResponseDto toFormResponseDto(Form form) {
-        return FormDtoMapper.INSTANCE.toFormResponseDto(form);
+        return FormDtoMapper.INSTANCE.toFormResponseDto(
+                form,
+                form.getFormQuestionList().stream()
+                        .map(this::toQuestionResponseDto)
+                        .collect(Collectors.toList())
+        );
+    }
+
+    private QuestionResponseDto toQuestionResponseDto(FormQuestion formQuestion) {
+        return FormDtoMapper.INSTANCE.toQuestionResponseDto(
+                formQuestion,
+                formQuestion.getFormQuestionOptionList().stream()
+                        .map(this::toOptionResponseDto)
+                        .collect(Collectors.toList())
+        );
+    }
+
+    private OptionResponseDto toOptionResponseDto(FormQuestionOption formQuestionOption) {
+        return FormDtoMapper.INSTANCE.toOptionResponseDto(formQuestionOption);
     }
 
 }

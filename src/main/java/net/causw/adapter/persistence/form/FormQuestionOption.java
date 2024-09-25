@@ -5,7 +5,6 @@ import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 
 @Getter
-@Setter
 @Entity
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -14,7 +13,7 @@ import net.causw.adapter.persistence.base.BaseEntity;
         indexes = {
                 @Index(name = "question_id_index", columnList = "question_id")
 })
-public class Option extends BaseEntity {
+public class FormQuestionOption extends BaseEntity {
     @Column(name = "number", nullable = false)
     private Integer number;
 
@@ -23,13 +22,17 @@ public class Option extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "question_id", nullable = false)
-    private Question question;
+    private FormQuestion formQuestion;
 
-    public static Option of(Integer number, String text, Question question) {
-        return Option.builder()
+    public static FormQuestionOption of(Integer number, String text, FormQuestion formQuestion) {
+        return FormQuestionOption.builder()
                 .number(number)
                 .optionText(text)
-                .question(question)
+                .formQuestion(formQuestion)
                 .build();
+    }
+
+    public void setFormQuestion(FormQuestion formQuestion) {
+        this.formQuestion = formQuestion;
     }
 }

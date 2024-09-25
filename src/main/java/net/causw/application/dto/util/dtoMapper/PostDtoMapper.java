@@ -3,7 +3,7 @@ package net.causw.application.dto.util.dtoMapper;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.application.dto.comment.CommentResponseDto;
-import net.causw.application.dto.form.FormResponseDto;
+import net.causw.application.dto.form.response.FormResponseDto;
 import net.causw.application.dto.post.BoardPostsResponseDto;
 import net.causw.application.dto.post.PostContentDto;
 import net.causw.application.dto.post.PostResponseDto;

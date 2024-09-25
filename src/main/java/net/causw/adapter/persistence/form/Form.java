@@ -31,11 +31,16 @@ public class Form extends BaseEntity {
     @OneToMany(mappedBy = "form", cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, orphanRemoval = true)
     @JoinColumn(nullable = false)
     @Builder.Default
-    private List<Question> questions = new ArrayList<>();
+    private List<FormQuestion> formQuestionList = new ArrayList<>();
 
     @Column(name = "is_deleted")
     @ColumnDefault("false")
-    private Boolean isDeleted;
+    @Builder.Default
+    private Boolean isDeleted = false;
+
+    @Column(name = "is_closed")
+    @ColumnDefault("false")
+    private Boolean isClosed;
 
     @ManyToOne
     @JoinColumn(name = "circle_id", nullable = true)
@@ -61,23 +66,21 @@ public class Form extends BaseEntity {
 
     @OneToMany(mappedBy = "form", cascade = { CascadeType.REMOVE }, orphanRemoval = true)
     @Builder.Default
-    private List<Reply> replies = new ArrayList<>();
+    private List<Reply> replyList = new ArrayList<>();
 
     public EnumSet<RegisteredSemester> getEnrolledRegisteredSemester() {
-        RegisteredSemesterManager registeredSemesterManager = new RegisteredSemesterManager();
-        registeredSemesterManager.deserialize(this.EnrolledRegisteredSemester);
+        RegisteredSemesterManager registeredSemesterManager = RegisteredSemesterManager.fromString(this.EnrolledRegisteredSemester);
         return registeredSemesterManager.getRegisteredSemesterEnumSet();
     }
 
     public EnumSet<RegisteredSemester> getLeaveOfAbsenceRegisteredSemester() {
-        RegisteredSemesterManager registeredSemesterManager = new RegisteredSemesterManager();
-        registeredSemesterManager.deserialize(this.LeaveOfAbsenceRegisteredSemester);
+        RegisteredSemesterManager registeredSemesterManager = RegisteredSemesterManager.fromString(this.EnrolledRegisteredSemester);
         return registeredSemesterManager.getRegisteredSemesterEnumSet();
     }
 
     public static Form createPostForm(
             String title,
-            List<Question> questionList,
+            List<FormQuestion> formQuestionList,
             Boolean isAllowedEnrolled,
             RegisteredSemesterManager enrolledRegisteredSemester,
             Boolean isNeedCouncilFeePaid,
@@ -88,7 +91,7 @@ public class Form extends BaseEntity {
         return Form.builder()
                 .formType(FormType.POST_FORM)
                 .title(title)
-                .questions(questionList)
+                .formQuestionList(formQuestionList)
                 .isAllowedEnrolled(isAllowedEnrolled)
                 .EnrolledRegisteredSemester(
                         isAllowedEnrolled ?
@@ -106,7 +109,7 @@ public class Form extends BaseEntity {
 
     public static Form createCircleApplicationForm(
             String title,
-            List<Question> questionList,
+            List<FormQuestion> formQuestionList,
             Circle circle,
             Boolean isAllowedEnrolled,
             RegisteredSemesterManager enrolledRegisteredSemester,
@@ -118,7 +121,7 @@ public class Form extends BaseEntity {
         return Form.builder()
                 .formType(FormType.CIRCLE_APPLICATION_FORM)
                 .title(title)
-                .questions(questionList)
+                .formQuestionList(formQuestionList)
                 .circle(circle)
                 .isAllowedEnrolled(isAllowedEnrolled)
                 .EnrolledRegisteredSemester(
@@ -140,7 +143,7 @@ public class Form extends BaseEntity {
 
     public void update(
             String title,
-            List<Question> questionList,
+            List<FormQuestion> formQuestionList,
             Boolean isAllowedEnrolled,
             RegisteredSemesterManager enrolledRegisteredSemester,
             Boolean isNeedCouncilFeePaid,
@@ -149,7 +152,7 @@ public class Form extends BaseEntity {
             Boolean isAllowedGraduation
     ) {
         this.title = title;
-        this.questions = questionList;
+        this.formQuestionList = formQuestionList;
         this.isAllowedEnrolled = isAllowedEnrolled;
         this.EnrolledRegisteredSemester = isAllowedEnrolled ?
                 enrolledRegisteredSemester.serialize()
@@ -160,6 +163,10 @@ public class Form extends BaseEntity {
                 leaveOfAbsenceRegisteredSemester.serialize()
                 : null;
         this.isAllowedGraduation = isAllowedGraduation;
+    }
+
+    public void setIsClosed(Boolean isClosed) {
+        this.isClosed = isClosed;
     }
 
     public void setIsDeleted(Boolean isDeleted) {

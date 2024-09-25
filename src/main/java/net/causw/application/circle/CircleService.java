@@ -6,8 +6,8 @@ import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.form.Form;
-import net.causw.adapter.persistence.form.Option;
-import net.causw.adapter.persistence.form.Question;
+import net.causw.adapter.persistence.form.FormQuestionOption;
+import net.causw.adapter.persistence.form.FormQuestion;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.board.BoardRepository;
 import net.causw.adapter.persistence.repository.circle.CircleMemberRepository;
@@ -24,8 +24,7 @@ import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.board.BoardOfCircleResponseDto;
 import net.causw.application.dto.circle.*;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
-import net.causw.application.dto.form.CircleRecruitFormCreateRequestDto;
-import net.causw.application.dto.form.FormCreateRequestDto;
+import net.causw.application.dto.form.request.create.FormCreateRequestDto;
 import net.causw.application.dto.user.UserResponseDto;
 import net.causw.application.dto.util.dtoMapper.CircleDtoMapper;
 import net.causw.application.dto.util.StatusUtil;
@@ -36,6 +35,7 @@ import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.model.enums.circle.CircleMemberStatus;
+import net.causw.domain.model.enums.form.QuestionType;
 import net.causw.domain.model.enums.form.RegisteredSemesterManager;
 import net.causw.domain.model.enums.uuidFile.FilePath;
 import net.causw.domain.model.enums.user.Role;
@@ -51,6 +51,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -701,9 +702,30 @@ public class CircleService {
         sheetNameDataMap.put("활성 동아리원", activeUserDtoList);
         sheetNameDataMap.put("가입 대기 동아리원", activeUserDtoList);
 
-        String fileName = LocalDateTime.now().toString() + "_" + circleName + "_부원명단";
+        String fileName = circleName + "_부원명단";
 
-        circleExcelService.generateExcel(response, circleName + "_부원명단", sheetNameDataMap);
+        List<String> headerStringList = List.of(
+                "아이디(이메일)",
+                "이름",
+                "닉네임",
+                "입학년도",
+                "학번",
+                "학부/학과",
+                "연락처",
+                "학적 상태",
+                "현재 등록 완료된 학기",
+                "졸업 년도",
+                "졸업 시기",
+                "동문네트워크 가입일",
+                "본 학기 학생회비 납부 여부",
+                "학생회비 납부 시점",
+                "학생회비 납부 차수",
+                "적용 학생회비 학기",
+                "잔여 학생회비 적용 학기",
+                "학생회비 환불 여부"
+        );
+
+        circleExcelService.generateExcel(response, fileName, headerStringList, sheetNameDataMap);
     }
 
     @Transactional
@@ -882,39 +904,63 @@ public class CircleService {
     }
 
     private Form generateForm(FormCreateRequestDto formCreateRequestDto, Circle circle) {
-        List<Question> questionList = Optional.ofNullable(formCreateRequestDto.getQuestions())
+        AtomicReference<Integer> questionNumber = new AtomicReference<>(1);
+        List<FormQuestion> formQuestionList = Optional.ofNullable(formCreateRequestDto.getQuestionCreateRequestDtoList())
                 .orElse(new ArrayList<>())
-                .stream().map(questionDto -> {
-                    List<Option> options = Optional.ofNullable(questionDto.getOptions())
+                .stream().map(questionCreateRequestDto -> {
+
+                    AtomicReference<Integer> optionNumber = new AtomicReference<>(1);
+
+                    List<FormQuestionOption> formQuestionOptionList = Optional.ofNullable(questionCreateRequestDto.getOptionCreateRequestDtoList())
                             .orElse(new ArrayList<>())
                             .stream()
-                            .map(optionDto -> Option.of(
-                                    optionDto.getOptionNumber(),
+                            .map(optionDto -> FormQuestionOption.of(
+                                    optionNumber.getAndSet(optionNumber.get() + 1),
                                     optionDto.getOptionText(),
                                     null
-                            )).collect(Collectors.toList());
+                            )).toList();
 
-                    Question question = Question.of(
-                            questionDto.getQuestionNumber(),
-                            questionDto.getQuestionType(),
-                            questionDto.getQuestionText(),
-                            questionDto.getIsMultiple(),
-                            options,
+                    if (questionCreateRequestDto.getQuestionType().equals(QuestionType.OBJECTIVE)) {
+                        if (questionCreateRequestDto.getIsMultiple() == null ||
+                                questionCreateRequestDto.getOptionCreateRequestDtoList().isEmpty()
+                        ) {
+                            throw new BadRequestException(
+                                    ErrorCode.INVALID_PARAMETER,
+                                    MessageUtil.INVALID_QUESTION_INFO
+                            );
+                        }
+                    } else {
+                        if (questionCreateRequestDto.getIsMultiple() != null ||
+                                !questionCreateRequestDto.getOptionCreateRequestDtoList().isEmpty()
+                        ) {
+                            throw new BadRequestException(
+                                    ErrorCode.INVALID_PARAMETER,
+                                    MessageUtil.INVALID_QUESTION_INFO
+                            );
+                        }
+                    }
+
+                    FormQuestion formQuestion = FormQuestion.of(
+                            questionNumber.getAndSet(questionNumber.get() + 1),
+                            questionCreateRequestDto.getQuestionType(),
+                            questionCreateRequestDto.getQuestionText(),
+                            questionCreateRequestDto.getIsMultiple(),
+                            formQuestionOptionList,
                             null
                     );
 
-                    options.forEach(option -> option.setQuestion(question));
+                    formQuestionOptionList.forEach(option -> option.setFormQuestion(formQuestion));
 
-                    return question;
+                    return formQuestion;
                 }).toList();
 
         return Form.createCircleApplicationForm(
                 formCreateRequestDto.getTitle(),
-                questionList,
+                formQuestionList,
                 circle,
                 formCreateRequestDto.getIsAllowedEnrolled(),
                 formCreateRequestDto.getIsAllowedEnrolled() ?
-                        RegisteredSemesterManager.from(
+                        RegisteredSemesterManager.fromEnumList(
                                 formCreateRequestDto.getEnrolledRegisteredSemesterList()
                         )
                         : null,
@@ -923,7 +969,7 @@ public class CircleService {
                         : null,
                 formCreateRequestDto.getIsAllowedLeaveOfAbsence(),
                 formCreateRequestDto.getIsAllowedLeaveOfAbsence() ?
-                        RegisteredSemesterManager.from(
+                        RegisteredSemesterManager.fromEnumList(
                                 formCreateRequestDto.getLeaveOfAbsenceRegisteredSemesterList()
                         )
                         : null,

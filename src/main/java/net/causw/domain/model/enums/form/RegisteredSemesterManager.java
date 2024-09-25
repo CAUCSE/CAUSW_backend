@@ -1,32 +1,24 @@
 package net.causw.domain.model.enums.form;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.EnumSet;
 import java.util.List;
 
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class RegisteredSemesterManager {
 
     private EnumSet<RegisteredSemester> registeredSemesterEnumSet = EnumSet.noneOf(RegisteredSemester.class);
 
-    public void enableRegisteredSemester(RegisteredSemester registeredSemester) {
-        registeredSemesterEnumSet.add(registeredSemester);
-    }
-
-    public void disableRegisteredSemester(RegisteredSemester registeredSemester) {
-        registeredSemesterEnumSet.remove(registeredSemester);
-    }
-
-    public void enableAllRegisteredSemester() {
-        registeredSemesterEnumSet = EnumSet.allOf(RegisteredSemester.class);
-    }
-
-    public void disableAllRegisteredSemester() {
-        registeredSemesterEnumSet.clear();
-    }
-
     public String serialize() {
+        if (this.registeredSemesterEnumSet.isEmpty()) {
+            return null;
+        }
         StringBuilder sb = new StringBuilder();
         for (RegisteredSemester registeredSemester : registeredSemesterEnumSet) {
             sb.append(registeredSemester.name());
@@ -36,19 +28,33 @@ public class RegisteredSemesterManager {
     }
 
     public void deserialize(String registeredSemesterString) {
+        if (registeredSemesterString.isBlank() || registeredSemesterString.isEmpty()) {
+            this.registeredSemesterEnumSet.clear();
+            return;
+        }
         String[] registeredSemesterArray = registeredSemesterString.split(",");
         for (String registeredSemester : registeredSemesterArray) {
             this.registeredSemesterEnumSet.add(RegisteredSemester.valueOf(registeredSemester));
         }
     }
 
-    public static RegisteredSemesterManager from (
+    public static RegisteredSemesterManager fromEnumList(
             List<RegisteredSemester> registeredSemesterList
     ) {
-        RegisteredSemesterManager registeredSemesterManager = new RegisteredSemesterManager();
-        for (RegisteredSemester registeredSemester : registeredSemesterList) {
-            registeredSemesterManager.enableRegisteredSemester(registeredSemester);
+        if (registeredSemesterList.isEmpty()) {
+            return new RegisteredSemesterManager();
         }
+        return new RegisteredSemesterManager(EnumSet.copyOf(registeredSemesterList));
+    }
+
+    public static RegisteredSemesterManager fromString(
+            String registeredSemesterString
+    ) {
+        if (registeredSemesterString.isBlank() || registeredSemesterString.isEmpty()) {
+            return new RegisteredSemesterManager();
+        }
+        RegisteredSemesterManager registeredSemesterManager = new RegisteredSemesterManager();
+        registeredSemesterManager.deserialize(registeredSemesterString);
         return registeredSemesterManager;
     }
 

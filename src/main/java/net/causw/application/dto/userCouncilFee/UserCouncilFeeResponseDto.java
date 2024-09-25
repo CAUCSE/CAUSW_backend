@@ -53,7 +53,7 @@ public class UserCouncilFeeResponseDto {
     @Schema(description = "졸업 유형", example = "졸업예정")
     private GraduationType graduationType;
 
-    @Schema(description = "전화번호", example = "010-1234-5678")
+    @Schema(description = "전화번호", example = "01012345678")
     private String phoneNumber;
 
     @Schema(description = "동문 네트워크 가입일(서비스 가입 시만 존재)", example = "2021-01-01")

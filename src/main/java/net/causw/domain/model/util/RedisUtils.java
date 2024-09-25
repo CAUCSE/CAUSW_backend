@@ -1,6 +1,5 @@
 package net.causw.domain.model.util;
 
-import net.causw.application.dto.form.FormResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;

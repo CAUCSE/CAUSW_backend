@@ -1534,6 +1534,25 @@ public class UserService {
     public void exportUserListToExcel(HttpServletResponse response) {
         String fileName = LocalDateTime.now().toString() + "_사용자명단.xlsx";
 
+        List<String> headerStringList = List.of(
+                "아이디(이메일)",
+                "이름",
+                "학번",
+                "입학년도",
+                "역할",
+                "상태",
+                "동아리명 목록(동아리장일 경우",
+                "닉네임",
+                "학적 상태",
+                "현재 등록 완료된 학기",
+                "졸업 년도",
+                "졸업 시기",
+                "전화 번호",
+                "가입 거절/추방 사유",
+                "동문네트워크 가입일",
+                "사용자 정보 최종 수정일"
+        );
+
         LinkedHashMap<String, List<UserResponseDto>> sheetDataMap = new LinkedHashMap<>();
 
         List<UserResponseDto> activeUserList = userRepository.findAllByState(UserState.ACTIVE)
@@ -1602,7 +1621,7 @@ public class UserService {
         sheetDataMap.put("탈퇴 유저", inactiveUserList);
         sheetDataMap.put("추방 유저", dropUserList);
 
-        userExcelService.generateExcel(response, fileName, sheetDataMap);
+        userExcelService.generateExcel(response, fileName, headerStringList, sheetDataMap);
     }
 
     // private methods
