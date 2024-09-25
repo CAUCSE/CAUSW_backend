@@ -2,7 +2,8 @@ package net.causw.application.event;
 
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.event.Event;
-import net.causw.adapter.persistence.repository.EventRepository;
+import net.causw.adapter.persistence.repository.event.EventRepository;
+import net.causw.adapter.persistence.uuidFile.joinEntity.EventAttachImage;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.event.EventCreateRequestDto;
 import net.causw.application.dto.event.EventResponseDto;
@@ -10,6 +11,7 @@ import net.causw.application.dto.event.EventUpdateRequestDto;
 import net.causw.application.dto.event.EventsResponseDto;
 import net.causw.application.dto.util.dtoMapper.EventDtoMapper;
 import net.causw.application.uuidFile.UuidFileService;
+import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.enums.FilePath;
@@ -20,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-
+@MeasureTime
 @Service
 @RequiredArgsConstructor
 public class EventService {
@@ -65,13 +67,20 @@ public class EventService {
     public EventResponseDto updateEvent(String eventId, EventUpdateRequestDto eventUpdateRequestDto, MultipartFile eventImage) {
         Event event = getEvent(eventId);
 
-        UuidFile uuidFile = (eventImage.isEmpty()) ?
-                event.getEventImageUuidFile() :
-                uuidFileService.saveFile(eventImage, FilePath.EVENT);
+        // 이미지가 없을 경우 기존 이미지를 그대로 사용, 이미지가 있을 경우 새로운 이미지로 교체 (event의 이미지는 not null임)
+        EventAttachImage eventAttachImage = (eventImage.isEmpty()) ?
+                event.getEventAttachImage() :
+                event.getEventAttachImage().updateUuidFileAndReturnSelf(
+                        uuidFileService.updateFile(
+                                event.getEventAttachImage().getUuidFile(),
+                                eventImage,
+                                FilePath.EVENT
+                        )
+                );
 
         event.update(
                 eventUpdateRequestDto.getUrl(),
-                uuidFile
+                eventAttachImage
         );
         return EventDtoMapper.INSTANCE.toEventResponseDto(eventRepository.save(event));
     }

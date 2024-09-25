@@ -3,14 +3,19 @@ package net.causw.application.homepage;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
-import net.causw.adapter.persistence.page.PageableFactory;
+import net.causw.application.pageable.PageableFactory;
 import net.causw.adapter.persistence.post.Post;
-import net.causw.adapter.persistence.repository.*;
+import net.causw.adapter.persistence.repository.board.BoardRepository;
+import net.causw.adapter.persistence.repository.post.FavoritePostRepository;
+import net.causw.adapter.persistence.repository.post.LikePostRepository;
+import net.causw.adapter.persistence.repository.post.PostRepository;
+import net.causw.adapter.persistence.repository.user.UserRepository;
 import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.homepage.HomePageResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.util.dtoMapper.BoardDtoMapper;
 import net.causw.application.dto.util.dtoMapper.PostDtoMapper;
+import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.enums.Role;
@@ -23,7 +28,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
+@MeasureTime
 @Service
 @RequiredArgsConstructor
 public class HomePageService {

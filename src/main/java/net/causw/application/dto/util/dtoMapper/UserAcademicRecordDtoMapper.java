@@ -46,7 +46,7 @@ public interface UserAcademicRecordDtoMapper extends UuidFileToUrlDtoMapper {
 
     @Mapping(target = "targetAcademicStatus", source = "userAcademicRecordLog.targetAcademicRecordStatus")
     @Mapping(target = "userNote", source = "userAcademicRecordLog.note")
-    @Mapping(target = "attachedImageUrlList", source = "userAcademicRecordLog.targetUserAcademicRecordApplication.userAcademicRecordAttachImageUuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
+    @Mapping(target = "attachedImageUrlList", source = "userAcademicRecordLog.userAcademicRecordLogAttachImageList", qualifiedByName = "mapUuidFileListToFileUrlList")
     @Mapping(target = "changeDate", source = "userAcademicRecordLog.updatedAt")
     UserAcademicRecordApplicationResponseDto toUserAcademicRecordApplicationResponseDto(UserAcademicRecordLog userAcademicRecordLog);
 
@@ -57,7 +57,7 @@ public interface UserAcademicRecordDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "targetAcademicStatus", source = "userAcademicRecordApplication.targetAcademicStatus")
     @Mapping(target = "targetCompletedSemester", source = "userAcademicRecordApplication.targetCompletedSemester")
     @Mapping(target = "note", source = "userAcademicRecordApplication.note")
-    @Mapping(target = "attachedImageUrlList", source = "userAcademicRecordApplication.userAcademicRecordAttachImageUuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
+    @Mapping(target = "attachedImageUrlList", source = "userAcademicRecordApplication.userAcademicRecordAttachImageList", qualifiedByName = "mapUuidFileListToFileUrlList")
     @Mapping(target = "rejectMessage", source = "userAcademicRecordApplication.rejectMessage")
     UserAcademicRecordApplicationInfoResponseDto toUserAcademicRecordApplicationInfoResponseDto(UserAcademicRecordApplication userAcademicRecordApplication);
 
@@ -68,7 +68,7 @@ public interface UserAcademicRecordDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "targetAcademicStatus", source = "userAcademicRecordApplication.targetAcademicStatus")
     @Mapping(target = "targetCompletedSemester", source = "userAcademicRecordApplication.targetCompletedSemester")
     @Mapping(target = "userNote", source = "userAcademicRecordApplication.note")
-    @Mapping(target = "attachedImageUrlList", source = "userAcademicRecordApplication.userAcademicRecordAttachImageUuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
+    @Mapping(target = "attachedImageUrlList", source = "userAcademicRecordApplication.userAcademicRecordAttachImageList", qualifiedByName = "mapUuidFileListToFileUrlList")
     CurrentUserAcademicRecordApplicationResponseDto toCurrentUserAcademicRecordResponseDto(Semester semester, UserAcademicRecordApplication userAcademicRecordApplication, Boolean isRejected);
 
 

@@ -50,6 +50,7 @@ dump.rdb
 **/resources/causw-dev-51ab1a030da2.json
 **/resources/application-dev.yml
 **/resources/application-prod.yml
+**/resources/application-local.yml
 
 Dockerfile
 docker-compose.yaml

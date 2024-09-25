@@ -5,7 +5,12 @@ import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.board.BoardApply;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
-import net.causw.adapter.persistence.repository.*;
+import net.causw.adapter.persistence.repository.board.BoardApplyRepository;
+import net.causw.adapter.persistence.repository.board.BoardRepository;
+import net.causw.adapter.persistence.repository.circle.CircleMemberRepository;
+import net.causw.adapter.persistence.repository.circle.CircleRepository;
+import net.causw.adapter.persistence.repository.post.PostRepository;
+import net.causw.adapter.persistence.repository.user.UserRepository;
 import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.board.*;
 import net.causw.application.dto.post.PostContentDto;
@@ -13,6 +18,7 @@ import net.causw.application.dto.user.UserResponseDto;
 import net.causw.application.dto.util.dtoMapper.BoardDtoMapper;
 import net.causw.application.dto.util.dtoMapper.PostDtoMapper;
 import net.causw.application.dto.util.dtoMapper.UserDtoMapper;
+import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
@@ -37,7 +43,7 @@ import jakarta.validation.Validator;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
+@MeasureTime
 @Service
 @RequiredArgsConstructor
 public class BoardService {

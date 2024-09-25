@@ -1,7 +1,10 @@
 package net.causw.application.semester;
 
 import lombok.RequiredArgsConstructor;
-import net.causw.adapter.persistence.repository.*;
+import net.causw.adapter.persistence.repository.semester.SemesterRepository;
+import net.causw.adapter.persistence.repository.user.UserRepository;
+import net.causw.adapter.persistence.repository.userCouncilFee.CouncilFeeFakeUserRepository;
+import net.causw.adapter.persistence.repository.userCouncilFee.UserCouncilFeeRepository;
 import net.causw.adapter.persistence.semester.Semester;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.userCouncilFee.CouncilFeeFakeUser;
@@ -9,6 +12,7 @@ import net.causw.adapter.persistence.userCouncilFee.UserCouncilFee;
 import net.causw.application.dto.semester.CreateSemesterRequestDto;
 import net.causw.application.dto.semester.CurrentSemesterResponseDto;
 import net.causw.application.dto.util.dtoMapper.SemesterDtoMapper;
+import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.enums.AcademicStatus;
@@ -18,7 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
+@MeasureTime
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)

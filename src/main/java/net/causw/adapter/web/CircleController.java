@@ -25,7 +25,6 @@ import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.CircleMemberStatus;
 import net.causw.domain.validation.ConstraintValidator;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -667,11 +666,10 @@ public class CircleController {
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
             "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
     public void exportExcel(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable(name = "circleId") String circleId,
             HttpServletResponse response
     ){
-        circleService.exportCircleMembersToExcel(userDetails.getUser(), circleId, response);
+        circleService.exportCircleMembersToExcel(circleId, response);
     }
 
 }

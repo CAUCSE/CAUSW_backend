@@ -4,10 +4,10 @@ import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.locker.Locker;
 import net.causw.adapter.persistence.locker.LockerLocation;
 import net.causw.adapter.persistence.locker.LockerLog;
-import net.causw.adapter.persistence.repository.LockerLocationRepository;
-import net.causw.adapter.persistence.repository.LockerLogRepository;
-import net.causw.adapter.persistence.repository.LockerRepository;
-import net.causw.adapter.persistence.repository.UserRepository;
+import net.causw.adapter.persistence.repository.locker.LockerLocationRepository;
+import net.causw.adapter.persistence.repository.locker.LockerLogRepository;
+import net.causw.adapter.persistence.repository.locker.LockerRepository;
+import net.causw.adapter.persistence.repository.user.UserRepository;
 import net.causw.adapter.persistence.user.User;
 import net.causw.application.common.CommonService;
 import net.causw.application.dto.locker.LockerCreateRequestDto;
@@ -21,6 +21,7 @@ import net.causw.application.dto.locker.LockerMoveRequestDto;
 import net.causw.application.dto.locker.LockerResponseDto;
 import net.causw.application.dto.locker.LockerUpdateRequestDto;
 import net.causw.application.dto.locker.LockersResponseDto;
+import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
@@ -45,7 +46,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
+@MeasureTime
 @Service
 @RequiredArgsConstructor
 public class LockerService {

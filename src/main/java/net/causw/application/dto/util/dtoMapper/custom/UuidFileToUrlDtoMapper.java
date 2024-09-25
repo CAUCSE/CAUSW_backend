@@ -1,6 +1,6 @@
 package net.causw.application.dto.util.dtoMapper.custom;
 
-import net.causw.adapter.persistence.uuidFile.UuidFile;
+import net.causw.adapter.persistence.uuidFile.joinEntity.JoinEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Named;
 
@@ -11,20 +11,21 @@ import java.util.List;
 public interface UuidFileToUrlDtoMapper {
 
     @Named("mapUuidFileToFileUrl")
-    default String mapUuidFileToFileUrl(UuidFile uuidFile) {
-        if (uuidFile == null) {
+    default String mapUuidFileToFileUrl (JoinEntity joinEntity) {
+        if (joinEntity == null) {
             return null;
+        } else {
+            return joinEntity.getUuidFile() == null ? null : joinEntity.getUuidFile().getFileUrl();
         }
-        return uuidFile.getFileUrl();
     }
 
-    @Named("mapUuidFileListToFileUrlList")
-    default List<String> mapUuidFileListToFileUrlList(List<UuidFile> uuidFileList) {
-        if (uuidFileList.isEmpty()) {
+    @Named(value = "mapUuidFileListToFileUrlList")
+    default List<String> mapUuidFileListToFileUrlList(List<? extends JoinEntity> joinEntityList) {
+        if (joinEntityList.isEmpty()) {
             return new ArrayList<>();
         }
-        return uuidFileList.stream()
-                .map(UuidFile::getFileUrl)
+        return joinEntityList.stream()
+                .map(mappingTable -> mappingTable.getUuidFile().getFileUrl())
                 .toList();
     }
 

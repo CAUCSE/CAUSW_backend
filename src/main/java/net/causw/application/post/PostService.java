@@ -6,11 +6,23 @@ import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
-import net.causw.adapter.persistence.page.PageableFactory;
+import net.causw.adapter.persistence.repository.uuidFile.PostAttachImageRepository;
+import net.causw.adapter.persistence.uuidFile.joinEntity.PostAttachImage;
+import net.causw.application.pageable.PageableFactory;
 import net.causw.adapter.persistence.post.FavoritePost;
 import net.causw.adapter.persistence.post.LikePost;
 import net.causw.adapter.persistence.post.Post;
-import net.causw.adapter.persistence.repository.*;
+import net.causw.adapter.persistence.repository.board.BoardRepository;
+import net.causw.adapter.persistence.repository.board.FavoriteBoardRepository;
+import net.causw.adapter.persistence.repository.circle.CircleMemberRepository;
+import net.causw.adapter.persistence.repository.comment.ChildCommentRepository;
+import net.causw.adapter.persistence.repository.comment.CommentRepository;
+import net.causw.adapter.persistence.repository.comment.LikeChildCommentRepository;
+import net.causw.adapter.persistence.repository.comment.LikeCommentRepository;
+import net.causw.adapter.persistence.repository.post.FavoritePostRepository;
+import net.causw.adapter.persistence.repository.post.LikePostRepository;
+import net.causw.adapter.persistence.repository.post.PostRepository;
+import net.causw.adapter.persistence.repository.user.UserRepository;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.comment.ChildCommentResponseDto;
@@ -20,6 +32,7 @@ import net.causw.application.dto.util.dtoMapper.CommentDtoMapper;
 import net.causw.application.dto.util.dtoMapper.PostDtoMapper;
 import net.causw.application.dto.util.StatusUtil;
 import net.causw.application.uuidFile.UuidFileService;
+import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
@@ -39,7 +52,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
+@MeasureTime
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -58,6 +71,7 @@ public class PostService {
     private final PageableFactory pageableFactory;
     private final Validator validator;
     private final UuidFileService uuidFileService;
+    private final PostAttachImageRepository postAttachImageRepository;
 
     @Transactional(readOnly = true)
     public PostResponseDto findPostById(User user, String postId) {
@@ -329,18 +343,27 @@ public class PostService {
                 .consistOf(ConstraintValidator.of(post, this.validator));
         validatorBucket.validate();
 
-        List<UuidFile> uuidFileList = (attachImageList == null || attachImageList.isEmpty()) ?
-                post.getPostAttachImageUuidFileList() :
-                uuidFileService.updateFileList(
-                post.getPostAttachImageUuidFileList(),
-                attachImageList,
-                FilePath.POST
-        );
+
+        // post는 이미지가 nullable임 -> 이미지 null로 요청 시 기존 이미지 삭제
+        List<PostAttachImage> postAttachImageList = new ArrayList<>();
+
+        if (!attachImageList.isEmpty()) {
+            postAttachImageList = uuidFileService.updateFileList(
+                    post.getPostAttachImageList().stream().map(PostAttachImage::getUuidFile).collect(Collectors.toList()),
+                            attachImageList, FilePath.POST
+                    ).stream()
+                    .map(uuidFile -> PostAttachImage.of(post, uuidFile))
+                    .toList();
+        } else {
+            uuidFileService.deleteFileList(post.getPostAttachImageList().stream().map(PostAttachImage::getUuidFile).collect(Collectors.toList()));
+        }
+
+        postAttachImageRepository.deleteAll(post.getPostAttachImageList());
 
         post.update(
                 postUpdateRequestDto.getTitle(),
                 postUpdateRequestDto.getContent(),
-                uuidFileList
+                postAttachImageList
         );
 
         return toPostResponseDtoExtended(post, updater);

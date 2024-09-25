@@ -28,10 +28,15 @@ jar {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    /*
     implementation('org.springframework.boot:spring-boot-starter-web'){
         exclude module: 'spring-boot-starter-tomcat'
     }
     implementation('org.springframework.boot:spring-boot-starter-jetty')
+
+     */
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
@@ -73,9 +78,20 @@ dependencies {
     // h2 database(테스트용)
     runtimeOnly 'com.h2database:h2'
 
+    // monitoring
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
 
     // Apache POI for Excel file generation
     implementation 'org.apache.poi:poi-ooxml:5.2.3'
+
+    // Spring Batch
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
+    implementation 'org.springframework.batch:spring-batch-core'
+    // Retry 관련
+    // https://mvnrepository.com/artifact/org.springframework.retry/spring-retry
+    implementation 'org.springframework.retry:spring-retry:1.0.3.RELEASE'
+
 
 }
 

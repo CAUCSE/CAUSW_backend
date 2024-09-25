@@ -2,7 +2,8 @@ package net.causw.application.calendar;
 
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.calendar.Calendar;
-import net.causw.adapter.persistence.repository.CalendarRepository;
+import net.causw.adapter.persistence.repository.calendar.CalendarRepository;
+import net.causw.adapter.persistence.uuidFile.joinEntity.CalendarAttachImage;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.calendar.CalendarCreateRequestDto;
 import net.causw.application.dto.calendar.CalendarResponseDto;
@@ -10,6 +11,7 @@ import net.causw.application.dto.calendar.CalendarUpdateRequestDto;
 import net.causw.application.dto.calendar.CalendarsResponseDto;
 import net.causw.application.dto.util.dtoMapper.CalendarDtoMapper;
 import net.causw.application.uuidFile.UuidFileService;
+import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.enums.FilePath;
@@ -19,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-
+@MeasureTime
 @Service
 @RequiredArgsConstructor
 public class CalendarService {
@@ -91,12 +93,21 @@ public class CalendarService {
                 )
         );
 
-        UuidFile uuidFile = uuidFileService.updateFile(calendar.getCalendarAttachImageUuidFile(), image, FilePath.CALENDAR);
+        // 이미지가 없을 경우 기존 이미지를 사용하고, 이미지가 있을 경우 새로운 이미지로 교체 (Calendar의 이미지는 not null임)
+        CalendarAttachImage calendarAttachImage = (image.isEmpty()) ?
+                calendar.getCalendarAttachImage() :
+                calendar.getCalendarAttachImage().updateUuidFileAndReturnSelf(
+                        uuidFileService.updateFile(
+                                calendar.getCalendarAttachImage().getUuidFile(),
+                                image,
+                                FilePath.CALENDAR
+                        )
+                );
 
         calendar.update(
                 calendarUpdateRequestDto.getYear(),
                 calendarUpdateRequestDto.getMonth(),
-                uuidFile
+                calendarAttachImage
         );
 
         return CalendarDtoMapper.INSTANCE.toCalendarResponseDto(calendarRepository.save(calendar));
