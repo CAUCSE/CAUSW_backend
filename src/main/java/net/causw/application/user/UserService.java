@@ -403,7 +403,7 @@ public class UserService {
                 this.userRepository.findByRoleAndState(Role.LEADER_CIRCLE, UserState.ACTIVE)
                         .stream()
                         .map(userDomainModel -> {
-                            List<Circle> ownCircles = this.circleRepository.findByLeader_Id(user.getId());
+                            List<Circle> ownCircles = this.circleRepository.findByLeader_Id(userDomainModel.getId());
                             if (ownCircles.isEmpty()) {
                                 throw new InternalServerException(
                                         ErrorCode.INTERNAL_SERVER,
