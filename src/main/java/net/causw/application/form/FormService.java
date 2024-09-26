@@ -97,6 +97,9 @@ public class FormService {
         }
 
         try {
+            // writer가 해당 form이 있는 post에 접근 가능한지 검사
+            validCanAccessPost(user, form);
+
             // writer가 해당 form에 대한 권한이 있는지 확인
             validateToReply(user, form);
 
@@ -132,6 +135,9 @@ public class FormService {
                     MessageUtil.FORM_CLOSED
             );
         }
+
+        // writer가 해당 form이 있는 post에 접근 가능한지 검사
+        validCanAccessPost(writer, form);
 
         // writer가 해당 form에 대한 권한이 있는지 확인
         validateToReply(writer, form);
@@ -230,6 +236,31 @@ public class FormService {
         replyRepository.save(reply);
     }
 
+    private void validCanAccessPost(User writer, Form form) {
+        Post post = getPost(form);
+
+        Board board = post.getBoard();
+
+        if (board.getCircle() != null) {
+            Circle circle = board.getCircle();
+            CircleMember circleMember = getCircleMember(writer.getId(), circle.getId());
+            if (circleMember.getStatus().equals(CircleMemberStatus.MEMBER)) {
+                throw new UnauthorizedException(
+                        ErrorCode.API_NOT_ALLOWED,
+                        MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
+                );
+            }
+        }
+    }
+
+    private Post getPost(Form form) {
+        return postRepository.findByForm(form).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.FORM_NOT_FOUND
+                )
+        );
+    }
 
 
     public ReplyPageResponseDto findAllReplyPageByForm(String formId, Pageable pageable, User user){
@@ -408,12 +439,7 @@ public class FormService {
 
     private void validateCanAccessFormResult(User user, Form form) {
         if (form.getFormType().equals(FormType.POST_FORM)) {
-            Post post = postRepository.findByForm(form).orElseThrow(
-                    () -> new BadRequestException(
-                            ErrorCode.ROW_DOES_NOT_EXIST,
-                            MessageUtil.FORM_NOT_FOUND
-                    )
-            );
+            Post post = getPost(form);
             if (post.getWriter().equals(user)) {
                 throw new UnauthorizedException(
                         ErrorCode.API_NOT_ALLOWED,
