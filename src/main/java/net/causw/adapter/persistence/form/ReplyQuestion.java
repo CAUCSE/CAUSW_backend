@@ -15,16 +15,16 @@ import java.util.List;
 @Table(name = "tb_reply_question",
         indexes = {
                 @Index(name = "reply_id_index", columnList = "reply_id"),
-                @Index(name = "question_id_index", columnList = "question_id")
+                @Index(name = "form_question_id_index", columnList = "form_question_id")
 })
 public class ReplyQuestion extends BaseEntity {
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reply_id", nullable = false)
     private Reply reply;
 
-    @ManyToOne
-    @JoinColumn(name = "question_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "form_question_id", nullable = false)
     private FormQuestion formQuestion;
 
     @Lob // 텍스트 대용량 처리

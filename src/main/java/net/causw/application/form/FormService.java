@@ -279,7 +279,7 @@ public class FormService {
 
         List<FormQuestion> formQuestionList = form.getFormQuestionList();
 
-        List<ReplyQuestion> replyQuestionList = replyQuestionRepository.findAllByForm(form);
+        List<ReplyQuestion> replyQuestionList = replyQuestionRepository.findAllByReplyForm(form);
 
         Map<FormQuestion, List<ReplyQuestion>> replyQuestionMap = formQuestionList
                 .stream()

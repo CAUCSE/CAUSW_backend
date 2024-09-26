@@ -28,19 +28,21 @@ public class Form extends BaseEntity {
     @Column(name = "title", nullable = false)
     private String title;
 
-    @OneToMany(mappedBy = "form", cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, orphanRemoval = true)
-    @JoinColumn(nullable = false)
+    @OneToMany(mappedBy = "form", fetch = FetchType.LAZY, cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, orphanRemoval = true)
     @Builder.Default
     private List<FormQuestion> formQuestionList = new ArrayList<>();
 
-    @Column(name = "is_deleted")
+    @Setter
+    @Column(name = "is_deleted", nullable = false)
     @ColumnDefault("false")
     @Builder.Default
     private Boolean isDeleted = false;
 
-    @Column(name = "is_closed")
+    @Setter
+    @Column(name = "is_closed", nullable = false)
     @ColumnDefault("false")
-    private Boolean isClosed;
+    @Builder.Default
+    private Boolean isClosed = false;
 
     @ManyToOne
     @JoinColumn(name = "circle_id", nullable = true)
@@ -49,22 +51,22 @@ public class Form extends BaseEntity {
     @Column(name = "is_allowed_enrolled", nullable = false)
     private Boolean isAllowedEnrolled;
 
-    @Column(name = "is_allowed_registered", nullable = true)
+    @Column(name = "enrolled_registered_semester", nullable = true)
     private String EnrolledRegisteredSemester;
 
     @Column(name = "is_need_council_fee_paid", nullable = true)
     private Boolean isNeedCouncilFeePaid;
 
-    @Column(name = "is_need_council_fee_paid", nullable = false)
+    @Column(name = "is_allowed_leave_of_absence", nullable = false)
     private Boolean isAllowedLeaveOfAbsence;
 
-    @Column(name = "is_allowed_leave_of_absence", nullable = true)
+    @Column(name = "leave_of_absence_registered_semester", nullable = true)
     private String LeaveOfAbsenceRegisteredSemester;
 
     @Column(name = "is_allowed_graduation", nullable = false)
     private Boolean isAllowedGraduation;
 
-    @OneToMany(mappedBy = "form", cascade = { CascadeType.REMOVE }, orphanRemoval = true)
+    @OneToMany(mappedBy = "form", fetch = FetchType.LAZY, cascade = { CascadeType.REMOVE }, orphanRemoval = true)
     @Builder.Default
     private List<Reply> replyList = new ArrayList<>();
 
@@ -163,14 +165,6 @@ public class Form extends BaseEntity {
                 leaveOfAbsenceRegisteredSemester.serialize()
                 : null;
         this.isAllowedGraduation = isAllowedGraduation;
-    }
-
-    public void setIsClosed(Boolean isClosed) {
-        this.isClosed = isClosed;
-    }
-
-    public void setIsDeleted(Boolean isDeleted) {
-        this.isDeleted = isDeleted;
     }
 
 }

@@ -6,6 +6,7 @@ import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.domain.model.enums.form.QuestionType;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -13,7 +14,7 @@ import java.util.List;
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "tb_question",
+@Table(name = "tb_form_question",
         indexes = {
         @Index(name = "form_id_index", columnList = "form_id")
 })
@@ -33,10 +34,11 @@ public class FormQuestion extends BaseEntity {
     @ColumnDefault("false")
     private Boolean isMultiple;
 
-    @OneToMany(mappedBy = "question",cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, orphanRemoval = true)
-    private List<FormQuestionOption> formQuestionOptionList;
+    @OneToMany(mappedBy = "formQuestion", fetch = FetchType.LAZY, cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, orphanRemoval = true)
+    @Builder.Default
+    private List<FormQuestionOption> formQuestionOptionList = new ArrayList<>();
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "form_id", nullable = false)
     private Form form;
 

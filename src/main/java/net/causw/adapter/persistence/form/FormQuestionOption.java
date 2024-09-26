@@ -9,19 +9,20 @@ import net.causw.adapter.persistence.base.BaseEntity;
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "tb_option",
+@Table(name = "tb_form_question_option",
         indexes = {
-                @Index(name = "question_id_index", columnList = "question_id")
+                @Index(name = "form_question_id_index", columnList = "form_question_id")
 })
 public class FormQuestionOption extends BaseEntity {
+
     @Column(name = "number", nullable = false)
     private Integer number;
 
     @Column(name = "option_text", nullable = false)
     private String optionText;
 
-    @ManyToOne
-    @JoinColumn(name = "question_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "form_question_id", nullable = false)
     private FormQuestion formQuestion;
 
     public static FormQuestionOption of(Integer number, String text, FormQuestion formQuestion) {

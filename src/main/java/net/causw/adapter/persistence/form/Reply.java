@@ -16,15 +16,15 @@ import java.util.List;
 @Table(name = "tb_reply")
 public class Reply extends BaseEntity {
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "form_id", nullable = false)
     private Form form;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @OneToMany(mappedBy = "reply", cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, orphanRemoval = true)
+    @OneToMany(mappedBy = "reply", fetch = FetchType.LAZY, cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, orphanRemoval = true)
     @Builder.Default
     private List<ReplyQuestion> replyQuestionList = new ArrayList<>();
 
