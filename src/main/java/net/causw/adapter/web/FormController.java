@@ -3,6 +3,7 @@ package net.causw.adapter.web;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.form.response.reply.ReplyPageResponseDto;
 import net.causw.application.dto.form.response.reply.ReplyResponseDto;
@@ -28,19 +29,19 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/forms")
 public class FormController {
-    private final FormService formService;
-    private final SecurityService securityService;
 
-    @DeleteMapping("/{formId}")
+    private final FormService formService;
+
+    @PutMapping("/{formId}/set-closed")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "신청서 삭제", description = "신청서를 삭제합니다.")
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
-    public void deleteForm(
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
+    @Operation(summary = "신청서 마감 여부 설정", description = "신청서의 마감 여부를 설정합니다.")
+    public void setFormIsClosed(
             @PathVariable(name = "formId") String formId,
-            @AuthenticationPrincipal CustomUserDetails userDetails
-    ){
-        formService.deleteForm(formId, userDetails.getUser());
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestHeader @NotNull Boolean targetIsClosed
+    ) {
+        formService.setFormIsClosed(formId, userDetails.getUser(), targetIsClosed);
     }
 
     @PostMapping("/{formId}")

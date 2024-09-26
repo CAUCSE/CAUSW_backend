@@ -1,6 +1,7 @@
 package net.causw.application.dto.form.response.reply.excel;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import net.causw.application.dto.form.response.QuestionResponseDto;

@@ -59,6 +59,7 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "updatable", source = "updatable")
     @Mapping(target = "deletable", source = "deletable")
     @Mapping(target = "formResponseDto", source = "formResponseDto")
+    @Mapping(target = "writerProfileImage", source = "post.writer.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
     PostResponseDto toPostResponseDtoExtended(
             Post post,
             Page<CommentResponseDto> commentList,

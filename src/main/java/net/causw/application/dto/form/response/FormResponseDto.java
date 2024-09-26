@@ -24,7 +24,7 @@ public class FormResponseDto {
 
     @Schema(description = "재학생 답변 허용 시, 답변 가능한 등록 완료 학기(상관없음 시 1차부터 9차 이상까지)",
             example = "[FIRST_SEMESTER,SECOND_SEMESTER ... EIGHTH_SEMESTER,ABOVE_NIGHT_SEMESTER]")
-    private List<RegisteredSemester> enrolledRegitseredSemesterList;
+    private List<RegisteredSemester> enrolledRegisteredSemesterList;
 
     @Schema(description = "재학생 답변 허용 시, 학생회비 납부 필요 여부", example = "ture")
     private Boolean isNeedCouncilFeePaid;

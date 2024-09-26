@@ -12,6 +12,7 @@ import net.causw.application.dto.form.response.reply.excel.ExcelReplyListRespons
 import net.causw.application.dto.form.response.reply.excel.ExcelReplyQuestionResponseDto;
 import net.causw.application.dto.form.response.reply.excel.ExcelReplyResponseDto;
 import net.causw.domain.model.enums.form.RegisteredSemester;
+import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -59,10 +60,10 @@ public interface FormDtoMapper {
     @Mapping(target = "title", source = "form.title")
     @Mapping(target = "isClosed", source = "form.isClosed")
     @Mapping(target = "isAllowedEnrolled", source = "form.isAllowedEnrolled")
-    @Mapping(target = "enrolledSemesterList", source = "form", qualifiedByName = "getEnrolledRegisteredSemesterList")
+    @Mapping(target = "enrolledRegisteredSemesterList", source = "form", qualifiedByName = "getEnrolledRegisteredSemesterList")
     @Mapping(target = "isNeedCouncilFeePaid", source = "form.isNeedCouncilFeePaid")
     @Mapping(target = "isAllowedLeaveOfAbsence", source = "form.isAllowedLeaveOfAbsence")
-    @Mapping(target = "leaveOfAbsenceSemesterList", source = "form", qualifiedByName = "getLeaveOfAbsenceRegisteredSemesterList")
+    @Mapping(target = "leaveOfAbsenceRegisteredSemesterList", source = "form", qualifiedByName = "getLeaveOfAbsenceRegisteredSemesterList")
     @Mapping(target = "isAllowedGraduation", source = "form.isAllowedGraduation")
     @Mapping(target = "questionResponseDtoList", source = "questionResponseDtoList")
     FormResponseDto toFormResponseDto(Form form, List<QuestionResponseDto> questionResponseDtoList);
@@ -96,16 +97,16 @@ public interface FormDtoMapper {
     @Mapping(target = "selectedCount", source = "selectedCount")
     OptionSummaryResponseDto toOptionSummaryResponseDto(FormQuestionOption formQuestionOption, Long selectedCount);
 
-    @Mapping(target = "questionId", source = "question.id")
-    @Mapping(target = "questionText", source = "question.questionText")
-    @Mapping(target = "questionAnswers", source = "questionAnswerList")
-    @Mapping(target = "optionSummaries", source = "optionSummaryResponseDtoList")
+    @Mapping(target = "questionId", source = "formQuestion.id")
+    @Mapping(target = "questionText", source = "formQuestion.questionText")
+    @Mapping(target = "questionAnswerList", source = "questionAnswerList")
+    @Mapping(target = "optionSummarieList", source = "optionSummaryResponseDtoList")
     QuestionSummaryResponseDto toQuestionSummaryResponseDto(FormQuestion formQuestion, List<String> questionAnswerList, List<OptionSummaryResponseDto> optionSummaryResponseDtoList) ;
 
     @Mapping(target = "userId", source = "user.id")
     @Mapping(target = "email", source = "user.email")
     @Mapping(target = "name", source = "user.name")
-    @Mapping(target = "nickName", source = "user.nickName")
+    @Mapping(target = "nickName", source = "user.nickname")
     @Mapping(target = "admissionYear", source = "user.admissionYear")
     @Mapping(target = "studentId", source = "user.studentId")
     @Mapping(target = "major", source = "user.major")
@@ -122,17 +123,23 @@ public interface FormDtoMapper {
     @Mapping(target = "isRefunded", source = "userCouncilFee.isRefunded")
     ReplyUserResponseDto toReplyUserResponseDto(User user, UserCouncilFee userCouncilFee, Boolean isAppliedThisSemester, Integer restOfSemester);
 
-    @Mapping(target = "questionResponseDtoList", source = "questionResponseDtoList")
-    @Mapping(target = "replyResponseDtoPage", source = "replyResponseDtoPage")
-    ReplyPageResponseDto toReplyPageResponseDto(List<QuestionResponseDto> questionResponseDtoList, Page<ReplyResponseDto> replyResponseDtoPage);
+    default ReplyPageResponseDto toReplyPageResponseDto(List<QuestionResponseDto> questionResponseDtoList, Page<ReplyResponseDto> replyResponseDtoPage) {
+        return ReplyPageResponseDto.builder()
+                .questionResponseDtoList(questionResponseDtoList)
+                .replyResponseDtoPage(replyResponseDtoPage)
+                .build();
+    }
 
-    @Mapping(target = "questionResponseDtoList", source = "questionResponseDtoList")
-    @Mapping(target = "excelReplyResponseDtoList", source = "excelReplyResponseDtoList")
-    ExcelReplyListResponseDto toExcelReplyListResponseDto(List<QuestionResponseDto> questionResponseDtoList, List<ExcelReplyResponseDto> excelReplyResponseDtoList);
+    default ExcelReplyListResponseDto toExcelReplyListResponseDto(List<QuestionResponseDto> questionResponseDtoList, List<ExcelReplyResponseDto> excelReplyResponseDtoList) {
+        return ExcelReplyListResponseDto.builder()
+                .questionResponseDtoList(questionResponseDtoList)
+                .excelReplyResponseDtoList(excelReplyResponseDtoList)
+                .build();
+    }
 
     @Mapping(target = "questionId", source = "replyQuestion.formQuestion.id")
     @Mapping(target = "questionAnswer", source = "replyQuestion.questionAnswer")
-    @Mapping(target = "selectedOptionList", source = "replyQuestion", qualifiedByName = "getSelectedOptionTextList")
+    @Mapping(target = "selectedOptionTextList", source = "replyQuestion", qualifiedByName = "getSelectedOptionTextList")
     ExcelReplyQuestionResponseDto toExcelReplyQuestionResponseDto(ReplyQuestion replyQuestion);
 
     @Mapping(target = "replyUserResponseDto", source = "replyUserResponseDto")
