@@ -16,10 +16,9 @@ public interface EventDtoMapper extends FormatDateTimeDtoMapper, UuidFileToUrlDt
 
     EventDtoMapper INSTANCE = Mappers.getMapper(EventDtoMapper.class);
 
-
     @Mapping(source = "createdAt", target = "createdAt", qualifiedByName = "formatDateTime")
     @Mapping(source = "updatedAt", target = "updatedAt", qualifiedByName = "formatDateTime")
-    @Mapping(target = "image", source = "event.eventImageUuidFile", qualifiedByName = "mapUuidFileToFileUrl")
+    @Mapping(target = "image", source = "event.eventAttachImage", qualifiedByName = "mapUuidFileToFileUrl")
     EventResponseDto toEventResponseDto(Event event);
 
     @Mapping(target = "events", source = "events")

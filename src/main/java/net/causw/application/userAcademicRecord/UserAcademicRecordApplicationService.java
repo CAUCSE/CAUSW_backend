@@ -1,8 +1,12 @@
 package net.causw.application.userAcademicRecord;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import net.causw.adapter.persistence.repository.semester.SemesterRepository;
+import net.causw.adapter.persistence.repository.user.UserRepository;
+import net.causw.adapter.persistence.repository.userAcademicRecord.UserAcademicRecordApplicationRepository;
+import net.causw.adapter.persistence.repository.userAcademicRecord.UserAcademicRecordLogRepository;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
-import net.causw.adapter.persistence.repository.*;
 import net.causw.adapter.persistence.semester.Semester;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.userAcademicRecord.UserAcademicRecordApplication;
@@ -11,7 +15,9 @@ import net.causw.application.dto.semester.CurrentSemesterResponseDto;
 import net.causw.application.dto.userAcademicRecordApplication.*;
 import net.causw.application.dto.util.dtoMapper.SemesterDtoMapper;
 import net.causw.application.dto.util.dtoMapper.UserAcademicRecordDtoMapper;
+import net.causw.application.excel.UserAcademicRecordExcelService;
 import net.causw.application.uuidFile.UuidFileService;
+import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
@@ -26,9 +32,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
-
+@MeasureTime
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -39,6 +47,31 @@ public class UserAcademicRecordApplicationService {
     private final UserAcademicRecordLogRepository userAcademicRecordLogRepository;
     private final UuidFileService uuidFileService;
     private final SemesterRepository semesterRepository;
+    private final UserAcademicRecordExcelService userAcademicRecordExcelService;
+
+    public void exportUserAcademicRecordListToExcel(HttpServletResponse response) {
+        String fileName = LocalDateTime.now().toString() + "_학적상태명단";
+
+        LinkedHashMap<String, List<UserAcademicRecordInfoResponseDto>> sheetDataMap = new LinkedHashMap<>();
+
+        List<UserAcademicRecordInfoResponseDto> userAcademicRecordInfoResponseDtoList = new ArrayList<>();
+
+        List<User> userList = userRepository.findAll();
+
+        for (User user : userList) {
+            List<UserAcademicRecordLog> userAcademicRecordLogList = userAcademicRecordLogRepository.findAllByTargetUserStudentIdAndTargetUserEmailAndTargetUserName(
+                    user.getStudentId(),
+                    user.getEmail(),
+                    user.getName());
+            userAcademicRecordInfoResponseDtoList.add(
+                    toUserAcademicRecordInfoResponseDto(user, userAcademicRecordLogList)
+            );
+        }
+
+        sheetDataMap.put("학적상태명단", userAcademicRecordInfoResponseDtoList);
+
+        userAcademicRecordExcelService.generateExcel(response, fileName, sheetDataMap);
+    }
 
     public CurrentSemesterResponseDto getCurrentSemesterYearAndType() {
         return toCurrentSemesterResponseDto(getCurrentSemester());
@@ -59,7 +92,11 @@ public class UserAcademicRecordApplicationService {
                 .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND
                 ));
 
-        List<UserAcademicRecordLog> userAcademicRecordLogList = userAcademicRecordLogRepository.findAllByTargetUser(user);
+        List<UserAcademicRecordLog> userAcademicRecordLogList = userAcademicRecordLogRepository.findAllByTargetUserStudentIdAndTargetUserEmailAndTargetUserName(
+                user.getStudentId(),
+                user.getEmail(),
+                user.getName()
+        );
 
         return toUserAcademicRecordInfoResponseDto(user, userAcademicRecordLogList);
     }
@@ -112,7 +149,7 @@ public class UserAcademicRecordApplicationService {
 
         targetUser.setAcademicStatus(updateUserAcademicStatusRequestDto.getTargetAcademicStatus());
 
-        UserAcademicRecordLog userAcademicRecordLog = UserAcademicRecordLog.createWithNote(
+        UserAcademicRecordLog userAcademicRecordLog = UserAcademicRecordLog.create(
                 controllerUser,
                 targetUser,
                 updateUserAcademicStatusRequestDto.getTargetAcademicStatus(),
@@ -152,25 +189,15 @@ public class UserAcademicRecordApplicationService {
             }
         }
 
-        UserAcademicRecordLog userAcademicRecordLog;
-        if (userAcademicRecordApplication.getNote().isEmpty()) {
-            userAcademicRecordLog = UserAcademicRecordLog.createWithApplication(
-                    controllerUser,
-                    targetUser,
-                    userAcademicRecordApplication.getTargetAcademicStatus(),
-                    userAcademicRecordApplication,
-                    updateUserAcademicRecordApplicationStateRequestDto.getTargetAcademicRecordRequestStatus()
-            );
-        } else {
-            userAcademicRecordLog = UserAcademicRecordLog.createWithApplicationAndNote(
-                    controllerUser,
-                    targetUser,
-                    userAcademicRecordApplication.getTargetAcademicStatus(),
-                    userAcademicRecordApplication,
-                    updateUserAcademicRecordApplicationStateRequestDto.getTargetAcademicRecordRequestStatus(),
-                    userAcademicRecordApplication.getNote()
-            );
-        }
+        UserAcademicRecordLog userAcademicRecordLog = UserAcademicRecordLog.createWithApplication(
+                controllerUser,
+                targetUser,
+                userAcademicRecordApplication.getTargetAcademicStatus(),
+                userAcademicRecordApplication,
+                updateUserAcademicRecordApplicationStateRequestDto.getTargetAcademicRecordRequestStatus(),
+                userAcademicRecordApplication.getNote(),
+                updateUserAcademicRecordApplicationStateRequestDto.getRejectMessage()
+        );
 
         userRepository.save(targetUser);
         userAcademicRecordApplicationRepository.save(userAcademicRecordApplication);
@@ -194,13 +221,15 @@ public class UserAcademicRecordApplicationService {
         // User 엔티티가 영속성 컨텍스트에 없는 경우, merge로 다시 연결
         if (user != null) {
             user = userRepository.save(user);
+        } else {
+            throw new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND);
         }
 
         if (createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus().equals(AcademicStatus.ENROLLED)) {
             if (createUserAcademicRecordApplicationRequestDto.getTargetCompletedSemester() == null) {
                 throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.TARGET_CURRENT_COMPLETED_SEMESTER_NOT_EXIST);
             }
-            UserAcademicRecordApplication userAcademicRecordApplication = UserAcademicRecordApplication.createApplication(
+            UserAcademicRecordApplication userAcademicRecordApplication = UserAcademicRecordApplication.of(
                     user,
                     createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus(),
                     createUserAcademicRecordApplicationRequestDto.getTargetCompletedSemester(),
@@ -210,13 +239,14 @@ public class UserAcademicRecordApplicationService {
 
             userAcademicRecordApplicationRepository.save(userAcademicRecordApplication);
 
-            userAcademicRecordLog = UserAcademicRecordLog.createWithApplicationAndNote(
+            userAcademicRecordLog = UserAcademicRecordLog.createWithApplication(
                     user,
                     user,
                     createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus(),
                     userAcademicRecordApplication,
                     AcademicRecordRequestStatus.AWAIT,
-                    StaticValue.USER_APPLIED + createUserAcademicRecordApplicationRequestDto.getNote()
+                    StaticValue.USER_APPLIED + createUserAcademicRecordApplicationRequestDto.getNote(),
+                    null
             );
         } else {
             if (createUserAcademicRecordApplicationRequestDto.getNote() != null) {
@@ -228,7 +258,7 @@ public class UserAcademicRecordApplicationService {
                 }
                 user.setGraduationYear(createUserAcademicRecordApplicationRequestDto.getGraduationYear());
                 user.setGraduationType(createUserAcademicRecordApplicationRequestDto.getGraduationType());
-                userAcademicRecordLog = UserAcademicRecordLog.createWithGraduationWithNote(
+                userAcademicRecordLog = UserAcademicRecordLog.createWithGraduation(
                         user,
                         user,
                         createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus(),
@@ -237,7 +267,7 @@ public class UserAcademicRecordApplicationService {
                         StaticValue.USER_APPLIED
                 );
             } else {
-                userAcademicRecordLog = UserAcademicRecordLog.createWithNote(
+                userAcademicRecordLog = UserAcademicRecordLog.create(
                         user,
                         user,
                         createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus(),

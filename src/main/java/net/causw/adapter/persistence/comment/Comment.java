@@ -42,6 +42,7 @@ public class Comment extends BaseEntity {
     private Post post;
 
     @OneToMany(mappedBy = "parentComment")
+    @Builder.Default
     private List<ChildComment> childCommentList = new ArrayList<>(); // 필드 초기화 없으면 NPE
 
     public static Comment of(
@@ -57,7 +58,6 @@ public class Comment extends BaseEntity {
                 .isAnonymous(isAnonymous)
                 .writer(writer)
                 .post(post)
-                .childCommentList(new ArrayList<>())
                 .build();
     }
 

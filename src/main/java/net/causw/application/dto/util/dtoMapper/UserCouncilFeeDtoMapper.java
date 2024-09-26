@@ -3,6 +3,7 @@ package net.causw.application.dto.util.dtoMapper;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.userCouncilFee.CouncilFeeFakeUser;
 import net.causw.adapter.persistence.userCouncilFee.UserCouncilFee;
+import net.causw.application.dto.userCouncilFee.CurrentUserCouncilFeeResponseDto;
 import net.causw.application.dto.userCouncilFee.UserCouncilFeeListResponseDto;
 import net.causw.application.dto.userCouncilFee.UserCouncilFeeResponseDto;
 import org.mapstruct.Mapper;
@@ -79,4 +80,9 @@ public interface UserCouncilFeeDtoMapper {
     @Mapping(target = "isAppliedThisSemester", source = "isAppliedThisSemester")
     UserCouncilFeeResponseDto toUserCouncilFeeResponseDtoReduced(UserCouncilFee userCouncilFee, CouncilFeeFakeUser councilFeeFakeUser, Integer restOfSemester, Boolean isAppliedThisSemester);
 
+    @Mapping(target = "isRefunded", source = "userCouncilFee.isRefunded")
+    @Mapping(target = "numOfPaidSemester", source = "userCouncilFee.numOfPaidSemester")
+    @Mapping(target = "isAppliedThisSemester", source = "isAppliedThisSemester")
+    @Mapping(target = "restOfSemester", source = "restOfSemester")
+    CurrentUserCouncilFeeResponseDto toCurrentUserCouncilFeeResponseDto(UserCouncilFee userCouncilFee, Integer restOfSemester, Boolean isAppliedThisSemester);
 }

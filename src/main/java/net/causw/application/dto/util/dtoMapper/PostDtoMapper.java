@@ -46,7 +46,7 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "writerName", source = "post.writer.name")
     @Mapping(target = "writerAdmissionYear", source = "post.writer.admissionYear")
     @Mapping(target = "boardName", source = "post.board.name")
-    @Mapping(target = "fileUrlList", source = "post.postAttachImageUuidFileList", qualifiedByName = "mapUuidFileListToFileUrlList")
+    @Mapping(target = "fileUrlList", source = "post.postAttachImageList", qualifiedByName = "mapUuidFileListToFileUrlList")
     @Mapping(target = "content", source = "post.content")
     @Mapping(target = "isAnonymous", source = "post.isAnonymous")
     @Mapping(target = "isQuestion", source = "post.isQuestion")

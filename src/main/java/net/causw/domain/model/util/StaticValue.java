@@ -71,4 +71,8 @@ public class StaticValue {
     // UserAcademicRecordApplication
     public static final String USER_APPLIED = "[사용자 신청]";
     public static final String USER_CLOSED = "인증 서류 재제출로 인한 신청 서류 종료";
+
+    // CleanUnusedUuidFile
+    public static final Integer SELECT_UNUSED_UUID_FILE_PAGE_SIZE = 10000;
+    public static final Long CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME = 1000L * 60 * 60;   // 1hour
 }

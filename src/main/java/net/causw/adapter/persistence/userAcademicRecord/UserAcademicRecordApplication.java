@@ -3,6 +3,7 @@ package net.causw.adapter.persistence.userAcademicRecord;
 import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.user.User;
+import net.causw.adapter.persistence.uuidFile.joinEntity.UserAcademicRecordApplicationAttachImage;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.domain.exceptions.BadRequestException;
@@ -11,6 +12,7 @@ import net.causw.domain.model.enums.AcademicRecordRequestStatus;
 import net.causw.domain.model.enums.AcademicStatus;
 import net.causw.domain.model.util.MessageUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -18,7 +20,7 @@ import java.util.List;
 @Entity
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "tb_user_academic_record_admission")
+@Table(name = "tb_user_academic_record_application")
 public class UserAcademicRecordApplication extends BaseEntity {
 
     @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
@@ -39,9 +41,9 @@ public class UserAcademicRecordApplication extends BaseEntity {
     @Column(name = "note", nullable = true)
     private String note;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "user_academic_record_application_id", nullable = true)
-    private List<UuidFile> userAcademicRecordAttachImageUuidFileList;
+    @OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "userAcademicRecordApplication")
+    @Builder.Default
+    private List<UserAcademicRecordApplicationAttachImage> userAcademicRecordAttachImageList = new ArrayList<>();
 
     @Column(name = "reject_message", nullable = true)
     private String rejectMessage;
@@ -57,7 +59,7 @@ public class UserAcademicRecordApplication extends BaseEntity {
         }
     }
 
-    public static UserAcademicRecordApplication createApplication(
+    public static UserAcademicRecordApplication of(
             User user,
             AcademicStatus academicStatus,
             Integer targetCompletedSemester,
@@ -70,7 +72,6 @@ public class UserAcademicRecordApplication extends BaseEntity {
                 .targetAcademicStatus(academicStatus)
                 .targetCompletedSemester(targetCompletedSemester)
                 .note(note)
-                .userAcademicRecordAttachImageUuidFileList(userAcademicRecordAttachImageUuidFileList)
                 .build();
 
         if (academicStatus.equals(AcademicStatus.ENROLLED)) {
@@ -91,7 +92,17 @@ public class UserAcademicRecordApplication extends BaseEntity {
             userAcademicRecordApplication.updateApplicationRequestStatus(AcademicRecordRequestStatus.ACCEPT, null);
         }
 
+        List<UserAcademicRecordApplicationAttachImage> userAcademicRecordApplicationAttachImageList = userAcademicRecordAttachImageUuidFileList.stream()
+                .map(uuidFile -> UserAcademicRecordApplicationAttachImage.of(userAcademicRecordApplication, uuidFile))
+                .toList();
+
+        userAcademicRecordApplication.setUserAcademicRecordAttachImageList(userAcademicRecordApplicationAttachImageList);
+
         return userAcademicRecordApplication;
+    }
+
+    private void setUserAcademicRecordAttachImageList(List<UserAcademicRecordApplicationAttachImage> userAcademicRecordAttachImageList) {
+        this.userAcademicRecordAttachImageList = userAcademicRecordAttachImageList;
     }
 
 }

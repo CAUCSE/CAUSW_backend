@@ -5,7 +5,7 @@ import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.locker.Locker;
-import net.causw.adapter.persistence.uuidFile.UuidFile;
+import net.causw.adapter.persistence.uuidFile.joinEntity.UserProfileImage;
 import net.causw.application.dto.user.UserCreateRequestDto;
 import net.causw.domain.model.enums.AcademicStatus;
 import net.causw.domain.model.enums.GraduationType;
@@ -70,10 +70,8 @@ public class User extends BaseEntity {
     @Column(name = "role", nullable = false)
     private Set<Role> roles;
 
-    // 프로필 이미지
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "profile_image_uuid_file_id", nullable = true)
-    private UuidFile profileImageUuidFile;
+    @OneToOne(cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, mappedBy = "user")
+    private UserProfileImage userProfileImage;
 
     @Column(name = "refresh_token", nullable = true)
     private String refreshToken;
@@ -100,7 +98,7 @@ public class User extends BaseEntity {
         this.studentId = null;
         this.nickname = null;
         this.major = null;
-        this.profileImageUuidFile = null;
+        this.userProfileImage = null;
         this.graduationYear = null;
         this.graduationType = null;
         this.state = UserState.DELETED;
@@ -125,10 +123,10 @@ public class User extends BaseEntity {
                 .build();
     }
 
-    public void update(String nickname, AcademicStatus academicStatus, UuidFile profileImageUuidFile) {
+    public void update(String nickname, AcademicStatus academicStatus, UserProfileImage userProfileImage) {
         this.nickname = nickname;
         this.academicStatus = academicStatus;
-        this.profileImageUuidFile = profileImageUuidFile;
+        this.userProfileImage = userProfileImage;
     }
 
     public void updateRejectionOrDropReason(String reason) {

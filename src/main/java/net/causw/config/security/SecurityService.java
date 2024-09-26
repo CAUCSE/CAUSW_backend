@@ -2,7 +2,7 @@ package net.causw.config.security;
 
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.form.Form;
-import net.causw.adapter.persistence.repository.FormRepository;
+import net.causw.adapter.persistence.repository.form.FormRepository;
 import net.causw.adapter.persistence.user.User;
 import net.causw.config.security.userdetails.CustomUserDetails;
 import net.causw.domain.exceptions.BadRequestException;

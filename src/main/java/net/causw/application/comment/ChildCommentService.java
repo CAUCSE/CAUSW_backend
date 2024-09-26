@@ -8,13 +8,19 @@ import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.comment.LikeChildComment;
 import net.causw.adapter.persistence.post.Post;
-import net.causw.adapter.persistence.repository.*;
+import net.causw.adapter.persistence.repository.circle.CircleMemberRepository;
+import net.causw.adapter.persistence.repository.comment.ChildCommentRepository;
+import net.causw.adapter.persistence.repository.comment.CommentRepository;
+import net.causw.adapter.persistence.repository.comment.LikeChildCommentRepository;
+import net.causw.adapter.persistence.repository.post.PostRepository;
+import net.causw.adapter.persistence.repository.user.UserRepository;
 import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.comment.ChildCommentCreateRequestDto;
 import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.ChildCommentUpdateRequestDto;
 import net.causw.application.dto.util.dtoMapper.CommentDtoMapper;
 import net.causw.application.dto.util.StatusUtil;
+import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
@@ -31,7 +37,7 @@ import jakarta.validation.Validator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
+@MeasureTime
 @Service
 @RequiredArgsConstructor
 public class ChildCommentService {

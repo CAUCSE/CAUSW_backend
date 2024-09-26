@@ -3,6 +3,7 @@ package net.causw.adapter.persistence.calendar;
 import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
+import net.causw.adapter.persistence.uuidFile.joinEntity.CalendarAttachImage;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 
 @Getter
@@ -18,25 +19,37 @@ public class Calendar extends BaseEntity {
     @Column(name = "month", nullable = false)
     private Integer month;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "calendar_attach_image_uuid_file_id", nullable = false)
-    private UuidFile calendarAttachImageUuidFile;
+    @OneToOne(cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, mappedBy = "calendar")
+    @JoinColumn(nullable = false)
+    private CalendarAttachImage calendarAttachImage;
 
     public static Calendar of(
             Integer year,
             Integer month,
-            UuidFile calendarAttachImageUuidFile
+            UuidFile uuidFile
     ) {
-        return Calendar.builder()
+        Calendar calendar = Calendar.builder()
                 .year(year)
                 .month(month)
-                .calendarAttachImageUuidFile(calendarAttachImageUuidFile)
                 .build();
+
+        CalendarAttachImage calendarAttachImage = CalendarAttachImage.of(
+                calendar,
+                uuidFile
+        );
+
+        calendar.setCalendarAttachImage(calendarAttachImage);
+
+        return calendar;
     }
 
-    public void update(Integer year, Integer month, UuidFile calendarAttachImageUuidFile) {
+    public void update(Integer year, Integer month, CalendarAttachImage calendarAttachImage) {
         this.year = year;
         this.month = month;
-        this.calendarAttachImageUuidFile = calendarAttachImageUuidFile;
+        this.calendarAttachImage = calendarAttachImage;
+    }
+
+    private void setCalendarAttachImage(CalendarAttachImage calendarAttachImage) {
+        this.calendarAttachImage = calendarAttachImage;
     }
 }

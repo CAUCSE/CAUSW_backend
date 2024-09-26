@@ -128,6 +128,8 @@ public class MessageUtil {
     // UserCouncilFee
     public static final String INVALID_USER_COUNCIL_FEE_INFO = "유효하지 않은 학생회비 납부자 정보입니다.";
     public static final String USER_COUNCIL_FEE_NOT_FOUND = "해당 학생회비 납부자 정보를 찾을 수 없습니다.";
+    public static final String USER_ALREADY_EXISTS = "해당 사용자는 이미 동문네트워크 서비스에 가입했습니다.";
+    public static final String REFUND_DATE_IS_NULL = "환불 날짜가 비어있습니다.";
 
     // CouncilFeeFakeUser
     public static final String INVALID_COUNCIL_FEE_FAKE_USER_INFO = "유효하지 않은 가짜 사용자 정보입니다.";
@@ -137,4 +139,5 @@ public class MessageUtil {
     public static final String FILE_UPLOAD_FAIL = "파일 업로드에 실패했습니다.";
     public static final String FILE_DELETE_FAIL = "파일 삭제에 실패했습니다.";
     public static final String FAIL_TO_GENERATE_EXCEL_FILE = "엑셀 파일 생성에 실패했습니다.";
+    public static final String BATCH_FAIL = "[배치 실행에 실패했습니다.]";
 }

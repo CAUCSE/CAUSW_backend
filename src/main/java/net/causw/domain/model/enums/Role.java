@@ -1,5 +1,6 @@
 package net.causw.domain.model.enums;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -7,28 +8,26 @@ import net.causw.domain.exceptions.ErrorCode;
 import java.util.Arrays;
 
 @Getter
+@AllArgsConstructor
 public enum Role {
-    ADMIN("ADMIN"),
-    PRESIDENT("PRESIDENT"),
+    ADMIN("ADMIN", "관리자"),
+    PRESIDENT("PRESIDENT", "학생회장"),
 
-    VICE_PRESIDENT("VICE_PRESIDENT"),
+    VICE_PRESIDENT("VICE_PRESIDENT", "부학생회장"),
 
-    COUNCIL("COUNCIL"),
-    LEADER_1("LEADER_1"),
-    LEADER_2("LEADER_2"),
-    LEADER_3("LEADER_3"),
-    LEADER_4("LEADER_4"),
-    LEADER_CIRCLE("LEADER_CIRCLE"),
-    LEADER_ALUMNI("LEADER_ALUMNI"),
-    COMMON("COMMON"),
-    NONE("NONE"),
-    PROFESSOR("PROFESSOR");
+    COUNCIL("COUNCIL", "학생회"),
+    LEADER_1("LEADER_1", "1학년 대표"),
+    LEADER_2("LEADER_2", "2학년 대표"),
+    LEADER_3("LEADER_3", "3학년 대표"),
+    LEADER_4("LEADER_4", "4학년 대표"),
+    LEADER_CIRCLE("LEADER_CIRCLE", "동아리장"),
+    LEADER_ALUMNI("LEADER_ALUMNI", "동문회장"),
+    COMMON("COMMON", "일반"),
+    NONE("NONE", "없음"),
+    PROFESSOR("PROFESSOR", "교수");
 
     private final String value;
-
-    Role(String value) {
-        this.value = value;
-    }
+    private final String description;
 
     public static Role of(String value) {
         return Arrays.stream(values())
