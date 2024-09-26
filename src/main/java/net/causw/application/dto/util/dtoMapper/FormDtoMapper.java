@@ -8,8 +8,10 @@ import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.userCouncilFee.UserCouncilFee;
 import net.causw.application.dto.form.response.reply.*;
 import net.causw.application.dto.form.response.*;
+import net.causw.application.dto.form.response.reply.excel.ExcelReplyListResponseDto;
+import net.causw.application.dto.form.response.reply.excel.ExcelReplyQuestionResponseDto;
+import net.causw.application.dto.form.response.reply.excel.ExcelReplyResponseDto;
 import net.causw.domain.model.enums.form.RegisteredSemester;
-import net.causw.domain.model.enums.form.RegisteredSemesterManager;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -37,6 +39,20 @@ public interface FormDtoMapper {
     @Named("getSelectedOptionList")
     default List<Integer> getSelectedOptionList(ReplyQuestion replyQuestion) {
         return replyQuestion.getSelectedOptionList();
+    }
+
+    @Named("getSelectedOptionTextList")
+    default List<String> getSelectedOptionTextList(ReplyQuestion replyQuestion) {
+        List<Integer> selectedOptionList = replyQuestion.getSelectedOptionList();
+
+        List<FormQuestionOption> formQuestionOptionList = replyQuestion.getFormQuestion().getFormQuestionOptionList();
+
+        return formQuestionOptionList.stream()
+            .filter(formQuestionOption -> selectedOptionList.contains(formQuestionOption.getNumber()))
+            .map(formQuestionOption -> {
+                return formQuestionOption.getNumber() + ". " + formQuestionOption.getOptionText();
+            })
+            .toList();
     }
 
     @Mapping(target = "formId", source = "form.id")
@@ -111,7 +127,16 @@ public interface FormDtoMapper {
     ReplyPageResponseDto toReplyPageResponseDto(List<QuestionResponseDto> questionResponseDtoList, Page<ReplyResponseDto> replyResponseDtoPage);
 
     @Mapping(target = "questionResponseDtoList", source = "questionResponseDtoList")
-    @Mapping(target = "replyResponseDtoList", source = "replyResponseDtoList")
-    ReplyListResponseDto toReplyListResponseDto(List<QuestionResponseDto> questionResponseDtoList, List<ReplyResponseDto> replyResponseDtoList);
+    @Mapping(target = "excelReplyResponseDtoList", source = "excelReplyResponseDtoList")
+    ExcelReplyListResponseDto toExcelReplyListResponseDto(List<QuestionResponseDto> questionResponseDtoList, List<ExcelReplyResponseDto> excelReplyResponseDtoList);
 
+    @Mapping(target = "questionId", source = "replyQuestion.formQuestion.id")
+    @Mapping(target = "questionAnswer", source = "replyQuestion.questionAnswer")
+    @Mapping(target = "selectedOptionList", source = "replyQuestion", qualifiedByName = "getSelectedOptionTextList")
+    ExcelReplyQuestionResponseDto toExcelReplyQuestionResponseDto(ReplyQuestion replyQuestion);
+
+    @Mapping(target = "replyUserResponseDto", source = "replyUserResponseDto")
+    @Mapping(target = "excelReplyQuestionResponseDtoList", source = "excelReplyQuestionResponseDtoList")
+    @Mapping(target = "createdAt", source = "createdAt")
+    ExcelReplyResponseDto toExcelReplyResponseDto(ReplyUserResponseDto replyUserResponseDto, List<ExcelReplyQuestionResponseDto> excelReplyQuestionResponseDtoList, LocalDateTime createdAt);
 }

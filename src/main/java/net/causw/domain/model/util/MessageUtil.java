@@ -24,7 +24,7 @@ public class MessageUtil {
     public static final String ALREADY_REPLIED = "이미 답변한 신청서입니다.";
     public static final String NOT_ALLOWED_TO_ACCESS_REPLY = "신청서 답변을 조회할 수 없는 사용자입니다.";
     public static final String FORM_CLOSED = "신청 기간이 종료되었습니다.";
-    public static final String FORM_ALREADY_CLOSED = "이미 종료된 신청서입니다.";
+    public static final String REPLY_SIZE_INVALID = "답변 개수가 유효하지 않습니다.";
 
     // Calendar & Event
     public static final String CALENDAR_NOT_FOUND = "캘린더를 찾을 수 없습니다.";

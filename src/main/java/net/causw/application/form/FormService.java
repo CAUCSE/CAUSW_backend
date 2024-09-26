@@ -21,6 +21,9 @@ import net.causw.application.dto.form.request.FormReplyRequestDto;
 import net.causw.application.dto.form.response.OptionSummaryResponseDto;
 import net.causw.application.dto.form.request.QuestionReplyRequestDto;
 import net.causw.application.dto.form.response.QuestionSummaryResponseDto;
+import net.causw.application.dto.form.response.reply.excel.ExcelReplyListResponseDto;
+import net.causw.application.dto.form.response.reply.excel.ExcelReplyQuestionResponseDto;
+import net.causw.application.dto.form.response.reply.excel.ExcelReplyResponseDto;
 import net.causw.application.dto.util.dtoMapper.FormDtoMapper;
 import net.causw.application.excel.FormExcelService;
 import net.causw.domain.aop.annotation.MeasureTime;
@@ -65,15 +68,16 @@ public class FormService {
     private final FormExcelService formExcelService;
 
     @Transactional
-    public void closeForm(
+    public void setFormIsClosed(
             String formId,
-            User user
+            User user,
+            Boolean targetIsClosed
     ) {
         Form form = getForm(formId);
 
         validateCanAccessFormResult(user, form);
 
-        form.setIsClosed(true);
+        form.setIsClosed(targetIsClosed);
 
         formRepository.save(form);
     }
@@ -230,6 +234,30 @@ public class FormService {
             replyQuestionList.add(replyQuestion);
         }
 
+        // 답변 개수 맞는지 확인
+        if (replyQuestionList.size() != form.getFormQuestionList().size()) {
+            throw new BadRequestException(
+                    ErrorCode.INVALID_PARAMETER,
+                    MessageUtil.REPLY_SIZE_INVALID
+            );
+        }
+
+        // 모든 문항에 대해 답변 정확히 하나 있는지 검사(답변 유효성 검사)
+        form.getFormQuestionList().forEach(formQuestion -> {
+            int questionReplyCount = 0;
+            for (ReplyQuestion replyQuestion : replyQuestionList) {
+                if (formQuestion.equals(replyQuestion.getFormQuestion())) {
+                    questionReplyCount++;
+                }
+            }
+            if (questionReplyCount != 1) {
+                throw new BadRequestException(
+                        ErrorCode.INVALID_PARAMETER,
+                        MessageUtil.INVALID_REPLY_INFO
+                );
+            }
+        });
+
         replyRepository.save(Reply.of(form, writer, replyQuestionList));
     }
 
@@ -284,7 +312,7 @@ public class FormService {
 
         List<Reply> replyList = replyRepository.findAllByForm(form);
 
-        ReplyListResponseDto replyListResponseDto = toReplyListResponseDto(form, replyList);
+        ExcelReplyListResponseDto excelReplyListResponseDto = toExcelReplyListResponseDto(form, replyList);
 
         List<String> headerStringList = new ArrayList<>(List.of(
                 "제출 시각",
@@ -306,7 +334,7 @@ public class FormService {
                 "잔여 학생회비 적용 학기",
                 "환불 여부"
         ));
-        List<String> questionStringList = replyListResponseDto.getQuestionResponseDtoList()
+        List<String> questionStringList = excelReplyListResponseDto.getQuestionResponseDtoList()
                 .stream()
                 .map(questionResponseDto -> (
                         questionResponseDto.getQuestionNumber().toString()
@@ -315,8 +343,8 @@ public class FormService {
                 )).toList();
         headerStringList.addAll(questionStringList);
 
-        LinkedHashMap<String, List<ReplyResponseDto>> sheetNameDataMap = new LinkedHashMap<>();
-        sheetNameDataMap.put("결과", replyListResponseDto.getReplyResponseDtoList());
+        LinkedHashMap<String, List<ExcelReplyResponseDto>> sheetNameDataMap = new LinkedHashMap<>();
+        sheetNameDataMap.put("결과", excelReplyListResponseDto.getExcelReplyResponseDtoList());
 
         formExcelService.generateExcel(
                 response,
@@ -498,31 +526,6 @@ public class FormService {
         );
     }
 
-    private ReplyListResponseDto toReplyListResponseDto(Form form, List<Reply> replyList) {
-        return FormDtoMapper.INSTANCE.toReplyListResponseDto(
-                form.getFormQuestionList().stream()
-                        .map(this::toQuestionResponseDto)
-                        .toList(),
-
-                replyList.stream()
-                        .map(reply -> {
-                            User replyUser = reply.getUser();
-
-                            List<ReplyQuestionResponseDto> questionReplyList = reply.getReplyQuestionList()
-                                    .stream()
-                                    .map(this::toReplyQuestionResponseDto)
-                                    .toList();
-
-                            return this.toReplyResponseDto(
-                                    replyUser,
-                                    questionReplyList,
-                                    reply.getCreatedAt()
-                            );
-                        })
-                        .toList()
-        );
-    }
-
     private QuestionResponseDto toQuestionResponseDto(FormQuestion formQuestion) {
         return FormDtoMapper.INSTANCE.toQuestionResponseDto(
                 formQuestion,
@@ -599,6 +602,43 @@ public class FormService {
             Long selectedCount
     ) {
         return FormDtoMapper.INSTANCE.toOptionSummaryResponseDto(formQuestionOption, selectedCount);
+    }
+
+    private ExcelReplyListResponseDto toExcelReplyListResponseDto(Form form, List<Reply> replyList) {
+        return FormDtoMapper.INSTANCE.toExcelReplyListResponseDto(
+                form.getFormQuestionList().stream()
+                        .map(this::toQuestionResponseDto)
+                        .toList(),
+
+                replyList.stream()
+                        .map(reply -> {
+                            User replyUser = reply.getUser();
+
+                            List<ExcelReplyQuestionResponseDto> excelReplyQuestionResponseDtoList = reply.getReplyQuestionList()
+                                    .stream()
+                                    .map(this::toExcelReplyQuestionResponseDto)
+                                    .toList();
+
+                            return this.toExcelReplyResponseDto(
+                                    replyUser,
+                                    excelReplyQuestionResponseDtoList,
+                                    reply.getCreatedAt()
+                            );
+                        })
+                        .toList()
+        );
+    }
+
+    private ExcelReplyResponseDto toExcelReplyResponseDto(User replyUser, List<ExcelReplyQuestionResponseDto> excelReplyQuestionResponseDtoList, LocalDateTime createdAt) {
+        return FormDtoMapper.INSTANCE.toExcelReplyResponseDto(
+                this.toReplyUserResponseDto(replyUser),
+                excelReplyQuestionResponseDtoList,
+                createdAt
+        );
+    }
+
+    private ExcelReplyQuestionResponseDto toExcelReplyQuestionResponseDto(ReplyQuestion replyQuestion) {
+        return FormDtoMapper.INSTANCE.toExcelReplyQuestionResponseDto(replyQuestion);
     }
 
 }
