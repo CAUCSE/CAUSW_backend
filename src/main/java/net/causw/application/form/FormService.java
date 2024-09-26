@@ -77,6 +77,12 @@ public class FormService {
 
         validateCanAccessFormResult(user, form);
 
+        if (form.getFormType().equals(FormType.CIRCLE_APPLICATION_FORM)) {
+            Circle circle = form.getCircle();
+            circle.setIsRecruit(false);
+            circleRepository.save(circle);
+        }
+
         form.setIsClosed(targetIsClosed);
 
         formRepository.save(form);

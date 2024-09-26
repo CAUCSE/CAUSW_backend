@@ -3,8 +3,11 @@ package net.causw.application.circle;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
+import net.causw.adapter.persistence.form.Form;
+import net.causw.adapter.persistence.form.Reply;
 import net.causw.adapter.persistence.repository.circle.CircleMemberRepository;
 import net.causw.adapter.persistence.user.User;
+import net.causw.application.dto.form.request.FormReplyRequestDto;
 import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.model.enums.circle.CircleMemberStatus;
 import org.springframework.stereotype.Service;
@@ -13,14 +16,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
 @MeasureTime
 @Service
 @RequiredArgsConstructor
 public class CircleMemberService {
+
     private final CircleMemberRepository circleMemberRepository;
+
     public Optional<CircleMember> findById(String id) {
         return this.circleMemberRepository.findById(id);
     }
+
     public List<CircleMember> findByUserId(String userId) {
         return this.circleMemberRepository.findByUser_Id(userId);
     }
@@ -58,11 +65,12 @@ public class CircleMemberService {
         return this.circleMemberRepository.getNumMember(id);
     }
 
-    public CircleMember create(User user, Circle circle) {
+    public CircleMember create(User user, Circle circle, Reply reply) {
         return this.circleMemberRepository.save(CircleMember.of(
-                CircleMemberStatus.AWAIT,
                 circle,
-                user
+                user,
+                reply.getForm(),
+                reply
         ));
     }
 

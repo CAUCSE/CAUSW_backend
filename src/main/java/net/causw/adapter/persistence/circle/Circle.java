@@ -21,6 +21,7 @@ public class Circle extends BaseEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
+    @Setter(value = AccessLevel.PROTECTED)
     @OneToOne(cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, mappedBy = "circle")
     private CircleMainImage circleMainImage;
 
@@ -37,13 +38,16 @@ public class Circle extends BaseEntity {
     @Column(name = "recruit_members")
     private Integer recruitMembers;
 
+    @Setter
     @Column(name = "recruit_end_date")
     private LocalDateTime recruitEndDate;
 
+    @Setter
     @Column(name = "is_recruit")
-    @ColumnDefault("false")
-    private Boolean isRecruit;
+    @Builder.Default
+    private Boolean isRecruit = false;
 
+    @Setter
     @OneToOne
     @JoinColumn(name = "leader_id")
     private User leader;
@@ -83,7 +87,7 @@ public class Circle extends BaseEntity {
                 uuidFile
         );
 
-        circle.setCircleMainImageUuidFile(circleMainImage);
+        circle.setCircleMainImage(circleMainImage);
 
         return circle;
     }
@@ -98,16 +102,9 @@ public class Circle extends BaseEntity {
         this.isRecruit = isRecruit;
     }
 
-    public void setLeader(User leader){
-        this.leader = leader;
-    }
-
     public void delete(){
         this.isDeleted = true;
         this.leader = null;
     }
 
-    private void setCircleMainImageUuidFile(CircleMainImage circleMainImage) {
-        this.circleMainImage = circleMainImage;
-    }
 }
