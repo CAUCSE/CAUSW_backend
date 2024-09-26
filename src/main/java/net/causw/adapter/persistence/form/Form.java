@@ -22,6 +22,7 @@ import java.util.*;
 })
 public class Form extends BaseEntity {
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "form_type", nullable = false)
     private FormType formType;
 
@@ -34,13 +35,11 @@ public class Form extends BaseEntity {
 
     @Setter
     @Column(name = "is_deleted", nullable = false)
-    @ColumnDefault("false")
     @Builder.Default
     private Boolean isDeleted = false;
 
     @Setter
     @Column(name = "is_closed", nullable = false)
-    @ColumnDefault("false")
     @Builder.Default
     private Boolean isClosed = false;
 
@@ -54,8 +53,9 @@ public class Form extends BaseEntity {
     @Column(name = "enrolled_registered_semester", nullable = true)
     private String EnrolledRegisteredSemester;
 
-    @Column(name = "is_need_council_fee_paid", nullable = true)
-    private Boolean isNeedCouncilFeePaid;
+    @Column(name = "is_need_council_fee_paid", nullable = false)
+    @Builder.Default
+    private Boolean isNeedCouncilFeePaid = false;
 
     @Column(name = "is_allowed_leave_of_absence", nullable = false)
     private Boolean isAllowedLeaveOfAbsence;
@@ -99,7 +99,10 @@ public class Form extends BaseEntity {
                         isAllowedEnrolled ?
                                 enrolledRegisteredSemester.serialize()
                                 : null)
-                .isNeedCouncilFeePaid(isNeedCouncilFeePaid)
+                .isNeedCouncilFeePaid(
+                        isAllowedEnrolled ?
+                                isNeedCouncilFeePaid
+                                : false)
                 .isAllowedLeaveOfAbsence(isAllowedLeaveOfAbsence)
                 .LeaveOfAbsenceRegisteredSemester(
                         isAllowedLeaveOfAbsence ?
@@ -133,7 +136,7 @@ public class Form extends BaseEntity {
                 .isNeedCouncilFeePaid(
                         isAllowedEnrolled ?
                                 isNeedCouncilFeePaid
-                                : null)
+                                : false)
                 .isAllowedLeaveOfAbsence(isAllowedLeaveOfAbsence)
                 .LeaveOfAbsenceRegisteredSemester(
                         isAllowedLeaveOfAbsence ?

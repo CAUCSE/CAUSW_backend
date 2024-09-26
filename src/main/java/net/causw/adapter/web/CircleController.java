@@ -26,6 +26,7 @@ import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.circle.CircleMemberStatus;
 import net.causw.domain.validation.ConstraintValidator;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -666,6 +667,12 @@ public class CircleController {
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
             "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
+    @Operation(
+            summary = "동아리원 엑셀 다운로드 API",
+            description = "동아리원 정보를 엑셀로 다운로드 하는 API 입니다.\n" +
+                    "동아리 고유 ID 값(PK)을 입력해주세요.\n" +
+                    "엑셀 다운로드 시 해당 동아리의 동아리원 정보가 엑셀로 다운로드 됩니다."
+    )
     public void exportExcel(
             @PathVariable(name = "circleId") String circleId,
             HttpServletResponse response
@@ -677,6 +684,12 @@ public class CircleController {
     @ResponseStatus(value = HttpStatus.CREATED)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
             "hasAnyRole('LEADER_CIRCLE')")
+    @Operation(
+            summary = "동아리 가입 신청서 생성 API",
+            description = "동아리 가입 신청서를 생성하는 API 입니다.\n" +
+                    "동아리 고유 ID 값(PK)을 입력해주세요.\n" +
+                    "동아리 가입 신청서를 생성하면 해당 동아리에 가입 신청서가 생성됩니다."
+    )
     public void createApplicationForm(
             @PathVariable(name = "circleId") String circleId,
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -689,6 +702,12 @@ public class CircleController {
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
             "hasAnyRole('LEADER_CIRCLE')")
+    @Operation(
+            summary = "동아리 가입 신청서 수정 API",
+            description = "동아리 가입 신청서를 수정하는 API 입니다.\n" +
+                    "동아리 고유 ID 값(PK)을 입력해주세요.\n" +
+                    "동아리 가입 신청서를 수정하면 해당 동아리에 가입 신청서가 수정됩니다."
+    )
     public void updateApplicationForm(
             @PathVariable(name = "circleId") String circleId,
             @AuthenticationPrincipal CustomUserDetails userDetails,

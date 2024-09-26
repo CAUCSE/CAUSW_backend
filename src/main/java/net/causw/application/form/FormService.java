@@ -258,7 +258,11 @@ public class FormService {
             }
         });
 
-        replyRepository.save(Reply.of(form, writer, replyQuestionList));
+        Reply reply = Reply.of(form, writer, replyQuestionList);
+
+        replyQuestionList.forEach(replyQuestion -> replyQuestion.setReply(reply));
+
+        replyRepository.save(reply);
     }
 
     public ReplyPageResponseDto findAllReplyPageByForm(String formId, Pageable pageable, User user){
@@ -551,12 +555,11 @@ public class FormService {
     }
 
     private ReplyUserResponseDto toReplyUserResponseDto(User user) {
-        UserCouncilFee userCouncilFee = userCouncilFeeRepository.findByUser(user).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_COUNCIL_FEE_NOT_FOUND
-                )
-        );
+        UserCouncilFee userCouncilFee = userCouncilFeeRepository.findByUser(user).orElse(null);
+
+        if (userCouncilFee == null) {
+            return FormDtoMapper.INSTANCE.toReplyUserResponseDto(user, null, null, null);
+        }
 
         Boolean isAppliedThisSemester = getIsAppliedCurrentSemester(userCouncilFee);
         Integer restOfSemester = getRestOfSemester(userCouncilFee);

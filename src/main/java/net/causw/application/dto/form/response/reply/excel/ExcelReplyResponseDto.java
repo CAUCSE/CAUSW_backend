@@ -1,8 +1,10 @@
 package net.causw.application.dto.form.response.reply.excel;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import net.causw.application.dto.form.response.reply.ReplyUserResponseDto;
 
 import java.time.LocalDateTime;
@@ -10,6 +12,8 @@ import java.util.List;
 
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ExcelReplyResponseDto {
 
     @Schema(description = "답변 제출 사용자 정보 Dto")

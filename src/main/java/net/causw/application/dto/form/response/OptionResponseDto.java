@@ -4,8 +4,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class OptionResponseDto {
 
     @Schema(description = "객관식 id", example = "uuid 형식의 String 값입니다.")

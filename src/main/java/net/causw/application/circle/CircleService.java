@@ -222,7 +222,7 @@ public class CircleService {
                         MessageUtil.NEW_CIRCLE_LEADER_NOT_FOUND)
                 );
 
-        UuidFile uuidFile = (mainImage.isEmpty()) ?
+        UuidFile uuidFile = (mainImage == null) ?
                 null :
                 uuidFileService.saveFile(mainImage, FilePath.CIRCLE_PROFILE);
 
@@ -249,17 +249,6 @@ public class CircleService {
                     );
                 }
         );
-
-        // user Role이 Common이 아니면 아예 안 됨. -> 권한의 중첩이 필요하다. User Role에 대한 새로운 table 생성 어떤지?
-        // https://www.inflearn.com/questions/21303/enum%EC%9D%84-list%EB%A1%9C-%EC%96%B4%EB%96%BB%EA%B2%8C-%EB%B0%9B%EB%8A%94%EC%A7%80-%EA%B6%81%EA%B8%88%ED%95%A9%EB%8B%88%EB%8B%A4
-        // User Role Table 분리 필요하다고 봅니다...
-        ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(requestUser.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(roles))
-                .consistOf(ConstraintValidator.of(circle, this.validator))
-                .consistOf(UserRoleValidator.of(roles, Set.of()))
-                .consistOf(GrantableRoleValidator.of(roles, Role.LEADER_CIRCLE, leader.getRoles()))
-                .validate();
 
         // Grant role to the LEADER
         leader = updateRole(leader, Role.LEADER_CIRCLE);
@@ -954,7 +943,7 @@ public class CircleService {
                     return formQuestion;
                 }).toList();
 
-        return Form.createCircleApplicationForm(
+        Form form = Form.createCircleApplicationForm(
                 formCreateRequestDto.getTitle(),
                 formQuestionList,
                 circle,
@@ -966,7 +955,7 @@ public class CircleService {
                         : null,
                 formCreateRequestDto.getIsAllowedEnrolled() ?
                         formCreateRequestDto.getIsNeedCouncilFeePaid()
-                        : null,
+                        : false,
                 formCreateRequestDto.getIsAllowedLeaveOfAbsence(),
                 formCreateRequestDto.getIsAllowedLeaveOfAbsence() ?
                         RegisteredSemesterManager.fromEnumList(
@@ -975,6 +964,10 @@ public class CircleService {
                         : null,
                 formCreateRequestDto.getIsAllowedGraduation()
         );
+
+        formQuestionList.forEach(question -> question.setForm(form));
+
+        return form;
     }
 
     // ValidatorBucket Constructor

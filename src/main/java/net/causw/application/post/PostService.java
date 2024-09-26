@@ -749,7 +749,7 @@ public class PostService {
                         }
                 ).toList();
 
-        return Form.createPostForm(
+        Form form = Form.createPostForm(
                 formCreateRequestDto.getTitle(),
                 formQuestionList,
                 formCreateRequestDto.getIsAllowedEnrolled(),
@@ -760,7 +760,7 @@ public class PostService {
                         : null,
                 formCreateRequestDto.getIsAllowedEnrolled() ?
                         formCreateRequestDto.getIsNeedCouncilFeePaid()
-                        : null,
+                        : false,
                 formCreateRequestDto.getIsAllowedLeaveOfAbsence(),
                 formCreateRequestDto.getIsAllowedLeaveOfAbsence() ?
                         RegisteredSemesterManager.fromEnumList(
@@ -769,6 +769,10 @@ public class PostService {
                         : null,
                 formCreateRequestDto.getIsAllowedGraduation()
         );
+
+        formQuestionList.forEach(question -> question.setForm(form));
+
+        return form;
     }
 
 

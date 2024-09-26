@@ -19,6 +19,7 @@ import java.util.List;
 })
 public class ReplyQuestion extends BaseEntity {
 
+    @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reply_id", nullable = false)
     private Reply reply;
@@ -49,4 +50,5 @@ public class ReplyQuestion extends BaseEntity {
     public List<Integer> getSelectedOptionList() {
         return ReplySelectedOptionManager.fromString(this.selectedOptionList).getSelectedOptionList();
     }
+
 }

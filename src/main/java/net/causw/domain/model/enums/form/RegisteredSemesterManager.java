@@ -50,6 +50,9 @@ public class RegisteredSemesterManager {
     public static RegisteredSemesterManager fromString(
             String registeredSemesterString
     ) {
+        if (registeredSemesterString == null) {
+            return new RegisteredSemesterManager();
+        }
         if (registeredSemesterString.isBlank() || registeredSemesterString.isEmpty()) {
             return new RegisteredSemesterManager();
         }

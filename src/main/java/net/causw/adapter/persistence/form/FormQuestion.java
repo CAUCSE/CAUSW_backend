@@ -38,6 +38,7 @@ public class FormQuestion extends BaseEntity {
     @Builder.Default
     private List<FormQuestionOption> formQuestionOptionList = new ArrayList<>();
 
+    @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "form_id", nullable = false)
     private Form form;

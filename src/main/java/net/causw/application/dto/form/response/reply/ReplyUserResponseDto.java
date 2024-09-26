@@ -1,8 +1,10 @@
 package net.causw.application.dto.form.response.reply;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import net.causw.domain.model.enums.user.GraduationType;
 import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
 
@@ -10,6 +12,8 @@ import java.time.LocalDateTime;
 
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ReplyUserResponseDto {
 
     @Schema(description = "고유 id값", example = "uuid 형식의 String 값입니다.")

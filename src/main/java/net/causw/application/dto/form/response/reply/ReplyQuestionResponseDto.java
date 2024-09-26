@@ -7,6 +7,8 @@ import java.util.List;
 
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ReplyQuestionResponseDto {
 
     @Schema(description = "질문 고유 id값", example = "uuid 형식의 String 값입니다.")

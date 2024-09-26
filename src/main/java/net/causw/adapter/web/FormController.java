@@ -46,7 +46,7 @@ public class FormController {
 
     @PostMapping("/{formId}")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "신청서 작성", description = "신청서를 작성합니다.")
+    @Operation(summary = "신청서 응답 작성", description = "신청서 응답을 작성합니다.")
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     public void replyForm(
             @PathVariable(name = "formId") String formId,
