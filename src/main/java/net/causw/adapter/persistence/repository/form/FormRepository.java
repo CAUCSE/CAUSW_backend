@@ -13,9 +13,7 @@ import java.util.Optional;
 
 @Repository
 public interface FormRepository extends JpaRepository<Form, String> {
-    @NotNull Optional<Form> findById(@NotNull String id);
-
-    Optional<Form> findByCircle(Circle circle);
+    @NotNull Optional<Form> findByIdAndIsDeleted(@NotNull String id, Boolean isDeleted);
 
     List<Form> findAllByCircleAndIsDeletedAndIsClosed(Circle circle, Boolean isDeleted, Boolean isClosed);
 

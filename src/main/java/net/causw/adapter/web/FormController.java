@@ -6,17 +6,11 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.form.response.reply.ReplyPageResponseDto;
-import net.causw.application.dto.form.response.reply.ReplyResponseDto;
 import net.causw.application.dto.form.request.FormReplyRequestDto;
 import net.causw.application.dto.form.response.QuestionSummaryResponseDto;
 import net.causw.application.form.FormService;
-import net.causw.config.security.SecurityService;
 import net.causw.config.security.userdetails.CustomUserDetails;
-import net.causw.domain.exceptions.ErrorCode;
-import net.causw.domain.exceptions.UnauthorizedException;
-import net.causw.domain.model.util.MessageUtil;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -42,6 +36,17 @@ public class FormController {
             @RequestHeader @NotNull Boolean targetIsClosed
     ) {
         formService.setFormIsClosed(formId, userDetails.getUser(), targetIsClosed);
+    }
+
+    @GetMapping("/{formId}/can-reply")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
+    @Operation(summary = "신청서 응답 가능 여부 조회", description = "신청서 응답이 가능한지 여부를 조회합니다.")
+    public Boolean getCanReplyToPostForm(
+            @PathVariable(name = "formId") String formId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return formService.getCanReplyToPostForm(userDetails.getUser(), formId);
     }
 
     @PostMapping("/{formId}")

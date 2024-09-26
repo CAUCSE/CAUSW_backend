@@ -225,7 +225,7 @@ public class CircleService {
     }
 
     @Transactional
-    public void create(User requestUser, CircleCreateRequestDto circleCreateRequestDto, MultipartFile mainImage) {
+    public void create(CircleCreateRequestDto circleCreateRequestDto, MultipartFile mainImage) {
         User leader = userRepository.findById(circleCreateRequestDto.getLeaderId())
                 .orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -1028,82 +1028,7 @@ public class CircleService {
             );
         }
 
-        // writer가 해당 form에 대한 권한이 있는지 확인
-        Set<AcademicStatus> allowedAcademicStatus = new HashSet<>();
-
-        if (form.getIsAllowedEnrolled())
-            allowedAcademicStatus.add(AcademicStatus.ENROLLED);
-        if (form.getIsAllowedLeaveOfAbsence())
-            allowedAcademicStatus.add(AcademicStatus.LEAVE_OF_ABSENCE);
-        if (form.getIsAllowedGraduation())
-            allowedAcademicStatus.add(AcademicStatus.GRADUATED);
-
-        if (!allowedAcademicStatus.contains(writer.getAcademicStatus())) {
-            throw new BadRequestException(
-                    ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
-                    MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
-            );
-        } else {
-            if (allowedAcademicStatus.contains(AcademicStatus.ENROLLED)
-                    && writer.getAcademicStatus().equals(AcademicStatus.ENROLLED)
-            ) {
-                EnumSet<RegisteredSemester> allowedRegisteredSemester = form.getEnrolledRegisteredSemester();
-                if (!allowedRegisteredSemester
-                        .stream()
-                        .map(RegisteredSemester::getSemester)
-                        .collect(Collectors.toSet())
-                        .contains(writer.getCurrentCompletedSemester())
-                ) {
-                    throw new BadRequestException(
-                            ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
-                            MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
-                    );
-                }
-
-                if (form.getIsNeedCouncilFeePaid()) {
-                    // 학생회비 납부 필요
-                    UserCouncilFee userCouncilFee = userCouncilFeeRepository.findByUser(writer).orElseThrow(
-                            () -> new BadRequestException(
-                                    ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
-                                    MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
-                            )
-                    );
-
-                    if (!getIsAppliedCurrentSemester(userCouncilFee)) {
-                        throw new BadRequestException(
-                                ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
-                                MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
-                        );
-                    }
-                }
-            }
-
-            if (allowedAcademicStatus.contains(AcademicStatus.LEAVE_OF_ABSENCE)
-                    && writer.getAcademicStatus().equals(AcademicStatus.LEAVE_OF_ABSENCE)
-            ) {
-                EnumSet<RegisteredSemester> allowedRegisteredSemester = form.getLeaveOfAbsenceRegisteredSemester();
-                if (!allowedRegisteredSemester
-                        .stream()
-                        .map(RegisteredSemester::getSemester)
-                        .collect(Collectors.toSet())
-                        .contains(writer.getCurrentCompletedSemester())
-                ) {
-                    throw new BadRequestException(
-                            ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
-                            MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
-                    );
-                }
-            }
-        }
-
-        // 중복 답변 검사
-        if (replyRepository.existsByFormAndUser(form, writer)) {
-            throw new BadRequestException(
-                    ErrorCode.ROW_ALREADY_EXIST,
-                    MessageUtil.ALREADY_REPLIED
-            );
-        }
-
+        this.validateToReply(writer, form);
 
         // 주관식, 객관식 질문에 따라 유효한 답변인지 검증 및 저장
         List<ReplyQuestion> replyQuestionList = new ArrayList<>();
@@ -1194,6 +1119,77 @@ public class CircleService {
         replyQuestionList.forEach(replyQuestion -> replyQuestion.setReply(reply));
 
         return reply;
+    }
+
+
+    // writer가 해당 form에 대한 권한이 있는지 확인
+    private void validateToReply(User writer, Form form) {
+        Set<AcademicStatus> allowedAcademicStatus = new HashSet<>();
+
+        if (form.getIsAllowedEnrolled())
+            allowedAcademicStatus.add(AcademicStatus.ENROLLED);
+        if (form.getIsAllowedLeaveOfAbsence())
+            allowedAcademicStatus.add(AcademicStatus.LEAVE_OF_ABSENCE);
+        if (form.getIsAllowedGraduation())
+            allowedAcademicStatus.add(AcademicStatus.GRADUATED);
+
+        if (!allowedAcademicStatus.contains(writer.getAcademicStatus())) {
+            throw new BadRequestException(
+                    ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
+                    MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
+            );
+        } else {
+            if (allowedAcademicStatus.contains(AcademicStatus.ENROLLED)
+                    && writer.getAcademicStatus().equals(AcademicStatus.ENROLLED)
+            ) {
+                EnumSet<RegisteredSemester> allowedRegisteredSemester = form.getEnrolledRegisteredSemester();
+                if (!allowedRegisteredSemester
+                        .stream()
+                        .map(RegisteredSemester::getSemester)
+                        .collect(Collectors.toSet())
+                        .contains(writer.getCurrentCompletedSemester())
+                ) {
+                    throw new BadRequestException(
+                            ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
+                            MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
+                    );
+                }
+
+                if (form.getIsNeedCouncilFeePaid()) {
+                    // 학생회비 납부 필요
+                    UserCouncilFee userCouncilFee = userCouncilFeeRepository.findByUser(writer).orElseThrow(
+                            () -> new BadRequestException(
+                                    ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
+                                    MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
+                            )
+                    );
+
+                    if (!getIsAppliedCurrentSemester(userCouncilFee)) {
+                        throw new BadRequestException(
+                                ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
+                                MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
+                        );
+                    }
+                }
+            }
+
+            if (allowedAcademicStatus.contains(AcademicStatus.LEAVE_OF_ABSENCE)
+                    && writer.getAcademicStatus().equals(AcademicStatus.LEAVE_OF_ABSENCE)
+            ) {
+                EnumSet<RegisteredSemester> allowedRegisteredSemester = form.getLeaveOfAbsenceRegisteredSemester();
+                if (!allowedRegisteredSemester
+                        .stream()
+                        .map(RegisteredSemester::getSemester)
+                        .collect(Collectors.toSet())
+                        .contains(writer.getCurrentCompletedSemester())
+                ) {
+                    throw new BadRequestException(
+                            ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
+                            MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
+                    );
+                }
+            }
+        }
     }
 
     private FormQuestion getQuestion(String questionId){

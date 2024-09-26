@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.causw.application.dto.form.response.QuestionResponseDto;
-import net.causw.application.dto.form.response.reply.ReplyResponseDto;
 
 import java.util.List;
 

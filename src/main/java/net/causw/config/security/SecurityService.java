@@ -1,16 +1,12 @@
 package net.causw.config.security;
 
 import lombok.RequiredArgsConstructor;
-import net.causw.adapter.persistence.form.Form;
 import net.causw.adapter.persistence.repository.form.FormRepository;
 import net.causw.adapter.persistence.user.User;
 import net.causw.config.security.userdetails.CustomUserDetails;
-import net.causw.domain.exceptions.BadRequestException;
-import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
 import net.causw.domain.model.enums.user.Role;
 import net.causw.domain.model.enums.user.UserState;
-import net.causw.domain.model.util.MessageUtil;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;

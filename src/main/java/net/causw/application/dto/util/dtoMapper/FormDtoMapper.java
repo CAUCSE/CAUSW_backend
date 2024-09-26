@@ -12,7 +12,6 @@ import net.causw.application.dto.form.response.reply.excel.ExcelReplyListRespons
 import net.causw.application.dto.form.response.reply.excel.ExcelReplyQuestionResponseDto;
 import net.causw.application.dto.form.response.reply.excel.ExcelReplyResponseDto;
 import net.causw.domain.model.enums.form.RegisteredSemester;
-import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;

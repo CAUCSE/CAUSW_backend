@@ -31,7 +31,6 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -243,12 +242,11 @@ public class CircleController {
             @ApiResponse(responseCode = "5000", description = "Circle id immediately can be used, but exception occured", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
     public void create(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestPart(value = "circleCreateRequestDto") @Valid CircleCreateRequestDto circleCreateRequestDto,
             @RequestPart(value = "mainImage", required = false) MultipartFile mainImage
 
     ) {
-        circleService.create(userDetails.getUser(), circleCreateRequestDto, mainImage);
+        circleService.create(circleCreateRequestDto, mainImage);
     }
 
 

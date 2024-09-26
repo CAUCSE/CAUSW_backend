@@ -7,7 +7,6 @@ import net.causw.adapter.persistence.circle.Circle;
 import net.causw.domain.model.enums.form.FormType;
 import net.causw.domain.model.enums.form.RegisteredSemester;
 import net.causw.domain.model.enums.form.RegisteredSemesterManager;
-import org.hibernate.annotations.ColumnDefault;
 
 import java.util.*;
 
