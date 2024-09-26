@@ -45,6 +45,7 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "isFormExist", source = "isFormExist")
     PostsResponseDto toPostsResponseDto(Post post, Long numComment, Long numPostLike, Long numPostFavorite, Boolean isFormExist);
 
+    @Mapping(target = "title", source = "post.title")
     @Mapping(target = "writerName", source = "post.writer.name")
     @Mapping(target = "writerAdmissionYear", source = "post.writer.admissionYear")
     @Mapping(target = "boardName", source = "post.board.name")
@@ -58,8 +59,8 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "isPostFavorite", source = "isPostFavorite")
     @Mapping(target = "updatable", source = "updatable")
     @Mapping(target = "deletable", source = "deletable")
-    @Mapping(target = "formResponseDto", source = "formResponseDto")
     @Mapping(target = "writerProfileImage", source = "post.writer.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
+    @Mapping(target = "formResponseDto", source = "formResponseDto")
     PostResponseDto toPostResponseDtoExtended(
             Post post,
             Page<CommentResponseDto> commentList,
