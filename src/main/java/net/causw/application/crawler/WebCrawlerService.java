@@ -77,7 +77,12 @@ public class WebCrawlerService {
                     break;
                 }
                 // 상세 페이지로 이동하여 내용 크롤링
-                Document detailDoc = Jsoup.connect(absoluteLink).get();
+                Document detailDoc;
+                try {
+                    detailDoc = Jsoup.connect(absoluteLink).get();
+                } catch (IOException e) {
+                    throw new InternalServerException(ErrorCode.INTERNAL_SERVER, MessageUtil.FAIL_TO_CRAWL_CAU_SW_NOTICE_SITE);
+                }
                 String title = detailDoc.select("div.header > h3").text();  // 제목 추출
                 String announceDate = detailDoc.select("div.header > div > span").get(1).text();    // 작성일 추출
                 String author = detailDoc.select("div.header > div > span").get(3).text();  // 작성자 추출
