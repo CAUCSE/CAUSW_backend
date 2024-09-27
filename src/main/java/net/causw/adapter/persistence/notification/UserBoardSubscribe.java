@@ -7,7 +7,6 @@ import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.user.User;
 
 @Getter
-@Setter
 @Entity
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -23,6 +22,7 @@ public class UserBoardSubscribe extends BaseEntity {
     @JoinColumn(name = "board_id")
     private Board board;
 
+    @Setter
     @Column(name = "is_subscribed")
     private Boolean isSubscribed;
 
