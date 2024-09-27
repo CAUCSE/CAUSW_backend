@@ -149,6 +149,7 @@ public class PostService {
         }
     }
 
+    @Transactional(readOnly = true)
     public BoardPostsResponseDto searchPost(
             User user,
             String boardId,
