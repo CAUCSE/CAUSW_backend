@@ -2,9 +2,9 @@ package net.causw.adapter.persistence.repository.user;
 
 import jakarta.validation.constraints.Pattern;
 import net.causw.adapter.persistence.user.User;
-import net.causw.domain.model.enums.AcademicStatus;
-import net.causw.domain.model.enums.Role;
-import net.causw.domain.model.enums.UserState;
+import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.domain.model.enums.user.Role;
+import net.causw.domain.model.enums.user.UserState;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

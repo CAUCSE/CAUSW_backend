@@ -1,19 +1,12 @@
 package net.causw.adapter.persistence.board;
 
+import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.base.BaseEntity;
-import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.enums.user.Role;
 import org.hibernate.annotations.ColumnDefault;
-
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -37,6 +30,7 @@ public class Board extends BaseEntity {
     @Column(name = "category", nullable = false)
     private String category;
 
+    @Setter
     @Column(name = "is_deleted", nullable = false)
     @ColumnDefault("false")
     private Boolean isDeleted;
@@ -49,31 +43,16 @@ public class Board extends BaseEntity {
     @ColumnDefault("false")
     private Boolean is_anonymous_allowed;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "circle_id", nullable = true)
     private Circle circle;
 
-    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "board", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     private Set<Post> postSet;
 
-
-    private Board(
-            String id,
-            String name,
-            String description,
-            String createRoles,
-            String category,
-            Boolean isDeleted,
-            Circle circle
-    ) {
-        super(id);
-        this.name = name;
-        this.description = description;
-        this.createRoles = createRoles;
-        this.category = category;
-        this.isDeleted = isDeleted;
-        this.circle = circle;
-    }
+    @Column(name = "is_default_notice", nullable = false)
+    @ColumnDefault("false")
+    private Boolean isDefaultNotice; // 모두에게 알림이 가야 하는
 
     public static Board of(
             String name,
@@ -109,18 +88,17 @@ public class Board extends BaseEntity {
         return Board.builder()
                 .name(name)
                 .description(description)
-                .createRoles(String.join(",", createRoleList))
+                .createRoles(createRoleList == null ? "" :
+                        String.join(",", createRoleList)
+                )
                 .category(category)
                 .isDeleted(false)
                 .isDefault(false)
                 .is_anonymous_allowed(is_anonymous_allowed)
                 .circle(circle)
                 .postSet(new HashSet<>())
+                .isDefaultNotice(false)
                 .build();
-    }
-
-    public void setIsDeleted(boolean isDeleted){
-        this.isDeleted = isDeleted;
     }
 
     public void update(String name, String description, String createRoles, String category){

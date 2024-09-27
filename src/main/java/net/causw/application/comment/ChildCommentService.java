@@ -7,11 +7,13 @@ import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.comment.LikeChildComment;
+import net.causw.adapter.persistence.notification.Notification;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.circle.CircleMemberRepository;
 import net.causw.adapter.persistence.repository.comment.ChildCommentRepository;
 import net.causw.adapter.persistence.repository.comment.CommentRepository;
 import net.causw.adapter.persistence.repository.comment.LikeChildCommentRepository;
+import net.causw.adapter.persistence.repository.notification.NotificationRepository;
 import net.causw.adapter.persistence.repository.post.PostRepository;
 import net.causw.adapter.persistence.repository.user.UserRepository;
 import net.causw.adapter.persistence.user.User;
@@ -25,8 +27,9 @@ import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
-import net.causw.domain.model.enums.CircleMemberStatus;
-import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.enums.circle.CircleMemberStatus;
+import net.causw.domain.model.enums.user.Role;
+import net.causw.domain.model.enums.notification.NoticeType;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.validation.*;
@@ -37,6 +40,7 @@ import jakarta.validation.Validator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
 @MeasureTime
 @Service
 @RequiredArgsConstructor
@@ -48,6 +52,7 @@ public class ChildCommentService {
     private final CircleMemberRepository circleMemberRepository;
     private final PostRepository postRepository;
     private final LikeChildCommentRepository likeChildCommentRepository;
+    private final NotificationRepository notificationRepository;
     private final Validator validator;
 
     @Transactional
@@ -66,8 +71,18 @@ public class ChildCommentService {
         validatorBucket
                 .consistOf(ConstraintValidator.of(childComment, this.validator))
                 .consistOf(UserStateIsDeletedValidator.of(parentComment.getWriter().getState()));
-
         validatorBucket.validate();
+
+        if (!creator.getId().equals(childComment.getWriter().getId())) {
+            notificationRepository.save(
+                    Notification.of(
+                            parentComment.getWriter(),
+                            childComment.getContent(),
+                            NoticeType.COMMENT,
+                            false
+                    )
+            );
+        }
 
         return toChildCommentResponseDto(
                 childCommentRepository.save(childComment),

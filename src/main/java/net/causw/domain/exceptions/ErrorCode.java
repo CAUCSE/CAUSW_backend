@@ -28,6 +28,7 @@ public enum ErrorCode {
     LOCKER_ACTION_ERROR(4018),
     VALIDATION_FAILED(4019),
     INVALID_ACADEMIC_RECORD_REQUEST_STATUS(4020),
+    NOT_ALLOWED_TO_REPLY_FORM(4021),
 
     /**
      * 401 Unauthorized
@@ -56,7 +57,7 @@ public enum ErrorCode {
     /**
      * 503 Service Unavailable Error
      */
-    SERVICE_UNAVAILABLE(5030), ;
+    SERVICE_UNAVAILABLE(5030);
 
     private final int code;
 

@@ -3,6 +3,7 @@ package net.causw.application.homepage;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
+import net.causw.application.dto.util.StatusUtil;
 import net.causw.application.pageable.PageableFactory;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.board.BoardRepository;
@@ -18,7 +19,7 @@ import net.causw.application.dto.util.dtoMapper.PostDtoMapper;
 import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
-import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.enums.user.Role;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.validation.UserRoleIsNoneValidator;
@@ -66,6 +67,8 @@ public class HomePageService {
                                         postRepository.countAllCommentByPost_Id(post.getId()),
                                         getNumOfPostLikes(post),
                                         getNumOfPostFavorites(post)
+                                        , StatusUtil.isPostVote(post)
+                                        , post.getForm() != null
                                 )))
                 )
                 .collect(Collectors.toList());

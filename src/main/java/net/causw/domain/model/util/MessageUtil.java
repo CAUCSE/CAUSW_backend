@@ -12,11 +12,19 @@ public class MessageUtil {
     public static final String INVALID_REFRESH_TOKEN = "RefreshToken 유효성 검증 실패";
     public static final String INVALID_TOKEN = "잘못된 AccessToken 입니다";
     public static final String EXPIRED_TOKEN = "만료된 AccessToken 입니다";
+    public static final String DOES_NOT_HAVE_PERMISSION = "권한이 없습니다.";
 
     // Form
+    public static final String INVALID_QUESTION_INFO = "유효하지 않은 문항 정보입니다.";
     public static final String FORM_NOT_FOUND = "신청 폼을 찾을 수 없습니다.";
     public static final String QUESTION_NOT_FOUND = "질문을 찾을 수 없습니다.";
     public static final String OPTION_NOT_FOUND = "해당 문항을 찾을 수 없습니다.";
+    public static final String NOT_ALLOWED_TO_REPLY_FORM = "답변이 허용되지 않은 사용자입니다.";
+    public static final String INVALID_REPLY_INFO = "유효하지 않은 신청서 답변 정보입니다.";
+    public static final String ALREADY_REPLIED = "이미 답변한 신청서입니다.";
+    public static final String NOT_ALLOWED_TO_ACCESS_REPLY = "신청서 답변을 조회할 수 없는 사용자입니다.";
+    public static final String FORM_CLOSED = "신청 기간이 종료되었습니다.";
+    public static final String REPLY_SIZE_INVALID = "답변 개수가 유효하지 않습니다.";
 
     // Calendar & Event
     public static final String CALENDAR_NOT_FOUND = "캘린더를 찾을 수 없습니다.";
@@ -134,6 +142,16 @@ public class MessageUtil {
     // CouncilFeeFakeUser
     public static final String INVALID_COUNCIL_FEE_FAKE_USER_INFO = "유효하지 않은 가짜 사용자 정보입니다.";
 
+    // Vote
+    public static final String VOTE_OPTION_NOT_FOUND = "존재하지 않는 투표 옵션입니다.";
+    public static final String VOTE_OPTION_NOT_PROVIDED = "투표 옵션이 제공되지 않았습니다.";
+    public static final String VOTE_NOT_MULTIPLE = "이 투표는 여러 항목을 선택할 수 없습니다.";
+    public static final String VOTE_ALREADY_DONE = "해당 투표에 이미 참여한 이력이 있습니다.";
+    public static final String VOTE_ALREADY_END = "이미 종료된 투표입니다.";
+
+    public static final String VOTE_NOT_FOUND = "투표가 존재하지 않습니다.";
+    public static final String VOTE_END_NOT_ACCESSIBLE = "투표 종료 권한이 존재하지 않습니다.";
+    public static final String VOTE_START_NOT_ACCESSIBLE = "투표 시작 권한이 존재하지 않습니다.";
     // 500
     public static final String INTERNAL_SERVER_ERROR = "Internal Server Error";
     public static final String FILE_UPLOAD_FAIL = "파일 업로드에 실패했습니다.";

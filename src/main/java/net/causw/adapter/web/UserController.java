@@ -495,7 +495,7 @@ public class UserController {
     })
     public UserAdmissionResponseDto createAdmission(
             @RequestPart(value = "userAdmissionCreateRequestDto") @Valid UserAdmissionCreateRequestDto userAdmissionCreateRequestDto,
-            @RequestPart(value = "userAdmissionAttachImageList") @NotBlank(message = MessageUtil.IMAGE_MUST_NOT_NULL) List<MultipartFile> userAdmissionAttachImageList
+            @RequestPart(value = "userAdmissionAttachImageList") List<MultipartFile> userAdmissionAttachImageList
     ) {
         return this.userService.createAdmission(userAdmissionCreateRequestDto, userAdmissionAttachImageList);
     }

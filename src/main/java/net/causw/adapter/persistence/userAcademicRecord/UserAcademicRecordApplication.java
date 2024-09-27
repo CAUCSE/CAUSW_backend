@@ -8,8 +8,8 @@ import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
-import net.causw.domain.model.enums.AcademicRecordRequestStatus;
-import net.causw.domain.model.enums.AcademicStatus;
+import net.causw.domain.model.enums.userAcademicRecord.AcademicRecordRequestStatus;
+import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
 import net.causw.domain.model.util.MessageUtil;
 
 import java.util.ArrayList;

@@ -1,7 +1,7 @@
 package net.causw.adapter.persistence.repository.circle;
 
 import net.causw.adapter.persistence.circle.CircleMember;
-import net.causw.domain.model.enums.CircleMemberStatus;
+import net.causw.domain.model.enums.circle.CircleMemberStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

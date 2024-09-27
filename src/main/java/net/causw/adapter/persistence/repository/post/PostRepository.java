@@ -1,5 +1,6 @@
 package net.causw.adapter.persistence.repository.post;
 
+import net.causw.adapter.persistence.form.Form;
 import net.causw.adapter.persistence.post.Post;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,18 +20,17 @@ public interface PostRepository extends JpaRepository<Post, String> {
     Optional<Post> findTop1ByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(String boardId);
     List<Post> findTop3ByBoard_IdAndIsDeletedOrderByCreatedAtDesc(String boardId, Boolean isDeleted);
 
-    //해당 동아리의 동아리장, 관리자, 학생회장인 경우 삭제여부와 관계없이 모든 게시글 검색
+    //특정 게시판에서 삭제 여부와 관계없이 title 이 포함된 게시글 검색
     @Query(value = "SELECT * " +
             "FROM tb_post AS p " +
             "WHERE p.title LIKE CONCAT('%', :title, '%')AND p.board_id = :boardId ORDER BY p.created_at DESC", nativeQuery = true)
-    Page<Post> searchByTitle(@Param("title") String title, @Param("boardId") String boardId, Pageable pageable);
+    Page<Post> findByTitleAndBoard_Id(@Param("title") String title, @Param("boardId") String boardId, Pageable pageable);
 
-    //해당 동아리의 동아리장, 관리자, 학생회장이 아닌경우 삭제되지 않은 게시글 검색
+    //특정 게시판에서 삭제 여부를 고려하여 title 이 포함된 게시글 검색
     @Query(value = "SELECT * " +
             "FROM tb_post AS p " +
             "WHERE p.title LIKE CONCAT('%', :title, '%')AND p.board_id = :boardId AND p.is_deleted = :isDeleted ORDER BY p.created_at DESC", nativeQuery = true)
-
-    Page<Post> searchByTitle(@Param("title") String title, @Param("boardId") String boardId, Pageable pageable, @Param("isDeleted") boolean isDeleted);
+    Page<Post> findByTitleBoard_IdAndDeleted(@Param("title") String title, @Param("boardId") String boardId, Pageable pageable, @Param("isDeleted") boolean isDeleted);
 
     // 특정 사용자가 작성한 게시글 검색
     @Query("SELECT p " +
@@ -57,4 +57,6 @@ public interface PostRepository extends JpaRepository<Post, String> {
             "AND NOT (c.is_deleted = true AND cc.is_deleted IS NULL)" +
             "AND (cc.is_deleted = false OR cc.is_deleted IS NULL)", nativeQuery = true)
     Long countAllCommentByPost_Id(@Param("postId") String postId);
+
+    Optional<Post> findByForm(Form form);
 }

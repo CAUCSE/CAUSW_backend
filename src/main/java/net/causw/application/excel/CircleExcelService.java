@@ -2,7 +2,6 @@ package net.causw.application.excel;
 
 import net.causw.application.dto.circle.ExportCircleMemberToExcelResponseDto;
 import net.causw.domain.aop.annotation.MeasureTime;
-import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.springframework.stereotype.Service;
@@ -12,66 +11,6 @@ import java.util.List;
 @MeasureTime
 @Service
 public class CircleExcelService extends ExcelAbstractService<ExportCircleMemberToExcelResponseDto> {
-
-    @Override
-    public void createHeaderRow(Sheet sheet) {
-        Row headerRow = sheet.createRow(0);
-
-        Cell cell = headerRow.createCell(0);
-        cell.setCellValue("아이디(이메일)");
-
-        cell = headerRow.createCell(1);
-        cell.setCellValue("이름");
-
-        cell = headerRow.createCell(2);
-        cell.setCellValue("닉네임");
-
-        cell = headerRow.createCell(3);
-        cell.setCellValue("입학년도");
-
-        cell = headerRow.createCell(4);
-        cell.setCellValue("학번");
-
-        cell = headerRow.createCell(5);
-        cell.setCellValue("학부/학과");
-
-        cell = headerRow.createCell(6);
-        cell.setCellValue("연락처");
-
-        cell = headerRow.createCell(7);
-        cell.setCellValue("학적 상태");
-
-        cell = headerRow.createCell(8);
-        cell.setCellValue("현재 등록 완료된 학기");
-
-        cell = headerRow.createCell(9);
-        cell.setCellValue("졸업 년도");
-
-        cell = headerRow.createCell(10);
-        cell.setCellValue("졸업 시기");
-
-        cell = headerRow.createCell(11);
-        cell.setCellValue("동문네트워크 가입일");
-
-        cell = headerRow.createCell(12);
-        cell.setCellValue("본 학기 학생회비 납부 여부");
-
-        cell = headerRow.createCell(13);
-        cell.setCellValue("학생회비 납부 시점");
-
-        cell = headerRow.createCell(14);
-        cell.setCellValue("학생회비 납부 차수");
-
-        cell = headerRow.createCell(15);
-        cell.setCellValue("적용 학생회비 학기");
-
-        cell = headerRow.createCell(16);
-        cell.setCellValue("잔여 학생회비 적용 학기");
-
-        cell = headerRow.createCell(17);
-        cell.setCellValue("학생회비 환불 여부");
-    }
-
 
     @Override
     public void createDataRows(Sheet sheet, List<ExportCircleMemberToExcelResponseDto> exportCircleMemberToExcelResponseDtoList) {

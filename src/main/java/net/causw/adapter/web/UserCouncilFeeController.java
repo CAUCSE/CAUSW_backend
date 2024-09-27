@@ -141,8 +141,8 @@ public class UserCouncilFeeController {
     public void updateUserCouncilFeeWithUser(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestHeader @Pattern(
-                    regexp = "^[0-9a-fA-F]{32}$",
-                    message = "대상 사용자 고유 id 값은 대시(-) 없이 32자리의 UUID 형식이어야 합니다."
+                    regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                    message = "id 값은 대시(-)를 포함하고, 32자리의 UUID 형식이어야 합니다."
             )
             @NotBlank(message = "대상 사용자 고유 id 값은 필수 입력 값입니다.") String userCouncilFeeId,
             @RequestBody @Valid CreateUserCouncilFeeWithUserRequestDto createUserCouncilFeeWithUserRequestDto
@@ -167,8 +167,8 @@ public class UserCouncilFeeController {
     public void updateUserCouncilFeeWithFakeUser(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestHeader @Pattern(
-                    regexp = "^[0-9a-fA-F]{32}$",
-                    message = "대상 사용자 고유 id 값은 대시(-) 없이 32자리의 UUID 형식이어야 합니다."
+                    regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                    message = "id 값은 대시(-)를 포함하고, 32자리의 UUID 형식이어야 합니다."
             )
             @NotBlank(message = "대상 사용자 고유 id 값은 필수 입력 값입니다.") String userCouncilFeeId,
             @RequestBody @Valid CreateUserCouncilFeeWithFakeUserRequestDto createUserCouncilFeeRequestDto

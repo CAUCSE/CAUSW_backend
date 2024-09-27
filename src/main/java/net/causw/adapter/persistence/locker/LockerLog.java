@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Builder;
 import net.causw.adapter.persistence.base.BaseEntity;
-import net.causw.domain.model.enums.LockerLogAction;
+import net.causw.domain.model.enums.locker.LockerLogAction;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

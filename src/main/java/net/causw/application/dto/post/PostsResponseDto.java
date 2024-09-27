@@ -12,7 +12,8 @@ import java.time.LocalDateTime;
 @Setter
 @Builder
 @AllArgsConstructor
-public class PostsResponseDto {
+public class
+PostsResponseDto {
     @Schema(description = "게시글 id", example = "uuid 형식의 String 값입니다.")
     private String id;
 
@@ -51,5 +52,11 @@ public class PostsResponseDto {
 
     @Schema(description = "게시글 삭제여부", example = "false")
     private Boolean isDeleted;
+
+    @Schema(description = "투표 포함 여부" ,example = "false")
+    private Boolean isPostVote;
+
+    @Schema(description = "게시글 신청서 존재 여부", example = "true")
+    private Boolean isPostForm;
 
 }

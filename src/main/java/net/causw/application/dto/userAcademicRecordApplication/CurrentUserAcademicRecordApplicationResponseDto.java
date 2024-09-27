@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import net.causw.domain.model.enums.SemesterType;
+import net.causw.domain.model.enums.semester.SemesterType;
 
 import java.util.List;
 
