@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import net.causw.application.dto.comment.CommentResponseDto;
+import net.causw.application.dto.vote.VoteResponseDto;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
@@ -61,6 +62,9 @@ public class PostResponseDto {
     @Schema(description = "로그인한 사용자가 즐겨찾기를 이미 누른지 여부", example = "False")
     private Boolean isPostFavorite;
 
+    @Schema(description = "해당 글이 투표가 포함됐는지 여부", example = "False")
+    private Boolean isPostVote;
+
     @Schema(description = "게시글 업데이트 가능여부", example = "true")
     private Boolean updatable;
 
@@ -79,4 +83,6 @@ public class PostResponseDto {
     @Schema(description = "게시판 이름", example = "게시판 이름입니다.")
     private String boardName;
 
+    @Schema(description = "투표 정보", example = "투표 관련 정보")
+    private VoteResponseDto voteResponseDto;
 }

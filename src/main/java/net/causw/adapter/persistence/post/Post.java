@@ -7,6 +7,7 @@ import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.uuidFile.joinEntity.PostAttachImage;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
+import net.causw.adapter.persistence.vote.Vote;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.util.ArrayList;
@@ -48,6 +49,10 @@ public class Post extends BaseEntity {
     @ManyToOne(targetEntity = Board.class)
     @JoinColumn(name = "board_id", nullable = false)
     private Board board;
+
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+    @JoinColumn(name = "vote_id")
+    private Vote vote;
 
     public static Post of(
             String title,

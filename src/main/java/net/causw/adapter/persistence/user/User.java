@@ -6,6 +6,8 @@ import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.locker.Locker;
 import net.causw.adapter.persistence.uuidFile.joinEntity.UserProfileImage;
+import net.causw.adapter.persistence.vote.Vote;
+import net.causw.adapter.persistence.vote.VoteRecord;
 import net.causw.application.dto.user.UserCreateRequestDto;
 import net.causw.domain.model.enums.AcademicStatus;
 import net.causw.domain.model.enums.GraduationType;
@@ -87,6 +89,9 @@ public class User extends BaseEntity {
     @OneToMany
     @JoinColumn(name = "user_circle_id", nullable = true)
     private List<CircleMember> circleMemberList;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<VoteRecord> voteRecordList;
 
     @Column(name = "rejectionOrDropReason",nullable = true)
     private String rejectionOrDropReason;

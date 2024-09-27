@@ -100,4 +100,8 @@ public class StatusUtil {
     public static boolean isAdminOrPresident(User user) {
         return user.getRoles().contains(Role.ADMIN) || user.getRoles().contains(Role.PRESIDENT) || user.getRoles().contains(Role.VICE_PRESIDENT);
     }
+
+    public static boolean isPostVote(Post post){
+        return post.getVote() != null;
+    }
 }

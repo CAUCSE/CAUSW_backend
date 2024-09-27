@@ -8,6 +8,7 @@ import net.causw.application.dto.post.PostContentDto;
 import net.causw.application.dto.post.PostResponseDto;
 import net.causw.application.dto.post.PostsResponseDto;
 import net.causw.application.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
+import net.causw.application.dto.vote.VoteResponseDto;
 import net.causw.domain.model.enums.Role;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -43,6 +44,7 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "numFavorite", source = "numPostFavorite")
     PostsResponseDto toPostsResponseDto(Post post, Long numComment, Long numPostLike, Long numPostFavorite);
 
+    @Mapping(target = "title", source = "post.title")
     @Mapping(target = "writerName", source = "post.writer.name")
     @Mapping(target = "writerAdmissionYear", source = "post.writer.admissionYear")
     @Mapping(target = "boardName", source = "post.board.name")
@@ -52,8 +54,10 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "isQuestion", source = "post.isQuestion")
     @Mapping(target = "numLike", source = "numPostLike")
     @Mapping(target = "numFavorite", source = "numPostFavorite")
+    @Mapping(target = "isPostVote" , source =  "isPostVote")
+    @Mapping(target = "voteResponseDto", source = "voteResponseDto")
     PostResponseDto toPostResponseDtoExtended(Post post, Page<CommentResponseDto> commentList, Long numComment, Long numPostLike,
-                                              Long numPostFavorite, Boolean isPostLike, Boolean isPostFavorite, Boolean updatable, Boolean deletable);
+                                              Long numPostFavorite, Boolean isPostLike, Boolean isPostFavorite, Boolean updatable, Boolean deletable, Boolean isPostVote, VoteResponseDto voteResponseDto);
 
     @Mapping(target = "title", source = "post.title")
     @Mapping(target = "contentId", source = "post.id")

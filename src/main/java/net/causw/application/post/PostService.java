@@ -32,6 +32,7 @@ import net.causw.application.dto.util.dtoMapper.CommentDtoMapper;
 import net.causw.application.dto.util.dtoMapper.PostDtoMapper;
 import net.causw.application.dto.util.StatusUtil;
 import net.causw.application.uuidFile.UuidFileService;
+import net.causw.application.vote.VoteService;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
@@ -68,6 +69,7 @@ public class PostService {
     private final LikeCommentRepository likeCommentRepository;
     private final LikeChildCommentRepository likeChildCommentRepository;
     private final PageableFactory pageableFactory;
+    private final VoteService voteService;
     private final Validator validator;
     private final UuidFileService uuidFileService;
     private final PostAttachImageRepository postAttachImageRepository;
@@ -569,6 +571,8 @@ public class PostService {
                 isPostAlreadyFavorite(user, post.getId()),
                 StatusUtil.isUpdatable(post, user, isPostHasComment(post.getId())),
                 StatusUtil.isDeletable(post, user, post.getBoard(), isPostHasComment(post.getId()))
+                , StatusUtil.isPostVote(post)
+                , StatusUtil.isPostVote(post) ? voteService.toVoteResponseDto(post.getVote(), user) : null // 조건부로 처리
         );
     }
 
