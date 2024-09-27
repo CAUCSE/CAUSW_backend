@@ -10,8 +10,11 @@ import net.causw.adapter.persistence.form.Form;
 import net.causw.adapter.persistence.form.FormQuestionOption;
 import net.causw.adapter.persistence.form.FormQuestion;
 import net.causw.adapter.persistence.repository.form.FormRepository;
+import net.causw.adapter.persistence.notification.Notification;
+import net.causw.adapter.persistence.notification.UserBoardSubscribe;
+import net.causw.adapter.persistence.repository.notification.NotificationRepository;
+import net.causw.adapter.persistence.repository.notification.UserBoardSubscribeRepository;
 import net.causw.adapter.persistence.repository.uuidFile.PostAttachImageRepository;
-import net.causw.adapter.persistence.repository.vote.VoteOptionRepository;
 import net.causw.adapter.persistence.repository.vote.VoteRecordRepository;
 import net.causw.adapter.persistence.uuidFile.joinEntity.PostAttachImage;
 import net.causw.adapter.persistence.vote.Vote;
@@ -47,12 +50,12 @@ import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.post.*;
 import net.causw.application.dto.util.StatusUtil;
 import net.causw.application.uuidFile.UuidFileService;
-import net.causw.application.vote.VoteService;
 import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
+import net.causw.domain.model.enums.notification.NoticeType;
 import net.causw.domain.model.enums.circle.CircleMemberStatus;
 import net.causw.domain.model.enums.form.QuestionType;
 import net.causw.domain.model.enums.form.RegisteredSemesterManager;
@@ -71,6 +74,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+
 @MeasureTime
 @Service
 @RequiredArgsConstructor
@@ -89,6 +93,8 @@ public class PostService {
     private final FavoritePostRepository favoritePostRepository;
     private final LikeCommentRepository likeCommentRepository;
     private final LikeChildCommentRepository likeChildCommentRepository;
+    private final NotificationRepository notificationRepository;
+    private final UserBoardSubscribeRepository userBoardSubscribeRepository;
     private final PageableFactory pageableFactory;
     private final Validator validator;
     private final UuidFileService uuidFileService;
@@ -141,6 +147,7 @@ public class PostService {
         }
     }
 
+    @Transactional(readOnly = true)
     public BoardPostsResponseDto searchPost(
             User user,
             String boardId,
@@ -265,6 +272,32 @@ public class PostService {
         validatorBucket
                 .consistOf(ConstraintValidator.of(post, this.validator))
                 .validate();
+
+        // 게시물 알림
+        List<UserBoardSubscribe> byBoardId = userBoardSubscribeRepository.findByBoard_Id(postCreateRequestDto.getBoardId());
+        if (board.getIsDefaultNotice()) { // 전체 사용자가 알림 대상이면
+            notificationRepository.save(
+                    Notification.of(
+                            null,
+                            post.getTitle(),
+                            NoticeType.POST,
+                            true
+                    )
+            );
+        } else { // 개별 사용자에게 알림
+            for (UserBoardSubscribe user : byBoardId) {
+                if (!user.getUser().getId().equals(creator.getId())) {
+                    notificationRepository.save(
+                            Notification.of(
+                                    user.getUser(),
+                                    post.getTitle(),
+                                    NoticeType.POST,
+                                    false
+                            )
+                    );
+                }
+            }
+        }
 
         return toPostResponseDtoExtended(postRepository.save(post), creator);
     }

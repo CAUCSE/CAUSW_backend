@@ -3,7 +3,6 @@ package net.causw.application.vote;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.post.PostRepository;
-import net.causw.adapter.persistence.repository.user.UserRepository;
 import net.causw.adapter.persistence.repository.vote.VoteOptionRepository;
 import net.causw.adapter.persistence.repository.vote.VoteRecordRepository;
 import net.causw.adapter.persistence.repository.vote.VoteRepository;
@@ -18,16 +17,17 @@ import net.causw.application.dto.vote.CastVoteRequestDto;
 import net.causw.application.dto.vote.CreateVoteRequestDto;
 import net.causw.application.dto.vote.VoteOptionResponseDto;
 import net.causw.application.dto.vote.VoteResponseDto;
+import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.util.MessageUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@MeasureTime
 @Service
 @RequiredArgsConstructor
 public class VoteService {
