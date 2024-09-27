@@ -21,6 +21,6 @@ public class NotificationResponseDto {
     @Schema(description = "알림 종류", example = "POST")
     private NoticeType noticeType;
 
-    @Schema(description = "전체 사용자 대상 알리 여부", example = "false")
+    @Schema(description = "전체 사용자 대상 알림 여부", example = "false")
     private Boolean isGlobal;
 }
