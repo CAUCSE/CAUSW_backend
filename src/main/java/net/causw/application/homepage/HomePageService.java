@@ -3,6 +3,7 @@ package net.causw.application.homepage;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
+import net.causw.application.dto.util.StatusUtil;
 import net.causw.application.pageable.PageableFactory;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.board.BoardRepository;
@@ -65,8 +66,9 @@ public class HomePageService {
                                         post,
                                         postRepository.countAllCommentByPost_Id(post.getId()),
                                         getNumOfPostLikes(post),
-                                        getNumOfPostFavorites(post),
-                                        post.getForm() != null
+                                        getNumOfPostFavorites(post)
+                                        , StatusUtil.isPostVote(post)
+                                        , post.getForm() != null
                                 )))
                 )
                 .collect(Collectors.toList());

@@ -28,7 +28,7 @@ public class PostController {
 
     private final PostService postService;
 
-    @GetMapping(value = "/{id}")
+    @GetMapping(value = "/{id}", produces = "application/json")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시글 열람 API(완료)", description = "게시판에서 게시글을 선택했을 때 게시글을 열람할 수 있습니다.")

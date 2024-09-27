@@ -11,12 +11,20 @@ import net.causw.adapter.persistence.form.FormQuestionOption;
 import net.causw.adapter.persistence.form.FormQuestion;
 import net.causw.adapter.persistence.repository.form.FormRepository;
 import net.causw.adapter.persistence.repository.uuidFile.PostAttachImageRepository;
+import net.causw.adapter.persistence.repository.vote.VoteOptionRepository;
+import net.causw.adapter.persistence.repository.vote.VoteRecordRepository;
 import net.causw.adapter.persistence.uuidFile.joinEntity.PostAttachImage;
+import net.causw.adapter.persistence.vote.Vote;
+import net.causw.adapter.persistence.vote.VoteOption;
+import net.causw.adapter.persistence.vote.VoteRecord;
 import net.causw.application.dto.form.request.create.FormCreateRequestDto;
 import net.causw.application.dto.form.response.FormResponseDto;
 import net.causw.application.dto.form.response.OptionResponseDto;
 import net.causw.application.dto.form.response.QuestionResponseDto;
-import net.causw.application.dto.util.dtoMapper.FormDtoMapper;
+import net.causw.application.dto.user.UserResponseDto;
+import net.causw.application.dto.util.dtoMapper.*;
+import net.causw.application.dto.vote.VoteOptionResponseDto;
+import net.causw.application.dto.vote.VoteResponseDto;
 import net.causw.application.pageable.PageableFactory;
 import net.causw.adapter.persistence.post.FavoritePost;
 import net.causw.adapter.persistence.post.LikePost;
@@ -37,10 +45,9 @@ import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.post.*;
-import net.causw.application.dto.util.dtoMapper.CommentDtoMapper;
-import net.causw.application.dto.util.dtoMapper.PostDtoMapper;
 import net.causw.application.dto.util.StatusUtil;
 import net.causw.application.uuidFile.UuidFileService;
+import net.causw.application.vote.VoteService;
 import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -74,6 +81,7 @@ public class PostService {
     private final UserRepository userRepository;
     private final BoardRepository boardRepository;
     private final CircleMemberRepository circleMemberRepository;
+    private final VoteRecordRepository voteRecordRepository;
     private final CommentRepository commentRepository;
     private final ChildCommentRepository childCommentRepository;
     private final FavoriteBoardRepository favoriteBoardRepository;
@@ -89,14 +97,9 @@ public class PostService {
 
     public PostResponseDto findPostById(User user, String postId) {
         Post post = getPost(postId);
-
         ValidatorBucket validatorBucket = initializeValidator(user, post.getBoard());
         validatorBucket.validate();
-
-        Form form = post.getForm();
-        FormResponseDto formResponseDto = toFormResponseDto(form);
-
-        return toPostResponseDtoExtended(post, user, formResponseDto);
+        return toPostResponseDtoExtended(post, user);
     }
 
     public BoardPostsResponseDto findAllPost(
@@ -193,7 +196,7 @@ public class PostService {
     }
 
     @Transactional
-    public void createPost(User creator, PostCreateRequestDto postCreateRequestDto, List<MultipartFile> attachImageList) {
+    public PostResponseDto createPost(User creator, PostCreateRequestDto postCreateRequestDto, List<MultipartFile> attachImageList) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         Set<Role> roles = creator.getRoles();
 
@@ -263,7 +266,7 @@ public class PostService {
                 .consistOf(ConstraintValidator.of(post, this.validator))
                 .validate();
 
-        postRepository.save(post);
+        return toPostResponseDtoExtended(postRepository.save(post), creator);
     }
 
     @Transactional
@@ -404,12 +407,10 @@ public class PostService {
         validatorBucket.validate();
 
         post.setIsDeleted(true);
-
-        postRepository.save(post);
     }
 
     @Transactional
-    public void updatePost(
+    public PostResponseDto updatePost(
             User updater,
             String postId,
             PostUpdateRequestDto postUpdateRequestDto,
@@ -464,6 +465,8 @@ public class PostService {
                 null,
                 postAttachImageList
         );
+
+        return toPostResponseDtoExtended(post, updater);
     }
 
     @Transactional
@@ -592,8 +595,6 @@ public class PostService {
                 .validate();
 
         post.setIsDeleted(false);
-
-        postRepository.save(post);
     }
 
     @Transactional
@@ -798,12 +799,13 @@ public class PostService {
                 post,
                 postRepository.countAllCommentByPost_Id(post.getId()),
                 getNumOfPostLikes(post),
-                getNumOfPostLikes(post),
-                post.getForm() != null
+                getNumOfPostFavorites(post),
+                StatusUtil.isPostVote(post),
+                StatusUtil.isPostForm(post)
         );
     }
 
-    private PostResponseDto toPostResponseDtoExtended(Post post, User user, FormResponseDto formResponseDto) {
+    private PostResponseDto toPostResponseDtoExtended(Post post, User user) {
         return PostDtoMapper.INSTANCE.toPostResponseDtoExtended(
                 postRepository.save(post),
                 findCommentsByPostIdByPage(user, post, 0),
@@ -814,7 +816,10 @@ public class PostService {
                 isPostAlreadyFavorite(user, post.getId()),
                 StatusUtil.isUpdatable(post, user, isPostHasComment(post.getId())),
                 StatusUtil.isDeletable(post, user, post.getBoard(), isPostHasComment(post.getId())),
-                formResponseDto
+                StatusUtil.isPostForm(post) ? toFormResponseDto(post.getForm()) : null,
+                StatusUtil.isPostVote(post) ? toVoteResponseDto(post.getVote(), user) : null,
+                StatusUtil.isPostVote(post),
+                StatusUtil.isPostForm(post)
         );
     }
 
@@ -961,6 +966,27 @@ public class PostService {
 
     private OptionResponseDto toOptionResponseDto(FormQuestionOption formQuestionOption) {
         return FormDtoMapper.INSTANCE.toOptionResponseDto(formQuestionOption);
+    }
+
+    private VoteResponseDto toVoteResponseDto(Vote vote, User user) {
+        boolean isOwner = user.equals(vote.getPost().getWriter());
+        List<VoteOptionResponseDto> voteOptionResponseDtoList = vote.getVoteOptions().stream()
+                .map(this::tovoteOptionResponseDto)
+                .collect(Collectors.toList());
+        return VoteDtoMapper.INSTANCE.toVoteResponseDto(
+                vote,
+                voteOptionResponseDtoList
+                ,isOwner
+                ,vote.isEnd()
+        );
+    }
+
+    private VoteOptionResponseDto tovoteOptionResponseDto(VoteOption voteOption) {
+        List<VoteRecord> voteRecords = voteRecordRepository.findAllByVoteOption(voteOption);
+        List<UserResponseDto> userResponseDtos = voteRecords.stream()
+                .map(voteRecord -> UserDtoMapper.INSTANCE.toUserResponseDto(voteRecord.getUser(), null, null))
+                .collect(Collectors.toList());
+        return VoteDtoMapper.INSTANCE.toVoteOptionResponseDto(voteOption, voteRecords.size(), userResponseDtos);
     }
 
 }

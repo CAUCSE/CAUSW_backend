@@ -48,4 +48,19 @@ public class FormResponseDto {
 
     @Schema(description = "신청서 질문 Dto List")
     private List<QuestionResponseDto> questionResponseDtoList;
+
+    public static FormResponseDto empty() {
+        return FormResponseDto.builder()
+                .formId("")
+                .title("")
+                .isClosed(false)
+                .isAllowedEnrolled(false)
+                .enrolledRegisteredSemesterList(List.of())  // 빈 리스트
+                .isNeedCouncilFeePaid(false)  // 기본값 false
+                .isAllowedLeaveOfAbsence(false)  // 기본값 false
+                .leaveOfAbsenceRegisteredSemesterList(List.of())  // 빈 리스트
+                .isAllowedGraduation(false)  // 기본값 false
+                .questionResponseDtoList(List.of())  // 빈 리스트
+                .build();
+    }
 }

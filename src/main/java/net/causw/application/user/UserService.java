@@ -9,6 +9,7 @@ import net.causw.adapter.persistence.locker.LockerLog;
 import net.causw.adapter.persistence.repository.uuidFile.UserProfileImageRepository;
 import net.causw.adapter.persistence.uuidFile.joinEntity.UserAdmissionAttachImage;
 import net.causw.adapter.persistence.uuidFile.joinEntity.UserProfileImage;
+import net.causw.application.dto.util.StatusUtil;
 import net.causw.application.excel.UserExcelService;
 import net.causw.application.pageable.PageableFactory;
 import net.causw.adapter.persistence.post.Post;
@@ -229,8 +230,9 @@ public class UserService {
                         post,
                         getNumOfComment(post),
                         getNumOfPostLikes(post),
-                        getNumOfPostFavorites(post),
-                        post.getForm() != null
+                        getNumOfPostFavorites(post)
+                        , StatusUtil.isPostVote(post)
+                        , StatusUtil.isPostForm(post)
                 ))
         );
     }
@@ -251,8 +253,9 @@ public class UserService {
                                 favoritePost.getPost(),
                                 getNumOfComment(favoritePost.getPost()),
                                 getNumOfPostLikes(favoritePost.getPost()),
-                                getNumOfPostFavorites(favoritePost.getPost()),
-                                favoritePost.getPost().getForm() != null
+                                getNumOfPostFavorites(favoritePost.getPost())
+                                ,StatusUtil.isPostVote(favoritePost.getPost())
+                                ,StatusUtil.isPostForm(favoritePost.getPost())
                         ))
         );
     }
@@ -287,8 +290,9 @@ public class UserService {
                         post,
                         getNumOfComment(post),
                         getNumOfPostLikes(post),
-                        getNumOfPostFavorites(post),
-                        post.getForm() != null
+                        getNumOfPostFavorites(post)
+                        ,StatusUtil.isPostVote(post)
+                        ,StatusUtil.isPostForm(post)
                 ))
         );
     }

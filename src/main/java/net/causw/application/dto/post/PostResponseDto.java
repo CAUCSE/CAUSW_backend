@@ -2,14 +2,17 @@ package net.causw.application.dto.post;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
+import lombok.Getter;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.form.response.FormResponseDto;
+import net.causw.application.dto.vote.VoteResponseDto;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Builder
+@Getter
 public class PostResponseDto {
     @Schema(description = "게시글 id", example = "uuid 형식의 String 값입니다.")
     private String id;
@@ -56,6 +59,12 @@ public class PostResponseDto {
     @Schema(description = "로그인한 사용자가 즐겨찾기를 이미 누른지 여부", example = "False")
     private Boolean isPostFavorite;
 
+    @Schema(description = "해당 글이 투표가 포함됐는지 여부", example = "False")
+    private Boolean isPostVote;
+
+    @Schema(description = "해당 글이 설문이 포함됐는지 여부", example = "False")
+    private Boolean isPostForm;
+
     @Schema(description = "게시글 업데이트 가능여부", example = "true")
     private Boolean updatable;
 
@@ -77,4 +86,6 @@ public class PostResponseDto {
     @Schema(description = "게시글의 신청서 정보")
     private FormResponseDto formResponseDto;
 
+    @Schema(description = "투표 정보")
+    private VoteResponseDto voteResponseDto;
 }

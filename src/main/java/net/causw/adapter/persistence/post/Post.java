@@ -8,6 +8,7 @@ import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.uuidFile.joinEntity.PostAttachImage;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
+import net.causw.adapter.persistence.vote.Vote;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.util.ArrayList;
@@ -57,8 +58,12 @@ public class Post extends BaseEntity {
     private Board board;
 
     @OneToOne(cascade = { CascadeType.REMOVE, CascadeType.PERSIST })
-    @JoinColumn(name = "form_id", nullable = true, unique = true)
+    @JoinColumn(name = "form_id", unique = true)
     private Form form;
+
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+    @JoinColumn(name = "vote_id" , unique = true)
+    private Vote vote;
 
     public static Post of(
             String title,
@@ -68,6 +73,7 @@ public class Post extends BaseEntity {
             Boolean isQuestion,
             Board board,
             Form form,
+
             List<UuidFile> postAttachImageUuidFileList
     ) {
         Post post = Post.builder()
@@ -107,5 +113,8 @@ public class Post extends BaseEntity {
 
     private void setPostAttachFileList(List<PostAttachImage> postAttachImageList) {
         this.postAttachImageList = postAttachImageList;
+    }
+    public void updateVote(Vote vote){
+        this.vote = vote;
     }
 }

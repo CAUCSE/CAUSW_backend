@@ -9,6 +9,7 @@ import net.causw.application.dto.post.PostContentDto;
 import net.causw.application.dto.post.PostResponseDto;
 import net.causw.application.dto.post.PostsResponseDto;
 import net.causw.application.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
+import net.causw.application.dto.vote.VoteResponseDto;
 import net.causw.domain.model.enums.user.Role;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -27,7 +28,8 @@ import java.util.Set;
 @Mapping(target = "writerName", source = "post.writer.name")
 @Mapping(target = "writerAdmissionYear", source = "post.writer.admissionYear")
 @Mapping(target = "writerProfileImage", source = "post.writer.profileImage")
-@interface CommonPostWriterMappings {}
+@interface CommonPostWriterMappings {
+}
 
 @Mapper(componentModel = "spring")
 public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
@@ -42,8 +44,9 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "isQuestion", source = "post.isQuestion")
     @Mapping(target = "numLike", source = "numPostLike")
     @Mapping(target = "numFavorite", source = "numPostFavorite")
-    @Mapping(target = "isFormExist", source = "isFormExist")
-    PostsResponseDto toPostsResponseDto(Post post, Long numComment, Long numPostLike, Long numPostFavorite, Boolean isFormExist);
+    @Mapping(target = "isPostVote", source = "isPostVote")
+    @Mapping(target = "isPostForm", source = "isPostForm")
+    PostsResponseDto toPostsResponseDto(Post post, Long numComment, Long numPostLike, Long numPostFavorite, Boolean isPostVote, Boolean isPostForm);
 
     @Mapping(target = "title", source = "post.title")
     @Mapping(target = "writerName", source = "post.writer.name")
@@ -61,6 +64,9 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "deletable", source = "deletable")
     @Mapping(target = "writerProfileImage", source = "post.writer.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
     @Mapping(target = "formResponseDto", source = "formResponseDto")
+    @Mapping(target = "voteResponseDto", source = "voteResponseDto")
+    @Mapping(target = "isPostVote", source = "isPostVote")
+    @Mapping(target = "isPostForm", source = "isPostForm")
     PostResponseDto toPostResponseDtoExtended(
             Post post,
             Page<CommentResponseDto> commentList,
@@ -71,7 +77,10 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
             Boolean isPostFavorite,
             Boolean updatable,
             Boolean deletable,
-            FormResponseDto formResponseDto
+            FormResponseDto formResponseDto,
+            VoteResponseDto voteResponseDto,
+            Boolean isPostVote,
+            Boolean isPostForm
     );
 
     @Mapping(target = "title", source = "post.title")

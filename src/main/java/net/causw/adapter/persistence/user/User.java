@@ -6,6 +6,8 @@ import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.locker.Locker;
 import net.causw.adapter.persistence.uuidFile.joinEntity.UserProfileImage;
+import net.causw.adapter.persistence.vote.Vote;
+import net.causw.adapter.persistence.vote.VoteRecord;
 import net.causw.application.dto.user.UserCreateRequestDto;
 import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
 import net.causw.domain.model.enums.user.GraduationType;
@@ -13,6 +15,7 @@ import net.causw.domain.model.enums.user.Role;
 import net.causw.domain.model.enums.user.UserState;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Getter
@@ -88,6 +91,9 @@ public class User extends BaseEntity {
     @JoinColumn(name = "user_circle_id", nullable = true)
     private List<CircleMember> circleMemberList;
 
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<VoteRecord> voteRecordList;
+
     @Column(name = "rejectionOrDropReason",nullable = true)
     private String rejectionOrDropReason;
 
@@ -131,5 +137,18 @@ public class User extends BaseEntity {
 
     public void updateRejectionOrDropReason(String reason) {
         this.rejectionOrDropReason = reason;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(getId(), user.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId());
     }
 }
