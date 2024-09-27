@@ -203,6 +203,26 @@ public class CircleService {
                 )).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<CircleMemberResponseDto> getMemberList(String circleId) {
+        Circle circle = getCircle(circleId);
+
+        return circleMemberRepository.findByCircle_Id(circle.getId())
+                .stream()
+                .filter(circleMember -> circleMember.getStatus().equals(CircleMemberStatus.MEMBER))
+                .map(circleMember -> this.toCircleMemberResponseDto(
+                        circleMember,
+                        circleMember.getCircle(),
+                        userRepository.findById(circleMember.getUser().getId()).orElseThrow(
+                                () -> new BadRequestException(
+                                        ErrorCode.ROW_DOES_NOT_EXIST,
+                                        MessageUtil.USER_NOT_FOUND
+                                )
+                        )
+                )).collect(Collectors.toList());
+    }
+
+
     @Transactional
     public CircleResponseDto create(User requestUser, CircleCreateRequestDto circleCreateRequestDto, MultipartFile mainImage) {
         Set<Role> roles = requestUser.getRoles();
