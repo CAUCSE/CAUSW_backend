@@ -5,7 +5,7 @@ import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.uuidFile.joinEntity.UserAdmissionLogAttachImage;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
-import net.causw.domain.model.enums.UserAdmissionLogAction;
+import net.causw.domain.model.enums.user.UserAdmissionLogAction;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -5,42 +5,38 @@ import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.user.User;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-@Setter
 @Entity
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_reply")
 public class Reply extends BaseEntity {
-    @ManyToOne
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "form_id", nullable = false)
     private Form form;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "question_id", nullable = false)
-    private Question question;
+    @OneToMany(mappedBy = "reply", cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, orphanRemoval = true)
+    @Builder.Default
+    private List<ReplyQuestion> replyQuestionList = new ArrayList<>();
 
-    @Column(name = "question_answer")
-    private String questionAnswer;
-
-    @ElementCollection(fetch = FetchType.EAGER)
-    @Column(name = "selected_option")
-    private List<Integer> selectedOptions;
-
-    public static Reply of(Form form, User user, Question question, String questionAnswer, List<Integer> selectedOptions) {
+    public static Reply of(
+            Form form,
+            User user,
+            List<ReplyQuestion> replyQuestionList
+    ) {
         return Reply.builder()
                 .form(form)
                 .user(user)
-                .question(question)
-                .questionAnswer(questionAnswer)
-                .selectedOptions(selectedOptions)
+                .replyQuestionList(replyQuestionList)
                 .build();
     }
 }

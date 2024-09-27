@@ -1,5 +1,6 @@
 package net.causw.adapter.persistence.repository.post;
 
+import net.causw.adapter.persistence.form.Form;
 import net.causw.adapter.persistence.post.Post;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,7 +30,6 @@ public interface PostRepository extends JpaRepository<Post, String> {
     @Query(value = "SELECT * " +
             "FROM tb_post AS p " +
             "WHERE p.title LIKE CONCAT('%', :title, '%')AND p.board_id = :boardId AND p.is_deleted = :isDeleted ORDER BY p.created_at DESC", nativeQuery = true)
-
     Page<Post> searchByTitle(@Param("title") String title, @Param("boardId") String boardId, Pageable pageable, @Param("isDeleted") boolean isDeleted);
 
     // 특정 사용자가 작성한 게시글 검색
@@ -57,4 +57,6 @@ public interface PostRepository extends JpaRepository<Post, String> {
             "AND NOT (c.is_deleted = true AND cc.is_deleted IS NULL)" +
             "AND (cc.is_deleted = false OR cc.is_deleted IS NULL)", nativeQuery = true)
     Long countAllCommentByPost_Id(@Param("postId") String postId);
+
+    Optional<Post> findByForm(Form form);
 }

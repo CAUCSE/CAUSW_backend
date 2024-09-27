@@ -17,17 +17,15 @@ import net.causw.application.semester.SemesterService;
 import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
-import net.causw.domain.model.enums.CouncilFeeLogType;
+import net.causw.domain.model.enums.userCouncilFee.CouncilFeeLogType;
 import net.causw.domain.model.util.MessageUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 @MeasureTime
 @Service
@@ -44,7 +42,28 @@ public class UserCouncilFeeService {
     public void exportUserCouncilFeeToExcel(HttpServletResponse response) {
         Semester semester = semesterService.getCurrentSemesterEntity();
 
-        String fileName = LocalDateTime.now() + "_" + semester.getSemesterYear().toString() + "-" + semester.getSemesterType().getValue() + "_학생회비_납부자_현황";
+        String fileName = semester.getSemesterYear().toString() + "-" + semester.getSemesterType().getValue() + "_학생회비_납부자_현황";
+
+        List<String> headerStringList = List.of(
+                "동문네트워크 서비스 가입 여부",
+                "이메일(아이디)",
+                "이름",
+                "학번",
+                "입학년도",
+                "전공",
+                "학적상태",
+                "등록 완료 학기",
+                "졸업 년도",
+                "졸업 유형",
+                "전화번호",
+                "동문 네트워크 가입일",
+                "납부 시점 학기",
+                "납부한 학기 수",
+                "학생회비 환불 여부",
+                "학생회비 환불 시점",
+                "잔여 학생회비 적용 학기",
+                "본 학기 학생회비 적용 여부"
+        );
 
         List<UserCouncilFeeResponseDto> userCouncilFeeResponseDtoList = userCouncilFeeRepository.findAll()
                         .stream().map(userCouncilFee -> (userCouncilFee.getIsJoinedService()) ?
@@ -58,6 +77,7 @@ public class UserCouncilFeeService {
         councilFeeExcelService.generateExcel(
                 response,
                 fileName,
+                headerStringList,
                 sheetNameDataMap
         );
     }

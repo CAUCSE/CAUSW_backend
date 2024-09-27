@@ -3,7 +3,7 @@ package net.causw.adapter.web;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.file.FileResponseDto;
 import net.causw.application.uuidFile.UuidFileService;
-import net.causw.domain.model.enums.FilePath;
+import net.causw.domain.model.enums.uuidFile.FilePath;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;

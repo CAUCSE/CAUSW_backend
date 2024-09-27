@@ -5,8 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.domain.model.enums.AcademicStatus;
-import net.causw.domain.model.enums.GraduationType;
+import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.domain.model.enums.user.GraduationType;
 
 import java.time.LocalDateTime;
 
@@ -34,7 +34,7 @@ public class ExportCircleMemberToExcelResponseDto {
     @Schema(description = "학부/학과", example = "소프트웨어학부")
     private String major;
 
-    @Schema(description = "연락처", example = "010-1234-5678")
+    @Schema(description = "연락처", example = "01012345678")
     private String phoneNumber;
 
     @Schema(description = "학적 상태", example = "ENROLLED")

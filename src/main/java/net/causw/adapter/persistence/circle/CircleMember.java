@@ -1,26 +1,22 @@
 package net.causw.adapter.persistence.circle;
 
+import jakarta.persistence.*;
 import lombok.*;
+import net.causw.adapter.persistence.form.Form;
+import net.causw.adapter.persistence.form.Reply;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.base.BaseEntity;
-import net.causw.domain.model.enums.CircleMemberStatus;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import net.causw.domain.model.enums.circle.CircleMemberStatus;
 
 @Getter
-@Setter
 @Entity
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_circle_member")
 public class CircleMember extends BaseEntity {
+
+    @Setter
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     private CircleMemberStatus status;
@@ -33,11 +29,31 @@ public class CircleMember extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    public static CircleMember of(CircleMemberStatus status, Circle circle, User user) {
+    // 신청 당시 제출한 신청서
+    @Setter
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "form_id", nullable = true)
+    private Form appliedForm;
+
+    // 신청 당시 제출한 신청서 답변
+    @Setter
+    @OneToOne(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST })
+    @JoinColumn(name = "reply_id", nullable = true)
+    private Reply appliedReply;
+
+    public static CircleMember of(
+            Circle circle,
+            User user,
+            Form form,
+            Reply reply
+    ) {
         return CircleMember.builder()
-                .status(status)
+                .status(CircleMemberStatus.AWAIT)
                 .circle(circle)
                 .user(user)
+                .appliedForm(form)
+                .appliedReply(reply)
                 .build();
     }
+
 }

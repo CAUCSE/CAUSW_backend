@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.enums.user.Role;
 
 import java.util.Optional;
 

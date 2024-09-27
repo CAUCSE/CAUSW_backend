@@ -4,7 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import net.causw.adapter.persistence.locker.LockerLog;
-import net.causw.domain.model.enums.LockerLogAction;
+import net.causw.domain.model.enums.locker.LockerLogAction;
 
 import java.time.LocalDateTime;
 

@@ -8,7 +8,7 @@ import net.causw.application.dto.semester.CurrentSemesterResponseDto;
 import net.causw.application.dto.userAcademicRecordApplication.*;
 import net.causw.application.userAcademicRecord.UserAcademicRecordApplicationService;
 import net.causw.config.security.userdetails.CustomUserDetails;
-import net.causw.domain.model.enums.AcademicStatus;
+import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

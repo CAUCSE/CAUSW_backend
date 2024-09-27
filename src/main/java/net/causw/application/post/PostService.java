@@ -6,8 +6,17 @@ import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
+import net.causw.adapter.persistence.form.Form;
+import net.causw.adapter.persistence.form.FormQuestionOption;
+import net.causw.adapter.persistence.form.FormQuestion;
+import net.causw.adapter.persistence.repository.form.FormRepository;
 import net.causw.adapter.persistence.repository.uuidFile.PostAttachImageRepository;
 import net.causw.adapter.persistence.uuidFile.joinEntity.PostAttachImage;
+import net.causw.application.dto.form.request.create.FormCreateRequestDto;
+import net.causw.application.dto.form.response.FormResponseDto;
+import net.causw.application.dto.form.response.OptionResponseDto;
+import net.causw.application.dto.form.response.QuestionResponseDto;
+import net.causw.application.dto.util.dtoMapper.FormDtoMapper;
 import net.causw.application.pageable.PageableFactory;
 import net.causw.adapter.persistence.post.FavoritePost;
 import net.causw.adapter.persistence.post.LikePost;
@@ -37,9 +46,11 @@ import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
-import net.causw.domain.model.enums.CircleMemberStatus;
-import net.causw.domain.model.enums.FilePath;
-import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.enums.circle.CircleMemberStatus;
+import net.causw.domain.model.enums.form.QuestionType;
+import net.causw.domain.model.enums.form.RegisteredSemesterManager;
+import net.causw.domain.model.enums.uuidFile.FilePath;
+import net.causw.domain.model.enums.user.Role;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.validation.*;
@@ -51,10 +62,12 @@ import jakarta.validation.Validator;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 @MeasureTime
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class PostService {
 
     private final PostRepository postRepository;
@@ -72,18 +85,20 @@ public class PostService {
     private final Validator validator;
     private final UuidFileService uuidFileService;
     private final PostAttachImageRepository postAttachImageRepository;
+    private final FormRepository formRepository;
 
-    @Transactional(readOnly = true)
     public PostResponseDto findPostById(User user, String postId) {
         Post post = getPost(postId);
 
         ValidatorBucket validatorBucket = initializeValidator(user, post.getBoard());
         validatorBucket.validate();
 
-        return toPostResponseDtoExtended(post, user);
+        Form form = post.getForm();
+        FormResponseDto formResponseDto = toFormResponseDto(form);
+
+        return toPostResponseDtoExtended(post, user, formResponseDto);
     }
 
-    @Transactional(readOnly = true)
     public BoardPostsResponseDto findAllPost(
             User user,
             String boardId,
@@ -123,7 +138,6 @@ public class PostService {
         }
     }
 
-    @Transactional(readOnly = true)
     public BoardPostsResponseDto searchPost(
             User user,
             String boardId,
@@ -160,7 +174,6 @@ public class PostService {
         }
     }
 
-    @Transactional(readOnly = true)
     public BoardPostsResponseDto findAllAppNotice(User user, Integer pageNum) {
         Set<Role> roles = user.getRoles();
         Board board = boardRepository.findAppNotice().orElseThrow(
@@ -179,7 +192,7 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponseDto createPost(User creator, PostCreateRequestDto postCreateRequestDto, List<MultipartFile> attachImageList) {
+    public void createPost(User creator, PostCreateRequestDto postCreateRequestDto, List<MultipartFile> attachImageList) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         Set<Role> roles = creator.getRoles();
 
@@ -203,10 +216,10 @@ public class PostService {
                 postCreateRequestDto.getTitle(),
                 postCreateRequestDto.getContent(),
                 creator,
-                false,
                 postCreateRequestDto.getIsAnonymous(),
                 postCreateRequestDto.getIsQuestion(),
                 board,
+                null,
                 uuidFileList
         );
 
@@ -249,11 +262,93 @@ public class PostService {
                 .consistOf(ConstraintValidator.of(post, this.validator))
                 .validate();
 
-        return toPostResponseDtoExtended(postRepository.save(post), creator);
+        postRepository.save(post);
     }
 
     @Transactional
-    public PostResponseDto deletePost(User deleter, String postId) {
+    public void createPostWithForm(
+            User creator,
+            PostCreateWithFormRequestDto postCreateWithFormRequestDto,
+            List<MultipartFile> attachImageList
+    ) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+        Set<Role> roles = creator.getRoles();
+
+        Board board = getBoard(postCreateWithFormRequestDto.getBoardId());
+        List<String> createRoles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
+        if (board.getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
+            validatorBucket
+                    .consistOf(UserRoleValidator.of(
+                            roles,
+                            Set.of()
+                    ));
+        }
+
+        List<UuidFile> uuidFileList = (attachImageList == null || attachImageList.isEmpty()) ?
+                new ArrayList<>() :
+                attachImageList.stream()
+                        .map(multipartFile -> uuidFileService.saveFile(multipartFile, FilePath.POST))
+                        .toList();
+
+        Form form = generateForm(postCreateWithFormRequestDto.getFormCreateRequestDto());
+
+        Post post = Post.of(
+                postCreateWithFormRequestDto.getTitle(),
+                postCreateWithFormRequestDto.getContent(),
+                creator,
+                postCreateWithFormRequestDto.getIsAnonymous(),
+                postCreateWithFormRequestDto.getIsQuestion(),
+                board,
+                form,
+                uuidFileList
+        );
+
+        validatorBucket
+                .consistOf(UserStateValidator.of(creator.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(PostNumberOfAttachmentsValidator.of(attachImageList))
+                .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD))
+                .consistOf(UserRoleValidator.of(
+                        roles,
+                        createRoles.stream()
+                                .map(Role::of)
+                                .collect(Collectors.toSet())
+                ));
+
+        Optional<Circle> circles = Optional.ofNullable(board.getCircle());
+        circles
+                .filter(circle -> !roles.contains(Role.ADMIN) && !roles.contains(Role.PRESIDENT) && !roles.contains(Role.VICE_PRESIDENT))
+                .ifPresent(
+                        circle -> {
+                            CircleMember member = getCircleMember(creator.getId(), circle.getId());
+
+                            validatorBucket
+                                    .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
+                                    .consistOf(CircleMemberStatusValidator.of(
+                                            member.getStatus(),
+                                            List.of(CircleMemberStatus.MEMBER)
+                                    ));
+
+                            if (roles.contains(Role.LEADER_CIRCLE) && !createRoles.contains("COMMON")) {
+                                validatorBucket
+                                        .consistOf(UserEqualValidator.of(
+                                                getCircleLeader(circle).getId(),
+                                                creator.getId()
+                                        ));
+                            }
+                        }
+                );
+        validatorBucket
+                .consistOf(ConstraintValidator.of(post, this.validator))
+                .validate();
+
+        postRepository.save(post);
+    }
+
+
+
+    @Transactional
+    public void deletePost(User deleter, String postId) {
         Post post = getPost(postId);
         Set<Role> roles = deleter.getRoles();
 
@@ -309,11 +404,11 @@ public class PostService {
 
         post.setIsDeleted(true);
 
-        return toPostResponseDtoExtended(postRepository.save(post), deleter);
+        postRepository.save(post);
     }
 
     @Transactional
-    public PostResponseDto updatePost(
+    public void updatePost(
             User updater,
             String postId,
             PostUpdateRequestDto postUpdateRequestDto,
@@ -360,17 +455,78 @@ public class PostService {
 
         postAttachImageRepository.deleteAll(post.getPostAttachImageList());
 
+        formRepository.delete(post.getForm());
+
         post.update(
                 postUpdateRequestDto.getTitle(),
                 postUpdateRequestDto.getContent(),
+                null,
                 postAttachImageList
         );
-
-        return toPostResponseDtoExtended(post, updater);
     }
 
     @Transactional
-    public PostResponseDto restorePost(User restorer, String postId) {
+    public void updatePostWithForm(
+            User updater,
+            String postId,
+            PostUpdateWithFormRequestDto postUpdateWithFormRequestDto,
+            List<MultipartFile> attachImageList
+    ) {
+        Set<Role> roles = updater.getRoles();
+        Post post = getPost(postId);
+
+        ValidatorBucket validatorBucket = initializeValidator(updater, post.getBoard());
+        if (post.getBoard().getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
+            validatorBucket
+                    .consistOf(UserRoleValidator.of(
+                            roles,
+                            Set.of()
+                    ));
+        }
+        validatorBucket
+                .consistOf(PostNumberOfAttachmentsValidator.of(attachImageList))
+                .consistOf(TargetIsDeletedValidator.of(post.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
+                .consistOf(TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST))
+                .consistOf(ContentsAdminValidator.of(
+                        roles,
+                        updater.getId(),
+                        post.getWriter().getId(),
+                        List.of()
+                ))
+                .consistOf(ConstraintValidator.of(post, this.validator));
+        validatorBucket.validate();
+
+
+        // post는 이미지가 nullable임 -> 이미지 null로 요청 시 기존 이미지 삭제
+        List<PostAttachImage> postAttachImageList = new ArrayList<>();
+
+        if (!attachImageList.isEmpty()) {
+            postAttachImageList = uuidFileService.updateFileList(
+                            post.getPostAttachImageList().stream().map(PostAttachImage::getUuidFile).collect(Collectors.toList()),
+                            attachImageList, FilePath.POST
+                    ).stream()
+                    .map(uuidFile -> PostAttachImage.of(post, uuidFile))
+                    .toList();
+        } else {
+            uuidFileService.deleteFileList(post.getPostAttachImageList().stream().map(PostAttachImage::getUuidFile).collect(Collectors.toList()));
+        }
+
+        postAttachImageRepository.deleteAll(post.getPostAttachImageList());
+
+        formRepository.delete(post.getForm());
+
+        Form form = generateForm(postUpdateWithFormRequestDto.getFormCreateRequestDto());
+
+        post.update(
+                postUpdateWithFormRequestDto.getTitle(),
+                postUpdateWithFormRequestDto.getContent(),
+                form,
+                postAttachImageList
+        );
+    }
+
+    @Transactional
+    public void restorePost(User restorer, String postId) {
         Set<Role> roles = restorer.getRoles();
         Post post = getPost(postId);
 
@@ -436,7 +592,7 @@ public class PostService {
 
         post.setIsDeleted(false);
 
-        return toPostResponseDtoExtended(postRepository.save(post), restorer);
+        postRepository.save(post);
     }
 
     @Transactional
@@ -536,6 +692,92 @@ public class PostService {
         return validatorBucket;
     }
 
+    private Form generateForm(FormCreateRequestDto formCreateRequestDto) {
+        AtomicReference<Integer> questionNumber = new AtomicReference<>(1);
+
+        List<FormQuestion> formQuestionList = Optional.ofNullable(formCreateRequestDto.getQuestionCreateRequestDtoList())
+                .orElse(new ArrayList<>())
+                .stream()
+                .map(
+                        questionCreateRequestDto -> {
+
+                            AtomicReference<Integer> optionNumber = new AtomicReference<>(1);
+
+                            List<FormQuestionOption> formQuestionOptionList = Optional.ofNullable(questionCreateRequestDto.getOptionCreateRequestDtoList())
+                                    .orElse(new ArrayList<>())
+                                    .stream()
+                                    .map(
+                                            optionCreateRequestDto -> FormQuestionOption.of(
+                                                    optionNumber.getAndSet(optionNumber.get() + 1),
+                                                    optionCreateRequestDto.getOptionText(),
+                                                    null
+                                            )
+                                    ).toList();
+
+                            if (questionCreateRequestDto.getQuestionType().equals(QuestionType.OBJECTIVE)) {
+                                if (questionCreateRequestDto.getIsMultiple() == null ||
+                                        questionCreateRequestDto.getOptionCreateRequestDtoList().isEmpty()
+                                ) {
+                                    throw new BadRequestException(
+                                            ErrorCode.INVALID_PARAMETER,
+                                            MessageUtil.INVALID_QUESTION_INFO
+                                    );
+                                }
+                            } else {
+                                if (questionCreateRequestDto.getIsMultiple() != null ||
+                                        !questionCreateRequestDto.getOptionCreateRequestDtoList().isEmpty()
+                                ) {
+                                    throw new BadRequestException(
+                                            ErrorCode.INVALID_PARAMETER,
+                                            MessageUtil.INVALID_QUESTION_INFO
+                                    );
+                                }
+                            }
+
+                            FormQuestion formQuestion = FormQuestion.of(
+                                    questionNumber.getAndSet(questionNumber.get() + 1),
+                                    questionCreateRequestDto.getQuestionType(),
+                                    questionCreateRequestDto.getQuestionText(),
+                                    questionCreateRequestDto.getIsMultiple(),
+                                    formQuestionOptionList,
+                                    null
+                            );
+
+                            formQuestionOptionList.forEach(option -> option.setFormQuestion(formQuestion));
+
+                            return formQuestion;
+                        }
+                ).toList();
+
+        Form form = Form.createPostForm(
+                formCreateRequestDto.getTitle(),
+                formQuestionList,
+                formCreateRequestDto.getIsAllowedEnrolled(),
+                formCreateRequestDto.getIsAllowedEnrolled() ?
+                        RegisteredSemesterManager.fromEnumList(
+                                formCreateRequestDto.getEnrolledRegisteredSemesterList()
+                        )
+                        : null,
+                formCreateRequestDto.getIsAllowedEnrolled() ?
+                        formCreateRequestDto.getIsNeedCouncilFeePaid()
+                        : false,
+                formCreateRequestDto.getIsAllowedLeaveOfAbsence(),
+                formCreateRequestDto.getIsAllowedLeaveOfAbsence() ?
+                        RegisteredSemesterManager.fromEnumList(
+                                formCreateRequestDto.getLeaveOfAbsenceRegisteredSemesterList()
+                        )
+                        : null,
+                formCreateRequestDto.getIsAllowedGraduation()
+        );
+
+        formQuestionList.forEach(question -> question.setForm(form));
+
+        return form;
+    }
+
+
+    // DtoMapper methods
+
     private BoardPostsResponseDto toBoardPostsResponseDto(Board board, Set<Role> userRoles, boolean isFavorite, Page<PostsResponseDto> post) {
         List<String> roles = Arrays.asList(board.getCreateRoles().split(","));
         Boolean writable = userRoles.stream()
@@ -555,11 +797,12 @@ public class PostService {
                 post,
                 postRepository.countAllCommentByPost_Id(post.getId()),
                 getNumOfPostLikes(post),
-                getNumOfPostLikes(post)
+                getNumOfPostLikes(post),
+                post.getForm() != null
         );
     }
 
-    private PostResponseDto toPostResponseDtoExtended(Post post, User user) {
+    private PostResponseDto toPostResponseDtoExtended(Post post, User user, FormResponseDto formResponseDto) {
         return PostDtoMapper.INSTANCE.toPostResponseDtoExtended(
                 postRepository.save(post),
                 findCommentsByPostIdByPage(user, post, 0),
@@ -569,7 +812,8 @@ public class PostService {
                 isPostAlreadyLike(user, post.getId()),
                 isPostAlreadyFavorite(user, post.getId()),
                 StatusUtil.isUpdatable(post, user, isPostHasComment(post.getId())),
-                StatusUtil.isDeletable(post, user, post.getBoard(), isPostHasComment(post.getId()))
+                StatusUtil.isDeletable(post, user, post.getBoard(), isPostHasComment(post.getId())),
+                formResponseDto
         );
     }
 
@@ -694,6 +938,28 @@ public class PostService {
                         MessageUtil.FAVORITE_POST_NOT_FOUND
                 )
         );
+    }
+
+    private FormResponseDto toFormResponseDto(Form form) {
+        return FormDtoMapper.INSTANCE.toFormResponseDto(
+                form,
+                form.getFormQuestionList().stream()
+                        .map(this::toQuestionResponseDto)
+                        .collect(Collectors.toList())
+        );
+    }
+
+    private QuestionResponseDto toQuestionResponseDto(FormQuestion formQuestion) {
+        return FormDtoMapper.INSTANCE.toQuestionResponseDto(
+                formQuestion,
+                formQuestion.getFormQuestionOptionList().stream()
+                        .map(this::toOptionResponseDto)
+                        .collect(Collectors.toList())
+        );
+    }
+
+    private OptionResponseDto toOptionResponseDto(FormQuestionOption formQuestionOption) {
+        return FormDtoMapper.INSTANCE.toOptionResponseDto(formQuestionOption);
     }
 
 }

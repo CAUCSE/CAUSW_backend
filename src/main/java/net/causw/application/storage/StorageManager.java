@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
-import net.causw.domain.model.enums.FilePath;
+import net.causw.domain.model.enums.uuidFile.FilePath;
 import net.causw.domain.model.util.MessageUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
