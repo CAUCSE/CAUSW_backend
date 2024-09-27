@@ -7,11 +7,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import net.causw.application.dto.post.*;
 import net.causw.application.post.PostService;
-import net.causw.application.dto.post.BoardPostsResponseDto;
-import net.causw.application.dto.post.PostCreateRequestDto;
-import net.causw.application.dto.post.PostResponseDto;
-import net.causw.application.dto.post.PostUpdateRequestDto;
 import net.causw.config.security.userdetails.CustomUserDetails;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.InternalServerException;
@@ -31,7 +28,7 @@ public class PostController {
 
     private final PostService postService;
 
-    @GetMapping(value = "/{id}")
+    @GetMapping(value = "/{id}", produces = "application/json")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시글 열람 API(완료)", description = "게시판에서 게시글을 선택했을 때 게시글을 열람할 수 있습니다.")
@@ -110,12 +107,6 @@ public class PostController {
     @ApiResponse(responseCode = "4102", description = "동아리 가입 거절된 사용자입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
     @ApiResponse(responseCode = "4102", description = "동아리에서 추방된 사용자입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
     @ApiResponse(responseCode = "4004", description = "삭제된 게시판입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
-//    @ApiImplicitParam(name = "keyword",
-//            value = "제목 연관검색어",
-//            required = true,
-//            dataType = "String",
-//            paramType = "query"
-//    )
     public BoardPostsResponseDto searchPost(
             @RequestParam("boardId") String boardId,
             @RequestParam(name = "keyword", defaultValue = "") String keyword,
@@ -158,12 +149,43 @@ public class PostController {
             @ApiResponse(responseCode = "4102", description = "동아리에서 추방된 사용자입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
             @ApiResponse(responseCode = "4107", description = "사용자가 해당 동아리의 동아리장이 아닙니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
     })
-    public PostResponseDto createPost(
+    public void createPost(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestPart(value = "postCreateRequestDto") @Valid PostCreateRequestDto postCreateRequestDto,
             @RequestPart(value = "attachImageList", required = false) List<MultipartFile> attachImageList
     ) {
-        return this.postService.createPost(userDetails.getUser(), postCreateRequestDto, attachImageList);
+        postService.createPost(userDetails.getUser(), postCreateRequestDto, attachImageList);
+    }
+
+    @PostMapping("/form")
+    @ResponseStatus(value = HttpStatus.CREATED)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
+    @Operation(summary = "신청서 첨부 게시글 생성 API(완료)",
+            description = "신청서와 함께 게시글을 생성하는 API로 각 게시판의 createrolelist에 따라서 작성할 수 있는 권한이 달라집니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4000", description = "게시판을 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4102", description = "추방된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+            @ApiResponse(responseCode = "4103", description = "비활성화된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+            @ApiResponse(responseCode = "4104", description = "대기 중인 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+            @ApiResponse(responseCode = "4109", description = "가입이 거절된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+            @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4108", description = "로그인된 사용자가 동아리 멤버가 아닙니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+            @ApiResponse(responseCode = "4004", description = "삭제된 동아리입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4001", description = "이미 동아리에 가입한 사용자입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4006", description = "동아리를 떠난 사용자입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4008", description = "동아리 가입 대기 중인 사용자입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4102", description = "동아리 가입 거절된 사용자입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+            @ApiResponse(responseCode = "4102", description = "동아리에서 추방된 사용자입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+            @ApiResponse(responseCode = "4107", description = "사용자가 해당 동아리의 동아리장이 아닙니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
+    })
+    public void createPostWithForm(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestPart(value = "postCreateWithFormRequestDto") @Valid PostCreateWithFormRequestDto postCreateWithFormRequestDto,
+            @RequestPart(value = "attachImageList", required = false) List<MultipartFile> attachImageList
+    ) {
+        postService.createPostWithForm(userDetails.getUser(), postCreateWithFormRequestDto, attachImageList);
     }
 
     @DeleteMapping(value = "/{id}")
@@ -191,18 +213,18 @@ public class PostController {
             @ApiResponse(responseCode = "4107", description = "사용자가 해당 동아리의 동아리장이 아닙니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
             @ApiResponse(responseCode = "5000", description = "Post id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
-    public PostResponseDto deletePost(
+    public void deletePost(
             @PathVariable("id") String id,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return this.postService.deletePost(userDetails.getUser(), id);
+        postService.deletePost(userDetails.getUser(), id);
     }
 
     @PutMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시글 업데이트 API(완료)",
-            description = "게시글을 업데이트하는 API로 작성자 본인이나 해당 게시판이 속한 동아리의 동아리장, 관리자, 학생회장의 경우 업데이트 가능합니다.")
+            description = "게시글을 업데이트하는 API로 작성자 본인이나 해당 게시판이 속한 동아리의 동아리장, 관리자, 학생회장의 경우 업데이트 가능합니다. 기존에 신청서가 있었던 게시글의 경우 신청서가 사라집니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
             @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
@@ -226,19 +248,56 @@ public class PostController {
             @ApiResponse(responseCode = "4107", description = "접근 권한이 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
             @ApiResponse(responseCode = "5000", description = "Post id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
-    public PostResponseDto updatePost(
+    public void updatePost(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("id") String id,
             @RequestPart(value = "postUpdateRequestDto") @Valid PostUpdateRequestDto postUpdateRequestDto,
             @RequestPart(value = "attachImageList", required = false) List<MultipartFile> attachImageList
     ) {
 
-        return this.postService.updatePost(
+        postService.updatePost(
                 userDetails.getUser(),
                 id,
                 postUpdateRequestDto,
                 attachImageList
         );
+    }
+
+    @PutMapping(value = "/{id}/form")
+    @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
+    @Operation(summary = "신청서 첨부 게시글 업데이트 API(완료)",
+            description = "신청서와 함께 게시글을 업데이트하는 API로 작성자 본인이나 해당 게시판이 속한 동아리의 동아리장, 관리자, 학생회장의 경우 업데이트 가능합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4000", description = "게시글을 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4102", description = "추방된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+            @ApiResponse(responseCode = "4103", description = "비활성화된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+            @ApiResponse(responseCode = "4104", description = "대기 중인 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+            @ApiResponse(responseCode = "4109", description = "가입이 거절된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+            @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4002", description = "4개 이상의 파일을 첨부할 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4004", description = "삭제된 게시판입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4004", description = "삭제된 게시글입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4108", description = "로그인된 사용자가 동아리 멤버가 아닙니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+            @ApiResponse(responseCode = "4004", description = "삭제된 동아리입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4001", description = "이미 동아리에 가입한 사용자입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4006", description = "동아리를 떠난 사용자입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4008", description = "동아리 가입 대기 중인 사용자입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4102", description = "동아리 가입 거절된 사용자입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+            @ApiResponse(responseCode = "4102", description = "동아리에서 추방된 사용자입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+            @ApiResponse(responseCode = "4107", description = "사용자가 해당 동아리의 동아리장이 아닙니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+            @ApiResponse(responseCode = "4107", description = "접근 권한이 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+            @ApiResponse(responseCode = "5000", description = "Post id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
+    })
+    public void updatePostWithForm(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable("id") String id,
+            @RequestPart(value = "postUpdateWithFormRequestDto") @Valid PostUpdateWithFormRequestDto postUpdateWithFormRequestDto,
+            @RequestPart(value = "attachImageList", required = false) List<MultipartFile> attachImageList
+    ) {
+        postService.updatePostWithForm(userDetails.getUser(), id, postUpdateWithFormRequestDto, attachImageList);
     }
 
     @PutMapping(value = "/{id}/restore")
@@ -269,11 +328,11 @@ public class PostController {
             @ApiResponse(responseCode = "4107", description = "접근 권한이 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
             @ApiResponse(responseCode = "5000", description = "Post id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
-    public PostResponseDto restorePost(
+    public void restorePost(
             @PathVariable("id") String id,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return this.postService.restorePost(
+        postService.restorePost(
                 userDetails.getUser(),
                 id
         );

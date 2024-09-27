@@ -1,6 +1,7 @@
 package net.causw.application.dto.userCouncilFee;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
@@ -11,9 +12,10 @@ public class CreateUserCouncilFeeWithUserRequestDto {
 
     @Schema(description = "user 고유 id값(서비스 가입 시만 존재)", requiredMode = Schema.RequiredMode.NOT_REQUIRED, example = "uuid 형식의 String 값입니다.")
     @Pattern(
-            regexp = "^[0-9a-fA-F]{32}$",
-            message = "대상 사용자 고유 id 값은 대시(-) 없이 32자리의 UUID 형식이어야 합니다."
+            regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            message = "id 값은 대시(-)를 포함하고, 32자리의 UUID 형식이어야 합니다."
     )
+    @NotBlank(message = "user 고유 id 값은 필수 입력 값입니다.")
     private String userId;
 
     @Schema(description = "납부 시점 학기", defaultValue = "1", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")

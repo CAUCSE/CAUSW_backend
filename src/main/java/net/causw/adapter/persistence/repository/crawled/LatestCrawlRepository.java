@@ -1,7 +1,7 @@
 package net.causw.adapter.persistence.repository.crawled;
 
 import net.causw.adapter.persistence.crawled.LatestCrawl;
-import net.causw.domain.model.enums.CrawlCategory;
+import net.causw.domain.model.enums.crawl.CrawlCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

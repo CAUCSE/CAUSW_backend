@@ -9,10 +9,10 @@ import net.causw.adapter.persistence.uuidFile.joinEntity.UserProfileImage;
 import net.causw.adapter.persistence.vote.Vote;
 import net.causw.adapter.persistence.vote.VoteRecord;
 import net.causw.application.dto.user.UserCreateRequestDto;
-import net.causw.domain.model.enums.AcademicStatus;
-import net.causw.domain.model.enums.GraduationType;
-import net.causw.domain.model.enums.Role;
-import net.causw.domain.model.enums.UserState;
+import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.domain.model.enums.user.GraduationType;
+import net.causw.domain.model.enums.user.Role;
+import net.causw.domain.model.enums.user.UserState;
 
 import java.util.List;
 import java.util.Objects;

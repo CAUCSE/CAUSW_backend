@@ -112,7 +112,7 @@ public class VoteService {
         return toVoteResponseDto(vote,user);
     }
 
-    public VoteResponseDto toVoteResponseDto(Vote vote, User user) {
+    private VoteResponseDto toVoteResponseDto(Vote vote, User user) {
         boolean isOwner = user.equals(vote.getPost().getWriter());
         List<VoteOptionResponseDto> voteOptionResponseDtoList = vote.getVoteOptions().stream()
                 .map(this::tovoteOptionResponseDto)
@@ -121,6 +121,7 @@ public class VoteService {
                 vote,
                 voteOptionResponseDtoList
                 ,isOwner
+                ,vote.isEnd()
         );
     }
 

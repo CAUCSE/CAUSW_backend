@@ -3,7 +3,7 @@ package net.causw.domain.validation;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
-import net.causw.domain.model.enums.CircleMemberStatus;
+import net.causw.domain.model.enums.circle.CircleMemberStatus;
 
 import java.util.List;
 

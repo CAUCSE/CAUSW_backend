@@ -4,66 +4,169 @@ import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.circle.Circle;
-import net.causw.adapter.persistence.user.User;
+import net.causw.domain.model.enums.form.FormType;
+import net.causw.domain.model.enums.form.RegisteredSemester;
+import net.causw.domain.model.enums.form.RegisteredSemesterManager;
 
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Getter
-@Setter
 @Entity
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "tb_form")
+@Table(name = "tb_form",
+        indexes = {
+                @Index(name = "circle_id_index", columnList = "circle_id")
+})
 public class Form extends BaseEntity {
 
-    @Column(name = "title")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "form_type", nullable = false)
+    private FormType formType;
+
+    @Column(name = "title", nullable = false)
     private String title;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @Column(name = "allowed_grades", nullable = false)
-    private Set<Integer> allowedGrades;
+    @OneToMany(mappedBy = "form", cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, orphanRemoval = true)
+    @Builder.Default
+    private List<FormQuestion> formQuestionList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "form", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Question> questions;
+    @Setter
+    @Column(name = "is_deleted", nullable = false)
+    @Builder.Default
+    private Boolean isDeleted = false;
 
-    @Column(name = "is_deleted")
-    private Boolean isDeleted;
+    @Setter
+    @Column(name = "is_closed", nullable = false)
+    @Builder.Default
+    private Boolean isClosed = false;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User writer;
-
-    @ManyToOne
-    @JoinColumn(name = "circle_id")
+    @JoinColumn(name = "circle_id", nullable = true)
     private Circle circle;
 
+    @Column(name = "is_allowed_enrolled", nullable = false)
+    private Boolean isAllowedEnrolled;
 
-    public static Form of(
+    @Column(name = "enrolled_registered_semester", nullable = true)
+    private String EnrolledRegisteredSemester;
+
+    @Column(name = "is_need_council_fee_paid", nullable = false)
+    @Builder.Default
+    private Boolean isNeedCouncilFeePaid = false;
+
+    @Column(name = "is_allowed_leave_of_absence", nullable = false)
+    private Boolean isAllowedLeaveOfAbsence;
+
+    @Column(name = "leave_of_absence_registered_semester", nullable = true)
+    private String LeaveOfAbsenceRegisteredSemester;
+
+    @Column(name = "is_allowed_graduation", nullable = false)
+    private Boolean isAllowedGraduation;
+
+    @OneToMany(mappedBy = "form", cascade = { CascadeType.REMOVE }, orphanRemoval = true)
+    @Builder.Default
+    private List<Reply> replyList = new ArrayList<>();
+
+    public EnumSet<RegisteredSemester> getEnrolledRegisteredSemester() {
+        RegisteredSemesterManager registeredSemesterManager = RegisteredSemesterManager.fromString(this.EnrolledRegisteredSemester);
+        return registeredSemesterManager.getRegisteredSemesterEnumSet();
+    }
+
+    public EnumSet<RegisteredSemester> getLeaveOfAbsenceRegisteredSemester() {
+        RegisteredSemesterManager registeredSemesterManager = RegisteredSemesterManager.fromString(this.EnrolledRegisteredSemester);
+        return registeredSemesterManager.getRegisteredSemesterEnumSet();
+    }
+
+    public static Form createPostForm(
             String title,
-            Set<Integer> allowedGrades,
-            List<Question> questions,
-            User writer,
-            Circle circle
+            List<FormQuestion> formQuestionList,
+            Boolean isAllowedEnrolled,
+            RegisteredSemesterManager enrolledRegisteredSemester,
+            Boolean isNeedCouncilFeePaid,
+            Boolean isAllowedLeaveOfAbsence,
+            RegisteredSemesterManager leaveOfAbsenceRegisteredSemester,
+            Boolean isAllowedGraduation
     ) {
         return Form.builder()
+                .formType(FormType.POST_FORM)
                 .title(title)
-                .allowedGrades(allowedGrades)
-                .questions(questions)
-                .isDeleted(false)
-                .writer(writer)
-                .circle(circle)
+                .formQuestionList(formQuestionList)
+                .isAllowedEnrolled(isAllowedEnrolled)
+                .EnrolledRegisteredSemester(
+                        isAllowedEnrolled ?
+                                enrolledRegisteredSemester.serialize()
+                                : null)
+                .isNeedCouncilFeePaid(
+                        isAllowedEnrolled ?
+                                isNeedCouncilFeePaid
+                                : false)
+                .isAllowedLeaveOfAbsence(isAllowedLeaveOfAbsence)
+                .LeaveOfAbsenceRegisteredSemester(
+                        isAllowedLeaveOfAbsence ?
+                                leaveOfAbsenceRegisteredSemester.serialize()
+                                : null)
+                .isAllowedGraduation(isAllowedGraduation)
                 .build();
     }
 
-    public void update(String title, Set<Integer> allowedGrades, List<Question> questions) {
-        this.title = title;
-        this.allowedGrades = allowedGrades;
-        this.questions = questions;
+    public static Form createCircleApplicationForm(
+            String title,
+            List<FormQuestion> formQuestionList,
+            Circle circle,
+            Boolean isAllowedEnrolled,
+            RegisteredSemesterManager enrolledRegisteredSemester,
+            Boolean isNeedCouncilFeePaid,
+            Boolean isAllowedLeaveOfAbsence,
+            RegisteredSemesterManager leaveOfAbsenceRegisteredSemester,
+            Boolean isAllowedGraduation
+    ) {
+        return Form.builder()
+                .formType(FormType.CIRCLE_APPLICATION_FORM)
+                .title(title)
+                .formQuestionList(formQuestionList)
+                .circle(circle)
+                .isAllowedEnrolled(isAllowedEnrolled)
+                .EnrolledRegisteredSemester(
+                        isAllowedEnrolled ?
+                                enrolledRegisteredSemester.serialize()
+                                : null)
+                .isNeedCouncilFeePaid(
+                        isAllowedEnrolled ?
+                                isNeedCouncilFeePaid
+                                : false)
+                .isAllowedLeaveOfAbsence(isAllowedLeaveOfAbsence)
+                .LeaveOfAbsenceRegisteredSemester(
+                        isAllowedLeaveOfAbsence ?
+                                leaveOfAbsenceRegisteredSemester.serialize()
+                                : null)
+                .isAllowedGraduation(isAllowedGraduation)
+                .build();
     }
 
-    public void setIsDeleted(Boolean isDeleted) {
-        this.isDeleted = isDeleted;
+    public void update(
+            String title,
+            List<FormQuestion> formQuestionList,
+            Boolean isAllowedEnrolled,
+            RegisteredSemesterManager enrolledRegisteredSemester,
+            Boolean isNeedCouncilFeePaid,
+            Boolean isAllowedLeaveOfAbsence,
+            RegisteredSemesterManager leaveOfAbsenceRegisteredSemester,
+            Boolean isAllowedGraduation
+    ) {
+        this.title = title;
+        this.formQuestionList = formQuestionList;
+        this.isAllowedEnrolled = isAllowedEnrolled;
+        this.EnrolledRegisteredSemester = isAllowedEnrolled ?
+                enrolledRegisteredSemester.serialize()
+                : null;
+        this.isNeedCouncilFeePaid = isNeedCouncilFeePaid;
+        this.isAllowedLeaveOfAbsence = isAllowedLeaveOfAbsence;
+        this.LeaveOfAbsenceRegisteredSemester = isAllowedLeaveOfAbsence ?
+                leaveOfAbsenceRegisteredSemester.serialize()
+                : null;
+        this.isAllowedGraduation = isAllowedGraduation;
     }
+
 }

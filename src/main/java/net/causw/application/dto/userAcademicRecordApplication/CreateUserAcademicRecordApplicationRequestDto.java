@@ -3,8 +3,8 @@ package net.causw.application.dto.userAcademicRecordApplication;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
-import net.causw.domain.model.enums.AcademicStatus;
-import net.causw.domain.model.enums.GraduationType;
+import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.domain.model.enums.user.GraduationType;
 
 @Getter
 public class CreateUserAcademicRecordApplicationRequestDto {

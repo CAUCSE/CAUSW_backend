@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.causw.domain.model.enums.AcademicStatus;
+import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
 
 @Getter
 @Setter

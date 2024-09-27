@@ -3,7 +3,7 @@ package net.causw.application.dto.board;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import net.causw.adapter.persistence.board.Board;
-import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.enums.user.Role;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;

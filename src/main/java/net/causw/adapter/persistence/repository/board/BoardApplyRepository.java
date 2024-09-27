@@ -1,7 +1,7 @@
 package net.causw.adapter.persistence.repository.board;
 
 import net.causw.adapter.persistence.board.BoardApply;
-import net.causw.domain.model.enums.BoardApplyStatus;
+import net.causw.domain.model.enums.board.BoardApplyStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

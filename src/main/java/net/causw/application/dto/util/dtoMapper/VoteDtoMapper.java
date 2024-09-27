@@ -18,12 +18,13 @@ public interface VoteDtoMapper {
 
     @Mapping(target = "voteId" , source = "vote.id")
     @Mapping(target = "title" , source = "vote.title")
+    @Mapping(target = "isEnd", source = "isEnd")
     @Mapping(target = "options", source = "options")
     @Mapping(target = "allowAnonymous", source = "vote.allowAnonymous")
     @Mapping(target = "allowMultiple" , source = "vote.allowMultiple")
     @Mapping(target = "postId", source = "vote.post.id")
     @Mapping(target = "isOwner" , source = "isOwner")
-    VoteResponseDto toVoteResponseDto(Vote vote , List<VoteOptionResponseDto> options, boolean isOwner);
+    VoteResponseDto toVoteResponseDto(Vote vote , List<VoteOptionResponseDto> options, boolean isOwner, boolean isEnd);
 
     @Mapping(target = "id", source = "voteOption.id")
     @Mapping(target = "optionName", source = "voteOption.optionName")

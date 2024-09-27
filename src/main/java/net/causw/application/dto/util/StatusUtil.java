@@ -5,9 +5,10 @@ import lombok.AllArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
+import net.causw.adapter.persistence.form.Form;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.user.User;
-import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.enums.user.Role;
 
 import java.util.Set;
 
@@ -104,4 +105,6 @@ public class StatusUtil {
     public static boolean isPostVote(Post post){
         return post.getVote() != null;
     }
+
+    public static boolean isPostForm(Post post) { return post.getForm() != null; }
 }

@@ -1,7 +1,7 @@
 package net.causw.adapter.persistence.repository.userAcademicRecord;
 
 import net.causw.adapter.persistence.userAcademicRecord.UserAcademicRecordApplication;
-import net.causw.domain.model.enums.AcademicRecordRequestStatus;
+import net.causw.domain.model.enums.userAcademicRecord.AcademicRecordRequestStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

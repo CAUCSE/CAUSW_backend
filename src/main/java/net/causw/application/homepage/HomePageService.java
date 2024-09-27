@@ -19,7 +19,7 @@ import net.causw.application.dto.util.dtoMapper.PostDtoMapper;
 import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
-import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.enums.user.Role;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.validation.UserRoleIsNoneValidator;
@@ -68,6 +68,7 @@ public class HomePageService {
                                         getNumOfPostLikes(post),
                                         getNumOfPostFavorites(post)
                                         , StatusUtil.isPostVote(post)
+                                        , post.getForm() != null
                                 )))
                 )
                 .collect(Collectors.toList());
