@@ -74,7 +74,7 @@ public class WebCrawlerService {
                 String announceDate = detailDoc.select("div.header > div > span").get(1).text();    // 작성일 추출
                 String author = detailDoc.select("div.header > div > span").get(3).text();  // 작성자 추출
                 String content = detailDoc.select("div.fr-view").outerHtml();   // 본문 내용 추출
-                String imgElement = detailDoc.select("div.fr-view > p > img").attr("abs:src");  // 절대경로로 이미지 추출
+                String imageLink = detailDoc.select("div.fr-view > p > img").attr("abs:src");  // 절대경로로 이미지 추출 => 없는 경우 빈 문자열 삽입
 
                 // CrawledNotice 객체 생성
                 CrawledNotice notice = CrawledNotice.of(
@@ -84,7 +84,7 @@ public class WebCrawlerService {
                         absoluteLink,
                         author,
                         announceDate,
-                        imgElement
+                        imageLink
                 );
                 notices.add(notice);
 

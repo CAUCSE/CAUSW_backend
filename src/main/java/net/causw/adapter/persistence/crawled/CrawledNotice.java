@@ -49,8 +49,8 @@ public class CrawledNotice extends BaseEntity {
         // String -> LocalDate
         LocalDate parsedDate = LocalDate.parse(announceDate, DateTimeFormatter.ISO_LOCAL_DATE);
         // 새로운 공지에 대한 처리
-        if (title.contains("NEW")) {
-            title = title.replace("NEW", "").trim();
+        if (type.contains("NEW")) {
+            type = type.replace("NEW", "").trim();
         }
 
         return CrawledNotice.builder()
