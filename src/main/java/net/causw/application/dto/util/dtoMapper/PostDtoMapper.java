@@ -3,12 +3,13 @@ package net.causw.application.dto.util.dtoMapper;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.application.dto.comment.CommentResponseDto;
+import net.causw.application.dto.form.response.FormResponseDto;
 import net.causw.application.dto.post.BoardPostsResponseDto;
 import net.causw.application.dto.post.PostContentDto;
 import net.causw.application.dto.post.PostResponseDto;
 import net.causw.application.dto.post.PostsResponseDto;
 import net.causw.application.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
-import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.enums.user.Role;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
@@ -41,8 +42,10 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "isQuestion", source = "post.isQuestion")
     @Mapping(target = "numLike", source = "numPostLike")
     @Mapping(target = "numFavorite", source = "numPostFavorite")
-    PostsResponseDto toPostsResponseDto(Post post, Long numComment, Long numPostLike, Long numPostFavorite);
+    @Mapping(target = "isFormExist", source = "isFormExist")
+    PostsResponseDto toPostsResponseDto(Post post, Long numComment, Long numPostLike, Long numPostFavorite, Boolean isFormExist);
 
+    @Mapping(target = "title", source = "post.title")
     @Mapping(target = "writerName", source = "post.writer.name")
     @Mapping(target = "writerAdmissionYear", source = "post.writer.admissionYear")
     @Mapping(target = "boardName", source = "post.board.name")
@@ -52,8 +55,24 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "isQuestion", source = "post.isQuestion")
     @Mapping(target = "numLike", source = "numPostLike")
     @Mapping(target = "numFavorite", source = "numPostFavorite")
-    PostResponseDto toPostResponseDtoExtended(Post post, Page<CommentResponseDto> commentList, Long numComment, Long numPostLike,
-                                              Long numPostFavorite, Boolean isPostLike, Boolean isPostFavorite, Boolean updatable, Boolean deletable);
+    @Mapping(target = "isPostLike", source = "isPostLike")
+    @Mapping(target = "isPostFavorite", source = "isPostFavorite")
+    @Mapping(target = "updatable", source = "updatable")
+    @Mapping(target = "deletable", source = "deletable")
+    @Mapping(target = "writerProfileImage", source = "post.writer.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
+    @Mapping(target = "formResponseDto", source = "formResponseDto")
+    PostResponseDto toPostResponseDtoExtended(
+            Post post,
+            Page<CommentResponseDto> commentList,
+            Long numComment,
+            Long numPostLike,
+            Long numPostFavorite,
+            Boolean isPostLike,
+            Boolean isPostFavorite,
+            Boolean updatable,
+            Boolean deletable,
+            FormResponseDto formResponseDto
+    );
 
     @Mapping(target = "title", source = "post.title")
     @Mapping(target = "contentId", source = "post.id")

@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.user.User;
-import net.causw.domain.model.enums.BoardApplyStatus;
+import net.causw.domain.model.enums.board.BoardApplyStatus;
 import org.hibernate.annotations.ColumnDefault;
 
 

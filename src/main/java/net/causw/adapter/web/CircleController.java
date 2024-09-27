@@ -18,18 +18,25 @@ import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.circle.CircleUpdateRequestDto;
 import net.causw.application.dto.circle.CircleBoardsResponseDto;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
+import net.causw.application.dto.form.request.FormReplyRequestDto;
+import net.causw.application.dto.form.request.create.FormCreateRequestDto;
+import net.causw.application.dto.form.response.FormResponseDto;
 import net.causw.config.security.userdetails.CustomUserDetails;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
-import net.causw.domain.model.enums.CircleMemberStatus;
+import net.causw.domain.model.enums.circle.CircleMemberStatus;
 import net.causw.domain.validation.ConstraintValidator;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -204,6 +211,30 @@ public class CircleController {
         );
     }
 
+    @GetMapping(value = "/{circleId}/memberList")
+    @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
+    @Operation(summary = "모든 동아리원 조회 API(완료)", description = "circleId에는 동아리 고유 id 값(PK), circleMemberStatus 엔 조회하고자 하는 동아리원의 상태를 입력해주세요.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CircleMemberResponseDto.class), array = @io.swagger.v3.oas.annotations.media.ArraySchema(schema = @Schema(implementation = CircleMemberResponseDto.class)))),
+            @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4000", description = "소모임을 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4102", description = "추방된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+            @ApiResponse(responseCode = "4103", description = "비활성화된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+            @ApiResponse(responseCode = "4104", description = "대기 중인 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+            @ApiResponse(responseCode = "4109", description = "가입이 거절된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+            @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+            @ApiResponse(responseCode = "4004", description = "삭제된 {동아리명} 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4107", description = "접근 권한이 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4000", description = "소모임원을 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
+    })
+    public List<CircleMemberResponseDto> findCircleMemberList(
+            @PathVariable("circleId") String circleId
+    ) {
+        return this.circleService.getMemberList(
+                circleId
+        );
+    }
 
     /**
      * 동아리 생성 API
@@ -219,7 +250,7 @@ public class CircleController {
             description = "생성하고자 하는 동아리의 정보를 입력해주세요. 동아리장의 권한은 일반 유저만 가능하며, 생성 요청은 관리자(admin), 학생회장(president)만 가능합니다."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CircleResponseDto.class))),
+            @ApiResponse(responseCode = "201", description = "Created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = void.class))),
             @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "4000", description = "소모임을 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "4001", description = "중복된 소모임 이름입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
@@ -234,13 +265,12 @@ public class CircleController {
             @ApiResponse(responseCode = "5000", description = "Leader id checked, but exception occured", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "5000", description = "Circle id immediately can be used, but exception occured", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
-    public CircleResponseDto create(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
+    public void create(
             @RequestPart(value = "circleCreateRequestDto") @Valid CircleCreateRequestDto circleCreateRequestDto,
             @RequestPart(value = "mainImage", required = false) MultipartFile mainImage
 
     ) {
-        return this.circleService.create(userDetails.getUser(), circleCreateRequestDto, mainImage);
+        circleService.create(circleCreateRequestDto, mainImage);
     }
 
 
@@ -312,16 +342,6 @@ public class CircleController {
                     "동아리 고유 ID 값(PK)을 입력해주세요.\n" +
                     "삭제 시 동아리 데이터가 아예 삭제되는 것이 아닌 isDeleted 가 true 로 바뀝니다."
     )
-//    @ApiImplicitParams(
-//            {
-//                    @ApiImplicitParam(name = "circleId",
-//                            value = "동아리 ID",
-//                            required = true,
-//                            dataType = "string",
-//                            paramType = "path"
-//                    )
-//            }
-//    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CircleMemberResponseDto.class))),
             @ApiResponse(responseCode = "4000", description = "삭제할 소모임을 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
@@ -346,31 +366,18 @@ public class CircleController {
     }
 
 
-    /**
-     * 사용자 동아리 지원 API
-     * @param circleId 동아리 고유 ID 값(PK)
-     * @return CircleMemberResponseDto
-     */
-    @GetMapping(value = "/{circleId}/applications")
+
+
+    @PostMapping(value = "/{circleId}/applications")
     @ResponseStatus(value = HttpStatus.CREATED)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(
             summary = "사용자 동아리 지원 API",
             description = "사용자가 동아리에 지원하는 API 입니다.\n" +
-                    "현재 로그인한 사용자 기준으로 자동으로 동아리 ID만 입력하면 해당 동아리에 지원됩니다."
+                    "현재 로그인한 사용자 기준으로 동아리 ID와 해당 동아리 신청서(Form)의 답변을 입력하면 해당 동아리에 지원됩니다."
     )
-//    @ApiImplicitParams(
-//            {
-//                    @ApiImplicitParam(name = "circleId",
-//                            value = "동아리 ID",
-//                            required = true,
-//                            dataType = "string",
-//                            paramType = "path",
-//                            defaultValue = "none"),
-//            }
-//    )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CircleMemberResponseDto.class))),
+            @ApiResponse(responseCode = "201", description = "Created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = void.class))),
             @ApiResponse(responseCode = "4000", description = "신청할 소모임을 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "4102", description = "추방된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
@@ -387,11 +394,12 @@ public class CircleController {
             @ApiResponse(responseCode = "4102", description = "추방된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
             @ApiResponse(responseCode = "5000", description = "Application id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
     })
-    public CircleMemberResponseDto userApply(
+    public void userApply(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable(name = "circleId") String circleId,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @RequestBody @Valid FormReplyRequestDto formReplyRequestDto
     ) {
-        return this.circleService.userApply(userDetails.getUser(), circleId);
+        circleService.userApply(userDetails.getUser(), circleId, formReplyRequestDto);
     }
 
 
@@ -402,16 +410,6 @@ public class CircleController {
      */
     @GetMapping(value = "/{circleName}/is-duplicated")
     @ResponseStatus(value = HttpStatus.OK)
-//    @ApiImplicitParams(
-//            {
-//                    @ApiImplicitParam(name = "circleName",
-//                            value = "동아리 이름",
-//                            required = true,
-//                            dataType = "string",
-//                            paramType = "path"
-//                    ),
-//            }
-//    )
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "동아리 이름 중복 검사 API",
             description = "동아리 이름 중복 검사 API 입니다. 이름 기준으로 검사하면 String 형식으로 동아리 이름을 넣어주세요.")
@@ -440,16 +438,6 @@ public class CircleController {
             description = "현재 로그인 된 유저 기준으로 동아리에서 탈퇴합니다.\n" +
                     "탈퇴 시 해당 유저의 동아리 가입 정보가 LEAVE 상태로 변경됩니다."
     )
-//    @ApiImplicitParams(
-//            {
-//                    @ApiImplicitParam(name = "circleId",
-//                            value = "동아리 ID",
-//                            required = true,
-//                            dataType = "string",
-//                            paramType = "path"
-//                    )
-//            }
-//    )
     @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CircleMemberResponseDto.class)))
     @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없거나 탈퇴할 소모임을 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     @ApiResponse(responseCode = "4001", description = "이미 소모임에 가입한 사용자입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
@@ -475,22 +463,6 @@ public class CircleController {
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
             "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
-//    @ApiImplicitParams(
-//            {
-//                    @ApiImplicitParam(name = "userId",
-//                            value = "유저 ID",
-//                            required = true,
-//                            dataType = "string",
-//                            paramType = "path"
-//                    ),
-//                    @ApiImplicitParam(name = "circleId",
-//                            value = "동아리 ID",
-//                            required = true,
-//                            dataType = "string",
-//                            paramType = "path"
-//                    )
-//            }
-//    )
     @Operation(summary = "동아리원 제거 API",
             description = "동아리원을 제거하는 API 입니다. userId 에는 제거하려는 유저를, circleId 에는 타깃 동아리를 넣어주세요.")
     @ApiResponses(value = {
@@ -618,22 +590,6 @@ public class CircleController {
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
             "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
-//    @ApiImplicitParams(
-//            {
-//                    @ApiImplicitParam(name = "circleId",
-//                            value = "동아리 가입 신청 ID",
-//                            required = true,
-//                            dataType = "string",
-//                            paramType = "path"
-//                    ),
-//                    @ApiImplicitParam(name = "userId",
-//                            value = "복구 유저 ID",
-//                            required = true,
-//                            dataType = "string",
-//                            paramType = "path"
-//                    )
-//            }
-//    )
     @Operation(summary = "추방된 동아리원 복구 API",
             description = "추방된 동아리원을 복구 시키는 API 입니다. 복구 시 동아리원으로 바꿔줍니다.\n" +
                     "해당하는 동아리 고유의 ID 값(PK)과 복구하려는 유저 고유의 ID 값(PK)를 입력해주세요.\n" +
@@ -665,11 +621,84 @@ public class CircleController {
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
             "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
+    @Operation(
+            summary = "동아리원 엑셀 다운로드 API",
+            description = "동아리원 정보를 엑셀로 다운로드 하는 API 입니다.\n" +
+                    "동아리 고유 ID 값(PK)을 입력해주세요.\n" +
+                    "엑셀 다운로드 시 해당 동아리의 동아리원 정보가 엑셀로 다운로드 됩니다."
+    )
     public void exportExcel(
             @PathVariable(name = "circleId") String circleId,
             HttpServletResponse response
     ){
         circleService.exportCircleMembersToExcel(circleId, response);
+    }
+
+    @PostMapping(value = "/{circleId}/apply/application")
+    @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "hasAnyRole('LEADER_CIRCLE')")
+    @Operation(
+            summary = "동아리 가입 신청서 생성/수정 API",
+            description = "동아리 가입 신청서를 수정하는 API 입니다.\n" +
+                    "동아리 고유 ID 값(PK)을 입력해주세요.\n" +
+                    "동아리 가입 신청서를 수정하면 해당 동아리에 가입 신청서가 생성/수정됩니다. (기존에 있던 신청서 모두 비활성화)"
+    )
+    public void createApplicationForm(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable(name = "circleId") String circleId,
+            @RequestHeader @NotNull LocalDateTime recruitEndDate,
+            @RequestBody @Valid FormCreateRequestDto formCreateRequestDto
+    ) {
+        circleService.createApplicationForm(userDetails.getUser(), circleId, recruitEndDate, formCreateRequestDto);
+    }
+
+    @GetMapping(value = "/{circleId}/apply/application/is-exist")
+    @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
+    @Operation(
+            summary = "동아리 가입 신청서 존재 여부 확인 API",
+            description = "현재 모집 중인 동아리 가입 신청서가 존재하는지 확인하는 API 입니다.\n" +
+                    "동아리 고유 ID 값(PK)을 입력해주세요.\n" +
+                    "동아리 가입 신청서가 존재하면 true, 존재하지 않으면 false 를 반환합니다."
+    )
+    public Boolean isCircleApplicationFormExist(
+            @PathVariable(name = "circleId") String circleId
+    ) {
+        return circleService.isCircleApplicationFormExist(circleId);
+    }
+
+    @GetMapping(value = "/{circleId}/apply/application")
+    @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
+    @Operation(
+            summary = "동아리 가입 신청서 조회 API",
+            description = "동아리 가입 신청서를 조회하는 API 입니다.\n" +
+                    "동아리 고유 ID 값(PK)을 입력해주세요.\n" +
+                    "동아리 가입 신청서를 조회하면 해당 동아리에 가입 신청서가 반환됩니다."
+    )
+    public FormResponseDto getCircleApplicationForm(
+            @PathVariable(name = "circleId") String circleId
+    ) {
+        return circleService.getCircleApplicationForm(circleId);
+    }
+
+    @GetMapping(value = "/{circleId}/apply/application/all")
+    @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
+    @Operation(
+            summary = "모든 동아리 가입 신청서 페이징 조회 API",
+            description = "모든 동아리 가입 신청서를 조회하는 API 입니다.\n" +
+                    "동아리 고유 ID 값(PK)을 입력해주세요.\n" +
+                    "모든 동아리 가입 신청서를 조회하면 해당 동아리에 마감되었거나 삭제된 가입 신청서를 포함해 모든 가입 신청서가가 반환됩니다. (동아리장 및 관리자/학생회장 포함)"
+    )
+    public Page<FormResponseDto> getAllCircleApplicationFormList(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable(name = "circleId") String circleId,
+            @ParameterObject Pageable pageable
+    ) {
+        return circleService.getAllCircleApplicationFormList(userDetails.getUser(), circleId, pageable);
     }
 
 }

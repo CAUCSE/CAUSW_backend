@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.causw.adapter.persistence.inquiry.Inquiry;
 import net.causw.adapter.persistence.user.User;
-import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.enums.user.Role;
 
 import java.time.LocalDateTime;
 

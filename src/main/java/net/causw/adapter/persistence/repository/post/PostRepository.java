@@ -1,5 +1,6 @@
 package net.causw.adapter.persistence.repository.post;
 
+import net.causw.adapter.persistence.form.Form;
 import net.causw.adapter.persistence.post.Post;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -56,4 +57,6 @@ public interface PostRepository extends JpaRepository<Post, String> {
             "AND NOT (c.is_deleted = true AND cc.is_deleted IS NULL)" +
             "AND (cc.is_deleted = false OR cc.is_deleted IS NULL)", nativeQuery = true)
     Long countAllCommentByPost_Id(@Param("postId") String postId);
+
+    Optional<Post> findByForm(Form form);
 }

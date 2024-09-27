@@ -21,9 +21,9 @@ import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
-import net.causw.domain.model.enums.AcademicRecordRequestStatus;
-import net.causw.domain.model.enums.AcademicStatus;
-import net.causw.domain.model.enums.FilePath;
+import net.causw.domain.model.enums.userAcademicRecord.AcademicRecordRequestStatus;
+import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.domain.model.enums.uuidFile.FilePath;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
 import org.springframework.data.domain.Page;
@@ -32,7 +32,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -50,7 +49,18 @@ public class UserAcademicRecordApplicationService {
     private final UserAcademicRecordExcelService userAcademicRecordExcelService;
 
     public void exportUserAcademicRecordListToExcel(HttpServletResponse response) {
-        String fileName = LocalDateTime.now().toString() + "_학적상태명단";
+        String fileName = "학적상태명단";
+
+        List<String> headerStringList = List.of(
+                "이름",
+                "학번",
+                "학적 상태",
+                "본 학기 기준 등록 완료 학기 차수",
+                "비고",
+                "변환 타겟 학적 상태",
+                "유저 작성 특이사항(단, 관리자 임의 수정 시 \"관리자 수정\"이라 기입)",
+                "변경 날짜"
+        );
 
         LinkedHashMap<String, List<UserAcademicRecordInfoResponseDto>> sheetDataMap = new LinkedHashMap<>();
 
@@ -70,7 +80,7 @@ public class UserAcademicRecordApplicationService {
 
         sheetDataMap.put("학적상태명단", userAcademicRecordInfoResponseDtoList);
 
-        userAcademicRecordExcelService.generateExcel(response, fileName, sheetDataMap);
+        userAcademicRecordExcelService.generateExcel(response, fileName, headerStringList, sheetDataMap);
     }
 
     public CurrentSemesterResponseDto getCurrentSemesterYearAndType() {

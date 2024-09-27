@@ -3,7 +3,7 @@ package net.causw.adapter.persistence.uuidFile;
 import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
-import net.causw.domain.model.enums.FilePath;
+import net.causw.domain.model.enums.uuidFile.FilePath;
 import org.hibernate.annotations.ColumnDefault;
 
 @Getter

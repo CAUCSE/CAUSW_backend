@@ -11,12 +11,13 @@ public interface ExcelService<T> {
 
     void generateExcel(HttpServletResponse response,
                        String fileName,
+                       List<String> headerStringList,
                        LinkedHashMap<String, List<T>> sheetNameDataMap
     );
 
-    void createSheet(Workbook workbook, String sheetName, List<T> dataList);
+    void createSheet(Workbook workbook, String sheetName, List<String> headerStringList, List<T> dataList);
 
-    void createHeaderRow(Sheet sheet);
+    void createHeaderRow(Sheet sheet, List<String> headerStringList);
 
     void createDataRows(Sheet sheet, List<T> dataList);
 

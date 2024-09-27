@@ -44,7 +44,13 @@ import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
-import net.causw.domain.model.enums.*;
+import net.causw.domain.model.enums.circle.CircleMemberStatus;
+import net.causw.domain.model.enums.locker.LockerLogAction;
+import net.causw.domain.model.enums.user.Role;
+import net.causw.domain.model.enums.user.UserAdmissionLogAction;
+import net.causw.domain.model.enums.user.UserState;
+import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.domain.model.enums.uuidFile.FilePath;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.RedisUtils;
 import net.causw.domain.model.util.StaticValue;
@@ -223,7 +229,8 @@ public class UserService {
                         post,
                         getNumOfComment(post),
                         getNumOfPostLikes(post),
-                        getNumOfPostFavorites(post)
+                        getNumOfPostFavorites(post),
+                        post.getForm() != null
                 ))
         );
     }
@@ -244,7 +251,8 @@ public class UserService {
                                 favoritePost.getPost(),
                                 getNumOfComment(favoritePost.getPost()),
                                 getNumOfPostLikes(favoritePost.getPost()),
-                                getNumOfPostFavorites(favoritePost.getPost())
+                                getNumOfPostFavorites(favoritePost.getPost()),
+                                favoritePost.getPost().getForm() != null
                         ))
         );
     }
@@ -279,7 +287,8 @@ public class UserService {
                         post,
                         getNumOfComment(post),
                         getNumOfPostLikes(post),
-                        getNumOfPostFavorites(post)
+                        getNumOfPostFavorites(post),
+                        post.getForm() != null
                 ))
         );
     }
@@ -403,7 +412,7 @@ public class UserService {
                 this.userRepository.findByRoleAndState(Role.LEADER_CIRCLE, UserState.ACTIVE)
                         .stream()
                         .map(userDomainModel -> {
-                            List<Circle> ownCircles = this.circleRepository.findByLeader_Id(user.getId());
+                            List<Circle> ownCircles = this.circleRepository.findByLeader_Id(userDomainModel.getId());
                             if (ownCircles.isEmpty()) {
                                 throw new InternalServerException(
                                         ErrorCode.INTERNAL_SERVER,
@@ -1525,6 +1534,25 @@ public class UserService {
     public void exportUserListToExcel(HttpServletResponse response) {
         String fileName = LocalDateTime.now().toString() + "_사용자명단.xlsx";
 
+        List<String> headerStringList = List.of(
+                "아이디(이메일)",
+                "이름",
+                "학번",
+                "입학년도",
+                "역할",
+                "상태",
+                "동아리명 목록(동아리장일 경우",
+                "닉네임",
+                "학적 상태",
+                "현재 등록 완료된 학기",
+                "졸업 년도",
+                "졸업 시기",
+                "전화 번호",
+                "가입 거절/추방 사유",
+                "동문네트워크 가입일",
+                "사용자 정보 최종 수정일"
+        );
+
         LinkedHashMap<String, List<UserResponseDto>> sheetDataMap = new LinkedHashMap<>();
 
         List<UserResponseDto> activeUserList = userRepository.findAllByState(UserState.ACTIVE)
@@ -1593,7 +1621,7 @@ public class UserService {
         sheetDataMap.put("탈퇴 유저", inactiveUserList);
         sheetDataMap.put("추방 유저", dropUserList);
 
-        userExcelService.generateExcel(response, fileName, sheetDataMap);
+        userExcelService.generateExcel(response, fileName, headerStringList, sheetDataMap);
     }
 
     // private methods

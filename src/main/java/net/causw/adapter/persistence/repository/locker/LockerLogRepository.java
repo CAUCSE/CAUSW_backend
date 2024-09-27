@@ -1,7 +1,7 @@
 package net.causw.adapter.persistence.repository.locker;
 
 import net.causw.adapter.persistence.locker.LockerLog;
-import net.causw.domain.model.enums.LockerLogAction;
+import net.causw.domain.model.enums.locker.LockerLogAction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

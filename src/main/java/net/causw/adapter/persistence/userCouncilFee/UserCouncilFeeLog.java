@@ -5,10 +5,10 @@ import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.semester.Semester;
 import net.causw.adapter.persistence.user.User;
-import net.causw.domain.model.enums.AcademicStatus;
-import net.causw.domain.model.enums.GraduationType;
-import net.causw.domain.model.enums.CouncilFeeLogType;
-import net.causw.domain.model.enums.SemesterType;
+import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.domain.model.enums.user.GraduationType;
+import net.causw.domain.model.enums.userCouncilFee.CouncilFeeLogType;
+import net.causw.domain.model.enums.semester.SemesterType;
 
 import java.time.LocalDate;
 

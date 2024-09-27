@@ -3,7 +3,7 @@ package net.causw.adapter.persistence.crawled;
 import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
-import net.causw.domain.model.enums.CrawlCategory;
+import net.causw.domain.model.enums.crawl.CrawlCategory;
 
 @Getter
 @Entity
