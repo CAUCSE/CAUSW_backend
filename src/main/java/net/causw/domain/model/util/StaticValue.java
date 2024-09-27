@@ -75,4 +75,8 @@ public class StaticValue {
     // CleanUnusedUuidFile
     public static final Integer SELECT_UNUSED_UUID_FILE_PAGE_SIZE = 10000;
     public static final Long CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME = 1000L * 60 * 60;   // 1hour
+
+    // WebCrawlerService
+    public static final String CAU_CSE_BASE_URL = "https://cse.cau.ac.kr/sub05/sub0501.php?offset="; // CAU 소프트웨어학부 공지사항 크롤링 주소
+
 }

@@ -8,6 +8,7 @@ import net.causw.adapter.persistence.repository.crawled.CrawledNoticeRepository;
 import net.causw.adapter.persistence.repository.crawled.LatestCrawlRepository;
 import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.model.enums.CrawlCategory;
+import net.causw.domain.model.util.StaticValue;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -26,13 +27,8 @@ import java.util.regex.Pattern;
 @Service
 @RequiredArgsConstructor
 public class WebCrawlerService {
-    private static final String LATEST_URL_KEY = "latestUrl";
-
     private final CrawledNoticeRepository crawledNoticeRepository;
     private final LatestCrawlRepository latestCrawlRepository;
-
-    private final String cauSwBaseUrl = "https://cse.cau.ac.kr/sub05/sub0501.php?offset="; // CAU 소프트웨어학부 공지사항 크롤링 주소
-
 
 //    @Scheduled(fixedRate = 5000) // 5초마다 실행 (테스트용)
     @Scheduled(cron = "0 0 * * * *") // 매 시각 0분 0초에 실행 (배포용)
@@ -47,7 +43,7 @@ public class WebCrawlerService {
 
         boolean isNew = true;
         while (isNew) {
-            String url = cauSwBaseUrl + pageNum;
+            String url = StaticValue.CAU_CSE_BASE_URL + pageNum;
             Document doc = Jsoup.connect(url).get();
             Elements rows = doc.select("table.table-basic tbody tr");
 
