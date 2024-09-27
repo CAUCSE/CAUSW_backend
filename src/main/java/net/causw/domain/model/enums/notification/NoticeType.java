@@ -1,4 +1,4 @@
-package net.causw.domain.model.enums;
+package net.causw.domain.model.enums.notification;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

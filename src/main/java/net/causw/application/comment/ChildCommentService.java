@@ -29,7 +29,7 @@ import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.circle.CircleMemberStatus;
 import net.causw.domain.model.enums.user.Role;
-import net.causw.domain.model.enums.NoticeType;
+import net.causw.domain.model.enums.notification.NoticeType;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.validation.*;

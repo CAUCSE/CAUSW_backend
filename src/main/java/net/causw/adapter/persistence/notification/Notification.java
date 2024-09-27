@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.user.User;
-import net.causw.domain.model.enums.NoticeType;
+import net.causw.domain.model.enums.notification.NoticeType;
 import org.hibernate.annotations.ColumnDefault;
 
 @Getter

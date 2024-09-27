@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.domain.model.enums.NoticeType;
+import net.causw.domain.model.enums.notification.NoticeType;
 
 @Getter
 @Setter
