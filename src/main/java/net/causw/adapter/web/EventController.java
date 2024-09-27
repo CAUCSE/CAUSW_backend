@@ -51,7 +51,7 @@ public class EventController {
             "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
     public EventResponseDto createEvent(
             @RequestPart(value = "eventCreateRequestDto") @Valid EventCreateRequestDto eventCreateRequestDto,
-            @RequestPart(value = "eventImage") @NotBlank(message = MessageUtil.IMAGE_MUST_NOT_NULL) MultipartFile eventImage
+            @RequestPart(value = "eventImage") MultipartFile eventImage
             ) {
         return eventService.createEvent(eventCreateRequestDto, eventImage);
     }
