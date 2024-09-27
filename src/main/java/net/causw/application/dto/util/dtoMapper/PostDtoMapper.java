@@ -42,7 +42,8 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "isQuestion", source = "post.isQuestion")
     @Mapping(target = "numLike", source = "numPostLike")
     @Mapping(target = "numFavorite", source = "numPostFavorite")
-    PostsResponseDto toPostsResponseDto(Post post, Long numComment, Long numPostLike, Long numPostFavorite);
+    @Mapping(target = "isPostVote", source = "isPostVote")
+    PostsResponseDto toPostsResponseDto(Post post, Long numComment, Long numPostLike, Long numPostFavorite, boolean isPostVote);
 
     @Mapping(target = "title", source = "post.title")
     @Mapping(target = "writerName", source = "post.writer.name")

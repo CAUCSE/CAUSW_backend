@@ -41,7 +41,7 @@ public class VoteService {
     public VoteResponseDto createVote(CreateVoteRequestDto createVoteRequestDTO, User user) {
         Post post = postRepository.findById(createVoteRequestDTO.getPostId())
                 .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.POST_NOT_FOUND));
-        if (user != post.getWriter()){
+        if (!(user.equals(post.getWriter()))){
             throw new BadRequestException(ErrorCode.API_NOT_ALLOWED, MessageUtil.VOTE_START_NOT_ACCESSIBLE);
         }
         List<VoteOption> voteOptions = createVoteRequestDTO.getOptions().stream()
@@ -81,13 +81,11 @@ public class VoteService {
                 throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.VOTE_ALREADY_DONE);
             }
         }
-        for (String voteOptionId : voteOptionIds) {
-            VoteOption voteOption = voteOptionRepository.findById(voteOptionId)
-                    .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.VOTE_OPTION_NOT_FOUND));
-            // 새로운 투표 기록 생성 및 저장
-            VoteRecord newVoteRecord = VoteRecord.of(user, voteOption);
-            voteRecordRepository.save(newVoteRecord);
-        }
+        List<VoteOption> voteOptions = voteOptionRepository.findAllById(voteOptionIds);
+        List<VoteRecord> newVoteRecords = voteOptions.stream()
+                .map(voteOption -> VoteRecord.of(user, voteOption))
+                .collect(Collectors.toList());
+        voteRecordRepository.saveAll(newVoteRecords);
         return "투표 성공";
     }
 
@@ -95,7 +93,7 @@ public class VoteService {
     public void endVote(String voteId, User user) {
         Vote vote = voteRepository.findById(voteId)
                 .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST,MessageUtil.VOTE_NOT_FOUND));
-        if (user != vote.getPost().getWriter()){
+        if (!(user.equals(vote.getPost().getWriter()))){
             throw new BadRequestException(ErrorCode.API_NOT_ALLOWED, MessageUtil.VOTE_END_NOT_ACCESSIBLE);
         }
         if (vote.isEnd()) {

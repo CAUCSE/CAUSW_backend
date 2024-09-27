@@ -558,6 +558,7 @@ public class PostService {
                 postRepository.countAllCommentByPost_Id(post.getId()),
                 getNumOfPostLikes(post),
                 getNumOfPostLikes(post)
+                ,StatusUtil.isPostVote(post)
         );
     }
 
