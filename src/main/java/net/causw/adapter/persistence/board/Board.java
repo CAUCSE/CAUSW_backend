@@ -50,6 +50,10 @@ public class Board extends BaseEntity {
     @OneToMany(mappedBy = "board", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     private Set<Post> postSet;
 
+    @Column(name = "is_default_notice", nullable = false)
+    @ColumnDefault("false")
+    private Boolean isDefaultNotice; // 모두에게 알림이 가야 하는
+
     public static Board of(
             String name,
             String description,
@@ -93,6 +97,7 @@ public class Board extends BaseEntity {
                 .is_anonymous_allowed(is_anonymous_allowed)
                 .circle(circle)
                 .postSet(new HashSet<>())
+                .isDefaultNotice(false)
                 .build();
     }
 
