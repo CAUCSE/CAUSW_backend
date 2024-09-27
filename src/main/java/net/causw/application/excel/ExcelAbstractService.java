@@ -12,16 +12,23 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 public abstract class ExcelAbstractService<T> implements ExcelService<T> {
 
     @Override
-    public void generateExcel(HttpServletResponse response, String fileName, List<T> dataList) {
+    public void generateExcel(
+            HttpServletResponse response,
+            String fileName,
+            LinkedHashMap<String, List<T>> sheetNameDataMap
+    ) {
         try (Workbook workbook = new XSSFWorkbook()) {
-            createSheet(workbook, fileName, dataList);
+            for (String sheetName : sheetNameDataMap.keySet()) {
+                createSheet(workbook, sheetName, sheetNameDataMap.get(sheetName));
+            }
 
-            String encodedFileName = URLEncoder.encode(fileName + ".xlsx", StandardCharsets.UTF_8.toString());
+            String encodedFileName = URLEncoder.encode(fileName + ".xlsx", StandardCharsets.UTF_8);
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             response.setHeader("Content-Disposition", "attachment; filename=" + encodedFileName);
 
@@ -40,8 +47,10 @@ public abstract class ExcelAbstractService<T> implements ExcelService<T> {
         createDataRows(sheet, dataList);
     }
 
+    @Override
     public abstract void createHeaderRow(Sheet sheet);
 
+    @Override
     public abstract void createDataRows(Sheet sheet, List<T> dataList);
 
 }

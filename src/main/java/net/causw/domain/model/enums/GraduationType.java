@@ -1,6 +1,13 @@
 package net.causw.domain.model.enums;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
 public enum GraduationType {
-    FEBRUARY,
-    AUGUST
+    FEBRUARY("2월 졸업"), // 2월 졸업
+    AUGUST("8월 졸업"); // 8월 졸업
+
+    private final String value;
 }

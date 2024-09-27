@@ -1,5 +1,6 @@
 package net.causw.domain.model.enums;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -7,19 +8,17 @@ import net.causw.domain.exceptions.ErrorCode;
 import java.util.Arrays;
 
 @Getter
+@AllArgsConstructor
 public enum UserState {
-    AWAIT("AWAIT"),
-    ACTIVE("ACTIVE"),
-    INACTIVE("INACTIVE"),
-    REJECT("REJECT"),
-    DROP("DROP"),
-    DELETED("DELETED");
+    AWAIT("AWAIT", "가입 대기"),
+    ACTIVE("ACTIVE", "활성"),
+    INACTIVE("INACTIVE", "탈퇴"),
+    REJECT("REJECT", "가입 거부"),
+    DROP("DROP", "추방"),
+    DELETED("DELETED", "삭제됨");
 
     private final String value;
-
-    UserState(String value) {
-        this.value = value;
-    }
+    private final String description;
 
     public static UserState of(String value) {
         return Arrays.stream(values())

@@ -15,6 +15,7 @@ import net.causw.application.dto.homepage.HomePageResponseDto;
 import net.causw.application.dto.board.BoardResponseDto;
 import net.causw.application.dto.util.dtoMapper.BoardDtoMapper;
 import net.causw.application.dto.util.dtoMapper.PostDtoMapper;
+import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.enums.Role;
@@ -27,7 +28,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
+@MeasureTime
 @Service
 @RequiredArgsConstructor
 public class HomePageService {

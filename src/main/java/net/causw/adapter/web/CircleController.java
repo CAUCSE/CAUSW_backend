@@ -666,11 +666,10 @@ public class CircleController {
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
             "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
     public void exportExcel(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable(name = "circleId") String circleId,
             HttpServletResponse response
     ){
-        circleService.exportCircleMembersToExcel(userDetails.getUser(), circleId, response);
+        circleService.exportCircleMembersToExcel(circleId, response);
     }
 
 }

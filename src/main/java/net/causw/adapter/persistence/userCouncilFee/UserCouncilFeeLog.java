@@ -39,6 +39,7 @@ public class UserCouncilFeeLog extends BaseEntity {
     @Column(name = "time_of_semester_year", nullable = false)
     private Integer timeOfSemesterYear;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "time_of_semester_type", nullable = false)
     private SemesterType timeOfSemesterType;
 
@@ -57,6 +58,7 @@ public class UserCouncilFeeLog extends BaseEntity {
     @Column(name = "major", nullable = false)
     private String major;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "academic_status", nullable = false)
     private AcademicStatus academicStatus;
 
@@ -66,6 +68,7 @@ public class UserCouncilFeeLog extends BaseEntity {
     @Column(name = "graduation_year", nullable = true)
     private Integer graduationYear;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "graduation_type", nullable = true)
     private GraduationType graduationType;
 

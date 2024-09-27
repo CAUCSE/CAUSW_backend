@@ -11,8 +11,10 @@ import net.causw.adapter.persistence.repository.circle.CircleMemberRepository;
 import net.causw.adapter.persistence.repository.circle.CircleRepository;
 import net.causw.adapter.persistence.repository.post.PostRepository;
 import net.causw.adapter.persistence.repository.user.UserRepository;
+import net.causw.adapter.persistence.repository.userCouncilFee.UserCouncilFeeRepository;
 import net.causw.adapter.persistence.repository.uuidFile.CircleMainImageRepository;
 import net.causw.adapter.persistence.user.User;
+import net.causw.adapter.persistence.userCouncilFee.UserCouncilFee;
 import net.causw.adapter.persistence.uuidFile.joinEntity.CircleMainImage;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.board.BoardOfCircleResponseDto;
@@ -23,6 +25,7 @@ import net.causw.application.dto.util.dtoMapper.CircleDtoMapper;
 import net.causw.application.dto.util.StatusUtil;
 import net.causw.application.excel.CircleExcelService;
 import net.causw.application.uuidFile.UuidFileService;
+import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
@@ -45,7 +48,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static net.causw.application.dto.board.BoardOfCircleResponseDto.isWriteable;
-
+@MeasureTime
 @Service
 @RequiredArgsConstructor
 public class CircleService {
@@ -58,6 +61,7 @@ public class CircleService {
     private final PostRepository postRepository;
     private final UuidFileService uuidFileService;
     private final CircleMainImageRepository circleMainImageRepository;
+    private final UserCouncilFeeRepository userCouncilFeeRepository;
 
     @Transactional(readOnly = true)
     public CircleResponseDto findById(String circleId) {
@@ -642,13 +646,56 @@ public class CircleService {
     }
 
     @Transactional(readOnly = true)
-    public void exportCircleMembersToExcel(User user, String circleId, HttpServletResponse response){
+    public void exportCircleMembersToExcel(String circleId, HttpServletResponse response){
         Circle circle = getCircle(circleId);
         String circleName = circle.getName();
-        List<CircleMemberResponseDto> awaitingMembers = getUserList(user, circleId, CircleMemberStatus.AWAIT);
-        List<CircleMemberResponseDto> activeMembers = getUserList(user, circleId, CircleMemberStatus.MEMBER);
 
-        circleExcelService.generateCircleExcel(response, circleName, awaitingMembers, activeMembers);
+        List<ExportCircleMemberToExcelResponseDto> activeUserDtoList = circleMemberRepository.findByCircle_IdAndStatus(circleId, CircleMemberStatus.MEMBER)
+                .stream()
+                .map(circleMember -> {
+                    User srcUser = circleMember.getUser();
+                    UserCouncilFee userCouncilFee = userCouncilFeeRepository.findByUser(srcUser)
+                            .orElseThrow(
+                                    () -> new BadRequestException(
+                                            ErrorCode.ROW_DOES_NOT_EXIST,
+                                            MessageUtil.USER_COUNCIL_FEE_NOT_FOUND
+                                    )
+                            );
+                    return this.toExportCircleMemberToExcelResponseDto(
+                            srcUser,
+                            userCouncilFee,
+                            getRestOfSemester(userCouncilFee),
+                            getIsAppliedCurrentSemester(userCouncilFee)
+                    );
+                }
+                ).toList();
+        List<ExportCircleMemberToExcelResponseDto> awaitingUserDtoList = circleMemberRepository.findByCircle_IdAndStatus(circleId, CircleMemberStatus.AWAIT)
+                .stream()
+                .map(circleMember -> {
+                    User srcUser = circleMember.getUser();
+                    UserCouncilFee userCouncilFee = userCouncilFeeRepository.findByUser(srcUser)
+                            .orElseThrow(
+                                    () -> new BadRequestException(
+                                            ErrorCode.ROW_DOES_NOT_EXIST,
+                                            MessageUtil.USER_COUNCIL_FEE_NOT_FOUND
+                                    )
+                            );
+                    return this.toExportCircleMemberToExcelResponseDto(
+                            srcUser,
+                            userCouncilFee,
+                            getRestOfSemester(userCouncilFee),
+                            getIsAppliedCurrentSemester(userCouncilFee)
+                    );
+                }
+                ).toList();
+
+        LinkedHashMap<String, List<ExportCircleMemberToExcelResponseDto>> sheetNameDataMap = new LinkedHashMap<>();
+        sheetNameDataMap.put("활성 동아리원", activeUserDtoList);
+        sheetNameDataMap.put("가입 대기 동아리원", activeUserDtoList);
+
+        String fileName = LocalDateTime.now().toString() + "_" + circleName + "_부원명단";
+
+        circleExcelService.generateExcel(response, circleName + "_부원명단", sheetNameDataMap);
     }
 
 
@@ -787,6 +834,39 @@ public class CircleService {
         return validatorBucket;
     }
 
+    // Private method
+    private Integer getRestOfSemester(UserCouncilFee userCouncilFee) {
+        Integer startOfAppliedSemester = userCouncilFee.getPaidAt();
+        Integer endOfAppliedSemester = ( userCouncilFee.getIsRefunded() ) ?
+                ( startOfAppliedSemester - 1 ) + userCouncilFee.getNumOfPaidSemester() :
+                userCouncilFee.getRefundedAt();
+        Integer restOfSemester;
+
+        if (userCouncilFee.getIsJoinedService()) {
+            restOfSemester = Math.max(endOfAppliedSemester - userCouncilFee.getUser().getCurrentCompletedSemester(), 0);
+        } else {
+            restOfSemester = Math.max(endOfAppliedSemester - userCouncilFee.getCouncilFeeFakeUser().getCurrentCompletedSemester(), 0);
+        }
+        return restOfSemester;
+    }
+
+    private Boolean getIsAppliedCurrentSemester(UserCouncilFee userCouncilFee) {
+        Integer startOfAppliedSemester = userCouncilFee.getPaidAt();
+        Integer endOfAppliedSemester = ( userCouncilFee.getIsRefunded() ) ?
+                ( startOfAppliedSemester - 1 ) + userCouncilFee.getNumOfPaidSemester() :
+                userCouncilFee.getRefundedAt();
+        Boolean isAppliedThisSemester;
+
+        if (userCouncilFee.getIsJoinedService()) {
+            isAppliedThisSemester = (startOfAppliedSemester <= userCouncilFee.getUser().getCurrentCompletedSemester()) &&
+                    (userCouncilFee.getUser().getCurrentCompletedSemester() <= endOfAppliedSemester);
+        } else {
+            isAppliedThisSemester = (startOfAppliedSemester <= userCouncilFee.getCouncilFeeFakeUser().getCurrentCompletedSemester()) &&
+                    (userCouncilFee.getCouncilFeeFakeUser().getCurrentCompletedSemester() <= endOfAppliedSemester);
+        }
+        return isAppliedThisSemester;
+    }
+
     // Dto Mapper
 
     private UserResponseDto toUserResponseDto(User user) {
@@ -844,4 +924,9 @@ public class CircleService {
     private DuplicatedCheckResponseDto toDuplicatedCheckResponseDto(Boolean isDuplicated) {
         return CircleDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(isDuplicated);
     }
+
+    private ExportCircleMemberToExcelResponseDto toExportCircleMemberToExcelResponseDto(User user, UserCouncilFee userCouncilFee, Integer restOfSemester, Boolean isAppliedThisSemester){
+        return CircleDtoMapper.INSTANCE.toExportCircleMemberToExcelResponseDto(user, userCouncilFee, restOfSemester, isAppliedThisSemester, userCouncilFee.getNumOfPaidSemester() - restOfSemester);
+    }
+
 }

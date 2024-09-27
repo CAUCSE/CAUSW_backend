@@ -5,6 +5,7 @@ import net.causw.adapter.persistence.crawled.CrawledNotice;
 import net.causw.adapter.persistence.crawled.LatestCrawl;
 import net.causw.adapter.persistence.repository.crawled.CrawledNoticeRepository;
 import net.causw.adapter.persistence.repository.crawled.LatestCrawlRepository;
+import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.model.enums.CrawlCategory;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -18,7 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-
+@MeasureTime
 @Service
 @RequiredArgsConstructor
 public class WebCrawlerService {

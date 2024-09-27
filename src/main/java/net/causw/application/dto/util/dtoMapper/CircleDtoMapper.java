@@ -5,11 +5,9 @@ import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.user.User;
+import net.causw.adapter.persistence.userCouncilFee.UserCouncilFee;
 import net.causw.application.dto.board.BoardOfCircleResponseDto;
-import net.causw.application.dto.circle.CircleBoardsResponseDto;
-import net.causw.application.dto.circle.CircleMemberResponseDto;
-import net.causw.application.dto.circle.CircleResponseDto;
-import net.causw.application.dto.circle.CirclesResponseDto;
+import net.causw.application.dto.circle.*;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.user.UserResponseDto;
 import net.causw.application.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
@@ -92,5 +90,24 @@ public interface CircleDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "createdAt", source = "circle.createdAt")
     CircleResponseDto toCircleResponseDto(Circle circle, User leader);
 
+    @Mapping(target = "email", source = "user.email")
+    @Mapping(target = "name", source = "user.name")
+    @Mapping(target = "nickname", source = "user.nickname")
+    @Mapping(target = "admissionYear", source = "user.admissionYear")
+    @Mapping(target = "studentId", source = "user.studentId")
+    @Mapping(target = "major", source = "user.major")
+    @Mapping(target = "phoneNumber", source = "user.phoneNumber")
+    @Mapping(target = "academicStatus", source = "user.academicStatus")
+    @Mapping(target = "currentSemester", source = "user.currentCompletedSemester")
+    @Mapping(target = "graduationYear", source = "user.graduationYear")
+    @Mapping(target = "graduationType", source = "user.graduationType")
+    @Mapping(target = "createdAt", source = "user.createdAt")
+    @Mapping(target = "isAppliedThisSemester", source = "isAppliedThisSemester")
+    @Mapping(target = "paidAt", source = "userCouncilFee.paidAt")
+    @Mapping(target = "paidSemester", source = "userCouncilFee.numOfPaidSemester")
+    @Mapping(target = "appliedSemester", source = "appliedSemester")
+    @Mapping(target = "restOfSemester", source = "restOfSemester")
+    @Mapping(target = "isRefunded", source = "userCouncilFee.isRefunded")
+    ExportCircleMemberToExcelResponseDto toExportCircleMemberToExcelResponseDto(User user, UserCouncilFee userCouncilFee, Integer restOfSemester, Boolean isAppliedThisSemester, Integer appliedSemester);
 
 }

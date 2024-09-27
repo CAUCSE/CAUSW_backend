@@ -1,5 +1,6 @@
 package net.causw.application.userAcademicRecord;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.repository.semester.SemesterRepository;
 import net.causw.adapter.persistence.repository.user.UserRepository;
@@ -14,7 +15,9 @@ import net.causw.application.dto.semester.CurrentSemesterResponseDto;
 import net.causw.application.dto.userAcademicRecordApplication.*;
 import net.causw.application.dto.util.dtoMapper.SemesterDtoMapper;
 import net.causw.application.dto.util.dtoMapper.UserAcademicRecordDtoMapper;
+import net.causw.application.excel.UserAcademicRecordExcelService;
 import net.causw.application.uuidFile.UuidFileService;
+import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
@@ -29,9 +32,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
-
+@MeasureTime
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -42,6 +47,31 @@ public class UserAcademicRecordApplicationService {
     private final UserAcademicRecordLogRepository userAcademicRecordLogRepository;
     private final UuidFileService uuidFileService;
     private final SemesterRepository semesterRepository;
+    private final UserAcademicRecordExcelService userAcademicRecordExcelService;
+
+    public void exportUserAcademicRecordListToExcel(HttpServletResponse response) {
+        String fileName = LocalDateTime.now().toString() + "_학적상태명단";
+
+        LinkedHashMap<String, List<UserAcademicRecordInfoResponseDto>> sheetDataMap = new LinkedHashMap<>();
+
+        List<UserAcademicRecordInfoResponseDto> userAcademicRecordInfoResponseDtoList = new ArrayList<>();
+
+        List<User> userList = userRepository.findAll();
+
+        for (User user : userList) {
+            List<UserAcademicRecordLog> userAcademicRecordLogList = userAcademicRecordLogRepository.findAllByTargetUserStudentIdAndTargetUserEmailAndTargetUserName(
+                    user.getStudentId(),
+                    user.getEmail(),
+                    user.getName());
+            userAcademicRecordInfoResponseDtoList.add(
+                    toUserAcademicRecordInfoResponseDto(user, userAcademicRecordLogList)
+            );
+        }
+
+        sheetDataMap.put("학적상태명단", userAcademicRecordInfoResponseDtoList);
+
+        userAcademicRecordExcelService.generateExcel(response, fileName, sheetDataMap);
+    }
 
     public CurrentSemesterResponseDto getCurrentSemesterYearAndType() {
         return toCurrentSemesterResponseDto(getCurrentSemester());

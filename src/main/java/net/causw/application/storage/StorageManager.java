@@ -6,6 +6,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.model.enums.FilePath;
@@ -17,7 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
-
+@MeasureTime
 @Component
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public class StorageManager {
