@@ -34,8 +34,8 @@ public class WebCrawlerService {
     private final String cauSwBaseUrl = "https://cse.cau.ac.kr/sub05/sub0501.php?offset="; // CAU 소프트웨어학부 공지사항 크롤링 주소
 
 
-//    @Scheduled(cron = "0 0 * * * *") // 매 시각 0분 0초에 실행 (배포용)
-    @Scheduled(fixedRate = 5000) // 5초마다 실행 (테스트용)
+//    @Scheduled(fixedRate = 5000) // 5초마다 실행 (테스트용)
+    @Scheduled(cron = "0 0 * * * *") // 매 시각 0분 0초에 실행 (배포용)
     @Transactional
     public void crawlAndSaveCAUSWNoticeSite() throws IOException {
         int pageNum = 1;
@@ -64,8 +64,8 @@ public class WebCrawlerService {
                 }
 
                 String absoluteLink = titleElement.absUrl("href");
-                System.out.println("방문한 페이지 절대 경로 : " + absoluteLink);
-                System.out.println("DB에 저장되어 있는 가장 최근 공지 URL " + recentNoticeLink);
+//                System.out.println("방문한 페이지 절대 경로 : " + absoluteLink);
+//                System.out.println("DB에 저장되어 있는 가장 최근 공지 URL " + recentNoticeLink);
                 if (absoluteLink.equals(recentNoticeLink)) {   // 최신 url과 비교하여 동일한 경우 for문 탈출
                     isNew = false;
                     break;
