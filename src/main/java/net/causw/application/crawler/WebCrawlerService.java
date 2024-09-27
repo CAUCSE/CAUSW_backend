@@ -1,6 +1,7 @@
 package net.causw.application.crawler;
 
 import lombok.RequiredArgsConstructor;
+import net.causw.adapter.persistence.crawled.CrawledFileLink;
 import net.causw.adapter.persistence.crawled.CrawledNotice;
 import net.causw.adapter.persistence.crawled.LatestCrawl;
 import net.causw.adapter.persistence.repository.crawled.CrawledNoticeRepository;
@@ -18,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @MeasureTime
 @Service
@@ -53,7 +56,6 @@ public class WebCrawlerService {
             }
 
             List<CrawledNotice> notices = new ArrayList<>();
-
             for (Element row : rows) {
                 String noticeType = row.select("td span.tag").text();
                 Element titleElement = row.select("td.aleft a").first();
@@ -74,7 +76,34 @@ public class WebCrawlerService {
                 String announceDate = detailDoc.select("div.header > div > span").get(1).text();    // 작성일 추출
                 String author = detailDoc.select("div.header > div > span").get(3).text();  // 작성자 추출
                 String content = detailDoc.select("div.fr-view").outerHtml();   // 본문 내용 추출
-                String imageLink = detailDoc.select("div.fr-view > p > img").attr("abs:src");  // 절대경로로 이미지 추출 => 없는 경우 빈 문자열 삽입
+                String imageLink = detailDoc.select("div.fr-view > p > img").attr("abs:src");  // 절대경로로 이미지 추출 => 없는 경우 빈 문자열 삽입\
+
+
+                // 첨부파일 다운로드 경로 추출
+                Elements downloadLinks = detailDoc.select("div.files span");
+                List<CrawledFileLink> crawledFileLinks = new ArrayList<>();
+
+                for (Element link : downloadLinks) {
+                    // 정규식 사용
+                    String onclickAttr = link.attr("onclick");
+                    Pattern pattern = Pattern.compile("goLocation\\('/_module/bbs/download.php','(\\d+)','(\\w+)'\\).*?>(.*?)<");
+                    Matcher matcher = pattern.matcher(link.outerHtml());
+
+                    while (matcher.find()) {
+                        String uid = matcher.group(1); // uid 추출
+                        String code = matcher.group(2); // code 추출
+                        String fileName = matcher.group(3).trim(); // 파일명 추출
+                        // 파일 다운로드 경로 생성
+                        String fileUrl = String.format("https://cse.cau.ac.kr/_module/bbs/download.php?uid=%s&code=%s", uid, code);
+                        // CrawledFileLink 객체 생성
+                        crawledFileLinks.add(CrawledFileLink.of(fileName, fileUrl));
+                    }
+                }
+
+                if (downloadLinks.isEmpty()) {
+                    // 첨부파일이 없는 경우
+                    crawledFileLinks = null;
+                }
 
                 // CrawledNotice 객체 생성
                 CrawledNotice notice = CrawledNotice.of(
@@ -84,7 +113,8 @@ public class WebCrawlerService {
                         absoluteLink,
                         author,
                         announceDate,
-                        imageLink
+                        imageLink,
+                        crawledFileLinks
                 );
                 notices.add(notice);
 

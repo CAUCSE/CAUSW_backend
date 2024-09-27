@@ -1,13 +1,13 @@
 package net.causw.adapter.persistence.crawled;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Entity
@@ -37,6 +37,10 @@ public class CrawledNotice extends BaseEntity {
     @Column(name = "image_link", nullable = true)
     private String imageLink;
 
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "crawled_notice_id", nullable = true)
+    private List<CrawledFileLink> crawledFileLinks = new ArrayList<>();
+
     public static CrawledNotice of(
             String type,
             String title,
@@ -44,7 +48,8 @@ public class CrawledNotice extends BaseEntity {
             String link,
             String author,
             String announceDate,
-            String imageLink
+            String imageLink,
+            List<CrawledFileLink> crawledFileLinks
     ) {
         // String -> LocalDate
         LocalDate parsedDate = LocalDate.parse(announceDate, DateTimeFormatter.ISO_LOCAL_DATE);
@@ -61,6 +66,7 @@ public class CrawledNotice extends BaseEntity {
                 .author(author)
                 .announceDate(parsedDate)
                 .imageLink(imageLink)
+                .crawledFileLinks(crawledFileLinks)
                 .build();
     }
 }
