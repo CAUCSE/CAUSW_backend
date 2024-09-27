@@ -157,19 +157,20 @@ public class PostService {
             isCircleLeader = getCircleLeader(board.getCircle()).getId().equals(user.getId());
         }
 
+        // 동아리장, Admin, 학생회장인 경우 삭제된 글 포함 검색. 그외의 경우 삭제되지 않는 글만 검색
         if (isCircleLeader || roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT) || roles.contains(Role.VICE_PRESIDENT)) {
             return toBoardPostsResponseDto(
                     board,
                     roles,
                     isFavorite(user.getId(), board.getId()),
-                    postRepository.findAllByBoard_IdOrderByCreatedAtDesc(boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
+                    postRepository.findByTitleAndBoard_Id(keyword, boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
                             .map(this::toPostsResponseDto));
         } else {
             return toBoardPostsResponseDto(
                     board,
                     roles,
                     isFavorite(user.getId(), board.getId()),
-                    postRepository.searchByTitle(keyword, boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), false)
+                    postRepository.findByTitleBoard_IdAndDeleted(keyword, boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), false)
                             .map(this::toPostsResponseDto));
         }
     }

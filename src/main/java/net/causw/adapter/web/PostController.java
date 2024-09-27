@@ -107,12 +107,6 @@ public class PostController {
     @ApiResponse(responseCode = "4102", description = "동아리 가입 거절된 사용자입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
     @ApiResponse(responseCode = "4102", description = "동아리에서 추방된 사용자입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
     @ApiResponse(responseCode = "4004", description = "삭제된 게시판입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
-//    @ApiImplicitParam(name = "keyword",
-//            value = "제목 연관검색어",
-//            required = true,
-//            dataType = "String",
-//            paramType = "query"
-//    )
     public BoardPostsResponseDto searchPost(
             @RequestParam("boardId") String boardId,
             @RequestParam(name = "keyword", defaultValue = "") String keyword,
