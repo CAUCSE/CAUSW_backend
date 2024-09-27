@@ -100,4 +100,7 @@ public class Post extends BaseEntity {
     private void setPostAttachFileList(List<PostAttachImage> postAttachImageList) {
         this.postAttachImageList = postAttachImageList;
     }
+    public void updateVote(Vote vote){
+        this.vote = vote;
+    }
 }

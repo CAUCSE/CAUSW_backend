@@ -33,9 +33,8 @@ import java.util.stream.Collectors;
 public class VoteService {
     private final VoteOptionRepository voteOptionRepository;
     private final VoteRepository voteRepository;
-    private final VoteRecordRepository voteRecordRepository;
     private final PostRepository postRepository;
-    private final UserRepository userRepository;
+    private final VoteRecordRepository voteRecordRepository;
 
     @Transactional
     public VoteResponseDto createVote(CreateVoteRequestDto createVoteRequestDTO, User user) {
@@ -55,6 +54,7 @@ public class VoteService {
                 post
         );
         Vote savedVote = voteRepository.save(vote);
+        post.updateVote(vote);
         voteOptions.forEach(voteOption -> voteOption.updateVote(savedVote));
         voteOptionRepository.saveAll(voteOptions);
         return toVoteResponseDto(savedVote,user);
@@ -90,7 +90,7 @@ public class VoteService {
     }
 
     @Transactional
-    public void endVote(String voteId, User user) {
+    public VoteResponseDto endVote(String voteId, User user) {
         Vote vote = voteRepository.findById(voteId)
                 .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST,MessageUtil.VOTE_NOT_FOUND));
         if (!(user.equals(vote.getPost().getWriter()))){
@@ -101,6 +101,8 @@ public class VoteService {
         }
         vote.endVote();
         voteRepository.save(vote);
+        return toVoteResponseDto(vote,user);
+
     }
 
     @Transactional(readOnly = true)
@@ -112,9 +114,6 @@ public class VoteService {
 
     public VoteResponseDto toVoteResponseDto(Vote vote, User user) {
         boolean isOwner = user.equals(vote.getPost().getWriter());
-        if (vote == null) {
-            return null;
-        }
         List<VoteOptionResponseDto> voteOptionResponseDtoList = vote.getVoteOptions().stream()
                 .map(this::tovoteOptionResponseDto)
                 .collect(Collectors.toList());

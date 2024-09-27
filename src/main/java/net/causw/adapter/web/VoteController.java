@@ -47,12 +47,11 @@ public class VoteController {
     @PostMapping("/{voteId}/end")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "투표 종료", description = "특정 투표를 종료합니다.")
-    public ResponseEntity<Void> endVote(
-            @PathVariable String voteId,
+    public ResponseEntity<VoteResponseDto> endVote(
+            @PathVariable("voteId") String voteId, // 파라미터 이름 명시
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        voteService.endVote(voteId, userDetails.getUser());
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(voteService.endVote(voteId, userDetails.getUser()));
     }
 
     @GetMapping("/{voteId}")
@@ -60,7 +59,7 @@ public class VoteController {
     @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
     @Operation(summary = "투표 조회", description = "특정 투표에 대한 정보를 조회합니다.")
     public ResponseEntity<VoteResponseDto> getVoteById(
-            @PathVariable String voteId,
+            @PathVariable("voteId") String voteId, // 파라미터 이름 명시
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         VoteResponseDto voteResponse = voteService.getVoteById(voteId, userDetails.getUser());

@@ -14,6 +14,6 @@ public class VoteResponseDto {
     private boolean allowAnonymous;
     private boolean allowMultiple;
     private List<VoteOptionResponseDto> options;
-    private Long postId;
+    private String postId;
     private boolean isOwner;
 }

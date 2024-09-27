@@ -11,7 +11,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 public class VoteOptionResponseDto {
-    private Long id;
+    private String id;
     private String optionName;
     private Long voteCount;
     private List<UserResponseDto> voteUsers;

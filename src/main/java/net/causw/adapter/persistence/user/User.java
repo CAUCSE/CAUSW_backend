@@ -15,6 +15,7 @@ import net.causw.domain.model.enums.Role;
 import net.causw.domain.model.enums.UserState;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Getter
@@ -136,5 +137,18 @@ public class User extends BaseEntity {
 
     public void updateRejectionOrDropReason(String reason) {
         this.rejectionOrDropReason = reason;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(getId(), user.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId());
     }
 }
