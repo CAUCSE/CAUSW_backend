@@ -35,9 +35,17 @@ public enum FilePath {
     ),
     POST(
             "post",
-            5 * 1024 * 1024L, // 5MB
+            10 * 1024 * 1024L, // 10MB
             10,
-            List.of(FileExtensionType.IMAGE)
+            List.of(
+                    FileExtensionType.IMAGE,
+                    FileExtensionType.VIDEO,
+                    FileExtensionType.AUDIO,
+                    FileExtensionType.TEXT,
+                    FileExtensionType.DOCUMENT,
+                    FileExtensionType.COMPRESS,
+                    FileExtensionType.ETC
+            )
     ),
     CALENDAR("calendar",
             50 * 1024 * 1024L, // 50MB
@@ -56,7 +64,8 @@ public enum FilePath {
             10,
             List.of(
                     FileExtensionType.IMAGE,
-                    FileExtensionType.VIDEO, FileExtensionType.AUDIO,
+                    FileExtensionType.VIDEO,
+                    FileExtensionType.AUDIO,
                     FileExtensionType.TEXT,
                     FileExtensionType.DOCUMENT,
                     FileExtensionType.COMPRESS,
