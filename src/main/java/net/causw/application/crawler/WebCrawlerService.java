@@ -7,7 +7,11 @@ import net.causw.adapter.persistence.crawled.LatestCrawl;
 import net.causw.adapter.persistence.repository.crawled.CrawledNoticeRepository;
 import net.causw.adapter.persistence.repository.crawled.LatestCrawlRepository;
 import net.causw.domain.aop.annotation.MeasureTime;
+import net.causw.domain.exceptions.BadRequestException;
+import net.causw.domain.exceptions.ErrorCode;
+import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.model.enums.CrawlCategory;
+import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -33,7 +37,7 @@ public class WebCrawlerService {
 //    @Scheduled(fixedRate = 5000) // 5초마다 실행 (테스트용)
     @Scheduled(cron = "0 0 * * * *") // 매 시각 0분 0초에 실행 (배포용)
     @Transactional
-    public void crawlAndSaveCAUSWNoticeSite() throws IOException {
+    public void crawlAndSaveCAUSWNoticeSite()  {
         int pageNum = 1;
 
         // 최신 URL 가져오기
@@ -44,7 +48,13 @@ public class WebCrawlerService {
         boolean isNew = true;
         while (isNew) {
             String url = StaticValue.CAU_CSE_BASE_URL + pageNum;
-            Document doc = Jsoup.connect(url).get();
+            Document doc;
+            try {
+                doc = Jsoup.connect(url).get();
+            } catch (IOException e) {
+                throw new InternalServerException(ErrorCode.INTERNAL_SERVER, MessageUtil.FAIL_TO_CRAWL_CAU_SW_NOTICE_SITE);
+            }
+
             Elements rows = doc.select("table.table-basic tbody tr");
 
             if (rows.isEmpty()) {
