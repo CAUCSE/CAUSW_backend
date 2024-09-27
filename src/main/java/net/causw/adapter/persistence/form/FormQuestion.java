@@ -34,7 +34,7 @@ public class FormQuestion extends BaseEntity {
     @ColumnDefault("false")
     private Boolean isMultiple;
 
-    @OneToMany(mappedBy = "formQuestion", fetch = FetchType.LAZY, cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, orphanRemoval = true)
+    @OneToMany(mappedBy = "formQuestion", cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, orphanRemoval = true)
     @Builder.Default
     private List<FormQuestionOption> formQuestionOptionList = new ArrayList<>();
 

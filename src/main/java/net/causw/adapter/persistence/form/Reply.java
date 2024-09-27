@@ -24,7 +24,7 @@ public class Reply extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @OneToMany(mappedBy = "reply", fetch = FetchType.LAZY, cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, orphanRemoval = true)
+    @OneToMany(mappedBy = "reply", cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, orphanRemoval = true)
     @Builder.Default
     private List<ReplyQuestion> replyQuestionList = new ArrayList<>();
 

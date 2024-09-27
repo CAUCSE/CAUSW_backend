@@ -28,7 +28,7 @@ public class Form extends BaseEntity {
     @Column(name = "title", nullable = false)
     private String title;
 
-    @OneToMany(mappedBy = "form", fetch = FetchType.LAZY, cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, orphanRemoval = true)
+    @OneToMany(mappedBy = "form", cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, orphanRemoval = true)
     @Builder.Default
     private List<FormQuestion> formQuestionList = new ArrayList<>();
 
@@ -65,7 +65,7 @@ public class Form extends BaseEntity {
     @Column(name = "is_allowed_graduation", nullable = false)
     private Boolean isAllowedGraduation;
 
-    @OneToMany(mappedBy = "form", fetch = FetchType.LAZY, cascade = { CascadeType.REMOVE }, orphanRemoval = true)
+    @OneToMany(mappedBy = "form", cascade = { CascadeType.REMOVE }, orphanRemoval = true)
     @Builder.Default
     private List<Reply> replyList = new ArrayList<>();
 
