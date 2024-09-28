@@ -11,7 +11,6 @@ import net.causw.adapter.persistence.form.FormQuestionOption;
 import net.causw.adapter.persistence.form.FormQuestion;
 import net.causw.adapter.persistence.repository.form.FormRepository;
 import net.causw.adapter.persistence.repository.uuidFile.PostAttachImageRepository;
-import net.causw.adapter.persistence.repository.vote.VoteOptionRepository;
 import net.causw.adapter.persistence.repository.vote.VoteRecordRepository;
 import net.causw.adapter.persistence.uuidFile.joinEntity.PostAttachImage;
 import net.causw.adapter.persistence.vote.Vote;
@@ -47,7 +46,6 @@ import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.post.*;
 import net.causw.application.dto.util.StatusUtil;
 import net.causw.application.uuidFile.UuidFileService;
-import net.causw.application.vote.VoteService;
 import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -969,15 +967,15 @@ public class PostService {
     }
 
     private VoteResponseDto toVoteResponseDto(Vote vote, User user) {
-        boolean isOwner = user.equals(vote.getPost().getWriter());
         List<VoteOptionResponseDto> voteOptionResponseDtoList = vote.getVoteOptions().stream()
                 .map(this::tovoteOptionResponseDto)
                 .collect(Collectors.toList());
         return VoteDtoMapper.INSTANCE.toVoteResponseDto(
                 vote,
                 voteOptionResponseDtoList
-                ,isOwner
-                ,vote.isEnd()
+                , StatusUtil.isVoteOwner(user, vote)
+                , vote.isEnd()
+                , voteRecordRepository.existsByVoteOption_VoteAndUser(vote, user)
         );
     }
 

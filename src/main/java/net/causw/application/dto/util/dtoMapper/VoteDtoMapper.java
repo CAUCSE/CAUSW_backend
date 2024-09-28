@@ -24,7 +24,7 @@ public interface VoteDtoMapper {
     @Mapping(target = "allowMultiple" , source = "vote.allowMultiple")
     @Mapping(target = "postId", source = "vote.post.id")
     @Mapping(target = "isOwner" , source = "isOwner")
-    VoteResponseDto toVoteResponseDto(Vote vote , List<VoteOptionResponseDto> options, boolean isOwner, boolean isEnd);
+    VoteResponseDto toVoteResponseDto(Vote vote , List<VoteOptionResponseDto> options, boolean isOwner, boolean isEnd, boolean hasVoted);
 
     @Mapping(target = "id", source = "voteOption.id")
     @Mapping(target = "optionName", source = "voteOption.optionName")

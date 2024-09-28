@@ -11,4 +11,5 @@ import java.util.List;
 public interface VoteRecordRepository extends JpaRepository<VoteRecord ,String> {
     List<VoteRecord> findAllByVoteOption(VoteOption voteOption);
     List<VoteRecord> findByVoteOption_VoteAndUser(Vote vote, User user);
+    boolean existsByVoteOption_VoteAndUser(Vote vote, User user);
 }
