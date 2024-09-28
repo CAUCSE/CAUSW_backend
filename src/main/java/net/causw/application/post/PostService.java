@@ -1002,15 +1002,15 @@ public class PostService {
     }
 
     private VoteResponseDto toVoteResponseDto(Vote vote, User user) {
-        boolean isOwner = user.equals(vote.getPost().getWriter());
         List<VoteOptionResponseDto> voteOptionResponseDtoList = vote.getVoteOptions().stream()
                 .map(this::tovoteOptionResponseDto)
                 .collect(Collectors.toList());
         return VoteDtoMapper.INSTANCE.toVoteResponseDto(
                 vote,
                 voteOptionResponseDtoList
-                ,isOwner
-                ,vote.isEnd()
+                , StatusUtil.isVoteOwner(user, vote)
+                , vote.isEnd()
+                , voteRecordRepository.existsByVoteOption_VoteAndUser(vote, user)
         );
     }
 

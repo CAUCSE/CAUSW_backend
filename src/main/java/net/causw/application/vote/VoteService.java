@@ -11,6 +11,7 @@ import net.causw.adapter.persistence.vote.Vote;
 import net.causw.adapter.persistence.vote.VoteOption;
 import net.causw.adapter.persistence.vote.VoteRecord;
 import net.causw.application.dto.user.UserResponseDto;
+import net.causw.application.dto.util.StatusUtil;
 import net.causw.application.dto.util.dtoMapper.UserDtoMapper;
 import net.causw.application.dto.util.dtoMapper.VoteDtoMapper;
 import net.causw.application.dto.vote.CastVoteRequestDto;
@@ -113,15 +114,15 @@ public class VoteService {
     }
 
     private VoteResponseDto toVoteResponseDto(Vote vote, User user) {
-        boolean isOwner = user.equals(vote.getPost().getWriter());
         List<VoteOptionResponseDto> voteOptionResponseDtoList = vote.getVoteOptions().stream()
                 .map(this::tovoteOptionResponseDto)
                 .collect(Collectors.toList());
         return VoteDtoMapper.INSTANCE.toVoteResponseDto(
                 vote,
                 voteOptionResponseDtoList
-                ,isOwner
-                ,vote.isEnd()
+                , StatusUtil.isVoteOwner(user, vote)
+                , vote.isEnd()
+                , voteRecordRepository.existsByVoteOption_VoteAndUser(vote, user)
         );
     }
 

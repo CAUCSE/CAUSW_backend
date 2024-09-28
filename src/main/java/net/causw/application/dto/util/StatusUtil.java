@@ -8,6 +8,7 @@ import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.form.Form;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.user.User;
+import net.causw.adapter.persistence.vote.Vote;
 import net.causw.domain.model.enums.user.Role;
 
 import java.util.Set;
@@ -107,4 +108,8 @@ public class StatusUtil {
     }
 
     public static boolean isPostForm(Post post) { return post.getForm() != null; }
+
+    public static boolean isVoteOwner(User user , Vote vote){
+        return user.equals(vote.getPost().getWriter());
+    }
 }
