@@ -851,6 +851,7 @@ public class PostService {
                 getNumOfPostFavorites(post),
                 isPostAlreadyLike(user, post.getId()),
                 isPostAlreadyFavorite(user, post.getId()),
+                StatusUtil.isPostOwner(post,user),
                 StatusUtil.isUpdatable(post, user, isPostHasComment(post.getId())),
                 StatusUtil.isDeletable(post, user, post.getBoard(), isPostHasComment(post.getId())),
                 StatusUtil.isPostForm(post) ? toFormResponseDto(post.getForm()) : null,

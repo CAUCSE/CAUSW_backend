@@ -1,5 +1,6 @@
 package net.causw.application.dto.util.dtoMapper;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.application.dto.comment.CommentResponseDto;
@@ -57,6 +58,7 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "numFavorite", source = "numPostFavorite")
     @Mapping(target = "isPostLike", source = "isPostLike")
     @Mapping(target = "isPostFavorite", source = "isPostFavorite")
+    @Mapping(target = "isOwner", source = "isOwner")
     @Mapping(target = "updatable", source = "updatable")
     @Mapping(target = "deletable", source = "deletable")
     @Mapping(target = "writerProfileImage", source = "post.writer.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
@@ -72,6 +74,7 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
             Long numPostFavorite,
             Boolean isPostLike,
             Boolean isPostFavorite,
+            Boolean isOwner,
             Boolean updatable,
             Boolean deletable,
             FormResponseDto formResponseDto,
