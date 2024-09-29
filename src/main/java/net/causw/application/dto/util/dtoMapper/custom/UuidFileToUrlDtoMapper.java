@@ -15,7 +15,9 @@ public interface UuidFileToUrlDtoMapper {
         if (joinEntity == null) {
             return null;
         } else {
-            return joinEntity.getUuidFile() == null ? null : joinEntity.getUuidFile().getFileUrl();
+            return joinEntity.getUuidFile() == null ?
+                    null
+                    : joinEntity.getUuidFile().getFileUrl();
         }
     }
 
