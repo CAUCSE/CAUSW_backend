@@ -14,7 +14,7 @@ import net.causw.adapter.persistence.uuidFile.UuidFile;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class JoinEntity extends BaseEntity {
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "uuid_file_id", nullable = false)
     public UuidFile uuidFile;
 
