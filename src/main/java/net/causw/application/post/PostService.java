@@ -1,5 +1,6 @@
 package net.causw.application.post;
 
+import jdk.jshell.Snippet;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
@@ -873,6 +874,7 @@ public class PostService {
                 childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
                 getNumOfCommentLikes(comment),
                 isCommentAlreadyLike(user, comment.getId()),
+                StatusUtil.isCommentOwner(comment, user),
                 comment.getChildCommentList().stream()
                         .map(childComment -> toChildCommentResponseDto(childComment, user, board))
                         .collect(Collectors.toList()),
@@ -886,6 +888,7 @@ public class PostService {
                 childComment,
                 getNumOfChildCommentLikes(childComment),
                 isChildCommentAlreadyLike(user, childComment.getId()),
+                StatusUtil.isChildCommentOwner(childComment, user),
                 StatusUtil.isUpdatable(childComment, user),
                 StatusUtil.isDeletable(childComment, user, board)
         );
@@ -1011,7 +1014,7 @@ public class PostService {
         return VoteDtoMapper.INSTANCE.toVoteResponseDto(
                 vote,
                 voteOptionResponseDtoList
-                , StatusUtil.isVoteOwner(user, vote)
+                , StatusUtil.isVoteOwner(vote, user)
                 , vote.isEnd()
                 , voteRecordRepository.existsByVoteOption_VoteAndUser(vote, user)
         );
