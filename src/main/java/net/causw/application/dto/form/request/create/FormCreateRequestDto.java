@@ -24,7 +24,8 @@ public class FormCreateRequestDto {
     private Boolean isAllowedEnrolled;
 
     @Schema(description = "재학생 답변 허용 시, 답변 가능한 등록 완료 학기(상관없음 시 1차부터 9차 이상까지 넣어서 요청)",
-            example = "[FIRST_SEMESTER,SECOND_SEMESTER ... EIGHTH_SEMESTER,ABOVE_NINTH_SEMESTER]", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+            example = "[FIRST_SEMESTER,SECOND_SEMESTER,THIRD_SEMESTER,FORTH_SEMESTER,FIFTH_SEMESTER,SIXTH_SEMESTER,SEVENTH_SEMESTER,EIGHTH_SEMESTER,ABOVE_NINTH_SEMESTER]",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private List<RegisteredSemester> enrolledRegisteredSemesterList;
 
     @Schema(description = "재학생 답변 허용 시, 학생회비 납부 필요 여부", example = "ture", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
@@ -35,7 +36,8 @@ public class FormCreateRequestDto {
     private Boolean isAllowedLeaveOfAbsence;
 
     @Schema(description = "휴학생 답변 허용 시, 답변 가능한 등록 완료 학기(상관없음 시 1차부터 9차 이상까지 넣어서 요청)",
-            example = "[FIRST_SEMESTER,SECOND_SEMESTER ... EIGHTH_SEMESTER,ABOVE_NINTH_SEMESTER]", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+            example = "[FIRST_SEMESTER,SECOND_SEMESTER,THIRD_SEMESTER,FORTH_SEMESTER,FIFTH_SEMESTER,SIXTH_SEMESTER,SEVENTH_SEMESTER,EIGHTH_SEMESTER,ABOVE_NINTH_SEMESTER]",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private List<RegisteredSemester> leaveOfAbsenceRegisteredSemesterList;
 
     @Schema(description = "졸업생 답변 허용 여부", example = "ture", requiredMode = Schema.RequiredMode.REQUIRED)
