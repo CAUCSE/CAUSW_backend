@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.circle.Circle;
+import net.causw.application.dto.form.request.create.FormCreateRequestDto;
 import net.causw.domain.model.enums.form.FormType;
 import net.causw.domain.model.enums.form.RegisteredSemester;
 import net.causw.domain.model.enums.form.RegisteredSemesterManager;
@@ -80,93 +81,73 @@ public class Form extends BaseEntity {
     }
 
     public static Form createPostForm(
-            String title,
-            List<FormQuestion> formQuestionList,
-            Boolean isAllowedEnrolled,
-            RegisteredSemesterManager enrolledRegisteredSemester,
-            Boolean isNeedCouncilFeePaid,
-            Boolean isAllowedLeaveOfAbsence,
-            RegisteredSemesterManager leaveOfAbsenceRegisteredSemester,
-            Boolean isAllowedGraduation
+            FormCreateRequestDto formCreateRequestDto,
+            List<FormQuestion> formQuestionList
     ) {
         return Form.builder()
                 .formType(FormType.POST_FORM)
-                .title(title)
+                .title(formCreateRequestDto.getTitle())
                 .formQuestionList(formQuestionList)
-                .isAllowedEnrolled(isAllowedEnrolled)
+                .isAllowedEnrolled(formCreateRequestDto.getIsAllowedEnrolled())
                 .EnrolledRegisteredSemester(
-                        isAllowedEnrolled ?
-                                enrolledRegisteredSemester.serialize()
+                        formCreateRequestDto.getIsAllowedEnrolled() ?
+                                RegisteredSemesterManager.fromEnumList(
+                                        formCreateRequestDto.getEnrolledRegisteredSemesterList()
+                                ).serialize()
                                 : null)
                 .isNeedCouncilFeePaid(
-                        isAllowedEnrolled ?
-                                isNeedCouncilFeePaid
-                                : false)
-                .isAllowedLeaveOfAbsence(isAllowedLeaveOfAbsence)
+                        (formCreateRequestDto.getIsAllowedEnrolled() && formCreateRequestDto.getIsNeedCouncilFeePaid() != null) ?
+                                formCreateRequestDto.getIsNeedCouncilFeePaid()
+                                : false
+                )
+                .isAllowedLeaveOfAbsence(formCreateRequestDto.getIsAllowedLeaveOfAbsence())
                 .LeaveOfAbsenceRegisteredSemester(
-                        isAllowedLeaveOfAbsence ?
-                                leaveOfAbsenceRegisteredSemester.serialize()
+                        (formCreateRequestDto.getIsAllowedLeaveOfAbsence() &&
+                                !(formCreateRequestDto.getLeaveOfAbsenceRegisteredSemesterList() == null ||
+                                        formCreateRequestDto.getLeaveOfAbsenceRegisteredSemesterList().isEmpty())
+                        ) ?
+                                RegisteredSemesterManager.fromEnumList(
+                                        formCreateRequestDto.getLeaveOfAbsenceRegisteredSemesterList()
+                                ).serialize()
                                 : null)
-                .isAllowedGraduation(isAllowedGraduation)
+                .isAllowedGraduation(formCreateRequestDto.getIsAllowedGraduation())
                 .build();
     }
 
     public static Form createCircleApplicationForm(
-            String title,
+            FormCreateRequestDto formCreateRequestDto,
             List<FormQuestion> formQuestionList,
-            Circle circle,
-            Boolean isAllowedEnrolled,
-            RegisteredSemesterManager enrolledRegisteredSemester,
-            Boolean isNeedCouncilFeePaid,
-            Boolean isAllowedLeaveOfAbsence,
-            RegisteredSemesterManager leaveOfAbsenceRegisteredSemester,
-            Boolean isAllowedGraduation
+            Circle circle
     ) {
         return Form.builder()
                 .formType(FormType.CIRCLE_APPLICATION_FORM)
-                .title(title)
+                .title(formCreateRequestDto.getTitle())
                 .formQuestionList(formQuestionList)
                 .circle(circle)
-                .isAllowedEnrolled(isAllowedEnrolled)
+                .isAllowedEnrolled(formCreateRequestDto.getIsAllowedEnrolled())
                 .EnrolledRegisteredSemester(
-                        isAllowedEnrolled ?
-                                enrolledRegisteredSemester.serialize()
+                        formCreateRequestDto.getIsAllowedEnrolled() ?
+                                RegisteredSemesterManager.fromEnumList(
+                                        formCreateRequestDto.getEnrolledRegisteredSemesterList()
+                                ).serialize()
                                 : null)
                 .isNeedCouncilFeePaid(
-                        isAllowedEnrolled ?
-                                isNeedCouncilFeePaid
-                                : false)
-                .isAllowedLeaveOfAbsence(isAllowedLeaveOfAbsence)
+                        (formCreateRequestDto.getIsAllowedEnrolled() && formCreateRequestDto.getIsNeedCouncilFeePaid() != null) ?
+                                formCreateRequestDto.getIsNeedCouncilFeePaid()
+                                : false
+                )
+                .isAllowedLeaveOfAbsence(formCreateRequestDto.getIsAllowedLeaveOfAbsence())
                 .LeaveOfAbsenceRegisteredSemester(
-                        isAllowedLeaveOfAbsence ?
-                                leaveOfAbsenceRegisteredSemester.serialize()
+                        (formCreateRequestDto.getIsAllowedLeaveOfAbsence() &&
+                                !(formCreateRequestDto.getLeaveOfAbsenceRegisteredSemesterList() == null ||
+                                        formCreateRequestDto.getLeaveOfAbsenceRegisteredSemesterList().isEmpty())
+                        ) ?
+                                RegisteredSemesterManager.fromEnumList(
+                                        formCreateRequestDto.getLeaveOfAbsenceRegisteredSemesterList()
+                                ).serialize()
                                 : null)
-                .isAllowedGraduation(isAllowedGraduation)
+                .isAllowedGraduation(formCreateRequestDto.getIsAllowedGraduation())
                 .build();
-    }
-
-    public void update(
-            String title,
-            List<FormQuestion> formQuestionList,
-            Boolean isAllowedEnrolled,
-            RegisteredSemesterManager enrolledRegisteredSemester,
-            Boolean isNeedCouncilFeePaid,
-            Boolean isAllowedLeaveOfAbsence,
-            RegisteredSemesterManager leaveOfAbsenceRegisteredSemester,
-            Boolean isAllowedGraduation
-    ) {
-        this.title = title;
-        this.formQuestionList = formQuestionList;
-        this.isAllowedEnrolled = isAllowedEnrolled;
-        this.EnrolledRegisteredSemester = isAllowedEnrolled ?
-                enrolledRegisteredSemester.serialize()
-                : null;
-        this.isNeedCouncilFeePaid = isNeedCouncilFeePaid;
-        this.isAllowedLeaveOfAbsence = isAllowedLeaveOfAbsence;
-        this.LeaveOfAbsenceRegisteredSemester = isAllowedLeaveOfAbsence ?
-                leaveOfAbsenceRegisteredSemester.serialize()
-                : null;
-        this.isAllowedGraduation = isAllowedGraduation;
     }
 
 }

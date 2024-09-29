@@ -1,6 +1,5 @@
 package net.causw.application.post;
 
-import jdk.jshell.Snippet;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
@@ -22,6 +21,7 @@ import net.causw.adapter.persistence.vote.Vote;
 import net.causw.adapter.persistence.vote.VoteOption;
 import net.causw.adapter.persistence.vote.VoteRecord;
 import net.causw.application.dto.form.request.create.FormCreateRequestDto;
+import net.causw.application.dto.form.request.create.QuestionCreateRequestDto;
 import net.causw.application.dto.form.response.FormResponseDto;
 import net.causw.application.dto.form.response.OptionResponseDto;
 import net.causw.application.dto.form.response.QuestionResponseDto;
@@ -65,6 +65,7 @@ import net.causw.domain.model.enums.user.Role;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.validation.*;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -729,86 +730,125 @@ public class PostService {
     }
 
     private Form generateForm(FormCreateRequestDto formCreateRequestDto) {
-        AtomicReference<Integer> questionNumber = new AtomicReference<>(1);
+        validFormInfo(formCreateRequestDto);
 
-        List<FormQuestion> formQuestionList = Optional.ofNullable(formCreateRequestDto.getQuestionCreateRequestDtoList())
-                .orElse(new ArrayList<>())
-                .stream()
-                .map(
-                        questionCreateRequestDto -> {
-
-                            AtomicReference<Integer> optionNumber = new AtomicReference<>(1);
-
-                            List<FormQuestionOption> formQuestionOptionList = Optional.ofNullable(questionCreateRequestDto.getOptionCreateRequestDtoList())
-                                    .orElse(new ArrayList<>())
-                                    .stream()
-                                    .map(
-                                            optionCreateRequestDto -> FormQuestionOption.of(
-                                                    optionNumber.getAndSet(optionNumber.get() + 1),
-                                                    optionCreateRequestDto.getOptionText(),
-                                                    null
-                                            )
-                                    ).toList();
-
-                            if (questionCreateRequestDto.getQuestionType().equals(QuestionType.OBJECTIVE)) {
-                                if (questionCreateRequestDto.getIsMultiple() == null ||
-                                        questionCreateRequestDto.getOptionCreateRequestDtoList().isEmpty()
-                                ) {
-                                    throw new BadRequestException(
-                                            ErrorCode.INVALID_PARAMETER,
-                                            MessageUtil.INVALID_QUESTION_INFO
-                                    );
-                                }
-                            } else {
-                                if (questionCreateRequestDto.getIsMultiple() != null ||
-                                        !questionCreateRequestDto.getOptionCreateRequestDtoList().isEmpty()
-                                ) {
-                                    throw new BadRequestException(
-                                            ErrorCode.INVALID_PARAMETER,
-                                            MessageUtil.INVALID_QUESTION_INFO
-                                    );
-                                }
-                            }
-
-                            FormQuestion formQuestion = FormQuestion.of(
-                                    questionNumber.getAndSet(questionNumber.get() + 1),
-                                    questionCreateRequestDto.getQuestionType(),
-                                    questionCreateRequestDto.getQuestionText(),
-                                    questionCreateRequestDto.getIsMultiple(),
-                                    formQuestionOptionList,
-                                    null
-                            );
-
-                            formQuestionOptionList.forEach(option -> option.setFormQuestion(formQuestion));
-
-                            return formQuestion;
-                        }
-                ).toList();
+        List<FormQuestion> formQuestionList = generateFormQuestionList(formCreateRequestDto);
 
         Form form = Form.createPostForm(
-                formCreateRequestDto.getTitle(),
-                formQuestionList,
-                formCreateRequestDto.getIsAllowedEnrolled(),
-                formCreateRequestDto.getIsAllowedEnrolled() ?
-                        RegisteredSemesterManager.fromEnumList(
-                                formCreateRequestDto.getEnrolledRegisteredSemesterList()
-                        )
-                        : null,
-                formCreateRequestDto.getIsAllowedEnrolled() ?
-                        formCreateRequestDto.getIsNeedCouncilFeePaid()
-                        : false,
-                formCreateRequestDto.getIsAllowedLeaveOfAbsence(),
-                formCreateRequestDto.getIsAllowedLeaveOfAbsence() ?
-                        RegisteredSemesterManager.fromEnumList(
-                                formCreateRequestDto.getLeaveOfAbsenceRegisteredSemesterList()
-                        )
-                        : null,
-                formCreateRequestDto.getIsAllowedGraduation()
+                formCreateRequestDto,
+                formQuestionList
         );
 
         formQuestionList.forEach(question -> question.setForm(form));
 
         return form;
+    }
+
+    private static void validFormInfo(FormCreateRequestDto formCreateRequestDto) {
+        // isAllowedEnrolled가 false이고 isAllowedLeaveOfAbsence가 false인 경우 예외 처리
+        if (formCreateRequestDto.getIsAllowedEnrolled()) {
+            // isNeedCouncilFeePaid가 null인 경우 예외 처리
+            if (formCreateRequestDto.getIsNeedCouncilFeePaid() == null) {
+                throw new BadRequestException(
+                        ErrorCode.INVALID_PARAMETER,
+                        MessageUtil.IS_NEED_COUNCIL_FEE_REQUIRED
+                );
+            }
+
+            // enrolledRegisteredSemesterList가 null이거나 비어있는 경우 예외 처리
+            if (formCreateRequestDto.getEnrolledRegisteredSemesterList() == null ||
+                    formCreateRequestDto.getEnrolledRegisteredSemesterList().isEmpty()) {
+                throw new BadRequestException(
+                        ErrorCode.INVALID_PARAMETER,
+                        MessageUtil.INVALID_REGISTERED_SEMESTER_INFO
+                );
+            }
+        }
+
+        // isAllowedLeaveOfAbsence가 false이고 isAllowedLeaveOfAbsence가 false인 경우 예외 처리
+        if (formCreateRequestDto.getIsAllowedLeaveOfAbsence() &&
+                (formCreateRequestDto.getLeaveOfAbsenceRegisteredSemesterList() == null ||
+                        formCreateRequestDto.getLeaveOfAbsenceRegisteredSemesterList().isEmpty())
+        ) {
+            throw new BadRequestException(
+                    ErrorCode.INVALID_PARAMETER,
+                    MessageUtil.INVALID_REGISTERED_SEMESTER_INFO
+            );
+        }
+    }
+
+    @NotNull
+    private List<FormQuestion> generateFormQuestionList(FormCreateRequestDto formCreateRequestDto) {
+        // questionCreateRequestDtoList가 null이거나 비어있는 경우 예외 처리
+        if (formCreateRequestDto.getQuestionCreateRequestDtoList() == null || formCreateRequestDto.getQuestionCreateRequestDtoList().isEmpty()) {
+            throw new BadRequestException(
+                    ErrorCode.INVALID_PARAMETER,
+                    MessageUtil.EMPTY_QUESTION_INFO
+            );
+        }
+
+        AtomicReference<Integer> questionNumber = new AtomicReference<>(1);
+
+        return formCreateRequestDto.getQuestionCreateRequestDtoList()
+                .stream()
+                .map(
+                        questionCreateRequestDto -> {
+                            FormQuestion formQuestion;
+
+                            // 객관식일 때, isMultiple이 null이거나 optionCreateRequestDtoList가 null이거나 비어있는 경우 예외 처리
+                            if (questionCreateRequestDto.getQuestionType().equals(QuestionType.OBJECTIVE)) {
+                                if (questionCreateRequestDto.getIsMultiple() == null ||
+                                        (questionCreateRequestDto.getOptionCreateRequestDtoList() == null ||
+                                                questionCreateRequestDto.getOptionCreateRequestDtoList().isEmpty())
+                                ) {
+                                    throw new BadRequestException(
+                                            ErrorCode.INVALID_PARAMETER,
+                                            MessageUtil.INVALID_QUESTION_INFO
+                                    );
+                                }
+
+                                List<FormQuestionOption> formQuestionOptionList = getFormQuestionOptionList(questionCreateRequestDto);
+
+                                formQuestion = FormQuestion.createObjectiveQuestion(
+                                        questionNumber.getAndSet(questionNumber.get() + 1),
+                                        questionCreateRequestDto,
+                                        formQuestionOptionList
+                                );
+
+                                formQuestionOptionList.forEach(option -> option.setFormQuestion(formQuestion));
+                            } else { // 주관식일 때
+                                formQuestion = FormQuestion.createSubjectQuestion(
+                                        questionNumber.getAndSet(questionNumber.get() + 1),
+                                        questionCreateRequestDto
+                                );
+                            }
+
+                            return formQuestion;
+                        }
+                ).toList();
+    }
+
+    @NotNull
+    private static List<FormQuestionOption> getFormQuestionOptionList(QuestionCreateRequestDto questionCreateRequestDto) {
+        // optionCreateRequestDtoList가 null이거나 비어있는 경우 예외 처리
+        if (questionCreateRequestDto.getOptionCreateRequestDtoList() == null || questionCreateRequestDto.getOptionCreateRequestDtoList().isEmpty()) {
+            throw new BadRequestException(
+                    ErrorCode.INVALID_PARAMETER,
+                    MessageUtil.EMPTY_OPTION_INFO
+            );
+        }
+
+        AtomicReference<Integer> optionNumber = new AtomicReference<>(1);
+
+        return questionCreateRequestDto.getOptionCreateRequestDtoList()
+                .stream()
+                .map(
+                        optionCreateRequestDto -> FormQuestionOption.of(
+                                optionNumber.getAndSet(optionNumber.get() + 1),
+                                optionCreateRequestDto.getOptionText(),
+                                null
+                        )
+                ).toList();
     }
 
 
