@@ -120,7 +120,7 @@ public class VoteService {
         return VoteDtoMapper.INSTANCE.toVoteResponseDto(
                 vote,
                 voteOptionResponseDtoList
-                , StatusUtil.isVoteOwner(user, vote)
+                , StatusUtil.isVoteOwner(vote, user)
                 , vote.isEnd()
                 , voteRecordRepository.existsByVoteOption_VoteAndUser(vote, user)
         );

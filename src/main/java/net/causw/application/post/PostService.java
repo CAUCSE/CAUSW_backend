@@ -1,5 +1,6 @@
 package net.causw.application.post;
 
+import jdk.jshell.Snippet;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
@@ -203,7 +204,7 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponseDto createPost(User creator, PostCreateRequestDto postCreateRequestDto, List<MultipartFile> attachImageList) {
+    public  PostCreateResponseDto createPost(User creator, PostCreateRequestDto postCreateRequestDto, List<MultipartFile> attachImageList) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         Set<Role> roles = creator.getRoles();
 
@@ -299,11 +300,11 @@ public class PostService {
             }
         }
 
-        return toPostResponseDtoExtended(postRepository.save(post), creator);
+        return toPostCreateResponseDto(postRepository.save(post));
     }
 
     @Transactional
-    public void createPostWithForm(
+    public  PostCreateResponseDto createPostWithForm(
             User creator,
             PostCreateWithFormRequestDto postCreateWithFormRequestDto,
             List<MultipartFile> attachImageList
@@ -379,7 +380,7 @@ public class PostService {
                 .consistOf(ConstraintValidator.of(post, this.validator))
                 .validate();
 
-        postRepository.save(post);
+        return toPostCreateResponseDto(postRepository.save(post));
     }
 
 
@@ -812,6 +813,9 @@ public class PostService {
 
 
     // DtoMapper methods
+    private PostCreateResponseDto toPostCreateResponseDto(Post post){
+        return PostDtoMapper.INSTANCE.toPostCreateResponseDto(post);
+    }
 
     private BoardPostsResponseDto toBoardPostsResponseDto(Board board, Set<Role> userRoles, boolean isFavorite, Page<PostsResponseDto> post) {
         List<String> roles = Arrays.asList(board.getCreateRoles().split(","));
@@ -870,6 +874,7 @@ public class PostService {
                 childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
                 getNumOfCommentLikes(comment),
                 isCommentAlreadyLike(user, comment.getId()),
+                StatusUtil.isCommentOwner(comment, user),
                 comment.getChildCommentList().stream()
                         .map(childComment -> toChildCommentResponseDto(childComment, user, board))
                         .collect(Collectors.toList()),
@@ -883,6 +888,7 @@ public class PostService {
                 childComment,
                 getNumOfChildCommentLikes(childComment),
                 isChildCommentAlreadyLike(user, childComment.getId()),
+                StatusUtil.isChildCommentOwner(childComment, user),
                 StatusUtil.isUpdatable(childComment, user),
                 StatusUtil.isDeletable(childComment, user, board)
         );
@@ -1008,7 +1014,7 @@ public class PostService {
         return VoteDtoMapper.INSTANCE.toVoteResponseDto(
                 vote,
                 voteOptionResponseDtoList
-                , StatusUtil.isVoteOwner(user, vote)
+                , StatusUtil.isVoteOwner(vote, user)
                 , vote.isEnd()
                 , voteRecordRepository.existsByVoteOption_VoteAndUser(vote, user)
         );

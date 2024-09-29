@@ -109,7 +109,13 @@ public class StatusUtil {
 
     public static boolean isPostForm(Post post) { return post.getForm() != null; }
 
-    public static boolean isVoteOwner(User user , Vote vote){
+    public static boolean isPostOwner(Post post, User user){ return user.equals(post.getWriter());}
+
+    public static boolean isCommentOwner(Comment comment, User user){ return user.equals(comment.getWriter()); }
+
+    public static boolean isChildCommentOwner(ChildComment childComment, User user){ return user.equals(childComment.getWriter()); }
+
+    public static boolean isVoteOwner(Vote vote, User user){
         return user.equals(vote.getPost().getWriter());
     }
 }

@@ -239,6 +239,7 @@ public class ChildCommentService {
                 childComment,
                 getNumOfChildCommentLikes(childComment),
                 isChildCommentAlreadyLike(user, childComment.getId()),
+                StatusUtil.isChildCommentOwner(childComment, user),
                 StatusUtil.isUpdatable(childComment, user),
                 StatusUtil.isDeletable(childComment, user, board)
         );

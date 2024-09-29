@@ -32,6 +32,9 @@ public class CommentResponseDto {
     @Schema(description = "익명글 여부", example = "False")
     private Boolean isAnonymous;
 
+    @Schema(description = "댓글 작성자 여부", example = "False")
+    private Boolean isOwner;
+
     @Schema(description = "로그인한 유저가 댓글에 좋아요를 이미 누른지 여부", example = "False")
     private Boolean isCommentLike;
 
