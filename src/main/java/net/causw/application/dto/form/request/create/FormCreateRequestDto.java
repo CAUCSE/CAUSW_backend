@@ -28,7 +28,7 @@ public class FormCreateRequestDto {
             requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private List<RegisteredSemester> enrolledRegisteredSemesterList;
 
-    @Schema(description = "재학생 답변 허용 시, 학생회비 납부 필요 여부", example = "ture", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(description = "재학생 답변 허용 시, 학생회비 납부 필요 여부(isAllowedEnrolled가 true일 때 null이면 안 됩니다)", example = "ture", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private Boolean isNeedCouncilFeePaid;
 
     @NotNull(message = "휴학생 답변 허용 여부를 선택해 주세요.")
