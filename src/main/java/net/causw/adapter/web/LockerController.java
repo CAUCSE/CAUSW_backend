@@ -37,15 +37,15 @@ import java.util.List;
 public class LockerController {
     private final LockerService lockerService;
 
-    @GetMapping(value = "/{id}")
+    @GetMapping(value = "/{lockerId}")
     @Operation(summary = "사물함 조회 Api(완료)", description = "사물함 id를 바탕으로 사물함 정보를 가져오는 Api 입니다.")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     public LockerResponseDto findById(
-            @PathVariable("id") String id,
+            @PathVariable("lockerId") String lockerId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return this.lockerService.findById(id, userDetails.getUser());
+        return this.lockerService.findById(lockerId, userDetails.getUser());
     }
 
     @PostMapping(value = "")
@@ -60,49 +60,49 @@ public class LockerController {
         return this.lockerService.create(userDetails.getUser(), lockerCreateRequestDto);
     }
 
-    @PutMapping(value = "/{id}")
+    @PutMapping(value = "/{lockerId}")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "사물함 상태 update Api", description = "사물함 상태를 변경하는 Api입니다.")
     public LockerResponseDto update(
-            @PathVariable("id") String id,
+            @PathVariable("lockerId") String lockerId,
             @Valid @RequestBody LockerUpdateRequestDto lockerUpdateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.lockerService.update(
                 userDetails.getUser(),
-                id,
+                lockerId,
                 lockerUpdateRequestDto
         );
     }
 
-    @PutMapping(value = "/{id}/move")
+    @PutMapping(value = "/{lockerId}/move")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
             "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
-    @Operation(summary = "사물함 위치 이동 Api(완료)", description = "사물함의 위치를 이동시키는 Api입니다.")
+    @Operation(summary = "사물함 위치 이동 Api(완료)", description = "사물함의 위치(locker location)를 이동(변경)시키는 Api입니다. ex) 1번 사물함에 있어서 1층 1번 -> 2층 1번, 층만 바뀜")
     public LockerResponseDto move(
-            @PathVariable("id") String id,
+            @PathVariable("lockerId") String lockerId,
             @Valid @RequestBody LockerMoveRequestDto lockerMoveRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.lockerService.move(
                 userDetails.getUser(),
-                id,
+                lockerId,
                 lockerMoveRequestDto
         );
     }
 
-    @DeleteMapping(value = "/{id}")
+    @DeleteMapping(value = "/{lockerId}")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
             "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
     @Operation(summary = "사물함 삭제 Api(완료)", description = "사물함을 삭제하는 Api입니다.")
     public LockerResponseDto delete(
-            @PathVariable("id") String id,
+            @PathVariable("lockerId") String lockerId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return this.lockerService.delete(userDetails.getUser(), id);
+        return this.lockerService.delete(userDetails.getUser(), lockerId);
     }
 
     @GetMapping(value = "/locations")
@@ -166,12 +166,14 @@ public class LockerController {
         return this.lockerService.deleteLocation(userDetails.getUser(), locationId);
     }
 
-    @GetMapping(value = "/{id}/log")
+    @GetMapping(value = "/{lockerId}/log")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
             "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
-    public List<LockerLogResponseDto> findLog(@PathVariable String id) {
-        return this.lockerService.findLog(id);
+    public List<LockerLogResponseDto> findLog(
+            @PathVariable("lockerId") String lockerId
+    ) {
+        return this.lockerService.findLog(lockerId);
     }
 
     @PostMapping(value = "/expire")
