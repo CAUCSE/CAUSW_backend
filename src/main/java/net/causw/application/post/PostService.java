@@ -203,7 +203,7 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponseDto createPost(User creator, PostCreateRequestDto postCreateRequestDto, List<MultipartFile> attachImageList) {
+    public  PostCreateResponseDto createPost(User creator, PostCreateRequestDto postCreateRequestDto, List<MultipartFile> attachImageList) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         Set<Role> roles = creator.getRoles();
 
@@ -299,11 +299,11 @@ public class PostService {
             }
         }
 
-        return toPostResponseDtoExtended(postRepository.save(post), creator);
+        return toPostCreateResponseDto(postRepository.save(post));
     }
 
     @Transactional
-    public void createPostWithForm(
+    public  PostCreateResponseDto createPostWithForm(
             User creator,
             PostCreateWithFormRequestDto postCreateWithFormRequestDto,
             List<MultipartFile> attachImageList
@@ -379,7 +379,7 @@ public class PostService {
                 .consistOf(ConstraintValidator.of(post, this.validator))
                 .validate();
 
-        postRepository.save(post);
+        return toPostCreateResponseDto(postRepository.save(post));
     }
 
 
@@ -812,6 +812,9 @@ public class PostService {
 
 
     // DtoMapper methods
+    private PostCreateResponseDto toPostCreateResponseDto(Post post){
+        return PostDtoMapper.INSTANCE.toPostCreateResponseDto(post);
+    }
 
     private BoardPostsResponseDto toBoardPostsResponseDto(Board board, Set<Role> userRoles, boolean isFavorite, Page<PostsResponseDto> post) {
         List<String> roles = Arrays.asList(board.getCreateRoles().split(","));
