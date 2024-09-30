@@ -596,15 +596,6 @@ public class UserService {
                         userSignInRequestDto.getPassword()))
                 .validate();
 
-        if (user.getState() == UserState.AWAIT) {
-            userAdmissionRepository.findByUser_Id(user.getId()).orElseThrow(
-                    () -> new BadRequestException(
-                            ErrorCode.NO_APPLICATION,
-                            MessageUtil.NO_APPLICATION
-                    )
-            );
-        }
-
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
                 .validate();

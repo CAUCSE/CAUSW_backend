@@ -68,7 +68,6 @@ public class UserController {
      */
     @GetMapping(value = "/me")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "로그인한 사용자 정보 조회 API (완료)",
             description = "현재 로그인한 사용자의 정보를 조회합니다.")
     @ApiResponses({
