@@ -55,9 +55,10 @@ public class FormController {
     @Operation(summary = "신청서 조회", description = "신청서를 조회합니다.")
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     public FormResponseDto getForm(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable(name = "formId") String formId
     ) {
-        return formService.getFormById(formId);
+        return formService.getFormById(userDetails.getUser(), formId);
     }
 
     @PostMapping("/{formId}")
