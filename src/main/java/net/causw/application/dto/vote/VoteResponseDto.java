@@ -20,4 +20,5 @@ public class VoteResponseDto {
     private Boolean hasVoted;
     private Boolean isEnd;
     private Integer totalVoteCount;
+    private Integer totalUserCount;
 }

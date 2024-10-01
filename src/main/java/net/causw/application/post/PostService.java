@@ -1052,6 +1052,11 @@ public class PostService {
         List<VoteOptionResponseDto> voteOptionResponseDtoList = vote.getVoteOptions().stream()
                 .map(this::tovoteOptionResponseDto)
                 .collect(Collectors.toList());
+        Set<String> uniqueUserIds = voteOptionResponseDtoList.stream()
+                .flatMap(voteOptionResponseDto -> voteOptionResponseDto.getVoteUsers().stream())
+                .map(UserResponseDto::getId)
+                .collect(Collectors.toSet());
+        Integer totalUserCount = uniqueUserIds.size();
         return VoteDtoMapper.INSTANCE.toVoteResponseDto(
                 vote,
                 voteOptionResponseDtoList
@@ -1060,7 +1065,8 @@ public class PostService {
                 , voteRecordRepository.existsByVoteOption_VoteAndUser(vote, user)
                 , voteOptionResponseDtoList.stream()
                         .mapToInt(VoteOptionResponseDto::getVoteCount)
-                        .sum());
+                        .sum()
+                , totalUserCount);
     }
 
     private VoteOptionResponseDto tovoteOptionResponseDto(VoteOption voteOption) {

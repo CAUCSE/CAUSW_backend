@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @MeasureTime
@@ -132,6 +133,11 @@ public class VoteService {
         List<VoteOptionResponseDto> voteOptionResponseDtoList = vote.getVoteOptions().stream()
                 .map(this::tovoteOptionResponseDto)
                 .collect(Collectors.toList());
+        Set<String> uniqueUserIds = voteOptionResponseDtoList.stream()
+                .flatMap(voteOptionResponseDto -> voteOptionResponseDto.getVoteUsers().stream())
+                .map(UserResponseDto::getId)
+                .collect(Collectors.toSet());
+        Integer totalUserCount = uniqueUserIds.size();
         return VoteDtoMapper.INSTANCE.toVoteResponseDto(
                 vote,
                 voteOptionResponseDtoList
@@ -140,7 +146,8 @@ public class VoteService {
                 , voteRecordRepository.existsByVoteOption_VoteAndUser(vote, user)
                 , voteOptionResponseDtoList.stream()
                         .mapToInt(VoteOptionResponseDto::getVoteCount)
-                        .sum());
+                        .sum()
+                , totalUserCount);
     }
 
     private VoteOptionResponseDto tovoteOptionResponseDto(VoteOption voteOption) {
