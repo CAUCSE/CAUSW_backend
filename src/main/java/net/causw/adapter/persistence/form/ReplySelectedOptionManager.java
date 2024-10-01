@@ -16,7 +16,7 @@ public class ReplySelectedOptionManager {
     private List<Integer> selectedOptionList = new ArrayList<>();
 
     public String serialize() {
-        if (this.selectedOptionList.isEmpty()) {
+        if (this.selectedOptionList == null || this.selectedOptionList.isEmpty()) {
             return null;
         }
         StringBuilder sb = new StringBuilder();
@@ -28,7 +28,7 @@ public class ReplySelectedOptionManager {
     }
 
     public void deserialize(String selectedOptionString) {
-        if (selectedOptionString.isBlank() || selectedOptionString.isEmpty()) {
+        if (selectedOptionString == null || selectedOptionString.isBlank() || selectedOptionString.isEmpty()) {
             this.selectedOptionList.clear();
             return;
         }
@@ -41,7 +41,7 @@ public class ReplySelectedOptionManager {
     public static ReplySelectedOptionManager fromIntegerList(
             List<Integer> selectedOptionList
     ) {
-        if (selectedOptionList.isEmpty()) {
+        if (selectedOptionList == null || selectedOptionList.isEmpty()) {
             return new ReplySelectedOptionManager();
         }
         selectedOptionList.sort(Integer::compareTo);
@@ -51,7 +51,7 @@ public class ReplySelectedOptionManager {
     public static ReplySelectedOptionManager fromString(
             String selectedOptionString
     ) {
-        if (selectedOptionString.isBlank() || selectedOptionString.isEmpty()) {
+        if (selectedOptionString == null || selectedOptionString.isBlank() || selectedOptionString.isEmpty()) {
             return new ReplySelectedOptionManager();
         }
         ReplySelectedOptionManager replySelectedOptionManager = new ReplySelectedOptionManager();

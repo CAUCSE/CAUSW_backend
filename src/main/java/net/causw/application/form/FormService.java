@@ -109,8 +109,10 @@ public class FormService {
         return true;
     }
 
-    public FormResponseDto getFormById(String formId) {
+    public FormResponseDto getFormById(User user, String formId) {
         Form form = getForm(formId);
+
+        validCanAccessPost(user, form);
 
         return this.toFormResponseDto(form);
     }
@@ -555,6 +557,10 @@ public class FormService {
     }
 
     private void validCanAccessPost(User writer, Form form) {
+        if (form.getCircle() != null) {
+            return;
+        }
+
         Post post = getPost(form);
 
         Board board = post.getBoard();
