@@ -1,13 +1,11 @@
 package net.causw.application.dto.util.dtoMapper;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.form.response.FormResponseDto;
-import net.causw.application.dto.post.BoardPostsResponseDto;
-import net.causw.application.dto.post.PostContentDto;
-import net.causw.application.dto.post.PostResponseDto;
-import net.causw.application.dto.post.PostsResponseDto;
+import net.causw.application.dto.post.*;
 import net.causw.application.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 import net.causw.application.dto.vote.VoteResponseDto;
 import net.causw.domain.model.enums.user.Role;
@@ -60,6 +58,7 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "numFavorite", source = "numPostFavorite")
     @Mapping(target = "isPostLike", source = "isPostLike")
     @Mapping(target = "isPostFavorite", source = "isPostFavorite")
+    @Mapping(target = "isOwner", source = "isOwner")
     @Mapping(target = "updatable", source = "updatable")
     @Mapping(target = "deletable", source = "deletable")
     @Mapping(target = "writerProfileImage", source = "post.writer.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
@@ -75,6 +74,7 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
             Long numPostFavorite,
             Boolean isPostLike,
             Boolean isPostFavorite,
+            Boolean isOwner,
             Boolean updatable,
             Boolean deletable,
             FormResponseDto formResponseDto,
@@ -91,5 +91,6 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "boardName", source = "board.name")
     BoardPostsResponseDto toBoardPostsResponseDto(Board board, Set<Role> userRole, Boolean writable, Boolean isFavorite, Page<PostsResponseDto> post);
 
-
+    @Mapping(target="id", source = "post.id")
+    PostCreateResponseDto toPostCreateResponseDto(Post post);
 }

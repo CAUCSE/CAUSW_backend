@@ -103,13 +103,27 @@ public class StatusUtil {
         return user.getRoles().contains(Role.ADMIN) || user.getRoles().contains(Role.PRESIDENT) || user.getRoles().contains(Role.VICE_PRESIDENT);
     }
 
-    public static boolean isPostVote(Post post){
+    public static boolean isPostVote(Post post) {
         return post.getVote() != null;
     }
 
-    public static boolean isPostForm(Post post) { return post.getForm() != null; }
+    public static boolean isPostForm(Post post) {
+        return post.getForm() != null;
+    }
 
-    public static boolean isVoteOwner(User user , Vote vote){
+    public static boolean isVoteOwner(Vote vote , User user) {
         return user.equals(vote.getPost().getWriter());
+    }
+
+    public static boolean isPostOwner(Post post, User user) {
+        return user.equals(post.getWriter());
+    }
+
+    public static boolean isCommentOwner(Comment comment, User user) {
+        return user.equals(comment.getWriter());
+    }
+
+    public static boolean isChildCommentOwner(ChildComment childComment, User user) {
+        return user.equals(childComment.getWriter());
     }
 }

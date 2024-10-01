@@ -206,6 +206,7 @@ public class CommentService {
                 childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
                 getNumOfCommentLikes(comment),
                 isCommentAlreadyLike(user, comment.getId()),
+                StatusUtil.isCommentOwner(comment, user),
                 comment.getChildCommentList().stream()
                         .map(childComment -> toChildCommentResponseDto(childComment, user, board))
                         .collect(Collectors.toList()),
@@ -219,6 +220,7 @@ public class CommentService {
                 childComment,
                 getNumOfChildCommentLikes(childComment),
                 isChildCommentAlreadyLike(user, childComment.getId()),
+                StatusUtil.isChildCommentOwner(childComment, user),
                 StatusUtil.isUpdatable(childComment, user),
                 StatusUtil.isDeletable(childComment, user, board)
         );

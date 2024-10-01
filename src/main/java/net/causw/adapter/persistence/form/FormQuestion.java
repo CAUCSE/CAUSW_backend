@@ -3,8 +3,8 @@ package net.causw.adapter.persistence.form;
 import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
+import net.causw.application.dto.form.request.create.QuestionCreateRequestDto;
 import net.causw.domain.model.enums.form.QuestionType;
-import org.hibernate.annotations.ColumnDefault;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,8 +31,8 @@ public class FormQuestion extends BaseEntity {
     private String questionText;
 
     @Column(name = "is_multiple", nullable = false)
-    @ColumnDefault("false")
-    private Boolean isMultiple;
+    @Builder.Default
+    private Boolean isMultiple = false;
 
     @OneToMany(mappedBy = "formQuestion", cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, orphanRemoval = true)
     @Builder.Default
@@ -43,16 +43,29 @@ public class FormQuestion extends BaseEntity {
     @JoinColumn(name = "form_id", nullable = false)
     private Form form;
 
-    public static FormQuestion of(Integer number, QuestionType questionType, String questionText, Boolean isMultiple, List<FormQuestionOption> formQuestionOptionList, Form form) {
+    public static FormQuestion createObjectiveQuestion(
+            Integer number,
+            QuestionCreateRequestDto questionCreateRequestDto,
+            List<FormQuestionOption> formQuestionOptionList
+    ) {
         return FormQuestion.builder()
                 .number(number)
-                .questionType(questionType)
-                .questionText(questionText)
-                .isMultiple(isMultiple)
+                .questionType(questionCreateRequestDto.getQuestionType())
+                .questionText(questionCreateRequestDto.getQuestionText())
+                .isMultiple(questionCreateRequestDto.getIsMultiple())
                 .formQuestionOptionList(formQuestionOptionList)
-                .form(form)
                 .build();
     }
 
+    public static FormQuestion createSubjectQuestion(
+            Integer number,
+            QuestionCreateRequestDto questionCreateRequestDto
+    ) {
+        return FormQuestion.builder()
+                .number(number)
+                .questionType(questionCreateRequestDto.getQuestionType())
+                .questionText(questionCreateRequestDto.getQuestionText())
+                .build();
+    }
 
 }

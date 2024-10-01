@@ -88,6 +88,7 @@ public interface CircleDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "leaderId", source = "leader.id")
     @Mapping(target = "leaderName", source = "leader.name")
     @Mapping(target = "createdAt", source = "circle.createdAt")
+    @Mapping(target = "mainImage", source = "circle.circleMainImage", qualifiedByName = "mapUuidFileToFileUrl")
     CircleResponseDto toCircleResponseDto(Circle circle, User leader);
 
     @Mapping(target = "email", source = "user.email")

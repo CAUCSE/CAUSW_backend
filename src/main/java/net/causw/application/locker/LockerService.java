@@ -49,7 +49,9 @@ import java.util.stream.Collectors;
 @MeasureTime
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class LockerService {
+
     private final LockerRepository lockerRepository;
     private final UserRepository userRepository;
     private final LockerLogRepository lockerLogRepository;
@@ -58,7 +60,6 @@ public class LockerService {
     private final LockerActionFactory lockerActionFactory;
     private final CommonService commonService;
 
-    @Transactional(readOnly = true)
     public LockerResponseDto findById(String id, User user) {
         return LockerResponseDto.of(lockerRepository.findByIdForRead(id).orElseThrow(
                         () -> new BadRequestException(
@@ -124,7 +125,9 @@ public class LockerService {
                 .validate();
 
         locker = this.lockerActionFactory
-                .getLockerAction(LockerLogAction.of(lockerUpdateRequestDto.getAction()))
+                .getLockerAction(LockerLogAction.of(
+                        lockerUpdateRequestDto.getAction()
+                ))
                 .updateLockerDomainModel(
                         locker,
                         user,
@@ -132,8 +135,17 @@ public class LockerService {
                         commonService
                 ).orElseThrow(() -> new InternalServerException(ErrorCode.LOCKER_ACTION_ERROR, MessageUtil.LOCKER_ACTION_ERROR));
 
-        LockerLog lockerLog = LockerLog.of(locker.getLockerNumber(), locker.getLocation().getName(), user.getEmail(), user.getName(), LockerLogAction.of(lockerUpdateRequestDto.getAction()),
-                lockerUpdateRequestDto.getMessage().orElse(lockerUpdateRequestDto.getAction()));
+        LockerLog lockerLog = LockerLog.of(
+                locker.getLockerNumber(),
+                locker.getLocation().getName(),
+                user.getEmail(),
+                user.getName(),
+                LockerLogAction.of(
+                        lockerUpdateRequestDto.getAction()
+                ),
+                lockerUpdateRequestDto.getMessage()
+                        .orElse(lockerUpdateRequestDto.getAction())
+        );
 
         lockerRepository.save(locker);
         lockerLogRepository.save(lockerLog);
@@ -153,7 +165,7 @@ public class LockerService {
                 MessageUtil.LOCKER_NOT_FOUND
         ));
 
-        LockerLocation lockerLocation = lockerLocationRepository.findById(lockerMoveRequestDto.getLocationId())
+        LockerLocation lockerLocation = lockerLocationRepository.findById(lockerMoveRequestDto.getLockerLocationId())
                 .orElseThrow(
                         () -> new BadRequestException(
                                 ErrorCode.ROW_DOES_NOT_EXIST,
@@ -175,7 +187,6 @@ public class LockerService {
         return LockerResponseDto.of(locker, user);
     }
 
-    @Transactional(readOnly = true)
     public Optional<Locker> findByUserId(String userId) {
         return lockerRepository.findByUser_Id(userId);
     }
@@ -205,7 +216,6 @@ public class LockerService {
         return LockerResponseDto.of(locker, user);
     }
 
-    @Transactional(readOnly = true)
     public LockersResponseDto findByLocation(String locationId, User user) {
         LockerLocation lockerLocation = lockerLocationRepository.findById(locationId)
                 .orElseThrow(
@@ -224,7 +234,6 @@ public class LockerService {
         );
     }
 
-    @Transactional(readOnly = true)
     public LockerLocationsResponseDto findAllLocation(User user) {
         LockerResponseDto myLocker = null;
         if (!user.getRoles().contains(Role.ADMIN))
@@ -351,7 +360,6 @@ public class LockerService {
         return LockerLocationResponseDto.of(lockerLocation, 0L, 0L);
     }
 
-    @Transactional(readOnly = true)
     public List<LockerLogResponseDto> findLog(String id) {
         Locker locker = lockerRepository.findByIdForRead(id).orElseThrow(
                 () -> new BadRequestException(
@@ -416,6 +424,9 @@ public class LockerService {
         createLockerByLockerLocationAndEndLockerNumber(lockerLocationThirdFloor, validatorBucket, user, 168L);
         createLockerByLockerLocationAndEndLockerNumber(lockerLocationFourthFloor, validatorBucket, user, 32L);
     }
+
+
+    // private methods
 
     private void createLockerByLockerLocationAndEndLockerNumber(LockerLocation lockerLocationSecondFloor, ValidatorBucket validatorBucket, User user, Long endNum) {
         for (Long lockerNumber = 1L; lockerNumber <= endNum; lockerNumber++) {

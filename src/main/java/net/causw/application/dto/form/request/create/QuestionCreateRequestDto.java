@@ -13,17 +13,16 @@ import java.util.List;
 public class QuestionCreateRequestDto {
 
     @NotBlank(message = "질문 내용을 입력해 주세요.")
-    @Schema(description = "질문 종류", example = "SUBJECTIVE")
+    @Schema(description = "질문 종류", example = "SUBJECTIVE", requiredMode = Schema.RequiredMode.REQUIRED)
     private QuestionType questionType;
 
-    @NotBlank(message = "질문 내용을 입력해 주세요.")
-    @Schema(description = "질문 내용", example = "1번 문제입니다.")
+    @NotNull(message = "질문 내용을 입력해 주세요.")
+    @Schema(description = "질문 내용, 없으면 공백 문자열이라도 보내줘야 합니다.", example = "1번 문제입니다.", requiredMode = Schema.RequiredMode.REQUIRED)
     private String questionText;
 
-    @NotNull(message = "복수 정답 여부를 선택해 주세요.")
-    @Schema(description = "복수 정답 여부(객관식일 때만)", defaultValue = "false")
+    @Schema(description = "복수 정답 여부(객관식일 때만)", defaultValue = "false", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private Boolean isMultiple;
 
-    @Schema(description = "객관식")
+    @Schema(description = "객관식", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private List<OptionCreateRequestDto> optionCreateRequestDtoList;
 }

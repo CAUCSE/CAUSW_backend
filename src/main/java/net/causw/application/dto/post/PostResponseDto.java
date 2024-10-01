@@ -53,6 +53,9 @@ public class PostResponseDto {
     @Schema(description = "질문글 여부", example = "False")
     private Boolean isQuestion;
 
+    @Schema(description = "게시글 작성자 여부", example = "False")
+    private Boolean isOwner;
+
     @Schema(description = "로그인한 사용자가 좋아요를 이미 누른지 여부", example = "False")
     private Boolean isPostLike;
 

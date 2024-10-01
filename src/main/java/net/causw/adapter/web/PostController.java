@@ -149,12 +149,12 @@ public class PostController {
             @ApiResponse(responseCode = "4102", description = "동아리에서 추방된 사용자입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
             @ApiResponse(responseCode = "4107", description = "사용자가 해당 동아리의 동아리장이 아닙니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
     })
-    public void createPost(
+    public PostCreateResponseDto createPost(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestPart(value = "postCreateRequestDto") @Valid PostCreateRequestDto postCreateRequestDto,
             @RequestPart(value = "attachImageList", required = false) List<MultipartFile> attachImageList
     ) {
-        postService.createPost(userDetails.getUser(), postCreateRequestDto, attachImageList);
+        return this.postService.createPost(userDetails.getUser(), postCreateRequestDto, attachImageList);
     }
 
     @PostMapping("/form")
@@ -180,12 +180,12 @@ public class PostController {
             @ApiResponse(responseCode = "4102", description = "동아리에서 추방된 사용자입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
             @ApiResponse(responseCode = "4107", description = "사용자가 해당 동아리의 동아리장이 아닙니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
     })
-    public void createPostWithForm(
+    public PostCreateResponseDto createPostWithForm(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestPart(value = "postCreateWithFormRequestDto") @Valid PostCreateWithFormRequestDto postCreateWithFormRequestDto,
             @RequestPart(value = "attachImageList", required = false) List<MultipartFile> attachImageList
     ) {
-        postService.createPostWithForm(userDetails.getUser(), postCreateWithFormRequestDto, attachImageList);
+        return this.postService.createPostWithForm(userDetails.getUser(), postCreateWithFormRequestDto, attachImageList);
     }
 
     @DeleteMapping(value = "/{id}")

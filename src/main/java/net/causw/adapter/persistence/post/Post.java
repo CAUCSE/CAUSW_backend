@@ -108,7 +108,9 @@ public class Post extends BaseEntity {
 
     public void setIsDeleted(Boolean isDeleted) {
         this.isDeleted = isDeleted;
-        this.form.setIsDeleted(isDeleted);
+        if(form!=null){
+            this.form.setIsDeleted(isDeleted);
+        }
     }
 
     private void setPostAttachFileList(List<PostAttachImage> postAttachImageList) {

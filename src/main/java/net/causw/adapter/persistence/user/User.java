@@ -129,9 +129,8 @@ public class User extends BaseEntity {
                 .build();
     }
 
-    public void update(String nickname, AcademicStatus academicStatus, UserProfileImage userProfileImage) {
+    public void update(String nickname, UserProfileImage userProfileImage) {
         this.nickname = nickname;
-        this.academicStatus = academicStatus;
         this.userProfileImage = userProfileImage;
     }
 

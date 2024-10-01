@@ -29,14 +29,10 @@ import java.util.UUID;
 public class UuidFileService extends StorageManager {
 
     private final UuidFileRepository uuidFileRepository;
-    private final CalendarAttachImageRepository calendarAttachImageRepository;
-    private final CircleMainImageRepository circleMainImageRepository;
 
-    public UuidFileService(AmazonS3Client amazonS3Client, UuidFileRepository uuidFileRepository, CalendarAttachImageRepository calendarAttachImageRepository, CircleMainImageRepository circleMainImageRepository) {
+    public UuidFileService(AmazonS3Client amazonS3Client, UuidFileRepository uuidFileRepository) {
         super(amazonS3Client);
         this.uuidFileRepository = uuidFileRepository;
-        this.calendarAttachImageRepository = calendarAttachImageRepository;
-        this.circleMainImageRepository = circleMainImageRepository;
     }
 
     public UuidFile findUuidFileById(@NotBlank String id) {

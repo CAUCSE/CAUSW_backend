@@ -10,10 +10,12 @@ import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
 import java.util.Optional;
+
 @MeasureTime
 @Service
 @RequiredArgsConstructor
 public class CommonService {
+
     private final TextFieldRepository textFieldRepository;
     private final FlagRepository flagRepository;
 

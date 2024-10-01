@@ -98,41 +98,27 @@ public class UserAcademicRecordApplicationService {
     }
 
     public UserAcademicRecordInfoResponseDto getUserAcademicRecordInfo(String userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND
-                ));
+        User user = getUser(userId);
 
-        List<UserAcademicRecordLog> userAcademicRecordLogList = userAcademicRecordLogRepository.findAllByTargetUserStudentIdAndTargetUserEmailAndTargetUserName(
-                user.getStudentId(),
-                user.getEmail(),
-                user.getName()
-        );
-
-        return toUserAcademicRecordInfoResponseDto(user, userAcademicRecordLogList);
+        return getUserAcademicRecordInfoResponseDto(user);
     }
 
     @Transactional
-    public Void updateUserAcademicRecordNote(String userId, String note) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND
-                ));
+    public UserAcademicRecordInfoResponseDto updateUserAcademicRecordNote(String userId, String note) {
+        User user = getUser(userId);
 
         user.setAcademicStatusNote(note);
 
         userRepository.save(user);
 
-        return null;
+        return getUserAcademicRecordInfoResponseDto(user);
     }
 
 
     public UserAcademicRecordApplicationInfoResponseDto getUserAcademicRecordApplicationInfo(String userId, String applicationId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND
-                ));
+        User user = getUser(userId);
 
-        UserAcademicRecordApplication userAcademicRecordApplication = userAcademicRecordApplicationRepository.findById(applicationId)
-                .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_ACADEMIC_RECORD_APPLICATION_NOT_FOUND
-                ));
+        UserAcademicRecordApplication userAcademicRecordApplication = getUserAcademicRecordApplication(applicationId);
 
         if (!userAcademicRecordApplication.getUser().getId().equals(user.getId())) {
             throw new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_ACADEMIC_RECORD_APPLICATION_AND_USER_NOT_MATCH);
@@ -141,21 +127,13 @@ public class UserAcademicRecordApplicationService {
         return toUserAcademicRecordApplicationResponseDto(userAcademicRecordApplication);
     }
 
-    @Transactional
-    public Void updateUserAcademicStatus(User controllerUser, UpdateUserAcademicStatusRequestDto updateUserAcademicStatusRequestDto) {
-        if (updateUserAcademicStatusRequestDto.getTargetAcademicStatus().equals(AcademicStatus.ENROLLED)) {
-            if (updateUserAcademicStatusRequestDto.getTargetCompletedSemester() == null) {
-                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.TARGET_CURRENT_COMPLETED_SEMESTER_NOT_EXIST);
-            }
-        } else if (updateUserAcademicStatusRequestDto.getTargetAcademicStatus().equals(AcademicStatus.GRADUATED)) {
-            if (updateUserAcademicStatusRequestDto.getTargetGraduationYear() == null || updateUserAcademicStatusRequestDto.getTargetGraduationType() == null) {
-                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.GRADUATION_INFORMATION_NOT_EXIST);
-            }
-        }
 
-        User targetUser = userRepository.findById(updateUserAcademicStatusRequestDto.getTargetUserId())
-                .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND
-                ));
+
+    @Transactional
+    public UserAcademicRecordInfoResponseDto updateUserAcademicStatus(User controllerUser, UpdateUserAcademicStatusRequestDto updateUserAcademicStatusRequestDto) {
+        validUpdateUserAcademicStatusRequestDto(updateUserAcademicStatusRequestDto);
+
+        User targetUser = getUser(updateUserAcademicStatusRequestDto.getTargetUserId());
 
         targetUser.setAcademicStatus(updateUserAcademicStatusRequestDto.getTargetAcademicStatus());
 
@@ -169,27 +147,23 @@ public class UserAcademicRecordApplicationService {
         userRepository.save(targetUser);
         userAcademicRecordLogRepository.save(userAcademicRecordLog);
 
-        return null;
+        return getUserAcademicRecordInfoResponseDto(targetUser);
     }
 
     @Transactional
-    public Void updateUserAcademicRecordApplicationStatus(User controllerUser, UpdateUserAcademicRecordApplicationStateRequestDto updateUserAcademicRecordApplicationStateRequestDto) {
-        User targetUser = userRepository.findById(updateUserAcademicRecordApplicationStateRequestDto.getTargetUserId())
-                .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND
-                ));
+    public UserAcademicRecordApplicationResponseDto updateUserAcademicRecordApplicationStatus(User controllerUser, UpdateUserAcademicRecordApplicationStateRequestDto updateUserAcademicRecordApplicationStateRequestDto) {
+        User targetUser = getUser(updateUserAcademicRecordApplicationStateRequestDto.getTargetUserId());
 
-        UserAcademicRecordApplication userAcademicRecordApplication = userAcademicRecordApplicationRepository.findById(updateUserAcademicRecordApplicationStateRequestDto.getApplicationId())
-                .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_ACADEMIC_RECORD_APPLICATION_NOT_FOUND
-                ));
+        UserAcademicRecordApplication userAcademicRecordApplication = getUserAcademicRecordApplication(updateUserAcademicRecordApplicationStateRequestDto.getApplicationId());
 
-        if (!userAcademicRecordApplication.getUser().getId().equals(targetUser.getId())) {
+        if (!userAcademicRecordApplication.getUser().equals(targetUser)) {
             throw new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_ACADEMIC_RECORD_APPLICATION_AND_USER_NOT_MATCH);
         }
 
-        userAcademicRecordApplication.updateApplicationRequestStatus(
-                updateUserAcademicRecordApplicationStateRequestDto.getTargetAcademicRecordRequestStatus(),
-                updateUserAcademicRecordApplicationStateRequestDto.getRejectMessage()
-        );
+        userAcademicRecordApplication.setAcademicRecordRequestStatus(updateUserAcademicRecordApplicationStateRequestDto.getTargetAcademicRecordRequestStatus());
+        if (updateUserAcademicRecordApplicationStateRequestDto.getTargetAcademicRecordRequestStatus().equals(AcademicRecordRequestStatus.REJECT)) {
+            userAcademicRecordApplication.setRejectMessage(updateUserAcademicRecordApplicationStateRequestDto.getRejectMessage());
+        }
 
         if (updateUserAcademicRecordApplicationStateRequestDto.getTargetAcademicRecordRequestStatus().equals(AcademicRecordRequestStatus.ACCEPT)) {
             targetUser.setAcademicStatus(userAcademicRecordApplication.getTargetAcademicStatus());
@@ -201,46 +175,39 @@ public class UserAcademicRecordApplicationService {
 
         UserAcademicRecordLog userAcademicRecordLog = UserAcademicRecordLog.createWithApplication(
                 controllerUser,
-                targetUser,
-                userAcademicRecordApplication.getTargetAcademicStatus(),
-                userAcademicRecordApplication,
-                updateUserAcademicRecordApplicationStateRequestDto.getTargetAcademicRecordRequestStatus(),
-                userAcademicRecordApplication.getNote(),
-                updateUserAcademicRecordApplicationStateRequestDto.getRejectMessage()
+                userAcademicRecordApplication
         );
 
         userRepository.save(targetUser);
         userAcademicRecordApplicationRepository.save(userAcademicRecordApplication);
         userAcademicRecordLogRepository.save(userAcademicRecordLog);
 
-        return null;
+        return toUserAcademicRecordApplicationResponseDto(userAcademicRecordLog);
     }
 
+
+
     @Transactional
-    public Void createUserAcademicRecordApplication(
+    public UserAcademicRecordApplicationResponseDto createUserAcademicRecordApplication(
             User user,
             CreateUserAcademicRecordApplicationRequestDto createUserAcademicRecordApplicationRequestDto,
             List<MultipartFile> imageFileList
     ) {
-        List<UuidFile> uuidFileList = (imageFileList.isEmpty()) ?
-                new ArrayList<>() :
-                uuidFileService.saveFileList(imageFileList, FilePath.USER_ACADEMIC_RECORD_APPLICATION);
+        validCreateUserAcademicRecordApplicationRequestDto(createUserAcademicRecordApplicationRequestDto, imageFileList);
+
+        user = getUser(user.getId());
 
         UserAcademicRecordLog userAcademicRecordLog;
+        UserAcademicRecordApplication userAcademicRecordApplication;
 
-        // User 엔티티가 영속성 컨텍스트에 없는 경우, merge로 다시 연결
-        if (user != null) {
-            user = userRepository.save(user);
-        } else {
-            throw new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND);
-        }
 
+        // 대상 사용자의 변경 타겟 학적 상태가 재학인 경우, 이미지 파일을 저장하고, 학적 정보 신청서를 생성
         if (createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus().equals(AcademicStatus.ENROLLED)) {
-            if (createUserAcademicRecordApplicationRequestDto.getTargetCompletedSemester() == null) {
-                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.TARGET_CURRENT_COMPLETED_SEMESTER_NOT_EXIST);
-            }
-            UserAcademicRecordApplication userAcademicRecordApplication = UserAcademicRecordApplication.of(
+            List<UuidFile> uuidFileList = uuidFileService.saveFileList(imageFileList, FilePath.USER_ACADEMIC_RECORD_APPLICATION);
+
+            userAcademicRecordApplication = UserAcademicRecordApplication.createWithImage(
                     user,
+                    AcademicRecordRequestStatus.AWAIT,
                     createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus(),
                     createUserAcademicRecordApplicationRequestDto.getTargetCompletedSemester(),
                     createUserAcademicRecordApplicationRequestDto.getNote(),
@@ -251,21 +218,12 @@ public class UserAcademicRecordApplicationService {
 
             userAcademicRecordLog = UserAcademicRecordLog.createWithApplication(
                     user,
-                    user,
-                    createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus(),
                     userAcademicRecordApplication,
-                    AcademicRecordRequestStatus.AWAIT,
-                    StaticValue.USER_APPLIED + createUserAcademicRecordApplicationRequestDto.getNote(),
-                    null
+                    StaticValue.USER_APPLIED + createUserAcademicRecordApplicationRequestDto.getNote()
             );
         } else {
-            if (createUserAcademicRecordApplicationRequestDto.getNote() != null) {
-                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.USER_NOTE_NOW_ALLOWED);
-            }
+            // 대상 사용자의 변경 타겟 학적 상태가 졸업인 경우, 학적 정보 신청서를 생성
             if (createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus().equals(AcademicStatus.GRADUATED)) {
-                if (createUserAcademicRecordApplicationRequestDto.getGraduationYear() == null || createUserAcademicRecordApplicationRequestDto.getGraduationType() == null) {
-                    throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.GRADUATION_INFORMATION_NOT_EXIST);
-                }
                 user.setGraduationYear(createUserAcademicRecordApplicationRequestDto.getGraduationYear());
                 user.setGraduationType(createUserAcademicRecordApplicationRequestDto.getGraduationType());
                 userAcademicRecordLog = UserAcademicRecordLog.createWithGraduation(
@@ -276,7 +234,9 @@ public class UserAcademicRecordApplicationService {
                         createUserAcademicRecordApplicationRequestDto.getGraduationType(),
                         StaticValue.USER_APPLIED
                 );
-            } else {
+            }
+            // 대상 사용자의 변경 타겟 학적 상태가 미정인 경우, 학적 정보 신청서를 생성
+            else {
                 userAcademicRecordLog = UserAcademicRecordLog.create(
                         user,
                         user,
@@ -284,13 +244,16 @@ public class UserAcademicRecordApplicationService {
                         StaticValue.USER_APPLIED
                 );
             }
+
+            // 대상 사용자의 변경 타겟 학적 상태를 변경
             user.setAcademicStatus(createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus());
+
+            userRepository.save(user);
         }
 
-        userRepository.save(user);
         userAcademicRecordLogRepository.save(userAcademicRecordLog);
 
-        return null;
+        return toUserAcademicRecordApplicationResponseDto(userAcademicRecordLog);
     }
 
     @Transactional
@@ -299,6 +262,7 @@ public class UserAcademicRecordApplicationService {
             user.setAcademicStatus(AcademicStatus.UNDETERMINED);
             userRepository.save(user);
         }
+
         return user.getAcademicStatus();
     }
 
@@ -315,31 +279,53 @@ public class UserAcademicRecordApplicationService {
     }
 
     @Transactional
-    public Void updateUserAcademicRecordApplication(
+    public UserAcademicRecordApplicationResponseDto updateUserAcademicRecordApplication(
             User user,
             CreateUserAcademicRecordApplicationRequestDto createUserAcademicRecordApplicationRequestDto,
             List<MultipartFile> imageFileList
     ) {
         // User 엔티티가 영속성 컨텍스트에 없는 경우, merge로 다시 연결
-        if (user != null) {
-            user = userRepository.save(user);
-        }
+        user = getUser(user.getId());
 
         UserAcademicRecordApplication priorUserAcademicRecordApplication = getRecentAwaitOrRejectUserAcademicRecordApplication(user);
 
         if (!priorUserAcademicRecordApplication.getAcademicRecordRequestStatus().equals(AcademicRecordRequestStatus.REJECT)) {
-            priorUserAcademicRecordApplication.updateApplicationRequestStatus(
-                    AcademicRecordRequestStatus.CLOSE,
-                    StaticValue.USER_CLOSED
-            );
+            priorUserAcademicRecordApplication.setAcademicRecordRequestStatus(AcademicRecordRequestStatus.CLOSE);
+            priorUserAcademicRecordApplication.setRejectMessage(StaticValue.USER_CLOSED);
         }
 
-        createUserAcademicRecordApplication(user, createUserAcademicRecordApplicationRequestDto, imageFileList);
-
-        return null;
+        return createUserAcademicRecordApplication(user, createUserAcademicRecordApplicationRequestDto, imageFileList);
     }
 
     // private method
+
+    // Entity Repository private method
+    private User getUser(String userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND));
+    }
+
+    private UserAcademicRecordInfoResponseDto getUserAcademicRecordInfoResponseDto(User user) {
+        return toUserAcademicRecordInfoResponseDto(
+                user,
+                getUserAcademicRecordLogList(user)
+        );
+    }
+
+    private List<UserAcademicRecordLog> getUserAcademicRecordLogList(User user) {
+        return userAcademicRecordLogRepository.findAllByTargetUserStudentIdAndTargetUserEmailAndTargetUserName(
+                user.getStudentId(),
+                user.getEmail(),
+                user.getName()
+        );
+    }
+
+    private UserAcademicRecordApplication getUserAcademicRecordApplication(String applicationId) {
+        return userAcademicRecordApplicationRepository.findById(applicationId)
+                .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_ACADEMIC_RECORD_APPLICATION_NOT_FOUND
+                ));
+    }
+
     private Semester getCurrentSemester() {
         List<Semester> activeSemesterList = semesterRepository.findAllByIsCurrent(true);
         if (activeSemesterList.isEmpty()) {
@@ -371,6 +357,46 @@ public class UserAcademicRecordApplicationService {
         }
 
         return userAcademicRecordApplication;
+    }
+
+    // Validation private method
+    private static void validUpdateUserAcademicStatusRequestDto(UpdateUserAcademicStatusRequestDto updateUserAcademicStatusRequestDto) {
+        // 대상 사용자의 변경 타겟 학적 상태가 재학인 경우, 현재 학기가 필수 입력 값
+        if (updateUserAcademicStatusRequestDto.getTargetAcademicStatus().equals(AcademicStatus.ENROLLED)) {
+            if (updateUserAcademicStatusRequestDto.getTargetCompletedSemester() == null) {
+                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.TARGET_CURRENT_COMPLETED_SEMESTER_NOT_EXIST);
+            }
+        }
+        // 대상 사용자의 변경 타겟 학적 상태가 졸업인 경우, 졸업 년도와 졸업 유형이 필수 입력 값
+        else if (updateUserAcademicStatusRequestDto.getTargetAcademicStatus().equals(AcademicStatus.GRADUATED)) {
+            if (updateUserAcademicStatusRequestDto.getTargetGraduationYear() == null || updateUserAcademicStatusRequestDto.getTargetGraduationType() == null) {
+                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.GRADUATION_INFORMATION_NOT_EXIST);
+            }
+        }
+    }
+
+    private void validCreateUserAcademicRecordApplicationRequestDto(
+            CreateUserAcademicRecordApplicationRequestDto createUserAcademicRecordApplicationRequestDto,
+            List<MultipartFile> imageFileList
+    ) {
+        // 대상 사용자의 변경 타겟 학적 상태가 재학인 경우, 현재 학기가 필수 입력 값이며 1 이상이여야 하고, 이미지 파일이 필수 입력 값
+        if (createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus().equals(AcademicStatus.ENROLLED)) {
+            if (createUserAcademicRecordApplicationRequestDto.getTargetCompletedSemester() == null ||
+                    createUserAcademicRecordApplicationRequestDto.getTargetCompletedSemester() < 1
+            ) {
+                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.TARGET_CURRENT_COMPLETED_SEMESTER_NOT_EXIST);
+            }
+
+            if (imageFileList == null || imageFileList.isEmpty()) {
+                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.IMAGE_MUST_NOT_NULL);
+            }
+        }
+        // 대상 사용자의 변경 타겟 학적 상태가 졸업인 경우, 졸업 년도와 졸업 유형이 필수 입력 값
+        else if (createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus().equals(AcademicStatus.GRADUATED)) {
+            if (createUserAcademicRecordApplicationRequestDto.getGraduationYear() == null || createUserAcademicRecordApplicationRequestDto.getGraduationType() == null) {
+                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.GRADUATION_INFORMATION_NOT_EXIST);
+            }
+        }
     }
 
     // DTO Mapper private method

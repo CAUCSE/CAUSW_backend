@@ -15,7 +15,11 @@ public class MessageUtil {
     public static final String DOES_NOT_HAVE_PERMISSION = "권한이 없습니다.";
 
     // Form
+    public static final String IS_NEED_COUNCIL_FEE_REQUIRED = "학생회비 납부 여부를 선택해 주세요.";
+    public static final String INVALID_REGISTERED_SEMESTER_INFO = "재학/휴학생 답변 가능을 선택했다면 답변할 수 있는 등록 완료 학기에 대한 정보가 필요합니다.";
     public static final String INVALID_QUESTION_INFO = "유효하지 않은 문항 정보입니다.";
+    public static final String EMPTY_QUESTION_INFO = "문항 정보가 비어있습니다.";
+    public static final String EMPTY_OPTION_INFO = "문항 옵션 정보가 비어있습니다.";
     public static final String FORM_NOT_FOUND = "신청 폼을 찾을 수 없습니다.";
     public static final String QUESTION_NOT_FOUND = "질문을 찾을 수 없습니다.";
     public static final String OPTION_NOT_FOUND = "해당 문항을 찾을 수 없습니다.";
@@ -159,4 +163,5 @@ public class MessageUtil {
     public static final String FAIL_TO_GENERATE_EXCEL_FILE = "엑셀 파일 생성에 실패했습니다.";
     public static final String BATCH_FAIL = "[배치 실행에 실패했습니다.]";
 
+    public static final String FAIL_TO_CRAWL_CAU_SW_NOTICE_SITE = "소프트웨어학부 공지사항 크롤링 실패";
 }

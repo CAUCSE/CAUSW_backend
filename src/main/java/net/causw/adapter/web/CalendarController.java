@@ -84,7 +84,7 @@ public class CalendarController {
     })
     public CalendarResponseDto createCalendar(
             @RequestPart(value = "calendarCreateRequestDto") @Valid CalendarCreateRequestDto calendarCreateRequestDto,
-            @RequestPart(value = "image") @NotNull(message = MessageUtil.IMAGE_MUST_NOT_NULL) MultipartFile image
+            @RequestPart(value = "image") MultipartFile image
             ) {
         return calendarService.createCalendar(calendarCreateRequestDto, image);
     }
@@ -103,7 +103,7 @@ public class CalendarController {
     public CalendarResponseDto updateCalendar(
             @PathVariable("calendarId") String calendarId,
             @RequestPart(value = "calendarUpdateRequestDto") @Valid CalendarUpdateRequestDto calendarUpdateRequestDto,
-            @RequestPart(value = "image") @NotNull(message = MessageUtil.IMAGE_MUST_NOT_NULL) MultipartFile image
+            @RequestPart(value = "image") MultipartFile image
     ) {
         return calendarService.updateCalendar(calendarId, calendarUpdateRequestDto, image);
     }
