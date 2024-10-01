@@ -418,7 +418,7 @@ public class FormService {
     private void validateCanAccessFormResult(User user, Form form) {
         if (form.getFormType().equals(FormType.POST_FORM)) {
             Post post = getPost(form);
-            if (post.getWriter().equals(user)) {
+            if (!post.getWriter().equals(user)) {
                 throw new UnauthorizedException(
                         ErrorCode.API_NOT_ALLOWED,
                         MessageUtil.NOT_ALLOWED_TO_ACCESS_REPLY
