@@ -24,11 +24,12 @@ public interface VoteDtoMapper {
     @Mapping(target = "allowMultiple" , source = "vote.allowMultiple")
     @Mapping(target = "postId", source = "vote.post.id")
     @Mapping(target = "isOwner" , source = "isOwner")
-    VoteResponseDto toVoteResponseDto(Vote vote , List<VoteOptionResponseDto> options, boolean isOwner, boolean isEnd, boolean hasVoted);
+    @Mapping(target = "totalVoteCount" ,source = "totalVoteCount")
+    VoteResponseDto toVoteResponseDto(Vote vote , List<VoteOptionResponseDto> options, boolean isOwner, boolean isEnd, boolean hasVoted , Integer totalVoteCount);
 
     @Mapping(target = "id", source = "voteOption.id")
     @Mapping(target = "optionName", source = "voteOption.optionName")
     @Mapping(target = "voteCount" , source = "voteCount")
     @Mapping(target = "voteUsers" , source = "voteUsers")
-    VoteOptionResponseDto toVoteOptionResponseDto(VoteOption voteOption, int voteCount , List<UserResponseDto> voteUsers);
+    VoteOptionResponseDto toVoteOptionResponseDto(VoteOption voteOption, Integer voteCount , List<UserResponseDto> voteUsers);
 }

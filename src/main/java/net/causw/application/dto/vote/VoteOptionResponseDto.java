@@ -13,6 +13,6 @@ import java.util.List;
 public class VoteOptionResponseDto {
     private String id;
     private String optionName;
-    private Long voteCount;
+    private Integer voteCount;
     private List<UserResponseDto> voteUsers;
 }

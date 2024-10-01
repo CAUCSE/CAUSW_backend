@@ -976,7 +976,9 @@ public class PostService {
                 , StatusUtil.isVoteOwner(user, vote)
                 , vote.isEnd()
                 , voteRecordRepository.existsByVoteOption_VoteAndUser(vote, user)
-        );
+                , voteOptionResponseDtoList.stream()
+                        .mapToInt(VoteOptionResponseDto::getVoteCount)
+                        .sum());
     }
 
     private VoteOptionResponseDto tovoteOptionResponseDto(VoteOption voteOption) {

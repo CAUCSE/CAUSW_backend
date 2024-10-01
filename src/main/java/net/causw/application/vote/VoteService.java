@@ -106,6 +106,21 @@ public class VoteService {
 
     }
 
+    @Transactional
+    public VoteResponseDto restartVote(String voteId, User user) {
+        Vote vote = voteRepository.findById(voteId)
+                .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST,MessageUtil.VOTE_NOT_FOUND));
+        if (!(user.equals(vote.getPost().getWriter()))){
+            throw new BadRequestException(ErrorCode.API_NOT_ALLOWED, MessageUtil.VOTE_END_NOT_ACCESSIBLE);
+        }
+        if (!vote.isEnd()) {
+            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.VOTE_ALREADY_END);
+        }
+        vote.restartVote();
+        voteRepository.save(vote);
+        return toVoteResponseDto(vote,user);
+    }
+
     @Transactional(readOnly = true)
     public VoteResponseDto getVoteById(String voteId, User user) {
         Vote vote = voteRepository.findById(voteId)
@@ -123,7 +138,9 @@ public class VoteService {
                 , StatusUtil.isVoteOwner(user, vote)
                 , vote.isEnd()
                 , voteRecordRepository.existsByVoteOption_VoteAndUser(vote, user)
-        );
+                , voteOptionResponseDtoList.stream()
+                        .mapToInt(VoteOptionResponseDto::getVoteCount)
+                        .sum());
     }
 
     private VoteOptionResponseDto tovoteOptionResponseDto(VoteOption voteOption) {
