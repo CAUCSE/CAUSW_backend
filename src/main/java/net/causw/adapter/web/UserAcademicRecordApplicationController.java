@@ -111,7 +111,7 @@ public class UserAcademicRecordApplicationController {
             "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
     @Operation(summary = "유저 학적 정보 노트 변경(관리자용)",
             description = "유저 학적 정보 노트를 변경합니다.")
-    public Void updateUserAcademicRecordNote(
+    public UserAcademicRecordInfoResponseDto updateUserAcademicRecordNote(
             @PathVariable("userId") String userId,
             @RequestBody String note
     ) {
@@ -149,7 +149,7 @@ public class UserAcademicRecordApplicationController {
             "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
     @Operation(summary = "유저 학적 정보 상태 변경(관리자용)",
             description = "유저 학적 정보 상태를 변경합니다.")
-    public Void updateUserAcademicStatus(
+    public UserAcademicRecordInfoResponseDto updateUserAcademicStatus(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody @Valid UpdateUserAcademicStatusRequestDto updateUserAcademicStatusRequestDto
     ) {
@@ -168,7 +168,7 @@ public class UserAcademicRecordApplicationController {
             "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
     @Operation(summary = "유저 학적 인증 승인 상태 변경(승인/거부)(관리자용)",
             description = "유저 학적 인증 승인 상태를 변경합니다.")
-    public Void updateUserAcademicRecordApplicationStatus(
+    public UserAcademicRecordApplicationResponseDto updateUserAcademicRecordApplicationStatus(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody @Valid UpdateUserAcademicRecordApplicationStateRequestDto updateUserAcademicRecordApplicationStateRequestDto
     ) {
@@ -217,7 +217,7 @@ public class UserAcademicRecordApplicationController {
     @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
     @Operation(summary = "사용자 본인의 학적 증빙 서류 제출",
             description = "사용자 본인의 학적 증빙 서류를 제출합니다.")
-    public Void createUserAcademicRecordApplication(
+    public UserAcademicRecordApplicationResponseDto createUserAcademicRecordApplication(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestPart(value = "createUserAcademicRecordApplicationRequestDto") @Valid CreateUserAcademicRecordApplicationRequestDto createUserAcademicRecordApplicationRequestDto,
             @RequestPart(value = "imageFileList", required = false) List<MultipartFile> imageFileList
@@ -237,7 +237,7 @@ public class UserAcademicRecordApplicationController {
     @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
     @Operation(summary = "사용자 본인의 학적 증빙 서류 수정",
             description = "사용자 본인의 학적 증빙 서류를 수정합니다.")
-    public Void updateUserAcademicRecordApplication(
+    public UserAcademicRecordApplicationResponseDto updateUserAcademicRecordApplication(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestPart(value = "createUserAcademicRecordApplicationRequestDto") @Valid CreateUserAcademicRecordApplicationRequestDto createUserAcademicRecordApplicationRequestDto,
             @RequestPart(value = "imageFileList", required = false) List<MultipartFile> imageFileList

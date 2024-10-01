@@ -6,11 +6,8 @@ import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.uuidFile.joinEntity.UserAcademicRecordApplicationAttachImage;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.adapter.persistence.base.BaseEntity;
-import net.causw.domain.exceptions.BadRequestException;
-import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.enums.userAcademicRecord.AcademicRecordRequestStatus;
 import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
-import net.causw.domain.model.util.MessageUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,13 +17,18 @@ import java.util.List;
 @Entity
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "tb_user_academic_record_application")
+@Table(
+        name = "tb_user_academic_record_application",
+        indexes = {
+                @Index(name = "user_id_index", columnList = "user_id")
+        })
 public class UserAcademicRecordApplication extends BaseEntity {
 
     @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Setter
     @Enumerated(EnumType.STRING)
     @Column(name = "academic_record_request_status", nullable = false)
     private AcademicRecordRequestStatus academicRecordRequestStatus;
@@ -41,26 +43,34 @@ public class UserAcademicRecordApplication extends BaseEntity {
     @Column(name = "note", nullable = true)
     private String note;
 
+    @Setter(value = AccessLevel.PRIVATE)
     @OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "userAcademicRecordApplication")
     @Builder.Default
     private List<UserAcademicRecordApplicationAttachImage> userAcademicRecordAttachImageList = new ArrayList<>();
 
+    @Setter
     @Column(name = "reject_message", nullable = true)
     private String rejectMessage;
 
-    public void updateApplicationRequestStatus(AcademicRecordRequestStatus academicRecordRequestStatus, String rejectMessage) {
-        if (academicRecordRequestStatus == AcademicRecordRequestStatus.ACCEPT) {
-            this.academicRecordRequestStatus = academicRecordRequestStatus;
-        } else if (academicRecordRequestStatus == AcademicRecordRequestStatus.REJECT || academicRecordRequestStatus == AcademicRecordRequestStatus.CLOSE) {
-            this.academicRecordRequestStatus = academicRecordRequestStatus;
-            this.rejectMessage = rejectMessage;
-        } else {
-            throw new BadRequestException(ErrorCode.INVALID_ACADEMIC_RECORD_REQUEST_STATUS, MessageUtil.INVALID_ACADEMIC_RECORD_REQUEST_STATUS);
-        }
+    public static UserAcademicRecordApplication create(
+            User user,
+            AcademicRecordRequestStatus academicRecordRequestStatus,
+            AcademicStatus academicStatus,
+            Integer targetCompletedSemester,
+            String note
+    ) {
+        return UserAcademicRecordApplication.builder()
+                .user(user)
+                .academicRecordRequestStatus(academicRecordRequestStatus)
+                .targetAcademicStatus(academicStatus)
+                .targetCompletedSemester(targetCompletedSemester)
+                .note(note)
+                .build();
     }
 
-    public static UserAcademicRecordApplication of(
+    public static UserAcademicRecordApplication createWithImage(
             User user,
+            AcademicRecordRequestStatus academicRecordRequestStatus,
             AcademicStatus academicStatus,
             Integer targetCompletedSemester,
             String note,
@@ -68,29 +78,11 @@ public class UserAcademicRecordApplication extends BaseEntity {
     ) {
         UserAcademicRecordApplication userAcademicRecordApplication = UserAcademicRecordApplication.builder()
                 .user(user)
-                .academicRecordRequestStatus(AcademicRecordRequestStatus.AWAIT)
+                .academicRecordRequestStatus(academicRecordRequestStatus)
                 .targetAcademicStatus(academicStatus)
                 .targetCompletedSemester(targetCompletedSemester)
                 .note(note)
                 .build();
-
-        if (academicStatus.equals(AcademicStatus.ENROLLED)) {
-            if (targetCompletedSemester == null || targetCompletedSemester < 1) {
-                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_TARGET_COMPLETED_SEMESTER);
-            }
-            if (userAcademicRecordAttachImageUuidFileList == null || userAcademicRecordAttachImageUuidFileList.isEmpty()) {
-                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.FILE_UPLOAD_REQUIRED);
-            }
-        } else {
-            if (targetCompletedSemester != null) {
-                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.INVALID_TARGET_COMPLETED_SEMESTER);
-            }
-            if (userAcademicRecordAttachImageUuidFileList != null) {
-                throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.FILE_UPLOAD_NOT_ALLOWED);
-            }
-            userAcademicRecordApplication.getUser().setAcademicStatus(academicStatus);
-            userAcademicRecordApplication.updateApplicationRequestStatus(AcademicRecordRequestStatus.ACCEPT, null);
-        }
 
         List<UserAcademicRecordApplicationAttachImage> userAcademicRecordApplicationAttachImageList = userAcademicRecordAttachImageUuidFileList.stream()
                 .map(uuidFile -> UserAcademicRecordApplicationAttachImage.of(userAcademicRecordApplication, uuidFile))
@@ -99,10 +91,6 @@ public class UserAcademicRecordApplication extends BaseEntity {
         userAcademicRecordApplication.setUserAcademicRecordAttachImageList(userAcademicRecordApplicationAttachImageList);
 
         return userAcademicRecordApplication;
-    }
-
-    private void setUserAcademicRecordAttachImageList(List<UserAcademicRecordApplicationAttachImage> userAcademicRecordAttachImageList) {
-        this.userAcademicRecordAttachImageList = userAcademicRecordAttachImageList;
     }
 
 }

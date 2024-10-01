@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import net.causw.application.dto.form.response.FormResponseDto;
 import net.causw.application.dto.form.response.reply.ReplyPageResponseDto;
 import net.causw.application.dto.form.request.FormReplyRequestDto;
 import net.causw.application.dto.form.response.QuestionSummaryResponseDto;
@@ -47,6 +48,16 @@ public class FormController {
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return formService.getCanReplyToPostForm(userDetails.getUser(), formId);
+    }
+
+    @GetMapping("/{formId}")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "신청서 조회", description = "신청서를 조회합니다.")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
+    public FormResponseDto getForm(
+            @PathVariable(name = "formId") String formId
+    ) {
+        return formService.getFormById(formId);
     }
 
     @PostMapping("/{formId}")

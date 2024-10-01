@@ -14,13 +14,10 @@ import net.causw.adapter.persistence.repository.post.PostRepository;
 import net.causw.adapter.persistence.repository.user.UserRepository;
 import net.causw.adapter.persistence.repository.userCouncilFee.UserCouncilFeeRepository;
 import net.causw.adapter.persistence.userCouncilFee.UserCouncilFee;
-import net.causw.application.dto.form.response.OptionResponseDto;
-import net.causw.application.dto.form.response.QuestionResponseDto;
+import net.causw.application.dto.form.response.*;
 import net.causw.application.dto.form.response.reply.*;
 import net.causw.application.dto.form.request.FormReplyRequestDto;
-import net.causw.application.dto.form.response.OptionSummaryResponseDto;
 import net.causw.application.dto.form.request.QuestionReplyRequestDto;
-import net.causw.application.dto.form.response.QuestionSummaryResponseDto;
 import net.causw.application.dto.form.response.reply.excel.ExcelReplyListResponseDto;
 import net.causw.application.dto.form.response.reply.excel.ExcelReplyQuestionResponseDto;
 import net.causw.application.dto.form.response.reply.excel.ExcelReplyResponseDto;
@@ -110,6 +107,12 @@ public class FormService {
         }
 
         return true;
+    }
+
+    public FormResponseDto getFormById(String formId) {
+        Form form = getForm(formId);
+
+        return this.toFormResponseDto(form);
     }
 
     @Transactional
@@ -236,33 +239,6 @@ public class FormService {
         replyRepository.save(reply);
     }
 
-    private void validCanAccessPost(User writer, Form form) {
-        Post post = getPost(form);
-
-        Board board = post.getBoard();
-
-        if (board.getCircle() != null) {
-            Circle circle = board.getCircle();
-            CircleMember circleMember = getCircleMember(writer.getId(), circle.getId());
-            if (circleMember.getStatus().equals(CircleMemberStatus.MEMBER)) {
-                throw new UnauthorizedException(
-                        ErrorCode.API_NOT_ALLOWED,
-                        MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
-                );
-            }
-        }
-    }
-
-    private Post getPost(Form form) {
-        return postRepository.findByForm(form).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.FORM_NOT_FOUND
-                )
-        );
-    }
-
-
     public ReplyPageResponseDto findAllReplyPageByForm(String formId, Pageable pageable, User user){
         Form form = getForm(formId);
 
@@ -273,7 +249,7 @@ public class FormService {
         return toReplyPageResponseDto(form, replyPage);
     }
 
-    //2. 각 질문별 결과를 반환(요약)
+    // 각 질문별 결과를 반환(요약)
     public List<QuestionSummaryResponseDto> findSummaryReply(String formId, User user){
         Form form = getForm(formId);
 
@@ -578,6 +554,32 @@ public class FormService {
         return restOfSemester;
     }
 
+    private void validCanAccessPost(User writer, Form form) {
+        Post post = getPost(form);
+
+        Board board = post.getBoard();
+
+        if (board.getCircle() != null) {
+            Circle circle = board.getCircle();
+            CircleMember circleMember = getCircleMember(writer.getId(), circle.getId());
+            if (circleMember.getStatus().equals(CircleMemberStatus.MEMBER)) {
+                throw new UnauthorizedException(
+                        ErrorCode.API_NOT_ALLOWED,
+                        MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
+                );
+            }
+        }
+    }
+
+    private Post getPost(Form form) {
+        return postRepository.findByForm(form).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.FORM_NOT_FOUND
+                )
+        );
+    }
+
     // Dto Mapper
 
     private ReplyPageResponseDto toReplyPageResponseDto(Form form, Page<Reply> replyPage) {
@@ -600,6 +602,15 @@ public class FormService {
                             reply.getCreatedAt()
                     );
                 })
+        );
+    }
+
+    private FormResponseDto toFormResponseDto(Form form) {
+        return FormDtoMapper.INSTANCE.toFormResponseDto(
+                form,
+                form.getFormQuestionList().stream()
+                        .map(this::toQuestionResponseDto)
+                        .collect(Collectors.toList())
         );
     }
 
