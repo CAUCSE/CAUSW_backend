@@ -699,15 +699,9 @@ public class UserService {
             );
         }
 
-        // User profile 이미지 nullable임 -> null로 요청 시 기존 이미지 삭제
-        UserProfileImage userProfileImage = null;
+        UserProfileImage userProfileImage = srcUser.getUserProfileImage();
 
-        if (profileImage.isEmpty()) {
-            if (user.getUserProfileImage() != null) {
-                uuidFileService.deleteFile(srcUser.getUserProfileImage().getUuidFile());
-                userProfileImageRepository.delete(srcUser.getUserProfileImage());
-            }
-        } else {
+        if (profileImage != null && !profileImage.isEmpty()) {
             if (srcUser.getUserProfileImage() == null) {
                 userProfileImage = UserProfileImage.of(
                         user,
