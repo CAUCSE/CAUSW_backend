@@ -89,12 +89,15 @@ public class JwtTokenProvider {
                 throw new UnauthorizedException(ErrorCode.INVALID_JWT, "블랙리스트에 등록된 토큰입니다.");
             }
 
+            /*
             List<String> rolesList = claims.getBody().get("roles", List.class);
 
             if (rolesList.contains(Role.NONE.getValue()) ||
                     !claims.getBody().get("state").equals(UserState.ACTIVE.getValue())) {
                 throw new BadRequestException(ErrorCode.NEED_SIGN_IN, "다시 로그인 하세요.");
             }
+
+             */
             return true;
 
         } catch (ExpiredJwtException e) {
