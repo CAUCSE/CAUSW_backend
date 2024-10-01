@@ -482,7 +482,7 @@ public class UserController {
         return this.userService.findAllAdmissions(userDetails.getUser(), name, pageNum);
     }
 
-    @PostMapping(value = "/admissions/apply", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PostMapping(value = "/admissions/apply")
     @ResponseStatus(value = HttpStatus.CREATED)
     @Operation(summary = "승인 신청서 작성 API (완료)", description = "가입 신청 api입니다.")
     @ApiResponses({
@@ -493,10 +493,30 @@ public class UserController {
             @ApiResponse(responseCode = "4107", description = "이미 등록된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     public UserAdmissionResponseDto createAdmission(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestPart(value = "userAdmissionCreateRequestDto") @Valid UserAdmissionCreateRequestDto userAdmissionCreateRequestDto,
             @RequestPart(value = "userAdmissionAttachImageList") List<MultipartFile> userAdmissionAttachImageList
     ) {
-        return this.userService.createAdmission(userAdmissionCreateRequestDto, userAdmissionAttachImageList);
+        return this.userService.createAdmission(userDetails.getUser(), userAdmissionCreateRequestDto, userAdmissionAttachImageList);
+    }
+
+    @GetMapping(value = "/admissions/self")
+    @ResponseStatus(value = HttpStatus.OK)
+    @Operation(summary = "현재 사용자의 가입 신청 정보 확인 API")
+    public UserAdmissionResponseDto getCurrentUserAdmission(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return this.userService.getCurrentUserAdmission(userDetails.getUser());
+    }
+
+    @PutMapping(value = "/admissions/apply")
+    @ResponseStatus(value = HttpStatus.OK)
+    public UserAdmissionResponseDto updateAdmission(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestPart(value = "userAdmissionCreateRequestDto") @Valid UserAdmissionCreateRequestDto userAdmissionCreateRequestDto,
+            @RequestPart(value = "userAdmissionAttachImageList") List<MultipartFile> userAdmissionAttachImageList
+    ) {
+        return userService.updateAdmission(userDetails.getUser(), userAdmissionCreateRequestDto, userAdmissionAttachImageList);
     }
 
     @PutMapping(value = "/admissions/{id}/accept")

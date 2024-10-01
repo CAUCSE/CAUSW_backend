@@ -1,6 +1,7 @@
 package net.causw.application.user;
 
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
@@ -1231,16 +1232,15 @@ public class UserService {
     }
 
     @Transactional
-    public UserAdmissionResponseDto createAdmission(UserAdmissionCreateRequestDto userAdmissionCreateRequestDto, List<MultipartFile> userAdmissionAttachImageList) {
-        User requestUser = this.userRepository.findByEmail(userAdmissionCreateRequestDto.getEmail()).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_NOT_FOUND
-                )
-        );
+    public UserAdmissionResponseDto createAdmission(User user, UserAdmissionCreateRequestDto userAdmissionCreateRequestDto, List<MultipartFile> userAdmissionAttachImageList) {
+        if (!user.getEmail().equals(userAdmissionCreateRequestDto.getEmail())) {
+            throw new BadRequestException(
+                    ErrorCode.INVALID_PARAMETER,
+                    MessageUtil.EMAIL_INVALID
+            );
+        }
 
-
-        if (this.userAdmissionRepository.existsByUser_Id(requestUser.getId())) {
+        if (this.userAdmissionRepository.existsByUser_Id(user.getId())) {
             throw new BadRequestException(
                     ErrorCode.ROW_ALREADY_EXIST,
                     MessageUtil.USER_ALREADY_APPLY
@@ -1257,13 +1257,68 @@ public class UserService {
         List<UuidFile> uuidFileList = uuidFileService.saveFileList(userAdmissionAttachImageList, FilePath.USER_ADMISSION);
 
         UserAdmission userAdmission = UserAdmission.of(
-                requestUser,
+                user,
                 uuidFileList,
                 userAdmissionCreateRequestDto.getDescription()
         );
 
         ValidatorBucket.of()
-                .consistOf(UserStateIsNotDropAndActiveValidator.of(requestUser.getState()))
+                .consistOf(UserStateIsNotDropAndActiveValidator.of(user.getState()))
+                .consistOf(ConstraintValidator.of(userAdmission, this.validator))
+                .validate();
+
+        return UserDtoMapper.INSTANCE.toUserAdmissionResponseDto(this.userAdmissionRepository.save(userAdmission));
+    }
+
+
+    public UserAdmissionResponseDto getCurrentUserAdmission(User user) {
+        UserAdmission userAdmission = userAdmissionRepository.findByUser_Id(user.getId()).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.USER_APPLY_NOT_FOUND
+                )
+        );
+
+        return UserDtoMapper.INSTANCE.toUserAdmissionResponseDto(userAdmission);
+    }
+
+    public UserAdmissionResponseDto updateAdmission(
+            User user,
+            UserAdmissionCreateRequestDto userAdmissionCreateRequestDto,
+            List<MultipartFile> userAdmissionAttachImageList
+    ) {
+        if (user.getRoles().contains(Role.NONE) || user.getState().equals(UserState.ACTIVE)) {
+            throw new UnauthorizedException(
+                    ErrorCode.API_NOT_ACCESSIBLE,
+                    MessageUtil.API_NOT_ACCESSIBLE
+            );
+        }
+
+        if (user.getState().equals(UserState.AWAIT)) {
+            UserAdmission priorUserAdmission = userAdmissionRepository.findByUser_Id(user.getId()).orElseThrow(
+                    () -> new BadRequestException(
+                            ErrorCode.ROW_DOES_NOT_EXIST,
+                            MessageUtil.USER_APPLY_NOT_FOUND
+                    )
+            );
+
+            List<UuidFile> priorUuidFileList = priorUserAdmission.getUserAdmissionAttachImageList().stream().map(UserAdmissionAttachImage::getUuidFile).toList();
+
+            userAdmissionRepository.delete(priorUserAdmission);
+
+            uuidFileService.deleteFileList(priorUuidFileList);
+        }
+
+        List<UuidFile> uuidFileList = uuidFileService.saveFileList(userAdmissionAttachImageList, FilePath.USER_ADMISSION);
+
+        UserAdmission userAdmission = UserAdmission.of(
+                user,
+                uuidFileList,
+                userAdmissionCreateRequestDto.getDescription()
+        );
+
+        ValidatorBucket.of()
+                .consistOf(UserStateIsNotDropAndActiveValidator.of(user.getState()))
                 .consistOf(ConstraintValidator.of(userAdmission, this.validator))
                 .validate();
 
@@ -1302,9 +1357,13 @@ public class UserService {
                 null
         );
 
-        // Remove the admission
         this.userAdmissionLogRepository.save(userAdmissionLog);
+
+        // Remove the admission
+        List<UuidFile> uuidFileList = userAdmission.getUserAdmissionAttachImageList().stream().map(UserAdmissionAttachImage::getUuidFile).toList();
         this.userAdmissionRepository.delete(userAdmission);
+
+        uuidFileService.deleteFileList(uuidFileList);
 
         return UserDtoMapper.INSTANCE.toUserAdmissionResponseDto(
                 userAdmissionLog,
@@ -1335,6 +1394,7 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .validate();
 
+        // Add admission log
         UserAdmissionLog userAdmissionLog = UserAdmissionLog.of(
                 userAdmission.getUser().getEmail(),
                 userAdmission.getUser().getName(),
@@ -1346,11 +1406,13 @@ public class UserService {
                 rejectReason
         );
 
-
-        // Add admission log
-
         this.userAdmissionLogRepository.save(userAdmissionLog);
+
+        List<UuidFile> uuidFileList = userAdmission.getUserAdmissionAttachImageList().stream().map(UserAdmissionAttachImage::getUuidFile).toList();
         this.userAdmissionRepository.delete(userAdmission);
+
+        uuidFileService.deleteFileList(uuidFileList);
+
         requestUser.updateRejectionOrDropReason(rejectReason);
         this.userRepository.save(requestUser);
 
