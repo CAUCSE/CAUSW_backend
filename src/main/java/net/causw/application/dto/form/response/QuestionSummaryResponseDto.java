@@ -30,4 +30,10 @@ public class QuestionSummaryResponseDto {
     @Schema(description = "질문 답변 정보 List(객관식 질문일 경우)", example = "[OptionSummaryResponseDto, OptionSummaryResponseDto, ...]")
     private List<OptionSummaryResponseDto> optionSummarieList;
 
+    @Schema(description = "총 응답 수", example = "10")
+    private Integer numOfReply;
+
+    @Schema(description = "복수 정답 여부(객관식일 때만)", defaultValue = "false", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private Boolean isMultiple;
+
 }

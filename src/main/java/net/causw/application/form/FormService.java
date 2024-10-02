@@ -670,7 +670,9 @@ public class FormService {
                     replyQuestionList.stream()
                             .map(ReplyQuestion::getQuestionAnswer)
                             .toList(),
-                    null
+                    null,
+                    findNumOfReply(replyQuestionList),
+                    findIsMultiple(formQuestion)
             );
         } else {
             return FormDtoMapper.INSTANCE.toQuestionSummaryResponseDto(
@@ -684,10 +686,20 @@ public class FormService {
                                         .count();
                                 return toOptionSummaryResponseDto(formQuestionOption, selectedCount);
                             })
-                            .toList()
+                            .toList(),
+                    findNumOfReply(replyQuestionList),
+                    findIsMultiple(formQuestion)
             );
         }
 
+    }
+
+    private Integer findNumOfReply(List<ReplyQuestion> replyQuestionList) {
+        return replyQuestionList.size();
+    }
+
+    private Boolean findIsMultiple(FormQuestion formQuestion) {
+        return formQuestion.getIsMultiple();
     }
 
     private OptionSummaryResponseDto toOptionSummaryResponseDto(
