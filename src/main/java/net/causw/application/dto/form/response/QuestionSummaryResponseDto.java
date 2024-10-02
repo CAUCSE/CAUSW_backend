@@ -31,7 +31,7 @@ public class QuestionSummaryResponseDto {
     private List<OptionSummaryResponseDto> optionSummarieList;
 
     @Schema(description = "총 응답 수", example = "10")
-    private Integer numOfReply;
+    private Long numOfReply;
 
     @Schema(description = "복수 정답 여부(객관식일 때만)", defaultValue = "false", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private Boolean isMultiple;

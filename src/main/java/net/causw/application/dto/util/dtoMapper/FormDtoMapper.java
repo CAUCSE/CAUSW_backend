@@ -102,7 +102,7 @@ public interface FormDtoMapper {
     @Mapping(target = "optionSummarieList", source = "optionSummaryResponseDtoList")
     @Mapping(target = "numOfReply", source = "numOfReply")
     @Mapping(target = "isMultiple", source = "isMultiple")
-    QuestionSummaryResponseDto toQuestionSummaryResponseDto(FormQuestion formQuestion, List<String> questionAnswerList, List<OptionSummaryResponseDto> optionSummaryResponseDtoList, Integer numOfReply, Boolean isMultiple) ;
+    QuestionSummaryResponseDto toQuestionSummaryResponseDto(FormQuestion formQuestion, List<String> questionAnswerList, List<OptionSummaryResponseDto> optionSummaryResponseDtoList, Long numOfReply, Boolean isMultiple) ;
 
     @Mapping(target = "userId", source = "user.id")
     @Mapping(target = "email", source = "user.email")
