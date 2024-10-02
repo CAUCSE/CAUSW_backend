@@ -44,7 +44,6 @@ import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.model.enums.circle.CircleMemberStatus;
 import net.causw.domain.model.enums.form.QuestionType;
 import net.causw.domain.model.enums.form.RegisteredSemester;
-import net.causw.domain.model.enums.form.RegisteredSemesterManager;
 import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
 import net.causw.domain.model.enums.uuidFile.FilePath;
 import net.causw.domain.model.enums.user.Role;
@@ -694,47 +693,27 @@ public class CircleService {
         Circle circle = getCircle(circleId);
         String circleName = circle.getName();
 
-        List<ExportCircleMemberToExcelResponseDto> activeUserDtoList = circleMemberRepository.findByCircle_IdAndStatus(circleId, CircleMemberStatus.MEMBER)
-                .stream()
-                .map(circleMember -> {
-                    User srcUser = circleMember.getUser();
-                    UserCouncilFee userCouncilFee = userCouncilFeeRepository.findByUser(srcUser)
-                            .orElseThrow(
-                                    () -> new BadRequestException(
-                                            ErrorCode.ROW_DOES_NOT_EXIST,
-                                            MessageUtil.USER_COUNCIL_FEE_NOT_FOUND
-                                    )
-                            );
-                    return this.toExportCircleMemberToExcelResponseDto(
-                            srcUser,
-                            userCouncilFee,
-                            getRestOfSemester(userCouncilFee),
-                            getIsAppliedCurrentSemester(userCouncilFee)
-                    );
-                }
-                ).toList();
-        List<ExportCircleMemberToExcelResponseDto> awaitingUserDtoList = circleMemberRepository.findByCircle_IdAndStatus(circleId, CircleMemberStatus.AWAIT)
-                .stream()
-                .map(circleMember -> {
-                    User srcUser = circleMember.getUser();
-                    UserCouncilFee userCouncilFee = userCouncilFeeRepository.findByUser(srcUser)
-                            .orElseThrow(
-                                    () -> new BadRequestException(
-                                            ErrorCode.ROW_DOES_NOT_EXIST,
-                                            MessageUtil.USER_COUNCIL_FEE_NOT_FOUND
-                                    )
-                            );
-                    return this.toExportCircleMemberToExcelResponseDto(
-                            srcUser,
-                            userCouncilFee,
-                            getRestOfSemester(userCouncilFee),
-                            getIsAppliedCurrentSemester(userCouncilFee)
-                    );
-                }).toList();
-
         LinkedHashMap<String, List<ExportCircleMemberToExcelResponseDto>> sheetNameDataMap = new LinkedHashMap<>();
-        sheetNameDataMap.put("활성 동아리원", activeUserDtoList);
-        sheetNameDataMap.put("가입 대기 동아리원", awaitingUserDtoList);
+        sheetNameDataMap.put(
+                "활성 동아리원",
+                getExportCircleMemberToExcelResponseDtoListByMemberStatus(circleId, CircleMemberStatus.MEMBER)
+        );
+        sheetNameDataMap.put(
+                "가입 대기 동아리원",
+                getExportCircleMemberToExcelResponseDtoListByMemberStatus(circleId, CircleMemberStatus.AWAIT)
+        );
+        sheetNameDataMap.put(
+                "거절 동아리원",
+                getExportCircleMemberToExcelResponseDtoListByMemberStatus(circleId, CircleMemberStatus.REJECT)
+        );
+        sheetNameDataMap.put(
+                "탈퇴 동아리원",
+                getExportCircleMemberToExcelResponseDtoListByMemberStatus(circleId, CircleMemberStatus.LEAVE)
+        );
+        sheetNameDataMap.put(
+                "추방 동아리원",
+                getExportCircleMemberToExcelResponseDtoListByMemberStatus(circleId, CircleMemberStatus.DROP)
+        );
 
         String fileName = circleName + "_부원명단";
 
@@ -1317,6 +1296,30 @@ public class CircleService {
         return isAppliedThisSemester;
     }
 
+    @NotNull
+    private List<ExportCircleMemberToExcelResponseDto> getExportCircleMemberToExcelResponseDtoListByMemberStatus(String circleId, CircleMemberStatus circleMemberStatus) {
+        return circleMemberRepository.findByCircle_IdAndStatus(circleId, circleMemberStatus)
+                .stream()
+                .map(circleMember -> {
+                            User srcUser = circleMember.getUser();
+                            UserCouncilFee userCouncilFee = userCouncilFeeRepository.findByUser(srcUser)
+                                    .orElse(null);
+
+                            if (userCouncilFee == null) {
+                                return this.toExportCircleMemberToExcelResponseDtoReduced(srcUser);
+                            }
+
+                            return this.toExportCircleMemberToExcelResponseDto(
+                                    srcUser,
+                                    userCouncilFee,
+                                    getRestOfSemester(userCouncilFee),
+                                    getIsAppliedCurrentSemester(userCouncilFee)
+                            );
+                        }
+                ).toList();
+    }
+
+
     // Dto Mapper
 
     private UserResponseDto toUserResponseDto(User user) {
@@ -1375,8 +1378,17 @@ public class CircleService {
         return CircleDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(isDuplicated);
     }
 
-    private ExportCircleMemberToExcelResponseDto toExportCircleMemberToExcelResponseDto(User user, UserCouncilFee userCouncilFee, Integer restOfSemester, Boolean isAppliedThisSemester){
+    private ExportCircleMemberToExcelResponseDto toExportCircleMemberToExcelResponseDto(
+            User user,
+            UserCouncilFee userCouncilFee,
+            Integer restOfSemester,
+            Boolean isAppliedThisSemester
+    ) {
         return CircleDtoMapper.INSTANCE.toExportCircleMemberToExcelResponseDto(user, userCouncilFee, restOfSemester, isAppliedThisSemester, userCouncilFee.getNumOfPaidSemester() - restOfSemester);
+    }
+
+    private ExportCircleMemberToExcelResponseDto toExportCircleMemberToExcelResponseDtoReduced(User user) {
+        return CircleDtoMapper.INSTANCE.toExportCircleMemberToExcelResponseDto(user, null, null, null, null);
     }
 
     private FormResponseDto toFormResponseDto(Form form) {
