@@ -665,29 +665,47 @@ public class FormService {
             List<ReplyQuestion> replyQuestionList
     ) {
         if (formQuestion.getQuestionType().equals(QuestionType.SUBJECTIVE)) {
+            List<String> answerList = replyQuestionList.stream()
+                    .map(ReplyQuestion::getQuestionAnswer)
+                    .toList();
             return FormDtoMapper.INSTANCE.toQuestionSummaryResponseDto(
                     formQuestion,
-                    replyQuestionList.stream()
-                            .map(ReplyQuestion::getQuestionAnswer)
-                            .toList(),
-                    null
+                    answerList,
+                    null,
+                    (long) answerList.size(),
+                    findIsMultiple(formQuestion)
             );
         } else {
+            List<OptionSummaryResponseDto> answerList = formQuestion.getFormQuestionOptionList().stream()
+                    .map(formQuestionOption -> {
+                        Long selectedCount = replyQuestionList
+                                .stream()
+                                .filter(replyQuestion -> replyQuestion.getSelectedOptionList().contains(formQuestionOption.getNumber()))
+                                .count();
+                        return toOptionSummaryResponseDto(formQuestionOption, selectedCount);
+                    })
+                    .toList();
             return FormDtoMapper.INSTANCE.toQuestionSummaryResponseDto(
                     formQuestion,
                     null,
-                    formQuestion.getFormQuestionOptionList().stream()
-                            .map(formQuestionOption -> {
-                                Long selectedCount = replyQuestionList
-                                        .stream()
-                                        .filter(replyQuestion -> replyQuestion.getSelectedOptionList().contains(formQuestionOption.getNumber()))
-                                        .count();
-                                return toOptionSummaryResponseDto(formQuestionOption, selectedCount);
-                            })
-                            .toList()
+                    answerList,
+                    findNumOfReply(answerList),
+                    findIsMultiple(formQuestion)
             );
         }
 
+    }
+
+    private Long findNumOfReply(List<OptionSummaryResponseDto> answerList) {
+        Long numOfReply = 0L;
+        for (OptionSummaryResponseDto optionSummaryResponseDto : answerList) {
+            numOfReply += optionSummaryResponseDto.getSelectedCount();
+        }
+        return numOfReply;
+    }
+
+    private Boolean findIsMultiple(FormQuestion formQuestion) {
+        return formQuestion.getIsMultiple();
     }
 
     private OptionSummaryResponseDto toOptionSummaryResponseDto(
