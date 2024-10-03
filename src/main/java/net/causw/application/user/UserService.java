@@ -148,6 +148,7 @@ public class UserService {
     }
 
     // Find process of another user
+    @Transactional(readOnly = true)
     public UserResponseDto findByUserId(String targetUserId, User requestUser) {
         Set<Role> roles = requestUser.getRoles();
 
@@ -188,6 +189,7 @@ public class UserService {
         return UserDtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
     }
 
+    @Transactional(readOnly = true)
     public UserResponseDto findCurrentUser(User requestUser) {
         Set<Role> roles = requestUser.getRoles();
 
@@ -213,6 +215,7 @@ public class UserService {
         return UserDtoMapper.INSTANCE.toUserResponseDto(requestUser, null, null);
     }
 
+    @Transactional(readOnly = true)
     public UserPostsResponseDto findPosts(User requestUser, Integer pageNum) {
         Set<Role> roles = requestUser.getRoles();
 
@@ -235,6 +238,7 @@ public class UserService {
         );
     }
 
+    @Transactional(readOnly = true)
     public UserPostsResponseDto findFavoritePosts(User requestUser, Integer pageNum) {
         Set<Role> roles = requestUser.getRoles();
 
@@ -257,6 +261,7 @@ public class UserService {
         );
     }
 
+    @Transactional(readOnly = true)
     public UserPostsResponseDto findCommentedPosts(User requestUser, Integer pageNum) {
         Set<Role> roles = requestUser.getRoles();
 
@@ -293,6 +298,7 @@ public class UserService {
         );
     }
 
+    @Transactional(readOnly = true)
     public UserCommentsResponseDto findComments(User requestUser, Integer pageNum) {
         Set<Role> roles = requestUser.getRoles();
 
@@ -323,6 +329,7 @@ public class UserService {
         );
     }
 
+    @Transactional(readOnly = true)
     public List<UserResponseDto> findByName(User requestUser, String name) {
         Set<Role> roles = requestUser.getRoles();
 
@@ -366,6 +373,7 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public UserPrivilegedResponseDto findPrivilegedUsers(User user) {
         Set<Role> roles = user.getRoles();
 
@@ -430,6 +438,7 @@ public class UserService {
         );
     }
 
+    @Transactional(readOnly = true)
     public Page<UserResponseDto> findByState(
             User user,
             String state,
@@ -482,6 +491,7 @@ public class UserService {
         });
     }
 
+    @Transactional(readOnly = true)
     public List<CircleResponseDto> getCircleList(User user) {
         Set<Role> roles = user.getRoles();
 
@@ -605,6 +615,7 @@ public class UserService {
      * @param email
      * @return DuplicatedCheckResponseDto
      */
+    @Transactional(readOnly = true)
     public DuplicatedCheckResponseDto isDuplicatedEmail(String email) {
         Optional<User> userFoundByEmail = userRepository.findByEmail(email);
         if (userFoundByEmail.isPresent()) {
@@ -623,8 +634,10 @@ public class UserService {
      * 닉네임 중복 확인 메소드
      *
      * @param nickname
-     * @return DuplicatedCheckResponseDto
+     * @return D
+     * uplicatedCheckResponseDto
      */
+    @Transactional(readOnly = true)
     public DuplicatedCheckResponseDto isDuplicatedNickname(String nickname) {
         Optional<User> userFoundByNickname = userRepository.findByNickname(nickname);
         if (userFoundByNickname.isPresent()) {
@@ -639,6 +652,7 @@ public class UserService {
         return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(userFoundByNickname.isPresent());
     }
 
+    @Transactional(readOnly = true)
     public DuplicatedCheckResponseDto isDuplicatedStudentId(String studentId) {
         Optional<User> userFoundByStudentId = userRepository.findByStudentId(studentId);
         if (userFoundByStudentId.isPresent()) {
@@ -653,6 +667,7 @@ public class UserService {
         return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(userFoundByStudentId.isPresent());
     }
 
+    @Transactional
     public UserResponseDto update(User user, UserUpdateRequestDto userUpdateRequestDto, MultipartFile profileImage) {
         User srcUser = userRepository.findById(user.getId()).orElseThrow(
                 () -> new BadRequestException(
