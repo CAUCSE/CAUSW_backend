@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @MeasureTime
@@ -106,6 +107,21 @@ public class VoteService {
 
     }
 
+    @Transactional
+    public VoteResponseDto restartVote(String voteId, User user) {
+        Vote vote = voteRepository.findById(voteId)
+                .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST,MessageUtil.VOTE_NOT_FOUND));
+        if (!(user.equals(vote.getPost().getWriter()))){
+            throw new BadRequestException(ErrorCode.API_NOT_ALLOWED, MessageUtil.VOTE_END_NOT_ACCESSIBLE);
+        }
+        if (!vote.isEnd()) {
+            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.VOTE_ALREADY_END);
+        }
+        vote.restartVote();
+        voteRepository.save(vote);
+        return toVoteResponseDto(vote,user);
+    }
+
     @Transactional(readOnly = true)
     public VoteResponseDto getVoteById(String voteId, User user) {
         Vote vote = voteRepository.findById(voteId)
@@ -117,13 +133,21 @@ public class VoteService {
         List<VoteOptionResponseDto> voteOptionResponseDtoList = vote.getVoteOptions().stream()
                 .map(this::tovoteOptionResponseDto)
                 .collect(Collectors.toList());
+        Set<String> uniqueUserIds = voteOptionResponseDtoList.stream()
+                .flatMap(voteOptionResponseDto -> voteOptionResponseDto.getVoteUsers().stream())
+                .map(UserResponseDto::getId)
+                .collect(Collectors.toSet());
+        Integer totalUserCount = uniqueUserIds.size();
         return VoteDtoMapper.INSTANCE.toVoteResponseDto(
                 vote,
                 voteOptionResponseDtoList
                 , StatusUtil.isVoteOwner(vote, user)
                 , vote.isEnd()
                 , voteRecordRepository.existsByVoteOption_VoteAndUser(vote, user)
-        );
+                , voteOptionResponseDtoList.stream()
+                        .mapToInt(VoteOptionResponseDto::getVoteCount)
+                        .sum()
+                , totalUserCount);
     }
 
     private VoteOptionResponseDto tovoteOptionResponseDto(VoteOption voteOption) {

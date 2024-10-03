@@ -54,6 +54,16 @@ public class VoteController {
         return ResponseEntity.ok(voteService.endVote(voteId, userDetails.getUser()));
     }
 
+    @PostMapping("/{voteId}/restart")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "투표 재시작", description = "특정 투표를 재시작합니다.")
+    public ResponseEntity<VoteResponseDto> restartVote(
+            @PathVariable("voteId") String voteId, // 파라미터 이름 명시
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return ResponseEntity.ok(voteService.restartVote(voteId, userDetails.getUser()));
+    }
+
     @GetMapping("/{voteId}")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUser()")

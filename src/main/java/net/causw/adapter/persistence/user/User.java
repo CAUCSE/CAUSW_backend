@@ -76,9 +76,6 @@ public class User extends BaseEntity {
     @OneToOne(cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, mappedBy = "user")
     private UserProfileImage userProfileImage;
 
-    @Column(name = "refresh_token", nullable = true)
-    private String refreshToken;
-
     @Column(name = "state", nullable = false)
     @Enumerated(EnumType.STRING)
     private UserState state;

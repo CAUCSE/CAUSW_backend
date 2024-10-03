@@ -40,4 +40,8 @@ public class Vote extends BaseEntity {
     public void endVote(){
         this.isEnd = true;
     }
+
+    public void restartVote(){
+        this.isEnd = false;
+    }
 }

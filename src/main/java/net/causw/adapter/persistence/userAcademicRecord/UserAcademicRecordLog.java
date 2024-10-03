@@ -66,13 +66,10 @@ public class UserAcademicRecordLog extends BaseEntity {
 
     public static UserAcademicRecordLog createWithApplication(
             User controlledUser,
-            User targetUser,
-            AcademicStatus targetAcademicRecordStatus,
-            UserAcademicRecordApplication targetUserAcademicRecordApplication,
-            AcademicRecordRequestStatus targetAcademicRecordRequestStatus,
-            String note,
-            String rejectMessage
+            UserAcademicRecordApplication targetUserAcademicRecordApplication
     ) {
+        User targetUser = targetUserAcademicRecordApplication.getUser();
+
         UserAcademicRecordLog userAcademicRecordLog = UserAcademicRecordLog.builder()
                 .controlledUserEmail(controlledUser.getEmail())
                 .controlledUserName(controlledUser.getName())
@@ -80,10 +77,43 @@ public class UserAcademicRecordLog extends BaseEntity {
                 .targetUserEmail(targetUser.getEmail())
                 .targetUserName(targetUser.getName())
                 .targetUserStudentId(targetUser.getStudentId())
-                .targetAcademicRecordStatus(targetAcademicRecordStatus)
-                .targetAcademicRecordRequestStatus(targetAcademicRecordRequestStatus)
+                .targetAcademicRecordStatus(targetUserAcademicRecordApplication.getTargetAcademicStatus())
+                .targetAcademicRecordRequestStatus(targetUserAcademicRecordApplication.getAcademicRecordRequestStatus())
+                .note(targetUserAcademicRecordApplication.getNote())
+                .rejectMessage(targetUserAcademicRecordApplication.getRejectMessage())
+                .build();
+
+        List<UserAcademicRecordLogAttachImage> userAcademicRecordLogAttachImageList =
+                targetUserAcademicRecordApplication.getUserAcademicRecordAttachImageList()
+                        .stream()
+                        .map(userAcademicRecordApplicationAttachImage ->
+                                UserAcademicRecordLogAttachImage.of(
+                                        userAcademicRecordLog, userAcademicRecordApplicationAttachImage.getUuidFile()))
+                        .toList();
+
+        userAcademicRecordLog.setUserAcademicRecordLogAttachImageList(userAcademicRecordLogAttachImageList);
+
+        return userAcademicRecordLog;
+    }
+
+    public static UserAcademicRecordLog createWithApplication(
+            User controlledUser,
+            UserAcademicRecordApplication targetUserAcademicRecordApplication,
+            String note
+    ) {
+        User targetUser = targetUserAcademicRecordApplication.getUser();
+
+        UserAcademicRecordLog userAcademicRecordLog = UserAcademicRecordLog.builder()
+                .controlledUserEmail(controlledUser.getEmail())
+                .controlledUserName(controlledUser.getName())
+                .controlledUserStudentId(controlledUser.getStudentId())
+                .targetUserEmail(targetUser.getEmail())
+                .targetUserName(targetUser.getName())
+                .targetUserStudentId(targetUser.getStudentId())
+                .targetAcademicRecordStatus(targetUserAcademicRecordApplication.getTargetAcademicStatus())
+                .targetAcademicRecordRequestStatus(targetUserAcademicRecordApplication.getAcademicRecordRequestStatus())
                 .note(note)
-                .rejectMessage(rejectMessage)
+                .rejectMessage(targetUserAcademicRecordApplication.getRejectMessage())
                 .build();
 
         List<UserAcademicRecordLogAttachImage> userAcademicRecordLogAttachImageList =
