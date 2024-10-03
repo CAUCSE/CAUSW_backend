@@ -1,5 +1,6 @@
 package net.causw.adapter.persistence.repository.userAcademicRecord;
 
+import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.userAcademicRecord.UserAcademicRecordApplication;
 import net.causw.domain.model.enums.userAcademicRecord.AcademicRecordRequestStatus;
 import org.springframework.data.domain.Page;
@@ -15,8 +16,14 @@ public interface UserAcademicRecordApplicationRepository extends JpaRepository<U
 
     Page<UserAcademicRecordApplication> findAllByAcademicRecordRequestStatus(Pageable pageable, AcademicRecordRequestStatus academicRecordRequestStatus);
 
-    List<UserAcademicRecordApplication> findAllByAcademicRecordRequestStatus(AcademicRecordRequestStatus academicRecordRequestStatus);
+    List<UserAcademicRecordApplication> findAllByAcademicRecordRequestStatusAndUser(
+            AcademicRecordRequestStatus academicRecordRequestStatus,
+            User user
+    );
 
-    Optional<UserAcademicRecordApplication> findDistinctTopByAcademicRecordRequestStatusOrderByCreatedAtDesc(AcademicRecordRequestStatus academicRecordRequestStatus);
+    Optional<UserAcademicRecordApplication> findDistinctTopByAcademicRecordRequestStatusAndUserOrderByCreatedAtDesc(
+            AcademicRecordRequestStatus academicRecordRequestStatus,
+            User user
+    );
 
 }
