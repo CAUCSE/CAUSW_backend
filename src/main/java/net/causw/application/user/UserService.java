@@ -89,7 +89,6 @@ import java.util.stream.Collectors;
 @MeasureTime
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class UserService {
     private final JwtTokenProvider jwtTokenProvider;
     private final UuidFileService uuidFileService;
