@@ -50,6 +50,7 @@ public class UserCouncilFeeService {
                 "이름",
                 "학번",
                 "입학년도",
+                "닉네임",
                 "전공",
                 "학적상태",
                 "등록 완료 학기",
