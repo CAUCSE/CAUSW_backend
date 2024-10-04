@@ -38,6 +38,9 @@ public class UserCouncilFeeResponseDto {
     @Schema(description = "입학년도", example = "2019")
     private Integer admissionYear;
 
+    @Schema(description = "닉네임", example = "푸앙", nullable = true)
+    private String nickname;
+
     @Schema(description = "전공", example = "컴퓨터공학과")
     private String major;
 
@@ -68,7 +71,7 @@ public class UserCouncilFeeResponseDto {
     @Schema(description = "환불 여부", example = "false")
     private Boolean isRefunded;
 
-    @Schema(description = "환불 시점(isRefunded가 ture일 때만 존재", example = "2021-01-01")
+    @Schema(description = "환불 시점(isRefunded가 true일 때만 존재", example = "2021-01-01")
     private Integer refundedAt;
 
     @Schema(description = "잔여 학생회비 적용 학기", example = "3")

@@ -45,6 +45,7 @@ public interface UserCouncilFeeDtoMapper {
     @Mapping(target = "userName", source = "user.name")
     @Mapping(target = "studentId", source = "user.studentId")
     @Mapping(target = "admissionYear", source = "user.admissionYear")
+    @Mapping(target = "nickname", source = "user.nickname")
     @Mapping(target = "major", source = "user.major")
     @Mapping(target = "academicStatus", source = "user.academicStatus")
     @Mapping(target = "currentCompletedSemester", source = "user.currentCompletedSemester")
