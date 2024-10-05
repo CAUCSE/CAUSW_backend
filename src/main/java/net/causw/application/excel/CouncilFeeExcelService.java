@@ -36,46 +36,49 @@ public class CouncilFeeExcelService extends ExcelAbstractService<UserCouncilFeeR
                     userCouncilFeeResponseDto.getAdmissionYear() != null ? userCouncilFeeResponseDto.getAdmissionYear().toString() : ""
             );
             row.createCell(5).setCellValue(
-                    userCouncilFeeResponseDto.getMajor() != null ? userCouncilFeeResponseDto.getMajor() : ""
+                    userCouncilFeeResponseDto.getNickname() != null ? userCouncilFeeResponseDto.getNickname() : ""
             );
             row.createCell(6).setCellValue(
-                    userCouncilFeeResponseDto.getAcademicStatus() != null ? userCouncilFeeResponseDto.getAcademicStatus().toString() : ""
+                    userCouncilFeeResponseDto.getMajor() != null ? userCouncilFeeResponseDto.getMajor() : ""
             );
             row.createCell(7).setCellValue(
-                    userCouncilFeeResponseDto.getCurrentCompletedSemester() != null ? userCouncilFeeResponseDto.getCurrentCompletedSemester().toString() : ""
+                    userCouncilFeeResponseDto.getAcademicStatus() != null ? userCouncilFeeResponseDto.getAcademicStatus().toString() : ""
             );
             row.createCell(8).setCellValue(
-                    userCouncilFeeResponseDto.getGraduationYear() != null ? userCouncilFeeResponseDto.getGraduationYear().toString() : ""
+                    userCouncilFeeResponseDto.getCurrentCompletedSemester() != null ? userCouncilFeeResponseDto.getCurrentCompletedSemester().toString() : ""
             );
             row.createCell(9).setCellValue(
-                    userCouncilFeeResponseDto.getGraduationType() != null ? userCouncilFeeResponseDto.getGraduationType().toString() : ""
+                    userCouncilFeeResponseDto.getGraduationYear() != null ? userCouncilFeeResponseDto.getGraduationYear().toString() : ""
             );
             row.createCell(10).setCellValue(
-                    userCouncilFeeResponseDto.getPhoneNumber() != null ? userCouncilFeeResponseDto.getPhoneNumber() : ""
+                    userCouncilFeeResponseDto.getGraduationType() != null ? userCouncilFeeResponseDto.getGraduationType().toString() : ""
             );
             row.createCell(11).setCellValue(
-                    userCouncilFeeResponseDto.getJoinedAt() != null ? userCouncilFeeResponseDto.getJoinedAt().toString() : ""
+                    userCouncilFeeResponseDto.getPhoneNumber() != null ? userCouncilFeeResponseDto.getPhoneNumber() : ""
             );
             row.createCell(12).setCellValue(
-                    userCouncilFeeResponseDto.getPaidAt() != null ? userCouncilFeeResponseDto.getPaidAt().toString() : ""
+                    userCouncilFeeResponseDto.getJoinedAt() != null ? userCouncilFeeResponseDto.getJoinedAt().toString() : ""
             );
             row.createCell(13).setCellValue(
-                    userCouncilFeeResponseDto.getNumOfPaidSemester() != null ? userCouncilFeeResponseDto.getNumOfPaidSemester().toString() : ""
+                    userCouncilFeeResponseDto.getPaidAt() != null ? userCouncilFeeResponseDto.getPaidAt().toString() : ""
             );
             row.createCell(14).setCellValue(
+                    userCouncilFeeResponseDto.getNumOfPaidSemester() != null ? userCouncilFeeResponseDto.getNumOfPaidSemester().toString() : ""
+            );
+            row.createCell(15).setCellValue(
                     (userCouncilFeeResponseDto.getIsRefunded() != null) ?
                             (userCouncilFeeResponseDto.getIsRefunded() ?
                                     "O" :
                                     "X") :
                             ""
             );
-            row.createCell(15).setCellValue(
+            row.createCell(16).setCellValue(
                     userCouncilFeeResponseDto.getRefundedAt() != null ? userCouncilFeeResponseDto.getRefundedAt().toString() : ""
             );
-            row.createCell(16).setCellValue(
+            row.createCell(17).setCellValue(
                     userCouncilFeeResponseDto.getRestOfSemester() != null ? userCouncilFeeResponseDto.getRestOfSemester().toString() : ""
             );
-            row.createCell(17).setCellValue(
+            row.createCell(18).setCellValue(
                     (userCouncilFeeResponseDto.getIsAppliedThisSemester() != null) ?
                             (userCouncilFeeResponseDto.getIsAppliedThisSemester() ?
                                     "O" :
