@@ -29,7 +29,7 @@ public class UserAdmissionLog extends BaseEntity {
     @Column(name = "admin_user_name", nullable = false)
     private String adminUserName;
 
-    @OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "userAdmissionLog")
+    @OneToMany(cascade = { CascadeType.PERSIST, CascadeType.REMOVE }, mappedBy = "userAdmissionLog")
     @Builder.Default
     private List<UserAdmissionLogAttachImage> userAdmissionLogAttachImageList = new ArrayList<>();
 
