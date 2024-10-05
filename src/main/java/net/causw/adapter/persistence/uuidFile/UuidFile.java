@@ -20,7 +20,8 @@ public class UuidFile extends BaseEntity {
     @Column(name = "file_key", unique = true, nullable = false)
     private String fileKey;
 
-    @Column(name = "file_url", unique = true, nullable = false)
+    @Lob
+    @Column(name = "file_url", columnDefinition = "TEXT", unique = true, nullable = false)
     private String fileUrl;
 
     @Column(name = "raw_file_name", nullable = false)
