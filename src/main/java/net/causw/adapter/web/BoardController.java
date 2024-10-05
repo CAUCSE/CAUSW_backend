@@ -121,7 +121,7 @@ public class BoardController {
     @PostMapping(value = "/apply")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
-    @Operation(summary = "게시판 신청 API(완료)", description = "게시판을 신청하는 API입니다. 권한 정보가 필요 없습니다.")
+    @Operation(summary = "일반 게시판 게시판 신청 API", description = "게시판을 신청하는 API입니다. 권한 정보가 필요 없습니다. 관리자/학생회장/부학생회장일 경우 별도의 신청 절차 없이 바로 일반 게시판이 생성됩니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Created", content = @Content(mediaType = "application/json")),
             @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
@@ -140,10 +140,11 @@ public class BoardController {
 
 
     
-    @PostMapping(value = "/normal")
+    @PostMapping(value = "/create/notice")
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
-    @Operation(summary = "일반 게시판 생성 API(완료)", description = "별도의 신청 없이 생성할 수 있는 게시판을 만드는 API입니다. 게시판의 이름을 전달 받습니다.")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() " +
+            "and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT')")
+    @Operation(summary = "관리자/학생회장/부학생회장 전용 공지 게시판 생성 API", description = "관리자/학생회장/부학생회장이 별도의 신청 없이 생성할 수 있는 게시판을 만드는 API입니다. 게시판의 이름을 전달 받습니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Created", content = @Content(mediaType = "application/json")),
             @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
@@ -153,11 +154,11 @@ public class BoardController {
             @ApiResponse(responseCode = "4109", description = "가입이 거절된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
             @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
     })
-    public BoardResponseDto createNormalBoard(
-            @Valid @RequestBody NormalBoardCreateRequestDto normalBoardCreateRequestDto,
+    public BoardResponseDto createNoticeBoard(
+            @Valid @RequestBody NoticeBoardCreateRequestDto noticeBoardCreateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return this.boardService.createNormalBoard(userDetails.getUser(), normalBoardCreateRequestDto);
+        return this.boardService.createNoticeBoard(userDetails.getUser(), noticeBoardCreateRequestDto);
     }
 
     @GetMapping(value = "/apply/list")

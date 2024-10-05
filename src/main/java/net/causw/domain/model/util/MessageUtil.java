@@ -55,6 +55,7 @@ public class MessageUtil {
     public static final String NEW_CIRCLE_LEADER_NOT_FOUND = "등록할 동아리장을 다시 확인해주세요.";
     public static final String CIRCLE_NOT_FOUND = "해당 동아리를 찾을 수 없습니다.";
     public static final String POST_DELETED = "삭제된 게시물입니다.";
+    public static final String BOARD_NAME_ALREADY_EXISTS = "게시판 이름이 이미 존재합니다.";
 
     // Like & favorite
     public static final String POST_ALREADY_LIKED = "좋아요를 이미 누른 게시글 입니다.";
@@ -164,4 +165,5 @@ public class MessageUtil {
     public static final String BATCH_FAIL = "[배치 실행에 실패했습니다.]";
 
     public static final String FAIL_TO_CRAWL_CAU_SW_NOTICE_SITE = "소프트웨어학부 공지사항 크롤링 실패";
+
 }
