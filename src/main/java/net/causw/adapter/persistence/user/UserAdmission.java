@@ -20,7 +20,7 @@ public class UserAdmission extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "userAdmission")
+    @OneToMany(cascade = { CascadeType.PERSIST, CascadeType.REMOVE }, mappedBy = "userAdmission")
     @Builder.Default
     private List<UserAdmissionAttachImage> userAdmissionAttachImageList = new ArrayList<>();
 
