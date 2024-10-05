@@ -1355,10 +1355,7 @@ public class UserService {
         this.userAdmissionLogRepository.save(userAdmissionLog);
 
         // Remove the admission
-        List<UuidFile> uuidFileList = userAdmission.getUserAdmissionAttachImageList().stream().map(UserAdmissionAttachImage::getUuidFile).toList();
         this.userAdmissionRepository.delete(userAdmission);
-
-        uuidFileService.deleteFileList(uuidFileList);
 
         return UserDtoMapper.INSTANCE.toUserAdmissionResponseDto(
                 userAdmissionLog,
@@ -1403,10 +1400,7 @@ public class UserService {
 
         this.userAdmissionLogRepository.save(userAdmissionLog);
 
-        List<UuidFile> uuidFileList = userAdmission.getUserAdmissionAttachImageList().stream().map(UserAdmissionAttachImage::getUuidFile).toList();
         this.userAdmissionRepository.delete(userAdmission);
-
-        uuidFileService.deleteFileList(uuidFileList);
 
         requestUser.updateRejectionOrDropReason(rejectReason);
         this.userRepository.save(requestUser);

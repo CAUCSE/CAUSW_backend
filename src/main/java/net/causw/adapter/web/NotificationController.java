@@ -34,4 +34,13 @@ public class NotificationController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         notificationService.setNotice(userDetails.getUser(), boardId);
     }
+
+    @GetMapping("/{boardId}")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "알림설정 여부 확인", description = "알림설정 여부를 확인합니다.")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
+    public Boolean checkNotice(@AuthenticationPrincipal CustomUserDetails userDetails,
+                               @PathVariable("boardId") String boardId) {
+        return notificationService.checkNotice(userDetails.getUser(), boardId);
+    }
 }

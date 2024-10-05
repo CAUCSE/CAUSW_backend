@@ -1050,8 +1050,10 @@ public class PostService {
 
     private VoteResponseDto toVoteResponseDto(Vote vote, User user) {
         List<VoteOptionResponseDto> voteOptionResponseDtoList = vote.getVoteOptions().stream()
+                .sorted(Comparator.comparing(VoteOption::getCreatedAt))
                 .map(this::tovoteOptionResponseDto)
                 .collect(Collectors.toList());
+
         Set<String> uniqueUserIds = voteOptionResponseDtoList.stream()
                 .flatMap(voteOptionResponseDto -> voteOptionResponseDto.getVoteUsers().stream())
                 .map(UserResponseDto::getId)
