@@ -217,10 +217,32 @@ public class BoardService {
             User creator,
             NormalBoardApplyRequestDto normalBoardApplyRequestDto
     ) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-        validatorBucket
-                .consistOf(UserStateValidator.of(creator.getState()))   // 활성화된 사용자인지 확인
-                .consistOf(UserRoleIsNoneValidator.of(creator.getRoles())); // 권한이 없는 사용자인지 확인
+        if (boardRepository.existsByName(normalBoardApplyRequestDto.getBoardName())) {
+            throw new BadRequestException(
+                    ErrorCode.ROW_ALREADY_EXIST,
+                    MessageUtil.BOARD_NAME_ALREADY_EXISTS
+            );
+        }
+
+        if (creator.getRoles().contains(Role.ADMIN) ||
+                creator.getRoles().contains(Role.PRESIDENT) ||
+                creator.getRoles().contains(Role.VICE_PRESIDENT)
+        ) {
+            List<String> createRoleList = new ArrayList<>();
+            createRoleList.add("ALL"); // 일반 사용자의 게시판 신청은 항상 글 작성 권한이 '상관없음'임
+            Board newBoard = Board.of(
+                    normalBoardApplyRequestDto.getBoardName(),
+                    normalBoardApplyRequestDto.getDescription(),
+                    createRoleList,
+                    StaticValue.BOARD_NAME_APP_FREE,
+                    normalBoardApplyRequestDto.getIsAnonymousAllowed(),
+                    null
+            );
+
+            boardRepository.save(newBoard);
+
+            return;
+        }
 
         BoardApply newBoardApply = BoardApply.of(
                 creator,
@@ -230,40 +252,29 @@ public class BoardService {
                 normalBoardApplyRequestDto.getIsAnonymousAllowed()
         );
 
-        validatorBucket
-                .consistOf(ConstraintValidator.of(newBoardApply, this.validator))
-                .validate();
-
         boardApplyRepository.save(newBoardApply);
     }
 
     @Transactional
-    public BoardResponseDto createNormalBoard(
+    public BoardResponseDto createNoticeBoard(
             User creator,
-            NormalBoardCreateRequestDto normalBoardCreateRequestDto
+            NoticeBoardCreateRequestDto noticeBoardCreateRequestDto
     ) {
+        if (boardRepository.existsByName(noticeBoardCreateRequestDto.getBoardName())) {
+            throw new BadRequestException(
+                    ErrorCode.ROW_ALREADY_EXIST,
+                    MessageUtil.BOARD_NAME_ALREADY_EXISTS
+            );
+        }
 
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-        validatorBucket
-                .consistOf(UserStateValidator.of(creator.getState()))   // 활성화된 사용자인지 확인
-                .consistOf(UserRoleIsNoneValidator.of(creator.getRoles())) // 권한이 없는 사용자인지 확인
-                .consistOf(UserRoleValidator.of(creator.getRoles(), Set.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT))); // 권한이 관리자, 학생회장, 부학생회장 중 하나인지 확인
-
-
-        // 로그인 유저의 권한이 관리자, 학생회장, 부학생회장 중 하나인 경우
-        // 아무런 조건 없이 게시판을 생성할 수 있음
         Board newBoard = Board.of(
-                normalBoardCreateRequestDto.getBoardName(),
-                normalBoardCreateRequestDto.getDescription(),
-                normalBoardCreateRequestDto.getCreateRoleList(),
+                noticeBoardCreateRequestDto.getBoardName(),
+                noticeBoardCreateRequestDto.getDescription(),
+                noticeBoardCreateRequestDto.getCreateRoleList(),
                 StaticValue.BOARD_NAME_APP_NOTICE,
-                normalBoardCreateRequestDto.getIsAnonymousAllowed(),
+                noticeBoardCreateRequestDto.getIsAnonymousAllowed(),
                 null
         );
-
-        validatorBucket
-                .consistOf(ConstraintValidator.of(newBoard, this.validator))
-                .validate();
 
         return toBoardResponseDto(boardRepository.save(newBoard), creator.getRoles());
     }

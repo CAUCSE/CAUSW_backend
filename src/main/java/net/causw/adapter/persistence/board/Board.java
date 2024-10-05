@@ -66,6 +66,7 @@ public class Board extends BaseEntity {
             if (createRoleList.isEmpty()) {
                 createRoleList.add(Role.ADMIN.getValue());
                 createRoleList.add(Role.PRESIDENT.getValue());
+                createRoleList.add(Role.VICE_PRESIDENT.getValue());
             } else if (createRoleList.contains("ALL")) {
                 createRoleList.addAll(
                         Arrays.stream(Role.values())
@@ -80,8 +81,16 @@ public class Board extends BaseEntity {
                         .map(Role::of)
                         .map(Role::getValue)
                         .collect(Collectors.toList());
-                createRoleList.add(Role.ADMIN.getValue());
-                createRoleList.add(Role.PRESIDENT.getValue());
+                createRoleList.remove(Role.NONE.getValue());
+                if (!createRoleList.contains(Role.ADMIN.getValue())) {
+                    createRoleList.add(Role.ADMIN.getValue());
+                }
+                if (!createRoleList.contains(Role.PRESIDENT.getValue())) {
+                    createRoleList.add(Role.PRESIDENT.getValue());
+                }
+                if (!createRoleList.contains(Role.VICE_PRESIDENT.getValue())) {
+                    createRoleList.add(Role.VICE_PRESIDENT.getValue());
+                }
             }
         }
 
