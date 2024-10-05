@@ -211,13 +211,6 @@ public class PostService {
 
         Board board = getBoard(postCreateRequestDto.getBoardId());
         List<String> createRoles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
-        if (board.getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
-            validatorBucket
-                    .consistOf(UserRoleValidator.of(
-                            roles,
-                            Set.of()
-                    ));
-        }
 
         List<UuidFile> uuidFileList = (attachImageList == null || attachImageList.isEmpty()) ?
                 new ArrayList<>() :
