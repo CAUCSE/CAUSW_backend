@@ -29,7 +29,7 @@ public class SecurityService {
         boolean isJustRoleNone = userDetails.getAuthorities().stream()
                 .allMatch(authority -> authority.getAuthority().equals("ROLE_NONE"));
 
-        return userDetails.getUserState() == UserState.ACTIVE && isJustRoleNone;
+        return userDetails.getUserState() == UserState.ACTIVE && !isJustRoleNone;
     }
 
     public boolean isAcademicRecordCertified() {
