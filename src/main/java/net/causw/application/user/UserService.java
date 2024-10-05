@@ -1337,8 +1337,8 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .validate();
 
-        // Update user role to COMMON
-        this.updateRole(userAdmission.getUser(), Role.COMMON);
+        // NONE role 삭제 후 COMMON으로 변경
+        this.removeRole(userAdmission.getUser(), Role.NONE);
 
         // Add admission log
         UserAdmissionLog userAdmissionLog = UserAdmissionLog.of(
