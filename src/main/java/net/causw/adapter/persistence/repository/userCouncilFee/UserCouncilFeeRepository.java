@@ -15,4 +15,6 @@ public interface UserCouncilFeeRepository extends JpaRepository<UserCouncilFee, 
     List<UserCouncilFee> findAllByIsJoinedService(Boolean isJoinedService);
 
     Optional<UserCouncilFee> findByUser(User user);
+
+    Boolean existsByUser(User targetUser);
 }

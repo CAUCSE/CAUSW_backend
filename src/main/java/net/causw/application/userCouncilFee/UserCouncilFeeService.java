@@ -131,6 +131,10 @@ public class UserCouncilFeeService {
         User targetUser = userRepository.findById(createUserCouncilFeeWithUserRequestDto.getUserId())
                 .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND));
 
+        if (userCouncilFeeRepository.existsByUser(targetUser)) {
+            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.USER_COUNCIL_FEE_INFO_ALREADY_EXISTS);
+        }
+
         if (createUserCouncilFeeWithUserRequestDto.getIsRefunded() && createUserCouncilFeeWithUserRequestDto.getRefundedAt() == null) {
             throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.REFUND_DATE_IS_NULL);
         }
