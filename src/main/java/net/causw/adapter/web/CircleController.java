@@ -647,10 +647,9 @@ public class CircleController {
     public void createApplicationForm(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable(name = "circleId") String circleId,
-            @RequestHeader @NotNull LocalDateTime recruitEndDate,
             @RequestBody @Valid FormCreateRequestDto formCreateRequestDto
     ) {
-        circleService.createApplicationForm(userDetails.getUser(), circleId, recruitEndDate, formCreateRequestDto);
+        circleService.createApplicationForm(userDetails.getUser(), circleId, formCreateRequestDto);
     }
 
     @GetMapping(value = "/{circleId}/apply/application/is-exist")

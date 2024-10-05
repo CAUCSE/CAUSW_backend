@@ -742,7 +742,7 @@ public class CircleService {
     }
 
     @Transactional
-    public void createApplicationForm(User writer, String circleId, LocalDateTime recruitEndDate, FormCreateRequestDto formCreateRequestDto) {
+    public void createApplicationForm(User writer, String circleId, FormCreateRequestDto formCreateRequestDto) {
         Circle circle = getCircle(circleId);
         CircleMember circleMember = circleMemberRepository.findByUser_IdAndCircle_Id(writer.getId(), circleId).orElseThrow(
                 () -> new BadRequestException(
@@ -776,7 +776,6 @@ public class CircleService {
         formRepository.save(generateForm(formCreateRequestDto, circle));
 
         circle.setIsRecruit(true);
-        circle.setRecruitEndDate(recruitEndDate);
 
         circleRepository.save(circle);
     }

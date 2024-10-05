@@ -35,6 +35,7 @@ public interface CircleDtoMapper extends UuidFileToUrlDtoMapper {
     CircleDtoMapper INSTANCE = Mappers.getMapper(CircleDtoMapper.class);
 
     // User
+    @Mapping(target = "profileImageUrl", source = "user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
     UserResponseDto toUserResponseDto(User user);
 
     // Circle
