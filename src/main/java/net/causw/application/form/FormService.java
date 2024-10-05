@@ -755,12 +755,14 @@ public class FormService {
     public List<UserReplyResponseDto> getReplyByUserAndCircle(String userId, String circleId) {
         List<Form> circleFormList = this.formRepository.findAllByCircleAndIsDeletedAndIsClosed(this.getCircle(circleId), false, false);
 
-        List<Reply> circleReplyList = circleFormList.stream()
-                .flatMap(form -> replyRepository.findAllByForm(form).stream())
-                .collect(Collectors.toList());
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.USER_NOT_FOUND
+                ));
 
-        List<Reply> userReplyList = circleReplyList.stream()
-                .filter(reply -> reply.getUser().getId().equals(userId))
+        List<Reply> userReplyList = circleFormList.stream()
+                .flatMap(form -> replyRepository.findByFormAndUser(form, user).stream())
                 .collect(Collectors.toList());
 
         if (userReplyList.isEmpty()) {
