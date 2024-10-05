@@ -721,4 +721,28 @@ public class FormService {
         return FormDtoMapper.INSTANCE.toExcelReplyQuestionResponseDto(replyQuestion);
     }
 
+    public List<UserReplyResponseDto> getReplyByUserAndCircle(String userId, String circleId) {
+        List<Form> circleFormList = this.formRepository.findAllByCircleAndIsDeletedAndIsClosed(this.getCircle(circleId), false, false);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.USER_NOT_FOUND
+                ));
+
+        List<Reply> userReplyList = circleFormList.stream()
+                .flatMap(form -> replyRepository.findByFormAndUser(form, user).stream())
+                .collect(Collectors.toList());
+
+        if (userReplyList.isEmpty()) {
+            throw new BadRequestException(
+                    ErrorCode.ROW_DOES_NOT_EXIST,
+                    MessageUtil.USER_APPLY_NOT_FOUND
+            );
+        }
+
+        return userReplyList.stream()
+                .map(FormDtoMapper.INSTANCE::toUserReplyResponseDto)
+                .collect(Collectors.toList());
+    }
 }
