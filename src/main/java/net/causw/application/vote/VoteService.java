@@ -25,6 +25,7 @@ import net.causw.domain.model.util.MessageUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -131,8 +132,10 @@ public class VoteService {
 
     private VoteResponseDto toVoteResponseDto(Vote vote, User user) {
         List<VoteOptionResponseDto> voteOptionResponseDtoList = vote.getVoteOptions().stream()
+                .sorted(Comparator.comparing(VoteOption::getCreatedAt))
                 .map(this::tovoteOptionResponseDto)
                 .collect(Collectors.toList());
+
         Set<String> uniqueUserIds = voteOptionResponseDtoList.stream()
                 .flatMap(voteOptionResponseDto -> voteOptionResponseDto.getVoteUsers().stream())
                 .map(UserResponseDto::getId)
