@@ -21,6 +21,7 @@ import net.causw.application.dto.form.request.QuestionReplyRequestDto;
 import net.causw.application.dto.form.response.reply.excel.ExcelReplyListResponseDto;
 import net.causw.application.dto.form.response.reply.excel.ExcelReplyQuestionResponseDto;
 import net.causw.application.dto.form.response.reply.excel.ExcelReplyResponseDto;
+import net.causw.application.dto.util.StatusUtil;
 import net.causw.application.dto.util.dtoMapper.FormDtoMapper;
 import net.causw.application.excel.FormExcelService;
 import net.causw.domain.aop.annotation.MeasureTime;
@@ -387,7 +388,7 @@ public class FormService {
                             )
                     );
 
-                    if (!getIsAppliedCurrentSemester(userCouncilFee)) {
+                    if (!StatusUtil.getIsAppliedCurrentSemester(userCouncilFee)) {
                         throw new BadRequestException(
                                 ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
                                 MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
@@ -524,38 +525,6 @@ public class FormService {
         return leader;
     }
 
-    private Boolean getIsAppliedCurrentSemester(UserCouncilFee userCouncilFee) {
-        Integer startOfAppliedSemester = userCouncilFee.getPaidAt();
-        Integer endOfAppliedSemester = ( userCouncilFee.getIsRefunded() ) ?
-                ( startOfAppliedSemester - 1 ) + userCouncilFee.getNumOfPaidSemester() :
-                userCouncilFee.getRefundedAt();
-        Boolean isAppliedThisSemester;
-
-        if (userCouncilFee.getIsJoinedService()) {
-            isAppliedThisSemester = (startOfAppliedSemester <= userCouncilFee.getUser().getCurrentCompletedSemester()) &&
-                    (userCouncilFee.getUser().getCurrentCompletedSemester() <= endOfAppliedSemester);
-        } else {
-            isAppliedThisSemester = (startOfAppliedSemester <= userCouncilFee.getCouncilFeeFakeUser().getCurrentCompletedSemester()) &&
-                    (userCouncilFee.getCouncilFeeFakeUser().getCurrentCompletedSemester() <= endOfAppliedSemester);
-        }
-        return isAppliedThisSemester;
-    }
-
-    private Integer getRestOfSemester(UserCouncilFee userCouncilFee) {
-        Integer startOfAppliedSemester = userCouncilFee.getPaidAt();
-        Integer endOfAppliedSemester = ( userCouncilFee.getIsRefunded() ) ?
-                ( startOfAppliedSemester - 1 ) + userCouncilFee.getNumOfPaidSemester() :
-                userCouncilFee.getRefundedAt();
-        Integer restOfSemester;
-
-        if (userCouncilFee.getIsJoinedService()) {
-            restOfSemester = Math.max(endOfAppliedSemester - userCouncilFee.getUser().getCurrentCompletedSemester(), 0);
-        } else {
-            restOfSemester = Math.max(endOfAppliedSemester - userCouncilFee.getCouncilFeeFakeUser().getCurrentCompletedSemester(), 0);
-        }
-        return restOfSemester;
-    }
-
     private void validCanAccessPost(User writer, Form form) {
         if (form.getCircle() != null) {
             return;
@@ -651,8 +620,8 @@ public class FormService {
             return FormDtoMapper.INSTANCE.toReplyUserResponseDto(user, null, null, null);
         }
 
-        Boolean isAppliedThisSemester = getIsAppliedCurrentSemester(userCouncilFee);
-        Integer restOfSemester = getRestOfSemester(userCouncilFee);
+        Boolean isAppliedThisSemester = StatusUtil.getIsAppliedCurrentSemester(userCouncilFee);
+        Integer restOfSemester = StatusUtil.getRestOfSemester(userCouncilFee);
 
         return FormDtoMapper.INSTANCE.toReplyUserResponseDto(user, userCouncilFee, isAppliedThisSemester, restOfSemester);
     }

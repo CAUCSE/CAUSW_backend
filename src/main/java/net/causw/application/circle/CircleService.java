@@ -1208,7 +1208,7 @@ public class CircleService {
                             )
                     );
 
-                    if (!getIsAppliedCurrentSemester(userCouncilFee)) {
+                    if (!StatusUtil.getIsAppliedCurrentSemester(userCouncilFee)) {
                         throw new BadRequestException(
                                 ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
                                 MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
@@ -1263,38 +1263,6 @@ public class CircleService {
     }
 
     // Private method
-    private Integer getRestOfSemester(UserCouncilFee userCouncilFee) {
-        Integer startOfAppliedSemester = userCouncilFee.getPaidAt();
-        Integer endOfAppliedSemester = ( userCouncilFee.getIsRefunded() ) ?
-                ( startOfAppliedSemester - 1 ) + userCouncilFee.getNumOfPaidSemester() :
-                userCouncilFee.getRefundedAt();
-        Integer restOfSemester;
-
-        if (userCouncilFee.getIsJoinedService()) {
-            restOfSemester = Math.max(endOfAppliedSemester - userCouncilFee.getUser().getCurrentCompletedSemester(), 0);
-        } else {
-            restOfSemester = Math.max(endOfAppliedSemester - userCouncilFee.getCouncilFeeFakeUser().getCurrentCompletedSemester(), 0);
-        }
-        return restOfSemester;
-    }
-
-    private Boolean getIsAppliedCurrentSemester(UserCouncilFee userCouncilFee) {
-        Integer startOfAppliedSemester = userCouncilFee.getPaidAt();
-        Integer endOfAppliedSemester = ( userCouncilFee.getIsRefunded() ) ?
-                ( startOfAppliedSemester - 1 ) + userCouncilFee.getNumOfPaidSemester() :
-                userCouncilFee.getRefundedAt();
-        Boolean isAppliedThisSemester;
-
-        if (userCouncilFee.getIsJoinedService()) {
-            isAppliedThisSemester = (startOfAppliedSemester <= userCouncilFee.getUser().getCurrentCompletedSemester()) &&
-                    (userCouncilFee.getUser().getCurrentCompletedSemester() <= endOfAppliedSemester);
-        } else {
-            isAppliedThisSemester = (startOfAppliedSemester <= userCouncilFee.getCouncilFeeFakeUser().getCurrentCompletedSemester()) &&
-                    (userCouncilFee.getCouncilFeeFakeUser().getCurrentCompletedSemester() <= endOfAppliedSemester);
-        }
-        return isAppliedThisSemester;
-    }
-
     @NotNull
     private List<ExportCircleMemberToExcelResponseDto> getExportCircleMemberToExcelResponseDtoListByMemberStatus(String circleId, CircleMemberStatus circleMemberStatus) {
         return circleMemberRepository.findByCircle_IdAndStatus(circleId, circleMemberStatus)
@@ -1311,8 +1279,8 @@ public class CircleService {
                             return this.toExportCircleMemberToExcelResponseDto(
                                     srcUser,
                                     userCouncilFee,
-                                    getRestOfSemester(userCouncilFee),
-                                    getIsAppliedCurrentSemester(userCouncilFee)
+                                    StatusUtil.getRestOfSemester(userCouncilFee),
+                                    StatusUtil.getIsAppliedCurrentSemester(userCouncilFee)
                             );
                         }
                 ).toList();
