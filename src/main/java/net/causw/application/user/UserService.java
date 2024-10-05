@@ -983,10 +983,11 @@ public class UserService {
     private User updateRole(User targetUser, Role newRole) {
         Set<Role> roles = targetUser.getRoles();
 
-        //common이 포함되어 있을때는 common을 지우고 새로운 역할 추가
-        if(roles.contains(Role.COMMON)){
-            roles.remove(Role.COMMON);
+        // newRole이 NONE이면 기존 모든 권한 삭제
+        if (newRole.equals(Role.NONE)) {
+            roles.clear();
         }
+
         roles.add(newRole);
         return this.userRepository.save(targetUser);
     }
