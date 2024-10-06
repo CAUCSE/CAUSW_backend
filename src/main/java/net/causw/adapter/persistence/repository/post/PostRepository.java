@@ -48,15 +48,17 @@ public interface PostRepository extends JpaRepository<Post, String> {
     @Query(value = "SELECT DISTINCT p FROM Post p JOIN FETCH p.board WHERE p.id = :id")
     Optional<Post> findById(@Param("id") String id);
 
-    // 게시물에 작성된 모든 댓글(댓글+대댓글)의 수 세기
-    @Query(value = "SELECT COUNT(DISTINCT c.id) + COUNT(DISTINCT cc.id) - COUNT(DISTINCT CASE WHEN c.is_deleted = true AND NOT cc.is_deleted IS NULL THEN c.id END)" +
-            "FROM tb_post AS p " +
-            "JOIN tb_comment AS c ON p.id = c.post_id " +
-            "LEFT JOIN tb_child_comment AS cc ON c.id = cc.parent_comment_id " +
-            "WHERE p.id = :postId AND p.is_deleted = false " +
-            "AND NOT (c.is_deleted = true AND cc.is_deleted IS NULL)" +
-            "AND (cc.is_deleted = false OR cc.is_deleted IS NULL)", nativeQuery = true)
-    Long countAllCommentByPost_Id(@Param("postId") String postId);
+    @Query("SELECT COUNT(c) FROM Comment c WHERE c.post.id = :postId AND c.isDeleted = false")
+    Long countCommentsByPostId(@Param("postId") String postId);
+
+    @Query("SELECT COUNT(cc) FROM ChildComment cc WHERE cc.parentComment.post.id = :postId AND cc.isDeleted = false")
+    Long countChildCommentsByPostId(@Param("postId") String postId);
+
+    default Long countAllCommentByPost_Id(String postId) {
+        Long commentCount = countCommentsByPostId(postId);
+        Long childCommentCount = countChildCommentsByPostId(postId);
+        return commentCount + childCommentCount;
+    }
 
     Optional<Post> findByForm(Form form);
 }
