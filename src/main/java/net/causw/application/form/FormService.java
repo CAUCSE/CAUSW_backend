@@ -741,8 +741,20 @@ public class FormService {
             );
         }
 
+        List<OptionResponseDto> optionResponseDtoList = circleFormList.stream()
+                .flatMap(form -> form.getFormQuestionList().stream()
+                        .flatMap(question -> question.getFormQuestionOptionList().stream()
+                                .map(option -> FormDtoMapper.INSTANCE.toOptionResponseDto(option))))
+                .collect(Collectors.toList());
+
+        List<QuestionResponseDto> questionResponseDtoList = circleFormList.stream()
+                .flatMap(form -> form.getFormQuestionList().stream()
+                        .map(question -> FormDtoMapper.INSTANCE.toQuestionResponseDto(question, optionResponseDtoList)))
+                .collect(Collectors.toList());
+
+
         return userReplyList.stream()
-                .map(FormDtoMapper.INSTANCE::toUserReplyResponseDto)
+                .map(reply -> FormDtoMapper.INSTANCE.toUserReplyResponseDto(reply, questionResponseDtoList))
                 .collect(Collectors.toList());
     }
 }
