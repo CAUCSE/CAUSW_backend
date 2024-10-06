@@ -481,6 +481,10 @@ public class CircleService {
                         null
                 ));
 
+        if (circleMember.getStatus().equals(CircleMemberStatus.REJECT)) {
+            circleMember.setStatus(CircleMemberStatus.AWAIT);
+        }
+
         Reply reply = this.replyForm(
                 this.getForm(circle),
                 formReplyRequestDto,
