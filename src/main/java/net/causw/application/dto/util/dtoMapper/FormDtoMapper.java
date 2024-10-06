@@ -87,8 +87,9 @@ public interface FormDtoMapper {
     @Mapping(target = "createdAt", source = "createdAt")
     ReplyResponseDto toReplyResponseDto(ReplyUserResponseDto replyUserResponseDto, List<ReplyQuestionResponseDto> replyQuestionResponseDtoList, LocalDateTime createdAt);
 
+    @Mapping(target = "questionResponseDtoList", source = "questionResponseDtoList")
     @Mapping(target = "replyQuestionResponseDtoList", source = "reply.replyQuestionList")
-    UserReplyResponseDto toUserReplyResponseDto(Reply reply);
+    UserReplyResponseDto toUserReplyResponseDto(Reply reply, List<QuestionResponseDto> questionResponseDtoList);
 
     @Mapping(target = "optionId", source = "formQuestionOption.id")
     @Mapping(target = "optionNumber", source = "formQuestionOption.number")
