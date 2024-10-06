@@ -54,6 +54,7 @@ public interface PostRepository extends JpaRepository<Post, String> {
     @Query("SELECT COUNT(cc) FROM ChildComment cc WHERE cc.parentComment.post.id = :postId AND cc.isDeleted = false")
     Long countChildCommentsByPostId(@Param("postId") String postId);
 
+    // 게시글에 작성된 모든댓글(댓글 + 대댓글)의 수 반환
     default Long countAllCommentByPost_Id(String postId) {
         Long commentCount = countCommentsByPostId(postId);
         Long childCommentCount = countChildCommentsByPostId(postId);
