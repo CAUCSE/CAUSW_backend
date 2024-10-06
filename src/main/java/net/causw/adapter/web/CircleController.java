@@ -214,7 +214,7 @@ public class CircleController {
     @GetMapping(value = "/{circleId}/memberList")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
-    @Operation(summary = "모든 동아리원 조회 API(완료)", description = "circleId에는 동아리 고유 id 값(PK), circleMemberStatus 엔 조회하고자 하는 동아리원의 상태를 입력해주세요.")
+    @Operation(summary = "모든 동아리원 조회 API(완료)", description = "circleId에는 동아리 고유 id 값(PK)을 입력해주세요.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CircleMemberResponseDto.class), array = @io.swagger.v3.oas.annotations.media.ArraySchema(schema = @Schema(implementation = CircleMemberResponseDto.class)))),
             @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
