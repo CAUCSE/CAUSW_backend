@@ -371,7 +371,7 @@ public class CircleService {
                         uuidFileService.saveFile(mainImage, FilePath.CIRCLE_PROFILE)
                 );
             } else {
-                circleMainImage = circle.getCircleMainImage().updateUuidFileAndReturnSelf(
+                circleMainImage.setUuidFile(
                         uuidFileService.updateFile(
                                 circle.getCircleMainImage().getUuidFile(),
                                 mainImage,

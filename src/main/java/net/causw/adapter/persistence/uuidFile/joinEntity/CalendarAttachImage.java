@@ -2,10 +2,12 @@ package net.causw.adapter.persistence.uuidFile.joinEntity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.calendar.Calendar;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 
 @Getter
+@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
@@ -16,22 +18,21 @@ indexes = {
 })
 public class CalendarAttachImage extends JoinEntity {
 
+    @Getter
+    @Setter(AccessLevel.PUBLIC)
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "uuid_file_id", nullable = false, unique = true)
+    public UuidFile uuidFile;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "calendar_id", nullable = false)
     private Calendar calendar;
 
-    private CalendarAttachImage(Calendar calendar, UuidFile uuidFile) {
-        super(uuidFile);
-        this.calendar = calendar;
-    }
-
     public static CalendarAttachImage of(Calendar calendar, UuidFile uuidFile) {
-        return new CalendarAttachImage(calendar, uuidFile);
-    }
-
-    public CalendarAttachImage updateUuidFileAndReturnSelf(UuidFile uuidFile) {
-        this.uuidFile = uuidFile;
-        return this;
+        return CalendarAttachImage.builder()
+                .uuidFile(uuidFile)
+                .calendar(calendar)
+                .build();
     }
 
 }

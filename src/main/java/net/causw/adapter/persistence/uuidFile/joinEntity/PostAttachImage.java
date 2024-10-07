@@ -2,10 +2,12 @@ package net.causw.adapter.persistence.uuidFile.joinEntity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 
 @Getter
+@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
@@ -16,17 +18,21 @@ indexes = {
 })
 public class PostAttachImage extends JoinEntity {
 
+    @Getter
+    @Setter(AccessLevel.PUBLIC)
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "uuid_file_id", nullable = false, unique = true)
+    public UuidFile uuidFile;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
-    private PostAttachImage(Post post, UuidFile uuidFile) {
-        super(uuidFile);
-        this.post = post;
-    }
-
     public static PostAttachImage of(Post post, UuidFile uuidFile) {
-        return new PostAttachImage(post, uuidFile);
+        return PostAttachImage.builder()
+                .uuidFile(uuidFile)
+                .post(post)
+                .build();
     }
 
 }

@@ -16,7 +16,7 @@ indexes = {
     @Index(name = "idx_user_profile_user_id", columnList = "user_id"),
     @Index(name = "idx_user_profile_uuid_file_id", columnList = "uuid_file_id")
 })
-public class UserProfileImage extends BaseEntity {
+public class UserProfileImage extends JoinEntity {
 
     @Setter(AccessLevel.PUBLIC)
     @OneToOne(fetch = FetchType.EAGER)
