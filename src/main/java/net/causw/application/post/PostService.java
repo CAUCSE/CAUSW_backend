@@ -870,6 +870,7 @@ public class PostService {
                 postRepository.countAllCommentByPost_Id(post.getId()),
                 getNumOfPostLikes(post),
                 getNumOfPostFavorites(post),
+                !post.getPostAttachImageList().isEmpty() ? post.getPostAttachImageList().get(0) : null,
                 StatusUtil.isPostVote(post),
                 StatusUtil.isPostForm(post)
         );
