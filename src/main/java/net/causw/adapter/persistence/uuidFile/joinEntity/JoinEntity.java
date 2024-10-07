@@ -12,8 +12,8 @@ import net.causw.application.uuidFile.UuidFileService;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class JoinEntity extends BaseEntity {
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "uuid_file_id", nullable = false)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "uuid_file_id", nullable = false, unique = false)
     public UuidFile uuidFile;
 
 }
