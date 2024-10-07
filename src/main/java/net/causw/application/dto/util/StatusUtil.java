@@ -28,7 +28,7 @@ public class StatusUtil {
         if (roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT) || roles.contains(Role.VICE_PRESIDENT) || comment.getWriter().getId().equals(user.getId())) {
             return true;
         }
-        User leader = board.getCircle().getLeader().orElse(null);
+        User leader = board.getCircle() != null ? board.getCircle().getLeader().orElse(null) : null;
         if (leader == null) return false;
 
         return roles.contains(Role.LEADER_CIRCLE) && leader.getId().equals(user.getId());
