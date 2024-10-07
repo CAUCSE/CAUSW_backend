@@ -230,9 +230,10 @@ public class UserService {
                         post,
                         getNumOfComment(post),
                         getNumOfPostLikes(post),
-                        getNumOfPostFavorites(post)
-                        , StatusUtil.isPostVote(post)
-                        , StatusUtil.isPostForm(post)
+                        getNumOfPostFavorites(post),
+                        !post.getPostAttachImageList().isEmpty() ? post.getPostAttachImageList().get(0) : null,
+                        StatusUtil.isPostVote(post),
+                        StatusUtil.isPostForm(post)
                 ))
         );
     }
@@ -253,9 +254,10 @@ public class UserService {
                                 favoritePost.getPost(),
                                 getNumOfComment(favoritePost.getPost()),
                                 getNumOfPostLikes(favoritePost.getPost()),
-                                getNumOfPostFavorites(favoritePost.getPost())
-                                ,StatusUtil.isPostVote(favoritePost.getPost())
-                                ,StatusUtil.isPostForm(favoritePost.getPost())
+                                getNumOfPostFavorites(favoritePost.getPost()),
+                                !favoritePost.getPost().getPostAttachImageList().isEmpty() ? favoritePost.getPost().getPostAttachImageList().get(0) : null,
+                                StatusUtil.isPostVote(favoritePost.getPost()),
+                                StatusUtil.isPostForm(favoritePost.getPost())
                         ))
         );
     }
@@ -290,9 +292,10 @@ public class UserService {
                         post,
                         getNumOfComment(post),
                         getNumOfPostLikes(post),
-                        getNumOfPostFavorites(post)
-                        ,StatusUtil.isPostVote(post)
-                        ,StatusUtil.isPostForm(post)
+                        getNumOfPostFavorites(post),
+                        !post.getPostAttachImageList().isEmpty() ? post.getPostAttachImageList().get(0) : null,
+                        StatusUtil.isPostVote(post),
+                        StatusUtil.isPostForm(post)
                 ))
         );
     }
