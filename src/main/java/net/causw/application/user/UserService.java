@@ -698,7 +698,7 @@ public class UserService {
                         uuidFileService.saveFile(profileImage, FilePath.USER_PROFILE)
                 );
             } else {
-                userProfileImage = srcUser.getUserProfileImage().updateUuidFileAndReturnSelf(
+                userProfileImage.setUuidFile(
                         uuidFileService.updateFile(
                                 srcUser.getUserProfileImage().getUuidFile(),
                                 profileImage,

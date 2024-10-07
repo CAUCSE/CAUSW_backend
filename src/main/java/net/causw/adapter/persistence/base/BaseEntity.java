@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 @MappedSuperclass
 @EntityListeners(value = {AuditingEntityListener.class})
 public class BaseEntity {
+
     @Id
     @UuidGenerator
     @Column(name = "id", nullable = false, unique = true)
