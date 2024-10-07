@@ -3,6 +3,7 @@ package net.causw.application.homepage;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
+import net.causw.adapter.persistence.uuidFile.joinEntity.PostAttachImage;
 import net.causw.application.dto.util.StatusUtil;
 import net.causw.application.pageable.PageableFactory;
 import net.causw.adapter.persistence.post.Post;
@@ -66,9 +67,10 @@ public class HomePageService {
                                         post,
                                         postRepository.countAllCommentByPost_Id(post.getId()),
                                         getNumOfPostLikes(post),
-                                        getNumOfPostFavorites(post)
-                                        , StatusUtil.isPostVote(post)
-                                        , post.getForm() != null
+                                        getNumOfPostFavorites(post),
+                                        !post.getPostAttachImageList().isEmpty() ? post.getPostAttachImageList().get(0) : null,
+                                        StatusUtil.isPostVote(post),
+                                        post.getForm() != null
                                 )))
                 )
                 .collect(Collectors.toList());
