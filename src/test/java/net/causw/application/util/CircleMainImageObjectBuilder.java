@@ -1,62 +1,62 @@
 package net.causw.application.util;
 
 import net.causw.adapter.persistence.base.BaseEntity;
-import net.causw.adapter.persistence.user.User;
+import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
-import net.causw.adapter.persistence.uuidFile.joinEntity.UserProfileImage;
+import net.causw.adapter.persistence.uuidFile.joinEntity.CircleMainImage;
 
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 
-public class UserProfileImageObjectBuilder extends UserProfileImage {
+public class CircleMainImageObjectBuilder extends CircleMainImage {
 
-    public static UserProfileImage buildUserProfileImage(
+    public static CircleMainImage buildCircleMainImage(
             String id,
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
-            User user,
+            Circle circle,
             UuidFile uuidFile
     ) {
-        UserProfileImage userProfileImage = UserProfileImage.builder()
-                .user(user)
+        CircleMainImage circleMainImage = CircleMainImage.builder()
+                .circle(circle)
                 .uuidFile(uuidFile)
                 .build();
 
         BaseEntityReflectionManager.setBaseEntityFields(
-                userProfileImage,
+                circleMainImage,
                 id,
                 createdAt,
                 updatedAt
         );
 
-        return userProfileImage;
+        return circleMainImage;
     }
 
-    public static UserProfileImage buildUserProfileImageReduced(
+    public static CircleMainImage buildCircleMainImageReduced(
             String id,
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
             UuidFile uuidFile
     ) {
-        UserProfileImage userProfileImage = UserProfileImage.builder()
+        CircleMainImage circleMainImage = CircleMainImage.builder()
                 .uuidFile(uuidFile)
                 .build();
 
         BaseEntityReflectionManager.setBaseEntityFields(
-                userProfileImage,
+                circleMainImage,
                 id,
                 createdAt,
                 updatedAt
         );
 
-        return userProfileImage;
+        return circleMainImage;
     }
 
-    public static void setUserProfileImageUser(UserProfileImage userProfileImage, User user) {
+    public static void setCircleMainImageCircle(CircleMainImage circleMainImage, Circle circle) {
         try {
-            Field userField = UserProfileImage.class.getDeclaredField("user");
-            userField.setAccessible(true);
-            userField.set(userProfileImage, user);
+            Field circleField = CircleMainImage.class.getDeclaredField("circle");
+            circleField.setAccessible(true);
+            circleField.set(circleMainImage, circle);
         } catch (NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();
         }

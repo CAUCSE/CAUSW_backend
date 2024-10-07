@@ -65,23 +65,12 @@ public class UserObjectBuilder extends User {
                 .rejectionOrDropReason(rejectionOrDropReason)
                 .build();
 
-        // correct uuid format: F000xxxx-0451-4000-B000-000000000000
-
-        try {
-            Field idField = BaseEntity.class.getDeclaredField("id");
-            idField.setAccessible(true);
-            idField.set(user, id);
-
-            Field createdAtField = BaseEntity.class.getDeclaredField("createdAt");
-            createdAtField.setAccessible(true);
-            createdAtField.set(user, createdAt);
-
-            Field updatedAtField = BaseEntity.class.getDeclaredField("updatedAt");
-            updatedAtField.setAccessible(true);
-            updatedAtField.set(user, updatedAt);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
+        BaseEntityReflectionManager.setBaseEntityFields(
+                user,
+                id,
+                createdAt,
+                updatedAt
+        );
 
         return user;
     }

@@ -29,21 +29,12 @@ public class UuidFileObjectBuilder extends UuidFile {
                 .isUsed(isUsed)
                 .build();
 
-        try {
-            Field idField = BaseEntity.class.getDeclaredField("id");
-            idField.setAccessible(true);
-            idField.set(uuidFile, id);
-
-            Field createdAtField = BaseEntity.class.getDeclaredField("createdAt");
-            createdAtField.setAccessible(true);
-            createdAtField.set(uuidFile, createdAt);
-
-            Field updatedAtField = BaseEntity.class.getDeclaredField("updatedAt");
-            updatedAtField.setAccessible(true);
-            updatedAtField.set(uuidFile, updatedAt);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
+        BaseEntityReflectionManager.setBaseEntityFields(
+                uuidFile,
+                id,
+                createdAt,
+                updatedAt
+        );
 
         return uuidFile;
     }

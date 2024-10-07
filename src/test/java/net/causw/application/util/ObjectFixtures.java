@@ -1,11 +1,14 @@
 package net.causw.application.util;
 
+import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.locker.Locker;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
+import net.causw.adapter.persistence.uuidFile.joinEntity.CircleMainImage;
 import net.causw.adapter.persistence.uuidFile.joinEntity.UserProfileImage;
 import net.causw.adapter.persistence.vote.VoteRecord;
+import net.causw.domain.model.enums.circle.CircleMemberStatus;
 import net.causw.domain.model.enums.user.GraduationType;
 import net.causw.domain.model.enums.user.Role;
 import net.causw.domain.model.enums.user.UserState;
@@ -89,6 +92,62 @@ public class ObjectFixtures {
         UserProfileImageObjectBuilder.setUserProfileImageUser(user.getUserProfileImage(), user);
 
         return user;
+    }
+
+    public static Circle getCircle(
+            User leader
+    ) {
+        CircleMainImage circleMainImage = CircleMainImageObjectBuilder.buildCircleMainImageReduced(
+                "circleMainImageMockId",
+                LocalDateTime.now(),
+                LocalDateTime.now(),
+                UuidFileObjectBuilder.buildUuidFile(
+                        "uuidFileMockId",
+                        LocalDateTime.now(),
+                        LocalDateTime.now(),
+                        "uuidMock",
+                        "fileKeyMock",
+                        "rawFileNameMock",
+                        "extensionMock",
+                        FilePath.CIRCLE_PROFILE,
+                        true
+                )
+        );
+
+        Circle circle = CircleObjectBuilder.buildCircle(
+                "circleMockId",
+                LocalDateTime.now(),
+                LocalDateTime.now(),
+                "동아리 이름 mock",
+                circleMainImage,
+                "동아리 설명 mock",
+                false,
+                10000,
+                10,
+                LocalDateTime.now(),
+                true,
+                leader
+        );
+
+        CircleMainImageObjectBuilder.setCircleMainImageCircle(circle.getCircleMainImage(), circle);
+
+        return circle;
+    }
+
+    public static CircleMember getCircleMember(
+            Circle circle,
+            User user
+    ) {
+        return CircleMemberObjectFixtures.buildCircleMember(
+                "circleMemberMockId",
+                LocalDateTime.now(),
+                LocalDateTime.now(),
+                CircleMemberStatus.MEMBER,
+                circle,
+                user,
+                null,
+                null
+        );
     }
 
 }
