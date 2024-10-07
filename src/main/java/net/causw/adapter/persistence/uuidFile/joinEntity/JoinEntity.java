@@ -13,7 +13,7 @@ import net.causw.application.uuidFile.UuidFileService;
 public abstract class JoinEntity extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "uuid_file_id", nullable = false, unique = false)
+    @JoinColumn(name = "uuid_file_id", nullable = false)
     public UuidFile uuidFile;
 
 }
