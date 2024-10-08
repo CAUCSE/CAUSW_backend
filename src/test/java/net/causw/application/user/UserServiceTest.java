@@ -34,9 +34,10 @@ import net.causw.infrastructure.PasswordGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.ArrayList;
@@ -47,79 +48,80 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
 
 
-@SpringBootTest
+// @SpringBootTest(classes = {UserService.class})
+@ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
 
-    @Autowired
+    @InjectMocks
     UserService userService;
 
-    @MockBean
+    @Mock
     JwtTokenProvider jwtTokenProvider;
 
-    @MockBean
+    @Mock
     UuidFileService uuidFileService;
 
-    @MockBean
+    @Mock
     GoogleMailSender googleMailSender;
 
-    @MockBean
+    @Mock
     PasswordGenerator passwordGenerator;
 
-    @MockBean
+    @Mock
     PasswordEncoder passwordEncoder;
 
-    @MockBean
+    @Mock
     Validator validator;
 
-    @MockBean
+    @Mock
     UserRepository userRepository;
 
-    @MockBean
+    @Mock
     CircleRepository circleRepository;
 
-    @MockBean
+    @Mock
     CircleMemberRepository circleMemberRepository;
 
-    @MockBean
+    @Mock
     PostRepository postRepository;
 
-    @MockBean
+    @Mock
     PageableFactory pageableFactory;
 
-    @MockBean
+    @Mock
     CommentRepository commentRepository;
 
-    @MockBean
+    @Mock
     ChildCommentRepository childCommentRepository;
 
-    @MockBean
+    @Mock
     UserAdmissionRepository userAdmissionRepository;
 
-    @MockBean
+    @Mock
     RedisUtils redisUtils;
 
-    @MockBean
+    @Mock
     LockerRepository lockerRepository;
 
-    @MockBean
+    @Mock
     LockerLogRepository lockerLogRepository;
 
-    @MockBean
+    @Mock
     UserAdmissionLogRepository userAdmissionLogRepository;
 
-    @MockBean
+    @Mock
     BoardRepository boardRepository;
 
-    @MockBean
+    @Mock
     FavoritePostRepository favoritePostRepository;
 
-    @MockBean
+    @Mock
     LikePostRepository likePostRepository;
 
-    @MockBean
+    @Mock
     UserProfileImageRepository userProfileImageRepository;
 
-    @MockBean
+    @Mock
     UserExcelService userExcelService;
 
     User commonUser;
