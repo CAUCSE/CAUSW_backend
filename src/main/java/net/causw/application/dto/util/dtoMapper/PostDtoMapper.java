@@ -1,6 +1,5 @@
 package net.causw.application.dto.util.dtoMapper;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.uuidFile.joinEntity.PostAttachImage;

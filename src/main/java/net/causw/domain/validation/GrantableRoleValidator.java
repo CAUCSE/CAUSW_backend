@@ -84,7 +84,7 @@ public class GrantableRoleValidator extends AbstractValidator {
 
         throw new UnauthorizedException(
                 ErrorCode.GRANT_ROLE_NOT_ALLOWED,
-                String.format("권한을 부여할 수 없습니다.")
+                "권한을 부여할 수 없습니다."
         );
     }
 }

@@ -1,7 +1,6 @@
 package net.causw.application.user;
 
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
@@ -1572,7 +1571,7 @@ public class UserService {
     }
 
     public void exportUserListToExcel(HttpServletResponse response) {
-        String fileName = LocalDateTime.now().toString() + "_사용자명단.xlsx";
+        String fileName = LocalDateTime.now() + "_사용자명단.xlsx";
 
         List<String> headerStringList = List.of(
                 "아이디(이메일)",

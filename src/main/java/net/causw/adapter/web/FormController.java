@@ -9,7 +9,6 @@ import net.causw.application.dto.form.response.FormResponseDto;
 import net.causw.application.dto.form.response.reply.ReplyPageResponseDto;
 import net.causw.application.dto.form.request.FormReplyRequestDto;
 import net.causw.application.dto.form.response.QuestionSummaryResponseDto;
-import net.causw.application.dto.form.response.reply.ReplyQuestionResponseDto;
 import net.causw.application.dto.form.response.reply.UserReplyResponseDto;
 import net.causw.application.form.FormService;
 import net.causw.config.security.userdetails.CustomUserDetails;

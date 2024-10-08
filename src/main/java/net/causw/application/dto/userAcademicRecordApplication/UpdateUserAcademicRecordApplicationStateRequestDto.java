@@ -3,7 +3,6 @@ package net.causw.application.dto.userAcademicRecordApplication;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import net.causw.domain.model.enums.userAcademicRecord.AcademicRecordRequestStatus;
 

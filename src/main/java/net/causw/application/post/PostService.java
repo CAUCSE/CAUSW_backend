@@ -59,7 +59,6 @@ import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.notification.NoticeType;
 import net.causw.domain.model.enums.circle.CircleMemberStatus;
 import net.causw.domain.model.enums.form.QuestionType;
-import net.causw.domain.model.enums.form.RegisteredSemesterManager;
 import net.causw.domain.model.enums.uuidFile.FilePath;
 import net.causw.domain.model.enums.user.Role;
 import net.causw.domain.model.util.MessageUtil;

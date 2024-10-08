@@ -3,8 +3,6 @@ package net.causw.application.uuidFile;
 import com.amazonaws.services.s3.AmazonS3Client;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import net.causw.adapter.persistence.repository.uuidFile.CalendarAttachImageRepository;
-import net.causw.adapter.persistence.repository.uuidFile.CircleMainImageRepository;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.adapter.persistence.repository.uuidFile.UuidFileRepository;
 import net.causw.application.storage.StorageManager;
