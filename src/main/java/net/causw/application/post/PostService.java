@@ -59,6 +59,7 @@ import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.notification.NoticeType;
 import net.causw.domain.model.enums.circle.CircleMemberStatus;
 import net.causw.domain.model.enums.form.QuestionType;
+import net.causw.domain.model.enums.uuidFile.FileExtensionType;
 import net.causw.domain.model.enums.uuidFile.FilePath;
 import net.causw.domain.model.enums.user.Role;
 import net.causw.domain.model.util.MessageUtil;
@@ -864,12 +865,21 @@ public class PostService {
     }
 
     private PostsResponseDto toPostsResponseDto(Post post) {
+        PostAttachImage postThumbnailFile = (post.getPostAttachImageList() == null || post.getPostAttachImageList().isEmpty()) ?
+                null :
+                post.getPostAttachImageList()
+                        .stream()
+                        .filter(postAttachImage ->
+                                FileExtensionType.IMAGE.getExtensionList().contains(postAttachImage.getUuidFile().getExtension())
+                        ).findFirst()
+                        .orElse(null);
+
         return PostDtoMapper.INSTANCE.toPostsResponseDto(
                 post,
                 postRepository.countAllCommentByPost_Id(post.getId()),
                 getNumOfPostLikes(post),
                 getNumOfPostFavorites(post),
-                !post.getPostAttachImageList().isEmpty() ? post.getPostAttachImageList().get(0) : null,
+                postThumbnailFile,
                 StatusUtil.isPostVote(post),
                 StatusUtil.isPostForm(post)
         );
