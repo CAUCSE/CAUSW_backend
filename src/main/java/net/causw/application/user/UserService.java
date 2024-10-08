@@ -440,7 +440,7 @@ public class UserService {
         );
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public Page<UserResponseDto> findByState(
             User user,
             String state,
@@ -472,23 +472,21 @@ public class UserService {
             );
         }
 
-        return usersPage.map(userEntity -> {
-            if (userEntity.getRoles().contains(Role.LEADER_CIRCLE) && !"INACTIVE_N_DROP".equals(state)) {
-                List<Circle> ownCircles = circleRepository.findByLeader_Id(userEntity.getId());
+        return usersPage.map(srcUser -> {
+            if (srcUser.getRoles().contains(Role.LEADER_CIRCLE) && !"INACTIVE_N_DROP".equals(state)) {
+                List<Circle> ownCircles = circleRepository.findByLeader_Id(srcUser.getId());
                 if (ownCircles.isEmpty()) {
-                    throw new InternalServerException(
-                            ErrorCode.INTERNAL_SERVER,
-                            MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER
-                    );
+                    removeRole(srcUser, Role.LEADER_CIRCLE);
+                    userRepository.save(srcUser);
                 }
 
                 return UserDtoMapper.INSTANCE.toUserResponseDto(
-                        userEntity,
+                        srcUser,
                         ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
                         ownCircles.stream().map(Circle::getName).collect(Collectors.toList())
                 );
             } else {
-                return UserDtoMapper.INSTANCE.toUserResponseDto(userEntity, null, null);
+                return UserDtoMapper.INSTANCE.toUserResponseDto(srcUser, null, null);
             }
         });
     }
