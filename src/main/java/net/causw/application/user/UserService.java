@@ -11,6 +11,8 @@ import net.causw.adapter.persistence.locker.LockerLog;
 import net.causw.adapter.persistence.repository.userAcademicRecord.UserAcademicRecordApplicationRepository;
 import net.causw.adapter.persistence.repository.uuidFile.UserAcademicRecordApplicationAttachImageRepository;
 import net.causw.adapter.persistence.repository.uuidFile.UserProfileImageRepository;
+import net.causw.adapter.persistence.userAcademicRecord.UserAcademicRecordApplication;
+import net.causw.adapter.persistence.uuidFile.joinEntity.UserAcademicRecordApplicationAttachImage;
 import net.causw.adapter.persistence.uuidFile.joinEntity.UserAdmissionAttachImage;
 import net.causw.adapter.persistence.uuidFile.joinEntity.UserProfileImage;
 import net.causw.application.dto.util.StatusUtil;
@@ -1067,17 +1069,21 @@ public class UserService {
                         this.updateStatus(circleMember.getId(), CircleMemberStatus.LEAVE)
                 );
 
-        // 재학 인증 신청 이미지 파일이 있다면 삭제
-        this.userAcademicRecordApplicationRepository.findByUserId(deleteUser.getId()).stream()
-                .map(BaseEntity::getId)
-                .forEach(userAcademicRecordApplicationId -> {
-                    this.userAcademicRecordApplicationAttachImageRepository.deleteAll(
-                            this.userAcademicRecordApplicationAttachImageRepository.findByUserAcademicRecordApplicationId(userAcademicRecordApplicationId)
-                    );
-                });
+        List<UserAcademicRecordApplication> userAcademicRecordApplicationList = userAcademicRecordApplicationRepository.findByUserId(deleteUser.getId());
 
-        // 재학 인증 신청 기록이 있다면 삭제
-        this.userAcademicRecordApplicationRepository.deleteAll(this.userAcademicRecordApplicationRepository.findByUserId(deleteUser.getId()));
+        if (!userAcademicRecordApplicationList.isEmpty()) {
+            // 재학 인증 신청 이미지 파일이 있다면 삭제
+            uuidFileService.deleteFileList(
+                    userAcademicRecordApplicationList
+                            .stream()
+                            .flatMap(userAcademicRecordApplication -> userAcademicRecordApplication.getUserAcademicRecordAttachImageList()
+                                    .stream()
+                                    .map(UserAcademicRecordApplicationAttachImage::getUuidFile)).toList()
+            );
+
+            // 재학 인증 신청 기록이 있다면 삭제
+            userAcademicRecordApplicationRepository.deleteAll(userAcademicRecordApplicationList);
+        }
         this.userRepository.delete(deleteUser);
 
         return UserDtoMapper.INSTANCE.toUserResponseDto(deleteUser, null, null);
