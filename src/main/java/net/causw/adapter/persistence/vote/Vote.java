@@ -22,6 +22,7 @@ public class Vote extends BaseEntity {
     private boolean isEnd;
 
     @OneToMany(mappedBy = "vote", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @Builder.Default
     private List<VoteOption> voteOptions = new ArrayList<>();
 
     @OneToOne(mappedBy = "vote", fetch = FetchType.LAZY)
