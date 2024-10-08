@@ -3,7 +3,6 @@ package net.causw.config.security;
 import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import net.causw.config.security.userdetails.CustomUserDetailsService;
-import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.user.Role;

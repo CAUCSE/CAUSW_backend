@@ -6,7 +6,6 @@ import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.locker.Locker;
 import net.causw.adapter.persistence.uuidFile.joinEntity.UserProfileImage;
-import net.causw.adapter.persistence.vote.Vote;
 import net.causw.adapter.persistence.vote.VoteRecord;
 import net.causw.application.dto.user.UserCreateRequestDto;
 import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;

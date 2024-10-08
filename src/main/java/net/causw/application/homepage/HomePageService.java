@@ -3,7 +3,6 @@ package net.causw.application.homepage;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
-import net.causw.adapter.persistence.uuidFile.joinEntity.PostAttachImage;
 import net.causw.application.dto.util.StatusUtil;
 import net.causw.application.pageable.PageableFactory;
 import net.causw.adapter.persistence.post.Post;

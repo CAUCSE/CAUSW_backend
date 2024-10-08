@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
-import net.causw.adapter.persistence.form.Form;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.userCouncilFee.UserCouncilFee;

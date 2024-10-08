@@ -358,20 +358,20 @@ public class CircleService {
 
 
         // 이미지가 없을 경우 기존 이미지 그대로 유지, 이미지가 있을 경우 새로운 이미지로 교체 (Circle의 이미지는 not null임)
-        CircleMainImage circleMainImage = null;
+        CircleMainImage circleMainImage = circle.getCircleMainImage();
 
         if (mainImage == null || mainImage.isEmpty()) {
             if (circle.getCircleMainImage() == null) {
                 throw new BadRequestException(ErrorCode.API_NOT_ALLOWED, MessageUtil.FILE_IS_NULL);
             }
         } else {
-            if (circle.getCircleMainImage() == null) {
+            if (circleMainImage == null) {
                 circleMainImage = CircleMainImage.of(
                         circle,
                         uuidFileService.saveFile(mainImage, FilePath.CIRCLE_PROFILE)
                 );
             } else {
-                circleMainImage = circle.getCircleMainImage().updateUuidFileAndReturnSelf(
+                circleMainImage.setUuidFile(
                         uuidFileService.updateFile(
                                 circle.getCircleMainImage().getUuidFile(),
                                 mainImage,

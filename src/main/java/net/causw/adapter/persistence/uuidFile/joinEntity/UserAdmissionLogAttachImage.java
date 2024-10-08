@@ -6,6 +6,7 @@ import net.causw.adapter.persistence.user.UserAdmissionLog;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 
 @Getter
+@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
@@ -16,17 +17,21 @@ indexes = {
 })
 public class UserAdmissionLogAttachImage extends JoinEntity {
 
+    @Getter
+    @Setter(AccessLevel.PUBLIC)
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "uuid_file_id", nullable = false, unique = true)
+    public UuidFile uuidFile;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_admission_log_id", nullable = false)
     private UserAdmissionLog userAdmissionLog;
 
-    private UserAdmissionLogAttachImage(UserAdmissionLog userAdmissionLog, UuidFile uuidFile) {
-        super(uuidFile);
-        this.userAdmissionLog = userAdmissionLog;
-    }
-
     public static UserAdmissionLogAttachImage of(UserAdmissionLog userAdmissionLog, UuidFile uuidFile) {
-        return new UserAdmissionLogAttachImage(userAdmissionLog, uuidFile);
+        return UserAdmissionLogAttachImage.builder()
+                .uuidFile(uuidFile)
+                .userAdmissionLog(userAdmissionLog)
+                .build();
     }
 
 }
