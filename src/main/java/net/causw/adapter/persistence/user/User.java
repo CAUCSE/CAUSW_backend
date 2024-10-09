@@ -31,23 +31,23 @@ public class User extends BaseEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "phone_number", unique = true, nullable = true)  // 일단 null 가능하게 설정(false 로 하면 기존 데이터와 충돌 예상)
+    @Column(name = "phone_number", unique = true, nullable = false)  // 일단 null 가능하게 설정(false 로 하면 기존 데이터와 충돌 예상)
     private String phoneNumber;
 
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "student_id", unique = true, nullable = true)
+    @Column(name = "student_id", unique = true, nullable = false)
     private String studentId;
 
     @Column(name = "admission_year", nullable = false)
     private Integer admissionYear;
 
     // 새로 추가한 필드들
-    @Column(name = "nickname",unique = true, nullable = true)
+    @Column(name = "nickname",unique = true, nullable = false)
     private String nickname;
 
-    @Column(name = "major", nullable = true)
+    @Column(name = "major", nullable = false)
     private String major;
 
     @Column(name = "academic_status", nullable = false)
