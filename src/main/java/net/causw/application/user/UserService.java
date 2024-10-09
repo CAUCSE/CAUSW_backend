@@ -1630,6 +1630,8 @@ public class UserService {
 
     @Transactional
     public UserResponseDto updateUserIsV2(User user) {
+        user = this.getUser(user.getId());
+
         user.setIsV2(true);
 
         Set<Role> roles = user.getRoles();
@@ -1650,7 +1652,9 @@ public class UserService {
             );
         }
 
-        return UserDtoMapper.INSTANCE.toUserResponseDto(this.userRepository.save(user), null, null);
+        userRepository.save(user);
+
+        return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
     }
 
     // private methods
