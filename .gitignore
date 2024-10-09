@@ -26,6 +26,7 @@ bin/
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+dump.rdb
 
 ### NetBeans ###
 /nbproject/private/
@@ -49,8 +50,16 @@ out/
 **/resources/causw-dev-51ab1a030da2.json
 **/resources/application-dev.yml
 **/resources/application-prod.yml
+**/resources/application-local.yml
+**/resources/application-test.yml
+**/resources/application-qa.yml
 
 Dockerfile
 docker-compose.yaml
 deploy_*.sh
 app-*.yaml
+
+*.pem
+src/main/generated/net/causw/application/dto/util/*Impl.java
+src/main/generated/net/causw/application/dto/util/dtoMapper/*Impl.java
+src/main/generated/net/causw/application/dto/util/dtoMapper/custom/*Impl.java

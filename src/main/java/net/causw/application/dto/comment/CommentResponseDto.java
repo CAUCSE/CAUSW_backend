@@ -1,17 +1,18 @@
 package net.causw.application.dto.comment;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.domain.model.board.BoardDomainModel;
-import net.causw.domain.model.comment.CommentDomainModel;
-import net.causw.domain.model.enums.Role;
-import net.causw.domain.model.util.StaticValue;
-import net.causw.domain.model.user.UserDomainModel;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
 public class CommentResponseDto {
     private String id;
     private String content;
@@ -21,88 +22,29 @@ public class CommentResponseDto {
     private String postId;
     private String writerName;
     private Integer writerAdmissionYear;
+
+    @Schema(description = "작성자 사진이 저장되어 있는 URL 주소(없으면 Null 반환)", example = "http://test/123")
     private String writerProfileImage;
+
     private Boolean updatable;
     private Boolean deletable;
+
+    @Schema(description = "익명글 여부", example = "False")
+    private Boolean isAnonymous;
+
+    @Schema(description = "댓글 작성자 여부", example = "False")
+    private Boolean isOwner;
+
+    @Schema(description = "로그인한 유저가 댓글에 좋아요를 이미 누른지 여부", example = "False")
+    private Boolean isCommentLike;
+
+    @Schema(description = "댓글 종아요 수", example = "10")
+    private Long numLike;
+
+    @Schema(description = "대댓글 수", example ="5")
     private Long numChildComment;
 
-    private CommentResponseDto(
-            String id,
-            String content,
-            LocalDateTime createdAt,
-            LocalDateTime updatedAt,
-            Boolean isDeleted,
-            String postId,
-            String writerName,
-            Integer writerAdmissionYear,
-            String writerProfileImage,
-            Boolean updatable,
-            Boolean deletable,
-            Long numChildComment
-    ) {
-        this.id = id;
-        this.content = content;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.isDeleted = isDeleted;
-        this.postId = postId;
-        this.writerName = writerName;
-        this.writerAdmissionYear = writerAdmissionYear;
-        this.writerProfileImage = writerProfileImage;
-        this.updatable = updatable;
-        this.deletable = deletable;
-        this.numChildComment = numChildComment;
-    }
+    @Schema(description = "대댓글 DTO 리스트", example ="대댓글 DTO 리스트 입니다.")
+    private List<ChildCommentResponseDto> childCommentList;
 
-    public static CommentResponseDto from(
-            CommentDomainModel comment,
-            UserDomainModel user,
-            BoardDomainModel board,
-            Long numChildComment
-    ) {
-        boolean updatable = false;
-        boolean deletable = false;
-        String content = comment.getContent();
-
-        if (user.getRole() == Role.ADMIN) {
-            updatable = true;
-            deletable = true;
-        } else if (comment.getWriter().getId().equals(user.getId())) {
-            updatable = true;
-            deletable = true;
-        } else if (user.getRole().getValue().contains("PRESIDENT")) {
-            deletable = true;
-        } else {
-            if (board.getCircle().isPresent()) {
-                boolean isLeader = user.getRole().getValue().contains("LEADER_CIRCLE")
-                        && board.getCircle().get().getLeader()
-                        .map(leader -> leader.getId().equals(user.getId()))
-                        .orElse(false);
-                if (isLeader) {
-                    deletable = true;
-                }
-            }
-        }
-
-        if (comment.getIsDeleted()) {
-            updatable = false;
-            deletable = false;
-            content = StaticValue.CONTENT_DELETED_COMMENT;
-        }
-
-        return new CommentResponseDto(
-                comment.getId(),
-                content,
-                comment.getCreatedAt(),
-                comment.getUpdatedAt(),
-                comment.getIsDeleted(),
-                comment.getPostId(),
-                comment.getWriter().getName(),
-                comment.getWriter().getAdmissionYear(),
-                comment.getWriter().getProfileImage(),
-                updatable,
-                deletable,
-                numChildComment
-        );
-    }
 }

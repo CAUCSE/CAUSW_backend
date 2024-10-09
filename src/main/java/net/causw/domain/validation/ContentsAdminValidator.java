@@ -2,10 +2,11 @@ package net.causw.domain.validation;
 
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
-import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.enums.user.Role;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Validate is the request user has role for API of the contents (post or comment)
@@ -14,7 +15,7 @@ import java.util.List;
  */
 public class ContentsAdminValidator extends AbstractValidator {
 
-    private final Role requestUserRole;
+    private final Set<Role> requestUserRoles;
 
     private final String requestUserId;
 
@@ -23,25 +24,25 @@ public class ContentsAdminValidator extends AbstractValidator {
     private final List<Role> adminRoleList;
 
     private ContentsAdminValidator(
-            Role requestUserRole,
+            Set<Role> requestUserRoles,
             String requestUserId,
             String writerUserId,
             List<Role> adminRoleList
     ) {
-        this.requestUserRole = requestUserRole;
+        this.requestUserRoles = requestUserRoles;
         this.requestUserId = requestUserId;
         this.writerUserId = writerUserId;
         this.adminRoleList = adminRoleList;
     }
 
     public static ContentsAdminValidator of(
-            Role requestUserRole,
+            Set<Role> requestUserRoles,
             String requestUserId,
             String writerUserId,
             List<Role> adminRoleList
     ) {
         return new ContentsAdminValidator(
-                requestUserRole,
+                requestUserRoles,
                 requestUserId,
                 writerUserId,
                 adminRoleList
@@ -54,12 +55,12 @@ public class ContentsAdminValidator extends AbstractValidator {
             return;
         }
 
-        if (EnumSet.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT).contains(this.requestUserRole)) {
+        if (this.requestUserRoles.stream().anyMatch(role -> EnumSet.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT).contains(role))) {
             return;
         }
 
         for (Role adminRole : this.adminRoleList) {
-            if (this.requestUserRole.getValue().contains(adminRole.getValue())) {
+            if (this.requestUserRoles.contains(adminRole)) {
                 return;
             }
         }

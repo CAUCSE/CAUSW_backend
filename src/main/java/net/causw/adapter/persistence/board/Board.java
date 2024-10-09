@@ -1,30 +1,24 @@
 package net.causw.adapter.persistence.board;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.base.BaseEntity;
-import net.causw.domain.model.board.BoardDomainModel;
+import net.causw.domain.model.enums.user.Role;
 import org.hibernate.annotations.ColumnDefault;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Getter
-@Setter
 @Entity
-@NoArgsConstructor
+@Builder(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_board")
 public class Board extends BaseEntity {
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", nullable = false, unique = true)
     private String name;
 
     @Column(name = "description", nullable = true)
@@ -36,100 +30,90 @@ public class Board extends BaseEntity {
     @Column(name = "category", nullable = false)
     private String category;
 
-    @Column(name = "is_deleted")
+    @Setter
+    @Column(name = "is_deleted", nullable = false)
     @ColumnDefault("false")
     private Boolean isDeleted;
 
-    @ManyToOne
+    @Column(name = "is_default", nullable = false)
+    @ColumnDefault("false")
+    private Boolean isDefault;
+
+    @Column(name = "is_anonymous_allowed", nullable = false)
+    @ColumnDefault("false")
+    private Boolean is_anonymous_allowed;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "circle_id", nullable = true)
     private Circle circle;
 
-    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "board", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     private Set<Post> postSet;
 
-    private Board(
-            String id,
-            String name,
-            String description,
-            String createRoles,
-            String category,
-            Boolean isDeleted,
-            Circle circle
-    ) {
-        super(id);
-        this.name = name;
-        this.description = description;
-        this.createRoles = createRoles;
-        this.category = category;
-        this.isDeleted = isDeleted;
-        this.circle = circle;
-    }
-
-    private Board(
-            String name,
-            String description,
-            String createRoles,
-            String category,
-            Boolean isDeleted,
-            Circle circle
-    ) {
-        this.name = name;
-        this.description = description;
-        this.createRoles = createRoles;
-        this.category = category;
-        this.isDeleted = isDeleted;
-        this.circle = circle;
-    }
-
-    public static Board of(
-            String id,
-            String name,
-            String description,
-            String createRoles,
-            String category,
-            Boolean isDeleted,
-            Circle circle
-    ) {
-        return new Board(
-                id,
-                name,
-                description,
-                createRoles,
-                category,
-                isDeleted,
-                circle
-        );
-    }
+    @Column(name = "is_default_notice", nullable = false)
+    @ColumnDefault("false")
+    private Boolean isDefaultNotice; // 모두에게 알림이 가야 하는
 
     public static Board of(
             String name,
             String description,
-            String createRoles,
+            List<String> createRoleList,
             String category,
-            Boolean isDeleted,
+            Boolean is_anonymous_allowed,
             Circle circle
     ) {
-        return new Board(
-                name,
-                description,
-                createRoles,
-                category,
-                isDeleted,
-                circle
-        );
+        if (createRoleList != null) {
+            if (createRoleList.isEmpty()) {
+                createRoleList.add(Role.ADMIN.getValue());
+                createRoleList.add(Role.PRESIDENT.getValue());
+                createRoleList.add(Role.VICE_PRESIDENT.getValue());
+            } else if (createRoleList.contains("ALL")) {
+                createRoleList.addAll(
+                        Arrays.stream(Role.values())
+                                .map(Role::getValue)
+                                .toList()
+                );
+                createRoleList.remove(Role.NONE.getValue());
+                createRoleList.remove("ALL");
+            } else {
+                createRoleList = createRoleList
+                        .stream()
+                        .map(Role::of)
+                        .map(Role::getValue)
+                        .collect(Collectors.toList());
+                createRoleList.remove(Role.NONE.getValue());
+                if (!createRoleList.contains(Role.ADMIN.getValue())) {
+                    createRoleList.add(Role.ADMIN.getValue());
+                }
+                if (!createRoleList.contains(Role.PRESIDENT.getValue())) {
+                    createRoleList.add(Role.PRESIDENT.getValue());
+                }
+                if (!createRoleList.contains(Role.VICE_PRESIDENT.getValue())) {
+                    createRoleList.add(Role.VICE_PRESIDENT.getValue());
+                }
+            }
+        }
+
+        return Board.builder()
+                .name(name)
+                .description(description)
+                .createRoles(createRoleList == null ? "" :
+                        String.join(",", createRoleList)
+                )
+                .category(category)
+                .isDeleted(false)
+                .isDefault(false)
+                .is_anonymous_allowed(is_anonymous_allowed)
+                .circle(circle)
+                .postSet(new HashSet<>())
+                .isDefaultNotice(false)
+                .build();
     }
 
-    public static Board from(BoardDomainModel boardDomainModel) {
-        Circle circle = boardDomainModel.getCircle().map(Circle::from).orElse(null);
-
-        return new Board(
-                boardDomainModel.getId(),
-                boardDomainModel.getName(),
-                boardDomainModel.getDescription(),
-                String.join(",", boardDomainModel.getCreateRoleList()),
-                boardDomainModel.getCategory(),
-                boardDomainModel.getIsDeleted(),
-                circle
-        );
+    public void update(String name, String description, String createRoles, String category){
+        this.name = name;
+        this.description = description;
+        this.createRoles = createRoles;
+        this.category = category;
     }
 }

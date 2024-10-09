@@ -1,31 +1,29 @@
 package net.causw.adapter.persistence.circle;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.base.BaseEntity;
-import net.causw.domain.model.circle.CircleDomainModel;
+import net.causw.adapter.persistence.uuidFile.joinEntity.CircleMainImage;
+import net.causw.adapter.persistence.uuidFile.UuidFile;
 import org.hibernate.annotations.ColumnDefault;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Getter
-@Setter
 @Entity
-@NoArgsConstructor
+@Builder(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_circle")
 public class Circle extends BaseEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "main_image", length = 500, nullable = true)
-    private String mainImage;
+    @Setter(value = AccessLevel.PROTECTED)
+    @OneToOne(cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, mappedBy = "circle")
+    private CircleMainImage circleMainImage;
 
     @Column(name = "description", nullable = true)
     private String description;
@@ -34,6 +32,22 @@ public class Circle extends BaseEntity {
     @ColumnDefault("false")
     private Boolean isDeleted;
 
+    @Column(name = "circle_tax")
+    private Integer circleTax;
+
+    @Column(name = "recruit_members")
+    private Integer recruitMembers;
+
+    @Setter
+    @Column(name = "recruit_end_date")
+    private LocalDateTime recruitEndDate;
+
+    @Setter
+    @Column(name = "is_recruit")
+    @Builder.Default
+    private Boolean isRecruit = false;
+
+    @Setter
     @OneToOne
     @JoinColumn(name = "leader_id")
     private User leader;
@@ -42,78 +56,55 @@ public class Circle extends BaseEntity {
         return Optional.ofNullable(this.leader);
     }
 
-    private Circle(
-            String id,
-            String name,
-            String mainImage,
-            String description,
-            Boolean isDeleted,
-            User leader
-    ) {
-        super(id);
-        this.name = name;
-        this.mainImage = mainImage;
-        this.description = description;
-        this.isDeleted = isDeleted;
-        this.leader = leader;
-    }
-
-    private Circle(
-            String name,
-            String mainImage,
-            String description,
-            Boolean isDeleted,
-            User leader
-    ) {
-        this.name = name;
-        this.mainImage = mainImage;
-        this.description = description;
-        this.isDeleted = isDeleted;
-        this.leader = leader;
-    }
-
     public static Circle of(
             String name,
-            String mainImage,
+            UuidFile uuidFile,
             String description,
             Boolean isDeleted,
-            User leader
+            Integer circleTax,
+            Integer recruitMembers,
+            User leader,
+            LocalDateTime recruitEndDate,
+            Boolean isRecruit
     ) {
-        return new Circle(
-                name,
-                mainImage,
-                description,
-                isDeleted,
-                leader
+        Circle circle = Circle.builder()
+                .name(name)
+                .description(description)
+                .isDeleted(isDeleted)
+                .circleTax(circleTax)
+                .recruitMembers(recruitMembers)
+                .leader(leader)
+                .recruitEndDate(recruitEndDate)
+                .isRecruit(isRecruit)
+                .build();
+
+        if (uuidFile == null) {
+            return circle;
+        }
+
+        CircleMainImage circleMainImage = CircleMainImage.of(
+                circle,
+                uuidFile
         );
+
+        circle.setCircleMainImage(circleMainImage);
+
+        return circle;
     }
 
-    public static Circle of(
-            String id,
-            String name,
-            String mainImage,
-            String description,
-            Boolean isDeleted,
-            User leader
-    ) {
-        return new Circle(
-                id,
-                name,
-                mainImage,
-                description,
-                isDeleted,
-                leader
-        );
+    public void update(String name, String description, CircleMainImage circleMainImage, Integer circleTax, Integer recruitMembers, LocalDateTime recruitEndDate, Boolean isRecruit) {
+        this.description = description;
+        this.name = name;
+        this.circleMainImage = circleMainImage;
+        this.circleTax = circleTax;
+        this.recruitMembers = recruitMembers;
+        this.recruitEndDate = recruitEndDate;
+        this.isRecruit = isRecruit;
     }
 
-    public static Circle from(CircleDomainModel circleDomainModel) {
-        return new Circle(
-                circleDomainModel.getId(),
-                circleDomainModel.getName(),
-                circleDomainModel.getMainImage(),
-                circleDomainModel.getDescription(),
-                circleDomainModel.getIsDeleted(),
-                circleDomainModel.getLeader().map(User::from).orElse(null)
-        );
+    public void delete(){
+        this.isDeleted = true;
+        this.leader = null;
     }
+
 }

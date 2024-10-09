@@ -2,29 +2,29 @@ package net.causw.domain.validation;
 
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
-import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.enums.user.Role;
 
-import java.util.List;
+import java.util.Set;
 
 public class UserRoleWithoutAdminValidator extends AbstractValidator {
 
-    private final Role requestUserRole;
+    private final Set<Role> requestUserRoles;
 
-    private final List<Role> targetRoleList;
+    private final Set<Role> targetRoleSet;
 
-    private UserRoleWithoutAdminValidator(Role requestUserRole, List<Role> targetRoleList) {
-        this.requestUserRole = requestUserRole;
-        this.targetRoleList = targetRoleList;
+    private UserRoleWithoutAdminValidator(Set<Role> requestUserRoles, Set<Role> targetRoleSet) {
+        this.requestUserRoles = requestUserRoles;
+        this.targetRoleSet = targetRoleSet;
     }
 
-    public static UserRoleWithoutAdminValidator of(Role requestUserRole, List<Role> targetRoleList) {
-        return new UserRoleWithoutAdminValidator(requestUserRole, targetRoleList);
+    public static UserRoleWithoutAdminValidator of(Set<Role> requestUserRoles, Set<Role> targetRoleSet) {
+        return new UserRoleWithoutAdminValidator(requestUserRoles, targetRoleSet);
     }
 
     @Override
     public void validate() {
-        for (Role targetRole : this.targetRoleList) {
-            if (this.requestUserRole.equals(targetRole)) {
+        for (Role targetRole : this.targetRoleSet) {
+            if (this.requestUserRoles.contains(targetRole)) {
                 return;
             }
         }

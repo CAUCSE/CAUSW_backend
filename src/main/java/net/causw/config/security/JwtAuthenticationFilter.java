@@ -1,17 +1,21 @@
 package net.causw.config.security;
 
+import lombok.extern.slf4j.Slf4j;
+import net.causw.domain.exceptions.UnauthorizedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.filter.GenericFilterBean;
+import org.springframework.util.StringUtils;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.web.filter.OncePerRequestFilter;
+
 import java.io.IOException;
 
-public class JwtAuthenticationFilter extends GenericFilterBean {
+@Slf4j
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -20,11 +24,20 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
     }
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        String token = this.jwtTokenProvider.resolveToken((HttpServletRequest) request);
-        if (token != null && this.jwtTokenProvider.validateToken(token)) {
-            Authentication auth = this.jwtTokenProvider.getAuthentication(token);
-            SecurityContextHolder.getContext().setAuthentication(auth);
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
+        String token = jwtTokenProvider.resolveToken(request);
+        if (StringUtils.hasText(token)) {
+            try {
+                if (jwtTokenProvider.validateToken(token)) {
+                    Authentication auth = jwtTokenProvider.getAuthentication(token);
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                }
+            } catch (UnauthorizedException e) {
+                SecurityContextHolder.clearContext();
+                request.setAttribute("exception", e);
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
+                return;
+            }
         }
         chain.doFilter(request, response);
     }

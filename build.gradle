@@ -1,6 +1,6 @@
 plugins {
-    id 'org.springframework.boot' version '2.4.1'
-    id 'io.spring.dependency-management' version '1.0.10.RELEASE'
+    id 'org.springframework.boot' version '3.2.0'
+    id 'io.spring.dependency-management' version '1.1.4'
     id 'java'
     id 'groovy'
 }
@@ -8,8 +8,8 @@ plugins {
 group = 'net.causw'
 version = '0.0.1-SNAPSHOT'
 
-sourceCompatibility = 11
-targetCompatibility = 11
+sourceCompatibility = 17
+targetCompatibility = 17
 
 configurations {
     compileOnly {
@@ -28,26 +28,30 @@ jar {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    /*
     implementation('org.springframework.boot:spring-boot-starter-web'){
         exclude module: 'spring-boot-starter-tomcat'
     }
     implementation('org.springframework.boot:spring-boot-starter-jetty')
+
+     */
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'org.jsoup:jsoup:1.18.1'
     implementation 'io.jsonwebtoken:jjwt:0.9.1'
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
-    runtimeOnly 'mysql:mysql-connector-java'
+    runtimeOnly 'com.mysql:mysql-connector-j'
     // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
-    implementation group: 'org.hibernate', name: 'hibernate-spatial', version: '5.6.15.Final'
-
     // Swagger
-    implementation "io.springfox:springfox-boot-starter:3.0.0"
-    implementation "io.springfox:springfox-swagger-ui:3.0.0"
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2'
+
 
     // Spock test
     testImplementation "org.spockframework:spock-core:1.2-groovy-2.4"
@@ -64,6 +68,29 @@ dependencies {
 
     // Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    // MapStruct
+    implementation 'org.mapstruct:mapstruct:1.4.2.Final'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.4.2.Final'
+
+    implementation 'javax.xml.bind:jaxb-api:2.3.1'
+
+    // h2 database(테스트용)
+    runtimeOnly 'com.h2database:h2'
+
+    // monitoring
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+
+    // Apache POI for Excel file generation
+    implementation 'org.apache.poi:poi-ooxml:5.2.3'
+
+    // Spring Batch
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
+    implementation 'org.springframework.batch:spring-batch-core'
+    // Retry 관련
+    // https://mvnrepository.com/artifact/org.springframework.retry/spring-retry
+    implementation 'org.springframework.retry:spring-retry:1.0.3.RELEASE'
 }
 
 test {

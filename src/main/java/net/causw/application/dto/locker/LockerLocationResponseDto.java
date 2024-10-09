@@ -1,40 +1,29 @@
 package net.causw.application.dto.locker;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.domain.model.locker.LockerLocationDomainModel;
+import net.causw.adapter.persistence.locker.LockerLocation;
 
 @Getter
 @Setter
+@Builder
 public class LockerLocationResponseDto {
     private String id;
     private String name;
     private Long enableLockerCount;
     private Long totalLockerCount;
 
-    private LockerLocationResponseDto(
-            String id,
-            String name,
+    public static LockerLocationResponseDto of(
+            LockerLocation lockerLocation,
             Long enableLockerCount,
             Long totalLockerCount
     ) {
-        this.id = id;
-        this.name = name;
-        this.enableLockerCount = enableLockerCount;
-        this.totalLockerCount = totalLockerCount;
+        return LockerLocationResponseDto.builder()
+                .id(lockerLocation.getId())
+                .name(lockerLocation.getName())
+                .enableLockerCount(enableLockerCount)
+                .totalLockerCount(totalLockerCount)
+                .build();
     }
-
-    public static LockerLocationResponseDto from(
-            LockerLocationDomainModel lockerLocation,
-            Long enableLockerCount,
-            Long totalLockerCount
-    ) {
-        return new LockerLocationResponseDto(
-                lockerLocation.getId(),
-                lockerLocation.getName(),
-                enableLockerCount,
-                totalLockerCount
-        );
-    }
-
 }

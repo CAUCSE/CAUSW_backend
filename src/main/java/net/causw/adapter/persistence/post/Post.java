@@ -1,134 +1,122 @@
 package net.causw.adapter.persistence.post;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
+import net.causw.adapter.persistence.form.Form;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.board.Board;
-import net.causw.domain.model.post.PostDomainModel;
+import net.causw.adapter.persistence.uuidFile.joinEntity.PostAttachImage;
+import net.causw.adapter.persistence.uuidFile.UuidFile;
+import net.causw.adapter.persistence.vote.Vote;
 import org.hibernate.annotations.ColumnDefault;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
-@Setter
 @Entity
-@NoArgsConstructor
-@Table(name = "tb_post")
+@Builder(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Table(name = "tb_post", indexes = {
+        @Index(name = "board_id_index", columnList = "board_id"),
+        @Index(name = "user_id_index", columnList = "user_id"),
+        @Index(name = "form_id_index", columnList = "form_id")
+})
 public class Post extends BaseEntity {
     @Column(name = "title", nullable = false)
     private String title;
 
+    @Lob
     @Column(columnDefinition = "TEXT", name = "content", nullable = false)
     private String content;
 
-    @Column(name = "attachments", length = 1500)
-    private String attachments;
+    @OneToMany(cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, mappedBy = "post")
+    @Builder.Default
+    private List<PostAttachImage> postAttachImageList = new ArrayList<>();
 
     @ManyToOne(targetEntity = User.class)
     @JoinColumn(name = "user_id", nullable = false)
     private User writer;
 
     @Column(name = "is_deleted")
+    @Builder.Default
     @ColumnDefault("false")
-    private Boolean isDeleted;
+    private Boolean isDeleted = false;
+
+    @Column(name = "is_anonymous", nullable = false)
+    @ColumnDefault("false")
+    private Boolean isAnonymous;
+
+    @Column(name = "is_question", nullable = false)
+    @ColumnDefault("false")
+    private Boolean isQuestion;
 
     @ManyToOne(targetEntity = Board.class)
     @JoinColumn(name = "board_id", nullable = false)
     private Board board;
 
-    private Post(
-            String title,
-            String content,
-            User writer,
-            Boolean isDeleted,
-            Board board,
-            String attachments
-    ) {
-        this.title = title;
-        this.content = content;
-        this.writer = writer;
-        this.isDeleted = isDeleted;
-        this.board = board;
-        this.attachments = attachments;
-    }
+    @OneToOne(cascade = { CascadeType.REMOVE, CascadeType.PERSIST })
+    @JoinColumn(name = "form_id", unique = true)
+    private Form form;
 
-    private Post(
-            String id,
-            String title,
-            String content,
-            User writer,
-            Boolean isDeleted,
-            Board board,
-            String attachments
-    ) {
-        super(id);
-        this.title = title;
-        this.content = content;
-        this.writer = writer;
-        this.isDeleted = isDeleted;
-        this.board = board;
-        this.attachments = attachments;
-    }
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+    @JoinColumn(name = "vote_id" , unique = true)
+    private Vote vote;
 
     public static Post of(
             String title,
             String content,
             User writer,
-            Boolean isDeleted,
+            Boolean isAnonymous,
+            Boolean isQuestion,
             Board board,
-            String attachments
+            Form form,
+
+            List<UuidFile> postAttachImageUuidFileList
     ) {
-        return new Post(
-                title,
-                content,
-                writer,
-                isDeleted,
-                board,
-                attachments
-        );
+        Post post = Post.builder()
+                .title(title)
+                .content(content)
+                .writer(writer)
+                .isAnonymous(isAnonymous)
+                .isQuestion(isQuestion)
+                .board(board)
+                .form(form)
+                .build();
+
+        if (postAttachImageUuidFileList.isEmpty()) {
+            return post;
+        }
+
+        List<PostAttachImage> postAttachImageList = postAttachImageUuidFileList.stream()
+                .map(uuidFile -> PostAttachImage.of(post, uuidFile))
+                .toList();
+
+        post.setPostAttachFileList(postAttachImageList);
+
+        return post;
     }
 
-    public static Post of(
-            String id,
-            String title,
-            String content,
-            User writer,
-            Boolean isDeleted,
-            Board board,
-            String attachments
-    ) {
-        return new Post(
-                id,
-                title,
-                content,
-                writer,
-                isDeleted,
-                board,
-                attachments
-        );
+    public void update(String title, String content, Form form, List<PostAttachImage> postAttachImageList) {
+        this.title = title;
+        this.content = content;
+        this.form = form;
+        this.postAttachImageList = postAttachImageList;
     }
 
-    public static Post from(PostDomainModel postDomainModel) {
-        return new Post(
-                postDomainModel.getId(),
-                postDomainModel.getTitle(),
-                postDomainModel.getContent(),
-                User.from(postDomainModel.getWriter()),
-                postDomainModel.getIsDeleted(),
-                Board.from(postDomainModel.getBoard()),
-                String.join(":::", postDomainModel.getAttachmentList())
-        );
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
+        if(form!=null){
+            this.form.setIsDeleted(isDeleted);
+        }
     }
 
-    public Optional<String> getAttachments() {
-        return Optional.ofNullable(this.attachments);
+    private void setPostAttachFileList(List<PostAttachImage> postAttachImageList) {
+        this.postAttachImageList = postAttachImageList;
+    }
+    public void updateVote(Vote vote){
+        this.vote = vote;
     }
 }

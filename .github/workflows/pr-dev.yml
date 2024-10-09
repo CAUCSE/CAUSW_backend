@@ -1,8 +1,8 @@
-name: 동문네트워크 백엔드 CI 테스트 자동화(main bracnh PR 시 작동)
+name: 동문네트워크 백엔드 CI 테스트 자동화(dev branch PR 시 작동)
 
 on:
   pull_request:
-    branches: [ "develop" ]
+    branches: [ "dev" ]
 
 permissions:
   contents: read
@@ -28,7 +28,7 @@ jobs:
       - name: Copy secret
         env:
           APPLICATION_FILE: ${{ secrets.APPLICATION_PROFILE_DEV }}
-          APPLICATION_DEV_FILE: ${{secrets.APPLICATION_DEV}}
+          APPLICATION_DEV_FILE: ${{ secrets.APPLICATION_DEV }}
           DIR: ./src/main/resources
 
           APPLICATION_FILE_NAME: application.yml

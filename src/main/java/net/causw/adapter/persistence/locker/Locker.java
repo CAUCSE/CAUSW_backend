@@ -1,26 +1,24 @@
 package net.causw.adapter.persistence.locker;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.base.BaseEntity;
-import net.causw.domain.model.locker.LockerDomainModel;
 import org.hibernate.annotations.ColumnDefault;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Getter
-@Setter
 @Entity
-@NoArgsConstructor
+@Builder(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "TB_LOCKER")
 public class Locker extends BaseEntity {
     @Column(name = "locker_number", nullable = false)
@@ -41,57 +39,65 @@ public class Locker extends BaseEntity {
     @JoinColumn(name = "location_id", nullable = false)
     private LockerLocation location;
 
-    private Locker(
-            String id,
-            Long lockerNumber,
-            Boolean isActive,
-            User user,
-            LockerLocation location
-    ) {
-        super(id);
-        this.lockerNumber = lockerNumber;
-        this.isActive = isActive;
-        this.user = user;
-        this.location = location;
-    }
-
-    private Locker(
-            Long lockerNumber,
-            Boolean isActive,
-            User user,
-            LockerLocation location
-    ) {
-        this.lockerNumber = lockerNumber;
-        this.isActive = isActive;
-        this.user = user;
-        this.location = location;
-    }
-
     public static Locker of(
             Long lockerNumber,
             Boolean isActive,
             User user,
-            LockerLocation location
+            LockerLocation location,
+            LocalDateTime expireDate
     ) {
-        return new Locker(
-                lockerNumber,
-                isActive,
-                user,
-                location
-        );
+        return Locker.builder()
+                .lockerNumber(lockerNumber)
+                .isActive(isActive)
+                .user(user)
+                .location(location)
+                .expireDate(expireDate)
+                .build();
     }
 
-    public static Locker from(LockerDomainModel lockerDomainModel) {
-        return new Locker(
-                lockerDomainModel.getId(),
-                lockerDomainModel.getLockerNumber(),
-                lockerDomainModel.getIsActive(),
-                lockerDomainModel.getUser().map(User::from).orElse(null),
-                LockerLocation.from(lockerDomainModel.getLockerLocation())
-        );
-    }
 
     public Optional<User> getUser() {
         return Optional.ofNullable(this.user);
     }
+
+    public void update(boolean isActive, User user, LocalDateTime expireDate) {
+        this.isActive = isActive;
+        this.user = user;
+        this.expireDate = expireDate;
+    }
+
+    public void updateLocation(LockerLocation location) {
+        this.location = location;
+    }
+
+    public void register(User user, LocalDateTime expiredAt) {
+        this.user = user;
+        this.isActive = Boolean.FALSE;
+        this.expireDate = expiredAt;
+    }
+
+    public void returnLocker() {
+        this.user = null;
+        this.isActive = Boolean.TRUE;
+        this.expireDate = null;
+    }
+
+    public void extendExpireDate(LocalDateTime expiredAt) {
+        this.expireDate = expiredAt;
+    }
+
+    public void activate() {
+        this.isActive = true;
+    }
+
+    public void deactivate() {
+        this.isActive = false;
+        this.user = null;
+    }
+
+    public void move(LockerLocation lockerLocation) {
+        this.location = lockerLocation;
+    }
+
+
 }

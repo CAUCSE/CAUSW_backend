@@ -2,7 +2,7 @@ package net.causw.domain.validation;
 
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
-import net.causw.domain.model.enums.UserState;
+import net.causw.domain.model.enums.user.UserState;
 
 public class UserStateValidator extends AbstractValidator {
 
@@ -32,18 +32,12 @@ public class UserStateValidator extends AbstractValidator {
             );
         }
 
-        if (this.userState == UserState.AWAIT) {
+        if (this.userState == UserState.DELETED) {
             throw new UnauthorizedException(
-                    ErrorCode.AWAITING_USER,
-                    "대기 중인 사용자 입니다."
+                    ErrorCode.DELETED_USER,
+                    "삭제된 사용자 입니다."
             );
         }
 
-        if (this.userState == UserState.REJECT) {
-            throw new UnauthorizedException(
-                    ErrorCode.REJECT_USER,
-                    "가입이 거절된 사용자 입니다."
-            );
-        }
     }
 }

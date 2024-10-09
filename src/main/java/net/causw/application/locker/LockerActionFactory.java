@@ -2,7 +2,8 @@ package net.causw.application.locker;
 
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
-import net.causw.domain.model.enums.LockerLogAction;
+import net.causw.domain.model.enums.locker.LockerLogAction;
+import net.causw.domain.model.util.MessageUtil;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -28,7 +29,7 @@ public class LockerActionFactory {
         if(updateAction == null) {
             throw new BadRequestException(
                     ErrorCode.INVALID_PARAMETER,
-                    "Invalid action parameter"
+                    MessageUtil.INVALID_PARAMETER
             );
         }
         return updateAction.get();

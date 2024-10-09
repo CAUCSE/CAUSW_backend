@@ -1,27 +1,25 @@
 package net.causw.adapter.persistence.comment;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.base.BaseEntity;
-import net.causw.domain.model.comment.CommentDomainModel;
-import net.causw.domain.model.post.PostDomainModel;
 import org.hibernate.annotations.ColumnDefault;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-@Setter
 @Entity
-@NoArgsConstructor
+@Builder(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_comment")
 public class Comment extends BaseEntity {
     @Column(name = "content", nullable = false)
@@ -30,6 +28,10 @@ public class Comment extends BaseEntity {
     @Column(name = "is_deleted")
     @ColumnDefault("false")
     private Boolean isDeleted;
+
+    @Column(name = "is_anonymous", nullable = false)
+    @ColumnDefault("false")
+    private Boolean isAnonymous;
 
     @ManyToOne(targetEntity = User.class)
     @JoinColumn(name = "user_id", nullable = false)
@@ -40,71 +42,34 @@ public class Comment extends BaseEntity {
     private Post post;
 
     @OneToMany(mappedBy = "parentComment")
-    private List<ChildComment> childCommentList;
-
-    private Comment(
-            String content,
-            Boolean isDeleted,
-            User writer,
-            Post post
-    ) {
-        this.content = content;
-        this.isDeleted = isDeleted;
-        this.writer = writer;
-        this.post = post;
-    }
-
-    private Comment(
-            String id,
-            String content,
-            Boolean isDeleted,
-            User writer,
-            Post post
-    ) {
-        super(id);
-        this.content = content;
-        this.isDeleted = isDeleted;
-        this.writer = writer;
-        this.post = post;
-    }
+    @Builder.Default
+    private List<ChildComment> childCommentList = new ArrayList<>(); // 필드 초기화 없으면 NPE
 
     public static Comment of(
             String content,
             Boolean isDeleted,
+            Boolean isAnonymous,
             User writer,
             Post post
     ) {
-        return new Comment(
-                content,
-                isDeleted,
-                writer,
-                post
-        );
+        return Comment.builder()
+                .content(content)
+                .isDeleted(isDeleted)
+                .isAnonymous(isAnonymous)
+                .writer(writer)
+                .post(post)
+                .build();
     }
 
-    public static Comment of(
-            String id,
-            String content,
-            Boolean isDeleted,
-            User writer,
-            Post post
-    ) {
-        return new Comment(
-                id,
-                content,
-                isDeleted,
-                writer,
-                post
-        );
+    public void setChildCommentList(List<ChildComment> childCommentList) {
+        this.childCommentList = childCommentList;
     }
 
-    public static Comment from(CommentDomainModel commentDomainModel, PostDomainModel postDomainModel) {
-        return new Comment(
-                commentDomainModel.getId(),
-                commentDomainModel.getContent(),
-                commentDomainModel.getIsDeleted(),
-                User.from(commentDomainModel.getWriter()),
-                Post.from(postDomainModel)
-        );
+    public void update(String content) {
+        this.content = content;
+    }
+
+    public void delete() {
+        this.isDeleted = true;
     }
 }

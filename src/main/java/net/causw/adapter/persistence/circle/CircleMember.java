@@ -1,26 +1,22 @@
 package net.causw.adapter.persistence.circle;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
+import net.causw.adapter.persistence.form.Form;
+import net.causw.adapter.persistence.form.Reply;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.base.BaseEntity;
-import net.causw.domain.model.enums.CircleMemberStatus;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import net.causw.domain.model.enums.circle.CircleMemberStatus;
 
 @Getter
-@Setter
 @Entity
-@NoArgsConstructor
+@Builder(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_circle_member")
 public class CircleMember extends BaseEntity {
+
+    @Setter
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     private CircleMemberStatus status;
@@ -33,51 +29,31 @@ public class CircleMember extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    private CircleMember(
-            String id,
-            CircleMemberStatus status,
-            Circle circle,
-            User user
-    ) {
-        super(id);
-        this.status = status;
-        this.circle = circle;
-        this.user = user;
-    }
+    // 신청 당시 제출한 신청서
+    @Setter
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "form_id", nullable = true)
+    private Form appliedForm;
 
-    private CircleMember(
-            CircleMemberStatus status,
-            Circle circle,
-            User user
-    ) {
-        this.status = status;
-        this.circle = circle;
-        this.user = user;
-    }
+    // 신청 당시 제출한 신청서 답변
+    @Setter
+    @OneToOne(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST })
+    @JoinColumn(name = "reply_id", nullable = true)
+    private Reply appliedReply;
 
     public static CircleMember of(
-            String id,
-            CircleMemberStatus status,
             Circle circle,
-            User user
+            User user,
+            Form form,
+            Reply reply
     ) {
-        return new CircleMember(
-                id,
-                status,
-                circle,
-                user
-        );
+        return CircleMember.builder()
+                .status(CircleMemberStatus.AWAIT)
+                .circle(circle)
+                .user(user)
+                .appliedForm(form)
+                .appliedReply(reply)
+                .build();
     }
 
-    public static CircleMember of(
-            CircleMemberStatus status,
-            Circle circle,
-            User user
-    ) {
-        return new CircleMember(
-                status,
-                circle,
-                user
-        );
-    }
 }
