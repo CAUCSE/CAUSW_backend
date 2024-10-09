@@ -2,12 +2,14 @@ package net.causw.config.security;
 
 import lombok.extern.slf4j.Slf4j;
 import net.causw.domain.exceptions.ErrorCode;
+import net.causw.domain.exceptions.UnauthorizedException;
+import net.causw.domain.model.util.MessageUtil;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
@@ -17,18 +19,19 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
-        ErrorCode errorCode = (ErrorCode) request.getAttribute("exception");
 
-        // API Access without JWT token or invalid JWT
-        if (errorCode == null || errorCode == ErrorCode.INVALID_JWT) {
-            this.setResponse(response, ErrorCode.INVALID_JWT, "ACCESS TOKEN 만료");
-            return;
+        //디폴트 오류처리 설정
+        ErrorCode errorCode = ErrorCode.INVALID_JWT;
+        String message = MessageUtil.INVALID_TOKEN;
+
+        UnauthorizedException exception = (UnauthorizedException) request.getAttribute("exception");
+
+        if (exception != null) {
+            errorCode = exception.getErrorCode();
+            message = exception.getMessage();
         }
 
-        // API Access with JWT token includes user data whose role is NONE or state is not ACTIVE
-        if (errorCode == ErrorCode.NEED_SIGN_IN) {
-            this.setResponse(response, ErrorCode.NEED_SIGN_IN, "다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.");
-        }
+        setResponse(response, errorCode, message);
     }
 
     private void setResponse(

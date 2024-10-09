@@ -1,22 +1,32 @@
 package net.causw.application.board;
 
 import lombok.RequiredArgsConstructor;
-import net.causw.application.dto.board.BoardCreateRequestDto;
-import net.causw.application.dto.board.BoardResponseDto;
-import net.causw.application.dto.board.BoardUpdateRequestDto;
-import net.causw.application.spi.BoardPort;
-import net.causw.application.spi.CircleMemberPort;
-import net.causw.application.spi.CirclePort;
-import net.causw.application.spi.UserPort;
+import net.causw.adapter.persistence.board.Board;
+import net.causw.adapter.persistence.board.BoardApply;
+import net.causw.adapter.persistence.circle.Circle;
+import net.causw.adapter.persistence.circle.CircleMember;
+import net.causw.adapter.persistence.repository.board.BoardApplyRepository;
+import net.causw.adapter.persistence.repository.board.BoardRepository;
+import net.causw.adapter.persistence.repository.circle.CircleMemberRepository;
+import net.causw.adapter.persistence.repository.circle.CircleRepository;
+import net.causw.adapter.persistence.repository.post.PostRepository;
+import net.causw.adapter.persistence.repository.user.UserRepository;
+import net.causw.adapter.persistence.user.User;
+import net.causw.application.dto.board.*;
+import net.causw.application.dto.post.PostContentDto;
+import net.causw.application.dto.user.UserResponseDto;
+import net.causw.application.dto.util.dtoMapper.BoardDtoMapper;
+import net.causw.application.dto.util.dtoMapper.PostDtoMapper;
+import net.causw.application.dto.util.dtoMapper.UserDtoMapper;
+import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
-import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
-import net.causw.domain.model.board.BoardDomainModel;
-import net.causw.domain.model.circle.CircleDomainModel;
-import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.enums.board.BoardApplyStatus;
+import net.causw.domain.model.enums.circle.CircleMemberStatus;
+import net.causw.domain.model.enums.user.Role;
+import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
-import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.validation.ConstraintValidator;
 import net.causw.domain.validation.TargetIsDeletedValidator;
 import net.causw.domain.validation.UserEqualValidator;
@@ -28,342 +38,527 @@ import net.causw.domain.validation.ValidatorBucket;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.Validator;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import jakarta.validation.Validator;
 
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+@MeasureTime
 @Service
 @RequiredArgsConstructor
 public class BoardService {
-    private final BoardPort boardPort;
-    private final UserPort userPort;
-    private final CirclePort circlePort;
-    private final CircleMemberPort circleMemberPort;
+    private final PostRepository postRepository;
+    private final BoardRepository boardRepository;
+    private final UserRepository userRepository;
+    private final CircleRepository circleRepository;
+    private final CircleMemberRepository circleMemberRepository;
+    private final BoardApplyRepository boardApplyRepository;
     private final Validator validator;
+
+
     @Transactional(readOnly = true)
-    public List<BoardResponseDto> findAllBoard(String loginUserId) {
-        UserDomainModel userDomainModel = this.userPort.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
-                )
-        );
+    public List<BoardResponseDto> findAllBoard(
+            User user
+    ) {
+        Set<Role> roles = user.getRoles();
 
         ValidatorBucket.of()
-                .consistOf(UserStateValidator.of(userDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
                 .validate();
 
-        if(userDomainModel.getRole().equals(Role.ADMIN) || userDomainModel.getRole().getValue().contains("PRESIDENT") ){
-            return this.boardPort.findAllBoard()
-                    .stream()
-                    .map(boardDomainModel -> BoardResponseDto.from(boardDomainModel, userDomainModel.getRole()))
+        if (roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT)) {
+            return boardRepository.findByOrderByCreatedAtAsc().stream()
+                    .map(board -> toBoardResponseDto(board, roles))
                     .collect(Collectors.toList());
-        }
-        else  {
-            List<CircleDomainModel> joinCircles = this.circleMemberPort.getCircleListByUserId(loginUserId);
+        } else {
+            List<Circle> joinCircles = circleMemberRepository.findByUser_Id(user.getId()).stream()
+                    .filter(circleMember -> circleMember.getStatus() == CircleMemberStatus.MEMBER)
+                    .map(CircleMember::getCircle)
+                    .collect(Collectors.toList());
             if (joinCircles.isEmpty()) {
-                return this.boardPort.findAllBoard(false)
-                        .stream()
-                        .map(boardDomainModel -> BoardResponseDto.from(boardDomainModel, userDomainModel.getRole()))
+                return boardRepository.findByCircle_IdIsNullAndIsDeletedOrderByCreatedAtAsc(false).stream()
+                        .map(board -> toBoardResponseDto(board, roles))
                         .collect(Collectors.toList());
-            }else{
+            } else {
                 List<String> circleIdList = joinCircles.stream()
-                        .map(CircleDomainModel::getId)
+                        .map(Circle::getId)
                         .collect(Collectors.toList());
 
-                return this.boardPort.findAllBoard(circleIdList)
-                        .stream()
-                        .map(boardDomainModel -> BoardResponseDto.from(boardDomainModel, userDomainModel.getRole()))
+                return Stream.concat(
+                                this.boardRepository.findByCircle_IdIsNullAndIsDeletedOrderByCreatedAtAsc(false).stream(),
+                                this.boardRepository.findByCircle_IdInAndIsDeletedFalseOrderByCreatedAtAsc(circleIdList).stream())
+                        .map(board -> toBoardResponseDto(board, roles))
+                        .collect(Collectors.toList());
+            }
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public List<BoardMainResponseDto> mainBoard(
+            User user
+    ) {
+        Set<Role> roles = user.getRoles();
+
+        ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .validate();
+
+        List<Board> boards;
+
+        if (roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT)) {
+            boards = boardRepository.findByOrderByCreatedAtAsc();
+        }else{
+            List<Circle> joinCircles = circleMemberRepository.findByUser_Id(user.getId()).stream()
+                .filter(circleMember -> circleMember.getStatus() == CircleMemberStatus.MEMBER)
+                .map(CircleMember::getCircle)
+                .collect(Collectors.toList());
+
+            if (joinCircles.isEmpty()) {
+                boards = boardRepository.findByCircle_IdIsNullAndIsDeletedOrderByCreatedAtAsc(false);
+            } else {
+                List<String> circleIdList = joinCircles.stream()
+                        .map(Circle::getId)
+                        .collect(Collectors.toList());
+
+                boards = Stream.concat(
+                                boardRepository.findByCircle_IdIsNullAndIsDeletedOrderByCreatedAtAsc(false).stream(),
+                                boardRepository.findByCircle_IdInAndIsDeletedFalseOrderByCreatedAtAsc(circleIdList).stream()
+                        )
                         .collect(Collectors.toList());
             }
         }
 
+        return boards.stream()
+                .map(board -> {
+                    List<PostContentDto> recentPosts = postRepository.findTop3ByBoard_IdAndIsDeletedOrderByCreatedAtDesc(board.getId(), false).stream()
+                            .map(PostDtoMapper.INSTANCE::toPostContentDto)
+                            .collect(Collectors.toList());
+                    return BoardDtoMapper.INSTANCE.toBoardMainResponseDto(board, recentPosts);
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public BoardNameCheckResponseDto checkBoardName (
+            BoardNameCheckRequestDto boardNameCheckRequestDto
+    ) {
+        String boardName = boardNameCheckRequestDto.getName();
+
+        return BoardDtoMapper.INSTANCE.toBoardNameCheckResponseDto(boardRepository.existsByName(boardName));
+    }
+
+    // 동아리 게시판 생성에서 재사용 예정인데 일단 안쓰므로 주석 처리.
+//    @Transactional
+//    public BoardResponseDto createBoard(
+//            User creator,
+//            BoardCreateRequestDto boardCreateRequestDto
+//    ) {
+//        Set<Role> roles = creator.getRoles();
+//
+//        ValidatorBucket validatorBucket = ValidatorBucket.of();
+//        validatorBucket
+//                .consistOf(UserStateValidator.of(creator.getState()))
+//                .consistOf(UserRoleIsNoneValidator.of(roles));
+//
+//        Circle circle = boardCreateRequestDto.getCircleId().map(
+//                circleId -> {
+//                    Circle newCircle = getCircle(circleId);
+//
+//                    validatorBucket
+//                            .consistOf(TargetIsDeletedValidator.of(newCircle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
+//                            //동아리장이거나 관리자만 통과
+//                            .consistOf(UserRoleValidator.of(roles,
+//                                    Set.of(Role.LEADER_CIRCLE)));
+//
+//                    //동아리장인 경우와 회장단이 아닌경우에 아래 조건문을 실행한다.
+//                    if (roles.contains(Role.LEADER_CIRCLE)) {
+//                        validatorBucket
+//                                .consistOf(UserEqualValidator.of(
+//                                        newCircle.getLeader().map(User::getId).orElseThrow(
+//                                                () -> new UnauthorizedException(
+//                                                        ErrorCode.API_NOT_ALLOWED,
+//                                                        MessageUtil.NOT_CIRCLE_LEADER
+//                                                )
+//                                        ),
+//                                        creator.getId()
+//                                ));
+//                    }
+//
+//                    return newCircle;
+//                }
+//        ).orElseGet(
+//                () -> {
+//                    validatorBucket
+//                            .consistOf(UserRoleValidator.of(roles, Set.of()));
+//
+//                    return null;
+//                }
+//        );
+
+//        Board board = Board.of(
+//                boardCreateRequestDto.getName(),
+//                boardCreateRequestDto.getDescription(),
+//                boardCreateRequestDto.getCreateRoleList(),
+//                boardCreateRequestDto.getCategory(),
+//                circle
+//        );
+//
+////        validatorBucket
+////                .consistOf(ConstraintValidator.of(board, this.validator))
+////                .validate();
+//
+//        return toBoardResponseDto(boardRepository.save(board), roles);
+//    }
+
+    @Transactional
+    public void applyNormalBoard(
+            User creator,
+            NormalBoardApplyRequestDto normalBoardApplyRequestDto
+    ) {
+        if (boardRepository.existsByName(normalBoardApplyRequestDto.getBoardName())) {
+            throw new BadRequestException(
+                    ErrorCode.ROW_ALREADY_EXIST,
+                    MessageUtil.BOARD_NAME_ALREADY_EXISTS
+            );
+        }
+
+        if (creator.getRoles().contains(Role.ADMIN) ||
+                creator.getRoles().contains(Role.PRESIDENT) ||
+                creator.getRoles().contains(Role.VICE_PRESIDENT)
+        ) {
+            List<String> createRoleList = new ArrayList<>();
+            createRoleList.add("ALL"); // 일반 사용자의 게시판 신청은 항상 글 작성 권한이 '상관없음'임
+            Board newBoard = Board.of(
+                    normalBoardApplyRequestDto.getBoardName(),
+                    normalBoardApplyRequestDto.getDescription(),
+                    createRoleList,
+                    StaticValue.BOARD_NAME_APP_FREE,
+                    normalBoardApplyRequestDto.getIsAnonymousAllowed(),
+                    null
+            );
+
+            boardRepository.save(newBoard);
+
+            return;
+        }
+
+        BoardApply newBoardApply = BoardApply.of(
+                creator,
+                normalBoardApplyRequestDto.getBoardName(),
+                normalBoardApplyRequestDto.getDescription(),
+                StaticValue.BOARD_NAME_APP_FREE,
+                normalBoardApplyRequestDto.getIsAnonymousAllowed()
+        );
+
+        boardApplyRepository.save(newBoardApply);
     }
 
     @Transactional
-    public BoardResponseDto createBoard(String loginUserId, BoardCreateRequestDto boardCreateRequestDto) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
+    public BoardResponseDto createBoard(
+            User creator,
+            BoardCreateRequestDto boardCreateRequestDto
+    ) {
+        if (boardRepository.existsByName(boardCreateRequestDto.getBoardName())) {
+            throw new BadRequestException(
+                    ErrorCode.ROW_ALREADY_EXIST,
+                    MessageUtil.BOARD_NAME_ALREADY_EXISTS
+            );
+        }
 
-        UserDomainModel creatorDomainModel = this.userPort.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
-                )
-        );
+        if ( !(boardCreateRequestDto.getBoardCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE) ||
+            boardCreateRequestDto.getBoardCategory().equals(StaticValue.BOARD_NAME_APP_FREE))
+        ) {
+            throw new BadRequestException(
+                    ErrorCode.INVALID_BOARD_CATEGORY,
+                    MessageUtil.INVALID_BOARD_CATEGORY
+            );
+        }
 
-        validatorBucket
-                .consistOf(UserStateValidator.of(creatorDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(creatorDomainModel.getRole()));
-
-        CircleDomainModel circleDomainModel = boardCreateRequestDto.getCircleId().map(
-                circleId -> {
-                    CircleDomainModel circle = this.circlePort.findById(circleId).orElseThrow(
-                            () -> new BadRequestException(
-                                    ErrorCode.ROW_DOES_NOT_EXIST,
-                                    "동아리를 찾을 수 없습니다."
-                            )
-                    );
-
-                    validatorBucket
-                            .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                            .consistOf(UserRoleValidator.of(creatorDomainModel.getRole(),
-                                    List.of(Role.LEADER_CIRCLE)));
-
-                    if (creatorDomainModel.getRole().getValue().contains("LEADER_CIRCLE") && !creatorDomainModel.getRole().getValue().contains("PRESIDENT")) {
-                        validatorBucket
-                                .consistOf(UserEqualValidator.of(
-                                        circle.getLeader().map(UserDomainModel::getId).orElseThrow(
-                                                () -> new UnauthorizedException(
-                                                        ErrorCode.API_NOT_ALLOWED,
-                                                        "사용자가 해당 동아리의 동아리장이 아닙니다."
-                                                )
-                                        ),
-                                        loginUserId
-                                ));
-                    }
-
-                    return circle;
-                }
-        ).orElseGet(
-                () -> {
-                    validatorBucket
-                            .consistOf(UserRoleValidator.of(creatorDomainModel.getRole(), List.of()));
-
-                    return null;
-                }
-        );
-
-        BoardDomainModel boardDomainModel = BoardDomainModel.of(
-                boardCreateRequestDto.getName(),
+        Board newBoard = Board.of(
+                boardCreateRequestDto.getBoardName(),
                 boardCreateRequestDto.getDescription(),
                 boardCreateRequestDto.getCreateRoleList(),
-                boardCreateRequestDto.getCategory(),
-                circleDomainModel
+                boardCreateRequestDto.getBoardCategory(),
+                boardCreateRequestDto.getIsAnonymousAllowed(),
+                null
         );
 
-        validatorBucket
-                .consistOf(ConstraintValidator.of(boardDomainModel, this.validator))
-                .validate();
+        return toBoardResponseDto(boardRepository.save(newBoard), creator.getRoles());
+    }
 
-        return BoardResponseDto.from(this.boardPort.createBoard(boardDomainModel), creatorDomainModel.getRole());
+    @Transactional(readOnly = true)
+    public List<NormalBoardAppliesResponseDto> findAllBoardApply() {
+        // 관리자, 학생회장, 부학생회장만 게시판 관리 기능 사용 가능
+        return this.boardApplyRepository.findAllByAcceptStatus(BoardApplyStatus.AWAIT)
+                .stream()
+                .map(BoardDtoMapper.INSTANCE::toNormalBoardAppliesResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public NormalBoardApplyResponseDto findBoardApplyByApplyId(String applyId) {
+        // 관리자, 학생회장, 부학생회장만 게시판 관리 기능 사용 가능
+        BoardApply boardApply = this.boardApplyRepository.findById(applyId)
+                .orElseThrow(() -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.APPLY_NOT_FOUND
+                ));
+        return BoardDtoMapper.INSTANCE.toNormalBoardApplyResponseDto(
+                boardApply, UserDtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null));
+    }
+
+    @Transactional
+    public NormalBoardApplyResponseDto accept(String boardApplyId) {
+        BoardApply boardApply = this.boardApplyRepository.findById(boardApplyId)
+                .orElseThrow(() -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.APPLY_NOT_FOUND
+                ));
+
+        if (boardApply.getAcceptStatus() == BoardApplyStatus.ACCEPTED) { // 해당 신청이 이미 승인된 경우
+            throw new BadRequestException(
+                    ErrorCode.CANNOT_PERFORMED,
+                    MessageUtil.APPLY_ALREADY_ACCEPTED
+            );
+        }
+
+        if (boardApply.getAcceptStatus() == BoardApplyStatus.REJECT) { // 해당 신청이 이미 거부된 경우
+            throw new BadRequestException(
+                    ErrorCode.CANNOT_PERFORMED,
+                    MessageUtil.APPLY_ALREADY_REJECTED
+            );
+        }
+
+        boardApply.updateAcceptStatus(BoardApplyStatus.ACCEPTED); // 해당 boardApply의 상태를 ACCEPTED로 변경
+        this.boardApplyRepository.save(boardApply);
+
+        List<String> createRoleList = new ArrayList<>();
+        createRoleList.add("ALL"); // 일반 사용자의 게시판 신청은 항상 글 작성 권한이 '상관없음'임
+        UserResponseDto userResponseDto = UserDtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null);
+        NormalBoardApplyResponseDto normalBoardApplyResponseDto =
+                BoardDtoMapper.INSTANCE.toNormalBoardApplyResponseDto(boardApply, userResponseDto);
+        Board newBoard = Board.of(
+                normalBoardApplyResponseDto.getBoardName(),
+                normalBoardApplyResponseDto.getDescription(),
+                createRoleList,
+                StaticValue.BOARD_NAME_APP_NOTICE,
+                normalBoardApplyResponseDto.getIsAnonymousAllowed(),
+                null
+        );
+
+        this.boardRepository.save(newBoard);
+
+        return BoardDtoMapper.INSTANCE.toNormalBoardApplyResponseDto(boardApply, userResponseDto);
+    }
+
+    @Transactional
+    public NormalBoardApplyResponseDto reject(String boardApplyId) {
+        BoardApply boardApply = this.boardApplyRepository.findById(boardApplyId)
+                .orElseThrow(() -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.APPLY_NOT_FOUND
+                ));
+
+        if (boardApply.getAcceptStatus() == BoardApplyStatus.ACCEPTED) { // 해당 신청이 이미 승인된 경우
+            throw new BadRequestException(
+                    ErrorCode.CANNOT_PERFORMED,
+                    MessageUtil.APPLY_ALREADY_ACCEPTED
+            );
+        }
+
+        if (boardApply.getAcceptStatus() == BoardApplyStatus.REJECT) { // 해당 신청이 이미 거부된 경우
+            throw new BadRequestException(
+                    ErrorCode.CANNOT_PERFORMED,
+                    MessageUtil.APPLY_ALREADY_REJECTED
+            );
+        }
+
+        boardApply.updateAcceptStatus(BoardApplyStatus.REJECT); // 해당 boardApply의 상태를 REJECT로 변경
+        this.boardApplyRepository.save(boardApply);
+
+        return BoardDtoMapper.INSTANCE.toNormalBoardApplyResponseDto(
+                boardApply,
+                UserDtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null));
     }
 
     @Transactional
     public BoardResponseDto updateBoard(
-            String loginUserId,
+            User updater,
             String boardId,
             BoardUpdateRequestDto boardUpdateRequestDto
     ) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
+        Set<Role> roles = updater.getRoles();
+        Board board = getBoard(boardId);
 
-        UserDomainModel updaterDomainModel = this.userPort.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
-                )
-        );
+        ValidatorBucket validatorBucket = initializeValidatorBucket(updater, board);
 
-        BoardDomainModel boardDomainModel = this.boardPort.findById(boardId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "수정할 게시판을 찾을 수 없습니다."
-                )
-        );
-
-        validatorBucket
-                .consistOf(UserStateValidator.of(updaterDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(updaterDomainModel.getRole()))
-                .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted(), StaticValue.DOMAIN_BOARD));
-
-        boardDomainModel.getCircle().ifPresentOrElse(
-                circleDomainModel -> {
-                    validatorBucket
-                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                            .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(),
-                                    List.of(Role.LEADER_CIRCLE)));
-
-                    if (updaterDomainModel.getRole().getValue().contains("LEADER_CIRCLE") && !updaterDomainModel.getRole().getValue().contains("PRESIDENT")) {
-                        validatorBucket
-                                .consistOf(UserEqualValidator.of(
-                                        circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
-                                                () -> new UnauthorizedException(
-                                                        ErrorCode.API_NOT_ALLOWED,
-                                                        "사용자가 해당 동아리의 동아리장이 아닙니다."
-                                                )
-                                        ),
-                                        loginUserId
-                                ));
-                    }
-                },
-                () -> validatorBucket
-                        .consistOf(UserRoleValidator.of(updaterDomainModel.getRole(), List.of()))
-        );
-
-        boardDomainModel.update(
+        board.update(
                 boardUpdateRequestDto.getName(),
                 boardUpdateRequestDto.getDescription(),
-                boardUpdateRequestDto.getCreateRoleList(),
+                String.join(",", boardUpdateRequestDto.getCreateRoleList()),
                 boardUpdateRequestDto.getCategory()
         );
 
         validatorBucket
-                .consistOf(ConstraintValidator.of(boardDomainModel, this.validator))
+                .consistOf(ConstraintValidator.of(board, this.validator))
                 .validate();
 
-        return BoardResponseDto.from(
-                this.boardPort.updateBoard(boardId, boardDomainModel).orElseThrow(
-                        () -> new InternalServerException(
-                                ErrorCode.INTERNAL_SERVER,
-                                "Board id checked, but exception occurred"
-                        )
-                ),
-                updaterDomainModel.getRole()
-        );
+        return toBoardResponseDto(boardRepository.save(board), roles);
     }
 
     @Transactional
     public BoardResponseDto deleteBoard(
-            String loginUserId,
+            User deleter,
             String boardId
     ) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
+        Set<Role> roles = deleter.getRoles();
+        Board board = getBoard(boardId);
 
-        UserDomainModel deleterDomainModel = this.userPort.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
-                )
-        );
-
-        BoardDomainModel boardDomainModel = this.boardPort.findById(boardId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "삭제할 게시판을 찾을 수 없습니다."
-                )
-        );
-
-        if (boardDomainModel.getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
+        ValidatorBucket validatorBucket = initializeValidatorBucket(deleter, board);
+        if (board.getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
             validatorBucket
                     .consistOf(UserRoleValidator.of(
-                            deleterDomainModel.getRole(),
-                            List.of()
+                            roles,
+                            Set.of()
                     ));
         }
+        validatorBucket.validate();
 
-        validatorBucket
-                .consistOf(UserStateValidator.of(deleterDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(deleterDomainModel.getRole()))
-                .consistOf(TargetIsDeletedValidator.of(boardDomainModel.getIsDeleted(), StaticValue.DOMAIN_BOARD));
-
-        boardDomainModel.getCircle().ifPresentOrElse(
-                circleDomainModel -> {
-                    validatorBucket
-                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                            .consistOf(UserRoleValidator.of(deleterDomainModel.getRole(),
-                                    List.of(Role.LEADER_CIRCLE)));
-
-                    if (deleterDomainModel.getRole().getValue().contains("LEADER_CIRCLE") && !deleterDomainModel.getRole().getValue().contains("PRESIDENT")) {
-                        validatorBucket
-                                .consistOf(UserEqualValidator.of(
-                                        circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
-                                                () -> new UnauthorizedException(
-                                                        ErrorCode.API_NOT_ALLOWED,
-                                                        "사용자가 해당 동아리의 동아리장이 아닙니다."
-                                                )
-                                        ),
-                                        loginUserId
-                                ));
-                    }
-                },
-                () -> validatorBucket
-                        .consistOf(UserRoleValidator.of(deleterDomainModel.getRole(), List.of()))
-        );
-
-        validatorBucket
-                .validate();
-
-        return BoardResponseDto.from(
-                this.boardPort.deleteBoard(boardId).orElseThrow(
-                        () -> new InternalServerException(
-                                ErrorCode.INTERNAL_SERVER,
-                                "Board id checked, but exception occurred"
-                        )
-                ),
-                deleterDomainModel.getRole()
-        );
+        board.setIsDeleted(true);
+        return toBoardResponseDto(boardRepository.save(board), roles);
     }
 
     @Transactional
     public BoardResponseDto restoreBoard(
-            String loginUserId,
+            User restorer,
             String boardId
-    ){
+    ) {
+        Set<Role> roles = restorer.getRoles();
+        Board board = getBoard(boardId);
+
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel restorerDomainModel = this.userPort.findById(loginUserId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
-                )
-        );
-
-        BoardDomainModel boardDomainModel = this.boardPort.findById(boardId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        "복구할 게시판을 찾을 수 없습니다."
-                )
-        );
-
-        if (boardDomainModel.getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
-            validatorBucket
-                    .consistOf(UserRoleValidator.of(
-                            restorerDomainModel.getRole(),
-                            List.of()
-                    ));
-        }
-
         validatorBucket
-                .consistOf(UserStateValidator.of(restorerDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(restorerDomainModel.getRole()))
-                .consistOf(TargetIsNotDeletedValidator.of(boardDomainModel.getIsDeleted(), StaticValue.DOMAIN_BOARD));
+                .consistOf(UserStateValidator.of(restorer.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(TargetIsNotDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD));
 
-        boardDomainModel.getCircle().ifPresentOrElse(
-                circleDomainModel -> {
+        Optional<Circle> circles = Optional.ofNullable(board.getCircle());
+        circles.ifPresentOrElse(
+                circle -> {
                     validatorBucket
-                            .consistOf(TargetIsDeletedValidator.of(circleDomainModel.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                            .consistOf(UserRoleValidator.of(restorerDomainModel.getRole(),
-                                    List.of(Role.LEADER_CIRCLE)));
+                            .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
+                            .consistOf(UserRoleValidator.of(roles,
+                                    Set.of(Role.LEADER_CIRCLE)));
 
-                    if (restorerDomainModel.getRole().getValue().contains("LEADER_CIRCLE") && !restorerDomainModel.getRole().getValue().contains("PRESIDENT")) {
+                    if (roles.contains(Role.LEADER_CIRCLE)) {
                         validatorBucket
                                 .consistOf(UserEqualValidator.of(
-                                        circleDomainModel.getLeader().map(UserDomainModel::getId).orElseThrow(
+                                        circle.getLeader().map(User::getId).orElseThrow(
                                                 () -> new UnauthorizedException(
                                                         ErrorCode.API_NOT_ALLOWED,
-                                                        "사용자가 해당 동아리의 동아리장이 아닙니다."
+                                                        MessageUtil.NOT_CIRCLE_LEADER
                                                 )
                                         ),
-                                        loginUserId
+                                        restorer.getId()
                                 ));
                     }
                 },
                 () -> validatorBucket
-                        .consistOf(UserRoleValidator.of(restorerDomainModel.getRole(), List.of()))
+                        .consistOf(UserRoleValidator.of(roles, Set.of()))
         );
 
-        validatorBucket
-                .validate();
+        if (board.getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
+            validatorBucket
+                    .consistOf(UserRoleValidator.of(
+                            roles,
+                            Set.of()
+                    ));
+        }
+        validatorBucket.validate();
 
-        return BoardResponseDto.from(
-                this.boardPort.restoreBoard(boardId).orElseThrow(
-                        () -> new InternalServerException(
-                                ErrorCode.INTERNAL_SERVER,
-                                "Board id checked, but exception occurred"
-                        )
-                ),
-                restorerDomainModel.getRole()
+        board.setIsDeleted(false);
+        return toBoardResponseDto(boardRepository.save(board), roles);
+    }
+
+    private ValidatorBucket initializeValidatorBucket(User user, Board board) {
+        Set<Role> roles = user.getRoles();
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+
+        validatorBucket
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD));
+
+        Optional<Circle> circles = Optional.ofNullable(board.getCircle());
+        circles.ifPresentOrElse(
+                circle -> {
+                    validatorBucket
+                            .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
+                            .consistOf(UserRoleValidator.of(roles,
+                                    Set.of(Role.LEADER_CIRCLE)));
+
+                    if (roles.contains(Role.LEADER_CIRCLE)) {
+                        validatorBucket
+                                .consistOf(UserEqualValidator.of(
+                                        circle.getLeader().map(User::getId).orElseThrow(
+                                                () -> new UnauthorizedException(
+                                                        ErrorCode.API_NOT_ALLOWED,
+                                                        MessageUtil.NOT_CIRCLE_LEADER
+                                                )
+                                        ),
+                                        user.getId()
+                                ));
+                    }
+                },
+                () -> validatorBucket
+                        .consistOf(UserRoleValidator.of(roles, Set.of()))
+        );
+        return validatorBucket;
+    }
+
+    private BoardResponseDto toBoardResponseDto(Board board, Set<Role> userRoles) {
+        List<String> roles = Arrays.asList(board.getCreateRoles().split(","));
+        Boolean writable = userRoles.stream()
+                .map(Role::getValue)
+                .anyMatch(roles::contains);
+        String circleId = Optional.ofNullable(board.getCircle()).map(Circle::getId).orElse(null);
+        String circleName = Optional.ofNullable(board.getCircle()).map(Circle::getName).orElse(null);
+        return BoardDtoMapper.INSTANCE.toBoardResponseDto(
+                board,
+                roles,
+                writable,
+                circleId,
+                circleName
+        );
+    }
+
+    private User getUser(String userId) {
+        return userRepository.findById(userId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.USER_NOT_FOUND
+                )
+        );
+    }
+
+    private Board getBoard(String boardId) {
+        return boardRepository.findById(boardId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.BOARD_NOT_FOUND
+                )
+        );
+    }
+
+    private Circle getCircle(String circleId) {
+        return circleRepository.findById(circleId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.SMALL_CLUB_NOT_FOUND
+                )
         );
     }
 }

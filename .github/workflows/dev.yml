@@ -110,3 +110,4 @@ jobs:
             sudo fuser -k -n tcp 8080
             sleep 15
             sudo nohup java -jar /home/ubuntu/app/*.jar > ./nohup.out 2>&1 &
+

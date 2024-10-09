@@ -1,11 +1,12 @@
 package net.causw.application.dto.user;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.causw.domain.model.enums.Role;
+import net.causw.domain.model.enums.user.Role;
 
 import java.util.Optional;
 
@@ -15,10 +16,12 @@ import java.util.Optional;
 @NoArgsConstructor
 public class UserUpdateRoleRequestDto {
 
-    @ApiModelProperty(value = "역할", example = "COMMON")
+    @NotBlank(message = "역할을 선택해 주세요.")
+    @Schema(description = "역할", example = "COMMON")
     private String role;
 
-    @ApiModelProperty(value = "동아리 고유 id값", example = "uuid 형식의 String 값입니다.")
+    @NotBlank(message = "동아리 id를 입력해 주세요.")
+    @Schema(description = "동아리 고유 id값", example = "uuid 형식의 String 값입니다.")
     private String circleId;
 
     public Role getRole() {

@@ -1,19 +1,20 @@
 package net.causw.adapter.persistence.user;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
-import net.causw.domain.model.enums.UserAdmissionLogAction;
+import net.causw.adapter.persistence.uuidFile.joinEntity.UserAdmissionLogAttachImage;
+import net.causw.adapter.persistence.uuidFile.UuidFile;
+import net.causw.domain.model.enums.user.UserAdmissionLogAction;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Entity
-@NoArgsConstructor
+@Builder(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_user_admission_log")
 public class UserAdmissionLog extends BaseEntity {
     @Column(name = "user_email", nullable = false)
@@ -28,8 +29,9 @@ public class UserAdmissionLog extends BaseEntity {
     @Column(name = "admin_user_name", nullable = false)
     private String adminUserName;
 
-    @Column(name = "image", length = 500)
-    private String attachImage;
+    @OneToMany(cascade = { CascadeType.PERSIST, CascadeType.REMOVE }, mappedBy = "userAdmissionLog")
+    @Builder.Default
+    private List<UserAdmissionLogAttachImage> userAdmissionLogAttachImageList = new ArrayList<>();
 
     @Column(name = "description")
     private String description;
@@ -38,43 +40,8 @@ public class UserAdmissionLog extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private UserAdmissionLogAction action;
 
-    private UserAdmissionLog(
-            String id,
-            String userEmail,
-            String userName,
-            String adminUserEmail,
-            String adminUserName,
-            UserAdmissionLogAction action,
-            String attachImage,
-            String description
-    ) {
-        super(id);
-        this.userEmail = userEmail;
-        this.userName = userName;
-        this.adminUserEmail = adminUserEmail;
-        this.adminUserName = adminUserName;
-        this.action = action;
-        this.attachImage = attachImage;
-        this.description = description;
-    }
-
-    private UserAdmissionLog(
-            String userEmail,
-            String userName,
-            String adminUserEmail,
-            String adminUserName,
-            UserAdmissionLogAction action,
-            String attachImage,
-            String description
-    ) {
-        this.userEmail = userEmail;
-        this.userName = userName;
-        this.adminUserEmail = adminUserEmail;
-        this.adminUserName = adminUserName;
-        this.action = action;
-        this.attachImage = attachImage;
-        this.description = description;
-    }
+    @Column(name = "rejectReason",nullable = true)
+    private String rejectReason;
 
     public static UserAdmissionLog of(
             String userEmail,
@@ -82,17 +49,30 @@ public class UserAdmissionLog extends BaseEntity {
             String adminUserEmail,
             String adminUserName,
             UserAdmissionLogAction action,
-            String attachImage,
-            String description
+            List<UuidFile> userAdmissionLogAttachImageUuidFileList,
+            String description,
+            String rejectReason
     ) {
-        return new UserAdmissionLog(
-                userEmail,
-                userName,
-                adminUserEmail,
-                adminUserName,
-                action,
-                attachImage,
-                description
-        );
+        UserAdmissionLog userAdmissionLog = UserAdmissionLog.builder()
+                .userEmail(userEmail)
+                .userName(userName)
+                .adminUserEmail(adminUserEmail)
+                .adminUserName(adminUserName)
+                .action(action)
+                .description(description)
+                .rejectReason(rejectReason)
+                .build();
+
+        List<UserAdmissionLogAttachImage> userAdmissionLogAttachImageList = userAdmissionLogAttachImageUuidFileList.stream()
+                .map(uuidFile -> UserAdmissionLogAttachImage.of(userAdmissionLog, uuidFile))
+                .toList();
+
+        userAdmissionLog.setUserAdmissionLogAttachImageList(userAdmissionLogAttachImageList);
+
+        return userAdmissionLog;
+    }
+
+    private void setUserAdmissionLogAttachImageList(List<UserAdmissionLogAttachImage> userAdmissionLogAttachImageList) {
+        this.userAdmissionLogAttachImageList = userAdmissionLogAttachImageList;
     }
 }

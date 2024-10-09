@@ -1,15 +1,17 @@
 package net.causw.application.inquiry;
 
 import lombok.RequiredArgsConstructor;
+import net.causw.adapter.persistence.inquiry.Inquiry;
+import net.causw.adapter.persistence.repository.inquiry.InquiryRepository;
+import net.causw.adapter.persistence.repository.user.UserRepository;
+import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.inquiry.InquiryCreateRequestDto;
 import net.causw.application.dto.inquiry.InquiryResponseDto;
-import net.causw.application.spi.InquiryPort;
-import net.causw.application.spi.UserPort;
+import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
-import net.causw.domain.model.inquiry.InquiryDomainModel;
+import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
-import net.causw.domain.model.user.UserDomainModel;
 import net.causw.domain.validation.ValidatorBucket;
 import net.causw.domain.validation.UserStateValidator;
 import net.causw.domain.validation.UserRoleIsNoneValidator;
@@ -18,15 +20,15 @@ import net.causw.domain.validation.ConstraintValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.Validator;
-
+import jakarta.validation.Validator;
+@MeasureTime
 @Service
 @RequiredArgsConstructor
 public class InquiryService {
 
-    private final UserPort userPort;
     private final Validator validator;
-    private final InquiryPort inquiryPort;
+    private final UserRepository userRepository;
+    private final InquiryRepository inquiryRepository;
 
     @Transactional(readOnly = true)
     public InquiryResponseDto findById(
@@ -35,31 +37,31 @@ public class InquiryService {
     ) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel userDomainModel = this.userPort.findById(requestUserId).orElseThrow(
+        User user = userRepository.findById(requestUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
-        InquiryDomainModel inquiryDomainModel = this.inquiryPort.findById(inquiryId).orElseThrow(
+        Inquiry inquiry = inquiryRepository.findById(inquiryId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "문의글을 찾을 수 없습니다."
+                        MessageUtil.INQUIRY_NOT_FOUND
                 )
         );
 
         validatorBucket
-                .consistOf(UserStateValidator.of(userDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(userDomainModel.getRole()))
-                .consistOf(TargetIsDeletedValidator.of(inquiryDomainModel.getIsDeleted(), StaticValue.DOMAIN_INQUIRY));
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(user.getRoles()))
+                .consistOf(TargetIsDeletedValidator.of(inquiry.getIsDeleted(), StaticValue.DOMAIN_INQUIRY));
 
         validatorBucket
                 .validate();
 
-        return InquiryResponseDto.from(
-                inquiryDomainModel,
-                userDomainModel
+        return InquiryResponseDto.of(
+                inquiry,
+                user
         );
     }
 
@@ -67,30 +69,32 @@ public class InquiryService {
     public InquiryResponseDto create(String requestUserId, InquiryCreateRequestDto inquiryCreateRequestDto) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
-        UserDomainModel creatorDomainModel = this.userPort.findById(requestUserId).orElseThrow(
+        User writer = userRepository.findById(requestUserId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
-                        "로그인된 사용자를 찾을 수 없습니다."
+                        MessageUtil.LOGIN_USER_NOT_FOUND
                 )
         );
 
         validatorBucket
-                .consistOf(UserStateValidator.of(creatorDomainModel.getState()))
-                .consistOf(UserRoleIsNoneValidator.of(creatorDomainModel.getRole()));
+                .consistOf(UserStateValidator.of(writer.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(writer.getRoles()));
 
-        InquiryDomainModel inquiryDomainModel = InquiryDomainModel.of(
+        Inquiry inquiry = Inquiry.of(
                 inquiryCreateRequestDto.getTitle(),
                 inquiryCreateRequestDto.getContent(),
-                creatorDomainModel
+                writer
         );
 
+        inquiryRepository.save(inquiry);
+
         validatorBucket
-                .consistOf(ConstraintValidator.of(inquiryDomainModel, this.validator))
+                .consistOf(ConstraintValidator.of(inquiry, this.validator))
                 .validate();
 
-        return InquiryResponseDto.from(
-                this.inquiryPort.create(inquiryDomainModel),
-                creatorDomainModel
+        return InquiryResponseDto.of(
+                inquiryRepository.save(inquiry),
+                writer
         );
     }
 

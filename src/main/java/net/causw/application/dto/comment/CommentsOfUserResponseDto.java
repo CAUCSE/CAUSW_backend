@@ -1,13 +1,14 @@
 package net.causw.application.dto.comment;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.domain.model.comment.CommentDomainModel;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@Builder
 public class CommentsOfUserResponseDto {
     private String id;
     private String content;
@@ -21,53 +22,4 @@ public class CommentsOfUserResponseDto {
     private String circleId;
     private String circleName;
 
-    private CommentsOfUserResponseDto(
-            String id,
-            String content,
-            LocalDateTime createdAt,
-            LocalDateTime updatedAt,
-            Boolean isDeleted,
-            String boardId,
-            String boardName,
-            String postId,
-            String postName,
-            String circleId,
-            String circleName
-    ) {
-        this.id = id;
-        this.content = content;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.isDeleted = isDeleted;
-        this.boardId = boardId;
-        this.boardName = boardName;
-        this.postId = postId;
-        this.postName = postName;
-        this.circleId = circleId;
-        this.circleName = circleName;
-    }
-
-    public static CommentsOfUserResponseDto from(
-            CommentDomainModel comment,
-            String boardId,
-            String boardName,
-            String postId,
-            String postName,
-            String circleId,
-            String circleName
-    ) {
-        return new CommentsOfUserResponseDto(
-                comment.getId(),
-                comment.getContent(),
-                comment.getCreatedAt(),
-                comment.getUpdatedAt(),
-                comment.getIsDeleted(),
-                boardId,
-                boardName,
-                postId,
-                postName,
-                circleId,
-                circleName
-        );
-    }
 }

@@ -1,19 +1,24 @@
 package net.causw.adapter.persistence.locker;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Builder;
 import net.causw.adapter.persistence.base.BaseEntity;
-import net.causw.domain.model.enums.LockerLogAction;
+import net.causw.domain.model.enums.locker.LockerLogAction;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
 
 @Getter
 @Entity
-@NoArgsConstructor
+@Builder(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "TB_LOCKER_LOG")
 public class LockerLog extends BaseEntity {
     @Column(name = "locker_number", nullable = false)
@@ -35,40 +40,6 @@ public class LockerLog extends BaseEntity {
     @Column(name = "message", nullable = true)
     private String message;
 
-    private LockerLog(
-            String id,
-            Long lockerNumber,
-            String lockerLocationName,
-            String userEmail,
-            String userName,
-            LockerLogAction action,
-            String message
-    ) {
-        super(id);
-        this.lockerNumber = lockerNumber;
-        this.lockerLocationName = lockerLocationName;
-        this.userEmail = userEmail;
-        this.userName = userName;
-        this.action = action;
-        this.message = message;
-    }
-
-    private LockerLog(
-            Long lockerNumber,
-            String lockerLocationName,
-            String userEmail,
-            String userName,
-            LockerLogAction action,
-            String message
-    ) {
-        this.lockerNumber = lockerNumber;
-        this.lockerLocationName = lockerLocationName;
-        this.userEmail = userEmail;
-        this.userName = userName;
-        this.action = action;
-        this.message = message;
-    }
-
     public static LockerLog of(
             Long lockerNumber,
             String lockerLocationName,
@@ -77,13 +48,13 @@ public class LockerLog extends BaseEntity {
             LockerLogAction action,
             String message
     ) {
-        return new LockerLog(
-                lockerNumber,
-                lockerLocationName,
-                userEmail,
-                userName,
-                action,
-                message
-        );
+        return LockerLog.builder()
+                .lockerNumber(lockerNumber)
+                .lockerLocationName(lockerLocationName)
+                .userEmail(userEmail)
+                .userName(userName)
+                .action(action)
+                .message(message)
+                .build();
     }
 }
