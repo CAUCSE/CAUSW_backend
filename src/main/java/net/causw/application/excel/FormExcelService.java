@@ -74,7 +74,7 @@ public class FormExcelService extends ExcelAbstractService<ExcelReplyResponseDto
             row.createCell(cellNum++).setCellValue(
                     excelReplyResponseDto.getReplyUserResponseDto() != null ?
                             excelReplyResponseDto.getReplyUserResponseDto().getPhoneNumber() != null ?
-                                    excelReplyResponseDto.getReplyUserResponseDto().getPhoneNumber().toString() : ""
+                                    excelReplyResponseDto.getReplyUserResponseDto().getPhoneNumber() : ""
                             : ""
             );
 

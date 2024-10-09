@@ -69,8 +69,7 @@ public class WebCrawlerService {
                 }
 
                 String absoluteLink = titleElement.absUrl("href");
-//                System.out.println("방문한 페이지 절대 경로 : " + absoluteLink);
-//                System.out.println("DB에 저장되어 있는 가장 최근 공지 URL " + recentNoticeLink);
+
                 if (absoluteLink.equals(recentNoticeLink)) {   // 최신 url과 비교하여 동일한 경우 for문 탈출
                     isNew = false;
                     break;
