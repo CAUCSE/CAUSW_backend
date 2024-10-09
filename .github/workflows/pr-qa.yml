@@ -1,8 +1,8 @@
-name: 동문네트워크 백엔드 CI 테스트 자동화(dev branch PR 시 작동)
+name: 동문네트워크 백엔드 CI 테스트 자동화(qa branch PR 시 작동)
 
 on:
   pull_request:
-    branches: [ "dev" ]
+    branches: [ "qa" ]
 
 permissions:
   contents: read
@@ -27,17 +27,17 @@ jobs:
       # git ignore한 yml 파일들 github secret에서 복사해 오기
       - name: Copy secret
         env:
-          APPLICATION_FILE: ${{ secrets.APPLICATION_PROFILE_DEV }}
-          APPLICATION_DEV_FILE: ${{ secrets.APPLICATION_DEV }}
+          APPLICATION_FILE: ${{ secrets.APPLICATION_PROFILE_QA }}
+          APPLICATION_QA_FILE: ${{ secrets.APPLICATION_QA }}
           DIR: ./src/main/resources
 
           APPLICATION_FILE_NAME: application.yml
-          APPLICATION_DEV_FILE_NAME: application-dev.yml
+          APPLICATION_QA_FILE_NAME: application-qa.yml
         run: |
           touch $DIR/$APPLICATION_FILE_NAME
-          touch $DIR/$APPLICATION_DEV_FILE_NAME
+          touch $DIR/$APPLICATION_QA_FILE_NAME
           echo "$APPLICATION_FILE" > $DIR/$APPLICATION_FILE_NAME
-          echo "$APPLICATION_DEV_FILE" > $DIR/$APPLICATION_DEV_FILE_NAME
+          echo "$APPLICATION_QA_FILE" > $DIR/$APPLICATION_QA_FILE_NAME
 
       # gradlew 실행 권한 부여
       - name: Run chmod to make gradlew executable
