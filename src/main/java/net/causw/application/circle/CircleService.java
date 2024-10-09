@@ -890,9 +890,7 @@ public class CircleService {
         Set<Role> roles = targetUser.getRoles();
 
         //common이 포함되어 있을때는 common을 지우고 새로운 역할 추가
-        if(roles.contains(Role.COMMON)){
-            roles.remove(Role.COMMON);
-        }
+        roles.remove(Role.COMMON);
         roles.add(newRole);
         return this.userRepository.save(targetUser);
     }

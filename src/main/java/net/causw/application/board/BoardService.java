@@ -75,7 +75,7 @@ public class BoardService {
             List<Circle> joinCircles = circleMemberRepository.findByUser_Id(user.getId()).stream()
                     .filter(circleMember -> circleMember.getStatus() == CircleMemberStatus.MEMBER)
                     .map(CircleMember::getCircle)
-                    .collect(Collectors.toList());
+                    .toList();
             if (joinCircles.isEmpty()) {
                 return boardRepository.findByCircle_IdIsNullAndIsDeletedOrderByCreatedAtAsc(false).stream()
                         .map(board -> toBoardResponseDto(board, roles))
@@ -113,7 +113,7 @@ public class BoardService {
             List<Circle> joinCircles = circleMemberRepository.findByUser_Id(user.getId()).stream()
                 .filter(circleMember -> circleMember.getStatus() == CircleMemberStatus.MEMBER)
                 .map(CircleMember::getCircle)
-                .collect(Collectors.toList());
+                .toList();
 
             if (joinCircles.isEmpty()) {
                 boards = boardRepository.findByCircle_IdIsNullAndIsDeletedOrderByCreatedAtAsc(false);
@@ -148,69 +148,6 @@ public class BoardService {
 
         return BoardDtoMapper.INSTANCE.toBoardNameCheckResponseDto(boardRepository.existsByName(boardName));
     }
-
-    // 동아리 게시판 생성에서 재사용 예정인데 일단 안쓰므로 주석 처리.
-//    @Transactional
-//    public BoardResponseDto createBoard(
-//            User creator,
-//            BoardCreateRequestDto boardCreateRequestDto
-//    ) {
-//        Set<Role> roles = creator.getRoles();
-//
-//        ValidatorBucket validatorBucket = ValidatorBucket.of();
-//        validatorBucket
-//                .consistOf(UserStateValidator.of(creator.getState()))
-//                .consistOf(UserRoleIsNoneValidator.of(roles));
-//
-//        Circle circle = boardCreateRequestDto.getCircleId().map(
-//                circleId -> {
-//                    Circle newCircle = getCircle(circleId);
-//
-//                    validatorBucket
-//                            .consistOf(TargetIsDeletedValidator.of(newCircle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-//                            //동아리장이거나 관리자만 통과
-//                            .consistOf(UserRoleValidator.of(roles,
-//                                    Set.of(Role.LEADER_CIRCLE)));
-//
-//                    //동아리장인 경우와 회장단이 아닌경우에 아래 조건문을 실행한다.
-//                    if (roles.contains(Role.LEADER_CIRCLE)) {
-//                        validatorBucket
-//                                .consistOf(UserEqualValidator.of(
-//                                        newCircle.getLeader().map(User::getId).orElseThrow(
-//                                                () -> new UnauthorizedException(
-//                                                        ErrorCode.API_NOT_ALLOWED,
-//                                                        MessageUtil.NOT_CIRCLE_LEADER
-//                                                )
-//                                        ),
-//                                        creator.getId()
-//                                ));
-//                    }
-//
-//                    return newCircle;
-//                }
-//        ).orElseGet(
-//                () -> {
-//                    validatorBucket
-//                            .consistOf(UserRoleValidator.of(roles, Set.of()));
-//
-//                    return null;
-//                }
-//        );
-
-//        Board board = Board.of(
-//                boardCreateRequestDto.getName(),
-//                boardCreateRequestDto.getDescription(),
-//                boardCreateRequestDto.getCreateRoleList(),
-//                boardCreateRequestDto.getCategory(),
-//                circle
-//        );
-//
-////        validatorBucket
-////                .consistOf(ConstraintValidator.of(board, this.validator))
-////                .validate();
-//
-//        return toBoardResponseDto(boardRepository.save(board), roles);
-//    }
 
     @Transactional
     public void applyNormalBoard(
