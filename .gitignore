@@ -52,6 +52,7 @@ dump.rdb
 **/resources/application-prod.yml
 **/resources/application-local.yml
 **/resources/application-test.yml
+**/resources/application-qa.yml
 
 Dockerfile
 docker-compose.yaml

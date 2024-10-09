@@ -30,8 +30,8 @@
         </root>
     </springProfile>
 
-    <!-- 개발 환경 -->
-    <springProfile name="dev">
+    <!-- QA 환경 -->
+    <springProfile name="qa">
         <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
 
         <springProperty name="DISCORD_WEBHOOK_URL" source="logging.discord.webhook-uri"/>
@@ -56,4 +56,12 @@
             <appender-ref ref="CONSOLE"/>
         </root>
     </springProfile>
+
+    <!-- 개발 및 로컬 환경 -->
+    <springProfile name="dev|local">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
 </configuration>
