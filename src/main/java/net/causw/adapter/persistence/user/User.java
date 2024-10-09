@@ -93,6 +93,10 @@ public class User extends BaseEntity {
     @Column(name = "rejectionOrDropReason",nullable = true)
     private String rejectionOrDropReason;
 
+    @Column(name = "is_v2", nullable = false)
+    @Builder.Default
+    private Boolean isV2 = true;
+
     public void delete() {
         this.email = "deleted_" + this.getId();
         this.name = "탈퇴한 사용자";
@@ -122,6 +126,7 @@ public class User extends BaseEntity {
                 .major(userCreateRequestDto.getMajor())
                 .academicStatus(AcademicStatus.UNDETERMINED)
                 .phoneNumber(userCreateRequestDto.getPhoneNumber())
+                .isV2(true)
                 .build();
     }
 
