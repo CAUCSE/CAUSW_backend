@@ -93,6 +93,7 @@ public class User extends BaseEntity {
     @Column(name = "rejectionOrDropReason",nullable = true)
     private String rejectionOrDropReason;
 
+    @Setter(AccessLevel.PUBLIC)
     @Column(name = "is_v2", nullable = false)
     @Builder.Default
     private Boolean isV2 = true;

@@ -1628,6 +1628,31 @@ public class UserService {
         userExcelService.generateExcel(response, fileName, headerStringList, sheetDataMap);
     }
 
+    @Transactional
+    public UserResponseDto updateUserIsV2(User user) {
+        user.setIsV2(true);
+
+        Set<Role> roles = user.getRoles();
+
+        if (roles.contains(Role.LEADER_CIRCLE)) {
+            List<Circle> ownCircles = this.circleRepository.findByLeader_Id(user.getId());
+            if (ownCircles.isEmpty()) {
+                throw new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER
+                );
+            }
+
+            return UserDtoMapper.INSTANCE.toUserResponseDto(
+                    user,
+                    ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
+                    ownCircles.stream().map(Circle::getName).collect(Collectors.toList())
+            );
+        }
+
+        return UserDtoMapper.INSTANCE.toUserResponseDto(this.userRepository.save(user), null, null);
+    }
+
     // private methods
     private List<String> getCircleNamesIfLeader(User user) {
         List<Circle> circleList = this.circleRepository.findByLeader_Id(user.getId());
@@ -1688,4 +1713,5 @@ public class UserService {
     private Long getNumOfPostFavorites(Post post){
         return favoritePostRepository.countByPostIdAndIsDeletedFalse(post.getId());
     }
+
 }
