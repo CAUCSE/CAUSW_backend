@@ -79,7 +79,7 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private UserState state;
 
-    @OneToOne
+    @OneToOne(mappedBy = "user", fetch = FetchType.EAGER)
     @JoinColumn(name = "locker_id", nullable = true)
     private Locker locker;
 
