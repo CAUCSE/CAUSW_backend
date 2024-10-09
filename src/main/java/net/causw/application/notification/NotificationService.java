@@ -51,4 +51,11 @@ public class NotificationService {
             userBoardSubscribeRepository.save(UserBoardSubscribe.of(user, board, true));
         }
     }
+
+    @Transactional
+    public Boolean checkNotice(User user, String boardId) {
+        return userBoardSubscribeRepository.findByUser_IdAndBoard_Id(user.getId(), boardId)
+                .map(UserBoardSubscribe::getIsSubscribed)
+                .orElse(false);
+    }
 }

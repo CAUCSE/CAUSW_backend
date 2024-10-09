@@ -5,9 +5,9 @@ import lombok.AllArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
-import net.causw.adapter.persistence.form.Form;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.user.User;
+import net.causw.adapter.persistence.userCouncilFee.UserCouncilFee;
 import net.causw.adapter.persistence.vote.Vote;
 import net.causw.domain.model.enums.user.Role;
 
@@ -27,7 +27,7 @@ public class StatusUtil {
         if (roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT) || roles.contains(Role.VICE_PRESIDENT) || comment.getWriter().getId().equals(user.getId())) {
             return true;
         }
-        User leader = board.getCircle().getLeader().orElse(null);
+        User leader = board.getCircle() != null ? board.getCircle().getLeader().orElse(null) : null;
         if (leader == null) return false;
 
         return roles.contains(Role.LEADER_CIRCLE) && leader.getId().equals(user.getId());
@@ -45,7 +45,7 @@ public class StatusUtil {
             return true;
         }
 
-        User leader = board.getCircle().getLeader().orElse(null);
+        User leader = board.getCircle() != null ? board.getCircle().getLeader().orElse(null) : null;
         if (leader == null) return false;
 
         return roles.contains(Role.LEADER_CIRCLE) && leader.getId().equals(user.getId());
@@ -126,4 +126,40 @@ public class StatusUtil {
     public static boolean isChildCommentOwner(ChildComment childComment, User user) {
         return user.equals(childComment.getWriter());
     }
+
+    public static int getRestOfSemester(UserCouncilFee userCouncilFee) {
+        int refundedAt = userCouncilFee.getRefundedAt() == null ? 0 : userCouncilFee.getRefundedAt();
+
+        Integer startOfAppliedSemester = userCouncilFee.getPaidAt();
+        Integer endOfAppliedSemester = !( userCouncilFee.getIsRefunded() ) ?
+                ( startOfAppliedSemester - 1 ) + userCouncilFee.getNumOfPaidSemester() :
+                refundedAt;
+
+        int restOfSemester;
+
+        if (userCouncilFee.getIsJoinedService()) {
+            restOfSemester = Math.max(endOfAppliedSemester - userCouncilFee.getUser().getCurrentCompletedSemester(), 0);
+        } else {
+            restOfSemester = Math.max(endOfAppliedSemester - userCouncilFee.getCouncilFeeFakeUser().getCurrentCompletedSemester(), 0);
+        }
+        return restOfSemester;
+    }
+
+    public static boolean getIsAppliedCurrentSemester(UserCouncilFee userCouncilFee) {
+        int refundedAt = userCouncilFee.getRefundedAt() == null ? 0 : userCouncilFee.getRefundedAt();
+
+        Integer startOfAppliedSemester = userCouncilFee.getPaidAt();
+        int endOfAppliedSemester = !( userCouncilFee.getIsRefunded() ) ?
+                ( startOfAppliedSemester - 1 ) + userCouncilFee.getNumOfPaidSemester() :
+                refundedAt;
+
+        if (userCouncilFee.getIsJoinedService()) {
+            return (startOfAppliedSemester <= userCouncilFee.getUser().getCurrentCompletedSemester()) &&
+                    (userCouncilFee.getUser().getCurrentCompletedSemester() <= endOfAppliedSemester);
+        } else {
+            return (startOfAppliedSemester <= userCouncilFee.getCouncilFeeFakeUser().getCurrentCompletedSemester()) &&
+                    (userCouncilFee.getCouncilFeeFakeUser().getCurrentCompletedSemester() <= endOfAppliedSemester);
+        }
+    }
+
 }

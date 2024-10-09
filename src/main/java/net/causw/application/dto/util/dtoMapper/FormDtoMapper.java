@@ -1,9 +1,6 @@
 package net.causw.application.dto.util.dtoMapper;
 
-import net.causw.adapter.persistence.form.Form;
-import net.causw.adapter.persistence.form.FormQuestionOption;
-import net.causw.adapter.persistence.form.FormQuestion;
-import net.causw.adapter.persistence.form.ReplyQuestion;
+import net.causw.adapter.persistence.form.*;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.userCouncilFee.UserCouncilFee;
 import net.causw.application.dto.form.response.reply.*;
@@ -89,6 +86,10 @@ public interface FormDtoMapper {
     @Mapping(target = "replyQuestionResponseDtoList", source = "replyQuestionResponseDtoList")
     @Mapping(target = "createdAt", source = "createdAt")
     ReplyResponseDto toReplyResponseDto(ReplyUserResponseDto replyUserResponseDto, List<ReplyQuestionResponseDto> replyQuestionResponseDtoList, LocalDateTime createdAt);
+
+    @Mapping(target = "questionResponseDtoList", source = "questionResponseDtoList")
+    @Mapping(target = "replyQuestionResponseDtoList", source = "reply.replyQuestionList")
+    UserReplyResponseDto toUserReplyResponseDto(Reply reply, List<QuestionResponseDto> questionResponseDtoList);
 
     @Mapping(target = "optionId", source = "formQuestionOption.id")
     @Mapping(target = "optionNumber", source = "formQuestionOption.number")

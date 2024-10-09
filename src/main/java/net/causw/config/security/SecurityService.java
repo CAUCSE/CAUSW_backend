@@ -25,9 +25,11 @@ public class SecurityService {
             return false;
         }
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        return userDetails.getUserState() == UserState.ACTIVE &&
-                userDetails.getAuthorities().stream()
-                        .noneMatch(authority -> authority.getAuthority().equals("ROLE_NONE"));
+
+        boolean isJustRoleNone = userDetails.getAuthorities().stream()
+                .allMatch(authority -> authority.getAuthority().equals("ROLE_NONE"));
+
+        return userDetails.getUserState() == UserState.ACTIVE && !isJustRoleNone;
     }
 
     public boolean isAcademicRecordCertified() {

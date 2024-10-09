@@ -1,13 +1,17 @@
 package net.causw.application.user;
 
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.locker.LockerLog;
+import net.causw.adapter.persistence.repository.userAcademicRecord.UserAcademicRecordApplicationRepository;
+import net.causw.adapter.persistence.repository.uuidFile.UserAcademicRecordApplicationAttachImageRepository;
 import net.causw.adapter.persistence.repository.uuidFile.UserProfileImageRepository;
+import net.causw.adapter.persistence.userAcademicRecord.UserAcademicRecordApplication;
+import net.causw.adapter.persistence.uuidFile.joinEntity.UserAcademicRecordApplicationAttachImage;
 import net.causw.adapter.persistence.uuidFile.joinEntity.UserAdmissionAttachImage;
 import net.causw.adapter.persistence.uuidFile.joinEntity.UserProfileImage;
 import net.causw.application.dto.util.StatusUtil;
@@ -114,6 +118,8 @@ public class UserService {
     private final LikePostRepository likePostRepository;
     private final UserProfileImageRepository userProfileImageRepository;
     private final UserExcelService userExcelService;
+    private final UserAcademicRecordApplicationRepository userAcademicRecordApplicationRepository;
+    private final UserAcademicRecordApplicationAttachImageRepository userAcademicRecordApplicationAttachImageRepository;
 
     @Transactional
     public UserResponseDto findPassword(
@@ -230,9 +236,10 @@ public class UserService {
                         post,
                         getNumOfComment(post),
                         getNumOfPostLikes(post),
-                        getNumOfPostFavorites(post)
-                        , StatusUtil.isPostVote(post)
-                        , StatusUtil.isPostForm(post)
+                        getNumOfPostFavorites(post),
+                        !post.getPostAttachImageList().isEmpty() ? post.getPostAttachImageList().get(0) : null,
+                        StatusUtil.isPostVote(post),
+                        StatusUtil.isPostForm(post)
                 ))
         );
     }
@@ -253,9 +260,10 @@ public class UserService {
                                 favoritePost.getPost(),
                                 getNumOfComment(favoritePost.getPost()),
                                 getNumOfPostLikes(favoritePost.getPost()),
-                                getNumOfPostFavorites(favoritePost.getPost())
-                                ,StatusUtil.isPostVote(favoritePost.getPost())
-                                ,StatusUtil.isPostForm(favoritePost.getPost())
+                                getNumOfPostFavorites(favoritePost.getPost()),
+                                !favoritePost.getPost().getPostAttachImageList().isEmpty() ? favoritePost.getPost().getPostAttachImageList().get(0) : null,
+                                StatusUtil.isPostVote(favoritePost.getPost()),
+                                StatusUtil.isPostForm(favoritePost.getPost())
                         ))
         );
     }
@@ -290,9 +298,10 @@ public class UserService {
                         post,
                         getNumOfComment(post),
                         getNumOfPostLikes(post),
-                        getNumOfPostFavorites(post)
-                        ,StatusUtil.isPostVote(post)
-                        ,StatusUtil.isPostForm(post)
+                        getNumOfPostFavorites(post),
+                        !post.getPostAttachImageList().isEmpty() ? post.getPostAttachImageList().get(0) : null,
+                        StatusUtil.isPostVote(post),
+                        StatusUtil.isPostForm(post)
                 ))
         );
     }
@@ -437,7 +446,7 @@ public class UserService {
         );
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public Page<UserResponseDto> findByState(
             User user,
             String state,
@@ -469,23 +478,21 @@ public class UserService {
             );
         }
 
-        return usersPage.map(userEntity -> {
-            if (userEntity.getRoles().contains(Role.LEADER_CIRCLE) && !"INACTIVE_N_DROP".equals(state)) {
-                List<Circle> ownCircles = circleRepository.findByLeader_Id(userEntity.getId());
+        return usersPage.map(srcUser -> {
+            if (srcUser.getRoles().contains(Role.LEADER_CIRCLE) && !"INACTIVE_N_DROP".equals(state)) {
+                List<Circle> ownCircles = circleRepository.findByLeader_Id(srcUser.getId());
                 if (ownCircles.isEmpty()) {
-                    throw new InternalServerException(
-                            ErrorCode.INTERNAL_SERVER,
-                            MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER
-                    );
+                    removeRole(srcUser, Role.LEADER_CIRCLE);
+                    userRepository.save(srcUser);
                 }
 
                 return UserDtoMapper.INSTANCE.toUserResponseDto(
-                        userEntity,
+                        srcUser,
                         ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
                         ownCircles.stream().map(Circle::getName).collect(Collectors.toList())
                 );
             } else {
-                return UserDtoMapper.INSTANCE.toUserResponseDto(userEntity, null, null);
+                return UserDtoMapper.INSTANCE.toUserResponseDto(srcUser, null, null);
             }
         });
     }
@@ -698,7 +705,7 @@ public class UserService {
                         uuidFileService.saveFile(profileImage, FilePath.USER_PROFILE)
                 );
             } else {
-                userProfileImage = srcUser.getUserProfileImage().updateUuidFileAndReturnSelf(
+                userProfileImage.setUuidFile(
                         uuidFileService.updateFile(
                                 srcUser.getUserProfileImage().getUuidFile(),
                                 profileImage,
@@ -983,10 +990,11 @@ public class UserService {
     private User updateRole(User targetUser, Role newRole) {
         Set<Role> roles = targetUser.getRoles();
 
-        //common이 포함되어 있을때는 common을 지우고 새로운 역할 추가
-        if(roles.contains(Role.COMMON)){
-            roles.remove(Role.COMMON);
+        // newRole이 NONE이면 기존 모든 권한 삭제
+        if (newRole.equals(Role.NONE)) {
+            roles.clear();
         }
+
         roles.add(newRole);
         return this.userRepository.save(targetUser);
     }
@@ -1058,6 +1066,21 @@ public class UserService {
                         this.updateStatus(circleMember.getId(), CircleMemberStatus.LEAVE)
                 );
 
+        List<UserAcademicRecordApplication> userAcademicRecordApplicationList = userAcademicRecordApplicationRepository.findByUserId(deleteUser.getId());
+
+        if (!userAcademicRecordApplicationList.isEmpty()) {
+            // 재학 인증 신청 이미지 파일이 있다면 삭제
+            uuidFileService.deleteFileList(
+                    userAcademicRecordApplicationList
+                            .stream()
+                            .flatMap(userAcademicRecordApplication -> userAcademicRecordApplication.getUserAcademicRecordAttachImageList()
+                                    .stream()
+                                    .map(UserAcademicRecordApplicationAttachImage::getUuidFile)).toList()
+            );
+
+            // 재학 인증 신청 기록이 있다면 삭제
+            userAcademicRecordApplicationRepository.deleteAll(userAcademicRecordApplicationList);
+        }
         this.userRepository.delete(deleteUser);
 
         return UserDtoMapper.INSTANCE.toUserResponseDto(deleteUser, null, null);
@@ -1337,8 +1360,8 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .validate();
 
-        // Update user role to COMMON
-        this.updateRole(userAdmission.getUser(), Role.COMMON);
+        // NONE role 삭제 후 COMMON으로 변경
+        this.removeRole(userAdmission.getUser(), Role.NONE);
 
         // Add admission log
         UserAdmissionLog userAdmissionLog = UserAdmissionLog.of(
@@ -1355,10 +1378,7 @@ public class UserService {
         this.userAdmissionLogRepository.save(userAdmissionLog);
 
         // Remove the admission
-        List<UuidFile> uuidFileList = userAdmission.getUserAdmissionAttachImageList().stream().map(UserAdmissionAttachImage::getUuidFile).toList();
         this.userAdmissionRepository.delete(userAdmission);
-
-        uuidFileService.deleteFileList(uuidFileList);
 
         return UserDtoMapper.INSTANCE.toUserAdmissionResponseDto(
                 userAdmissionLog,
@@ -1403,10 +1423,7 @@ public class UserService {
 
         this.userAdmissionLogRepository.save(userAdmissionLog);
 
-        List<UuidFile> uuidFileList = userAdmission.getUserAdmissionAttachImageList().stream().map(UserAdmissionAttachImage::getUuidFile).toList();
         this.userAdmissionRepository.delete(userAdmission);
-
-        uuidFileService.deleteFileList(uuidFileList);
 
         requestUser.updateRejectionOrDropReason(rejectReason);
         this.userRepository.save(requestUser);
@@ -1576,7 +1593,7 @@ public class UserService {
     }
 
     public void exportUserListToExcel(HttpServletResponse response) {
-        String fileName = LocalDateTime.now().toString() + "_사용자명단.xlsx";
+        String fileName = LocalDateTime.now() + "_사용자명단.xlsx";
 
         List<String> headerStringList = List.of(
                 "아이디(이메일)",

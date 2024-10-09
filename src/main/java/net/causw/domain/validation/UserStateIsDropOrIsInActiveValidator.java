@@ -17,7 +17,7 @@ public class UserStateIsDropOrIsInActiveValidator extends AbstractValidator {
 
     @Override
     public void validate() {
-        if (!(this.userState.equals(UserState.DROP) || this.userState.equals(UserState.INACTIVE) || this.userState.equals(UserState.DELETED))) {
+        if (!(this.userState.equals(UserState.REJECT) || this.userState.equals(UserState.DROP) || this.userState.equals(UserState.INACTIVE) || this.userState.equals(UserState.DELETED))) {
             throw new UnauthorizedException(
                     ErrorCode.BLOCKED_USER,
                     "등록된 사용자가 아닙니다."

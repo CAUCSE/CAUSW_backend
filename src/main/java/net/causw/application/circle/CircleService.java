@@ -358,20 +358,20 @@ public class CircleService {
 
 
         // 이미지가 없을 경우 기존 이미지 그대로 유지, 이미지가 있을 경우 새로운 이미지로 교체 (Circle의 이미지는 not null임)
-        CircleMainImage circleMainImage = null;
+        CircleMainImage circleMainImage = circle.getCircleMainImage();
 
         if (mainImage == null || mainImage.isEmpty()) {
             if (circle.getCircleMainImage() == null) {
                 throw new BadRequestException(ErrorCode.API_NOT_ALLOWED, MessageUtil.FILE_IS_NULL);
             }
         } else {
-            if (circle.getCircleMainImage() == null) {
+            if (circleMainImage == null) {
                 circleMainImage = CircleMainImage.of(
                         circle,
                         uuidFileService.saveFile(mainImage, FilePath.CIRCLE_PROFILE)
                 );
             } else {
-                circleMainImage = circle.getCircleMainImage().updateUuidFileAndReturnSelf(
+                circleMainImage.setUuidFile(
                         uuidFileService.updateFile(
                                 circle.getCircleMainImage().getUuidFile(),
                                 mainImage,
@@ -480,6 +480,10 @@ public class CircleService {
                         null,
                         null
                 ));
+
+        if (circleMember.getStatus().equals(CircleMemberStatus.REJECT)) {
+            circleMember.setStatus(CircleMemberStatus.AWAIT);
+        }
 
         Reply reply = this.replyForm(
                 this.getForm(circle),
@@ -742,7 +746,7 @@ public class CircleService {
     }
 
     @Transactional
-    public void createApplicationForm(User writer, String circleId, LocalDateTime recruitEndDate, FormCreateRequestDto formCreateRequestDto) {
+    public void createApplicationForm(User writer, String circleId, FormCreateRequestDto formCreateRequestDto) {
         Circle circle = getCircle(circleId);
         CircleMember circleMember = circleMemberRepository.findByUser_IdAndCircle_Id(writer.getId(), circleId).orElseThrow(
                 () -> new BadRequestException(
@@ -776,7 +780,6 @@ public class CircleService {
         formRepository.save(generateForm(formCreateRequestDto, circle));
 
         circle.setIsRecruit(true);
-        circle.setRecruitEndDate(recruitEndDate);
 
         circleRepository.save(circle);
     }
@@ -1209,7 +1212,7 @@ public class CircleService {
                             )
                     );
 
-                    if (!getIsAppliedCurrentSemester(userCouncilFee)) {
+                    if (!StatusUtil.getIsAppliedCurrentSemester(userCouncilFee)) {
                         throw new BadRequestException(
                                 ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
                                 MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
@@ -1264,38 +1267,6 @@ public class CircleService {
     }
 
     // Private method
-    private Integer getRestOfSemester(UserCouncilFee userCouncilFee) {
-        Integer startOfAppliedSemester = userCouncilFee.getPaidAt();
-        Integer endOfAppliedSemester = ( userCouncilFee.getIsRefunded() ) ?
-                ( startOfAppliedSemester - 1 ) + userCouncilFee.getNumOfPaidSemester() :
-                userCouncilFee.getRefundedAt();
-        Integer restOfSemester;
-
-        if (userCouncilFee.getIsJoinedService()) {
-            restOfSemester = Math.max(endOfAppliedSemester - userCouncilFee.getUser().getCurrentCompletedSemester(), 0);
-        } else {
-            restOfSemester = Math.max(endOfAppliedSemester - userCouncilFee.getCouncilFeeFakeUser().getCurrentCompletedSemester(), 0);
-        }
-        return restOfSemester;
-    }
-
-    private Boolean getIsAppliedCurrentSemester(UserCouncilFee userCouncilFee) {
-        Integer startOfAppliedSemester = userCouncilFee.getPaidAt();
-        Integer endOfAppliedSemester = ( userCouncilFee.getIsRefunded() ) ?
-                ( startOfAppliedSemester - 1 ) + userCouncilFee.getNumOfPaidSemester() :
-                userCouncilFee.getRefundedAt();
-        Boolean isAppliedThisSemester;
-
-        if (userCouncilFee.getIsJoinedService()) {
-            isAppliedThisSemester = (startOfAppliedSemester <= userCouncilFee.getUser().getCurrentCompletedSemester()) &&
-                    (userCouncilFee.getUser().getCurrentCompletedSemester() <= endOfAppliedSemester);
-        } else {
-            isAppliedThisSemester = (startOfAppliedSemester <= userCouncilFee.getCouncilFeeFakeUser().getCurrentCompletedSemester()) &&
-                    (userCouncilFee.getCouncilFeeFakeUser().getCurrentCompletedSemester() <= endOfAppliedSemester);
-        }
-        return isAppliedThisSemester;
-    }
-
     @NotNull
     private List<ExportCircleMemberToExcelResponseDto> getExportCircleMemberToExcelResponseDtoListByMemberStatus(String circleId, CircleMemberStatus circleMemberStatus) {
         return circleMemberRepository.findByCircle_IdAndStatus(circleId, circleMemberStatus)
@@ -1312,8 +1283,8 @@ public class CircleService {
                             return this.toExportCircleMemberToExcelResponseDto(
                                     srcUser,
                                     userCouncilFee,
-                                    getRestOfSemester(userCouncilFee),
-                                    getIsAppliedCurrentSemester(userCouncilFee)
+                                    StatusUtil.getRestOfSemester(userCouncilFee),
+                                    StatusUtil.getIsAppliedCurrentSemester(userCouncilFee)
                             );
                         }
                 ).toList();

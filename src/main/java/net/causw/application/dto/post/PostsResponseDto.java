@@ -53,6 +53,9 @@ PostsResponseDto {
     @Schema(description = "게시글 삭제여부", example = "false")
     private Boolean isDeleted;
 
+    @Schema(description = "이미지 url", example = "")
+    private String postAttachImage;
+
     @Schema(description = "투표 포함 여부" ,example = "false")
     private Boolean isPostVote;
 

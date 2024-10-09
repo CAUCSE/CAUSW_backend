@@ -338,22 +338,26 @@ public class UserAcademicRecordApplicationService {
     }
 
     private UserAcademicRecordApplication getRecentAwaitOrRejectUserAcademicRecordApplication(User user) {
-        List<UserAcademicRecordApplication> userAcademicRecordApplicationList =
-                userAcademicRecordApplicationRepository.findAllByAcademicRecordRequestStatus(
-                        AcademicRecordRequestStatus.AWAIT
+        List<UserAcademicRecordApplication> awaitUserAcademicRecordApplicationList =
+                userAcademicRecordApplicationRepository.findAllByAcademicRecordRequestStatusAndUser(
+                        AcademicRecordRequestStatus.AWAIT,
+                        user
                 );
 
         UserAcademicRecordApplication userAcademicRecordApplication;
 
-        if (userAcademicRecordApplicationList.size() > 1) {
+        if (awaitUserAcademicRecordApplicationList.size() > 1) {
             throw new InternalServerException(ErrorCode.ROW_IS_DUPLICATED, MessageUtil.USER_ACADEMIC_RECORD_APPLICATION_DUPLICATED);
-        } else if (userAcademicRecordApplicationList.isEmpty()) {
-            userAcademicRecordApplication = userAcademicRecordApplicationRepository.findDistinctTopByAcademicRecordRequestStatusOrderByCreatedAtDesc(AcademicRecordRequestStatus.REJECT)
-                    .orElseThrow(() ->
+        } else if (awaitUserAcademicRecordApplicationList.isEmpty()) {
+            userAcademicRecordApplication = userAcademicRecordApplicationRepository
+                    .findDistinctTopByAcademicRecordRequestStatusAndUserOrderByCreatedAtDesc(
+                            AcademicRecordRequestStatus.REJECT,
+                            user
+                    ).orElseThrow(() ->
                             new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_ACADEMIC_RECORD_APPLICATION_NOT_FOUND)
                     );
         } else {
-            userAcademicRecordApplication = userAcademicRecordApplicationList.get(0);
+            userAcademicRecordApplication = awaitUserAcademicRecordApplicationList.get(0);
         }
 
         return userAcademicRecordApplication;

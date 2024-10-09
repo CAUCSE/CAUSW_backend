@@ -66,9 +66,10 @@ public class HomePageService {
                                         post,
                                         postRepository.countAllCommentByPost_Id(post.getId()),
                                         getNumOfPostLikes(post),
-                                        getNumOfPostFavorites(post)
-                                        , StatusUtil.isPostVote(post)
-                                        , post.getForm() != null
+                                        getNumOfPostFavorites(post),
+                                        !post.getPostAttachImageList().isEmpty() ? post.getPostAttachImageList().get(0) : null,
+                                        StatusUtil.isPostVote(post),
+                                        post.getForm() != null
                                 )))
                 )
                 .collect(Collectors.toList());

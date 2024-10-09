@@ -21,6 +21,7 @@ import net.causw.application.dto.form.request.QuestionReplyRequestDto;
 import net.causw.application.dto.form.response.reply.excel.ExcelReplyListResponseDto;
 import net.causw.application.dto.form.response.reply.excel.ExcelReplyQuestionResponseDto;
 import net.causw.application.dto.form.response.reply.excel.ExcelReplyResponseDto;
+import net.causw.application.dto.util.StatusUtil;
 import net.causw.application.dto.util.dtoMapper.FormDtoMapper;
 import net.causw.application.excel.FormExcelService;
 import net.causw.domain.aop.annotation.MeasureTime;
@@ -387,7 +388,7 @@ public class FormService {
                             )
                     );
 
-                    if (!getIsAppliedCurrentSemester(userCouncilFee)) {
+                    if (!StatusUtil.getIsAppliedCurrentSemester(userCouncilFee)) {
                         throw new BadRequestException(
                                 ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
                                 MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
@@ -524,38 +525,6 @@ public class FormService {
         return leader;
     }
 
-    private Boolean getIsAppliedCurrentSemester(UserCouncilFee userCouncilFee) {
-        Integer startOfAppliedSemester = userCouncilFee.getPaidAt();
-        Integer endOfAppliedSemester = ( userCouncilFee.getIsRefunded() ) ?
-                ( startOfAppliedSemester - 1 ) + userCouncilFee.getNumOfPaidSemester() :
-                userCouncilFee.getRefundedAt();
-        Boolean isAppliedThisSemester;
-
-        if (userCouncilFee.getIsJoinedService()) {
-            isAppliedThisSemester = (startOfAppliedSemester <= userCouncilFee.getUser().getCurrentCompletedSemester()) &&
-                    (userCouncilFee.getUser().getCurrentCompletedSemester() <= endOfAppliedSemester);
-        } else {
-            isAppliedThisSemester = (startOfAppliedSemester <= userCouncilFee.getCouncilFeeFakeUser().getCurrentCompletedSemester()) &&
-                    (userCouncilFee.getCouncilFeeFakeUser().getCurrentCompletedSemester() <= endOfAppliedSemester);
-        }
-        return isAppliedThisSemester;
-    }
-
-    private Integer getRestOfSemester(UserCouncilFee userCouncilFee) {
-        Integer startOfAppliedSemester = userCouncilFee.getPaidAt();
-        Integer endOfAppliedSemester = ( userCouncilFee.getIsRefunded() ) ?
-                ( startOfAppliedSemester - 1 ) + userCouncilFee.getNumOfPaidSemester() :
-                userCouncilFee.getRefundedAt();
-        Integer restOfSemester;
-
-        if (userCouncilFee.getIsJoinedService()) {
-            restOfSemester = Math.max(endOfAppliedSemester - userCouncilFee.getUser().getCurrentCompletedSemester(), 0);
-        } else {
-            restOfSemester = Math.max(endOfAppliedSemester - userCouncilFee.getCouncilFeeFakeUser().getCurrentCompletedSemester(), 0);
-        }
-        return restOfSemester;
-    }
-
     private void validCanAccessPost(User writer, Form form) {
         if (form.getCircle() != null) {
             return;
@@ -651,8 +620,8 @@ public class FormService {
             return FormDtoMapper.INSTANCE.toReplyUserResponseDto(user, null, null, null);
         }
 
-        Boolean isAppliedThisSemester = getIsAppliedCurrentSemester(userCouncilFee);
-        Integer restOfSemester = getRestOfSemester(userCouncilFee);
+        Boolean isAppliedThisSemester = StatusUtil.getIsAppliedCurrentSemester(userCouncilFee);
+        Integer restOfSemester = StatusUtil.getRestOfSemester(userCouncilFee);
 
         return FormDtoMapper.INSTANCE.toReplyUserResponseDto(user, userCouncilFee, isAppliedThisSemester, restOfSemester);
     }
@@ -752,4 +721,40 @@ public class FormService {
         return FormDtoMapper.INSTANCE.toExcelReplyQuestionResponseDto(replyQuestion);
     }
 
+    public List<UserReplyResponseDto> getReplyByUserAndCircle(String userId, String circleId) {
+        List<Form> circleFormList = this.formRepository.findAllByCircleAndIsDeletedAndIsClosed(this.getCircle(circleId), false, false);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.USER_NOT_FOUND
+                ));
+
+        List<Reply> userReplyList = circleFormList.stream()
+                .flatMap(form -> replyRepository.findByFormAndUser(form, user).stream())
+                .collect(Collectors.toList());
+
+        if (userReplyList.isEmpty()) {
+            throw new BadRequestException(
+                    ErrorCode.ROW_DOES_NOT_EXIST,
+                    MessageUtil.USER_APPLY_NOT_FOUND
+            );
+        }
+
+        List<OptionResponseDto> optionResponseDtoList = circleFormList.stream()
+                .flatMap(form -> form.getFormQuestionList().stream()
+                        .flatMap(question -> question.getFormQuestionOptionList().stream()
+                                .map(option -> FormDtoMapper.INSTANCE.toOptionResponseDto(option))))
+                .collect(Collectors.toList());
+
+        List<QuestionResponseDto> questionResponseDtoList = circleFormList.stream()
+                .flatMap(form -> form.getFormQuestionList().stream()
+                        .map(question -> FormDtoMapper.INSTANCE.toQuestionResponseDto(question, optionResponseDtoList)))
+                .collect(Collectors.toList());
+
+
+        return userReplyList.stream()
+                .map(reply -> FormDtoMapper.INSTANCE.toUserReplyResponseDto(reply, questionResponseDtoList))
+                .collect(Collectors.toList());
+    }
 }

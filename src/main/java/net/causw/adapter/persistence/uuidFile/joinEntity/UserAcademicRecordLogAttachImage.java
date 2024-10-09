@@ -1,14 +1,12 @@
 package net.causw.adapter.persistence.uuidFile.joinEntity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import net.causw.adapter.persistence.userAcademicRecord.UserAcademicRecordLog;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 
 @Getter
+@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
@@ -19,17 +17,21 @@ indexes = {
 })
 public class UserAcademicRecordLogAttachImage extends JoinEntity {
 
+    @Getter
+    @Setter(AccessLevel.PUBLIC)
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "uuid_file_id", nullable = false, unique = true)
+    public UuidFile uuidFile;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_academic_record_log_id", nullable = false)
     private UserAcademicRecordLog userAcademicRecordLog;
 
-    private UserAcademicRecordLogAttachImage(UserAcademicRecordLog userAcademicRecordLog, UuidFile uuidFile) {
-        super(uuidFile);
-        this.userAcademicRecordLog = userAcademicRecordLog;
-    }
-
     public static UserAcademicRecordLogAttachImage of(UserAcademicRecordLog userAcademicRecordLog, UuidFile uuidFile) {
-        return new UserAcademicRecordLogAttachImage(userAcademicRecordLog, uuidFile);
+        return UserAcademicRecordLogAttachImage.builder()
+                .uuidFile(uuidFile)
+                .userAcademicRecordLog(userAcademicRecordLog)
+                .build();
     }
 
 }

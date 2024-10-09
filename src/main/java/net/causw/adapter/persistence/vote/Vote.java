@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.post.Post;
-import net.causw.adapter.persistence.user.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +21,7 @@ public class Vote extends BaseEntity {
     private boolean isEnd;
 
     @OneToMany(mappedBy = "vote", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @Builder.Default
     private List<VoteOption> voteOptions = new ArrayList<>();
 
     @OneToOne(mappedBy = "vote", fetch = FetchType.LAZY)

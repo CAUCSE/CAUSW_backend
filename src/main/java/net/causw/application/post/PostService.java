@@ -59,7 +59,7 @@ import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.notification.NoticeType;
 import net.causw.domain.model.enums.circle.CircleMemberStatus;
 import net.causw.domain.model.enums.form.QuestionType;
-import net.causw.domain.model.enums.form.RegisteredSemesterManager;
+import net.causw.domain.model.enums.uuidFile.FileExtensionType;
 import net.causw.domain.model.enums.uuidFile.FilePath;
 import net.causw.domain.model.enums.user.Role;
 import net.causw.domain.model.util.MessageUtil;
@@ -211,13 +211,6 @@ public class PostService {
 
         Board board = getBoard(postCreateRequestDto.getBoardId());
         List<String> createRoles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
-        if (board.getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
-            validatorBucket
-                    .consistOf(UserRoleValidator.of(
-                            roles,
-                            Set.of()
-                    ));
-        }
 
         List<UuidFile> uuidFileList = (attachImageList == null || attachImageList.isEmpty()) ?
                 new ArrayList<>() :
@@ -872,11 +865,21 @@ public class PostService {
     }
 
     private PostsResponseDto toPostsResponseDto(Post post) {
+        PostAttachImage postThumbnailFile = (post.getPostAttachImageList() == null || post.getPostAttachImageList().isEmpty()) ?
+                null :
+                post.getPostAttachImageList()
+                        .stream()
+                        .filter(postAttachImage ->
+                                FileExtensionType.IMAGE.getExtensionList().contains(postAttachImage.getUuidFile().getExtension())
+                        ).findFirst()
+                        .orElse(null);
+
         return PostDtoMapper.INSTANCE.toPostsResponseDto(
                 post,
                 postRepository.countAllCommentByPost_Id(post.getId()),
                 getNumOfPostLikes(post),
                 getNumOfPostFavorites(post),
+                postThumbnailFile,
                 StatusUtil.isPostVote(post),
                 StatusUtil.isPostForm(post)
         );
@@ -1050,8 +1053,10 @@ public class PostService {
 
     private VoteResponseDto toVoteResponseDto(Vote vote, User user) {
         List<VoteOptionResponseDto> voteOptionResponseDtoList = vote.getVoteOptions().stream()
+                .sorted(Comparator.comparing(VoteOption::getCreatedAt))
                 .map(this::tovoteOptionResponseDto)
                 .collect(Collectors.toList());
+
         Set<String> uniqueUserIds = voteOptionResponseDtoList.stream()
                 .flatMap(voteOptionResponseDto -> voteOptionResponseDto.getVoteUsers().stream())
                 .map(UserResponseDto::getId)

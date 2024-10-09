@@ -2,7 +2,6 @@ package net.causw.application.dto.userAcademicRecordApplication;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
@@ -12,10 +11,6 @@ import net.causw.domain.model.enums.user.GraduationType;
 public class UpdateUserAcademicStatusRequestDto {
 
     @Schema(description = "대상 사용자 고유 id 값", requiredMode = Schema.RequiredMode.REQUIRED, example = "uuid 형식의 String 값입니다.")
-    @Pattern(
-            regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-            message = "id 값은 대시(-)를 포함하고, 32자리의 UUID 형식이어야 합니다."
-    )
     @NotBlank(message = "대상 사용자 고유 id 값은 필수 입력 값입니다.")
     private String targetUserId;
 

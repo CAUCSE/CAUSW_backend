@@ -24,7 +24,7 @@ public class UserCouncilFee extends BaseEntity {
     @JoinColumn(name = "council_fee_fake_user_id", unique = true, nullable = true)
     private CouncilFeeFakeUser councilFeeFakeUser;
 
-    @Column(name = "is_paid", nullable = false)
+    @Column(name = "paid_at", nullable = false)
     private Integer paidAt;
 
     @Column(name = "num_of_paid_semester", nullable = false)

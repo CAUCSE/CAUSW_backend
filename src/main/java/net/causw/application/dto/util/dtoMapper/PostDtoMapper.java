@@ -1,8 +1,8 @@
 package net.causw.application.dto.util.dtoMapper;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.post.Post;
+import net.causw.adapter.persistence.uuidFile.joinEntity.PostAttachImage;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.form.response.FormResponseDto;
 import net.causw.application.dto.post.*;
@@ -35,16 +35,20 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
     PostDtoMapper INSTANCE = Mappers.getMapper(PostDtoMapper.class);
 
     // Dto writerName 필드에 post.writer.name을 삽입한다는 의미입니다.
+    @Mapping(target = "id", source = "post.id")
     @Mapping(target = "writerName", source = "post.writer.name")
     @Mapping(target = "writerAdmissionYear", source = "post.writer.admissionYear")
     @Mapping(target = "content", source = "post.content")
     @Mapping(target = "isAnonymous", source = "post.isAnonymous")
     @Mapping(target = "isQuestion", source = "post.isQuestion")
+    @Mapping(target = "createdAt", source = "post.createdAt")
+    @Mapping(target = "updatedAt", source = "post.updatedAt")
     @Mapping(target = "numLike", source = "numPostLike")
     @Mapping(target = "numFavorite", source = "numPostFavorite")
+    @Mapping(target = "postAttachImage", source = "thumbnail", qualifiedByName = "mapUuidFileToFileUrl")
     @Mapping(target = "isPostVote", source = "isPostVote")
     @Mapping(target = "isPostForm", source = "isPostForm")
-    PostsResponseDto toPostsResponseDto(Post post, Long numComment, Long numPostLike, Long numPostFavorite, Boolean isPostVote, Boolean isPostForm);
+    PostsResponseDto toPostsResponseDto(Post post, Long numComment, Long numPostLike, Long numPostFavorite, PostAttachImage thumbnail, Boolean isPostVote, Boolean isPostForm);
 
     @Mapping(target = "title", source = "post.title")
     @Mapping(target = "writerName", source = "post.writer.name")
