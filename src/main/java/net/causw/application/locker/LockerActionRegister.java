@@ -40,14 +40,6 @@ public class LockerActionRegister implements LockerAction {
             ValidatorBucket.of()
                     .consistOf(LockerAccessValidator.of(commonService.findByKeyInFlag(LOCKER_ACCESS).orElse(false)))
                     .validate();
-            //이미 등록 시 하루 제한
-            /*
-            lockerLogPort.whenRegister(updaterDomainModel).ifPresent(
-                    createdAt -> ValidatorBucket.of()
-                            .consistOf(LockerTimePassedValidator.of(createdAt))
-                            .validate()
-            );
-             */
 
             lockerService.findByUserId(user.getId()).ifPresent(existingLocker -> {
                 existingLocker.returnLocker();

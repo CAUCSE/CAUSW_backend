@@ -2,7 +2,6 @@ package net.causw.application.user;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
@@ -889,7 +888,7 @@ public class UserService {
     private String checkAuthAndCircleId(UserUpdateRoleRequestDto userUpdateRoleRequestDto, User grantee) {
         String circleId;
         // 학생회장, 부학생회장은 동아리장 겸직 불가
-        if(grantee.getRoles().equals(Role.VICE_PRESIDENT) || grantee.getRoles().equals(Role.PRESIDENT)){
+        if(grantee.getRoles().contains(Role.VICE_PRESIDENT) || grantee.getRoles().contains(Role.PRESIDENT)){
             throw new UnauthorizedException(
                     ErrorCode.API_NOT_ALLOWED,
                     MessageUtil.CONCURRENT_JOB_IMPOSSIBLE
@@ -1437,62 +1436,6 @@ public class UserService {
                         ))
         );
     }
-
-    //TODO: 현재 사용하지 않는 기능으로 주석처리
-    //사용 여부 결정 후 board 수정 후 도입 필요할 것으로 보임
-//    @Transactional
-//    public BoardResponseDto createFavoriteBoard(
-//            String loginUserId,
-//            String boardId
-//    ) {
-//        User user = this.userRepository.findById(loginUserId).orElseThrow(
-//                () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.LOGIN_USER_NOT_FOUND)
-//        );
-//
-//        Board board = this.boardRepository.findById(boardId).orElseThrow(
-//                () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.BOARD_NOT_FOUND)
-//        );
-//
-//        FavoriteBoard favoriteBoard = FavoriteBoard.builder()
-//                .user(user)
-//                .board(board)
-//                .build();
-//
-//        ValidatorBucket.of()
-//                .consistOf(UserStateValidator.of(user.getState()))
-//                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
-//                .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD))
-//                .consistOf(ConstraintValidator.of(favoriteBoard, this.validator))
-//                .validate();
-//
-//        return BoardResponseDto.from(this.favoriteBoardRepository.save(favoriteBoard).getBoard(), user.getRole());
-//    }
-    //사용하지 않는 기능으로 주석처리
-//    @Transactional
-//    public BoardResponseDto createFavoriteBoard(
-//            String loginUserId,
-//            String boardId
-//    ) {
-//        User user = getUser(loginUserId);
-//        Board board = getBoard(boardId);
-//
-//        FavoriteBoard favoriteBoard = FavoriteBoard.of(
-//                user,
-//                board
-//        );
-//
-//        ValidatorBucket.of()
-//                .consistOf(UserStateValidator.of(user.getState()))
-//                .consistOf(UserRoleIsNoneValidator.of(user.getRole()))
-//                .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD))
-//                .consistOf(ConstraintValidator.of(favoriteBoard, this.validator))
-//                .validate();
-//
-//        return toBoardResponseDto(
-//                favoriteBoardRepository.save(favoriteBoard).getBoard(),
-//                user.getRole()
-//        );
-//    }
 
     @Transactional
     public UserResponseDto restore(

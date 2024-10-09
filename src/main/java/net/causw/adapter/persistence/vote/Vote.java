@@ -24,7 +24,7 @@ public class Vote extends BaseEntity {
     @Builder.Default
     private List<VoteOption> voteOptions = new ArrayList<>();
 
-    @OneToOne(mappedBy = "vote", fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "vote", fetch = FetchType.EAGER)
     private Post post;
 
     public static Vote of(String title, boolean allowAnonymous, boolean allowMultiple, List<VoteOption> voteOptions, Post post) {

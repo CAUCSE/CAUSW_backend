@@ -732,7 +732,7 @@ public class FormService {
 
         List<Reply> userReplyList = circleFormList.stream()
                 .flatMap(form -> replyRepository.findByFormAndUser(form, user).stream())
-                .collect(Collectors.toList());
+                .toList();
 
         if (userReplyList.isEmpty()) {
             throw new BadRequestException(
@@ -744,7 +744,7 @@ public class FormService {
         List<OptionResponseDto> optionResponseDtoList = circleFormList.stream()
                 .flatMap(form -> form.getFormQuestionList().stream()
                         .flatMap(question -> question.getFormQuestionOptionList().stream()
-                                .map(option -> FormDtoMapper.INSTANCE.toOptionResponseDto(option))))
+                                .map(FormDtoMapper.INSTANCE::toOptionResponseDto)))
                 .collect(Collectors.toList());
 
         List<QuestionResponseDto> questionResponseDtoList = circleFormList.stream()
