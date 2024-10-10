@@ -21,6 +21,11 @@ public class CommentResponseDto {
     private Boolean isDeleted;
     private String postId;
     private String writerName;
+
+    @Schema(description = "게시글 작성자 닉네임", example = "푸앙이")
+    private String writerNickname;
+
+    @Schema(description = "작성자의 입학연도", example = "2022")
     private Integer writerAdmissionYear;
 
     @Schema(description = "작성자 사진이 저장되어 있는 URL 주소(없으면 Null 반환)", example = "http://test/123")

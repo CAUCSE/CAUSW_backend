@@ -19,6 +19,10 @@ public class ChildCommentResponseDto {
     private LocalDateTime updatedAt;
     private Boolean isDeleted;
     private String writerName;
+
+    @Schema(description = "게시글 작성자 닉네임", example = "푸앙이")
+    private String writerNickname;
+
     private Integer writerAdmissionYear;
     private String writerProfileImage;
     private Boolean updatable;
