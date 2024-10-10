@@ -20,7 +20,7 @@ public class ChildCommentResponseDto {
     private Boolean isDeleted;
     private String writerName;
 
-    @Schema(description = "게시글 작성자 닉네임", example = "푸앙이")
+    @Schema(description = "대댓글 작성자 닉네임", example = "푸앙이")
     private String writerNickname;
 
     private Integer writerAdmissionYear;

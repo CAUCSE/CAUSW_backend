@@ -22,7 +22,7 @@ public class CommentResponseDto {
     private String postId;
     private String writerName;
 
-    @Schema(description = "게시글 작성자 닉네임", example = "푸앙이")
+    @Schema(description = "댓글 작성자 닉네임", example = "푸앙이")
     private String writerNickname;
 
     @Schema(description = "작성자의 입학연도", example = "2022")
