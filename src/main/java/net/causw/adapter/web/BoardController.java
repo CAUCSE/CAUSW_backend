@@ -140,7 +140,7 @@ public class BoardController {
 
 
     
-    @PostMapping(value = "/create")
+    @PostMapping(value = "/create/notice")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() " +
             "and hasAnyRole('ADMIN','PRESIDENT','VICE_PRESIDENT')")
@@ -154,11 +154,11 @@ public class BoardController {
             @ApiResponse(responseCode = "4109", description = "가입이 거절된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
             @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
     })
-    public BoardResponseDto createBoard(
-            @Valid @RequestBody BoardCreateRequestDto boardCreateRequestDto,
+    public BoardResponseDto createNoticeBoard(
+            @Valid @RequestBody NoticeBoardCreateRequestDto noticeBoardCreateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return this.boardService.createBoard(userDetails.getUser(), boardCreateRequestDto);
+        return this.boardService.createNoticeBoard(userDetails.getUser(), noticeBoardCreateRequestDto);
     }
 
     @GetMapping(value = "/apply/list")

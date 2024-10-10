@@ -256,32 +256,23 @@ public class BoardService {
     }
 
     @Transactional
-    public BoardResponseDto createBoard(
+    public BoardResponseDto createNoticeBoard(
             User creator,
-            BoardCreateRequestDto boardCreateRequestDto
+            NoticeBoardCreateRequestDto noticeBoardCreateRequestDto
     ) {
-        if (boardRepository.existsByName(boardCreateRequestDto.getBoardName())) {
+        if (boardRepository.existsByName(noticeBoardCreateRequestDto.getBoardName())) {
             throw new BadRequestException(
                     ErrorCode.ROW_ALREADY_EXIST,
                     MessageUtil.BOARD_NAME_ALREADY_EXISTS
             );
         }
 
-        if ( !(boardCreateRequestDto.getBoardCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE) ||
-            boardCreateRequestDto.getBoardCategory().equals(StaticValue.BOARD_NAME_APP_FREE))
-        ) {
-            throw new BadRequestException(
-                    ErrorCode.INVALID_BOARD_CATEGORY,
-                    MessageUtil.INVALID_BOARD_CATEGORY
-            );
-        }
-
         Board newBoard = Board.of(
-                boardCreateRequestDto.getBoardName(),
-                boardCreateRequestDto.getDescription(),
-                boardCreateRequestDto.getCreateRoleList(),
-                boardCreateRequestDto.getBoardCategory(),
-                boardCreateRequestDto.getIsAnonymousAllowed(),
+                noticeBoardCreateRequestDto.getBoardName(),
+                noticeBoardCreateRequestDto.getDescription(),
+                noticeBoardCreateRequestDto.getCreateRoleList(),
+                StaticValue.BOARD_NAME_APP_NOTICE,
+                noticeBoardCreateRequestDto.getIsAnonymousAllowed(),
                 null
         );
 
