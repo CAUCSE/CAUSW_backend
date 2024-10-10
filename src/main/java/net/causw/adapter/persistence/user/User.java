@@ -80,7 +80,6 @@ public class User extends BaseEntity {
     private UserState state;
 
     @OneToOne(mappedBy = "user", fetch = FetchType.EAGER)
-    @JoinColumn(name = "locker_id", nullable = true)
     private Locker locker;
 
     @OneToMany

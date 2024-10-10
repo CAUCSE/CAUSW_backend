@@ -37,6 +37,7 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
     // Dto writerName 필드에 post.writer.name을 삽입한다는 의미입니다.
     @Mapping(target = "id", source = "post.id")
     @Mapping(target = "writerName", source = "post.writer.name")
+    @Mapping(target = "writerNickname", source = "post.writer.nickname")
     @Mapping(target = "writerAdmissionYear", source = "post.writer.admissionYear")
     @Mapping(target = "content", source = "post.content")
     @Mapping(target = "isAnonymous", source = "post.isAnonymous")
@@ -52,6 +53,7 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
 
     @Mapping(target = "title", source = "post.title")
     @Mapping(target = "writerName", source = "post.writer.name")
+    @Mapping(target = "writerNickname", source = "post.writer.nickname")
     @Mapping(target = "writerAdmissionYear", source = "post.writer.admissionYear")
     @Mapping(target = "boardName", source = "post.board.name")
     @Mapping(target = "fileUrlList", source = "post.postAttachImageList", qualifiedByName = "mapUuidFileListToFileUrlList")

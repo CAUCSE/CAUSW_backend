@@ -45,13 +45,28 @@ public class WebSecurityConfigProd {
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
                         .requestMatchers(
+                                "/",
+                                "/css/**",
+                                "/images/**",
+                                "/js/**",
+                                "/favicon.ico",
+                                "/h2-console/**",
                                 "/api/v1/users/sign-in",
                                 "/api/v1/users/sign-up",
                                 "/healthy",
                                 "/api/v1/users/admissions/apply",
-                                "/api/v1/users/**/is-duplicated",
+                                "/api/v1/users/{email}/is-duplicated",
+                                "/api/v1/users/{nickname}/is-duplicated-nickname",
+                                "/api/v1/users/{studentId}/is-duplicated-student-id",
                                 "/api/v1/users/email",
-                                "/api/v1/users/password"
+                                "/api/v1/users/password",
+                                "/api/v1/users/token/update",
+                                "/api/v1/storage/**",
+                                "/api/v1/users/password/find",
+                                "/api/v1/users/user-id/find",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/actuator/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
