@@ -32,7 +32,7 @@ public abstract class ExcelAbstractService<T> implements ExcelService<T> {
                 createSheet(workbook, sheetName, headerStringList, sheetNameDataMap.get(sheetName));
             }
 
-            String encodedFileName = URLEncoder.encode( LocalDateTime.now().toString() + "_" + fileName + ".xlsx", StandardCharsets.UTF_8);
+            String encodedFileName = URLEncoder.encode( LocalDateTime.now() + "_" + fileName + ".xlsx", StandardCharsets.UTF_8);
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             response.setHeader("Content-Disposition", "attachment; filename=" + encodedFileName);
 
@@ -62,7 +62,7 @@ public abstract class ExcelAbstractService<T> implements ExcelService<T> {
             cell.setCellValue(headerStringList.get(i));
         }
 
-    };
+    }
 
     @Override
     public abstract void createDataRows(Sheet sheet, List<T> dataList);

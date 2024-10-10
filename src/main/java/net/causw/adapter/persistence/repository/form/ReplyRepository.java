@@ -19,4 +19,6 @@ public interface ReplyRepository extends JpaRepository<Reply, Long> {
 
     List<Reply> findAllByForm(Form form);
 
+    List<Reply> findByFormAndUser(Form form, User user);
+
 }

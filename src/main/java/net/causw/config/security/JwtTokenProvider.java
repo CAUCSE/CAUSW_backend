@@ -3,7 +3,6 @@ package net.causw.config.security;
 import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import net.causw.config.security.userdetails.CustomUserDetailsService;
-import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.user.Role;
@@ -89,15 +88,6 @@ public class JwtTokenProvider {
                 throw new UnauthorizedException(ErrorCode.INVALID_JWT, "블랙리스트에 등록된 토큰입니다.");
             }
 
-            /*
-            List<String> rolesList = claims.getBody().get("roles", List.class);
-
-            if (rolesList.contains(Role.NONE.getValue()) ||
-                    !claims.getBody().get("state").equals(UserState.ACTIVE.getValue())) {
-                throw new BadRequestException(ErrorCode.NEED_SIGN_IN, "다시 로그인 하세요.");
-            }
-
-             */
             return true;
 
         } catch (ExpiredJwtException e) {

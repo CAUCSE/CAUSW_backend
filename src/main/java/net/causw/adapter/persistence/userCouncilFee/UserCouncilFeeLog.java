@@ -30,7 +30,7 @@ public class UserCouncilFeeLog extends BaseEntity {
     private String controlledUserStudentId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "update_type", nullable = false)
+    @Column(name = "council_fee_log_type", nullable = false)
     private CouncilFeeLogType councilFeeLogType;
 
     @Column(name = "target_is_joined_service", nullable = false)
@@ -78,10 +78,10 @@ public class UserCouncilFeeLog extends BaseEntity {
     @Column(name = "joined_at", nullable = true)
     private LocalDate joinedAt;
 
-    @Column(name = "paid_at", nullable = false)
+    @Column(name = "rest_of_semester", nullable = false)
     private Integer restOfSemester;
 
-    @Column(name = "num_of_paid_semester", nullable = false)
+    @Column(name = "is_applied_this_semester", nullable = false)
     private Boolean isAppliedThisSemester;
 
     @Column(name = "target_paid_at", nullable = false)

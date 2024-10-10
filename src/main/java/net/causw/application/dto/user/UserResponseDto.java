@@ -81,4 +81,7 @@ public class UserResponseDto {
     @Schema(description = "수정일자", example = "2024-08-24")
     private LocalDateTime updatedAt;
 
+    @Schema(description = "V2 여부", example = "true")
+    private Boolean isV2;
+
 }

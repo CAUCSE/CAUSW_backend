@@ -17,6 +17,7 @@ public interface CommentDtoMapper extends UuidFileToUrlDtoMapper {
     CommentDtoMapper INSTANCE = Mappers.getMapper(CommentDtoMapper.class);
 
     @Mapping(target = "writerName", source = "comment.writer.name")
+    @Mapping(target ="writerNickname", source = "comment.writer.nickname")
     @Mapping(target = "writerAdmissionYear", source = "comment.writer.admissionYear")
     @Mapping(target = "writerProfileImage", source = "comment.writer.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
     @Mapping(target = "postId", source = "comment.post.id")
@@ -34,6 +35,7 @@ public interface CommentDtoMapper extends UuidFileToUrlDtoMapper {
             Boolean deletable);
 
     @Mapping(target = "writerName", source = "childComment.writer.name")
+    @Mapping(target ="writerNickname", source = "childComment.writer.nickname")
     @Mapping(target = "writerAdmissionYear", source = "childComment.writer.admissionYear")
     @Mapping(target = "writerProfileImage", source = "childComment.writer.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
     @Mapping(target = "isAnonymous", source = "childComment.isAnonymous")

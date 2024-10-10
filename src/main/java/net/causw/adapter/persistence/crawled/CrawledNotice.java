@@ -39,6 +39,7 @@ public class CrawledNotice extends BaseEntity {
 
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "crawled_notice_id", nullable = true)
+    @Builder.Default
     private List<CrawledFileLink> crawledFileLinks = new ArrayList<>();
 
     public static CrawledNotice of(

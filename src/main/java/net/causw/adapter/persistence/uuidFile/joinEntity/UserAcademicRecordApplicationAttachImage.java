@@ -6,6 +6,7 @@ import net.causw.adapter.persistence.userAcademicRecord.UserAcademicRecordApplic
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 
 @Getter
+@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
@@ -16,17 +17,21 @@ indexes = {
 })
 public class UserAcademicRecordApplicationAttachImage extends JoinEntity {
 
+    @Getter
+    @Setter(AccessLevel.PUBLIC)
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "uuid_file_id", nullable = false, unique = true)
+    public UuidFile uuidFile;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_academic_record_application_id", nullable = false)
     private UserAcademicRecordApplication userAcademicRecordApplication;
 
-    private UserAcademicRecordApplicationAttachImage(UserAcademicRecordApplication userAcademicRecordApplication, UuidFile uuidFile) {
-        super(uuidFile);
-        this.userAcademicRecordApplication = userAcademicRecordApplication;
-    }
-
     public static UserAcademicRecordApplicationAttachImage of(UserAcademicRecordApplication userAcademicRecordApplication, UuidFile uuidFile) {
-        return new UserAcademicRecordApplicationAttachImage(userAcademicRecordApplication, uuidFile);
+        return UserAcademicRecordApplicationAttachImage.builder()
+                .uuidFile(uuidFile)
+                .userAcademicRecordApplication(userAcademicRecordApplication)
+                .build();
     }
 
 }

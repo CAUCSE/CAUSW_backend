@@ -7,7 +7,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.user.*;
 import net.causw.application.user.UserService;
@@ -16,11 +15,9 @@ import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.config.security.userdetails.CustomUserDetails;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.UnauthorizedException;
-import net.causw.domain.model.util.MessageUtil;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -571,15 +568,6 @@ public class UserController {
         return this.userService.reject(userDetails.getUser(), id, rejectReason);
     }
 
-//    @PostMapping(value = "/favorite-boards/{boardId}")
-//    @ResponseStatus(value = HttpStatus.CREATED)
-//    @ApiOperation(value = "즐겨찾는 게시판 생성 API(완료)", notes = "즐겨찾는 게시판을 생성할 수 있습니다.")
-//    public BoardResponseDto createFavoriteBoard(@PathVariable String boardId) {
-//        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//        String loginUserId = ((String) principal);
-//        return this.userService.createFavoriteBoard(loginUserId, boardId);
-//    }
-
     @PutMapping(value = "/restore/{id}")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
@@ -661,5 +649,22 @@ public class UserController {
     public void exportUserList(HttpServletResponse response) {
         userService.exportUserListToExcel(response);
     }
+
+    @PutMapping(value = "/update/isV2")
+    @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
+    @Operation(summary = "사용자 isV2 칼럼 업데이트(v1->v2 DB 마이그레이션 전용)",
+            description = "사용자 isV2 칼럼 업데이트(v1->v2 DB 마이그레이션 전용) API입니다. isV2를 true로 업데이트 합니다. 학부 인증과 학적 상태 인증이 모두 끝난 유저만 업데이트가 가능합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserResponseDto.class))),
+            @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
+    })
+    public UserResponseDto updateUserIsV2(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return userService.updateUserIsV2(userDetails.getUser());
+    }
+
 }
 

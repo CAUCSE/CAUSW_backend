@@ -26,4 +26,6 @@ public interface UserAcademicRecordApplicationRepository extends JpaRepository<U
             User user
     );
 
+    List<UserAcademicRecordApplication> findByUserId(String userId);
+
 }

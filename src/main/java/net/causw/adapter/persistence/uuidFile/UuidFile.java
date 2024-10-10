@@ -21,7 +21,7 @@ public class UuidFile extends BaseEntity {
     private String fileKey;
 
     @Lob
-    @Column(name = "file_url", columnDefinition = "TEXT", unique = true, nullable = false)
+    @Column(name = "file_url", columnDefinition = "TEXT", nullable = false)
     private String fileUrl;
 
     @Column(name = "raw_file_name", nullable = false)
@@ -34,6 +34,7 @@ public class UuidFile extends BaseEntity {
     @Column(name = "file_path", nullable = false)
     private FilePath filePath;
 
+    @Setter(AccessLevel.PUBLIC)
     @ColumnDefault("true")
     @Builder.Default
     @Column(name = "is_used", nullable = false)
@@ -48,10 +49,6 @@ public class UuidFile extends BaseEntity {
                 .extension(extension)
                 .filePath(filePath)
                 .build();
-    }
-
-    public void setIsUsed(Boolean isUsed) {
-        this.isUsed = isUsed;
     }
 
 }

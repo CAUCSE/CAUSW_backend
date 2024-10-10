@@ -6,6 +6,7 @@ import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 
 @Getter
+@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
@@ -16,22 +17,21 @@ indexes = {
 })
 public class CircleMainImage extends JoinEntity {
 
+    @Getter
+    @Setter(AccessLevel.PUBLIC)
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "uuid_file_id", nullable = false, unique = true)
+    public UuidFile uuidFile;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "circle_id", nullable = false)
     private Circle circle;
 
-    private CircleMainImage(Circle circle, UuidFile uuidFile) {
-        super(uuidFile);
-        this.circle = circle;
-    }
-
     public static CircleMainImage of(Circle circle, UuidFile uuidFile) {
-        return new CircleMainImage(circle, uuidFile);
-    }
-
-    public CircleMainImage updateUuidFileAndReturnSelf(UuidFile uuidFile) {
-        this.uuidFile = uuidFile;
-        return this;
+        return CircleMainImage.builder()
+                .circle(circle)
+                .uuidFile(uuidFile)
+                .build();
     }
 
 }

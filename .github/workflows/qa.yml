@@ -1,8 +1,8 @@
-name: Caucse Main Java CI/DE with Gradle(main branch)
+name: Caucse QA Java CI/DE with Gradle(qa branch)
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "qa" ]
 
 permissions:
   contents: read
@@ -27,17 +27,17 @@ jobs:
       # git ignore한 yml 파일들 github secret에서 복사해 오기
       - name: Copy secret
         env:
-          APPLICATION_FILE: ${{ secrets.APPLICATION_PROFILE_PROD }}
-          APPLICATION_PROD_FILE: ${{secrets.APPLICATION_PROD}}
+          APPLICATION_FILE: ${{ secrets.APPLICATION_PROFILE_QA }}
+          APPLICATION_QA_FILE: ${{ secrets.APPLICATION_QA }}
           DIR: ./src/main/resources
 
           APPLICATION_FILE_NAME: application.yml
-          APPLICATION_PROD_FILE_NAME: application-prod.yml
+          APPLICATION_QA_FILE_NAME: application-qa.yml
         run: |
           touch $DIR/$APPLICATION_FILE_NAME
-          touch $DIR/$APPLICATION_PROD_FILE_NAME
+          touch $DIR/$APPLICATION_QA_FILE_NAME
           echo "$APPLICATION_FILE" > $DIR/$APPLICATION_FILE_NAME
-          echo "$APPLICATION_PROD_FILE" > $DIR/$APPLICATION_PROD_FILE_NAME
+          echo "$APPLICATION_QA_FILE" > $DIR/$APPLICATION_QA_FILE_NAME
 
       # gradlew 실행 권한 부여
       - name: Run chmod to make gradlew executable
@@ -72,9 +72,9 @@ jobs:
       - name: SCP JAR to EC2
         uses: appleboy/scp-action@master
         with:
-          key: ${{ secrets.EC2_KEY_PROD }}
-          host: ${{ secrets.EC2_HOST_PROD }}
-          username: ${{ secrets.EC2_USER_PROD }}
+          key: ${{ secrets.EC2_KEY_QA }}
+          host: ${{ secrets.EC2_HOST_QA }}
+          username: ${{ secrets.EC2_USER_QA }}
           source: "*.jar"
           target: "/home/ubuntu/app"
 
@@ -82,9 +82,9 @@ jobs:
 #      - name: Upload project code
 #        uses: appleboy/scp-action@master
 #        with:
-#          key: ${{ secrets.EC2_KEY_PROD }}
-#          host: ${{ secrets.EC2_HOST_PROD }}
-#          username: ${{ secrets.EC2_USER_PROD }}
+#          key: ${{ secrets.EC2_KEY_QA }}
+#          host: ${{ secrets.EC2_HOST_QA }}
+#          username: ${{ secrets.EC2_USER_QA }}
 #          target: /home/ubuntu/app/spring_source
 #          source: .
 
@@ -92,9 +92,9 @@ jobs:
       - name: Start redis-server
         uses: appleboy/ssh-action@master
         with:
-          key: ${{ secrets.EC2_KEY_PROD }}
-          host: ${{ secrets.EC2_HOST_PROD }}
-          username: ${{ secrets.EC2_USER_PROD }}
+          key: ${{ secrets.EC2_KEY_QA }}
+          host: ${{ secrets.EC2_HOST_QA }}
+          username: ${{ secrets.EC2_USER_QA }}
           script: |
             sudo systemctl start redis-server
 
@@ -102,11 +102,12 @@ jobs:
       - name: Deploy SSH
         uses: appleboy/ssh-action@master
         with:
-          key: ${{ secrets.EC2_KEY_PROD }}
-          host: ${{ secrets.EC2_HOST_PROD }}
-          username: ${{ secrets.EC2_USER_PROD }}
+          key: ${{ secrets.EC2_KEY_QA }}
+          host: ${{ secrets.EC2_HOST_QA }}
+          username: ${{ secrets.EC2_USER_QA }}
           # 기존 실행 중인 서버 종료 후 jar 파일 실행
           script: |
             sudo fuser -k -n tcp 8080
             sleep 15
             sudo nohup java -jar /home/ubuntu/app/*.jar > ./nohup.out 2>&1 &
+

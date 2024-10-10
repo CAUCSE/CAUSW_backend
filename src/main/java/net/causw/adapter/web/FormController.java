@@ -9,6 +9,7 @@ import net.causw.application.dto.form.response.FormResponseDto;
 import net.causw.application.dto.form.response.reply.ReplyPageResponseDto;
 import net.causw.application.dto.form.request.FormReplyRequestDto;
 import net.causw.application.dto.form.response.QuestionSummaryResponseDto;
+import net.causw.application.dto.form.response.reply.UserReplyResponseDto;
 import net.causw.application.form.FormService;
 import net.causw.config.security.userdetails.CustomUserDetails;
 import org.springdoc.core.annotations.ParameterObject;
@@ -94,6 +95,18 @@ public class FormController {
             @AuthenticationPrincipal CustomUserDetails userDetails
     ){
         return formService.findSummaryReply(formId, userDetails.getUser());
+    }
+
+    @GetMapping("/{userId}/{circleId}")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "동아리 신청서 답변 유저별 조회", description = "각 유저의 동아리 신청서에 대한 답변을 조회합니다.")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
+    public List<UserReplyResponseDto> findReplyByUserAndCircle(
+            @PathVariable(name = "userId") String userId,
+            @PathVariable(name = "circleId") String circleId
+    ) {
+        return formService.getReplyByUserAndCircle(userId, circleId);
     }
 
     @GetMapping("/{formId}/export")

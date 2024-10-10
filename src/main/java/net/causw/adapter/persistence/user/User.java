@@ -6,7 +6,6 @@ import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.locker.Locker;
 import net.causw.adapter.persistence.uuidFile.joinEntity.UserProfileImage;
-import net.causw.adapter.persistence.vote.Vote;
 import net.causw.adapter.persistence.vote.VoteRecord;
 import net.causw.application.dto.user.UserCreateRequestDto;
 import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
@@ -32,23 +31,23 @@ public class User extends BaseEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "phone_number", unique = true, nullable = true)  // 일단 null 가능하게 설정(false 로 하면 기존 데이터와 충돌 예상)
+    @Column(name = "phone_number", unique = true, nullable = false)
     private String phoneNumber;
 
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "student_id", unique = true, nullable = true)
+    @Column(name = "student_id", unique = true, nullable = false)
     private String studentId;
 
     @Column(name = "admission_year", nullable = false)
     private Integer admissionYear;
 
     // 새로 추가한 필드들
-    @Column(name = "nickname",unique = true, nullable = true)
+    @Column(name = "nickname",unique = true, nullable = false)
     private String nickname;
 
-    @Column(name = "major", nullable = true)
+    @Column(name = "major", nullable = false)
     private String major;
 
     @Column(name = "academic_status", nullable = false)
@@ -80,8 +79,7 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private UserState state;
 
-    @OneToOne
-    @JoinColumn(name = "locker_id", nullable = true)
+    @OneToOne(mappedBy = "user", fetch = FetchType.EAGER)
     private Locker locker;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
@@ -93,6 +91,11 @@ public class User extends BaseEntity {
 
     @Column(name = "rejectionOrDropReason",nullable = true)
     private String rejectionOrDropReason;
+
+    @Setter(AccessLevel.PUBLIC)
+    @Column(name = "is_v2", nullable = false)
+    @Builder.Default
+    private Boolean isV2 = true;
 
     public void delete() {
         this.email = "deleted_" + this.getId();
@@ -123,6 +126,7 @@ public class User extends BaseEntity {
                 .major(userCreateRequestDto.getMajor())
                 .academicStatus(AcademicStatus.UNDETERMINED)
                 .phoneNumber(userCreateRequestDto.getPhoneNumber())
+                .isV2(true)
                 .build();
     }
 

@@ -143,6 +143,7 @@ public class MessageUtil {
     public static final String USER_COUNCIL_FEE_NOT_FOUND = "해당 학생회비 납부자 정보를 찾을 수 없습니다.";
     public static final String USER_ALREADY_EXISTS = "해당 사용자는 이미 동문네트워크 서비스에 가입했습니다.";
     public static final String REFUND_DATE_IS_NULL = "환불 날짜가 비어있습니다.";
+    public static final String USER_COUNCIL_FEE_INFO_ALREADY_EXISTS = "이미 등록된 학생회비 납부자 정보입니다.";
 
     // CouncilFeeFakeUser
     public static final String INVALID_COUNCIL_FEE_FAKE_USER_INFO = "유효하지 않은 가짜 사용자 정보입니다.";
