@@ -83,7 +83,6 @@ public class User extends BaseEntity {
     private Locker locker;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    @JoinColumn(nullable = true)
     private List<CircleMember> circleMemberList;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
