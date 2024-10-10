@@ -84,8 +84,8 @@ public class User extends BaseEntity {
     @JoinColumn(name = "locker_id", nullable = true)
     private Locker locker;
 
-    @OneToMany
-    @JoinColumn(name = "user_circle_id", nullable = true)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @JoinColumn(nullable = true)
     private List<CircleMember> circleMemberList;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
