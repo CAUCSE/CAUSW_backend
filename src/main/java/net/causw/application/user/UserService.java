@@ -59,19 +59,7 @@ import net.causw.domain.model.enums.uuidFile.FilePath;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.RedisUtils;
 import net.causw.domain.model.util.StaticValue;
-import net.causw.domain.validation.AdmissionYearValidator;
-import net.causw.domain.validation.CircleMemberStatusValidator;
-import net.causw.domain.validation.ConstraintValidator;
-import net.causw.domain.validation.GrantableRoleValidator;
-import net.causw.domain.validation.PasswordCorrectValidator;
-import net.causw.domain.validation.PasswordFormatValidator;
-import net.causw.domain.validation.UserRoleIsNoneValidator;
-import net.causw.domain.validation.UserRoleValidator;
-import net.causw.domain.validation.UserRoleWithoutAdminValidator;
-import net.causw.domain.validation.UserStateIsDropOrIsInActiveValidator;
-import net.causw.domain.validation.UserStateIsNotDropAndActiveValidator;
-import net.causw.domain.validation.UserStateValidator;
-import net.causw.domain.validation.ValidatorBucket;
+import net.causw.domain.validation.*;
 import net.causw.infrastructure.GoogleMailSender;
 import net.causw.infrastructure.PasswordGenerator;
 import org.springframework.data.domain.Page;
@@ -576,6 +564,7 @@ public class UserService {
                 .consistOf(ConstraintValidator.of(user, this.validator))
                 .consistOf(PasswordFormatValidator.of(userCreateRequestDto.getPassword()))
                 .consistOf(AdmissionYearValidator.of(userCreateRequestDto.getAdmissionYear()))
+                .consistOf(PhoneNumberFormatValidator.of(userCreateRequestDto.getPhoneNumber()))
                 .validate();
 
         return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
