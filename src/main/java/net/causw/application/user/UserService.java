@@ -45,10 +45,7 @@ import net.causw.application.dto.util.dtoMapper.UserDtoMapper;
 import net.causw.application.uuidFile.UuidFileService;
 import net.causw.config.security.JwtTokenProvider;
 import net.causw.domain.aop.annotation.MeasureTime;
-import net.causw.domain.exceptions.BadRequestException;
-import net.causw.domain.exceptions.ErrorCode;
-import net.causw.domain.exceptions.InternalServerException;
-import net.causw.domain.exceptions.UnauthorizedException;
+import net.causw.domain.exceptions.*;
 import net.causw.domain.model.enums.circle.CircleMemberStatus;
 import net.causw.domain.model.enums.locker.LockerLogAction;
 import net.causw.domain.model.enums.user.Role;
@@ -121,15 +118,15 @@ public class UserService {
     private final UserAcademicRecordApplicationAttachImageRepository userAcademicRecordApplicationAttachImageRepository;
 
     @Transactional
-    public UserResponseDto findPassword(
+    public void findPassword(
             UserFindPasswordRequestDto userFindPasswordRequestDto
     ) {
         User requestUser = userRepository.findByEmailAndNameAndStudentIdAndPhoneNumber(
-                    userFindPasswordRequestDto.getEmail(),
-                    userFindPasswordRequestDto.getName(),
-                    userFindPasswordRequestDto.getStudentId(),
-                    userFindPasswordRequestDto.getPhoneNumber()
-                ).orElseThrow(() -> new BadRequestException(
+                    userFindPasswordRequestDto.getEmail().trim(),
+                    userFindPasswordRequestDto.getName().trim(),
+                    userFindPasswordRequestDto.getStudentId().trim(),
+                    userFindPasswordRequestDto.getPhoneNumber().trim()
+                ).orElseThrow(() -> new NotFoundException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.USER_NOT_FOUND
                 ));
@@ -139,16 +136,9 @@ public class UserService {
         // 메일 전송
         this.googleMailSender.sendNewPasswordMail(requestUser.getEmail(), newPassword);
 
-        // 비밀번호 변경 (db save)
-        this.userRepository.findById(requestUser.getId()).map(
-                srcUser -> {
-                    srcUser.setPassword(passwordEncoder.encode(newPassword));
-                    return this.userRepository.save(srcUser);
-                }).orElseThrow(() -> new BadRequestException(
-                ErrorCode.ROW_DOES_NOT_EXIST,
-                MessageUtil.USER_NOT_FOUND));
-
-        return UserDtoMapper.INSTANCE.toUserResponseDto(requestUser, getCircleIdsIfLeader(requestUser), getCircleNamesIfLeader(requestUser));
+        // 비밀번호 변경
+        requestUser.setPassword(this.passwordEncoder.encode(newPassword));
+        // ! dirty cecking 때문에 save 필요 없음
     }
 
     // Find process of another user
