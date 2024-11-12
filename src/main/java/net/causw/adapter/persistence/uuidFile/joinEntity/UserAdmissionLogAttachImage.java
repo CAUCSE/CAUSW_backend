@@ -19,8 +19,8 @@ public class UserAdmissionLogAttachImage extends JoinEntity {
 
     @Getter
     @Setter(AccessLevel.PUBLIC)
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "uuid_file_id", nullable = false, unique = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "uuid_file_id", nullable = false, unique = false)
     public UuidFile uuidFile;
 
     @ManyToOne(fetch = FetchType.LAZY)
