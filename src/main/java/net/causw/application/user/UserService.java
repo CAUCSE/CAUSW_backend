@@ -1234,8 +1234,13 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .validate();
 
-        return this.userAdmissionRepository.findAllWithName(UserState.AWAIT.getValue(), name, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE))
-                .map(UserDtoMapper.INSTANCE::toUserAdmissionsResponseDto);
+        if (name == null) {
+            return userAdmissionRepository.findAll(this.pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE))
+                    .map(UserDtoMapper.INSTANCE::toUserAdmissionsResponseDto);
+        } else {
+            return this.userAdmissionRepository.findAllByUserName(name, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE))
+                    .map(UserDtoMapper.INSTANCE::toUserAdmissionsResponseDto);
+        }
     }
 
     @Transactional
@@ -1414,7 +1419,7 @@ public class UserService {
 
         this.userAdmissionRepository.delete(userAdmission);
 
-        requestUser.updateRejectionOrDropReason(rejectReason);
+        userAdmission.getUser().updateRejectionOrDropReason(rejectReason);
         this.userRepository.save(requestUser);
 
         return UserDtoMapper.INSTANCE.toUserAdmissionResponseDto(
