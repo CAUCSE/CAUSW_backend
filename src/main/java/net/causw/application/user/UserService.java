@@ -45,10 +45,7 @@ import net.causw.application.dto.util.dtoMapper.UserDtoMapper;
 import net.causw.application.uuidFile.UuidFileService;
 import net.causw.config.security.JwtTokenProvider;
 import net.causw.domain.aop.annotation.MeasureTime;
-import net.causw.domain.exceptions.BadRequestException;
-import net.causw.domain.exceptions.ErrorCode;
-import net.causw.domain.exceptions.InternalServerException;
-import net.causw.domain.exceptions.UnauthorizedException;
+import net.causw.domain.exceptions.*;
 import net.causw.domain.model.enums.circle.CircleMemberStatus;
 import net.causw.domain.model.enums.locker.LockerLogAction;
 import net.causw.domain.model.enums.user.Role;
@@ -121,15 +118,15 @@ public class UserService {
     private final UserAcademicRecordApplicationAttachImageRepository userAcademicRecordApplicationAttachImageRepository;
 
     @Transactional
-    public UserResponseDto findPassword(
+    public void findPassword(
             UserFindPasswordRequestDto userFindPasswordRequestDto
     ) {
         User requestUser = userRepository.findByEmailAndNameAndStudentIdAndPhoneNumber(
-                    userFindPasswordRequestDto.getEmail(),
-                    userFindPasswordRequestDto.getName(),
-                    userFindPasswordRequestDto.getStudentId(),
-                    userFindPasswordRequestDto.getPhoneNumber()
-                ).orElseThrow(() -> new BadRequestException(
+                    userFindPasswordRequestDto.getEmail().trim(),
+                    userFindPasswordRequestDto.getName().trim(),
+                    userFindPasswordRequestDto.getStudentId().trim(),
+                    userFindPasswordRequestDto.getPhoneNumber().trim()
+                ).orElseThrow(() -> new NotFoundException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.USER_NOT_FOUND
                 ));
@@ -139,16 +136,9 @@ public class UserService {
         // 메일 전송
         this.googleMailSender.sendNewPasswordMail(requestUser.getEmail(), newPassword);
 
-        // 비밀번호 변경 (db save)
-        this.userRepository.findById(requestUser.getId()).map(
-                srcUser -> {
-                    srcUser.setPassword(passwordEncoder.encode(newPassword));
-                    return this.userRepository.save(srcUser);
-                }).orElseThrow(() -> new BadRequestException(
-                ErrorCode.ROW_DOES_NOT_EXIST,
-                MessageUtil.USER_NOT_FOUND));
-
-        return UserDtoMapper.INSTANCE.toUserResponseDto(requestUser, getCircleIdsIfLeader(requestUser), getCircleNamesIfLeader(requestUser));
+        // 비밀번호 변경
+        requestUser.setPassword(this.passwordEncoder.encode(newPassword));
+        // ! dirty cecking 때문에 save 필요 없음
     }
 
     // Find process of another user
@@ -1174,6 +1164,9 @@ public class UserService {
                 )
         );
 
+        String droppedUserEmail = droppedUser.getEmail();
+        String droppedUserName = droppedUser.getName();
+
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(roles))
@@ -1181,7 +1174,7 @@ public class UserService {
                 .consistOf(UserRoleWithoutAdminValidator.of(droppedUser.getRoles(), Set.of(Role.COMMON, Role.PROFESSOR)))
                 .validate();
 
-        this.lockerRepository.findByUser_Id(userId)
+        lockerRepository.findByUser_Id(userId)
                 .ifPresent(locker -> {
                     locker.returnLocker();
                     this.lockerRepository.save(locker);
@@ -1189,8 +1182,8 @@ public class UserService {
                     LockerLog lockerLog = LockerLog.of(
                             locker.getLockerNumber(),
                             locker.getLocation().getName(),
-                            droppedUser.getEmail(),
-                            droppedUser.getName(),
+                            droppedUserEmail,
+                            droppedUserName,
                             LockerLogAction.RETURN,
                             "사용자 추방"
                     );
@@ -1200,15 +1193,16 @@ public class UserService {
 
         this.updateRole(droppedUser, Role.NONE);
 
-        User entity = this.updateState(userId, UserState.DROP)
+        droppedUser.updateRejectionOrDropReason(dropReason);
+        droppedUser = this.updateState(userId, UserState.DROP)
                 .orElseThrow(() -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.INTERNAL_SERVER_ERROR
                 ));
-        entity.updateRejectionOrDropReason(dropReason);
-        this.userRepository.save(requestUser);
 
-        return UserDtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
+        userRepository.save(droppedUser);
+
+        return UserDtoMapper.INSTANCE.toUserResponseDto(droppedUser, null, null);
     }
 
     @Transactional(readOnly = true)
@@ -1244,8 +1238,13 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .validate();
 
-        return this.userAdmissionRepository.findAllWithName(UserState.AWAIT.getValue(), name, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE))
-                .map(UserDtoMapper.INSTANCE::toUserAdmissionsResponseDto);
+        if (name == null) {
+            return userAdmissionRepository.findAll(this.pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE))
+                    .map(UserDtoMapper.INSTANCE::toUserAdmissionsResponseDto);
+        } else {
+            return this.userAdmissionRepository.findAllByUserName(name, this.pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE))
+                    .map(UserDtoMapper.INSTANCE::toUserAdmissionsResponseDto);
+        }
     }
 
     @Transactional
@@ -1401,6 +1400,8 @@ public class UserService {
                 () -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_APPLY_NOT_FOUND)
         );
 
+        User targetUser = userAdmission.getUser();
+
 
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(requestUser.getState()))
@@ -1420,20 +1421,23 @@ public class UserService {
                 rejectReason
         );
 
-        this.userAdmissionLogRepository.save(userAdmissionLog);
+        userAdmissionLogRepository.save(userAdmissionLog);
 
-        this.userAdmissionRepository.delete(userAdmission);
+        userAdmissionRepository.delete(userAdmission);
 
-        requestUser.updateRejectionOrDropReason(rejectReason);
-        this.userRepository.save(requestUser);
+        targetUser.updateRejectionOrDropReason(rejectReason);
+
+        targetUser = this.updateState(targetUser.getId(), UserState.REJECT)
+                .orElseThrow(() -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        MessageUtil.ADMISSION_EXCEPTION
+                ));
+
+        userRepository.save(targetUser);
 
         return UserDtoMapper.INSTANCE.toUserAdmissionResponseDto(
                 userAdmissionLog,
-                this.updateState(userAdmission.getUser().getId(), UserState.REJECT)
-                        .orElseThrow(() -> new InternalServerException(
-                                ErrorCode.INTERNAL_SERVER,
-                                MessageUtil.ADMISSION_EXCEPTION
-                        ))
+                targetUser
         );
     }
 
