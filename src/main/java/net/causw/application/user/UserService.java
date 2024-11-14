@@ -1263,6 +1263,13 @@ public class UserService {
             );
         }
 
+        if ( !(user.getState().equals(UserState.AWAIT) || user.getState().equals(UserState.ACTIVE)) ) {
+            throw new BadRequestException(
+                    ErrorCode.INVALID_REQUEST_USER_STATE,
+                    MessageUtil.INVALID_USER_APPLICATION_USER_STATE
+            );
+        }
+
         if (userAdmissionAttachImageList.isEmpty()) {
             throw new BadRequestException(
                     ErrorCode.INVALID_PARAMETER,
