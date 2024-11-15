@@ -1391,13 +1391,13 @@ public class UserService {
 
         targetUser.updateRejectionOrDropReason(rejectReason);
 
-        targetUser = this.updateState(targetUser.getId(), UserState.REJECT)
+        targetUser = this.updateState(targetUser.getId(), UserState.AWAIT)
                 .orElseThrow(() -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.ADMISSION_EXCEPTION
                 ));
 
-        userRepository.save(targetUser);
+        userRepository.save(targetUser);`
 
         return UserDtoMapper.INSTANCE.toUserAdmissionResponseDto(
                 userAdmissionLog,
