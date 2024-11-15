@@ -1397,7 +1397,7 @@ public class UserService {
                         MessageUtil.ADMISSION_EXCEPTION
                 ));
 
-        userRepository.save(targetUser);`
+        userRepository.save(targetUser);
 
         return UserDtoMapper.INSTANCE.toUserAdmissionResponseDto(
                 userAdmissionLog,
