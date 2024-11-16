@@ -506,16 +506,6 @@ public class UserController {
         return this.userService.getCurrentUserAdmission(userDetails.getUser());
     }
 
-    @PutMapping(value = "/admissions/apply")
-    @ResponseStatus(value = HttpStatus.OK)
-    public UserAdmissionResponseDto updateAdmission(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestPart(value = "userAdmissionCreateRequestDto") @Valid UserAdmissionCreateRequestDto userAdmissionCreateRequestDto,
-            @RequestPart(value = "userAdmissionAttachImageList") List<MultipartFile> userAdmissionAttachImageList
-    ) {
-        return userService.updateAdmission(userDetails.getUser(), userAdmissionCreateRequestDto, userAdmissionAttachImageList);
-    }
-
     @PutMapping(value = "/admissions/{id}/accept")
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
             "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")

@@ -1263,6 +1263,13 @@ public class UserService {
             );
         }
 
+        if ( !(user.getState().equals(UserState.AWAIT) || user.getState().equals(UserState.ACTIVE)) ) {
+            throw new BadRequestException(
+                    ErrorCode.INVALID_REQUEST_USER_STATE,
+                    MessageUtil.INVALID_USER_APPLICATION_USER_STATE
+            );
+        }
+
         if (userAdmissionAttachImageList.isEmpty()) {
             throw new BadRequestException(
                     ErrorCode.INVALID_PARAMETER,
@@ -1296,49 +1303,6 @@ public class UserService {
         );
 
         return UserDtoMapper.INSTANCE.toUserAdmissionResponseDto(userAdmission);
-    }
-
-    public UserAdmissionResponseDto updateAdmission(
-            User user,
-            UserAdmissionCreateRequestDto userAdmissionCreateRequestDto,
-            List<MultipartFile> userAdmissionAttachImageList
-    ) {
-        if (user.getRoles().contains(Role.NONE) || user.getState().equals(UserState.ACTIVE)) {
-            throw new UnauthorizedException(
-                    ErrorCode.API_NOT_ACCESSIBLE,
-                    MessageUtil.API_NOT_ACCESSIBLE
-            );
-        }
-
-        if (user.getState().equals(UserState.AWAIT)) {
-            UserAdmission priorUserAdmission = userAdmissionRepository.findByUser_Id(user.getId()).orElseThrow(
-                    () -> new BadRequestException(
-                            ErrorCode.ROW_DOES_NOT_EXIST,
-                            MessageUtil.USER_APPLY_NOT_FOUND
-                    )
-            );
-
-            List<UuidFile> priorUuidFileList = priorUserAdmission.getUserAdmissionAttachImageList().stream().map(UserAdmissionAttachImage::getUuidFile).toList();
-
-            userAdmissionRepository.delete(priorUserAdmission);
-
-            uuidFileService.deleteFileList(priorUuidFileList);
-        }
-
-        List<UuidFile> uuidFileList = uuidFileService.saveFileList(userAdmissionAttachImageList, FilePath.USER_ADMISSION);
-
-        UserAdmission userAdmission = UserAdmission.of(
-                user,
-                uuidFileList,
-                userAdmissionCreateRequestDto.getDescription()
-        );
-
-        ValidatorBucket.of()
-                .consistOf(UserStateIsNotDropAndActiveValidator.of(user.getState()))
-                .consistOf(ConstraintValidator.of(userAdmission, this.validator))
-                .validate();
-
-        return UserDtoMapper.INSTANCE.toUserAdmissionResponseDto(this.userAdmissionRepository.save(userAdmission));
     }
 
     @Transactional
@@ -1427,7 +1391,7 @@ public class UserService {
 
         targetUser.updateRejectionOrDropReason(rejectReason);
 
-        targetUser = this.updateState(targetUser.getId(), UserState.REJECT)
+        targetUser = this.updateState(targetUser.getId(), UserState.AWAIT)
                 .orElseThrow(() -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.ADMISSION_EXCEPTION
