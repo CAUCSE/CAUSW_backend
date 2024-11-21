@@ -151,7 +151,10 @@ public class UserAcademicRecordApplicationService {
     }
 
     @Transactional
-    public UserAcademicRecordApplicationResponseDto updateUserAcademicRecordApplicationStatus(User controllerUser, UpdateUserAcademicRecordApplicationStateRequestDto updateUserAcademicRecordApplicationStateRequestDto) {
+    public UserAcademicRecordApplicationResponseDto updateUserAcademicRecordApplicationStatus(
+            User controllerUser,
+            UpdateUserAcademicRecordApplicationStateRequestDto updateUserAcademicRecordApplicationStateRequestDto
+    ) {
         User targetUser = getUser(updateUserAcademicRecordApplicationStateRequestDto.getTargetUserId());
 
         UserAcademicRecordApplication userAcademicRecordApplication = getUserAcademicRecordApplication(updateUserAcademicRecordApplicationStateRequestDto.getApplicationId());
