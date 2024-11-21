@@ -102,6 +102,7 @@ public class MessageUtil {
     public static final String USER_ADMISSION_MUST_HAVE_IMAGE = "입학 증빙 사진은 필수 입니다.";
     public static final String STUDENT_ID_ALREADY_EXIST = "이미 존재하는 학번입니다.";
     public static final String PHONE_NUMBER_ALREADY_EXIST = "이미 존재하는 전화번호입니다.";
+    public static final String INVALID_USER_APPLICATION_USER_STATE = "사용자 인증을 할 수 없는 상태의 사용자입니다(AWAIT / REJECT 상태만 인증 가능합니다).";
 
     // Flag
     public static final String FLAG_UPDATE_FAILED = "플래그 업데이트에 실패했습니다.";

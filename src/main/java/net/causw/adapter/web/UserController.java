@@ -368,8 +368,8 @@ public class UserController {
     @PutMapping(value = "/password/find")
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "비밀번호 찾기 API (완료)", description = "비밀번호 재설정 이메일 전송 API입니다.")
-    public UserResponseDto findPassword(@Valid @RequestBody UserFindPasswordRequestDto userFindPasswordRequestDto) {
-        return this.userService.findPassword(userFindPasswordRequestDto);
+    public void findPassword(@Valid @RequestBody UserFindPasswordRequestDto userFindPasswordRequestDto) {
+        this.userService.findPassword(userFindPasswordRequestDto);
     }
 
     @PutMapping(value = "/password")
@@ -504,16 +504,6 @@ public class UserController {
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return this.userService.getCurrentUserAdmission(userDetails.getUser());
-    }
-
-    @PutMapping(value = "/admissions/apply")
-    @ResponseStatus(value = HttpStatus.OK)
-    public UserAdmissionResponseDto updateAdmission(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestPart(value = "userAdmissionCreateRequestDto") @Valid UserAdmissionCreateRequestDto userAdmissionCreateRequestDto,
-            @RequestPart(value = "userAdmissionAttachImageList") List<MultipartFile> userAdmissionAttachImageList
-    ) {
-        return userService.updateAdmission(userDetails.getUser(), userAdmissionCreateRequestDto, userAdmissionAttachImageList);
     }
 
     @PutMapping(value = "/admissions/{id}/accept")
