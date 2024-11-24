@@ -16,6 +16,7 @@ import net.causw.application.dto.board.*;
 import net.causw.application.dto.post.PostContentDto;
 import net.causw.application.dto.user.UserResponseDto;
 import net.causw.application.dto.util.dtoMapper.BoardDtoMapper;
+import net.causw.application.dto.util.dtoMapper.CircleDtoMapper;
 import net.causw.application.dto.util.dtoMapper.PostDtoMapper;
 import net.causw.application.dto.util.dtoMapper.UserDtoMapper;
 import net.causw.domain.aop.annotation.MeasureTime;
@@ -161,6 +162,10 @@ public class BoardService {
             );
         }
 
+        Circle circle = ( normalBoardApplyRequestDto.getCircleId() == null || normalBoardApplyRequestDto.getCircleId().isEmpty() ) ?
+                null :
+                getCircle(normalBoardApplyRequestDto.getCircleId());
+
         if (creator.getRoles().contains(Role.ADMIN) ||
                 creator.getRoles().contains(Role.PRESIDENT) ||
                 creator.getRoles().contains(Role.VICE_PRESIDENT)
@@ -173,7 +178,7 @@ public class BoardService {
                     createRoleList,
                     StaticValue.BOARD_NAME_APP_FREE,
                     normalBoardApplyRequestDto.getIsAnonymousAllowed(),
-                    null
+                    circle
             );
 
             boardRepository.save(newBoard);
@@ -186,7 +191,8 @@ public class BoardService {
                 normalBoardApplyRequestDto.getBoardName(),
                 normalBoardApplyRequestDto.getDescription(),
                 StaticValue.BOARD_NAME_APP_FREE,
-                normalBoardApplyRequestDto.getIsAnonymousAllowed()
+                normalBoardApplyRequestDto.getIsAnonymousAllowed(),
+                circle
         );
 
         boardApplyRepository.save(newBoardApply);
@@ -245,8 +251,12 @@ public class BoardService {
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.APPLY_NOT_FOUND
                 ));
+
         return BoardDtoMapper.INSTANCE.toNormalBoardApplyResponseDto(
-                boardApply, UserDtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null));
+                boardApply,
+                UserDtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null),
+                boardApply.getCircle() == null ? null : CircleDtoMapper.INSTANCE.toCircleResponseDto(boardApply.getCircle())
+        );
     }
 
     @Transactional
@@ -274,23 +284,26 @@ public class BoardService {
         boardApply.updateAcceptStatus(BoardApplyStatus.ACCEPTED); // 해당 boardApply의 상태를 ACCEPTED로 변경
         this.boardApplyRepository.save(boardApply);
 
-        List<String> createRoleList = new ArrayList<>();
-        createRoleList.add("ALL"); // 일반 사용자의 게시판 신청은 항상 글 작성 권한이 '상관없음'임
-        UserResponseDto userResponseDto = UserDtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null);
-        NormalBoardApplyResponseDto normalBoardApplyResponseDto =
-                BoardDtoMapper.INSTANCE.toNormalBoardApplyResponseDto(boardApply, userResponseDto);
+        List<String> createRoleList = new ArrayList<>(Arrays.stream(boardApply.getCreateRoles().split(",")).toList());
+        // TODO: Board.of 메서드에서 정상적으로 createRole 받을 수 있도록 수정 필요
+        //createRoleList.add("ALL"); // 일반 사용자의 게시판 신청은 항상 글 작성 권한이 '상관없음'임 -> Board.of에서 처리
+
         Board newBoard = Board.of(
-                normalBoardApplyResponseDto.getBoardName(),
-                normalBoardApplyResponseDto.getDescription(),
+                boardApply.getBoardName(),
+                boardApply.getDescription(),
                 createRoleList,
-                StaticValue.BOARD_NAME_APP_NOTICE,
-                normalBoardApplyResponseDto.getIsAnonymousAllowed(),
-                null
+                boardApply.getCategory(),
+                boardApply.getIsAnonymousAllowed(),
+                boardApply.getCircle() == null ? null : getCircle(boardApply.getCircle().getId())
         );
 
         this.boardRepository.save(newBoard);
 
-        return BoardDtoMapper.INSTANCE.toNormalBoardApplyResponseDto(boardApply, userResponseDto);
+        return BoardDtoMapper.INSTANCE.toNormalBoardApplyResponseDto(
+                boardApply,
+                UserDtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null),
+                boardApply.getCircle() == null ? null : CircleDtoMapper.INSTANCE.toCircleResponseDto(boardApply.getCircle())
+        );
     }
 
     @Transactional
@@ -320,7 +333,9 @@ public class BoardService {
 
         return BoardDtoMapper.INSTANCE.toNormalBoardApplyResponseDto(
                 boardApply,
-                UserDtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null));
+                UserDtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null),
+                boardApply.getCircle() == null ? null : CircleDtoMapper.INSTANCE.toCircleResponseDto(boardApply.getCircle())
+        );
     }
 
     @Transactional
