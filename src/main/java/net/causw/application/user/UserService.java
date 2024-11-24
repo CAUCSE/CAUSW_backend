@@ -1290,6 +1290,13 @@ public class UserService {
                 .consistOf(ConstraintValidator.of(userAdmission, this.validator))
                 .validate();
 
+        userRepository.save(updateState(user.getId(), UserState.AWAIT)
+                .orElseThrow(() -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        MessageUtil.ADMISSION_EXCEPTION
+                ))
+        );
+
         return UserDtoMapper.INSTANCE.toUserAdmissionResponseDto(this.userAdmissionRepository.save(userAdmission));
     }
 
