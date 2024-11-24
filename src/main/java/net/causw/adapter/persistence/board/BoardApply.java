@@ -3,6 +3,7 @@ package net.causw.adapter.persistence.board;
 import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
+import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.user.User;
 import net.causw.domain.model.enums.board.BoardApplyStatus;
 import org.hibernate.annotations.ColumnDefault;
@@ -40,12 +41,17 @@ public class BoardApply extends BaseEntity {
     @ColumnDefault("false")
     private Boolean isAnonymousAllowed;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "circle_id", nullable = true)
+    private Circle circle;
+
     public static BoardApply of(
             User user,
             String boardName,
             String description,
             String category,
-            Boolean isAnonymousAllowed
+            Boolean isAnonymousAllowed,
+            Circle circle
     ) {
         // description 비어있을 경우 처리
         if (description == null) {
@@ -60,6 +66,7 @@ public class BoardApply extends BaseEntity {
                 .category(category)
                 .acceptStatus(BoardApplyStatus.AWAIT)
                 .isAnonymousAllowed(isAnonymousAllowed)
+                .circle(circle)
                 .build();
     }
 
