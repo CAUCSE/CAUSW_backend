@@ -28,4 +28,5 @@ public interface UserAcademicRecordApplicationRepository extends JpaRepository<U
 
     List<UserAcademicRecordApplication> findByUserId(String userId);
 
+    List<UserAcademicRecordApplication> findByUserAndAcademicRecordRequestStatus(User user, AcademicRecordRequestStatus academicRecordRequestStatus);
 }
