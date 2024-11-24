@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.user.UserResponseDto;
 
 @Getter
@@ -35,4 +36,7 @@ public class NormalBoardApplyResponseDto {
 
     @Schema(description = "게시판 생성 신청자", example = "게시판 생성 신청 User 객체를 반환합니다.")
     private UserResponseDto user;
+
+    @Schema(description = "신청한 게시판이 속한 동아리 정보", example = "신청한 게시판이 속한 동아리 정보를 반환합니다.")
+    private CircleResponseDto circleResponseDto;
 }
