@@ -213,13 +213,16 @@ public class BoardService {
             );
         }
 
+
         Board newBoard = Board.of(
                 boardCreateRequestDto.getBoardName(),
                 boardCreateRequestDto.getDescription(),
                 boardCreateRequestDto.getCreateRoleList(),
                 boardCreateRequestDto.getBoardCategory(),
                 boardCreateRequestDto.getIsAnonymousAllowed(),
-                null
+                ( boardCreateRequestDto.getCircleId() == null || boardCreateRequestDto.getCircleId().isEmpty() ) ?
+                        null :
+                        getCircle(boardCreateRequestDto.getCircleId())
         );
 
         return toBoardResponseDto(boardRepository.save(newBoard), creator.getRoles());
