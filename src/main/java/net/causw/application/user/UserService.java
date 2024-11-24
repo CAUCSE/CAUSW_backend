@@ -1263,7 +1263,7 @@ public class UserService {
             );
         }
 
-        if ( !(user.getState().equals(UserState.AWAIT) || user.getState().equals(UserState.ACTIVE)) ) {
+        if ( !(user.getState().equals(UserState.AWAIT) || user.getState().equals(UserState.REJECT)) ) {
             throw new BadRequestException(
                     ErrorCode.INVALID_REQUEST_USER_STATE,
                     MessageUtil.INVALID_USER_APPLICATION_USER_STATE
@@ -1391,7 +1391,7 @@ public class UserService {
 
         targetUser.updateRejectionOrDropReason(rejectReason);
 
-        targetUser = this.updateState(targetUser.getId(), UserState.AWAIT)
+        targetUser = this.updateState(targetUser.getId(), UserState.REJECT)
                 .orElseThrow(() -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.ADMISSION_EXCEPTION
