@@ -139,6 +139,7 @@ public class MessageUtil {
     // Semester
     public static final String PRIOR_SEMESTER_NOT_FOUND = "이전 학기를 찾을 수 없습니다.";
     public static final String ACTIVE_SEMESTER_IS_DUPLICATED = "활성화된 학기가 중복되어 있습니다.";
+    public static final String CURRENT_SEMESTER_DOES_NOT_EXIST = "현재 학기가 존재하지 않습니다. 현재 학기를 등록해주세요";
 
     // UserCouncilFee
     public static final String INVALID_USER_COUNCIL_FEE_INFO = "유효하지 않은 학생회비 납부자 정보입니다.";
@@ -170,4 +171,5 @@ public class MessageUtil {
     public static final String FAIL_TO_CRAWL_CAU_SW_NOTICE_SITE = "소프트웨어학부 공지사항 크롤링 실패";
 
 
+    public static final String USER_CURRENT_COMPLETE_SEMESTER_DOES_NOT_EXIST = "사용자의 현재 등록 완료 학기 정보가 존재하지 않습니다.";
 }
