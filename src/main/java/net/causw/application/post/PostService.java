@@ -383,11 +383,13 @@ public class PostService {
 
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         if (post.getBoard().getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
-            validatorBucket
-                    .consistOf(UserRoleValidator.of(
-                            roles,
-                            Set.of()
-                    ));
+            // 관리자 역할이 없고, 게시글의 작성자가 아니면 오류 발생
+            if (roles.stream().noneMatch(role -> EnumSet.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT).contains(role)) && !post.getWriter().getId().equals(deleter.getId())) {
+                throw new UnauthorizedException(
+                        ErrorCode.API_NOT_ALLOWED,
+                        "접근 권한이 없습니다."
+                );
+            }
         }
         validatorBucket
                 .consistOf(UserStateValidator.of(deleter.getState()))
