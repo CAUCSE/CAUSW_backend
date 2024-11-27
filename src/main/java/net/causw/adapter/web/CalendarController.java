@@ -14,6 +14,7 @@ import net.causw.application.dto.calendar.CalendarUpdateRequestDto;
 import net.causw.application.dto.calendar.CalendarsResponseDto;
 import net.causw.domain.exceptions.BadRequestException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -68,7 +69,7 @@ public class CalendarController {
         return calendarService.findCalendar();
     }
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(value = HttpStatus.CREATED)
     @Operation(summary = "캘린더 생성 API", description = "캘린더 생성 API 입니다.")
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
@@ -87,7 +88,7 @@ public class CalendarController {
         return calendarService.createCalendar(calendarCreateRequestDto, image);
     }
 
-    @PutMapping("/{calendarId}")
+    @PutMapping(value = "/{calendarId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "캘린더 수정 API", description = "캘린더 수정 API 입니다.")
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
             "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
