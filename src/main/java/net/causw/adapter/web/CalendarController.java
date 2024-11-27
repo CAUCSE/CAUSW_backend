@@ -88,7 +88,7 @@ public class CalendarController {
         return calendarService.createCalendar(calendarCreateRequestDto, image);
     }
 
-    @PutMapping("/{calendarId}")
+    @PutMapping(value = "/{calendarId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "캘린더 수정 API", description = "캘린더 수정 API 입니다.")
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
             "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")

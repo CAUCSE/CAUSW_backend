@@ -18,6 +18,7 @@ import net.causw.domain.exceptions.UnauthorizedException;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -301,7 +302,7 @@ public class UserController {
      * @param userUpdateDto
      * @return UserResponseDto
      */
-    @PutMapping
+    @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "사용자 정보 업데이트 API (완료)")
@@ -479,7 +480,7 @@ public class UserController {
         return this.userService.findAllAdmissions(userDetails.getUser(), name, pageNum);
     }
 
-    @PostMapping(value = "/admissions/apply")
+    @PostMapping(value = "/admissions/apply", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(value = HttpStatus.CREATED)
     @Operation(summary = "승인 신청서 작성 API (완료)", description = "가입 신청 api입니다.")
     @ApiResponses({
