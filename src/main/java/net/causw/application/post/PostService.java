@@ -214,9 +214,7 @@ public class PostService {
 
         List<UuidFile> uuidFileList = (attachImageList == null || attachImageList.isEmpty()) ?
                 new ArrayList<>() :
-                attachImageList.stream()
-                .map(multipartFile -> uuidFileService.saveFile(multipartFile, FilePath.POST))
-                .toList();
+                uuidFileService.saveFileList(attachImageList, FilePath.POST);
 
         Post post = Post.of(
                 postCreateRequestDto.getTitle(),
@@ -232,7 +230,6 @@ public class PostService {
         validatorBucket
                 .consistOf(UserStateValidator.of(creator.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(roles))
-                .consistOf(PostNumberOfAttachmentsValidator.of(attachImageList))
                 .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD))
                 .consistOf(UserRoleValidator.of(
                         roles,
