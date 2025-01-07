@@ -46,7 +46,7 @@ public class EventController {
             @ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
+            "@securityService.isAdminOrPresidentOrVicePresident()")
     public EventResponseDto createEvent(
             @RequestPart(value = "eventCreateRequestDto") @Valid EventCreateRequestDto eventCreateRequestDto,
             @RequestPart(value = "eventImage") MultipartFile eventImage
@@ -64,7 +64,7 @@ public class EventController {
             @ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
+            "@securityService.isAdminOrPresidentOrVicePresident()")
     public EventResponseDto updateEvent(
             @PathVariable("eventId") String eventId,
             @RequestPart(value = "eventUpdateRequestDto") @Valid EventUpdateRequestDto eventUpdateRequestDto,
@@ -83,7 +83,7 @@ public class EventController {
             @ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
+            "@securityService.isAdminOrPresidentOrVicePresident()")
     public EventResponseDto deleteEvent(@PathVariable("eventId") String eventId) {
         return eventService.deleteEvent(eventId);
     }

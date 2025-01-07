@@ -34,7 +34,7 @@ public class UserCouncilFeeController {
     @GetMapping("/export/excel")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
+            "@securityService.isAdminOrPresidentOrVicePresident()")
     @Operation(summary = "학생회비 엑셀 다운로드",
         description = "학생회비 엑셀 파일을 다운로드합니다.")
     @ApiResponses({
@@ -51,7 +51,7 @@ public class UserCouncilFeeController {
     @GetMapping("/list")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
+            "@securityService.isAdminOrPresidentOrVicePresident()")
     @Operation(summary = "학생회비 납부자 목록 조회",
         description = "학생회비 납부자 목록을 조회합니다.")
     @ApiResponses({
@@ -68,7 +68,7 @@ public class UserCouncilFeeController {
     @GetMapping("/info/{userCouncilFeeId}")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
+            "@securityService.isAdminOrPresidentOrVicePresident()")
     @Operation(summary = "학생회비 납부자 상세 조회",
         description = "학생회비 납부자 상세 정보를 조회합니다.")
     @ApiResponses({
@@ -85,7 +85,7 @@ public class UserCouncilFeeController {
     @PostMapping("/create-user")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
+            "@securityService.isAdminOrPresidentOrVicePresident()")
     @Operation(summary = "학생회비 납부자 등록(가입 유저 대상)",
         description = "동문네트워크 가입자 대상으로 학생회비 납부자를 등록합니다.")
     @ApiResponses({
@@ -106,7 +106,7 @@ public class UserCouncilFeeController {
     @PostMapping("/create-fake-user")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
+            "@securityService.isAdminOrPresidentOrVicePresident()")
     @Operation(summary = "학생회비 납부자 등록(미가입자 대상)",
         description = "동문네트워크 미 가입자 대상으로 학생회비 납부자를 등록합니다.")
     @ApiResponses({
@@ -127,7 +127,7 @@ public class UserCouncilFeeController {
     @PutMapping("/update-user")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
+            "@securityService.isAdminOrPresidentOrVicePresident()")
     @Operation(summary = "학생회비 납부자 수정(가입 유저 대상)",
         description = "학생회비 납부자를 수정합니다.(가입 유저 대상)")
     @ApiResponses({
@@ -153,7 +153,7 @@ public class UserCouncilFeeController {
     @PutMapping("/update-fake-user")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
+            "@securityService.isAdminOrPresidentOrVicePresident()")
     @Operation(summary = "학생회비 납부자 수정(미가입자 대상)",
         description = "학생회비 납부자를 수정합니다.")
     @ApiResponses({
@@ -179,7 +179,7 @@ public class UserCouncilFeeController {
     @DeleteMapping("/delete")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
+            "@securityService.isAdminOrPresidentOrVicePresident()")
     @Operation(summary = "학생회비 납부자 삭제",
         description = "학생회비 납부자를 삭제합니다.")
     @ApiResponses({
@@ -197,7 +197,7 @@ public class UserCouncilFeeController {
     @GetMapping("/getUserIdByStudentId")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
+            "@securityService.isAdminOrPresidentOrVicePresident()")
     @Operation(summary = "학번으로 사용자 id 조회",
         description = "학번으로 사용자 id를 조회합니다.")
     @ApiResponses({
@@ -214,7 +214,7 @@ public class UserCouncilFeeController {
     @GetMapping("/isCurrentSemesterApplied")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
+            "@securityService.isAdminOrPresidentOrVicePresident()")
     @Operation(summary = "특정 사용자가 현재 학생회비 적용 학기인지 여부 조회",
         description = "특정 사용자가 현재 학생회비 적용 학기인지 여부를 조회합니다.")
     @ApiResponses({

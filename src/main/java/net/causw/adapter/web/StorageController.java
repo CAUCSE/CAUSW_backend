@@ -18,7 +18,7 @@ public class StorageController {
     private final UuidFileService uuidFileService;
 
     @PostMapping(value = "/upload", consumes = "multipart/form-data")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@securityService.isAdmin()")
     public FileResponseDto post(
             @RequestPart("file") MultipartFile multipartFile,
             @RequestParam("type") FilePath filePath
