@@ -2,7 +2,6 @@ package net.causw.application.userAcademicRecord;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import net.causw.adapter.persistence.repository.semester.SemesterRepository;
 import net.causw.adapter.persistence.repository.user.UserRepository;
 import net.causw.adapter.persistence.repository.userAcademicRecord.UserAcademicRecordApplicationRepository;
 import net.causw.adapter.persistence.repository.userAcademicRecord.UserAcademicRecordLogRepository;
@@ -16,6 +15,7 @@ import net.causw.application.dto.userAcademicRecordApplication.*;
 import net.causw.application.dto.util.dtoMapper.SemesterDtoMapper;
 import net.causw.application.dto.util.dtoMapper.UserAcademicRecordDtoMapper;
 import net.causw.application.excel.UserAcademicRecordExcelService;
+import net.causw.application.semester.SemesterService;
 import net.causw.application.uuidFile.UuidFileService;
 import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
@@ -45,7 +45,7 @@ public class UserAcademicRecordApplicationService {
     private final UserAcademicRecordApplicationRepository userAcademicRecordApplicationRepository;
     private final UserAcademicRecordLogRepository userAcademicRecordLogRepository;
     private final UuidFileService uuidFileService;
-    private final SemesterRepository semesterRepository;
+    private final SemesterService semesterService;
     private final UserAcademicRecordExcelService userAcademicRecordExcelService;
 
     public void exportUserAcademicRecordListToExcel(HttpServletResponse response) {
@@ -81,10 +81,6 @@ public class UserAcademicRecordApplicationService {
         sheetDataMap.put("학적상태명단", userAcademicRecordInfoResponseDtoList);
 
         userAcademicRecordExcelService.generateExcel(response, fileName, headerStringList, sheetDataMap);
-    }
-
-    public CurrentSemesterResponseDto getCurrentSemesterYearAndType() {
-        return toCurrentSemesterResponseDto(getCurrentSemester());
     }
 
     public Page<UserAcademicRecordListResponseDto> getAllUserAcademicRecordPage(Pageable pageable) {
@@ -200,6 +196,28 @@ public class UserAcademicRecordApplicationService {
 
         user = getUser(user.getId());
 
+        // 대상 사용자의 변경 타겟 학적 상태가 재학인 경우, 대기 중인 이미 신청한 학적 정보 신청서가 있는지 확인하고, 있다면 닫음 처리
+        List<UserAcademicRecordApplication> awaitUserAcademicRecordApplicationList = this.getAwaitUserAcademicRecordApplicationList(user);
+
+        if (!awaitUserAcademicRecordApplicationList.isEmpty()) {
+            User logFinalUser = user;   // final 변수로 선언하여 람다식 내에서 사용 가능하도록 함
+            List<UserAcademicRecordLog> priovUserAcademicRecordLogList = new ArrayList<>();
+            awaitUserAcademicRecordApplicationList
+                    .forEach(userAcademicRecordApplication -> {
+                        userAcademicRecordApplication.setAcademicRecordRequestStatus(AcademicRecordRequestStatus.CLOSE);
+                        userAcademicRecordApplication.setRejectMessage(StaticValue.USER_CLOSED);
+                        UserAcademicRecordLog userAcademicRecordLog = UserAcademicRecordLog.createWithApplication(
+                                logFinalUser,
+                                userAcademicRecordApplication,
+                                StaticValue.USER_CLOSED
+                        );
+                        priovUserAcademicRecordLogList.add(userAcademicRecordLog);
+                    });
+            userAcademicRecordLogRepository.saveAll(priovUserAcademicRecordLogList);
+        }
+
+
+        // 신청한 학적 상태 변경 신청서 처리
         UserAcademicRecordLog userAcademicRecordLog;
         UserAcademicRecordApplication userAcademicRecordApplication;
 
@@ -270,7 +288,7 @@ public class UserAcademicRecordApplicationService {
     }
 
     public CurrentUserAcademicRecordApplicationResponseDto getCurrentUserAcademicRecordApplication(User user) {
-        Semester semester = getCurrentSemester();
+        Semester semester = semesterService.getCurrentSemesterEntity();
 
         UserAcademicRecordApplication userAcademicRecordApplication = getRecentAwaitOrRejectUserAcademicRecordApplication(user);
 
@@ -280,6 +298,9 @@ public class UserAcademicRecordApplicationService {
                 userAcademicRecordApplication.getAcademicRecordRequestStatus().equals(AcademicRecordRequestStatus.REJECT)
         );
     }
+
+    /*
+    FIXME: FE 미사용으로 주석 처리
 
     @Transactional
     public UserAcademicRecordApplicationResponseDto updateUserAcademicRecordApplication(
@@ -299,6 +320,8 @@ public class UserAcademicRecordApplicationService {
 
         return createUserAcademicRecordApplication(user, createUserAcademicRecordApplicationRequestDto, imageFileList);
     }
+
+     */
 
     // private method
 
@@ -329,15 +352,8 @@ public class UserAcademicRecordApplicationService {
                 ));
     }
 
-    private Semester getCurrentSemester() {
-        List<Semester> activeSemesterList = semesterRepository.findAllByIsCurrent(true);
-        if (activeSemesterList.isEmpty()) {
-            throw new InternalServerException(ErrorCode.ROW_IS_DUPLICATED, MessageUtil.PRIOR_SEMESTER_NOT_FOUND);
-        } else if (activeSemesterList.size() != 1) {
-            throw new InternalServerException(ErrorCode.ROW_IS_DUPLICATED, MessageUtil.ACTIVE_SEMESTER_IS_DUPLICATED);
-        }
-
-        return activeSemesterList.get(0);
+    private List<UserAcademicRecordApplication> getAwaitUserAcademicRecordApplicationList(User user) {
+        return userAcademicRecordApplicationRepository.findByUserAndAcademicRecordRequestStatus(user, AcademicRecordRequestStatus.AWAIT);
     }
 
     private UserAcademicRecordApplication getRecentAwaitOrRejectUserAcademicRecordApplication(User user) {

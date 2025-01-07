@@ -4,6 +4,7 @@ import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.board.BoardApply;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.application.dto.board.*;
+import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.post.PostContentDto;
 import net.causw.application.dto.user.UserResponseDto;
 import org.mapstruct.Mapper;
@@ -50,7 +51,8 @@ public interface BoardDtoMapper {
     @Mapping(target = "createRoles", source = "boardApply.createRoles")
     @Mapping(target = "isAnonymousAllowed", source = "boardApply.isAnonymousAllowed")
     @Mapping(target = "user", source = "user")
-    NormalBoardApplyResponseDto toNormalBoardApplyResponseDto(BoardApply boardApply, UserResponseDto user);
+    @Mapping(target = "circleResponseDto", source = "circleResponseDto")
+    NormalBoardApplyResponseDto toNormalBoardApplyResponseDto(BoardApply boardApply, UserResponseDto user, CircleResponseDto circleResponseDto);
 
     @Mapping(target = "id", source = "boardApply.id")
     @Mapping(target = "boardName", source = "boardApply.boardName")

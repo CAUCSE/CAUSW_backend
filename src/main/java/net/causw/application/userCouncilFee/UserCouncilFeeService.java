@@ -18,6 +18,8 @@ import net.causw.application.semester.SemesterService;
 import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
+import net.causw.domain.model.enums.user.UserState;
+import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
 import net.causw.domain.model.enums.userCouncilFee.CouncilFeeLogType;
 import net.causw.domain.model.util.MessageUtil;
 import org.springframework.data.domain.Page;
@@ -133,6 +135,10 @@ public class UserCouncilFeeService {
 
         if (userCouncilFeeRepository.existsByUser(targetUser)) {
             throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.USER_COUNCIL_FEE_INFO_ALREADY_EXISTS);
+        }
+
+        if (targetUser.getCurrentCompletedSemester() == null) {
+            throw new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_CURRENT_COMPLETE_SEMESTER_DOES_NOT_EXIST);
         }
 
         if (createUserCouncilFeeWithUserRequestDto.getIsRefunded() && createUserCouncilFeeWithUserRequestDto.getRefundedAt() == null) {

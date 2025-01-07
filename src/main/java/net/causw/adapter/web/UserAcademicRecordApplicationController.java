@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.semester.CurrentSemesterResponseDto;
 import net.causw.application.dto.userAcademicRecordApplication.*;
+import net.causw.application.semester.SemesterService;
 import net.causw.application.userAcademicRecord.UserAcademicRecordApplicationService;
 import net.causw.config.security.userdetails.CustomUserDetails;
 import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
@@ -26,6 +27,7 @@ import java.util.List;
 public class UserAcademicRecordApplicationController {
 
     private final UserAcademicRecordApplicationService userAcademicRecordApplicationService;
+    private final SemesterService semesterService;
 
     @GetMapping("/export")
     @ResponseStatus(value = HttpStatus.OK)
@@ -45,7 +47,7 @@ public class UserAcademicRecordApplicationController {
     @Operation(summary = "현재 학기 조회",
             description = "현재 학기를 조회합니다.")
     public CurrentSemesterResponseDto getCurrentSemesterYearAndType() {
-        return userAcademicRecordApplicationService.getCurrentSemesterYearAndType();
+        return semesterService.getCurrentSemester();
     }
 
     /**
@@ -225,13 +227,15 @@ public class UserAcademicRecordApplicationController {
         return userAcademicRecordApplicationService.createUserAcademicRecordApplication(userDetails.getUser(), createUserAcademicRecordApplicationRequestDto, imageFileList);
     }
 
-    /**
+    /*
+    FIXME: FE 미사용으로 주석 처리
+
      * 사용자 본인의 학적 증빙 서류 수정
      * @param userDetails
      * @param createUserAcademicRecordApplicationRequestDto
      * @param imageFileList
      * @return
-     */
+
     @PutMapping(value = "/application/update")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
@@ -244,5 +248,6 @@ public class UserAcademicRecordApplicationController {
     ) {
         return userAcademicRecordApplicationService.updateUserAcademicRecordApplication(userDetails.getUser(), createUserAcademicRecordApplicationRequestDto, imageFileList);
     }
+    */
 
 }
