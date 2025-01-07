@@ -57,6 +57,7 @@ public class MessageUtil {
     public static final String POST_DELETED = "삭제된 게시물입니다.";
     public static final String BOARD_NAME_ALREADY_EXISTS = "게시판 이름이 이미 존재합니다.";
     public static final String INVALID_BOARD_CATEGORY = "유효하지 않은 게시판 카테고리입니다.";
+    public static final String INVALID_FILE_EXTENSION = "지원하지 않는 파일 형식입니다.";
 
     // Like & favorite
     public static final String POST_ALREADY_LIKED = "좋아요를 이미 누른 게시글 입니다.";
@@ -134,7 +135,6 @@ public class MessageUtil {
     public static final String NUMBER_OF_FILES_EXCEEDED = "파일 개수가 초과되었습니다.";
     public static final String FILE_NAME_IS_NULL = "파일 이름이 비어있습니다.";
     public static final String FILE_EXTENSION_IS_NULL = "파일 확장자가 비어있습니다.";
-    public static final String INVALID_FILE_EXTENSION = "유효하지 않은 파일 확장자입니다.";
 
     // Semester
     public static final String PRIOR_SEMESTER_NOT_FOUND = "이전 학기를 찾을 수 없습니다.";

@@ -50,6 +50,7 @@ import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.post.*;
 import net.causw.application.dto.util.StatusUtil;
+import net.causw.application.storage.StorageManager;
 import net.causw.application.uuidFile.UuidFileService;
 import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
@@ -65,12 +66,14 @@ import net.causw.domain.model.enums.user.Role;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.validation.*;
+import org.aspectj.util.FileUtil;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.validation.Validator;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
@@ -208,13 +211,12 @@ public class PostService {
     public  PostCreateResponseDto createPost(User creator, PostCreateRequestDto postCreateRequestDto, List<MultipartFile> attachImageList) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         Set<Role> roles = creator.getRoles();
-
         Board board = getBoard(postCreateRequestDto.getBoardId());
         List<String> createRoles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
 
-        List<UuidFile> uuidFileList = (attachImageList == null || attachImageList.isEmpty()) ?
-                new ArrayList<>() :
-                uuidFileService.saveFileList(attachImageList, FilePath.POST);
+        List<UuidFile> uuidFileList = attachImageList == null || attachImageList.isEmpty()
+                ? new ArrayList<>()
+                : validateAndSaveFiles(attachImageList, FilePath.POST);
 
         Post post = Post.of(
                 postCreateRequestDto.getTitle(),
@@ -1080,5 +1082,49 @@ public class PostService {
                 .collect(Collectors.toList());
         return VoteDtoMapper.INSTANCE.toVoteOptionResponseDto(voteOption, voteRecords.size(), userResponseDtos);
     }
+
+    private String getExtension(String originFileName) {
+        String extension = StringUtils.getFilenameExtension(originFileName);
+        if (extension == null) {
+            throw new BadRequestException(ErrorCode.INVALID_FILE_EXTENSION, MessageUtil.FILE_EXTENSION_IS_NULL);
+        }
+        return extension.toLowerCase(); // 확장자는 소문자로 통일
+    }
+
+
+    private List<UuidFile> validateAndSaveFiles(List<MultipartFile> files, FilePath filePath) {
+        List<UuidFile> savedFiles = new ArrayList<>();
+        for (MultipartFile file : files) {
+            validateFile(file, filePath); // 파일 검증
+            savedFiles.add(uuidFileService.saveFile(file, filePath)); // 파일 저장
+        }
+        return savedFiles;
+    }
+
+    private void validateFile(MultipartFile file, FilePath filePath) {
+        if (file == null || file.getOriginalFilename() == null) {
+            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.FILE_IS_NULL);
+        }
+
+        // 확장자 검증
+        String extension = getExtension(file.getOriginalFilename());
+        boolean isValidExtension = filePath.getFileExtensionList().stream()
+                .flatMap(extType -> extType.getExtensionList().stream())
+                .anyMatch(extension::equalsIgnoreCase);
+
+        if (!isValidExtension) {
+            throw new BadRequestException(
+                    ErrorCode.INVALID_FILE_EXTENSION,
+                    MessageUtil.INVALID_FILE_EXTENSION + " 확장자: " + extension
+            );
+        }
+
+        // 파일 크기 검증
+        if (file.getSize() > filePath.getMaxFileSize()) {
+            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.FILE_SIZE_EXCEEDED);
+        }
+    }
+
+
 
 }
