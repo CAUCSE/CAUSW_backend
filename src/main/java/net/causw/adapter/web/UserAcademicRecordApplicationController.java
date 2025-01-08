@@ -14,6 +14,7 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -214,7 +215,7 @@ public class UserAcademicRecordApplicationController {
      * @param imageFileList
      * @return
      */
-    @PostMapping(value = "/application/create")
+    @PostMapping(value = "/application/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(value = HttpStatus.CREATED)
     @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
     @Operation(summary = "사용자 본인의 학적 증빙 서류 제출",
