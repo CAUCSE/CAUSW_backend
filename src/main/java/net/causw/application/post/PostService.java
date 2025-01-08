@@ -1092,15 +1092,6 @@ public class PostService {
     }
 
 
-    private List<UuidFile> validateAndSaveFiles(List<MultipartFile> files, FilePath filePath) {
-        List<UuidFile> savedFiles = new ArrayList<>();
-        for (MultipartFile file : files) {
-            validateFile(file, filePath); // 파일 검증
-            savedFiles.add(uuidFileService.saveFile(file, filePath)); // 파일 저장
-        }
-        return savedFiles;
-    }
-
     private void validateFile(MultipartFile file, FilePath filePath) {
         if (file == null || file.getOriginalFilename() == null) {
             throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.FILE_IS_NULL);
@@ -1124,6 +1115,16 @@ public class PostService {
             throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.FILE_SIZE_EXCEEDED);
         }
     }
+
+    private List<UuidFile> validateAndSaveFiles(List<MultipartFile> files, FilePath filePath) {
+        List<UuidFile> savedFiles = new ArrayList<>();
+        for (MultipartFile file : files) {
+            validateFile(file, filePath); // 파일 검증
+            savedFiles.add(uuidFileService.saveFile(file, filePath)); // 파일 저장
+        }
+        return savedFiles;
+    }
+
 
 
 
