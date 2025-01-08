@@ -60,6 +60,7 @@ public interface PostRepository extends JpaRepository<Post, String> {
         Long childCommentCount = countChildCommentsByPostId(postId);
         return commentCount + childCommentCount;
     }
+    Optional<Post> findByIdAndIsDeletedFalse(String postId);
 
     Optional<Post> findByForm(Form form);
 }

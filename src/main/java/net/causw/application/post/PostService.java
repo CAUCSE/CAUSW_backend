@@ -389,7 +389,7 @@ public class PostService {
             if (roles.stream().noneMatch(role -> EnumSet.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT).contains(role)) && !post.getWriter().getId().equals(deleter.getId())) {
                 throw new UnauthorizedException(
                         ErrorCode.API_NOT_ALLOWED,
-                        "접근 권한이 없습니다."
+                        MessageUtil.DOES_NOT_HAVE_PERMISSION
                 );
             }
         }
@@ -975,7 +975,7 @@ public class PostService {
     }
 
     private Post getPost(String postId) {
-        return postRepository.findById(postId).orElseThrow(
+        return postRepository.findByIdAndIsDeletedFalse(postId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.POST_NOT_FOUND
