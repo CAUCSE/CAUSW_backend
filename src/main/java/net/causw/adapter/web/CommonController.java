@@ -52,7 +52,7 @@ public class CommonController {
 
     @PostMapping("/api/v1/flag")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@securityService.isAdmin()")
     public Boolean createFlag(
             @RequestParam("key") String key,
             @RequestParam("value") Boolean value
@@ -65,7 +65,7 @@ public class CommonController {
 
     @PutMapping("/api/v1/flag")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@securityService.isAdmin()")
     public Boolean updateFlag(
             @RequestParam("key") String key,
             @RequestParam("value") Boolean value

@@ -52,7 +52,7 @@ public class LockerController {
     @Operation(summary = "사물함 생성 Api(관리자/회장 전용)", description = "사물함을 생성하는 Api입니다.")
     @ResponseStatus(value = HttpStatus.CREATED)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
+            "@securityService.isAdminOrPresidentOrVicePresident()")
     public LockerResponseDto create(
             @Valid @RequestBody LockerCreateRequestDto lockerCreateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -80,7 +80,7 @@ public class LockerController {
     @PutMapping(value = "/{lockerId}/move")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
+            "@securityService.isAdminOrPresidentOrVicePresident()")
     @Operation(summary = "사물함 위치 이동 Api(관리자/회장 전용)", description = "사물함의 위치(locker location)를 이동(변경)시키는 Api입니다. ex) 1번 사물함에 있어서 1층 1번 -> 2층 1번, 층만 바뀜")
     public LockerResponseDto move(
             @PathVariable("lockerId") String lockerId,
@@ -97,7 +97,7 @@ public class LockerController {
     @DeleteMapping(value = "/{lockerId}")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
+            "@securityService.isAdminOrPresidentOrVicePresident()")
     @Operation(summary = "사물함 삭제 Api(관리자/회장 전용)", description = "사물함을 삭제하는 Api입니다.")
     public LockerResponseDto delete(
             @PathVariable("lockerId") String lockerId,
@@ -129,7 +129,7 @@ public class LockerController {
     @Operation(summary = "사물함 위치 생성 API(관리자/회장 전용)", description = "사물함 특정 층 생성 API 입니다.")
     @ResponseStatus(value = HttpStatus.CREATED)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
+            "@securityService.isAdminOrPresidentOrVicePresident()")
     public LockerLocationResponseDto createLocation(
             @Valid @RequestBody LockerLocationCreateRequestDto lockerLocationCreateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -141,7 +141,7 @@ public class LockerController {
     @Operation(summary = "사물함 위치 업데이트 API(관리자/회장 전용)", description = "사물함 특정 층 업데이트 API 입니다.")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
+            "@securityService.isAdminOrPresidentOrVicePresident()")
     public LockerLocationResponseDto updateLocation(
             @PathVariable("locationId") String locationId,
             @Valid @RequestBody LockerLocationUpdateRequestDto lockerLocationUpdateRequestDto,
@@ -158,7 +158,7 @@ public class LockerController {
     @Operation(summary = "사물함 위치 삭제 API(관리자/회장 전용)", description = "사물함 특정 층 삭제 API 입니다.")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
+            "@securityService.isAdminOrPresidentOrVicePresident()")
     public LockerLocationResponseDto deleteLocation(
             @PathVariable("locationId") String locationId,
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -170,7 +170,7 @@ public class LockerController {
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "사물함 로그 조회 API(관리자/회장 전용)", description = "사물함 로그를 조회하는 API입니다.")
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
+            "@securityService.isAdminOrPresidentOrVicePresident()")
     public List<LockerLogResponseDto> findLog(
             @PathVariable("lockerId") String lockerId
     ) {
@@ -181,7 +181,7 @@ public class LockerController {
     @Operation(summary = "사물함 만료 기한 설정 Api(관리자/회장 전용)", description = "사물함 만료 기한을 설정하는 API입니다.(학생회장만 가능)")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
+            "@securityService.isAdminOrPresidentOrVicePresident()")
     public void setExpireDate(
             @Valid @RequestBody LockerExpiredAtRequestDto lockerExpiredAtRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -193,7 +193,7 @@ public class LockerController {
     @Operation(summary = "사물함 전체 생성 API(관리자/회장 전용)" , description = "현재 존재하는 모든 사물함을 생성하는 API입니다.")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
+            "@securityService.isAdminOrPresidentOrVicePresident()")
     public void createAllLockers(@AuthenticationPrincipal CustomUserDetails userDetails){
         this.lockerService.createAllLockers(userDetails.getUser());
     }
