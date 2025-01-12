@@ -13,6 +13,7 @@ public class MessageUtil {
     public static final String INVALID_TOKEN = "잘못된 AccessToken 입니다";
     public static final String EXPIRED_TOKEN = "만료된 AccessToken 입니다";
     public static final String DOES_NOT_HAVE_PERMISSION = "권한이 없습니다.";
+    public static final String INVALID_USER_DATA_REQUEST = "유저의 가입 및 수정 정보가 유효하지 않습니다.";
 
     // Form
     public static final String IS_NEED_COUNCIL_FEE_REQUIRED = "학생회비 납부 여부를 선택해 주세요.";
