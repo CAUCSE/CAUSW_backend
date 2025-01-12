@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.file.FileResponseDto;
 import net.causw.application.uuidFile.UuidFileService;
 import net.causw.domain.model.enums.uuidFile.FilePath;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,8 +18,8 @@ public class StorageController {
 
     private final UuidFileService uuidFileService;
 
-    @PostMapping(value = "/upload", consumes = "multipart/form-data")
-    @PreAuthorize("@securityService.isAdmin()")
+    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('ADMIN')")
     public FileResponseDto post(
             @RequestPart("file") MultipartFile multipartFile,
             @RequestParam("type") FilePath filePath
