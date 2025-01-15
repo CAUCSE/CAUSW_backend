@@ -68,6 +68,7 @@ import net.causw.domain.validation.UserRoleWithoutAdminValidator;
 import net.causw.domain.validation.UserStateIsDropOrIsInActiveValidator;
 import net.causw.domain.validation.UserStateIsNotDropAndActiveValidator;
 import net.causw.domain.validation.UserStateValidator;
+import net.causw.domain.validation.PhoneNumberFormatValidator;
 import net.causw.domain.validation.ValidatorBucket;
 import net.causw.infrastructure.GoogleMailSender;
 import net.causw.infrastructure.PasswordGenerator;
@@ -574,6 +575,7 @@ public class UserService {
                 .consistOf(ConstraintValidator.of(user, this.validator))
                 .consistOf(PasswordFormatValidator.of(userCreateRequestDto.getPassword()))
                 .consistOf(AdmissionYearValidator.of(userCreateRequestDto.getAdmissionYear()))
+                .consistOf(PhoneNumberFormatValidator.of(userCreateRequestDto.getPhoneNumber()))
                 .validate();
 
         return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
