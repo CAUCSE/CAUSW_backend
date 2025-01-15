@@ -1,6 +1,7 @@
 package net.causw.adapter.persistence.repository.user;
 
 import net.causw.adapter.persistence.user.UserAdmission;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,5 +26,10 @@ public interface UserAdmissionRepository extends JpaRepository<UserAdmission, St
             "LEFT JOIN tb_user AS u ON ua.user_id = u.id " +
             "LEFT JOIN tb_user_admission_attach_image_uuid_file AS uai ON ua.id = uai.user_admission_id " +
             "WHERE u.state = :user_state AND (:name IS NULL OR u.name LIKE %:name%) ORDER BY ua.created_at DESC", nativeQuery = true)
-    Page<UserAdmission> findAllWithName(@Param("user_state") String userState, @Param("name") String name, Pageable pageable);
+    Page<UserAdmission> findAllWithStateAneName(@Param("user_state") String userState, @Param("name") String name, Pageable pageable);
+
+    @NotNull Page<UserAdmission> findAll(@NotNull Pageable pageable);
+
+    Page<UserAdmission> findAllByUserName(String name, Pageable pageable);
+
 }

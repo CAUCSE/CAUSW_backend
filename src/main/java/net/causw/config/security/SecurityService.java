@@ -61,42 +61,86 @@ public class SecurityService {
         return isActiveAndNotNoneUser() && isAcademicRecordCertified();
     }
 
-    public boolean isAdminOrPresidentOrVicePresident() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return false;
+    public boolean isAdmin() {
+        Set<String> userRoleSet = getUserRoleSet();
+
+        if (userRoleSet != null) {
+            return userRoleSet.contains(Role.ADMIN.getValue());
         }
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        return false;
+    }
 
-        Set<String> userRoleSet = userDetails.getUser().getRoles()
-                .stream()
-                .map(Role::getValue)
-                .collect(Collectors.toSet());
+    public boolean isAdminOrPresidentOrVicePresident() {
+        Set<String> userRoleSet = getUserRoleSet();
 
-        return userRoleSet.contains(Role.ADMIN.getValue()) ||
-                userRoleSet.contains(Role.PRESIDENT.getValue()) ||
-                userRoleSet.contains(Role.VICE_PRESIDENT.getValue());
+        if (userRoleSet != null) {
+            return userRoleSet.contains(Role.ADMIN.getValue()) ||
+                    userRoleSet.contains(Role.PRESIDENT.getValue()) ||
+                    userRoleSet.contains(Role.VICE_PRESIDENT.getValue());
+        }
+        return false;
     }
 
     public boolean isAdminOrPresidentOrVicePresidentOrCircleLeader() {
+        Set<String> userRoleSet = getUserRoleSet();
+
+        if (userRoleSet != null) {
+            return userRoleSet.contains(Role.ADMIN.getValue()) ||
+                    userRoleSet.contains(Role.PRESIDENT.getValue()) ||
+                    userRoleSet.contains(Role.VICE_PRESIDENT.getValue()) ||
+                    userRoleSet.contains(Role.LEADER_CIRCLE.getValue());
+        }
+        return false;
+    }
+
+    public boolean isCircleLeader() {
+        Set<String> userRoleSet = getUserRoleSet();
+
+        if (userRoleSet != null) {
+            return userRoleSet.contains(Role.LEADER_CIRCLE.getValue());
+        }
+        return false;
+    }
+
+    public boolean isAbleToLeave() {
+        Set<String> userRoleSet = getUserRoleSet();
+
+        if (userRoleSet != null) {
+            return userRoleSet.contains(Role.COMMON.getValue()) ||
+                    userRoleSet.contains(Role.PROFESSOR.getValue());
+        }
+        return false;
+    }
+
+    public boolean isSpecialPrivileged() {
+        Set<String> userRoleSet = getUserRoleSet();
+
+        if (userRoleSet != null) {
+            return userRoleSet.contains(Role.ADMIN.getValue()) ||
+                    userRoleSet.contains(Role.PRESIDENT.getValue()) ||
+                    userRoleSet.contains(Role.VICE_PRESIDENT.getValue()) ||
+                    userRoleSet.contains(Role.COUNCIL.getValue()) ||
+                    userRoleSet.contains(Role.LEADER_CIRCLE.getValue()) ||
+                    userRoleSet.contains(Role.LEADER_1.getValue()) ||
+                    userRoleSet.contains(Role.LEADER_2.getValue()) ||
+                    userRoleSet.contains(Role.LEADER_3.getValue()) ||
+                    userRoleSet.contains(Role.LEADER_4.getValue()) ||
+                    userRoleSet.contains(Role.LEADER_ALUMNI.getValue());
+        }
+        return false;
+    }
+
+    private Set<String> getUserRoleSet() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
-            return false;
+            return null;
         }
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        Set<String> userRoleSet = userDetails.getUser().getRoles()
+        return userDetails.getUser().getRoles()
                 .stream()
                 .map(Role::getValue)
                 .collect(Collectors.toSet());
-
-        return userRoleSet.contains(Role.ADMIN.getValue()) ||
-                userRoleSet.contains(Role.PRESIDENT.getValue()) ||
-                userRoleSet.contains(Role.VICE_PRESIDENT.getValue()) ||
-                userRoleSet.contains(Role.LEADER_CIRCLE.getValue());
     }
 
-    private int convertSemesterToGrade(int semester) {
-        return (semester + 1) / 2;
-    }
 }

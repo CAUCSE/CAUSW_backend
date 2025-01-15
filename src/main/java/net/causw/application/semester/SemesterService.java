@@ -36,7 +36,7 @@ public class SemesterService {
     public CurrentSemesterResponseDto getCurrentSemester() {
         List<Semester> currentSemesterList = semesterRepository.findAllByIsCurrent(true);
         if (currentSemesterList.isEmpty()) {
-            return null;
+            throw new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.CURRENT_SEMESTER_DOES_NOT_EXIST);
         }
         return toCurrentSemesterResponseDto(currentSemesterList.get(0));
     }
@@ -44,7 +44,7 @@ public class SemesterService {
     public Semester getCurrentSemesterEntity() {
         List<Semester> currentSemesterList = semesterRepository.findAllByIsCurrent(true);
         if (currentSemesterList.isEmpty()) {
-            return null;
+            throw new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.CURRENT_SEMESTER_DOES_NOT_EXIST);
         }
         return currentSemesterList.get(0);
     }

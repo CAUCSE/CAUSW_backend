@@ -13,6 +13,7 @@ public class MessageUtil {
     public static final String INVALID_TOKEN = "잘못된 AccessToken 입니다";
     public static final String EXPIRED_TOKEN = "만료된 AccessToken 입니다";
     public static final String DOES_NOT_HAVE_PERMISSION = "권한이 없습니다.";
+    public static final String INVALID_USER_DATA_REQUEST = "유저의 가입 및 수정 정보가 유효하지 않습니다.";
 
     // Form
     public static final String IS_NEED_COUNCIL_FEE_REQUIRED = "학생회비 납부 여부를 선택해 주세요.";
@@ -102,6 +103,7 @@ public class MessageUtil {
     public static final String USER_ADMISSION_MUST_HAVE_IMAGE = "입학 증빙 사진은 필수 입니다.";
     public static final String STUDENT_ID_ALREADY_EXIST = "이미 존재하는 학번입니다.";
     public static final String PHONE_NUMBER_ALREADY_EXIST = "이미 존재하는 전화번호입니다.";
+    public static final String INVALID_USER_APPLICATION_USER_STATE = "사용자 인증을 할 수 없는 상태의 사용자입니다(AWAIT / REJECT 상태만 인증 가능합니다).";
 
     // Flag
     public static final String FLAG_UPDATE_FAILED = "플래그 업데이트에 실패했습니다.";
@@ -138,6 +140,7 @@ public class MessageUtil {
     // Semester
     public static final String PRIOR_SEMESTER_NOT_FOUND = "이전 학기를 찾을 수 없습니다.";
     public static final String ACTIVE_SEMESTER_IS_DUPLICATED = "활성화된 학기가 중복되어 있습니다.";
+    public static final String CURRENT_SEMESTER_DOES_NOT_EXIST = "현재 학기가 존재하지 않습니다. 현재 학기를 등록해주세요";
 
     // UserCouncilFee
     public static final String INVALID_USER_COUNCIL_FEE_INFO = "유효하지 않은 학생회비 납부자 정보입니다.";
@@ -169,4 +172,5 @@ public class MessageUtil {
     public static final String FAIL_TO_CRAWL_CAU_SW_NOTICE_SITE = "소프트웨어학부 공지사항 크롤링 실패";
 
 
+    public static final String USER_CURRENT_COMPLETE_SEMESTER_DOES_NOT_EXIST = "사용자의 현재 등록 완료 학기 정보가 존재하지 않습니다.";
 }
