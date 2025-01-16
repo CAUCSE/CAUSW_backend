@@ -107,7 +107,12 @@ public class PostService {
         Post post = getPost(postId);
         ValidatorBucket validatorBucket = initializeValidator(user, post.getBoard());
         validatorBucket.validate();
-        return toPostResponseDtoExtended(post, user);
+
+        PostResponseDto postResponseDto = toPostResponseDtoExtended(post, user);
+        if(postResponseDto.getIsAnonymous()){
+            postResponseDto.updateAnonymousPost();
+        }
+        return postResponseDto;
     }
 
     public BoardPostsResponseDto findAllPost(
@@ -305,6 +310,9 @@ public class PostService {
 
         Board board = getBoard(postCreateWithFormRequestDto.getBoardId());
         List<String> createRoles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
+        System.out.println(createRoles);
+        System.out.println("Creator Roles: " + roles);
+
         if (board.getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
             validatorBucket
                     .consistOf(UserRoleValidator.of(
@@ -332,6 +340,11 @@ public class PostService {
                 uuidFileList
         );
 
+        Set<Role> targetRoleSet = Arrays.stream(board.getCreateRoles().split(","))
+                .map(String::trim) // 공백 제거
+                .map(Role::of) // Optional로 변환
+                .collect(Collectors.toSet());
+        System.out.println(targetRoleSet);
         validatorBucket
                 .consistOf(UserStateValidator.of(creator.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(roles))
@@ -340,9 +353,20 @@ public class PostService {
                 .consistOf(UserRoleValidator.of(
                         roles,
                         createRoles.stream()
-                                .map(Role::of)
+                                .map(String::trim) // 공백 제거
+                                .map(roleString -> {
+                                    try {
+                                        return Role.of(roleString);
+                                    } catch (BadRequestException e) {
+                                        // 잘못된 역할은 무시하고 로그 출력
+                                        System.out.println("Invalid role found: " + roleString);
+                                        return null;
+                                    }
+                                })
+                                .filter(Objects::nonNull) // 유효한 역할만 수집
                                 .collect(Collectors.toSet())
-                ));
+                ))
+                .validate();
 
         Optional<Circle> circles = Optional.ofNullable(board.getCircle());
         circles
@@ -873,7 +897,7 @@ public class PostService {
                         ).findFirst()
                         .orElse(null);
 
-        return PostDtoMapper.INSTANCE.toPostsResponseDto(
+        PostsResponseDto postsResponseDto = PostDtoMapper.INSTANCE.toPostsResponseDto(
                 post,
                 postRepository.countAllCommentByPost_Id(post.getId()),
                 getNumOfPostLikes(post),
@@ -882,6 +906,12 @@ public class PostService {
                 StatusUtil.isPostVote(post),
                 StatusUtil.isPostForm(post)
         );
+
+        if(postsResponseDto.getIsAnonymous()){
+            postsResponseDto.updateAnonymousPosts();
+        }
+
+        return postsResponseDto;
     }
 
     private PostResponseDto toPostResponseDtoExtended(Post post, User user) {
