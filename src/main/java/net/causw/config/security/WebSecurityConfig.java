@@ -68,6 +68,7 @@ public class WebSecurityConfig {
                                 "/api/v1/users/password/find",
                                 "/api/v1/users/user-id/find",
                                 "/swagger-ui/**",
+                                "/api/v1/fcm/send",
                                 "/v3/api-docs/**",
                                 "/actuator/**"
                         ).permitAll()
