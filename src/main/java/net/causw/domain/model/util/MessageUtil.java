@@ -152,6 +152,9 @@ public class MessageUtil {
     // CouncilFeeFakeUser
     public static final String INVALID_COUNCIL_FEE_FAKE_USER_INFO = "유효하지 않은 가짜 사용자 정보입니다.";
 
+    // Ceremony
+    public static final String CEREMONY_NOT_FOUND = "존재하지 않는 경조사입니다.";
+
     // Vote
     public static final String VOTE_OPTION_NOT_FOUND = "존재하지 않는 투표 옵션입니다.";
     public static final String VOTE_OPTION_NOT_PROVIDED = "투표 옵션이 제공되지 않았습니다.";
