@@ -46,5 +46,12 @@ jobs:
 
       # 테스트 실행
       - name: Test with Gradle
-        run: ./gradlew test # 실패 시 actions 중지
+        run: ./gradlew test
         shell: bash
+
+      # 테스트 결과 출력
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: ${{ always() }}
+        with:
+          files: build/test-results/**/*.xml
