@@ -44,14 +44,7 @@ jobs:
         run: chmod +x ./gradlew
         shell: bash
 
-      # Build -> jar 파일 생성
-      - name: Build with Gradle
-        run: ./gradlew clean build -x test
+      # 테스트 실행
+      - name: Test with Gradle
+        run: ./gradlew test # 실패 시 actions 중지
         shell: bash
-
-      - name: Upload Build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts
-          path: |
-            build/libs/*.jar
