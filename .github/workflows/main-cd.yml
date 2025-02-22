@@ -39,6 +39,16 @@ jobs:
           echo "$APPLICATION_FILE" > $DIR/$APPLICATION_FILE_NAME
           echo "$APPLICATION_PROD_FILE" > $DIR/$APPLICATION_PROD_FILE_NAME
 
+      # 파이어베이스 key 파일 추가
+      - name: Add firebase key
+        env:
+          FIREBASE_KEY: ${{ secrets.FIREBASE_KEY }}
+          FIREBASE_KEY_FILENAME: dongnae_firebase_key.json
+          DIR: ./src/main/resources
+        run: |
+          touch $DIR/$FIREBASE_KEY_FILENAME
+          echo "$FIREBASE_KEY" > $DIR/$FIREBASE_KEY_FILENAME
+
       # gradlew 실행 권한 부여
       - name: Run chmod to make gradlew executable
         run: chmod +x ./gradlew
