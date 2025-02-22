@@ -15,11 +15,11 @@ jobs:
     steps:
       # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
       - name: Checkout branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # java 버전 세팅(JDK 17)
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'zulu'
@@ -44,14 +44,14 @@ jobs:
         run: chmod +x ./gradlew
         shell: bash
 
-      # Build -> jar 파일 생성
-      - name: Build with Gradle
-        run: ./gradlew clean build -x test
+      # 테스트 실행
+      - name: Test with Gradle
+        run: ./gradlew test
         shell: bash
 
-      - name: Upload Build artifacts
-        uses: actions/upload-artifact@v3
+      # 테스트 결과 출력
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: ${{ always() }}
         with:
-          name: build-artifacts
-          path: |
-            build/libs/*.jar
+          files: ./build/test-results/**/*.xml

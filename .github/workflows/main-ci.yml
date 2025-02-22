@@ -1,8 +1,8 @@
-name: 동문네트워크 백엔드 CI 테스트 자동화(qa branch PR 시 작동)
+name: 동문네트워크 백엔드 CI 테스트 자동화(main branch PR 시 작동)
 
 on:
   pull_request:
-    branches: [ "qa" ]
+    branches: [ "main" ]
 
 permissions:
   contents: read
@@ -27,31 +27,31 @@ jobs:
       # git ignore한 yml 파일들 github secret에서 복사해 오기
       - name: Copy secret
         env:
-          APPLICATION_FILE: ${{ secrets.APPLICATION_PROFILE_QA }}
-          APPLICATION_QA_FILE: ${{ secrets.APPLICATION_QA }}
+          APPLICATION_FILE: ${{ secrets.APPLICATION_PROFILE_PROD }}
+          APPLICATION_PROD_FILE: ${{secrets.APPLICATION_PROD}}
           DIR: ./src/main/resources
 
           APPLICATION_FILE_NAME: application.yml
-          APPLICATION_QA_FILE_NAME: application-qa.yml
+          APPLICATION_PROD_FILE_NAME: application-prod.yml
         run: |
           touch $DIR/$APPLICATION_FILE_NAME
-          touch $DIR/$APPLICATION_QA_FILE_NAME
+          touch $DIR/$APPLICATION_PROD_FILE_NAME
           echo "$APPLICATION_FILE" > $DIR/$APPLICATION_FILE_NAME
-          echo "$APPLICATION_QA_FILE" > $DIR/$APPLICATION_QA_FILE_NAME
+          echo "$APPLICATION_PROD_FILE" > $DIR/$APPLICATION_PROD_FILE_NAME
 
       # gradlew 실행 권한 부여
       - name: Run chmod to make gradlew executable
         run: chmod +x ./gradlew
         shell: bash
 
-      # Build -> jar 파일 생성
-      - name: Build with Gradle
-        run: ./gradlew clean build -x test
+      # 테스트 실행
+      - name: Test with Gradle
+        run: ./gradlew test
         shell: bash
 
-      - name: Upload Build artifacts
-        uses: actions/upload-artifact@v3
+      # 테스트 결과 출력
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: ${{ always() }}
         with:
-          name: build-artifacts
-          path: |
-            build/libs/*.jar
+          files: ./build/test-results/**/*.xml
