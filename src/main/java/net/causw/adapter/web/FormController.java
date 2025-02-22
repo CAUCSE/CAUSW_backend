@@ -101,7 +101,7 @@ public class FormController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "동아리 신청서 답변 유저별 조회", description = "각 유저의 동아리 신청서에 대한 답변을 조회합니다.")
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT', 'LEADER_CIRCLE')")
+            "@securityService.isAdminOrPresidentOrVicePresidentOrCircleLeader()")
     public List<UserReplyResponseDto> findReplyByUserAndCircle(
             @PathVariable(name = "userId") String userId,
             @PathVariable(name = "circleId") String circleId
