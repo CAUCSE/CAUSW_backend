@@ -96,6 +96,9 @@ public class User extends BaseEntity {
     @Builder.Default
     private Boolean isV2 = true;
 
+    @Column(name = "fcm_token")
+    private String fcmToken;
+
     public void delete() {
         this.email = "deleted_" + this.getId();
         this.name = "탈퇴한 사용자";

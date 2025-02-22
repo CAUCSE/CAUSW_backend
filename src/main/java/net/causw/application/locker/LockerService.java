@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.locker.Locker;
 import net.causw.adapter.persistence.locker.LockerLocation;
 import net.causw.adapter.persistence.locker.LockerLog;
+import net.causw.adapter.persistence.locker.LockerName;
 import net.causw.adapter.persistence.repository.locker.LockerLocationRepository;
 import net.causw.adapter.persistence.repository.locker.LockerLogRepository;
 import net.causw.adapter.persistence.repository.locker.LockerRepository;
@@ -273,7 +274,7 @@ public class LockerService {
         }
 
         LockerLocation lockerLocation = LockerLocation.of(
-                lockerLocationCreateRequestDto.getName()
+                LockerName.valueOf(lockerLocationCreateRequestDto.getName())
         );
 
         ValidatorBucket.of()
@@ -282,7 +283,7 @@ public class LockerService {
                 .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .consistOf(ConstraintValidator.of(lockerLocation, this.validator))
                 .validate();
-        LockerLocation location = LockerLocation.of(lockerLocationCreateRequestDto.getName());
+        LockerLocation location = LockerLocation.of(LockerName.valueOf(lockerLocationCreateRequestDto.getName()));
 
         return LockerLocationResponseDto.of(
                 location,
@@ -315,7 +316,7 @@ public class LockerService {
         }
 
         lockerLocation.update(
-                lockerLocationRequestDto.getName()
+                LockerName.valueOf(lockerLocationRequestDto.getName())
         );
 
         ValidatorBucket.of()
@@ -411,13 +412,13 @@ public class LockerService {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
 
-        LockerLocation lockerLocationSecondFloor = LockerLocation.of("Second Floor");
+        LockerLocation lockerLocationSecondFloor = LockerLocation.of(LockerName.valueOf("Second"));
         lockerLocationRepository.save(lockerLocationSecondFloor);
 
-        LockerLocation lockerLocationThirdFloor = LockerLocation.of("Third Floor");
+        LockerLocation lockerLocationThirdFloor = LockerLocation.of(LockerName.valueOf("Third"));
         lockerLocationRepository.save(lockerLocationThirdFloor);
 
-        LockerLocation lockerLocationFourthFloor = LockerLocation.of("Fourth Floor");
+        LockerLocation lockerLocationFourthFloor = LockerLocation.of(LockerName.valueOf("Fourth"));
         lockerLocationRepository.save(lockerLocationFourthFloor);
 
         createLockerByLockerLocationAndEndLockerNumber(lockerLocationSecondFloor, validatorBucket, user, 136L);
