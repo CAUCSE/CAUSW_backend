@@ -39,7 +39,7 @@
         <appender name="DISCORD" class="com.github.napstr.logback.DiscordAppender">
             <webhookUri>${DISCORD_WEBHOOK_URL}</webhookUri>
             <layout class="ch.qos.logback.classic.PatternLayout">
-                <pattern>%d{HH:mm:ss} [%thread] [%-5level] %logger{36} - %msg%n```%ex{105}```</pattern>
+                <pattern>%d{HH:mm:ss} [%thread] [%-5level] %logger{36} - %msg%n```%ex{10}```</pattern>
             </layout>
             <username>BACKEND-ERROR!</username>
             <tts>false</tts>
