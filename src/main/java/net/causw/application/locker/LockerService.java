@@ -412,13 +412,13 @@ public class LockerService {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
 
-        LockerLocation lockerLocationSecondFloor = LockerLocation.of(LockerName.valueOf("Second"));
+        LockerLocation lockerLocationSecondFloor = LockerLocation.of(LockerName.valueOf("SECOND"));
         lockerLocationRepository.save(lockerLocationSecondFloor);
 
-        LockerLocation lockerLocationThirdFloor = LockerLocation.of(LockerName.valueOf("Third"));
+        LockerLocation lockerLocationThirdFloor = LockerLocation.of(LockerName.valueOf("THIRD"));
         lockerLocationRepository.save(lockerLocationThirdFloor);
 
-        LockerLocation lockerLocationFourthFloor = LockerLocation.of(LockerName.valueOf("Fourth"));
+        LockerLocation lockerLocationFourthFloor = LockerLocation.of(LockerName.valueOf("FOURTH"));
         lockerLocationRepository.save(lockerLocationFourthFloor);
 
         createLockerByLockerLocationAndEndLockerNumber(lockerLocationSecondFloor, validatorBucket, user, 136L);
