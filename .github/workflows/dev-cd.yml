@@ -1,8 +1,8 @@
-name: Caucse Main Java CI/DE with Gradle(main branch)
+name: Caucse DEV Java CI/DE with Gradle(dev branch)
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "dev" ]
 
 permissions:
   contents: read
@@ -27,17 +27,27 @@ jobs:
       # git ignore한 yml 파일들 github secret에서 복사해 오기
       - name: Copy secret
         env:
-          APPLICATION_FILE: ${{ secrets.APPLICATION_PROFILE_PROD }}
-          APPLICATION_PROD_FILE: ${{secrets.APPLICATION_PROD}}
+          APPLICATION_FILE: ${{ secrets.APPLICATION_PROFILE_DEV }}
+          APPLICATION_DEV_FILE: ${{ secrets.APPLICATION_DEV }}
           DIR: ./src/main/resources
 
           APPLICATION_FILE_NAME: application.yml
-          APPLICATION_PROD_FILE_NAME: application-prod.yml
+          APPLICATION_DEV_FILE_NAME: application-dev.yml
         run: |
           touch $DIR/$APPLICATION_FILE_NAME
-          touch $DIR/$APPLICATION_PROD_FILE_NAME
+          touch $DIR/$APPLICATION_DEV_FILE_NAME
           echo "$APPLICATION_FILE" > $DIR/$APPLICATION_FILE_NAME
-          echo "$APPLICATION_PROD_FILE" > $DIR/$APPLICATION_PROD_FILE_NAME
+          echo "$APPLICATION_DEV_FILE" > $DIR/$APPLICATION_DEV_FILE_NAME
+
+      # 파이어베이스 key 파일 추가
+      - name: Add firebase key
+        env:
+          FIREBASE_KEY: ${{ secrets.FIREBASE_KEY }}
+          FIREBASE_KEY_FILENAME: dongnae_firebase_key.json
+          DIR: ./src/main/resources
+        run: |
+          touch $DIR/$FIREBASE_KEY_FILENAME
+          echo "$FIREBASE_KEY" > $DIR/$FIREBASE_KEY_FILENAME
 
       # gradlew 실행 권한 부여
       - name: Run chmod to make gradlew executable
@@ -50,7 +60,7 @@ jobs:
         shell: bash
 
       - name: Upload Build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
           path: |
@@ -64,7 +74,7 @@ jobs:
 
     steps:
       - name: Download build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-artifacts
 
@@ -72,29 +82,29 @@ jobs:
       - name: SCP JAR to EC2
         uses: appleboy/scp-action@master
         with:
-          key: ${{ secrets.EC2_KEY_PROD }}
-          host: ${{ secrets.EC2_HOST_PROD }}
-          username: ${{ secrets.EC2_USER_PROD }}
+          key: ${{ secrets.EC2_KEY_DEV }}
+          host: ${{ secrets.EC2_HOST_DEV }}
+          username: ${{ secrets.EC2_USER_DEV }}
           source: "*.jar"
           target: "/home/ubuntu/app"
 
-# 전체 프로젝트 코드 Github Actions에서 어떻게 Build 되고, 업로드 될 지 Debugging 원할 시 주석 해제
-#      - name: Upload project code
-#        uses: appleboy/scp-action@master
-#        with:
-#          key: ${{ secrets.EC2_KEY_PROD }}
-#          host: ${{ secrets.EC2_HOST_PROD }}
-#          username: ${{ secrets.EC2_USER_PROD }}
-#          target: /home/ubuntu/app/spring_source
-#          source: .
+      # 전체 프로젝트 코드 Github Actions에서 어떻게 Build 되고, 업로드 될 지 Debugging 원할 시 주석 해제
+      #      - name: Upload project code
+      #        uses: appleboy/scp-action@master
+      #        with:
+      #          key: ${{ secrets.EC2_KEY_DEV }}
+      #          host: ${{ secrets.EC2_HOST_DEV }}
+      #          username: ${{ secrets.EC2_USER_DEV }}
+      #          target: /home/ubuntu/app/spring_source
+      #          source: .
 
       # Redis Server 구동
       - name: Start redis-server
         uses: appleboy/ssh-action@master
         with:
-          key: ${{ secrets.EC2_KEY_PROD }}
-          host: ${{ secrets.EC2_HOST_PROD }}
-          username: ${{ secrets.EC2_USER_PROD }}
+          key: ${{ secrets.EC2_KEY_DEV }}
+          host: ${{ secrets.EC2_HOST_DEV }}
+          username: ${{ secrets.EC2_USER_DEV }}
           script: |
             sudo systemctl start redis-server
 
@@ -102,11 +112,12 @@ jobs:
       - name: Deploy SSH
         uses: appleboy/ssh-action@master
         with:
-          key: ${{ secrets.EC2_KEY_PROD }}
-          host: ${{ secrets.EC2_HOST_PROD }}
-          username: ${{ secrets.EC2_USER_PROD }}
+          key: ${{ secrets.EC2_KEY_DEV }}
+          host: ${{ secrets.EC2_HOST_DEV }}
+          username: ${{ secrets.EC2_USER_DEV }}
           # 기존 실행 중인 서버 종료 후 jar 파일 실행
           script: |
             sudo fuser -k -n tcp 8080
             sleep 15
             sudo nohup java -jar /home/ubuntu/app/*.jar > ./nohup.out 2>&1 &
+
