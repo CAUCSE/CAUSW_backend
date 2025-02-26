@@ -72,9 +72,10 @@ public class ChildCommentService {
                 .consistOf(ConstraintValidator.of(childComment, this.validator))
                 .consistOf(UserStateIsDeletedValidator.of(parentComment.getWriter().getState()));
         validatorBucket.validate();
-
+        //TODO 푸시알람 로직 변경 필요
+        /*
         if (!creator.getId().equals(childComment.getWriter().getId())) {
-            notificationRepository.save(
+                        notificationRepository.save(
                     Notification.of(
                             parentComment.getWriter(),
                             childComment.getContent(),
@@ -83,6 +84,7 @@ public class ChildCommentService {
                     )
             );
         }
+         */
 
         return toChildCommentResponseDto(
                 childCommentRepository.save(childComment),
