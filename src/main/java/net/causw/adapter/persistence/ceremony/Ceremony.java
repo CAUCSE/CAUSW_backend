@@ -1,10 +1,8 @@
-package net.causw.adapter.persistence.push;
+package net.causw.adapter.persistence.ceremony;
 
 import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
-import net.causw.adapter.persistence.comment.ChildComment;
-import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.user.User;
 //import net.causw.adapter.persistence.uuidFile.joinEntity.CeremonyAttachImage;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
@@ -85,7 +83,6 @@ public class Ceremony extends BaseEntity {
             LocalDate endDate,
             List<UuidFile> ceremonyAttachImageUuidFileList
     ) {
-        // Create a Ceremony object using the 'of' method
         Ceremony ceremony = Ceremony.of(
                 user,
                 ceremonyCategory,
@@ -93,15 +90,10 @@ public class Ceremony extends BaseEntity {
                 startDate,
                 endDate
         );
-
-        // Map UUID files to CeremonyAttachImage and associate them with the ceremony
         List<CeremonyAttachImage> ceremonyAttachImageList = ceremonyAttachImageUuidFileList.stream()
                 .map(uuidFile -> CeremonyAttachImage.of(ceremony, uuidFile))
                 .toList();
-
-        // Assuming there's a setter or method to add images to ceremony
         ceremony.updateCeremonyAttachImageList(ceremonyAttachImageList);
-
         return ceremony;
     }
 

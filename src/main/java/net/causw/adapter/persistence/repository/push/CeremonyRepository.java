@@ -1,7 +1,7 @@
 package net.causw.adapter.persistence.repository.push;
 
 
-import net.causw.adapter.persistence.push.Ceremony;
+import net.causw.adapter.persistence.ceremony.Ceremony;
 import net.causw.adapter.persistence.user.User;
 import net.causw.domain.model.enums.ceremony.CeremonyState;
 import org.springframework.data.domain.Page;

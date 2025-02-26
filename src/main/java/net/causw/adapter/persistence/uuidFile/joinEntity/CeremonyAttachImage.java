@@ -2,7 +2,7 @@ package net.causw.adapter.persistence.uuidFile.joinEntity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import net.causw.adapter.persistence.push.Ceremony;
+import net.causw.adapter.persistence.ceremony.Ceremony;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 
 @Getter
