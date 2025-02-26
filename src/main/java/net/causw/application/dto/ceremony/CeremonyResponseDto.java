@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import net.causw.domain.model.enums.ceremony.CeremonyCategory;
-import net.causw.adapter.persistence.push.Ceremony;
+import net.causw.adapter.persistence.ceremony.Ceremony;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 @Getter
 @Builder
 @AllArgsConstructor
-public class CeremonyResponseDTO {
+public class CeremonyResponseDto {
 
     @Schema(description = "행사 설명", example = "연례 졸업식")
     private String description;
@@ -31,12 +31,12 @@ public class CeremonyResponseDTO {
     @Schema(description = "첨부 이미지 URL 리스트")
     private List<String> attachedImageUrlList;
 
-    public static CeremonyResponseDTO from(Ceremony ceremony) {
+    public static CeremonyResponseDto from(Ceremony ceremony) {
         List<String> attachedImageUrlList = ceremony.getCeremonyAttachImageList().stream()
                 .map(image -> image.getUuidFile().getFileUrl()) // Get URL from UuidFile
                 .collect(Collectors.toList());
 
-        return CeremonyResponseDTO.builder()
+        return CeremonyResponseDto.builder()
                 .description(ceremony.getDescription())
                 .startDate(ceremony.getStartDate())
                 .endDate(ceremony.getEndDate())
