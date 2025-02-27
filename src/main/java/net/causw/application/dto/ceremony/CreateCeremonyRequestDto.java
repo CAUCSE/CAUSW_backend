@@ -8,7 +8,7 @@ import net.causw.domain.model.enums.ceremony.CeremonyCategory;
 import java.time.LocalDate;
 
 @Getter
-public class CreateCeremonyRequestDTO {
+public class CreateCeremonyRequestDto {
 
     @Schema(description = "행사 설명", requiredMode = Schema.RequiredMode.REQUIRED, example = "연례 졸업식")
     @NotNull(message = "설명은 필수 입력 값입니다.")

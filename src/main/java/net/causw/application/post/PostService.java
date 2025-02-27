@@ -272,6 +272,8 @@ public class PostService {
 
         // 게시물 알림
         List<UserBoardSubscribe> byBoardId = userBoardSubscribeRepository.findByBoard_Id(postCreateRequestDto.getBoardId());
+        //TODO 푸시알람 로직 변경 필요
+        /*
         if (board.getIsDefaultNotice()) { // 전체 사용자가 알림 대상이면
             notificationRepository.save(
                     Notification.of(
@@ -295,6 +297,7 @@ public class PostService {
                 }
             }
         }
+        */
 
         return toPostCreateResponseDto(postRepository.save(post));
     }

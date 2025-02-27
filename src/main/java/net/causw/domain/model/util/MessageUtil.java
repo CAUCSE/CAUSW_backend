@@ -154,6 +154,8 @@ public class MessageUtil {
 
     // Ceremony
     public static final String CEREMONY_NOT_FOUND = "존재하지 않는 경조사입니다.";
+    public static final String CEREMONY_NOTIFICATION_SETTING_NOT_FOUND = "유저의 경조사 알람 설정이 되어있지 않습니다.";
+
 
     // Vote
     public static final String VOTE_OPTION_NOT_FOUND = "존재하지 않는 투표 옵션입니다.";
