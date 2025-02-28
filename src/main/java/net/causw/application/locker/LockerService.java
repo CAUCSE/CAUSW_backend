@@ -1,10 +1,12 @@
 package net.causw.application.locker;
 
 import lombok.RequiredArgsConstructor;
+import net.causw.adapter.persistence.flag.Flag;
 import net.causw.adapter.persistence.locker.Locker;
 import net.causw.adapter.persistence.locker.LockerLocation;
 import net.causw.adapter.persistence.locker.LockerLog;
 import net.causw.adapter.persistence.locker.LockerName;
+import net.causw.adapter.persistence.repository.flag.FlagRepository;
 import net.causw.adapter.persistence.repository.locker.LockerLocationRepository;
 import net.causw.adapter.persistence.repository.locker.LockerLogRepository;
 import net.causw.adapter.persistence.repository.locker.LockerRepository;
@@ -60,6 +62,7 @@ public class LockerService {
     private final Validator validator;
     private final LockerActionFactory lockerActionFactory;
     private final CommonService commonService;
+    private final FlagRepository flagRepository;
 
     public LockerResponseDto findById(String id, User user) {
         return LockerResponseDto.of(lockerRepository.findByIdForRead(id).orElseThrow(
@@ -226,8 +229,13 @@ public class LockerService {
                         )
                 );
 
+        String lockerPeriod = flagRepository.findByValue(true)
+                .map(Flag::getKey)
+                .orElse("NULL");
+
         return LockersResponseDto.of(
                 lockerLocation.getName(),
+                lockerPeriod,
                 lockerRepository.findByLocation_IdOrderByLockerNumberAsc(lockerLocation.getId())
                         .stream()
                         .map(locker -> LockerResponseDto.of(locker, user))
@@ -460,5 +468,12 @@ public class LockerService {
             );
             lockerLogRepository.save(lockerLog);
         }
+    }
+
+    @Transactional
+    public void returnAndSaveLocker(Locker locker) {
+        locker.returnLocker();
+        lockerRepository.saveAndFlush(locker);
+//        lockerRepository.flush();
     }
 }
