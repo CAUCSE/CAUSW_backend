@@ -13,6 +13,7 @@ public class MessageUtil {
     public static final String INVALID_TOKEN = "잘못된 AccessToken 입니다";
     public static final String EXPIRED_TOKEN = "만료된 AccessToken 입니다";
     public static final String DOES_NOT_HAVE_PERMISSION = "권한이 없습니다.";
+    public static final String INVALID_USER_DATA_REQUEST = "유저의 가입 및 수정 정보가 유효하지 않습니다.";
 
     // Form
     public static final String IS_NEED_COUNCIL_FEE_REQUIRED = "학생회비 납부 여부를 선택해 주세요.";
@@ -139,6 +140,7 @@ public class MessageUtil {
     // Semester
     public static final String PRIOR_SEMESTER_NOT_FOUND = "이전 학기를 찾을 수 없습니다.";
     public static final String ACTIVE_SEMESTER_IS_DUPLICATED = "활성화된 학기가 중복되어 있습니다.";
+    public static final String CURRENT_SEMESTER_DOES_NOT_EXIST = "현재 학기가 존재하지 않습니다. 현재 학기를 등록해주세요";
 
     // UserCouncilFee
     public static final String INVALID_USER_COUNCIL_FEE_INFO = "유효하지 않은 학생회비 납부자 정보입니다.";
@@ -149,6 +151,11 @@ public class MessageUtil {
 
     // CouncilFeeFakeUser
     public static final String INVALID_COUNCIL_FEE_FAKE_USER_INFO = "유효하지 않은 가짜 사용자 정보입니다.";
+
+    // Ceremony
+    public static final String CEREMONY_NOT_FOUND = "존재하지 않는 경조사입니다.";
+    public static final String CEREMONY_NOTIFICATION_SETTING_NOT_FOUND = "유저의 경조사 알람 설정이 되어있지 않습니다.";
+
 
     // Vote
     public static final String VOTE_OPTION_NOT_FOUND = "존재하지 않는 투표 옵션입니다.";
@@ -170,4 +177,5 @@ public class MessageUtil {
     public static final String FAIL_TO_CRAWL_CAU_SW_NOTICE_SITE = "소프트웨어학부 공지사항 크롤링 실패";
 
 
+    public static final String USER_CURRENT_COMPLETE_SEMESTER_DOES_NOT_EXIST = "사용자의 현재 등록 완료 학기 정보가 존재하지 않습니다.";
 }

@@ -16,8 +16,9 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/notifications")
 public class NotificationController {
-    private final NotificationService notificationService;
-
+    //private final NotificationService notificationService;
+    //TODO 푸시알람 로직 변경 필요
+    /*
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "알림 조회", description = "알림을 조회합니다.")
@@ -43,4 +44,5 @@ public class NotificationController {
                                @PathVariable("boardId") String boardId) {
         return notificationService.checkNotice(userDetails.getUser(), boardId);
     }
+     */
 }

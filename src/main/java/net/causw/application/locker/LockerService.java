@@ -1,9 +1,12 @@
 package net.causw.application.locker;
 
 import lombok.RequiredArgsConstructor;
+import net.causw.adapter.persistence.flag.Flag;
 import net.causw.adapter.persistence.locker.Locker;
 import net.causw.adapter.persistence.locker.LockerLocation;
 import net.causw.adapter.persistence.locker.LockerLog;
+import net.causw.adapter.persistence.locker.LockerName;
+import net.causw.adapter.persistence.repository.flag.FlagRepository;
 import net.causw.adapter.persistence.repository.locker.LockerLocationRepository;
 import net.causw.adapter.persistence.repository.locker.LockerLogRepository;
 import net.causw.adapter.persistence.repository.locker.LockerRepository;
@@ -59,6 +62,7 @@ public class LockerService {
     private final Validator validator;
     private final LockerActionFactory lockerActionFactory;
     private final CommonService commonService;
+    private final FlagRepository flagRepository;
 
     public LockerResponseDto findById(String id, User user) {
         return LockerResponseDto.of(lockerRepository.findByIdForRead(id).orElseThrow(
@@ -225,8 +229,13 @@ public class LockerService {
                         )
                 );
 
+        String lockerPeriod = flagRepository.findByValue(true)
+                .map(Flag::getKey)
+                .orElse("NULL");
+
         return LockersResponseDto.of(
                 lockerLocation.getName(),
+                lockerPeriod,
                 lockerRepository.findByLocation_IdOrderByLockerNumberAsc(lockerLocation.getId())
                         .stream()
                         .map(locker -> LockerResponseDto.of(locker, user))
@@ -273,7 +282,7 @@ public class LockerService {
         }
 
         LockerLocation lockerLocation = LockerLocation.of(
-                lockerLocationCreateRequestDto.getName()
+                LockerName.valueOf(lockerLocationCreateRequestDto.getName())
         );
 
         ValidatorBucket.of()
@@ -282,7 +291,7 @@ public class LockerService {
                 .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .consistOf(ConstraintValidator.of(lockerLocation, this.validator))
                 .validate();
-        LockerLocation location = LockerLocation.of(lockerLocationCreateRequestDto.getName());
+        LockerLocation location = LockerLocation.of(LockerName.valueOf(lockerLocationCreateRequestDto.getName()));
 
         return LockerLocationResponseDto.of(
                 location,
@@ -315,7 +324,7 @@ public class LockerService {
         }
 
         lockerLocation.update(
-                lockerLocationRequestDto.getName()
+                LockerName.valueOf(lockerLocationRequestDto.getName())
         );
 
         ValidatorBucket.of()
@@ -411,13 +420,13 @@ public class LockerService {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 
 
-        LockerLocation lockerLocationSecondFloor = LockerLocation.of("Second Floor");
+        LockerLocation lockerLocationSecondFloor = LockerLocation.of(LockerName.valueOf("SECOND"));
         lockerLocationRepository.save(lockerLocationSecondFloor);
 
-        LockerLocation lockerLocationThirdFloor = LockerLocation.of("Third Floor");
+        LockerLocation lockerLocationThirdFloor = LockerLocation.of(LockerName.valueOf("THIRD"));
         lockerLocationRepository.save(lockerLocationThirdFloor);
 
-        LockerLocation lockerLocationFourthFloor = LockerLocation.of("Fourth Floor");
+        LockerLocation lockerLocationFourthFloor = LockerLocation.of(LockerName.valueOf("FOURTH"));
         lockerLocationRepository.save(lockerLocationFourthFloor);
 
         createLockerByLockerLocationAndEndLockerNumber(lockerLocationSecondFloor, validatorBucket, user, 136L);
@@ -459,5 +468,12 @@ public class LockerService {
             );
             lockerLogRepository.save(lockerLog);
         }
+    }
+
+    @Transactional
+    public void returnAndSaveLocker(Locker locker) {
+        locker.returnLocker();
+        lockerRepository.saveAndFlush(locker);
+//        lockerRepository.flush();
     }
 }

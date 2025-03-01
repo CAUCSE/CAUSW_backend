@@ -13,6 +13,7 @@ import net.causw.application.dto.event.EventUpdateRequestDto;
 import net.causw.application.dto.event.EventsResponseDto;
 import net.causw.application.event.EventService;
 import net.causw.domain.exceptions.BadRequestException;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -37,7 +38,7 @@ public class EventController {
         return eventService.findEvents();
     }
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "이벤트 생성 API", description = "이벤트 생성 API 입니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "CREATED", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
@@ -46,7 +47,7 @@ public class EventController {
             @ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
+            "@securityService.isAdminOrPresidentOrVicePresident()")
     public EventResponseDto createEvent(
             @RequestPart(value = "eventCreateRequestDto") @Valid EventCreateRequestDto eventCreateRequestDto,
             @RequestPart(value = "eventImage") MultipartFile eventImage
@@ -54,7 +55,7 @@ public class EventController {
         return eventService.createEvent(eventCreateRequestDto, eventImage);
     }
 
-    @PutMapping("/{eventId}")
+    @PutMapping(value = "/{eventId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "이벤트 수정 API", description = "이벤트 수정 API 입니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
@@ -64,7 +65,7 @@ public class EventController {
             @ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
+            "@securityService.isAdminOrPresidentOrVicePresident()")
     public EventResponseDto updateEvent(
             @PathVariable("eventId") String eventId,
             @RequestPart(value = "eventUpdateRequestDto") @Valid EventUpdateRequestDto eventUpdateRequestDto,
@@ -83,7 +84,7 @@ public class EventController {
             @ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "hasAnyRole('ADMIN','PERSIDENT', 'VICE_PRESIDENT')")
+            "@securityService.isAdminOrPresidentOrVicePresident()")
     public EventResponseDto deleteEvent(@PathVariable("eventId") String eventId) {
         return eventService.deleteEvent(eventId);
     }

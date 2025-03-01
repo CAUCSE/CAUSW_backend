@@ -19,8 +19,11 @@ public class Notification extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = true)
     private User user;
 
-    @Column(name = "content")
-    private String content;
+    @Column(name = "title")
+    private String title;
+
+    @Column(name = "body")
+    private String body;
 
     @Column(name = "notice_type")
     @Enumerated(EnumType.STRING)
@@ -28,17 +31,19 @@ public class Notification extends BaseEntity {
 
     @Column(name = "is_global")
     @ColumnDefault("false")
-    private Boolean isGlobal;
+    private Boolean isGlobal = false;
 
     public static Notification of(
             User user,
-            String content,
+            String title,
+            String body,
             NoticeType noticeType,
             Boolean isGlobal
     ) {
         return Notification.builder()
                 .user(user)
-                .content(content)
+                .title(title)
+                .body(body)
                 .noticeType(noticeType)
                 .isGlobal(isGlobal)
                 .build();

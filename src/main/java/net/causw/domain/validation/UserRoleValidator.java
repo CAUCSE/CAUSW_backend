@@ -35,7 +35,7 @@ public class UserRoleValidator extends AbstractValidator {
 
         throw new UnauthorizedException(
                 ErrorCode.API_NOT_ALLOWED,
-                "접근 권한이 없습니다."
+                "접근 권한이 없습니다. 사용자 역할: " + this.requestUserRoles + ", 허용된 역할: " + this.targetRoleSet
         );
     }
 }

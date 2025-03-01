@@ -107,7 +107,12 @@ public class PostService {
         Post post = getPost(postId);
         ValidatorBucket validatorBucket = initializeValidator(user, post.getBoard());
         validatorBucket.validate();
-        return toPostResponseDtoExtended(post, user);
+
+        PostResponseDto postResponseDto = toPostResponseDtoExtended(post, user);
+        if(postResponseDto.getIsAnonymous()){
+            postResponseDto.updateAnonymousPost();
+        }
+        return postResponseDto;
     }
 
     public BoardPostsResponseDto findAllPost(
@@ -214,9 +219,7 @@ public class PostService {
 
         List<UuidFile> uuidFileList = (attachImageList == null || attachImageList.isEmpty()) ?
                 new ArrayList<>() :
-                attachImageList.stream()
-                .map(multipartFile -> uuidFileService.saveFile(multipartFile, FilePath.POST))
-                .toList();
+                uuidFileService.saveFileList(attachImageList, FilePath.POST);
 
         Post post = Post.of(
                 postCreateRequestDto.getTitle(),
@@ -232,7 +235,6 @@ public class PostService {
         validatorBucket
                 .consistOf(UserStateValidator.of(creator.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(roles))
-                .consistOf(PostNumberOfAttachmentsValidator.of(attachImageList))
                 .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD))
                 .consistOf(UserRoleValidator.of(
                         roles,
@@ -270,6 +272,8 @@ public class PostService {
 
         // 게시물 알림
         List<UserBoardSubscribe> byBoardId = userBoardSubscribeRepository.findByBoard_Id(postCreateRequestDto.getBoardId());
+        //TODO 푸시알람 로직 변경 필요
+        /*
         if (board.getIsDefaultNotice()) { // 전체 사용자가 알림 대상이면
             notificationRepository.save(
                     Notification.of(
@@ -293,6 +297,7 @@ public class PostService {
                 }
             }
         }
+        */
 
         return toPostCreateResponseDto(postRepository.save(post));
     }
@@ -308,6 +313,9 @@ public class PostService {
 
         Board board = getBoard(postCreateWithFormRequestDto.getBoardId());
         List<String> createRoles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
+        System.out.println(createRoles);
+        System.out.println("Creator Roles: " + roles);
+
         if (board.getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
             validatorBucket
                     .consistOf(UserRoleValidator.of(
@@ -335,6 +343,11 @@ public class PostService {
                 uuidFileList
         );
 
+        Set<Role> targetRoleSet = Arrays.stream(board.getCreateRoles().split(","))
+                .map(String::trim) // 공백 제거
+                .map(Role::of) // Optional로 변환
+                .collect(Collectors.toSet());
+        System.out.println(targetRoleSet);
         validatorBucket
                 .consistOf(UserStateValidator.of(creator.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(roles))
@@ -343,9 +356,20 @@ public class PostService {
                 .consistOf(UserRoleValidator.of(
                         roles,
                         createRoles.stream()
-                                .map(Role::of)
+                                .map(String::trim) // 공백 제거
+                                .map(roleString -> {
+                                    try {
+                                        return Role.of(roleString);
+                                    } catch (BadRequestException e) {
+                                        // 잘못된 역할은 무시하고 로그 출력
+                                        System.out.println("Invalid role found: " + roleString);
+                                        return null;
+                                    }
+                                })
+                                .filter(Objects::nonNull) // 유효한 역할만 수집
                                 .collect(Collectors.toSet())
-                ));
+                ))
+                .validate();
 
         Optional<Circle> circles = Optional.ofNullable(board.getCircle());
         circles
@@ -386,11 +410,13 @@ public class PostService {
 
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         if (post.getBoard().getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
-            validatorBucket
-                    .consistOf(UserRoleValidator.of(
-                            roles,
-                            Set.of()
-                    ));
+            // 관리자 역할이 없고, 게시글의 작성자가 아니면 오류 발생
+            if (roles.stream().noneMatch(role -> EnumSet.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT).contains(role)) && !post.getWriter().getId().equals(deleter.getId())) {
+                throw new UnauthorizedException(
+                        ErrorCode.API_NOT_ALLOWED,
+                        "접근 권한이 없습니다."
+                );
+            }
         }
         validatorBucket
                 .consistOf(UserStateValidator.of(deleter.getState()))
@@ -874,7 +900,7 @@ public class PostService {
                         ).findFirst()
                         .orElse(null);
 
-        return PostDtoMapper.INSTANCE.toPostsResponseDto(
+        PostsResponseDto postsResponseDto = PostDtoMapper.INSTANCE.toPostsResponseDto(
                 post,
                 postRepository.countAllCommentByPost_Id(post.getId()),
                 getNumOfPostLikes(post),
@@ -883,6 +909,12 @@ public class PostService {
                 StatusUtil.isPostVote(post),
                 StatusUtil.isPostForm(post)
         );
+
+        if(postsResponseDto.getIsAnonymous()){
+            postsResponseDto.updateAnonymousPosts();
+        }
+
+        return postsResponseDto;
     }
 
     private PostResponseDto toPostResponseDtoExtended(Post post, User user) {

@@ -3,6 +3,7 @@ package net.causw.application.dto.post;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.form.response.FormResponseDto;
 import net.causw.application.dto.vote.VoteResponseDto;
@@ -13,6 +14,7 @@ import java.util.List;
 
 @Builder
 @Getter
+@Setter
 public class PostResponseDto {
     @Schema(description = "게시글 id", example = "uuid 형식의 String 값입니다.")
     private String id;
@@ -94,4 +96,13 @@ public class PostResponseDto {
 
     @Schema(description = "투표 정보")
     private VoteResponseDto voteResponseDto;
+
+    public void updateAnonymousPost() {
+        if (Boolean.TRUE.equals(this.isAnonymous)) {
+            this.writerName = null;
+            this.writerNickname = null;
+            this.writerAdmissionYear = null;
+            this.writerProfileImage = null;
+        }
+    }
 }

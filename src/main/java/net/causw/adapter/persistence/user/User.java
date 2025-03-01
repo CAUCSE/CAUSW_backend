@@ -5,6 +5,7 @@ import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.locker.Locker;
+import net.causw.adapter.persistence.notification.CeremonyNotificationSetting;
 import net.causw.adapter.persistence.uuidFile.joinEntity.UserProfileImage;
 import net.causw.adapter.persistence.vote.VoteRecord;
 import net.causw.application.dto.user.UserCreateRequestDto;
@@ -82,6 +83,9 @@ public class User extends BaseEntity {
     @OneToOne(mappedBy = "user", fetch = FetchType.EAGER)
     private Locker locker;
 
+    @OneToOne(mappedBy = "user", fetch = FetchType.EAGER)
+    private CeremonyNotificationSetting ceremonyNotificationSetting;
+
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<CircleMember> circleMemberList;
 
@@ -95,6 +99,9 @@ public class User extends BaseEntity {
     @Column(name = "is_v2", nullable = false)
     @Builder.Default
     private Boolean isV2 = true;
+
+    @Column(name = "fcm_token")
+    private String fcmToken;
 
     public void delete() {
         this.email = "deleted_" + this.getId();

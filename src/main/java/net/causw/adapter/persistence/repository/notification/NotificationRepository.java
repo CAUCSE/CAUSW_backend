@@ -1,6 +1,8 @@
 package net.causw.adapter.persistence.repository.notification;
 
 import net.causw.adapter.persistence.notification.Notification;
+import net.causw.adapter.persistence.user.User;
+import net.causw.domain.model.enums.notification.NoticeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,4 +19,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Stri
                     "ORDER BY created_at DESC " +
                     "LIMIT 4", nativeQuery = true)
     List<Notification> findUserNotice(@Param("userId") String userId);
+
+    List<Notification> findByUserAndNoticeType(User user, NoticeType noticeType);
 }

@@ -68,6 +68,7 @@ import net.causw.domain.validation.UserRoleWithoutAdminValidator;
 import net.causw.domain.validation.UserStateIsDropOrIsInActiveValidator;
 import net.causw.domain.validation.UserStateIsNotDropAndActiveValidator;
 import net.causw.domain.validation.UserStateValidator;
+import net.causw.domain.validation.PhoneNumberFormatValidator;
 import net.causw.domain.validation.ValidatorBucket;
 import net.causw.infrastructure.GoogleMailSender;
 import net.causw.infrastructure.PasswordGenerator;
@@ -521,6 +522,14 @@ public class UserService {
     public UserResponseDto signUp(UserCreateRequestDto userCreateRequestDto) {
         // Make domain model for generalized data model and validate the format of request parameter
 
+        // 학번 앞 4자리와 입학년도가 다른 경우 잘못된 요청이므로 예외처리
+        if (!userCreateRequestDto.getStudentId().substring(0, 4).equals(userCreateRequestDto.getAdmissionYear().toString())) {
+            throw new BadRequestException(
+                    ErrorCode.INVALID_USER_DATA_REQUEST,
+                    MessageUtil.INVALID_USER_DATA_REQUEST
+            );
+        }
+
         this.userRepository.findByEmail(userCreateRequestDto.getEmail()).ifPresent(
                 email -> {
                     throw new BadRequestException(
@@ -566,6 +575,7 @@ public class UserService {
                 .consistOf(ConstraintValidator.of(user, this.validator))
                 .consistOf(PasswordFormatValidator.of(userCreateRequestDto.getPassword()))
                 .consistOf(AdmissionYearValidator.of(userCreateRequestDto.getAdmissionYear()))
+                .consistOf(PhoneNumberFormatValidator.of(userCreateRequestDto.getPhoneNumber()))
                 .validate();
 
         return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
@@ -1263,7 +1273,7 @@ public class UserService {
             );
         }
 
-        if ( !(user.getState().equals(UserState.AWAIT) || user.getState().equals(UserState.ACTIVE)) ) {
+        if ( !(user.getState().equals(UserState.AWAIT) || user.getState().equals(UserState.REJECT)) ) {
             throw new BadRequestException(
                     ErrorCode.INVALID_REQUEST_USER_STATE,
                     MessageUtil.INVALID_USER_APPLICATION_USER_STATE
@@ -1289,6 +1299,13 @@ public class UserService {
                 .consistOf(UserStateIsNotDropAndActiveValidator.of(user.getState()))
                 .consistOf(ConstraintValidator.of(userAdmission, this.validator))
                 .validate();
+
+        userRepository.save(updateState(user.getId(), UserState.AWAIT)
+                .orElseThrow(() -> new InternalServerException(
+                        ErrorCode.INTERNAL_SERVER,
+                        MessageUtil.ADMISSION_EXCEPTION
+                ))
+        );
 
         return UserDtoMapper.INSTANCE.toUserAdmissionResponseDto(this.userAdmissionRepository.save(userAdmission));
     }
@@ -1391,7 +1408,7 @@ public class UserService {
 
         targetUser.updateRejectionOrDropReason(rejectReason);
 
-        targetUser = this.updateState(targetUser.getId(), UserState.AWAIT)
+        targetUser = this.updateState(targetUser.getId(), UserState.REJECT)
                 .orElseThrow(() -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
                         MessageUtil.ADMISSION_EXCEPTION

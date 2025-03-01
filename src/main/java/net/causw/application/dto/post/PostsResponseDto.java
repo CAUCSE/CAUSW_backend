@@ -65,4 +65,12 @@ PostsResponseDto {
     @Schema(description = "게시글 신청서 존재 여부", example = "true")
     private Boolean isPostForm;
 
+
+    public void updateAnonymousPosts() {
+        if (Boolean.TRUE.equals(this.isAnonymous)) {
+            this.writerName = null;
+            this.writerNickname = null;
+            this.writerAdmissionYear = null;
+        }
+    }
 }

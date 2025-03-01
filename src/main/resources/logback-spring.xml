@@ -30,15 +30,16 @@
         </root>
     </springProfile>
 
-    <!-- QA 환경 -->
-    <springProfile name="qa">
+    <!-- 개발 환경 -->
+    <springProfile name="dev">
         <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
 
+        <!-- Discord 알림 관련 -->
         <springProperty name="DISCORD_WEBHOOK_URL" source="logging.discord.webhook-uri"/>
         <appender name="DISCORD" class="com.github.napstr.logback.DiscordAppender">
             <webhookUri>${DISCORD_WEBHOOK_URL}</webhookUri>
             <layout class="ch.qos.logback.classic.PatternLayout">
-                <pattern>%d{HH:mm:ss} [%thread] [%-5level] %logger{36} - %msg%n```%ex{full}```</pattern>
+                <pattern>%d{HH:mm:ss} [%thread] [%-5level] %logger{36} - %msg%n```%ex{10}```</pattern>
             </layout>
             <username>BACKEND-ERROR!</username>
             <tts>false</tts>
@@ -57,8 +58,8 @@
         </root>
     </springProfile>
 
-    <!-- 개발 및 로컬 환경 -->
-    <springProfile name="dev|local">
+    <!-- 로컬 환경 -->
+    <springProfile name="local">
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
         </root>
