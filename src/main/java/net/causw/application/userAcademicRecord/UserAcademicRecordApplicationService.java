@@ -201,11 +201,16 @@ public class UserAcademicRecordApplicationService {
 
         if (!awaitUserAcademicRecordApplicationList.isEmpty()) {
             User logFinalUser = user;   // final 변수로 선언하여 람다식 내에서 사용 가능하도록 함
+            List<UserAcademicRecordApplication> closedAwaitUserAcademicRecordApplicationList = new ArrayList<>();
             List<UserAcademicRecordLog> priovUserAcademicRecordLogList = new ArrayList<>();
             awaitUserAcademicRecordApplicationList
                     .forEach(userAcademicRecordApplication -> {
+                        // 대상 사용자 이전 신청한 학적 정보 신청서 Closed 처리
                         userAcademicRecordApplication.setAcademicRecordRequestStatus(AcademicRecordRequestStatus.CLOSE);
                         userAcademicRecordApplication.setRejectMessage(StaticValue.USER_CLOSED);
+                        closedAwaitUserAcademicRecordApplicationList.add(userAcademicRecordApplication);
+
+                        // Closed 처리에 대한 Log 생성
                         UserAcademicRecordLog userAcademicRecordLog = UserAcademicRecordLog.createWithApplication(
                                 logFinalUser,
                                 userAcademicRecordApplication,
@@ -213,6 +218,7 @@ public class UserAcademicRecordApplicationService {
                         );
                         priovUserAcademicRecordLogList.add(userAcademicRecordLog);
                     });
+            userAcademicRecordApplicationRepository.saveAll(closedAwaitUserAcademicRecordApplicationList);
             userAcademicRecordLogRepository.saveAll(priovUserAcademicRecordLogList);
         }
 
@@ -220,7 +226,6 @@ public class UserAcademicRecordApplicationService {
         // 신청한 학적 상태 변경 신청서 처리
         UserAcademicRecordLog userAcademicRecordLog;
         UserAcademicRecordApplication userAcademicRecordApplication;
-
 
         // 대상 사용자의 변경 타겟 학적 상태가 재학인 경우, 이미지 파일을 저장하고, 학적 정보 신청서를 생성
         if (createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus().equals(AcademicStatus.ENROLLED)) {
@@ -243,7 +248,7 @@ public class UserAcademicRecordApplicationService {
                     StaticValue.USER_APPLIED + createUserAcademicRecordApplicationRequestDto.getNote()
             );
         } else {
-            // 대상 사용자의 변경 타겟 학적 상태가 졸업인 경우, 학적 정보 신청서를 생성
+            // 대상 사용자의 변경 타겟 학적 상태가 졸업인 경우, 학적 정보 신청서를 생성하지 않고, 사용자 졸업 관련 정보 변경 후 로그만 생성
             if (createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus().equals(AcademicStatus.GRADUATED)) {
                 user.setGraduationYear(createUserAcademicRecordApplicationRequestDto.getGraduationYear());
                 user.setGraduationType(createUserAcademicRecordApplicationRequestDto.getGraduationType());
@@ -256,7 +261,7 @@ public class UserAcademicRecordApplicationService {
                         StaticValue.USER_APPLIED
                 );
             }
-            // 대상 사용자의 변경 타겟 학적 상태가 미정인 경우, 학적 정보 신청서를 생성
+            // 대상 사용자의 변경 타겟 학적 상태가 미정인 경우, 학적 정보 신청서를 생성하지 않고, 로그만 생성
             else {
                 userAcademicRecordLog = UserAcademicRecordLog.create(
                         user,
@@ -266,7 +271,7 @@ public class UserAcademicRecordApplicationService {
                 );
             }
 
-            // 대상 사용자의 변경 타겟 학적 상태를 변경
+            // 재학 이외의 상태가 타겟일 시, 대상 사용자의 변경 타겟 학적 상태를 변경
             user.setAcademicStatus(createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus());
 
             userRepository.save(user);
