@@ -5,16 +5,17 @@ import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.board.BoardApply;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
+import net.causw.adapter.persistence.notification.UserBoardSubscribe;
 import net.causw.adapter.persistence.repository.board.BoardApplyRepository;
 import net.causw.adapter.persistence.repository.board.BoardRepository;
 import net.causw.adapter.persistence.repository.circle.CircleMemberRepository;
 import net.causw.adapter.persistence.repository.circle.CircleRepository;
+import net.causw.adapter.persistence.repository.notification.UserBoardSubscribeRepository;
 import net.causw.adapter.persistence.repository.post.PostRepository;
 import net.causw.adapter.persistence.repository.user.UserRepository;
 import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.board.*;
 import net.causw.application.dto.post.PostContentDto;
-import net.causw.application.dto.user.UserResponseDto;
 import net.causw.application.dto.util.dtoMapper.BoardDtoMapper;
 import net.causw.application.dto.util.dtoMapper.CircleDtoMapper;
 import net.causw.application.dto.util.dtoMapper.PostDtoMapper;
@@ -53,6 +54,7 @@ public class BoardService {
     private final UserRepository userRepository;
     private final CircleRepository circleRepository;
     private final CircleMemberRepository circleMemberRepository;
+    private final UserBoardSubscribeRepository userBoardSubscribeRepository;
     private final BoardApplyRepository boardApplyRepository;
     private final Validator validator;
 
@@ -515,5 +517,21 @@ public class BoardService {
                         MessageUtil.SMALL_CLUB_NOT_FOUND
                 )
         );
+    }
+
+    @Transactional
+    public void createBoardSubscribe(User user, String boardId) {
+
+        Board board = getBoard(boardId);
+        UserBoardSubscribe userBoardSubscribe = UserBoardSubscribe.of(user, board, true);
+        userBoardSubscribeRepository.save(userBoardSubscribe);
+    }
+
+    public void updateBoarSubscribe(User user , String boardId){
+        Board board = getBoard();
+        UserBoardSubscribe subscription = userBoardSubscribeRepository.findByUserAndBoard(user, board)
+                .orElseGet(() -> UserBoardSubscribe.of(user, board, false));
+
+        subscription.toggle();
     }
 }

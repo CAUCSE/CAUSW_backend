@@ -29,23 +29,17 @@ public class Notification extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private NoticeType noticeType;
 
-    @Column(name = "is_global")
-    @ColumnDefault("false")
-    private Boolean isGlobal = false;
-
     public static Notification of(
             User user,
             String title,
             String body,
-            NoticeType noticeType,
-            Boolean isGlobal
+            NoticeType noticeType
     ) {
         return Notification.builder()
                 .user(user)
                 .title(title)
                 .body(body)
                 .noticeType(noticeType)
-                .isGlobal(isGlobal)
                 .build();
     }
 

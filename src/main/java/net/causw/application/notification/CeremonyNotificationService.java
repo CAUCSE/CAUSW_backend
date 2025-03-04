@@ -27,7 +27,7 @@ public class CeremonyNotificationService implements NotificationService {
 
     @Override
     public void save(String title, String body, User user) {
-        notificationRepository.save(Notification.of(user, title, body, NoticeType.CEREMONY,false));
+        notificationRepository.save(Notification.of(user, title, body, NoticeType.CEREMONY));
     }
 
     public void sendByAdmissionYear(Integer admissionYear, Ceremony ceremony) {
