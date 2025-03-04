@@ -870,6 +870,8 @@ public class UserService {
             }
             if (grantee.getRoles().isEmpty()) {
                 addRole(grantee, Role.COMMON);
+            } else if (grantee.getRoles().size() >= 2 && grantee.getRoles().contains(Role.COMMON)) {
+                removeRole(grantee, Role.COMMON);
             }
         }
         else {
