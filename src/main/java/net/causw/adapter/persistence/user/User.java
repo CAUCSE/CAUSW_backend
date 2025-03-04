@@ -136,9 +136,10 @@ public class User extends BaseEntity {
                 .build();
     }
 
-    public void update(String nickname, UserProfileImage userProfileImage) {
+    public void update(String nickname, UserProfileImage userProfileImage, String phoneNumber) {
         this.nickname = nickname;
         this.userProfileImage = userProfileImage;
+        this.phoneNumber = phoneNumber;
     }
 
     public void updateRejectionOrDropReason(String reason) {

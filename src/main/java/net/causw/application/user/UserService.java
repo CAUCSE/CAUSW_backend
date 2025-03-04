@@ -557,15 +557,6 @@ public class UserService {
                 }
         );
 
-        this.userRepository.findByPhoneNumber(userCreateRequestDto.getPhoneNumber()).ifPresent(
-                phoneNumber -> {
-                    throw new BadRequestException(
-                            ErrorCode.ROW_ALREADY_EXIST,
-                            MessageUtil.PHONE_NUMBER_ALREADY_EXIST
-                    );
-                }
-        );
-
         User user = User.from(userCreateRequestDto, passwordEncoder.encode(userCreateRequestDto.getPassword()));
 
         this.userRepository.save(user);
@@ -714,7 +705,7 @@ public class UserService {
             }
         }
 
-        srcUser.update(userUpdateRequestDto.getNickname(), userProfileImage);
+        srcUser.update(userUpdateRequestDto.getNickname(), userProfileImage,userUpdateRequestDto.getPhoneNumber());
 
         User updatedUser = userRepository.save(srcUser);
 
