@@ -37,7 +37,7 @@ public class ReplyUserResponseDto {
     @Schema(description = "학부/학과", example = "컴퓨터공학과")
     private String major;
 
-    @Schema(description = "전화번호", example = "01012345678")
+    @Schema(description = "전화번호", example = "010-1234-5678")
     private String phoneNumber;
 
     @Schema(description = "학적상태", example = "ENROLLED")
