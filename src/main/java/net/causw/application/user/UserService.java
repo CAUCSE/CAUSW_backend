@@ -122,11 +122,10 @@ public class UserService {
     public void findPassword(
             UserFindPasswordRequestDto userFindPasswordRequestDto
     ) {
-        User requestUser = userRepository.findByEmailAndNameAndStudentIdAndPhoneNumber(
+        User requestUser = userRepository.findByEmailAndNameAndStudentId(
                     userFindPasswordRequestDto.getEmail().trim(),
                     userFindPasswordRequestDto.getName().trim(),
-                    userFindPasswordRequestDto.getStudentId().trim(),
-                    userFindPasswordRequestDto.getPhoneNumber().trim()
+                    userFindPasswordRequestDto.getStudentId().trim()
                 ).orElseThrow(() -> new NotFoundException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.USER_NOT_FOUND
