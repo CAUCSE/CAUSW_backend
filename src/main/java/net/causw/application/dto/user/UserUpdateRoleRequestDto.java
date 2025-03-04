@@ -20,15 +20,16 @@ public class UserUpdateRoleRequestDto {
     @Schema(description = "역할", example = "COMMON")
     private String role;
 
-    @NotBlank(message = "동아리 id를 입력해 주세요.")
-    @Schema(description = "동아리 고유 id값", example = "uuid 형식의 String 값입니다.")
-    private String circleId;
+    // 동아리 기능 삭제에 따라 주석 처리합니다.
+//    @NotBlank(message = "동아리 id를 입력해 주세요.")
+//    @Schema(description = "동아리 고유 id값", example = "uuid 형식의 String 값입니다.")
+//    private String circleId;
 
     public Role getRole() {
         return Role.of(this.role);
     }
 
-    public Optional<String> getCircleId() {
-        return Optional.ofNullable(this.circleId);
-    }
+//    public Optional<String> getCircleId() {
+//        return Optional.ofNullable(this.circleId);
+//    }
 }
