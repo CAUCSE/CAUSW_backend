@@ -69,7 +69,7 @@ public class UserResponseDto {
     @Schema(description = "졸업시기 월", example = "2")
     private GraduationType graduationType;
 
-    @Schema(description = "전화번호", example = "01012345678")
+    @Schema(description = "전화번호", example = "010-1234-5678")
     private String phoneNumber;
 
     @Schema(description = "가입 거부 OR DROP 이유", example = "부적절한 행위로 DROP")

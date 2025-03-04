@@ -34,7 +34,7 @@ public class ExportCircleMemberToExcelResponseDto {
     @Schema(description = "학부/학과", example = "소프트웨어학부")
     private String major;
 
-    @Schema(description = "연락처", example = "01012345678")
+    @Schema(description = "연락처", example = "010-1234-5678")
     private String phoneNumber;
 
     @Schema(description = "학적 상태", example = "ENROLLED")
