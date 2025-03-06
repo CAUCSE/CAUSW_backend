@@ -5,7 +5,12 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Named;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+import net.causw.adapter.persistence.uuidFile.UuidFile;
+import java.util.Objects;
+
 
 @Mapper(componentModel = "spring")
 public interface UuidFileToUrlDtoMapper {
@@ -23,11 +28,16 @@ public interface UuidFileToUrlDtoMapper {
 
     @Named(value = "mapUuidFileListToFileUrlList")
     default List<String> mapUuidFileListToFileUrlList(List<? extends JoinEntity> joinEntityList) {
-        if (joinEntityList.isEmpty()) {
+
+        if (joinEntityList == null || joinEntityList.isEmpty()) {
             return new ArrayList<>();
         }
         return joinEntityList.stream()
-                .map(mappingTable -> mappingTable.getUuidFile().getFileUrl())
+                .sorted(Comparator.comparing(JoinEntity::getCreatedAt))
+                .map(mappingTable -> Optional.ofNullable(mappingTable.getUuidFile())
+                        .map(UuidFile::getFileUrl)
+                        .orElse(null))
+                .filter(Objects::nonNull)
                 .toList();
     }
 
