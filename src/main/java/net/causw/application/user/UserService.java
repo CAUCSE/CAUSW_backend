@@ -1475,10 +1475,9 @@ public class UserService {
     }
 
     public UserFindIdResponseDto findUserId(UserFindIdRequestDto userIdFindRequestDto) {
-        User user = this.userRepository.findByStudentIdAndNameAndPhoneNumber(
+        User user = this.userRepository.findByStudentIdAndName(
                 userIdFindRequestDto.getStudentId(),
-                userIdFindRequestDto.getName(),
-                userIdFindRequestDto.getPhoneNumber()
+                userIdFindRequestDto.getName()
         ).orElseThrow(() -> new BadRequestException(
                 ErrorCode.ROW_DOES_NOT_EXIST,
                 MessageUtil.USER_NOT_FOUND
