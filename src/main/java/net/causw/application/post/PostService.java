@@ -50,6 +50,7 @@ import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.post.*;
 import net.causw.application.dto.util.StatusUtil;
+import net.causw.application.storage.StorageManager;
 import net.causw.application.uuidFile.UuidFileService;
 import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
@@ -65,12 +66,14 @@ import net.causw.domain.model.enums.user.Role;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.validation.*;
+import org.aspectj.util.FileUtil;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.validation.Validator;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
@@ -213,13 +216,12 @@ public class PostService {
     public  PostCreateResponseDto createPost(User creator, PostCreateRequestDto postCreateRequestDto, List<MultipartFile> attachImageList) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         Set<Role> roles = creator.getRoles();
-
         Board board = getBoard(postCreateRequestDto.getBoardId());
         List<String> createRoles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
 
-        List<UuidFile> uuidFileList = (attachImageList == null || attachImageList.isEmpty()) ?
-                new ArrayList<>() :
-                uuidFileService.saveFileList(attachImageList, FilePath.POST);
+        List<UuidFile> uuidFileList = attachImageList == null || attachImageList.isEmpty()
+                ? new ArrayList<>()
+                : uuidFileService.saveFileList(attachImageList, FilePath.POST);
 
         Post post = Post.of(
                 postCreateRequestDto.getTitle(),
@@ -414,7 +416,7 @@ public class PostService {
             if (roles.stream().noneMatch(role -> EnumSet.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT).contains(role)) && !post.getWriter().getId().equals(deleter.getId())) {
                 throw new UnauthorizedException(
                         ErrorCode.API_NOT_ALLOWED,
-                        "접근 권한이 없습니다."
+                        MessageUtil.DOES_NOT_HAVE_PERMISSION
                 );
             }
         }
@@ -1008,7 +1010,7 @@ public class PostService {
     }
 
     private Post getPost(String postId) {
-        return postRepository.findById(postId).orElseThrow(
+        return postRepository.findByIdAndIsDeletedFalse(postId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.POST_NOT_FOUND
@@ -1115,5 +1117,7 @@ public class PostService {
                 .collect(Collectors.toList());
         return VoteDtoMapper.INSTANCE.toVoteOptionResponseDto(voteOption, voteRecords.size(), userResponseDtos);
     }
+
+
 
 }
