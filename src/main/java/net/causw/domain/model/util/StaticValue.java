@@ -51,7 +51,8 @@ public class StaticValue {
     public static final Integer MAX_NUM_EVENT_IMAGE = 1;
     public static final Integer MAX_NUM_ETC_FILE = 10;
     // 파일 확장자 제한
-    public static final List<String> IMAGE_FILE_EXTENSION_LIST = List.of("JPEG", "JPG", "PNG");
+    public static final List<String> ALLOWED_FILE_EXTENSION_LIST = List.of("jpg", "png", "pdf", "docx", "xlsx", "zip", "jpeg");
+
 
     // Domain
     public static final String DOMAIN_BOARD = "게시판";
