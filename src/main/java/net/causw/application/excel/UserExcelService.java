@@ -29,7 +29,6 @@ public class UserExcelService extends ExcelAbstractService<UserResponseDto> {
                         .orElse(""),
         user -> Optional.ofNullable(user.getRoles())
                         .map(roles -> roles.stream()
-                            .filter(role -> role != Role.NONE)
                             .map(Role::getDescription)
                             .collect(Collectors.joining(",")))
                         .orElse(""),
