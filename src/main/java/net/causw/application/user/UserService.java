@@ -1,6 +1,8 @@
 package net.causw.application.user;
 
 import jakarta.servlet.http.HttpServletResponse;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
@@ -1512,7 +1514,8 @@ public class UserService {
     }
 
     public void exportUserListToExcel(HttpServletResponse response) {
-        String fileName = LocalDateTime.now() + "_사용자명단.xlsx";
+        String timePrefix = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss").format(LocalDateTime.now());
+        String fileName = timePrefix  + "_사용자명단";
 
         List<String> headerStringList = List.of(
                 "아이디(이메일)",
@@ -1521,7 +1524,6 @@ public class UserService {
                 "입학년도",
                 "역할",
                 "상태",
-                "동아리명 목록(동아리장일 경우",
                 "닉네임",
                 "학적 상태",
                 "현재 등록 완료된 학기",
@@ -1534,72 +1536,15 @@ public class UserService {
         );
 
         LinkedHashMap<String, List<UserResponseDto>> sheetDataMap = new LinkedHashMap<>();
+        for (UserState state : UserState.values()){
+            if (state == UserState.DELETED) {
+                continue;
+            }
+            String sheetName = state.getDescription() + " 유저";
+            List<UserResponseDto> sheetData = getUserResponseDtosByState(state);
 
-        List<UserResponseDto> activeUserList = userRepository.findAllByState(UserState.ACTIVE)
-                .stream()
-                .map(user -> {
-                            if (user.getRoles().contains(Role.LEADER_CIRCLE)) {
-                                List<String> circleIdIfLeader = getCircleIdsIfLeader(user);
-                                List<String> circleNameIfLeader = getCircleNamesIfLeader(user);
-                                return UserDtoMapper.INSTANCE.toUserResponseDto(user, circleIdIfLeader, circleNameIfLeader);
-                            } else {
-                                return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
-                            }
-                }).toList();
-
-        List<UserResponseDto> inactiveUserList = userRepository.findAllByState(UserState.INACTIVE)
-                .stream()
-                .map(user -> {
-                            if (user.getRoles().contains(Role.LEADER_CIRCLE)) {
-                                List<String> circleIdIfLeader = getCircleIdsIfLeader(user);
-                                List<String> circleNameIfLeader = getCircleNamesIfLeader(user);
-                                return UserDtoMapper.INSTANCE.toUserResponseDto(user, circleIdIfLeader, circleNameIfLeader);
-                            } else {
-                                return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
-                            }
-                }).toList();
-
-        List<UserResponseDto> awaitUserList = userRepository.findAllByState(UserState.AWAIT)
-                .stream()
-                .map(user -> {
-                            if (user.getRoles().contains(Role.LEADER_CIRCLE)) {
-                                List<String> circleIdIfLeader = getCircleIdsIfLeader(user);
-                                List<String> circleNameIfLeader = getCircleNamesIfLeader(user);
-                                return UserDtoMapper.INSTANCE.toUserResponseDto(user, circleIdIfLeader, circleNameIfLeader);
-                            } else {
-                                return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
-                            }
-                }).toList();
-
-        List<UserResponseDto> rejectUserList = userRepository.findAllByState(UserState.REJECT)
-                .stream()
-                .map(user -> {
-                    if (user.getRoles().contains(Role.LEADER_CIRCLE)) {
-                        List<String> circleIdIfLeader = getCircleIdsIfLeader(user);
-                        List<String> circleNameIfLeader = getCircleNamesIfLeader(user);
-                        return UserDtoMapper.INSTANCE.toUserResponseDto(user, circleIdIfLeader, circleNameIfLeader);
-                    } else {
-                        return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
-                    }
-                }).toList();
-
-        List<UserResponseDto> dropUserList = userRepository.findAllByState(UserState.DROP)
-                .stream()
-                .map(user -> {
-                            if (user.getRoles().contains(Role.LEADER_CIRCLE)) {
-                                List<String> circleIdIfLeader = getCircleIdsIfLeader(user);
-                                List<String> circleNameIfLeader = getCircleNamesIfLeader(user);
-                                return UserDtoMapper.INSTANCE.toUserResponseDto(user, circleIdIfLeader, circleNameIfLeader);
-                            } else {
-                                return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
-                            }
-                }).toList();
-
-        sheetDataMap.put("활성 유저", activeUserList);
-        sheetDataMap.put("가입 대기 유저", awaitUserList);
-        sheetDataMap.put("가입 거절 유저", rejectUserList);
-        sheetDataMap.put("탈퇴 유저", inactiveUserList);
-        sheetDataMap.put("추방 유저", dropUserList);
+            sheetDataMap.put(sheetName, sheetData);
+        }
 
         userExcelService.generateExcel(response, fileName, headerStringList, sheetDataMap);
     }
@@ -1693,5 +1638,24 @@ public class UserService {
     private Long getNumOfPostFavorites(Post post){
         return favoritePostRepository.countByPostIdAndIsDeletedFalse(post.getId());
     }
+
+    private List<User> getUsersByState(UserState state) {
+        if (state.equals(UserState.AWAIT)) {
+            return userAdmissionRepository.findAll()
+                .stream()
+                .map(UserAdmission::getUser)
+                .toList();
+        } else {
+            return userRepository.findAllByState(state);
+        }
+    }
+
+    private List<UserResponseDto> getUserResponseDtosByState(UserState state) {
+        List<User> users = getUsersByState(state);
+        return users.stream()
+            .map(UserDtoMapper.INSTANCE::toUserResponseDto)
+            .toList();
+    }
+
 
 }
