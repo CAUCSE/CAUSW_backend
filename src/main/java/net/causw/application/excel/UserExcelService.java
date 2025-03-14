@@ -37,6 +37,7 @@ public class UserExcelService extends ExcelAbstractService<UserResponseDto> {
                         .map(UserState::getDescription)
                         .orElse(""),
         user -> Optional.ofNullable(user.getNickname()).orElse(""),
+        user -> Optional.ofNullable(user.getMajor()).orElse(""),
         user -> Optional.ofNullable(user.getAcademicStatus())
                         .map(AcademicStatus::getValue)
                         .orElse(""),
