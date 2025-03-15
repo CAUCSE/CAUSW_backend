@@ -50,6 +50,9 @@ public class UserExcelService extends ExcelAbstractService<UserResponseDto> {
                         .map(GraduationType::getValue)
                         .orElse(""),
         user -> Optional.ofNullable(user.getPhoneNumber()).orElse(""),
+        user -> Optional.ofNullable(user.getCircleNameIfLeader())
+                        .map(circles -> String.join(",", circles))
+                        .orElse(""),
         user -> Optional.ofNullable(user.getRejectionOrDropReason()).orElse(""),
         user -> Optional.ofNullable(user.getCreatedAt())
                         .map(String::valueOf)

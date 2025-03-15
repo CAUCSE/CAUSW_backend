@@ -1531,6 +1531,7 @@ public class UserService {
                 "졸업 년도",
                 "졸업 시기",
                 "전화 번호",
+                "동아리명 목록(동아리장일 경우)",
                 "가입 거절/추방 사유",
                 "동문네트워크 가입일",
                 "사용자 정보 최종 수정일"
@@ -1654,8 +1655,15 @@ public class UserService {
     private List<UserResponseDto> getUserResponseDtosByState(UserState state) {
         List<User> users = getUsersByState(state);
         return users.stream()
-            .map(UserDtoMapper.INSTANCE::toUserResponseDto)
-            .toList();
+            .map(user -> {
+                if (user.getRoles().contains(Role.LEADER_CIRCLE)) {
+                    List<String> circleIdIfLeader = getCircleIdsIfLeader(user);
+                    List<String> circleNameIfLeader = getCircleNamesIfLeader(user);
+                    return UserDtoMapper.INSTANCE.toUserResponseDto(user, circleIdIfLeader, circleNameIfLeader);
+                } else {
+                    return UserDtoMapper.INSTANCE.toUserResponseDto(user);
+                }
+            }).toList();
     }
 
 
