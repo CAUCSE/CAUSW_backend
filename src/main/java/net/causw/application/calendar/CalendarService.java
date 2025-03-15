@@ -3,6 +3,7 @@ package net.causw.application.calendar;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.calendar.Calendar;
 import net.causw.adapter.persistence.repository.calendar.CalendarRepository;
+import net.causw.adapter.persistence.repository.uuidFile.CalendarAttachImageRepository;
 import net.causw.adapter.persistence.uuidFile.joinEntity.CalendarAttachImage;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.calendar.CalendarCreateRequestDto;
@@ -27,6 +28,7 @@ import java.util.List;
 public class CalendarService {
     private final CalendarRepository calendarRepository;
     private final UuidFileService uuidFileService;
+    private final CalendarAttachImageRepository calendarAttachImageRepository;
 
     @Transactional(readOnly = true)
     public CalendarsResponseDto findCalendarByYear(Integer year) {
@@ -113,5 +115,25 @@ public class CalendarService {
         );
 
         return CalendarDtoMapper.INSTANCE.toCalendarResponseDto(calendarRepository.save(calendar));
+    }
+
+    /**
+     * @param calendarId 삭제할 캘린더 Id
+     * @return 캘린더 단일 dto
+     */
+    @Transactional
+    public CalendarResponseDto deleteCalendar(final String calendarId) {
+        Calendar calendar = calendarRepository.findById(calendarId).orElseThrow(
+            () -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                MessageUtil.CALENDAR_NOT_FOUND
+            )
+        );
+        
+        calendarAttachImageRepository.delete(calendar.getCalendarAttachImage());
+        uuidFileService.deleteFile(calendar.getCalendarAttachImage().uuidFile);
+        calendarRepository.delete(calendar);
+
+        return CalendarDtoMapper.INSTANCE.toCalendarResponseDto(calendar);
     }
 }
