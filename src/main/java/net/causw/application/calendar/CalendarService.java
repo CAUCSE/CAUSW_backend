@@ -122,7 +122,7 @@ public class CalendarService {
      * @return 캘린더 단일 dto
      */
     @Transactional
-    public CalendarResponseDto deleteCalendar(final String calendarId) {
+    public CalendarResponseDto deleteCalendar(String calendarId) {
         Calendar calendar = calendarRepository.findById(calendarId).orElseThrow(
             () -> new BadRequestException(
                 ErrorCode.ROW_DOES_NOT_EXIST,
