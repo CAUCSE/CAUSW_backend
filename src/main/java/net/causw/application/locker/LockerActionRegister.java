@@ -42,8 +42,8 @@ public class LockerActionRegister implements LockerAction {
                     .validate();
 
             lockerService.findByUserId(user.getId()).ifPresent(existingLocker -> {
-                existingLocker.returnLocker();
-                LockerLog lockerLog = LockerLog.of(
+                lockerService.returnAndSaveLocker(existingLocker);
+               LockerLog lockerLog = LockerLog.of(
                         existingLocker.getLockerNumber(),
                         existingLocker.getLocation().getName(),
                         user.getEmail(),

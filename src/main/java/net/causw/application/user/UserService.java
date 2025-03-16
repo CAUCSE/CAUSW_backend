@@ -122,11 +122,10 @@ public class UserService {
     public void findPassword(
             UserFindPasswordRequestDto userFindPasswordRequestDto
     ) {
-        User requestUser = userRepository.findByEmailAndNameAndStudentIdAndPhoneNumber(
+        User requestUser = userRepository.findByEmailAndNameAndStudentId(
                     userFindPasswordRequestDto.getEmail().trim(),
                     userFindPasswordRequestDto.getName().trim(),
-                    userFindPasswordRequestDto.getStudentId().trim(),
-                    userFindPasswordRequestDto.getPhoneNumber().trim()
+                    userFindPasswordRequestDto.getStudentId().trim()
                 ).orElseThrow(() -> new NotFoundException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.USER_NOT_FOUND
@@ -557,15 +556,6 @@ public class UserService {
                 }
         );
 
-        this.userRepository.findByPhoneNumber(userCreateRequestDto.getPhoneNumber()).ifPresent(
-                phoneNumber -> {
-                    throw new BadRequestException(
-                            ErrorCode.ROW_ALREADY_EXIST,
-                            MessageUtil.PHONE_NUMBER_ALREADY_EXIST
-                    );
-                }
-        );
-
         User user = User.from(userCreateRequestDto, passwordEncoder.encode(userCreateRequestDto.getPassword()));
 
         this.userRepository.save(user);
@@ -714,7 +704,7 @@ public class UserService {
             }
         }
 
-        srcUser.update(userUpdateRequestDto.getNickname(), userProfileImage);
+        srcUser.update(userUpdateRequestDto.getNickname(), userProfileImage,userUpdateRequestDto.getPhoneNumber());
 
         User updatedUser = userRepository.save(srcUser);
 
@@ -870,6 +860,8 @@ public class UserService {
             }
             if (grantee.getRoles().isEmpty()) {
                 addRole(grantee, Role.COMMON);
+            } else if (grantee.getRoles().size() >= 2 && grantee.getRoles().contains(Role.COMMON)) {
+                removeRole(grantee, Role.COMMON);
             }
         }
         else {
@@ -1483,10 +1475,9 @@ public class UserService {
     }
 
     public UserFindIdResponseDto findUserId(UserFindIdRequestDto userIdFindRequestDto) {
-        User user = this.userRepository.findByStudentIdAndNameAndPhoneNumber(
-                userIdFindRequestDto.getStudentId(),
-                userIdFindRequestDto.getName(),
-                userIdFindRequestDto.getPhoneNumber()
+        User user = this.userRepository.findByStudentIdAndName(
+                userIdFindRequestDto.getStudentId().trim(),
+                userIdFindRequestDto.getName().trim()
         ).orElseThrow(() -> new BadRequestException(
                 ErrorCode.ROW_DOES_NOT_EXIST,
                 MessageUtil.USER_NOT_FOUND

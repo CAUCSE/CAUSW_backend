@@ -38,7 +38,7 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     List<User> findAllByState(UserState state);
 
-    Optional<User> findByStudentIdAndNameAndPhoneNumber(String studentId, String name, String phoneNumber);
+    Optional<User> findByStudentIdAndName(String studentId, String name);
 
     List<User> findByStudentIdAndStateAndAcademicStatus(String studentId, UserState userState, AcademicStatus academicStatus);
 

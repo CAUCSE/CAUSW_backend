@@ -897,7 +897,9 @@ public class PostService {
                         .stream()
                         .filter(postAttachImage ->
                                 FileExtensionType.IMAGE.getExtensionList().contains(postAttachImage.getUuidFile().getExtension())
-                        ).findFirst()
+                        )
+                        .sorted(Comparator.comparing(PostAttachImage::getCreatedAt)) // 오름차순 정렬
+                        .findFirst()
                         .orElse(null);
 
         PostsResponseDto postsResponseDto = PostDtoMapper.INSTANCE.toPostsResponseDto(

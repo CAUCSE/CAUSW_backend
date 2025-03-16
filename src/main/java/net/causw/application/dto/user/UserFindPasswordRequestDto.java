@@ -2,6 +2,7 @@ package net.causw.application.dto.user;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,6 +20,4 @@ public class UserFindPasswordRequestDto {
     private String name;
     @NotBlank(message = "학번을 입력해 주세요.")
     private String studentId;
-    @NotBlank(message = "전화번호를 입력해 주세요.")
-    private String phoneNumber;
 }

@@ -20,7 +20,7 @@ public class UserUpdateRoleRequestDto {
     @Schema(description = "역할", example = "COMMON")
     private String role;
 
-    @NotBlank(message = "동아리 id를 입력해 주세요.")
+    //@NotBlank(message = "동아리 id를 입력해 주세요.")
     @Schema(description = "동아리 고유 id값", example = "uuid 형식의 String 값입니다.")
     private String circleId;
 
