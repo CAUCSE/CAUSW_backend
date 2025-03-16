@@ -130,8 +130,18 @@ public class UserAcademicRecordApplicationService {
         validUpdateUserAcademicStatusRequestDto(updateUserAcademicStatusRequestDto);
 
         User targetUser = getUser(updateUserAcademicStatusRequestDto.getTargetUserId());
+        AcademicStatus targetAcademicStatus = updateUserAcademicStatusRequestDto.getTargetAcademicStatus();
 
-        targetUser.setAcademicStatus(updateUserAcademicStatusRequestDto.getTargetAcademicStatus());
+        targetUser.setAcademicStatus(targetAcademicStatus);
+
+        if (targetAcademicStatus.equals(AcademicStatus.GRADUATED)) {
+            targetUser.setGraduationYear(updateUserAcademicStatusRequestDto.getTargetGraduationYear());
+            targetUser.setGraduationType(updateUserAcademicStatusRequestDto.getTargetGraduationType());
+        }
+
+        else if (targetAcademicStatus.equals(AcademicStatus.ENROLLED)) {
+            targetUser.setCurrentCompletedSemester(updateUserAcademicStatusRequestDto.getTargetCompletedSemester());
+        }
 
         UserAcademicRecordLog userAcademicRecordLog = UserAcademicRecordLog.create(
                 controllerUser,
