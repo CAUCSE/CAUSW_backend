@@ -9,7 +9,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.calendar.CalendarService;
 import net.causw.application.dto.calendar.CalendarCreateRequestDto;
-import net.causw.application.dto.calendar.CalendarDeleteRequestDto;
 import net.causw.application.dto.calendar.CalendarResponseDto;
 import net.causw.application.dto.calendar.CalendarUpdateRequestDto;
 import net.causw.application.dto.calendar.CalendarsResponseDto;
