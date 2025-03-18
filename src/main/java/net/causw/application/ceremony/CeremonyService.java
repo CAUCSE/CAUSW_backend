@@ -46,7 +46,10 @@ public class CeremonyService {
             @Valid CreateCeremonyRequestDto createCeremonyRequestDTO,
             List<MultipartFile> imageFileList
     ) {
-        List<UuidFile> uuidFileList = uuidFileService.saveFileList(imageFileList, FilePath.USER_ACADEMIC_RECORD_APPLICATION);
+        List<UuidFile> uuidFileList = (imageFileList == null || imageFileList.isEmpty())
+                ? List.of()
+                : uuidFileService.saveFileList(imageFileList, FilePath.USER_ACADEMIC_RECORD_APPLICATION);
+
         Ceremony ceremony = Ceremony.createWithImages(
                 user,
                 createCeremonyRequestDTO.getCategory(),

@@ -278,15 +278,15 @@ public class BoardController {
         return this.boardService.restoreBoard(userDetails.getUser(), id);
     }
 
-    @PostMapping("/{id}/notification-setting")
-    @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
-    @Operation(summary = "보드 알람 설정", description = "id에는 board id 값을 넣어주세요")
-    public void setBoardNotification(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable("id") String id
-    ){
-        boardService.createBoardNotification(userDetails.getUser(), id){
-        }
-    }
+//    @PostMapping("/{id}/notification-setting")
+//    @ResponseStatus(HttpStatus.OK)
+//    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
+//    @Operation(summary = "보드 알람 설정", description = "id에는 board id 값을 넣어주세요")
+//    public void setBoardNotification(
+//            @AuthenticationPrincipal CustomUserDetails userDetails,
+//            @PathVariable("id") String id
+//    ){
+//        boardService.createBoardNotification(userDetails.getUser(), id){
+//        }
+//    }
 }

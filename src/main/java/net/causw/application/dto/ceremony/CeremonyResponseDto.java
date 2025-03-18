@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import net.causw.domain.model.enums.ceremony.CeremonyCategory;
 import net.causw.adapter.persistence.ceremony.Ceremony;
+import net.causw.domain.model.enums.ceremony.CeremonyState;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -28,6 +29,9 @@ public class CeremonyResponseDto {
     @Schema(description = "행사 카테고리", example = "GRADUATION")
     private CeremonyCategory category;
 
+    @Schema(description = "신청한 경조사 상태", example = "AWAIT")
+    private CeremonyState ceremonyState;
+
     @Schema(description = "첨부 이미지 URL 리스트")
     private List<String> attachedImageUrlList;
 
@@ -41,6 +45,7 @@ public class CeremonyResponseDto {
                 .startDate(ceremony.getStartDate())
                 .endDate(ceremony.getEndDate())
                 .category(ceremony.getCeremonyCategory())
+                .ceremonyState(ceremony.getCeremonyState())
                 .attachedImageUrlList(attachedImageUrlList)
                 .build();
     }

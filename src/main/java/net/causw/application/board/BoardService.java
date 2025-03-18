@@ -528,7 +528,7 @@ public class BoardService {
     }
 
     public void updateBoarSubscribe(User user , String boardId){
-        Board board = getBoard();
+        Board board = getBoard(boardId);
         UserBoardSubscribe subscription = userBoardSubscribeRepository.findByUserAndBoard(user, board)
                 .orElseGet(() -> UserBoardSubscribe.of(user, board, false));
 

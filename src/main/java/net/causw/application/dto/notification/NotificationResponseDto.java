@@ -34,7 +34,7 @@ public class NotificationResponseDto {
                 .title(notification.getTitle())
                 .body(notification.getBody())
                 .noticeType(notification.getNoticeType())
-                .isGlobal(notification.getIsGlobal())
+//                .isGlobal(notification.getIsGlobal())
                 .build();
     }
 }
