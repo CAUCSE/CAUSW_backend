@@ -105,13 +105,13 @@ public class CeremonyController {
     }
 
 
-    @GetMapping("/notification")
-    @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
-    @Operation(summary = "유저에게 온 경조사 알람 조회", description = "유저의 경조사 알람을 조회합니다.")
-    public List<NotificationResponseDto> getCeremonyNotification(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        return ceremonyService.getCeremonyNotification(userDetails.getUser());
-    }
+//    @GetMapping("/notification")
+//    @ResponseStatus(value = HttpStatus.OK)
+//    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
+//    @Operation(summary = "유저에게 온 경조사 알람 조회", description = "유저의 경조사 알람을 조회합니다.")
+//    public List<NotificationResponseDto> getCeremonyNotification(@AuthenticationPrincipal CustomUserDetails userDetails) {
+//        return ceremonyService.getCeremonyNotification(userDetails.getUser());
+//    }
 
     @GetMapping("/notification-setting")
     @ResponseStatus(value = HttpStatus.OK)

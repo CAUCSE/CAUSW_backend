@@ -11,6 +11,11 @@ public interface NotificationDtoMapper {
 
     NotificationDtoMapper INSTANCE = Mappers.getMapper(NotificationDtoMapper.class);
 
-    @Mapping(target = "user_id", source = "user.id")
+    @Mapping(target = "title", source = "notification.title")
+    @Mapping(target = "body", source = "notification.body")
+    @Mapping(target = "noticeType", source = "notification.noticeType")
     NotificationResponseDto toNotificationResponseDto(Notification notification);
+
+
+
 }

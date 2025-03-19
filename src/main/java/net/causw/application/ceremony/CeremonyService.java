@@ -150,12 +150,5 @@ public class CeremonyService {
 
         return CeremonyNotificationSettingResponseDto.from(notificationSetting);
     }
-    @Transactional(readOnly = true)
-    public List<NotificationResponseDto> getCeremonyNotification(User user) {
-        List<Notification> notifications = notificationRepository.findByUserAndNoticeType(user, NoticeType.CEREMONY);
 
-        return notifications.stream()
-                .map(NotificationResponseDto::of)
-                .collect(Collectors.toList());
-    }
 }
