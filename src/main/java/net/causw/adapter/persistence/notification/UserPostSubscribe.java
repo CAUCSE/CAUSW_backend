@@ -22,12 +22,11 @@ public class UserPostSubscribe extends BaseEntity {
     @JoinColumn(name = "post_id")
     private Post post;
 
-    @Setter
     @Column(name = "is_subscribed")
     private Boolean isSubscribed;
 
     public UserPostSubscribe toggle() {
-        this.setIsSubscribed(!this.getIsSubscribed());
+        this.isSubscribed = (this.isSubscribed == null) ? true : !this.isSubscribed;
         return this;
     }
 

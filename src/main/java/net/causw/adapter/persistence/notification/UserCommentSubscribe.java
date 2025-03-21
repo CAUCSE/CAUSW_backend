@@ -22,12 +22,11 @@ public class UserCommentSubscribe extends BaseEntity {
     @JoinColumn(name = "comment_id")
     private Comment comment;
 
-    @Setter
     @Column(name = "is_subscribed")
     private Boolean isSubscribed;
 
     public UserCommentSubscribe toggle() {
-        this.setIsSubscribed(!this.getIsSubscribed());
+        this.isSubscribed = (this.isSubscribed == null) ? true : !this.isSubscribed;
         return this;
     }
 

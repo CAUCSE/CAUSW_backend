@@ -10,7 +10,9 @@ import lombok.RequiredArgsConstructor;
 import net.causw.application.comment.CommentService;
 import net.causw.application.dto.comment.CommentCreateRequestDto;
 import net.causw.application.dto.comment.CommentResponseDto;
+import net.causw.application.dto.comment.CommentSubscribeResponseDto;
 import net.causw.application.dto.comment.CommentUpdateRequestDto;
+import net.causw.application.dto.post.PostSubscribeResponseDto;
 import net.causw.config.security.userdetails.CustomUserDetails;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.UnauthorizedException;
@@ -189,6 +191,18 @@ public class CommentController {
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         this.commentService.likeComment(userDetails.getUser(), id);
+    }
+
+    @PutMapping("/subscribe/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
+    @Operation(summary = "로그인한 사용자의 게시글 알람 설정"
+            , description = "id에는 comment id 값을 넣어주세요")
+    public CommentSubscribeResponseDto updatePostSubscribe(
+            @PathVariable("id") String id,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ){
+        return this.commentService.updateCommentSubscribe(userDetails.getUser(), id);
     }
 
 }

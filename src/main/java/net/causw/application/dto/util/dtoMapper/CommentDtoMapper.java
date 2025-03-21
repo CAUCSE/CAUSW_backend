@@ -2,8 +2,10 @@ package net.causw.application.dto.util.dtoMapper;
 
 import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
+import net.causw.adapter.persistence.notification.UserCommentSubscribe;
 import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentResponseDto;
+import net.causw.application.dto.comment.CommentSubscribeResponseDto;
 import net.causw.application.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -48,5 +50,11 @@ public interface CommentDtoMapper extends UuidFileToUrlDtoMapper {
             Boolean updatable,
             Boolean deletable);
 
+
+
+    @Mapping(target = "commentId", source = "comment.id")
+    @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "isSubscribed", source = "isSubscribed")
+    CommentSubscribeResponseDto toCommentSubscribeResponseDto(UserCommentSubscribe userCommentSubscribe);
 
 }

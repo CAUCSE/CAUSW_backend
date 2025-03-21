@@ -13,5 +13,5 @@ import java.util.Optional;
 public interface UserBoardSubscribeRepository extends JpaRepository<UserBoardSubscribe, String> {
     Optional<UserBoardSubscribe> findByUserAndBoard(User user, Board board);
 
-    List<UserBoardSubscribe> findByBoard_Id(String boardId);
+    List<UserBoardSubscribe> findByBoardAndIsSubscribedTrue(Board board);
 }

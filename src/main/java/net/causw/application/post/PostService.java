@@ -9,11 +9,11 @@ import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.form.Form;
 import net.causw.adapter.persistence.form.FormQuestionOption;
 import net.causw.adapter.persistence.form.FormQuestion;
+import net.causw.adapter.persistence.notification.UserPostSubscribe;
 import net.causw.adapter.persistence.repository.form.FormRepository;
-import net.causw.adapter.persistence.notification.Notification;
-import net.causw.adapter.persistence.notification.UserBoardSubscribe;
 import net.causw.adapter.persistence.repository.notification.NotificationRepository;
 import net.causw.adapter.persistence.repository.notification.UserBoardSubscribeRepository;
+import net.causw.adapter.persistence.repository.notification.UserPostSubscribeRepository;
 import net.causw.adapter.persistence.repository.uuidFile.PostAttachImageRepository;
 import net.causw.adapter.persistence.repository.vote.VoteRecordRepository;
 import net.causw.adapter.persistence.uuidFile.joinEntity.PostAttachImage;
@@ -29,6 +29,7 @@ import net.causw.application.dto.user.UserResponseDto;
 import net.causw.application.dto.util.dtoMapper.*;
 import net.causw.application.dto.vote.VoteOptionResponseDto;
 import net.causw.application.dto.vote.VoteResponseDto;
+import net.causw.application.notification.BoardNotificationService;
 import net.causw.application.pageable.PageableFactory;
 import net.causw.adapter.persistence.post.FavoritePost;
 import net.causw.adapter.persistence.post.LikePost;
@@ -102,6 +103,8 @@ public class PostService {
     private final UuidFileService uuidFileService;
     private final PostAttachImageRepository postAttachImageRepository;
     private final FormRepository formRepository;
+    private final UserPostSubscribeRepository userPostSubscribeRepository;
+    private final BoardNotificationService boardNotificationService;
 
     public PostResponseDto findPostById(User user, String postId) {
         Post post = getPost(postId);
@@ -209,6 +212,10 @@ public class PostService {
                         .map(this::toPostsResponseDto));
     }
 
+    //게시글이 생성될 때 발생할 일
+    //1. 게시글과 작성자의 구독 매핑 만들기
+    //2. 이 게시글이 작성된 게시판의 구독자 확인하기
+    //3. 이 게시판의 구독자들에게 sendByBoardIsSubscribed로 푸시 알림 보내기 & 서비스 알람 로그 저장하기
     @Transactional
     public  PostCreateResponseDto createPost(User creator, PostCreateRequestDto postCreateRequestDto, List<MultipartFile> attachImageList) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
@@ -270,36 +277,14 @@ public class PostService {
                 .consistOf(ConstraintValidator.of(post, this.validator))
                 .validate();
 
-        // 게시물 알림
-        List<UserBoardSubscribe> byBoardId = userBoardSubscribeRepository.findByBoard_Id(postCreateRequestDto.getBoardId());
-        //TODO 푸시알람 로직 변경 필요
-        /*
-        if (board.getIsDefaultNotice()) { // 전체 사용자가 알림 대상이면
-            notificationRepository.save(
-                    Notification.of(
-                            null,
-                            post.getTitle(),
-                            NoticeType.POST,
-                            true
-                    )
-            );
-        } else { // 개별 사용자에게 알림
-            for (UserBoardSubscribe user : byBoardId) {
-                if (!user.getUser().getId().equals(creator.getId())) {
-                    notificationRepository.save(
-                            Notification.of(
-                                    user.getUser(),
-                                    post.getTitle(),
-                                    NoticeType.POST,
-                                    false
-                            )
-                    );
-                }
-            }
-        }
-        */
+        PostCreateResponseDto postCreateResponseDto = toPostCreateResponseDto(postRepository.save(post));
 
-        return toPostCreateResponseDto(postRepository.save(post));
+        createPostSubscribe(creator, post.getId());
+
+        //2. 작성된 게시판의 구독자에게 알람 보내기
+        boardNotificationService.sendByBoardIsSubscribed(board, post);
+
+        return postCreateResponseDto;
     }
 
     @Transactional
@@ -313,8 +298,6 @@ public class PostService {
 
         Board board = getBoard(postCreateWithFormRequestDto.getBoardId());
         List<String> createRoles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
-        System.out.println(createRoles);
-        System.out.println("Creator Roles: " + roles);
 
         if (board.getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
             validatorBucket
@@ -711,6 +694,36 @@ public class PostService {
 
         favoritePostRepository.save(favoritePost);
     }
+
+
+    //게시글에대한 알람은 작성자면 무조건 true, 아니라면 false(null 이거나 false)
+    //근데 얘는 디폴트로 추가해줄건 내가 쓴 게시글이면 알람이 달리게 해야될것 같음
+    // 근데 이건 지금까지 작성한건 배제하고, 앞으로 작성할 글들에 대해서 자동으로 켜지게 한다치고
+    //그럼 아래 createpostsubscribe의 목적은? 내가 게시글을 작성할때 그 계정과 게시글의 매핑을 만드는 것임
+    public void createPostSubscribe(User user, String postId){
+        Post post = getPost(postId);
+
+        UserPostSubscribe userPostSubscribe = UserPostSubscribe.of(user, post, true);
+        userPostSubscribeRepository.save(userPostSubscribe);
+    }
+
+    @Transactional
+    public PostSubscribeResponseDto updatePostSubscribe(User user, String postId) {
+        Post post = getPost(postId);
+
+        UserPostSubscribe subscription = userPostSubscribeRepository.findByUserAndPost(user, post)
+                .map(existing -> {
+                    existing.toggle();
+                    return existing;
+                })
+                .orElseGet(() -> userPostSubscribeRepository.save(UserPostSubscribe.of(user, post, true)));
+
+        return PostDtoMapper.INSTANCE.toPostSubscribeResponseDto(subscription);
+    }
+
+
+
+
 
     private Boolean isPostAlreadyLike(User user, String postId) {
         return likePostRepository.existsByPostIdAndUserId(postId, user.getId());

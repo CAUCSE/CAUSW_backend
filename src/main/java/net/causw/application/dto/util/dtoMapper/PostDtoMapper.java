@@ -1,6 +1,7 @@
 package net.causw.application.dto.util.dtoMapper;
 
 import net.causw.adapter.persistence.board.Board;
+import net.causw.adapter.persistence.notification.UserPostSubscribe;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.uuidFile.joinEntity.PostAttachImage;
 import net.causw.application.dto.comment.CommentResponseDto;
@@ -99,4 +100,10 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
 
     @Mapping(target="id", source = "post.id")
     PostCreateResponseDto toPostCreateResponseDto(Post post);
+
+
+    @Mapping(target = "postId", source = "post.id")
+    @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "isSubscribed", source = "isSubscribed")
+    PostSubscribeResponseDto toPostSubscribeResponseDto(UserPostSubscribe userPostSubscribe);
 }

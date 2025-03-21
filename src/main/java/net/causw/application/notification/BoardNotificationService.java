@@ -1,20 +1,17 @@
 package net.causw.application.notification;
 
+
 import lombok.RequiredArgsConstructor;
-import net.causw.adapter.persistence.comment.ChildComment;
-import net.causw.adapter.persistence.comment.Comment;
+import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.notification.Notification;
 import net.causw.adapter.persistence.notification.NotificationLog;
-import net.causw.adapter.persistence.notification.UserCommentSubscribe;
-import net.causw.adapter.persistence.notification.UserPostSubscribe;
+import net.causw.adapter.persistence.notification.UserBoardSubscribe;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.notification.NotificationLogRepository;
 import net.causw.adapter.persistence.repository.notification.NotificationRepository;
-import net.causw.adapter.persistence.repository.notification.UserCommentSubscribeRepository;
-import net.causw.adapter.persistence.repository.notification.UserPostSubscribeRepository;
+import net.causw.adapter.persistence.repository.notification.UserBoardSubscribeRepository;
 import net.causw.adapter.persistence.user.User;
-import net.causw.application.dto.notification.CommentNotificationDto;
-import net.causw.application.dto.notification.PostNotificationDto;
+import net.causw.application.dto.notification.BoardNotificationDto;
 import net.causw.domain.model.enums.notification.NoticeType;
 import org.springframework.stereotype.Service;
 
@@ -22,11 +19,12 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class CommentNotificationService implements NotificationService{
+public class BoardNotificationService implements NotificationService {
     private final FirebasePushNotificationService firebasePushNotificationService;
     private final NotificationRepository notificationRepository;
     private final NotificationLogRepository notificationLogRepository;
-    private final UserCommentSubscribeRepository userCommentSubscribeRepository;
+    private final UserBoardSubscribeRepository userBoardSubscribeRepository;
+
     @Override
     public void send(String targetToken, String title, String body) {
         firebasePushNotificationService.sendNotification(targetToken, title, body);
@@ -42,19 +40,21 @@ public class CommentNotificationService implements NotificationService{
         notificationLogRepository.save(NotificationLog.of(user, notification));
     }
 
-    public void sendByCommentIsSubscribed(Comment comment, ChildComment childComment){
-        List<UserCommentSubscribe> userCommentSubscribeList = userCommentSubscribeRepository.findByCommentAndIsSubscribedTrue(comment);
-        CommentNotificationDto commentNotificationDto = CommentNotificationDto.of(comment, childComment);
+    public void sendByBoardIsSubscribed(Board board, Post post){
+        //해당 게시판의 구독자 목록을 불러
+        List<UserBoardSubscribe> userBoardSubscribeList = userBoardSubscribeRepository.findByBoardAndIsSubscribedTrue(board);
+        BoardNotificationDto boardNotificationDto = BoardNotificationDto.of(board, post);
 
-        Notification notification = Notification.of(childComment.getWriter(), commentNotificationDto.getTitle(), commentNotificationDto.getBody(), NoticeType.COMMENT);
+        Notification notification = Notification.of(post.getWriter(), boardNotificationDto.getTitle(), boardNotificationDto.getBody(), NoticeType.BOARD);
 
         saveNotification(notification);
 
-        userCommentSubscribeList.stream()
-                .map(UserCommentSubscribe::getUser)
+        userBoardSubscribeList.stream()
+                .map(UserBoardSubscribe::getUser)
                 .forEach(user -> {
-                    //특정 게시글에 댓글이 달리는 경우의 푸시알림 전송 여기서 진행
+                    //여기서 게시글 푸시알람 보내면 됨
                     saveNotificationLog(user, notification);
                 });
+
     }
 }

@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import net.causw.application.dto.board.BoardSubscribeResponseDto;
 import net.causw.application.dto.post.*;
 import net.causw.application.post.PostService;
 import net.causw.config.security.userdetails.CustomUserDetails;
@@ -410,6 +411,21 @@ public class PostController {
     ){
         this.postService.cancelFavoritePost(userDetails.getUser(), id);
     }
+
+    @PutMapping("/subscribe/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
+    @Operation(summary = "로그인한 사용자의 게시글 알람 설정"
+            , description = "id에는 post id 값을 넣어주세요")
+    public PostSubscribeResponseDto updatePostSubscribe(
+            @PathVariable("id") String id,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ){
+        return this.postService.updatePostSubscribe(userDetails.getUser(), id);
+    }
+
+
+
 
 
 }
