@@ -12,6 +12,7 @@ import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.ceremony.*;
 import net.causw.application.dto.notification.NotificationResponseDto;
+import net.causw.application.dto.util.dtoMapper.CeremonyDtoMapper;
 import net.causw.application.notification.CeremonyNotificationService;
 import net.causw.application.uuidFile.UuidFileService;
 import net.causw.domain.exceptions.BadRequestException;
@@ -60,21 +61,21 @@ public class CeremonyService {
         );
         ceremonyRepository.save(ceremony);
 
-        return CeremonyResponseDto.from(ceremony);
+        return CeremonyDtoMapper.INSTANCE.toCeremonyResponseDto(ceremony);
     }
 
     @Transactional(readOnly = true)
     public List<CeremonyResponseDto> getUserCeremonyResponsesDTO(User user) {
         List<Ceremony> ceremonies = ceremonyRepository.findAllByUser(user);
         return ceremonies.stream()
-                .map(CeremonyResponseDto::from) // Assuming from method exists in DTO
+                .map(CeremonyDtoMapper.INSTANCE::toCeremonyResponseDto) // Assuming from method exists in DTO
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public Page<CeremonyResponseDto> getAllUserAwaitingCeremonyPage(Pageable pageable) {
         Page<Ceremony> ceremoniesPage = ceremonyRepository.findByCeremonyState(CeremonyState.AWAIT, pageable);
-        return ceremoniesPage.map(CeremonyResponseDto::from);
+        return ceremoniesPage.map(CeremonyDtoMapper.INSTANCE::toCeremonyResponseDto);
     }
 
     @Transactional(readOnly = true)
@@ -85,7 +86,7 @@ public class CeremonyService {
                         MessageUtil.CEREMONY_NOT_FOUND
                 )
         );
-        return CeremonyResponseDto.from(ceremony);
+        return CeremonyDtoMapper.INSTANCE.toCeremonyResponseDto(ceremony);
     }
 
     @Transactional
@@ -100,13 +101,13 @@ public class CeremonyService {
 
         if (updateDto.getTargetCeremonyState() == CeremonyState.REJECT) {
             ceremony.updateNote(updateDto.getRejectMessage());
-            return CeremonyResponseDto.from(ceremony);
+            return CeremonyDtoMapper.INSTANCE.toCeremonyResponseDto(ceremony);
         }
         Integer writerAdmissionYear = ceremony.getUser().getAdmissionYear();
         ceremonyNotificationService.sendByAdmissionYear(writerAdmissionYear, ceremony);
         ceremonyRepository.save(ceremony);
 
-        return CeremonyResponseDto.from(ceremony);
+        return CeremonyDtoMapper.INSTANCE.toCeremonyResponseDto(ceremony);
     }
 
 
@@ -118,37 +119,38 @@ public class CeremonyService {
         CeremonyNotificationSetting ceremonyNotificationSetting = CeremonyNotificationSetting.of(createCeremonyNotificationSettingDTO.getSubscribedAdmissionYears(),
                 createCeremonyNotificationSettingDTO.isSetAll(), createCeremonyNotificationSettingDTO.isNotificationActive(), user);
         ceremonyNotificationSettingRepository.save(ceremonyNotificationSetting);
-        return CeremonyNotificationSettingResponseDto.from(ceremonyNotificationSetting);
+        return CeremonyDtoMapper.INSTANCE.toCeremonyNotificationSettingResponseDto(ceremonyNotificationSetting);
     }
 
     @Transactional(readOnly = true)
     public CeremonyNotificationSettingResponseDto getCeremonyNotificationSetting(User user) {
-        CeremonyNotificationSetting notificationSetting = ceremonyNotificationSettingRepository.findByUser(user).orElseThrow(
+        CeremonyNotificationSetting ceremonyNotificationSetting = ceremonyNotificationSettingRepository.findByUser(user).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.CEREMONY_NOTIFICATION_SETTING_NOT_FOUND
                 )
         );
-        return CeremonyNotificationSettingResponseDto.from(notificationSetting);
+        return CeremonyDtoMapper.INSTANCE.toCeremonyNotificationSettingResponseDto(ceremonyNotificationSetting);
     }
 
     @Transactional
     public CeremonyNotificationSettingResponseDto updateUserSettings(User user, CreateCeremonyNotificationSettingDto createCeremonyNotificationSettingDTO) {
-        CeremonyNotificationSetting notificationSetting = ceremonyNotificationSettingRepository.findByUser(user).orElseThrow(
+        CeremonyNotificationSetting ceremonyNotificationSetting = ceremonyNotificationSettingRepository.findByUser(user).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.CEREMONY_NOTIFICATION_SETTING_NOT_FOUND
                 )
         );
 
-        notificationSetting.getSubscribedAdmissionYears().clear();
-        notificationSetting.getSubscribedAdmissionYears().addAll(createCeremonyNotificationSettingDTO.getSubscribedAdmissionYears());
-        notificationSetting.updateIsSetAll(createCeremonyNotificationSettingDTO.isSetAll());
-        notificationSetting.updateIsNotificationActive(createCeremonyNotificationSettingDTO.isNotificationActive());
+        ceremonyNotificationSetting.getSubscribedAdmissionYears().clear();
+        ceremonyNotificationSetting.getSubscribedAdmissionYears().addAll(createCeremonyNotificationSettingDTO.getSubscribedAdmissionYears());
+        ceremonyNotificationSetting.updateIsSetAll(createCeremonyNotificationSettingDTO.isSetAll());
+        ceremonyNotificationSetting.updateIsNotificationActive(createCeremonyNotificationSettingDTO.isNotificationActive());
 
-        ceremonyNotificationSettingRepository.save(notificationSetting);
+        ceremonyNotificationSettingRepository.save(ceremonyNotificationSetting);
 
-        return CeremonyNotificationSettingResponseDto.from(notificationSetting);
+        return CeremonyDtoMapper.INSTANCE.toCeremonyNotificationSettingResponseDto(ceremonyNotificationSetting);
+
     }
 
 }

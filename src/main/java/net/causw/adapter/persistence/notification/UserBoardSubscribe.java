@@ -22,14 +22,15 @@ public class UserBoardSubscribe extends BaseEntity {
     @JoinColumn(name = "board_id")
     private Board board;
 
-    @Setter
+
     @Column(name = "is_subscribed")
     private Boolean isSubscribed;
 
     public UserBoardSubscribe toggle() {
-        this.setIsSubscribed(!this.getIsSubscribed());
+        this.isSubscribed = (this.isSubscribed == null) ? true : !this.isSubscribed;
         return this;
     }
+
 
     public static UserBoardSubscribe of(
             User user,

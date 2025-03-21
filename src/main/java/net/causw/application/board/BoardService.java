@@ -520,18 +520,40 @@ public class BoardService {
     }
 
     @Transactional
-    public void createBoardSubscribe(User user, String boardId) {
-
+    public void createBoardSubscribe(String boardId) {
+        //관리자용 api로 추후에는 공지게시판이 있으면 자동으로 호출되게 하는게 좋을듯
+        //공지게시판은 이 메서드로 한번에 관리를 한다고 치고, 나머지 일반 게시판은 그냥 없으면
         Board board = getBoard(boardId);
-        UserBoardSubscribe userBoardSubscribe = UserBoardSubscribe.of(user, board, true);
-        userBoardSubscribeRepository.save(userBoardSubscribe);
+        List<User> allUsers = userRepository.findAll();
+
+        List<UserBoardSubscribe> subscriptions = allUsers.stream()
+                .map(user -> UserBoardSubscribe.of(user, board, true))
+                .collect(Collectors.toList());
+
+        userBoardSubscribeRepository.saveAll(subscriptions);
     }
 
-    public void updateBoarSubscribe(User user , String boardId){
+    //공지 게시판은 무조건 디폴트로 on이어야 하고, 나머지는 그냥 디폴트로 off 여야함
+    /*
+    하지만 지금 상황은 결국엔 기존 게시판이 있기 때문에 무조건 off 가 아니라 구독 기능이 추가될 때 사용자 전원이 매핑되게 할 필요가 있음
+    그럼 그냥 아예 없으면(굳이 사용자가 억지로 키지 않으면) false
+    But 공지게시판은 무조건 true로 만들기 (위 createBoardSubscribe를 관리자용 api로 일단 저장해두면 될 것 같음)? 을 할게 아니라
+    그냥 공지게시판은 무조건 보내지게 하는것보다 걍 자동으로 공지게시판이랑 모든 유저가 다 매핑되게 하는 api를 만드는게 좋을듯
+    일반 게시판은 매핑테이블에 정보가 없으면 그냥 알람이 꺼진 상태이고 만약에 update가 들어왔을때 없다면 그때 생성하게
+    * */
+
+    @Transactional
+    public BoardSubscribeResponseDto updateBoardSubscribe(User user, String boardId) {
         Board board = getBoard(boardId);
+
         UserBoardSubscribe subscription = userBoardSubscribeRepository.findByUserAndBoard(user, board)
-                .orElseGet(() -> UserBoardSubscribe.of(user, board, false));
+                .map(existing -> {
+                    existing.toggle();
+                    return existing;
+                })
+                .orElseGet(() -> userBoardSubscribeRepository.save(UserBoardSubscribe.of(user, board, true)));
 
-        subscription.toggle();
+        return BoardDtoMapper.INSTANCE.toBoardSubscribeResponseDto(subscription);
     }
+
 }

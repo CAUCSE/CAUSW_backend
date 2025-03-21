@@ -278,15 +278,31 @@ public class BoardController {
         return this.boardService.restoreBoard(userDetails.getUser(), id);
     }
 
-//    @PostMapping("/{id}/notification-setting")
-//    @ResponseStatus(HttpStatus.OK)
-//    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
-//    @Operation(summary = "보드 알람 설정", description = "id에는 board id 값을 넣어주세요")
-//    public void setBoardNotification(
-//            @AuthenticationPrincipal CustomUserDetails userDetails,
-//            @PathVariable("id") String id
-//    ){
-//        boardService.createBoardNotification(userDetails.getUser(), id){
-//        }
-//    }
+    @PutMapping("/subscribe/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
+    @Operation(summary = "로그인한 사용자의 보드 알람 설정"
+            , description = "id에는 board id 값을 넣어주세요")
+    public BoardSubscribeResponseDto setBoardNotification(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable("id") String id
+    ){
+        return boardService.updateBoardSubscribe(userDetails.getUser(), id);
+    }
+
+    @PostMapping("/subscribe/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "@securityService.isAdminOrPresidentOrVicePresident()")
+    @Operation(summary = "게시판 구독 데이터 생성 API(관리자용/임시)",
+            description = "id에는 board id 값을 넣어주세요 <br>" +
+                    "기존 게시판들의 구독 여부 저장을 위한 임시 api 입니다. 설정후 삭제 예정이고, 추후에는 공지게시판 생성과 동시에 구독여부도 저장될 예정입니다.")
+    public void createBoardSubscribe(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable("id") String id
+    ) {
+        this.boardService.createBoardSubscribe(id);
+    }
+
+
 }
