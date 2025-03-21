@@ -4,12 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 
 import java.util.List;
-import java.util.Optional;
-import net.causw.adapter.persistence.calendar.Calendar;
 import net.causw.adapter.persistence.event.Event;
 import net.causw.adapter.persistence.repository.event.EventRepository;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
-import net.causw.application.dto.event.EventResponseDto;
 import net.causw.application.dto.event.EventsResponseDto;
 import net.causw.application.uuidFile.UuidFileService;
 import net.causw.domain.model.enums.uuidFile.FilePath;
@@ -48,11 +45,11 @@ public class EventServiceTest {
           "fileUrl",
           "rawFileName",
           "png",
-          FilePath.CALENDAR
+          FilePath.EVENT
       );
       mockEvents = List.of(
-          Event.of("url1", mockUuidFile, false),
-          Event.of("url2", mockUuidFile, false)
+          Event.of("url2", mockUuidFile, false),
+          Event.of("url1", mockUuidFile, false)
       );
     }
 
@@ -61,7 +58,7 @@ public class EventServiceTest {
     void listEventBannerSuccess() {
 
       // given
-      given(eventRepository.findByIsDeletedIsFalse()).willReturn(mockEvents);
+      given(eventRepository.findByIsDeletedIsFalseOrderByCreatedAtDesc()).willReturn(mockEvents);
 
       // when
       EventsResponseDto result = eventService.findEvents();
@@ -69,14 +66,14 @@ public class EventServiceTest {
       // then
       assertThat(result).isNotNull();
       assertThat(result.getEvents().size()).isEqualTo(2);
-      assertThat(result.getEvents().getFirst().getUrl()).isEqualTo("url1");
+      assertThat(result.getEvents().getFirst().getUrl()).isEqualTo("url2");
     }
 
     @Test
     @DisplayName("이벤트가 없을 때 빈 리스트 반환")
     void listEventBannerEmpty() {
       // given
-      given(eventRepository.findByIsDeletedIsFalse()).willReturn(List.of());
+      given(eventRepository.findByIsDeletedIsFalseOrderByCreatedAtDesc()).willReturn(List.of());
 
       // when
       EventsResponseDto result = eventService.findEvents();

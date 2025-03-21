@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface EventRepository extends JpaRepository<Event, String> {
 
-    List<Event> findByIsDeletedIsFalse();
+    List<Event> findByIsDeletedIsFalseOrderByCreatedAtDesc();
 }
