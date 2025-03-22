@@ -1,15 +1,27 @@
 package net.causw.application.event;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.util.List;
+import java.util.stream.IntStream;
 import net.causw.adapter.persistence.event.Event;
 import net.causw.adapter.persistence.repository.event.EventRepository;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
+import net.causw.application.dto.event.EventCreateRequestDto;
+import net.causw.application.dto.event.EventResponseDto;
 import net.causw.application.dto.event.EventsResponseDto;
 import net.causw.application.uuidFile.UuidFileService;
+import net.causw.domain.exceptions.BadRequestException;
+import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.enums.uuidFile.FilePath;
+import net.causw.domain.model.util.MessageUtil;
+import net.causw.domain.model.util.StaticValue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -18,6 +30,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
 @ExtendWith(MockitoExtension.class)
 public class EventServiceTest {
@@ -32,7 +46,7 @@ public class EventServiceTest {
   private UuidFileService uuidFileService;
 
   @Nested
-  @DisplayName("배너 리스트 테스트")
+  @DisplayName("이벤트 리스트 테스트")
   class EventListTest {
 
     List<Event> mockEvents;
@@ -54,8 +68,8 @@ public class EventServiceTest {
     }
 
     @Test
-    @DisplayName("배너 리스트 성공")
-    void listEventBannerSuccess() {
+    @DisplayName("이벤트 리스트 성공")
+    void listEventSuccess() {
 
       // given
       given(eventRepository.findByIsDeletedIsFalseOrderByCreatedAtDesc()).willReturn(mockEvents);
@@ -71,7 +85,7 @@ public class EventServiceTest {
 
     @Test
     @DisplayName("이벤트가 없을 때 빈 리스트 반환")
-    void listEventBannerEmpty() {
+    void listEventEmpty() {
       // given
       given(eventRepository.findByIsDeletedIsFalseOrderByCreatedAtDesc()).willReturn(List.of());
 
@@ -81,7 +95,93 @@ public class EventServiceTest {
       // then
       assertThat(result).isNotNull();
       assertThat(result.getEvents()).isEmpty();
+
+      verify(eventRepository, times(1)).findByIsDeletedIsFalseOrderByCreatedAtDesc();
+    }
+  }
+
+  @Nested
+  @DisplayName("이벤트 생성 테스트")
+  class EventCreateTest {
+
+    EventCreateRequestDto mockEventCreateRequestDto;
+    MultipartFile mockMultiFile;
+    UuidFile mockUuidFile;
+    Event mockEvent;
+
+    @BeforeEach
+    void setUp() {
+      mockEventCreateRequestDto = new EventCreateRequestDto("url1");
+      mockMultiFile = new MockMultipartFile(
+          "image1"
+          , "image" + ".png",
+          "png",
+          "file".getBytes()
+      );
+      mockUuidFile = UuidFile.of(
+          "uuid",
+          "fileKey",
+          "fileUrl",
+          mockMultiFile.getName(),
+          mockMultiFile.getContentType(),
+          FilePath.CALENDAR
+      );
+
+      mockEvent = Event.of(
+          mockEventCreateRequestDto.getUrl(),
+          mockUuidFile,
+          false
+      );
     }
 
+    @Test
+    @DisplayName("이벤트 생성 성공")
+    void createEventSuccess() {
+
+      // given
+      given(eventRepository.findByIsDeletedIsFalseOrderByCreatedAtDesc())
+          .willReturn(List.of());
+      given(eventRepository.save(any())).willReturn(mockEvent);
+      given(uuidFileService.saveFile(mockMultiFile, FilePath.EVENT))
+          .willReturn(mockUuidFile);
+
+      // when
+      EventResponseDto result = eventService.createEvent(mockEventCreateRequestDto, mockMultiFile);
+
+      // then
+      assertThat(result).isNotNull();
+      assertThat(result.getImage()).isEqualTo(mockUuidFile.getFileUrl());
+      assertThat(result.getUrl()).isEqualTo(mockEvent.getUrl());
+
+      verify(uuidFileService, times(1)).saveFile(mockMultiFile, FilePath.EVENT);
+      verify(eventRepository, times(1)).save(any());
+    }
+
+    @Test
+    @DisplayName("최대 이벤트 개수 초과로 인한 이벤트 생성 실패")
+    void createEventFailed() {
+
+      int maxEventSize = StaticValue.MAX_NUM_EVENT;
+      // given
+      List<Event> mockEvents = IntStream.range(0, maxEventSize)
+          .mapToObj(i -> Event.of(
+              mockEventCreateRequestDto.getUrl() + i, // 각 이벤트마다 URL 다르게 설정
+              mockUuidFile,
+              false
+          ))
+          .toList();
+      given(eventRepository.findByIsDeletedIsFalseOrderByCreatedAtDesc())
+          .willReturn(mockEvents);
+
+      // when & then
+      assertThatThrownBy(() -> eventService.createEvent(mockEventCreateRequestDto, mockMultiFile))
+          .isInstanceOf(BadRequestException.class)
+          .hasMessageContaining(MessageUtil.EVENT_MAX_CREATED)
+          .extracting("errorCode")
+          .isEqualTo(ErrorCode.CANNOT_PERFORMED);
+
+      verify(uuidFileService, never()).saveFile(any(), any());
+      verify(eventRepository, never()).save(any());
+    }
   }
 }
