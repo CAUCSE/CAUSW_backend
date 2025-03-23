@@ -5,16 +5,17 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.IntStream;
 import net.causw.adapter.persistence.event.Event;
 import net.causw.adapter.persistence.repository.event.EventRepository;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.event.EventCreateRequestDto;
 import net.causw.application.dto.event.EventResponseDto;
+import net.causw.application.dto.event.EventUpdateRequestDto;
 import net.causw.application.dto.event.EventsResponseDto;
 import net.causw.application.uuidFile.UuidFileService;
 import net.causw.domain.exceptions.BadRequestException;
@@ -96,7 +97,7 @@ public class EventServiceTest {
       assertThat(result).isNotNull();
       assertThat(result.getEvents()).isEmpty();
 
-      verify(eventRepository, times(1)).findByIsDeletedIsFalseOrderByCreatedAtDesc();
+      verify(eventRepository).findByIsDeletedIsFalseOrderByCreatedAtDesc();
     }
   }
 
@@ -141,7 +142,7 @@ public class EventServiceTest {
       // given
       given(eventRepository.findByIsDeletedIsFalseOrderByCreatedAtDesc())
           .willReturn(List.of());
-      given(eventRepository.save(any())).willReturn(mockEvent);
+      given(eventRepository.save(any(Event.class))).willReturn(mockEvent);
       given(uuidFileService.saveFile(mockMultiFile, FilePath.EVENT))
           .willReturn(mockUuidFile);
 
@@ -153,8 +154,8 @@ public class EventServiceTest {
       assertThat(result.getImage()).isEqualTo(mockUuidFile.getFileUrl());
       assertThat(result.getUrl()).isEqualTo(mockEvent.getUrl());
 
-      verify(uuidFileService, times(1)).saveFile(mockMultiFile, FilePath.EVENT);
-      verify(eventRepository, times(1)).save(any());
+      verify(uuidFileService).saveFile(mockMultiFile, FilePath.EVENT);
+      verify(eventRepository).save(any(Event.class));
     }
 
     @Test
@@ -182,6 +183,120 @@ public class EventServiceTest {
 
       verify(uuidFileService, never()).saveFile(any(), any());
       verify(eventRepository, never()).save(any());
+    }
+  }
+
+  @Nested
+  @DisplayName("이벤트 수정 테스트")
+  class EventUpdateTest {
+
+    private static final String MOCK_URL = "url1";
+    private static final String MOCK_EVENT_ID = "id1";
+
+    EventUpdateRequestDto eventUpdateRequestDto;
+    MultipartFile previousMockMultipartFile;
+    MultipartFile toBeUpdateMockMultipartFile;
+    UuidFile mockUuidFile;
+    Event mockEvent;
+
+    @BeforeEach
+    void setUp() {
+      eventUpdateRequestDto = new EventUpdateRequestDto(MOCK_URL);
+
+      previousMockMultipartFile = createMockMultipartFile("image1", "file1");
+      toBeUpdateMockMultipartFile = createMockMultipartFile("image2", "file2");
+
+      mockUuidFile = UuidFile.of(
+          "uuid", "fileKey", "fileUrl",
+          previousMockMultipartFile.getName(),
+          previousMockMultipartFile.getContentType(),
+          FilePath.CALENDAR
+      );
+
+      mockEvent = Event.of(eventUpdateRequestDto.getUrl(), mockUuidFile, false);
+    }
+
+    @Test
+    @DisplayName("이벤트 수정 성공")
+    void updateEventSuccess() {
+
+      // given
+      givenWhenPreviousEventExist();
+      UuidFile updatedUuidFile = UuidFile.of(
+          "updatedUuid",
+          "updatedFileKey",
+          "updatedFileUrl",
+          toBeUpdateMockMultipartFile.getName(),
+          toBeUpdateMockMultipartFile.getContentType(),
+          FilePath.EVENT
+      );
+
+      given(uuidFileService.updateFile(mockUuidFile, toBeUpdateMockMultipartFile,
+          FilePath.EVENT)).willReturn(updatedUuidFile);
+
+      // when
+      EventResponseDto result = eventService.updateEvent(MOCK_EVENT_ID,
+          eventUpdateRequestDto,
+          toBeUpdateMockMultipartFile);
+
+      // then
+      assertThat(result).isNotNull();
+      assertThat(result.getImage()).isEqualTo(updatedUuidFile.getFileUrl());
+      assertThat(result.getUrl()).isEqualTo(eventUpdateRequestDto.getUrl());
+
+      verify(eventRepository).findById(MOCK_EVENT_ID);
+      verify(uuidFileService).updateFile(mockUuidFile, toBeUpdateMockMultipartFile, FilePath.EVENT);
+      verify(eventRepository).save(any(Event.class));
+    }
+
+    @Test
+    @DisplayName("이미지 수정 없이 이벤트 수정 성공")
+    void updateEventSuccess_WhenFileIsNull() {
+
+      // given
+      givenWhenPreviousEventExist();
+
+      // when
+      EventResponseDto result = eventService.updateEvent(MOCK_EVENT_ID, eventUpdateRequestDto,
+          null);
+
+      // then
+      assertThat(result).isNotNull();
+      assertThat(result.getImage()).isEqualTo(mockUuidFile.getFileUrl());
+      assertThat(result.getUrl()).isEqualTo(eventUpdateRequestDto.getUrl());
+
+      verify(eventRepository).findById(MOCK_EVENT_ID);
+      verify(uuidFileService, never()).updateFile(any(), any(), any());
+      verify(eventRepository).save(any(Event.class));
+    }
+
+    @Test
+    @DisplayName("기존 이벤트 없을 시 이벤트 수정 실패")
+    void updateEventFailed_WhenEventNotExist() {
+
+      // given
+      String notExistId = "notExistId";
+      given(eventRepository.findById(notExistId)).willReturn(Optional.empty());
+
+      // when
+      assertThatThrownBy(() -> eventService.updateEvent(notExistId, eventUpdateRequestDto,
+          toBeUpdateMockMultipartFile))
+          .isInstanceOf(BadRequestException.class)
+          .hasMessageContaining(MessageUtil.EVENT_NOT_FOUND)
+          .extracting("errorCode")
+          .isEqualTo(ErrorCode.ROW_DOES_NOT_EXIST);
+    }
+
+    private void givenWhenPreviousEventExist() {
+      given(eventRepository.findById(MOCK_EVENT_ID)).willReturn(Optional.of(mockEvent));
+      given(eventRepository.save(any(Event.class)))
+          .willAnswer(invocation -> invocation.getArgument(0));
+    }
+
+    private MultipartFile createMockMultipartFile(final String name, final String content) {
+      return new MockMultipartFile(
+          name, name + ".png", "png", content.getBytes()
+      );
     }
   }
 }
