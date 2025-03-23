@@ -299,4 +299,80 @@ public class EventServiceTest {
       );
     }
   }
+
+  @Nested
+  @DisplayName("이벤트 삭제 테스트")
+  class EventDeleteTest {
+
+    private static final String MOCK_URL = "url1";
+    private static final String MOCK_EVENT_ID = "id1";
+
+    EventUpdateRequestDto eventUpdateRequestDto;
+    MultipartFile previousMockMultipartFile;
+    UuidFile mockUuidFile;
+    Event mockEvent;
+
+    @BeforeEach
+    void setUp() {
+      eventUpdateRequestDto = new EventUpdateRequestDto(MOCK_URL);
+      previousMockMultipartFile = createMockMultipartFile("image1", "file1");
+
+      mockUuidFile = UuidFile.of(
+          "uuid", "fileKey", "fileUrl",
+          previousMockMultipartFile.getName(),
+          previousMockMultipartFile.getContentType(),
+          FilePath.CALENDAR
+      );
+
+      mockEvent = Event.of(eventUpdateRequestDto.getUrl(), mockUuidFile, false);
+    }
+
+    @Test
+    @DisplayName("이벤트 삭제 성공")
+    void deleteEventSuccess() {
+
+      // given
+      givenWhenPreviousEventExist();
+
+      // when
+      EventResponseDto result = eventService.deleteEvent(MOCK_EVENT_ID);
+
+      // then
+      assertThat(result).isNotNull();
+      assertThat(result.getImage()).isEqualTo(mockUuidFile.getFileUrl());
+      assertThat(result.getUrl()).isEqualTo(eventUpdateRequestDto.getUrl());
+      assertThat(result.getIsDeleted()).isEqualTo(true);
+
+      verify(eventRepository).findById(MOCK_EVENT_ID);
+      verify(eventRepository).save(any(Event.class));
+    }
+
+    @Test
+    @DisplayName("기존 이벤트 없을 시 이벤트 삭제 실패")
+    void updateEventFailed_WhenEventNotExist() {
+
+      // given
+      String notExistId = "notExistId";
+      given(eventRepository.findById(notExistId)).willReturn(Optional.empty());
+
+      // when
+      assertThatThrownBy(() -> eventService.deleteEvent(notExistId))
+          .isInstanceOf(BadRequestException.class)
+          .hasMessageContaining(MessageUtil.EVENT_NOT_FOUND)
+          .extracting("errorCode")
+          .isEqualTo(ErrorCode.ROW_DOES_NOT_EXIST);
+    }
+
+    private void givenWhenPreviousEventExist() {
+      given(eventRepository.findById(MOCK_EVENT_ID)).willReturn(Optional.of(mockEvent));
+      given(eventRepository.save(any(Event.class)))
+          .willAnswer(invocation -> invocation.getArgument(0));
+    }
+
+    private MultipartFile createMockMultipartFile(final String name, final String content) {
+      return new MockMultipartFile(
+          name, name + ".png", "png", content.getBytes()
+      );
+    }
+  }
 }
