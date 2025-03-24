@@ -12,7 +12,9 @@ import net.causw.adapter.persistence.repository.notification.NotificationReposit
 import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.notification.CeremonyNotificationDto;
 import net.causw.domain.model.enums.notification.NoticeType;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -38,6 +40,8 @@ public class CeremonyNotificationService implements NotificationService {
         notificationLogRepository.save(NotificationLog.of(user, notification));
     }
 
+    @Async("asyncExecutor")
+    @Transactional
     public void sendByAdmissionYear(Integer admissionYear, Ceremony ceremony) {
         List<CeremonyNotificationSetting> ceremonyNotificationSettings = ceremonyNotificationSettingRepository.findByAdmissionYearOrSetAll(admissionYear);
         CeremonyNotificationDto ceremonyNotificationDto = CeremonyNotificationDto.of(ceremony);
@@ -49,7 +53,6 @@ public class CeremonyNotificationService implements NotificationService {
         saveNotification(notification);
 
         //푸시알림은 별도로 구독 년도나 isSetAll 여부를 가지고 전송
-        //근데 여기서 이제 푸시알림을 보낼때 notificationLog테이블에도 내가 보낼 애들에 대해서 저장을 해야함
         ceremonyNotificationSettings.stream()
                 .map(CeremonyNotificationSetting::getUser)
                 .forEach(user -> {

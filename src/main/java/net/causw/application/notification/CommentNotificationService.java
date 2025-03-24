@@ -6,17 +6,15 @@ import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.notification.Notification;
 import net.causw.adapter.persistence.notification.NotificationLog;
 import net.causw.adapter.persistence.notification.UserCommentSubscribe;
-import net.causw.adapter.persistence.notification.UserPostSubscribe;
-import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.notification.NotificationLogRepository;
 import net.causw.adapter.persistence.repository.notification.NotificationRepository;
 import net.causw.adapter.persistence.repository.notification.UserCommentSubscribeRepository;
-import net.causw.adapter.persistence.repository.notification.UserPostSubscribeRepository;
 import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.notification.CommentNotificationDto;
-import net.causw.application.dto.notification.PostNotificationDto;
 import net.causw.domain.model.enums.notification.NoticeType;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -42,6 +40,8 @@ public class CommentNotificationService implements NotificationService{
         notificationLogRepository.save(NotificationLog.of(user, notification));
     }
 
+    @Async("asyncExecutor")
+    @Transactional
     public void sendByCommentIsSubscribed(Comment comment, ChildComment childComment){
         List<UserCommentSubscribe> userCommentSubscribeList = userCommentSubscribeRepository.findByCommentAndIsSubscribedTrue(comment);
         CommentNotificationDto commentNotificationDto = CommentNotificationDto.of(comment, childComment);

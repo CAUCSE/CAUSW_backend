@@ -13,7 +13,9 @@ import net.causw.adapter.persistence.repository.notification.UserBoardSubscribeR
 import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.notification.BoardNotificationDto;
 import net.causw.domain.model.enums.notification.NoticeType;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -40,8 +42,9 @@ public class BoardNotificationService implements NotificationService {
         notificationLogRepository.save(NotificationLog.of(user, notification));
     }
 
+    @Async("asyncExecutor")
+    @Transactional
     public void sendByBoardIsSubscribed(Board board, Post post){
-        //해당 게시판의 구독자 목록을 불러
         List<UserBoardSubscribe> userBoardSubscribeList = userBoardSubscribeRepository.findByBoardAndIsSubscribedTrue(board);
         BoardNotificationDto boardNotificationDto = BoardNotificationDto.of(board, post);
 
