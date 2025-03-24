@@ -233,7 +233,11 @@ public class BoardService {
                         getCircle(boardCreateRequestDto.getCircleId())
         );
 
-        return toBoardResponseDto(boardRepository.save(newBoard), creator.getRoles());
+        BoardResponseDto boardResponseDto = toBoardResponseDto(boardRepository.save(newBoard), creator.getRoles());
+
+        createBoardSubscribe(newBoard.getId());
+
+        return boardResponseDto;
     }
 
     @Transactional(readOnly = true)
@@ -521,8 +525,10 @@ public class BoardService {
 
     @Transactional
     public void createBoardSubscribe(String boardId) {
-        //관리자용 api로 추후에는 공지게시판이 있으면 자동으로 호출되게 하는게 좋을듯
-        //공지게시판은 이 메서드로 한번에 관리를 한다고 치고, 나머지 일반 게시판은 그냥 없으면
+        // 공지게시판을 만들면 무조건 on으로 설정하게하고
+        // 일반 게시판은 굳이 이걸 호출할 필요 없음(생성자도 굳이 할필요 없게 하자)
+        // 관리자용 api로 추후에는 공지게시판이 있으면 자동으로 호출되게 하는게 좋을듯
+        // 공지게시판은 이 메서드로 한번에 관리를 한다고 치고, 나머지 일반 게시판은 그냥 없으면
         Board board = getBoard(boardId);
         List<User> allUsers = userRepository.findAll();
 
