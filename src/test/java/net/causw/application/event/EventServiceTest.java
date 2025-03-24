@@ -81,7 +81,7 @@ public class EventServiceTest {
       // then
       assertThat(result).isNotNull();
       assertThat(result.getEvents().size()).isEqualTo(2);
-      assertThat(result.getEvents().getFirst().getUrl()).isEqualTo("url2");
+      assertThat(result.getEvents().get(0).getUrl()).isEqualTo("url2");
     }
 
     @Test
