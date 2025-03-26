@@ -14,6 +14,7 @@ import net.causw.domain.model.enums.user.GraduationType;
 import net.causw.domain.model.enums.user.Role;
 import net.causw.domain.model.enums.user.UserState;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -73,6 +74,7 @@ public class User extends BaseEntity {
     @Column(name = "role", nullable = false)
     private Set<Role> roles;
 
+
     @OneToOne(cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, mappedBy = "user")
     private UserProfileImage userProfileImage;
 
@@ -100,8 +102,14 @@ public class User extends BaseEntity {
     @Builder.Default
     private Boolean isV2 = true;
 
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "tb_user_fcm_token",
+            joinColumns = @JoinColumn(name = "user_id")
+    )
     @Column(name = "fcm_token")
-    private String fcmToken;
+    private Set<String> fcmTokens = new HashSet<>();
 
     public void delete() {
         this.email = "deleted_" + this.getId();

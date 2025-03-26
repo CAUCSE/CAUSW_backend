@@ -1,6 +1,7 @@
 package net.causw.application.notification;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.notification.Notification;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class CommentNotificationService implements NotificationService{
     private final FirebasePushNotificationService firebasePushNotificationService;
@@ -26,8 +28,19 @@ public class CommentNotificationService implements NotificationService{
     private final NotificationLogRepository notificationLogRepository;
     private final UserCommentSubscribeRepository userCommentSubscribeRepository;
     @Override
-    public void send(String targetToken, String title, String body) {
-        firebasePushNotificationService.sendNotification(targetToken, title, body);
+    public void send(User user, String targetToken, String title, String body) {
+        try {
+            firebasePushNotificationService.sendNotification(targetToken, title, body);
+        } catch (Exception e) {
+            log.warn("FCM 전송 실패: {}, 이유: {}", targetToken, e.getMessage());
+
+            String msg = e.getMessage();
+            if (msg != null &&
+                    (msg.contains("registration-token-not-registered") || msg.contains("invalid-registration-token"))) {
+                user.getFcmTokens().remove(targetToken);
+                log.info("만료된 FCM 토큰 제거됨: {}", targetToken);
+            }
+        }
     }
 
     @Override
@@ -53,7 +66,9 @@ public class CommentNotificationService implements NotificationService{
         userCommentSubscribeList.stream()
                 .map(UserCommentSubscribe::getUser)
                 .forEach(user -> {
-                    //특정 게시글에 댓글이 달리는 경우의 푸시알림 전송 여기서 진행
+                    user.getFcmTokens().forEach(token -> {
+                        send(user, token, commentNotificationDto.getTitle(), commentNotificationDto.getBody());
+                    });
                     saveNotificationLog(user, notification);
                 });
     }

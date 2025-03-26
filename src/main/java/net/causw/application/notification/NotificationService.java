@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface NotificationService {
-    void send(String targetToken, String title, String body);
+    void send(User user, String targetToken, String title, String body);
     void saveNotification(Notification notification);
 
     void saveNotificationLog(User user, Notification notification);

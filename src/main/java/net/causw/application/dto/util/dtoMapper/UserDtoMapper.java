@@ -151,4 +151,6 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 
     UserSignOutResponseDto toUserSignOutResponseDto(String message);
 
+    @Mapping(target = "fcmToken", source = "fcmTokens")
+    UserFcmTokenResponseDto toUserFcmTokenResponseDto(User user);
 }

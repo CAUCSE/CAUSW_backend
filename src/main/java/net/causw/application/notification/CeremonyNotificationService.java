@@ -2,6 +2,7 @@ package net.causw.application.notification;
 
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.causw.adapter.persistence.ceremony.Ceremony;
 import net.causw.adapter.persistence.notification.CeremonyNotificationSetting;
 import net.causw.adapter.persistence.notification.Notification;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class CeremonyNotificationService implements NotificationService {
     private final FirebasePushNotificationService firebasePushNotificationService;
@@ -26,8 +28,19 @@ public class CeremonyNotificationService implements NotificationService {
     private final NotificationRepository notificationRepository;
     private final NotificationLogRepository notificationLogRepository;
     @Override
-    public void send(String targetToken, String title, String body) {
-        firebasePushNotificationService.sendNotification(targetToken, title, body);
+    public void send(User user, String targetToken, String title, String body) {
+        try {
+            firebasePushNotificationService.sendNotification(targetToken, title, body);
+        } catch (Exception e) {
+            log.warn("FCM 전송 실패: {}, 이유: {}", targetToken, e.getMessage());
+
+            String msg = e.getMessage();
+            if (msg != null &&
+                    (msg.contains("registration-token-not-registered") || msg.contains("invalid-registration-token"))) {
+                user.getFcmTokens().remove(targetToken);
+                log.info("만료된 FCM 토큰 제거됨: {}", targetToken);
+            }
+        }
     }
 
     @Override
@@ -56,9 +69,9 @@ public class CeremonyNotificationService implements NotificationService {
         ceremonyNotificationSettings.stream()
                 .map(CeremonyNotificationSetting::getUser)
                 .forEach(user -> {
-//                    String targetToken = user.getFcmToken();
-//                    send(targetToken, ceremonyNotificationDto.getTitle(), ceremonyNotificationDto.getBody());
-                    //공지를 받는 사람의 매핑테이블 저장
+                    user.getFcmTokens().forEach(token -> {
+                        send(user, token, ceremonyNotificationDto.getTitle(), ceremonyNotificationDto.getBody());
+                    });
                     saveNotificationLog(user, notification);
                 });
     }

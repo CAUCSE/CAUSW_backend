@@ -2,6 +2,7 @@ package net.causw.application.notification;
 
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.notification.Notification;
 import net.causw.adapter.persistence.notification.NotificationLog;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class BoardNotificationService implements NotificationService {
     private final FirebasePushNotificationService firebasePushNotificationService;
@@ -28,8 +30,19 @@ public class BoardNotificationService implements NotificationService {
     private final UserBoardSubscribeRepository userBoardSubscribeRepository;
 
     @Override
-    public void send(String targetToken, String title, String body) {
-        firebasePushNotificationService.sendNotification(targetToken, title, body);
+    public void send(User user, String targetToken, String title, String body) {
+        try {
+            firebasePushNotificationService.sendNotification(targetToken, title, body);
+        } catch (Exception e) {
+            log.warn("FCM 전송 실패: {}, 이유: {}", targetToken, e.getMessage());
+
+            String msg = e.getMessage();
+            if (msg != null &&
+                    (msg.contains("registration-token-not-registered") || msg.contains("invalid-registration-token"))) {
+                user.getFcmTokens().remove(targetToken);
+                log.info("만료된 FCM 토큰 제거됨: {}", targetToken);
+            }
+        }
     }
 
     @Override
@@ -55,7 +68,9 @@ public class BoardNotificationService implements NotificationService {
         userBoardSubscribeList.stream()
                 .map(UserBoardSubscribe::getUser)
                 .forEach(user -> {
-                    //여기서 게시글 푸시알람 보내면 됨
+                    user.getFcmTokens().forEach(token -> {
+                        send(user, token, boardNotificationDto.getTitle(), boardNotificationDto.getBody());
+                    });
                     saveNotificationLog(user, notification);
                 });
 

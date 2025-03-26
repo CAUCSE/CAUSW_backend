@@ -99,12 +99,16 @@ public class CeremonyService {
         );
         ceremony.updateCeremonyState(updateDto.getTargetCeremonyState());
 
-        if (updateDto.getTargetCeremonyState() == CeremonyState.REJECT) {
+        //todo : 종료에 대한 처리
+        if(updateDto.getTargetCeremonyState() == CeremonyState.ACCEPT){
+            Integer writerAdmissionYear = ceremony.getUser().getAdmissionYear();
+            ceremonyNotificationService.sendByAdmissionYear(writerAdmissionYear, ceremony);
+        }
+        else{ //state가 reject, await, close로 바뀌는 경우(close는 별도 처리)
             ceremony.updateNote(updateDto.getRejectMessage());
             return CeremonyDtoMapper.INSTANCE.toCeremonyResponseDto(ceremony);
         }
-        Integer writerAdmissionYear = ceremony.getUser().getAdmissionYear();
-        ceremonyNotificationService.sendByAdmissionYear(writerAdmissionYear, ceremony);
+
         ceremonyRepository.save(ceremony);
 
         return CeremonyDtoMapper.INSTANCE.toCeremonyResponseDto(ceremony);
