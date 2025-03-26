@@ -108,8 +108,12 @@ public class User extends BaseEntity {
             name = "tb_user_fcm_token",
             joinColumns = @JoinColumn(name = "user_id")
     )
-    @Column(name = "fcm_token")
+    @Column(name = "fcm_token_value")
     private Set<String> fcmTokens = new HashSet<>();
+
+    //fixme : db에러로 임시 설정
+    @Column(name = "fcm_token")
+    private String fcmToken;
 
     public void delete() {
         this.email = "deleted_" + this.getId();
