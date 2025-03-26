@@ -22,6 +22,7 @@ import net.causw.adapter.persistence.uuidFile.joinEntity.PostAttachImage;
 import net.causw.adapter.persistence.vote.Vote;
 import net.causw.adapter.persistence.vote.VoteOption;
 import net.causw.adapter.persistence.vote.VoteRecord;
+import net.causw.application.dto.board.BoardSubscribeResponseDto;
 import net.causw.application.dto.form.request.create.FormCreateRequestDto;
 import net.causw.application.dto.form.request.create.QuestionCreateRequestDto;
 import net.causw.application.dto.form.response.FormResponseDto;
@@ -711,15 +712,15 @@ public class PostService {
     }
 
     @Transactional
-    public PostSubscribeResponseDto updatePostSubscribe(User user, String postId) {
+    public PostSubscribeResponseDto setPostSubscribe(User user, String postId, Boolean isSubscribed) {
         Post post = getPost(postId);
 
         UserPostSubscribe subscription = userPostSubscribeRepository.findByUserAndPost(user, post)
                 .map(existing -> {
-                    existing.toggle();
+                    existing.setIsSubscribed(isSubscribed);
                     return existing;
                 })
-                .orElseGet(() -> userPostSubscribeRepository.save(UserPostSubscribe.of(user, post, true)));
+                .orElseGet(() -> userPostSubscribeRepository.save(UserPostSubscribe.of(user, post, isSubscribed)));
 
         return PostDtoMapper.INSTANCE.toPostSubscribeResponseDto(subscription);
     }

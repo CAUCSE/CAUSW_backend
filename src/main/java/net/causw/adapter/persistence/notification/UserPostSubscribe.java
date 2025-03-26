@@ -30,6 +30,10 @@ public class UserPostSubscribe extends BaseEntity {
         return this;
     }
 
+    public void setIsSubscribed(Boolean subscribed) {
+        this.isSubscribed = subscribed;
+    }
+
     public static UserPostSubscribe of(
             User user,
             Post post,

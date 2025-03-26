@@ -217,15 +217,15 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentSubscribeResponseDto updateCommentSubscribe(User user, String commentId) {
+    public CommentSubscribeResponseDto setCommentSubscribe(User user, String commentId, Boolean isSubscribed) {
         Comment comment = getComment(commentId);
 
         UserCommentSubscribe subscription = userCommentSubscribeRepository.findByUserAndComment(user, comment)
                 .map(existing -> {
-                    existing.toggle();
+                    existing.setIsSubscribed(isSubscribed);
                     return existing;
                 })
-                .orElseGet(() -> userCommentSubscribeRepository.save(UserCommentSubscribe.of(user, comment, true)));
+                .orElseGet(() -> userCommentSubscribeRepository.save(UserCommentSubscribe.of(user, comment, isSubscribed)));
 
         return CommentDtoMapper.INSTANCE.toCommentSubscribeResponseDto(subscription);
     }

@@ -16,15 +16,7 @@ import net.causw.domain.exceptions.UnauthorizedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.*;
 
 
 import java.util.List;
@@ -278,19 +270,31 @@ public class BoardController {
         return this.boardService.restoreBoard(userDetails.getUser(), id);
     }
 
-    @PutMapping("/subscribe/{id}")
+    @PostMapping("/subscribe/{id}")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
-    @Operation(summary = "로그인한 사용자의 보드 알람 설정"
+    @Operation(summary = "로그인한 사용자의 게시판 알람 설정 켜기"
             , description = "id에는 board id 값을 넣어주세요")
-    public BoardSubscribeResponseDto setBoardNotification(
+    public BoardSubscribeResponseDto subscribeBoard(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("id") String id
     ){
-        return boardService.updateBoardSubscribe(userDetails.getUser(), id);
+        return boardService.setBoardSubscribe(userDetails.getUser(), id, true);
     }
 
-    @PostMapping("/subscribe/{id}")
+    @DeleteMapping("/subscribe/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
+    @Operation(summary = "로그인한 사용자의 게시판 알람 설정 끄기"
+            , description = "id에는 board id 값을 넣어주세요")
+    public BoardSubscribeResponseDto unsubscribeBoard(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable("id") String id
+    ){
+        return boardService.setBoardSubscribe(userDetails.getUser(), id, false);
+    }
+
+    @PostMapping("/subscribe")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
             "@securityService.isAdminOrPresidentOrVicePresident()")
@@ -299,7 +303,7 @@ public class BoardController {
                     "기존 게시판들의 구독 여부 저장을 위한 임시 api 입니다. 설정후 삭제 예정이고, 추후에는 공지게시판 생성과 동시에 구독여부도 저장될 예정입니다.")
     public void createBoardSubscribe(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable("id") String id
+            @RequestParam("id") String id
     ) {
         this.boardService.createBoardSubscribe(id);
     }

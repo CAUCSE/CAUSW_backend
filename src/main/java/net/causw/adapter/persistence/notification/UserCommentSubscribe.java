@@ -25,9 +25,8 @@ public class UserCommentSubscribe extends BaseEntity {
     @Column(name = "is_subscribed")
     private Boolean isSubscribed;
 
-    public UserCommentSubscribe toggle() {
-        this.isSubscribed = (this.isSubscribed == null) ? true : !this.isSubscribed;
-        return this;
+    public void setIsSubscribed(Boolean subscribed) {
+        this.isSubscribed = subscribed;
     }
 
     public static UserCommentSubscribe of(
