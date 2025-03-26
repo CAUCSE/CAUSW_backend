@@ -73,6 +73,7 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "voteResponseDto", source = "voteResponseDto")
     @Mapping(target = "isPostVote", source = "isPostVote")
     @Mapping(target = "isPostForm", source = "isPostForm")
+    @Mapping(target = "isPostSubscribed", source = "isPostSubscribed")
     PostResponseDto toPostResponseDtoExtended(
             Post post,
             Page<CommentResponseDto> commentList,
@@ -87,7 +88,8 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
             FormResponseDto formResponseDto,
             VoteResponseDto voteResponseDto,
             Boolean isPostVote,
-            Boolean isPostForm
+            Boolean isPostForm,
+            Boolean isPostSubscribed
     );
 
     @Mapping(target = "title", source = "post.title")
@@ -96,7 +98,7 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
 
     @Mapping(target = "boardId", source = "board.id")
     @Mapping(target = "boardName", source = "board.name")
-    BoardPostsResponseDto toBoardPostsResponseDto(Board board, Set<Role> userRole, Boolean writable, Boolean isFavorite, Page<PostsResponseDto> post);
+    BoardPostsResponseDto toBoardPostsResponseDto(Board board, Set<Role> userRole, Boolean writable, Boolean isFavorite, Boolean isBoardSubscribed,Page<PostsResponseDto> post);
 
     @Mapping(target="id", source = "post.id")
     PostCreateResponseDto toPostCreateResponseDto(Post post);

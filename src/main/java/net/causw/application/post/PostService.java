@@ -9,6 +9,7 @@ import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.form.Form;
 import net.causw.adapter.persistence.form.FormQuestionOption;
 import net.causw.adapter.persistence.form.FormQuestion;
+import net.causw.adapter.persistence.notification.UserBoardSubscribe;
 import net.causw.adapter.persistence.notification.UserPostSubscribe;
 import net.causw.adapter.persistence.repository.form.FormRepository;
 import net.causw.adapter.persistence.repository.notification.NotificationRepository;
@@ -106,6 +107,7 @@ public class PostService {
     private final UserPostSubscribeRepository userPostSubscribeRepository;
     private final BoardNotificationService boardNotificationService;
 
+
     public PostResponseDto findPostById(User user, String postId) {
         Post post = getPost(postId);
         ValidatorBucket validatorBucket = initializeValidator(user, post.getBoard());
@@ -131,10 +133,13 @@ public class PostService {
         validatorBucket.validate();
 
         // 동아리 리더 여부 확인
-        boolean isCircleLeader = false;
+        Boolean isCircleLeader = false;
         if (roles.contains(Role.LEADER_CIRCLE)) {
             isCircleLeader = getCircleLeader(board.getCircle()).getId().equals(user.getId());
         }
+
+        //개인의 게시판 구독 여부 확인
+        //
 
         if (isCircleLeader || roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT)) {
             // 게시글 조회: 리더, 관리자, 회장인 경우 삭제된 게시글도 포함하여 조회
@@ -142,6 +147,7 @@ public class PostService {
                     board,
                     roles,
                     isFavorite(user.getId(), board.getId()),
+                    isBoardSubscribed(user, board),
                     postRepository.findAllByBoard_IdOrderByCreatedAtDesc(boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
                             .map(this::toPostsResponseDto)
             );
@@ -151,6 +157,7 @@ public class PostService {
                     board,
                     roles,
                     isFavorite(user.getId(), board.getId()),
+                    isBoardSubscribed(user, board),
                     postRepository.findAllByBoard_IdAndIsDeletedOrderByCreatedAtDesc(boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), false)
                             .map(this::toPostsResponseDto)
             );
@@ -183,6 +190,7 @@ public class PostService {
                     board,
                     roles,
                     isFavorite(user.getId(), board.getId()),
+                    isBoardSubscribed(user, board),
                     postRepository.findByTitleAndBoard_Id(keyword, boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
                             .map(this::toPostsResponseDto));
         } else {
@@ -190,6 +198,7 @@ public class PostService {
                     board,
                     roles,
                     isFavorite(user.getId(), board.getId()),
+                    isBoardSubscribed(user, board),
                     postRepository.findByTitleBoard_IdAndDeleted(keyword, boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), false)
                             .map(this::toPostsResponseDto));
         }
@@ -208,6 +217,7 @@ public class PostService {
                 board,
                 roles,
                 isFavorite(user.getId(), board.getId()),
+                isBoardSubscribed(user, board),
                 postRepository.findAllByBoard_IdOrderByCreatedAtDesc(board.getId(), pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
                         .map(this::toPostsResponseDto));
     }
@@ -889,7 +899,7 @@ public class PostService {
         return PostDtoMapper.INSTANCE.toPostCreateResponseDto(post);
     }
 
-    private BoardPostsResponseDto toBoardPostsResponseDto(Board board, Set<Role> userRoles, boolean isFavorite, Page<PostsResponseDto> post) {
+    private BoardPostsResponseDto toBoardPostsResponseDto(Board board, Set<Role> userRoles, Boolean isFavorite, Boolean isBoardSubscribed, Page<PostsResponseDto> post) {
         List<String> roles = Arrays.asList(board.getCreateRoles().split(","));
         Boolean writable = userRoles.stream()
                 .map(Role::getValue)
@@ -899,6 +909,7 @@ public class PostService {
                 userRoles,
                 writable,
                 isFavorite,
+                isBoardSubscribed,
                 post
         );
     }
@@ -947,7 +958,8 @@ public class PostService {
                 StatusUtil.isPostForm(post) ? toFormResponseDto(post.getForm()) : null,
                 StatusUtil.isPostVote(post) ? toVoteResponseDto(post.getVote(), user) : null,
                 StatusUtil.isPostVote(post),
-                StatusUtil.isPostForm(post)
+                StatusUtil.isPostForm(post),
+                isPostSubscribed(user, post)
         );
     }
 
@@ -1006,6 +1018,18 @@ public class PostService {
                 .stream()
                 .filter(favoriteBoard -> !favoriteBoard.getBoard().getIsDeleted())
                 .anyMatch(favoriteboard -> favoriteboard.getBoard().getId().equals(boardId));
+    }
+
+    private Boolean isBoardSubscribed(User user, Board board){
+        return userBoardSubscribeRepository.findByUserAndBoard(user, board)
+                .map(UserBoardSubscribe::getIsSubscribed)
+                .orElse(false);
+    }
+
+    private Boolean isPostSubscribed(User user, Post post){
+        return userPostSubscribeRepository.findByUserAndPost(user, post)
+                .map(UserPostSubscribe::getIsSubscribed)
+                .orElse(false);
     }
 
     private Boolean isPostHasComment(String postId){

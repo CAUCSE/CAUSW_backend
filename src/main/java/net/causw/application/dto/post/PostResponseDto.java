@@ -79,6 +79,9 @@ public class PostResponseDto {
     @Schema(description = "게시글 삭제 가능여부", example = "true")
     private Boolean deletable;
 
+    @Schema(description = "게시글 구독 여부")
+    private Boolean isPostSubscribed;
+
     @Schema(description = "게시글 생성 시간", example = "2024-01-26T18:40:40.643Z")
     private LocalDateTime createdAt;
 
