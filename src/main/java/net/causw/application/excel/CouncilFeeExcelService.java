@@ -42,7 +42,7 @@ public class CouncilFeeExcelService extends ExcelAbstractService<UserCouncilFeeR
                     userCouncilFeeResponseDto.getMajor() != null ? userCouncilFeeResponseDto.getMajor() : ""
             );
             row.createCell(7).setCellValue(
-                    userCouncilFeeResponseDto.getAcademicStatus() != null ? userCouncilFeeResponseDto.getAcademicStatus().toString() : ""
+                    userCouncilFeeResponseDto.getAcademicStatus() != null ? userCouncilFeeResponseDto.getAcademicStatus().getValue() : ""
             );
             row.createCell(8).setCellValue(
                     userCouncilFeeResponseDto.getCurrentCompletedSemester() != null ? userCouncilFeeResponseDto.getCurrentCompletedSemester().toString() : ""
@@ -51,7 +51,7 @@ public class CouncilFeeExcelService extends ExcelAbstractService<UserCouncilFeeR
                     userCouncilFeeResponseDto.getGraduationYear() != null ? userCouncilFeeResponseDto.getGraduationYear().toString() : ""
             );
             row.createCell(10).setCellValue(
-                    userCouncilFeeResponseDto.getGraduationType() != null ? userCouncilFeeResponseDto.getGraduationType().toString() : ""
+                    userCouncilFeeResponseDto.getGraduationType() != null ? userCouncilFeeResponseDto.getGraduationType().getValue() : ""
             );
             row.createCell(11).setCellValue(
                     userCouncilFeeResponseDto.getPhoneNumber() != null ? userCouncilFeeResponseDto.getPhoneNumber() : ""
@@ -73,7 +73,11 @@ public class CouncilFeeExcelService extends ExcelAbstractService<UserCouncilFeeR
                             ""
             );
             row.createCell(16).setCellValue(
-                    userCouncilFeeResponseDto.getRefundedAt() != null ? userCouncilFeeResponseDto.getRefundedAt().toString() : ""
+                    (userCouncilFeeResponseDto.getRefundedAt() != null) ?
+                        (userCouncilFeeResponseDto.getIsRefunded() ?
+                                    userCouncilFeeResponseDto.getRefundedAt().toString() :
+                                    "") :
+                            ""
             );
             row.createCell(17).setCellValue(
                     userCouncilFeeResponseDto.getRestOfSemester() != null ? userCouncilFeeResponseDto.getRestOfSemester().toString() : ""
