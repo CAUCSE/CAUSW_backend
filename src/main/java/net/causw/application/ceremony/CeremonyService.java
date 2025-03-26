@@ -4,21 +4,18 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.ceremony.Ceremony;
 import net.causw.adapter.persistence.notification.CeremonyNotificationSetting;
-import net.causw.adapter.persistence.notification.Notification;
 import net.causw.adapter.persistence.repository.notification.CeremonyNotificationSettingRepository;
 import net.causw.adapter.persistence.repository.notification.NotificationRepository;
 import net.causw.adapter.persistence.repository.push.CeremonyRepository;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.ceremony.*;
-import net.causw.application.dto.notification.NotificationResponseDto;
 import net.causw.application.dto.util.dtoMapper.CeremonyDtoMapper;
 import net.causw.application.notification.CeremonyNotificationService;
 import net.causw.application.uuidFile.UuidFileService;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.enums.ceremony.CeremonyState;
-import net.causw.domain.model.enums.notification.NoticeType;
 import net.causw.domain.model.enums.uuidFile.FilePath;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.validation.AdmissionYearsValidator;
@@ -39,7 +36,6 @@ public class CeremonyService {
     private final CeremonyNotificationService ceremonyNotificationService;
     private final UuidFileService uuidFileService;
     private final CeremonyNotificationSettingRepository ceremonyNotificationSettingRepository;
-    private final NotificationRepository notificationRepository;
 
     @Transactional
     public CeremonyResponseDto createCeremony(
@@ -99,7 +95,6 @@ public class CeremonyService {
         );
         ceremony.updateCeremonyState(updateDto.getTargetCeremonyState());
 
-        //todo : 종료에 대한 처리
         if(updateDto.getTargetCeremonyState() == CeremonyState.ACCEPT){
             Integer writerAdmissionYear = ceremony.getUser().getAdmissionYear();
             ceremonyNotificationService.sendByAdmissionYear(writerAdmissionYear, ceremony);

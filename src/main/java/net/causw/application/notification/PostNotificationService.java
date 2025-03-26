@@ -1,5 +1,6 @@
 package net.causw.application.notification;
 
+import com.google.firebase.messaging.FirebaseMessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.causw.adapter.persistence.comment.Comment;
@@ -17,7 +18,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -31,15 +34,12 @@ public class PostNotificationService implements NotificationService{
     public void send(User user, String targetToken, String title, String body) {
         try {
             firebasePushNotificationService.sendNotification(targetToken, title, body);
-        } catch (Exception e) {
+        } catch (FirebaseMessagingException e) {
             log.warn("FCM 전송 실패: {}, 이유: {}", targetToken, e.getMessage());
-
-            String msg = e.getMessage();
-            if (msg != null &&
-                    (msg.contains("registration-token-not-registered") || msg.contains("invalid-registration-token"))) {
-                user.getFcmTokens().remove(targetToken);
-                log.info("만료된 FCM 토큰 제거됨: {}", targetToken);
-            }
+            user.getFcmTokens().remove(targetToken);
+            log.info("오류 발생으로 FCM 토큰 제거됨: {}", targetToken);
+        } catch (Exception e) {
+            log.error("FCM 전송 중 알 수 없는 예외 발생: {}", e.getMessage(), e);
         }
     }
 
@@ -66,7 +66,8 @@ public class PostNotificationService implements NotificationService{
         userPostSubscribeList.stream()
                 .map(UserPostSubscribe::getUser)
                 .forEach(user -> {
-                    user.getFcmTokens().forEach(token -> {
+                    Set<String> copy = new HashSet<>(user.getFcmTokens());
+                    copy.forEach(token -> {
                         send(user, token, postNotificationDto.getTitle(), postNotificationDto.getBody());
                     });
 
