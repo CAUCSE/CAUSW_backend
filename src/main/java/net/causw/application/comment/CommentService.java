@@ -74,12 +74,10 @@ public class CommentService {
         validatorBucket.
                 consistOf(ConstraintValidator.of(comment, this.validator));
         validatorBucket.validate();
-
-        CommentResponseDto commentResponseDto = toCommentResponseDto(commentRepository.save(comment), creator, post.getBoard());
-
-
         //1. comment의 구독 여부 저장
         createCommentSubscribe(creator, comment.getId());
+
+        CommentResponseDto commentResponseDto = toCommentResponseDto(commentRepository.save(comment), creator, post.getBoard());
 
         //2. comment가 달린 게시글의 구독자에게 전송
         postNotificationService.sendByPostIsSubscribed(post, comment);
@@ -252,7 +250,8 @@ public class CommentService {
                         .map(childComment -> toChildCommentResponseDto(childComment, user, board))
                         .collect(Collectors.toList()),
                 StatusUtil.isUpdatable(comment, user),
-                StatusUtil.isDeletable(comment, user, board)
+                StatusUtil.isDeletable(comment, user, board),
+                isCommentSubscribed(user, comment)
         );
     }
 
@@ -334,6 +333,12 @@ public class CommentService {
                         MessageUtil.CIRCLE_APPLY_INVALID
                 )
         );
+    }
+
+    private Boolean isCommentSubscribed(User user, Comment comment){
+        return userCommentSubscribeRepository.findByUserAndComment(user, comment)
+                .map(UserCommentSubscribe::getIsSubscribed)
+                .orElse(false);
     }
 
 }

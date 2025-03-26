@@ -26,6 +26,7 @@ public interface CommentDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "isAnonymous", source = "comment.isAnonymous")
     @Mapping(target ="numLike", source = "numCommentLike")
     @Mapping(target = "childCommentList", source = "childCommentList")
+    @Mapping(target = "isCommentSubscribed", source = "isCommentSubscribed")
     CommentResponseDto toCommentResponseDto(
             Comment comment,
             Long numChildComment,
@@ -34,7 +35,8 @@ public interface CommentDtoMapper extends UuidFileToUrlDtoMapper {
             Boolean isOwner,
             List<ChildCommentResponseDto> childCommentList,
             Boolean updatable,
-            Boolean deletable);
+            Boolean deletable,
+            Boolean isCommentSubscribed);
 
     @Mapping(target = "writerName", source = "childComment.writer.name")
     @Mapping(target ="writerNickname", source = "childComment.writer.nickname")

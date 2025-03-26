@@ -10,10 +10,11 @@ import net.causw.adapter.persistence.form.Form;
 import net.causw.adapter.persistence.form.FormQuestionOption;
 import net.causw.adapter.persistence.form.FormQuestion;
 import net.causw.adapter.persistence.notification.UserBoardSubscribe;
+import net.causw.adapter.persistence.notification.UserCommentSubscribe;
 import net.causw.adapter.persistence.notification.UserPostSubscribe;
 import net.causw.adapter.persistence.repository.form.FormRepository;
-import net.causw.adapter.persistence.repository.notification.NotificationRepository;
 import net.causw.adapter.persistence.repository.notification.UserBoardSubscribeRepository;
+import net.causw.adapter.persistence.repository.notification.UserCommentSubscribeRepository;
 import net.causw.adapter.persistence.repository.notification.UserPostSubscribeRepository;
 import net.causw.adapter.persistence.repository.uuidFile.PostAttachImageRepository;
 import net.causw.adapter.persistence.repository.vote.VoteRecordRepository;
@@ -97,16 +98,15 @@ public class PostService {
     private final FavoritePostRepository favoritePostRepository;
     private final LikeCommentRepository likeCommentRepository;
     private final LikeChildCommentRepository likeChildCommentRepository;
-    private final NotificationRepository notificationRepository;
-    private final UserBoardSubscribeRepository userBoardSubscribeRepository;
     private final PageableFactory pageableFactory;
     private final Validator validator;
     private final UuidFileService uuidFileService;
     private final PostAttachImageRepository postAttachImageRepository;
     private final FormRepository formRepository;
-    private final UserPostSubscribeRepository userPostSubscribeRepository;
     private final BoardNotificationService boardNotificationService;
-
+    private final UserBoardSubscribeRepository userBoardSubscribeRepository;
+    private final UserPostSubscribeRepository userPostSubscribeRepository;
+    private final UserCommentSubscribeRepository userCommentSubscribeRepository;
 
     public PostResponseDto findPostById(User user, String postId) {
         Post post = getPost(postId);
@@ -138,8 +138,6 @@ public class PostService {
             isCircleLeader = getCircleLeader(board.getCircle()).getId().equals(user.getId());
         }
 
-        //개인의 게시판 구독 여부 확인
-        //
 
         if (isCircleLeader || roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT)) {
             // 게시글 조회: 리더, 관리자, 회장인 경우 삭제된 게시글도 포함하여 조회
@@ -705,11 +703,6 @@ public class PostService {
         favoritePostRepository.save(favoritePost);
     }
 
-
-    //게시글에대한 알람은 작성자면 무조건 true, 아니라면 false(null 이거나 false)
-    //근데 얘는 디폴트로 추가해줄건 내가 쓴 게시글이면 알람이 달리게 해야될것 같음
-    // 근데 이건 지금까지 작성한건 배제하고, 앞으로 작성할 글들에 대해서 자동으로 켜지게 한다치고
-    //그럼 아래 createpostsubscribe의 목적은? 내가 게시글을 작성할때 그 계정과 게시글의 매핑을 만드는 것임
     public void createPostSubscribe(User user, String postId){
         Post post = getPost(postId);
 
@@ -982,7 +975,8 @@ public class PostService {
                         .map(childComment -> toChildCommentResponseDto(childComment, user, board))
                         .collect(Collectors.toList()),
                 StatusUtil.isUpdatable(comment, user),
-                StatusUtil.isDeletable(comment, user, board)
+                StatusUtil.isDeletable(comment, user, board),
+                isCommentSubscribed(user, comment)
         );
     }
 
@@ -1029,6 +1023,12 @@ public class PostService {
     private Boolean isPostSubscribed(User user, Post post){
         return userPostSubscribeRepository.findByUserAndPost(user, post)
                 .map(UserPostSubscribe::getIsSubscribed)
+                .orElse(false);
+    }
+
+    private Boolean isCommentSubscribed(User user, Comment comment){
+        return userCommentSubscribeRepository.findByUserAndComment(user, comment)
+                .map(UserCommentSubscribe::getIsSubscribed)
                 .orElse(false);
     }
 
