@@ -17,6 +17,9 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class CeremonyResponseDto {
 
+    @Schema(description = "경조사 id", example = "uuid 형식의 String 값입니다.")
+    private String id;
+
     @Schema(description = "행사 설명", example = "연례 졸업식")
     private String description;
 
