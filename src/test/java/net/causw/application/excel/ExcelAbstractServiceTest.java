@@ -9,54 +9,61 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.stream.Stream;
 import net.causw.adapter.persistence.user.User;
+import net.causw.adapter.persistence.userCouncilFee.UserCouncilFee;
 import net.causw.application.dto.user.UserResponseDto;
+import net.causw.application.dto.userCouncilFee.UserCouncilFeeResponseDto;
+import net.causw.application.dto.util.dtoMapper.UserCouncilFeeDtoMapper;
 import net.causw.application.dto.util.dtoMapper.UserDtoMapper;
-import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.InternalServerException;
+import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-@ExtendWith(MockitoExtension.class)
-class UserExcelServiceTest {
+public class ExcelAbstractServiceTest {
 
-  @InjectMocks
-  private UserExcelService userExcelService;
+  static final List<String> HEADER_STRING_LIST = List.of("아이디(이메일)", "이름", "학번");
+  static final String FILE_NAME = "fileName";
+  static final String SHEET_NAME = "sheetName";
 
-  User user;
-  List<UserResponseDto> userList;
-  List<String> headerStringList;
-  String fileName;
-  String sheetName;
+  static final List<UserResponseDto> USER_LIST = List.of(
+      UserDtoMapper.INSTANCE.toUserResponseDto(mock(User.class)));
+  static final List<UserCouncilFeeResponseDto> USER_COUNCIL_FEE_LIST = List.of(
+      UserCouncilFeeDtoMapper.INSTANCE.toUserCouncilFeeResponseDto(
+          mock(UserCouncilFee.class),
+          mock(User.class),
+          4,
+          true));
 
-  @BeforeEach
-  void setUp() {
-    user = mock(User.class);
-    userList = List.of(UserDtoMapper.INSTANCE.toUserResponseDto(user));
-    headerStringList = List.of("아이디(이메일)", "이름", "학번");
-    fileName = LocalDateTime.now() + "_사용자명단";
-    sheetName = "가입 대기 유저";
+  static Stream<Arguments> provideExcelServices(){
+    return Stream.of(
+        Arguments.arguments(new UserExcelService(), USER_LIST),
+        Arguments.arguments(new CouncilFeeExcelService(), USER_COUNCIL_FEE_LIST));
   }
 
-  @Test
+  @ParameterizedTest
+  @MethodSource("provideExcelServices")
   @DisplayName("Excel 파일 생성 성공 - 정상적인 데이터")
-  void testGenerateExcelSuccess() throws IOException {
+  void testGenerateExcelSuccess(
+      ExcelAbstractService<T> service, List<T> dataList) throws IOException {
     // given
     MockHttpServletResponse response = new MockHttpServletResponse();
-    LinkedHashMap<String, List<UserResponseDto>> sheetDataMap = new LinkedHashMap<>();
-    sheetDataMap.put(sheetName, userList);
+    LinkedHashMap<String, List<T>> sheetDataMap = new LinkedHashMap<>();
+    sheetDataMap.put(SHEET_NAME, dataList);
 
     // when
-    userExcelService.generateExcel(response, fileName, headerStringList, sheetDataMap);
+    service.generateExcel(response, FILE_NAME, HEADER_STRING_LIST, sheetDataMap);
 
     // then
     byte[] content = response.getContentAsByteArray();
@@ -78,49 +85,50 @@ class UserExcelServiceTest {
         .isIn(sheetDataMap.keySet());
   }
 
-  @Test
+  @ParameterizedTest
+  @MethodSource("provideExcelServices")
   @DisplayName("Excel 파일 생성 실패 - 빈 헤더 리스트")
-  void testGenerateExcelWithEmptyHeaderListFailure() {
+  void testGenerateExcelWithEmptyHeaderListFailure(ExcelAbstractService<T> service, List<T> dataList) {
     // given
     List<String> headerStringList = List.of();
     MockHttpServletResponse response = new MockHttpServletResponse();
-    LinkedHashMap<String, List<UserResponseDto>> sheetDataMap = new LinkedHashMap<>();
-    sheetDataMap.put(sheetName, userList);
+    LinkedHashMap<String, List<T>> sheetDataMap = new LinkedHashMap<>();
+    sheetDataMap.put(SHEET_NAME, dataList);
 
-    // when
-    // then
+    // when & then
     assertThatThrownBy(() ->
-        userExcelService.generateExcel(response, fileName, headerStringList, sheetDataMap))
+        service.generateExcel(response, FILE_NAME, headerStringList, sheetDataMap))
         .as("헤더가 비어 있으면 예외가 발생해야 합니다.")
         .isInstanceOf(InternalServerException.class);
   }
 
-  @Test
+  @ParameterizedTest
+  @MethodSource("provideExcelServices")
   @DisplayName("Excel 파일 생성 실패 - null 헤더 리스트")
-  void testGenerateExcelWithNullHeaderListFailure() {
+  void testGenerateExcelWithNullHeaderListFailure(ExcelAbstractService<T> service, List<T> dataList) {
     // given
     List<String> headerStringList = null;
     MockHttpServletResponse response = new MockHttpServletResponse();
-    LinkedHashMap<String, List<UserResponseDto>> sheetDataMap = new LinkedHashMap<>();
-    sheetDataMap.put(sheetName, userList);
+    LinkedHashMap<String, List<T>> sheetDataMap = new LinkedHashMap<>();
+    sheetDataMap.put(SHEET_NAME, dataList);
 
-    // when
-    // then
+    // when & then
     assertThatThrownBy(() ->
-        userExcelService.generateExcel(response, fileName, headerStringList, sheetDataMap))
+        service.generateExcel(response, FILE_NAME, headerStringList, sheetDataMap))
         .as("헤더가 null이면 예외가 발생해야 합니다.")
         .isInstanceOf(InternalServerException.class);
   }
 
+  @ParameterizedTest
+  @MethodSource("provideExcelServices")
   @DisplayName("Excel 시트 데이터 생성 성공 - 정상적인 데이터")
-  @Test
-  void testCreateSheetSuccess() {
+  void testCreateSheetSuccess(ExcelAbstractService<T> service, List<T> dataList) {
     // given
-    int expectedRowNum = userList.size() + 1, expectedColNum = headerStringList.size();
+    int expectedRowNum = dataList.size() + 1, expectedColNum = HEADER_STRING_LIST.size();
     Workbook workbook = new XSSFWorkbook();
 
     // when
-    userExcelService.createSheet(workbook, sheetName, headerStringList, userList);
+    service.createSheet(workbook, SHEET_NAME, HEADER_STRING_LIST, dataList);
 
     // then
     Sheet createdSheet = workbook.getSheetAt(0);
@@ -129,16 +137,17 @@ class UserExcelServiceTest {
     verifyCell(createdSheet, expectedColNum);
   }
 
-  @Test
+  @ParameterizedTest
+  @MethodSource("provideExcelServices")
   @DisplayName("Excel 시트 데이터 생성 성공 - 빈 데이터")
-  void testGenerateExcelWithEmptyUserListSuccess() throws IOException {
+  void testGenerateExcelWithEmptyUserListSuccess(ExcelAbstractService<T> service) {
     // given
-    List<UserResponseDto> userList = List.of();
-    int expectedRowNum = 1, expectedColNum = headerStringList.size();
+    List<T> dataList = List.of();
+    int expectedRowNum = 1, expectedColNum = HEADER_STRING_LIST.size();
     Workbook workbook = new XSSFWorkbook();
 
     // when
-    userExcelService.createSheet(workbook, sheetName, headerStringList, userList);
+    service.createSheet(workbook, SHEET_NAME, HEADER_STRING_LIST, dataList);
 
     // then
     Sheet createdSheet = workbook.getSheetAt(0);
@@ -164,4 +173,3 @@ class UserExcelServiceTest {
         .usingRecursiveAssertion().isNotNull();
   }
 }
-
