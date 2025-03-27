@@ -33,13 +33,13 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 public class ExcelAbstractServiceTest {
 
-  static final List<String> HEADER_STRING_LIST = List.of("아이디(이메일)", "이름", "학번");
-  static final String FILE_NAME = "fileName";
-  static final String SHEET_NAME = "sheetName";
+  static final List<String> headerStringList = List.of("아이디(이메일)", "이름", "학번");
+  static final String fileName = "fileName";
+  static final String sheetName = "sheetName";
 
-  static final List<UserResponseDto> USER_LIST = List.of(
+  static final List<UserResponseDto> userList = List.of(
       UserDtoMapper.INSTANCE.toUserResponseDto(mock(User.class)));
-  static final List<UserCouncilFeeResponseDto> USER_COUNCIL_FEE_LIST = List.of(
+  static final List<UserCouncilFeeResponseDto> userCouncilFeeList = List.of(
       UserCouncilFeeDtoMapper.INSTANCE.toUserCouncilFeeResponseDto(
           mock(UserCouncilFee.class),
           mock(User.class),
@@ -48,8 +48,8 @@ public class ExcelAbstractServiceTest {
 
   static Stream<Arguments> provideExcelServices(){
     return Stream.of(
-        Arguments.arguments(new UserExcelService(), USER_LIST),
-        Arguments.arguments(new CouncilFeeExcelService(), USER_COUNCIL_FEE_LIST));
+        Arguments.arguments(new UserExcelService(), userList),
+        Arguments.arguments(new CouncilFeeExcelService(), userCouncilFeeList));
   }
 
   @ParameterizedTest
@@ -60,10 +60,10 @@ public class ExcelAbstractServiceTest {
     // given
     MockHttpServletResponse response = new MockHttpServletResponse();
     LinkedHashMap<String, List<T>> sheetDataMap = new LinkedHashMap<>();
-    sheetDataMap.put(SHEET_NAME, dataList);
+    sheetDataMap.put(sheetName, dataList);
 
     // when
-    service.generateExcel(response, FILE_NAME, HEADER_STRING_LIST, sheetDataMap);
+    service.generateExcel(response, fileName, headerStringList, sheetDataMap);
 
     // then
     byte[] content = response.getContentAsByteArray();
@@ -93,11 +93,11 @@ public class ExcelAbstractServiceTest {
     List<String> headerStringList = List.of();
     MockHttpServletResponse response = new MockHttpServletResponse();
     LinkedHashMap<String, List<T>> sheetDataMap = new LinkedHashMap<>();
-    sheetDataMap.put(SHEET_NAME, dataList);
+    sheetDataMap.put(sheetName, dataList);
 
     // when & then
     assertThatThrownBy(() ->
-        service.generateExcel(response, FILE_NAME, headerStringList, sheetDataMap))
+        service.generateExcel(response, fileName, headerStringList, sheetDataMap))
         .as("헤더가 비어 있으면 예외가 발생해야 합니다.")
         .isInstanceOf(InternalServerException.class);
   }
@@ -110,11 +110,11 @@ public class ExcelAbstractServiceTest {
     List<String> headerStringList = null;
     MockHttpServletResponse response = new MockHttpServletResponse();
     LinkedHashMap<String, List<T>> sheetDataMap = new LinkedHashMap<>();
-    sheetDataMap.put(SHEET_NAME, dataList);
+    sheetDataMap.put(sheetName, dataList);
 
     // when & then
     assertThatThrownBy(() ->
-        service.generateExcel(response, FILE_NAME, headerStringList, sheetDataMap))
+        service.generateExcel(response, fileName, headerStringList, sheetDataMap))
         .as("헤더가 null이면 예외가 발생해야 합니다.")
         .isInstanceOf(InternalServerException.class);
   }
@@ -124,11 +124,11 @@ public class ExcelAbstractServiceTest {
   @DisplayName("Excel 시트 데이터 생성 성공 - 정상적인 데이터")
   void testCreateSheetSuccess(ExcelAbstractService<T> service, List<T> dataList) {
     // given
-    int expectedRowNum = dataList.size() + 1, expectedColNum = HEADER_STRING_LIST.size();
+    int expectedRowNum = dataList.size() + 1, expectedColNum = headerStringList.size();
     Workbook workbook = new XSSFWorkbook();
 
     // when
-    service.createSheet(workbook, SHEET_NAME, HEADER_STRING_LIST, dataList);
+    service.createSheet(workbook, sheetName, headerStringList, dataList);
 
     // then
     Sheet createdSheet = workbook.getSheetAt(0);
@@ -143,11 +143,11 @@ public class ExcelAbstractServiceTest {
   void testGenerateExcelWithEmptyUserListSuccess(ExcelAbstractService<T> service) {
     // given
     List<T> dataList = List.of();
-    int expectedRowNum = 1, expectedColNum = HEADER_STRING_LIST.size();
+    int expectedRowNum = 1, expectedColNum = headerStringList.size();
     Workbook workbook = new XSSFWorkbook();
 
     // when
-    service.createSheet(workbook, SHEET_NAME, HEADER_STRING_LIST, dataList);
+    service.createSheet(workbook, sheetName, headerStringList, dataList);
 
     // then
     Sheet createdSheet = workbook.getSheetAt(0);
