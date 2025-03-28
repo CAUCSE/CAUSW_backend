@@ -13,6 +13,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @AllArgsConstructor
 public class NotificationResponseDto {
 
+    @Schema(description = "알람 로그 id", example = "uuid 형식을 String 값입니다.")
+    private String notificationLogId;
+
     @Schema(description = "알림 제목", example = "알림 제목입니다.")
     private String title;
 

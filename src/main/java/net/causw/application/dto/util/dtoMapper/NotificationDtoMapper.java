@@ -11,12 +11,13 @@ public interface NotificationDtoMapper {
 
     NotificationDtoMapper INSTANCE = Mappers.getMapper(NotificationDtoMapper.class);
 
+    @Mapping(target = "notificationLogId", source = "notificationLogId")
     @Mapping(target = "title", source = "notification.title")
     @Mapping(target = "body", source = "notification.body")
     @Mapping(target = "noticeType", source = "notification.noticeType")
     @Mapping(target = "targetId", source = "notification.targetId")
     @Mapping(target = "isRead", source = "isRead")
-    NotificationResponseDto toNotificationResponseDto(Notification notification, Boolean isRead);
+    NotificationResponseDto toNotificationResponseDto(String notificationLogId, Notification notification, Boolean isRead);
 
 
 

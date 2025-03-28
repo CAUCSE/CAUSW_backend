@@ -36,22 +36,20 @@ public class NotificationController {
         return notificationLogService.getCeremonyNotification(userDetails.getUser());
     }
 
-//    @PutMapping("/{boardId}")
-//    @Operation(summary = "알림 설정 변경", description = "알림 설정을 변경합니다.")
-//    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
-//    public void toggleNotice(
-//            @PathVariable("boardId") String boardId,
-//            @AuthenticationPrincipal CustomUserDetails userDetails) {
-//        notificationService.setNotice(userDetails.getUser(), boardId);
-//    }
-//
-//    @GetMapping("/{boardId}")
-//    @ResponseStatus(HttpStatus.OK)
-//    @Operation(summary = "알림설정 여부 확인", description = "알림설정 여부를 확인합니다.")
-//    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
-//    public Boolean checkNotice(@AuthenticationPrincipal CustomUserDetails userDetails,
-//                               @PathVariable("boardId") String boardId) {
-//        return notificationService.checkNotice(userDetails.getUser(), boardId);
-//    }
-//
+    @PostMapping("/isRead/{id}")
+    @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
+    @Operation(summary = "유저에게 온 알람 읽음 여부 변경",
+            description = "유저의 알람 조회 여부를 참으로 변경합니다<br> " +
+            "id에는 notification_log id를 넣어주세요")
+    public void readNotification(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable("id") String id
+    ){
+        notificationLogService.readNotification(userDetails.getUser(), id);
+    }
+
+
+
+
 }

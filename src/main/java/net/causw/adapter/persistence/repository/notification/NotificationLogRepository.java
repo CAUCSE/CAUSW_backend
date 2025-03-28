@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface NotificationLogRepository extends JpaRepository<NotificationLog, String> {
 
@@ -17,4 +18,5 @@ public interface NotificationLogRepository extends JpaRepository<NotificationLog
             "AND n.noticeType IN :types")
     List<NotificationLog> findByUserAndNotificationTypes(@Param("user") User user, @Param("types") List<NoticeType> types);
 
+    Optional<NotificationLog> findByIdAndUser(String id, User user);
 }
