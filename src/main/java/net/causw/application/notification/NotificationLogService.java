@@ -25,7 +25,7 @@ public class NotificationLogService {
         List<NotificationLog> notificationLogs = notificationLogRepository.findByUserAndNotificationTypes(user, types);
 
         return notificationLogs.stream()
-                .map(log -> NotificationDtoMapper.INSTANCE.toNotificationResponseDto(log.getNotification()))
+                .map(log -> NotificationDtoMapper.INSTANCE.toNotificationResponseDto(log.getNotification(), log.getIsRead()))
                 .collect(Collectors.toList());
     }
 
@@ -35,7 +35,7 @@ public class NotificationLogService {
         List<NotificationLog> notificationLogs = notificationLogRepository.findByUserAndNotificationTypes(user, types);
 
         return notificationLogs.stream()
-                .map(log -> NotificationDtoMapper.INSTANCE.toNotificationResponseDto(log.getNotification()))
+                .map(log -> NotificationDtoMapper.INSTANCE.toNotificationResponseDto(log.getNotification(), log.getIsRead()))
                 .collect(Collectors.toList());
     }
 }

@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.causw.adapter.persistence.notification.Notification;
 import net.causw.domain.model.enums.notification.NoticeType;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -26,13 +25,7 @@ public class NotificationResponseDto {
     @Schema(description = "조회할 게시글 id(경조사 or 게시글)", example = "uuid 형식의 String 값입니다")
     private String targetId;
 
-    public static NotificationResponseDto of(Notification notification) {
-        return NotificationResponseDto.builder()
-                .targetId(notification.getTargetId())
-                .title(notification.getTitle())
-                .body(notification.getBody())
-                .noticeType(notification.getNoticeType())
-//                .isGlobal(notification.getIsGlobal())
-                .build();
-    }
+    @Schema(description = "알람 확인 여부", example = "true/false")
+    private Boolean isRead;
+
 }
