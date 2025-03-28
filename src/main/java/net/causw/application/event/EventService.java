@@ -31,7 +31,7 @@ public class EventService {
 
     @Transactional(readOnly = true)
     public EventsResponseDto findEvents() {
-        List<EventResponseDto> events = eventRepository.findByIsDeletedIsFalse().stream()
+        List<EventResponseDto> events = eventRepository.findByIsDeletedIsFalseOrderByCreatedAtDesc().stream()
                 .map(EventDtoMapper.INSTANCE::toEventResponseDto)
                 .toList();
 
@@ -43,7 +43,7 @@ public class EventService {
 
     @Transactional
     public EventResponseDto createEvent(EventCreateRequestDto eventCreateRequestDto, MultipartFile eventImage) {
-        if (eventRepository.findByIsDeletedIsFalse().size() >= StaticValue.MAX_NUM_EVENT) {
+        if (eventRepository.findByIsDeletedIsFalseOrderByCreatedAtDesc().size() >= StaticValue.MAX_NUM_EVENT) {
             throw new BadRequestException(
                     ErrorCode.CANNOT_PERFORMED,
                     MessageUtil.EVENT_MAX_CREATED
