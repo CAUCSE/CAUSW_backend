@@ -43,15 +43,16 @@ public class NotificationLogServiceTest {
     @BeforeEach
     void setUp() {
         UserCreateRequestDto userCreateRequestDto = UserCreateRequestDto.builder()
-                .email("tester@example.com")
+                .email("test@cau.ac.kr")
                 .name("테스트 유저")
                 .password("Password123!")
-                .studentId("20231234")
+                .studentId("20235555")
                 .admissionYear(2023)
-                .nickname("testerNick")
-                .major("컴퓨터공학과")
+                .nickname("tester")
+                .major("소프트웨어학부")
                 .phoneNumber("010-1234-5678")
                 .build();
+
         mockUser = User.from(userCreateRequestDto, "encodedPassword");
     }
 

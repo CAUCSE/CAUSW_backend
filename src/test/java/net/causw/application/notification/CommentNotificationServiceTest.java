@@ -53,7 +53,7 @@ class CommentNotificationServiceTest {
 
     @BeforeEach
     void setUp() {
-        UserCreateRequestDto dto = UserCreateRequestDto.builder()
+        UserCreateRequestDto userCreateRequestDto = UserCreateRequestDto.builder()
                 .email("test@cau.ac.kr")
                 .name("테스트 유저")
                 .password("Password123!")
@@ -63,7 +63,8 @@ class CommentNotificationServiceTest {
                 .major("소프트웨어학부")
                 .phoneNumber("010-1234-5678")
                 .build();
-        mockUser = User.from(dto, "encodedPassword");
+
+        mockUser = User.from(userCreateRequestDto, "encodedPassword");
         mockUser.setFcmTokens(new HashSet<>());
         mockUser.getFcmTokens().add("dummy-token");
 
