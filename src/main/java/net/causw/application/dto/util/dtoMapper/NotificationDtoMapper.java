@@ -14,6 +14,7 @@ public interface NotificationDtoMapper {
     @Mapping(target = "title", source = "notification.title")
     @Mapping(target = "body", source = "notification.body")
     @Mapping(target = "noticeType", source = "notification.noticeType")
+    @Mapping(target = "targetId", source = "notification.targetId")
     NotificationResponseDto toNotificationResponseDto(Notification notification);
 
 

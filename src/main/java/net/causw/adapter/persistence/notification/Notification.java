@@ -5,7 +5,6 @@ import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.user.User;
 import net.causw.domain.model.enums.notification.NoticeType;
-import org.hibernate.annotations.ColumnDefault;
 
 @Getter
 @Entity
@@ -29,17 +28,22 @@ public class Notification extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private NoticeType noticeType;
 
+    @Column(name = "target_id")
+    private String targetId;
+
     public static Notification of(
             User user,
             String title,
             String body,
-            NoticeType noticeType
+            NoticeType noticeType,
+            String targetId
     ) {
         return Notification.builder()
                 .user(user)
                 .title(title)
                 .body(body)
                 .noticeType(noticeType)
+                .targetId(targetId)
                 .build();
     }
 

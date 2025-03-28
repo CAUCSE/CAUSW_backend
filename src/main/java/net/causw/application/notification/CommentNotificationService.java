@@ -59,7 +59,7 @@ public class CommentNotificationService implements NotificationService{
         List<UserCommentSubscribe> userCommentSubscribeList = userCommentSubscribeRepository.findByCommentAndIsSubscribedTrue(comment);
         CommentNotificationDto commentNotificationDto = CommentNotificationDto.of(comment, childComment);
 
-        Notification notification = Notification.of(childComment.getWriter(), commentNotificationDto.getTitle(), commentNotificationDto.getBody(), NoticeType.COMMENT);
+        Notification notification = Notification.of(childComment.getWriter(), commentNotificationDto.getTitle(), commentNotificationDto.getBody(), NoticeType.COMMENT, comment.getPost().getId());
 
         saveNotification(notification);
 
@@ -67,10 +67,7 @@ public class CommentNotificationService implements NotificationService{
                 .map(UserCommentSubscribe::getUser)
                 .forEach(user -> {
                     Set<String> copy = new HashSet<>(user.getFcmTokens());
-                    copy.forEach(token -> {
-                        send(user, token, commentNotificationDto.getTitle(), commentNotificationDto.getBody());
-
-                    });
+                    copy.forEach(token -> send(user, token, commentNotificationDto.getTitle(), commentNotificationDto.getBody()));
                     saveNotificationLog(user, notification);
                 });
     }

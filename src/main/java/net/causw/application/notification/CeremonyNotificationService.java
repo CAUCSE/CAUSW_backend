@@ -59,20 +59,15 @@ public class CeremonyNotificationService implements NotificationService {
         List<CeremonyNotificationSetting> ceremonyNotificationSettings = ceremonyNotificationSettingRepository.findByAdmissionYearOrSetAll(admissionYear);
         CeremonyNotificationDto ceremonyNotificationDto = CeremonyNotificationDto.of(ceremony);
 
-        //save로 해당 알림의 제목, 내용, 알림의 신청자(경조사 신청자를 저장)
-        Notification notification = Notification.of(ceremony.getUser(), ceremonyNotificationDto.getTitle(), ceremonyNotificationDto.getBody(), NoticeType.CEREMONY);
+        Notification notification = Notification.of(ceremony.getUser(), ceremonyNotificationDto.getTitle(), ceremonyNotificationDto.getBody(), NoticeType.CEREMONY, ceremony.getId());
 
-        //공지 저장
         saveNotification(notification);
 
-        //푸시알림은 별도로 구독 년도나 isSetAll 여부를 가지고 전송
         ceremonyNotificationSettings.stream()
                 .map(CeremonyNotificationSetting::getUser)
                 .forEach(user -> {
                     Set<String> copy = new HashSet<>(user.getFcmTokens());
-                    copy.forEach(token -> {
-                        send(user, token, ceremonyNotificationDto.getTitle(), ceremonyNotificationDto.getBody());
-                    });
+                    copy.forEach(token -> send(user, token, ceremonyNotificationDto.getTitle(), ceremonyNotificationDto.getBody()));
                     saveNotificationLog(user, notification);
                 });
     }

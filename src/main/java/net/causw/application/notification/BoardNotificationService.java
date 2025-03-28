@@ -60,7 +60,7 @@ public class BoardNotificationService implements NotificationService {
         List<UserBoardSubscribe> userBoardSubscribeList = userBoardSubscribeRepository.findByBoardAndIsSubscribedTrue(board);
         BoardNotificationDto boardNotificationDto = BoardNotificationDto.of(board, post);
 
-        Notification notification = Notification.of(post.getWriter(), boardNotificationDto.getTitle(), boardNotificationDto.getBody(), NoticeType.BOARD);
+        Notification notification = Notification.of(post.getWriter(), boardNotificationDto.getTitle(), boardNotificationDto.getBody(), NoticeType.BOARD, post.getId());
 
         saveNotification(notification);
 
@@ -68,9 +68,7 @@ public class BoardNotificationService implements NotificationService {
                 .map(UserBoardSubscribe::getUser)
                 .forEach(user -> {
                     Set<String> copy = new HashSet<>(user.getFcmTokens());
-                    copy.forEach(token -> {
-                        send(user, token, boardNotificationDto.getTitle(), boardNotificationDto.getBody());
-                    });
+                    copy.forEach(token -> send(user, token, boardNotificationDto.getTitle(), boardNotificationDto.getBody()));
                     saveNotificationLog(user, notification);
                 });
 

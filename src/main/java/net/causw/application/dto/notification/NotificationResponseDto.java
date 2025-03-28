@@ -23,9 +23,12 @@ public class NotificationResponseDto {
     @Schema(description = "알림 종류", example = "CEREMONY")
     private NoticeType noticeType;
 
+    @Schema(description = "조회할 게시글 id(경조사 or 게시글)", example = "uuid 형식의 String 값입니다")
+    private String targetId;
+
     public static NotificationResponseDto of(Notification notification) {
         return NotificationResponseDto.builder()
-//                .user_id(notification.getUser().getId().toString())
+                .targetId(notification.getTargetId())
                 .title(notification.getTitle())
                 .body(notification.getBody())
                 .noticeType(notification.getNoticeType())

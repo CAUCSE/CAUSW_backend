@@ -59,7 +59,7 @@ public class PostNotificationService implements NotificationService{
         List<UserPostSubscribe> userPostSubscribeList = userPostSubscribeRepository.findByPostAndIsSubscribedTrue(post);
         PostNotificationDto postNotificationDto = PostNotificationDto.of(post, comment);
 
-        Notification notification = Notification.of(comment.getWriter(), postNotificationDto.getTitle(), postNotificationDto.getBody(), NoticeType.POST);
+        Notification notification = Notification.of(comment.getWriter(), postNotificationDto.getTitle(), postNotificationDto.getBody(), NoticeType.POST, post.getId());
 
         saveNotification(notification);
 
@@ -67,10 +67,7 @@ public class PostNotificationService implements NotificationService{
                 .map(UserPostSubscribe::getUser)
                 .forEach(user -> {
                     Set<String> copy = new HashSet<>(user.getFcmTokens());
-                    copy.forEach(token -> {
-                        send(user, token, postNotificationDto.getTitle(), postNotificationDto.getBody());
-                    });
-
+                    copy.forEach(token -> send(user, token, postNotificationDto.getTitle(), postNotificationDto.getBody()));
                     saveNotificationLog(user, notification);
                 });
     }
