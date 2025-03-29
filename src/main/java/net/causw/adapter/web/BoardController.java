@@ -302,7 +302,6 @@ public class BoardController {
             description = "id에는 board id 값을 넣어주세요 <br>" +
                     "기존 게시판들의 구독 여부 저장을 위한 임시 api 입니다. 설정후 삭제 예정이고, 추후에는 공지게시판 생성과 동시에 구독여부도 저장될 예정입니다.")
     public void createBoardSubscribe(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam("id") String id
     ) {
         this.boardService.createBoardSubscribe(id);

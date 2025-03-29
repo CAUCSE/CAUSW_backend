@@ -49,10 +49,11 @@ public class CeremonyController {
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "사용자 본인의 경조사 신청 내역 조회",
             description = "사용자 본인의 경조사 신청 내역을 조회합니다.")
-    public List<CeremonyResponseDto> getCeremonies(
-            @AuthenticationPrincipal CustomUserDetails userDetails
+    public Page<CeremonyResponseDto> getCeremonies(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum
     ) {
-        return ceremonyService.getUserCeremonyResponsesDTO(userDetails.getUser());
+        return ceremonyService.getUserCeremonyResponses(userDetails.getUser(), pageNum);
     }
 
     @GetMapping("/list/await")
@@ -62,9 +63,9 @@ public class CeremonyController {
     @Operation(summary = "전체 경조사 승인 대기 목록 조회(관리자용)",
             description = "전체 경조사 승인 대기 목록을 조회합니다.")
     public Page<CeremonyResponseDto> getAllUserAwaitingCeremonyPage(
-            @ParameterObject Pageable pageable
+            @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum
     ) {
-        return ceremonyService.getAllUserAwaitingCeremonyPage(pageable);
+        return ceremonyService.getAllUserAwaitingCeremonyPage(pageNum);
     }
 
     @GetMapping("/{ceremonyId}")
@@ -85,7 +86,6 @@ public class CeremonyController {
     @Operation(summary = "유저 경조사 승인 상태 변경(승인/거부)(관리자용)",
             description = "유저 경조사 승인 상태를 변경합니다.")
     public CeremonyResponseDto updateUserCeremonyStatus(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody @Valid UpdateCeremonyStateRequestDto updateCeremonyStateRequestDto
     ) {
         return ceremonyService.updateUserCeremonyStatus(updateCeremonyStateRequestDto);

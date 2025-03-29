@@ -11,6 +11,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface CeremonyRepository extends JpaRepository<Ceremony, String> {
-    List<Ceremony> findAllByUser(User user);
+    Page<Ceremony> findAllByUser(User user, Pageable pageable);
     Page<Ceremony> findByCeremonyState(CeremonyState ceremonyState, Pageable pageable);
 }

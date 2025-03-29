@@ -6,10 +6,13 @@ import net.causw.adapter.persistence.repository.notification.NotificationLogRepo
 import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.notification.NotificationResponseDto;
 import net.causw.application.dto.util.dtoMapper.NotificationDtoMapper;
+import net.causw.application.pageable.PageableFactory;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.enums.notification.NoticeType;
 import net.causw.domain.model.util.MessageUtil;
+import net.causw.domain.model.util.StaticValue;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,11 +24,26 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class NotificationLogService {
     private final NotificationLogRepository notificationLogRepository;
+    private final PageableFactory pageableFactory;
 
     @Transactional(readOnly = true)
-    public List<NotificationResponseDto> getCeremonyNotification(User user) {
-        List<NoticeType> types = Arrays.asList(NoticeType.CEREMONY);
-        List<NotificationLog> notificationLogs = notificationLogRepository.findByUserAndNotificationTypes(user, types);
+    public Page<NotificationResponseDto> getGeneralNotification(User user, Integer pageNum) {
+        List<NoticeType> types = Arrays.asList(NoticeType.BOARD, NoticeType.POST, NoticeType.COMMENT);
+        Page<NotificationLog> notificationLogs = notificationLogRepository.findByUserAndNotificationTypes(user, types, pageableFactory.create(pageNum, StaticValue.DEFAULT_NOTIFICATION_PAGE_SIZE));
+
+        return notificationLogs.map(log ->
+                NotificationDtoMapper.INSTANCE.toNotificationResponseDto(
+                        log.getId(),
+                        log.getNotification(),
+                        log.getIsRead()
+                )
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public List<NotificationResponseDto> getGeneralNotificationTop4(User user) {
+        List<NoticeType> types = Arrays.asList(NoticeType.BOARD, NoticeType.POST, NoticeType.COMMENT);
+        List<NotificationLog> notificationLogs = notificationLogRepository.findByUserAndIsReadFalseNotificationTypesTop4(user, types, pageableFactory.create(0, StaticValue.SIDE_NOTIFICATION_PAGE_SIZE));
 
         return notificationLogs.stream()
                 .map(log -> NotificationDtoMapper.INSTANCE.toNotificationResponseDto(log.getId(), log.getNotification(), log.getIsRead()))
@@ -33,9 +51,23 @@ public class NotificationLogService {
     }
 
     @Transactional(readOnly = true)
-    public List<NotificationResponseDto> getGeneralNotification(User user) {
-        List<NoticeType> types = Arrays.asList(NoticeType.BOARD, NoticeType.POST, NoticeType.COMMENT);
-        List<NotificationLog> notificationLogs = notificationLogRepository.findByUserAndNotificationTypes(user, types);
+    public Page<NotificationResponseDto> getCeremonyNotification(User user, Integer pageNum) {
+        List<NoticeType> types = Arrays.asList(NoticeType.CEREMONY);
+        Page<NotificationLog> notificationLogs = notificationLogRepository.findByUserAndNotificationTypes(user, types, pageableFactory.create(pageNum, StaticValue.DEFAULT_NOTIFICATION_PAGE_SIZE));
+
+        return notificationLogs.map(log ->
+                NotificationDtoMapper.INSTANCE.toNotificationResponseDto(
+                        log.getId(),
+                        log.getNotification(),
+                        log.getIsRead()
+                )
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public List<NotificationResponseDto> getCeremonyNotificationTop4(User user) {
+        List<NoticeType> types = Arrays.asList(NoticeType.CEREMONY);
+        List<NotificationLog> notificationLogs = notificationLogRepository.findByUserAndIsReadFalseNotificationTypesTop4(user, types, pageableFactory.create(0, StaticValue.SIDE_NOTIFICATION_PAGE_SIZE));
 
         return notificationLogs.stream()
                 .map(log -> NotificationDtoMapper.INSTANCE.toNotificationResponseDto(log.getId(), log.getNotification(), log.getIsRead()))

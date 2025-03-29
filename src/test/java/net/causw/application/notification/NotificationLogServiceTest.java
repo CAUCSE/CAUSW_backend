@@ -2,7 +2,9 @@ package net.causw.application.notification;
 
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 
 import net.causw.adapter.persistence.notification.Notification;
@@ -11,6 +13,7 @@ import net.causw.adapter.persistence.repository.notification.NotificationLogRepo
 import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.notification.NotificationResponseDto;
 import net.causw.application.dto.user.UserCreateRequestDto;
+import net.causw.application.pageable.PageableFactory;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.model.enums.notification.NoticeType;
 import net.causw.domain.model.util.MessageUtil;
@@ -22,6 +25,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -35,10 +42,15 @@ public class NotificationLogServiceTest {
 
     @Mock
     private NotificationLogRepository notificationLogRepository;
+    @Mock
+    private PageableFactory pageableFactory;
+    @Mock
+    private Pageable pageable;
+
 
     private User mockUser;
 
-    private List<NotificationLog> mockNotificationLogs;
+    private Page<NotificationLog> mockNotificationLogs;
 
     @BeforeEach
     void setUp() {
@@ -54,6 +66,8 @@ public class NotificationLogServiceTest {
                 .build();
 
         mockUser = User.from(userCreateRequestDto, "encodedPassword");
+        pageable = PageRequest.of(0, 10);
+        lenient().when(pageableFactory.create(anyInt(), anyInt())).thenReturn(pageable);
     }
 
     @Nested
@@ -64,23 +78,26 @@ public class NotificationLogServiceTest {
         void setUpCeremonyNotification() {
             Notification ceremonyNotification = Notification.of(mockUser, "경조사 제목", "내용", NoticeType.CEREMONY, "경조사-id");
             NotificationLog ceremonyLog = NotificationLog.of(mockUser, ceremonyNotification);
-            mockNotificationLogs = List.of(ceremonyLog);
+            List<NotificationLog> logs = List.of(ceremonyLog);
+
+            mockNotificationLogs =  new PageImpl<>(logs, pageable, logs.size());
         }
 
         @Test
         @DisplayName("경조사 알림 조회 성공")
         void getCeremonyNotificationSuccess() {
             List<NoticeType> types = Arrays.asList(NoticeType.CEREMONY);
-            given(notificationLogRepository.findByUserAndNotificationTypes(mockUser, types))
+            given(notificationLogRepository.findByUserAndNotificationTypes(mockUser, types, pageable))
                     .willReturn(mockNotificationLogs);
 
-            List<NotificationResponseDto> result = notificationLogService.getCeremonyNotification(mockUser);
+            Page<NotificationResponseDto> result = notificationLogService.getCeremonyNotification(mockUser, 0);
 
             assertThat(result).isNotNull();
             assertThat(result).hasSize(1);
-            assertThat(result.get(0).getTitle()).isEqualTo("경조사 제목");
+            assertThat(result).extracting("noticeType")
+                    .containsExactlyInAnyOrder(NoticeType.CEREMONY);
 
-            verify(notificationLogRepository).findByUserAndNotificationTypes(mockUser, types);
+            verify(notificationLogRepository).findByUserAndNotificationTypes(mockUser, types, pageable);
         }
 
         @Test
@@ -88,15 +105,15 @@ public class NotificationLogServiceTest {
         void getCeremonyNotificationEmpty() {
             List<NoticeType> types = List.of(NoticeType.CEREMONY);
 
-            given(notificationLogRepository.findByUserAndNotificationTypes(mockUser, types))
-                    .willReturn(List.of());
+            given(notificationLogRepository.findByUserAndNotificationTypes(mockUser, types, pageable))
+                    .willReturn(Page.empty(pageable));
 
-            List<NotificationResponseDto> result = notificationLogService.getCeremonyNotification(mockUser);
+            Page<NotificationResponseDto> result = notificationLogService.getCeremonyNotification(mockUser, 0);
 
             assertThat(result).isNotNull();
             assertThat(result).isEmpty();
 
-            verify(notificationLogRepository).findByUserAndNotificationTypes(mockUser, types);
+            verify(notificationLogRepository).findByUserAndNotificationTypes(mockUser, types, pageable);
         }
     }
 
@@ -114,7 +131,8 @@ public class NotificationLogServiceTest {
             NotificationLog postLog = NotificationLog.of(mockUser, postNotification);
             NotificationLog commentLog = NotificationLog.of(mockUser, commentNotification);
 
-            mockNotificationLogs = List.of(boardLog, postLog, commentLog);
+            List<NotificationLog> logs = List.of(boardLog, postLog, commentLog);
+            mockNotificationLogs = new PageImpl<>(logs, pageable, logs.size());
         }
 
         @Test
@@ -122,17 +140,17 @@ public class NotificationLogServiceTest {
         void getGeneralNotificationSuccess() {
             List<NoticeType> types = Arrays.asList(NoticeType.BOARD, NoticeType.POST, NoticeType.COMMENT);
 
-            given(notificationLogRepository.findByUserAndNotificationTypes(mockUser, types))
+            given(notificationLogRepository.findByUserAndNotificationTypes(mockUser, types, pageable))
                     .willReturn(mockNotificationLogs);
 
-            List<NotificationResponseDto> result = notificationLogService.getGeneralNotification(mockUser);
+            Page<NotificationResponseDto> result = notificationLogService.getGeneralNotification(mockUser, 0);
 
             assertThat(result).isNotNull();
             assertThat(result).hasSize(3);
             assertThat(result).extracting("noticeType")
                     .containsExactlyInAnyOrder(NoticeType.BOARD, NoticeType.POST, NoticeType.COMMENT);
 
-            verify(notificationLogRepository).findByUserAndNotificationTypes(mockUser, types);
+            verify(notificationLogRepository).findByUserAndNotificationTypes(mockUser, types, pageable);
         }
 
         @Test
@@ -140,15 +158,15 @@ public class NotificationLogServiceTest {
         void getGeneralNotificationEmpty() {
             List<NoticeType> types = List.of(NoticeType.BOARD, NoticeType.POST, NoticeType.COMMENT);
 
-            given(notificationLogRepository.findByUserAndNotificationTypes(mockUser, types))
-                    .willReturn(List.of());
+            given(notificationLogRepository.findByUserAndNotificationTypes(mockUser, types, pageable))
+                    .willReturn(Page.empty(pageable));
 
-            List<NotificationResponseDto> result = notificationLogService.getGeneralNotification(mockUser);
+            Page<NotificationResponseDto> result = notificationLogService.getGeneralNotification(mockUser, 0);
 
             assertThat(result).isNotNull();
             assertThat(result).isEmpty();
 
-            verify(notificationLogRepository).findByUserAndNotificationTypes(mockUser, types);
+            verify(notificationLogRepository).findByUserAndNotificationTypes(mockUser, types, pageable);
         }
     }
 
