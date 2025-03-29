@@ -119,7 +119,7 @@ class BoardNotificationServiceTest {
 
         boardNotificationService.sendByBoardIsSubscribed(mockBoard, mockPost);
 
-        verify(firebasePushNotificationService).sendNotification(eq(validToken), "게시판 알림", "새 게시글 : 게시글 내용");
+        verify(firebasePushNotificationService).sendNotification(validToken, "게시판 알림", "새 게시글 : 게시글 내용");
         verify(notificationLogRepository).save(any(NotificationLog.class));
     }
 

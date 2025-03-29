@@ -19,6 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -70,6 +71,9 @@ class CeremonyNotificationServiceTest {
         mockCeremony = mock(Ceremony.class);
         given(mockCeremony.getId()).willReturn("ceremony-id");
         given(mockCeremony.getUser()).willReturn(mockUser);
+        given(mockCeremony.getStartDate()).willReturn(LocalDate.of(2024, 4, 15));
+        given(mockCeremony.getEndDate()).willReturn(LocalDate.of(2024, 4, 16));
+
     }
 
     @Test
