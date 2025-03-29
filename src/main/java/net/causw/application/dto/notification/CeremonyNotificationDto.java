@@ -12,12 +12,11 @@ public class CeremonyNotificationDto {
 
     public static CeremonyNotificationDto of(Ceremony ceremony) {
         return CeremonyNotificationDto.builder()
-                .title(String.format("%s %s - %s",
-                        ceremony.getUser().getAdmissionYear().toString(),
+                .title(String.format("%s(%s) - %s",
                         ceremony.getUser().getName(),
-                        ceremony.getCeremonyCategory().toString()))
-                .body(String.format("Description: %s\nStart Date: %s\nEnd Date: %s",
-                        ceremony.getDescription(),
+                        ceremony.getUser().getAdmissionYear().toString(),
+                        ceremony.getDescription()))
+                .body(String.format("기간 : %s ~ %s",
                         ceremony.getStartDate().toString(),
                         ceremony.getEndDate().toString()))
                 .build();

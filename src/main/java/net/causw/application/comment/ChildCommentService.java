@@ -8,20 +8,24 @@ import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.comment.LikeChildComment;
 import net.causw.adapter.persistence.notification.Notification;
+import net.causw.adapter.persistence.notification.UserCommentSubscribe;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.circle.CircleMemberRepository;
 import net.causw.adapter.persistence.repository.comment.ChildCommentRepository;
 import net.causw.adapter.persistence.repository.comment.CommentRepository;
 import net.causw.adapter.persistence.repository.comment.LikeChildCommentRepository;
 import net.causw.adapter.persistence.repository.notification.NotificationRepository;
+import net.causw.adapter.persistence.repository.notification.UserCommentSubscribeRepository;
 import net.causw.adapter.persistence.repository.post.PostRepository;
 import net.causw.adapter.persistence.repository.user.UserRepository;
 import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.comment.ChildCommentCreateRequestDto;
 import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.ChildCommentUpdateRequestDto;
+import net.causw.application.dto.comment.CommentSubscribeResponseDto;
 import net.causw.application.dto.util.dtoMapper.CommentDtoMapper;
 import net.causw.application.dto.util.StatusUtil;
+import net.causw.application.notification.CommentNotificationService;
 import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
@@ -54,6 +58,7 @@ public class ChildCommentService {
     private final LikeChildCommentRepository likeChildCommentRepository;
     private final NotificationRepository notificationRepository;
     private final Validator validator;
+    private final CommentNotificationService commentNotificationService;
 
     @Transactional
     public ChildCommentResponseDto createChildComment(User creator, ChildCommentCreateRequestDto childCommentCreateRequestDto) {
@@ -72,25 +77,17 @@ public class ChildCommentService {
                 .consistOf(ConstraintValidator.of(childComment, this.validator))
                 .consistOf(UserStateIsDeletedValidator.of(parentComment.getWriter().getState()));
         validatorBucket.validate();
-        //TODO 푸시알람 로직 변경 필요
-        /*
-        if (!creator.getId().equals(childComment.getWriter().getId())) {
-                        notificationRepository.save(
-                    Notification.of(
-                            parentComment.getWriter(),
-                            childComment.getContent(),
-                            NoticeType.COMMENT,
-                            false
-                    )
-            );
-        }
-         */
 
-        return toChildCommentResponseDto(
+        ChildCommentResponseDto childCommentResponseDto = toChildCommentResponseDto(
                 childCommentRepository.save(childComment),
                 creator,
                 post.getBoard()
         );
+
+        //1. 여기선 그냥 댓글 달리면 알람을 보내게 하면됨
+        commentNotificationService.sendByCommentIsSubscribed(parentComment, childComment);
+
+        return childCommentResponseDto;
     }
 
     @Transactional
@@ -202,6 +199,9 @@ public class ChildCommentService {
         LikeChildComment likeChildComment = LikeChildComment.of(childComment, user);
         likeChildCommentRepository.save(likeChildComment);
     }
+
+
+
 
     private Boolean isChildCommentAlreadyLike(User user, String childCommentId) {
         return likeChildCommentRepository.existsByChildCommentIdAndUserId(childCommentId, user.getId());

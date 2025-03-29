@@ -2,7 +2,9 @@ package net.causw.application.dto.util.dtoMapper;
 
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.board.BoardApply;
+import net.causw.adapter.persistence.notification.UserBoardSubscribe;
 import net.causw.adapter.persistence.post.Post;
+import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.board.*;
 import net.causw.application.dto.circle.CircleResponseDto;
 import net.causw.application.dto.post.PostContentDto;
@@ -58,6 +60,12 @@ public interface BoardDtoMapper {
     @Mapping(target = "boardName", source = "boardApply.boardName")
     NormalBoardAppliesResponseDto toNormalBoardAppliesResponseDto(BoardApply boardApply);
 
+
+
+    @Mapping(target = "boardId", source = "userBoardSubscribe.board.id")
+    @Mapping(target = "userId", source = "userBoardSubscribe.user.id")
+    @Mapping(target = "isSubscribed", source = "userBoardSubscribe.isSubscribed")
+    BoardSubscribeResponseDto toBoardSubscribeResponseDto(UserBoardSubscribe userBoardSubscribe);
 
 
 }

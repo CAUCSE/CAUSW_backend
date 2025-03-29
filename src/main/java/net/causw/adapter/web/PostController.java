@@ -412,4 +412,30 @@ public class PostController {
     }
 
 
+    @PostMapping("/subscribe/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
+    @Operation(summary = "로그인한 사용자의 게시글 알람 설정 켜기"
+            , description = "id에는 post id 값을 넣어주세요")
+    public PostSubscribeResponseDto subscribePost(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable("id") String id
+    ){
+        return postService.setPostSubscribe(userDetails.getUser(), id, true);
+    }
+
+    @DeleteMapping("/subscribe/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
+    @Operation(summary = "로그인한 사용자의 게시글 알람 설정 끄기"
+            , description = "id에는 post id 값을 넣어주세요")
+    public PostSubscribeResponseDto unsubscribePost(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable("id") String id
+    ){
+        return postService.setPostSubscribe(userDetails.getUser(), id, false);
+    }
+
+
+
 }

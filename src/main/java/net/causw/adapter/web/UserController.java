@@ -657,5 +657,41 @@ public class UserController {
         return userService.updateUserIsV2(userDetails.getUser());
     }
 
+
+    @PostMapping(value = "/fcm")
+    @ResponseStatus(value = HttpStatus.CREATED)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
+    @Operation(summary = "사용자 fcmToken 등록",
+            description = "로그인한 사용자의 fcmToken을 등록합니다")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserResponseDto.class))),
+            @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
+    })
+    public UserFcmTokenResponseDto createFcmToken(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(name = "fcmToken") String fcmToken
+    ) {
+        return userService.createFcmToken(userDetails.getUser(), fcmToken);
+
+    }
+
+    @GetMapping(value = "/fcm")
+    @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
+    @Operation(summary = "사용자 fcmToken 조회",
+            description = "로그인한 사용자의 fcmToken을 조회합니다")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserResponseDto.class))),
+            @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
+    })
+    public UserFcmTokenResponseDto getFcmToken(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return userService.getUserFcmToken(userDetails.getUser());
+    }
+
+
 }
 

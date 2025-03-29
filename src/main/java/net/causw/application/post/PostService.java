@@ -9,17 +9,20 @@ import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.form.Form;
 import net.causw.adapter.persistence.form.FormQuestionOption;
 import net.causw.adapter.persistence.form.FormQuestion;
-import net.causw.adapter.persistence.repository.form.FormRepository;
-import net.causw.adapter.persistence.notification.Notification;
 import net.causw.adapter.persistence.notification.UserBoardSubscribe;
-import net.causw.adapter.persistence.repository.notification.NotificationRepository;
+import net.causw.adapter.persistence.notification.UserCommentSubscribe;
+import net.causw.adapter.persistence.notification.UserPostSubscribe;
+import net.causw.adapter.persistence.repository.form.FormRepository;
 import net.causw.adapter.persistence.repository.notification.UserBoardSubscribeRepository;
+import net.causw.adapter.persistence.repository.notification.UserCommentSubscribeRepository;
+import net.causw.adapter.persistence.repository.notification.UserPostSubscribeRepository;
 import net.causw.adapter.persistence.repository.uuidFile.PostAttachImageRepository;
 import net.causw.adapter.persistence.repository.vote.VoteRecordRepository;
 import net.causw.adapter.persistence.uuidFile.joinEntity.PostAttachImage;
 import net.causw.adapter.persistence.vote.Vote;
 import net.causw.adapter.persistence.vote.VoteOption;
 import net.causw.adapter.persistence.vote.VoteRecord;
+import net.causw.application.dto.board.BoardSubscribeResponseDto;
 import net.causw.application.dto.form.request.create.FormCreateRequestDto;
 import net.causw.application.dto.form.request.create.QuestionCreateRequestDto;
 import net.causw.application.dto.form.response.FormResponseDto;
@@ -29,6 +32,7 @@ import net.causw.application.dto.user.UserResponseDto;
 import net.causw.application.dto.util.dtoMapper.*;
 import net.causw.application.dto.vote.VoteOptionResponseDto;
 import net.causw.application.dto.vote.VoteResponseDto;
+import net.causw.application.notification.BoardNotificationService;
 import net.causw.application.pageable.PageableFactory;
 import net.causw.adapter.persistence.post.FavoritePost;
 import net.causw.adapter.persistence.post.LikePost;
@@ -95,13 +99,15 @@ public class PostService {
     private final FavoritePostRepository favoritePostRepository;
     private final LikeCommentRepository likeCommentRepository;
     private final LikeChildCommentRepository likeChildCommentRepository;
-    private final NotificationRepository notificationRepository;
-    private final UserBoardSubscribeRepository userBoardSubscribeRepository;
     private final PageableFactory pageableFactory;
     private final Validator validator;
     private final UuidFileService uuidFileService;
     private final PostAttachImageRepository postAttachImageRepository;
     private final FormRepository formRepository;
+    private final BoardNotificationService boardNotificationService;
+    private final UserBoardSubscribeRepository userBoardSubscribeRepository;
+    private final UserPostSubscribeRepository userPostSubscribeRepository;
+    private final UserCommentSubscribeRepository userCommentSubscribeRepository;
 
     public PostResponseDto findPostById(User user, String postId) {
         Post post = getPost(postId);
@@ -128,10 +134,11 @@ public class PostService {
         validatorBucket.validate();
 
         // 동아리 리더 여부 확인
-        boolean isCircleLeader = false;
+        Boolean isCircleLeader = false;
         if (roles.contains(Role.LEADER_CIRCLE)) {
             isCircleLeader = getCircleLeader(board.getCircle()).getId().equals(user.getId());
         }
+
 
         if (isCircleLeader || roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT)) {
             // 게시글 조회: 리더, 관리자, 회장인 경우 삭제된 게시글도 포함하여 조회
@@ -139,6 +146,7 @@ public class PostService {
                     board,
                     roles,
                     isFavorite(user.getId(), board.getId()),
+                    isBoardSubscribed(user, board),
                     postRepository.findAllByBoard_IdOrderByCreatedAtDesc(boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
                             .map(this::toPostsResponseDto)
             );
@@ -148,6 +156,7 @@ public class PostService {
                     board,
                     roles,
                     isFavorite(user.getId(), board.getId()),
+                    isBoardSubscribed(user, board),
                     postRepository.findAllByBoard_IdAndIsDeletedOrderByCreatedAtDesc(boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), false)
                             .map(this::toPostsResponseDto)
             );
@@ -180,6 +189,7 @@ public class PostService {
                     board,
                     roles,
                     isFavorite(user.getId(), board.getId()),
+                    isBoardSubscribed(user, board),
                     postRepository.findByTitleAndBoard_Id(keyword, boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
                             .map(this::toPostsResponseDto));
         } else {
@@ -187,6 +197,7 @@ public class PostService {
                     board,
                     roles,
                     isFavorite(user.getId(), board.getId()),
+                    isBoardSubscribed(user, board),
                     postRepository.findByTitleBoard_IdAndDeleted(keyword, boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), false)
                             .map(this::toPostsResponseDto));
         }
@@ -205,10 +216,15 @@ public class PostService {
                 board,
                 roles,
                 isFavorite(user.getId(), board.getId()),
+                isBoardSubscribed(user, board),
                 postRepository.findAllByBoard_IdOrderByCreatedAtDesc(board.getId(), pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
                         .map(this::toPostsResponseDto));
     }
 
+    //게시글이 생성될 때 발생할 일
+    //1. 게시글과 작성자의 구독 매핑 만들기
+    //2. 이 게시글이 작성된 게시판의 구독자 확인하기
+    //3. 이 게시판의 구독자들에게 sendByBoardIsSubscribed로 푸시 알림 보내기 & 서비스 알람 로그 저장하기
     @Transactional
     public  PostCreateResponseDto createPost(User creator, PostCreateRequestDto postCreateRequestDto, List<MultipartFile> attachImageList) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
@@ -270,36 +286,14 @@ public class PostService {
                 .consistOf(ConstraintValidator.of(post, this.validator))
                 .validate();
 
-        // 게시물 알림
-        List<UserBoardSubscribe> byBoardId = userBoardSubscribeRepository.findByBoard_Id(postCreateRequestDto.getBoardId());
-        //TODO 푸시알람 로직 변경 필요
-        /*
-        if (board.getIsDefaultNotice()) { // 전체 사용자가 알림 대상이면
-            notificationRepository.save(
-                    Notification.of(
-                            null,
-                            post.getTitle(),
-                            NoticeType.POST,
-                            true
-                    )
-            );
-        } else { // 개별 사용자에게 알림
-            for (UserBoardSubscribe user : byBoardId) {
-                if (!user.getUser().getId().equals(creator.getId())) {
-                    notificationRepository.save(
-                            Notification.of(
-                                    user.getUser(),
-                                    post.getTitle(),
-                                    NoticeType.POST,
-                                    false
-                            )
-                    );
-                }
-            }
-        }
-        */
+        PostCreateResponseDto postCreateResponseDto = toPostCreateResponseDto(postRepository.save(post));
 
-        return toPostCreateResponseDto(postRepository.save(post));
+        createPostSubscribe(creator, post.getId());
+
+        //2. 작성된 게시판의 구독자에게 알람 보내기
+        boardNotificationService.sendByBoardIsSubscribed(board, post);
+
+        return postCreateResponseDto;
     }
 
     @Transactional
@@ -313,8 +307,6 @@ public class PostService {
 
         Board board = getBoard(postCreateWithFormRequestDto.getBoardId());
         List<String> createRoles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
-        System.out.println(createRoles);
-        System.out.println("Creator Roles: " + roles);
 
         if (board.getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
             validatorBucket
@@ -712,6 +704,31 @@ public class PostService {
         favoritePostRepository.save(favoritePost);
     }
 
+    public void createPostSubscribe(User user, String postId){
+        Post post = getPost(postId);
+
+        UserPostSubscribe userPostSubscribe = UserPostSubscribe.of(user, post, true);
+        userPostSubscribeRepository.save(userPostSubscribe);
+    }
+
+    @Transactional
+    public PostSubscribeResponseDto setPostSubscribe(User user, String postId, Boolean isSubscribed) {
+        Post post = getPost(postId);
+
+        UserPostSubscribe subscription = userPostSubscribeRepository.findByUserAndPost(user, post)
+                .map(existing -> {
+                    existing.setIsSubscribed(isSubscribed);
+                    return existing;
+                })
+                .orElseGet(() -> userPostSubscribeRepository.save(UserPostSubscribe.of(user, post, isSubscribed)));
+
+        return PostDtoMapper.INSTANCE.toPostSubscribeResponseDto(subscription);
+    }
+
+
+
+
+
     private Boolean isPostAlreadyLike(User user, String postId) {
         return likePostRepository.existsByPostIdAndUserId(postId, user.getId());
     }
@@ -876,7 +893,7 @@ public class PostService {
         return PostDtoMapper.INSTANCE.toPostCreateResponseDto(post);
     }
 
-    private BoardPostsResponseDto toBoardPostsResponseDto(Board board, Set<Role> userRoles, boolean isFavorite, Page<PostsResponseDto> post) {
+    private BoardPostsResponseDto toBoardPostsResponseDto(Board board, Set<Role> userRoles, Boolean isFavorite, Boolean isBoardSubscribed, Page<PostsResponseDto> post) {
         List<String> roles = Arrays.asList(board.getCreateRoles().split(","));
         Boolean writable = userRoles.stream()
                 .map(Role::getValue)
@@ -886,6 +903,7 @@ public class PostService {
                 userRoles,
                 writable,
                 isFavorite,
+                isBoardSubscribed,
                 post
         );
     }
@@ -934,7 +952,8 @@ public class PostService {
                 StatusUtil.isPostForm(post) ? toFormResponseDto(post.getForm()) : null,
                 StatusUtil.isPostVote(post) ? toVoteResponseDto(post.getVote(), user) : null,
                 StatusUtil.isPostVote(post),
-                StatusUtil.isPostForm(post)
+                StatusUtil.isPostForm(post),
+                isPostSubscribed(user, post)
         );
     }
 
@@ -957,7 +976,8 @@ public class PostService {
                         .map(childComment -> toChildCommentResponseDto(childComment, user, board))
                         .collect(Collectors.toList()),
                 StatusUtil.isUpdatable(comment, user),
-                StatusUtil.isDeletable(comment, user, board)
+                StatusUtil.isDeletable(comment, user, board),
+                isCommentSubscribed(user, comment)
         );
     }
 
@@ -993,6 +1013,24 @@ public class PostService {
                 .stream()
                 .filter(favoriteBoard -> !favoriteBoard.getBoard().getIsDeleted())
                 .anyMatch(favoriteboard -> favoriteboard.getBoard().getId().equals(boardId));
+    }
+
+    private Boolean isBoardSubscribed(User user, Board board){
+        return userBoardSubscribeRepository.findByUserAndBoard(user, board)
+                .map(UserBoardSubscribe::getIsSubscribed)
+                .orElse(false);
+    }
+
+    private Boolean isPostSubscribed(User user, Post post){
+        return userPostSubscribeRepository.findByUserAndPost(user, post)
+                .map(UserPostSubscribe::getIsSubscribed)
+                .orElse(false);
+    }
+
+    private Boolean isCommentSubscribed(User user, Comment comment){
+        return userCommentSubscribeRepository.findByUserAndComment(user, comment)
+                .map(UserCommentSubscribe::getIsSubscribed)
+                .orElse(false);
     }
 
     private Boolean isPostHasComment(String postId){

@@ -1580,6 +1580,21 @@ public class UserService {
         return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
     }
 
+    @Transactional
+    public UserFcmTokenResponseDto createFcmToken(User user, String fcmToken){
+        if (!user.getFcmTokens().contains(fcmToken)) {
+            user.getFcmTokens().add(fcmToken);
+        }
+
+        userRepository.save(user);
+        return UserDtoMapper.INSTANCE.toUserFcmTokenResponseDto(user);
+    }
+
+    @Transactional(readOnly = true)
+    public UserFcmTokenResponseDto getUserFcmToken(User user){
+        return UserDtoMapper.INSTANCE.toUserFcmTokenResponseDto(user);
+    }
+
     // private methods
     private List<String> getCircleNamesIfLeader(User user) {
         List<Circle> circleList = this.circleRepository.findByLeader_Id(user.getId());

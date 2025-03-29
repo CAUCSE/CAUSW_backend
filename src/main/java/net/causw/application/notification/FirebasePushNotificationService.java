@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class FirebasePushNotificationService {
 
-    public void sendNotification(String targetToken, String title, String body) {
+    public void sendNotification(String targetToken, String title, String body) throws Exception {
         Notification notification = Notification.builder()
                 .setTitle(title)
                 .setBody(body)
@@ -21,11 +21,8 @@ public class FirebasePushNotificationService {
                 .setNotification(notification)
                 .build();
 
-        try {
-            String response = FirebaseMessaging.getInstance().send(message);
-            log.info("Successfully sent message: " + response);
-        } catch (Exception e) {
-            log.error("Error sending FCM message: " + e.getMessage());
-        }
+        String response = FirebaseMessaging.getInstance().send(message);
+        log.info("Successfully sent message: " + response);
     }
+
 }
