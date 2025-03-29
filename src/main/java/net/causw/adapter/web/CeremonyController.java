@@ -5,9 +5,8 @@ import lombok.RequiredArgsConstructor;
 import net.causw.application.ceremony.CeremonyService;
 import net.causw.application.dto.ceremony.*;
 import net.causw.config.security.userdetails.CustomUserDetails;
-import org.springdoc.core.annotations.ParameterObject;
+import net.causw.domain.model.enums.ceremony.CeremonyState;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -51,10 +50,12 @@ public class CeremonyController {
             description = "사용자 본인의 경조사 신청 내역을 조회합니다.")
     public Page<CeremonyResponseDto> getCeremonies(
             @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(name = "ceremonyState", defaultValue = "ACCEPT") CeremonyState state,
             @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum
     ) {
-        return ceremonyService.getUserCeremonyResponses(userDetails.getUser(), pageNum);
+        return ceremonyService.getUserCeremonyResponses(userDetails.getUser(), state, pageNum);
     }
+
 
     @GetMapping("/list/await")
     @ResponseStatus(value = HttpStatus.OK)
@@ -89,6 +90,18 @@ public class CeremonyController {
             @RequestBody @Valid UpdateCeremonyStateRequestDto updateCeremonyStateRequestDto
     ) {
         return ceremonyService.updateUserCeremonyStatus(updateCeremonyStateRequestDto);
+    }
+
+    @PutMapping("/state/close/{ceremonyId}")
+    @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
+    @Operation(summary = "유저 경조사 신청 취소(사용자용)",
+            description = "유저가 본인의 경조사 승인 상태를 close로 변경합니다.")
+    public CeremonyResponseDto closeUserCeremonyStatus(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable(name = "ceremonyId") String ceremonyId
+    ) {
+        return ceremonyService.closeUserCeremonyStatus(userDetails.getUser(), ceremonyId);
     }
 
     @PostMapping("/notification-setting")

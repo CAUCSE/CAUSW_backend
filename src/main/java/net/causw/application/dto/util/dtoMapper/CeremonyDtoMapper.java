@@ -26,6 +26,7 @@ public interface CeremonyDtoMapper {
     @Mapping(target = "category", source = "ceremonyCategory")
     @Mapping(target = "ceremonyState", source = "ceremonyState")
     @Mapping(target = "attachedImageUrlList", source = "ceremonyAttachImageList", qualifiedByName = "mapAttachedImages")
+    @Mapping(target = "note", source = "note")
     CeremonyResponseDto toCeremonyResponseDto(Ceremony ceremony);
 
 

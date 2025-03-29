@@ -61,8 +61,8 @@ public class CeremonyService {
     }
 
     @Transactional(readOnly = true)
-    public Page<CeremonyResponseDto> getUserCeremonyResponses(User user, Integer pageNum) {
-        Page<Ceremony> ceremonies = ceremonyRepository.findAllByUser(user, pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE));
+    public Page<CeremonyResponseDto> getUserCeremonyResponses(User user, CeremonyState state, Integer pageNum) {
+        Page<Ceremony> ceremonies = ceremonyRepository.findAllByUserAndCeremonyState(user, state, pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE));
         return ceremonies.map(CeremonyDtoMapper.INSTANCE::toCeremonyResponseDto);
     }
 
@@ -101,6 +101,22 @@ public class CeremonyService {
             ceremony.updateNote(updateDto.getRejectMessage());
             return CeremonyDtoMapper.INSTANCE.toCeremonyResponseDto(ceremony);
         }
+
+        ceremonyRepository.save(ceremony);
+
+        return CeremonyDtoMapper.INSTANCE.toCeremonyResponseDto(ceremony);
+    }
+
+    @Transactional
+    public CeremonyResponseDto closeUserCeremonyStatus(User user, String ceremonyId) {
+        Ceremony ceremony = ceremonyRepository.findByIdAndUser(ceremonyId, user).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.CEREMONY_NOT_FOUND
+                )
+        );
+
+        ceremony.updateCeremonyState(CeremonyState.CLOSE);
 
         ceremonyRepository.save(ceremony);
 

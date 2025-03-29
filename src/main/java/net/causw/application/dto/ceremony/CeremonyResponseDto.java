@@ -38,18 +38,6 @@ public class CeremonyResponseDto {
     @Schema(description = "첨부 이미지 URL 리스트")
     private List<String> attachedImageUrlList;
 
-    public static CeremonyResponseDto from(Ceremony ceremony) {
-        List<String> attachedImageUrlList = ceremony.getCeremonyAttachImageList().stream()
-                .map(image -> image.getUuidFile().getFileUrl()) // Get URL from UuidFile
-                .collect(Collectors.toList());
-
-        return CeremonyResponseDto.builder()
-                .description(ceremony.getDescription())
-                .startDate(ceremony.getStartDate())
-                .endDate(ceremony.getEndDate())
-                .category(ceremony.getCeremonyCategory())
-                .ceremonyState(ceremony.getCeremonyState())
-                .attachedImageUrlList(attachedImageUrlList)
-                .build();
-    }
+    @Schema(description = "경조사 거부 사유")
+    private String note;
 }
