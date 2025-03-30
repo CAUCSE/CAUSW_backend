@@ -37,19 +37,10 @@ public class ExcelAbstractServiceTest {
   static final String fileName = "fileName";
   static final String sheetName = "sheetName";
 
-  static final List<UserResponseDto> userList = List.of(
-      UserDtoMapper.INSTANCE.toUserResponseDto(mock(User.class)));
-  static final List<UserCouncilFeeResponseDto> userCouncilFeeList = List.of(
-      UserCouncilFeeDtoMapper.INSTANCE.toUserCouncilFeeResponseDto(
-          mock(UserCouncilFee.class),
-          mock(User.class),
-          4,
-          true));
-
   static Stream<Arguments> provideExcelServices(){
     return Stream.of(
-        Arguments.arguments(new UserExcelService(), userList),
-        Arguments.arguments(new CouncilFeeExcelService(), userCouncilFeeList));
+        Arguments.arguments(new UserExcelService(), List.of(mock(UserResponseDto.class))),
+        Arguments.arguments(new CouncilFeeExcelService(), List.of(mock(UserCouncilFeeResponseDto.class))));
   }
 
   @ParameterizedTest
