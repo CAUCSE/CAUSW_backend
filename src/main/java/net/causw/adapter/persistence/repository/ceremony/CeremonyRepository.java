@@ -1,4 +1,4 @@
-package net.causw.adapter.persistence.repository.push;
+package net.causw.adapter.persistence.repository.ceremony;
 
 
 import net.causw.adapter.persistence.ceremony.Ceremony;

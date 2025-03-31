@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.ceremony.Ceremony;
 import net.causw.adapter.persistence.notification.CeremonyNotificationSetting;
 import net.causw.adapter.persistence.repository.notification.CeremonyNotificationSettingRepository;
-import net.causw.adapter.persistence.repository.push.CeremonyRepository;
+import net.causw.adapter.persistence.repository.ceremony.CeremonyRepository;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.ceremony.*;
