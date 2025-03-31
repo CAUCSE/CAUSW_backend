@@ -17,7 +17,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/notifications/log")
-public class NotificationController {
+public class NotificationLogController {
     private final NotificationLogService notificationLogService;
 
 
@@ -25,7 +25,7 @@ public class NotificationController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "유저에게 온 일반 알람 조회", description = "유저의 일반 알림을 조회합니다.")
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
-    public Page<NotificationResponseDto> findGeneralNotification(
+    public Page<NotificationResponseDto> getGeneralNotification(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum
     ) {
@@ -47,7 +47,7 @@ public class NotificationController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "유저에게 온 일반 알람 조회", description = "유저의 일반 알림을 조회합니다.")
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
-    public List<NotificationResponseDto> findGeneralNotificationTop4(
+    public List<NotificationResponseDto> getGeneralNotificationTop4(
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return notificationLogService.getGeneralNotificationTop4(userDetails.getUser());
@@ -57,7 +57,7 @@ public class NotificationController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "유저에게 온 일반 알람 조회", description = "유저의 일반 알림을 조회합니다.")
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
-    public List<NotificationResponseDto> findCeremonyNotificationTop4(
+    public List<NotificationResponseDto> getCeremonyNotificationTop4(
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return notificationLogService.getCeremonyNotificationTop4(userDetails.getUser());
