@@ -1,6 +1,7 @@
 package net.causw.adapter.web;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.vote.CastVoteRequestDto;
 import net.causw.application.dto.vote.CreateVoteRequestDto;
@@ -24,7 +25,7 @@ public class VoteController {
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "투표 생성", description = "새로운 투표를 생성합니다.")
     public ResponseEntity<VoteResponseDto> createVote(
-            @RequestBody CreateVoteRequestDto createVoteRequestDto,
+            @Valid @RequestBody CreateVoteRequestDto createVoteRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         VoteResponseDto voteResponse = voteService.createVote(createVoteRequestDto, userDetails.getUser());
@@ -35,7 +36,7 @@ public class VoteController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "투표 참여", description = "해당 투표에 참여합니다.")
     public ResponseEntity<String> castVote(
-            @RequestBody CastVoteRequestDto castVoteRequestDto,
+            @Valid @RequestBody CastVoteRequestDto castVoteRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         String result = voteService.castVote(castVoteRequestDto, userDetails.getUser());
