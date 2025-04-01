@@ -27,7 +27,7 @@ public interface NotificationLogRepository extends JpaRepository<NotificationLog
             "AND nl.isRead = false " +
             "AND n.noticeType IN :types " +
             "ORDER BY nl.createdAt DESC")
-    List<NotificationLog> findByUserAndIsReadFalseNotificationTypesTop4(@Param("user") User user, @Param("types") List<NoticeType> types, Pageable pageable);
+    List<NotificationLog> findByUserAndIsReadFalseNotificationTypes(@Param("user") User user, @Param("types") List<NoticeType> types, Pageable pageable);
 
 
     Optional<NotificationLog> findByIdAndUser(String id, User user);

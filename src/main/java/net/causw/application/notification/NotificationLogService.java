@@ -43,7 +43,7 @@ public class NotificationLogService {
     @Transactional(readOnly = true)
     public List<NotificationResponseDto> getGeneralNotificationTop4(User user) {
         List<NoticeType> types = Arrays.asList(NoticeType.BOARD, NoticeType.POST, NoticeType.COMMENT);
-        List<NotificationLog> notificationLogs = notificationLogRepository.findByUserAndIsReadFalseNotificationTypesTop4(user, types, pageableFactory.create(0, StaticValue.SIDE_NOTIFICATION_PAGE_SIZE));
+        List<NotificationLog> notificationLogs = notificationLogRepository.findByUserAndIsReadFalseNotificationTypes(user, types, pageableFactory.create(0, StaticValue.SIDE_NOTIFICATION_PAGE_SIZE));
 
         return notificationLogs.stream()
                 .map(log -> NotificationDtoMapper.INSTANCE.toNotificationResponseDto(log.getId(), log.getNotification(), log.getIsRead()))
@@ -67,7 +67,7 @@ public class NotificationLogService {
     @Transactional(readOnly = true)
     public List<NotificationResponseDto> getCeremonyNotificationTop4(User user) {
         List<NoticeType> types = Arrays.asList(NoticeType.CEREMONY);
-        List<NotificationLog> notificationLogs = notificationLogRepository.findByUserAndIsReadFalseNotificationTypesTop4(user, types, pageableFactory.create(0, StaticValue.SIDE_NOTIFICATION_PAGE_SIZE));
+        List<NotificationLog> notificationLogs = notificationLogRepository.findByUserAndIsReadFalseNotificationTypes(user, types, pageableFactory.create(0, StaticValue.SIDE_NOTIFICATION_PAGE_SIZE));
 
         return notificationLogs.stream()
                 .map(log -> NotificationDtoMapper.INSTANCE.toNotificationResponseDto(log.getId(), log.getNotification(), log.getIsRead()))
