@@ -45,7 +45,9 @@ public class NotificationLogController {
 
     @GetMapping("/general/top4")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "유저에게 온 일반 알람 조회", description = "유저의 일반 알림을 조회합니다.")
+    @Operation(summary = "유저에게 온 일반 알람 조회"
+            , description = "유저의 일반 알림을 조회합니다. <br>" +
+            "해당 api는 웹상의 사이드 바 형태의 읽지 않은 알람 4개를 표시할 때 사용됩니다.")
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     public List<NotificationResponseDto> getGeneralNotificationTop4(
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -55,7 +57,9 @@ public class NotificationLogController {
 
     @GetMapping("/ceremony/top4")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "유저에게 온 일반 알람 조회", description = "유저의 일반 알림을 조회합니다.")
+    @Operation(summary = "유저에게 온 경조사 알람 조회"
+            , description = "유저의 경조사 알림을 조회합니다. <br>" +
+            "해당 api는 웹상의 사이드 바 형태의 읽지 않은 알람 4개를 표시할 때 사용됩니다.")
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     public List<NotificationResponseDto> getCeremonyNotificationTop4(
             @AuthenticationPrincipal CustomUserDetails userDetails
