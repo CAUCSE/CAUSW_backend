@@ -20,6 +20,7 @@ import java.util.List;
 @Entity
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "tb_ceremony")
 public class Ceremony extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -32,6 +33,7 @@ public class Ceremony extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "ceremony_state", nullable = false)
+    @Builder.Default
     private CeremonyState ceremonyState = CeremonyState.AWAIT;
 
     @Column(name = "description", nullable = false)

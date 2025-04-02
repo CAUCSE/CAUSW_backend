@@ -5,16 +5,17 @@ import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.board.BoardApply;
 import net.causw.adapter.persistence.circle.Circle;
 import net.causw.adapter.persistence.circle.CircleMember;
+import net.causw.adapter.persistence.notification.UserBoardSubscribe;
 import net.causw.adapter.persistence.repository.board.BoardApplyRepository;
 import net.causw.adapter.persistence.repository.board.BoardRepository;
 import net.causw.adapter.persistence.repository.circle.CircleMemberRepository;
 import net.causw.adapter.persistence.repository.circle.CircleRepository;
+import net.causw.adapter.persistence.repository.notification.UserBoardSubscribeRepository;
 import net.causw.adapter.persistence.repository.post.PostRepository;
 import net.causw.adapter.persistence.repository.user.UserRepository;
 import net.causw.adapter.persistence.user.User;
 import net.causw.application.dto.board.*;
 import net.causw.application.dto.post.PostContentDto;
-import net.causw.application.dto.user.UserResponseDto;
 import net.causw.application.dto.util.dtoMapper.BoardDtoMapper;
 import net.causw.application.dto.util.dtoMapper.CircleDtoMapper;
 import net.causw.application.dto.util.dtoMapper.PostDtoMapper;
@@ -53,6 +54,7 @@ public class BoardService {
     private final UserRepository userRepository;
     private final CircleRepository circleRepository;
     private final CircleMemberRepository circleMemberRepository;
+    private final UserBoardSubscribeRepository userBoardSubscribeRepository;
     private final BoardApplyRepository boardApplyRepository;
     private final Validator validator;
 
@@ -231,7 +233,11 @@ public class BoardService {
                         getCircle(boardCreateRequestDto.getCircleId())
         );
 
-        return toBoardResponseDto(boardRepository.save(newBoard), creator.getRoles());
+        BoardResponseDto boardResponseDto = toBoardResponseDto(boardRepository.save(newBoard), creator.getRoles());
+
+        createBoardSubscribe(newBoard.getId());
+
+        return boardResponseDto;
     }
 
     @Transactional(readOnly = true)
@@ -516,4 +522,33 @@ public class BoardService {
                 )
         );
     }
+
+    @Transactional
+    public void createBoardSubscribe(String boardId) {
+        Board board = getBoard(boardId);
+        List<User> allUsers = userRepository.findAll();
+
+        List<UserBoardSubscribe> subscriptions = allUsers.stream()
+                .map(user -> UserBoardSubscribe.of(user, board, true))
+                .collect(Collectors.toList());
+
+        userBoardSubscribeRepository.saveAll(subscriptions);
+    }
+
+
+    @Transactional
+    public BoardSubscribeResponseDto setBoardSubscribe(User user, String boardId, Boolean isSubscribed) {
+        Board board = getBoard(boardId);
+
+        UserBoardSubscribe subscription = userBoardSubscribeRepository.findByUserAndBoard(user, board)
+                .map(existing -> {
+                    existing.setIsSubscribed(isSubscribed);
+                    return existing;
+                })
+                .orElseGet(() -> userBoardSubscribeRepository.save(UserBoardSubscribe.of(user, board, isSubscribed)));
+
+        return BoardDtoMapper.INSTANCE.toBoardSubscribeResponseDto(subscription);
+    }
+
+
 }

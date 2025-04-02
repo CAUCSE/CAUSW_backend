@@ -7,6 +7,14 @@ import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.comment.LikeComment;
+import net.causw.adapter.persistence.notification.UserCommentSubscribe;
+import net.causw.adapter.persistence.notification.UserPostSubscribe;
+import net.causw.adapter.persistence.repository.notification.UserCommentSubscribeRepository;
+import net.causw.application.dto.comment.*;
+import net.causw.application.dto.post.PostSubscribeResponseDto;
+import net.causw.application.dto.util.dtoMapper.PostDtoMapper;
+import net.causw.application.notification.CommentNotificationService;
+import net.causw.application.notification.PostNotificationService;
 import net.causw.application.pageable.PageableFactory;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.circle.CircleMemberRepository;
@@ -17,10 +25,6 @@ import net.causw.adapter.persistence.repository.comment.LikeCommentRepository;
 import net.causw.adapter.persistence.repository.post.PostRepository;
 import net.causw.adapter.persistence.repository.user.UserRepository;
 import net.causw.adapter.persistence.user.User;
-import net.causw.application.dto.comment.ChildCommentResponseDto;
-import net.causw.application.dto.comment.CommentCreateRequestDto;
-import net.causw.application.dto.comment.CommentResponseDto;
-import net.causw.application.dto.comment.CommentUpdateRequestDto;
 import net.causw.application.dto.util.dtoMapper.CommentDtoMapper;
 import net.causw.application.dto.util.StatusUtil;
 import net.causw.domain.aop.annotation.MeasureTime;
@@ -56,18 +60,30 @@ public class CommentService {
     private final LikeChildCommentRepository likeChildCommentRepository;
     private final PageableFactory pageableFactory;
     private final Validator validator;
+    private final UserCommentSubscribeRepository userCommentSubscribeRepository;
+    private final PostNotificationService postNotificationService;
 
     @Transactional
     public CommentResponseDto createComment(User creator, CommentCreateRequestDto commentCreateDto) {
         Post post = getPost(commentCreateDto.getPostId());
         Comment comment = Comment.of(commentCreateDto.getContent(), false, commentCreateDto.getIsAnonymous(), creator, post);
 
+
+
         ValidatorBucket validatorBucket = initializeValidator(creator, post);
         validatorBucket.
                 consistOf(ConstraintValidator.of(comment, this.validator));
         validatorBucket.validate();
+        //1. comment의 구독 여부 저장
+        createCommentSubscribe(creator, comment.getId());
 
-        return toCommentResponseDto(commentRepository.save(comment), creator, post.getBoard());
+        CommentResponseDto commentResponseDto = toCommentResponseDto(commentRepository.save(comment), creator, post.getBoard());
+
+        //2. comment가 달린 게시글의 구독자에게 전송
+        postNotificationService.sendByPostIsSubscribed(post, comment);
+
+
+        return commentResponseDto;
     }
 
     @Transactional(readOnly = true)
@@ -192,6 +208,29 @@ public class CommentService {
         likeCommentRepository.save(likeComment);
     }
 
+
+    public void createCommentSubscribe(User user, String commentId){
+        Comment comment = getComment(commentId);
+
+        UserCommentSubscribe userCommentSubscribe = UserCommentSubscribe.of(user, comment, true);
+        userCommentSubscribeRepository.save(userCommentSubscribe);
+    }
+
+    @Transactional
+    public CommentSubscribeResponseDto setCommentSubscribe(User user, String commentId, Boolean isSubscribed) {
+        Comment comment = getComment(commentId);
+
+        UserCommentSubscribe subscription = userCommentSubscribeRepository.findByUserAndComment(user, comment)
+                .map(existing -> {
+                    existing.setIsSubscribed(isSubscribed);
+                    return existing;
+                })
+                .orElseGet(() -> userCommentSubscribeRepository.save(UserCommentSubscribe.of(user, comment, isSubscribed)));
+
+        return CommentDtoMapper.INSTANCE.toCommentSubscribeResponseDto(subscription);
+    }
+
+
     private Boolean isCommentAlreadyLike(User user, String commentId) {
         return likeCommentRepository.existsByCommentIdAndUserId(commentId, user.getId());
     }
@@ -211,7 +250,8 @@ public class CommentService {
                         .map(childComment -> toChildCommentResponseDto(childComment, user, board))
                         .collect(Collectors.toList()),
                 StatusUtil.isUpdatable(comment, user),
-                StatusUtil.isDeletable(comment, user, board)
+                StatusUtil.isDeletable(comment, user, board),
+                isCommentSubscribed(user, comment)
         );
     }
 
@@ -293,6 +333,12 @@ public class CommentService {
                         MessageUtil.CIRCLE_APPLY_INVALID
                 )
         );
+    }
+
+    private Boolean isCommentSubscribed(User user, Comment comment){
+        return userCommentSubscribeRepository.findByUserAndComment(user, comment)
+                .map(UserCommentSubscribe::getIsSubscribed)
+                .orElse(false);
     }
 
 }

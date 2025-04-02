@@ -25,6 +25,10 @@ public class BoardPostsResponseDto {
     @Schema(description = "즐겨찾기 게시판 여부", example = "false")
     private Boolean isFavorite;
 
+    @Schema(description = "게시판 구독 여부", example = "false")
+    private Boolean isBoardSubscribed;
+
+
     @Schema(description = "게시글 정보입니다")
     private Page<PostsResponseDto> post;
 

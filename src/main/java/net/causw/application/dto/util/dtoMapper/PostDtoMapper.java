@@ -1,6 +1,7 @@
 package net.causw.application.dto.util.dtoMapper;
 
 import net.causw.adapter.persistence.board.Board;
+import net.causw.adapter.persistence.notification.UserPostSubscribe;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.uuidFile.joinEntity.PostAttachImage;
 import net.causw.application.dto.comment.CommentResponseDto;
@@ -72,6 +73,7 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "voteResponseDto", source = "voteResponseDto")
     @Mapping(target = "isPostVote", source = "isPostVote")
     @Mapping(target = "isPostForm", source = "isPostForm")
+    @Mapping(target = "isPostSubscribed", source = "isPostSubscribed")
     PostResponseDto toPostResponseDtoExtended(
             Post post,
             Page<CommentResponseDto> commentList,
@@ -86,7 +88,8 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
             FormResponseDto formResponseDto,
             VoteResponseDto voteResponseDto,
             Boolean isPostVote,
-            Boolean isPostForm
+            Boolean isPostForm,
+            Boolean isPostSubscribed
     );
 
     @Mapping(target = "title", source = "post.title")
@@ -95,8 +98,14 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
 
     @Mapping(target = "boardId", source = "board.id")
     @Mapping(target = "boardName", source = "board.name")
-    BoardPostsResponseDto toBoardPostsResponseDto(Board board, Set<Role> userRole, Boolean writable, Boolean isFavorite, Page<PostsResponseDto> post);
+    BoardPostsResponseDto toBoardPostsResponseDto(Board board, Set<Role> userRole, Boolean writable, Boolean isFavorite, Boolean isBoardSubscribed,Page<PostsResponseDto> post);
 
     @Mapping(target="id", source = "post.id")
     PostCreateResponseDto toPostCreateResponseDto(Post post);
+
+
+    @Mapping(target = "postId", source = "post.id")
+    @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "isSubscribed", source = "isSubscribed")
+    PostSubscribeResponseDto toPostSubscribeResponseDto(UserPostSubscribe userPostSubscribe);
 }

@@ -43,6 +43,9 @@ public class CommentResponseDto {
     @Schema(description = "로그인한 유저가 댓글에 좋아요를 이미 누른지 여부", example = "False")
     private Boolean isCommentLike;
 
+    @Schema(description = "댓글 구독 여부")
+    private Boolean isCommentSubscribed;
+
     @Schema(description = "댓글 종아요 수", example = "10")
     private Long numLike;
 

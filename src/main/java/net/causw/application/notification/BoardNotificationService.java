@@ -1,18 +1,19 @@
 package net.causw.application.notification;
 
+
 import com.google.firebase.messaging.FirebaseMessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.causw.adapter.persistence.comment.Comment;
+import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.notification.Notification;
 import net.causw.adapter.persistence.notification.NotificationLog;
-import net.causw.adapter.persistence.notification.UserPostSubscribe;
+import net.causw.adapter.persistence.notification.UserBoardSubscribe;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.notification.NotificationLogRepository;
 import net.causw.adapter.persistence.repository.notification.NotificationRepository;
-import net.causw.adapter.persistence.repository.notification.UserPostSubscribeRepository;
+import net.causw.adapter.persistence.repository.notification.UserBoardSubscribeRepository;
 import net.causw.adapter.persistence.user.User;
-import net.causw.application.dto.notification.PostNotificationDto;
+import net.causw.application.dto.notification.BoardNotificationDto;
 import net.causw.domain.model.enums.notification.NoticeType;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -22,15 +23,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@RequiredArgsConstructor
-@Slf4j
 @Service
-public class PostNotificationService implements NotificationService{
+@Slf4j
+@RequiredArgsConstructor
+public class BoardNotificationService implements NotificationService {
     private final FirebasePushNotificationService firebasePushNotificationService;
     private final NotificationRepository notificationRepository;
     private final NotificationLogRepository notificationLogRepository;
-    private final UserPostSubscribeRepository userPostSubscribeRepository;
-    @Override
+    private final UserBoardSubscribeRepository userBoardSubscribeRepository;
+
     public void send(User user, String targetToken, String title, String body) {
         try {
             firebasePushNotificationService.sendNotification(targetToken, title, body);
@@ -55,22 +56,21 @@ public class PostNotificationService implements NotificationService{
 
     @Async("asyncExecutor")
     @Transactional
-    public void sendByPostIsSubscribed(Post post, Comment comment){
-        List<UserPostSubscribe> userPostSubscribeList = userPostSubscribeRepository.findByPostAndIsSubscribedTrue(post);
-        PostNotificationDto postNotificationDto = PostNotificationDto.of(post, comment);
+    public void sendByBoardIsSubscribed(Board board, Post post){
+        List<UserBoardSubscribe> userBoardSubscribeList = userBoardSubscribeRepository.findByBoardAndIsSubscribedTrue(board);
+        BoardNotificationDto boardNotificationDto = BoardNotificationDto.of(board, post);
 
-        Notification notification = Notification.of(comment.getWriter(), postNotificationDto.getTitle(), postNotificationDto.getBody(), NoticeType.POST, post.getId());
+        Notification notification = Notification.of(post.getWriter(), boardNotificationDto.getTitle(), boardNotificationDto.getBody(), NoticeType.BOARD, post.getId());
 
         saveNotification(notification);
 
-        userPostSubscribeList.stream()
-                .map(UserPostSubscribe::getUser)
+        userBoardSubscribeList.stream()
+                .map(UserBoardSubscribe::getUser)
                 .forEach(user -> {
                     Set<String> copy = new HashSet<>(user.getFcmTokens());
-                    copy.forEach(token -> send(user, token, postNotificationDto.getTitle(), postNotificationDto.getBody()));
+                    copy.forEach(token -> send(user, token, boardNotificationDto.getTitle(), boardNotificationDto.getBody()));
                     saveNotificationLog(user, notification);
                 });
+
     }
-
-
 }

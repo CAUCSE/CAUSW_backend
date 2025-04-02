@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import net.causw.application.comment.CommentService;
 import net.causw.application.dto.comment.CommentCreateRequestDto;
 import net.causw.application.dto.comment.CommentResponseDto;
+import net.causw.application.dto.comment.CommentSubscribeResponseDto;
 import net.causw.application.dto.comment.CommentUpdateRequestDto;
 import net.causw.config.security.userdetails.CustomUserDetails;
 import net.causw.domain.exceptions.BadRequestException;
@@ -191,4 +192,28 @@ public class CommentController {
         this.commentService.likeComment(userDetails.getUser(), id);
     }
 
+
+    @PostMapping("/subscribe/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
+    @Operation(summary = "로그인한 사용자의 댓글 알람 설정 켜기"
+            , description = "id에는 comment id 값을 넣어주세요")
+    public CommentSubscribeResponseDto subscribeComment(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable("id") String id
+    ){
+        return commentService.setCommentSubscribe(userDetails.getUser(), id, true);
+    }
+
+    @DeleteMapping("/subscribe/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
+    @Operation(summary = "로그인한 사용자의 댓글 알람 설정 끄기"
+            , description = "id에는 comment id 값을 넣어주세요")
+    public CommentSubscribeResponseDto unsubscribeComment(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable("id") String id
+    ){
+        return commentService.setCommentSubscribe(userDetails.getUser(), id, false);
+    }
 }

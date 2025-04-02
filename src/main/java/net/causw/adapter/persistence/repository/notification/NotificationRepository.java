@@ -20,5 +20,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Stri
                     "LIMIT 4", nativeQuery = true)
     List<Notification> findUserNotice(@Param("userId") String userId);
 
-    List<Notification> findByUserAndNoticeType(User user, NoticeType noticeType);
+    List<Notification> findByUserAndNoticeTypeIn(User user, List<NoticeType> noticeTypes);
+
+    List<Notification> findByNoticeTypeIn(List<NoticeType> noticeTypes);
 }

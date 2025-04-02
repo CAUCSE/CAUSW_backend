@@ -3,7 +3,7 @@ package net.causw.adapter.persistence.notification;
 import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
-import net.causw.adapter.persistence.board.Board;
+import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.user.User;
 
 @Getter
@@ -11,38 +11,33 @@ import net.causw.adapter.persistence.user.User;
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "tb_user_board_subscribe")
-public class UserBoardSubscribe extends BaseEntity {
+@Table(name = "tb_user_comment_subscribe")
+public class UserCommentSubscribe extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "board_id")
-    private Board board;
-
+    @JoinColumn(name = "comment_id")
+    private Comment comment;
 
     @Column(name = "is_subscribed")
     private Boolean isSubscribed;
-
 
     public void setIsSubscribed(Boolean subscribed) {
         this.isSubscribed = subscribed;
     }
 
-
-
-    public static UserBoardSubscribe of(
+    public static UserCommentSubscribe of(
             User user,
-            Board board,
+            Comment comment,
             Boolean isSubscribed
     ) {
-        return UserBoardSubscribe.builder()
+        return UserCommentSubscribe.builder()
                 .user(user)
-                .board(board)
+                .comment(comment)
                 .isSubscribed(isSubscribed)
                 .build();
     }
-
 }
