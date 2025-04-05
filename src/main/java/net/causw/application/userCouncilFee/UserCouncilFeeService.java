@@ -70,20 +70,7 @@ public class UserCouncilFeeService {
         );
 
         List<UserCouncilFeeResponseDto> userCouncilFeeResponseDtoList = userCouncilFeeRepository.findAll()
-                        .stream().map(userCouncilFee -> (userCouncilFee.getIsJoinedService()) ?
-                                toUserCouncilFeeResponseDto(
-                                        userCouncilFee,
-                                        userCouncilFee.getUser(),
-                                        StatusUtil.getRestOfSemester(userCouncilFee),
-                                        StatusUtil.getIsAppliedCurrentSemester(userCouncilFee)
-                                ) :
-                                toUserCouncilFeeResponseDtoReduced(
-                                        userCouncilFee,
-                                        userCouncilFee.getCouncilFeeFakeUser(),
-                                        StatusUtil.getRestOfSemester(userCouncilFee),
-                                        StatusUtil.getIsAppliedCurrentSemester(userCouncilFee)
-                                )
-                        ).toList();
+                        .stream().map(this::toUserCouncilFeeResponseDto).toList();
 
         LinkedHashMap<String, List<UserCouncilFeeResponseDto>> sheetNameDataMap = new LinkedHashMap<>();
         sheetNameDataMap.put("학생회비 납부자 현황", userCouncilFeeResponseDtoList);
@@ -105,24 +92,10 @@ public class UserCouncilFeeService {
     }
 
     public UserCouncilFeeResponseDto getUserCouncilFeeInfo(String userCouncilFeeId) {
-        UserCouncilFee userCouncilFee = userCouncilFeeRepository.findById(userCouncilFeeId)
-                .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_COUNCIL_FEE_NOT_FOUND));
-
-        if (userCouncilFee.getIsJoinedService()) {
-            return toUserCouncilFeeResponseDto(
-                    userCouncilFee,
-                    userCouncilFee.getUser(),
-                    StatusUtil.getRestOfSemester(userCouncilFee),
-                    StatusUtil.getIsAppliedCurrentSemester(userCouncilFee)
-            );
-        } else {
-            return toUserCouncilFeeResponseDtoReduced(
-                    userCouncilFee,
-                    userCouncilFee.getCouncilFeeFakeUser(),
-                    StatusUtil.getRestOfSemester(userCouncilFee),
-                    StatusUtil.getIsAppliedCurrentSemester(userCouncilFee)
-            );
-        }
+        return userCouncilFeeRepository.findById(userCouncilFeeId)
+                .map(this::toUserCouncilFeeResponseDto)
+                .orElseThrow(() -> new BadRequestException(
+                    ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_COUNCIL_FEE_NOT_FOUND));
     }
 
     @Transactional
@@ -395,12 +368,22 @@ public class UserCouncilFeeService {
         return UserCouncilFeeDtoMapper.INSTANCE.toUserCouncilFeeListResponseDtoReduced(userCouncilFee, councilFeeFakeUser);
     }
 
-    private UserCouncilFeeResponseDto toUserCouncilFeeResponseDto(UserCouncilFee userCouncilFee, User user, Integer restOfSemester, Boolean isAppliedThisSemester) {
-        return UserCouncilFeeDtoMapper.INSTANCE.toUserCouncilFeeResponseDto(userCouncilFee, user, restOfSemester, isAppliedThisSemester);
-    }
-
-    private UserCouncilFeeResponseDto toUserCouncilFeeResponseDtoReduced(UserCouncilFee userCouncilFee, CouncilFeeFakeUser councilFeeFakeUser, Integer restOfSemester, Boolean isAppliedThisSemester) {
-        return UserCouncilFeeDtoMapper.INSTANCE.toUserCouncilFeeResponseDtoReduced(userCouncilFee, councilFeeFakeUser, restOfSemester, isAppliedThisSemester);
+    private UserCouncilFeeResponseDto toUserCouncilFeeResponseDto(UserCouncilFee userCouncilFee) {
+        if (userCouncilFee.getIsJoinedService()) {
+            return UserCouncilFeeDtoMapper.INSTANCE.toUserCouncilFeeResponseDto(
+                userCouncilFee,
+                userCouncilFee.getUser(),
+                StatusUtil.getRestOfSemester(userCouncilFee),
+                StatusUtil.getIsAppliedCurrentSemester(userCouncilFee)
+            );
+        } else {
+            return UserCouncilFeeDtoMapper.INSTANCE.toUserCouncilFeeResponseDtoReduced(
+                userCouncilFee,
+                userCouncilFee.getCouncilFeeFakeUser(),
+                StatusUtil.getRestOfSemester(userCouncilFee),
+                StatusUtil.getIsAppliedCurrentSemester(userCouncilFee)
+            );
+        }
     }
 
     private CurrentUserCouncilFeeResponseDto toCurrentUserCouncilFeeResponseDto(UserCouncilFee userCouncilFee, Integer restOfSemester, Boolean isAppliedThisSemester) {

@@ -11,6 +11,7 @@ import net.causw.application.dto.user.UserResponseDto;
 import net.causw.application.excel.UserExcelService;
 import net.causw.domain.model.enums.user.UserState;
 
+import net.causw.domain.model.util.ObjectFixtures;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -45,14 +46,9 @@ class UserServiceTest {
   @Mock
   UserAdmissionRepository userAdmissionRepository;
 
+  @Mock
   HttpServletResponse response;
-  User user;
 
-  @BeforeEach
-  void setUp() {
-    response = mock(HttpServletResponse.class);
-    user = mock(User.class);
-  }
 
   @Nested
   class ExportUserListToExcelTest {
@@ -63,12 +59,10 @@ class UserServiceTest {
       //given
       UserState state = UserState.AWAIT;
       String sheetName = state.getDescription() + " 유저";
-      UserAdmission userAdmission = mock(UserAdmission.class);
-      List<UserAdmission> userAdmissionList = List.of(userAdmission);
+      UserAdmission userAdmission = ObjectFixtures.getUserAdmission();
+      userAdmission.getUser().setState(state);
 
-      given(user.getState()).willReturn(state);
-      given(userAdmission.getUser()).willReturn(user);
-      given(userAdmissionRepository.findAll()).willReturn(userAdmissionList);
+      given(userAdmissionRepository.findAll()).willReturn(List.of(userAdmission));
 
       //when
       userService.exportUserListToExcel(response);
@@ -86,10 +80,10 @@ class UserServiceTest {
       //given
       UserState state = UserState.ACTIVE;
       String sheetName = state.getDescription() + " 유저";
-      List<User> userList = List.of(user);
+      User user = ObjectFixtures.getUser();
+      user.setState(state);
 
-      given(user.getState()).willReturn(state);
-      given(userRepository.findAllByState(state)).willReturn(userList);
+      given(userRepository.findAllByState(state)).willReturn(List.of(user));
 
       //when
       userService.exportUserListToExcel(response);
