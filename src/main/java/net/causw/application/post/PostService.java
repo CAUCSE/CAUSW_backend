@@ -22,7 +22,6 @@ import net.causw.adapter.persistence.uuidFile.joinEntity.PostAttachImage;
 import net.causw.adapter.persistence.vote.Vote;
 import net.causw.adapter.persistence.vote.VoteOption;
 import net.causw.adapter.persistence.vote.VoteRecord;
-import net.causw.application.dto.board.BoardSubscribeResponseDto;
 import net.causw.application.dto.form.request.create.FormCreateRequestDto;
 import net.causw.application.dto.form.request.create.QuestionCreateRequestDto;
 import net.causw.application.dto.form.response.FormResponseDto;
@@ -60,7 +59,6 @@ import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
-import net.causw.domain.model.enums.notification.NoticeType;
 import net.causw.domain.model.enums.circle.CircleMemberStatus;
 import net.causw.domain.model.enums.form.QuestionType;
 import net.causw.domain.model.enums.uuidFile.FileExtensionType;
@@ -652,12 +650,33 @@ public class PostService {
                 .consistOf(UserStateIsDeletedValidator.of(post.getWriter().getState()))
                 .validate();
 
-        if (isPostAlreadyLike(user, postId)) {
+        if (isPostLiked(user, postId)) {
             throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.POST_ALREADY_LIKED);
         }
 
         LikePost likePost = LikePost.of(post, user);
         likePostRepository.save(likePost);
+    }
+
+    /**
+     * 게시글 좋아요 취소 메서드
+     * @param user 좋아요 취소 누른 유저
+     * @param postId 좋아요 취소 누른 게시글
+     */
+    @Transactional
+    public void cancelLikePost(final User user, final String postId) {
+        Post post = getPost(postId);
+
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+        validatorBucket
+            .consistOf(UserStateIsDeletedValidator.of(post.getWriter().getState()))
+            .validate();
+
+        if (!isPostLiked(user, postId)) {
+            throw new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.POST_NOT_LIKED);
+        }
+
+        likePostRepository.deleteLikeByPostIdAndUserId(postId, user.getId());
     }
 
     @Transactional
@@ -725,11 +744,7 @@ public class PostService {
         return PostDtoMapper.INSTANCE.toPostSubscribeResponseDto(subscription);
     }
 
-
-
-
-
-    private Boolean isPostAlreadyLike(User user, String postId) {
+    private Boolean isPostLiked(User user, String postId) {
         return likePostRepository.existsByPostIdAndUserId(postId, user.getId());
     }
 
@@ -944,7 +959,7 @@ public class PostService {
                 postRepository.countAllCommentByPost_Id(post.getId()),
                 getNumOfPostLikes(post),
                 getNumOfPostFavorites(post),
-                isPostAlreadyLike(user, post.getId()),
+                isPostLiked(user, post.getId()),
                 isPostAlreadyFavorite(user, post.getId()),
                 StatusUtil.isPostOwner(post,user),
                 StatusUtil.isUpdatable(post, user, isPostHasComment(post.getId())),
@@ -1153,5 +1168,4 @@ public class PostService {
                 .collect(Collectors.toList());
         return VoteDtoMapper.INSTANCE.toVoteOptionResponseDto(voteOption, voteRecords.size(), userResponseDtos);
     }
-
 }
