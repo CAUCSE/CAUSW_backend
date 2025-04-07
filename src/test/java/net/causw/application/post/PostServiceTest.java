@@ -58,15 +58,15 @@ public class PostServiceTest {
 
     @DisplayName("좋아요 성공 테스트")
     @Test
-    void likePostSuccess() {
+    void likePost_shouldSucceed_whenPostIsNotLiked() {
       // given
       String postId = "dummy123";
 
       UserState userStateNotDeleted = UserState.ACTIVE;
-      given(post.getWriter()).willReturn(user);
-      given(user.getState()).willReturn(userStateNotDeleted);
+      given(post.getWriter()).willReturn(writer);
+      given(writer.getState()).willReturn(userStateNotDeleted);
 
-      when(postRepository.findById(postId)).thenReturn(Optional.ofNullable(post));
+      when(postRepository.findById(postId)).thenReturn(Optional.of(post));
       when(likePostRepository.existsByPostIdAndUserId(postId, user.getId())).thenReturn(false);
 
       // When
@@ -76,17 +76,17 @@ public class PostServiceTest {
       verify(likePostRepository, times(1)).save(any(LikePost.class));
     }
 
-    @DisplayName("유저 삭제 상태일시 좋아요 실패")
+    @DisplayName("게시물 작성 유저 삭제 상태일시 좋아요 실패")
     @Test
-    void likePostFailure_WhenUserDeleted() {
+    void likePost_shouldFail_whenWriterIsDeleted() {
       // given
       String postId = "dummy123";
 
       UserState userStateDeleted = UserState.DELETED;
-      given(post.getWriter()).willReturn(user);
-      given(user.getState()).willReturn(userStateDeleted);
+      given(post.getWriter()).willReturn(writer);
+      given(writer.getState()).willReturn(userStateDeleted);
 
-      when(postRepository.findById(postId)).thenReturn(Optional.ofNullable(post));
+      when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 
       // When & Then
       assertThatThrownBy(() -> postService.likePost(user, postId))
@@ -99,15 +99,15 @@ public class PostServiceTest {
 
     @DisplayName("좋아요 이미 한 게시물에 대해서 좋아요 실패")
     @Test
-    void likePostFailure_WhenPostAlreadyLiked() {
+    void likePost_shouldFail_whenAlreadyLiked() {
       // given
       String postId = "dummy123";
 
       UserState userStateNotDeleted = UserState.ACTIVE;
-      given(post.getWriter()).willReturn(user);
-      given(user.getState()).willReturn(userStateNotDeleted);
+      given(post.getWriter()).willReturn(writer);
+      given(writer.getState()).willReturn(userStateNotDeleted);
 
-      when(postRepository.findById(postId)).thenReturn(Optional.ofNullable(post));
+      when(postRepository.findById(postId)).thenReturn(Optional.of(post));
       when(likePostRepository.existsByPostIdAndUserId(postId, user.getId())).thenReturn(true);
 
       // When & Then
@@ -138,17 +138,17 @@ public class PostServiceTest {
 
     @DisplayName("좋아요 취소 성공 테스트")
     @Test
-    void likePostSuccess() {
+    void cancelLikePost_shouldSucceed_whenPostIsLiked() {
       // given
       String postId = "dummy123";
       String userId = "dummy1234";
 
       UserState userStateNotDeleted = UserState.ACTIVE;
-      given(post.getWriter()).willReturn(user);
-      given(user.getState()).willReturn(userStateNotDeleted);
+      given(post.getWriter()).willReturn(writer);
+      given(writer.getState()).willReturn(userStateNotDeleted);
       given(user.getId()).willReturn(userId);
 
-      when(postRepository.findById(postId)).thenReturn(Optional.ofNullable(post));
+      when(postRepository.findById(postId)).thenReturn(Optional.of(post));
       when(likePostRepository.existsByPostIdAndUserId(postId, user.getId())).thenReturn(true);
 
       // When
@@ -158,17 +158,17 @@ public class PostServiceTest {
       verify(likePostRepository, times(1)).deleteLikeByPostIdAndUserId(postId, user.getId());
     }
 
-    @DisplayName("유저 삭제 상태일시 좋아요 취소 실패")
+    @DisplayName("게시물 작성 유저 삭제 상태일시 좋아요 취소 실패")
     @Test
-    void likePostFailure_WhenUserDeleted() {
+    void cancelLikePost_shouldFail_whenWriterIsDeleted() {
       // given
       String postId = "dummy123";
 
       UserState userStateDeleted = UserState.DELETED;
-      given(post.getWriter()).willReturn(user);
-      given(user.getState()).willReturn(userStateDeleted);
+      given(post.getWriter()).willReturn(writer);
+      given(writer.getState()).willReturn(userStateDeleted);
 
-      when(postRepository.findById(postId)).thenReturn(Optional.ofNullable(post));
+      when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 
       // When & Then
       assertThatThrownBy(() -> postService.cancelLikePost(user, postId))
@@ -176,20 +176,20 @@ public class PostServiceTest {
           .extracting("errorCode")
           .isEqualTo(ErrorCode.DELETED_USER);
 
-      verify(likePostRepository, times(0)).save(any(LikePost.class));
+      verify(likePostRepository, times(0)).deleteLikeByPostIdAndUserId(postId, user.getId());
     }
 
     @DisplayName("좋아요 하지 않은 게시물에 대해서 좋아요 취소 실패")
     @Test
-    void likePostFailure_WhenPostWasNotLiked() {
+    void cancelLikePost_shouldFail_whenPostIsNotLiked() {
       // given
       String postId = "dummy123";
 
       UserState userStateNotDeleted = UserState.ACTIVE;
-      given(post.getWriter()).willReturn(user);
-      given(user.getState()).willReturn(userStateNotDeleted);
+      given(post.getWriter()).willReturn(writer);
+      given(writer.getState()).willReturn(userStateNotDeleted);
 
-      when(postRepository.findById(postId)).thenReturn(Optional.ofNullable(post));
+      when(postRepository.findById(postId)).thenReturn(Optional.of(post));
       when(likePostRepository.existsByPostIdAndUserId(postId, user.getId())).thenReturn(false);
 
       // When & Then
@@ -199,7 +199,7 @@ public class PostServiceTest {
           .extracting("errorCode")
           .isEqualTo(ErrorCode.ROW_DOES_NOT_EXIST);
 
-      verify(likePostRepository, times(0)).save(any(LikePost.class));
+      verify(likePostRepository, times(0)).deleteLikeByPostIdAndUserId(postId, user.getId());
     }
   }
 
