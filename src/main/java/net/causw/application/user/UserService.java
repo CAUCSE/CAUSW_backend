@@ -120,6 +120,9 @@ public class UserService {
     private final UserAcademicRecordApplicationRepository userAcademicRecordApplicationRepository;
     private final UserAcademicRecordApplicationAttachImageRepository userAcademicRecordApplicationAttachImageRepository;
 
+    private final UserDtoMapper userDtoMapper;
+    private final PostDtoMapper postDtoMapper;
+
     @Transactional
     public void findPassword(
             UserFindPasswordRequestDto userFindPasswordRequestDto
@@ -274,10 +277,10 @@ public class UserService {
             .consistOf(UserStateValidator.of(requestUser.getState()))
             .validate();
 
-        return UserDtoMapper.INSTANCE.toUserPostsResponseDto(
+        return userDtoMapper.toUserPostsResponseDto(
             requestUser,
             this.likePostRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
-                .map(likePost -> PostDtoMapper.INSTANCE.toPostsResponseDto(
+                .map(likePost -> postDtoMapper.toPostsResponseDto(
                     likePost.getPost(),
                     getNumOfComment(likePost.getPost()),
                     getNumOfPostLikes(likePost.getPost()),
