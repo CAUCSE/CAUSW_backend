@@ -97,7 +97,7 @@ public class PostServiceTest {
       verify(likePostRepository, times(0)).save(any(LikePost.class));
     }
 
-    @DisplayName("유저 삭제 상태일시 좋아요 실패")
+    @DisplayName("좋아요 이미 한 게시물에 대해서 좋아요 실패")
     @Test
     void likePostFailure_WhenPostAlreadyLiked() {
       // given
@@ -116,6 +116,88 @@ public class PostServiceTest {
           .hasMessageContaining(MessageUtil.POST_ALREADY_LIKED)
           .extracting("errorCode")
           .isEqualTo(ErrorCode.ROW_ALREADY_EXIST);
+
+      verify(likePostRepository, times(0)).save(any(LikePost.class));
+    }
+  }
+
+  @Nested
+  @DisplayName("게시글 좋아요 취소 테스트")
+  class PostCancelLikeTest{
+
+    User user;
+    Post post;
+    User writer;
+
+    @BeforeEach
+    void setUp() {
+      user = mock(User.class);
+      post = mock(Post.class);
+      writer = mock(User.class);
+    }
+
+    @DisplayName("좋아요 취소 성공 테스트")
+    @Test
+    void likePostSuccess() {
+      // given
+      String postId = "dummy123";
+      String userId = "dummy1234";
+
+      UserState userStateNotDeleted = UserState.ACTIVE;
+      given(post.getWriter()).willReturn(user);
+      given(user.getState()).willReturn(userStateNotDeleted);
+      given(user.getId()).willReturn(userId);
+
+      when(postRepository.findById(postId)).thenReturn(Optional.ofNullable(post));
+      when(likePostRepository.existsByPostIdAndUserId(postId, user.getId())).thenReturn(true);
+
+      // When
+      postService.cancelLikePost(user, postId);
+
+      // Then
+      verify(likePostRepository, times(1)).deleteLikeByPostIdAndUserId(postId, user.getId());
+    }
+
+    @DisplayName("유저 삭제 상태일시 좋아요 취소 실패")
+    @Test
+    void likePostFailure_WhenUserDeleted() {
+      // given
+      String postId = "dummy123";
+
+      UserState userStateDeleted = UserState.DELETED;
+      given(post.getWriter()).willReturn(user);
+      given(user.getState()).willReturn(userStateDeleted);
+
+      when(postRepository.findById(postId)).thenReturn(Optional.ofNullable(post));
+
+      // When & Then
+      assertThatThrownBy(() -> postService.cancelLikePost(user, postId))
+          .isInstanceOf(UnauthorizedException.class)
+          .extracting("errorCode")
+          .isEqualTo(ErrorCode.DELETED_USER);
+
+      verify(likePostRepository, times(0)).save(any(LikePost.class));
+    }
+
+    @DisplayName("좋아요 하지 않은 게시물에 대해서 좋아요 취소 실패")
+    @Test
+    void likePostFailure_WhenPostWasNotLiked() {
+      // given
+      String postId = "dummy123";
+
+      UserState userStateNotDeleted = UserState.ACTIVE;
+      given(post.getWriter()).willReturn(user);
+      given(user.getState()).willReturn(userStateNotDeleted);
+
+      when(postRepository.findById(postId)).thenReturn(Optional.ofNullable(post));
+      when(likePostRepository.existsByPostIdAndUserId(postId, user.getId())).thenReturn(false);
+
+      // When & Then
+      assertThatThrownBy(() -> postService.cancelLikePost(user, postId))
+          .isInstanceOf(BadRequestException.class)
+          .hasMessageContaining(MessageUtil.POST_NOT_LIKED)
+          .extracting("errorCode")
+          .isEqualTo(ErrorCode.ROW_DOES_NOT_EXIST);
 
       verify(likePostRepository, times(0)).save(any(LikePost.class));
     }
