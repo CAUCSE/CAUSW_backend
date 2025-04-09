@@ -16,55 +16,57 @@ import java.util.List;
 @Service
 public class CouncilFeeExcelService extends ExcelAbstractService<UserCouncilFeeResponseDto> {
 
-    private static final List<Function<UserCouncilFeeResponseDto, String>> cellMappingFunctions = List.of(
-        userCouncilFee -> Optional.ofNullable(userCouncilFee.getIsJoinedService())
+    private static final Function<UserCouncilFeeResponseDto, List<String>> cellMappingFunction =
+        userCouncilFee -> List.of(
+        Optional.ofNullable(userCouncilFee.getIsJoinedService())
                                   .map(isRefunded -> isRefunded ? "O" : "X")
                                   .orElse(""),
-        userCouncilFee -> Optional.ofNullable(userCouncilFee.getEmail()).orElse(""),
-        userCouncilFee -> Optional.ofNullable(userCouncilFee.getUserName()).orElse(""),
-        userCouncilFee -> Optional.ofNullable(userCouncilFee.getStudentId()).orElse(""),
-        userCouncilFee -> Optional.ofNullable(userCouncilFee.getAdmissionYear())
-                                  .map(String::valueOf)
-                                  .orElse(""),
-        userCouncilFee -> Optional.ofNullable(userCouncilFee.getNickname()).orElse(""),
-        userCouncilFee -> Optional.ofNullable(userCouncilFee.getMajor()).orElse(""),
-        userCouncilFee -> Optional.ofNullable(userCouncilFee.getAcademicStatus())
-                                  .map(AcademicStatus::getValue)
-                                  .orElse(""),
-        userCouncilFee -> Optional.ofNullable(userCouncilFee.getCurrentCompletedSemester())
-                                  .map(String::valueOf)
-                                  .orElse(""),
-        userCouncilFee -> Optional.ofNullable(userCouncilFee.getGraduationYear())
-                                  .map(String::valueOf)
-                                  .orElse(""),
-        userCouncilFee -> Optional.ofNullable(userCouncilFee.getGraduationType())
-                                  .map(GraduationType::getValue)
-                                  .orElse(""),
-        userCouncilFee -> Optional.ofNullable(userCouncilFee.getPhoneNumber()).orElse(""),
-        userCouncilFee -> Optional.ofNullable(userCouncilFee.getJoinedAt())
-                                  .map(String::valueOf)
-                                  .orElse(""),
-        userCouncilFee -> Optional.ofNullable(userCouncilFee.getPaidAt())
-                                  .map(String::valueOf)
-                                  .orElse(""),
-        userCouncilFee -> Optional.ofNullable(userCouncilFee.getNumOfPaidSemester())
-                                  .map(String::valueOf)
-                                  .orElse(""),
-        userCouncilFee -> Optional.ofNullable(userCouncilFee.getIsRefunded())
-                                  .map(isRefunded -> isRefunded ? "O" : "X")
-                                  .orElse(""),
-        userCouncilFee -> Optional.ofNullable(userCouncilFee.getIsRefunded())
-                                  .filter(isRefunded -> isRefunded)
-                                  .map(isRefunded -> Optional.ofNullable(userCouncilFee.getRefundedAt())
-                                      .map(String::valueOf)
-                                      .orElse(""))
-                                  .orElse(""),
-        userCouncilFee -> Optional.ofNullable(userCouncilFee.getRestOfSemester())
-                                  .map(String::valueOf)
-                                  .orElse(""),
-        userCouncilFee -> Optional.ofNullable(userCouncilFee.getIsAppliedThisSemester())
-                                  .map(isRefunded -> isRefunded ? "O" : "X")
-                                  .orElse("")
+        Optional.ofNullable(userCouncilFee.getEmail()).orElse(""),
+        Optional.ofNullable(userCouncilFee.getUserName()).orElse(""),
+        Optional.ofNullable(userCouncilFee.getStudentId()).orElse(""),
+        Optional.ofNullable(userCouncilFee.getAdmissionYear())
+                .map(String::valueOf)
+                .orElse(""),
+        Optional.ofNullable(userCouncilFee.getNickname()).orElse(""),
+        Optional.ofNullable(userCouncilFee.getMajor()).orElse(""),
+        Optional.ofNullable(userCouncilFee.getAcademicStatus())
+                .map(AcademicStatus::getValue)
+                .orElse(""),
+        Optional.ofNullable(userCouncilFee.getCurrentCompletedSemester())
+                .map(String::valueOf)
+                .orElse(""),
+        Optional.ofNullable(userCouncilFee.getGraduationYear())
+                .map(String::valueOf)
+                .orElse(""),
+        Optional.ofNullable(userCouncilFee.getGraduationType())
+                .map(GraduationType::getValue)
+                .orElse(""),
+        Optional.ofNullable(userCouncilFee.getPhoneNumber()).orElse(""),
+        Optional.ofNullable(userCouncilFee.getJoinedAt())
+                .map(String::valueOf)
+                .orElse(""),
+        Optional.ofNullable(userCouncilFee.getPaidAt())
+                .map(String::valueOf)
+                .orElse(""),
+        Optional.ofNullable(userCouncilFee.getNumOfPaidSemester())
+                .map(String::valueOf)
+                .orElse(""),
+        Optional.ofNullable(userCouncilFee.getIsRefunded())
+                .map(isRefunded -> isRefunded ? "O" : "X")
+                .orElse(""),
+        Optional.ofNullable(userCouncilFee.getIsRefunded())
+                .filter(isRefunded -> isRefunded)
+                .map(isRefunded ->
+                    Optional.ofNullable(userCouncilFee.getRefundedAt())
+                            .map(String::valueOf)
+                            .orElse(""))
+                .orElse(""),
+        Optional.ofNullable(userCouncilFee.getRestOfSemester())
+                .map(String::valueOf)
+                .orElse(""),
+        Optional.ofNullable(userCouncilFee.getIsAppliedThisSemester())
+                .map(isRefunded -> isRefunded ? "O" : "X")
+                .orElse("")
     );
 
     @Override
@@ -74,9 +76,10 @@ public class CouncilFeeExcelService extends ExcelAbstractService<UserCouncilFeeR
             Row row = sheet.createRow(rowNum++);
 
             int colNum = 0;
-            for (Function<UserCouncilFeeResponseDto, String> func : cellMappingFunctions) {
+            List<String> cellValues = cellMappingFunction.apply(userCouncilFee);
+            for (String value : cellValues) {
                 Cell cell = row.createCell(colNum++);
-                cell.setCellValue(func.apply(userCouncilFee));
+                cell.setCellValue(value);
             }
         }
     }
