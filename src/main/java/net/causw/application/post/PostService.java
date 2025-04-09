@@ -190,7 +190,7 @@ public class PostService {
                     roles,
                     isFavorite(user.getId(), board.getId()),
                     isBoardSubscribed(user, board),
-                    postRepository.findByTitleAndBoard_Id(keyword, boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
+                    postRepository.findByBoard_IdAndKeyword(keyword, boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
                             .map(this::toPostsResponseDto));
         } else {
             return toBoardPostsResponseDto(
@@ -198,7 +198,7 @@ public class PostService {
                     roles,
                     isFavorite(user.getId(), board.getId()),
                     isBoardSubscribed(user, board),
-                    postRepository.findByTitleBoard_IdAndDeleted(keyword, boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), false)
+                    postRepository.findByBoard_IdAndKeywordAndIsDeleted(keyword, boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), false)
                             .map(this::toPostsResponseDto));
         }
     }
