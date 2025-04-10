@@ -2,6 +2,7 @@ package net.causw.application.post;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -234,11 +235,12 @@ class PostServiceTest {
       searchedPagedPost.getContent().forEach(
           postResponseDto -> {
             assertThat(postResponseDto).isNotNull();
-            assertThat(postResponseDto.getIsDeleted()).isEqualTo(isDeleted);
-
-            assertThat(postResponseDto.getTitle()).isEqualTo(post.getTitle());
-            assertThat(postResponseDto.getContent()).isEqualTo(post.getContent());
-            assertThat(postResponseDto.getWriterNickname()).isEqualTo(user.getNickname());
+            assertAll(
+                () -> assertThat(postResponseDto.getIsDeleted()).isEqualTo(isDeleted),
+                () -> assertThat(postResponseDto.getTitle()).isEqualTo(post.getTitle()),
+                () -> assertThat(postResponseDto.getContent()).isEqualTo(post.getContent()),
+                () -> assertThat(postResponseDto.getWriterNickname()).isEqualTo(user.getNickname())
+            );
           });
     }
   }
