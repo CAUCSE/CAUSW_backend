@@ -28,7 +28,6 @@ import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.user.Role;
 import net.causw.domain.model.enums.user.UserState;
-import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
 import net.causw.domain.model.util.ObjectFixtures;
 import net.causw.domain.model.util.StaticValue;
 import org.junit.jupiter.api.Test;
@@ -153,7 +152,7 @@ class PostServiceTest {
       Page<Post> postPage = new PageImpl<>(List.of(post), pageable, 1);
 
       given(pageableFactory.create(anyInt(), anyInt())).willReturn(pageable);
-      given(postRepository.findByBoard_IdAndKeywordAndIsDeleted(
+      given(postRepository.findByBoardIdAndKeywordAndIsDeleted(
           eq(keyword), eq(boardId), eq(pageable), eq(false))).willReturn(postPage);
 
       // when
@@ -177,7 +176,7 @@ class PostServiceTest {
       Page<Post> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
 
       given(pageableFactory.create(anyInt(), anyInt())).willReturn(pageable);
-      given(postRepository.findByBoard_IdAndKeywordAndIsDeleted(
+      given(postRepository.findByBoardIdAndKeywordAndIsDeleted(
           eq(keyword), eq(boardId), eq(pageable), eq(false))).willReturn(emptyPage);
 
       // when
@@ -196,7 +195,7 @@ class PostServiceTest {
       Page<Post> postPage = new PageImpl<>(List.of(post), pageable, 1);
 
       given(pageableFactory.create(anyInt(), anyInt())).willReturn(pageable);
-      given(postRepository.findByBoard_IdAndKeywordAndIsDeleted(
+      given(postRepository.findByBoardIdAndKeywordAndIsDeleted(
           eq(keyword), eq(boardId), eq(pageable), eq(false))).willReturn(postPage);
 
       //when
@@ -216,7 +215,7 @@ class PostServiceTest {
       Page<Post> postPage = new PageImpl<>(List.of(post), pageable, 1);
 
       given(pageableFactory.create(anyInt(), anyInt())).willReturn(pageable);
-      given(postRepository.findByBoard_IdAndKeyword(
+      given(postRepository.findByBoardIdAndKeyword(
           eq(keyword), eq(boardId), eq(pageable))).willReturn(postPage);
 
       //when

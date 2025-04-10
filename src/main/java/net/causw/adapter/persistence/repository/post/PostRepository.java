@@ -26,7 +26,7 @@ public interface PostRepository extends JpaRepository<Post, String> {
         "WHERE p.board_id = :boardId " +
         "AND (p.title LIKE CONCAT('%', :keyword, '%') OR p.content LIKE CONCAT('%', :keyword, '%'))" +
         "ORDER BY p.created_at DESC", nativeQuery = true)
-    Page<Post> findByBoard_IdAndKeyword(@Param("keyword") String keyword, @Param("boardId") String boardId, Pageable pageable);
+    Page<Post> findByBoardIdAndKeyword(@Param("keyword") String keyword, @Param("boardId") String boardId, Pageable pageable);
 
     //특정 게시판에서 삭제 여부를 고려하여 title 혹은 content 에 keyword 가 포함된 게시글 검색
     @Query(value = "SELECT * " +
@@ -34,7 +34,7 @@ public interface PostRepository extends JpaRepository<Post, String> {
         "WHERE p.board_id = :boardId AND p.is_deleted = :isDeleted " +
         "AND (p.title LIKE CONCAT('%', :keyword, '%') OR p.content LIKE CONCAT('%', :keyword, '%'))" +
         "ORDER BY p.created_at DESC", nativeQuery = true)
-    Page<Post> findByBoard_IdAndKeywordAndIsDeleted(@Param("keyword") String keyword, @Param("boardId") String boardId, Pageable pageable, @Param("isDeleted") boolean isDeleted);
+    Page<Post> findByBoardIdAndKeywordAndIsDeleted(@Param("keyword") String keyword, @Param("boardId") String boardId, Pageable pageable, @Param("isDeleted") boolean isDeleted);
 
     // 특정 사용자가 작성한 게시글 검색
     @Query("SELECT p " +
