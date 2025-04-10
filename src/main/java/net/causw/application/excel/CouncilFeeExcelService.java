@@ -1,7 +1,12 @@
 package net.causw.application.excel;
 
+import java.util.Optional;
+import java.util.function.Function;
 import net.causw.application.dto.userCouncilFee.UserCouncilFeeResponseDto;
 import net.causw.domain.aop.annotation.MeasureTime;
+import net.causw.domain.model.enums.user.GraduationType;
+import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.springframework.stereotype.Service;
@@ -11,80 +16,71 @@ import java.util.List;
 @Service
 public class CouncilFeeExcelService extends ExcelAbstractService<UserCouncilFeeResponseDto> {
 
+    private static final Function<UserCouncilFeeResponseDto, List<String>> cellMappingFunction =
+        userCouncilFee -> List.of(
+        Optional.ofNullable(userCouncilFee.getIsJoinedService())
+                                  .map(isRefunded -> isRefunded ? "O" : "X")
+                                  .orElse(""),
+        Optional.ofNullable(userCouncilFee.getEmail()).orElse(""),
+        Optional.ofNullable(userCouncilFee.getUserName()).orElse(""),
+        Optional.ofNullable(userCouncilFee.getStudentId()).orElse(""),
+        Optional.ofNullable(userCouncilFee.getAdmissionYear())
+                .map(String::valueOf)
+                .orElse(""),
+        Optional.ofNullable(userCouncilFee.getNickname()).orElse(""),
+        Optional.ofNullable(userCouncilFee.getMajor()).orElse(""),
+        Optional.ofNullable(userCouncilFee.getAcademicStatus())
+                .map(AcademicStatus::getValue)
+                .orElse(""),
+        Optional.ofNullable(userCouncilFee.getCurrentCompletedSemester())
+                .map(String::valueOf)
+                .orElse(""),
+        Optional.ofNullable(userCouncilFee.getGraduationYear())
+                .map(String::valueOf)
+                .orElse(""),
+        Optional.ofNullable(userCouncilFee.getGraduationType())
+                .map(GraduationType::getValue)
+                .orElse(""),
+        Optional.ofNullable(userCouncilFee.getPhoneNumber()).orElse(""),
+        Optional.ofNullable(userCouncilFee.getJoinedAt())
+                .map(String::valueOf)
+                .orElse(""),
+        Optional.ofNullable(userCouncilFee.getPaidAt())
+                .map(String::valueOf)
+                .orElse(""),
+        Optional.ofNullable(userCouncilFee.getNumOfPaidSemester())
+                .map(String::valueOf)
+                .orElse(""),
+        Optional.ofNullable(userCouncilFee.getIsRefunded())
+                .map(isRefunded -> isRefunded ? "O" : "X")
+                .orElse(""),
+        Optional.ofNullable(userCouncilFee.getIsRefunded())
+                .filter(isRefunded -> isRefunded)
+                .map(isRefunded ->
+                    Optional.ofNullable(userCouncilFee.getRefundedAt())
+                            .map(String::valueOf)
+                            .orElse(""))
+                .orElse(""),
+        Optional.ofNullable(userCouncilFee.getRestOfSemester())
+                .map(String::valueOf)
+                .orElse(""),
+        Optional.ofNullable(userCouncilFee.getIsAppliedThisSemester())
+                .map(isRefunded -> isRefunded ? "O" : "X")
+                .orElse("")
+    );
+
     @Override
     public void createDataRows(Sheet sheet, List<UserCouncilFeeResponseDto> dataList) {
         int rowNum = 1;
-        for (UserCouncilFeeResponseDto userCouncilFeeResponseDto : dataList) {
+        for (UserCouncilFeeResponseDto userCouncilFee : dataList) {
             Row row = sheet.createRow(rowNum++);
-            row.createCell(0).setCellValue(
-                    (userCouncilFeeResponseDto.getIsJoinedService() != null) ?
-                            (userCouncilFeeResponseDto.getIsJoinedService() ?
-                                    "O" :
-                                    "X") :
-                            ""
-            );
-            row.createCell(1).setCellValue(
-                    userCouncilFeeResponseDto.getEmail() != null ? userCouncilFeeResponseDto.getEmail() : ""
-            );
-            row.createCell(2).setCellValue(
-                    userCouncilFeeResponseDto.getUserName() != null ? userCouncilFeeResponseDto.getUserName() : ""
-            );
-            row.createCell(3).setCellValue(
-                    userCouncilFeeResponseDto.getStudentId() != null ? userCouncilFeeResponseDto.getStudentId() : ""
-            );
-            row.createCell(4).setCellValue(
-                    userCouncilFeeResponseDto.getAdmissionYear() != null ? userCouncilFeeResponseDto.getAdmissionYear().toString() : ""
-            );
-            row.createCell(5).setCellValue(
-                    userCouncilFeeResponseDto.getNickname() != null ? userCouncilFeeResponseDto.getNickname() : ""
-            );
-            row.createCell(6).setCellValue(
-                    userCouncilFeeResponseDto.getMajor() != null ? userCouncilFeeResponseDto.getMajor() : ""
-            );
-            row.createCell(7).setCellValue(
-                    userCouncilFeeResponseDto.getAcademicStatus() != null ? userCouncilFeeResponseDto.getAcademicStatus().toString() : ""
-            );
-            row.createCell(8).setCellValue(
-                    userCouncilFeeResponseDto.getCurrentCompletedSemester() != null ? userCouncilFeeResponseDto.getCurrentCompletedSemester().toString() : ""
-            );
-            row.createCell(9).setCellValue(
-                    userCouncilFeeResponseDto.getGraduationYear() != null ? userCouncilFeeResponseDto.getGraduationYear().toString() : ""
-            );
-            row.createCell(10).setCellValue(
-                    userCouncilFeeResponseDto.getGraduationType() != null ? userCouncilFeeResponseDto.getGraduationType().toString() : ""
-            );
-            row.createCell(11).setCellValue(
-                    userCouncilFeeResponseDto.getPhoneNumber() != null ? userCouncilFeeResponseDto.getPhoneNumber() : ""
-            );
-            row.createCell(12).setCellValue(
-                    userCouncilFeeResponseDto.getJoinedAt() != null ? userCouncilFeeResponseDto.getJoinedAt().toString() : ""
-            );
-            row.createCell(13).setCellValue(
-                    userCouncilFeeResponseDto.getPaidAt() != null ? userCouncilFeeResponseDto.getPaidAt().toString() : ""
-            );
-            row.createCell(14).setCellValue(
-                    userCouncilFeeResponseDto.getNumOfPaidSemester() != null ? userCouncilFeeResponseDto.getNumOfPaidSemester().toString() : ""
-            );
-            row.createCell(15).setCellValue(
-                    (userCouncilFeeResponseDto.getIsRefunded() != null) ?
-                            (userCouncilFeeResponseDto.getIsRefunded() ?
-                                    "O" :
-                                    "X") :
-                            ""
-            );
-            row.createCell(16).setCellValue(
-                    userCouncilFeeResponseDto.getRefundedAt() != null ? userCouncilFeeResponseDto.getRefundedAt().toString() : ""
-            );
-            row.createCell(17).setCellValue(
-                    userCouncilFeeResponseDto.getRestOfSemester() != null ? userCouncilFeeResponseDto.getRestOfSemester().toString() : ""
-            );
-            row.createCell(18).setCellValue(
-                    (userCouncilFeeResponseDto.getIsAppliedThisSemester() != null) ?
-                            (userCouncilFeeResponseDto.getIsAppliedThisSemester() ?
-                                    "O" :
-                                    "X") :
-                            ""
-            );
+
+            int colNum = 0;
+            List<String> cellValues = cellMappingFunction.apply(userCouncilFee);
+            for (String value : cellValues) {
+                Cell cell = row.createCell(colNum++);
+                cell.setCellValue(value);
+            }
         }
     }
 
