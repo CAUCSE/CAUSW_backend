@@ -9,6 +9,7 @@ import net.causw.adapter.persistence.repository.ceremony.CeremonyRepository;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.ceremony.*;
+import net.causw.application.dto.notification.CeremonyNotificationDto;
 import net.causw.application.dto.util.dtoMapper.CeremonyDtoMapper;
 import net.causw.application.notification.CeremonyNotificationService;
 import net.causw.application.pageable.PageableFactory;
@@ -61,15 +62,17 @@ public class CeremonyService {
     }
 
     @Transactional(readOnly = true)
-    public Page<CeremonyResponseDto> getUserCeremonyResponses(User user, CeremonyState state, Integer pageNum) {
+    public Page<CeremonyNotificationDto> getUserCeremonyResponses(User user, CeremonyState state, Integer pageNum) {
         Page<Ceremony> ceremonies = ceremonyRepository.findAllByUserAndCeremonyState(user, state, pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE));
-        return ceremonies.map(CeremonyDtoMapper.INSTANCE::toCeremonyResponseDto);
+
+        return ceremonies.map(CeremonyNotificationDto::of);
     }
 
     @Transactional(readOnly = true)
-    public Page<CeremonyResponseDto> getAllUserAwaitingCeremonyPage(Integer pageNum) {
-        Page<Ceremony> ceremoniesPage = ceremonyRepository.findByCeremonyState(CeremonyState.AWAIT, pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE));
-        return ceremoniesPage.map(CeremonyDtoMapper.INSTANCE::toCeremonyResponseDto);
+    public Page<CeremonyNotificationDto> getAllUserAwaitingCeremonyPage(Integer pageNum) {
+        Page<Ceremony> ceremonies = ceremonyRepository.findByCeremonyState(CeremonyState.AWAIT, pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE));
+
+        return ceremonies.map(CeremonyNotificationDto::of);
     }
 
     @Transactional(readOnly = true)
