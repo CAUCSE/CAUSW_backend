@@ -73,7 +73,7 @@ class CeremonyNotificationServiceTest {
         given(mockCeremony.getUser()).willReturn(mockUser);
         given(mockCeremony.getStartDate()).willReturn(LocalDate.of(2024, 4, 15));
         given(mockCeremony.getEndDate()).willReturn(LocalDate.of(2024, 4, 16));
-
+        given(mockCeremony.getCeremonyCategory()).willReturn(CeremonyCategory.MARRIAGE);
     }
 
     @Test
@@ -112,14 +112,14 @@ class CeremonyNotificationServiceTest {
 
         given(mockCeremony.getUser()).willReturn(mockUser);
         given(mockCeremony.getId()).willReturn("ceremony-id");
-        given(mockCeremony.getDescription()).willReturn("결혼식에 초대합니다");
+        given(mockCeremony.getCeremonyCategory()).willReturn(CeremonyCategory.MARRIAGE);
         given(mockCeremony.getStartDate()).willReturn(java.time.LocalDate.of(2024, 4, 15));
         given(mockCeremony.getEndDate()).willReturn(java.time.LocalDate.of(2024, 4, 16));
 
 
         ceremonyNotificationService.sendByAdmissionYear(2023, mockCeremony);
 
-        verify(firebasePushNotificationService).sendNotification(validToken, "테스트 유저(2023) - 결혼식에 초대합니다" , "기간 : 2024-04-15 ~ 2024-04-16");
+        verify(firebasePushNotificationService).sendNotification(validToken, "테스트 유저(2023) - 결혼식" , "기간 : 2024-04-15 ~ 2024-04-16");
         verify(notificationLogRepository).save(any(NotificationLog.class));
     }
 

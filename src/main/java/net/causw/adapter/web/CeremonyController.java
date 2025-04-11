@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.ceremony.CeremonyService;
 import net.causw.application.dto.ceremony.*;
+import net.causw.application.dto.notification.CeremonyNotificationDto;
 import net.causw.config.security.userdetails.CustomUserDetails;
 import net.causw.domain.model.enums.ceremony.CeremonyState;
 import org.springframework.data.domain.Page;
@@ -48,7 +49,7 @@ public class CeremonyController {
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "사용자 본인의 경조사 신청 내역 조회",
             description = "사용자 본인의 경조사 신청 내역을 조회합니다.")
-    public Page<CeremonyResponseDto> getCeremonies(
+    public Page<CeremonyNotificationDto> getCeremonies(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(name = "ceremonyState", defaultValue = "ACCEPT") CeremonyState state,
             @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum
@@ -63,7 +64,7 @@ public class CeremonyController {
             "@securityService.isAdminOrPresidentOrVicePresident()")
     @Operation(summary = "전체 경조사 승인 대기 목록 조회(관리자용)",
             description = "전체 경조사 승인 대기 목록을 조회합니다.")
-    public Page<CeremonyResponseDto> getAllUserAwaitingCeremonyPage(
+    public Page<CeremonyNotificationDto> getAllUserAwaitingCeremonyPage(
             @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum
     ) {
         return ceremonyService.getAllUserAwaitingCeremonyPage(pageNum);

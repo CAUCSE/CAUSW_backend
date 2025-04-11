@@ -5,12 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import net.causw.domain.model.enums.ceremony.CeremonyCategory;
-import net.causw.adapter.persistence.ceremony.Ceremony;
 import net.causw.domain.model.enums.ceremony.CeremonyState;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @Builder
@@ -40,4 +38,6 @@ public class CeremonyResponseDto {
 
     @Schema(description = "경조사 거부 사유")
     private String note;
+
+
 }
