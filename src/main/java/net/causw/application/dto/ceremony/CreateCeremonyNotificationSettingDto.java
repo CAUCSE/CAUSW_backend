@@ -15,9 +15,9 @@ public class CreateCeremonyNotificationSettingDto {
 
     @NotNull
     @Schema(description = "모든 입학년도 설정에 대한 flag")
-    private boolean isSetAll;
+    private boolean setAll;
 
     @NotNull
     @Schema(description = "푸시알람 수신 여부에 대한 flag")
-    private boolean isNotificationActive;
+    private boolean notificationActive;
 }
