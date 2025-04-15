@@ -20,17 +20,21 @@ public interface PostRepository extends JpaRepository<Post, String> {
     Optional<Post> findTop1ByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(String boardId);
     List<Post> findTop3ByBoard_IdAndIsDeletedOrderByCreatedAtDesc(String boardId, Boolean isDeleted);
 
-    //특정 게시판에서 삭제 여부와 관계없이 title 이 포함된 게시글 검색
+    //특정 게시판에서 삭제 여부와 관계없이 title 혹은 content 에 keyword 가 포함된 게시글 검색
     @Query(value = "SELECT * " +
-            "FROM tb_post AS p " +
-            "WHERE p.title LIKE CONCAT('%', :title, '%')AND p.board_id = :boardId ORDER BY p.created_at DESC", nativeQuery = true)
-    Page<Post> findByTitleAndBoard_Id(@Param("title") String title, @Param("boardId") String boardId, Pageable pageable);
+        "FROM tb_post AS p " +
+        "WHERE p.board_id = :boardId " +
+        "AND (p.title LIKE CONCAT('%', :keyword, '%') OR p.content LIKE CONCAT('%', :keyword, '%'))" +
+        "ORDER BY p.created_at DESC", nativeQuery = true)
+    Page<Post> findByBoardIdAndKeyword(@Param("keyword") String keyword, @Param("boardId") String boardId, Pageable pageable);
 
-    //특정 게시판에서 삭제 여부를 고려하여 title 이 포함된 게시글 검색
+    //특정 게시판에서 삭제 여부를 고려하여 title 혹은 content 에 keyword 가 포함된 게시글 검색
     @Query(value = "SELECT * " +
-            "FROM tb_post AS p " +
-            "WHERE p.title LIKE CONCAT('%', :title, '%')AND p.board_id = :boardId AND p.is_deleted = :isDeleted ORDER BY p.created_at DESC", nativeQuery = true)
-    Page<Post> findByTitleBoard_IdAndDeleted(@Param("title") String title, @Param("boardId") String boardId, Pageable pageable, @Param("isDeleted") boolean isDeleted);
+        "FROM tb_post AS p " +
+        "WHERE p.board_id = :boardId AND p.is_deleted = :isDeleted " +
+        "AND (p.title LIKE CONCAT('%', :keyword, '%') OR p.content LIKE CONCAT('%', :keyword, '%'))" +
+        "ORDER BY p.created_at DESC", nativeQuery = true)
+    Page<Post> findByBoardIdAndKeywordAndIsDeleted(@Param("keyword") String keyword, @Param("boardId") String boardId, Pageable pageable, @Param("isDeleted") boolean isDeleted);
 
     // 특정 사용자가 작성한 게시글 검색
     @Query("SELECT p " +

@@ -1,6 +1,8 @@
 package net.causw.domain.model.util;
 
 import java.util.List;
+import net.causw.adapter.persistence.board.Board;
+import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.semester.Semester;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.user.UserAdmission;
@@ -81,6 +83,33 @@ public class ObjectFixtures {
         2000,
         SemesterType.FIRST,
         getUser()
+    );
+  }
+
+  public static Board getBoard() {
+    return Board.of(
+        "boardName",
+        "boardDescription",
+        List.of(
+            "ADMIN","PRESIDENT","VICE_PRESIDENT",
+            "COUNCIL","LEADER_1","LEADER_2","LEADER_3","LEADER_4",
+            "LEADER_CIRCLE","LEADER_ALUMNI","COMMON","PROFESSOR"),
+        "category",
+        true,
+        null
+    );
+  }
+
+  public static Post getPost(User user, Board board) {
+    return Post.of(
+        "title",
+        "content",
+        user,
+        false,
+        false,
+        board,
+        null,
+        List.of()
     );
   }
 }

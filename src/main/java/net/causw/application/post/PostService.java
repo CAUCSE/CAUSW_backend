@@ -22,7 +22,6 @@ import net.causw.adapter.persistence.uuidFile.joinEntity.PostAttachImage;
 import net.causw.adapter.persistence.vote.Vote;
 import net.causw.adapter.persistence.vote.VoteOption;
 import net.causw.adapter.persistence.vote.VoteRecord;
-import net.causw.application.dto.board.BoardSubscribeResponseDto;
 import net.causw.application.dto.form.request.create.FormCreateRequestDto;
 import net.causw.application.dto.form.request.create.QuestionCreateRequestDto;
 import net.causw.application.dto.form.response.FormResponseDto;
@@ -60,7 +59,6 @@ import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.InternalServerException;
 import net.causw.domain.exceptions.UnauthorizedException;
-import net.causw.domain.model.enums.notification.NoticeType;
 import net.causw.domain.model.enums.circle.CircleMemberStatus;
 import net.causw.domain.model.enums.form.QuestionType;
 import net.causw.domain.model.enums.uuidFile.FileExtensionType;
@@ -190,7 +188,7 @@ public class PostService {
                     roles,
                     isFavorite(user.getId(), board.getId()),
                     isBoardSubscribed(user, board),
-                    postRepository.findByTitleAndBoard_Id(keyword, boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
+                    postRepository.findByBoardIdAndKeyword(keyword, boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
                             .map(this::toPostsResponseDto));
         } else {
             return toBoardPostsResponseDto(
@@ -198,7 +196,7 @@ public class PostService {
                     roles,
                     isFavorite(user.getId(), board.getId()),
                     isBoardSubscribed(user, board),
-                    postRepository.findByTitleBoard_IdAndDeleted(keyword, boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), false)
+                    postRepository.findByBoardIdAndKeywordAndIsDeleted(keyword, boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), false)
                             .map(this::toPostsResponseDto));
         }
     }
