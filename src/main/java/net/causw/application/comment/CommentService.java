@@ -75,9 +75,9 @@ public class CommentService {
                 consistOf(ConstraintValidator.of(comment, this.validator));
         validatorBucket.validate();
         //1. comment의 구독 여부 저장
-        createCommentSubscribe(creator, comment.getId());
-
         CommentResponseDto commentResponseDto = toCommentResponseDto(commentRepository.save(comment), creator, post.getBoard());
+
+        createCommentSubscribe(creator, comment.getId());
 
         //2. comment가 달린 게시글의 구독자에게 전송
         postNotificationService.sendByPostIsSubscribed(post, comment);
