@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,6 +20,8 @@ import net.causw.adapter.persistence.repository.vote.VoteRepository;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.vote.Vote;
 import net.causw.adapter.persistence.vote.VoteOption;
+import net.causw.adapter.persistence.vote.VoteRecord;
+import net.causw.application.dto.vote.CastVoteRequestDto;
 import net.causw.application.dto.vote.CreateVoteRequestDto;
 import net.causw.application.dto.vote.VoteOptionResponseDto;
 import net.causw.application.dto.vote.VoteResponseDto;
@@ -34,7 +38,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import spock.util.mop.Use;
 
 @ExtendWith(MockitoExtension.class)
 public class VoteServiceTest {
@@ -68,7 +71,6 @@ public class VoteServiceTest {
     vote = ObjectFixtures.getVote(voteOptions, post);
   }
 
-
   @Nested
   @DisplayName("투표 생성 테스트")
   class voteCreateTest {
@@ -91,7 +93,7 @@ public class VoteServiceTest {
       given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
       given(voteRepository.save(any(Vote.class))).willReturn(vote);
       given(voteOptionRepository.saveAll(anyList())).willAnswer(
-            invocation -> invocation.getArgument(0));
+          invocation -> invocation.getArgument(0));
 
       // when
       VoteResponseDto result = voteService.createVote(createVoteRequestDto, user);
@@ -104,7 +106,7 @@ public class VoteServiceTest {
 
         assertThat(result.getOptions()).hasSize(2);
         assertThat(result.getOptions()).extracting(VoteOptionResponseDto::getVoteCount)
-            .containsExactlyElementsOf(List.of(0,0));
+            .containsExactlyElementsOf(List.of(0, 0));
         assertThat(result.getOptions()).extracting(VoteOptionResponseDto::getOptionName)
             .containsExactlyElementsOf(List.of("option1", "option2"));
 
@@ -116,7 +118,6 @@ public class VoteServiceTest {
         assertThat(result.getTotalUserCount()).isEqualTo(0);
       });
     }
-
 
     @Test
     @DisplayName("실패 - 게시물 없을 경우 투표 생성 실패")
@@ -157,5 +158,41 @@ public class VoteServiceTest {
     }
   }
 
+  @Nested
+  @DisplayName("투표 참여 테스트")
+  class voteCastTest {
+
+    CastVoteRequestDto castVoteRequestDto;
+    VoteOption firstVoteOption;
+
+    @BeforeEach
+    public void setUp() {
+      castVoteRequestDto = new CastVoteRequestDto();
+      castVoteRequestDto.setVoteOptionIdList(List.of("id1"));
+      firstVoteOption = voteOptions.get(0);
+      firstVoteOption.updateVote(vote);
+    }
+
+    @Test
+    @DisplayName("성공 - 투표 참여 테스트")
+    public void castVote_ShouldSuccess() {
+      // given
+      given(voteOptionRepository.findById(any(String.class))).willReturn(
+          Optional.of(firstVoteOption));
+      given(voteRecordRepository.findByVoteOption_VoteAndUser(any(Vote.class),
+          any(User.class))).willReturn(List.of());
+      given(voteOptionRepository.findAllById(anyList())).willReturn(voteOptions.subList(0, 0));
+      given(voteRecordRepository.saveAll(anyList())).willAnswer(invocation -> invocation.getArgument(0));
+
+      // when
+      String result = voteService.castVote(castVoteRequestDto, user);
+
+      // then
+      SoftAssertions.assertSoftly(softAssertions -> {
+        assertThat(result).isEqualTo("투표 성공");
+        verify(voteRecordRepository, times(1)).saveAll(anyList());
+      });
+    }
+  }
 
 }
