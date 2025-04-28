@@ -1,19 +1,14 @@
 package net.causw.application.vote;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
 
-import java.lang.reflect.Field;
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.function.BiPredicate;
-import java.util.stream.Collectors;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.post.PostRepository;
@@ -23,18 +18,12 @@ import net.causw.adapter.persistence.repository.vote.VoteRepository;
 import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.vote.Vote;
 import net.causw.adapter.persistence.vote.VoteOption;
-import net.causw.adapter.persistence.vote.VoteRecord;
-import net.causw.application.dto.user.UserResponseDto;
-import net.causw.application.dto.util.StatusUtil;
-import net.causw.application.dto.util.dtoMapper.UserDtoMapper;
-import net.causw.application.dto.util.dtoMapper.VoteDtoMapper;
 import net.causw.application.dto.vote.CreateVoteRequestDto;
 import net.causw.application.dto.vote.VoteOptionResponseDto;
 import net.causw.application.dto.vote.VoteResponseDto;
-import net.causw.domain.model.enums.user.Role;
+import net.causw.domain.exceptions.BadRequestException;
+import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.util.ObjectFixtures;
-import net.causw.domain.model.util.StaticValue;
-import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -44,8 +33,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.test.util.ReflectionTestUtils;
+import spock.util.mop.Use;
 
 @ExtendWith(MockitoExtension.class)
 public class VoteServiceTest {
@@ -93,7 +82,7 @@ public class VoteServiceTest {
     }
 
     @Test
-    @DisplayName("투표 생성 성공 테스트")
+    @DisplayName("성공 - 투표 생성 테스트")
     public void createVote_ShouldSuccess() {
       // given
       given(postRepository.findById(createVoteRequestDto.getPostId())).willReturn(
@@ -127,5 +116,46 @@ public class VoteServiceTest {
         assertThat(result.getTotalUserCount()).isEqualTo(0);
       });
     }
+
+
+    @Test
+    @DisplayName("실패 - 게시물 없을 경우 투표 생성 실패")
+    public void createVote_FailWhenPostNotExist() {
+      // given
+      given(postRepository.findById(createVoteRequestDto.getPostId())).willReturn(
+          Optional.of(post));
+
+      given(postRepository.findById(post.getId())).willReturn(Optional.empty());
+
+      // when & then
+      assertThatThrownBy(() -> voteService.createVote(createVoteRequestDto, user))
+          .isInstanceOf(BadRequestException.class)
+          .hasMessageContaining("게시글을 찾을 수 없습니다.")
+          .extracting("errorCode")
+          .isEqualTo(ErrorCode.ROW_DOES_NOT_EXIST);
+    }
+
+    @Test
+    @DisplayName("실패 - 게시물 생성자, 작성자 다른 경우")
+    public void createVote_FailWhenWriterAndUserDifferent() {
+      // given
+      given(postRepository.findById(createVoteRequestDto.getPostId())).willReturn(
+          Optional.of(post));
+
+      given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
+
+      User anotherUser = ObjectFixtures.getUser();
+      ReflectionTestUtils.setField(user, "id", "1");
+      ReflectionTestUtils.setField(anotherUser, "id", "2");
+
+      // when & then
+      assertThatThrownBy(() -> voteService.createVote(createVoteRequestDto, anotherUser))
+          .isInstanceOf(BadRequestException.class)
+          .hasMessageContaining("투표 시작 권한이 존재하지 않습니다.")
+          .extracting("errorCode")
+          .isEqualTo(ErrorCode.API_NOT_ALLOWED);
+    }
   }
+
+
 }
