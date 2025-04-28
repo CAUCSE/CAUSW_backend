@@ -1,8 +1,10 @@
 package net.causw.adapter.persistence.vote;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
+import org.jetbrains.annotations.TestOnly;
 
 @Entity
 @Builder(access = AccessLevel.PROTECTED)
