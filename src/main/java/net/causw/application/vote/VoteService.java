@@ -105,7 +105,6 @@ public class VoteService {
         vote.endVote();
         voteRepository.save(vote);
         return toVoteResponseDto(vote,user);
-
     }
 
     @Transactional
@@ -113,10 +112,10 @@ public class VoteService {
         Vote vote = voteRepository.findById(voteId)
                 .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST,MessageUtil.VOTE_NOT_FOUND));
         if (!(user.equals(vote.getPost().getWriter()))){
-            throw new BadRequestException(ErrorCode.API_NOT_ALLOWED, MessageUtil.VOTE_END_NOT_ACCESSIBLE);
+            throw new BadRequestException(ErrorCode.API_NOT_ALLOWED, MessageUtil.VOTE_RESTART_NOT_ACCESSIBLE);
         }
         if (!vote.isEnd()) {
-            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.VOTE_ALREADY_END);
+            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.VOTE_NOT_END);
         }
         vote.restartVote();
         voteRepository.save(vote);
