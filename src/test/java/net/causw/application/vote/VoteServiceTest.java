@@ -182,7 +182,8 @@ public class VoteServiceTest {
       given(voteRecordRepository.findByVoteOption_VoteAndUser(any(Vote.class),
           any(User.class))).willReturn(List.of());
       given(voteOptionRepository.findAllById(anyList())).willReturn(voteOptions.subList(0, 0));
-      given(voteRecordRepository.saveAll(anyList())).willAnswer(invocation -> invocation.getArgument(0));
+      given(voteRecordRepository.saveAll(anyList())).willAnswer(
+          invocation -> invocation.getArgument(0));
 
       // when
       String result = voteService.castVote(castVoteRequestDto, user);
@@ -192,6 +193,57 @@ public class VoteServiceTest {
         assertThat(result).isEqualTo("투표 성공");
         verify(voteRecordRepository, times(1)).saveAll(anyList());
       });
+    }
+
+    @Test
+    @DisplayName("실패 - voteOptionId 에 맞는 voteOption 이 없는 경우")
+    public void castVote_FailWhenVoteOptionNotExist() {
+      // given
+      given(voteOptionRepository.findById(
+          castVoteRequestDto.getVoteOptionIdList().get(0))).willReturn(Optional.empty());
+
+      // when & then
+      assertThatThrownBy(() -> voteService.castVote(castVoteRequestDto, user)).isInstanceOf(
+              BadRequestException.class).hasMessageContaining("존재하지 않는 투표 옵션입니다.")
+          .extracting("errorCode")
+          .isEqualTo(ErrorCode.ROW_DOES_NOT_EXIST);
+
+      verify(voteRecordRepository, times(0)).saveAll(anyList());
+    }
+
+    @Test
+    @DisplayName("실패 - 중복투표 비허용이지만 중복투표 한 경우")
+    public void castVote_FailWhenSelectMultipleVoteOptionsNotAllowed() {
+      // given
+      given(voteOptionRepository.findById(any(String.class))).willReturn(
+          Optional.of(firstVoteOption));
+      castVoteRequestDto.setVoteOptionIdList(List.of("id1", "id2"));
+
+      // when & then
+      assertThatThrownBy(() -> voteService.castVote(castVoteRequestDto, user)).isInstanceOf(
+              BadRequestException.class).hasMessageContaining("이 투표는 여러 항목을 선택할 수 없습니다.")
+          .extracting("errorCode")
+          .isEqualTo(ErrorCode.INVALID_PARAMETER);
+
+      verify(voteRecordRepository, times(0)).saveAll(anyList());
+    }
+
+    @Test
+    @DisplayName("실패 - 이미 투표 진행한 경우")
+    public void castVote_FailWhenVoteRecordAlreadyExist() {
+      // given
+      given(voteOptionRepository.findById(any(String.class))).willReturn(
+          Optional.of(firstVoteOption));
+      given(voteRecordRepository.findByVoteOption_VoteAndUser(any(Vote.class),
+          any(User.class))).willReturn(List.of(VoteRecord.of(user, firstVoteOption)));
+
+      // when & then
+      assertThatThrownBy(() -> voteService.castVote(castVoteRequestDto, user)).isInstanceOf(
+              BadRequestException.class).hasMessageContaining("해당 투표에 이미 참여한 이력이 있습니다.")
+          .extracting("errorCode")
+          .isEqualTo(ErrorCode.INVALID_PARAMETER);
+
+      verify(voteRecordRepository, times(0)).saveAll(anyList());
     }
   }
 
