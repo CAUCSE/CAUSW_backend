@@ -441,7 +441,7 @@ public class VoteServiceTest {
     public void endVote_FailWhenVoteAlreadyEnded() {
       // given
       given(mockVote.getPost()).willReturn(post);
-      given(voteRepository.findById(voteId)).willReturn(Optional.of(mockVote));;
+      given(voteRepository.findById(voteId)).willReturn(Optional.of(mockVote));
       given(mockVote.isEnd()).willReturn(false);
 
       // when
@@ -454,5 +454,62 @@ public class VoteServiceTest {
       verify(voteRepository, never()).save(any());
     }
   }
+
+  @Nested
+  @DisplayName("투표 Id로 검색 테스트")
+  class getVoteByIdTest {
+
+    private String voteId;
+
+    @BeforeEach
+    public void setUp() {
+      voteId = "id1";
+    }
+
+    @Test
+    @DisplayName("성공 - 투표 ID로 투표 조회")
+    void getVoteById_ShouldSuccess() {
+      // given
+      given(voteRepository.findById(voteId)).willReturn(Optional.of(vote));
+
+      // when
+      VoteResponseDto result = voteService.getVoteById(voteId, writerUser);
+
+      // then
+      SoftAssertions.assertSoftly(softAssertions -> {
+        assertThat(result.getTitle()).isEqualTo("title");
+        assertThat(result.getAllowAnonymous()).isEqualTo(false);
+        assertThat(result.getAllowMultiple()).isEqualTo(false);
+
+        assertThat(result.getOptions()).hasSize(2);
+        assertThat(result.getOptions()).extracting(VoteOptionResponseDto::getVoteCount)
+            .containsExactlyElementsOf(List.of(0, 0));
+        assertThat(result.getOptions()).extracting(VoteOptionResponseDto::getOptionName)
+            .containsExactlyElementsOf(List.of("option1", "option2"));
+
+        assertThat(result.getIsOwner()).isEqualTo(true);
+        assertThat(result.getHasVoted()).isEqualTo(false);
+        assertThat(result.getIsEnd()).isEqualTo(false);
+
+        assertThat(result.getTotalVoteCount()).isEqualTo(0);
+        assertThat(result.getTotalUserCount()).isEqualTo(0);
+      });
+    }
+
+    @Test
+    @DisplayName("실패 - 투표가 존재하지 않는 경우")
+    void getVoteById_ShouldThrowException_WhenVoteNotFound() {
+      // given
+      given(voteRepository.findById(voteId)).willReturn(Optional.empty());
+
+      // when & then
+      assertThatThrownBy(() -> voteService.getVoteById(voteId, writerUser))
+          .isInstanceOf(BadRequestException.class)
+          .hasMessageContaining("투표가 존재하지 않습니다.")
+          .extracting("errorCode")
+          .isEqualTo(ErrorCode.ROW_DOES_NOT_EXIST);
+    }
+  }
+
 
 }
