@@ -5,6 +5,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -54,7 +58,7 @@ public class VoteServiceTest {
   @Mock
   VoteRecordRepository voteRecordRepository;
 
-  User user;
+  User writerUser;
   Post post;
   Board board;
   List<VoteOption> voteOptions;
@@ -62,9 +66,9 @@ public class VoteServiceTest {
 
   @BeforeEach
   public void setUp() {
-    user = ObjectFixtures.getUser();
+    writerUser = ObjectFixtures.getUser();
     board = ObjectFixtures.getBoard();
-    post = ObjectFixtures.getPost(user, board);
+    post = ObjectFixtures.getPost(writerUser, board);
     voteOptions = ObjectFixtures.getVoteOptions();
     voteOptions.forEach(
         voteOption -> ReflectionTestUtils.setField(voteOption, "createdAt", LocalDateTime.now()));
@@ -96,7 +100,7 @@ public class VoteServiceTest {
           invocation -> invocation.getArgument(0));
 
       // when
-      VoteResponseDto result = voteService.createVote(createVoteRequestDto, user);
+      VoteResponseDto result = voteService.createVote(createVoteRequestDto, writerUser);
 
       // then
       SoftAssertions.assertSoftly(softAssertions -> {
@@ -129,7 +133,7 @@ public class VoteServiceTest {
       given(postRepository.findById(post.getId())).willReturn(Optional.empty());
 
       // when & then
-      assertThatThrownBy(() -> voteService.createVote(createVoteRequestDto, user))
+      assertThatThrownBy(() -> voteService.createVote(createVoteRequestDto, writerUser))
           .isInstanceOf(BadRequestException.class)
           .hasMessageContaining("게시글을 찾을 수 없습니다.")
           .extracting("errorCode")
@@ -146,7 +150,7 @@ public class VoteServiceTest {
       given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
 
       User anotherUser = ObjectFixtures.getUser();
-      ReflectionTestUtils.setField(user, "id", "1");
+      ReflectionTestUtils.setField(writerUser, "id", "1");
       ReflectionTestUtils.setField(anotherUser, "id", "2");
 
       // when & then
@@ -186,7 +190,7 @@ public class VoteServiceTest {
           invocation -> invocation.getArgument(0));
 
       // when
-      String result = voteService.castVote(castVoteRequestDto, user);
+      String result = voteService.castVote(castVoteRequestDto, writerUser);
 
       // then
       SoftAssertions.assertSoftly(softAssertions -> {
@@ -203,12 +207,12 @@ public class VoteServiceTest {
           castVoteRequestDto.getVoteOptionIdList().get(0))).willReturn(Optional.empty());
 
       // when & then
-      assertThatThrownBy(() -> voteService.castVote(castVoteRequestDto, user)).isInstanceOf(
+      assertThatThrownBy(() -> voteService.castVote(castVoteRequestDto, writerUser)).isInstanceOf(
               BadRequestException.class).hasMessageContaining("존재하지 않는 투표 옵션입니다.")
           .extracting("errorCode")
           .isEqualTo(ErrorCode.ROW_DOES_NOT_EXIST);
 
-      verify(voteRecordRepository, times(0)).saveAll(anyList());
+      verify(voteRecordRepository, never()).saveAll(anyList());
     }
 
     @Test
@@ -220,12 +224,12 @@ public class VoteServiceTest {
       castVoteRequestDto.setVoteOptionIdList(List.of("id1", "id2"));
 
       // when & then
-      assertThatThrownBy(() -> voteService.castVote(castVoteRequestDto, user)).isInstanceOf(
+      assertThatThrownBy(() -> voteService.castVote(castVoteRequestDto, writerUser)).isInstanceOf(
               BadRequestException.class).hasMessageContaining("이 투표는 여러 항목을 선택할 수 없습니다.")
           .extracting("errorCode")
           .isEqualTo(ErrorCode.INVALID_PARAMETER);
 
-      verify(voteRecordRepository, times(0)).saveAll(anyList());
+      verify(voteRecordRepository, never()).saveAll(anyList());
     }
 
     @Test
@@ -235,15 +239,219 @@ public class VoteServiceTest {
       given(voteOptionRepository.findById(any(String.class))).willReturn(
           Optional.of(firstVoteOption));
       given(voteRecordRepository.findByVoteOption_VoteAndUser(any(Vote.class),
-          any(User.class))).willReturn(List.of(VoteRecord.of(user, firstVoteOption)));
+          any(User.class))).willReturn(List.of(VoteRecord.of(writerUser, firstVoteOption)));
 
       // when & then
-      assertThatThrownBy(() -> voteService.castVote(castVoteRequestDto, user)).isInstanceOf(
+      assertThatThrownBy(() -> voteService.castVote(castVoteRequestDto, writerUser)).isInstanceOf(
               BadRequestException.class).hasMessageContaining("해당 투표에 이미 참여한 이력이 있습니다.")
           .extracting("errorCode")
           .isEqualTo(ErrorCode.INVALID_PARAMETER);
 
-      verify(voteRecordRepository, times(0)).saveAll(anyList());
+      verify(voteRecordRepository, never()).saveAll(anyList());
+    }
+  }
+
+  @Nested
+  @DisplayName("투표 종료 테스트")
+  class entVoteTest {
+
+    private String voteId;
+
+    @BeforeEach
+    public void setUp() {
+      voteId = "id1";
+    }
+
+    @Test
+    @DisplayName("성공 - 투표 종료 테스트")
+    public void endVote_ShouldSuccess() {
+      // given
+      given(voteRepository.findById(voteId)).willReturn(Optional.of(vote));
+
+      // when
+      VoteResponseDto result = voteService.endVote(voteId, writerUser);
+
+      // then
+      SoftAssertions.assertSoftly(softAssertions -> {
+        assertThat(result.getTitle()).isEqualTo("title");
+        assertThat(result.getAllowAnonymous()).isEqualTo(false);
+        assertThat(result.getAllowMultiple()).isEqualTo(false);
+
+        assertThat(result.getOptions()).hasSize(2);
+        assertThat(result.getOptions()).extracting(VoteOptionResponseDto::getVoteCount)
+            .containsExactlyElementsOf(List.of(0, 0));
+        assertThat(result.getOptions()).extracting(VoteOptionResponseDto::getOptionName)
+            .containsExactlyElementsOf(List.of("option1", "option2"));
+
+        assertThat(result.getIsOwner()).isEqualTo(true);
+        assertThat(result.getHasVoted()).isEqualTo(false);
+        assertThat(result.getIsEnd()).isEqualTo(true);
+
+        assertThat(result.getTotalVoteCount()).isEqualTo(0);
+        assertThat(result.getTotalUserCount()).isEqualTo(0);
+      });
+    }
+
+    @Test
+    @DisplayName("실패 - 존재하지 않는 투표일때")
+    public void endVote_FailWhenVoteNotExist() {
+      // given
+      given(voteRepository.findById(voteId)).willReturn(Optional.empty());
+
+      // when
+      assertThatThrownBy(() -> voteService.endVote(voteId, writerUser))
+          .isInstanceOf(BadRequestException.class)
+          .hasMessageContaining("투표가 존재하지 않습니다.")
+          .extracting("errorCode")
+          .isEqualTo(ErrorCode.ROW_DOES_NOT_EXIST);
+
+      verify(voteRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("실패 - 투표 종료자가 게시글 작성자가 아닌 경우")
+    public void endVote_FailWhenUserIsNotWriter() {
+      // given
+      given(voteRepository.findById(voteId)).willReturn(Optional.of(vote));
+
+      User anotherUser = ObjectFixtures.getUser();
+      ReflectionTestUtils.setField(writerUser, "id", "1");
+      ReflectionTestUtils.setField(anotherUser, "id", "2");
+
+      // when
+      assertThatThrownBy(() -> voteService.endVote(voteId, anotherUser))
+          .isInstanceOf(BadRequestException.class)
+          .hasMessageContaining("투표 종료 권한이 존재하지 않습니다.")
+          .extracting("errorCode")
+          .isEqualTo(ErrorCode.API_NOT_ALLOWED);
+
+      verify(voteRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("실패 - 이미 종료된 투표인 경우")
+    public void endVote_FailWhenVoteAlreadyEnded() {
+      // given
+      Vote mockVote = mock(Vote.class);
+      given(voteRepository.findById(voteId)).willReturn(Optional.of(mockVote));
+      given(mockVote.getPost()).willReturn(post);
+      given(mockVote.isEnd()).willReturn(true);
+
+      // when
+      assertThatThrownBy(() -> voteService.endVote(voteId, writerUser))
+          .isInstanceOf(BadRequestException.class)
+          .hasMessageContaining("이미 종료된 투표입니다.")
+          .extracting("errorCode")
+          .isEqualTo(ErrorCode.INVALID_PARAMETER);
+
+      verify(voteRepository, never()).save(any());
+    }
+  }
+
+  @Nested
+  @DisplayName("투표 재시작 테스트")
+  class restartVoteTest {
+
+    private String voteId;
+    private Vote mockVote;
+
+    @BeforeEach
+    public void setUp() {
+      voteId = "id1";
+      mockVote = spy(vote);
+    }
+
+    @Test
+    @DisplayName("성공 - 투표 재시작 테스트")
+    public void restartVote_ShouldSuccess() {
+      // given
+      given(mockVote.getPost()).willReturn(post);
+      given(mockVote.isEnd()).willReturn(true);
+      given(voteRepository.findById(voteId)).willReturn(Optional.of(mockVote));
+
+      // restartVote 호출될 때 isEnd를 false로 바꾸는 행동 추가
+      doAnswer(invocation -> {
+        given(mockVote.isEnd()).willReturn(false);
+        return null;
+      }).when(mockVote).restartVote();
+
+      // when
+      VoteResponseDto result = voteService.restartVote(voteId, writerUser);
+
+      // then
+      SoftAssertions.assertSoftly(softAssertions -> {
+        assertThat(result.getTitle()).isEqualTo("title");
+        assertThat(result.getAllowAnonymous()).isEqualTo(false);
+        assertThat(result.getAllowMultiple()).isEqualTo(false);
+
+        assertThat(result.getOptions()).hasSize(2);
+        assertThat(result.getOptions()).extracting(VoteOptionResponseDto::getVoteCount)
+            .containsExactlyElementsOf(List.of(0, 0));
+        assertThat(result.getOptions()).extracting(VoteOptionResponseDto::getOptionName)
+            .containsExactlyElementsOf(List.of("option1", "option2"));
+
+        assertThat(result.getIsOwner()).isEqualTo(true);
+        assertThat(result.getHasVoted()).isEqualTo(false);
+        assertThat(result.getIsEnd()).isEqualTo(false);
+
+        assertThat(result.getTotalVoteCount()).isEqualTo(0);
+        assertThat(result.getTotalUserCount()).isEqualTo(0);
+      });
+    }
+
+    @Test
+    @DisplayName("실패 - 존재하지 않는 투표일때")
+    public void endVote_FailWhenVoteNotExist() {
+      // given
+      given(voteRepository.findById(voteId)).willReturn(Optional.empty());
+
+      // when
+      assertThatThrownBy(() -> voteService.restartVote(voteId, writerUser))
+          .isInstanceOf(BadRequestException.class)
+          .hasMessageContaining("투표가 존재하지 않습니다.")
+          .extracting("errorCode")
+          .isEqualTo(ErrorCode.ROW_DOES_NOT_EXIST);
+
+      verify(voteRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("실패 - 투표 종료자가 게시글 작성자가 아닌 경우")
+    public void castVote_FailWhenUserIsNotWriter() {
+      // given
+      given(mockVote.getPost()).willReturn(post);
+      given(voteRepository.findById(voteId)).willReturn(Optional.of(mockVote));
+
+      User anotherUser = ObjectFixtures.getUser();
+      ReflectionTestUtils.setField(writerUser, "id", "1");
+      ReflectionTestUtils.setField(anotherUser, "id", "2");
+
+      // when
+      assertThatThrownBy(() -> voteService.restartVote(voteId, anotherUser))
+          .isInstanceOf(BadRequestException.class)
+          .hasMessageContaining("투표 재시작 권한이 존재하지 않습니다.")
+          .extracting("errorCode")
+          .isEqualTo(ErrorCode.API_NOT_ALLOWED);
+
+      verify(voteRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("실패 - 이미 종료된 투표인 경우")
+    public void endVote_FailWhenVoteAlreadyEnded() {
+      // given
+      given(mockVote.getPost()).willReturn(post);
+      given(voteRepository.findById(voteId)).willReturn(Optional.of(mockVote));;
+      given(mockVote.isEnd()).willReturn(false);
+
+      // when
+      assertThatThrownBy(() -> voteService.restartVote(voteId, writerUser))
+          .isInstanceOf(BadRequestException.class)
+          .hasMessageContaining("종료되지 않은 투표입니다.")
+          .extracting("errorCode")
+          .isEqualTo(ErrorCode.INVALID_PARAMETER);
+
+      verify(voteRepository, never()).save(any());
     }
   }
 
