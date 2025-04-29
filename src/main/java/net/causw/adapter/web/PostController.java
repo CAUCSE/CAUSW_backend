@@ -409,7 +409,7 @@ public class PostController {
         this.postService.favoritePost(userDetails.getUser(), id);
     }
 
-    @PutMapping(value ="/{id}/favorite" )
+    @DeleteMapping(value ="/{id}/favorite" )
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시글 즐겨찾기 취소 API(완료)",

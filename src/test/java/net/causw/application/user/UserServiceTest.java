@@ -23,6 +23,7 @@ import net.causw.application.pageable.PageableFactory;
 import net.causw.domain.model.enums.user.Role;
 import net.causw.domain.model.enums.user.UserState;
 
+import net.causw.domain.model.util.ObjectFixtures;
 import net.causw.domain.model.util.StaticValue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -40,7 +41,6 @@ import org.springframework.data.domain.PageRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -76,14 +76,9 @@ class UserServiceTest {
   @Mock
   FavoritePostRepository favoritePostRepository;
 
+  @Mock
   HttpServletResponse response;
-  User user;
 
-  @BeforeEach
-  void setUp() {
-    response = mock(HttpServletResponse.class);
-    user = mock(User.class);
-  }
 
   @Nested
   class ExportUserListToExcelTest {
@@ -94,12 +89,10 @@ class UserServiceTest {
       //given
       UserState state = UserState.AWAIT;
       String sheetName = state.getDescription() + " 유저";
-      UserAdmission userAdmission = mock(UserAdmission.class);
-      List<UserAdmission> userAdmissionList = List.of(userAdmission);
+      UserAdmission userAdmission = ObjectFixtures.getUserAdmission();
+      userAdmission.getUser().setState(state);
 
-      given(user.getState()).willReturn(state);
-      given(userAdmission.getUser()).willReturn(user);
-      given(userAdmissionRepository.findAll()).willReturn(userAdmissionList);
+      given(userAdmissionRepository.findAll()).willReturn(List.of(userAdmission));
 
       //when
       userService.exportUserListToExcel(response);
@@ -117,10 +110,10 @@ class UserServiceTest {
       //given
       UserState state = UserState.ACTIVE;
       String sheetName = state.getDescription() + " 유저";
-      List<User> userList = List.of(user);
+      User user = ObjectFixtures.getUser();
+      user.setState(state);
 
-      given(user.getState()).willReturn(state);
-      given(userRepository.findAllByState(state)).willReturn(userList);
+      given(userRepository.findAllByState(state)).willReturn(List.of(user));
 
       //when
       userService.exportUserListToExcel(response);
@@ -157,6 +150,13 @@ class UserServiceTest {
   @Nested
   @DisplayName("유저 게시글 모아보기 테스트")
   class UserFindPostsTest {
+
+    private User user;
+
+    @BeforeEach
+    void setUp() {
+      user = mock(User.class);
+    }
 
     @DisplayName("유저 좋아요 게시글 모아보기 성공")
     @Test

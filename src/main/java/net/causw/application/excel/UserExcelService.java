@@ -20,46 +20,47 @@ import java.util.List;
 @Service
 public class UserExcelService extends ExcelAbstractService<UserResponseDto> {
 
-    private static final List<Function<UserResponseDto, String>> cellMappingFunctions = List.of(
-        user -> Optional.ofNullable(user.getEmail()).orElse(""),
-        user -> Optional.ofNullable(user.getName()).orElse(""),
-        user -> Optional.ofNullable(user.getStudentId()).orElse(""),
-        user -> Optional.ofNullable(user.getAdmissionYear())
-                        .map(String::valueOf)
-                        .orElse(""),
-        user -> Optional.ofNullable(user.getRoles())
-                        .map(roles -> roles.stream()
+    private static final Function<UserResponseDto, List<String>> cellMappingFunction =
+        user -> List.of(
+            Optional.ofNullable(user.getEmail()).orElse(""),
+            Optional.ofNullable(user.getName()).orElse(""),
+            Optional.ofNullable(user.getStudentId()).orElse(""),
+            Optional.ofNullable(user.getAdmissionYear())
+                    .map(String::valueOf)
+                    .orElse(""),
+            Optional.ofNullable(user.getRoles())
+                    .map(roles -> roles.stream()
                             .map(Role::getDescription)
                             .collect(Collectors.joining(",")))
-                        .orElse(""),
-        user -> Optional.ofNullable(user.getState())
-                        .map(UserState::getDescription)
-                        .orElse(""),
-        user -> Optional.ofNullable(user.getNickname()).orElse(""),
-        user -> Optional.ofNullable(user.getMajor()).orElse(""),
-        user -> Optional.ofNullable(user.getAcademicStatus())
-                        .map(AcademicStatus::getValue)
-                        .orElse(""),
-        user -> Optional.ofNullable(user.getCurrentCompletedSemester())
-                        .map(String::valueOf)
-                        .orElse(""),
-        user -> Optional.ofNullable(user.getGraduationYear())
-                        .map(String::valueOf)
-                        .orElse(""),
-        user -> Optional.ofNullable(user.getGraduationType())
-                        .map(GraduationType::getValue)
-                        .orElse(""),
-        user -> Optional.ofNullable(user.getPhoneNumber()).orElse(""),
-        user -> Optional.ofNullable(user.getCircleNameIfLeader())
-                        .map(circles -> String.join(",", circles))
-                        .orElse(""),
-        user -> Optional.ofNullable(user.getRejectionOrDropReason()).orElse(""),
-        user -> Optional.ofNullable(user.getCreatedAt())
-                        .map(String::valueOf)
-                        .orElse(""),
-        user -> Optional.ofNullable(user.getUpdatedAt())
-                        .map(String::valueOf)
-                        .orElse("")
+                    .orElse(""),
+            Optional.ofNullable(user.getState())
+                    .map(UserState::getDescription)
+                    .orElse(""),
+            Optional.ofNullable(user.getNickname()).orElse(""),
+            Optional.ofNullable(user.getMajor()).orElse(""),
+            Optional.ofNullable(user.getAcademicStatus())
+                    .map(AcademicStatus::getValue)
+                    .orElse(""),
+            Optional.ofNullable(user.getCurrentCompletedSemester())
+                    .map(String::valueOf)
+                    .orElse(""),
+            Optional.ofNullable(user.getGraduationYear())
+                    .map(String::valueOf)
+                    .orElse(""),
+            Optional.ofNullable(user.getGraduationType())
+                    .map(GraduationType::getValue)
+                    .orElse(""),
+            Optional.ofNullable(user.getPhoneNumber()).orElse(""),
+            Optional.ofNullable(user.getCircleNameIfLeader())
+                    .map(circles -> String.join(",", circles))
+                    .orElse(""),
+            Optional.ofNullable(user.getRejectionOrDropReason()).orElse(""),
+            Optional.ofNullable(user.getCreatedAt())
+                    .map(String::valueOf)
+                    .orElse(""),
+            Optional.ofNullable(user.getUpdatedAt())
+                    .map(String::valueOf)
+                    .orElse("")
     );
 
     @Override
@@ -69,9 +70,10 @@ public class UserExcelService extends ExcelAbstractService<UserResponseDto> {
             Row row = sheet.createRow(rowNum++);
 
             int colNum = 0;
-            for (Function<UserResponseDto, String> func : cellMappingFunctions) {
+            List<String> cellValues = cellMappingFunction.apply(user);
+            for (String value : cellValues) {
                 Cell cell = row.createCell(colNum++);
-                cell.setCellValue(func.apply(user));
+                cell.setCellValue(value);
             }
         }
     }
