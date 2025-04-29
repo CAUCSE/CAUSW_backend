@@ -96,7 +96,7 @@ public class WebCrawlerService {
     }
 
     //HTML페이지를 가져옴
-    private Document fetchUrl(String url) {
+    protected Document fetchUrl(String url) {
         try {
             return Jsoup.connect(url).get();
         } catch (IOException e) {
@@ -105,7 +105,7 @@ public class WebCrawlerService {
     }
 
     // 상세 페이지로 이동하여 내용 크롤링
-    private CrawledNotice parseNotice(Element row, String noticeUrl) {
+    protected CrawledNotice parseNotice(Element row, String noticeUrl) {
         String noticeType = row.select("td span.tag").text();
         Document detailDoc = fetchUrl(noticeUrl);
 

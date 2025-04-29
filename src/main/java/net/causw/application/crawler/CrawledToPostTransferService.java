@@ -32,8 +32,8 @@ public class CrawledToPostTransferService {
     private final PostRepository postRepository;
     private final UuidFileRepository uuidFileRepository;
 
-    @Scheduled(fixedRate = 5000) // 테스트용, 5초마다 실행
-//    @Scheduled(cron = "0 0 1 * * *") // 매일 새벽 1시
+//    @Scheduled(fixedRate = 5000) // 테스트용, 5초마다 실행
+    @Scheduled(cron = "0 0 1 * * *") // 매일 새벽 1시
     @Transactional
     public void transferCrawledNoticesToPosts() {
         Board board = boardRepository.findByName("소프트웨어학부 학부 공지")
