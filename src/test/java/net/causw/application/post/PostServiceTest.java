@@ -19,6 +19,9 @@ import java.util.Set;
 import java.util.stream.Stream;
 import net.causw.adapter.persistence.post.LikePost;
 import net.causw.adapter.persistence.post.Post;
+import net.causw.adapter.persistence.repository.board.FavoriteBoardRepository;
+import net.causw.adapter.persistence.repository.notification.UserBoardSubscribeRepository;
+import net.causw.adapter.persistence.repository.post.FavoritePostRepository;
 import net.causw.adapter.persistence.repository.post.LikePostRepository;
 import net.causw.adapter.persistence.repository.post.PostRepository;
 import net.causw.adapter.persistence.user.User;
@@ -69,6 +72,15 @@ public class PostServiceTest {
 
   @Mock
   PageableFactory pageableFactory;
+
+  @Mock
+  FavoriteBoardRepository favoriteBoardRepository;
+
+  @Mock
+  UserBoardSubscribeRepository userBoardSubscribeRepository;
+
+  @Mock
+  FavoritePostRepository favoritePostRepository;
 
   @Nested
   @DisplayName("게시글 좋아요 테스트")
