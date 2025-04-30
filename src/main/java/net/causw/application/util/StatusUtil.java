@@ -1,4 +1,4 @@
-package net.causw.application.dto.util;
+package net.causw.application.util;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

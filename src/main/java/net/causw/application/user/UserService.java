@@ -2,7 +2,6 @@ package net.causw.application.user;
 
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
@@ -15,7 +14,7 @@ import net.causw.adapter.persistence.userAcademicRecord.UserAcademicRecordApplic
 import net.causw.adapter.persistence.uuidFile.joinEntity.UserAcademicRecordApplicationAttachImage;
 import net.causw.adapter.persistence.uuidFile.joinEntity.UserAdmissionAttachImage;
 import net.causw.adapter.persistence.uuidFile.joinEntity.UserProfileImage;
-import net.causw.application.dto.util.StatusUtil;
+import net.causw.application.util.StatusUtil;
 import net.causw.application.excel.UserExcelService;
 import net.causw.application.pageable.PageableFactory;
 import net.causw.adapter.persistence.post.Post;

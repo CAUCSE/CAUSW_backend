@@ -11,7 +11,7 @@ import net.causw.adapter.persistence.vote.Vote;
 import net.causw.adapter.persistence.vote.VoteOption;
 import net.causw.adapter.persistence.vote.VoteRecord;
 import net.causw.application.dto.user.UserResponseDto;
-import net.causw.application.dto.util.StatusUtil;
+import net.causw.application.util.StatusUtil;
 import net.causw.application.dto.util.dtoMapper.UserDtoMapper;
 import net.causw.application.dto.util.dtoMapper.VoteDtoMapper;
 import net.causw.application.dto.vote.CastVoteRequestDto;

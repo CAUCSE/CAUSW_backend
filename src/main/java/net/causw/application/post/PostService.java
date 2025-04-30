@@ -52,7 +52,7 @@ import net.causw.adapter.persistence.uuidFile.UuidFile;
 import net.causw.application.dto.comment.ChildCommentResponseDto;
 import net.causw.application.dto.comment.CommentResponseDto;
 import net.causw.application.dto.post.*;
-import net.causw.application.dto.util.StatusUtil;
+import net.causw.application.util.StatusUtil;
 import net.causw.application.uuidFile.UuidFileService;
 import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.exceptions.BadRequestException;

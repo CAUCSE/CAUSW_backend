@@ -21,7 +21,7 @@ import net.causw.application.dto.form.request.QuestionReplyRequestDto;
 import net.causw.application.dto.form.response.reply.excel.ExcelReplyListResponseDto;
 import net.causw.application.dto.form.response.reply.excel.ExcelReplyQuestionResponseDto;
 import net.causw.application.dto.form.response.reply.excel.ExcelReplyResponseDto;
-import net.causw.application.dto.util.StatusUtil;
+import net.causw.application.util.StatusUtil;
 import net.causw.application.dto.util.dtoMapper.FormDtoMapper;
 import net.causw.application.excel.FormExcelService;
 import net.causw.domain.aop.annotation.MeasureTime;
