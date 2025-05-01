@@ -96,6 +96,7 @@ public class UserCouncilFeeService {
                     ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_COUNCIL_FEE_NOT_FOUND));
     }
 
+    // TODO: 납부 시점 학기 내부 정책 서비스에서 처리하도록 수정
     @Transactional
     public void creatUserCouncilFeeWithUser(User user, CreateUserCouncilFeeWithUserRequestDto createUserCouncilFeeWithUserRequestDto) {
         User controlledUser = userRepository.findById(user.getId())
@@ -140,6 +141,7 @@ public class UserCouncilFeeService {
         userCouncilFeeLogRepository.save(userCouncilFeeLog);
     }
 
+    // TODO: currentCompletedSemester null 체크 및 납부 시점 학기 내부 정책 서비스에서 처리하도록 수정
     @Transactional
     public void creatUserCouncilFeeWithFakeUser(User user, CreateUserCouncilFeeWithFakeUserRequestDto createUserCouncilFeeRequestDto) {
         User controlledUser = userRepository.findById(user.getId())
