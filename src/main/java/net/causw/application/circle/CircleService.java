@@ -50,6 +50,7 @@ import net.causw.domain.model.enums.user.Role;
 import net.causw.domain.model.enums.user.UserState;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
+import net.causw.domain.policy.UserCouncilFeePolicy;
 import net.causw.domain.validation.*;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
@@ -1210,7 +1211,7 @@ public class CircleService {
                             )
                     );
 
-                    if (!StatusUtil.getIsAppliedCurrentSemester(userCouncilFee)) {
+                    if (!UserCouncilFeePolicy.isAppliedCurrentSemesterWithUser(userCouncilFee)) {
                         throw new BadRequestException(
                                 ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
                                 MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
@@ -1281,8 +1282,8 @@ public class CircleService {
                             return this.toExportCircleMemberToExcelResponseDto(
                                     srcUser,
                                     userCouncilFee,
-                                    StatusUtil.getRestOfSemester(userCouncilFee),
-                                    StatusUtil.getIsAppliedCurrentSemester(userCouncilFee)
+                                    UserCouncilFeePolicy.determineRemainingAppliedSemestersWithUser(userCouncilFee),
+                                    UserCouncilFeePolicy.isAppliedCurrentSemesterWithUser(userCouncilFee)
                             );
                         }
                 ).toList();

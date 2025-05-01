@@ -11,7 +11,6 @@ import net.causw.adapter.persistence.userCouncilFee.CouncilFeeFakeUser;
 import net.causw.adapter.persistence.userCouncilFee.UserCouncilFee;
 import net.causw.adapter.persistence.userCouncilFee.UserCouncilFeeLog;
 import net.causw.application.dto.userCouncilFee.*;
-import net.causw.application.util.StatusUtil;
 import net.causw.application.dto.util.dtoMapper.UserCouncilFeeDtoMapper;
 import net.causw.application.excel.CouncilFeeExcelService;
 import net.causw.application.semester.SemesterService;
@@ -20,6 +19,7 @@ import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.enums.userCouncilFee.CouncilFeeLogType;
 import net.causw.domain.model.util.MessageUtil;
+import net.causw.domain.policy.UserCouncilFeePolicy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -96,9 +96,8 @@ public class UserCouncilFeeService {
                     ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_COUNCIL_FEE_NOT_FOUND));
     }
 
-    // TODO: 납부 시점 학기 내부 정책 서비스에서 처리하도록 수정
     @Transactional
-    public void creatUserCouncilFeeWithUser(User user, CreateUserCouncilFeeWithUserRequestDto createUserCouncilFeeWithUserRequestDto) {
+    public void createUserCouncilFeeWithUser(User user, CreateUserCouncilFeeWithUserRequestDto createUserCouncilFeeWithUserRequestDto) {
         User controlledUser = userRepository.findById(user.getId())
                 .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND));
 
@@ -117,43 +116,32 @@ public class UserCouncilFeeService {
             throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.REFUND_DATE_IS_NULL);
         }
 
+        Semester currentSemester = semesterService.getCurrentSemesterEntity();
+        int paidAt = UserCouncilFeePolicy.determineStartSemesterToApply(
+            currentSemester,
+            targetUser.getCurrentCompletedSemester(),
+            targetUser.getAcademicStatus()
+        );
         UserCouncilFee userCouncilFee = UserCouncilFee.of(
                 true,
                 targetUser,
                 null,
-                createUserCouncilFeeWithUserRequestDto.getPaidAt(),
+                paidAt,
                 createUserCouncilFeeWithUserRequestDto.getNumOfPaidSemester(),
                 createUserCouncilFeeWithUserRequestDto.getIsRefunded(),
                 createUserCouncilFeeWithUserRequestDto.getRefundedAt() == null ? null : createUserCouncilFeeWithUserRequestDto.getRefundedAt()
         );
-
-        UserCouncilFeeLog userCouncilFeeLog = UserCouncilFeeLog.fromUser(
-                controlledUser,
-                CouncilFeeLogType.CREATE,
-                userCouncilFee,
-                semesterService.getCurrentSemesterEntity(),
-                targetUser,
-                StatusUtil.getRestOfSemester(userCouncilFee),
-                StatusUtil.getIsAppliedCurrentSemester(userCouncilFee)
-        );
-
         userCouncilFeeRepository.save(userCouncilFee);
-        userCouncilFeeLogRepository.save(userCouncilFeeLog);
+
+        createUserCouncilFeeLog(controlledUser, CouncilFeeLogType.CREATE, userCouncilFee, currentSemester);
     }
 
-    // TODO: currentCompletedSemester null 체크 및 납부 시점 학기 내부 정책 서비스에서 처리하도록 수정
     @Transactional
     public void creatUserCouncilFeeWithFakeUser(User user, CreateUserCouncilFeeWithFakeUserRequestDto createUserCouncilFeeRequestDto) {
         User controlledUser = userRepository.findById(user.getId())
                 .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND));
 
-        if (userRepository.existsByStudentId(createUserCouncilFeeRequestDto.getStudentId())) {
-            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.USER_ALREADY_EXISTS);
-        }
-
-        if (createUserCouncilFeeRequestDto.getIsRefunded() && createUserCouncilFeeRequestDto.getRefundedAt() == null) {
-            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.REFUND_DATE_IS_NULL);
-        }
+        validateCreateRequestDtoWithFakeUser(createUserCouncilFeeRequestDto);
 
         CouncilFeeFakeUser councilFeeFakeUser = CouncilFeeFakeUser.of(
                 createUserCouncilFeeRequestDto.getUserName(),
@@ -167,31 +155,25 @@ public class UserCouncilFeeService {
                 createUserCouncilFeeRequestDto.getGraduationType()
         );
 
+        Semester currentSemester = semesterService.getCurrentSemesterEntity();
+        int paidAt = UserCouncilFeePolicy.determineStartSemesterToApply(
+            currentSemester,
+            councilFeeFakeUser.getCurrentCompletedSemester(),
+            councilFeeFakeUser.getAcademicStatus()
+        );
         UserCouncilFee userCouncilFee = UserCouncilFee.of(
                 false,
                 null,
                 councilFeeFakeUser,
-                createUserCouncilFeeRequestDto.getPaidAt(),
+                paidAt,
                 createUserCouncilFeeRequestDto.getNumOfPaidSemester(),
                 createUserCouncilFeeRequestDto.getIsRefunded(),
                 createUserCouncilFeeRequestDto.getRefundedAt()
         );
-
-        UserCouncilFeeLog userCouncilFeeLog = UserCouncilFeeLog.fromCouncilFeeFakeUser(
-                controlledUser,
-                CouncilFeeLogType.CREATE,
-                userCouncilFee,
-                semesterService.getCurrentSemesterEntity(),
-                councilFeeFakeUser,
-                StatusUtil.getRestOfSemester(userCouncilFee),
-                StatusUtil.getIsAppliedCurrentSemester(userCouncilFee)
-        );
-
         userCouncilFeeRepository.save(userCouncilFee);
-        userCouncilFeeLogRepository.save(userCouncilFeeLog);
+
+        createUserCouncilFeeLog(controlledUser, CouncilFeeLogType.CREATE, userCouncilFee, currentSemester);
     }
-
-
 
     @Transactional
     public void updateUserCouncilFeeWithUser(User user, String userCouncilFeeId, CreateUserCouncilFeeWithUserRequestDto createUserCouncilFeeWithUserRequestDto) {
@@ -208,7 +190,6 @@ public class UserCouncilFeeService {
             throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.REFUND_DATE_IS_NULL);
         }
 
-
         userCouncilFee.update(
                 true,
                 targetUser,
@@ -218,19 +199,10 @@ public class UserCouncilFeeService {
                 createUserCouncilFeeWithUserRequestDto.getIsRefunded(),
                 createUserCouncilFeeWithUserRequestDto.getRefundedAt()
         );
-
-        UserCouncilFeeLog userCouncilFeeLog = UserCouncilFeeLog.fromUser(
-                controlledUser,
-                CouncilFeeLogType.UPDATE,
-                userCouncilFee,
-                semesterService.getCurrentSemesterEntity(),
-                targetUser,
-                StatusUtil.getRestOfSemester(userCouncilFee),
-                StatusUtil.getIsAppliedCurrentSemester(userCouncilFee)
-        );
-
         userCouncilFeeRepository.save(userCouncilFee);
-        userCouncilFeeLogRepository.save(userCouncilFeeLog);
+
+        createUserCouncilFeeLog(
+            controlledUser, CouncilFeeLogType.UPDATE, userCouncilFee, semesterService.getCurrentSemesterEntity());
     }
 
     @Transactional
@@ -238,19 +210,12 @@ public class UserCouncilFeeService {
         User controlledUser = userRepository.findById(user.getId())
                 .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND));
 
-        if (userRepository.existsByStudentId(createUserCouncilFeeWithFakeUserRequestDto.getStudentId())) {
-            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.USER_ALREADY_EXISTS);
-        }
-
-        if (createUserCouncilFeeWithFakeUserRequestDto.getIsRefunded() && createUserCouncilFeeWithFakeUserRequestDto.getRefundedAt() == null) {
-            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.REFUND_DATE_IS_NULL);
-        }
-
         UserCouncilFee userCouncilFee = userCouncilFeeRepository.findById(userCouncilFeeId)
                 .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_COUNCIL_FEE_NOT_FOUND));
 
-        CouncilFeeFakeUser councilFeeFakeUser = userCouncilFee.getCouncilFeeFakeUser();
+        validateCreateRequestDtoWithFakeUser(createUserCouncilFeeWithFakeUserRequestDto);
 
+        CouncilFeeFakeUser councilFeeFakeUser = userCouncilFee.getCouncilFeeFakeUser();
         councilFeeFakeUser.update(
                 createUserCouncilFeeWithFakeUserRequestDto.getUserName(),
                 createUserCouncilFeeWithFakeUserRequestDto.getStudentId(),
@@ -262,7 +227,6 @@ public class UserCouncilFeeService {
                 createUserCouncilFeeWithFakeUserRequestDto.getGraduationYear(),
                 createUserCouncilFeeWithFakeUserRequestDto.getGraduationType()
         );
-
         userCouncilFee.update(
                 false,
                 null,
@@ -272,19 +236,11 @@ public class UserCouncilFeeService {
                 createUserCouncilFeeWithFakeUserRequestDto.getIsRefunded(),
                 createUserCouncilFeeWithFakeUserRequestDto.getRefundedAt()
         );
-
-        UserCouncilFeeLog userCouncilFeeLog = UserCouncilFeeLog.fromCouncilFeeFakeUser(
-                controlledUser,
-                CouncilFeeLogType.UPDATE,
-                userCouncilFee,
-                semesterService.getCurrentSemesterEntity(),
-                councilFeeFakeUser,
-                StatusUtil.getRestOfSemester(userCouncilFee),
-                StatusUtil.getIsAppliedCurrentSemester(userCouncilFee)
-        );
-
         userCouncilFeeRepository.save(userCouncilFee);
-        userCouncilFeeLogRepository.save(userCouncilFeeLog);
+
+        createUserCouncilFeeLog(
+            controlledUser, CouncilFeeLogType.UPDATE, userCouncilFee, semesterService.getCurrentSemesterEntity());
+
     }
 
     @Transactional
@@ -295,34 +251,11 @@ public class UserCouncilFeeService {
         UserCouncilFee userCouncilFee = userCouncilFeeRepository.findById(userCouncilFeeId)
                 .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_COUNCIL_FEE_NOT_FOUND));
 
-        UserCouncilFeeLog userCouncilFeeLog;
-
-        Semester semester = semesterService.getCurrentSemesterEntity();
-
-        if (userCouncilFee.getIsJoinedService()) {
-            userCouncilFeeLog = UserCouncilFeeLog.fromUser(
-                    controlledUser,
-                    CouncilFeeLogType.DELETE,
-                    userCouncilFee,
-                    semester,
-                    userCouncilFee.getUser(),
-                    StatusUtil.getRestOfSemester(userCouncilFee),
-                    StatusUtil.getIsAppliedCurrentSemester(userCouncilFee)
-            );
-        } else {
-            userCouncilFeeLog = UserCouncilFeeLog.fromCouncilFeeFakeUser(
-                    user,
-                    CouncilFeeLogType.DELETE,
-                    userCouncilFee,
-                    semester,
-                    userCouncilFee.getCouncilFeeFakeUser(),
-                    StatusUtil.getRestOfSemester(userCouncilFee),
-                    StatusUtil.getIsAppliedCurrentSemester(userCouncilFee)
-            );
-        }
-
         userCouncilFeeRepository.deleteById(userCouncilFeeId);
-        userCouncilFeeLogRepository.save(userCouncilFeeLog);
+
+        createUserCouncilFeeLog(
+            controlledUser, CouncilFeeLogType.DELETE, userCouncilFee, semesterService.getCurrentSemesterEntity());
+
     }
 
     public String getUserIdByStudentId(String studentId) {
@@ -345,7 +278,7 @@ public class UserCouncilFeeService {
             return false;
         }
 
-        return StatusUtil.getIsAppliedCurrentSemester(userCouncilFee);
+        return UserCouncilFeePolicy.isAppliedCurrentSemesterWithUser(userCouncilFee);
     }
 
     public CurrentUserCouncilFeeResponseDto isCurrentSemesterAppliedBySelfInfo(User user) {
@@ -356,7 +289,55 @@ public class UserCouncilFeeService {
             return toCurrentUserCouncilFeeResponseDto(userCouncilFee, 0, false);
         }
 
-        return toCurrentUserCouncilFeeResponseDto(userCouncilFee, StatusUtil.getRestOfSemester(userCouncilFee), StatusUtil.getIsAppliedCurrentSemester(userCouncilFee));
+        return toCurrentUserCouncilFeeResponseDto(
+            userCouncilFee,
+            UserCouncilFeePolicy.determineRemainingAppliedSemestersWithUser(userCouncilFee),
+            UserCouncilFeePolicy.isAppliedCurrentSemesterWithUser(userCouncilFee));
+    }
+
+    private void createUserCouncilFeeLog(
+        User controlledUser, CouncilFeeLogType councilFeeLogType,
+        UserCouncilFee userCouncilFee, Semester currentSemester
+    ) {
+        UserCouncilFeeLog userCouncilFeeLog;
+
+        if (userCouncilFee.getUser() != null) {
+            userCouncilFeeLog = UserCouncilFeeLog.fromUser(
+                controlledUser,
+                councilFeeLogType,
+                userCouncilFee,
+                currentSemester,
+                userCouncilFee.getUser(),
+                UserCouncilFeePolicy.determineRemainingAppliedSemestersWithUser(userCouncilFee),
+                UserCouncilFeePolicy.isAppliedCurrentSemesterWithUser(userCouncilFee)
+            );
+        } else {
+            userCouncilFeeLog = UserCouncilFeeLog.fromCouncilFeeFakeUser(
+                controlledUser,
+                councilFeeLogType,
+                userCouncilFee,
+                currentSemester,
+                userCouncilFee.getCouncilFeeFakeUser(),
+                UserCouncilFeePolicy.determineRemainingAppliedSemestersWithFakeUser(userCouncilFee),
+                UserCouncilFeePolicy.isAppliedCurrentSemesterWithFakeUser(userCouncilFee)
+            );
+        }
+
+        userCouncilFeeLogRepository.save(userCouncilFeeLog);
+    }
+
+    private void validateCreateRequestDtoWithFakeUser(CreateUserCouncilFeeWithFakeUserRequestDto dto) {
+        if (userRepository.existsByStudentId(dto.getStudentId())) {
+            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.USER_ALREADY_EXISTS);
+        }
+
+        if (dto.getCurrentCompletedSemester() == null) {
+            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.USER_CURRENT_COMPLETE_SEMESTER_DOES_NOT_EXIST);
+        }
+
+        if (dto.getIsRefunded() && dto.getRefundedAt() == null) {
+            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.REFUND_DATE_IS_NULL);
+        }
     }
 
     // Dto Mapper private method
@@ -373,15 +354,15 @@ public class UserCouncilFeeService {
             return UserCouncilFeeDtoMapper.INSTANCE.toUserCouncilFeeResponseDto(
                 userCouncilFee,
                 userCouncilFee.getUser(),
-                StatusUtil.getRestOfSemester(userCouncilFee),
-                StatusUtil.getIsAppliedCurrentSemester(userCouncilFee)
+                UserCouncilFeePolicy.determineRemainingAppliedSemestersWithUser(userCouncilFee),
+                UserCouncilFeePolicy.isAppliedCurrentSemesterWithUser(userCouncilFee)
             );
         } else {
             return UserCouncilFeeDtoMapper.INSTANCE.toUserCouncilFeeResponseDtoReduced(
                 userCouncilFee,
                 userCouncilFee.getCouncilFeeFakeUser(),
-                StatusUtil.getRestOfSemester(userCouncilFee),
-                StatusUtil.getIsAppliedCurrentSemester(userCouncilFee)
+                UserCouncilFeePolicy.determineRemainingAppliedSemestersWithFakeUser(userCouncilFee),
+                UserCouncilFeePolicy.isAppliedCurrentSemesterWithFakeUser(userCouncilFee)
             );
         }
     }

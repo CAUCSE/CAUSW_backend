@@ -19,31 +19,15 @@ public class UserCouncilFeePolicy {
         userCouncilFee.getCouncilFeeFakeUser().getCurrentCompletedSemester());
   }
 
-  public static int determineStartOfCouncilFeeAppliedSemesterWithUser(UserCouncilFee userCouncilFee, Semester currentSemester) {
-    return determineStartOfCouncilFeeAppliedSemester(
-        currentSemester,
-        userCouncilFee.getUser().getCurrentCompletedSemester(),
-        userCouncilFee.getUser().getAcademicStatus()
-    );
-  }
-
-  public static int determineStartOfCouncilFeeAppliedSemesterWithFakeUser(UserCouncilFee userCouncilFee, Semester currentSemester) {
-    return determineStartOfCouncilFeeAppliedSemester(
-        currentSemester,
-        userCouncilFee.getCouncilFeeFakeUser().getCurrentCompletedSemester(),
-        userCouncilFee.getCouncilFeeFakeUser().getAcademicStatus()
-    );
-  }
-
-  public static boolean isCouncilFeeAppliedCurrentSemesterWithUser(UserCouncilFee userCouncilFee) {
-    return isCouncilFeeAppliedCurrentSemester(
+  public static boolean isAppliedCurrentSemesterWithUser(UserCouncilFee userCouncilFee) {
+    return isAppliedCurrentSemester(
         userCouncilFee,
         userCouncilFee.getUser().getCurrentCompletedSemester()
     );
   }
 
-  public static boolean isCouncilFeeAppliedCurrentSemesterWithFakeUser(UserCouncilFee userCouncilFee) {
-    return isCouncilFeeAppliedCurrentSemester(
+  public static boolean isAppliedCurrentSemesterWithFakeUser(UserCouncilFee userCouncilFee) {
+    return isAppliedCurrentSemester(
         userCouncilFee,
         userCouncilFee.getCouncilFeeFakeUser().getCurrentCompletedSemester()
     );
@@ -60,7 +44,7 @@ public class UserCouncilFeePolicy {
    * @param currentAcademicStatus
    * @return 학생회비 적용 시작 학기
    */
-  private static int determineStartOfCouncilFeeAppliedSemester(
+  public static int determineStartSemesterToApply(
       Semester currentSemester,
       Integer currentCompletedSemester, AcademicStatus currentAcademicStatus
   ) {
@@ -103,7 +87,7 @@ public class UserCouncilFeePolicy {
    * @param currentCompletedSemester
    * @return 현재 학기의 학생회비 적용 여부
    */
-  private static boolean isCouncilFeeAppliedCurrentSemester(UserCouncilFee userCouncilFee, Integer currentCompletedSemester) {
+  private static boolean isAppliedCurrentSemester(UserCouncilFee userCouncilFee, Integer currentCompletedSemester) {
     int startOfAppliedSemester = userCouncilFee.getPaidAt();
     int endOfAppliedSemester = startOfAppliedSemester + userCouncilFee.getNumOfPaidSemester() - 1;
 
