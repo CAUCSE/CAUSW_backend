@@ -141,6 +141,10 @@ public class UserCouncilFeeService {
         User controlledUser = userRepository.findById(user.getId())
                 .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND));
 
+        if (createUserCouncilFeeRequestDto.getCurrentCompletedSemester() == null) {
+            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.USER_CURRENT_COMPLETE_SEMESTER_DOES_NOT_EXIST);
+        }
+
         validateCreateRequestDtoWithFakeUser(createUserCouncilFeeRequestDto);
 
         CouncilFeeFakeUser councilFeeFakeUser = CouncilFeeFakeUser.of(
@@ -329,10 +333,6 @@ public class UserCouncilFeeService {
     private void validateCreateRequestDtoWithFakeUser(CreateUserCouncilFeeWithFakeUserRequestDto dto) {
         if (userRepository.existsByStudentId(dto.getStudentId())) {
             throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.USER_ALREADY_EXISTS);
-        }
-
-        if (dto.getCurrentCompletedSemester() == null) {
-            throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.USER_CURRENT_COMPLETE_SEMESTER_DOES_NOT_EXIST);
         }
 
         if (dto.getIsRefunded() && dto.getRefundedAt() == null) {
