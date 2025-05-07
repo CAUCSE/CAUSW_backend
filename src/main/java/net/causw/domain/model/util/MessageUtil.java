@@ -167,9 +167,11 @@ public class MessageUtil {
     public static final String VOTE_NOT_MULTIPLE = "이 투표는 여러 항목을 선택할 수 없습니다.";
     public static final String VOTE_ALREADY_DONE = "해당 투표에 이미 참여한 이력이 있습니다.";
     public static final String VOTE_ALREADY_END = "이미 종료된 투표입니다.";
+    public static final String VOTE_NOT_END = "종료되지 않은 투표입니다.";
 
     public static final String VOTE_NOT_FOUND = "투표가 존재하지 않습니다.";
     public static final String VOTE_END_NOT_ACCESSIBLE = "투표 종료 권한이 존재하지 않습니다.";
+    public static final String VOTE_RESTART_NOT_ACCESSIBLE = "투표 재시작 권한이 존재하지 않습니다.";
     public static final String VOTE_START_NOT_ACCESSIBLE = "투표 시작 권한이 존재하지 않습니다.";
     // 500
     public static final String INTERNAL_SERVER_ERROR = "Internal Server Error";
