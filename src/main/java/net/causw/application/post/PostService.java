@@ -641,21 +641,41 @@ public class PostService {
         post.setIsDeleted(false);
     }
 
+    /**
+     * 게시글 좋아요 메서드
+     * @param user 좋아요 누른 유저
+     * @param postId 좋아요 누른 게시글 아이디
+     */
     @Transactional
     public void likePost(User user, String postId) {
         Post post = getPost(postId);
 
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-        validatorBucket
-                .consistOf(UserStateIsDeletedValidator.of(post.getWriter().getState()))
-                .validate();
+        validateWriterNotDeleted(post);
 
-        if (isPostAlreadyLike(user, postId)) {
+        if (isPostLiked(user, postId)) {
             throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.POST_ALREADY_LIKED);
         }
 
         LikePost likePost = LikePost.of(post, user);
         likePostRepository.save(likePost);
+    }
+
+    /**
+     * 게시글 좋아요 취소 메서드
+     * @param user 좋아요 취소 누른 유저
+     * @param postId 좋아요 취소 누른 게시글 아이디
+     */
+    @Transactional
+    public void cancelLikePost(final User user, final String postId) {
+        Post post = getPost(postId);
+
+        this.validateWriterNotDeleted(post);
+
+        if (!isPostLiked(user, postId)) {
+            throw new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.POST_NOT_LIKED);
+        }
+
+        likePostRepository.deleteLikeByPostIdAndUserId(postId, user.getId());
     }
 
     @Transactional
@@ -723,11 +743,7 @@ public class PostService {
         return PostDtoMapper.INSTANCE.toPostSubscribeResponseDto(subscription);
     }
 
-
-
-
-
-    private Boolean isPostAlreadyLike(User user, String postId) {
+    private Boolean isPostLiked(User user, String postId) {
         return likePostRepository.existsByPostIdAndUserId(postId, user.getId());
     }
 
@@ -942,7 +958,7 @@ public class PostService {
                 postRepository.countAllCommentByPost_Id(post.getId()),
                 getNumOfPostLikes(post),
                 getNumOfPostFavorites(post),
-                isPostAlreadyLike(user, post.getId()),
+                isPostLiked(user, post.getId()),
                 isPostAlreadyFavorite(user, post.getId()),
                 StatusUtil.isPostOwner(post,user),
                 StatusUtil.isUpdatable(post, user, isPostHasComment(post.getId())),
@@ -1152,4 +1168,14 @@ public class PostService {
         return VoteDtoMapper.INSTANCE.toVoteOptionResponseDto(voteOption, voteRecords.size(), userResponseDtos);
     }
 
+    /**
+     * 게시글의 글쓴이가 삭제된 사용자인지 유효성 검사
+     * @param post 게시글
+     */
+    private void validateWriterNotDeleted(final Post post) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+        validatorBucket
+            .consistOf(UserStateIsDeletedValidator.of(post.getWriter().getState()))
+            .validate();
+    }
 }
