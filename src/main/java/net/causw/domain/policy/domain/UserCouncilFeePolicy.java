@@ -1,4 +1,4 @@
-package net.causw.domain.policy;
+package net.causw.domain.policy.domain;
 
 import net.causw.adapter.persistence.semester.Semester;
 import net.causw.adapter.persistence.userCouncilFee.UserCouncilFee;

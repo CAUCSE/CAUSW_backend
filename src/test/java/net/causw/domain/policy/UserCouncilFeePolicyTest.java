@@ -1,8 +1,8 @@
 package net.causw.domain.policy;
 
-import static net.causw.domain.policy.UserCouncilFeePolicy.determineRemainingAppliedSemestersWithUser;
-import static net.causw.domain.policy.UserCouncilFeePolicy.determineStartSemesterToApply;
-import static net.causw.domain.policy.UserCouncilFeePolicy.isAppliedCurrentSemesterWithUser;
+import static net.causw.domain.policy.domain.UserCouncilFeePolicy.determineRemainingAppliedSemestersWithUser;
+import static net.causw.domain.policy.domain.UserCouncilFeePolicy.determineStartSemesterToApply;
+import static net.causw.domain.policy.domain.UserCouncilFeePolicy.isAppliedCurrentSemesterWithUser;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.stream.Stream;

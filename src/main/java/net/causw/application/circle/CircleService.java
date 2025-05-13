@@ -50,7 +50,7 @@ import net.causw.domain.model.enums.user.Role;
 import net.causw.domain.model.enums.user.UserState;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.StaticValue;
-import net.causw.domain.policy.UserCouncilFeePolicy;
+import net.causw.domain.policy.domain.UserCouncilFeePolicy;
 import net.causw.domain.validation.*;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;

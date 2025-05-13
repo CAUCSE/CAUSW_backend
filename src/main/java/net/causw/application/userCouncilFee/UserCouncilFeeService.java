@@ -19,7 +19,7 @@ import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.enums.userCouncilFee.CouncilFeeLogType;
 import net.causw.domain.model.util.MessageUtil;
-import net.causw.domain.policy.UserCouncilFeePolicy;
+import net.causw.domain.policy.domain.UserCouncilFeePolicy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
