@@ -7,18 +7,36 @@ import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
 
 public class UserCouncilFeePolicy {
 
+  /**
+   * 가입한 학생의 잔여 학생회비 적용 학기를 결정합니다
+   *
+   * @param userCouncilFee
+   * @return 잔여 학생회비 적용 학기
+   */
   public static int getRemainingAppliedSemestersWithUser(UserCouncilFee userCouncilFee) {
     return getRemainingAppliedSemesters(
         userCouncilFee,
         userCouncilFee.getUser().getCurrentCompletedSemester());
   }
 
+  /**
+   * 가입하지 않은 학생의 잔여 학생회비 적용 학기를 결정합니다
+   *
+   * @param userCouncilFee
+   * @return 잔여 학생회비 적용 학기
+   */
   public static int getRemainingAppliedSemestersWithFakeUser(UserCouncilFee userCouncilFee) {
     return getRemainingAppliedSemesters(
         userCouncilFee,
         userCouncilFee.getCouncilFeeFakeUser().getCurrentCompletedSemester());
   }
 
+  /**
+   * 가입한 학생의 현재 학기의 학생회비 적용 여부를 결정합니다
+   *
+   * @param userCouncilFee
+   * @return 현재 학기의 학생회비 적용 여부
+   */
   public static boolean isAppliedCurrentSemesterWithUser(UserCouncilFee userCouncilFee) {
     return isAppliedCurrentSemester(
         userCouncilFee,
@@ -26,6 +44,12 @@ public class UserCouncilFeePolicy {
     );
   }
 
+  /**
+   * 가입하지 않은 학생의 현재 학기의 학생회비 적용 여부를 결정합니다
+   *
+   * @param userCouncilFee
+   * @return 현재 학기의 학생회비 적용 여부
+   */
   public static boolean isAppliedCurrentSemesterWithFakeUser(UserCouncilFee userCouncilFee) {
     return isAppliedCurrentSemester(
         userCouncilFee,
