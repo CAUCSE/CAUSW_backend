@@ -117,7 +117,7 @@ public class UserCouncilFeeService {
         }
 
         Semester currentSemester = semesterService.getCurrentSemesterEntity();
-        int paidAt = UserCouncilFeePolicy.determineStartSemesterToApply(
+        int paidAt = UserCouncilFeePolicy.getStartSemesterToApply(
             currentSemester,
             targetUser.getCurrentCompletedSemester(),
             targetUser.getAcademicStatus()
@@ -160,7 +160,7 @@ public class UserCouncilFeeService {
         );
 
         Semester currentSemester = semesterService.getCurrentSemesterEntity();
-        int paidAt = UserCouncilFeePolicy.determineStartSemesterToApply(
+        int paidAt = UserCouncilFeePolicy.getStartSemesterToApply(
             currentSemester,
             councilFeeFakeUser.getCurrentCompletedSemester(),
             councilFeeFakeUser.getAcademicStatus()
@@ -295,7 +295,7 @@ public class UserCouncilFeeService {
 
         return toCurrentUserCouncilFeeResponseDto(
             userCouncilFee,
-            UserCouncilFeePolicy.determineRemainingAppliedSemestersWithUser(userCouncilFee),
+            UserCouncilFeePolicy.getRemainingAppliedSemestersWithUser(userCouncilFee),
             UserCouncilFeePolicy.isAppliedCurrentSemesterWithUser(userCouncilFee));
     }
 
@@ -312,7 +312,7 @@ public class UserCouncilFeeService {
                 userCouncilFee,
                 currentSemester,
                 userCouncilFee.getUser(),
-                UserCouncilFeePolicy.determineRemainingAppliedSemestersWithUser(userCouncilFee),
+                UserCouncilFeePolicy.getRemainingAppliedSemestersWithUser(userCouncilFee),
                 UserCouncilFeePolicy.isAppliedCurrentSemesterWithUser(userCouncilFee)
             );
         } else {
@@ -322,7 +322,7 @@ public class UserCouncilFeeService {
                 userCouncilFee,
                 currentSemester,
                 userCouncilFee.getCouncilFeeFakeUser(),
-                UserCouncilFeePolicy.determineRemainingAppliedSemestersWithFakeUser(userCouncilFee),
+                UserCouncilFeePolicy.getRemainingAppliedSemestersWithFakeUser(userCouncilFee),
                 UserCouncilFeePolicy.isAppliedCurrentSemesterWithFakeUser(userCouncilFee)
             );
         }
@@ -354,14 +354,14 @@ public class UserCouncilFeeService {
             return UserCouncilFeeDtoMapper.INSTANCE.toUserCouncilFeeResponseDto(
                 userCouncilFee,
                 userCouncilFee.getUser(),
-                UserCouncilFeePolicy.determineRemainingAppliedSemestersWithUser(userCouncilFee),
+                UserCouncilFeePolicy.getRemainingAppliedSemestersWithUser(userCouncilFee),
                 UserCouncilFeePolicy.isAppliedCurrentSemesterWithUser(userCouncilFee)
             );
         } else {
             return UserCouncilFeeDtoMapper.INSTANCE.toUserCouncilFeeResponseDtoReduced(
                 userCouncilFee,
                 userCouncilFee.getCouncilFeeFakeUser(),
-                UserCouncilFeePolicy.determineRemainingAppliedSemestersWithFakeUser(userCouncilFee),
+                UserCouncilFeePolicy.getRemainingAppliedSemestersWithFakeUser(userCouncilFee),
                 UserCouncilFeePolicy.isAppliedCurrentSemesterWithFakeUser(userCouncilFee)
             );
         }

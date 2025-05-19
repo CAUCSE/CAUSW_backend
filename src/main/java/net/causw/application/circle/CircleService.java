@@ -1282,7 +1282,7 @@ public class CircleService {
                             return this.toExportCircleMemberToExcelResponseDto(
                                     srcUser,
                                     userCouncilFee,
-                                    UserCouncilFeePolicy.determineRemainingAppliedSemestersWithUser(userCouncilFee),
+                                    UserCouncilFeePolicy.getRemainingAppliedSemestersWithUser(userCouncilFee),
                                     UserCouncilFeePolicy.isAppliedCurrentSemesterWithUser(userCouncilFee)
                             );
                         }

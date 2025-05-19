@@ -621,7 +621,7 @@ public class FormService {
         }
 
         Boolean isAppliedThisSemester = UserCouncilFeePolicy.isAppliedCurrentSemesterWithUser(userCouncilFee);
-        Integer restOfSemester = UserCouncilFeePolicy.determineRemainingAppliedSemestersWithUser(userCouncilFee);
+        Integer restOfSemester = UserCouncilFeePolicy.getRemainingAppliedSemestersWithUser(userCouncilFee);
 
         return FormDtoMapper.INSTANCE.toReplyUserResponseDto(user, userCouncilFee, isAppliedThisSemester, restOfSemester);
     }

@@ -7,14 +7,14 @@ import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
 
 public class UserCouncilFeePolicy {
 
-  public static int determineRemainingAppliedSemestersWithUser(UserCouncilFee userCouncilFee) {
-    return determineRemainingAppliedSemesters(
+  public static int getRemainingAppliedSemestersWithUser(UserCouncilFee userCouncilFee) {
+    return getRemainingAppliedSemesters(
         userCouncilFee,
         userCouncilFee.getUser().getCurrentCompletedSemester());
   }
 
-  public static int determineRemainingAppliedSemestersWithFakeUser(UserCouncilFee userCouncilFee) {
-    return determineRemainingAppliedSemesters(
+  public static int getRemainingAppliedSemestersWithFakeUser(UserCouncilFee userCouncilFee) {
+    return getRemainingAppliedSemesters(
         userCouncilFee,
         userCouncilFee.getCouncilFeeFakeUser().getCurrentCompletedSemester());
   }
@@ -44,7 +44,7 @@ public class UserCouncilFeePolicy {
    * @param currentAcademicStatus
    * @return 학생회비 적용 시작 학기
    */
-  public static int determineStartSemesterToApply(
+  public static int getStartSemesterToApply(
       Semester currentSemester,
       Integer currentCompletedSemester, AcademicStatus currentAcademicStatus
   ) {
@@ -69,7 +69,7 @@ public class UserCouncilFeePolicy {
    * @param currentCompletedSemester
    * @return 잔여 학생회비 적용 학기
    */
-  private static int determineRemainingAppliedSemesters(UserCouncilFee userCouncilFee, Integer currentCompletedSemester) {
+  private static int getRemainingAppliedSemesters(UserCouncilFee userCouncilFee, Integer currentCompletedSemester) {
     if (userCouncilFee.getIsRefunded()) {
       return 0;
     }

@@ -1,7 +1,7 @@
 package net.causw.domain.policy;
 
-import static net.causw.domain.policy.domain.UserCouncilFeePolicy.determineRemainingAppliedSemestersWithUser;
-import static net.causw.domain.policy.domain.UserCouncilFeePolicy.determineStartSemesterToApply;
+import static net.causw.domain.policy.domain.UserCouncilFeePolicy.getRemainingAppliedSemestersWithUser;
+import static net.causw.domain.policy.domain.UserCouncilFeePolicy.getStartSemesterToApply;
 import static net.causw.domain.policy.domain.UserCouncilFeePolicy.isAppliedCurrentSemesterWithUser;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -54,7 +54,7 @@ public class UserCouncilFeePolicyTest {
       user.setAcademicStatus(academicStatus);
 
       //when
-      int actualSemester = determineStartSemesterToApply(
+      int actualSemester = getStartSemesterToApply(
           currentSemester, user.getCurrentCompletedSemester(), user.getAcademicStatus());
 
       //then
@@ -97,7 +97,7 @@ public class UserCouncilFeePolicyTest {
     @MethodSource("provideRemainingAppliedSemestersCases")
     void test(String description, UserCouncilFee userCouncilFee, int expectedSemester){
       //given & when
-      int actualSemester = determineRemainingAppliedSemestersWithUser(userCouncilFee);
+      int actualSemester = getRemainingAppliedSemestersWithUser(userCouncilFee);
 
       //then
       assertThat(actualSemester).isEqualTo(expectedSemester);
