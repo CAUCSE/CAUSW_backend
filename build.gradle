@@ -94,6 +94,9 @@ dependencies {
 
     //FCM
     implementation 'com.google.firebase:firebase-admin:9.2.0'
+
+    //Flyway
+    implementation 'org.flywaydb:flyway-mysql'
 }
 
 test {
@@ -110,3 +113,6 @@ test {
         }
     }
 }
+
+//Flyway Task
+apply from: 'gradle/tasks/flywayCreate.gradle'
