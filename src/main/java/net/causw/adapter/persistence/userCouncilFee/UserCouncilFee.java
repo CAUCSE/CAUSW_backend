@@ -74,4 +74,8 @@ public class UserCouncilFee extends BaseEntity {
                 .build();
     }
 
+    public Integer getCurrentCompletedSemester() {
+        return user != null ?
+            user.getCurrentCompletedSemester() : councilFeeFakeUser.getCurrentCompletedSemester();
+    }
 }
