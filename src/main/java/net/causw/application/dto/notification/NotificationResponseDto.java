@@ -28,6 +28,9 @@ public class NotificationResponseDto {
     @Schema(description = "조회할 게시글 id(경조사 or 게시글)", example = "uuid 형식의 String 값입니다")
     private String targetId;
 
+    @Schema(description = "조회할 타겟의 부모 id(게시글의 경우 게시판)", example = "uuid 형식의 String 값입니다")
+    private String targetParentId;
+
     @Schema(description = "알람 확인 여부", example = "true/false")
     private Boolean isRead;
 
