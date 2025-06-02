@@ -59,7 +59,7 @@ public class CommentNotificationService implements NotificationService{
         List<UserCommentSubscribe> userCommentSubscribeList = userCommentSubscribeRepository.findByCommentAndIsSubscribedTrue(comment);
         CommentNotificationDto commentNotificationDto = CommentNotificationDto.of(comment, childComment);
 
-        Notification notification = Notification.of(childComment.getWriter(), commentNotificationDto.getTitle(), commentNotificationDto.getBody(), NoticeType.COMMENT, comment.getPost().getId());
+        Notification notification = Notification.of(childComment.getWriter(), commentNotificationDto.getTitle(), commentNotificationDto.getBody(), NoticeType.COMMENT, comment.getPost().getId(), comment.getPost().getBoard().getId());
 
         saveNotification(notification);
 

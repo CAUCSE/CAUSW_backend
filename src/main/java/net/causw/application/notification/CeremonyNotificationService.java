@@ -59,7 +59,7 @@ public class CeremonyNotificationService implements NotificationService {
         List<CeremonyNotificationSetting> ceremonyNotificationSettings = ceremonyNotificationSettingRepository.findByAdmissionYearOrSetAll(admissionYear);
         CeremonyNotificationDto ceremonyNotificationDto = CeremonyNotificationDto.of(ceremony);
 
-        Notification notification = Notification.of(ceremony.getUser(), ceremonyNotificationDto.getTitle(), ceremonyNotificationDto.getBody(), NoticeType.CEREMONY, ceremony.getId());
+        Notification notification = Notification.of(ceremony.getUser(), ceremonyNotificationDto.getTitle(), ceremonyNotificationDto.getBody(), NoticeType.CEREMONY, ceremony.getId(), null);
 
         saveNotification(notification);
 
