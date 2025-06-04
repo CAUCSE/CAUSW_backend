@@ -1,5 +1,6 @@
 package net.causw.adapter.persistence.repository.post;
 
+import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.form.Form;
 import net.causw.adapter.persistence.post.Post;
 import org.springframework.data.domain.Page;
@@ -66,4 +67,6 @@ public interface PostRepository extends JpaRepository<Post, String> {
     }
 
     Optional<Post> findByForm(Form form);
+
+    boolean existsByBoardAndContentContains(Board board, String contentSubstring);
 }

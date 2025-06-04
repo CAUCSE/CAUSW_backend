@@ -22,4 +22,6 @@ public interface BoardRepository extends JpaRepository<Board, String> {
     Optional<Board> findAppNotice();
 
     Boolean existsByName(String name);
+
+    Optional<Board> findByName(String name);
 }
