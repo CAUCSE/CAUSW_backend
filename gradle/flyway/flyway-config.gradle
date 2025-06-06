@@ -1,0 +1,38 @@
+// flyway-config.gradle
+
+// 1. .env 파일 파싱
+def loadEnvFile(String path = '.env') {
+    def envFile = file(path)
+    if (envFile.exists()) {
+        envFile.eachLine { line ->
+            if (!line || line.startsWith('#')) return
+            def (key, value) = line.split('=', 2)
+            if (key && value) {
+                project.ext.set(key.trim(), value.trim())
+            }
+        }
+    }
+}
+
+loadEnvFile('.env')
+
+// 2. project.ext에서 환경변수 조회
+def dbUrlKey = "LOCAL_DB_URL"
+def dbUsernameKey = "LOCAL_DB_USERNAME"
+def dbPasswordKey = "LOCAL_DB_PASSWORD"
+
+def dbUrl = project.hasProperty(dbUrlKey) ? project.ext.get(dbUrlKey) : null
+def dbUsername = project.hasProperty(dbUsernameKey) ? project.ext.get(dbUsernameKey) : null
+def dbPassword = project.hasProperty(dbPasswordKey) ? project.ext.get(dbPasswordKey) : null
+
+if (!dbUrl || !dbUsername || !dbPassword) {
+    throw new GradleException("Missing DB config for profile 'local': Check your .env file.")
+}
+
+// 3. Flyway 설정
+flyway {
+    url = dbUrl
+    user = dbUsername
+    password = dbPassword
+    locations = ["filesystem:src/main/resources/db/migration"]
+}

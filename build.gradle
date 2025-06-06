@@ -61,7 +61,6 @@ dependencies {
     // Swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2'
 
-
     // Spock test
     testImplementation "org.spockframework:spock-core:1.2-groovy-2.4"
     testImplementation "org.spockframework:spock-spring:1.2-groovy-2.4"
@@ -124,5 +123,6 @@ test {
     }
 }
 
-//Flyway Task
-apply from: 'gradle/tasks/flywayCreate.gradle'
+// Flyway
+apply from: 'gradle/flyway/flyway-config.gradle'
+apply from: 'gradle/flyway/flyway-task.gradle'
