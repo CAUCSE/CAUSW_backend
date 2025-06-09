@@ -123,7 +123,6 @@ test {
     }
 }
 
-if (file('.env').exists()) {
-    apply from: 'gradle/flyway/flyway-config.gradle'
-    apply from: 'gradle/flyway/flyway-task.gradle'
-}
+// Custom Flyway configuration and tasks
+apply from: 'gradle/flyway/flyway-config.gradle'
+apply from: 'gradle/flyway/flyway-task.gradle'
