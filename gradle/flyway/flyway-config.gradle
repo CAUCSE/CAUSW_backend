@@ -1,7 +1,7 @@
 // flyway-config.gradle
 
 // .env.* 파일이 없는 경우 Flyway 설정 생략
-def hasAnyEnv = file('.').listFiles()?.any { it.name == '.env' || it.name.matches(/\.env\..+/) }
+def hasAnyEnv = file('.').listFiles()?.any { it.name.matches(/\.env\..+/) }
 
 if (!hasAnyEnv) {
     logger.lifecycle(".env.* 파일이 존재하지 않아 flyway 플러그인 설정을 생략합니다.")
@@ -11,7 +11,7 @@ if (!hasAnyEnv) {
 // 1. 프로필 지정
 def env = project.hasProperty('env') ? project.property('env') : 'local'
 
-// 2. .env.local 파일 파싱
+// 2. .env.{env} 파일 파싱
 def loadEnvFile(String env) {
     def envFile = file(".env.${env}")
     if (!envFile.exists()) {
