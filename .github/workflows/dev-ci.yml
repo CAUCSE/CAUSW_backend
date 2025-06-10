@@ -76,11 +76,7 @@ jobs:
           sleep 30
 
       - name: Run Flyway migration
-        run: ./gradlew flywayMigrate \
-          -DDB_URL=jdbc:mysql://localhost:3306/test_db \
-          -DDB_USERNAME=root \
-          -DDB_PASSWORD=root \
-          -Denv=ci
+        run: ./gradlew flywayMigrate -DDB_URL=jdbc:mysql://localhost:3306/test_db -DDB_USERNAME=root -DDB_PASSWORD=root
 
       - name: Gradle Build
         run: ./gradlew build
