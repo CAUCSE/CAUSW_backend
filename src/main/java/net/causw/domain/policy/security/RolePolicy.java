@@ -1,4 +1,4 @@
-package net.causw.domain.policy;
+package net.causw.domain.policy.security;
 
 import net.causw.domain.model.enums.user.Role;
 import net.causw.domain.model.enums.user.RoleGroup;

@@ -1,4 +1,4 @@
-package net.causw.domain.policy;
+package net.causw.domain.policy.security;
 
 import net.causw.adapter.persistence.user.User;
 import net.causw.config.security.userdetails.CustomUserDetails;
