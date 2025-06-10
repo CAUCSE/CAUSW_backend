@@ -1,0 +1,37 @@
+// flyway-config.gradle
+
+// 1. 환경 프로필 지정
+def env = project.hasProperty('env') ? project.property('env') : 'local'
+
+// 2. .env.{env} 존재 시 파싱하여 project.ext 설정
+def envFile = file(".env.${env}")
+if (envFile.exists()) {
+    logger.lifecycle(".env.${env} 파일을 로드합니다.")
+    envFile.eachLine { line ->
+        def trimmedLine = line.trim()
+        if (!trimmedLine || trimmedLine.startsWith('#')) return
+
+        def (key, value) = line.split('=', 2)
+        if (key && value) {
+            project.ext.set(key.trim(), value.trim())
+        }
+    }
+}
+
+// 3. 환경변수 설정: project.ext → systemProperty → 생략
+def dbUrl = project.hasProperty("DB_URL") ? project.property("DB_URL") : System.getProperty("DB_URL")
+def dbUsername = project.hasProperty("DB_USERNAME") ? project.property("DB_USERNAME") : System.getProperty("DB_USERNAME")
+def dbPassword = project.hasProperty("DB_PASSWORD") ? project.property("DB_PASSWORD") : System.getProperty("DB_PASSWORD")
+
+if (!dbUrl || !dbUsername || !dbPassword) {
+    logger.lifecycle("DB 설정값이 누락되어 flyway 설정이 불가능합니다.")
+    return
+}
+
+// 4. Flyway 설정
+flyway {
+    url = dbUrl
+    user = dbUsername
+    password = dbPassword
+    locations = ["filesystem:src/main/resources/db/migration"]
+}
