@@ -64,3 +64,12 @@ jobs:
         if: always()
         with:
           report_paths: ./build/test-results/test/TEST-*.xml
+
+      # Flyway 마이그레이션 테스트
+      - name: Start MySQL container
+        run: |
+          docker run --name test-mysql -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=test_db -p 3306:3306 -d mysql:8
+          sleep 30 # DB 대기
+
+      - name: Run Flyway migration (test DB)
+        run: ./gradlew flywayMigrate -Dspring.datasource.url=jdbc:mysql://localhost:3306/test_db -Dspring.datasource.username=root -Dspring.datasource.password=root
