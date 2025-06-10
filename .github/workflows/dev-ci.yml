@@ -72,4 +72,8 @@ jobs:
           sleep 30 # DB 대기
 
       - name: Run Flyway migration (test DB)
-        run: ./gradlew flywayMigrate -Dspring.datasource.url=jdbc:mysql://localhost:3306/test_db -Dspring.datasource.username=root -Dspring.datasource.password=root
+        run: |
+          ./gradlew flywayMigrate \
+            -DDB_URL=jdbc:mysql://localhost:3306/test_db \
+            -DDB_USERNAME=root \
+            -DDB_PASSWORD=root
