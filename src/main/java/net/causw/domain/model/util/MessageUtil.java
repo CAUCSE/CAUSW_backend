@@ -15,6 +15,9 @@ public class MessageUtil {
     public static final String DOES_NOT_HAVE_PERMISSION = "권한이 없습니다.";
     public static final String INVALID_USER_DATA_REQUEST = "유저의 가입 및 수정 정보가 유효하지 않습니다.";
 
+    // Security
+    public static final String ACCESS_DENIED = "접근이 거부되었습니다.";
+
     // Form
     public static final String IS_NEED_COUNCIL_FEE_REQUIRED = "학생회비 납부 여부를 선택해 주세요.";
     public static final String INVALID_REGISTERED_SEMESTER_INFO = "재학/휴학생 답변 가능을 선택했다면 답변할 수 있는 등록 완료 학기에 대한 정보가 필요합니다.";
