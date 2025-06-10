@@ -47,7 +47,7 @@ public class SecurityRuleBuilder {
 
     private void applyRules(List<SecurityRule> rules) {
         for (SecurityRule rule : rules) {
-            registry.requestMatchers(rule.endpoints().getFirst()).access(rule.authorizationManager());
+            registry.requestMatchers(rule.endpoints().get(0)).access(rule.authorizationManager());
         }
     }
 
