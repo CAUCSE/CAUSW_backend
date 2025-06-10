@@ -68,12 +68,28 @@ jobs:
       # Flyway 마이그레이션 테스트
       - name: Start MySQL container
         run: |
-          docker run --name test-mysql -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=test_db -p 3306:3306 -d mysql:8
-          sleep 30 # DB 대기
+          docker run --name test-mysql \
+            -e MYSQL_ROOT_PASSWORD=root \
+            -e MYSQL_DATABASE=test_db \
+            -p 3306:3306 \
+            -d mysql:8
+          sleep 30
 
-      - name: Run Flyway migration (test DB)
+      - name: Run Flyway migration
+        run: ./gradlew flywayMigrate \
+          -DDB_URL=jdbc:mysql://localhost:3306/test_db \
+          -DDB_USERNAME=root \
+          -DDB_PASSWORD=root \
+          -Denv=ci
+
+      - name: Gradle Build
+        run: ./gradlew build
+
+      - name: Validate schema
         run: |
-          ./gradlew flywayMigrate \
-            -DDB_URL=jdbc:mysql://localhost:3306/test_db \
-            -DDB_USERNAME=root \
-            -DDB_PASSWORD=root
+          java -Dspring.profiles.active=dev \
+               -Dspring.datasource.url=jdbc:mysql://localhost:3306/test_db \
+               -Dspring.datasource.username=root \
+               -Dspring.datasource.password=root \
+               -Dspring.jpa.hibernate.ddl-auto=validate \
+               -jar build/libs/CAUSW_backend-0.0.1-SNAPSHOT.jar

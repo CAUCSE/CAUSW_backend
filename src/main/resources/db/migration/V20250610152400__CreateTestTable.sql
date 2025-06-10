@@ -1,0 +1,5 @@
+-- Migration: CreateTestTable
+
+CREATE TABLE IF NOT EXISTS test (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY
+);

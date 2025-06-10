@@ -5,6 +5,9 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
+!**/src/main/resources/db/migration/
+!**/src/main/resources/db/migration/**
+
 lib
 
 ### STS ###
