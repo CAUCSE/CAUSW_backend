@@ -1099,6 +1099,7 @@ CREATE TABLE IF NOT EXISTS `tb_notification` (
     `body` VARCHAR(255) NULL DEFAULT NULL,
     `title` VARCHAR(255) NULL DEFAULT NULL,
     `target_id` VARCHAR(255) NULL DEFAULT NULL,
+    `target_parent_id` VARCHAR(255) NULL DEFAULT NULL, #삭제
     PRIMARY KEY (`id`),
     INDEX `FK9ihj3k9lv33u6qd10wq18f482` (`user_id` ASC) VISIBLE,
     CONSTRAINT `FK9ihj3k9lv33u6qd10wq18f482`
