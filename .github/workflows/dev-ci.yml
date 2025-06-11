@@ -69,7 +69,6 @@ jobs:
       - name: Run Flyway migration
         run: |
           ./gradlew flywayMigrate \
-            -Dflyway.experimental.nativeConnectors=false \
             -DDB_URL=jdbc:mysql://localhost:3306/causw_test \
             -DDB_USERNAME=root \
             -DDB_PASSWORD=password
