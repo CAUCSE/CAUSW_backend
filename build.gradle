@@ -111,6 +111,8 @@ dependencies {
 test {
     useJUnitPlatform()
 
+    exclude '**/*JpaSchemaValidationTest.class'
+
     testLogging {
         showStandardStreams = true
         events = ["passed", "skipped", "failed"]

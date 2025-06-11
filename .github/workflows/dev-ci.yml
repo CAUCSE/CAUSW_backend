@@ -31,15 +31,19 @@ jobs:
         env:
           APPLICATION_FILE: ${{ secrets.APPLICATION_PROFILE_DEV }}
           APPLICATION_DEV_FILE: ${{ secrets.APPLICATION_DEV }}
+          APPLICATION_TEST_FILE: ${{ secrets.APPLICATION_PROFILE_TEST }}
+
           DIR: ./src/main/resources
 
           APPLICATION_FILE_NAME: application.yml
           APPLICATION_DEV_FILE_NAME: application-dev.yml
+          APPLICATION_TEST_FILE_NAME: application-test.yml
         run: |
           touch $DIR/$APPLICATION_FILE_NAME
           touch $DIR/$APPLICATION_DEV_FILE_NAME
           echo "$APPLICATION_FILE" > $DIR/$APPLICATION_FILE_NAME
           echo "$APPLICATION_DEV_FILE" > $DIR/$APPLICATION_DEV_FILE_NAME
+          echo "$APPLICATION_TEST_FILE" > $DIR/$APPLICATION_TEST_FILE_NAME
 
       # gradlew 실행 권한 부여
       - name: Run chmod to make gradlew executable
@@ -49,6 +53,16 @@ jobs:
       # 테스트 실행
       - name: Test with Gradle
         run: ./gradlew test
+        shell: bash
+
+      # Flyway 마이그레이션 테스트 DB에 적용
+      - name: Flyway migration test
+        run: ./gradlew flywayMigrate -Dspring.profiles.active=test
+        shell: bash
+
+      # JPA 엔티티와 DB 스키마 일치 검증
+      - name: Validate JPA entity and DB schema
+        run: ./gradlew test --tests '*JpaSchemaValidationTest' -Dspring.profiles.active=test
         shell: bash
 
       # 테스트 결과 출력
@@ -64,28 +78,3 @@ jobs:
         if: always()
         with:
           report_paths: ./build/test-results/test/TEST-*.xml
-
-      # Flyway 마이그레이션 테스트
-      - name: Start MySQL container
-        run: |
-          docker run --name test-mysql \
-            -e MYSQL_ROOT_PASSWORD=root \
-            -e MYSQL_DATABASE=test_db \
-            -p 3306:3306 \
-            -d mysql:8
-          sleep 30
-
-      - name: Run Flyway migration
-        run: ./gradlew flywayMigrate -DDB_URL=jdbc:mysql://localhost:3306/test_db -DDB_USERNAME=root -DDB_PASSWORD=root
-
-      - name: Gradle Build
-        run: ./gradlew build
-
-      - name: Validate schema
-        run: |
-          java -Dspring.profiles.active=dev \
-               -Dspring.datasource.url=jdbc:mysql://localhost:3306/test_db \
-               -Dspring.datasource.username=root \
-               -Dspring.datasource.password=root \
-               -Dspring.jpa.hibernate.ddl-auto=validate \
-               -jar build/libs/CAUSW_backend-0.0.1-SNAPSHOT.jar
