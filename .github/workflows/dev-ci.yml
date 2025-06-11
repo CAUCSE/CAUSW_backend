@@ -59,7 +59,7 @@ jobs:
       - name: Start MySQL container
         run: |
           docker run --name test-mysql \
-            -e MYSQL_ROOT_PASSWORD=root \
+            -e MYSQL_ROOT_PASSWORD=password \
             -e MYSQL_DATABASE=causw_test \
             -p 3306:3306 \
             -d mysql:8
