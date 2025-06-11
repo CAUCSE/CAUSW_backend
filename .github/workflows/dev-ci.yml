@@ -57,7 +57,7 @@ jobs:
 
       # Flyway 마이그레이션 및 JPA 엔티티와 DB 스키마 일치 검증
       - name: Validate JPA entity and DB schema
-        run: ./gradlew test --tests '*JpaSchemaValidationTest' -Dspring.profiles.active=test
+        run: ./gradlew entitySchemaValidationTest -Dspring.profiles.active=test
         shell: bash
 
       # 테스트 결과 출력

@@ -128,3 +128,6 @@ test {
 // Custom Flyway configuration and tasks
 apply from: 'gradle/flyway/flyway-config.gradle'
 apply from: 'gradle/flyway/flyway-task.gradle'
+
+// Custom test
+apply from: 'gradle/test/entity-schema-validation.gradle'

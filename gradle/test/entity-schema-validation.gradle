@@ -1,0 +1,6 @@
+tasks.register('entitySchemaValidationTest', Test) {
+    useJUnitPlatform()
+    include '**/*EntitySchemaValidationTest.class'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+}
