@@ -3,12 +3,4 @@ tasks.register('entitySchemaValidationTest', Test) {
     include '**/*EntitySchemaValidationTest.class'
     testClassesDirs = sourceSets.test.output.classesDirs
     classpath = sourceSets.test.runtimeClasspath
-
-    testLogging {
-        events "passed", "skipped", "failed"
-        exceptionFormat "full"
-        showExceptions true
-        showCauses true
-        showStackTraces true
-    }
 }
