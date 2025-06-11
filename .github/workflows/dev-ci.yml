@@ -81,7 +81,7 @@ jobs:
       # 테스트 실패 시 리포트 업로드
       - name: Upload JPA schema validation test report if failed
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: entity-schema-validation-report
           path: build/reports/tests/entitySchemaValidationTest/
