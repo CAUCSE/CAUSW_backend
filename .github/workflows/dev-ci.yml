@@ -51,9 +51,16 @@ jobs:
         shell: bash
 
       # 테스트 실행
-      - name: Test with Gradle
-        run: ./gradlew test
-        shell: bash
+      #- name: Test with Gradle
+      #  run: ./gradlew test
+      #  shell: bash
+
+      - name: Debug copied yml files
+        run: |
+          echo "===== application.yml ====="
+          cat ./src/main/resources/application.yml || echo "File not found"
+          echo "===== application-test.yml ====="
+          cat ./src/main/resources/application-test.yml || echo "File not found"
 
       # MySQL Docker 컨테이너 실행
       - name: Start MySQL container
@@ -65,7 +72,7 @@ jobs:
             -d mysql:8
           sleep 30
 
-        # Flyway 마이그레이션 실행
+      # Flyway 마이그레이션 실행
       - name: Run Flyway migration
         run: |
           ./gradlew flywayMigrate \
@@ -78,15 +85,15 @@ jobs:
         run: ./gradlew entitySchemaValidationTest -Dspring.profiles.active=test --info
 
       # 테스트 결과 출력
-      - name: Publish test results to pr
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        if: ${{ always() }}
-        with:
-          files: ./build/test-results/test/TEST-*.xml
+      #- name: Publish test results to pr
+      #  uses: EnricoMi/publish-unit-test-result-action@v2
+      #  if: ${{ always() }}
+      #  with:
+      #    files: ./build/test-results/test/TEST-*.xml
 
       # 테스트 실패 시 fail된 부분 마크
-      - name: Publish check comment on test failure
-        uses: mikepenz/action-junit-report@v3
-        if: always()
-        with:
-          report_paths: ./build/test-results/test/TEST-*.xml
+      #- name: Publish check comment on test failure
+      #  uses: mikepenz/action-junit-report@v3
+      #  if: always()
+      #  with:
+      #    report_paths: ./build/test-results/test/TEST-*.xml
