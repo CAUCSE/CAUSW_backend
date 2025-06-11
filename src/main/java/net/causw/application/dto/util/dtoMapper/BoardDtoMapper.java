@@ -45,6 +45,11 @@ public interface BoardDtoMapper {
 
     @Mapping(target = "writable", source = "writable")
     @Mapping(target = "postNumComment", source = "numComment")
+    @Mapping(target = "postId", ignore = true)
+    @Mapping(target = "postTitle", ignore = true)
+    @Mapping(target = "postWriterName", ignore = true)
+    @Mapping(target = "postWriterStudentId", ignore = true)
+    @Mapping(target = "postCreatedAt", ignore = true)
     BoardOfCircleResponseDto toBoardOfCircleResponseDto(Board entity, Long numComment, boolean writable);
 
     @Mapping(target = "id", source = "boardApply.id")

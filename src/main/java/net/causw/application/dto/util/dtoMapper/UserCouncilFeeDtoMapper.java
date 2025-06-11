@@ -29,6 +29,7 @@ public interface UserCouncilFeeDtoMapper {
     @Mapping(target = "userId", source = "user.id")
     @Mapping(target = "userName", source = "user.name")
     @Mapping(target = "studentId", source = "user.studentId")
+    @Mapping(target = "councilFeeFakeUserId", ignore = true)
     UserCouncilFeeListResponseDto toUserCouncilFeeListResponseDto(UserCouncilFee userCouncilFee, User user);
 
     @Mapping(target = "userCouncilFeeId", source = "userCouncilFee.id")
@@ -36,6 +37,7 @@ public interface UserCouncilFeeDtoMapper {
     @Mapping(target = "councilFeeFakeUserId", source = "councilFeeFakeUser.id")
     @Mapping(target = "userName", source = "councilFeeFakeUser.name")
     @Mapping(target = "studentId", source = "councilFeeFakeUser.studentId")
+    @Mapping(target = "userId", ignore = true)
     UserCouncilFeeListResponseDto toUserCouncilFeeListResponseDtoReduced(UserCouncilFee userCouncilFee, CouncilFeeFakeUser councilFeeFakeUser);
 
     @Mapping(target = "userCouncilFeeId", source = "userCouncilFee.id")
@@ -59,6 +61,7 @@ public interface UserCouncilFeeDtoMapper {
     @Mapping(target = "refundedAt", source = "userCouncilFee.refundedAt")
     @Mapping(target = "restOfSemester", source = "restOfSemester")
     @Mapping(target = "isAppliedThisSemester", source = "isAppliedThisSemester")
+    @Mapping(target = "councilFeeFakeUserId", ignore = true)
     UserCouncilFeeResponseDto toUserCouncilFeeResponseDto(UserCouncilFee userCouncilFee, User user, Integer restOfSemester, Boolean isAppliedThisSemester);
 
     @Mapping(target = "userCouncilFeeId", source = "userCouncilFee.id")
@@ -79,6 +82,10 @@ public interface UserCouncilFeeDtoMapper {
     @Mapping(target = "refundedAt", source = "userCouncilFee.refundedAt")
     @Mapping(target = "restOfSemester", source = "restOfSemester")
     @Mapping(target = "isAppliedThisSemester", source = "isAppliedThisSemester")
+    @Mapping(target = "userId", ignore = true)
+    @Mapping(target = "email", ignore = true)
+    @Mapping(target = "nickname", ignore = true)
+    @Mapping(target = "joinedAt", ignore = true)
     UserCouncilFeeResponseDto toUserCouncilFeeResponseDtoReduced(UserCouncilFee userCouncilFee, CouncilFeeFakeUser councilFeeFakeUser, Integer restOfSemester, Boolean isAppliedThisSemester);
 
     @Mapping(target = "isRefunded", source = "userCouncilFee.isRefunded")

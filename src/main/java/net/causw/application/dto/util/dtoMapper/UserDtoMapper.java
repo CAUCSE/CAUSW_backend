@@ -140,6 +140,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "description", source = "userAdmission.description")
     @Mapping(target = "createdAt", source = "userAdmission.createdAt")
     @Mapping(target = "updatedAt", source = "userAdmission.updatedAt")
+    @Mapping(target = "rejectReason", ignore = true)
     UserAdmissionResponseDto toUserAdmissionResponseDto(UserAdmission userAdmission);
 
     @Mapping(target = "id", source = "userAdmission.id")
@@ -148,6 +149,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "description", source = "userAdmission.description")
     @Mapping(target = "createdAt", source = "userAdmission.createdAt")
     @Mapping(target = "updatedAt", source = "userAdmission.updatedAt")
+    @Mapping(target = "rejectReason", ignore = true)
     UserAdmissionResponseDto toUserAdmissionResponseDto(UserAdmission userAdmission, User user);
 
     @Mapping(target = "id", source = "userAdmissionLog.id")

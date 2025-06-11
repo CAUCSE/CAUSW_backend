@@ -19,12 +19,15 @@ public class CeremonyNotificationSetting extends BaseEntity {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "TB_CEREMONY_SUBSCRIBE_YEAR", joinColumns = @JoinColumn(name = "notification_id"))
     @Column(name = "admission_year")
+    @Builder.Default
     private Set<Integer> subscribedAdmissionYears = new HashSet<>();
 
     @Column(name = "is_notification_active", nullable = false)
+    @Builder.Default
     private boolean isNotificationActive = true;
 
     @Column(name = "is_set_all", nullable = false)
+    @Builder.Default
     private boolean isSetAll = false;
 
     @OneToOne(fetch = FetchType.LAZY)

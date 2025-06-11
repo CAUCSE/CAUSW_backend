@@ -109,6 +109,7 @@ public class User extends BaseEntity {
             joinColumns = @JoinColumn(name = "user_id")
     )
     @Column(name = "fcm_token_value")
+    @Builder.Default
     private Set<String> fcmTokens = new HashSet<>();
 
     //fixme : db에러로 임시 설정

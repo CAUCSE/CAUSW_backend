@@ -36,11 +36,14 @@ public interface CircleDtoMapper extends UuidFileToUrlDtoMapper {
 
     // User
     @Mapping(target = "profileImageUrl", source = "user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
+    @Mapping(target = "circleIdIfLeader", ignore = true)
+    @Mapping(target = "circleNameIfLeader", ignore = true)
     UserResponseDto toUserResponseDto(User user);
 
     // Circle
     @CircleCommonWriterMappings
     @Mapping(target = "mainImage", source = "circle.circleMainImage", qualifiedByName = "mapUuidFileToFileUrl")
+    @Mapping(target = "numMember", ignore = true)
     CircleResponseDto toCircleResponseDto(Circle circle);
 
 
@@ -53,6 +56,7 @@ public interface CircleDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "mainImage", source = "circle.circleMainImage", qualifiedByName = "mapUuidFileToFileUrl")
     @Mapping(target = "isJoined", constant = "false")
     @Mapping(target = "isDeleted", source = "circle.isDeleted")
+    @Mapping(target = "joinedAt", ignore = true)
     CirclesResponseDto toCirclesResponseDto(Circle circle, Long numMember);
 
 
@@ -64,6 +68,12 @@ public interface CircleDtoMapper extends UuidFileToUrlDtoMapper {
 
 
     @Mapping(target = "postNumComment", constant = "0L")
+    @Mapping(target = "writable", ignore = true)
+    @Mapping(target = "postId", ignore = true)
+    @Mapping(target = "postTitle", ignore = true)
+    @Mapping(target = "postWriterName", ignore = true)
+    @Mapping(target = "postWriterStudentId", ignore = true)
+    @Mapping(target = "postCreatedAt", ignore = true)
     BoardOfCircleResponseDto toBoardOfCircleResponseDto(Board board, Boolean writeable);
 
     @Mapping(target = "id", source = "board.id")
@@ -73,6 +83,7 @@ public interface CircleDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "postWriterName", source = "post.writer.name")
     @Mapping(target = "postWriterStudentId", source = "post.writer.studentId")
     @Mapping(target = "postCreatedAt", source = "post.createdAt")
+    @Mapping(target = "writable", ignore = true)
     BoardOfCircleResponseDto toBoardOfCircleResponseDtoExtended(Board board, Boolean writeable, Post post, Long postNumComment);
 
     CircleBoardsResponseDto toCircleBoardsResponseDto(CircleResponseDto circle, List<BoardOfCircleResponseDto> boardList);
@@ -90,6 +101,7 @@ public interface CircleDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "leaderName", source = "leader.name")
     @Mapping(target = "createdAt", source = "circle.createdAt")
     @Mapping(target = "mainImage", source = "circle.circleMainImage", qualifiedByName = "mapUuidFileToFileUrl")
+    @Mapping(target = "numMember", ignore = true)
     CircleResponseDto toCircleResponseDto(Circle circle, User leader);
 
     @Mapping(target = "email", source = "user.email")

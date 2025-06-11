@@ -46,6 +46,7 @@ public class Ceremony extends BaseEntity {
     private LocalDate endDate;
 
     @Column(name = "note", nullable = true)
+    @Builder.Default
     private String note = "";
 
     @Setter(value = AccessLevel.PRIVATE)
