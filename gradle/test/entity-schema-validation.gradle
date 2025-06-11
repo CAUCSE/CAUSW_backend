@@ -1,6 +1,6 @@
 tasks.register('entitySchemaValidationTest', Test) {
     useJUnitPlatform()
-    systemProperty "spring.profiles.active", System.getProperty("spring.profiles.active")
+    systemProperty "spring.profiles.active", "test" // test 프로파일 강제 활성화
     include '**/*EntitySchemaValidationTest.class'
     testClassesDirs = sourceSets.test.output.classesDirs
     classpath = sourceSets.test.runtimeClasspath
