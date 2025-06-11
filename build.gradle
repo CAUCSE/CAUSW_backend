@@ -111,7 +111,7 @@ dependencies {
 test {
     useJUnitPlatform()
 
-    exclude '**/*JpaSchemaValidationTest.class'
+    exclude '**/*EntitySchemaValidationTest.class'
 
     testLogging {
         showStandardStreams = true
