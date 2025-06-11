@@ -82,7 +82,7 @@ jobs:
 
       # JPA 엔티티와 DB 스키마 일치 검증
       - name: Validate schema with JPA
-        run: ./gradlew entitySchemaValidationTest -Dspring.profiles.active=test --scan
+        run: ./gradlew entitySchemaValidationTest -Dspring.profiles.active=test --info
 
       # 테스트 결과 출력
       #- name: Publish test results to pr
