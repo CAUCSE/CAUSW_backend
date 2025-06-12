@@ -75,7 +75,7 @@ jobs:
 
       # JPA 엔티티와 DB 스키마 일치 검증
       - name: 빌드 및 JPA 스키마 검증 실행
-        run: ./gradlew schemaValidationTest -Dspring.profiles.active=test -q --no-daemon
+        run: ./gradlew schemaValidationTest -Dspring.profiles.active=test --console=plain --no-daemon
 
       # 테스트 실패 시 리포트 업로드
       - name: Upload JPA schema validation test report if failed
