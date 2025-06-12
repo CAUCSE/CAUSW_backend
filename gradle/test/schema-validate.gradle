@@ -1,0 +1,12 @@
+tasks.register('schemaValidationTest', Test) {
+    description = 'Run only EntitySchemaValidationTest'
+    group = 'verification'
+
+    useJUnitPlatform()
+
+    // 테스트 클래스 포함 필터 (패키지 경로 기준)
+    include '**/EntitySchemaValidationTest.class'
+
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+}

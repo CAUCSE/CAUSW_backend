@@ -34,12 +34,6 @@ jar {
     enabled = false
 }
 
-
-bootJar {
-    enabled = true
-    mainClass = 'net.causw.CauswApplication'
-}
-
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     /*
@@ -109,6 +103,8 @@ dependencies {
 
 test {
     useJUnitPlatform()
+
+    exclude '**/EntitySchemaValidationTest.class'
 
     testLogging {
         showStandardStreams = true
