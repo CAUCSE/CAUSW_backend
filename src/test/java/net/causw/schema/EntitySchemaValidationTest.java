@@ -7,6 +7,7 @@ import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.service.ServiceRegistry;
 import org.hibernate.tool.schema.internal.ExceptionHandlerLoggedImpl;
 import org.hibernate.tool.schema.spi.ContributableMatcher;
 import org.hibernate.tool.schema.spi.ExceptionHandler;
@@ -32,11 +33,11 @@ public class EntitySchemaValidationTest {
   @Test
   void validateSchema() {
     SessionFactoryImplementor sessionFactory = entityManagerFactory.unwrap(SessionFactoryImplementor.class);
-    StandardServiceRegistry serviceRegistry = (StandardServiceRegistry) sessionFactory.getServiceRegistry();
-
-    Metadata metadata = new MetadataSources(serviceRegistry).buildMetadata();
+    ServiceRegistry serviceRegistry = sessionFactory.getServiceRegistry();
 
     SchemaManagementTool tool = serviceRegistry.getService(SchemaManagementTool.class);
+
+    Metadata metadata = new MetadataSources(serviceRegistry).buildMetadata();
 
     Map<String, Object> configValues = new HashMap<>();
     SchemaValidator schemaValidator = tool.getSchemaValidator(configValues);
