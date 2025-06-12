@@ -5,7 +5,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.ConfigurableApplicationContext;
 
-@EntityScan(basePackages = {"co.dalicious.*"})
 @SpringBootApplication
 public class EntitySchemaValidationTest {
   public static void main(String[] args) {
