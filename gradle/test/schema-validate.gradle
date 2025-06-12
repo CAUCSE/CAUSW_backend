@@ -11,7 +11,7 @@ tasks.register('schemaValidationTest', Test) {
     classpath = sourceSets.test.runtimeClasspath
 
     testLogging {
-        exceptionFormat = 'short'
+        exceptionFormat = 'full'
         showExceptions = true
         showCauses = true
         showStackTraces = false
