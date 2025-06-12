@@ -9,4 +9,11 @@ tasks.register('schemaValidationTest', Test) {
 
     testClassesDirs = sourceSets.test.output.classesDirs
     classpath = sourceSets.test.runtimeClasspath
+
+    testLogging {
+        exceptionFormat = 'short'
+        showExceptions = true
+        showCauses = true
+        showStackTraces = false
+    }
 }
