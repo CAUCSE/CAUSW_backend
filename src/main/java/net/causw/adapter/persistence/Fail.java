@@ -1,5 +1,10 @@
 package net.causw.adapter.persistence;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
@@ -14,9 +19,10 @@ import jakarta.persistence.MappedSuperclass;
 import java.time.LocalDateTime;
 
 @Getter
-@NoArgsConstructor
-@MappedSuperclass
-@EntityListeners(value = {AuditingEntityListener.class})
+@Entity
+@Builder(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Fail {
 
   @Id
