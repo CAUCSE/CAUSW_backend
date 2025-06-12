@@ -104,8 +104,6 @@ dependencies {
 test {
     useJUnitPlatform()
 
-    exclude '**/*EntitySchemaValidationTest.class'
-
     testLogging {
         showStandardStreams = true
         events = ["passed", "skipped", "failed"]
@@ -121,6 +119,3 @@ test {
 // Custom Flyway configuration and tasks
 apply from: 'gradle/flyway/flyway-config.gradle'
 apply from: 'gradle/flyway/flyway-task.gradle'
-
-// Custom test
-apply from: 'gradle/test/entity-schema-validation.gradle'
