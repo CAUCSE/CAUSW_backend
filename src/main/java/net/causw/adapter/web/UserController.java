@@ -364,7 +364,7 @@ public class UserController {
             @Valid @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return this.userService.grantRole(userDetails.getUser(), granteeId, userUpdateRoleRequestDto);
+        return this.userService.grantUserRole(userDetails.getUser(), granteeId, userUpdateRoleRequestDto);
     }
 
     @PutMapping(value = "/{granteeId}/update-role")
@@ -377,7 +377,7 @@ public class UserController {
             @Valid @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return this.userService.updateRole(userDetails.getUser(), grantorId, granteeId, userUpdateRoleRequestDto);
+        return this.userService.updateUserRole(userDetails.getUser(), grantorId, granteeId, userUpdateRoleRequestDto);
     }
 
 

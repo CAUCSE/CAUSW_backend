@@ -735,7 +735,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponseDto grantRole(
+    public UserResponseDto grantUserRole(
             User grantor, // 위임인
             String granteeId, // 피위임인
             UserUpdateRoleRequestDto userUpdateRoleRequestDto
@@ -775,7 +775,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponseDto updateRole(
+    public UserResponseDto updateUserRole(
             User user,
             String grantorId, // 위임인
             String granteeId, // 피위임인
