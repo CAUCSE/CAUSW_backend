@@ -71,6 +71,10 @@ jobs:
             -DDB_URL=jdbc:mysql://localhost:3306/causw_test \
             -DDB_USERNAME=root \
             -DDB_PASSWORD=password
+          ./gradlew flywayInfo \
+            -DDB_URL=jdbc:mysql://localhost:3306/causw_test \
+            -DDB_USERNAME=root \
+            -DDB_PASSWORD=password
 
       # JPA 엔티티와 DB 스키마 일치 검증
       - name: 빌드 및 JPA 스키마 검증 실행
