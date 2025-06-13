@@ -86,3 +86,11 @@ jobs:
       # JPA 엔티티와 DB 스키마 일치 검증
       - name: 빌드 및 JPA 스키마 검증 실행
         run: ./gradlew jpaEntityMappingTest -Dspring.profiles.active=test --console=plain --no-daemon
+
+      # report
+      - name: Upload test report artifact
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jpaEntityMappingTest-report
+          path: build/reports/tests/jpaEntityMappingTest/index.html
