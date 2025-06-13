@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import net.causw.adapter.persistence.post.LikePost;
 import net.causw.adapter.persistence.post.Post;
@@ -229,15 +230,16 @@ class UserServiceTest {
   }
 
   @Nested
-  class GrantRoleTest {
+  class GrantUserRoleTest {
 
     private final User grantor = ObjectFixtures.getUser();
     private final User grantee = ObjectFixtures.getUser();
     private final String granteeId = "dummyGranteeId";
     private static final Set<Role> grantableRoles = GrantableRoleValidator.getGrantableRoles();
 
-    private static Set<Role> getGrantableRoles() {
-      return GrantableRoleValidator.getGrantableRoles();
+    private List<User> generateUsersByRole(Role role) {
+      return Stream.of(ObjectFixtures.getUser(), ObjectFixtures.getUser(), ObjectFixtures.getUser())
+              .peek(user -> user.setRoles(Set.of(role))).collect(Collectors.toList());
     }
 
     private static Set<Role> getNonGrantableRoles() {
@@ -258,16 +260,23 @@ class UserServiceTest {
               .collect(Collectors.toSet());
     }
 
+    private static Set<Role> getGrantableAndUniqueRolesWithoutEdge() {
+      return grantableRoles.stream()
+              .filter(role -> !role.equals(Role.PRESIDENT))
+              .filter(Role::isUnique)
+              .collect(Collectors.toSet());
+    }
+
     void assertServiceSuccess(User grantor, Role targetRole) {
       UserUpdateRoleRequestDto userUpdateRoleRequestDto = new UserUpdateRoleRequestDto(String.valueOf(targetRole));
-      userService.grantRole(grantor, granteeId, userUpdateRoleRequestDto);
+      userService.grantUserRole(grantor, granteeId, userUpdateRoleRequestDto);
       assertThat(grantor.getRoles()).isEqualTo(Set.of(Role.COMMON));
       assertThat(grantee.getRoles()).isEqualTo(Set.of(targetRole));
     }
 
     void assertValidatorFail(User grantor, Role targetRole) {
       UserUpdateRoleRequestDto userUpdateRoleRequestDto = new UserUpdateRoleRequestDto(String.valueOf(targetRole));
-      assertThatThrownBy(() -> userService.grantRole(grantor, granteeId, userUpdateRoleRequestDto))
+      assertThatThrownBy(() -> userService.grantUserRole(grantor, granteeId, userUpdateRoleRequestDto))
               .isInstanceOf(UnauthorizedException.class)
               .hasMessageContaining(MessageUtil.GRANT_ROLE_NOT_ALLOWED)
               .extracting("errorCode")
@@ -278,18 +287,6 @@ class UserServiceTest {
     void setUp() {
       //when
       when(userRepository.findById(granteeId)).thenReturn(Optional.of(grantee));
-    }
-
-    @ParameterizedTest
-    @MethodSource("getGrantableRoles")
-    @DisplayName("위임 권한이 위임 가능 대상일 경우 성공")
-    void a_Success(Role role) {
-      // given
-      grantor.setRoles(Set.of(role));
-      grantee.setRoles(Set.of(Role.COMMON));
-
-      // when & then
-      assertServiceSuccess(grantor, role);
     }
 
     @ParameterizedTest
@@ -305,18 +302,6 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("위임자가 위임 권한을 가지고 있을 경우 성공")
-    void b_Success() {
-      // given
-      Role grantableRole = grantableRoles.iterator().next();
-      grantor.setRoles(Set.of(grantableRole));
-      grantee.setRoles(Set.of(Role.COMMON));
-
-      // when & then
-      assertServiceSuccess(grantor, grantableRole);
-    }
-
-    @Test
     @DisplayName("위임자가 위임 권한을 가지고 있지 않을 경우 실패")
     void b_Failure() {
       // given
@@ -329,8 +314,22 @@ class UserServiceTest {
 
     @ParameterizedTest
     @MethodSource("getGrantableRolesWithoutEdge")
-    @DisplayName("피위임자가 일반 권한일 경우 성공")
-    void c_Success1(Role role) {
+    @DisplayName("피위임자가 특수 권한일 경우 실패(특수 조건을 가진 권한 제외)")
+    void c_Failure2(Role role) {
+      for (Role specialRole : getSpecialRoles()) {
+        // given
+        grantor.setRoles(Set.of(role));
+        grantee.setRoles(Set.of(specialRole));
+
+        // when & then
+        assertValidatorFail(grantor, role);
+      }
+    }
+
+    @ParameterizedTest
+    @MethodSource("getGrantableRolesWithoutEdge")
+    @DisplayName("피위임자가 일반 권한일 경우 성공(특수 조건을 가진 권한 제외)")
+    void a_Success1(Role role) {
       // given
       grantor.setRoles(Set.of(role));
       grantee.setRoles(Set.of(Role.COMMON));
@@ -339,9 +338,26 @@ class UserServiceTest {
       assertServiceSuccess(grantor, role);
     }
 
+    @ParameterizedTest
+    @MethodSource("getGrantableAndUniqueRolesWithoutEdge")
+    @DisplayName("고유 권한 위임 후 해당 권한을 가진 사용자가 없을 경우 성공(특수 조건을 가진 권한 제외)")
+    void a_Success2(Role role) {
+      // given
+      grantor.setRoles(Set.of(role));
+      grantee.setRoles(Set.of(Role.COMMON));
+      List<User> users = generateUsersByRole(role);
+      System.out.println( role + "/" + users.get(0).getRoles());
+      // when
+      when(userRepository.findByRoleAndState(role, UserState.ACTIVE)).thenReturn(users);
+      userService.grantUserRole(grantor, granteeId, new UserUpdateRoleRequestDto(String.valueOf(role)));
+
+      // then
+      users.forEach(user -> assertThat(user.getRoles()).isEqualTo(Set.of(Role.COMMON)));
+    }
+
     @Test
     @DisplayName("위임자가 학생회장일 때 피위임자가 부학생회장과 학생회 또는 일반 권한일 경우 성공")
-    void c_Success2() {
+    void b_Success1() {
       for (Role role : Set.of(Role.VICE_PRESIDENT, Role.COUNCIL, Role.COMMON)) {
         // given
         grantor.setRoles(Set.of(Role.PRESIDENT));
@@ -352,18 +368,25 @@ class UserServiceTest {
       }
     }
 
-    @ParameterizedTest
-    @MethodSource("getGrantableRolesWithoutEdge")
-    @DisplayName("피위임자가 특수 권한일 경우 실패(특수 조건을 가진 권한 제외)")
-    void c_Failure(Role role) {
-      for (Role specialRole : getSpecialRoles()) {
-        // given
-        grantor.setRoles(Set.of(role));
-        grantee.setRoles(Set.of(specialRole));
+    @Test
+    @DisplayName("위임자가 학생회장일 때 학생회장과 부학생회장 그리고 학생회 권한을 가진 사용자가 없을 경우 성공")
+    void b_Success2() {
+      // given
+      grantor.setRoles(Set.of(Role.PRESIDENT));
+      grantee.setRoles(Set.of(Role.COMMON));
+      List<User> presidentUsers = generateUsersByRole(Role.PRESIDENT);
+      List<User> vicePresidentUsers = generateUsersByRole(Role.VICE_PRESIDENT);
+      List<User> councilUsers = generateUsersByRole(Role.COUNCIL);
 
-        // when & then
-        assertValidatorFail(grantor, role);
-      }
+      // when
+      when(userRepository.findByRoleAndState(Role.PRESIDENT, UserState.ACTIVE)).thenReturn(presidentUsers);
+      when(userRepository.findByRoleAndState(Role.VICE_PRESIDENT, UserState.ACTIVE)).thenReturn(vicePresidentUsers);
+      when(userRepository.findByRoleAndState(Role.COUNCIL, UserState.ACTIVE)).thenReturn(councilUsers);
+      userService.grantUserRole(grantor, granteeId, new UserUpdateRoleRequestDto(String.valueOf(Role.PRESIDENT)));
+
+      // then
+      Stream.of(presidentUsers, vicePresidentUsers, councilUsers).flatMap(Collection::stream)
+              .forEach(user -> assertThat(user.getRoles()).isEqualTo(Set.of(Role.COMMON)));
     }
   }
 }
