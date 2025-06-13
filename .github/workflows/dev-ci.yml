@@ -67,6 +67,10 @@ jobs:
       # Flyway 마이그레이션 실행
       - name: Run Flyway migration
         run: |
+          ./gradlew flywayClean \
+            -DDB_URL=jdbc:mysql://localhost:3306/causw_test \
+            -DDB_USERNAME=root \
+            -DDB_PASSWORD=password
           ./gradlew flywayMigrate \
             -DDB_URL=jdbc:mysql://localhost:3306/causw_test \
             -DDB_USERNAME=root \
