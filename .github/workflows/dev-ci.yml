@@ -64,3 +64,25 @@ jobs:
         if: always()
         with:
           report_paths: ./build/test-results/test/TEST-*.xml
+
+      # MySQL Docker 컨테이너 실행
+      - name: Start MySQL container
+        run: |
+          docker run --name test-mysql \
+            -e MYSQL_ROOT_PASSWORD=password \
+            -e MYSQL_DATABASE=causw_test \
+            -p 3306:3306 \
+            -d mysql:8
+          sleep 30
+
+      # Flyway 마이그레이션 실행
+      - name: Run Flyway migration
+        run: |
+          ./gradlew flywayMigrate \
+            -DDB_URL=jdbc:mysql://localhost:3306/causw_test \
+            -DDB_USERNAME=root \
+            -DDB_PASSWORD=password
+
+      # JPA 엔티티와 DB 스키마 일치 검증
+      - name: 빌드 및 JPA 스키마 검증 실행
+        run: ./gradlew jpaEntityMappingTest -Dspring.profiles.active=test --console=plain --no-daemon
