@@ -61,7 +61,7 @@ public class JpaEntityMappingTest {
     public JpaVendorAdapter jpaVendorAdapter() {
       HibernateJpaVendorAdapter adapter = new HibernateJpaVendorAdapter();
       adapter.setShowSql(true);
-      adapter.setDatabasePlatform("org.hibernate.dialect.H2Dialect");
+      adapter.setDatabasePlatform("org.hibernate.dialect.MySQL8Dialect");
       return adapter;
     }
 
