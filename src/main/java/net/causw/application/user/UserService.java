@@ -766,6 +766,10 @@ public class UserService {
             removeAllRole(Role.COUNCIL);
         }
 
+        if (grantedRole.isUnique()) {
+            removeAllRole(grantedRole);
+        }
+
         // 위임인의 권한 삭제
         removeRole(grantor, grantedRole);
 
