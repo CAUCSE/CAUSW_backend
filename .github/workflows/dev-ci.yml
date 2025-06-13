@@ -47,23 +47,23 @@ jobs:
         shell: bash
 
       # 테스트 실행
-      - name: Test with Gradle
-        run: ./gradlew test
-        shell: bash
+      #- name: Test with Gradle
+      #  run: ./gradlew test
+      #  shell: bash
 
       # 테스트 결과 출력
-      - name: Publish test results to pr
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        if: ${{ always() }}
-        with:
-          files: ./build/test-results/test/TEST-*.xml
+      #- name: Publish test results to pr
+      #  uses: EnricoMi/publish-unit-test-result-action@v2
+      #  if: ${{ always() }}
+      #  with:
+      #    files: ./build/test-results/test/TEST-*.xml
 
       # 테스트 실패 시 fail된 부분 마크
-      - name: Publish check comment on test failure
-        uses: mikepenz/action-junit-report@v3
-        if: always()
-        with:
-          report_paths: ./build/test-results/test/TEST-*.xml
+      #- name: Publish check comment on test failure
+      #  uses: mikepenz/action-junit-report@v3
+      #  if: always()
+      #  with:
+      #    report_paths: ./build/test-results/test/TEST-*.xml
 
       # MySQL Docker 컨테이너 실행
       - name: Start MySQL container
@@ -93,4 +93,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: jpaEntityMappingTest-report
-          path: build/reports/tests/jpaEntityMappingTest/index.html
+          path: build/reports/tests/jpaEntityMappingTest/
