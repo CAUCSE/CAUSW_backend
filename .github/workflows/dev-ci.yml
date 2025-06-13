@@ -46,25 +46,6 @@ jobs:
         run: chmod +x ./gradlew
         shell: bash
 
-      # 테스트 실행
-      #- name: Test with Gradle
-      #  run: ./gradlew test
-      #  shell: bash
-
-      # 테스트 결과 출력
-      #- name: Publish test results to pr
-      #  uses: EnricoMi/publish-unit-test-result-action@v2
-      #  if: ${{ always() }}
-      #  with:
-      #    files: ./build/test-results/test/TEST-*.xml
-
-      # 테스트 실패 시 fail된 부분 마크
-      #- name: Publish check comment on test failure
-      #  uses: mikepenz/action-junit-report@v3
-      #  if: always()
-      #  with:
-      #    report_paths: ./build/test-results/test/TEST-*.xml
-
       # MySQL Docker 컨테이너 실행
       - name: Start MySQL container
         run: |
@@ -73,7 +54,15 @@ jobs:
             -e MYSQL_DATABASE=causw_test \
             -p 3306:3306 \
             -d mysql:8
-          sleep 30
+
+      - name: Wait for MySQL to be ready
+        run: |
+          for i in {1..30}; do
+            nc -z localhost 3306 && echo "MySQL is up" && exit 0
+            echo "Waiting for MySQL..."
+            sleep 1
+          done
+          echo "MySQL did not start in time" && exit 1
 
       # Flyway 마이그레이션 실행
       - name: Run Flyway migration
@@ -94,3 +83,22 @@ jobs:
         with:
           name: jpaEntityMappingTest-report
           path: build/reports/tests/jpaEntityMappingTest/
+
+      # 테스트 실행
+      - name: Test with Gradle
+        run: ./gradlew test
+        shell: bash
+
+      # 테스트 결과 출력
+      - name: Publish test results to pr
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: ${{ always() }}
+        with:
+          files: ./build/test-results/test/TEST-*.xml
+
+      # 테스트 실패 시 fail된 부분 마크
+      - name: Publish check comment on test failure
+        uses: mikepenz/action-junit-report@v3
+        if: always()
+        with:
+          report_paths: ./build/test-results/test/TEST-*.xml
