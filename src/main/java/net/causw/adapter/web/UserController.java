@@ -355,35 +355,29 @@ public class UserController {
      * @param userUpdateRoleRequestDto
      * @return
      */
-    @PutMapping(value = "/{granteeId}/role")
+    @PutMapping(value = "/{granteeId}/grant-role")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "@securityService.isAdminOrPresidentOrVicePresident()")
-    @Operation(summary = "역할 업데이트 API(완료)", description = "grantorId 에는 관리자의 고유 id값, granteeId 에는 권한이 업데이트될 사용자의 고유 id 값을 넣어주세요")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
-            @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-            @ApiResponse(responseCode = "4001", description = "권한을 받을 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-            @ApiResponse(responseCode = "4102", description = "추방된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-            @ApiResponse(responseCode = "4103", description = "비활성화된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-            @ApiResponse(responseCode = "4104", description = "대기 중인 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-            @ApiResponse(responseCode = "4109", description = "가입이 거절된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-            @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-            @ApiResponse(responseCode = "4106", description = "권한을 부여할 수 없습니다. - 부여하는 사용자 권한 : ADMIN, 부여할 권한 : PRESIDENT, 부여받는 사용자 권한 : COMMON", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-            @ApiResponse(responseCode = "4107", description = "위임할 수 있는 권한이 아닙니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-            @ApiResponse(responseCode = "4002", description = "소모임장을 위임할 소모임 입력이 필요합니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-            @ApiResponse(responseCode = "4108", description = "사용자가 가입 신청한 소모임이 아닙니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-            @ApiResponse(responseCode = "4000", description = "소모임을 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-            @ApiResponse(responseCode = "5000", description = "동문회장이 존재하지 않습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-            @ApiResponse(responseCode = "5001", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
-    })
-    public UserResponseDto updateRole(
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
+    @Operation(summary = "역할 업데이트 API(완료)", description = "로그인된 사용자의 권한을 위임합니다.")
+    public UserResponseDto grantRole(
             @PathVariable("granteeId") String granteeId,
             @Valid @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        return this.userService.grantRole(userDetails.getUser(), granteeId, userUpdateRoleRequestDto);
+    }
 
-        return this.userService.updateUserRole(userDetails.getUser(), granteeId, userUpdateRoleRequestDto);
+    @PutMapping(value = "/{granteeId}/update-role")
+    @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
+    @Operation(summary = "역할 업데이트 API(완료)", description = "타인의 권한을 위임함. grantorId가 비어있을 시 권한 위임 없이 업데이트만 진행합니다.")
+    public UserResponseDto updateRole(
+            @RequestParam(value = "grantorId", required = false) String grantorId,
+            @PathVariable("granteeId") String granteeId,
+            @Valid @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return this.userService.updateRole(userDetails.getUser(), grantorId, granteeId, userUpdateRoleRequestDto);
     }
 
 

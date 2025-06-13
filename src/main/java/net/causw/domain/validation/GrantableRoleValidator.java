@@ -1,13 +1,19 @@
 package net.causw.domain.validation;
 
+import lombok.Getter;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.user.Role;
+import net.causw.domain.model.util.MessageUtil;
 
+import java.util.Arrays;
 import java.util.Set;
 
 
 public class GrantableRoleValidator extends AbstractValidator {
+
+    @Getter
+    private static final Set<Role> grantableRoles = Set.of(Role.ADMIN, Role.PRESIDENT, Role.LEADER_ALUMNI);
 
     private final Set<Role> grantorRoles;
 
@@ -27,64 +33,27 @@ public class GrantableRoleValidator extends AbstractValidator {
 
     @Override
     public void validate() {
-        /* When role of grantor is Admin
-         * Granted and grantee role should not be Admin
-         * Granted and grantee role should be different
-         * Grantee role should not be Leader Circle or Leader Alumni
-         *   => They will automatically granted while other granting process since the roles has unique user
-         */
-        if (this.grantorRoles.contains(Role.ADMIN)) {
-            if (!this.granteeRoles.contains(Role.ADMIN)) {
-                if(this.grantedRole.equals(Role.LEADER_CIRCLE) || this.granteeRoles.contains(Role.LEADER_CIRCLE)){
-                    return;
-                } else if(this.granteeRoles.contains(Role.COMMON)){
-                    return;
-                } else if(this.grantedRole.equals(Role.COMMON)){
-                    return;
-                }
+        // 위임할 권한이 위임 가능 대상이어야 하고 위임자가 해당 권한이어야 함.
+        if (grantableRoles.contains(this.grantedRole) && this.grantorRoles.contains(this.grantedRole)) {
+            // 피위임자가 특수 권한이 아닌 일반 권한일 경우에만 위임 가능함.
+            // 단, 학생회장 위임의 경우 부학생회장과 학생회 권한이 같이 삭제되므로 이 두 권한을 포함해 가능함.
+            if (this.grantedRole.equals(Role.PRESIDENT)
+                    && hasAnyRole(this.granteeRoles, Role.VICE_PRESIDENT, Role.COUNCIL, Role.COMMON)) {
+                return;
             }
-        }
-        /* When role of grantor is President
-         * Granted role should not be Admin, and Grantee role should not be Admin and President
-         * Granted and grantee role should be different
-         * Grantee role should not be Leader Circle or Leader Alumni
-         *   => They will automatically granted while other granting process since the roles has unique user
-         */
-        else if (this.grantorRoles.contains(Role.PRESIDENT)) {
-            if (this.grantedRole != Role.ADMIN
-                    && (!this.granteeRoles.contains(Role.ADMIN) && !this.granteeRoles.contains(Role.PRESIDENT))) {
-                if(this.grantedRole.equals(Role.LEADER_CIRCLE) || this.granteeRoles.contains(Role.LEADER_CIRCLE)){
-                    return;
-                } else if(this.granteeRoles.contains(Role.COMMON)){
-                    return;
-                } else if(this.grantedRole.equals(Role.COMMON)){
-                    return;
-                }
-            }
-        }
-        /* When role of grantor is Leader_Circle
-         * Granted role should be Leader_Circle, and Grantee role should be Common
-         */
-        else if (this.grantorRoles.contains(Role.LEADER_CIRCLE)) {
-            if(this.grantedRole.equals(Role.LEADER_CIRCLE)){
-                if(!this.granteeRoles.contains(Role.ADMIN) && !this.granteeRoles.contains(Role.PRESIDENT) && !this.granteeRoles.contains(Role.VICE_PRESIDENT)
-                        && !this.granteeRoles.contains(Role.LEADER_ALUMNI) && !this.granteeRoles.contains(Role.PROFESSOR)){
-                    return;
-                }
-            }
-        }
-        /* When role of grantor is Leader_Alumni
-         * Granted role should be Leader_Alumni, and Grantee role should be Common
-         */
-        else if (this.grantorRoles.contains(Role.LEADER_ALUMNI)) {
-            if (this.grantedRole == Role.LEADER_ALUMNI && this.granteeRoles.contains(Role.COMMON)) {
+            else if (hasAnyRole(this.granteeRoles, Role.COMMON)) {
                 return;
             }
         }
 
         throw new UnauthorizedException(
                 ErrorCode.GRANT_ROLE_NOT_ALLOWED,
-                "권한을 부여할 수 없습니다."
+                MessageUtil.GRANT_ROLE_NOT_ALLOWED
         );
     }
+
+    private boolean hasAnyRole(Set<Role> targetRole, Role... targetedRoles) {
+        return Arrays.stream(targetedRoles).anyMatch(targetRole::contains);
+    }
+
 }
