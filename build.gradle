@@ -61,13 +61,6 @@ dependencies {
     // Swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2'
 
-    // Spock test
-    testImplementation "org.spockframework:spock-core:1.2-groovy-2.4"
-    testImplementation "org.spockframework:spock-spring:1.2-groovy-2.4"
-    testImplementation "org.junit.vintage:junit-vintage-engine"
-    testImplementation "org.powermock:powermock-api-mockito2:2.0.2"
-    testImplementation "org.powermock:powermock-module-junit4:2.0.2"
-
     // Discord LogBack
     implementation 'com.github.napstr:logback-discord-appender:1.0.0'
 
