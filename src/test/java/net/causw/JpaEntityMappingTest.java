@@ -5,12 +5,10 @@ import java.util.Properties;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.env.Environment;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -36,16 +34,13 @@ public class JpaEntityMappingTest {
   @EntityScan(basePackages = targetPackages)
   static class Config {
 
-    @Autowired
-    private Environment env;
-
     @Bean
     public DataSource dataSource() {
       return DataSourceBuilder.create()
-          .url(env.getProperty("spring.datasource.url"))
-          .username(env.getProperty("spring.datasource.username"))
-          .password(env.getProperty("spring.datasource.password"))
-          .driverClassName(env.getProperty("spring.datasource.driver-class-name"))
+          .url("jdbc:mysql://localhost:3306/causw_test")
+          .username("root")
+          .password("password")
+          .driverClassName("com.mysql.cj.jdbc.Driver")
           .build();
     }
 
