@@ -1,0 +1,202 @@
+package net.causw.application.user;
+
+import net.causw.adapter.persistence.repository.user.UserRepository;
+import net.causw.adapter.persistence.user.User;
+import net.causw.application.dto.user.UserUpdateRoleRequestDto;
+import net.causw.domain.exceptions.ErrorCode;
+import net.causw.domain.exceptions.UnauthorizedException;
+import net.causw.domain.model.enums.user.Role;
+import net.causw.domain.model.enums.user.UserState;
+import net.causw.domain.model.util.MessageUtil;
+import net.causw.domain.model.util.ObjectFixtures;
+import net.causw.domain.policy.domain.RolePolicy;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+public class UserRoleServiceTest {
+
+    @InjectMocks
+    UserRoleService userRoleService;
+
+    @Mock
+    UserRepository userRepository;
+
+    @Nested
+    class GrantUserRoleTest {
+
+        private final User grantor = ObjectFixtures.getUser();
+        private final User grantee = ObjectFixtures.getUser();
+        private final String granteeId = "dummyGranteeId";
+
+        private List<User> generateUsersByRole(Role role) {
+            return Stream.of(ObjectFixtures.getUser(), ObjectFixtures.getUser(), ObjectFixtures.getUser())
+                    .peek(user -> user.setRoles(Set.of(role))).collect(Collectors.toList());
+        }
+
+        private static Set<Role> getNonGrantableRoles() {
+            return EnumSet.allOf(Role.class).stream()
+                    .filter(role -> !RolePolicy.GRANTABLE_ROLES.contains(role))
+                    .collect(Collectors.toSet());
+        }
+
+        private static Set<Role> getSpecialRoles() {
+            return EnumSet.allOf(Role.class).stream()
+                    .filter(role -> !role.equals(Role.COMMON))
+                    .collect(Collectors.toSet());
+        }
+
+        private static Set<Role> getGrantableRolesWithoutEdge() {
+            return RolePolicy.GRANTABLE_ROLES.stream()
+                    .filter(role -> !role.equals(Role.PRESIDENT))
+                    .collect(Collectors.toSet());
+        }
+
+        private static Set<Role> getGrantableAndUniqueRolesWithoutEdge() {
+            return RolePolicy.GRANTABLE_ROLES.stream()
+                    .filter(role -> !role.equals(Role.PRESIDENT))
+                    .filter(Role::isUnique)
+                    .collect(Collectors.toSet());
+        }
+
+        void assertServiceSuccess(User grantor, Role targetRole) {
+            UserUpdateRoleRequestDto userUpdateRoleRequestDto = new UserUpdateRoleRequestDto(String.valueOf(targetRole));
+            userRoleService.grantUserRole(grantor, granteeId, userUpdateRoleRequestDto);
+            assertThat(grantor.getRoles()).isEqualTo(Set.of(Role.COMMON));
+            assertThat(grantee.getRoles()).isEqualTo(Set.of(targetRole));
+        }
+
+        void assertValidatorFail(User grantor, Role targetRole) {
+            UserUpdateRoleRequestDto userUpdateRoleRequestDto = new UserUpdateRoleRequestDto(String.valueOf(targetRole));
+            assertThatThrownBy(() -> userRoleService.grantUserRole(grantor, granteeId, userUpdateRoleRequestDto))
+                    .isInstanceOf(UnauthorizedException.class)
+                    .hasMessageContaining(MessageUtil.GRANT_ROLE_NOT_ALLOWED)
+                    .extracting("errorCode")
+                    .isEqualTo(ErrorCode.GRANT_ROLE_NOT_ALLOWED);
+        }
+
+        @BeforeEach
+        void setUp() {
+            //when
+            when(userRepository.findById(granteeId)).thenReturn(Optional.of(grantee));
+        }
+
+        @ParameterizedTest
+        @MethodSource("getNonGrantableRoles")
+        @DisplayName("위임 권한이 위임 가능 대상이 아닐 경우 실패")
+        void a_Failure(Role role) {
+            // given
+            grantor.setRoles(Set.of(role));
+            grantee.setRoles(Set.of(Role.COMMON));
+
+            // when & then
+            assertValidatorFail(grantee, role);
+        }
+
+        @Test
+        @DisplayName("위임자가 위임할 권한이 아닐 경우 실패")
+        void b_Failure() {
+            // given
+            grantor.setRoles(Set.of(Role.COMMON));
+            grantee.setRoles(Set.of(Role.COMMON));
+
+            // when & then
+            assertValidatorFail(grantor, RolePolicy.GRANTABLE_ROLES.iterator().next());
+        }
+
+        @ParameterizedTest
+        @MethodSource("getGrantableRolesWithoutEdge")
+        @DisplayName("피위임자가 특수 권한일 경우 실패(특수 조건을 가진 권한 제외)")
+        void c_Failure2(Role role) {
+            for (Role specialRole : getSpecialRoles()) {
+                // given
+                grantor.setRoles(Set.of(role));
+                grantee.setRoles(Set.of(specialRole));
+
+                // when & then
+                assertValidatorFail(grantor, role);
+            }
+        }
+
+        @ParameterizedTest
+        @MethodSource("getGrantableRolesWithoutEdge")
+        @DisplayName("피위임자가 일반 권한일 경우 성공(특수 조건을 가진 권한 제외)")
+        void a_Success1(Role role) {
+            // given
+            grantor.setRoles(Set.of(role));
+            grantee.setRoles(Set.of(Role.COMMON));
+
+            // when & then
+            assertServiceSuccess(grantor, role);
+        }
+
+        @ParameterizedTest
+        @MethodSource("getGrantableAndUniqueRolesWithoutEdge")
+        @DisplayName("고유 권한 위임 후 해당 권한을 가진 사용자가 없을 경우 성공(특수 조건을 가진 권한 제외)")
+        void a_Success2(Role role) {
+            // given
+            grantor.setRoles(Set.of(role));
+            grantee.setRoles(Set.of(Role.COMMON));
+            List<User> users = generateUsersByRole(role);
+
+            // when
+            when(userRepository.findByRoleAndState(role, UserState.ACTIVE)).thenReturn(users);
+            userRoleService.grantUserRole(grantor, granteeId, new UserUpdateRoleRequestDto(String.valueOf(role)));
+
+            // then
+            users.forEach(user -> assertThat(user.getRoles()).isEqualTo(Set.of(Role.COMMON)));
+        }
+
+        @Test
+        @DisplayName("위임자가 학생회장일 때 피위임자가 부학생회장과 학생회 또는 일반 권한일 경우 성공")
+        void b_Success1() {
+            for (Role role : RolePolicy.ROLES_GRANTABLE_BY_PRESIDENT) {
+                // given
+                grantor.setRoles(Set.of(Role.PRESIDENT));
+                grantee.setRoles(Set.of(role));
+
+                // when & then
+                assertServiceSuccess(grantor, Role.PRESIDENT);
+            }
+        }
+
+        @Test
+        @DisplayName("위임자가 학생회장일 때 학생회장과 부학생회장 그리고 학생회 권한을 가진 사용자가 없을 경우 성공")
+        void b_Success2() {
+            // given
+            grantor.setRoles(Set.of(Role.PRESIDENT));
+            grantee.setRoles(Set.of(Role.COMMON));
+            Map<Role, List<User>> mockUsers = new HashMap<>();
+            for (Role role : Set.of(Role.PRESIDENT, Role.VICE_PRESIDENT, Role.COUNCIL)) {
+                mockUsers.put(role, generateUsersByRole(role));
+            }
+
+            // when
+            for (Role role : Set.of(Role.PRESIDENT, Role.VICE_PRESIDENT, Role.COUNCIL)) {
+                when(userRepository.findByRoleAndState(role, UserState.ACTIVE)).thenReturn(mockUsers.get(role));
+            }
+
+            userRoleService.grantUserRole(grantor, granteeId, new UserUpdateRoleRequestDto(String.valueOf(Role.PRESIDENT)));
+
+            // then
+            mockUsers.values().stream().flatMap(Collection::stream)
+                    .forEach(user -> assertThat(user.getRoles()).isEqualTo(Set.of(Role.COMMON)));
+        }
+    }
+}

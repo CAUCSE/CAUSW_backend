@@ -109,6 +109,8 @@ public class UserService {
     private final UserAcademicRecordApplicationRepository userAcademicRecordApplicationRepository;
     private final UserAcademicRecordApplicationAttachImageRepository userAcademicRecordApplicationAttachImageRepository;
 
+    private final UserRoleService userRoleService;
+
     private final UserDtoMapper userDtoMapper;
     private final PostDtoMapper postDtoMapper;
 
@@ -495,7 +497,7 @@ public class UserService {
             if (srcUser.getRoles().contains(Role.LEADER_CIRCLE) && !"INACTIVE_N_DROP".equals(state)) {
                 List<Circle> ownCircles = circleRepository.findByLeader_Id(srcUser.getId());
                 if (ownCircles.isEmpty()) {
-                    removeRole(srcUser, Role.LEADER_CIRCLE);
+                    userRoleService.removeRole(srcUser, Role.LEADER_CIRCLE);
                     userRepository.save(srcUser);
                 }
 
@@ -735,146 +737,8 @@ public class UserService {
         return UserDtoMapper.INSTANCE.toUserResponseDto(updatedUser, null, null);
     }
 
-    @Transactional
-    public UserResponseDto grantUserRole(
-            User grantor, // 위임인
-            String granteeId, // 피위임인
-            UserUpdateRoleRequestDto userUpdateRoleRequestDto
-    ) {
-        // 피위임인의 Id로 피위임인 조회
-        User grantee = userRepository.findById(granteeId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_NOT_FOUND
-                )
-        );
-
-        // 권한을 모두 조회
-        Set<Role> grantorRoles = grantor.getRoles();
-        Set<Role> granteeRoles = grantee.getRoles();
-        Role grantedRole = userUpdateRoleRequestDto.getRole();
-
-        // 예외 처리
-        GrantableRoleValidator.of(
-                grantorRoles,
-                grantedRole,
-                granteeRoles
-        ).validate();
-
-        // 학생회장 권한 위임 시 부학생 및 학생회 권한 삭제
-        if (grantedRole.equals(Role.PRESIDENT)) {
-            removeAllRole(Role.VICE_PRESIDENT);
-            removeAllRole(Role.COUNCIL);
-        }
-
-        if (grantedRole.isUnique()) {
-            removeAllRole(grantedRole);
-        }
-
-        // 위임인의 권한 삭제
-        removeRole(grantor, grantedRole);
-
-        // 피위임인에게 권한 설정
-        return UserDtoMapper.INSTANCE.toUserResponseDto(
-                updateRole(grantee, grantedRole), null, null);
-    }
-
-    @Transactional
-    public UserResponseDto updateUserRole(
-            User user,
-            String grantorId, // 위임인
-            String granteeId, // 피위임인
-            UserUpdateRoleRequestDto userUpdateRoleRequestDto
-    ) {
-        // 위임인의 Id로 위임인 조회
-        User grantor = StringUtils.isBlank(grantorId) ? null : userRepository.findById(granteeId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_NOT_FOUND
-                )
-        );
-
-        // 피위임인의 Id로 피위임인 조회
-        User grantee = userRepository.findById(granteeId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_NOT_FOUND
-                )
-        );
-
-        // 권한을 모두 조회
-        Set<Role> grantorRoles = grantor == null ? null : grantor.getRoles();
-        Set<Role> granteeRoles = grantee.getRoles();
-        Role grantedRole = userUpdateRoleRequestDto.getRole();
-
-        // 예외 처리
-        UpdatableRoleValidator.of(
-                user.getRoles(),
-                grantorRoles,
-                grantedRole,
-                granteeRoles
-        ).validate();
-
-        // 학생회장 권한 위임 시 부학생 및 학생회 권한 삭제
-        if (grantedRole.equals(Role.PRESIDENT)) {
-            removeAllRole(Role.VICE_PRESIDENT);
-            removeAllRole(Role.COUNCIL);
-        }
-
-        // 고유 권한일 경우 모든 사용자로부터 권한 삭제
-        if (grantedRole.isUnique()) {
-            removeAllRole(grantedRole);
-        }
-
-        // 고유 권한이 아니고 위임인이 있을 경우 위임인 권한 삭제(관리자 및 기본 권한 제외)
-        else if (grantor != null && grantorRoles.contains(grantedRole)
-                && !RolePolicy.NON_GRANTABLE_ROLES.contains(grantedRole)) {
-            removeRole(grantor, grantedRole);
-        }
-
-        // 피위임인에게 권한 설정
-        return UserDtoMapper.INSTANCE.toUserResponseDto(
-                updateRole(grantee, grantedRole), null, null);
-    }
-
 
     // private method
-    private void removeAllRole(Role targetRole) {
-        List<User> targetUsers = userRepository.findByRoleAndState(targetRole, UserState.ACTIVE);
-
-        targetUsers.forEach(user -> removeRole(user, targetRole));
-    }
-
-    private void removeRole(User targetUser, Role targetRole) {
-        Set<Role> roles = new HashSet<>(targetUser.getRoles());
-
-        roles.remove(targetRole);
-
-        // 권한이 비어 있을 시 COMMON을 부여 단 NONE을 삭제해 빈 경우 NONE을 유지
-        if (roles.isEmpty()) {
-            if (targetRole.equals(Role.NONE)) {
-                roles.add(Role.NONE);
-            }
-            else {
-                roles.add(Role.COMMON);
-            }
-        }
-
-        targetUser.setRoles(roles);
-        userRepository.save(targetUser);
-    }
-
-    private User updateRole(User targetUser, Role newRole) {
-        Set<Role> roles = new HashSet<>(targetUser.getRoles());
-
-        roles.clear(); // 겸직 불가
-        roles.add(newRole);
-
-        targetUser.setRoles(roles);
-        return userRepository.save(targetUser);
-    }
-
-
     @Transactional
     public UserResponseDto updatePassword(
             User user,
@@ -989,7 +853,7 @@ public class UserService {
                 });
 
         // Change user role to NONE
-        this.updateRole(user, Role.NONE);
+        userRoleService.updateRole(user, Role.NONE);
 
         // Leave from circle where user joined
         this.circleMemberRepository.findByUser_Id(user.getId())
@@ -1076,7 +940,7 @@ public class UserService {
                     this.lockerLogRepository.save(lockerLog);
                 });
 
-        this.updateRole(droppedUser, Role.NONE);
+        userRoleService.updateRole(droppedUser, Role.NONE);
 
         droppedUser.updateRejectionOrDropReason(dropReason);
         droppedUser = this.updateState(userId, UserState.DROP)
@@ -1215,7 +1079,7 @@ public class UserService {
                 .validate();
 
         // NONE role 삭제 후 COMMON으로 변경
-        this.removeRole(userAdmission.getUser(), Role.NONE);
+        userRoleService.removeRole(userAdmission.getUser(), Role.NONE);
 
         // Add admission log
         UserAdmissionLog userAdmissionLog = UserAdmissionLog.of(
@@ -1312,7 +1176,7 @@ public class UserService {
                 .consistOf(UserStateIsDropOrIsInActiveValidator.of(restoredUser.getState()))
                 .validate();
 
-        this.updateRole(restoredUser, Role.COMMON);
+        userRoleService.updateRole(restoredUser, Role.COMMON);
 
         User entity = this.updateState(restoredUser.getId(), UserState.ACTIVE)
                 .orElseThrow(() -> new InternalServerException(

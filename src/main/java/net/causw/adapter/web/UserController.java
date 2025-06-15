@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.user.*;
+import net.causw.application.user.UserRoleService;
 import net.causw.application.user.UserService;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.circle.CircleResponseDto;
@@ -31,6 +32,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+    private final UserRoleService userRoleService;
 
     /**
      * 사용자 고유 id 값으로 사용자 정보를 조회하는 API
@@ -364,7 +366,7 @@ public class UserController {
             @Valid @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return this.userService.grantUserRole(userDetails.getUser(), granteeId, userUpdateRoleRequestDto);
+        return this.userRoleService.grantUserRole(userDetails.getUser(), granteeId, userUpdateRoleRequestDto);
     }
 
     @PutMapping(value = "/{granteeId}/update-role")
@@ -377,7 +379,7 @@ public class UserController {
             @Valid @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return this.userService.updateUserRole(userDetails.getUser(), grantorId, granteeId, userUpdateRoleRequestDto);
+        return this.userRoleService.updateUserRole(userDetails.getUser(), grantorId, granteeId, userUpdateRoleRequestDto);
     }
 
 
