@@ -31,7 +31,7 @@ import net.causw.domain.model.enums.user.UserState;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.ObjectFixtures;
 import net.causw.domain.model.util.StaticValue;
-import net.causw.domain.validation.GrantableRoleValidator;
+import net.causw.domain.policy.domain.RolePolicy;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -235,7 +235,6 @@ class UserServiceTest {
     private final User grantor = ObjectFixtures.getUser();
     private final User grantee = ObjectFixtures.getUser();
     private final String granteeId = "dummyGranteeId";
-    private static final Set<Role> grantableRoles = GrantableRoleValidator.getGrantableRoles();
 
     private List<User> generateUsersByRole(Role role) {
       return Stream.of(ObjectFixtures.getUser(), ObjectFixtures.getUser(), ObjectFixtures.getUser())
@@ -244,7 +243,7 @@ class UserServiceTest {
 
     private static Set<Role> getNonGrantableRoles() {
       return EnumSet.allOf(Role.class).stream()
-              .filter(role -> !grantableRoles.contains(role))
+              .filter(role -> !RolePolicy.GRANTABLE_ROLES.contains(role))
               .collect(Collectors.toSet());
     }
 
@@ -255,13 +254,13 @@ class UserServiceTest {
     }
 
     private static Set<Role> getGrantableRolesWithoutEdge() {
-      return grantableRoles.stream()
+      return RolePolicy.GRANTABLE_ROLES.stream()
               .filter(role -> !role.equals(Role.PRESIDENT))
               .collect(Collectors.toSet());
     }
 
     private static Set<Role> getGrantableAndUniqueRolesWithoutEdge() {
-      return grantableRoles.stream()
+      return RolePolicy.GRANTABLE_ROLES.stream()
               .filter(role -> !role.equals(Role.PRESIDENT))
               .filter(Role::isUnique)
               .collect(Collectors.toSet());
@@ -309,7 +308,7 @@ class UserServiceTest {
       grantee.setRoles(Set.of(Role.COMMON));
 
       // when & then
-      assertValidatorFail(grantor, grantableRoles.iterator().next());
+      assertValidatorFail(grantor, RolePolicy.GRANTABLE_ROLES.iterator().next());
     }
 
     @ParameterizedTest
@@ -358,7 +357,7 @@ class UserServiceTest {
     @Test
     @DisplayName("위임자가 학생회장일 때 피위임자가 부학생회장과 학생회 또는 일반 권한일 경우 성공")
     void b_Success1() {
-      for (Role role : Set.of(Role.VICE_PRESIDENT, Role.COUNCIL, Role.COMMON)) {
+      for (Role role : RolePolicy.ROLES_GRANTABLE_BY_PRESIDENT) {
         // given
         grantor.setRoles(Set.of(Role.PRESIDENT));
         grantee.setRoles(Set.of(role));

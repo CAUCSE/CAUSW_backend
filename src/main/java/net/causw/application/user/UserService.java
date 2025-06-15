@@ -58,6 +58,7 @@ import net.causw.domain.model.enums.uuidFile.FilePath;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.RedisUtils;
 import net.causw.domain.model.util.StaticValue;
+import net.causw.domain.policy.domain.RolePolicy;
 import net.causw.domain.validation.*;
 import net.causw.infrastructure.GoogleMailSender;
 import net.causw.infrastructure.PasswordGenerator;
@@ -826,8 +827,8 @@ public class UserService {
         }
 
         // 고유 권한이 아니고 위임인이 있을 경우 위임인 권한 삭제(관리자 및 기본 권한 제외)
-        else if (!List.of(Role.ADMIN, Role.COMMON, Role.NONE).contains(grantedRole)
-                && grantor != null && grantorRoles.contains(grantedRole)) {
+        else if (grantor != null && grantorRoles.contains(grantedRole)
+                && !RolePolicy.NON_GRANTABLE_ROLES.contains(grantedRole)) {
             removeRole(grantor, grantedRole);
         }
 
