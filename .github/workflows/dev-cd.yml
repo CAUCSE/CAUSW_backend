@@ -125,7 +125,7 @@ jobs:
         if: always()
         uses: sarisia/actions-status-discord@v1
         with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK_URL_DEV }}
+          webhook: ${{ secrets.DISCORD_DEPLOY_WEBHOOK_URL_DEV }}
 
           # ✅ status 자동 감지
           status: ${{ job.status }}
@@ -134,7 +134,7 @@ jobs:
           content: >-
             ${{ job.status == 'success' &&
                 format('`[{0}]` 🎉 배포가 성공적으로 완료됐어요!', github.ref_name)
-            || format('`[{0}]` 🚨 배포 실패! <@&123456789012345678> 확인해주세요.', github.ref_name) }}
+            || format('`[{0}]` 🚨 배포 실패! <@&{1}> 확인해주세요.', github.ref_name, secrets.DISCORD_BACKEND_ROLE_ID) }}
 
           # ✅ title: 브랜치 prefix + 이모지 포함
           title: >-
