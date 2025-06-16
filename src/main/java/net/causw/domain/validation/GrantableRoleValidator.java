@@ -1,8 +1,10 @@
 package net.causw.domain.validation;
 
+import net.causw.adapter.persistence.user.User;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.user.Role;
+import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.policy.domain.RolePolicy;
 
@@ -13,21 +15,21 @@ public class GrantableRoleValidator extends AbstractValidator {
 
     private final Set<Role> grantorRoles;
 
-    private final Set<Role> delegatorRoles;
+    private final User delegator;
 
     private final Role grantedRole;
 
-    private final Set<Role> granteeRoles;
+    private final User grantee;
 
-    private GrantableRoleValidator(Set<Role> grantorRoles, Set<Role> delegatorRoles, Role grantedRole, Set<Role> granteeRoles) {
+    private GrantableRoleValidator(Set<Role> grantorRoles, User delegator, Role grantedRole, User grantee) {
         this.grantorRoles = grantorRoles;
-        this.delegatorRoles = delegatorRoles;
+        this.delegator = delegator;
         this.grantedRole = grantedRole;
-        this.granteeRoles = granteeRoles;
+        this.grantee = grantee;
     }
 
-    public static GrantableRoleValidator of(Set<Role> grantorRoles, Set<Role> delegatorRoles, Role grantedRole, Set<Role> granteeRoles) {
-        return new GrantableRoleValidator(grantorRoles, delegatorRoles, grantedRole, granteeRoles);
+    public static GrantableRoleValidator of(Set<Role> grantorRoles, User delegator, Role grantedRole, User grantee) {
+        return new GrantableRoleValidator(grantorRoles, delegator, grantedRole, grantee);
     }
 
     @Override
@@ -43,14 +45,20 @@ public class GrantableRoleValidator extends AbstractValidator {
 
         // 학생회장 부여의 경우 부학생회장과 학생회 권한이 같이 삭제되므로 수혜자가 일반 권한 외에 두 권한이어도 부여 가능함.
         else if (grantedRole.equals(Role.PRESIDENT)) {
-            if (hasAnyRole(granteeRoles, RolePolicy.ROLES_UPDATABLE_BY_PRESIDENT)) {
+            if (hasAnyRole(grantee.getRoles(), RolePolicy.ROLES_UPDATABLE_BY_PRESIDENT)) {
                 return;
             }
         }
 
+        // 동문회장 부여의 경우 수혜자가 졸업생일 경우에만 부여 가능함
+        else if (grantedRole.equals(Role.LEADER_ALUMNI)) {
+            if (grantee.getAcademicStatus().equals(AcademicStatus.GRADUATED))
+                return;
+        }
+
         // 그 외의 경우 수혜자가 특수 권한이 아닌 일반 권한일 경우에만 부여 가능함.
         else {
-            if (hasAnyRole(granteeRoles, Role.COMMON)) {
+            if (hasAnyRole(grantee.getRoles(), Role.COMMON)) {
                 return;
             }
         }
@@ -66,7 +74,7 @@ public class GrantableRoleValidator extends AbstractValidator {
 
     public boolean canProxyDelegate() {
         // 위임자가 있을 경우 위임자가 대리 위임할 권한이어야 함.
-        if (delegatorRoles == null || !delegatorRoles.contains(grantedRole)) {
+        if (delegator == null || !delegator.getRoles().contains(grantedRole)) {
             return false;
         }
 

@@ -11,7 +11,6 @@ import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.enums.user.Role;
 import net.causw.domain.model.enums.user.UserState;
 import net.causw.domain.model.util.MessageUtil;
-import net.causw.domain.policy.domain.RolePolicy;
 import net.causw.domain.validation.DelegatableRoleValidator;
 import net.causw.domain.validation.GrantableRoleValidator;
 import org.apache.commons.lang3.StringUtils;
@@ -30,9 +29,9 @@ public class UserRoleService {
     /**
      * 자신의 권한을 넘겨주는 권한 위임
      *
-     * @param delegator - 위임자
-     * @param delegateeId - 피위임자의 id
-     * @param userUpdateRoleRequestDto - 위임할 권한
+     * @param delegator 위임자
+     * @param delegateeId 피위임자의 id
+     * @param userUpdateRoleRequestDto 위임할 권한
      * @return 권한 위임이 완료된 피위임자
      */
     @Transactional
@@ -85,10 +84,10 @@ public class UserRoleService {
      * 타인의 권한을 설정하는 권한 부여
      * <pre>grantorId가 존재할 시 위임의 형태가 된다.<pre/>
      *
-     * @param grantor - 부여자
-     * @param delegatorId - 피위임자의 id
-     * @param granteeId - 수혜자의 id
-     * @param userUpdateRoleRequestDto - 부여할 권한
+     * @param grantor 부여자
+     * @param delegatorId 피위임자의 id
+     * @param granteeId 수혜자의 id
+     * @param userUpdateRoleRequestDto 부여할 권한
      * @return 권한 부여가 완료된 수혜자
      */
     @Transactional
@@ -115,16 +114,14 @@ public class UserRoleService {
         );
 
         // 권한을 모두 조회
-        Set<Role> delegatorRoles = delegator == null ? null : delegator.getRoles();
-        Set<Role> granteeRoles = grantee.getRoles();
         Role grantedRole = userUpdateRoleRequestDto.getRole();
 
         // 예외 처리
         GrantableRoleValidator.of(
                 grantor.getRoles(),
-                delegatorRoles,
+                delegator,
                 grantedRole,
-                granteeRoles
+                grantee
         ).validate();
 
         // 학생회장 권한 부여 시 부학생 및 학생회 권한 삭제
@@ -137,6 +134,7 @@ public class UserRoleService {
             removeAllRole(grantedRole);
         }
 
+        // 위임자가 있을 경우 위임자의 권한 삭제
         else if (delegator != null) {
             removeRole(delegator, grantedRole);
         }
