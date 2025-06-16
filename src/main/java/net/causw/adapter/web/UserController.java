@@ -351,35 +351,29 @@ public class UserController {
         return this.userService.update(userDetails.getUser(), userUpdateDto, profileImage);
     }
 
-    /**
-     * 권한 업데이트 컨트롤러
-     * @param granteeId
-     * @param userUpdateRoleRequestDto
-     * @return
-     */
-    @PutMapping(value = "/{granteeId}/grant-role")
+    @PutMapping(value = "/{delegateeId}/delegate-role")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "역할 업데이트 API(완료)", description = "로그인된 사용자의 권한을 위임합니다.")
-    public UserResponseDto grantRole(
-            @PathVariable("granteeId") String granteeId,
+    public UserResponseDto delegateRole(
+            @PathVariable("delegateeId") String delegateeId,
             @Valid @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return this.userRoleService.grantUserRole(userDetails.getUser(), granteeId, userUpdateRoleRequestDto);
+        return this.userRoleService.delegateRole(userDetails.getUser(), delegateeId, userUpdateRoleRequestDto);
     }
 
-    @PutMapping(value = "/{granteeId}/update-role")
+    @PutMapping(value = "/{granteeId}/grant-role")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
-    @Operation(summary = "역할 업데이트 API(완료)", description = "타인의 권한을 위임함. grantorId가 비어있을 시 권한 위임 없이 업데이트만 진행합니다.")
-    public UserResponseDto updateRole(
-            @RequestParam(value = "grantorId", required = false) String grantorId,
+    @Operation(summary = "역할 업데이트 API(완료)", description = "타인에게 권한을 부여함. grantorId가 존재할 시 위임의 형태가 된다.")
+    public UserResponseDto grantRole(
+            @RequestParam(value = "delegatorId", required = false) String delegatorId,
             @PathVariable("granteeId") String granteeId,
             @Valid @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return this.userRoleService.updateUserRole(userDetails.getUser(), grantorId, granteeId, userUpdateRoleRequestDto);
+        return this.userRoleService.grantRole(userDetails.getUser(), delegatorId, granteeId, userUpdateRoleRequestDto);
     }
 
 

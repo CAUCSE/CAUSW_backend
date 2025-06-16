@@ -12,8 +12,8 @@ import net.causw.domain.model.enums.user.Role;
 import net.causw.domain.model.enums.user.UserState;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.policy.domain.RolePolicy;
+import net.causw.domain.validation.DelegatableRoleValidator;
 import net.causw.domain.validation.GrantableRoleValidator;
-import net.causw.domain.validation.UpdatableRoleValidator;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,13 +27,84 @@ import java.util.Set;
 public class UserRoleService {
     private final UserRepository userRepository;
 
+    /**
+     * 자신의 권한을 넘겨주는 권한 위임
+     *
+     * @param delegator - 위임자
+     * @param delegateeId - 피위임자의 id
+     * @param userUpdateRoleRequestDto - 위임할 권한
+     * @return 권한 위임이 완료된 피위임자
+     */
     @Transactional
-    public UserResponseDto grantUserRole(
-            User grantor, // 위임인
-            String granteeId, // 피위임인
+    public UserResponseDto delegateRole(
+            User delegator,
+            String delegateeId,
             UserUpdateRoleRequestDto userUpdateRoleRequestDto
     ) {
-        // 피위임인의 Id로 피위임인 조회
+        // 피위임자의 Id로 피위임자 조회
+        User delegatee = userRepository.findById(delegateeId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.USER_NOT_FOUND
+                )
+        );
+
+        // 권한을 모두 조회
+        Set<Role> delegatorRoles = delegator.getRoles();
+        Set<Role> delegateeRoles = delegatee.getRoles();
+        Role delegatedRole = userUpdateRoleRequestDto.getRole();
+
+        // 예외 처리
+        DelegatableRoleValidator.of(
+                delegatorRoles,
+                delegatedRole,
+                delegateeRoles
+        ).validate();
+
+        // 학생회장 권한 위임 시 부학생 및 학생회 권한 삭제
+        if (delegatedRole.equals(Role.PRESIDENT)) {
+            removeAllRole(Role.VICE_PRESIDENT);
+            removeAllRole(Role.COUNCIL);
+        }
+
+        if (delegatedRole.isUnique()) {
+            removeAllRole(delegatedRole);
+        }
+
+        // 위임자의 권한 삭제
+        removeRole(delegator, delegatedRole);
+
+        // 피위임자에게 권한 설정
+        return UserDtoMapper.INSTANCE.toUserResponseDto(
+                updateRole(delegatee, delegatedRole), null, null);
+    }
+
+    /**
+     * 타인의 권한을 설정하는 권한 부여
+     * <pre>grantorId가 존재할 시 위임의 형태가 된다.<pre/>
+     *
+     * @param grantor - 부여자
+     * @param delegatorId - 피위임자의 id
+     * @param granteeId - 수혜자의 id
+     * @param userUpdateRoleRequestDto - 부여할 권한
+     * @return 권한 부여가 완료된 수혜자
+     */
+    @Transactional
+    public UserResponseDto grantRole(
+            User grantor, // 부여자
+            String delegatorId, // 위임자
+            String granteeId, // 수혜자
+            UserUpdateRoleRequestDto userUpdateRoleRequestDto
+    ) {
+        // 위임자의 Id로 위임자 조회
+        User delegator = StringUtils.isBlank(delegatorId) ? null : userRepository.findById(granteeId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.USER_NOT_FOUND
+                )
+        );
+
+        // 수혜자의 Id로 수혜자 조회
         User grantee = userRepository.findById(granteeId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -42,72 +113,19 @@ public class UserRoleService {
         );
 
         // 권한을 모두 조회
-        Set<Role> grantorRoles = grantor.getRoles();
+        Set<Role> delegatorRoles = delegator == null ? null : delegator.getRoles();
         Set<Role> granteeRoles = grantee.getRoles();
         Role grantedRole = userUpdateRoleRequestDto.getRole();
 
         // 예외 처리
         GrantableRoleValidator.of(
-                grantorRoles,
+                grantor.getRoles(),
+                delegatorRoles,
                 grantedRole,
                 granteeRoles
         ).validate();
 
-        // 학생회장 권한 위임 시 부학생 및 학생회 권한 삭제
-        if (grantedRole.equals(Role.PRESIDENT)) {
-            removeAllRole(Role.VICE_PRESIDENT);
-            removeAllRole(Role.COUNCIL);
-        }
-
-        if (grantedRole.isUnique()) {
-            removeAllRole(grantedRole);
-        }
-
-        // 위임인의 권한 삭제
-        removeRole(grantor, grantedRole);
-
-        // 피위임인에게 권한 설정
-        return UserDtoMapper.INSTANCE.toUserResponseDto(
-                updateRole(grantee, grantedRole), null, null);
-    }
-
-    @Transactional
-    public UserResponseDto updateUserRole(
-            User user,
-            String grantorId, // 위임인
-            String granteeId, // 피위임인
-            UserUpdateRoleRequestDto userUpdateRoleRequestDto
-    ) {
-        // 위임인의 Id로 위임인 조회
-        User grantor = StringUtils.isBlank(grantorId) ? null : userRepository.findById(granteeId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_NOT_FOUND
-                )
-        );
-
-        // 피위임인의 Id로 피위임인 조회
-        User grantee = userRepository.findById(granteeId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_NOT_FOUND
-                )
-        );
-
-        // 권한을 모두 조회
-        Set<Role> grantorRoles = grantor == null ? null : grantor.getRoles();
-        Set<Role> granteeRoles = grantee.getRoles();
-        Role grantedRole = userUpdateRoleRequestDto.getRole();
-
-        // 예외 처리
-        UpdatableRoleValidator.of(
-                user.getRoles(),
-                grantorRoles,
-                grantedRole,
-                granteeRoles
-        ).validate();
-
-        // 학생회장 권한 위임 시 부학생 및 학생회 권한 삭제
+        // 학생회장 권한 부여 시 부학생 및 학생회 권한 삭제
         if (grantedRole.equals(Role.PRESIDENT)) {
             removeAllRole(Role.VICE_PRESIDENT);
             removeAllRole(Role.COUNCIL);
@@ -118,13 +136,13 @@ public class UserRoleService {
             removeAllRole(grantedRole);
         }
 
-        // 고유 권한이 아니고 위임인이 있을 경우 위임인 권한 삭제(관리자 및 기본 권한 제외)
-        else if (grantor != null && grantorRoles.contains(grantedRole)
-                && !RolePolicy.NON_GRANTABLE_ROLES.contains(grantedRole)) {
-            removeRole(grantor, grantedRole);
+        // 고유 권한이 아니고 위임자가 있을 경우 위임자 권한 삭제(관리자 및 기본 권한 제외)
+        else if (delegator != null && delegatorRoles.contains(grantedRole)
+                && !RolePolicy.NON_PROXY_DELEGATABLE_ROLES.contains(grantedRole)) {
+            removeRole(delegator, grantedRole);
         }
 
-        // 피위임인에게 권한 설정
+        // 수혜자에게 권한 설정
         return UserDtoMapper.INSTANCE.toUserResponseDto(
                 updateRole(grantee, grantedRole), null, null);
     }
