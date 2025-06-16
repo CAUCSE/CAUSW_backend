@@ -34,19 +34,24 @@ public class DelegatableRoleValidator extends AbstractValidator {
         if (!RolePolicy.DELEGATABLE_ROLES.contains(this.delegatedRole) || !this.delegatorRoles.contains(this.delegatedRole)) {
             throw  customUnauthorizedException();
         }
-
-        // 피위임자가 특수 권한이 아닌 일반 권한일 경우에만 위임 가능함.
-        // 단, 학생회장 위임의 경우 부학생회장과 학생회 권한이 같이 삭제되므로 이 두 권한을 포함해 위임 가능함.
+        
+        // 학생회장 위임의 경우 부학생회장과 학생회 권한이 같이 삭제되므로 피위임자가 일반 권한 외에 두 권한이어도 위임 가능함.
         if (this.delegatedRole.equals(Role.PRESIDENT)) {
-            if (hasAnyRole(this.delegateeRoles, RolePolicy.ROLES_DELEGATABLE_BY_PRESIDENT.toArray(new Role[0])))
+            if (hasAnyRole(this.delegateeRoles, RolePolicy.ROLES_UPDATABLE_BY_PRESIDENT))
                 return;
         }
+
+        // 그 외의 경우 피위임자가 특수 권한이 아닌 일반 권한일 경우에만 위임 가능함.
         else {
             if (hasAnyRole(this.delegateeRoles, Role.COMMON))
                 return;
         }
 
         throw customUnauthorizedException();
+    }
+
+    private boolean hasAnyRole(Set<Role> targetRole, Set<Role> targetedRoles) {
+        return targetedRoles.stream().anyMatch(targetRole::contains);
     }
 
     private boolean hasAnyRole(Set<Role> targetRole, Role... targetedRoles) {

@@ -184,7 +184,7 @@ public class UserRoleServiceTest {
         }
 
         private static Set<Role> getRolesDelegatableByPresident() {
-            return RolePolicy.ROLES_DELEGATABLE_BY_PRESIDENT;
+            return RolePolicy.ROLES_UPDATABLE_BY_PRESIDENT;
         }
 
         private void assertServiceSuccess(User delegator, Role targetRole) {

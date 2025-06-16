@@ -32,29 +32,25 @@ public class GrantableRoleValidator extends AbstractValidator {
 
     @Override
     public void validate() {
-        // 부여 불가 권한이 아니어야하고 위임자가 있을 시 조건(isNotDelegatableByDelegator)을 충족해야함.
-        if (RolePolicy.NON_GRANTABLE_ROLES.contains(this.grantedRole) && isNotProxyDelegatableByDelegator()) {
+        if (!canGrant() && !canProxyDelegate()) {
             throw  customUnauthorizedException();
         }
 
         // 일반 권한 부여의 경우 수혜자의 권한 상관 없이 부여 가능함.
         if (grantedRole.equals(Role.COMMON)) {
-            if (hasAnyRole(grantorRoles, RolePolicy.DEFAULT_GRANTOR_ROLES.toArray(new Role[0])))
-                return;
+            return;
         }
 
-        // 학생회장 부여의 경우 부학생회장과 학생회 권한이 같이 삭제되므로 수혜자가 일반 권한 또는 이 두 권한일 경우 부여 가능함.
+        // 학생회장 부여의 경우 부학생회장과 학생회 권한이 같이 삭제되므로 수혜자가 일반 권한 외에 두 권한이어도 부여 가능함.
         else if (grantedRole.equals(Role.PRESIDENT)) {
-            if (hasAnyRole(grantorRoles, RolePolicy.getGrantorRoles(Role.PRESIDENT).toArray(new Role[0]))
-                    && hasAnyRole(granteeRoles, RolePolicy.ROLES_DELEGATABLE_BY_PRESIDENT.toArray(new Role[0]))) {
+            if (hasAnyRole(granteeRoles, RolePolicy.ROLES_UPDATABLE_BY_PRESIDENT)) {
                 return;
             }
         }
 
-        // 수혜자가 특수 권한이 아닌 일반 권한일 경우에만 위임 가능함.
+        // 그 외의 경우 수혜자가 특수 권한이 아닌 일반 권한일 경우에만 부여 가능함.
         else {
-            if (hasAnyRole(grantorRoles, RolePolicy.DEFAULT_GRANTOR_ROLES.toArray(new Role[0]))
-                    && hasAnyRole(granteeRoles, Role.COMMON)) {
+            if (hasAnyRole(granteeRoles, Role.COMMON)) {
                 return;
             }
         }
@@ -62,10 +58,25 @@ public class GrantableRoleValidator extends AbstractValidator {
         throw  customUnauthorizedException();
     }
 
-    private boolean isNotProxyDelegatableByDelegator() {
-        // 위임지가 있을 시 위임자가 해당 권한이어야하고 위임 불가 권한이 아니어야함.
-        return delegatorRoles != null &&
-                (!delegatorRoles.contains(grantedRole) || RolePolicy.NON_PROXY_DELEGATABLE_ROLES.contains(grantedRole));
+    public boolean canGrant() {
+        // 부여자가 부여할 권한에 대한 부여 가능 권한을 가지고 있어야 함.
+        return grantorRoles.stream().anyMatch(role -> RolePolicy.GRANTABLE_ROLES
+                .getOrDefault(role, Set.of()).contains(grantedRole));
+    }
+
+    public boolean canProxyDelegate() {
+        // 위임자가 있을 경우 위임자가 대리 위임할 권한이어야 함.
+        if (delegatorRoles == null || !delegatorRoles.contains(grantedRole)) {
+            return false;
+        }
+
+        // 부여자가 대리 위임할 권한에 대한 대리 위임 가능 권한을 가지고 있어야 함.
+        return grantorRoles.stream().anyMatch(role -> RolePolicy.PROXY_DELEGATABLE_ROLES
+                .getOrDefault(role, Set.of()).contains(grantedRole));
+    }
+
+    private boolean hasAnyRole(Set<Role> targetRole, Set<Role> targetedRoles) {
+        return targetedRoles.stream().anyMatch(targetRole::contains);
     }
 
     private boolean hasAnyRole(Set<Role> targetRole, Role... targetedRoles) {
