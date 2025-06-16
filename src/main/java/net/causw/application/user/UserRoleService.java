@@ -63,16 +63,18 @@ public class UserRoleService {
 
         // 학생회장 권한 위임 시 부학생 및 학생회 권한 삭제
         if (delegatedRole.equals(Role.PRESIDENT)) {
-            removeAllRole(Role.VICE_PRESIDENT);
-            removeAllRole(Role.COUNCIL);
+            removeAllStudentCouncil();
         }
 
-        if (delegatedRole.isUnique()) {
+        // 고유 권한일 경우 모든 사용자로부터 권한 삭제
+        else if (delegatedRole.isUnique()) {
             removeAllRole(delegatedRole);
         }
 
         // 위임자의 권한 삭제
-        removeRole(delegator, delegatedRole);
+        else {
+            removeRole(delegator, delegatedRole);
+        }
 
         // 피위임자에게 권한 설정
         return UserDtoMapper.INSTANCE.toUserResponseDto(
@@ -127,18 +129,15 @@ public class UserRoleService {
 
         // 학생회장 권한 부여 시 부학생 및 학생회 권한 삭제
         if (grantedRole.equals(Role.PRESIDENT)) {
-            removeAllRole(Role.VICE_PRESIDENT);
-            removeAllRole(Role.COUNCIL);
+            removeAllStudentCouncil();
         }
 
         // 고유 권한일 경우 모든 사용자로부터 권한 삭제
-        if (grantedRole.isUnique()) {
+        else if (grantedRole.isUnique()) {
             removeAllRole(grantedRole);
         }
 
-        // 고유 권한이 아니고 위임자가 있을 경우 위임자 권한 삭제(관리자 및 기본 권한 제외)
-        else if (delegator != null && delegatorRoles.contains(grantedRole)
-                && !RolePolicy.NON_PROXY_DELEGATABLE_ROLES.contains(grantedRole)) {
+        else if (delegator != null) {
             removeRole(delegator, grantedRole);
         }
 
@@ -181,5 +180,12 @@ public class UserRoleService {
         List<User> targetUsers = userRepository.findByRoleAndState(targetRole, UserState.ACTIVE);
 
         targetUsers.forEach(user -> removeRole(user, targetRole));
+    }
+
+    private void removeAllStudentCouncil() {
+        // 학생회장 권한 위임 시 부학생 및 학생회 권한 삭제
+        removeAllRole(Role.PRESIDENT);
+        removeAllRole(Role.VICE_PRESIDENT);
+        removeAllRole(Role.COUNCIL);
     }
 }

@@ -10,10 +10,7 @@ import net.causw.domain.model.enums.user.UserState;
 import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.ObjectFixtures;
 import net.causw.domain.policy.domain.RolePolicy;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -23,7 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -38,61 +35,19 @@ public class UserRoleServiceTest {
     @Mock
     UserRepository userRepository;
 
+    private User delegator;
+
     @Nested
     class DelegateRoleTest {
 
-        private final User delegator = ObjectFixtures.getUser();
         private final User delegatee = ObjectFixtures.getUser();
         private final String delegateeId = "dummyDelegateeId";
 
-        private List<User> generateUsersByRole(Role role) {
-            return Stream.of(ObjectFixtures.getUser(), ObjectFixtures.getUser(), ObjectFixtures.getUser())
-                    .peek(user -> user.setRoles(Set.of(role))).collect(Collectors.toList());
-        }
-
-        private static Set<Role> getNonDelegatableRoles() {
-            return EnumSet.allOf(Role.class).stream()
-                    .filter(role -> !RolePolicy.DELEGATABLE_ROLES.contains(role))
-                    .collect(Collectors.toSet());
-        }
-
-        private static Set<Role> getSpecialRoles() {
-            return EnumSet.allOf(Role.class).stream()
-                    .filter(role -> !role.equals(Role.COMMON))
-                    .collect(Collectors.toSet());
-        }
-
-        private static Set<Role> getDelegatableRolesWithoutEdge() {
-            return RolePolicy.DELEGATABLE_ROLES.stream()
-                    .filter(role -> !role.equals(Role.PRESIDENT))
-                    .collect(Collectors.toSet());
-        }
-
-        private static Set<Role> getDelegatableAndUniqueRolesWithoutEdge() {
-            return RolePolicy.DELEGATABLE_ROLES.stream()
-                    .filter(role -> !role.equals(Role.PRESIDENT))
-                    .filter(Role::isUnique)
-                    .collect(Collectors.toSet());
-        }
-
-        void assertServiceSuccess(User delegator, Role targetRole) {
-            UserUpdateRoleRequestDto userUpdateRoleRequestDto = new UserUpdateRoleRequestDto(String.valueOf(targetRole));
-            userRoleService.delegateRole(delegator, delegateeId, userUpdateRoleRequestDto);
-            assertThat(delegator.getRoles()).isEqualTo(Set.of(Role.COMMON));
-            assertThat(delegatee.getRoles()).isEqualTo(Set.of(targetRole));
-        }
-
-        void assertValidatorFail(User delegator, Role targetRole) {
-            UserUpdateRoleRequestDto userUpdateRoleRequestDto = new UserUpdateRoleRequestDto(String.valueOf(targetRole));
-            assertThatThrownBy(() -> userRoleService.delegateRole(delegator, delegateeId, userUpdateRoleRequestDto))
-                    .isInstanceOf(UnauthorizedException.class)
-                    .hasMessageContaining(MessageUtil.GRANT_ROLE_NOT_ALLOWED)
-                    .extracting("errorCode")
-                    .isEqualTo(ErrorCode.GRANT_ROLE_NOT_ALLOWED);
-        }
-
         @BeforeEach
         void setUp() {
+            // given
+            delegator = ObjectFixtures.getUser();
+
             //when
             when(userRepository.findById(delegateeId)).thenReturn(Optional.of(delegatee));
         }
@@ -146,6 +101,7 @@ public class UserRoleServiceTest {
             assertServiceSuccess(delegator, role);
         }
 
+        @Disabled("현재 특수 조건을 가지지 않는 고유 권한을 위임하는 경우가 없어 실행 안함, 추후 필요 시 활성화")
         @ParameterizedTest
         @MethodSource("getDelegatableAndUniqueRolesWithoutEdge")
         @DisplayName("고유 권한 위임 후 해당 권한을 가진 사용자가 없을 경우 성공(특수 조건을 가진 권한 제외)")
@@ -153,27 +109,26 @@ public class UserRoleServiceTest {
             // given
             delegator.setRoles(Set.of(role));
             delegatee.setRoles(Set.of(Role.COMMON));
-            List<User> users = generateUsersByRole(role);
 
             // when
-            when(userRepository.findByRoleAndState(role, UserState.ACTIVE)).thenReturn(users);
+            Map<Role, List<User>> mockUsers = mockFindByRoleAndState(Set.of(role), delegator, delegatee);
             userRoleService.delegateRole(delegator, delegateeId, new UserUpdateRoleRequestDto(String.valueOf(role)));
 
             // then
-            users.forEach(user -> assertThat(user.getRoles()).isEqualTo(Set.of(Role.COMMON)));
+            mockUsers.get(role).forEach(user -> assertThat(user.getRoles()).isEqualTo(Set.of(Role.COMMON)));
         }
 
-        @Test
+        @ParameterizedTest
+        @MethodSource("getRolesDelegatableByPresident")
         @DisplayName("위임자가 학생회장일 때 피위임자가 부학생회장과 학생회 또는 일반 권한일 경우 성공")
-        void b_Success1() {
-            for (Role role : RolePolicy.ROLES_DELEGATABLE_BY_PRESIDENT) {
-                // given
-                delegator.setRoles(Set.of(Role.PRESIDENT));
-                delegatee.setRoles(Set.of(role));
+        void b_Success1(Role role) {
+            // given
+            delegator.setRoles(Set.of(Role.PRESIDENT));
+            delegatee.setRoles(Set.of(role));
 
-                // when & then
-                assertServiceSuccess(delegator, Role.PRESIDENT);
-            }
+            // when & then
+            mockFindByRoleAndState(Set.of(Role.PRESIDENT, Role.VICE_PRESIDENT, Role.COUNCIL), delegator, delegatee);
+            assertServiceSuccess(delegator, Role.PRESIDENT);
         }
 
         @Test
@@ -181,22 +136,100 @@ public class UserRoleServiceTest {
         void b_Success2() {
             // given
             delegator.setRoles(Set.of(Role.PRESIDENT));
-            delegatee.setRoles(Set.of(Role.COMMON));
-            Map<Role, List<User>> mockUsers = new HashMap<>();
-            for (Role role : Set.of(Role.PRESIDENT, Role.VICE_PRESIDENT, Role.COUNCIL)) {
-                mockUsers.put(role, generateUsersByRole(role));
-            }
+            delegatee.setRoles(Set.of(Role.COUNCIL));
 
             // when
-            for (Role role : Set.of(Role.PRESIDENT, Role.VICE_PRESIDENT, Role.COUNCIL)) {
-                when(userRepository.findByRoleAndState(role, UserState.ACTIVE)).thenReturn(mockUsers.get(role));
-            }
+            Map<Role, List<User>> mockUsers = mockFindByRoleAndState(
+                    Set.of(Role.PRESIDENT, Role.VICE_PRESIDENT, Role.COUNCIL)
+                    , delegator, delegatee);
 
             userRoleService.delegateRole(delegator, delegateeId, new UserUpdateRoleRequestDto(String.valueOf(Role.PRESIDENT)));
 
             // then
             mockUsers.values().stream().flatMap(Collection::stream)
-                    .forEach(user -> assertThat(user.getRoles()).isEqualTo(Set.of(Role.COMMON)));
+                    .forEach(user -> {
+                        if (user == delegatee) {
+                            assertThat(delegatee.getRoles()).isEqualTo(Set.of(Role.PRESIDENT));
+                        }
+                        else {
+                            assertThat(user.getRoles()).isEqualTo(Set.of(Role.COMMON));
+                        }
+                    });
         }
+
+        // private methods
+        private static Set<Role> getNonDelegatableRoles() {
+            return EnumSet.allOf(Role.class).stream()
+                    .filter(role -> !RolePolicy.DELEGATABLE_ROLES.contains(role))
+                    .collect(Collectors.toSet());
+        }
+
+        private static Set<Role> getSpecialRoles() {
+            return EnumSet.allOf(Role.class).stream()
+                    .filter(role -> !role.equals(Role.COMMON))
+                    .collect(Collectors.toSet());
+        }
+
+        private static Set<Role> getDelegatableRolesWithoutEdge() {
+            return RolePolicy.DELEGATABLE_ROLES.stream()
+                    .filter(role -> !role.equals(Role.PRESIDENT))
+                    .collect(Collectors.toSet());
+        }
+
+        private static Set<Role> getDelegatableAndUniqueRolesWithoutEdge() {
+            return RolePolicy.DELEGATABLE_ROLES.stream()
+                    .filter(role -> !role.equals(Role.PRESIDENT))
+                    .filter(Role::isUnique)
+                    .collect(Collectors.toSet());
+        }
+
+        private static Set<Role> getRolesDelegatableByPresident() {
+            return RolePolicy.ROLES_DELEGATABLE_BY_PRESIDENT;
+        }
+
+        private void assertServiceSuccess(User delegator, Role targetRole) {
+            UserUpdateRoleRequestDto userUpdateRoleRequestDto = new UserUpdateRoleRequestDto(String.valueOf(targetRole));
+            userRoleService.delegateRole(delegator, delegateeId, userUpdateRoleRequestDto);
+            assertThat(delegator.getRoles()).isEqualTo(Set.of(Role.COMMON));
+            assertThat(delegatee.getRoles()).isEqualTo(Set.of(targetRole));
+        }
+
+        private void assertValidatorFail(User delegator, Role targetRole) {
+            UserUpdateRoleRequestDto userUpdateRoleRequestDto = new UserUpdateRoleRequestDto(String.valueOf(targetRole));
+            assertThatThrownBy(() -> userRoleService.delegateRole(delegator, delegateeId, userUpdateRoleRequestDto))
+                    .isInstanceOf(UnauthorizedException.class)
+                    .hasMessageContaining(MessageUtil.GRANT_ROLE_NOT_ALLOWED)
+                    .extracting("errorCode")
+                    .isEqualTo(ErrorCode.GRANT_ROLE_NOT_ALLOWED);
+        }
+    }
+
+    private Map<Role, List<User>> mockFindByRoleAndState(Set<Role> roles, User... users) {
+        Map<Role, List<User>> mockUsers = new HashMap<>();
+
+        for (Role role : roles) {
+            List<User> dummyUsers = IntStream.range(0, 3)
+                    .mapToObj(i -> {
+                        User user = ObjectFixtures.getUser();
+                        user.setRoles(Set.of(role));
+                        return user;
+                    })
+                    .collect(Collectors.toCollection(ArrayList::new));
+
+            for (User user : users) {
+                if (user != null && user.getRoles().contains(role)) {
+                    dummyUsers.add(user);
+                    if (delegator.equals(user)) {
+                        System.out.println("delegator 드감");
+                    }
+                }
+            }
+
+            when(userRepository.findByRoleAndState(role, UserState.ACTIVE)).thenReturn(dummyUsers);
+
+            mockUsers.put(role, dummyUsers);
+        }
+
+        return mockUsers;
     }
 }
