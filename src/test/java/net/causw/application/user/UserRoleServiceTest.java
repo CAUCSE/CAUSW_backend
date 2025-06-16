@@ -37,6 +37,58 @@ public class UserRoleServiceTest {
 
     private User delegator;
 
+    @Test
+    @DisplayName("사용자가 하나의 권한만 가지고 있을 경우 성공(겸직 불가)")
+    void testUpdateRole() {
+        // given
+        User user = ObjectFixtures.getUser();
+        user.setRoles(Set.of(Role.PRESIDENT, Role.COUNCIL));
+
+        // when
+        userRoleService.updateRole(user, Role.COMMON);
+
+        // then
+        assertThat(user.getRoles()).isEqualTo(Set.of(Role.COMMON));
+    }
+
+    @Nested
+    class RemoveRoleTest {
+        User user = ObjectFixtures.getUser();
+
+        @ParameterizedTest
+        @MethodSource("getAllRolesWithoutNone")
+        @DisplayName("하나 남은 권한을 삭제했을 때 COMMON이 부여될 경우 성공")
+        void testRemoveRole(Role role) {
+            // given
+            user.setRoles(Set.of(role));
+
+            // when
+            userRoleService.removeRole(user, role);
+
+            // then
+            assertThat(user.getRoles()).isEqualTo(Set.of(Role.COMMON));
+        }
+
+        @Test
+        @DisplayName("마지막으로 남은 NONE을 삭제했을 때 NONE이 부여될 경우 성공")
+        void testRemoveNone() {
+            // given
+            user.setRoles(Set.of(Role.NONE));
+
+            // when
+            userRoleService.removeRole(user, Role.NONE);
+
+            // then
+            assertThat(user.getRoles()).isEqualTo(Set.of(Role.NONE));
+        }
+
+        private static Set<Role> getAllRolesWithoutNone() {
+            Set<Role> roles = EnumSet.allOf(Role.class);
+            roles.remove(Role.NONE);
+            return roles;
+        }
+    }
+
     @Nested
     class DelegateRoleTest {
 
