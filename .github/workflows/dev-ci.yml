@@ -104,7 +104,7 @@ jobs:
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: flyway-status
-          message-path: flyway-summary.md
+          path: flyway-summary.md
 
       # JPA 엔티티와 DB 스키마 일치 검증
       - name: 빌드 및 JPA 스키마 검증 실행
