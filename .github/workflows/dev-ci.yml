@@ -82,6 +82,7 @@ jobs:
           ./gradlew flywayInfo -Penv=test --console=plain > flyway-info.txt
 
       - name: Parse Flyway info and create summary
+        if: ${{ always() }}
         run: |
           success_count=$(grep -c 'Success' flyway-info.txt || true)
           failed_count=$(grep -c 'Failed' flyway-info.txt || true)
@@ -101,6 +102,7 @@ jobs:
         run: ./gradlew jpaEntityMappingTest --console=plain --no-daemon
 
       - name: Extract JPA entity validation result
+        if: ${{ always() }}
         run: |
           REPORT=build/reports/tests/jpaEntityMappingTest/index.html
 
@@ -123,6 +125,7 @@ jobs:
           fi
 
       - name: Combine Flyway and JPA summaries
+        if: ${{ always() }}
         run: |
           cat flyway-summary.md > db-summary.md
           echo -e "\n---\n" >> db-summary.md
@@ -131,6 +134,7 @@ jobs:
 
       - name: Comment DB summary on PR
         uses: marocchino/sticky-pull-request-comment@v2
+        if: ${{ always() }}
         with:
           header: db-schema-status
           path: db-summary.md
