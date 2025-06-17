@@ -40,6 +40,7 @@ public class UserAdmissionLog extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private UserAdmissionLogAction action;
 
+    @Transient
     @Column(name = "rejectReason",nullable = true)
     private String rejectReason;
 
