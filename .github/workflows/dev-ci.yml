@@ -112,14 +112,17 @@ jobs:
           # Extract the last "Caused by:" block
           FAIL_LOG=$(awk '
           /> .* FAILED/ && found_failed == 0 {
-            print "⚠️ " $0    # 첫 FAILED 줄에만 이모지 붙여서 출력
+            print "⚠️ " $0    
             getline
-            print              # 다음 줄 (예외 메시지)
+            print              
             found_failed=1
             next
           }
           found_failed && /Caused by:/ {
-            print              # 모든 Caused by: 줄 출력
+            line = $0           
+            getline nextline    
+            sub(/^[ \t]+/, "", nextline)  
+            print line " " nextline       
           }
             ' /tmp/jpa-test.log)
 
