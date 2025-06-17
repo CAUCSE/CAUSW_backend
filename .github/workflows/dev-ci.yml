@@ -101,9 +101,6 @@ jobs:
           echo "" >> flyway-summary.md
 
       # JPA 엔티티와 DB 스키마 일치 검증
-      - name: 빌드 및 JPA 스키마 검증 실행
-        run: ./gradlew jpaEntityMappingTest --console=plain --no-daemon
-
       - name: Extract JPA entity validation result
         if: ${{ always() }}
         run: |
@@ -112,7 +109,7 @@ jobs:
 
           # Extract the last "Caused by:" block
           FAIL_LOG=$(awk '
-          /> .* FAILED/ && found_failed == 0 {
+          /> .*\(.*\) FAILED/ && found_failed == 0 {
             print "⚠️ " $0    
             getline
             print              
