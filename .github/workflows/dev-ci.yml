@@ -105,13 +105,11 @@ jobs:
       - name: Extract JPA entity validation result
         if: ${{ always() }}
         run: |
-          REPORT=build/reports/tests/jpaEntityMappingTest/index.html
-
           # Run test and capture full log
           ./gradlew jpaEntityMappingTest --console=plain --no-daemon | tee /tmp/jpa-test.log || true
 
           # Extract the last "Caused by:" block
-          FAIL_LOG=$(tac /tmp/jpa-test.log | grep -m 1 -B 0 "Caused by:" | tac)
+          FAIL_LOG=$(awk '/Caused by:/, /^[[:space:]]*$/' /tmp/jpa-test.log)
 
           touch jpa-entity-summary.md
           echo "### 🏗️ JPA Entity Schema Validation Result" > jpa-entity-summary.md
@@ -121,7 +119,6 @@ jobs:
             echo "\`\`\`" >> jpa-entity-summary.md
             echo "$FAIL_LOG" >> jpa-entity-summary.md
             echo "\`\`\`" >> jpa-entity-summary.md
-            echo -e "\n📄 Full report: $REPORT" >> jpa-entity-summary.md
           else
             echo "✅ No schema mismatches detected." >> jpa-entity-summary.md
           fi
