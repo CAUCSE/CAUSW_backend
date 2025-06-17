@@ -17,7 +17,7 @@ import java.util.Set;
 public class CeremonyNotificationSetting extends BaseEntity {
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "TB_CEREMONY_SUBSCRIBE_YEAR", joinColumns = @JoinColumn(name = "notification_id"))
+    @CollectionTable(name = "tb_ceremony_subscribe_year", joinColumns = @JoinColumn(name = "notification_id"))
     @Column(name = "admission_year")
     private Set<Integer> subscribedAdmissionYears = new HashSet<>();
 
