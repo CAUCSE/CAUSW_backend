@@ -1606,8 +1606,8 @@ COLLATE = utf8mb4_0900_ai_ci;
 -- Table `tb_fail`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_fail` (
-    `user_id` VARCHAR(255) NOT NULL,
-    PRIMARY KEY (`user_id`))
+    `id` VARCHAR(255) NOT NULL,
+    PRIMARY KEY (`id`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
