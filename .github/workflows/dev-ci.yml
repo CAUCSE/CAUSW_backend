@@ -77,14 +77,14 @@ jobs:
 
       # Flyway 마이그레이션 실행
       - name: Run Flyway migration
-        continue-on-error: true
         run: |
-          ./gradlew flywayMigrate -Penv=test
-          ./gradlew flywayInfo -Penv=test --console=plain > flyway-info.txt
+          ./gradlew flywayMigrate -Penv=test   
 
       - name: Parse Flyway info and create summary
         if: ${{ always() }}
         run: |
+          ./gradlew flywayInfo -Penv=test --console=plain > flyway-info.txt
+          
           success_count=$(grep -c 'Success' flyway-info.txt || true)
           failed_count=$(grep -c 'Failed' flyway-info.txt || true)
           pending_count=$(grep -c 'Pending' flyway-info.txt || true)
