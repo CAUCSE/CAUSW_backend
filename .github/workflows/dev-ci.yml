@@ -140,10 +140,12 @@ jobs:
       - name: Combine Flyway and JPA summaries
         if: ${{ always() }}
         run: |
+          SHORT_SHA=${{ github.event.pull_request.head.sha }}
+          
           cat flyway-summary.md > db-summary.md
           echo -e "\n\n" >> db-summary.md
           cat jpa-entity-summary.md >> db-summary.md
-          echo -e "\nResults for commit $GITHUB_SHA." >> db-summary.md
+          echo -e "\nResults for commit \`${SHORT_SHA::7}\`" >> db-summary.md
           echo -e "\n♻️ This comment has been updated with latest results." >> db-summary.md
 
       - name: Comment DB summary on PR
