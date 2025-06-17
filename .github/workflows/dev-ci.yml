@@ -87,24 +87,24 @@ jobs:
           success_count=$(grep -c 'Success' flyway-info.txt || true)
           failed_count=$(grep -c 'Failed' flyway-info.txt || true)
           pending_count=$(grep -c 'Pending' flyway-info.txt || true)
-
-          summary="### Flyway Migration Summary 📦\n\n"
-          summary+="| Status  | Count |\n"
-          summary+="|---------|-------|\n"
-          summary+="| ✅ Success | $success_count |\n"
-          summary+="| ❌ Failed  | $failed_count |\n"
-          summary+="| ⏳ Pending | $pending_count |\n"
-
-          echo "$summary" > flyway-summary.md
+      
           echo "summary<<EOF" >> $GITHUB_OUTPUT
-          echo "$summary" >> $GITHUB_OUTPUT
+          echo "### Flyway Migration Summary 📦" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "| Status  | Count |" >> $GITHUB_OUTPUT
+          echo "|---------|-------|" >> $GITHUB_OUTPUT
+          echo "| ✅ Success | $success_count |" >> $GITHUB_OUTPUT
+          echo "| ❌ Failed  | $failed_count |" >> $GITHUB_OUTPUT
+          echo "| ⏳ Pending | $pending_count |" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "♻️ This comment has been updated with latest results." >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Comment Flyway status on PR
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: flyway-status
-          path: flyway-summary.md
+          message: ${{ steps.flyway-summary.outputs.summary }}
 
       # JPA 엔티티와 DB 스키마 일치 검증
       - name: 빌드 및 JPA 스키마 검증 실행
@@ -133,6 +133,12 @@ jobs:
           fi
 
           echo -e "\n♻️ This comment has been updated with latest results." >> jpa-entity-summary.md
+
+      - name: Comment JPA Entity Mapping result
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: jpa-entity-status
+          path: jpa-entity-summary.md
 
       # 테스트 실행
       - name: Test with Gradle
