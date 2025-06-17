@@ -46,12 +46,23 @@ jobs:
         run: chmod +x ./gradlew
         shell: bash
 
-      # MySQL Docker 컨테이너 실행
+      # .env.test 파일 생성
+      - name: Create .env.test file
+        run: |
+          cat <<EOF > .env.test
+          DB_NAME=causw_test
+          DB_USERNAME=root
+          DB_PASSWORD=password
+          DB_URL=jdbc:mysql://localhost:3306/causw_test
+          EOF
+
+      # MySQL Docker 컨테이너 실행 대기
       - name: Start MySQL container
         run: |
+          source .env.test
           docker run --name test-mysql \
-            -e MYSQL_ROOT_PASSWORD=password \
-            -e MYSQL_DATABASE=causw_test \
+            -e MYSQL_DATABASE=$DB_NAME \
+            -e MYSQL_ROOT_PASSWORD=$DB_PASSWORD \
             -p 3306:3306 \
             -d mysql:8
 
@@ -67,26 +78,12 @@ jobs:
       # Flyway 마이그레이션 실행
       - name: Run Flyway migration
         run: |
-          ./gradlew flywayMigrate \
-            -DDB_URL=jdbc:mysql://localhost:3306/causw_test \
-            -DDB_USERNAME=root \
-            -DDB_PASSWORD=password
-          ./gradlew flywayInfo \
-            -DDB_URL=jdbc:mysql://localhost:3306/causw_test \
-            -DDB_USERNAME=root \
-            -DDB_PASSWORD=password
+          ./gradlew flywayMigrate -Penv=test
+          ./gradlew flywayInfo -Penv=test
 
       # JPA 엔티티와 DB 스키마 일치 검증
       - name: 빌드 및 JPA 스키마 검증 실행
         run: ./gradlew jpaEntityMappingTest -Dspring.profiles.active=test --console=plain --no-daemon
-
-      # report
-      - name: Upload test report artifact
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: jpaEntityMappingTest-report
-          path: build/reports/tests/jpaEntityMappingTest/
 
       # 테스트 실행
       - name: Test with Gradle
