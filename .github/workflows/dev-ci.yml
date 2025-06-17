@@ -82,29 +82,19 @@ jobs:
           ./gradlew flywayInfo -Penv=test --console=plain > flyway-info.txt
 
       - name: Parse Flyway info and create summary
-        id: flyway-summary
         run: |
           success_count=$(grep -c 'Success' flyway-info.txt || true)
           failed_count=$(grep -c 'Failed' flyway-info.txt || true)
           pending_count=$(grep -c 'Pending' flyway-info.txt || true)
       
-          echo "summary<<EOF" >> $GITHUB_OUTPUT
-          echo "### Flyway Migration Summary 📦" >> $GITHUB_OUTPUT
-          echo "" >> $GITHUB_OUTPUT
-          echo "| Status  | Count |" >> $GITHUB_OUTPUT
-          echo "|---------|-------|" >> $GITHUB_OUTPUT
-          echo "| ✅ Success | $success_count |" >> $GITHUB_OUTPUT
-          echo "| ❌ Failed  | $failed_count |" >> $GITHUB_OUTPUT
-          echo "| ⏳ Pending | $pending_count |" >> $GITHUB_OUTPUT
-          echo "" >> $GITHUB_OUTPUT
-          echo "♻️ This comment has been updated with latest results." >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: Comment Flyway status on PR
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          header: flyway-status
-          message: ${{ steps.flyway-summary.outputs.summary }}
+          echo "### Flyway Migration Summary 📦" > flyway-summary.md
+          echo "" >> flyway-summary.md
+          echo "| Status  | Count |" >> flyway-summary.md
+          echo "|---------|-------|" >> flyway-summary.md
+          echo "| ✅ Success | $success_count |" >> flyway-summary.md
+          echo "| ❌ Failed  | $failed_count |" >> flyway-summary.md
+          echo "| ⏳ Pending | $pending_count |" >> flyway-summary.md
+          echo "" >> flyway-summary.md
 
       # JPA 엔티티와 DB 스키마 일치 검증
       - name: 빌드 및 JPA 스키마 검증 실행
@@ -132,13 +122,18 @@ jobs:
             echo "✅ No schema mismatches detected." >> jpa-entity-summary.md
           fi
 
-          echo -e "\n♻️ This comment has been updated with latest results." >> jpa-entity-summary.md
+      - name: Combine Flyway and JPA summaries
+        run: |
+          cat flyway-summary.md > db-summary.md
+          echo -e "\n---\n" >> db-summary.md
+          cat jpa-entity-summary.md >> db-summary.md
+          echo -e "\n♻️ This comment has been updated with latest results." >> db-summary.md
 
-      - name: Comment JPA Entity Mapping result
+      - name: Comment DB summary on PR
         uses: marocchino/sticky-pull-request-comment@v2
         with:
-          header: jpa-entity-status
-          path: jpa-entity-summary.md
+          header: db-schema-status
+          path: db-summary.md
 
       # 테스트 실행
       - name: Test with Gradle
