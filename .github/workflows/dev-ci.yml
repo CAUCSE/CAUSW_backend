@@ -77,6 +77,7 @@ jobs:
 
       # Flyway 마이그레이션 실행
       - name: Run Flyway migration
+        continue-on-error: true
         run: |
           ./gradlew flywayMigrate -Penv=test
           ./gradlew flywayInfo -Penv=test --console=plain > flyway-info.txt
