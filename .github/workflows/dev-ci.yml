@@ -87,7 +87,8 @@ jobs:
           success_count=$(grep -c 'Success' flyway-info.txt || true)
           failed_count=$(grep -c 'Failed' flyway-info.txt || true)
           pending_count=$(grep -c 'Pending' flyway-info.txt || true)
-      
+          
+          touch flyway-summary.md
           echo "### Flyway Migration Summary 📦" > flyway-summary.md
           echo "" >> flyway-summary.md
           echo "| Status  | Count |" >> flyway-summary.md
@@ -112,6 +113,7 @@ jobs:
           # Extract the last "Caused by:" block
           FAIL_LOG=$(tac /tmp/jpa-test.log | grep -m 1 -B 0 "Caused by:" | tac)
 
+          touch jpa-entity-summary.md
           echo "### 🏗️ JPA Entity Schema Validation Result" > jpa-entity-summary.md
           echo "" >> jpa-entity-summary.md
 
