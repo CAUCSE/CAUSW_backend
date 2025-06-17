@@ -9,7 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "TB_CEREMONY_PUSH_NOTIFICATION")
+@Table(name = "tb_ceremony_push_notification")
 @Getter
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
