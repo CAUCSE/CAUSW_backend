@@ -111,17 +111,17 @@ jobs:
 
           # Extract the last "Caused by:" block
           FAIL_LOG=$(awk '
-          /> .* FAILED/ {
-            print "⚠️ " $0 # FAILED 라인 출력
-            getline        # 다음 줄 (예외 메시지)
-            print
+          /> .* FAILED/ && found_failed == 0 {
+            print "⚠️ " $0    # 첫 FAILED 줄에만 이모지 붙여서 출력
+            getline
+            print              # 다음 줄 (예외 메시지)
             found_failed=1
             next
           }
-          found_failed && /^Caused by:/ {
-            print          # 모든 Caused by 줄 출력
+          found_failed && /Caused by:/ {
+            print              # 모든 Caused by: 줄 출력
           }
-          ' /tmp/jpa-test.log)
+            ' /tmp/jpa-test.log)
 
           touch jpa-entity-summary.md
           echo "Schema Validation Result 🔍" > jpa-entity-summary.md
