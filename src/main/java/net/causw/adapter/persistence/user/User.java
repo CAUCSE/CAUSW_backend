@@ -94,6 +94,7 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<VoteRecord> voteRecordList;
 
+    @Transient
     @Column(name = "rejectionOrDropReason",nullable = true)
     private String rejectionOrDropReason;
 
