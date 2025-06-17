@@ -109,7 +109,7 @@ jobs:
           ./gradlew jpaEntityMappingTest --console=plain --no-daemon | tee /tmp/jpa-test.log || true
 
           # Extract the last "Caused by:" block
-          FAIL_LOG=$(awk '/Caused by:/, /^[[:space:]]*$/' /tmp/jpa-test.log)
+          FAIL_LOG=$(awk '/Caused by:/, /^[[:space:]]*$/' /tmp/jpa-test.log | sed 's/^[ \t]*//')
 
           touch jpa-entity-summary.md
           echo "### 🏗️ JPA Entity Schema Validation Result" > jpa-entity-summary.md
@@ -127,7 +127,7 @@ jobs:
         if: ${{ always() }}
         run: |
           cat flyway-summary.md > db-summary.md
-          echo -e "\n---\n" >> db-summary.md
+          echo -e "\n___\n" >> db-summary.md
           cat jpa-entity-summary.md >> db-summary.md
           echo -e "\n♻️ This comment has been updated with latest results." >> db-summary.md
 
