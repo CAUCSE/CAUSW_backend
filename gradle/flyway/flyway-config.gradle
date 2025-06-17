@@ -24,7 +24,7 @@ def dbUsername = project.hasProperty("DB_USERNAME") ? project.property("DB_USERN
 def dbPassword = project.hasProperty("DB_PASSWORD") ? project.property("DB_PASSWORD") : System.getProperty("DB_PASSWORD")
 
 if (!dbUrl || !dbUsername || !dbPassword) {
-    logger.lifecycle("DB 설정값이 누락되어 flyway 설정이 불가능합니다.")
+    logger.lifecycle("Skipping Flyway migration in Gradle: required DB config not found. Spring Boot application will still apply migrations at runtime.")
     return
 }
 
