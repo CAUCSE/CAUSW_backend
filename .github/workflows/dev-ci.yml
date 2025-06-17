@@ -89,7 +89,8 @@ jobs:
           pending_count=$(grep -c 'Pending' flyway-info.txt || true)
           
           touch flyway-summary.md
-          echo "### Flyway Migration Summary 📦" > flyway-summary.md
+          echo "Migration Result 📦" > flyway-summary.md
+          echo "---------------------------" >> flyway-summary.md
           echo "" >> flyway-summary.md
           echo "| Status  | Count |" >> flyway-summary.md
           echo "|---------|-------|" >> flyway-summary.md
@@ -109,10 +110,22 @@ jobs:
           ./gradlew jpaEntityMappingTest --console=plain --no-daemon | tee /tmp/jpa-test.log || true
 
           # Extract the last "Caused by:" block
-          FAIL_LOG=$(awk '/Caused by:/, /^[[:space:]]*$/' /tmp/jpa-test.log | sed 's/^[ \t]*//')
+          FAIL_LOG=$(awk '
+          /> .* FAILED/ {
+            print "⚠️ " $0 # FAILED 라인 출력
+            getline        # 다음 줄 (예외 메시지)
+            print
+            found_failed=1
+            next
+          }
+          found_failed && /^Caused by:/ {
+            print          # 모든 Caused by 줄 출력
+          }
+          ' /tmp/jpa-test.log)
 
           touch jpa-entity-summary.md
-          echo "### 🏗️ JPA Entity Schema Validation Result" > jpa-entity-summary.md
+          echo "Schema Validation Result 🔍" > jpa-entity-summary.md
+          echo "---------------------------------------" >> jpa-entity-summary.md
           echo "" >> jpa-entity-summary.md
 
           if [[ -n "$FAIL_LOG" ]]; then
@@ -127,7 +140,7 @@ jobs:
         if: ${{ always() }}
         run: |
           cat flyway-summary.md > db-summary.md
-          echo -e "\n___\n" >> db-summary.md
+          echo -e "\n\n" >> db-summary.md
           cat jpa-entity-summary.md >> db-summary.md
           echo -e "\n♻️ This comment has been updated with latest results." >> db-summary.md
 
