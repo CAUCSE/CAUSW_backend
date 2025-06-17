@@ -1,6 +1,6 @@
 -- Migration: CreateFailTable
 
-CREATE TABLE `tb_fail` (
+CREATE TABLE `tb_board` (
     `name` VARCHAR(255) NOT NULL,
     PRIMARY KEY (`name`)
 )

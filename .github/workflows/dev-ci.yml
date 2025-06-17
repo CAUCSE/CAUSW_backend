@@ -145,6 +145,7 @@ jobs:
           cat flyway-summary.md > db-summary.md
           echo -e "\n\n" >> db-summary.md
           cat jpa-entity-summary.md >> db-summary.md
+          echo -e "\nResults for commit $GITHUB_SHA." >> db-summary.md
           echo -e "\n♻️ This comment has been updated with latest results." >> db-summary.md
 
       - name: Comment DB summary on PR
