@@ -68,6 +68,8 @@ public class JpaEntityMappingTest {
     private Properties jpaProperties() {
       Properties properties = new Properties();
       properties.setProperty("hibernate.hbm2ddl.auto", "validate");
+      properties.setProperty("hibernate.physical_naming_strategy",
+          "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy");
       return properties;
     }
 
