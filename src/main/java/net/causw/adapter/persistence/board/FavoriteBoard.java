@@ -14,7 +14,7 @@ import jakarta.persistence.Table;
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "TB_FAVORITE_BOARD")
+@Table(name = "tb_favorite_board")
 public class FavoriteBoard extends BaseEntity {
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false)
