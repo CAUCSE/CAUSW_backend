@@ -14,9 +14,9 @@ import lombok.NoArgsConstructor;
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "tb_board")
+@Table(name = "tb_fail")
 public class Fail {
 
   @Id
-  private Long id;
+  private String id;
 }
