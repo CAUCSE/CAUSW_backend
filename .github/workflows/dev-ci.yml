@@ -93,7 +93,7 @@ jobs:
 
       # JPA 엔티티와 DB 스키마 일치 검증
       - name: 빌드 및 JPA 스키마 검증 실행
-        run: ./gradlew jpaEntityMappingTest -Dspring.profiles.active=test --console=plain --no-daemon
+        run: ./gradlew jpaEntityMappingTest --console=plain --no-daemon
 
       # 테스트 실행
       - name: Test with Gradle

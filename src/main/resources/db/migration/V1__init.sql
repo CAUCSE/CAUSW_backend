@@ -1602,17 +1602,6 @@ DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
 
--- -----------------------------------------------------
--- Table `tb_fail`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `tb_fail` (
-    `id` VARCHAR(255) NOT NULL,
-    PRIMARY KEY (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
-
-
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
