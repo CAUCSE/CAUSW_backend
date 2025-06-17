@@ -17,7 +17,7 @@ import jakarta.persistence.Table;
 @Builder(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "TB_INQUIRY")
+@Table(name = "tb_inquiry")
 public class Inquiry extends BaseEntity {
     @Column(name = "title",nullable = false)
     private String title;

@@ -13,7 +13,7 @@ import jakarta.persistence.Table;
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "TB_TEXT_FIELD")
+@Table(name = "tb_text_field")
 public class TextField extends BaseEntity {
     @Column(name = "tb_key", unique = true, nullable = false)
     private String key;
