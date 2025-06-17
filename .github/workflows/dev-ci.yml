@@ -56,21 +56,11 @@ jobs:
           DB_URL=jdbc:mysql://localhost:3306/causw_test
           EOF
 
-      # MySQL 설정 파일 작성 (lower_case_table_names=1)
-      - name: Create MySQL custom config
-        run: |
-          mkdir -p ./mysql-conf.d
-          cat <<EOF > ./mysql-conf.d/custom.cnf
-          [mysqld]
-          lower_case_table_names=1
-          EOF
-
       # MySQL Docker 컨테이너 실행 대기
       - name: Start MySQL container
         run: |
           source .env.test
           docker run --name test-mysql \
-            -v $(pwd)/mysql-conf.d:/etc/mysql/conf.d \
             -e MYSQL_DATABASE=$DB_NAME \
             -e MYSQL_ROOT_PASSWORD=$DB_PASSWORD \
             -p 3306:3306 \
@@ -89,7 +79,32 @@ jobs:
       - name: Run Flyway migration
         run: |
           ./gradlew flywayMigrate -Penv=test
-          ./gradlew flywayInfo -Penv=test
+          ./gradlew flywayInfo -Penv=test --console=plain > flyway-info.txt
+
+      - name: Parse Flyway info and create summary
+        id: flyway-summary
+        run: |
+          success_count=$(grep -c 'Success' flyway-info.txt || true)
+          failed_count=$(grep -c 'Failed' flyway-info.txt || true)
+          pending_count=$(grep -c 'Pending' flyway-info.txt || true)
+
+          summary="### Flyway Migration Summary 📦\n"
+          summary+="| Status  | Count |\n"
+          summary+="|---------|-------|\n"
+          summary+="| ✅ Success | $success_count |\n"
+          summary+="| ❌ Failed  | $failed_count |\n"
+          summary+="| ⏳ Pending | $pending_count |\n"
+
+          echo "$summary" > flyway-summary.md
+          echo "summary<<EOF" >> $GITHUB_OUTPUT
+          echo "$summary" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Comment Flyway status on PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: flyway-status
+          message: $(cat flyway-summary.md)
 
       # JPA 엔티티와 DB 스키마 일치 검증
       - name: 빌드 및 JPA 스키마 검증 실행
