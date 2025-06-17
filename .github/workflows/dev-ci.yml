@@ -56,11 +56,21 @@ jobs:
           DB_URL=jdbc:mysql://localhost:3306/causw_test
           EOF
 
+      # MySQL 설정 파일 작성 (lower_case_table_names=1)
+      - name: Create MySQL custom config
+        run: |
+          mkdir -p ./mysql-conf.d
+          cat <<EOF > ./mysql-conf.d/custom.cnf
+          [mysqld]
+          lower_case_table_names=1
+          EOF
+
       # MySQL Docker 컨테이너 실행 대기
       - name: Start MySQL container
         run: |
           source .env.test
           docker run --name test-mysql \
+            -v $(pwd)/mysql-conf.d:/etc/mysql/conf.d \
             -e MYSQL_DATABASE=$DB_NAME \
             -e MYSQL_ROOT_PASSWORD=$DB_PASSWORD \
             -p 3306:3306 \
