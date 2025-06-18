@@ -24,8 +24,8 @@ public class DelegatableRoleValidator extends AbstractValidator {
         this.delegateeRoles = delegateeRoles;
     }
 
-    public static DelegatableRoleValidator of(Set<Role> grantorRoles, Role grantedRole, Set<Role> granteeRoles) {
-        return new DelegatableRoleValidator(grantorRoles, grantedRole, granteeRoles);
+    public static DelegatableRoleValidator of(Set<Role> delegatorRoles, Role delegatedRole, Set<Role> delegateeRoles) {
+        return new DelegatableRoleValidator(delegatorRoles, delegatedRole, delegateeRoles);
     }
 
     @Override
