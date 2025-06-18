@@ -107,15 +107,15 @@ jobs:
           echo "| ⏳ Pending | $pending_count |" >> flyway-summary.md
           echo "" >> flyway-summary.md
 
-      # JPA 엔티티 매핑 결과 요약
-      - name: Run JPA entity mapping test
+      # 스키마 유효성 검사 결과 요약
+      - name: Run schema validation test
         if: ${{ always() }}
-        run: ./gradlew jpaEntityMappingTest --console=plain --no-daemon | tee /tmp/jpa-test.log || true
+        run: ./gradlew schemaValidationTest --console=plain --no-daemon | tee /tmp/jpa-test.log || true
 
-      - name: Generate JPA entity mapping summary
+      - name: Generate schema validation summary
         if: ${{ always() }}
         run: |
-          # JPA 엔티티 매핑 실패 로그 추출
+          # 스키마 유효성 검사 실패 로그 추출
           FAIL_LOG=$(awk '
           /> .*\(.*\) FAILED/ && found_failed == 0 {
             print "⚠️ " $0    
@@ -132,7 +132,7 @@ jobs:
           }
             ' /tmp/jpa-test.log)
 
-          # JPA 엔티티 매핑 결과 요약 생성
+          # 스키마 유효성 검사 결과 요약 생성
           touch jpa-entity-summary.md
           echo "Schema Validation Result 🔍" > jpa-entity-summary.md
           echo "---------------------------------------" >> jpa-entity-summary.md
@@ -146,7 +146,7 @@ jobs:
             echo "✅ No schema mismatches detected." >> jpa-entity-summary.md
           fi
 
-      # Flyway & JPA 결과를 통합 및 PR 코멘트 작성
+      # Flyway 마이그레이션 & 스키마 유효성 검사 결과 통합 및 PR 코멘트 작성
       - name: Combine Flyway & JPA summaries
         if: ${{ always() }}
         run: |

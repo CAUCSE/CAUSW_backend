@@ -104,7 +104,7 @@ dependencies {
 test {
     useJUnitPlatform()
 
-    exclude '**/JpaEntityMappingTest.class'
+    exclude '**/SchemaValidationTest.class'
 
     testLogging {
         showStandardStreams = true
@@ -123,4 +123,4 @@ apply from: 'gradle/flyway/flyway-config.gradle'
 apply from: 'gradle/flyway/flyway-task.gradle'
 
 // JPA entity mapping test task
-apply from: 'gradle/test/jpa-entity-mapping.gradle'
+apply from: 'gradle/test/schema-validation.gradle'

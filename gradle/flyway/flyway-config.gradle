@@ -1,12 +1,12 @@
 // flyway-config.gradle
 
-// 1. 환경 프로필 지정
+// 1. 환경(env) 설정
 def env = project.hasProperty('env') ? project.property('env') : 'local'
 
-// 2. .env.{env} 존재 시 파싱하여 project.ext 설정
+// 2. .env.${env} 파싱
 def envFile = file(".env.${env}")
 if (envFile.exists()) {
-    logger.lifecycle(".env.${env} 파일을 로드합니다.")
+    logger.lifecycle("Parsing .env.${env} file")
     envFile.eachLine { line ->
         def trimmedLine = line.trim()
         if (!trimmedLine || trimmedLine.startsWith('#')) return
@@ -18,13 +18,19 @@ if (envFile.exists()) {
     }
 }
 
-// 3. 환경변수 설정: project.ext → systemProperty → 생략
+/* 3. 환경변수 설정
+ *
+ * 우선순위
+ * (1) Gradle -P 옵션 (e.g. ./gradlew flywayInfo -PDB_URL=... -PDB_USERNAME=... -PDB_PASSWORD=...)
+ * (2) .env.{env}
+ * (3) 환경변수 설정 생략
+ */
 def dbUrl = project.hasProperty("DB_URL") ? project.property("DB_URL") : null
 def dbUsername = project.hasProperty("DB_USERNAME") ? project.property("DB_USERNAME") : null
 def dbPassword = project.hasProperty("DB_PASSWORD") ? project.property("DB_PASSWORD") : null
 
 if (!dbUrl || !dbUsername || !dbPassword) {
-    logger.lifecycle("Skipping Flyway migration in Gradle: required DB config not found. Spring Boot application will still apply migrations at runtime.")
+    logger.lifecycle("Skipping Flyway configuration in Gradle: required DB properties not found.")
     return
 }
 

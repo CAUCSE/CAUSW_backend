@@ -1,10 +1,10 @@
-// jpa-entity-mapping.gradle
+// schema-validation.gradle
 
-tasks.register('jpaEntityMappingTest', Test) {
+tasks.register('schemaValidationTest', Test) {
     useJUnitPlatform()
 
     // 테스트 클래스 포함 필터 (패키지 경로 기준)
-    include '**/JpaEntityMappingTest.class'
+    include '**/SchemaValidationTest.class'
 
     testClassesDirs = sourceSets.test.output.classesDirs
     classpath = sourceSets.test.runtimeClasspath

@@ -19,14 +19,14 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = JpaEntityMappingTest.Config.class)
-public class JpaEntityMappingTest {
+@ContextConfiguration(classes = SchemaValidationTest.Config.class)
+public class SchemaValidationTest {
 
   private static final String targetPackages = "net.causw.adapter.persistence";
 
   @Test
   void contextLoads() {
-    // targetPackages 내의 JPA 엔티티와 DB 스키마 일치 검증
+    // 대상 패키지 내의 엔티티와 실제 DB 스키마 간의 유효성 검사 (hibernate.hbm2ddl.auto=validate)
   }
 
   @TestConfiguration
@@ -69,7 +69,7 @@ public class JpaEntityMappingTest {
       properties.setProperty("hibernate.hbm2ddl.auto", "validate");
       properties.setProperty(
           "hibernate.physical_naming_strategy",
-          "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy"); // 엔티티의 camel case를 snake case로, 대문자를 소문자로 변경
+          "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy");
       return properties;
     }
 

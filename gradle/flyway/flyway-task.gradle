@@ -3,7 +3,7 @@
 tasks.register('flywayCreate') {
     doLast {
         def description = project.findProperty('desc') ?: null
-        if (!description) throw new GradleException("Missing -Pdesc=...")
+        if (!description) throw new GradleException("Cannot run 'flywayCreate': Missing required property -Pdesc=...")
 
         def timestamp = new Date().format("yyyyMMddHHmmss")
         def file = file("src/main/resources/db/migration/V${timestamp}__${description}.sql")
