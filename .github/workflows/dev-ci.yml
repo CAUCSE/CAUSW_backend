@@ -16,7 +16,7 @@ jobs:
 
     env:
       DB_NAME: causw_test
-      DB_URL: jdbc:mysql://localhost:3306/causw_test
+      DB_URL: jdbc:mysql://mysql:3306/causw_test
       DB_USERNAME: root
       DB_PASSWORD: password
 
@@ -24,8 +24,8 @@ jobs:
       mysql:
         image: mysql:8
         env:
-          MYSQL_DATABASE: $DB_NAME
-          MYSQL_ROOT_PASSWORD: $DB_PASSWORD
+          MYSQL_DATABASE: ${{ env.DB_NAME }}
+          MYSQL_ROOT_PASSWORD: ${{ env.DB_PASSWORD }}
         ports:
           - 3306:3306
         options: >
