@@ -28,11 +28,7 @@ jobs:
           MYSQL_ROOT_PASSWORD: ${{ env.DB_PASSWORD }}
         ports:
           - 3306:3306
-        options: >
-          --health-cmd="mysqladmin ping -uroot -ppassword"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
+        options: --health-cmd="mysqladmin ping -uroot -ppassword" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
       # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
