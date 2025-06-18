@@ -68,7 +68,7 @@ public class GrantableRoleValidator extends AbstractValidator {
         throw  customUnauthorizedException();
     }
 
-    public boolean canGrant() {
+    private boolean canGrant() {
         Set<Role> totalGrantableRoles = grantorRoles.stream()
                 .flatMap(role -> RolePolicy.GRANTABLE_ROLES.getOrDefault(role, Set.of()).stream())
                 .collect(Collectors.toSet());
@@ -77,7 +77,7 @@ public class GrantableRoleValidator extends AbstractValidator {
         return totalGrantableRoles.contains(grantedRole) && totalGrantableRoles.containsAll(grantee.getRoles());
     }
 
-    public boolean canProxyDelegate() {
+    private boolean canProxyDelegate() {
         // 위임자가 대리 위임할 권한이어야 함.
         if (!delegator.getRoles().contains(grantedRole)) {
             return false;
