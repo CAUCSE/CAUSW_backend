@@ -14,6 +14,26 @@ jobs:
     name: Build in Github Actions
     runs-on: ubuntu-22.04
 
+    env:
+      DB_NAME: causw_test
+      DB_URL: jdbc:mysql://localhost:3306/causw_test
+      DB_USERNAME: root
+      DB_PASSWORD: password
+
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_DATABASE: $DB_NAME
+          MYSQL_ROOT_PASSWORD: $DB_PASSWORD
+        ports:
+          - 3306:3306
+        options: >
+          --health-cmd="mysqladmin ping -uroot -ppassword"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
     steps:
       # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
       - name: Checkout branch
@@ -25,6 +45,17 @@ jobs:
         with:
           java-version: '17'
           distribution: 'zulu'
+
+      # Gradle 패키지 캐싱
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
       # git ignore한 yml 파일들 github secret에서 복사해 오기
       - name: Copy secret
@@ -45,6 +76,91 @@ jobs:
       - name: Run chmod to make gradlew executable
         run: chmod +x ./gradlew
         shell: bash
+
+      # Flyway 마이그레이션 및 결과 요약
+      - name: Run Flyway migration
+        run: ./gradlew flywayMigrate -PDB_URL=$DB_URL -PDB_USERNAME=$DB_USERNAME -PDB_PASSWORD=$DB_PASSWORD
+
+      - name: Generate Flyway info summary
+        if: ${{ always() }}
+        run: |
+          # Flyway 마이그레이션 정보 수집 및 분석
+          ./gradlew flywayInfo -PDB_URL=$DB_URL -PDB_USERNAME=$DB_USERNAME -PDB_PASSWORD=$DB_PASSWORD --console=plain > flyway-info.txt
+
+          success_count=$(grep -c 'Success' flyway-info.txt || true)
+          failed_count=$(grep -c 'Failed' flyway-info.txt || true)
+          pending_count=$(grep -c 'Pending' flyway-info.txt || true)
+
+          # Flyway 마이그레이션 결과 요약 생성
+          touch flyway-summary.md
+          echo "Migration Result 📦" > flyway-summary.md
+          echo "---------------------------" >> flyway-summary.md
+          echo "" >> flyway-summary.md
+          echo "| Status  | Count |" >> flyway-summary.md
+          echo "|---------|-------|" >> flyway-summary.md
+          echo "| ✅ Success | $success_count |" >> flyway-summary.md
+          echo "| ❌ Failed  | $failed_count |" >> flyway-summary.md
+          echo "| ⏳ Pending | $pending_count |" >> flyway-summary.md
+          echo "" >> flyway-summary.md
+
+      # JPA 엔티티 매핑 결과 요약
+      - name: Run JPA entity mapping test
+        if: ${{ always() }}
+        run: ./gradlew jpaEntityMappingTest --console=plain --no-daemon | tee /tmp/jpa-test.log || true
+
+      - name: Generate JPA entity mapping summary
+        if: ${{ always() }}
+        run: |
+          # JPA 엔티티 매핑 실패 로그 추출
+          FAIL_LOG=$(awk '
+          /> .*\(.*\) FAILED/ && found_failed == 0 {
+            print "⚠️ " $0    
+            getline
+            print              
+            found_failed=1
+            next
+          }
+          found_failed && /Caused by:/ {
+            line = $0           
+            getline nextline    
+            sub(/^[ \t]+/, "", nextline)  
+            print line " " nextline       
+          }
+            ' /tmp/jpa-test.log)
+
+          # JPA 엔티티 매핑 결과 요약 생성
+          touch jpa-entity-summary.md
+          echo "Schema Validation Result 🔍" > jpa-entity-summary.md
+          echo "---------------------------------------" >> jpa-entity-summary.md
+          echo "" >> jpa-entity-summary.md
+
+          if [[ -n "$FAIL_LOG" ]]; then
+            echo "\`\`\`" >> jpa-entity-summary.md
+            echo "$FAIL_LOG" >> jpa-entity-summary.md
+            echo "\`\`\`" >> jpa-entity-summary.md
+          else
+            echo "✅ No schema mismatches detected." >> jpa-entity-summary.md
+          fi
+
+      # Flyway & JPA 결과를 통합 및 PR 코멘트 작성
+      - name: Combine Flyway & JPA summaries
+        if: ${{ always() }}
+        run: |
+          COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+          COMMIT_URL="https://github.com/${{ github.repository }}/commit/${COMMIT_SHA}"
+
+          cat flyway-summary.md > db-summary.md
+          echo -e "\n\n" >> db-summary.md
+          cat jpa-entity-summary.md >> db-summary.md
+          echo -e "\n\nResults for commit [\`${COMMIT_SHA::7}\`]($COMMIT_URL)" >> db-summary.md
+          echo -e "\n♻️ This comment has been updated with latest results." >> db-summary.md
+
+      - name: Publish Flyway & JPA test results to pr
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: ${{ always() }}
+        with:
+          header: db-schema-status
+          path: db-summary.md
 
       # 테스트 실행
       - name: Test with Gradle

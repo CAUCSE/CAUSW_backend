@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.env.Environment;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -33,11 +34,11 @@ public class JpaEntityMappingTest {
   static class Config {
 
     @Bean
-    public DataSource dataSource() {
+    public DataSource dataSource(Environment env) {
       return DataSourceBuilder.create()
-          .url("jdbc:mysql://localhost:3306/causw_test") // 테스트용 MySQL Docker 컨테이너 설정
-          .username("root")
-          .password("password")
+          .url(env.getProperty("DB_URL"))
+          .username(env.getProperty("DB_USERNAME"))
+          .password(env.getProperty("DB_PASSWORD"))
           .driverClassName("com.mysql.cj.jdbc.Driver")
           .build();
     }

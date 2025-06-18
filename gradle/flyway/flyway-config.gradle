@@ -1,22 +1,12 @@
 // flyway-config.gradle
 
-// .env.* 파일이 없는 경우 Flyway 설정 생략
-def hasAnyEnv = file('.').listFiles()?.any { it.name.matches(/\.env\..+/) }
-
-if (!hasAnyEnv) {
-    logger.lifecycle(".env.* 파일이 존재하지 않아 flyway 플러그인 설정을 생략합니다.")
-    return
-}
-
-// 1. 프로필 지정
+// 1. 환경 프로필 지정
 def env = project.hasProperty('env') ? project.property('env') : 'local'
 
-// 2. .env.{env} 파일 파싱
-def loadEnvFile(String env) {
-    def envFile = file(".env.${env}")
-    if (!envFile.exists()) {
-        throw new GradleException(".env.${env} 파일이 존재하지 않습니다.")
-    }
+// 2. .env.{env} 존재 시 파싱하여 project.ext 설정
+def envFile = file(".env.${env}")
+if (envFile.exists()) {
+    logger.lifecycle(".env.${env} 파일을 로드합니다.")
     envFile.eachLine { line ->
         def trimmedLine = line.trim()
         if (!trimmedLine || trimmedLine.startsWith('#')) return
@@ -28,17 +18,15 @@ def loadEnvFile(String env) {
     }
 }
 
-loadEnvFile(env)
+// 3. 환경변수 설정: project.ext → systemProperty → 생략
+def dbUrl = project.hasProperty("DB_URL") ? project.property("DB_URL") : null
+def dbUsername = project.hasProperty("DB_USERNAME") ? project.property("DB_USERNAME") : null
+def dbPassword = project.hasProperty("DB_PASSWORD") ? project.property("DB_PASSWORD") : null
 
-// 3. project.ext 에서 환경변수 조회, 없는 경우 flyway 설정 생략
-if (!(project.ext.has("DB_URL") && project.ext.has("DB_USERNAME") && project.ext.has("DB_PASSWORD"))) {
-    logger.lifecycle("DB 설정값이 누락되어 flyway 설정을 생략합니다. env='${env}'")
+if (!dbUrl || !dbUsername || !dbPassword) {
+    logger.lifecycle("Skipping Flyway migration in Gradle: required DB config not found. Spring Boot application will still apply migrations at runtime.")
     return
 }
-
-def dbUrl = project.ext.get("DB_URL")
-def dbUsername = project.ext.get("DB_USERNAME")
-def dbPassword = project.ext.get("DB_PASSWORD")
 
 // 4. Flyway 설정
 flyway {
