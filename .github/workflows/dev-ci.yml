@@ -20,20 +20,6 @@ jobs:
       DB_USERNAME: root
       DB_PASSWORD: password
 
-    services:
-      mysql:
-        image: mysql:8
-        env:
-          MYSQL_DATABASE: $DB_NAME
-          MYSQL_ROOT_PASSWORD: $DB_PASSWORD
-        ports:
-          - 3306:3306
-        options: >
-          --health-cmd="mysqladmin ping -uroot -ppassword"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
-
     steps:
       # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
       - name: Checkout branch
@@ -76,6 +62,25 @@ jobs:
       - name: Run chmod to make gradlew executable
         run: chmod +x ./gradlew
         shell: bash
+
+      # MySQL Docker 컨테이너 실행 및 대기
+      - name: Start MySQL container
+        run: |
+          source .env.test
+          docker run --name test-mysql \
+            -e MYSQL_DATABASE=$DB_NAME \
+            -e MYSQL_ROOT_PASSWORD=$DB_PASSWORD \
+            -p 3306:3306 \
+            -d mysql:8
+
+      - name: Wait for MySQL to be ready
+        run: |
+          for i in {1..30}; do
+            nc -z localhost 3306 && echo "MySQL is up" && exit 0
+            echo "Waiting for MySQL..."
+            sleep 1
+          done
+          echo "MySQL did not start in time" && exit 1
 
       # Flyway 마이그레이션 및 결과 요약
       - name: Run Flyway migration
