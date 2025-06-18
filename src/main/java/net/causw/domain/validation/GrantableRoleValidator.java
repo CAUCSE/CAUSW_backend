@@ -10,6 +10,7 @@ import net.causw.domain.policy.domain.RolePolicy;
 
 import java.util.Arrays;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class GrantableRoleValidator extends AbstractValidator {
 
@@ -34,7 +35,7 @@ public class GrantableRoleValidator extends AbstractValidator {
 
     @Override
     public void validate() {
-        if (!canGrant() && !canProxyDelegate()) {
+        if (delegator == null ? !canGrant() : !canProxyDelegate()) {
             throw  customUnauthorizedException();
         }
 
@@ -50,13 +51,14 @@ public class GrantableRoleValidator extends AbstractValidator {
             }
         }
 
-        // 동문회장 부여의 경우 수혜자가 졸업생일 경우에만 부여 가능함
+        // 동문회장 부여의 경우 수혜자가 일반 권한이고 졸업생일 경우에만 부여 가능함
         else if (grantedRole.equals(Role.LEADER_ALUMNI)) {
-            if (grantee.getAcademicStatus().equals(AcademicStatus.GRADUATED))
+            if (hasAnyRole(grantee.getRoles(), Role.COMMON)
+                    && grantee.getAcademicStatus().equals(AcademicStatus.GRADUATED))
                 return;
         }
 
-        // 그 외의 경우 수혜자가 특수 권한이 아닌 일반 권한일 경우에만 부여 가능함.
+        // 그 외의 경우 수혜자가 일반 권한일 경우에만 부여 가능함.
         else {
             if (hasAnyRole(grantee.getRoles(), Role.COMMON)) {
                 return;
@@ -67,14 +69,17 @@ public class GrantableRoleValidator extends AbstractValidator {
     }
 
     public boolean canGrant() {
-        // 부여자가 부여할 권한에 대한 부여 가능 권한을 가지고 있어야 함.
-        return grantorRoles.stream().anyMatch(role -> RolePolicy.GRANTABLE_ROLES
-                .getOrDefault(role, Set.of()).contains(grantedRole));
+        Set<Role> totalGrantableRoles = grantorRoles.stream()
+                .flatMap(role -> RolePolicy.GRANTABLE_ROLES.getOrDefault(role, Set.of()).stream())
+                .collect(Collectors.toSet());
+
+        // 부여자는 부여할 권한 및 수혜자의 모든 권한에 대한 부여 가능 권한을 가지고 있어야 함.
+        return totalGrantableRoles.contains(grantedRole) && totalGrantableRoles.containsAll(grantee.getRoles());
     }
 
     public boolean canProxyDelegate() {
-        // 위임자가 있을 경우 위임자가 대리 위임할 권한이어야 함.
-        if (delegator == null || !delegator.getRoles().contains(grantedRole)) {
+        // 위임자가 대리 위임할 권한이어야 함.
+        if (!delegator.getRoles().contains(grantedRole)) {
             return false;
         }
 
