@@ -111,6 +111,8 @@ dependencies {
 test {
     useJUnitPlatform()
 
+    exclude '**/JpaEntityMappingTest.class'
+
     testLogging {
         showStandardStreams = true
         events = ["passed", "skipped", "failed"]
@@ -126,3 +128,6 @@ test {
 // Custom Flyway configuration and tasks
 apply from: 'gradle/flyway/flyway-config.gradle'
 apply from: 'gradle/flyway/flyway-task.gradle'
+
+// JPA entity mapping test task
+apply from: 'gradle/test/jpa-entity-mapping.gradle'

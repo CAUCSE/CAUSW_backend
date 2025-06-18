@@ -1,0 +1,18 @@
+// jpa-entity-mapping.gradle
+
+tasks.register('jpaEntityMappingTest', Test) {
+    useJUnitPlatform()
+
+    // 테스트 클래스 포함 필터 (패키지 경로 기준)
+    include '**/JpaEntityMappingTest.class'
+
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+
+    testLogging {
+        exceptionFormat = 'full'
+        showExceptions = true
+        showCauses = true
+        showStackTraces = false
+    }
+}
