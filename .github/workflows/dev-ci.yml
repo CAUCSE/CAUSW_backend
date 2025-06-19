@@ -16,7 +16,7 @@ jobs:
 
     env:
       DB_NAME: causw_test
-      DB_URL: jdbc:mysql://mysql:3306/causw_test
+      DB_URL: jdbc:mysql://mysql:3306/causw_test?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
       DB_USERNAME: root
       DB_PASSWORD: password
 
