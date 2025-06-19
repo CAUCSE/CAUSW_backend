@@ -18,7 +18,7 @@ jobs:
       DB_NAME: causw_test
       DB_USERNAME: root
       DB_PASSWORD: password
-      DB_URL: jdbc:mysql://127.0.0.1:3306/${DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
+      DB_URL: jdbc:mysql://127.0.0.1:3306/$DB_NAME?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
 
     services:
       mysql:
