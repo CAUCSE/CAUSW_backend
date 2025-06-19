@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   migration-test:
-    name: Build in Github Actions
+    name: Flyway Migration Test in Github Actions
     runs-on: ubuntu-22.04
 
     env:
@@ -29,7 +29,7 @@ jobs:
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 --silent"
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -ppassword --silent"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
@@ -130,7 +130,7 @@ jobs:
 
 
   junit-test:
-    name: Build in Github Actions
+    name: JUnit Test in Github Actions
     runs-on: ubuntu-22.04
 
     steps:
