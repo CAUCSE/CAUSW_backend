@@ -1,5 +1,5 @@
 name: Setup Common Environment
-description: Checkout, JDK, Gradle Cache, Secrets, gradlew 권한 부여
+description: JDK, Gradle Cache, gradlew 권한 부여
 
 runs:
   using: "composite"

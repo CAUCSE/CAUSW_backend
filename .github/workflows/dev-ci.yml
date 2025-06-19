@@ -23,6 +23,8 @@ jobs:
     services:
       mysql:
         image: mysql:8.0
+        ports:
+          - 3306:3306
         env:
           MYSQL_DATABASE: causw_test
           MYSQL_ROOT_PASSWORD: password
