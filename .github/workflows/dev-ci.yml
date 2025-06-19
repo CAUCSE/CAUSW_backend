@@ -35,6 +35,10 @@ jobs:
           --health-retries=5
 
     steps:
+      # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
       # JDK & Gradle 설정
       - name: Setup JDK and Gradle
         uses: ./.github/actions/setup-jdk-gradle
@@ -130,6 +134,10 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
+      # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
       # JDK & Gradle 설정
       - name: Setup JDK and Gradle
         uses: ./.github/actions/setup-jdk-gradle
