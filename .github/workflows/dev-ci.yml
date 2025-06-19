@@ -16,7 +16,7 @@ jobs:
 
     env:
       DB_NAME: causw_test
-      DB_URL: jdbc:mysql://mysql:3306/causw_test?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
+      DB_URL: jdbc:mysql://127.0.0.1:3306/causw_test?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
       DB_USERNAME: root
       DB_PASSWORD: password
 
@@ -40,25 +40,6 @@ jobs:
       # JDK & Gradle 설정
       - name: Setup JDK and Gradle
         uses: ./.github/actions/setup-jdk-gradle
-
-      - name: Check MySQL bind-address
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y mysql-client
-
-          echo "[INFO] Checking bind-address..."
-          mysql -hmysql -uroot -ppassword -e "SHOW VARIABLES LIKE 'bind_address';"
-
-      - name: Debug DNS and connectivity
-        run: |
-          ping -c 3 mysql
-          nslookup mysql
-
-      - name: Test MySQL connection
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y mysql-client
-          mysql -hmysql -uroot -ppassword -e "SHOW DATABASES;"
 
       # Flyway 마이그레이션 및 결과 요약
       - name: Run Flyway migration
