@@ -15,10 +15,9 @@ jobs:
     runs-on: ubuntu-22.04
 
     env:
-      DB_NAME: causw_test
       DB_USERNAME: root
       DB_PASSWORD: password
-      DB_URL: jdbc:mysql://127.0.0.1:3306/$DB_NAME?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
+      DB_URL: jdbc:mysql://127.0.0.1:3306/test?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
 
     services:
       mysql:
@@ -26,8 +25,8 @@ jobs:
         ports:
           - 3306:3306
         env:
-          MYSQL_DATABASE: ${{ env.DB_NAME }}
-          MYSQL_ROOT_PASSWORD: ${{ env.DB_PASSWORD }}
+          MYSQL_DATABASE: test
+          MYSQL_ROOT_PASSWORD: password
         options: >-
           --health-cmd="mysqladmin ping -h 127.0.0.1 -ppassword"
           --health-interval=5s
