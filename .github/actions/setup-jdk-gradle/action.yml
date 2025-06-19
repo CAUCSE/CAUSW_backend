@@ -1,0 +1,28 @@
+name: Setup Common Environment
+description: JDK, Gradle Cache, gradlew 권한 부여
+
+runs:
+  using: "composite"
+  steps:
+    # java 버전 세팅(JDK 17)
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'zulu'
+
+    # Gradle 패키지 캐싱
+    - name: Cache Gradle packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+    # gradlew 실행 권한 부여
+    - name: Make gradlew executable
+      run: chmod +x ./gradlew
+      shell: bash
