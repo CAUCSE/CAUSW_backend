@@ -41,6 +41,11 @@ jobs:
       - name: Setup JDK and Gradle
         uses: ./.github/actions/setup-jdk-gradle
 
+      - name: Debug DNS and connectivity
+        run: |
+          ping -c 3 mysql
+          nslookup mysql
+
       - name: Test MySQL connection
         run: |
           sudo apt-get update
