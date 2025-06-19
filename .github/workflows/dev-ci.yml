@@ -10,76 +10,34 @@ permissions:
   checks: write
 
 jobs:
-  build:
+  migration-test:
     name: Build in Github Actions
     runs-on: ubuntu-22.04
 
     env:
       DB_NAME: causw_test
-      DB_URL: jdbc:mysql://localhost:3306/causw_test
+      DB_URL: jdbc:mysql://mysql:3306/causw_test
       DB_USERNAME: root
       DB_PASSWORD: password
 
-    steps:
-      # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
-      - name: Checkout branch
-        uses: actions/checkout@v4
-
-      # java 버전 세팅(JDK 17)
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'zulu'
-
-      # Gradle 패키지 캐싱
-      - name: Cache Gradle packages
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
-      # git ignore한 yml 파일들 github secret에서 복사해 오기
-      - name: Copy secret
+    services:
+      mysql:
+        image: mysql:8.0
         env:
-          APPLICATION_FILE: ${{ secrets.APPLICATION_PROFILE_DEV }}
-          APPLICATION_DEV_FILE: ${{ secrets.APPLICATION_DEV }}
-          DIR: ./src/main/resources
+          MYSQL_DATABASE: ${{ env.DB_NAME }}
+          MYSQL_ROOT_PASSWORD: ${{ env.DB_PASSWORD }}
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
 
-          APPLICATION_FILE_NAME: application.yml
-          APPLICATION_DEV_FILE_NAME: application-dev.yml
-        run: |
-          touch $DIR/$APPLICATION_FILE_NAME
-          touch $DIR/$APPLICATION_DEV_FILE_NAME
-          echo "$APPLICATION_FILE" > $DIR/$APPLICATION_FILE_NAME
-          echo "$APPLICATION_DEV_FILE" > $DIR/$APPLICATION_DEV_FILE_NAME
-
-      # gradlew 실행 권한 부여
-      - name: Run chmod to make gradlew executable
-        run: chmod +x ./gradlew
-        shell: bash
-
-      # MySQL Docker 컨테이너 실행 및 대기
-      - name: Start MySQL container
-        run: |
-          docker run --name test-mysql \
-            -e MYSQL_DATABASE=$DB_NAME \
-            -e MYSQL_ROOT_PASSWORD=$DB_PASSWORD \
-            -p 3306:3306 \
-            -d mysql:8
-
-      - name: Wait for MySQL to be ready
-        run: |
-          for i in {1..30}; do
-            nc -z localhost 3306 && echo "MySQL is up" && exit 0
-            echo "Waiting for MySQL..."
-            sleep 1
-          done
-          echo "MySQL did not start in time" && exit 1
+    steps:
+      # JDK & Gradle 설정
+      - name: Setup JDK and Gradle
+        uses: ./.github/actions/setup-jdk-gradle
 
       # Flyway 마이그레이션 및 결과 요약
       - name: Run Flyway migration
@@ -165,6 +123,31 @@ jobs:
         with:
           header: db-schema-status
           path: db-summary.md
+
+
+  junit-test:
+    name: Build in Github Actions
+    runs-on: ubuntu-22.04
+
+    steps:
+      # JDK & Gradle 설정
+      - name: Setup JDK and Gradle
+        uses: ./.github/actions/setup-jdk-gradle
+
+      # git ignore한 yml 파일들 github secret에서 복사해 오기
+      - name: Copy secret
+        env:
+          APPLICATION_FILE: ${{ secrets.APPLICATION_PROFILE_DEV }}
+          APPLICATION_DEV_FILE: ${{ secrets.APPLICATION_DEV }}
+          DIR: ./src/main/resources
+
+          APPLICATION_FILE_NAME: application.yml
+          APPLICATION_DEV_FILE_NAME: application-dev.yml
+        run: |
+          touch $DIR/$APPLICATION_FILE_NAME
+          touch $DIR/$APPLICATION_DEV_FILE_NAME
+          echo "$APPLICATION_FILE" > $DIR/$APPLICATION_FILE_NAME
+          echo "$APPLICATION_DEV_FILE" > $DIR/$APPLICATION_DEV_FILE_NAME
 
       # 테스트 실행
       - name: Test with Gradle
