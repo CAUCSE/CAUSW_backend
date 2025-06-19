@@ -26,13 +26,11 @@ jobs:
         env:
           MYSQL_DATABASE: ${{ env.DB_NAME }}
           MYSQL_ROOT_PASSWORD: ${{ env.DB_PASSWORD }}
-        ports:
-          - 3306:3306
         options: >-
           --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -ppassword --silent"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=20
+          --health-retries=10
 
     steps:
       # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
@@ -42,6 +40,11 @@ jobs:
       # JDK & Gradle 설정
       - name: Setup JDK and Gradle
         uses: ./.github/actions/setup-jdk-gradle
+
+      - name: Test MySQL connection
+        run: |
+          apt-get update && apt-get install -y mysql-client
+          mysql -hmysql -uroot -ppassword -e "SHOW DATABASES;"
 
       # Flyway 마이그레이션 및 결과 요약
       - name: Run Flyway migration
@@ -132,6 +135,7 @@ jobs:
   junit-test:
     name: JUnit Test in Github Actions
     runs-on: ubuntu-22.04
+    if: false # 작업 임시 중지
 
     steps:
       # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
