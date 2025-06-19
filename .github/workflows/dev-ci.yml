@@ -30,8 +30,8 @@ jobs:
           MYSQL_ROOT_PASSWORD: ${{ env.DB_PASSWORD }}
         options: >-
           --health-cmd="mysqladmin ping -h 127.0.0.1 -ppassword"
-          --health-interval=5s \
-          --health-timeout=3s \
+          --health-interval=5s
+          --health-timeout=3s
           --health-retries=5
 
     steps:
