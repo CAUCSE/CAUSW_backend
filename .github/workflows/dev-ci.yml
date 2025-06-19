@@ -41,6 +41,14 @@ jobs:
       - name: Setup JDK and Gradle
         uses: ./.github/actions/setup-jdk-gradle
 
+      - name: Check MySQL bind-address
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+
+          echo "[INFO] Checking bind-address..."
+          mysql -hmysql -uroot -ppassword -e "SHOW VARIABLES LIKE 'bind_address';"
+
       - name: Debug DNS and connectivity
         run: |
           ping -c 3 mysql
