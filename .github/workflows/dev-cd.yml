@@ -54,6 +54,10 @@ jobs:
         run: chmod +x ./gradlew
         shell: bash
 
+      # Flyway 마이그레이션
+      - name: Run Flyway migration
+        run: ./gradlew flywayMigrate -PDB_URL=$DB_URL -PDB_USERNAME=$DB_USERNAME -PDB_PASSWORD=$DB_PASSWORD
+
       # Build -> jar 파일 생성
       - name: Build with Gradle
         run: ./gradlew clean build -x test

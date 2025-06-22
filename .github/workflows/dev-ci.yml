@@ -14,11 +14,6 @@ jobs:
     name: Flyway Migration Test in Github Actions
     runs-on: ubuntu-22.04
 
-    env:
-      DB_USERNAME: root
-      DB_PASSWORD: password
-      DB_URL: jdbc:mysql://127.0.0.1:3306/test?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
-
     services:
       mysql:
         image: mysql:8.0
@@ -42,15 +37,24 @@ jobs:
       - name: Setup JDK and Gradle
         uses: ./.github/actions/setup-jdk-gradle
 
+      # .env.test github secret에서 복사해 오기
+      - name: Copy .env.test from secret
+        env:
+          ENV_TEST: ${{ secrets.ENV_TEST }}
+        run: |
+          cat <<EOF > .env.test
+          $ENV_TEST
+          EOF
+
       # Flyway 마이그레이션 및 결과 요약
       - name: Run Flyway migration
-        run: ./gradlew flywayMigrate -PDB_URL=$DB_URL -PDB_USERNAME=$DB_USERNAME -PDB_PASSWORD=$DB_PASSWORD
+        run: ./gradlew flywayMigrate -Penv=test
 
       - name: Generate Flyway info summary
         if: ${{ always() }}
         run: |
           # Flyway 마이그레이션 정보 수집 및 분석
-          ./gradlew flywayInfo -PDB_URL=$DB_URL -PDB_USERNAME=$DB_USERNAME -PDB_PASSWORD=$DB_PASSWORD --console=plain > flyway-info.txt
+          ./gradlew flywayInfo -Penv=test --console=plain > flyway-info.txt
 
           success_count=$(grep -c 'Success' flyway-info.txt || true)
           failed_count=$(grep -c 'Failed' flyway-info.txt || true)
@@ -70,6 +74,14 @@ jobs:
           EOF
 
       # 스키마 유효성 검사 결과 요약
+      - name: Load .env.test and run schema validation test
+        run: |
+          set -a
+          source .env.test
+          set +a
+          
+          ./gradlew SchemaValidationTest -DDB_URL=$DB_URL -DDB_USERNAME=$DB_USERNAME -DDB_PASSWORD=$DB_PASSWORD --console=plain --no-daemon | tee /tmp/jpa-test.log || true
+
       - name: Run schema validation test
         run: ./gradlew schemaValidationTest --console=plain --no-daemon | tee /tmp/jpa-test.log || true
 
