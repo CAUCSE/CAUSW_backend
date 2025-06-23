@@ -56,48 +56,22 @@ public class GrantableRoleValidatorTest {
     private static final Map<Role, Set<Role>> MOCK_GRANTABLE_ROLES = Map.of(
             Role.ADMIN, Set.of(
                     Role.PRESIDENT,
-                    Role.VICE_PRESIDENT,
-                    Role.COUNCIL,
-                    Role.LEADER_1,
-                    Role.LEADER_2,
-                    Role.LEADER_3,
-                    Role.LEADER_4,
-                    Role.LEADER_ALUMNI,
+                    LEADER_ALUMNI,
                     Role.COMMON
             ),
 
             Role.PRESIDENT, Set.of(
-                    Role.VICE_PRESIDENT,
-                    Role.COUNCIL,
-                    Role.LEADER_1,
-                    Role.LEADER_2,
-                    Role.LEADER_3,
-                    Role.LEADER_4,
-                    Role.LEADER_ALUMNI,
                     Role.COMMON
             )
     );
 
     private static final Map<Role, Set<Role>> MOCK_PROXY_DELEGATABLE_ROLES = Map.of(
             Role.ADMIN, Set.of(
-                    Role.PRESIDENT,
-                    Role.VICE_PRESIDENT,
-                    Role.COUNCIL,
-                    Role.LEADER_1,
-                    Role.LEADER_2,
-                    Role.LEADER_3,
-                    Role.LEADER_4,
-                    Role.LEADER_ALUMNI
+                    Role.PRESIDENT
             ),
 
             Role.PRESIDENT, Set.of(
-                    Role.VICE_PRESIDENT,
-                    Role.COUNCIL,
-                    Role.LEADER_1,
-                    Role.LEADER_2,
-                    Role.LEADER_3,
-                    Role.LEADER_4,
-                    Role.LEADER_ALUMNI
+                    Role.VICE_PRESIDENT
             )
     );
 

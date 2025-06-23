@@ -47,7 +47,7 @@ public class DelegatableRoleValidatorTest {
 
     private static final Map<Role, Set<Role>> MOCK_ROLES_ASSIGNABLE_FOR = Map.of(
             Role.PRESIDENT, Set.of(Role.VICE_PRESIDENT, Role.COUNCIL, Role.COMMON),
-            Role.VICE_PRESIDENT, Set.of(Role.PRESIDENT)
+            Role.VICE_PRESIDENT, Set.of(Role.PRESIDENT, COMMON)
     );
 
     private static final Set<Role> MOCK_DELEGATABLE_ROLES = Set.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT);
