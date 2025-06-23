@@ -64,9 +64,9 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
     }
 
     return uri.startsWith("/static/")
+        || uri.startsWith("/actuator/")
         || uri.equals("/favicon.ico")
         || uri.equals("/healthy")
-        || uri.equals("/actuator")
         || uri.equals("/robots.txt");
   }
 
