@@ -6,6 +6,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
@@ -23,17 +24,25 @@ public class LogAspect {
     public Object loggingExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
         StopWatch stopWatch = new StopWatch();
 
-        stopWatch.start();
-        Object result = joinPoint.proceed(); // 조인포인트의 메서드 실행
-        stopWatch.stop();
-
-        long totalTimeMillis = stopWatch.getTotalTimeMillis();
-
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         String methodName = signature.getMethod().getName();
+        MDC.put("methodName", methodName); // 메서드명 기록
 
-        log.info("실행된 메서드: {}, 실행시간 = {}ms", methodName, totalTimeMillis);
+        try {
+            stopWatch.start();
+            Object result = joinPoint.proceed(); // 메서드 실행
+            stopWatch.stop();
 
-        return result;
+            long totalTimeMillis = stopWatch.getTotalTimeMillis();
+            final String totalTimeStringMillis = String.valueOf(totalTimeMillis);
+            MDC.put("executionTimeMs", totalTimeStringMillis); // 실행시간 기록
+
+            log.debug("실행된 메서드: {}, 실행시간 = {}ms", methodName, totalTimeStringMillis);
+
+            return result;
+        } finally {
+            MDC.remove("methodName");
+            MDC.remove("executionTimeMs");
+        }
     }
 }
