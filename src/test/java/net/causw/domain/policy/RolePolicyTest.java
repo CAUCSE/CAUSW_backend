@@ -2,6 +2,7 @@ package net.causw.domain.policy;
 
 import net.causw.domain.model.enums.user.Role;
 import net.causw.domain.policy.domain.RolePolicy;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -15,13 +16,15 @@ public class RolePolicyTest {
 
     @ParameterizedTest
     @EnumSource(Role.class)
-    public void a_Success(Role role) {
+    @DisplayName("단일 보유 권한 정책이 정의되어 있을 경우 성공")
+    public void getRoleUnique_whenRoleIsChecked_thenReturnsUnique(Role role) {
         assertThat(RolePolicy.getRoleUnique(role)).isNotNull();
     }
 
     @ParameterizedTest
     @EnumSource(Role.class)
-    public void b_Success(Role role) {
+    @DisplayName("권한 우선순위 정책이 정의되어 있을 경우 성공")
+    public void getRolePriority_whenRoleIsChecked_thenReturnsPriority(Role role) {
         assertThat(RolePolicy.getRolePriority(role)).isNotNull();
     }
 }

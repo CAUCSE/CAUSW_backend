@@ -104,7 +104,7 @@ public class GrantableRoleValidatorTest {
     // 부여
     @Test
     @DisplayName("위임자가 없을 때 부여자가 부여할 권한에 대한 부여 가능 권한을 가지고 있을 경우 성공")
-    void b_Success() {
+    void whenNoDelegatorAndGrantorCanGrantRole_thenSuccess() {
         // given
         grantor.setRoles(Set.of(Role.ADMIN));
         grantee.setRoles(Set.of(Role.LEADER_1));
@@ -116,7 +116,7 @@ public class GrantableRoleValidatorTest {
 
     @Test
     @DisplayName("위임자가 없을 때 부여자가 부여할 권한에 대한 부여 가능 권한을 가지고 있지 않을 경우 실패")
-    void b_Failure() {
+    void whenNoDelegatorAndGrantorCannotGrantRole_thenFail() {
         // given
         grantor.setRoles(Set.of(Role.ADMIN));
         grantee.setRoles(Set.of(Role.LEADER_1));
@@ -129,7 +129,7 @@ public class GrantableRoleValidatorTest {
     // 대리 위임
     @Test
     @DisplayName("위임자가 있을 때 위임자가 대리 위임할 권한일 경우 성공")
-    void c_Success() {
+    void whenDelegatorCanProxyGrantRole_thenSuccess() {
         // given
         delegator = ObjectFixtures.getUser();
         grantor.setRoles(Set.of(Role.PRESIDENT));
@@ -143,7 +143,7 @@ public class GrantableRoleValidatorTest {
 
     @Test
     @DisplayName("위임자가 있을 때 위임자가 대리 위임할 권한이 아닐 경우 실패")
-    void c_Failure() {
+    void whenDelegatorCannotProxyGrantRole_thenFail() {
         // given
         delegator = ObjectFixtures.getUser();
         grantor.setRoles(Set.of(Role.PRESIDENT));
@@ -157,7 +157,7 @@ public class GrantableRoleValidatorTest {
 
     @Test
     @DisplayName("위임자가 있을 때 부여자가 대리 위임할 권한에 대한 대리 위임 가능 권한을 가지고 있을 경우 성공")
-    void d_Success() {
+    void whenGrantorCanDelegateGrantableRole_thenSuccess() {
         // given
         delegator = ObjectFixtures.getUser();
         grantor.setRoles(Set.of(Role.ADMIN));
@@ -171,7 +171,7 @@ public class GrantableRoleValidatorTest {
 
     @Test
     @DisplayName("위임자가 있을 때 부여자가 대리 위임할 권한에 대한 대리 위임 가능 권한을 가지고 있지 않을 경우 실패")
-    void d_Failure() {
+    void whenGrantorCannotDelegateGrantableRole_thenFail() {
         // given
         delegator = ObjectFixtures.getUser();
         grantor.setRoles(Set.of(Role.PRESIDENT));
@@ -186,7 +186,7 @@ public class GrantableRoleValidatorTest {
     // 공통
     @Test
     @DisplayName("부여자가 수혜자 보다 권한 우선순위가 높은 경우 성공")
-    void a_Success() {
+    void whenGrantorHasHigherPriorityThanGrantee_thenSuccess() {
         // given
         grantor.setRoles(Set.of(Role.ADMIN));
         grantee.setRoles(Set.of(Role.PRESIDENT));
@@ -198,7 +198,7 @@ public class GrantableRoleValidatorTest {
 
     @Test
     @DisplayName("수혜자가 부여자 보다 권한 우선순위가 높은 경우 실패")
-    void a_Failure() {
+    void whenGranteeHasHigherPriorityThanGrantor_thenFail() {
         // given
         grantor.setRoles(Set.of(Role.PRESIDENT));
         grantee.setRoles(Set.of(Role.ADMIN));
@@ -210,7 +210,7 @@ public class GrantableRoleValidatorTest {
 
     @Test
     @DisplayName("부여할 권한이 수혜자의 모든 권한에 대한 부여 가능 권한을 가지고 있을 경우 성공")
-    void e_Success() {
+    void whenGrantedRoleCoversAllGranteeRoles_thenSuccess() {
         // given
         grantor.setRoles(Set.of(Role.ADMIN));
         grantee.setRoles(Set.of(Role.COUNCIL));
@@ -221,7 +221,7 @@ public class GrantableRoleValidatorTest {
 
     @Test
     @DisplayName("부여할 권한이 수혜자의 모든 권한에 대한 부여 가능 권한을 가지고 있지 않을 경우 실패")
-    void e_Failure() {
+    void whenGrantedRoleDoesNotCoverAllGranteeRoles_thenFail() {
         // given
         grantor.setRoles(Set.of(Role.ADMIN));
         grantee.setRoles(Set.of(Role.NONE));
@@ -233,7 +233,7 @@ public class GrantableRoleValidatorTest {
     // 동문회장
     @Test
     @DisplayName("동문회장 부여 시 수혜자가 졸업생일 경우 성공")
-    void f_Success() {
+    void whenGrantingAlumniLeaderToGraduate_thenSuccess() {
         // given
         grantor.setRoles(Set.of(Role.ADMIN));
         grantee.setRoles(Set.of(Role.COMMON));
@@ -245,7 +245,7 @@ public class GrantableRoleValidatorTest {
 
     @Test
     @DisplayName("동문회장 부여 시 수혜자가 졸업생이 아닐 경우 실패")
-    void f_Failure() {
+    void whenGrantingAlumniLeaderToNonGraduate_thenFail() {
         // given
         grantor.setRoles(Set.of(Role.ADMIN));
         grantee.setRoles(Set.of(Role.COMMON));

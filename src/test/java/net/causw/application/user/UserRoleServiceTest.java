@@ -86,7 +86,7 @@ public class UserRoleServiceTest {
 
         @Test
         @DisplayName("사용자가 하나의 권한만 가지고 있을 경우 성공(겸직 불가)")
-        void testUpdateRole() {
+        void whenUserHasSingleRole_thenSuccess() {
             // given
             user.setRoles(Set.of(Role.PRESIDENT, Role.COUNCIL));
 
@@ -106,7 +106,7 @@ public class UserRoleServiceTest {
         @ParameterizedTest
         @MethodSource("getAllRolesWithoutNone")
         @DisplayName("하나 남은 권한을 삭제했을 때 COMMON이 부여될 경우 성공")
-        void testRemoveRole(Role role) {
+        void whenLastRoleDeleted_thenAssignCommon(Role role) {
             // given
             user.setRoles(Set.of(role));
 
@@ -119,7 +119,7 @@ public class UserRoleServiceTest {
 
         @Test
         @DisplayName("마지막으로 남은 NONE을 삭제했을 때 NONE이 부여될 경우 성공")
-        void testRemoveNone() {
+        void whenOnlyNoneLeft_thenRemainAsNone() {
             // given
             user.setRoles(Set.of(Role.NONE));
 
@@ -155,7 +155,7 @@ public class UserRoleServiceTest {
 
         @Test
         @DisplayName("학생회장 권한을 위임할 때 학생회장과 부학생회장 그리고 학생회 권한을 가진 사용자가 없을 경우 성공")
-        void a_Success() {
+        void whenNoOtherExecutives_thenSuccess() {
             // given
             Role delegatedRole = Role.PRESIDENT;
             delegator.setRoles(Set.of(delegatedRole));
@@ -177,7 +177,7 @@ public class UserRoleServiceTest {
 
         @Test
         @DisplayName("고유 권한을 위임할 때 해당 권한을 가진 사용자가 없을 경우 성공")
-        void b_Success() {
+        void whenNoUserHasUniqueRole_thenSuccess() {
             // given
             Role delegatedRole = Role.VICE_PRESIDENT;
             delegator.setRoles(Set.of(delegatedRole));
@@ -199,7 +199,7 @@ public class UserRoleServiceTest {
 
         @Test
         @DisplayName("권한을 위임 후 위임자가 일반 권한일 경우 성공")
-        void c_Success() {
+        void whenDelegationOccurs_thenGrantorBecomesCommon() {
             // given
             Role delegatedRole = Role.COUNCIL;
             delegator.setRoles(Set.of(delegatedRole));
@@ -215,7 +215,7 @@ public class UserRoleServiceTest {
 
         @Test
         @DisplayName("권한을 위임 후 피위임지가 해당 권한일 경우 성공")
-        void d_Success() {
+        void whenDelegateeAlreadyHasRole_thenSuccess() {
             // given
             Role delegatedRole = Role.ADMIN;
             delegator.setRoles(Set.of(delegatedRole));
@@ -279,7 +279,7 @@ public class UserRoleServiceTest {
 
         @Test
         @DisplayName("학생회장 권한을 부여할 때 학생회장과 부학생회장 그리고 학생회 권한을 가진 사용자가 없을 경우 성공")
-        void a_Success() {
+        void whenNoOtherExecutives_thenSuccess() {
             // given
             grantor.setRoles(Set.of(Role.ADMIN));
             grantee.setRoles(Set.of(Role.COMMON));
@@ -300,7 +300,7 @@ public class UserRoleServiceTest {
 
         @Test
         @DisplayName("고유 권한을 부여할 때 해당 권한을 가진 사용자가 없을 경우 성공")
-        void b_Success() {
+        void whenNoUserHasUniqueRole_thenSuccess() {
             // given
             Role grantedRole = Role.VICE_PRESIDENT;
             grantor.setRoles(Set.of(Role.PRESIDENT));
@@ -322,7 +322,7 @@ public class UserRoleServiceTest {
 
         @Test
         @DisplayName("위임자가 있을 때 권한을 대리 위임 후 위임자가 일반 권한일 경우 성공")
-        void c_Success() {
+        void whenProxyDelegation_thenOriginalGrantorBecomesCommon() {
             // given
             Role grantedRole = Role.COUNCIL;
             delegator = ObjectFixtures.getUser();
@@ -340,7 +340,7 @@ public class UserRoleServiceTest {
 
         @Test
         @DisplayName("권한을 부여 후 수혜자가 해당 권한일 경우 성공")
-        void d_Success() {
+        void whenAssigneeAlreadyHasRole_thenSuccess() {
             // given
             Role grantedRole = Role.LEADER_1;
             grantor.setRoles(Set.of(Role.ADMIN));

@@ -54,7 +54,7 @@ public class DelegatableRoleValidatorTest {
 
     @Test
     @DisplayName("위임 권한이 위임 가능 대상일 경우 성공")
-    void a_Success() {
+    void whenDelegatedRoleIsDelegatable_thenSuccess() {
         // given
         Role delegatedRole = Role.ADMIN;
         delegator.setRoles(Set.of(delegatedRole));
@@ -66,7 +66,7 @@ public class DelegatableRoleValidatorTest {
     
     @Test
     @DisplayName("위임 권한이 위임 가능 대상이 아닐 경우 실패")
-    void a_Failure() {
+    void whenDelegatedRoleIsNotDelegatable_thenFail() {
         // given
         Role delegatedRole = Role.COUNCIL;
         delegator.setRoles(Set.of(delegatedRole));
@@ -78,7 +78,7 @@ public class DelegatableRoleValidatorTest {
 
     @Test
     @DisplayName("위임자가 위임할 권한일 경우 성공")
-    void b_Success() {
+    void whenDelegatorHasDelegatedRole_thenSuccess() {
         // given
         Role delegatedRole = Role.PRESIDENT;
         delegator.setRoles(Set.of(delegatedRole));
@@ -90,7 +90,7 @@ public class DelegatableRoleValidatorTest {
     
     @Test
     @DisplayName("위임자가 위임할 권한이 아닐 경우 실패")
-    void b_Failure() {
+    void whenDelegatorLacksDelegatedRole_thenFail() {
         // given
         delegator.setRoles(Set.of(Role.PRESIDENT));
         delegatee.setRoles(Set.of(Role.COMMON));
@@ -101,7 +101,7 @@ public class DelegatableRoleValidatorTest {
 
     @Test
     @DisplayName("위임할 권한이 피위임자의 모든 권한에 대한 위임 가능 권한을 가지고 있을 경우 성공")
-    void c_Success() {
+    void whenDelegatedRoleCoversAllDelegateeRoles_thenSuccess() {
         // given
         Role delegatedRole = Role.PRESIDENT;
         delegator.setRoles(Set.of(delegatedRole));
@@ -113,7 +113,7 @@ public class DelegatableRoleValidatorTest {
     
     @Test
     @DisplayName("위임할 권한이 피위임자의 모든 권한에 대한 위임 가능 권한을 가지고 있지 않을 경우 실패")
-    void c_Failure() {
+    void whenDelegatedRoleDoesNotCoverAllDelegateeRoles_thenFail() {
         // given
         Role delegatedRole = Role.PRESIDENT;
         delegator.setRoles(Set.of(delegatedRole));
@@ -125,7 +125,7 @@ public class DelegatableRoleValidatorTest {
 
     @Test
     @DisplayName("위임자가 피위임자 보다 권한 우선순위가 높은 경우 성공")
-    void d_Success() {
+    void whenDelegatorHasHigherPriority_thanDelegatee_thenSuccess() {
         // given
         Role delegatedRole = Role.PRESIDENT;
         delegator.setRoles(Set.of(delegatedRole));
@@ -137,7 +137,7 @@ public class DelegatableRoleValidatorTest {
 
     @Test
     @DisplayName("피위임자가 위임자 보다 권한 우선순위가 높은 경우 실패")
-    void d_Failure() {
+    void whenDelegateeHasHigherPriority_thanDelegator_thenFail() {
         // given
         Role delegatedRole = Role.VICE_PRESIDENT;
         delegator.setRoles(Set.of(delegatedRole));
