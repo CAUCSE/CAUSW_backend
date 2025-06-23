@@ -5,15 +5,19 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+@Slf4j
 @Component
 public class RequestLoggingFilter extends OncePerRequestFilter {
+
+  private static final AtomicLong requestCounter = new AtomicLong();
 
   @Override
   protected void doFilterInternal(HttpServletRequest request,
@@ -21,8 +25,11 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
       FilterChain filterChain)
       throws ServletException, IOException {
 
+    long requestId = requestCounter.incrementAndGet();
     try {
-      String traceId = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
+      String traceId = String.format("%d-%04d",
+          System.currentTimeMillis() % 100000,
+          requestId % 10000);
       MDC.put("traceId", traceId);
       MDC.put("path", request.getRequestURI());
       MDC.put("httpMethod", request.getMethod());
@@ -40,6 +47,7 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
       MDC.put("status", String.valueOf(wrappedResponse.getStatus()));
       MDC.put("duration", String.valueOf(duration));
 
+      log.info("Request processed");
     } finally {
       MDC.clear(); // 누락되면 memory leak
     }
