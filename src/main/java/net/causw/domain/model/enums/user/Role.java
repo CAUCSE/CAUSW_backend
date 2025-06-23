@@ -10,25 +10,24 @@ import java.util.Arrays;
 @Getter
 @AllArgsConstructor
 public enum Role {
-    ADMIN("ADMIN", "관리자", false),
-    PRESIDENT("PRESIDENT", "학생회장", true),
-    VICE_PRESIDENT("VICE_PRESIDENT", "부학생회장", true),
-    COUNCIL("COUNCIL", "학생회", false),
-    LEADER_1("LEADER_1", "1학년 대표", false),
-    LEADER_2("LEADER_2", "2학년 대표", false),
-    LEADER_3("LEADER_3", "3학년 대표", false),
-    LEADER_4("LEADER_4", "4학년 대표", false),
-    LEADER_ALUMNI("LEADER_ALUMNI", "동문회장", true),
-    COMMON("COMMON", "일반", false),
-    NONE("NONE", "없음", false),
+    ADMIN("ADMIN", "관리자"),
+    PRESIDENT("PRESIDENT", "학생회장"),
+    VICE_PRESIDENT("VICE_PRESIDENT", "부학생회장"),
+    COUNCIL("COUNCIL", "학생회"),
+    LEADER_1("LEADER_1", "1학년 대표"),
+    LEADER_2("LEADER_2", "2학년 대표"),
+    LEADER_3("LEADER_3", "3학년 대표"),
+    LEADER_4("LEADER_4", "4학년 대표"),
+    LEADER_ALUMNI("LEADER_ALUMNI", "동문회장"),
+    COMMON("COMMON", "일반"),
+    NONE("NONE", "없음"),
 
     // Deprecated Roles
-    @Deprecated LEADER_CIRCLE("LEADER_CIRCLE", "동아리장", false),
-    @Deprecated PROFESSOR("PROFESSOR", "교수", false);
+    @Deprecated LEADER_CIRCLE("LEADER_CIRCLE", "동아리장"),
+    @Deprecated PROFESSOR("PROFESSOR", "교수");
 
     private final String value;
     private final String description;
-    private final boolean unique;
 
     public static Role of(String value) {
         return Arrays.stream(values())

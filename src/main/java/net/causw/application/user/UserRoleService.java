@@ -11,6 +11,7 @@ import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.model.enums.user.Role;
 import net.causw.domain.model.enums.user.UserState;
 import net.causw.domain.model.util.MessageUtil;
+import net.causw.domain.policy.domain.RolePolicy;
 import net.causw.domain.validation.DelegatableRoleValidator;
 import net.causw.domain.validation.GrantableRoleValidator;
 import org.apache.commons.lang3.StringUtils;
@@ -66,7 +67,7 @@ public class UserRoleService {
         }
 
         // 고유 권한일 경우 모든 사용자로부터 권한 삭제
-        else if (delegatedRole.isUnique()) {
+        else if (RolePolicy.getRoleUnique(delegatedRole)) {
             removeAllRole(delegatedRole);
         }
 
@@ -98,7 +99,7 @@ public class UserRoleService {
             UserUpdateRoleRequestDto userUpdateRoleRequestDto
     ) {
         // 위임자의 Id로 위임자 조회
-        User delegator = StringUtils.isBlank(delegatorId) ? null : userRepository.findById(granteeId).orElseThrow(
+        User delegator = StringUtils.isBlank(delegatorId) ? null : userRepository.findById(delegatorId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.USER_NOT_FOUND
@@ -130,7 +131,7 @@ public class UserRoleService {
         }
 
         // 고유 권한일 경우 모든 사용자로부터 권한 삭제
-        else if (grantedRole.isUnique()) {
+        else if (RolePolicy.getRoleUnique(grantedRole)) {
             removeAllRole(grantedRole);
         }
 
@@ -173,7 +174,7 @@ public class UserRoleService {
         userRepository.save(targetUser);
     }
 
-    // private methods
+    // --- Private Methods ---
     private void removeAllRole(Role targetRole) {
         List<User> targetUsers = userRepository.findByRoleAndState(targetRole, UserState.ACTIVE);
 
