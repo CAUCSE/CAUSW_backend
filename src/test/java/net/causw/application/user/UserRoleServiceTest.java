@@ -2,12 +2,10 @@ package net.causw.application.user;
 
 import net.causw.adapter.persistence.repository.user.UserRepository;
 import net.causw.adapter.persistence.user.User;
+import net.causw.application.dto.user.UserResponseDto;
 import net.causw.application.dto.user.UserUpdateRoleRequestDto;
-import net.causw.domain.exceptions.ErrorCode;
-import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.user.Role;
 import net.causw.domain.model.enums.user.UserState;
-import net.causw.domain.model.util.MessageUtil;
 import net.causw.domain.model.util.ObjectFixtures;
 import net.causw.domain.policy.domain.RolePolicy;
 import org.junit.jupiter.api.*;
@@ -16,14 +14,19 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
+import static java.util.Map.entry;
+import static net.causw.domain.model.enums.user.Role.*;
+import static net.causw.domain.model.enums.user.Role.COMMON;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,25 +38,70 @@ public class UserRoleServiceTest {
     @Mock
     UserRepository userRepository;
 
-    private User delegator;
+    private static final Map<Role, Boolean> MOCK_ROLE_UNIQUE = Map.ofEntries(
+            entry(ADMIN, false),
+            entry(PRESIDENT, true),
+            entry(VICE_PRESIDENT, true),
+            entry(COUNCIL, false),
+            entry(LEADER_1, false),
+            entry(LEADER_2, false),
+            entry(LEADER_3, false),
+            entry(LEADER_4, false),
+            entry(LEADER_ALUMNI, true),
+            entry(COMMON, false),
+            entry(NONE, false),
 
-    @Test
-    @DisplayName("사용자가 하나의 권한만 가지고 있을 경우 성공(겸직 불가)")
-    void testUpdateRole() {
-        // given
+            entry(LEADER_CIRCLE, false),
+            entry(PROFESSOR, false)
+    );
+
+    private static final Map<Role, Integer> MOCK_ROLE_PRIORITY = Map.ofEntries(
+            entry(ADMIN, 0),
+            entry(PRESIDENT, 1),
+            entry(VICE_PRESIDENT, 2),
+            entry(COUNCIL, 3),
+            entry(LEADER_1, 4),
+            entry(LEADER_2, 4),
+            entry(LEADER_3, 4),
+            entry(LEADER_4, 4),
+            entry(LEADER_ALUMNI, 5),
+            entry(COMMON, 99),
+            entry(NONE, 100),
+
+            entry(LEADER_CIRCLE, 5),
+            entry(PROFESSOR, 6)
+    );
+
+    private static final Map<Role, Set<Role>> MOCK_ROLES_ASSIGNABLE_FOR = Map.of(
+            // 부학생회장과 학생회 권한이 같이 삭제되므로 대상이 일반, 학생회장, 부학생회장 권한까지 설정 가능함.
+            PRESIDENT, Set.of(VICE_PRESIDENT, COUNCIL, COMMON),
+            // 일반 권한의 경우 모두 권한에 설정 가능함.
+            COMMON, EnumSet.allOf(Role.class)
+    );
+
+    @Nested
+    class UpdateRoleTest {
+
         User user = ObjectFixtures.getUser();
-        user.setRoles(Set.of(Role.PRESIDENT, Role.COUNCIL));
 
-        // when
-        userRoleService.updateRole(user, Role.COMMON);
+        @Test
+        @DisplayName("사용자가 하나의 권한만 가지고 있을 경우 성공(겸직 불가)")
+        void testUpdateRole() {
+            // given
+            user.setRoles(Set.of(Role.PRESIDENT, Role.COUNCIL));
 
-        // then
-        assertThat(user.getRoles()).isEqualTo(Set.of(Role.COMMON));
+            // when
+            userRoleService.updateRole(user, Role.COMMON);
+
+            // then
+            assertThat(user.getRoles()).isEqualTo(Set.of(Role.COMMON));
+        }
     }
 
     @Nested
     class RemoveRoleTest {
-        User user = ObjectFixtures.getUser();
+
+        private final User user = ObjectFixtures.getUser();
 
         @ParameterizedTest
         @MethodSource("getAllRolesWithoutNone")
@@ -91,169 +139,274 @@ public class UserRoleServiceTest {
 
     @Nested
     class DelegateRoleTest {
-
+        private final User delegator = ObjectFixtures.getUser();
         private final User delegatee = ObjectFixtures.getUser();
         private final String delegateeId = "dummyDelegateeId";
 
+        private static final Set<Role> MOCK_DELEGATABLE_ROLES = Set.of(
+                Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT, Role.COUNCIL);
+
         @BeforeEach
         void setUp() {
-            // given
-            delegator = ObjectFixtures.getUser();
-
-            //when
-            when(userRepository.findById(delegateeId)).thenReturn(Optional.of(delegatee));
-        }
-
-        @ParameterizedTest
-        @MethodSource("getNonDelegatableRoles")
-        @DisplayName("위임 권한이 위임 가능 대상이 아닐 경우 실패")
-        void a_Failure(Role role) {
-            // given
-            delegator.setRoles(Set.of(role));
-            delegatee.setRoles(Set.of(Role.COMMON));
-
-            // when & then
-            assertValidatorFail(delegatee, role);
-        }
-
-        @Test
-        @DisplayName("위임자가 위임할 권한이 아닐 경우 실패")
-        void b_Failure() {
-            // given
-            delegator.setRoles(Set.of(Role.COMMON));
-            delegatee.setRoles(Set.of(Role.COMMON));
-
-            // when & then
-            assertValidatorFail(delegator, RolePolicy.DELEGATABLE_ROLES.iterator().next());
-        }
-
-        @ParameterizedTest
-        @MethodSource("getDelegatableRolesWithoutEdge")
-        @DisplayName("피위임자가 특수 권한일 경우 실패(특수 조건을 가진 권한 제외)")
-        void c_Failure2(Role role) {
-            for (Role specialRole : getSpecialRoles()) {
-                // given
-                delegator.setRoles(Set.of(role));
-                delegatee.setRoles(Set.of(specialRole));
-
-                // when & then
-                assertValidatorFail(delegator, role);
-            }
-        }
-
-        @ParameterizedTest
-        @MethodSource("getDelegatableRolesWithoutEdge")
-        @DisplayName("피위임자가 일반 권한일 경우 성공(특수 조건을 가진 권한 제외)")
-        void a_Success1(Role role) {
-            // given
-            delegator.setRoles(Set.of(role));
-            delegatee.setRoles(Set.of(Role.COMMON));
-
-            // when & then
-            assertServiceSuccess(delegator, role);
-        }
-
-        @Disabled("현재 특수 조건을 가지지 않는 고유 권한을 위임하는 경우가 없어 실행 안함, 추후 필요 시 활성화")
-        @ParameterizedTest
-        @MethodSource("getDelegatableAndUniqueRolesWithoutEdge")
-        @DisplayName("고유 권한 위임 후 해당 권한을 가진 사용자가 없을 경우 성공(특수 조건을 가진 권한 제외)")
-        void a_Success2(Role role) {
-            // given
-            delegator.setRoles(Set.of(role));
-            delegatee.setRoles(Set.of(Role.COMMON));
-
             // when
-            Map<Role, List<User>> mockUsers = mockFindByRoleAndState(Set.of(role), delegator, delegatee);
-            userRoleService.delegateRole(delegator, delegateeId, new UserUpdateRoleRequestDto(String.valueOf(role)));
-
-            // then
-            mockUsers.get(role).forEach(user -> assertThat(user.getRoles()).isEqualTo(Set.of(Role.COMMON)));
-        }
-
-        @ParameterizedTest
-        @MethodSource("getRolesDelegatableByPresident")
-        @DisplayName("위임자가 학생회장일 때 피위임자가 부학생회장과 학생회 또는 일반 권한일 경우 성공")
-        void b_Success1(Role role) {
-            // given
-            delegator.setRoles(Set.of(Role.PRESIDENT));
-            delegatee.setRoles(Set.of(role));
-
-            // when & then
-            mockFindByRoleAndState(Set.of(Role.PRESIDENT, Role.VICE_PRESIDENT, Role.COUNCIL), delegator, delegatee);
-            assertServiceSuccess(delegator, Role.PRESIDENT);
+            when(userRepository.findById(delegateeId)).thenReturn(Optional.of(delegatee));
+            when(userRepository.save(delegatee)).thenReturn(delegatee);
         }
 
         @Test
-        @DisplayName("위임자가 학생회장일 때 학생회장과 부학생회장 그리고 학생회 권한을 가진 사용자가 없을 경우 성공")
-        void b_Success2() {
+        @DisplayName("학생회장 권한을 위임할 때 학생회장과 부학생회장 그리고 학생회 권한을 가진 사용자가 없을 경우 성공")
+        void a_Success() {
             // given
-            delegator.setRoles(Set.of(Role.PRESIDENT));
-            delegatee.setRoles(Set.of(Role.COUNCIL));
+            Role delegatedRole = Role.PRESIDENT;
+            delegator.setRoles(Set.of(delegatedRole));
+            delegatee.setRoles(Set.of(Role.COMMON));
 
             // when
             Map<Role, List<User>> mockUsers = mockFindByRoleAndState(
-                    Set.of(Role.PRESIDENT, Role.VICE_PRESIDENT, Role.COUNCIL)
-                    , delegator, delegatee);
-
-            userRoleService.delegateRole(delegator, delegateeId, new UserUpdateRoleRequestDto(String.valueOf(Role.PRESIDENT)));
+                    Set.of(Role.PRESIDENT, Role.VICE_PRESIDENT, Role.COUNCIL), delegator, delegatee);
+            mockPolicyAndDelegateRole(delegatedRole);
 
             // then
             mockUsers.values().stream().flatMap(Collection::stream)
                     .forEach(user -> {
-                        if (user == delegatee) {
-                            assertThat(delegatee.getRoles()).isEqualTo(Set.of(Role.PRESIDENT));
-                        }
-                        else {
+                        if (user != delegatee) {
                             assertThat(user.getRoles()).isEqualTo(Set.of(Role.COMMON));
                         }
                     });
         }
 
-        // private methods
-        private static Set<Role> getNonDelegatableRoles() {
-            return EnumSet.allOf(Role.class).stream()
-                    .filter(role -> !RolePolicy.DELEGATABLE_ROLES.contains(role))
-                    .collect(Collectors.toSet());
+        @Test
+        @DisplayName("고유 권한을 위임할 때 해당 권한을 가진 사용자가 없을 경우 성공")
+        void b_Success() {
+            // given
+            Role delegatedRole = Role.VICE_PRESIDENT;
+            delegator.setRoles(Set.of(delegatedRole));
+            delegatee.setRoles(Set.of(Role.COMMON));
+
+            // when
+            Map<Role, List<User>> mockUsers = mockFindByRoleAndState(Set.of(delegatedRole), delegator, delegatee);
+            mockPolicyAndDelegateRole(delegatedRole);
+
+            // then
+            assertThat(RolePolicy.getRoleUnique(delegatedRole)).isTrue();
+            mockUsers.values().stream().flatMap(Collection::stream)
+                    .forEach(user -> {
+                        if (user != delegatee) {
+                            assertThat(user.getRoles()).isEqualTo(Set.of(Role.COMMON));
+                        }
+                    });
         }
 
-        private static Set<Role> getSpecialRoles() {
-            return EnumSet.allOf(Role.class).stream()
-                    .filter(role -> !role.equals(Role.COMMON))
-                    .collect(Collectors.toSet());
-        }
+        @Test
+        @DisplayName("권한을 위임 후 위임자가 일반 권한일 경우 성공")
+        void c_Success() {
+            // given
+            Role delegatedRole = Role.COUNCIL;
+            delegator.setRoles(Set.of(delegatedRole));
+            delegatee.setRoles(Set.of(Role.COMMON));
+            
+            // when
+            mockPolicyAndDelegateRole(delegatedRole);
 
-        private static Set<Role> getDelegatableRolesWithoutEdge() {
-            return RolePolicy.DELEGATABLE_ROLES.stream()
-                    .filter(role -> !role.equals(Role.PRESIDENT))
-                    .collect(Collectors.toSet());
-        }
-
-        private static Set<Role> getDelegatableAndUniqueRolesWithoutEdge() {
-            return RolePolicy.DELEGATABLE_ROLES.stream()
-                    .filter(role -> !role.equals(Role.PRESIDENT))
-                    .filter(Role::isUnique)
-                    .collect(Collectors.toSet());
-        }
-
-        private static Set<Role> getRolesDelegatableByPresident() {
-            return RolePolicy.ROLES_UPDATABLE_BY_PRESIDENT;
-        }
-
-        private void assertServiceSuccess(User delegator, Role targetRole) {
-            UserUpdateRoleRequestDto userUpdateRoleRequestDto = new UserUpdateRoleRequestDto(String.valueOf(targetRole));
-            userRoleService.delegateRole(delegator, delegateeId, userUpdateRoleRequestDto);
+            // then
+            assertThat(RolePolicy.getRoleUnique(delegatedRole)).isFalse();
             assertThat(delegator.getRoles()).isEqualTo(Set.of(Role.COMMON));
-            assertThat(delegatee.getRoles()).isEqualTo(Set.of(targetRole));
         }
 
-        private void assertValidatorFail(User delegator, Role targetRole) {
-            UserUpdateRoleRequestDto userUpdateRoleRequestDto = new UserUpdateRoleRequestDto(String.valueOf(targetRole));
-            assertThatThrownBy(() -> userRoleService.delegateRole(delegator, delegateeId, userUpdateRoleRequestDto))
-                    .isInstanceOf(UnauthorizedException.class)
-                    .hasMessageContaining(MessageUtil.GRANT_ROLE_NOT_ALLOWED)
-                    .extracting("errorCode")
-                    .isEqualTo(ErrorCode.GRANT_ROLE_NOT_ALLOWED);
+        @Test
+        @DisplayName("권한을 위임 후 피위임지가 해당 권한일 경우 성공")
+        void d_Success() {
+            // given
+            Role delegatedRole = Role.ADMIN;
+            delegator.setRoles(Set.of(delegatedRole));
+            delegatee.setRoles(Set.of(Role.COMMON));
+
+            // when
+            UserResponseDto userResponseDto = mockPolicyAndDelegateRole(delegatedRole);
+
+            // then
+            assertThat(delegatee.getRoles()).isEqualTo(Set.of(delegatedRole));
+            assertThat(userResponseDto.getRoles()).isEqualTo(Set.of(delegatedRole));
         }
+
+        private UserResponseDto mockPolicyAndDelegateRole(Role delegatedRole) {
+            UserResponseDto userResponseDto;
+
+            try (MockedStatic<RolePolicy> rolePolicyMockedStatic = Mockito.mockStatic(RolePolicy.class)) {
+                rolePolicyMockedStatic.when(RolePolicy::getDelegatableRoles).thenReturn(MOCK_DELEGATABLE_ROLES);
+                mockDefaultRolePolicy(rolePolicyMockedStatic, delegator.getRoles(), delegatedRole, delegatee.getRoles());
+
+                userResponseDto = userRoleService.delegateRole(
+                        delegator, delegateeId, new UserUpdateRoleRequestDto(String.valueOf(delegatedRole)));
+            }
+
+            return userResponseDto;
+        }
+    }
+
+    @Nested
+    class GrantRoleTest {
+
+        private final User grantor = ObjectFixtures.getUser();
+        private final String granteeId = "dummyDelegateeId";
+        private final User grantee = ObjectFixtures.getUser();
+        private final String delegatorId = "dummyDelegatorId";
+        private User delegator;
+
+        private static final Map<Role, Set<Role>> MOCK_GRANTABLE_ROLES = Map.of(
+                Role.ADMIN, Set.of(
+                        Role.PRESIDENT,
+                        Role.LEADER_1
+                ),
+
+                Role.PRESIDENT, Set.of(
+                        Role.VICE_PRESIDENT
+                )
+        );
+
+        private static final Map<Role, Set<Role>> MOCK_PROXY_DELEGATABLE_ROLES = Map.of(
+                Role.ADMIN, Set.of(
+                        Role.COUNCIL
+                )
+        );
+
+        @BeforeEach
+        void setUp() {
+            // when
+            when(userRepository.findById(granteeId)).thenReturn(Optional.of(grantee));
+            when(userRepository.save(grantee)).thenReturn(grantee);
+        }
+
+        @Test
+        @DisplayName("학생회장 권한을 부여할 때 학생회장과 부학생회장 그리고 학생회 권한을 가진 사용자가 없을 경우 성공")
+        void a_Success() {
+            // given
+            grantor.setRoles(Set.of(Role.ADMIN));
+            grantee.setRoles(Set.of(Role.COMMON));
+
+            // when
+            Map<Role, List<User>> mockUsers = mockFindByRoleAndState(
+                    Set.of(Role.PRESIDENT, Role.VICE_PRESIDENT, Role.COUNCIL), grantor, grantee);
+            mockPolicyAndGrantRole(Role.PRESIDENT);
+
+            // then
+            mockUsers.values().stream().flatMap(Collection::stream)
+                    .forEach(user -> {
+                        if (user != grantee) {
+                            assertThat(user.getRoles()).isEqualTo(Set.of(Role.COMMON));
+                        }
+                    });
+        }
+
+        @Test
+        @DisplayName("고유 권한을 부여할 때 해당 권한을 가진 사용자가 없을 경우 성공")
+        void b_Success() {
+            // given
+            Role grantedRole = Role.VICE_PRESIDENT;
+            grantor.setRoles(Set.of(Role.PRESIDENT));
+            grantee.setRoles(Set.of(Role.COMMON));
+
+            // when
+            Map<Role, List<User>> mockUsers = mockFindByRoleAndState(Set.of(grantedRole), grantor, grantee);
+            mockPolicyAndGrantRole(grantedRole);
+
+            // then
+            assertThat(RolePolicy.getRoleUnique(grantedRole)).isTrue();
+            mockUsers.values().stream().flatMap(Collection::stream)
+                    .forEach(user -> {
+                        if (user != grantee) {
+                            assertThat(user.getRoles()).isEqualTo(Set.of(Role.COMMON));
+                        }
+                    });
+        }
+
+        @Test
+        @DisplayName("위임자가 있을 때 권한을 대리 위임 후 위임자가 일반 권한일 경우 성공")
+        void c_Success() {
+            // given
+            Role grantedRole = Role.COUNCIL;
+            delegator = ObjectFixtures.getUser();
+            grantor.setRoles(Set.of(Role.ADMIN));
+            delegator.setRoles(Set.of(grantedRole));
+            grantee.setRoles(Set.of(Role.COMMON));
+
+            // when
+            mockPolicyAndProxyDelegateRole(grantedRole);
+
+            // then
+            assertThat(RolePolicy.getRoleUnique(grantedRole)).isFalse();
+            assertThat(delegator.getRoles()).isEqualTo(Set.of(Role.COMMON));
+        }
+
+        @Test
+        @DisplayName("권한을 부여 후 수혜자가 해당 권한일 경우 성공")
+        void d_Success() {
+            // given
+            Role grantedRole = Role.LEADER_1;
+            grantor.setRoles(Set.of(Role.ADMIN));
+            grantee.setRoles(Set.of(Role.COMMON));
+
+            // when
+            UserResponseDto userResponseDto = mockPolicyAndGrantRole(grantedRole);
+
+            // then
+            assertThat(grantee.getRoles()).isEqualTo(Set.of(grantedRole));
+            assertThat(userResponseDto.getRoles()).isEqualTo(Set.of(grantedRole));
+        }
+
+        private static Set<Role> getGrantableRoles(Role role) {
+            return MOCK_GRANTABLE_ROLES.getOrDefault(role, Set.of());
+        }
+
+        private static Set<Role> getProxyDelegatableRoles(Role role) {
+            return MOCK_PROXY_DELEGATABLE_ROLES.getOrDefault(role, Set.of());
+        }
+
+        private UserResponseDto mockPolicyAndProxyDelegateRole(Role grantedRole) {
+            when(userRepository.findById(delegatorId)).thenReturn(Optional.of(delegator));
+            return mockPolicyAndGrantRole(delegatorId, grantedRole);
+        }
+
+        private UserResponseDto mockPolicyAndGrantRole(Role grantedRole) {
+            return mockPolicyAndGrantRole(null, grantedRole);
+        }
+
+        private UserResponseDto mockPolicyAndGrantRole(String delegatorId, Role grantedRole) {
+            UserResponseDto userResponseDto;
+
+            try (MockedStatic<RolePolicy> rolePolicyMockedStatic = Mockito.mockStatic(RolePolicy.class)) {
+                if (delegatorId == null) {
+                    grantor.getRoles().forEach(role -> rolePolicyMockedStatic
+                            .when(() -> RolePolicy.getGrantableRoles(role))
+                            .thenReturn(getGrantableRoles(role)));
+                }
+                else {
+                    grantor.getRoles().forEach(role -> rolePolicyMockedStatic
+                            .when(() -> RolePolicy.getProxyDelegatableRoles(role))
+                            .thenReturn(getProxyDelegatableRoles(role)));
+                }
+
+                mockDefaultRolePolicy(rolePolicyMockedStatic, grantor.getRoles(), grantedRole, grantee.getRoles());
+
+                userResponseDto = userRoleService.grantRole(
+                        grantor, delegatorId, granteeId, new UserUpdateRoleRequestDto(String.valueOf(grantedRole)));
+            }
+
+            return userResponseDto;
+        }
+    }
+
+    private void mockDefaultRolePolicy(MockedStatic<RolePolicy> rolePolicyMockedStatic,
+                                       Set<Role> assignerRoles, Role assignedRole, Set<Role> assigneeRoles) {
+        rolePolicyMockedStatic.when(() -> RolePolicy.getRolesAssignableFor(assignedRole))
+                .thenReturn(MOCK_ROLES_ASSIGNABLE_FOR.getOrDefault(assignedRole, Set.of(Role.COMMON)));
+
+        rolePolicyMockedStatic.when(() -> RolePolicy.getRoleUnique(assignedRole))
+                .thenReturn(MOCK_ROLE_UNIQUE.get(assignedRole));
+
+        Stream.concat(assignerRoles.stream(), assigneeRoles.stream()).forEach(role ->
+            rolePolicyMockedStatic.when(() -> RolePolicy.getRolePriority(role))
+                    .thenReturn(MOCK_ROLE_PRIORITY.get(role)));
     }
 
     private Map<Role, List<User>> mockFindByRoleAndState(Set<Role> roles, User... users) {
@@ -271,9 +424,6 @@ public class UserRoleServiceTest {
             for (User user : users) {
                 if (user != null && user.getRoles().contains(role)) {
                     dummyUsers.add(user);
-                    if (delegator.equals(user)) {
-                        System.out.println("delegator 드감");
-                    }
                 }
             }
 
