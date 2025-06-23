@@ -56,7 +56,18 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
   @Override
   protected boolean shouldNotFilter(HttpServletRequest request) {
     String uri = request.getRequestURI();
-    return uri.startsWith("/static/") || uri.equals("/favicon.ico");
+    String method = request.getMethod();
+
+    // HTTP 메서드로 제외
+    if ("OPTIONS".equals(method)) {
+      return true;
+    }
+
+    return uri.startsWith("/static/")
+        || uri.startsWith("/actuator/")
+        || uri.equals("/favicon.ico")
+        || uri.equals("/healthy")
+        || uri.equals("/robots.txt");
   }
 
   private String getUserId() {
