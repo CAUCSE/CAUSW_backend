@@ -182,7 +182,7 @@ public class DelegatableRoleValidatorTest {
                         .isInstanceOf(UnauthorizedException.class)
                         .hasMessageContaining(MessageUtil.GRANT_ROLE_NOT_ALLOWED)
                         .extracting("errorCode")
-                        .isEqualTo(ErrorCode.GRANT_ROLE_NOT_ALLOWED)
+                        .isEqualTo(ErrorCode.ASSIGN_ROLE_NOT_ALLOWED)
         );
     }
 }

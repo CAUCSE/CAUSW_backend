@@ -46,8 +46,8 @@ public class DelegatableRoleValidator extends AbstractValidator {
 
     private UnauthorizedException customUnauthorizedException() {
         return new UnauthorizedException(
-                ErrorCode.GRANT_ROLE_NOT_ALLOWED,
-                MessageUtil.GRANT_ROLE_NOT_ALLOWED
+                ErrorCode.ASSIGN_ROLE_NOT_ALLOWED,
+                MessageUtil.DELEGATE_ROLE_NOT_ALLOWED
         );
     }
 }
