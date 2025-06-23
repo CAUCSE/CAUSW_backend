@@ -354,7 +354,15 @@ public class UserController {
     @PutMapping(value = "/{delegateeId}/delegate-role")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
-    @Operation(summary = "역할 업데이트 API(완료)", description = "로그인된 사용자의 권한을 위임합니다.")
+    @Operation(
+            summary = "자신의 권한 위임",
+            description = """
+        로그인된 사용자가 자신의 권한 중 하나를 특정 사용자에게 위임합니다.
+        - 위임자는 해당 권한이 회수 됩니다.
+        - 고유 권한(ex. 학생회장 등)을 위임할 경우, 기존 모든 사용자로부터 해당 권한이 제거됩니다.
+        - 학생회장 권한 위임 시, 학생회 전체 권한(부회장, 학생회 등)이 초기화됩니다.
+        """
+    )
     public UserResponseDto delegateRole(
             @PathVariable("delegateeId") String delegateeId,
             @Valid @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto,
@@ -366,7 +374,16 @@ public class UserController {
     @PutMapping(value = "/{granteeId}/grant-role")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
-    @Operation(summary = "역할 업데이트 API(완료)", description = "타인에게 권한을 부여함. grantorId가 존재할 시 위임의 형태가 된다.")
+    @Operation(
+            summary = "타인에게 권한 부여",
+            description = """
+        로그인된 사용자가 타인에게 권한을 부여합니다.
+        - 부여일 경우 delegatorId는 생략해야 합니다.
+        - delegatorId가 존재하면, 위임의 형태로 간주되어 delegator의 권한이 회수됩니다.
+        - 고유 권한(ex. 학생회장 등) 부여 시 기존 모든 사용자로부터 해당 권한이 제거됩니다.
+        - 학생회장 권한 부여 시, 학생회 전체 권한(부회장, 학생회 등)이 초기화됩니다.
+        """
+    )
     public UserResponseDto grantRole(
             @RequestParam(value = "delegatorId", required = false) String delegatorId,
             @PathVariable("granteeId") String granteeId,
