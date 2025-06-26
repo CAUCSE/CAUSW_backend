@@ -20,7 +20,9 @@ import java.util.stream.Stream;
 
 import static java.util.Map.entry;
 import static net.causw.domain.model.enums.user.Role.*;
+import static net.causw.domain.policy.domain.RolePolicy.*;
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 
 @ExtendWith(MockitoExtension.class)
 public class DelegatableRoleValidatorTest {
@@ -153,15 +155,21 @@ public class DelegatableRoleValidatorTest {
 
     private void withMockedRolePolicy(Role delegatedRole, Runnable assertions) {
         try (MockedStatic<RolePolicy> rolePolicyMockedStatic = Mockito.mockStatic(RolePolicy.class)) {
-            rolePolicyMockedStatic.when(() -> RolePolicy.getRolesAssignableFor(delegatedRole))
+            rolePolicyMockedStatic.when(() -> getRolesAssignableFor(delegatedRole))
                     .thenReturn(MOCK_ROLES_ASSIGNABLE_FOR.getOrDefault(delegatedRole, Set.of(Role.COMMON)));
 
             rolePolicyMockedStatic.when(RolePolicy::getDelegatableRoles)
                     .thenReturn(MOCK_DELEGATABLE_ROLES);
 
             Stream.concat(delegator.getRoles().stream(), delegatee.getRoles().stream()).forEach(role ->
-                    rolePolicyMockedStatic.when(() -> RolePolicy.getRolePriority(role))
+                    rolePolicyMockedStatic.when(() -> getRolePriority(role))
                             .thenReturn(MOCK_ROLE_PRIORITY.get(role)));
+
+            rolePolicyMockedStatic.when(() -> canAssign(any(), any()))
+                    .thenCallRealMethod();
+
+            rolePolicyMockedStatic.when(() -> isPrivilegeInverted(any(), any()))
+                    .thenCallRealMethod();
 
             assertions.run();
         }

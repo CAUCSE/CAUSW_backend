@@ -75,7 +75,7 @@ public class RolePolicy {
 
     /**
      * 권한 부여 정책
-     * - Key: 부여자 역할
+     * - Key: 부여자 권한
      * - Value: 부여자가 수혜자에게 부여 가능한 권한 목록
      */
     private static final Map<Role, Set<Role>> GRANTABLE_ROLES = Map.of(
@@ -105,7 +105,7 @@ public class RolePolicy {
 
     /**
      * 대리 위임 정책
-     * - Key: 부여자 역할
+     * - Key: 부여자 권한
      * - Value: 부여자가 대리로 위임 가능한 권한 목록
      */
     private static final Map<Role, Set<Role>> PROXY_DELEGATABLE_ROLES = Map.of(
@@ -132,27 +132,108 @@ public class RolePolicy {
     );
 
     // --- Getter Methods ---
+    /**
+     * 단일 보유 권한 여부 반환
+     * - 사용자가 동시에 하나만 가질 수 있는 권한인지 여부
+     *
+     * @param role 확인할 권한
+     * @return true: 단일 보유, false: 복수 보유 가능
+     */
     public static Boolean getRoleUnique(Role role) {
         return ROLE_UNIQUE.get(role);
     }
 
+    /**
+     * 권한 우선순위 반환
+     * - 값이 작을수록 우선순위 높음
+     * - 예: ADMIN(0), PRESIDENT(1), ..., COMMON(99)
+     *
+     * @param role 대상 권한
+     * @return 우선순위 (작을수록 우선)
+     */
     public static Integer getRolePriority(Role role) {
         return ROLE_PRIORITY.get(role);
     }
 
+    /**
+     * 설정 가능 대상 권한 목록 반환
+     * - 특정 권한이 어떤 수혜자의 권한에 부여 가능한지 정의
+     *
+     * @param role 부여할 권한
+     * @return 설정 가능 대상 권한 목록
+     */
     public static Set<Role> getRolesAssignableFor(final Role role) {
         return ROLES_ASSIGNABLE_FOR.getOrDefault(role, Set.of(COMMON));
     }
 
+    /**
+     * 위임 가능한 전체 권한 목록 반환
+     * - 사용자가 다른 사용자에게 위임할 수 있는 권한 집합
+     *
+     * @return 위임 가능 권한 목록
+     */
     public static Set<Role> getDelegatableRoles() {
         return DELEGATABLE_ROLES;
     }
 
+    /**
+     * 권한 부여 가능 목록 반환
+     * - 주어진 권한이 다른 사용자에게 부여 가능한 권한 집합
+     *
+     * @param role 부여자 권한
+     * @return 부여 가능 권한 목록
+     */
     public static Set<Role> getGrantableRoles(final Role role) {
         return GRANTABLE_ROLES.getOrDefault(role, Set.of());
     }
 
+    /**
+     * 대리 위임 가능 목록 반환
+     * - 주어진 권한이 타인을 대신해 위임할 수 있는 권한 집합
+     *
+     * @param role 위임자 권한
+     * @return 대리 위임 가능 권한 목록
+     */
     public static Set<Role> getProxyDelegatableRoles(final Role role) {
         return PROXY_DELEGATABLE_ROLES.getOrDefault(role, Set.of());
+    }
+
+    // --- Policy Methods ---
+    /**
+     * 부여 가능 여부 판단
+     * - 대상 사용자가 가진 모든 권한이 설정 가능 대상에 포함되는지 검사
+     *
+     * @param assignedRole 부여하려는 권한
+     * @param assigneeRoles 대상 사용자의 권한
+     * @return 부여 가능 여부
+     */
+    public static boolean canAssign(Role assignedRole, Set<Role> assigneeRoles) {
+        // 부여할 권한은 대상의 모든 권한에 대한 부여 가능 권한을 가지고 있어야 함.
+        return RolePolicy.getRolesAssignableFor(assignedRole).containsAll(assigneeRoles);
+    }
+
+    /**
+     * 권한 역전 여부 판단
+     * - 부여자보다 수혜자의 우선순위가 더 높으면 권한 역전으로 간주
+     *
+     * @param assignerRoles 부여자의 권한
+     * @param assigneeRoles 수혜자의 권한
+     * @return 권한 역전 여부
+     */
+    public static boolean isPrivilegeInverted(Set<Role> assignerRoles, Set<Role> assigneeRoles) {
+        // 부여자가 가진 모든 권한 중 최상위 우선순위를 권한을 찾음
+        int assignerMinPriority = assignerRoles.stream()
+                .mapToInt(RolePolicy::getRolePriority)
+                .min()
+                .orElse(Integer.MAX_VALUE);
+
+        // 수혜자가 가진 모든 권한 중 최상위 우선순위를 찾음
+        int assigneeMinPriority = assigneeRoles.stream()
+                .mapToInt(RolePolicy::getRolePriority)
+                .min()
+                .orElse(Integer.MAX_VALUE);
+
+        // 수혜자가 부여자 보다 낮은 값(높은 우선순위)을 가지면 권한 역전
+        return assignerMinPriority > assigneeMinPriority;
     }
 }

@@ -22,7 +22,9 @@ import java.util.stream.Stream;
 
 import static java.util.Map.entry;
 import static net.causw.domain.model.enums.user.Role.*;
+import static net.causw.domain.policy.domain.RolePolicy.*;
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 
 @ExtendWith(MockitoExtension.class)
 public class GrantableRoleValidatorTest {
@@ -237,21 +239,27 @@ public class GrantableRoleValidatorTest {
         try (MockedStatic<RolePolicy> rolePolicyMockedStatic = Mockito.mockStatic(RolePolicy.class)) {
             grantor.getRoles().forEach(role -> {
                 if (delegator == null) {
-                    rolePolicyMockedStatic.when(() -> RolePolicy.getGrantableRoles(role))
+                    rolePolicyMockedStatic.when(() -> getGrantableRoles(role))
                             .thenReturn(MOCK_GRANTABLE_ROLES.getOrDefault(role, Set.of()));
                 }
                 else {
-                    rolePolicyMockedStatic.when(() -> RolePolicy.getProxyDelegatableRoles(role))
+                    rolePolicyMockedStatic.when(() -> getProxyDelegatableRoles(role))
                             .thenReturn(MOCK_PROXY_DELEGATABLE_ROLES.getOrDefault(role, Set.of()));
                 }
             });
 
-            rolePolicyMockedStatic.when(() -> RolePolicy.getRolesAssignableFor(grantedRole))
+            rolePolicyMockedStatic.when(() -> getRolesAssignableFor(grantedRole))
                     .thenReturn(MOCK_ROLES_ASSIGNABLE_FOR.getOrDefault(grantedRole, Set.of(Role.COMMON)));
 
             Stream.concat(grantor.getRoles().stream(), grantee.getRoles().stream()).forEach(role ->
-                    rolePolicyMockedStatic.when(() -> RolePolicy.getRolePriority(role))
+                    rolePolicyMockedStatic.when(() -> getRolePriority(role))
                             .thenReturn(MOCK_ROLE_PRIORITY.get(role)));
+
+            rolePolicyMockedStatic.when(() -> canAssign(any(), any()))
+                    .thenCallRealMethod();
+
+            rolePolicyMockedStatic.when(() -> isPrivilegeInverted(any(), any()))
+                    .thenCallRealMethod();
 
             assertions.run();
         }

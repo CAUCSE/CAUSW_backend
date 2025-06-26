@@ -4,11 +4,10 @@ import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.user.Role;
 import net.causw.domain.model.util.MessageUtil;
-import net.causw.domain.policy.domain.RolePolicy;
 
 import java.util.Set;
 
-import static net.causw.domain.validation.util.RoleValidationUtils.*;
+import static net.causw.domain.policy.domain.RolePolicy.*;
 
 
 public class DelegatableRoleValidator extends AbstractValidator {
@@ -41,7 +40,7 @@ public class DelegatableRoleValidator extends AbstractValidator {
 
     private boolean canDelegate() {
         // 위임할 권한이 위임 가능 대상이어야 하고 위임자가 해당 권한이어야 함.
-        return RolePolicy.getDelegatableRoles().contains(delegatedRole) && delegatorRoles.contains(delegatedRole);
+        return getDelegatableRoles().contains(delegatedRole) && delegatorRoles.contains(delegatedRole);
     }
 
     private UnauthorizedException customUnauthorizedException() {

@@ -26,7 +26,9 @@ import java.util.stream.Stream;
 import static java.util.Map.entry;
 import static net.causw.domain.model.enums.user.Role.*;
 import static net.causw.domain.model.enums.user.Role.COMMON;
+import static net.causw.domain.policy.domain.RolePolicy.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -188,7 +190,7 @@ public class UserRoleServiceTest {
             mockPolicyAndDelegateRole(delegatedRole);
 
             // then
-            assertThat(RolePolicy.getRoleUnique(delegatedRole)).isTrue();
+            assertThat(getRoleUnique(delegatedRole)).isTrue();
             mockUsers.values().stream().flatMap(Collection::stream)
                     .forEach(user -> {
                         if (user != delegatee) {
@@ -209,7 +211,7 @@ public class UserRoleServiceTest {
             mockPolicyAndDelegateRole(delegatedRole);
 
             // then
-            assertThat(RolePolicy.getRoleUnique(delegatedRole)).isFalse();
+            assertThat(getRoleUnique(delegatedRole)).isFalse();
             assertThat(delegator.getRoles()).isEqualTo(Set.of(Role.COMMON));
         }
 
@@ -311,7 +313,7 @@ public class UserRoleServiceTest {
             mockPolicyAndGrantRole(grantedRole);
 
             // then
-            assertThat(RolePolicy.getRoleUnique(grantedRole)).isTrue();
+            assertThat(getRoleUnique(grantedRole)).isTrue();
             mockUsers.values().stream().flatMap(Collection::stream)
                     .forEach(user -> {
                         if (user != grantee) {
@@ -334,7 +336,7 @@ public class UserRoleServiceTest {
             mockPolicyAndProxyDelegateRole(grantedRole);
 
             // then
-            assertThat(RolePolicy.getRoleUnique(grantedRole)).isFalse();
+            assertThat(getRoleUnique(grantedRole)).isFalse();
             assertThat(delegator.getRoles()).isEqualTo(Set.of(Role.COMMON));
         }
 
@@ -375,7 +377,7 @@ public class UserRoleServiceTest {
             UserResponseDto userResponseDto;
 
             try (MockedStatic<RolePolicy> rolePolicyMockedStatic = Mockito.mockStatic(RolePolicy.class)) {
-                if (delegatorId == null) {
+                if (delegator == null) {
                     grantor.getRoles().forEach(role -> rolePolicyMockedStatic
                             .when(() -> RolePolicy.getGrantableRoles(role))
                             .thenReturn(getGrantableRoles(role)));
@@ -398,15 +400,21 @@ public class UserRoleServiceTest {
 
     private void mockDefaultRolePolicy(MockedStatic<RolePolicy> rolePolicyMockedStatic,
                                        Set<Role> assignerRoles, Role assignedRole, Set<Role> assigneeRoles) {
-        rolePolicyMockedStatic.when(() -> RolePolicy.getRolesAssignableFor(assignedRole))
+        rolePolicyMockedStatic.when(() -> getRolesAssignableFor(assignedRole))
                 .thenReturn(MOCK_ROLES_ASSIGNABLE_FOR.getOrDefault(assignedRole, Set.of(Role.COMMON)));
 
-        rolePolicyMockedStatic.when(() -> RolePolicy.getRoleUnique(assignedRole))
+        rolePolicyMockedStatic.when(() -> getRoleUnique(assignedRole))
                 .thenReturn(MOCK_ROLE_UNIQUE.get(assignedRole));
 
         Stream.concat(assignerRoles.stream(), assigneeRoles.stream()).forEach(role ->
-            rolePolicyMockedStatic.when(() -> RolePolicy.getRolePriority(role))
+            rolePolicyMockedStatic.when(() -> getRolePriority(role))
                     .thenReturn(MOCK_ROLE_PRIORITY.get(role)));
+
+        rolePolicyMockedStatic.when(() -> canAssign(any(), any()))
+                .thenCallRealMethod();
+
+        rolePolicyMockedStatic.when(() -> isPrivilegeInverted(any(), any()))
+                .thenCallRealMethod();
     }
 
     private Map<Role, List<User>> mockFindByRoleAndState(Set<Role> roles, User... users) {

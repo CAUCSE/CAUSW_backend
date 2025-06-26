@@ -6,11 +6,11 @@ import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.user.Role;
 import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
 import net.causw.domain.model.util.MessageUtil;
-import net.causw.domain.policy.domain.RolePolicy;
 
 import java.util.Set;
 
-import static net.causw.domain.validation.util.RoleValidationUtils.*;
+import static net.causw.domain.policy.domain.RolePolicy.*;
+
 
 public class GrantableRoleValidator extends AbstractValidator {
 
@@ -55,7 +55,7 @@ public class GrantableRoleValidator extends AbstractValidator {
 
     private boolean canGrant() {
         // 부여자는 부여할 권한에 대한 부여 가능 권한을 가지고 있어야 함.
-        return grantorRoles.stream().anyMatch(role -> RolePolicy.getGrantableRoles(role).contains(grantedRole));
+        return grantorRoles.stream().anyMatch(role -> getGrantableRoles(role).contains(grantedRole));
     }
 
     private boolean canProxyDelegate() {
@@ -65,10 +65,8 @@ public class GrantableRoleValidator extends AbstractValidator {
         }
 
         // 부여자가 대리 위임할 권한에 대한 대리 위임 가능 권한을 가지고 있어야 함.
-        return grantorRoles.stream().anyMatch(role -> RolePolicy.getProxyDelegatableRoles(role).contains(grantedRole));
+        return grantorRoles.stream().anyMatch(role -> getProxyDelegatableRoles(role).contains(grantedRole));
     }
-
-
 
     private UnauthorizedException customUnauthorizedException() {
         return new UnauthorizedException(
