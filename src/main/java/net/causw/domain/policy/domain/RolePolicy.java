@@ -58,7 +58,7 @@ public class RolePolicy {
     /**
      * 권한 설정 가능 대상 정책 (부여 및 위임 공통)
      * - Key: 설정하려는 권한
-     * - Value: 해당 권한을 설정받을 수 있는 수혜자의 최소 자격 역할 목록 (1개 이상 보유 시 설정 가능)
+     * - Value: 해당 권한을 설정받을 수 있는 수혜자의 권한 목록
      */
     private static final Map<Role, Set<Role>> ROLES_ASSIGNABLE_FOR = Map.of(
             // 부학생회장과 학생회 권한이 같이 삭제되므로 대상이 일반, 학생회장, 부학생회장 권한까지 설정 가능함.
