@@ -1,12 +1,16 @@
-package net.causw.domain.policy.security;
+package net.causw.application.security;
 
+import net.causw.adapter.persistence.user.User;
+import net.causw.config.security.userdetails.CustomUserDetails;
 import net.causw.domain.model.enums.user.Role;
 import net.causw.domain.model.enums.user.RoleGroup;
+import net.causw.domain.model.enums.user.UserState;
+import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Collection;
 
-public class RolePolicy {
+public class SecurityHelper {
 
 
     public static boolean hasRole(Collection<? extends GrantedAuthority> authorities, Role role) {
@@ -27,5 +31,17 @@ public class RolePolicy {
                 .anyMatch(role -> authorities
                         .stream()
                         .anyMatch(authority -> authority.getAuthority().equals(role)));
+    }
+
+    public static boolean isAcademicRecordCertified(User user) {
+        AcademicStatus academicStatus = user.getAcademicStatus();
+
+        if (academicStatus == null) {
+            return false;
+        } else return !academicStatus.equals(AcademicStatus.UNDETERMINED);
+    }
+
+    public static boolean isStateActive(CustomUserDetails userDetails) {
+        return userDetails.getUserState() == UserState.ACTIVE;
     }
 }

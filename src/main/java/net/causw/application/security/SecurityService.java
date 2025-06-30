@@ -1,4 +1,4 @@
-package net.causw.config.security;
+package net.causw.application.security;
 
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.user.User;
@@ -7,8 +7,6 @@ import net.causw.domain.aop.annotation.MeasureTime;
 import net.causw.domain.model.enums.user.RoleGroup;
 import net.causw.domain.model.enums.user.Role;
 import net.causw.domain.model.util.MessageUtil;
-import net.causw.domain.policy.security.RolePolicy;
-import net.causw.domain.policy.security.UserPolicy;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -23,29 +21,29 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class SecurityService {
     public boolean hasRole(String role) {
-        return RolePolicy.hasRole(getAuthorities(), Role.of(role));
+        return SecurityHelper.hasRole(getAuthorities(), Role.of(role));
     }
 
     public boolean hasRole(Role role) {
-        return RolePolicy.hasRole(getAuthorities(), role);
+        return SecurityHelper.hasRole(getAuthorities(), role);
     }
 
     public boolean hasRoleGroup(RoleGroup roleGroup) {
-        return RolePolicy.hasRoleGroup(getAuthorities(), roleGroup);
+        return SecurityHelper.hasRoleGroup(getAuthorities(), roleGroup);
     }
 
     public boolean isActiveAndNotNoneUser() {
-        return UserPolicy.isStateActive(getUserDetails()) && !RolePolicy.hasRoleOnlyNone(getAuthorities());
+        return SecurityHelper.isStateActive(getUserDetails()) && !SecurityHelper.hasRoleOnlyNone(getAuthorities());
     }
 
     public boolean isAcademicRecordCertified() {
         User user = getUserDetails().getUser();
 
-        if (RolePolicy.hasRoleGroup(getAuthorities(), RoleGroup.EXECUTIVES_AND_PROFESSOR)) {
+        if (SecurityHelper.hasRoleGroup(getAuthorities(), RoleGroup.EXECUTIVES_AND_PROFESSOR)) {
             return true;
         }
 
-        return UserPolicy.isAcademicRecordCertified(user);
+        return SecurityHelper.isAcademicRecordCertified(user);
     }
 
     public boolean isActiveAndNotNoneUserAndAcademicRecordCertified() {
