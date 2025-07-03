@@ -4,9 +4,19 @@
 def env = project.hasProperty("env") ? project.property("env") : "local"
 
 // 2. .env.${env} 파싱
-def loadEnvToProjectExt = apply(from: "${rootDir}/gradle/env/load-to-project.gradle")
+def envFile = project.rootProject.file(".env.${env}")
+if (envFile.exists()) {
+    project.logger.lifecycle("🔧 Loading to project.ext from .env.${env}")
+    envFile.eachLine { line ->
+        def trimmedLine = line.trim()
+        if (!trimmedLine || trimmedLine.startsWith('#')) return
 
-loadEnvToProjectExt(project, env)
+        def (key, value) = line.split('=', 2)
+        if (key && value) {
+            project.ext.set(key.trim(), value.trim())
+        }
+    }
+}
 
 /* 3. 환경변수 설정
  *
@@ -20,7 +30,7 @@ def dbUsername = project.hasProperty("DB_USERNAME") ? project.property("DB_USERN
 def dbPassword = project.hasProperty("DB_PASSWORD") ? project.property("DB_PASSWORD") : null
 
 if (!dbUrl || !dbUsername || !dbPassword) {
-    logger.lifecycle("Skipping Flyway configuration in Gradle: required DB properties not found.")
+    logger.lifecycle("Skip Flyway configuration in Gradle: required DB properties not found.")
     return
 }
 

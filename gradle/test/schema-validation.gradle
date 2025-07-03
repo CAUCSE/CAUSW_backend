@@ -17,7 +17,21 @@ tasks.register('schemaValidationTest', Test) {
     }
 
     // 시스템 환경변수 설정
-    def loadEnvToSystemProps = apply(from: "${rootDir}/gradle/env/load-to-system.gradle")
+    def env = "test"
+    def envFile = project.rootProject.file(".env.${env}")
+    if (!envFile.exists()) {
+        throw new GradleException("Required .env.${env} file not found")
+    }
 
-    loadEnvToSystemProps(delegate, "test")
+    project.logger.lifecycle("🔧 Loading to systemProperties from .env.${env} for SchemaValidationTest")
+
+    envFile.eachLine { line ->
+        def trimmedLine = line.trim()
+        if (!trimmedLine || trimmedLine.startsWith('#')) return
+
+        def (key, value) = line.split('=', 2)
+        if (key && value) {
+            systemProperty key.trim(), value.trim()
+        }
+    }
 }
