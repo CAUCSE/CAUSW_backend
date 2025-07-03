@@ -1,11 +1,9 @@
 package net.causw.application.user;
 
 import jakarta.servlet.http.HttpServletResponse;
-
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Set;
 import net.causw.adapter.persistence.post.LikePost;
 import net.causw.adapter.persistence.post.Post;
 import net.causw.adapter.persistence.repository.post.FavoritePostRepository;
@@ -27,7 +25,10 @@ import net.causw.domain.model.enums.user.UserState;
 
 import net.causw.domain.model.util.ObjectFixtures;
 import net.causw.domain.model.util.StaticValue;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
