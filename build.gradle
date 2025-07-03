@@ -1,6 +1,14 @@
+buildscript {
+    dependencies {
+        classpath 'org.flywaydb:flyway-mysql:9.22.3'
+        classpath 'com.mysql:mysql-connector-j:8.1.0'
+    }
+}
+
 plugins {
     id 'org.springframework.boot' version '3.2.0'
     id 'io.spring.dependency-management' version '1.1.4'
+    id 'org.flywaydb.flyway' version '9.22.3'
     id 'java'
     id 'groovy'
 }
@@ -36,7 +44,6 @@ dependencies {
 
      */
     implementation 'org.springframework.boot:spring-boot-starter-web'
-
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
@@ -45,20 +52,14 @@ dependencies {
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
-    runtimeOnly 'com.mysql:mysql-connector-j'
+    implementation 'com.mysql:mysql-connector-j:8.1.0'
+
     // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+
     // Swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2'
-
-
-    // Spock test
-    testImplementation "org.spockframework:spock-core:1.2-groovy-2.4"
-    testImplementation "org.spockframework:spock-spring:1.2-groovy-2.4"
-    testImplementation "org.junit.vintage:junit-vintage-engine"
-    testImplementation "org.powermock:powermock-api-mockito2:2.0.2"
-    testImplementation "org.powermock:powermock-module-junit4:2.0.2"
 
     // Discord LogBack
     implementation 'com.github.napstr:logback-discord-appender:1.0.0'
@@ -72,7 +73,6 @@ dependencies {
     // MapStruct
     implementation 'org.mapstruct:mapstruct:1.4.2.Final'
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.4.2.Final'
-
     implementation 'javax.xml.bind:jaxb-api:2.3.1'
 
     // h2 database(테스트용)
@@ -88,12 +88,17 @@ dependencies {
     // Spring Batch
     implementation 'org.springframework.boot:spring-boot-starter-batch'
     implementation 'org.springframework.batch:spring-batch-core'
+
     // Retry 관련
     // https://mvnrepository.com/artifact/org.springframework.retry/spring-retry
     implementation 'org.springframework.retry:spring-retry:1.0.3.RELEASE'
 
-    //FCM
+    // FCM
     implementation 'com.google.firebase:firebase-admin:9.2.0'
+
+    // Flyway
+    implementation 'org.flywaydb:flyway-core:9.22.3'
+    implementation 'org.flywaydb:flyway-mysql:9.22.3'
 
     // logback json 형식 관련
     implementation 'ch.qos.logback.contrib:logback-json-classic:0.1.5'
@@ -103,6 +108,8 @@ dependencies {
 
 test {
     useJUnitPlatform()
+
+    exclude '**/SchemaValidationTest.class'
 
     testLogging {
         showStandardStreams = true
@@ -115,3 +122,10 @@ test {
         }
     }
 }
+
+// Custom Flyway configuration and tasks
+apply from: 'gradle/flyway/flyway-config.gradle'
+apply from: 'gradle/flyway/flyway-task.gradle'
+
+// JPA entity mapping test task
+apply from: 'gradle/test/schema-validation.gradle'

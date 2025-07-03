@@ -49,10 +49,23 @@ jobs:
           touch $DIR/$FIREBASE_KEY_FILENAME
           echo "$FIREBASE_KEY" > $DIR/$FIREBASE_KEY_FILENAME
 
+      # .env.dev 파일 추가
+      - name: Copy .env.dev from secret
+        env:
+          ENV_DEV: ${{ secrets.ENV_DEV }}
+        run: |
+          cat <<EOF > .env.dev
+          $ENV_DEV
+          EOF
+
       # gradlew 실행 권한 부여
       - name: Run chmod to make gradlew executable
         run: chmod +x ./gradlew
         shell: bash
+
+      # Flyway 마이그레이션
+      - name: Run Flyway migration
+        run: ./gradlew flywayMigrate -Penv=dev
 
       # Build -> jar 파일 생성
       - name: Build with Gradle
