@@ -31,12 +31,16 @@ public class Notification extends BaseEntity {
     @Column(name = "target_id")
     private String targetId;
 
+    @Column(name = "target_parent_id")
+    private String targetParentId;
+
     public static Notification of(
             User user,
             String title,
             String body,
             NoticeType noticeType,
-            String targetId
+            String targetId,
+            String targetParentId
     ) {
         return Notification.builder()
                 .user(user)
@@ -44,6 +48,7 @@ public class Notification extends BaseEntity {
                 .body(body)
                 .noticeType(noticeType)
                 .targetId(targetId)
+                .targetParentId(targetParentId)
                 .build();
     }
 

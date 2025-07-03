@@ -8,6 +8,8 @@ import net.causw.adapter.persistence.user.User;
 import net.causw.adapter.persistence.user.UserAdmission;
 import net.causw.adapter.persistence.userCouncilFee.CouncilFeeFakeUser;
 import net.causw.adapter.persistence.userCouncilFee.UserCouncilFee;
+import net.causw.adapter.persistence.vote.Vote;
+import net.causw.adapter.persistence.vote.VoteOption;
 import net.causw.application.dto.user.UserCreateRequestDto;
 import net.causw.domain.model.enums.semester.SemesterType;
 import net.causw.domain.model.enums.user.GraduationType;
@@ -91,9 +93,9 @@ public class ObjectFixtures {
         "boardName",
         "boardDescription",
         List.of(
-            "ADMIN","PRESIDENT","VICE_PRESIDENT",
-            "COUNCIL","LEADER_1","LEADER_2","LEADER_3","LEADER_4",
-            "LEADER_CIRCLE","LEADER_ALUMNI","COMMON","PROFESSOR"),
+            "ADMIN", "PRESIDENT", "VICE_PRESIDENT",
+            "COUNCIL", "LEADER_1", "LEADER_2", "LEADER_3", "LEADER_4",
+            "LEADER_CIRCLE", "LEADER_ALUMNI", "COMMON", "PROFESSOR"),
         "category",
         true,
         null
@@ -110,6 +112,20 @@ public class ObjectFixtures {
         board,
         null,
         List.of()
+    );
+  }
+
+  public static List<VoteOption> getVoteOptions() {
+    return List.of(VoteOption.of("option1"), VoteOption.of("option2"));
+  }
+
+  public static Vote getVote(List<VoteOption> voteOptions, Post post) {
+    return Vote.of(
+        "title",
+        false,
+        false,
+        voteOptions,
+        post
     );
   }
 }

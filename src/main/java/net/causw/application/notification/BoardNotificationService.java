@@ -60,8 +60,8 @@ public class BoardNotificationService implements NotificationService {
         List<UserBoardSubscribe> userBoardSubscribeList = userBoardSubscribeRepository.findByBoardAndIsSubscribedTrue(board);
         BoardNotificationDto boardNotificationDto = BoardNotificationDto.of(board, post);
 
-        Notification notification = Notification.of(post.getWriter(), boardNotificationDto.getTitle(), boardNotificationDto.getBody(), NoticeType.BOARD, post.getId());
-
+        Notification notification = Notification.of(post.getWriter(), boardNotificationDto.getTitle(), boardNotificationDto.getBody(), NoticeType.BOARD, post.getId(), board.getId());
+        
         saveNotification(notification);
 
         userBoardSubscribeList.stream()

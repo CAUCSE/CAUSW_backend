@@ -59,7 +59,7 @@ public class PostNotificationService implements NotificationService{
         List<UserPostSubscribe> userPostSubscribeList = userPostSubscribeRepository.findByPostAndIsSubscribedTrue(post);
         PostNotificationDto postNotificationDto = PostNotificationDto.of(post, comment);
 
-        Notification notification = Notification.of(comment.getWriter(), postNotificationDto.getTitle(), postNotificationDto.getBody(), NoticeType.POST, post.getId());
+        Notification notification = Notification.of(comment.getWriter(), postNotificationDto.getTitle(), postNotificationDto.getBody(), NoticeType.POST, post.getId(), post.getBoard().getId());
 
         saveNotification(notification);
 
