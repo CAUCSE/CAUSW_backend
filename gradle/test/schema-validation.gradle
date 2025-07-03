@@ -15,4 +15,9 @@ tasks.register('schemaValidationTest', Test) {
         showCauses = true
         showStackTraces = false
     }
+
+    // 시스템 환경변수 설정
+    def loadEnvToSystemProps = apply(from: "${rootDir}/gradle/env/load-to-system.gradle")
+
+    loadEnvToSystemProps(delegate, "test")
 }

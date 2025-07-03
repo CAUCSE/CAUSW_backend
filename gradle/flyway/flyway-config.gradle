@@ -1,22 +1,12 @@
 // flyway-config.gradle
 
 // 1. 환경(env) 설정
-def env = project.hasProperty('env') ? project.property('env') : 'local'
+def env = project.hasProperty("env") ? project.property("env") : "local"
 
 // 2. .env.${env} 파싱
-def envFile = file(".env.${env}")
-if (envFile.exists()) {
-    logger.lifecycle("Parsing .env.${env} file")
-    envFile.eachLine { line ->
-        def trimmedLine = line.trim()
-        if (!trimmedLine || trimmedLine.startsWith('#')) return
+def loadEnvToProjectExt = apply(from: "${rootDir}/gradle/env/load-to-project.gradle")
 
-        def (key, value) = line.split('=', 2)
-        if (key && value) {
-            project.ext.set(key.trim(), value.trim())
-        }
-    }
-}
+loadEnvToProjectExt(project, env)
 
 /* 3. 환경변수 설정
  *
