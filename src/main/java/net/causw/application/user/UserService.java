@@ -2,7 +2,6 @@ package net.causw.application.user;
 
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.circle.Circle;
@@ -15,7 +14,7 @@ import net.causw.adapter.persistence.userAcademicRecord.UserAcademicRecordApplic
 import net.causw.adapter.persistence.uuidFile.joinEntity.UserAcademicRecordApplicationAttachImage;
 import net.causw.adapter.persistence.uuidFile.joinEntity.UserAdmissionAttachImage;
 import net.causw.adapter.persistence.uuidFile.joinEntity.UserProfileImage;
-import net.causw.application.dto.util.StatusUtil;
+import net.causw.application.util.StatusUtil;
 import net.causw.application.excel.UserExcelService;
 import net.causw.application.pageable.PageableFactory;
 import net.causw.adapter.persistence.post.Post;
@@ -119,6 +118,9 @@ public class UserService {
     private final UserExcelService userExcelService;
     private final UserAcademicRecordApplicationRepository userAcademicRecordApplicationRepository;
     private final UserAcademicRecordApplicationAttachImageRepository userAcademicRecordApplicationAttachImageRepository;
+
+    private final UserDtoMapper userDtoMapper;
+    private final PostDtoMapper postDtoMapper;
 
     @Transactional
     public void findPassword(
@@ -256,6 +258,36 @@ public class UserService {
                                 StatusUtil.isPostVote(favoritePost.getPost()),
                                 StatusUtil.isPostForm(favoritePost.getPost())
                         ))
+        );
+    }
+
+    /**
+     *
+     * @param requestUser 유저
+     * @param pageNum 페이지 넘버
+     * @return 회원 좋아요 게시글 dto
+     */
+    @Transactional(readOnly = true)
+    public UserPostsResponseDto findLikePosts(User requestUser, Integer pageNum) {
+        Set<Role> roles = requestUser.getRoles();
+
+        ValidatorBucket.of()
+            .consistOf(UserRoleIsNoneValidator.of(roles))
+            .consistOf(UserStateValidator.of(requestUser.getState()))
+            .validate();
+
+        return userDtoMapper.toUserPostsResponseDto(
+            requestUser,
+            this.likePostRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
+                .map(likePost -> postDtoMapper.toPostsResponseDto(
+                    likePost.getPost(),
+                    getNumOfComment(likePost.getPost()),
+                    getNumOfPostLikes(likePost.getPost()),
+                    getNumOfPostFavorites(likePost.getPost()),
+                    !likePost.getPost().getPostAttachImageList().isEmpty() ? likePost.getPost().getPostAttachImageList().get(0) : null,
+                    StatusUtil.isPostVote(likePost.getPost()),
+                    StatusUtil.isPostForm(likePost.getPost())
+                ))
         );
     }
 

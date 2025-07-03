@@ -21,7 +21,6 @@ import net.causw.application.dto.form.request.QuestionReplyRequestDto;
 import net.causw.application.dto.form.response.reply.excel.ExcelReplyListResponseDto;
 import net.causw.application.dto.form.response.reply.excel.ExcelReplyQuestionResponseDto;
 import net.causw.application.dto.form.response.reply.excel.ExcelReplyResponseDto;
-import net.causw.application.dto.util.StatusUtil;
 import net.causw.application.dto.util.dtoMapper.FormDtoMapper;
 import net.causw.application.excel.FormExcelService;
 import net.causw.domain.aop.annotation.MeasureTime;
@@ -38,6 +37,7 @@ import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
 import net.causw.domain.model.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import net.causw.adapter.persistence.user.User;
+import net.causw.domain.policy.domain.UserCouncilFeePolicy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -388,7 +388,7 @@ public class FormService {
                             )
                     );
 
-                    if (!StatusUtil.getIsAppliedCurrentSemester(userCouncilFee)) {
+                    if (!UserCouncilFeePolicy.isAppliedCurrentSemesterWithUser(userCouncilFee)) {
                         throw new BadRequestException(
                                 ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
                                 MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
@@ -620,8 +620,8 @@ public class FormService {
             return FormDtoMapper.INSTANCE.toReplyUserResponseDto(user, null, null, null);
         }
 
-        Boolean isAppliedThisSemester = StatusUtil.getIsAppliedCurrentSemester(userCouncilFee);
-        Integer restOfSemester = StatusUtil.getRestOfSemester(userCouncilFee);
+        Boolean isAppliedThisSemester = UserCouncilFeePolicy.isAppliedCurrentSemesterWithUser(userCouncilFee);
+        Integer restOfSemester = UserCouncilFeePolicy.getRemainingAppliedSemestersWithUser(userCouncilFee);
 
         return FormDtoMapper.INSTANCE.toReplyUserResponseDto(user, userCouncilFee, isAppliedThisSemester, restOfSemester);
     }

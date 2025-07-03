@@ -134,3 +134,36 @@ jobs:
             sleep 15
             sudo nohup java -jar /home/ubuntu/app/*.jar > ./nohup.out 2>&1 &
 
+      - name: Discord Notify (Always)
+        if: always()
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_DEPLOY_WEBHOOK_URL_DEV }}
+
+          # ✅ status 자동 감지
+          status: ${{ job.status }}
+
+          # ✅ content: 실패 시 역할 멘션 포함
+          content: >-
+            ${{ job.status == 'success' &&
+                format('`[{0}]` 🎉 배포가 성공적으로 완료됐어요!', github.ref_name)
+            || format('`[{0}]` 🚨 배포 실패! <@&{1}> 확인해주세요.', github.ref_name, secrets.DISCORD_BACKEND_ROLE_ID) }}
+
+          # ✅ title: 브랜치 prefix + 이모지 포함
+          title: >-
+            ${{ job.status == 'success' &&
+                format('✅ [{0}] 배포 성공', github.ref_name)
+            || format('❌ [{0}] 배포 실패', github.ref_name) }}
+
+          # ✅ Embed description
+          description: |
+            🛠 브랜치: `${{ github.ref_name }}`
+            🔖 커밋: `${{ github.sha }}`
+            🙋 작성자: `${{ github.actor }}`
+            🔗 [깃허브 액션 로그 보기](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+          # ✅ 상태별 색상
+          color: ${{ job.status == 'success' && '0x00ff00' || '0xff0000' }}
+
+          # ✅ 봇 이름 커스터마이징
+          username: "🚀 배포 봇"

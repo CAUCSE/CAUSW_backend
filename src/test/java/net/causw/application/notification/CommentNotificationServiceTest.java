@@ -1,6 +1,7 @@
 package net.causw.application.notification;
 
 import com.google.firebase.messaging.FirebaseMessagingException;
+import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.comment.ChildComment;
 import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.notification.Notification;
@@ -50,6 +51,7 @@ class CommentNotificationServiceTest {
     private Comment mockComment;
     private ChildComment mockChildComment;
     private Post mockPost;
+    private Board mockBoard;
 
     @BeforeEach
     void setUp() {
@@ -68,6 +70,7 @@ class CommentNotificationServiceTest {
         mockUser.setFcmTokens(new HashSet<>());
         mockUser.getFcmTokens().add("dummy-token");
 
+        mockBoard = mock(Board.class);
         mockPost = mock(Post.class);
         mockComment = mock(Comment.class);
         mockChildComment = mock(ChildComment.class);
@@ -80,6 +83,9 @@ class CommentNotificationServiceTest {
     void sendByCommentIsSubscribed_성공() {
         given(mockPost.getId()).willReturn("post-id");
         given(mockChildComment.getWriter()).willReturn(mockUser);
+        given(mockPost.getBoard()).willReturn(mockBoard);
+        given(mockBoard.getId()).willReturn("board-id");
+
 
         given(userCommentSubscribeRepository.findByCommentAndIsSubscribedTrue(mockComment))
                 .willReturn(List.of(UserCommentSubscribe.of(mockUser, mockComment, true)));
@@ -94,6 +100,8 @@ class CommentNotificationServiceTest {
     @DisplayName("댓글 구독 안된 경우 알림 저장, 로그 저장 안됨")
     void sendByCommentIsSubscribed_구독없음() {
         given(mockPost.getId()).willReturn("post-id");
+        given(mockPost.getBoard()).willReturn(mockBoard);
+        given(mockBoard.getId()).willReturn("board-id");
         given(userCommentSubscribeRepository.findByCommentAndIsSubscribedTrue(mockComment))
                 .willReturn(List.of());
 
@@ -110,6 +118,8 @@ class CommentNotificationServiceTest {
         mockUser.getFcmTokens().add(validToken);
 
         given(mockPost.getId()).willReturn("post-id");
+        given(mockPost.getBoard()).willReturn(mockBoard);
+        given(mockBoard.getId()).willReturn("board-id");
         given(mockChildComment.getWriter()).willReturn(mockUser);
         given(mockComment.getContent()).willReturn("부모 댓글");
         given(mockChildComment.getContent()).willReturn("대댓글 내용");
@@ -130,6 +140,8 @@ class CommentNotificationServiceTest {
         mockUser.getFcmTokens().add(invalidToken);
 
         given(mockPost.getId()).willReturn("post-id");
+        given(mockPost.getBoard()).willReturn(mockBoard);
+        given(mockBoard.getId()).willReturn("board-id");
         given(mockChildComment.getWriter()).willReturn(mockUser);
 
         given(userCommentSubscribeRepository.findByCommentAndIsSubscribedTrue(mockComment))
