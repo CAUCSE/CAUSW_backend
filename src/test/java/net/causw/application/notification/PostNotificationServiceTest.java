@@ -1,6 +1,7 @@
 package net.causw.application.notification;
 
 import com.google.firebase.messaging.FirebaseMessagingException;
+import net.causw.adapter.persistence.board.Board;
 import net.causw.adapter.persistence.comment.Comment;
 import net.causw.adapter.persistence.notification.Notification;
 import net.causw.adapter.persistence.notification.NotificationLog;
@@ -47,6 +48,7 @@ class PostNotificationServiceTest {
 
     private User mockUser;
     private Post mockPost;
+    private Board mockBoard;
     private Comment mockComment;
 
     @BeforeEach
@@ -66,6 +68,7 @@ class PostNotificationServiceTest {
         mockUser.setFcmTokens(new HashSet<>());
         mockUser.getFcmTokens().add("dummy-token");
 
+        mockBoard = mock(Board.class);
         mockPost = mock(Post.class);
         mockComment = mock(Comment.class);
     }
@@ -74,6 +77,8 @@ class PostNotificationServiceTest {
     @DisplayName("게시글 구독 시 알림 및 로그 저장")
     void sendByPostIsSubscribed_성공() {
         given(mockPost.getId()).willReturn("post-id");
+        given(mockPost.getBoard()).willReturn(mockBoard);
+        given(mockBoard.getId()).willReturn("board-id");
         lenient().when(mockComment.getPost()).thenReturn(mockPost);
 
         given(userPostSubscribeRepository.findByPostAndIsSubscribedTrue(mockPost))
@@ -89,6 +94,8 @@ class PostNotificationServiceTest {
     @DisplayName("게시글 구독 안된 경우 알림 저장, 로그 저장 안됨")
     void sendByPostIsSubscribed_구독없음() {
         given(mockPost.getId()).willReturn("post-id");
+        given(mockPost.getBoard()).willReturn(mockBoard);
+        given(mockBoard.getId()).willReturn("board-id");
         lenient().when(mockComment.getPost()).thenReturn(mockPost);
 
         given(userPostSubscribeRepository.findByPostAndIsSubscribedTrue(mockPost))
@@ -106,6 +113,8 @@ class PostNotificationServiceTest {
         mockUser.getFcmTokens().add("valid-token");
 
         given(mockPost.getId()).willReturn("post-id");
+        given(mockPost.getBoard()).willReturn(mockBoard);
+        given(mockBoard.getId()).willReturn("board-id");
         lenient().when(mockComment.getPost()).thenReturn(mockPost);
         given(mockPost.getTitle()).willReturn("게시글 제목");
         given(mockComment.getContent()).willReturn("댓글 내용");
@@ -127,6 +136,8 @@ class PostNotificationServiceTest {
         mockUser.getFcmTokens().add(invalidToken);
 
         given(mockPost.getId()).willReturn("post-id");
+        given(mockPost.getBoard()).willReturn(mockBoard);
+        given(mockBoard.getId()).willReturn("board-id");
         given(mockComment.getPost()).willReturn(mockPost);
 
         given(userPostSubscribeRepository.findByPostAndIsSubscribedTrue(mockPost))

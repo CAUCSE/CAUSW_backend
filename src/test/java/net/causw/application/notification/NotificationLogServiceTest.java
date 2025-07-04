@@ -76,7 +76,7 @@ public class NotificationLogServiceTest {
 
         @BeforeEach
         void setUpCeremonyNotification() {
-            Notification ceremonyNotification = Notification.of(mockUser, "경조사 제목", "내용", NoticeType.CEREMONY, "경조사-id");
+            Notification ceremonyNotification = Notification.of(mockUser, "경조사 제목", "내용", NoticeType.CEREMONY, "경조사-id", null);
             NotificationLog ceremonyLog = NotificationLog.of(mockUser, ceremonyNotification);
             List<NotificationLog> logs = List.of(ceremonyLog);
 
@@ -123,9 +123,9 @@ public class NotificationLogServiceTest {
 
         @BeforeEach
         void setUpGeneralNotification() {
-            Notification boardNotification = Notification.of(mockUser, "게시판 제목", "게시글 내용", NoticeType.BOARD, "게시글-id");
-            Notification postNotification = Notification.of(mockUser, "게시글 제목", "댓글 내용", NoticeType.POST, "게시글-id");
-            Notification commentNotification = Notification.of(mockUser, "댓글 내용", "대댓글 내용", NoticeType.COMMENT, "게시글-id");
+            Notification boardNotification = Notification.of(mockUser, "게시판 제목", "게시글 내용", NoticeType.BOARD, "게시글-id", "게시판-id");
+            Notification postNotification = Notification.of(mockUser, "게시글 제목", "댓글 내용", NoticeType.POST, "게시글-id", "게시판-id");
+            Notification commentNotification = Notification.of(mockUser, "댓글 내용", "대댓글 내용", NoticeType.COMMENT, "게시글-id", "게시판-id");
 
             NotificationLog boardLog = NotificationLog.of(mockUser, boardNotification);
             NotificationLog postLog = NotificationLog.of(mockUser, postNotification);
@@ -180,7 +180,7 @@ public class NotificationLogServiceTest {
 
         @BeforeEach
         void setUpReadNotification() throws Exception {
-            Notification notification = Notification.of(mockUser, "제목", "본문", NoticeType.CEREMONY, "targetId");
+            Notification notification = Notification.of(mockUser, "제목", "본문", NoticeType.CEREMONY, "targetId", "targetParentId");
             unreadLog = NotificationLog.of(mockUser, notification); // isRead = false 초기값
 
             Field idField = unreadLog.getClass().getSuperclass().getDeclaredField("id");
