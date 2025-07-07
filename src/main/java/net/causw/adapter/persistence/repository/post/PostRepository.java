@@ -67,14 +67,7 @@ public interface PostRepository extends JpaRepository<Post, String> {
     }
 
     Optional<Post> findByForm(Form form);
-
-    /**
-     * 링크가 포함된 게시글이 있는지 확인 (기존 방식 - 백업용)
-     */
-    boolean existsByBoardAndContentContains(Board board, String contentSubstring);
     
-    /**
-     * 특정 게시판의 모든 게시글 조회 (해시 계산용)
-     */
+    //특정 게시판의 모든 게시글 조회 (해시 계산용)
     List<Post> findAllByBoardAndIsDeletedIsFalse(Board board);
 }
