@@ -5,9 +5,11 @@ import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import net.causw.domain.model.util.HashUtil;
 
 @Getter
 @Entity
@@ -42,6 +44,15 @@ public class CrawledNotice extends BaseEntity {
     @Builder.Default
     private List<CrawledFileLink> crawledFileLinks = new ArrayList<>();
 
+    @Column(name = "content_hash", nullable = false, length = 64)
+    private String contentHash;
+
+    @Column(name = "last_modified", nullable = false)
+    private LocalDateTime lastModified;
+
+    @Column(name = "is_updated", nullable = false)
+    private Boolean isUpdated;
+
     public static CrawledNotice of(
             String type,
             String title,
@@ -59,6 +70,9 @@ public class CrawledNotice extends BaseEntity {
             type = type.replace("NEW", "").trim();
         }
 
+        // 본문 내용의 해시값 생성
+        String contentHash = generateContentHash(title, content, imageLink, crawledFileLinks);
+
         return CrawledNotice.builder()
                 .type(type)
                 .title(title)
@@ -68,6 +82,38 @@ public class CrawledNotice extends BaseEntity {
                 .announceDate(parsedDate)
                 .imageLink(imageLink)
                 .crawledFileLinks(crawledFileLinks)
+                .contentHash(contentHash)
+                .lastModified(LocalDateTime.now())
+                .isUpdated(false)
                 .build();
+    }
+
+    //제목, 본문, 내용, 첨부파일로 해시 값 생성
+    private static String generateContentHash(String title, String content, String imageLink, List<CrawledFileLink> fileLinks) {
+        StringBuilder hashInput = new StringBuilder();
+        hashInput.append(title != null ? title : "");
+        hashInput.append(content != null ? content : "");
+        hashInput.append(imageLink != null ? imageLink : "");
+        
+        if (fileLinks != null) {
+            for (CrawledFileLink fileLink : fileLinks) {
+                hashInput.append(fileLink.getFileName()).append(fileLink.getFileLink());
+            }
+        }
+        
+        return HashUtil.generateSHA256(hashInput.toString());
+    }
+
+    //내용 업데이트 메서드
+    public void updateContent(String newTitle, String newContent, String newContentHash) {
+        this.title = newTitle;
+        this.content = newContent;
+        this.contentHash = newContentHash;
+        this.lastModified = LocalDateTime.now();
+        this.isUpdated = true;
+    }
+
+    public void setIsUpdated(boolean isUpdated) {
+        this.isUpdated = isUpdated;
     }
 }

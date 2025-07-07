@@ -60,5 +60,4 @@ public class RedisUtils {
         String redisKey = tableName + "PageNum";
         return (Integer) redisTemplate.opsForValue().get(redisKey);
     }
-
 }

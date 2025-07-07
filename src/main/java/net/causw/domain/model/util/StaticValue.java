@@ -78,7 +78,23 @@ public class StaticValue {
     public static final Integer SELECT_UNUSED_UUID_FILE_PAGE_SIZE = 10000;
     public static final Long CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME = 1000L * 60 * 60;   // 1hour
 
-    // WebCrawlerService
-    public static final String CAU_CSE_BASE_URL = "https://cse.cau.ac.kr/sub05/sub0501.php?offset="; // CAU 소프트웨어학부 공지사항 크롤링 주소
+    // Crawling
+    public static final String CrawlingBoard = "소프트웨어학부 학부 공지";
+    public static final String ORIGINAL_NOTICE_SITE_NAME = "중앙대학교 소프트웨어학부 공지사항";
+    public static final String CAU_CSE_BASE_URL = "https://cse.cau.ac.kr/sub05/sub0501.php?offset=";
+    public static final String CAU_CSE_DOWNLOAD_URL_FORMAT = "https://cse.cau.ac.kr/_module/bbs/download.php?uid=%s&code=%s";
+    public static final String ADMIN_STUDENT_ID = "20220881";
+    public static final int CRAWLING_MAX_NOTICES = 30;
+    public static final int CRAWLING_MAX_RETRIES = 3;
+    public static final int CRAWLING_REQUEST_DELAY_MS = 2000;
+    public static final String[] CRAWLING_USER_AGENTS = {
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15",
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    };
 
+    // Hash
+    public static final String HASH_ALGORITHM = "SHA-256";
 }
