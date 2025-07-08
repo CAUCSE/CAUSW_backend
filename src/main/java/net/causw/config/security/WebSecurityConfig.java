@@ -46,11 +46,11 @@ public class WebSecurityConfig {
                 .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(registry -> {
                             registry.requestMatchers(CorsUtils::isPreFlightRequest).permitAll();
-                            new SecurityRuleBuilder(registry)
-                                    .addRule(authorizationManager.permitAll(), SecurityEndpoints.PUBLIC_ENDPOINTS)
-                                    .addRule(authorizationManager.authenticated(), SecurityEndpoints.AUTHENTICATED_ENDPOINTS)
-                                    .addRule(authorizationManager.isActiveAndNotNoneUser(), SecurityEndpoints.ACTIVE_USER_ENDPOINTS)
-                                    .addRule(authorizationManager.isActiveAndNotNoneUserAndAcademicRecordCertified(), SecurityEndpoints.CERTIFIED_USER_ENDPOINTS)
+                            RequestAuthorizationBinder.with(registry)
+                                    .bind(authorizationManager.permitAll(), SecurityEndpoints.PUBLIC_ENDPOINTS)
+                                    .bind(authorizationManager.authenticated(), SecurityEndpoints.AUTHENTICATED_ENDPOINTS)
+                                    .bind(authorizationManager.isActiveAndNotNoneUser(), SecurityEndpoints.ACTIVE_USER_ENDPOINTS)
+                                    .bind(authorizationManager.isActiveAndNotNoneUserAndAcademicRecordCertified(), SecurityEndpoints.CERTIFIED_USER_ENDPOINTS)
                                     .sort(true)
                                     .apply();
                             registry.anyRequest().authenticated();

@@ -1,6 +1,7 @@
 package net.causw.config.security;
 
 import lombok.RequiredArgsConstructor;
+import net.causw.application.security.SecurityService;
 import org.springframework.security.authorization.AuthenticatedAuthorizationManager;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class CustomAuthorizationManager {
-    SecurityService securityService;
+    private final SecurityService securityService;
 
     public AuthorizationManager<RequestAuthorizationContext> isActiveAndNotNoneUserAndAcademicRecordCertified() {
         return (authentication, context) -> {
