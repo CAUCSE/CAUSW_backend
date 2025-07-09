@@ -134,7 +134,8 @@ public class RequestAuthorizationBinder {
             sb.append("- ").append(authorization.name()).append("\n");
 
             for (DescriptiveRequestMatcher drm : authorization.matchers()) {
-                sb.append(" └ ").append(drm.pattern()).append("\n");
+                sb.append(" └ ").append(drm.pattern()).append(" ")
+                        .append(drm.httpMethod == null ? "ALL" : drm.httpMethod).append("\n");
             }
         }
 
