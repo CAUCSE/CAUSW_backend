@@ -50,7 +50,7 @@ public class WebSecurityConfigTest {
         @ParameterizedTest
         @MethodSource("getPublicEndpoints")
         @WithAnonymousUser
-        @DisplayName("PUBLIC_ENDPOINTS에 있는 Endpoint 모두 permitAll로 적용되어 있을 경우 성공")
+        @DisplayName("PUBLIC_ENDPOINTS에 해당할 시 인증 없이 접근 허용")
         void shouldAllowAccess_WhenPublicEndpoint(SecurityEndpoint endpoint) throws Exception {
             testSecurityEndpointSuccess(endpoint);
         }
@@ -58,7 +58,7 @@ public class WebSecurityConfigTest {
         @ParameterizedTest
         @MethodSource("getAuthenticatedEndpoints")
         @WithMockUser
-        @DisplayName("AUTHENTICATED_ENDPOINTS에 있는 Endpoint 모두 authenticated로 적용되어 있을 경우 성공")
+        @DisplayName("AUTHENTICATED_ENDPOINTS에 해당할 시 로그인한 사용자는 접근 허용")
         void shouldAllowAccess_WhenAuthenticatedUser(SecurityEndpoint endpoint) throws Exception {
             testSecurityEndpointSuccess(endpoint);
         }
@@ -66,7 +66,7 @@ public class WebSecurityConfigTest {
         @ParameterizedTest
         @MethodSource("getAuthenticatedEndpoints")
         @WithAnonymousUser
-        @DisplayName("AUTHENTICATED_ENDPOINTS에 있는 Endpoint 모두 authenticated로 적용되어 있을 경우 성공")
+        @DisplayName("AUTHENTICATED_ENDPOINTS에 해당할 시 비로그인 사용자는 접근 거부")
         void shouldRejectAccess_WhenUnauthenticatedUser(SecurityEndpoint endpoint) throws Exception {
             testSecurityEndpointFail(endpoint);
         }
@@ -74,7 +74,7 @@ public class WebSecurityConfigTest {
         @ParameterizedTest
         @MethodSource("getActiveUserEndpoints")
         @WithMockCustomUser(roles = Role.COMMON, state = UserState.ACTIVE)
-        @DisplayName("ACTIVE_USER_ENDPOINTS에 있는 Endpoint 모두 isActiveAndNotNoneUser로 적용되어 있을 경우 성공")
+        @DisplayName("ACTIVE_USER_ENDPOINTS에 해당할 시 상태가 ACTIVE인 사용자는 접근 허용")
         void shouldAllowAccess_WhenActiveUser(SecurityEndpoint endpoint) throws Exception {
             testSecurityEndpointSuccess(endpoint);
         }
@@ -82,7 +82,7 @@ public class WebSecurityConfigTest {
         @ParameterizedTest
         @MethodSource("getActiveUserEndpoints")
         @WithMockCustomUser(roles = Role.COMMON, state = UserState.AWAIT)
-        @DisplayName("ACTIVE_USER_ENDPOINTS에 있는 Endpoint 모두 isActiveAndNotNoneUser로 적용되어 있을 경우 성공")
+        @DisplayName("ACTIVE_USER_ENDPOINTS에 해당할 시 상태가 ACTIVE가 아닌 사용자는 접근 거부")
         void shouldRejectAccess_WhenNotActiveUser(SecurityEndpoint endpoint) throws Exception {
             testSecurityEndpointFail(endpoint);
         }
@@ -90,7 +90,7 @@ public class WebSecurityConfigTest {
         @ParameterizedTest
         @MethodSource("getCertifiedUserEndpoints")
         @WithMockCustomUser(roles = Role.COMMON, state = UserState.ACTIVE, academicStatus = AcademicStatus.ENROLLED)
-        @DisplayName("CERTIFIED_USER_ENDPOINTS에 있는 Endpoint 모두 isActiveAndNotNoneUserAndAcademicRecordCertified로 적용되어 있을 경우 성공")
+        @DisplayName("CERTIFIED_USER_ENDPOINTS에 해당할 시 학적이 정해진 사용자는 접근 허용")
         void shouldAllowAccess_WhenCertifiedUser(SecurityEndpoint endpoint) throws Exception {
             testSecurityEndpointSuccess(endpoint);
         }
@@ -98,7 +98,7 @@ public class WebSecurityConfigTest {
         @ParameterizedTest
         @MethodSource("getCertifiedUserEndpoints")
         @WithMockCustomUser(roles = Role.COMMON, state = UserState.ACTIVE, academicStatus = AcademicStatus.UNDETERMINED)
-        @DisplayName("CERTIFIED_USER_ENDPOINTS에 있는 Endpoint 모두 isActiveAndNotNoneUserAndAcademicRecordCertified로 적용되어 있을 경우 성공")
+        @DisplayName("CERTIFIED_USER_ENDPOINTS에 해당할 시 학적이 미정된 사용자는 접근 거부")
         void shouldRejectAccess_WhenNotCertifiedUser(SecurityEndpoint endpoint) throws Exception {
             testSecurityEndpointFail(endpoint);
         }
