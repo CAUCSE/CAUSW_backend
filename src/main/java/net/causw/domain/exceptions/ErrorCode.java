@@ -40,7 +40,7 @@ public enum ErrorCode {
     INACTIVE_USER(4103),            // User is not activated
     AWAITING_USER(4104),
     INVALID_JWT(4105),
-    GRANT_ROLE_NOT_ALLOWED(4106),
+    ASSIGN_ROLE_NOT_ALLOWED(4106),
     API_NOT_ALLOWED(4107),
     NOT_MEMBER(4108),
     REJECT_USER(4109),

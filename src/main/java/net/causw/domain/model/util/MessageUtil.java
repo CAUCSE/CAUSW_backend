@@ -105,6 +105,8 @@ public class MessageUtil {
     public static final String STUDENT_ID_ALREADY_EXIST = "이미 존재하는 학번입니다.";
     public static final String PHONE_NUMBER_ALREADY_EXIST = "이미 존재하는 전화번호입니다.";
     public static final String INVALID_USER_APPLICATION_USER_STATE = "사용자 인증을 할 수 없는 상태의 사용자입니다(AWAIT / REJECT 상태만 인증 가능합니다).";
+    public static final String GRANT_ROLE_NOT_ALLOWED = "권한을 부여할 수 없습니다.";
+    public static final String DELEGATE_ROLE_NOT_ALLOWED = "권한을 위임할 수 없습니다.";
 
     // Flag
     public static final String FLAG_UPDATE_FAILED = "플래그 업데이트에 실패했습니다.";
