@@ -1,90 +1,77 @@
 package net.causw.domain.validation;
 
+import net.causw.adapter.persistence.user.User;
 import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.user.Role;
+import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.domain.model.util.MessageUtil;
 
 import java.util.Set;
+
+import static net.causw.domain.policy.domain.RolePolicy.*;
 
 
 public class GrantableRoleValidator extends AbstractValidator {
 
     private final Set<Role> grantorRoles;
 
+    private final User delegator;
+
     private final Role grantedRole;
 
-    private final Set<Role> granteeRoles;
+    private final User grantee;
 
-    private GrantableRoleValidator(Set<Role> grantorRoles, Role grantedRole, Set<Role> granteeRoles) {
+    private GrantableRoleValidator(Set<Role> grantorRoles, User delegator, Role grantedRole, User grantee) {
         this.grantorRoles = grantorRoles;
+        this.delegator = delegator;
         this.grantedRole = grantedRole;
-        this.granteeRoles = granteeRoles;
+        this.grantee = grantee;
     }
 
-    public static GrantableRoleValidator of(Set<Role> grantorRoles, Role grantedRole, Set<Role> granteeRoles) {
-        return new GrantableRoleValidator(grantorRoles, grantedRole, granteeRoles);
+    public static GrantableRoleValidator of(Set<Role> grantorRoles, User delegator, Role grantedRole, User grantee) {
+        return new GrantableRoleValidator(grantorRoles, delegator, grantedRole, grantee);
     }
 
     @Override
     public void validate() {
-        /* When role of grantor is Admin
-         * Granted and grantee role should not be Admin
-         * Granted and grantee role should be different
-         * Grantee role should not be Leader Circle or Leader Alumni
-         *   => They will automatically granted while other granting process since the roles has unique user
-         */
-        if (this.grantorRoles.contains(Role.ADMIN)) {
-            if (!this.granteeRoles.contains(Role.ADMIN)) {
-                if(this.grantedRole.equals(Role.LEADER_CIRCLE) || this.granteeRoles.contains(Role.LEADER_CIRCLE)){
-                    return;
-                } else if(this.granteeRoles.contains(Role.COMMON)){
-                    return;
-                } else if(this.grantedRole.equals(Role.COMMON)){
-                    return;
-                }
-            }
-        }
-        /* When role of grantor is President
-         * Granted role should not be Admin, and Grantee role should not be Admin and President
-         * Granted and grantee role should be different
-         * Grantee role should not be Leader Circle or Leader Alumni
-         *   => They will automatically granted while other granting process since the roles has unique user
-         */
-        else if (this.grantorRoles.contains(Role.PRESIDENT)) {
-            if (this.grantedRole != Role.ADMIN
-                    && (!this.granteeRoles.contains(Role.ADMIN) && !this.granteeRoles.contains(Role.PRESIDENT))) {
-                if(this.grantedRole.equals(Role.LEADER_CIRCLE) || this.granteeRoles.contains(Role.LEADER_CIRCLE)){
-                    return;
-                } else if(this.granteeRoles.contains(Role.COMMON)){
-                    return;
-                } else if(this.grantedRole.equals(Role.COMMON)){
-                    return;
-                }
-            }
-        }
-        /* When role of grantor is Leader_Circle
-         * Granted role should be Leader_Circle, and Grantee role should be Common
-         */
-        else if (this.grantorRoles.contains(Role.LEADER_CIRCLE)) {
-            if(this.grantedRole.equals(Role.LEADER_CIRCLE)){
-                if(!this.granteeRoles.contains(Role.ADMIN) && !this.granteeRoles.contains(Role.PRESIDENT) && !this.granteeRoles.contains(Role.VICE_PRESIDENT)
-                        && !this.granteeRoles.contains(Role.LEADER_ALUMNI) && !this.granteeRoles.contains(Role.PROFESSOR)){
-                    return;
-                }
-            }
-        }
-        /* When role of grantor is Leader_Alumni
-         * Granted role should be Leader_Alumni, and Grantee role should be Common
-         */
-        else if (this.grantorRoles.contains(Role.LEADER_ALUMNI)) {
-            if (this.grantedRole == Role.LEADER_ALUMNI && this.granteeRoles.contains(Role.COMMON)) {
-                return;
-            }
+        if ((delegator == null ? !canGrant() : !canProxyDelegate())
+                || !canAssign(grantedRole, grantee.getRoles())
+                || isPrivilegeInverted(grantorRoles, grantee.getRoles())) {
+            throw  customUnauthorizedException();
         }
 
-        throw new UnauthorizedException(
-                ErrorCode.GRANT_ROLE_NOT_ALLOWED,
-                "권한을 부여할 수 없습니다."
+        // 동문회장 부여의 경우 수혜자가 졸업생일 경우에만 부여 가능함
+        if (grantedRole.equals(Role.LEADER_ALUMNI)) {
+            if (grantee.getAcademicStatus().equals(AcademicStatus.GRADUATED))
+                return;
+        }
+        else {
+            return;
+        }
+
+        throw  customUnauthorizedException();
+    }
+
+    private boolean canGrant() {
+        // 부여자는 부여할 권한에 대한 부여 가능 권한을 가지고 있어야 함.
+        return grantorRoles.stream().anyMatch(role -> getGrantableRoles(role).contains(grantedRole));
+    }
+
+    private boolean canProxyDelegate() {
+        // 위임자가 대리 위임할 권한이어야 함.
+        if (!delegator.getRoles().contains(grantedRole)) {
+            return false;
+        }
+
+        // 부여자가 대리 위임할 권한에 대한 대리 위임 가능 권한을 가지고 있어야 함.
+        return grantorRoles.stream().anyMatch(role -> getProxyDelegatableRoles(role).contains(grantedRole));
+    }
+
+    private UnauthorizedException customUnauthorizedException() {
+        return new UnauthorizedException(
+                ErrorCode.ASSIGN_ROLE_NOT_ALLOWED,
+                MessageUtil.GRANT_ROLE_NOT_ALLOWED
         );
     }
 }

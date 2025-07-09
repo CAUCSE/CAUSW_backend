@@ -96,7 +96,7 @@ public class UserCouncilFeeController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody @Valid CreateUserCouncilFeeWithUserRequestDto createUserCouncilFeeWithUserRequestDto
     ) {
-        userCouncilFeeService.creatUserCouncilFeeWithUser(userDetails.getUser(), createUserCouncilFeeWithUserRequestDto);
+        userCouncilFeeService.createUserCouncilFeeWithUser(userDetails.getUser(), createUserCouncilFeeWithUserRequestDto);
     }
 
     @PostMapping("/create-fake-user")

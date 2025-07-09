@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.application.dto.user.*;
+import net.causw.application.user.UserRoleService;
 import net.causw.application.user.UserService;
 import net.causw.application.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.application.dto.circle.CircleResponseDto;
@@ -31,6 +32,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+    private final UserRoleService userRoleService;
 
     /**
      * 사용자 고유 id 값으로 사용자 정보를 조회하는 API
@@ -338,40 +340,44 @@ public class UserController {
         return this.userService.update(userDetails.getUser(), userUpdateDto, profileImage);
     }
 
-    /**
-     * 권한 업데이트 컨트롤러
-     * @param granteeId
-     * @param userUpdateRoleRequestDto
-     * @return
-     */
-    @PutMapping(value = "/{granteeId}/role")
+    @PutMapping(value = "/{delegateeId}/delegate-role")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
-    @Operation(summary = "역할 업데이트 API(완료)", description = "grantorId 에는 관리자의 고유 id값, granteeId 에는 권한이 업데이트될 사용자의 고유 id 값을 넣어주세요")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
-            @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-            @ApiResponse(responseCode = "4001", description = "권한을 받을 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-            @ApiResponse(responseCode = "4102", description = "추방된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-            @ApiResponse(responseCode = "4103", description = "비활성화된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-            @ApiResponse(responseCode = "4104", description = "대기 중인 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-            @ApiResponse(responseCode = "4109", description = "가입이 거절된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-            @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-            @ApiResponse(responseCode = "4106", description = "권한을 부여할 수 없습니다. - 부여하는 사용자 권한 : ADMIN, 부여할 권한 : PRESIDENT, 부여받는 사용자 권한 : COMMON", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-            @ApiResponse(responseCode = "4107", description = "위임할 수 있는 권한이 아닙니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-            @ApiResponse(responseCode = "4002", description = "소모임장을 위임할 소모임 입력이 필요합니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-            @ApiResponse(responseCode = "4108", description = "사용자가 가입 신청한 소모임이 아닙니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-            @ApiResponse(responseCode = "4000", description = "소모임을 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-            @ApiResponse(responseCode = "5000", description = "동문회장이 존재하지 않습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-            @ApiResponse(responseCode = "5001", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
-    })
-    public UserResponseDto updateRole(
+    @Operation(
+            summary = "자신의 권한 위임",
+            description = """
+        로그인된 사용자가 자신의 권한 중 하나를 특정 사용자에게 위임합니다.
+        - 위임자는 해당 권한이 회수 됩니다.
+        - 고유 권한(ex. 학생회장 등)을 위임할 경우, 기존 모든 사용자로부터 해당 권한이 제거됩니다.
+        - 학생회장 권한 위임 시, 학생회 전체 권한(부회장, 학생회 등)이 초기화됩니다.
+        """
+    )
+    public UserResponseDto delegateRole(
+            @PathVariable("delegateeId") String delegateeId,
+            @Valid @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return this.userRoleService.delegateRole(userDetails.getUser(), delegateeId, userUpdateRoleRequestDto);
+    }
+
+    @PutMapping(value = "/{granteeId}/grant-role")
+    @ResponseStatus(value = HttpStatus.OK)
+    @Operation(
+            summary = "타인에게 권한 부여",
+            description = """
+        로그인된 사용자가 타인에게 권한을 부여합니다.
+        - 부여일 경우 delegatorId는 생략해야 합니다.
+        - delegatorId가 존재하면, 위임의 형태로 간주되어 delegator의 권한이 회수됩니다.
+        - 고유 권한(ex. 학생회장 등) 부여 시 기존 모든 사용자로부터 해당 권한이 제거됩니다.
+        - 학생회장 권한 부여 시, 학생회 전체 권한(부회장, 학생회 등)이 초기화됩니다.
+        """
+    )
+    public UserResponseDto grantRole(
+            @RequestParam(value = "delegatorId", required = false) String delegatorId,
             @PathVariable("granteeId") String granteeId,
             @Valid @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-
-        return this.userService.updateUserRole(userDetails.getUser(), granteeId, userUpdateRoleRequestDto);
+        return this.userRoleService.grantRole(userDetails.getUser(), delegatorId, granteeId, userUpdateRoleRequestDto);
     }
 
 

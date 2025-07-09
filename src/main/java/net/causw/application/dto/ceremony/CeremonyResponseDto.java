@@ -39,5 +39,10 @@ public class CeremonyResponseDto {
     @Schema(description = "경조사 거부 사유")
     private String note;
 
+    @Schema(description = "경조사 신청자 학번")
+    private String applicantStudentId;
+
+    @Schema(description = "경조사 신청자 이름")
+    private String applicantName;
 
 }
