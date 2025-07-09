@@ -1,5 +1,6 @@
 package net.causw.config.security;
 
+import net.causw.domain.model.util.PatternUtil;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -72,14 +73,10 @@ public class SecurityEndpoints {
             return new SecurityEndpoint(pattern, method);
         }
 
-        public String toAntPattern() {
-            return pattern.replaceAll("\\{[^/]+}", "*");
-        }
-
         public RequestMatcher toRequestMatcher() {
             return httpMethod != null
-                    ? new AntPathRequestMatcher(toAntPattern(), httpMethod.name())
-                    : new AntPathRequestMatcher(toAntPattern());
+                    ? new AntPathRequestMatcher(PatternUtil.toAntPath(pattern), httpMethod.name())
+                    : new AntPathRequestMatcher(PatternUtil.toAntPath(pattern));
         }
     }
 }

@@ -1,6 +1,7 @@
 package net.causw.config.security;
 
 import lombok.extern.slf4j.Slf4j;
+import net.causw.domain.model.util.PatternUtil;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.server.PathContainer;
 import org.springframework.security.authorization.AuthorizationManager;
@@ -35,7 +36,7 @@ public class RequestAuthorizationBinder {
     public RequestAuthorizationBinder bind(AuthorizationManager<RequestAuthorizationContext> manager, String... patterns) {
         List<RequestAuthorizationBinder.DescriptiveRequestMatcher> matchers = Arrays.stream(patterns)
                 .map(pattern -> {
-                    String antPath = toAntPath(pattern);
+                    String antPath = PatternUtil.toAntPath(pattern);
 
                     return new RequestAuthorizationBinder.DescriptiveRequestMatcher(
                             new AntPathRequestMatcher(antPath),
@@ -51,7 +52,7 @@ public class RequestAuthorizationBinder {
     public RequestAuthorizationBinder bind(AuthorizationManager<RequestAuthorizationContext> manager, HttpMethod method, String... patterns) {
         List<RequestAuthorizationBinder.DescriptiveRequestMatcher> matchers = Arrays.stream(patterns)
                 .map(pattern -> {
-                    String antPath = toAntPath(pattern);
+                    String antPath = PatternUtil.toAntPath(pattern);
 
                     return new RequestAuthorizationBinder.DescriptiveRequestMatcher(
                             new AntPathRequestMatcher(antPath, method.name()),
@@ -71,7 +72,7 @@ public class RequestAuthorizationBinder {
         List<RequestAuthorizationBinder.DescriptiveRequestMatcher> matchers = Stream.of(endpoints)
                 .map(e -> new RequestAuthorizationBinder.DescriptiveRequestMatcher(
                         e.toRequestMatcher(),
-                        toAntPath(e.pattern()),
+                        PatternUtil.toAntPath(e.pattern()),
                         e.httpMethod()
                 ))
                 .collect(Collectors.toList());
@@ -144,10 +145,6 @@ public class RequestAuthorizationBinder {
         return grouped.entrySet().stream()
                 .map(entry -> new RequestAuthorization(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
-    }
-
-    private String toAntPath(String pattern) {
-        return pattern.replaceAll("\\{[^/]+}", "*");
     }
 
     private int compareMatchers(DescriptiveRequestMatcher m1, DescriptiveRequestMatcher m2) {
