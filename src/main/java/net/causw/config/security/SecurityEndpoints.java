@@ -6,6 +6,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import static net.causw.config.security.SecurityEndpoints.SecurityEndpoint.*;
+import static org.springframework.http.HttpMethod.*;
 
 public class SecurityEndpoints {
     public static final SecurityEndpoint[] PUBLIC_ENDPOINTS = {
@@ -13,33 +14,33 @@ public class SecurityEndpoints {
             of("/css/**"),
             of("/images/**"),
             of("/js/**"),
-            of("/favicon.ico"),
+            of("/favicon.ico", GET),
             of("/h2-console/**"),
-            of("/api/v1/users/sign-in"),
-            of("/api/v1/users/sign-up"),
-            of("/healthy"),
-            of("/api/v1/users/admissions/apply"),
-            of("/api/v1/users/{email}/is-duplicated"),
-            of("/api/v1/users/{nickname}/is-duplicated-nickname"),
-            of("/api/v1/users/{studentId}/is-duplicated-student-id"),
-            of("/api/v1/users/email"),
-            of("/api/v1/users/password"),
-            of("/api/v1/users/token/update"),
+            of("/api/v1/users/sign-in", POST),
+            of("/api/v1/users/sign-up", POST),
+            of("/healthy", GET),
+            of("/api/v1/users/admissions/apply", POST),
+            of("/api/v1/users/{email}/is-duplicated", GET),
+            of("/api/v1/users/{nickname}/is-duplicated-nickname", GET),
+            of("/api/v1/users/{studentId}/is-duplicated-student-id", GET),
+            of("/api/v1/users/email"), //FIXME 존재하지 않는 Controller
+            of("/api/v1/users/password", PUT),
+            of("/api/v1/users/token/update", PUT),
             of("/api/v1/storage/**"),
-            of("/api/v1/users/password/find"),
-            of("/api/v1/users/user-id/find"),
+            of("/api/v1/users/password/find", PUT),
+            of("/api/v1/users/user-id/find", POST),
             of("/swagger-ui/**"),
-            of("/api/v1/fcm/send"),
+            of("/api/v1/fcm/send", POST),
             of("/v3/api-docs/**"),
             of("/actuator/**")
     };
 
     public static final SecurityEndpoint[] AUTHENTICATED_ENDPOINTS = {
-            of("/api/v1/posts/app/notice"),
-            of("/api/v1/users/me"),
-            of("/api/v1/users/admissions/self"),
-            of("/api/v1/users/sign-out"),
-            of("/api/v1/users/studentId/{studentId}")
+            of("/api/v1/posts/app/notice", GET),
+            of("/api/v1/users/me", GET),
+            of("/api/v1/users/admissions/self", GET),
+            of("/api/v1/users/sign-out", POST),
+            of("/api/v1/users/studentId/{studentId}", GET)
     };
 
     public static final SecurityEndpoint[] ACTIVE_USER_ENDPOINTS = {
@@ -47,7 +48,7 @@ public class SecurityEndpoints {
     };
 
     public static final SecurityEndpoint[] CERTIFIED_USER_ENDPOINTS = {
-            of("/api/v1/users/academic-record/export"),
+            of("/api/v1/users/academic-record/export", GET),
             of("/api/v1/boards/**"),
             of("/api/v1/calendars/**"),
             of("/api/v1/ceremony/**"),
