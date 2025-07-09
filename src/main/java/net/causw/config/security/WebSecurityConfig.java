@@ -47,11 +47,12 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(registry -> {
                             registry.requestMatchers(CorsUtils::isPreFlightRequest).permitAll();
                             RequestAuthorizationBinder.with(registry)
-                                    .bind(authorizationManager.permitAll(), SecurityEndpoints.PUBLIC_ENDPOINTS)
-                                    .bind(authorizationManager.authenticated(), SecurityEndpoints.AUTHENTICATED_ENDPOINTS)
-                                    .bind(authorizationManager.isActiveAndNotNoneUser(), SecurityEndpoints.ACTIVE_USER_ENDPOINTS)
-                                    .bind(authorizationManager.isActiveAndNotNoneUserAndAcademicRecordCertified(), SecurityEndpoints.CERTIFIED_USER_ENDPOINTS)
+                                    .bind("Public", authorizationManager.permitAll(), SecurityEndpoints.PUBLIC_ENDPOINTS)
+                                    .bind("Authenticated", authorizationManager.authenticated(), SecurityEndpoints.AUTHENTICATED_ENDPOINTS)
+                                    .bind("Active", authorizationManager.isActiveAndNotNoneUser(), SecurityEndpoints.ACTIVE_USER_ENDPOINTS)
+                                    .bind("Certified", authorizationManager.isActiveAndNotNoneUserAndAcademicRecordCertified(), SecurityEndpoints.CERTIFIED_USER_ENDPOINTS)
                                     .sort(true)
+                                    .log(true)
                                     .apply();
                             registry.anyRequest().authenticated();
                         }

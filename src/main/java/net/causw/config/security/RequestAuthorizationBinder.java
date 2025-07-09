@@ -1,5 +1,6 @@
 package net.causw.config.security;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import net.causw.domain.model.util.PatternUtil;
 import org.springframework.http.HttpMethod;
@@ -33,7 +34,11 @@ public class RequestAuthorizationBinder {
         return new RequestAuthorizationBinder(registry);
     }
 
-    public RequestAuthorizationBinder bind(AuthorizationManager<RequestAuthorizationContext> manager, String... patterns) {
+    public RequestAuthorizationBinder bind(
+            String name,
+            AuthorizationManager<RequestAuthorizationContext> manager,
+            String... patterns
+    ) {
         List<RequestAuthorizationBinder.DescriptiveRequestMatcher> matchers = Arrays.stream(patterns)
                 .map(pattern -> {
                     String antPath = PatternUtil.toAntPath(pattern);
@@ -46,10 +51,15 @@ public class RequestAuthorizationBinder {
                 })
                 .collect(Collectors.toList());
 
-        return bind(new RequestAuthorization(manager, matchers));
+        return bind(new RequestAuthorization(name, manager, matchers));
     }
 
-    public RequestAuthorizationBinder bind(AuthorizationManager<RequestAuthorizationContext> manager, HttpMethod method, String... patterns) {
+    public RequestAuthorizationBinder bind(
+            String name,
+            AuthorizationManager<RequestAuthorizationContext> manager,
+            HttpMethod method,
+            String... patterns
+    ) {
         List<RequestAuthorizationBinder.DescriptiveRequestMatcher> matchers = Arrays.stream(patterns)
                 .map(pattern -> {
                     String antPath = PatternUtil.toAntPath(pattern);
@@ -62,10 +72,11 @@ public class RequestAuthorizationBinder {
                 })
                 .collect(Collectors.toList());
 
-        return bind(new RequestAuthorization(manager, matchers));
+        return bind(new RequestAuthorization(name, manager, matchers));
     }
 
     public RequestAuthorizationBinder bind(
+            String name,
             AuthorizationManager<RequestAuthorizationContext> manager,
             SecurityEndpoints.SecurityEndpoint... endpoints
     ) {
@@ -77,11 +88,11 @@ public class RequestAuthorizationBinder {
                 ))
                 .collect(Collectors.toList());
 
-        return bind(new RequestAuthorization(manager, matchers));
+        return bind(new RequestAuthorization(name, manager, matchers));
     }
 
-    public RequestAuthorizationBinder bind(RequestAuthorization... rules) {
-        this.requestAuthorizations.addAll(Arrays.asList(rules));
+    public RequestAuthorizationBinder bind(RequestAuthorization... authorizations) {
+        this.requestAuthorizations.addAll(Arrays.asList(authorizations));
         return this;
     }
 
@@ -96,60 +107,92 @@ public class RequestAuthorizationBinder {
     }
 
     public void apply() {
-        List<RequestAuthorization> refinedRules = doSort ? splitAndSortRules(requestAuthorizations) : requestAuthorizations;
+        List<RequestAuthorization> redefinedAuthorizations = doSort
+                ? sortRequestAuthorization(requestAuthorizations)
+                : requestAuthorizations;
 
-        applyRequestAuthorization(refinedRules);
-        logRequestAuthorization(refinedRules);
+        applyRequestAuthorization(redefinedAuthorizations);
+        logRequestAuthorization(redefinedAuthorizations);
     }
 
-    private void applyRequestAuthorization(List<RequestAuthorization> rules) {
-        for (RequestAuthorization rule : rules) {
-            for (DescriptiveRequestMatcher drm : rule.matchers()) {
-                registry.requestMatchers(drm.matcher()).access(rule.authorizationManager());
+    private void applyRequestAuthorization(List<RequestAuthorization> authorizations) {
+        for (RequestAuthorization authorization : authorizations) {
+            for (DescriptiveRequestMatcher drm : authorization.matchers()) {
+                registry.requestMatchers(drm.matcher()).access(authorization.authorizationManager());
             }
         }
     }
 
-    private void logRequestAuthorization(List<RequestAuthorization> rules) {
+    private void logRequestAuthorization(List<RequestAuthorization> authorizations) {
         if (!doLog) return;
 
-        for (RequestAuthorization rule : rules) {
-            log.info("- {}", rule.authorizationManager());
-            for (DescriptiveRequestMatcher drm : rule.matchers()) {
-                log.info(" └ {}", drm.pattern());
-            }
-        }
-    }
+        StringBuilder sb = new StringBuilder();
 
-    private List<RequestAuthorization> splitAndSortRules(List<RequestAuthorization> rules) {
-        List<DescriptiveRequestMatcher> allMatchers = rules.stream()
-                .flatMap(rule -> rule.matchers().stream()
-                        .map(matcher -> new DescriptiveRequestMatcher(matcher.matcher(), matcher.pattern(), matcher.httpMethod())))
-                .sorted(this::compareMatchers)
-                .toList();
+        sb.append("Applied request authorizations:\n");
 
-        Map<AuthorizationManager<RequestAuthorizationContext>, List<DescriptiveRequestMatcher>> grouped = new LinkedHashMap<>();
-        for (RequestAuthorization rule : rules) {
-            grouped.computeIfAbsent(rule.authorizationManager(), k -> new ArrayList<>());
-        }
+        for (RequestAuthorization authorization : authorizations) {
+            sb.append("- ").append(authorization.name()).append("\n");
 
-        for (DescriptiveRequestMatcher drm : allMatchers) {
-            for (RequestAuthorization rule : rules) {
-                if (rule.matchers().contains(drm)) {
-                    grouped.get(rule.authorizationManager()).add(drm);
-                    break;
-                }
+            for (DescriptiveRequestMatcher drm : authorization.matchers()) {
+                sb.append(" └ ").append(drm.pattern()).append("\n");
             }
         }
 
-        return grouped.entrySet().stream()
-                .map(entry -> new RequestAuthorization(entry.getKey(), entry.getValue()))
-                .collect(Collectors.toList());
+        log.info(sb.toString());
     }
 
-    private int compareMatchers(DescriptiveRequestMatcher m1, DescriptiveRequestMatcher m2) {
-        String p1 = m1.pattern();
-        String p2 = m2.pattern();
+    private List<RequestAuthorization> sortRequestAuthorization(List<RequestAuthorization> authorizations) {
+        List<RequestAuthorization> flattened = flattenRequestAuthorization(authorizations);
+
+        flattened.sort(this::compareMatchers);
+
+        return groupRequestAuthorization(flattened);
+    }
+
+    private List<RequestAuthorization> flattenRequestAuthorization(List<RequestAuthorization> authorizations) {
+        return authorizations.stream()
+                .flatMap(auth -> auth.matchers().stream()
+                        .map(matcher -> new RequestAuthorization(
+                                auth.name,
+                                auth.authorizationManager(),
+                                Collections.singletonList(matcher)
+                        )))
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    private List<RequestAuthorization> groupRequestAuthorization(List<RequestAuthorization> authorizations) {
+        List<RequestAuthorization> grouped = new ArrayList<>();
+
+        for (RequestAuthorization authorization : authorizations) {
+            if (grouped.isEmpty()) {
+                grouped.add(authorization);
+                continue;
+            }
+
+            int lastIndex = grouped.size() - 1;
+            RequestAuthorization last = grouped.get(lastIndex);
+
+            if (!last.authorizationManager().equals(authorization.authorizationManager())) {
+                grouped.add(authorization);
+                continue;
+            }
+
+            List<DescriptiveRequestMatcher> mergedMatchers = new ArrayList<>(last.matchers());
+            mergedMatchers.addAll(authorization.matchers());
+
+            grouped.set(lastIndex, new RequestAuthorization(
+                    last.name(),
+                    last.authorizationManager(),
+                    mergedMatchers
+            ));
+        }
+
+        return grouped;
+    }
+
+    private int compareMatchers(RequestAuthorization a1, RequestAuthorization a2) {
+        String p1 = a1.matchers().get(0).pattern();
+        String p2 = a2.matchers().get(0).pattern();
 
         PathPattern pattern1 = parser.parse(p1);
         PathPattern pattern2 = parser.parse(p2);
@@ -164,6 +207,7 @@ public class RequestAuthorizationBinder {
     }
 
     public record RequestAuthorization(
+            String name,
             AuthorizationManager<RequestAuthorizationContext> authorizationManager,
             List<DescriptiveRequestMatcher> matchers
     ) {}
