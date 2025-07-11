@@ -1,0 +1,48 @@
+<configuration>
+    <property name="LOG_DIR" value="/var/log/spring-boot" />
+
+    <!-- 콘솔 출력 설정 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="ch.qos.logback.contrib.json.classic.JsonLayout">
+                <appendLineSeparator>true</appendLineSeparator>
+                <jsonFormatter class="ch.qos.logback.contrib.jackson.JacksonJsonFormatter" />
+                <timestampFormat>yyyy-MM-dd'T'HH:mm:ss.SSSZ</timestampFormat>
+                <timestampFormatTimezoneId>Asia/Seoul</timestampFormatTimezoneId>
+                <includeContextName>true</includeContextName>
+                <includeLoggerName>true</includeLoggerName>
+                <includeThreadName>true</includeThreadName>
+                <includeMdc>true</includeMdc> <!-- traceId, spanId 등 사용 가능 -->
+                <includeFormattedMessage>true</includeFormattedMessage>
+            </layout>
+        </encoder>
+    </appender>
+
+    <!-- 배포 환경 -->
+    <springProfile name="prod">
+        <root level="info">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <!-- 개발 환경 -->
+    <springProfile name="dev">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <!-- 로컬 환경 -->
+    <springProfile name="local">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+</configuration>
