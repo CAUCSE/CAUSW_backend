@@ -7,7 +7,7 @@ import net.causw.domain.exceptions.ErrorCode;
 import net.causw.domain.exceptions.UnauthorizedException;
 import net.causw.domain.model.enums.user.Role;
 import net.causw.domain.model.util.MessageUtil;
-import net.causw.domain.model.util.RedisUtils;
+import net.causw.application.redis.auth.AuthRedisService;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.model.enums.user.UserState;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,7 +31,7 @@ public class JwtTokenProvider {
 
     private final CustomUserDetailsService userDetailsService;
 
-    private final RedisUtils redisUtils;
+    private final AuthRedisService authRedisService;
 
     @PostConstruct
     protected void init() {
@@ -84,7 +84,7 @@ public class JwtTokenProvider {
         try {
             Jws<Claims> claims = Jwts.parser().setSigningKey(this.secretKey).parseClaimsJws(jwtToken);
 
-            if (redisUtils.isTokenBlacklisted(jwtToken)) {
+            if (authRedisService.isTokenBlacklisted(jwtToken)) {
                 throw new UnauthorizedException(ErrorCode.INVALID_JWT, "블랙리스트에 등록된 토큰입니다.");
             }
 

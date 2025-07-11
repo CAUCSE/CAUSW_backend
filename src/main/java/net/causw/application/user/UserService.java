@@ -55,7 +55,7 @@ import net.causw.domain.model.enums.user.UserState;
 import net.causw.domain.model.enums.userAcademicRecord.AcademicStatus;
 import net.causw.domain.model.enums.uuidFile.FilePath;
 import net.causw.domain.model.util.MessageUtil;
-import net.causw.domain.model.util.RedisUtils;
+import net.causw.application.redis.auth.AuthRedisService;
 import net.causw.domain.model.util.StaticValue;
 import net.causw.domain.validation.AdmissionYearValidator;
 import net.causw.domain.validation.CircleMemberStatusValidator;
@@ -107,7 +107,7 @@ public class UserService {
     private final CommentRepository commentRepository;
     private final ChildCommentRepository childCommentRepository;
     private final UserAdmissionRepository userAdmissionRepository;
-    private final RedisUtils redisUtils;
+    private final AuthRedisService authRedisService;
     private final LockerRepository lockerRepository;
     private final LockerLogRepository lockerLogRepository;
     private final UserAdmissionLogRepository userAdmissionLogRepository;
@@ -630,7 +630,7 @@ public class UserService {
 
         // refreshToken은 redis에 보관
         String refreshToken = jwtTokenProvider.createRefreshToken();
-        redisUtils.setRefreshTokenData(refreshToken, user.getId(), StaticValue.JWT_REFRESH_TOKEN_VALID_TIME);
+        authRedisService.setRefreshTokenData(refreshToken, user.getId(), StaticValue.JWT_REFRESH_TOKEN_VALID_TIME);
 
         return UserDtoMapper.INSTANCE.toUserSignInResponseDto(
                 jwtTokenProvider.createAccessToken(user.getId(), user.getRoles(), user.getState()),
@@ -1494,7 +1494,7 @@ public class UserService {
     }
 
     private String getUserIdFromRefreshToken(String refreshToken) {
-        return Optional.ofNullable(redisUtils.getRefreshTokenData(refreshToken))
+        return Optional.ofNullable(authRedisService.getRefreshTokenData(refreshToken))
                 .orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.INVALID_REFRESH_TOKEN
@@ -1502,8 +1502,8 @@ public class UserService {
     }
 
     public UserSignOutResponseDto signOut(UserSignOutRequestDto userSignOutRequestDto){
-        redisUtils.addToBlacklist(userSignOutRequestDto.getAccessToken());
-        redisUtils.deleteRefreshTokenData(userSignOutRequestDto.getRefreshToken());
+        authRedisService.addToBlacklist(userSignOutRequestDto.getAccessToken());
+        authRedisService.deleteRefreshTokenData(userSignOutRequestDto.getRefreshToken());
 
         return UserDtoMapper.INSTANCE.toUserSignOutResponseDto("로그아웃 성공");
     }
