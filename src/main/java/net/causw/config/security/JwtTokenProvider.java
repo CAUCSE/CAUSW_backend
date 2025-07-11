@@ -79,6 +79,14 @@ public class JwtTokenProvider {
         return null;
     }
 
+    // WebSocket용 토큰 추출 메서드 (공통 로직)
+    public String resolveToken(String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+        return null;
+    }
+
     //ACCESS TOKEN만 Validate합니다.
     public boolean validateToken(String jwtToken) {
         try {

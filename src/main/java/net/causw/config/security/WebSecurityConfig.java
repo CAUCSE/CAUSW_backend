@@ -70,7 +70,8 @@ public class WebSecurityConfig {
                                 "/swagger-ui/**",
                                 "/api/v1/fcm/send",
                                 "/v3/api-docs/**",
-                                "/actuator/**"
+                                "/actuator/**",
+                                "/ws-connect/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

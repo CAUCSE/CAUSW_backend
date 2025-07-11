@@ -107,6 +107,9 @@ dependencies {
 
     //mongodb
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
+    // chatting
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
 }
 
 test {
