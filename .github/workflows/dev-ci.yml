@@ -39,7 +39,7 @@ jobs:
     name: Flyway Migration Test in Github Actions
     runs-on: ubuntu-22.04
     needs: prepare
-    # if: needs.prepare.outputs.app_main_changed == 'true'
+    if: needs.prepare.outputs.app_main_changed == 'true'
 
     services:
       mysql:
@@ -171,7 +171,7 @@ jobs:
     name: JUnit Test app-main Module
     runs-on: ubuntu-22.04
     needs: prepare
-    # if: needs.prepare.outputs.app_main_changed == 'true'
+    if: needs.prepare.outputs.app_main_changed == 'true'
 
     steps:
       # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
@@ -222,7 +222,7 @@ jobs:
     name: JUnit Test app-chat Module
     runs-on: ubuntu-22.04
     needs: prepare
-    # if: needs.prepare.outputs.app_chat_changed == 'true'
+    if: needs.prepare.outputs.app_chat_changed == 'true'
 
     steps:
       # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
