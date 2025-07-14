@@ -8,29 +8,79 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    name: Build in Github Actions
+  prepare:
+    name: Prepare Build in Github Actions
     runs-on: ubuntu-22.04
+    outputs:
+      root_changed: ${{ steps.filter.outputs.root }}
+      global_changed: ${{ steps.filter.outputs.global }}
+      app_main_changed: ${{ steps.filter.outputs.app_main }}
+      app_chat_changed: ${{ steps.filter.outputs.app_chat }}
 
     steps:
       # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
       - name: Checkout branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      # java 버전 세팅(JDK 17)
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
+      # JDK & Gradle 설정
+      - name: Setup JDK and Gradle
+        uses: ./.github/actions/setup-jdk-gradle
+
+      # 변경된 모듈 확인
+      - name: Check which modules changed
+        id: filter
+        run: |
+          echo "root=false" >> $GITHUB_OUTPUT
+          echo "global=false" >> $GITHUB_OUTPUT
+          echo "app_main=false" >> $GITHUB_OUTPUT
+          echo "app_chat=false" >> $GITHUB_OUTPUT
+          
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -Eq "^(build\.gradle|settings\.gradle|gradle/)"; then
+            echo "root=true" >> $GITHUB_OUTPUT
+          fi
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^global/"; then
+            echo "global=true" >> $GITHUB_OUTPUT
+          fi
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^app-main/"; then
+            echo "app_main=true" >> $GITHUB_OUTPUT
+          fi
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^app-chat/"; then
+            echo "app_chat=true" >> $GITHUB_OUTPUT
+          fi
+
+      # global 모듈 변경 시 빌드
+      - name: Build global module
+        run: ./gradlew clean :global:build
+
+      # global JAR 업로드
+      - name: Upload global jar
+        uses: actions/upload-artifact@v4
         with:
-          java-version: '17'
-          distribution: 'zulu'
+          name: global-artifact
+          path: global/build/libs/*.jar
 
-      # git ignore한 yml 파일들 github secret에서 복사해 오기
-      - name: Copy secret
+
+  app-main-build:
+    needs: prepare
+    name: Build & Deploy app-main Module in Github Actions
+    runs-on: ubuntu-22.04
+    if: needs.prepare.outputs.root_changed == 'true' || needs.prepare.outputs.global_changed == 'true' || needs.prepare.outputs.app_main_changed == 'true'
+
+    steps:
+      # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      # JDK & Gradle 설정
+      - name: Setup JDK and Gradle
+        uses: ./.github/actions/setup-jdk-gradle
+
+      # .gitignore된 yml 파일들 github secret에서 복사
+      - name: Copy secret for app-main
         env:
           APPLICATION_FILE: ${{ secrets.APPLICATION_PROFILE_DEV }}
           APPLICATION_DEV_FILE: ${{ secrets.APPLICATION_DEV }}
-          DIR: ./src/main/resources
-
+          DIR: ./app-main/src/main/resources
           APPLICATION_FILE_NAME: application.yml
           APPLICATION_DEV_FILE_NAME: application-dev.yml
         run: |
@@ -44,7 +94,7 @@ jobs:
         env:
           FIREBASE_KEY: ${{ secrets.FIREBASE_KEY }}
           FIREBASE_KEY_FILENAME: dongnae_firebase_key.json
-          DIR: ./src/main/resources
+          DIR: ./app-main/src/main/resources
         run: |
           touch $DIR/$FIREBASE_KEY_FILENAME
           echo "$FIREBASE_KEY" > $DIR/$FIREBASE_KEY_FILENAME
@@ -58,31 +108,30 @@ jobs:
           $ENV_DEV
           EOF
 
-      # gradlew 실행 권한 부여
-      - name: Run chmod to make gradlew executable
-        run: chmod +x ./gradlew
-        shell: bash
-
       # Flyway 마이그레이션
       - name: Run Flyway migration
         run: ./gradlew flywayMigrate -Penv=dev
 
       # Build -> jar 파일 생성
-      - name: Build with Gradle
-        run: ./gradlew clean build -x test
-        shell: bash
+      - name: Download global jar
+        uses: actions/download-artifact@v4
+        with:
+          name: global-artifact
+
+      - name: Build app-main module
+        run: ./gradlew clean :app-main:build -x test
 
       - name: Upload Build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
           path: |
-            build/libs/*.jar
+            app-main/build/libs/*.jar
 
 
-  deploy:
-    name: CD with SSH
-    needs: build
+  app-main-deploy:
+    name: CD app-main Module with SSH
+    needs: app-main-build
     runs-on: ubuntu-22.04
 
     steps:
@@ -91,25 +140,35 @@ jobs:
         with:
           name: build-artifacts
 
-      # JAR 파일을 EC2에 배포하는 step
-      - name: SCP JAR to EC2
+      # app-main 전용 디렉토리 생성
+      - name: Ensure app-main folder exists on EC2
+        uses: appleboy/ssh-action@master
+        with:
+          key: ${{ secrets.EC2_KEY_DEV }}
+          host: ${{ secrets.EC2_HOST_DEV }}
+          username: ${{ secrets.EC2_USER_DEV }}
+          script: |
+            mkdir -p /home/ubuntu/app/app-main
+
+      # app-main JAR 파일 EC2에 전송
+      - name: SCP app-main JAR to EC2
         uses: appleboy/scp-action@master
         with:
           key: ${{ secrets.EC2_KEY_DEV }}
           host: ${{ secrets.EC2_HOST_DEV }}
           username: ${{ secrets.EC2_USER_DEV }}
-          source: "*.jar"
-          target: "/home/ubuntu/app"
+          source: "app-main/build/libs/*.jar"
+          target: "/home/ubuntu/app/app-main"
 
-      # 전체 프로젝트 코드 Github Actions에서 어떻게 Build 되고, 업로드 될 지 Debugging 원할 시 주석 해제
-      #      - name: Upload project code
+      #      # Github Actions 빌드, 업로드 디버깅 용
+      #      - name: Upload project code (app-main)
       #        uses: appleboy/scp-action@master
       #        with:
       #          key: ${{ secrets.EC2_KEY_DEV }}
       #          host: ${{ secrets.EC2_HOST_DEV }}
       #          username: ${{ secrets.EC2_USER_DEV }}
-      #          target: /home/ubuntu/app/spring_source
-      #          source: .
+      #          target: /home/ubuntu/app/spring_source/app-main
+      #          source: app-main/**
 
       # Redis Server 구동
       - name: Start redis-server
@@ -121,21 +180,131 @@ jobs:
           script: |
             sudo systemctl start redis-server
 
-      # EC2에 SSH로 배포 커맨드를 입력하는 step
-      - name: Deploy SSH
+      # 기존 서버 종료 및 app-main JAR 실행
+      - name: Deploy app-main
         uses: appleboy/ssh-action@master
         with:
           key: ${{ secrets.EC2_KEY_DEV }}
           host: ${{ secrets.EC2_HOST_DEV }}
           username: ${{ secrets.EC2_USER_DEV }}
-          # 기존 실행 중인 서버 종료 후 jar 파일 실행
           script: |
-            sudo fuser -k -n tcp 8080
-            sleep 15
-            sudo nohup java -jar /home/ubuntu/app/*.jar > ./nohup.out 2>&1 &
+            sudo fuser -k -n tcp 8080 || true
+            sleep 10
+            APP_MAIN_JAR=$(ls /home/ubuntu/app/app-main/*.jar | tail -n 1)
+            sudo nohup java -jar "$APP_MAIN_JAR" > /home/ubuntu/app/app-main/nohup.out 2>&1 &
 
+
+  app-chat-build:
+    needs: prepare
+    name: Build & Deploy app-chat Module in Github Actions
+    runs-on: ubuntu-22.04
+    if: needs.prepare.outputs.root_changed == 'true' || needs.prepare.outputs.global_changed == 'true' || needs.prepare.outputs.app_chat_changed == 'true'
+
+    steps:
+      # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      # JDK & Gradle 설정
+      - name: Setup JDK and Gradle
+        uses: ./.github/actions/setup-jdk-gradle
+
+      # .gitignore된 yml 파일들 github secret에서 복사
+      - name: Copy secret for app-chat
+        env:
+          APPLICATION_FILE: ${{ secrets.APPLICATION_PROFILE_DEV }}
+          APPLICATION_DEV_FILE: ${{ secrets.APPLICATION_DEV_APP_CHAT }}
+          DIR: ./app-chat/src/main/resources
+          APPLICATION_FILE_NAME: application.yml
+          APPLICATION_DEV_FILE_NAME: application-dev.yml
+        run: |
+          touch $DIR/$APPLICATION_FILE_NAME
+          touch $DIR/$APPLICATION_DEV_FILE_NAME
+          echo "$APPLICATION_FILE" > $DIR/$APPLICATION_FILE_NAME
+          echo "$APPLICATION_DEV_FILE" > $DIR/$APPLICATION_DEV_FILE_NAME
+
+      # Build -> jar 파일 생성
+      - name: Download global jar
+        uses: actions/download-artifact@v4
+        with:
+          name: global-artifact
+
+      - name: Build app-chat module
+        run: ./gradlew clean :app-chat:build -x test
+
+      - name: Upload Build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            app-chat/build/libs/*.jar
+
+
+  app-chat-deploy:
+    name: CD app-chat Module with SSH
+    needs: app-chat-build
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+
+      # app-chat 전용 디렉토리 생성
+      - name: Ensure app-chat folder exists on EC2
+        uses: appleboy/ssh-action@master
+        with:
+          key: ${{ secrets.EC2_KEY_DEV }}
+          host: ${{ secrets.EC2_HOST_DEV }}
+          username: ${{ secrets.EC2_USER_DEV }}
+          script: |
+            mkdir -p /home/ubuntu/app/app-chat
+
+      # app-chat JAR 파일 EC2에 전송
+      - name: SCP app-chat JAR to EC2
+        uses: appleboy/scp-action@master
+        with:
+          key: ${{ secrets.EC2_KEY_DEV }}
+          host: ${{ secrets.EC2_HOST_DEV }}
+          username: ${{ secrets.EC2_USER_DEV }}
+          source: "app-chat/build/libs/*.jar"
+          target: "/home/ubuntu/app/app-chat"
+
+      #    # Github Actions 빌드, 업로드 디버깅 용
+      #    - name: Upload project code (app-chat)
+      #      uses: appleboy/scp-action@master
+      #      with:
+      #        key: ${{ secrets.EC2_KEY_DEV }}
+      #        host: ${{ secrets.EC2_HOST_DEV }}
+      #        username: ${{ secrets.EC2_USER_DEV }}
+      #        target: /home/ubuntu/app/spring_source/app-chat
+      #        source: app-chat/**
+
+      # 기존 서버 종료 및 app-chat JAR 실행
+      - name: Deploy app-chat
+        uses: appleboy/ssh-action@master
+        with:
+          key: ${{ secrets.EC2_KEY_DEV }}
+          host: ${{ secrets.EC2_HOST_DEV }}
+          username: ${{ secrets.EC2_USER_DEV }}
+          script: |
+            sudo fuser -k -n tcp 8081 || true
+            sleep 10
+            APP_CHAT_JAR=$(ls /home/ubuntu/app/app-chat/*.jar | tail -n 1)
+            sudo nohup java -jar "$APP_CHAT_JAR" > /home/ubuntu/app/app-chat/nohup.out 2>&1 &
+
+
+  notify:
+    name: Discord Notify
+    needs:
+      - app-main-deploy
+      - app-chat-deploy
+    runs-on: ubuntu-22.04
+    if: always()
+
+    steps:
       - name: Discord Notify (Always)
-        if: always()
         uses: sarisia/actions-status-discord@v1
         with:
           webhook: ${{ secrets.DISCORD_DEPLOY_WEBHOOK_URL_DEV }}

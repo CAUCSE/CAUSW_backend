@@ -10,9 +10,36 @@ permissions:
   checks: write
 
 jobs:
+  prepare:
+    name: Prepare changed modules
+    runs-on: ubuntu-22.04
+    outputs:
+      app_main_changed: ${{ steps.filter.outputs.app_main }}
+      app_chat_changed: ${{ steps.filter.outputs.app_chat }}
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - id: filter
+        name: Check changed modules
+        run: |
+          echo "app_main=false" >> $GITHUB_OUTPUT
+          echo "app_chat=false" >> $GITHUB_OUTPUT
+          
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^app-main/"; then
+            echo "app_main=true" >> $GITHUB_OUTPUT
+          fi
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^app-chat/"; then
+            echo "app_chat=true" >> $GITHUB_OUTPUT
+          fi
+          
+
   migration-test:
     name: Flyway Migration Test in Github Actions
     runs-on: ubuntu-22.04
+    needs: prepare
+    if: needs.prepare.outputs.app_main_changed == 'true'
 
     services:
       mysql:
@@ -140,9 +167,11 @@ jobs:
           path: db-summary.md
 
 
-  junit-test:
-    name: JUnit Test in Github Actions
+  junit-test-app-main:
+    name: JUnit Test app-main Module
     runs-on: ubuntu-22.04
+    needs: prepare
+    if: needs.prepare.outputs.app_main_changed == 'true'
 
     steps:
       # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
@@ -154,11 +183,11 @@ jobs:
         uses: ./.github/actions/setup-jdk-gradle
 
       # git ignore한 yml 파일들 github secret에서 복사해 오기
-      - name: Copy secret
+      - name: Copy secrets for app-main
         env:
           APPLICATION_FILE: ${{ secrets.APPLICATION_PROFILE_DEV }}
           APPLICATION_DEV_FILE: ${{ secrets.APPLICATION_DEV }}
-          DIR: ./src/main/resources
+          DIR: ./app-main/src/main/resources
 
           APPLICATION_FILE_NAME: application.yml
           APPLICATION_DEV_FILE_NAME: application-dev.yml
@@ -169,8 +198,8 @@ jobs:
           echo "$APPLICATION_DEV_FILE" > $DIR/$APPLICATION_DEV_FILE_NAME
 
       # 테스트 실행
-      - name: Test with Gradle
-        run: ./gradlew test
+      - name: Test with Gradle (app-main)
+        run: ./gradlew :app-main:test
         shell: bash
 
       # 테스트 결과 출력
@@ -178,11 +207,61 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: ${{ always() }}
         with:
-          files: ./build/test-results/test/TEST-*.xml
+          files: ./app-main/build/test-results/test/TEST-*.xml
 
       # 테스트 실패 시 fail된 부분 마크
       - name: Publish check comment on test failure
         uses: mikepenz/action-junit-report@v3
         if: always()
         with:
-          report_paths: ./build/test-results/test/TEST-*.xml
+          report_paths: ./app-main/build/test-results/test/TEST-*.xml
+
+
+  junit-test-app-chat:
+    name: JUnit Test app-chat Module
+    runs-on: ubuntu-22.04
+    needs: prepare
+    if: needs.prepare.outputs.app_chat_changed == 'true'
+
+    steps:
+      # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      # JDK & Gradle 설정
+      - name: Setup JDK and Gradle
+        uses: ./.github/actions/setup-jdk-gradle
+
+      # git ignore한 yml 파일들 github secret에서 복사해 오기
+      - name: Copy secrets for app-chat
+        env:
+          APPLICATION_FILE: ${{ secrets.APPLICATION_PROFILE_DEV }}
+          APPLICATION_DEV_FILE: ${{ secrets.APPLICATION_DEV_APP_CHAT }}
+          DIR: ./app-chat/src/main/resources
+
+          APPLICATION_FILE_NAME: application.yml
+          APPLICATION_DEV_FILE_NAME: application-dev.yml
+        run: |
+          touch $DIR/$APPLICATION_FILE_NAME
+          touch $DIR/$APPLICATION_DEV_FILE_NAME
+          echo "$APPLICATION_FILE" > $DIR/$APPLICATION_FILE_NAME
+          echo "$APPLICATION_DEV_FILE" > $DIR/$APPLICATION_DEV_FILE_NAME
+
+      # 테스트 실행
+      - name: Test with Gradle (app-chat)
+        run: ./gradlew :app-chat:test
+        shell: bash
+
+      # 테스트 결과 출력
+      - name: Publish test results to pr
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: ${{ always() }}
+        with:
+          files: ./app-chat/build/test-results/test/TEST-*.xml
+
+      # 테스트 실패 시 fail된 부분 마크
+      - name: Publish check comment on test failure
+        uses: mikepenz/action-junit-report@v3
+        if: always()
+        with:
+          report_paths: ./app-chat/build/test-results/test/TEST-*.xml
