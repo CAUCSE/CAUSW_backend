@@ -192,6 +192,7 @@ jobs:
           APPLICATION_FILE_NAME: application.yml
           APPLICATION_DEV_FILE_NAME: application-dev.yml
         run: |
+          mkdir -p $DIR
           touch $DIR/$APPLICATION_FILE_NAME
           touch $DIR/$APPLICATION_DEV_FILE_NAME
           echo "$APPLICATION_FILE" > $DIR/$APPLICATION_FILE_NAME
@@ -242,6 +243,7 @@ jobs:
           APPLICATION_FILE_NAME: application.yml
           APPLICATION_DEV_FILE_NAME: application-dev.yml
         run: |
+          mkdir -p $DIR
           touch $DIR/$APPLICATION_FILE_NAME
           touch $DIR/$APPLICATION_DEV_FILE_NAME
           echo "$APPLICATION_FILE" > $DIR/$APPLICATION_FILE_NAME
