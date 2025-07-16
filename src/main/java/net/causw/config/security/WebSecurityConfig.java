@@ -49,8 +49,8 @@ public class WebSecurityConfig {
                             RequestAuthorizationBinder.with(registry)
                                     .bind("Public", authorizationManager.permitAll(), SecurityEndpoints.PUBLIC_ENDPOINTS)
                                     .bind("Authenticated", authorizationManager.authenticated(), SecurityEndpoints.AUTHENTICATED_ENDPOINTS)
-                                    .bind("Active", authorizationManager.isActiveAndNotNoneUser(), SecurityEndpoints.ACTIVE_USER_ENDPOINTS)
-                                    .bind("Certified", authorizationManager.isActiveAndNotNoneUserAndAcademicRecordCertified(), SecurityEndpoints.CERTIFIED_USER_ENDPOINTS)
+                                    .bind("Active", authorizationManager.isActiveUser(), SecurityEndpoints.ACTIVE_USER_ENDPOINTS)
+                                    .bind("Certified", authorizationManager.isCertifiedUser(), SecurityEndpoints.CERTIFIED_USER_ENDPOINTS)
                                     .sort(true)
                                     .log(true)
                                     .apply();

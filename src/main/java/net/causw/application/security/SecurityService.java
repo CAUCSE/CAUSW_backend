@@ -32,7 +32,7 @@ public class SecurityService {
         return SecurityHelper.hasRoleGroup(getAuthorities(), roleGroup);
     }
 
-    public boolean isActiveAndNotNoneUser() {
+    public boolean isActiveUser() {
         return SecurityHelper.isStateActive(getUserDetails()) && !SecurityHelper.hasRoleOnlyNone(getAuthorities());
     }
 
@@ -46,8 +46,8 @@ public class SecurityService {
         return SecurityHelper.isAcademicRecordCertified(user);
     }
 
-    public boolean isActiveAndNotNoneUserAndAcademicRecordCertified() {
-        return isActiveAndNotNoneUser() && isAcademicRecordCertified();
+    public boolean isCertifiedUser() {
+        return isActiveUser() && isAcademicRecordCertified();
     }
 
     private Authentication getAuthentication() {

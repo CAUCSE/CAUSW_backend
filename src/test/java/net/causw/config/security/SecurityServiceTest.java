@@ -71,7 +71,7 @@ class SecurityServiceTest {
         @DisplayName("사용자 상태가 ACTIVE이고 권한이 NONE이 아닐 경우 성공")
         void shouldReturnTrue_whenUserIsActiveAndRoleIsNotNone() {
             // when & then
-            assertThat(securityService.isActiveAndNotNoneUser()).isTrue();
+            assertThat(securityService.isActiveUser()).isTrue();
         }
 
         @Test
@@ -79,7 +79,7 @@ class SecurityServiceTest {
         @DisplayName("사용자 상태가 ACTIVE가 아닌 경우 실패")
         void shouldReturnFalse_whenUserIsNotActiveAndRoleIsValid() {
             // when & then
-            assertThat(securityService.isActiveAndNotNoneUser()).isFalse();
+            assertThat(securityService.isActiveUser()).isFalse();
         }
 
         @Test
@@ -87,7 +87,7 @@ class SecurityServiceTest {
         @DisplayName("사용자 권한이 NONE일 경우 실패")
         void shouldReturnFalse_whenUserIsActiveButRoleIsNone() {
             // when & then
-            assertThat(securityService.isActiveAndNotNoneUser()).isFalse();
+            assertThat(securityService.isActiveUser()).isFalse();
         }
 
         @Test
@@ -95,7 +95,7 @@ class SecurityServiceTest {
         @DisplayName("사용자 상태가 ACTIVE가 아니고 권한이 NONE일 경우 실패")
         void shouldReturnFalse_whenUserIsNotActiveAndRoleIsNone() {
             // when & then
-            assertThat(securityService.isActiveAndNotNoneUser()).isFalse();
+            assertThat(securityService.isActiveUser()).isFalse();
         }
     }
 
@@ -136,22 +136,22 @@ class SecurityServiceTest {
         @WithMockCustomUser
         @DisplayName("사용자 및 학적 검사 분기 성공")
         void shouldReturnTrue_whenUserIsActiveAndAcademicStatusCertified() {
-            when(securityService.isActiveAndNotNoneUser()).thenReturn(true);
+            when(securityService.isActiveUser()).thenReturn(true);
             when(securityService.isAcademicRecordCertified()).thenReturn(true);
 
             // when & then
-            assertThat(securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()).isTrue();
+            assertThat(securityService.isCertifiedUser()).isTrue();
         }
 
         @Test
         @WithMockCustomUser
         @DisplayName("사용자 및 학적 검사 분기 실패")
         void shouldReturnFalse_whenUserIsActiveButAcademicStatusNotCertified() {
-            when(securityService.isActiveAndNotNoneUser()).thenReturn(true);
+            when(securityService.isActiveUser()).thenReturn(true);
             when(securityService.isAcademicRecordCertified()).thenReturn(false);
 
             // when & then
-            assertThat(securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()).isFalse();
+            assertThat(securityService.isCertifiedUser()).isFalse();
         }
     }
 }

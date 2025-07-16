@@ -13,16 +13,16 @@ import org.springframework.stereotype.Component;
 public class CustomAuthorizationManager {
     private final SecurityService securityService;
 
-    public AuthorizationManager<RequestAuthorizationContext> isActiveAndNotNoneUserAndAcademicRecordCertified() {
+    public AuthorizationManager<RequestAuthorizationContext> isCertifiedUser() {
         return (authentication, context) -> {
-            boolean isAuthenticated = securityService.isActiveAndNotNoneUserAndAcademicRecordCertified();
+            boolean isAuthenticated = securityService.isCertifiedUser();
             return new AuthorizationDecision(isAuthenticated);
         };
     }
 
-    public AuthorizationManager<RequestAuthorizationContext> isActiveAndNotNoneUser() {
+    public AuthorizationManager<RequestAuthorizationContext> isActiveUser() {
         return (authentication, context) -> {
-            boolean isAuthenticated = securityService.isActiveAndNotNoneUser();
+            boolean isAuthenticated = securityService.isActiveUser();
             return new AuthorizationDecision(isAuthenticated);
         };
     }
