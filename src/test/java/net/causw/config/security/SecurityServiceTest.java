@@ -1,5 +1,6 @@
 package net.causw.config.security;
 
+import net.causw.application.security.SecurityHelper;
 import net.causw.application.security.SecurityService;
 import net.causw.domain.aop.annotation.WithMockCustomUser;
 import net.causw.domain.model.enums.user.Role;
@@ -10,11 +11,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith({MockitoExtension.class, SpringExtension.class})
@@ -100,15 +104,16 @@ class SecurityServiceTest {
     }
 
     @Nested
-    @DisplayName("학적 검사 테스트")
-    class IsAcademicRecordCertifiedTest {
+    @DisplayName("사용자 및 학적 검사 테스트")
+    class ActiveAndNotNoneUserAndAcademicRecordCertifiedTest {
 
         @Test
         @WithMockCustomUser(roles = Role.ADMIN, academicStatus = AcademicStatus.UNDETERMINED)
         @DisplayName("권한이 EXECUTIVES_AND_PROFESSOR 소속일 경우 Bypass")
         void shouldReturnTrue_whenUserHasExecutiveRoleRegardlessOfAcademicStatus() {
             // when & then
-            assertThat(securityService.isAcademicRecordCertified()).isTrue();
+            when(securityService.isActiveUser()).thenReturn(true);
+            assertThat(securityService.isCertifiedUser()).isTrue();
         }
 
         @Test
@@ -116,7 +121,8 @@ class SecurityServiceTest {
         @DisplayName("일반 사용자이고 학적이 인증된 경우 성공")
         void shouldReturnTrue_whenUserIsCommonAndAcademicStatusIsCertified() {
             // when & then
-            assertThat(securityService.isAcademicRecordCertified()).isTrue();
+            when(securityService.isActiveUser()).thenReturn(true);
+            assertThat(securityService.isCertifiedUser()).isTrue();
         }
 
         @Test
@@ -124,34 +130,34 @@ class SecurityServiceTest {
         @DisplayName("일반 사용자이고 학적이 인증되지 않은 경우 실패")
         void shouldReturnFalse_whenUserIsCommonAndAcademicStatusIsUncertified() {
             // when & then
-            assertThat(securityService.isAcademicRecordCertified()).isFalse();
+            when(securityService.isActiveUser()).thenReturn(true);
+            assertThat(securityService.isCertifiedUser()).isFalse();
         }
-    }
-
-    @Nested
-    @DisplayName("사용자 및 학적 검사 테스트")
-    class ActiveAndNotNoneUserAndAcademicRecordCertifiedTest {
 
         @Test
         @WithMockCustomUser
         @DisplayName("사용자 및 학적 검사 분기 성공")
         void shouldReturnTrue_whenUserIsActiveAndAcademicStatusCertified() {
-            when(securityService.isActiveUser()).thenReturn(true);
-            when(securityService.isAcademicRecordCertified()).thenReturn(true);
+            try (MockedStatic<SecurityHelper> securityHelperMockedStatic = Mockito.mockStatic(SecurityHelper.class)) {
+                when(securityService.isActiveUser()).thenReturn(true);
+                securityHelperMockedStatic.when(() -> SecurityHelper.isAcademicRecordCertified(any()))
+                        .thenReturn(true);
 
-            // when & then
-            assertThat(securityService.isCertifiedUser()).isTrue();
+                assertThat(securityService.isCertifiedUser()).isTrue();
+            }
         }
 
         @Test
         @WithMockCustomUser
         @DisplayName("사용자 및 학적 검사 분기 실패")
         void shouldReturnFalse_whenUserIsActiveButAcademicStatusNotCertified() {
-            when(securityService.isActiveUser()).thenReturn(true);
-            when(securityService.isAcademicRecordCertified()).thenReturn(false);
+            try (MockedStatic<SecurityHelper> securityHelperMockedStatic = Mockito.mockStatic(SecurityHelper.class)) {
+                when(securityService.isActiveUser()).thenReturn(false);
+                securityHelperMockedStatic.when(() -> SecurityHelper.isAcademicRecordCertified(any()))
+                        .thenReturn(true);
 
-            // when & then
-            assertThat(securityService.isCertifiedUser()).isFalse();
+                assertThat(securityService.isCertifiedUser()).isFalse();
+            }
         }
     }
 }

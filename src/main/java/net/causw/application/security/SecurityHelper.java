@@ -33,8 +33,12 @@ public class SecurityHelper {
                         .anyMatch(authority -> authority.getAuthority().equals(role)));
     }
 
-    public static boolean isAcademicRecordCertified(User user) {
-        AcademicStatus academicStatus = user.getAcademicStatus();
+    public static boolean isAcademicRecordCertified(CustomUserDetails userDetails) {
+        AcademicStatus academicStatus = userDetails.getUser().getAcademicStatus();
+
+        if (SecurityHelper.hasRoleGroup(userDetails.getAuthorities(), RoleGroup.EXECUTIVES_AND_PROFESSOR)) {
+            return true;
+        }
 
         if (academicStatus == null) {
             return false;

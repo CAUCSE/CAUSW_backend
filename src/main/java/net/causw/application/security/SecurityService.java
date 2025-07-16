@@ -36,18 +36,8 @@ public class SecurityService {
         return SecurityHelper.isStateActive(getUserDetails()) && !SecurityHelper.hasRoleOnlyNone(getAuthorities());
     }
 
-    public boolean isAcademicRecordCertified() {
-        User user = getUserDetails().getUser();
-
-        if (SecurityHelper.hasRoleGroup(getAuthorities(), RoleGroup.EXECUTIVES_AND_PROFESSOR)) {
-            return true;
-        }
-
-        return SecurityHelper.isAcademicRecordCertified(user);
-    }
-
     public boolean isCertifiedUser() {
-        return isActiveUser() && isAcademicRecordCertified();
+        return isActiveUser() && SecurityHelper.isAcademicRecordCertified(getUserDetails());
     }
 
     private Authentication getAuthentication() {
