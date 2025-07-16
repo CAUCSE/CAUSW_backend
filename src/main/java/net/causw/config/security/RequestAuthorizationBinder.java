@@ -18,6 +18,23 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Spring Security의 authorizeHttpRequests DSL에서
+ * 포함관계(endpoint precedence)를 고려한 권한 설정 정렬을 지원하는 유틸리티 클래스
+ * <p>
+ * 사용 목적:
+ * <ul>
+ *     <li>포괄적인 URL 패턴이 더 구체적인 패턴보다 먼저 등록되어 무시되는 것을 방지</li>
+ *     <li>접근 제어 로직을 간결하고 선언적으로 작성</li>
+ *     <li>AuthorizationManager와 패턴 정보를 그룹핑하여 로그 출력 및 관리 용이</li>
+ * </ul>
+ * <p>
+ * 주요 기능:
+ * <ul>
+ *     <li>엔드포인트 별 접근 권한을 등록 및 정렬</li>
+ *     <li>등록된 권한 정보를 로그로 출력</li>
+ * </ul>
+ */
 @Slf4j
 public class RequestAuthorizationBinder {
     private final AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry registry;
@@ -30,10 +47,24 @@ public class RequestAuthorizationBinder {
         this.registry = registry;
     }
 
+    /**
+     * static 팩토리 메서드
+     *
+     * @param registry Spring Security DSL 내부에서 생성되는 matcher registry
+     * @return RequestAuthorizationBinder 인스턴스
+     */
     public static RequestAuthorizationBinder with(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry registry) {
         return new RequestAuthorizationBinder(registry);
     }
 
+    /**
+     * AuthorizationManager 및 path pattern(문자열 기반)을 바인딩
+     *
+     * @param name 바인딩 이름 (로그 출력용)
+     * @param manager 요청 접근 제어를 위한 AuthorizationManager
+     * @param patterns URL 패턴 목록
+     * @return this
+     */
     public RequestAuthorizationBinder bind(
             String name,
             AuthorizationManager<RequestAuthorizationContext> manager,
@@ -54,6 +85,15 @@ public class RequestAuthorizationBinder {
         return bind(new RequestAuthorization(name, manager, matchers));
     }
 
+    /**
+     * AuthorizationManager, HTTP method, path pattern을 함께 바인딩
+     *
+     * @param name 바인딩 이름 (로그 출력용)
+     * @param manager 요청 접근 제어를 위한 AuthorizationManager
+     * @param method HTTP 메서드
+     * @param patterns URL 패턴 목록
+     * @return this
+     */
     public RequestAuthorizationBinder bind(
             String name,
             AuthorizationManager<RequestAuthorizationContext> manager,
@@ -75,6 +115,14 @@ public class RequestAuthorizationBinder {
         return bind(new RequestAuthorization(name, manager, matchers));
     }
 
+    /**
+     * 미리 정의된 SecurityEndpoint enum 기반으로 AuthorizationManager를 바인딩
+     *
+     * @param name 바인딩 이름 (로그 출력용)
+     * @param manager 요청 접근 제어를 위한 AuthorizationManager
+     * @param endpoints 정렬 기준이 되는 보안 엔드포인트 정보
+     * @return this
+     */
     public RequestAuthorizationBinder bind(
             String name,
             AuthorizationManager<RequestAuthorizationContext> manager,
@@ -91,21 +139,45 @@ public class RequestAuthorizationBinder {
         return bind(new RequestAuthorization(name, manager, matchers));
     }
 
+    /**
+     * RequestAuthorization 객체들을 직접 바인딩
+     *
+     * @param authorizations 바인딩할 RequestAuthorization 목록
+     * @return this
+     */
     public RequestAuthorizationBinder bind(RequestAuthorization... authorizations) {
         this.requestAuthorizations.addAll(Arrays.asList(authorizations));
         return this;
     }
 
+    /**
+     * 정렬 수행 여부 설정
+     * <p>
+     * 정렬을 활성화하면 포괄적인 경로보다 더 구체적인 경로가 먼저 등록되어
+     * Security 필터 체인에서 덮어쓰기 문제를 방지할 수 있음
+     *
+     * @param flag true면 apply 시 정렬 수행
+     * @return this
+     */
     public RequestAuthorizationBinder sort(boolean flag) {
         this.doSort = flag;
         return this;
     }
 
+    /**
+     * 로그 출력 여부 설정
+     *
+     * @param flag true면 apply 시 바인딩된 정보 로그 출력
+     * @return this
+     */
     public RequestAuthorizationBinder log(boolean flag) {
         this.doLog = flag;
         return this;
     }
 
+    /**
+     * 등록된 RequestAuthorization을 Security DSL에 적용
+     */
     public void apply() {
         List<RequestAuthorization> redefinedAuthorizations = doSort
                 ? sortRequestAuthorization(requestAuthorizations)
@@ -207,12 +279,26 @@ public class RequestAuthorizationBinder {
         return p1.compareTo(p2);
     }
 
+    /**
+     * 요청 접근 제어 정보를 묶는 불변 데이터 구조
+     *
+     * @param name 로그 출력용 이름
+     * @param authorizationManager 요청 접근 제어 관리자
+     * @param matchers 적용될 엔드포인트 및 메서드 정보
+     */
     public record RequestAuthorization(
             String name,
             AuthorizationManager<RequestAuthorizationContext> authorizationManager,
             List<DescriptiveRequestMatcher> matchers
     ) {}
 
+    /**
+     * 요청 매처의 정보를 부가적으로 담는 불변 데이터 구조
+     *
+     * @param matcher Spring Security 요청 매처
+     * @param pattern 경로 패턴 (정렬 및 로그 출력용)
+     * @param httpMethod HTTP 메서드 (null이면 전체)
+     */
     private record DescriptiveRequestMatcher(
             RequestMatcher matcher,
             String pattern,
