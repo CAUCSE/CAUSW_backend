@@ -53,8 +53,7 @@ public class SemesterController {
      */
     @PostMapping("/create/next")
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("@security.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "@security.hasRoleGroup(RoleGroup.EXECUTIVES)")
+    @PreAuthorize("@security.hasRoleGroup(RoleGroup.EXECUTIVES)")
     @Operation(summary = "다음 학기 생성(재학 인증 일괄 요청)", description = "다음 학기를 생성합니다. 자동으로 재학 인증도 일괄 요청 됩니다.")
     public void createNextSemester(
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -71,7 +70,4 @@ public class SemesterController {
     ) {
         semesterService.deleteSemester(semesterId);
     }
-
-
-
 }

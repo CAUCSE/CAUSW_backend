@@ -23,7 +23,6 @@ public class SecurityEndpoints {
             of("/api/v1/users/{email}/is-duplicated", GET),
             of("/api/v1/users/{nickname}/is-duplicated-nickname", GET),
             of("/api/v1/users/{studentId}/is-duplicated-student-id", GET),
-            of("/api/v1/users/email"), //FIXME 존재하지 않는 Controller
             of("/api/v1/users/password", PUT),
             of("/api/v1/users/token/update", PUT),
             of("/api/v1/storage/**"),
@@ -48,7 +47,9 @@ public class SecurityEndpoints {
     };
 
     public static final SecurityEndpoint[] CERTIFIED_USER_ENDPOINTS = {
+            of("/api/v1/home", GET),
             of("/api/v1/users/academic-record/export", GET),
+            of("/api/v1/votes/{voteId}", GET),
             of("/api/v1/boards/**"),
             of("/api/v1/calendars/**"),
             of("/api/v1/ceremony/**"),
@@ -59,7 +60,8 @@ public class SecurityEndpoints {
             of("/api/v1/forms/**"),
             of("/api/v1/lockers/**"),
             of("/api/v1/notifications/log/**"),
-            of("/api/v1/posts/**")
+            of("/api/v1/posts/**"),
+            of("/api/v1/semesters/**")
     };
 
     public record SecurityEndpoint(
