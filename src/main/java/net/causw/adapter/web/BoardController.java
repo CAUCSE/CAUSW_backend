@@ -29,7 +29,6 @@ public class BoardController {
 
     @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시판 검색 API(완료)", description = "전체 게시판을 불러오는 api로 관리자 권한을 가진 경우 삭제된 게시판도 확인할 수 있습니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
@@ -48,7 +47,6 @@ public class BoardController {
 
     @GetMapping("/main")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시판 검색 API(완료)", description = "전체 게시판을 불러오는 api로 관리자 권한을 가진 경우 삭제된 게시판도 확인할 수 있습니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
@@ -67,7 +65,6 @@ public class BoardController {
 
     @PostMapping("/check")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시판 이름 중복 체크 API(완료)", description = "게시판 이름 중복 체크 api로 중복된 이름이 존재할 경우 isPresent가 true, 없을 경우 false로 반환됩니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
@@ -81,7 +78,6 @@ public class BoardController {
 
     @PostMapping(value = "/apply")
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "일반 게시판 게시판 신청 API", description = "게시판을 신청하는 API입니다. 권한 정보가 필요 없습니다. 관리자/학생회장/부학생회장일 경우 별도의 신청 절차 없이 바로 일반 게시판이 생성됩니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
@@ -102,8 +98,7 @@ public class BoardController {
     
     @PostMapping(value = "/create")
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "@securityService.isAdminOrPresidentOrVicePresident()")
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
     @Operation(summary = "관리자/학생회장/부학생회장 전용 공지 게시판 생성 API", description = "관리자/학생회장/부학생회장이 별도의 신청 없이 생성할 수 있는 게시판을 만드는 API입니다. 게시판의 이름을 전달 받습니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
@@ -122,8 +117,7 @@ public class BoardController {
 
     @GetMapping(value = "/apply/list")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "@securityService.isAdminOrPresidentOrVicePresident()")
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
     @Operation(summary = "게시판 생성 신청 조회(완료)", description = "게시판 생성 신청 목록을 조회하는 API입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
@@ -139,8 +133,7 @@ public class BoardController {
 
     @GetMapping(value = "/apply/{id}")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "@securityService.isAdminOrPresidentOrVicePresident()")
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
     @Operation(summary = "게시판 생성 신청 단일 조회(완료)", description = "단일 게시판 생성 신청 내역을 조회하는 API입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
@@ -158,8 +151,7 @@ public class BoardController {
 
     @PutMapping(value = "/apply/{applyId}/accept")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "@securityService.isAdminOrPresidentOrVicePresident()")
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
     @Operation(summary = "게시판 생성 신청 승인(완료)", description = "게시판 생성 신청을 승인하는 API입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
@@ -178,8 +170,7 @@ public class BoardController {
 
     @PutMapping(value = "/apply/{applyId}/reject")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "@securityService.isAdminOrPresidentOrVicePresident()")
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
     @Operation(summary = "게시판 생성 신청 거부(완료)", description = "게시판 생성 신청을 거부하는 API입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json")),
@@ -200,7 +191,6 @@ public class BoardController {
 
     @PutMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시판 업데이트 API(완료)", description = "id에는 board id 값을 넣어주세요")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
@@ -225,7 +215,6 @@ public class BoardController {
 
     @DeleteMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시판 삭제 API(완료)", description = "id에는 board id 값을 넣어주세요")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
@@ -249,7 +238,6 @@ public class BoardController {
 
     @PutMapping(value = "/{id}/restore")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "게시판 복구 API(완료)", description = "id에는 board id 값을 넣어주세요")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
@@ -272,7 +260,6 @@ public class BoardController {
 
     @PostMapping("/subscribe/{id}")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "로그인한 사용자의 게시판 알람 설정 켜기"
             , description = "id에는 board id 값을 넣어주세요")
     public BoardSubscribeResponseDto subscribeBoard(
@@ -284,7 +271,6 @@ public class BoardController {
 
     @DeleteMapping("/subscribe/{id}")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "로그인한 사용자의 게시판 알람 설정 끄기"
             , description = "id에는 board id 값을 넣어주세요")
     public BoardSubscribeResponseDto unsubscribeBoard(
@@ -296,8 +282,7 @@ public class BoardController {
 
     @PostMapping("/subscribe")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "@securityService.isAdminOrPresidentOrVicePresident()")
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
     @Operation(summary = "게시판 구독 데이터 생성 API(관리자용/임시)",
             description = "id에는 board id 값을 넣어주세요 <br>" +
                     "기존 게시판들의 구독 여부 저장을 위한 임시 api 입니다. 설정후 삭제 예정이고, 추후에는 공지게시판 생성과 동시에 구독여부도 저장될 예정입니다.")
