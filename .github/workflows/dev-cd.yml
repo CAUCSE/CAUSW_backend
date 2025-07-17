@@ -8,14 +8,9 @@ permissions:
   contents: read
 
 jobs:
-  prepare:
+  global-build:
     name: Prepare Build in Github Actions
     runs-on: ubuntu-22.04
-    outputs:
-      root_changed: ${{ steps.filter.outputs.root }}
-      global_changed: ${{ steps.filter.outputs.global }}
-      app_main_changed: ${{ steps.filter.outputs.app_main }}
-      app_chat_changed: ${{ steps.filter.outputs.app_chat }}
 
     steps:
       # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
@@ -26,29 +21,7 @@ jobs:
       - name: Setup JDK and Gradle
         uses: ./.github/actions/setup-jdk-gradle
 
-      # 변경된 모듈 확인
-      - name: Check which modules changed
-        id: filter
-        run: |
-          echo "root=false" >> $GITHUB_OUTPUT
-          echo "global=false" >> $GITHUB_OUTPUT
-          echo "app_main=false" >> $GITHUB_OUTPUT
-          echo "app_chat=false" >> $GITHUB_OUTPUT
-          
-          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -Eq "^(build\.gradle|settings\.gradle|gradle/)"; then
-            echo "root=true" >> $GITHUB_OUTPUT
-          fi
-          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^global/"; then
-            echo "global=true" >> $GITHUB_OUTPUT
-          fi
-          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^app-main/"; then
-            echo "app_main=true" >> $GITHUB_OUTPUT
-          fi
-          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^app-chat/"; then
-            echo "app_chat=true" >> $GITHUB_OUTPUT
-          fi
-
-      # global 모듈 변경 시 빌드
+      # global 모듈 빌드
       - name: Build global module
         run: ./gradlew clean :global:build
 
@@ -61,10 +34,9 @@ jobs:
 
 
   app-main-build:
-    needs: prepare
+    needs: global-build
     name: Build & Deploy app-main Module in Github Actions
     runs-on: ubuntu-22.04
-    if: needs.prepare.outputs.root_changed == 'true' || needs.prepare.outputs.global_changed == 'true' || needs.prepare.outputs.app_main_changed == 'true'
 
     steps:
       # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
@@ -189,16 +161,15 @@ jobs:
           username: ${{ secrets.EC2_USER_DEV }}
           script: |
             sudo fuser -k -n tcp 8080 || true
-            sleep 10
+            sleep 15
             APP_MAIN_JAR=$(ls /home/ubuntu/app/app-main/*.jar | tail -n 1)
             sudo nohup java -jar "$APP_MAIN_JAR" > /home/ubuntu/app/app-main/nohup.out 2>&1 &
 
 
   app-chat-build:
-    needs: prepare
+    needs: global-build
     name: Build & Deploy app-chat Module in Github Actions
     runs-on: ubuntu-22.04
-    if: needs.prepare.outputs.root_changed == 'true' || needs.prepare.outputs.global_changed == 'true' || needs.prepare.outputs.app_chat_changed == 'true'
 
     steps:
       # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
@@ -290,49 +261,38 @@ jobs:
           username: ${{ secrets.EC2_USER_DEV }}
           script: |
             sudo fuser -k -n tcp 8081 || true
-            sleep 10
+            sleep 15
             APP_CHAT_JAR=$(ls /home/ubuntu/app/app-chat/*.jar | tail -n 1)
             sudo nohup java -jar "$APP_CHAT_JAR" > /home/ubuntu/app/app-chat/nohup.out 2>&1 &
 
 
   notify:
     name: Discord Notify
-    needs:
-      - app-main-deploy
-      - app-chat-deploy
+    needs: [ app-main-deploy, app-chat-deploy ]
     runs-on: ubuntu-22.04
     if: always()
 
     steps:
-      - name: Discord Notify (Always)
-        uses: sarisia/actions-status-discord@v1
+      - name: Notify Success
+        if: ${{ needs.app-main-deploy.result == 'success' && needs.app-chat-deploy.result == 'success' }}
+        uses: ./.github/actions/discord-notify
         with:
+          status: success
+          branch: ${{ github.ref_name }}
+          sha: ${{ github.sha }}
+          actor: ${{ github.actor }}
+          run_id: ${{ github.run_id }}
           webhook: ${{ secrets.DISCORD_DEPLOY_WEBHOOK_URL_DEV }}
+          role_id: ${{ secrets.DISCORD_BACKEND_ROLE_ID }}
 
-          # ✅ status 자동 감지
-          status: ${{ job.status }}
-
-          # ✅ content: 실패 시 역할 멘션 포함
-          content: >-
-            ${{ job.status == 'success' &&
-                format('`[{0}]` 🎉 배포가 성공적으로 완료됐어요!', github.ref_name)
-            || format('`[{0}]` 🚨 배포 실패! <@&{1}> 확인해주세요.', github.ref_name, secrets.DISCORD_BACKEND_ROLE_ID) }}
-
-          # ✅ title: 브랜치 prefix + 이모지 포함
-          title: >-
-            ${{ job.status == 'success' &&
-                format('✅ [{0}] 배포 성공', github.ref_name)
-            || format('❌ [{0}] 배포 실패', github.ref_name) }}
-
-          # ✅ Embed description
-          description: |
-            🛠 브랜치: `${{ github.ref_name }}`
-            🔖 커밋: `${{ github.sha }}`
-            🙋 작성자: `${{ github.actor }}`
-            🔗 [깃허브 액션 로그 보기](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-
-          # ✅ 상태별 색상
-          color: ${{ job.status == 'success' && '0x00ff00' || '0xff0000' }}
-
-          # ✅ 봇 이름 커스터마이징
-          username: "🚀 배포 봇"
+      - name: Notify Failure
+        if: ${{ needs.app-main-deploy.result != 'success' || needs.app-chat-deploy.result != 'success' }}
+        uses: ./.github/actions/discord-notify
+        with:
+          status: failure
+          branch: ${{ github.ref_name }}
+          sha: ${{ github.sha }}
+          actor: ${{ github.actor }}
+          run_id: ${{ github.run_id }}
+          webhook: ${{ secrets.DISCORD_DEPLOY_WEBHOOK_URL_DEV }}
+          role_id: ${{ secrets.DISCORD_BACKEND_ROLE_ID }}
