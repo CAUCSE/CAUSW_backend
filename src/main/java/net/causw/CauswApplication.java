@@ -16,6 +16,9 @@ import java.util.TimeZone;
         @Server(url = "/", description = "Default Server URL")
 })
 @SpringBootApplication
+@EnableJpaAuditing
+@EnableScheduling
+@EnableAsync
 public class CauswApplication {
 
     static {

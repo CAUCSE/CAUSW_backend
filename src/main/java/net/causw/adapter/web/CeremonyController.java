@@ -33,6 +33,7 @@ public class CeremonyController {
 
     @PostMapping( consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(value = HttpStatus.CREATED)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "사용자 본인의 경조사 생성",
             description = "사용자 본인의 경조사 생성합니다.")
     public CeremonyResponseDto createCeremony(
@@ -45,6 +46,7 @@ public class CeremonyController {
 
     @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "사용자 본인의 경조사 신청 내역 조회",
             description = "사용자 본인의 경조사 신청 내역을 조회합니다.")
     public Page<CeremonyNotificationDto> getCeremonies(
@@ -58,7 +60,8 @@ public class CeremonyController {
 
     @GetMapping("/list/await")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "@securityService.isAdminOrPresidentOrVicePresident()")
     @Operation(summary = "전체 경조사 승인 대기 목록 조회(관리자용)",
             description = "전체 경조사 승인 대기 목록을 조회합니다.")
     public Page<CeremonyNotificationDto> getAllUserAwaitingCeremonyPage(
@@ -69,6 +72,7 @@ public class CeremonyController {
 
     @GetMapping("/{ceremonyId}")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "유저 경조사 정보 상세 보기",
             description = "유저 경조사 정보를 조회합니다.")
     public CeremonyResponseDto getUserCeremonyInfo(
@@ -79,7 +83,8 @@ public class CeremonyController {
 
     @PutMapping("/state")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "@securityService.isAdminOrPresidentOrVicePresident()")
     @Operation(summary = "유저 경조사 승인 상태 변경(승인/거부)(관리자용)",
             description = "유저 경조사 승인 상태를 변경합니다.")
     public CeremonyResponseDto updateUserCeremonyStatus(
@@ -90,6 +95,7 @@ public class CeremonyController {
 
     @PutMapping("/state/close/{ceremonyId}")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "유저 경조사 신청 취소(사용자용)",
             description = "유저가 본인의 경조사 승인 상태를 close로 변경합니다.")
     public CeremonyResponseDto closeUserCeremonyStatus(
@@ -101,6 +107,7 @@ public class CeremonyController {
 
     @PostMapping("/notification-setting")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "유저 경조사 알람 설정 생성",
             description = "유저 경조사 알람 설정을 생성합니다.")
     public CeremonyNotificationSettingResponseDto createCeremonyNotificationSetting(
@@ -113,6 +120,7 @@ public class CeremonyController {
 
     @GetMapping("/notification-setting")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "유저 경조사 알람 설정 조회", description = "유저의 경조사 알람 설정을 조회합니다.")
     public CeremonyNotificationSettingResponseDto getCeremonyNotificationSetting(@AuthenticationPrincipal CustomUserDetails userDetails) {
         return ceremonyService.getCeremonyNotificationSetting(userDetails.getUser());
@@ -120,6 +128,7 @@ public class CeremonyController {
 
     @PutMapping("/notification-setting")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "유저 경조사 알람 설정 수정", description = "유저의 경조사 알람 설정을 수정합니다.")
     public CeremonyNotificationSettingResponseDto updateCeremonyNotificationSetting(
             @AuthenticationPrincipal CustomUserDetails userDetails,

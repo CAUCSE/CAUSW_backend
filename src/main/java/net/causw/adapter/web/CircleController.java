@@ -53,6 +53,7 @@ public class CircleController {
      */
     @GetMapping(value = "/{circleId}")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "동아리 정보 조회 API / findById (완료)", description = "circleId에는 동아리 고유 id 값(PK)을 입력해주세요.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CircleResponseDto.class))),
@@ -72,6 +73,7 @@ public class CircleController {
      */
     @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "전체 동아리 정보 조회 API / findAll (완료)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CircleResponseDto.class, type = "array"))),
@@ -96,6 +98,7 @@ public class CircleController {
      */
     @GetMapping("/{circleId}/boards")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "동아리 소속 게시판 조회 API / findBoards (완료)", description = "circleId에는 동아리 고유 id 값(PK)을 입력해주세요.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CircleBoardsResponseDto.class))),
@@ -123,7 +126,8 @@ public class CircleController {
      */
     @GetMapping(value = "/{circleId}/num-member")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES_AND_CIRCLE_LEADER)")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "@securityService.isAdminOrPresidentOrVicePresidentOrCircleLeader()")
     @Operation(summary = "동아리원 숫자 조회 API / getNumMember (완료)", description = "circleId에는 동아리 고유 id 값(PK)을 입력해주세요.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Long.class))),
@@ -144,7 +148,8 @@ public class CircleController {
      */
     @GetMapping(value = "/{circleId}/users")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES_AND_CIRCLE_LEADER)")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "@securityService.isAdminOrPresidentOrVicePresidentOrCircleLeader()")
     @Operation(summary = "동아리원 상태별 조회 API / getUserList (완료)", description = "circleId에는 동아리 고유 id 값(PK), circleMemberStatus 엔 조회하고자 하는 동아리원의 상태를 입력해주세요.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CircleMemberResponseDto.class), array = @io.swagger.v3.oas.annotations.media.ArraySchema(schema = @Schema(implementation = CircleMemberResponseDto.class)))),
@@ -174,6 +179,7 @@ public class CircleController {
 
     @GetMapping(value = "/{circleId}/memberList")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "모든 동아리원 조회 API(완료)", description = "circleId에는 동아리 고유 id 값(PK)을 입력해주세요.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CircleMemberResponseDto.class), array = @io.swagger.v3.oas.annotations.media.ArraySchema(schema = @Schema(implementation = CircleMemberResponseDto.class)))),
@@ -203,7 +209,8 @@ public class CircleController {
      */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(value = HttpStatus.CREATED)
-    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "@securityService.isAdminOrPresidentOrVicePresident()")
     @Operation(
             summary = "동아리 생성 API / create (완료)",
             description = "생성하고자 하는 동아리의 정보를 입력해주세요. 동아리장의 권한은 일반 유저만 가능하며, 생성 요청은 관리자(admin), 학생회장(president)만 가능합니다."
@@ -241,7 +248,8 @@ public class CircleController {
      */
     @PutMapping(value = "/{circleId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES_AND_CIRCLE_LEADER)")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "@securityService.isAdminOrPresidentOrVicePresidentOrCircleLeader()")
     @Operation(
             summary = "동아리 수정 API / update (완료)",
             description = "circleId 에는 수정하고자 하는 동아리의 UUID 형식의 ID String 값을 입력해주세요.\n" +
@@ -282,7 +290,8 @@ public class CircleController {
      */
     @DeleteMapping(value = "/{circleId}")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES_AND_CIRCLE_LEADER)")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "@securityService.isAdminOrPresidentOrVicePresidentOrCircleLeader()")
     @Operation(
             summary = "동아리 삭제 API",
             description = "동아리 삭제 API 입니다.\n" +
@@ -317,6 +326,7 @@ public class CircleController {
 
     @PostMapping(value = "/{circleId}/applications")
     @ResponseStatus(value = HttpStatus.CREATED)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(
             summary = "사용자 동아리 지원 API",
             description = "사용자가 동아리에 지원하는 API 입니다.\n" +
@@ -356,6 +366,7 @@ public class CircleController {
      */
     @GetMapping(value = "/{circleName}/is-duplicated")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "동아리 이름 중복 검사 API",
             description = "동아리 이름 중복 검사 API 입니다. 이름 기준으로 검사하면 String 형식으로 동아리 이름을 넣어주세요.")
     @ApiResponse(
@@ -377,6 +388,7 @@ public class CircleController {
      */
     @PutMapping(value = "/{circleId}/users/leave")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(
             summary = "동아리 탈퇴 API",
             description = "현재 로그인 된 유저 기준으로 동아리에서 탈퇴합니다.\n" +
@@ -405,7 +417,8 @@ public class CircleController {
      */
     @PutMapping(value = "/{circleId}/users/{userId}/drop")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES_AND_CIRCLE_LEADER)")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "@securityService.isAdminOrPresidentOrVicePresidentOrCircleLeader()")
     @Operation(summary = "동아리원 제거 API",
             description = "동아리원을 제거하는 API 입니다. userId 에는 제거하려는 유저를, circleId 에는 타깃 동아리를 넣어주세요.")
     @ApiResponses(value = {
@@ -444,7 +457,8 @@ public class CircleController {
      */
     @PutMapping(value = "/applications/{applicationId}/accept")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES_AND_CIRCLE_LEADER)")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "@securityService.isAdminOrPresidentOrVicePresidentOrCircleLeader()")
     @Operation(summary = "동아리 가입 신청 수락 API",
             description = "동아리 가입 신청에 대해 수락하는 API 입니다.\n" +
                     "동아리 가입 신청 건수 고유의 ID 값(PK)을 입력해주세요.\n" +
@@ -476,7 +490,8 @@ public class CircleController {
      */
     @PutMapping(value = "/applications/{applicationId}/reject")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES_AND_CIRCLE_LEADER)")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "@securityService.isAdminOrPresidentOrVicePresidentOrCircleLeader()")
     @Operation(summary = "동아리 가입 신청 거절 API",
             description = "동아리 가입 신청에 대해 거절하는 API 입니다.\n" +
                     "동아리 가입 신청 건수 고유의 ID 값(PK)을 입력해주세요.\n" +
@@ -509,7 +524,8 @@ public class CircleController {
      */
     @PutMapping(value = "/{circleId}/users/{userId}/restore")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES_AND_CIRCLE_LEADER)")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "@securityService.isAdminOrPresidentOrVicePresidentOrCircleLeader()")
     @Operation(summary = "추방된 동아리원 복구 API",
             description = "추방된 동아리원을 복구 시키는 API 입니다. 복구 시 동아리원으로 바꿔줍니다.\n" +
                     "해당하는 동아리 고유의 ID 값(PK)과 복구하려는 유저 고유의 ID 값(PK)를 입력해주세요.\n" +
@@ -539,7 +555,8 @@ public class CircleController {
 
     @GetMapping(value = "/{circleId}/users/excel")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES_AND_CIRCLE_LEADER)")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "@securityService.isAdminOrPresidentOrVicePresidentOrCircleLeader()")
     @Operation(
             summary = "동아리원 엑셀 다운로드 API",
             description = "동아리원 정보를 엑셀로 다운로드 하는 API 입니다.\n" +
@@ -555,7 +572,8 @@ public class CircleController {
 
     @PostMapping(value = "/{circleId}/apply/application")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@security.hasRole(@Role.LEADER_CIRCLE)")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "@securityService.isCircleLeader()")
     @Operation(
             summary = "동아리 가입 신청서 생성/수정 API",
             description = "동아리 가입 신청서를 수정하는 API 입니다.\n" +
@@ -572,6 +590,7 @@ public class CircleController {
 
     @GetMapping(value = "/{circleId}/apply/application/is-exist")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(
             summary = "동아리 가입 신청서 존재 여부 확인 API",
             description = "현재 모집 중인 동아리 가입 신청서가 존재하는지 확인하는 API 입니다.\n" +
@@ -586,6 +605,7 @@ public class CircleController {
 
     @GetMapping(value = "/{circleId}/apply/application")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(
             summary = "동아리 가입 신청서 조회 API",
             description = "동아리 가입 신청서를 조회하는 API 입니다.\n" +
@@ -600,7 +620,8 @@ public class CircleController {
 
     @GetMapping(value = "/{circleId}/apply/application/all")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES_AND_CIRCLE_LEADER)")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "@securityService.isAdminOrPresidentOrVicePresidentOrCircleLeader()")
     @Operation(
             summary = "모든 동아리 가입 신청서 페이징 조회 API",
             description = "모든 동아리 가입 신청서를 조회하는 API 입니다.\n" +
