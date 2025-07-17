@@ -18,7 +18,6 @@ import java.time.LocalDateTime;
 
 @Slf4j
 @Configuration
-@EnableScheduling
 @RequiredArgsConstructor
 public class BatchScheduler {
 
