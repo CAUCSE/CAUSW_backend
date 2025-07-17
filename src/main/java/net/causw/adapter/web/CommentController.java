@@ -38,6 +38,7 @@ public class CommentController {
 
     @GetMapping(params = "postId")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "댓글 조회 API(완료)", description = "해당 게시글의 전체 댓글을 불러오는 api입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json")),
@@ -69,6 +70,7 @@ public class CommentController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "댓글 생성 API(완료)", description = "댓글을 생성하는 api입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Created", content = @Content(mediaType = "application/json")),
@@ -98,6 +100,7 @@ public class CommentController {
 
     @PutMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "댓글 수정 API(완료)", description = "댓글을 수정하는 api입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json")),
@@ -135,6 +138,7 @@ public class CommentController {
 
     @DeleteMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "댓글 삭제 API(완료)", description = "댓글을 삭제하는 api입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json")),
@@ -168,6 +172,7 @@ public class CommentController {
 
     @PostMapping(value = "/{id}/like")
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "댓글 좋아요 저장 API(완료)", description = "특정 유저가 특정 댓글에 좋아요를 누른 걸 저장하는 Api 입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Created", content = @Content(mediaType = "application/json")),
@@ -190,6 +195,7 @@ public class CommentController {
 
     @PostMapping("/subscribe/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "로그인한 사용자의 댓글 알람 설정 켜기"
             , description = "id에는 comment id 값을 넣어주세요")
     public CommentSubscribeResponseDto subscribeComment(
@@ -201,6 +207,7 @@ public class CommentController {
 
     @DeleteMapping("/subscribe/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "로그인한 사용자의 댓글 알람 설정 끄기"
             , description = "id에는 comment id 값을 넣어주세요")
     public CommentSubscribeResponseDto unsubscribeComment(
