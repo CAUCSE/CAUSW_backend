@@ -1,13 +1,13 @@
 package net.causw.app.main.infrastructure.security;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -22,14 +22,13 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
-@EnableMethodSecurity(prePostEnabled = true)
-@ConditionalOnProperty(value = "spring.deploy.prod", havingValue = "false", matchIfMissing = true)
 public class WebSecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final CustomAuthorizationManager authorizationManager;
 
     @Bean
     public PasswordEncoder getPasswordEncoder() {
@@ -45,42 +44,25 @@ public class WebSecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
                 .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
-                        .requestMatchers(
-                                "/",
-                                "/css/**",
-                                "/images/**",
-                                "/js/**",
-                                "/favicon.ico",
-                                "/h2-console/**",
-                                "/api/v1/users/sign-in",
-                                "/api/v1/users/sign-up",
-                                "/healthy",
-                                "/api/v1/users/admissions/apply",
-                                "/api/v1/users/{email}/is-duplicated",
-                                "/api/v1/users/{nickname}/is-duplicated-nickname",
-                                "/api/v1/users/{studentId}/is-duplicated-student-id",
-                                "/api/v1/users/email",
-                                "/api/v1/users/password",
-                                "/api/v1/users/token/update",
-                                "/api/v1/storage/**",
-                                "/api/v1/users/password/find",
-                                "/api/v1/users/user-id/find",
-                                "/swagger-ui/**",
-                                "/api/v1/fcm/send",
-                                "/v3/api-docs/**",
-                                "/actuator/**"
-                        ).permitAll()
-                        .anyRequest().authenticated()
+                .authorizeHttpRequests(registry -> {
+                            registry.requestMatchers(CorsUtils::isPreFlightRequest).permitAll();
+                            RequestAuthorizationBinder.with(registry)
+                                    .bind("Public", authorizationManager.permitAll(), SecurityEndpoints.PUBLIC_ENDPOINTS)
+                                    .bind("Authenticated", authorizationManager.authenticated(), SecurityEndpoints.AUTHENTICATED_ENDPOINTS)
+                                    .bind("Active", authorizationManager.isActiveUser(), SecurityEndpoints.ACTIVE_USER_ENDPOINTS)
+                                    .bind("Certified", authorizationManager.isCertifiedUser(), SecurityEndpoints.CERTIFIED_USER_ENDPOINTS)
+                                    .sort(true)
+                                    .log(true)
+                                    .apply();
+                            registry.anyRequest().authenticated();
+                        }
                 )
                 .exceptionHandling(exceptionHandling -> exceptionHandling
-                        .authenticationEntryPoint(jwtAuthenticationEntryPoint))
+                        .authenticationEntryPoint(customAuthenticationEntryPoint))
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
@@ -93,5 +75,10 @@ public class WebSecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().requestMatchers("/webjars/**");
     }
 }

@@ -1,146 +1,98 @@
 package net.causw.app.main.infrastructure.security;
 
 import lombok.RequiredArgsConstructor;
-import net.causw.app.main.repository.form.FormRepository;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.infrastructure.security.userdetails.CustomUserDetails;
-import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.infrastructure.aop.annotation.MeasureTime;
+import net.causw.app.main.domain.model.enums.user.RoleGroup;
 import net.causw.app.main.domain.model.enums.user.Role;
-import net.causw.app.main.domain.model.enums.user.UserState;
+import net.causw.global.constant.MessageUtil;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Collection;
 
-@Service
+/**
+ * 현재 인증된 사용자(SecurityContext 기준)의 권한, 상태 등을 조회하기 위한 Service 클래스
+ * <p>
+ * 도메인 기반 비즈니스 로직은 {@link SecurityHelper}로 위임하고,
+ * 이 클래스에서는 인증 객체 조회, 상태 분기 처리 등의 역할만 수행
+ */
+@MeasureTime
+@Service("security")
 @RequiredArgsConstructor
 public class SecurityService {
-    private final FormRepository formRepository;
 
-    public boolean isActiveAndNotNoneUser() {
+    /**
+     * 현재 인증된 사용자가 주어진 Role을 보유하고 있는지 확인
+     * @param role 문자열 형태의 역할 (예: "ADMIN", "VICE_PRESIDENT")
+     */
+    public boolean hasRole(String role) {
+        return SecurityHelper.hasRole(getAuthorities(), Role.of(role));
+    }
+
+    /**
+     * 현재 인증된 사용자가 주어진 Role을 보유하고 있는지 확인
+     * @param role Role enum (예: Role.ADMIN, Role.VICE_PRESIDENT)
+     */
+    public boolean hasRole(Role role) {
+        return SecurityHelper.hasRole(getAuthorities(), role);
+    }
+
+    /**
+     * 현재 인증된 사용자가 주어진 RoleGroup에 속하는 권한을 보유하고 있는지 확인
+     * @param roleGroup RoleGroup enum (예: RoleGroup.EXECUTIVES)
+     */
+    public boolean hasRoleGroup(RoleGroup roleGroup) {
+        return SecurityHelper.hasRoleGroup(getAuthorities(), roleGroup);
+    }
+
+    /**
+     * 현재 인증된 사용자가 활성 상태인지 확인
+     * <p>
+     * 사용자 상태(UserState)가 ACTIVE고
+     * NONE 역할만을 가지고 있지 않을 경우 활성 상태로 판단
+     *
+     * @return true면 활성 사용자
+     */
+    public boolean isActiveUser() {
+        return SecurityHelper.isStateActive(getUserDetails()) && !SecurityHelper.hasRoleOnlyNone(getAuthorities());
+    }
+
+    /**
+     * 현재 인증된 사용자가 학적 인증된 사용자(+ 활성 상태)인지 확인
+     * <p>
+     * 사용자 상태(UserState)가 ACTIVE고
+     * NONE 역할만을 가지고 있지 않고
+     * 학적 상태(AcademicStatus)가 UNDETERMINED가 아닌 경우 학적 인증된 사용자로 판단
+     * <p>
+     * 단, 특정 권한 그룹에 속한 경우 학적 상태 검사를 건너뜀
+     * 
+     * @return true면 학적 인증 사용자
+     */
+    public boolean isCertifiedUser() {
+        return isActiveUser() && SecurityHelper.isAcademicRecordCertified(getUserDetails());
+    }
+
+    private Authentication getAuthentication() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return false;
-        }
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        boolean isJustRoleNone = userDetails.getAuthorities().stream()
-                .allMatch(authority -> authority.getAuthority().equals("ROLE_NONE"));
-
-        return userDetails.getUserState() == UserState.ACTIVE && !isJustRoleNone;
-    }
-
-    public boolean isAcademicRecordCertified() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return false;
-        }
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-
-        User user = userDetails.getUser();
-
-        Set<Role> userRoleSet = user.getRoles();
-        if (userRoleSet.contains(Role.ADMIN) ||
-                userRoleSet.contains(Role.PROFESSOR) ||
-                userRoleSet.contains(Role.PRESIDENT) ||
-                userRoleSet.contains(Role.VICE_PRESIDENT)
-        ) {
-            return true;
+        if (authentication == null || !authentication.isAuthenticated() || authentication instanceof AnonymousAuthenticationToken) {
+            throw new AccessDeniedException(MessageUtil.ACCESS_DENIED);
         }
 
-        AcademicStatus academicStatus = user.getAcademicStatus();
-
-        if (academicStatus == null) {
-            return false;
-        } else return !academicStatus.equals(AcademicStatus.UNDETERMINED);
+        return authentication;
     }
 
-    public boolean isActiveAndNotNoneUserAndAcademicRecordCertified() {
-        return isActiveAndNotNoneUser() && isAcademicRecordCertified();
+    private CustomUserDetails getUserDetails() {
+        return (CustomUserDetails) getAuthentication().getPrincipal();
     }
 
-    public boolean isAdmin() {
-        Set<String> userRoleSet = getUserRoleSet();
-
-        if (userRoleSet != null) {
-            return userRoleSet.contains(Role.ADMIN.getValue());
-        }
-        return false;
+    private Collection<? extends GrantedAuthority> getAuthorities() {
+        return getAuthentication().getAuthorities();
     }
-
-    public boolean isAdminOrPresidentOrVicePresident() {
-        Set<String> userRoleSet = getUserRoleSet();
-
-        if (userRoleSet != null) {
-            return userRoleSet.contains(Role.ADMIN.getValue()) ||
-                    userRoleSet.contains(Role.PRESIDENT.getValue()) ||
-                    userRoleSet.contains(Role.VICE_PRESIDENT.getValue());
-        }
-        return false;
-    }
-
-    public boolean isAdminOrPresidentOrVicePresidentOrCircleLeader() {
-        Set<String> userRoleSet = getUserRoleSet();
-
-        if (userRoleSet != null) {
-            return userRoleSet.contains(Role.ADMIN.getValue()) ||
-                    userRoleSet.contains(Role.PRESIDENT.getValue()) ||
-                    userRoleSet.contains(Role.VICE_PRESIDENT.getValue()) ||
-                    userRoleSet.contains(Role.LEADER_CIRCLE.getValue());
-        }
-        return false;
-    }
-
-    public boolean isCircleLeader() {
-        Set<String> userRoleSet = getUserRoleSet();
-
-        if (userRoleSet != null) {
-            return userRoleSet.contains(Role.LEADER_CIRCLE.getValue());
-        }
-        return false;
-    }
-
-    public boolean isAbleToLeave() {
-        Set<String> userRoleSet = getUserRoleSet();
-
-        if (userRoleSet != null) {
-            return userRoleSet.contains(Role.COMMON.getValue()) ||
-                    userRoleSet.contains(Role.PROFESSOR.getValue());
-        }
-        return false;
-    }
-
-    public boolean isSpecialPrivileged() {
-        Set<String> userRoleSet = getUserRoleSet();
-
-        if (userRoleSet != null) {
-            return userRoleSet.contains(Role.ADMIN.getValue()) ||
-                    userRoleSet.contains(Role.PRESIDENT.getValue()) ||
-                    userRoleSet.contains(Role.VICE_PRESIDENT.getValue()) ||
-                    userRoleSet.contains(Role.COUNCIL.getValue()) ||
-                    userRoleSet.contains(Role.LEADER_CIRCLE.getValue()) ||
-                    userRoleSet.contains(Role.LEADER_1.getValue()) ||
-                    userRoleSet.contains(Role.LEADER_2.getValue()) ||
-                    userRoleSet.contains(Role.LEADER_3.getValue()) ||
-                    userRoleSet.contains(Role.LEADER_4.getValue()) ||
-                    userRoleSet.contains(Role.LEADER_ALUMNI.getValue());
-        }
-        return false;
-    }
-
-    private Set<String> getUserRoleSet() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return null;
-        }
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-
-        return userDetails.getUser().getRoles()
-                .stream()
-                .map(Role::getValue)
-                .collect(Collectors.toSet());
-    }
-
 }

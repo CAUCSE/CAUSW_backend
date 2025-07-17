@@ -32,8 +32,7 @@ public class UserAcademicRecordApplicationController {
 
     @GetMapping("/export")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "@securityService.isAdminOrPresidentOrVicePresident()")
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
     @Operation(summary = "학적 정보 엑셀 파일로 내보내기(관리자용)",
             description = "학적 정보를 엑셀 파일로 내보냅니다.")
     public void exportUserAcademicRecord(
@@ -44,7 +43,6 @@ public class UserAcademicRecordApplicationController {
 
     @GetMapping("/semester/current")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
     @Operation(summary = "현재 학기 조회",
             description = "현재 학기를 조회합니다.")
     public CurrentSemesterResponseDto getCurrentSemesterYearAndType() {
@@ -58,8 +56,7 @@ public class UserAcademicRecordApplicationController {
      */
     @GetMapping("/list/active-users")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and " +
-            "@securityService.isAdminOrPresidentOrVicePresident()")
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
     @Operation(summary = "전체 유저의 학적 정보 목록 조회(관리자용)",
             description = "전체 유저의 학적 정보 목록을 조회합니다.")
     public Page<UserAcademicRecordListResponseDto> getAllUserAcademicRecordPage(
@@ -75,8 +72,7 @@ public class UserAcademicRecordApplicationController {
      */
     @GetMapping("/list/await")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and " +
-            "@securityService.isAdminOrPresidentOrVicePresident()")
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
     @Operation(summary = "전체 학적 인증 승인 대기 목록 조회(관리자용)",
             description = "전체 학적 인증 승인 대기 목록 조회합니다.")
     public Page<UserAcademicRecordApplicationListResponseDto> getAllUserAwaitingAcademicRecordPage(
@@ -92,8 +88,7 @@ public class UserAcademicRecordApplicationController {
      */
     @GetMapping("/record/{userId}")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and " +
-            "@securityService.isAdminOrPresidentOrVicePresident()")
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
     @Operation(summary = "유저 학적 정보 상세 보기(관리자용)",
             description = "유저 학적 정보 상세를 조회합니다.")
     public UserAcademicRecordInfoResponseDto getUserAcademicRecordInfo(
@@ -110,8 +105,7 @@ public class UserAcademicRecordApplicationController {
      */
     @PutMapping("/record/{userId}")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and " +
-            "@securityService.isAdminOrPresidentOrVicePresident()")
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
     @Operation(summary = "유저 학적 정보 노트 변경(관리자용)",
             description = "유저 학적 정보 노트를 변경합니다.")
     public UserAcademicRecordInfoResponseDto updateUserAcademicRecordNote(
@@ -129,8 +123,7 @@ public class UserAcademicRecordApplicationController {
      */
     @GetMapping("/application/{userId}/{applicationId}")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and " +
-            "@securityService.isAdminOrPresidentOrVicePresident()")
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
     @Operation(summary = "유저 학적 승인 요청 상세 보기(관리자용)",
             description = "유저 학적 승인 요청 상세를 조회합니다.")
     public UserAcademicRecordApplicationInfoResponseDto getUserAcademicRecordApplicationInfo(
@@ -148,8 +141,7 @@ public class UserAcademicRecordApplicationController {
      */
     @PutMapping("/update")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and " +
-            "@securityService.isAdminOrPresidentOrVicePresident()")
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
     @Operation(summary = "유저 학적 정보 상태 변경(관리자용)",
             description = "유저 학적 정보 상태를 변경합니다.")
     public UserAcademicRecordInfoResponseDto updateUserAcademicStatus(
@@ -167,8 +159,7 @@ public class UserAcademicRecordApplicationController {
      */
     @PutMapping("/application/admin")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser() and " +
-            "@securityService.isAdminOrPresidentOrVicePresident()")
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
     @Operation(summary = "유저 학적 인증 승인 상태 변경(승인/거부)(관리자용)",
             description = "유저 학적 인증 승인 상태를 변경합니다.")
     public UserAcademicRecordApplicationResponseDto updateUserAcademicRecordApplicationStatus(
@@ -184,7 +175,6 @@ public class UserAcademicRecordApplicationController {
      */
     @GetMapping("current")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
     @Operation(summary = "사용자 본인의 학적 증빙 상태 조회",
             description = "사용자 본인의 학적 증빙 상태를 조회합니다.")
     public AcademicStatus getCurrentUserAcademicRecord(
@@ -199,7 +189,6 @@ public class UserAcademicRecordApplicationController {
      */
     @GetMapping("current/not-accepted")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
     @Operation(summary = "사용자 본인의 학적 증빙 제출 서류 조회(승인 대기/거절 중인 것만)",
             description = "사용자 본인의 대기/거절 중인 학적 증빙 제출 서류를 조회합니다.")
     public CurrentUserAcademicRecordApplicationResponseDto getCurrentUserAcademicRecordApplication(
@@ -217,7 +206,6 @@ public class UserAcademicRecordApplicationController {
      */
     @PostMapping(value = "/application/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(value = HttpStatus.CREATED)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
     @Operation(summary = "사용자 본인의 학적 증빙 서류 제출",
             description = "사용자 본인의 학적 증빙 서류를 제출합니다.")
     public UserAcademicRecordApplicationResponseDto createUserAcademicRecordApplication(

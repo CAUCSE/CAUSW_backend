@@ -24,7 +24,6 @@ public class NotificationLogController {
     @GetMapping("/general")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "유저에게 온 일반 알람 조회", description = "유저의 일반 알림을 조회합니다.")
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     public Page<NotificationResponseDto> getGeneralNotification(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum
@@ -34,7 +33,6 @@ public class NotificationLogController {
 
     @GetMapping("/ceremony")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "유저에게 온 경조사 알람 조회", description = "유저의 경조사 알람을 조회합니다.")
     public Page<NotificationResponseDto> getCeremonyNotification(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -48,7 +46,6 @@ public class NotificationLogController {
     @Operation(summary = "유저에게 온 일반 알람 조회"
             , description = "유저의 일반 알림을 조회합니다. <br>" +
             "해당 api는 웹상의 사이드 바 형태의 읽지 않은 알람 4개를 표시할 때 사용됩니다.")
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     public List<NotificationResponseDto> getGeneralNotificationTop4(
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
@@ -60,7 +57,6 @@ public class NotificationLogController {
     @Operation(summary = "유저에게 온 경조사 알람 조회"
             , description = "유저의 경조사 알림을 조회합니다. <br>" +
             "해당 api는 웹상의 사이드 바 형태의 읽지 않은 알람 4개를 표시할 때 사용됩니다.")
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     public List<NotificationResponseDto> getCeremonyNotificationTop4(
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
@@ -71,7 +67,6 @@ public class NotificationLogController {
 
     @PostMapping("/isRead/{id}")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "유저에게 온 알람 읽음 여부 변경",
             description = "유저의 알람 조회 여부를 참으로 변경합니다<br> " +
             "id에는 notification_log id를 넣어주세요")
