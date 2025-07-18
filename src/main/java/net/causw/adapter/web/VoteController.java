@@ -65,6 +65,7 @@ public class VoteController {
 
     @GetMapping("/{voteId}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUser()")
     @Operation(summary = "투표 조회", description = "특정 투표에 대한 정보를 조회합니다.")
     public ResponseEntity<VoteResponseDto> getVoteById(
             @PathVariable("voteId") String voteId, // 파라미터 이름 명시

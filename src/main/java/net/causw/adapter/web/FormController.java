@@ -30,6 +30,7 @@ public class FormController {
 
     @PutMapping("/{formId}/set-closed")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "신청서 마감 여부 설정", description = "신청서의 마감 여부를 설정합니다.")
     public void setFormIsClosed(
             @PathVariable(name = "formId") String formId,
@@ -41,6 +42,7 @@ public class FormController {
 
     @GetMapping("/{formId}/can-reply")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "신청서 응답 가능 여부 조회", description = "신청서 응답이 가능한지 여부를 조회합니다.")
     public Boolean getCanReplyToPostForm(
             @PathVariable(name = "formId") String formId,
@@ -52,6 +54,7 @@ public class FormController {
     @GetMapping("/{formId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "신청서 조회", description = "신청서를 조회합니다.")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     public FormResponseDto getForm(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable(name = "formId") String formId
@@ -62,6 +65,7 @@ public class FormController {
     @PostMapping("/{formId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "신청서 응답 작성", description = "신청서 응답을 작성합니다.")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     public void replyForm(
             @PathVariable(name = "formId") String formId,
             @Valid @RequestBody FormReplyRequestDto formReplyRequestDto,
@@ -73,6 +77,7 @@ public class FormController {
     @GetMapping("/{formId}/results")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "신청서 결과 전체 페이징 조회", description = "신청서 결과 전체를 페이징으로 조회합니다. 게시글의 신청서는 게시글 작성자만, 동아리 신청서는 동아리장만 조회가 가능합니다.")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     public ReplyPageResponseDto findAllReplyPageByForm(
             @PathVariable(name = "formId") String formId,
             @ParameterObject Pageable pageable,
@@ -84,6 +89,7 @@ public class FormController {
     @GetMapping("/{formId}/summary")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "신청서 결과 요약 조회", description = "신청서 결과를 요약 조회합니다.")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     public List<QuestionSummaryResponseDto> findSummaryReply(
             @PathVariable(name = "formId") String formId,
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -94,7 +100,8 @@ public class FormController {
     @GetMapping("/{userId}/{circleId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "동아리 신청서 답변 유저별 조회", description = "각 유저의 동아리 신청서에 대한 답변을 조회합니다.")
-    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES_AND_CIRCLE_LEADER)")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
+            "@securityService.isAdminOrPresidentOrVicePresidentOrCircleLeader()")
     public List<UserReplyResponseDto> findReplyByUserAndCircle(
             @PathVariable(name = "userId") String userId,
             @PathVariable(name = "circleId") String circleId
@@ -105,6 +112,7 @@ public class FormController {
     @GetMapping("/{formId}/export")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "신청서 결과 엑셀 다운로드", description = "신청서 결과를 엑셀로 다운로드합니다.")
+    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     public void exportFormResult(
             @PathVariable(name = "formId") String formId,
             @AuthenticationPrincipal CustomUserDetails userDetails,

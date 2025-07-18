@@ -15,14 +15,14 @@ import java.time.LocalDateTime;
 
 @Slf4j
 @Component
-public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
+public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
 
         //디폴트 오류처리 설정
-        ErrorCode errorCode = ErrorCode.API_NOT_ACCESSIBLE;
-        String message = MessageUtil.API_NOT_ACCESSIBLE;
+        ErrorCode errorCode = ErrorCode.INVALID_JWT;
+        String message = MessageUtil.INVALID_TOKEN;
 
         UnauthorizedException exception = (UnauthorizedException) request.getAttribute("exception");
 
