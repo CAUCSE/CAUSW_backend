@@ -18,19 +18,15 @@ import java.time.LocalDateTime;
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     @Override
-    public void commence(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            AuthenticationException authException
-    ) throws IOException {
+    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
 
-        // 기본 에러코드 및 메시지 설정
+        //디폴트 오류처리 설정
         ErrorCode errorCode = ErrorCode.API_NOT_ACCESSIBLE;
         String message = MessageUtil.API_NOT_ACCESSIBLE;
 
-        Object exceptionAttribute = request.getAttribute("exception");
+        UnauthorizedException exception = (UnauthorizedException) request.getAttribute("exception");
 
-        if (exceptionAttribute instanceof UnauthorizedException exception) {
+        if (exception != null) {
             errorCode = exception.getErrorCode();
             message = exception.getMessage();
         }
@@ -43,17 +39,14 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
             ErrorCode errorCode,
             String message
     ) throws IOException {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json;charset=UTF-8");
-
-        String body = """
-                {
-                    "errorCode" : "%s",
-                    "message" : "%s",
-                    "timeStamp" : "%s"
-                }
-                """.formatted(errorCode.getCode(), message, LocalDateTime.now());
-
-        response.getWriter().println(body);
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.getWriter().println(
+                "{" +
+                        "\"errorCode\" : \"" + errorCode.getCode() + "\"," +
+                        "\"message\" : \"" + message + "\"," +
+                        "\"timeStamp\" : \"" + LocalDateTime.now() + "\"" +
+                        "}"
+        );
     }
 }
