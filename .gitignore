@@ -60,6 +60,7 @@ Dockerfile
 docker-compose.yaml
 deploy_*.sh
 app-*.yaml
+log/
 
 *.pem
 src/main/generated/net/causw/application/dto/util/*Impl.java
