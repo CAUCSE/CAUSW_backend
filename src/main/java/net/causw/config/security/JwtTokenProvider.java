@@ -54,6 +54,7 @@ public class JwtTokenProvider {
 
     public String createRefreshToken() {
         Date now = new Date();
+
         return Jwts.builder()
                 .setExpiration(new Date(now.getTime() + StaticValue.JWT_REFRESH_TOKEN_VALID_TIME))
                 .signWith(SignatureAlgorithm.HS256, this.secretKey)
@@ -63,6 +64,7 @@ public class JwtTokenProvider {
     public Authentication getAuthentication(String token) {
         String userPk = getUserPk(token);
         UserDetails userDetails = userDetailsService.loadUserByUserId(userPk);
+
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 
@@ -73,9 +75,11 @@ public class JwtTokenProvider {
 
     public String resolveToken(HttpServletRequest request) {
         String bearerToken =  request.getHeader("Authorization");
+
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }
+
         return null;
     }
 
@@ -89,10 +93,9 @@ public class JwtTokenProvider {
             }
 
             return true;
-
-        } catch (ExpiredJwtException e) {
+        } catch (ExpiredJwtException exception) {
             throw new UnauthorizedException(ErrorCode.EXPIRED_JWT, MessageUtil.EXPIRED_TOKEN);
-        } catch (JwtException | IllegalArgumentException e) {
+        } catch (JwtException | IllegalArgumentException exception) {
             throw new UnauthorizedException(ErrorCode.INVALID_JWT, MessageUtil.INVALID_TOKEN);
         }
     }
