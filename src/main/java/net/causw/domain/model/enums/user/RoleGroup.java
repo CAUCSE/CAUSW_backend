@@ -34,7 +34,7 @@ public enum RoleGroup {
             Role.PROFESSOR
     )),
 
-    PRIVILEGED_MEMBERS(Set.of( // 특권 계층
+    OPERATIONS_TEAM(Set.of( // 운영진
             Role.ADMIN,
             Role.PRESIDENT,
             Role.VICE_PRESIDENT,
@@ -55,6 +55,6 @@ public enum RoleGroup {
         public static final RoleGroup EXECUTIVES_AND_PROFESSOR = RoleGroup.EXECUTIVES_AND_PROFESSOR;
         public static final RoleGroup EXECUTIVES_AND_CIRCLE_LEADER = RoleGroup.EXECUTIVES_AND_CIRCLE_LEADER;
         public static final RoleGroup CAN_LEAVE = RoleGroup.CAN_LEAVE;
-        public static final RoleGroup PRIVILEGED_MEMBERS = RoleGroup.PRIVILEGED_MEMBERS;
+        public static final RoleGroup OPERATIONS_TEAM = RoleGroup.OPERATIONS_TEAM;
     }
 }
