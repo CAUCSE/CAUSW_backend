@@ -20,13 +20,13 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
 
-        //디폴트 오류처리 설정
-        ErrorCode errorCode = ErrorCode.API_NOT_ACCESSIBLE;
-        String message = MessageUtil.API_NOT_ACCESSIBLE;
+        // Front의 Request Header가 Authorization: undefined 시 JWT 재발급 요청을 위한 에러 코드를 반환합니다.
+        ErrorCode errorCode = ErrorCode.INVALID_JWT;
+        String message = MessageUtil.INVALID_TOKEN;
 
-        UnauthorizedException exception = (UnauthorizedException) request.getAttribute("exception");
+        Object exceptionAttribute = request.getAttribute("exception");
 
-        if (exception != null) {
+        if (exceptionAttribute instanceof UnauthorizedException exception) {
             errorCode = exception.getErrorCode();
             message = exception.getMessage();
         }
@@ -39,14 +39,17 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
             ErrorCode errorCode,
             String message
     ) throws IOException {
-        response.setContentType("application/json;charset=UTF-8");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.getWriter().println(
-                "{" +
-                        "\"errorCode\" : \"" + errorCode.getCode() + "\"," +
-                        "\"message\" : \"" + message + "\"," +
-                        "\"timeStamp\" : \"" + LocalDateTime.now() + "\"" +
-                        "}"
-        );
+        response.setContentType("application/json;charset=UTF-8");
+
+        String body = """
+                {
+                    "errorCode" : "%s",
+                    "message" : "%s",
+                    "timeStamp" : "%s"
+                }
+                """.formatted(errorCode.getCode(), message, LocalDateTime.now());
+
+        response.getWriter().println(body);
     }
 }

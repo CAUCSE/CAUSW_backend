@@ -30,7 +30,6 @@ public class JwtTokenProvider {
     private String secretKey;
 
     private final CustomUserDetailsService userDetailsService;
-
     private final RedisUtils redisUtils;
 
     @PostConstruct
@@ -40,6 +39,7 @@ public class JwtTokenProvider {
 
     public String createAccessToken(String userPk, Set<Role> roles, UserState userState) {
         Date now = new Date();
+
         Claims claims = Jwts.claims().setSubject(userPk);
         claims.put("roles", roles.stream().map(Role::getValue).collect(Collectors.toSet()));
         claims.put("state", userState.getValue());
@@ -54,6 +54,7 @@ public class JwtTokenProvider {
 
     public String createRefreshToken() {
         Date now = new Date();
+
         return Jwts.builder()
                 .setExpiration(new Date(now.getTime() + StaticValue.JWT_REFRESH_TOKEN_VALID_TIME))
                 .signWith(SignatureAlgorithm.HS256, this.secretKey)
@@ -63,37 +64,45 @@ public class JwtTokenProvider {
     public Authentication getAuthentication(String token) {
         String userPk = getUserPk(token);
         UserDetails userDetails = userDetailsService.loadUserByUserId(userPk);
+
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 
     public String getUserPk(String token) {
-        return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
+        return parseClaims(token).getSubject();
     }
-
 
     public String resolveToken(HttpServletRequest request) {
         String bearerToken =  request.getHeader("Authorization");
+
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }
+
         return null;
     }
 
-    //ACCESS TOKEN만 Validate합니다.
+    // ACCESS TOKEN만 Validate합니다.
     public boolean validateToken(String jwtToken) {
         try {
-            Jws<Claims> claims = Jwts.parser().setSigningKey(this.secretKey).parseClaimsJws(jwtToken);
+            parseClaims(jwtToken);
 
             if (redisUtils.isTokenBlacklisted(jwtToken)) {
                 throw new UnauthorizedException(ErrorCode.INVALID_JWT, "블랙리스트에 등록된 토큰입니다.");
             }
 
             return true;
-
         } catch (ExpiredJwtException e) {
             throw new UnauthorizedException(ErrorCode.EXPIRED_JWT, MessageUtil.EXPIRED_TOKEN);
         } catch (JwtException | IllegalArgumentException e) {
             throw new UnauthorizedException(ErrorCode.INVALID_JWT, MessageUtil.INVALID_TOKEN);
         }
+    }
+
+    private Claims parseClaims(String token) {
+        return Jwts.parser()
+                .setSigningKey(this.secretKey)
+                .parseClaimsJws(token)
+                .getBody();
     }
 }
