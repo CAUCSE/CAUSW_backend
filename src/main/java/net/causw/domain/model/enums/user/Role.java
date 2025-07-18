@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.causw.domain.exceptions.BadRequestException;
 import net.causw.domain.exceptions.ErrorCode;
-import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 
@@ -40,27 +39,5 @@ public enum Role {
                                 String.format("'%s' is invalid : not supported", value)
                         )
                 );
-    }
-
-    public String authority() {
-        return "ROLE_" + value;
-    }
-
-    @Component("Role")
-    public static class RoleComponent {
-        public static final Role ADMIN = Role.ADMIN;
-        public static final Role PRESIDENT = Role.PRESIDENT;
-        public static final Role VICE_PRESIDENT = Role.VICE_PRESIDENT;
-        public static final Role COUNCIL = Role.COUNCIL;
-        public static final Role LEADER_1 = Role.LEADER_1;
-        public static final Role LEADER_2 = Role.LEADER_2;
-        public static final Role LEADER_3 = Role.LEADER_3;
-        public static final Role LEADER_4 = Role.LEADER_4;
-        public static final Role LEADER_ALUMNI = Role.LEADER_ALUMNI;
-        public static final Role COMMON = Role.COMMON;
-        public static final Role NONE = Role.NONE;
-
-        public static final Role LEADER_CIRCLE = Role.LEADER_CIRCLE;
-        public static final Role PROFESSOR = Role.PROFESSOR;
     }
 }
