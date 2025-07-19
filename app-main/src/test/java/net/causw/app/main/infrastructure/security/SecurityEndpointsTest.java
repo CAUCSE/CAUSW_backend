@@ -11,7 +11,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static net.causw.config.security.SecurityEndpoints.*;
+import static net.causw.app.main.infrastructure.security.SecurityEndpoints.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class SecurityEndpointsTest {
