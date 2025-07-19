@@ -185,7 +185,7 @@ public class UserController {
 
     @GetMapping(value = "/name/{name}")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.PRIVILEGED_MEMBERS)")
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.OPERATIONS_TEAM)")
     @Operation(summary = "유저 관리 시 사용자 이름으로 검색 API(완료)")
     public List<UserResponseDto> findByName(
             @PathVariable("name") String name,
