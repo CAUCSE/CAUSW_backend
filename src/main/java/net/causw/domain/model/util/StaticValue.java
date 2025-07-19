@@ -19,6 +19,8 @@ public class StaticValue {
     public final static Integer USER_LIST_PAGE_SIZE = 30;
     public final static Integer DEFAULT_NOTIFICATION_PAGE_SIZE = 10;
     public final static Integer SIDE_NOTIFICATION_PAGE_SIZE = 4;
+    public final static Integer MAX_NOTIFICATION_COUNT = 10;
+
 
     // Event
     public static final Integer MAX_NUM_EVENT = 10;
