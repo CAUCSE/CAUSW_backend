@@ -174,19 +174,21 @@ jobs:
         run: ./gradlew :app-main:test
         shell: bash
 
+      # 테스트 실패 시 fail된 부분 마크
+      - name: Publish check comment on test failure
+        uses: mikepenz/action-junit-report@v3
+        if: ${{ failure() }}
+        with:
+          report_paths: ./app-main/build/test-results/test/TEST-*.xml
+          check_name: "JUnit Failure Report (app-main)"
+
       # 테스트 결과 출력
       - name: Publish test results to pr
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: ${{ always() }}
         with:
           files: ./app-main/build/test-results/test/TEST-*.xml
-
-      # 테스트 실패 시 fail된 부분 마크
-      - name: Publish check comment on test failure
-        uses: mikepenz/action-junit-report@v3
-        if: always()
-        with:
-          report_paths: ./app-main/build/test-results/test/TEST-*.xml
+          check_name: "Test Results Summary (app-main)"
 
 
   junit-test-app-chat:
@@ -223,16 +225,18 @@ jobs:
         run: ./gradlew :app-chat:test
         shell: bash
 
+      # 테스트 실패 시 fail된 부분 마크
+      - name: Publish check comment on test failure
+        uses: mikepenz/action-junit-report@v3
+        if: ${{ failure() }}
+        with:
+          report_paths: ./app-chat/build/test-results/test/TEST-*.xml
+          check_name: "JUnit Failure Report (app-chat)"
+
       # 테스트 결과 출력
       - name: Publish test results to pr
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: ${{ always() }}
         with:
           files: ./app-chat/build/test-results/test/TEST-*.xml
-
-      # 테스트 실패 시 fail된 부분 마크
-      - name: Publish check comment on test failure
-        uses: mikepenz/action-junit-report@v3
-        if: always()
-        with:
-          report_paths: ./app-chat/build/test-results/test/TEST-*.xml
+          check_name: "Test Results Summary (app-chat)"
