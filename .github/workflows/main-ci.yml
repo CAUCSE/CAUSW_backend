@@ -10,36 +10,9 @@ permissions:
   checks: write
 
 jobs:
-  prepare:
-    name: Prepare changed modules
-    runs-on: ubuntu-22.04
-    outputs:
-      app_main_changed: ${{ steps.filter.outputs.app_main }}
-      app_chat_changed: ${{ steps.filter.outputs.app_chat }}
-
-    steps:
-      - name: Checkout branch
-        uses: actions/checkout@v4
-
-      - id: filter
-        name: Check changed modules
-        run: |
-          echo "app_main=false" >> $GITHUB_OUTPUT
-          echo "app_chat=false" >> $GITHUB_OUTPUT
-
-          if git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | grep -q "^app-main/"; then
-            echo "app_main=true" >> $GITHUB_OUTPUT
-          fi
-          if git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | grep -q "^app-chat/"; then
-            echo "app_chat=true" >> $GITHUB_OUTPUT
-          fi
-          
-
   junit-test-app-main:
     name: JUnit Test app-main Module
     runs-on: ubuntu-22.04
-    needs: prepare
-    if: needs.prepare.outputs.app_main_changed == 'true'
 
     steps:
       # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
@@ -88,8 +61,6 @@ jobs:
   junit-test-app-chat:
     name: JUnit Test app-chat Module
     runs-on: ubuntu-22.04
-    needs: prepare
-    if: needs.prepare.outputs.app_chat_changed == 'true'
 
     steps:
       # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
