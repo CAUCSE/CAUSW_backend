@@ -41,8 +41,7 @@ public class UserController {
      */
     @GetMapping(value = "/{userId}")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "@securityService.isAdminOrPresidentOrVicePresidentOrCircleLeader()")
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES_AND_CIRCLE_LEADER)")
     @Operation(summary = "사용자 정보 조회 API (완료)",
             description = "userId에는 사용자 고유 id 값을 입력해주세요.")
     @ApiResponses({
@@ -86,7 +85,6 @@ public class UserController {
     //FIXME: findMyWrittenPost로 대체(동일 기능), 리팩토링 통합 완료 후 삭제 예정
     @GetMapping(value = "/posts")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "(구)로그인한 사용자의 게시글 조회 API(삭제 예정 -> posts/written으로 변경)")
     public UserPostsResponseDto findPosts(
             @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
@@ -97,7 +95,6 @@ public class UserController {
 
     @GetMapping(value = "/posts/written")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "로그인한 사용자가 작성한 게시글 기록 조회 API(완료)",
             description = "로그인한 사용자가 작성한 게시글의 목록을 조회하는 Api 입니다.")
     @ApiResponses({
@@ -118,7 +115,6 @@ public class UserController {
 
     @GetMapping(value = "/posts/favorite")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "로그인한 사용자가 누른 즐겨찾기 게시글 기록 조회 API(완료)",
             description = "로그인한 사용자가 즐겨찾기한 게시글의 목록을 조회하는 Api 입니다.")
     @ApiResponses({
@@ -139,7 +135,6 @@ public class UserController {
 
     @GetMapping(value = "/posts/like")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "로그인한 사용자가 좋아요 누른 게시글 기록 조회 API(완료)",
         description = "로그인한 사용자가 좋아요 누른 게시글의 목록을 조회하는 Api 입니다.")
     @ApiResponses({
@@ -160,7 +155,6 @@ public class UserController {
 
     @GetMapping(value = "/comments/written")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "로그인한 사용자가 작성한 댓글들의 게시물 기록 조회 API(완료)",
             description = "로그인한 사용자가 작성한 댓글들의 게시물 기록 조회하는 Api 입니다.")
     @ApiResponses({
@@ -181,7 +175,6 @@ public class UserController {
 
     @GetMapping(value = "/comments")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "로그인한 사용자의 댓글 조회 API(완료)")
     public UserCommentsResponseDto findComments(
             @RequestParam(name = "pageNum",defaultValue = "0") Integer pageNum,
@@ -192,8 +185,7 @@ public class UserController {
 
     @GetMapping(value = "/name/{name}")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "@securityService.isSpecialPrivileged()")
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.OPERATIONS_TEAM)")
     @Operation(summary = "유저 관리 시 사용자 이름으로 검색 API(완료)")
     public List<UserResponseDto> findByName(
             @PathVariable("name") String name,
@@ -204,8 +196,7 @@ public class UserController {
 
     @GetMapping(value = "/privileged")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "@securityService.isAdminOrPresidentOrVicePresident()")
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
     @Operation(summary = "특별한 권한을 가진 사용자 목록 확인 API(완료)", description = "학생회장, 부학생회장, 학생회, 학년대표, 동문회장 역할을 가지는 사용자를 반환합니다. \n 권한 역임을 할 수 있기 때문에 중복되는 사용자가 존재합니다.(ex. PRESIDENT_N_LEADER_CIRCLE)")
     public UserPrivilegedResponseDto findPrivilegedUsers(
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -215,8 +206,7 @@ public class UserController {
 
     @GetMapping(value = "/state/{state}")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "@securityService.isAdminOrPresidentOrVicePresident()")
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
     @Operation(summary = "유저 관리 시 사용자의 상태(ACTIVE, INACTIVE 등) 에 따라 검색하는 API(완료)", description = "유저를 관리할 때 사용자가 활성, 비활성 상태인지에 따라서 분류하여 검색할 수 있습니다. \n state 는 ACTIVE, INACTIVE, AWAIT, REJECT, DROP 으로 검색가능합니다.")
     public Page<UserResponseDto> findByState(
             @PathVariable("state") String state,
@@ -327,7 +317,6 @@ public class UserController {
      */
     @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "사용자 정보 업데이트 API (완료)")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
@@ -353,7 +342,6 @@ public class UserController {
 
     @PutMapping(value = "/{delegateeId}/delegate-role")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(
             summary = "자신의 권한 위임",
             description = """
@@ -373,7 +361,6 @@ public class UserController {
 
     @PutMapping(value = "/{granteeId}/grant-role")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(
             summary = "타인에게 권한 부여",
             description = """
@@ -403,7 +390,6 @@ public class UserController {
 
     @PutMapping(value = "/password")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "비밀번호 업데이트 API (완료)")
     public UserResponseDto updatePassword(
             @Valid @RequestBody UserUpdatePasswordRequestDto userUpdatePasswordRequestDto,
@@ -419,8 +405,7 @@ public class UserController {
      */
     @DeleteMapping
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "@securityService.isAbleToLeave()")
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.CAN_LEAVE)")
     @Operation(summary = "사용자 탈퇴 API (완료)")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
@@ -445,8 +430,7 @@ public class UserController {
      */
     @DeleteMapping(value = "{id}/delete")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "@securityService.isAdminOrPresidentOrVicePresident()")
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
     @Operation(summary = "사용자 삭제 API (완료)")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
@@ -462,8 +446,7 @@ public class UserController {
 
     @PutMapping(value = "{id}/drop")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "@securityService.isAdminOrPresidentOrVicePresident()")
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
     @Operation(summary = "사용자 추방 및 사물함 반환 API (완료)")
     public UserResponseDto drop(
             @PathVariable("id") String id,
@@ -474,7 +457,6 @@ public class UserController {
     }
     @GetMapping(value = "/circles")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "사용자가 속한 동아리 목록 불러오기 API(완료)" , description = "관리자, 학생회장인 경우 모든 동아리 불러오기")
     public List<CircleResponseDto> getCircleList(
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -484,8 +466,7 @@ public class UserController {
 
     @GetMapping(value = "/admissions/{id}")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "@securityService.isAdminOrPresidentOrVicePresident()")
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
     @Operation(summary = "가입 대기 사용자 정보 확인 API (완료)")
     public UserAdmissionResponseDto findAdmissionById(
             @PathVariable("id") String id,
@@ -497,8 +478,7 @@ public class UserController {
 
     @GetMapping(value = "/admissions")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "@securityService.isAdminOrPresidentOrVicePresident()")
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
     @Operation(summary = "모든 가입 대기 사용자 목록 확인 API (완료)")
     public Page<UserAdmissionsResponseDto> findAllAdmissions(
             @RequestParam(name = "pageNum",defaultValue = "0") Integer pageNum,
@@ -536,8 +516,7 @@ public class UserController {
     }
 
     @PutMapping(value = "/admissions/{id}/accept")
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "@securityService.isAdminOrPresidentOrVicePresident()")
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
     @Operation(summary = "신청 승인 API (완료)", description = "id 에는 승인 고유 id 값(admission id)을 넣어주세요.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "application/json", schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = String.class))),
@@ -563,8 +542,7 @@ public class UserController {
      * @return
      */
     @PutMapping(value = "/admissions/{id}/reject")
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "@securityService.isAdminOrPresidentOrVicePresident()")
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
     @Operation(summary = "신청 거절 API (완료)", description = "id 에는 승인 고유 id 값(admission id)을 넣어주세요.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "application/json", schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = String.class))),
@@ -589,8 +567,7 @@ public class UserController {
 
     @PutMapping(value = "/restore/{id}")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "@securityService.isAdminOrPresidentOrVicePresident()")
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
     @Operation(summary = "사용자 복구 API(완료)", description = "복구할 사용자의 id를 넣어주세요")
     public UserResponseDto restore(
             @PathVariable("id") String id,
@@ -658,8 +635,7 @@ public class UserController {
 
     @GetMapping(value = "/export")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified() and " +
-            "@securityService.isAdminOrPresidentOrVicePresident()")
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
     @Operation(summary = "사용자 정보 엑셀 다운로드 API(완료)", description = "사용자 정보를 엑셀로 다운로드")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", schema = @Schema(implementation = Workbook.class))),
@@ -671,7 +647,6 @@ public class UserController {
 
     @PutMapping(value = "/update/isV2")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "사용자 isV2 칼럼 업데이트(v1->v2 DB 마이그레이션 전용)",
             description = "사용자 isV2 칼럼 업데이트(v1->v2 DB 마이그레이션 전용) API입니다. isV2를 true로 업데이트 합니다. 학부 인증과 학적 상태 인증이 모두 끝난 유저만 업데이트가 가능합니다.")
     @ApiResponses({
@@ -688,7 +663,6 @@ public class UserController {
 
     @PostMapping(value = "/fcm")
     @ResponseStatus(value = HttpStatus.CREATED)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "사용자 fcmToken 등록",
             description = "로그인한 사용자의 fcmToken을 등록합니다")
     @ApiResponses({
@@ -706,7 +680,6 @@ public class UserController {
 
     @GetMapping(value = "/fcm")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
     @Operation(summary = "사용자 fcmToken 조회",
             description = "로그인한 사용자의 fcmToken을 조회합니다")
     @ApiResponses({

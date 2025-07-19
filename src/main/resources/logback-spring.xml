@@ -1,5 +1,5 @@
 <configuration>
-    <property name="LOG_DIR" value="/var/log/spring-boot" />
+    <property name="LOG_DIR" value="${LOG_DIR:-./log}" />
 
     <!-- 콘솔 출력 설정 -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
