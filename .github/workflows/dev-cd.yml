@@ -162,8 +162,9 @@ jobs:
           script: |
             sudo fuser -k -n tcp 8080 || true
             sleep 15
-            APP_MAIN_JAR=$(ls /home/ubuntu/app/app-main/*.jar | tail -n 1)
-            sudo nohup java -jar "$APP_MAIN_JAR" > /home/ubuntu/app/app-main/nohup.out 2>&1 &
+            APP_MAIN_JAR=$(ls -t /home/ubuntu/app/app-main/*.jar | head -n 1)
+            sudo mkdir -p /var/log/spring-boot/app-main
+            sudo nohup java -DLOG_DIR=/var/log/spring-boot/app-main -jar "$APP_MAIN_JAR" 1>/dev/null 2>&1 & 
 
 
   app-chat-build:
@@ -262,8 +263,9 @@ jobs:
           script: |
             sudo fuser -k -n tcp 8081 || true
             sleep 15
-            APP_CHAT_JAR=$(ls /home/ubuntu/app/app-chat/*.jar | tail -n 1)
-            sudo nohup java -jar "$APP_CHAT_JAR" > /home/ubuntu/app/app-chat/nohup.out 2>&1 &
+            APP_CHAT_JAR=$(ls -t /home/ubuntu/app/app-chat/*.jar | head -n 1)
+            sudo mkdir -p /var/log/spring-boot/app-chat
+            sudo nohup java -DLOG_DIR=/var/log/spring-boot/app-chat -jar "$APP_CHAT_JAR" 1>/dev/null 2>&1 & 
 
 
   notify:
