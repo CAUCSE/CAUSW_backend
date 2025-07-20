@@ -52,13 +52,12 @@ jobs:
           report_paths: ./app-main/build/test-results/test/TEST-*.xml
           check_name: "JUnit Failure Report (app-main)"
 
-      # 테스트 결과 출력
-      - name: Publish test results to pr
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        if: ${{ always() }}
+      # 테스트 결과 아티팩트 업로드
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
         with:
-          files: ./app-main/build/test-results/test/TEST-*.xml
-          check_name: "Test Results Summary (app-main)"
+          name: app-main-test-results
+          path: ./app-main/build/test-results/test
 
 
   junit-test-app-chat:
@@ -103,10 +102,32 @@ jobs:
           report_paths: ./app-chat/build/test-results/test/TEST-*.xml
           check_name: "JUnit Failure Report (app-chat)"
 
+      # 테스트 결과 아티팩트 업로드
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-chat-test-results
+          path: ./app-chat/build/test-results/test
+
+
+  junit-test-result-summary:
+    name: Report JUnit Test Result Summary
+    runs-on: ubuntu-22.04
+    needs: [junit-test-app-main, junit-test-app-chat]
+
+    steps:
+      # 테스트 결과 아티팩트 다운로드
+      - name: Download all test results
+        uses: actions/download-artifact@v4
+        with:
+          path: combined
+
       # 테스트 결과 출력
-      - name: Publish test results to pr
+      - name: Comment Test Results Summary
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: ${{ always() }}
         with:
-          files: ./app-chat/build/test-results/test/TEST-*.xml
-          check_name: "Test Results Summary (app-chat)"
+          files: |
+            combined/app-main-test-results/TEST-*.xml
+            combined/app-chat-test-results/TEST-*.xml
+          check_name: "Test Results Summary"
