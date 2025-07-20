@@ -111,6 +111,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: app-main-artifact
+          path: app-main/build/libs/
 
       # app-main 전용 디렉토리 생성
       - name: Ensure app-main folder exists on EC2
@@ -222,6 +223,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: app-chat-artifact
+          path: app-chat/build/libs/
 
       # app-chat 전용 디렉토리 생성
       - name: Ensure app-chat folder exists on EC2
