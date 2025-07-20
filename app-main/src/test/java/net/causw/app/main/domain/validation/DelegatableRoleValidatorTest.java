@@ -1,0 +1,196 @@
+package net.causw.app.main.domain.validation;
+
+import net.causw.app.main.domain.model.entity.user.User;
+import net.causw.global.exception.ErrorCode;
+import net.causw.global.exception.UnauthorizedException;
+import net.causw.app.main.domain.model.enums.user.Role;
+import net.causw.global.constant.MessageUtil;
+import net.causw.app.main.util.ObjectFixtures;
+import net.causw.app.main.domain.policy.RolePolicy;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import static java.util.Map.entry;
+import static net.causw.app.main.domain.model.enums.user.Role.*;
+import static net.causw.app.main.domain.policy.RolePolicy.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+
+@ExtendWith(MockitoExtension.class)
+public class DelegatableRoleValidatorTest {
+
+    private final User delegator = ObjectFixtures.getUser();
+    private final User delegatee = ObjectFixtures.getUser();
+
+    private static final Map<Role, Integer> MOCK_ROLE_PRIORITY = Map.ofEntries(
+            entry(ADMIN, 0),
+            entry(PRESIDENT, 1),
+            entry(VICE_PRESIDENT, 2),
+            entry(COUNCIL, 3),
+            entry(LEADER_1, 4),
+            entry(LEADER_2, 4),
+            entry(LEADER_3, 4),
+            entry(LEADER_4, 4),
+            entry(LEADER_ALUMNI, 5),
+            entry(COMMON, 99),
+            entry(NONE, 100),
+
+            entry(LEADER_CIRCLE, 5),
+            entry(PROFESSOR, 6)
+    );
+
+    private static final Map<Role, Set<Role>> MOCK_ROLES_ASSIGNABLE_FOR = Map.of(
+            Role.PRESIDENT, Set.of(Role.VICE_PRESIDENT, Role.COUNCIL, Role.COMMON),
+            Role.VICE_PRESIDENT, Set.of(Role.PRESIDENT)
+    );
+
+    private static final Set<Role> MOCK_DELEGATABLE_ROLES = Set.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT);
+
+    @Test
+    @DisplayName("위임 권한이 위임 가능 대상일 경우 성공")
+    void whenDelegatedRoleIsDelegatable_thenSuccess() {
+        // given
+        Role delegatedRole = Role.ADMIN;
+        delegator.setRoles(Set.of(delegatedRole));
+        delegatee.setRoles(Set.of(Role.COMMON));
+
+        // when & then
+        assertValidatorSuccess(delegatedRole);
+    }
+    
+    @Test
+    @DisplayName("위임 권한이 위임 가능 대상이 아닐 경우 실패")
+    void whenDelegatedRoleIsNotDelegatable_thenFail() {
+        // given
+        Role delegatedRole = Role.COUNCIL;
+        delegator.setRoles(Set.of(delegatedRole));
+        delegatee.setRoles(Set.of(Role.COMMON));
+
+        // when & then
+        assertValidatorFail(delegatedRole);
+    }
+
+    @Test
+    @DisplayName("위임자가 위임할 권한일 경우 성공")
+    void whenDelegatorHasDelegatedRole_thenSuccess() {
+        // given
+        Role delegatedRole = Role.PRESIDENT;
+        delegator.setRoles(Set.of(delegatedRole));
+        delegatee.setRoles(Set.of(Role.COMMON));
+
+        // when & then
+        assertValidatorSuccess(delegatedRole);
+    }
+    
+    @Test
+    @DisplayName("위임자가 위임할 권한이 아닐 경우 실패")
+    void whenDelegatorLacksDelegatedRole_thenFail() {
+        // given
+        delegator.setRoles(Set.of(Role.PRESIDENT));
+        delegatee.setRoles(Set.of(Role.COMMON));
+
+        // when & then
+        assertValidatorFail(Role.VICE_PRESIDENT);
+    }
+
+    @Test
+    @DisplayName("위임할 권한이 피위임자의 모든 권한에 대한 위임 가능 권한을 가지고 있을 경우 성공")
+    void whenDelegatedRoleCoversAllDelegateeRoles_thenSuccess() {
+        // given
+        Role delegatedRole = Role.PRESIDENT;
+        delegator.setRoles(Set.of(delegatedRole));
+        delegatee.setRoles(Set.of(Role.COUNCIL));
+
+        // when & then
+        assertValidatorSuccess(delegatedRole);
+    }
+    
+    @Test
+    @DisplayName("위임할 권한이 피위임자의 모든 권한에 대한 위임 가능 권한을 가지고 있지 않을 경우 실패")
+    void whenDelegatedRoleDoesNotCoverAllDelegateeRoles_thenFail() {
+        // given
+        Role delegatedRole = Role.PRESIDENT;
+        delegator.setRoles(Set.of(delegatedRole));
+        delegatee.setRoles(Set.of(Role.NONE));
+
+        // when & then
+        assertValidatorFail(delegatedRole);
+    }
+
+    @Test
+    @DisplayName("위임자가 피위임자 보다 권한 우선순위가 높은 경우 성공")
+    void whenDelegatorHasHigherPriority_thanDelegatee_thenSuccess() {
+        // given
+        Role delegatedRole = Role.PRESIDENT;
+        delegator.setRoles(Set.of(delegatedRole));
+        delegatee.setRoles(Set.of(Role.VICE_PRESIDENT));
+
+        // when & then
+        assertValidatorSuccess(delegatedRole);
+    }
+
+    @Test
+    @DisplayName("피위임자가 위임자 보다 권한 우선순위가 높은 경우 실패")
+    void whenDelegateeHasHigherPriority_thanDelegator_thenFail() {
+        // given
+        Role delegatedRole = Role.VICE_PRESIDENT;
+        delegator.setRoles(Set.of(delegatedRole));
+        delegatee.setRoles(Set.of(Role.PRESIDENT));
+
+        // when & then
+        assertValidatorFail(delegatedRole);
+    }
+
+    private DelegatableRoleValidator createValidator(Role delegatedRole) {
+        return DelegatableRoleValidator.of(delegator.getRoles(), delegatedRole, delegatee.getRoles());
+    }
+
+    private void withMockedRolePolicy(Role delegatedRole, Runnable assertions) {
+        try (MockedStatic<RolePolicy> rolePolicyMockedStatic = Mockito.mockStatic(RolePolicy.class)) {
+            rolePolicyMockedStatic.when(() -> getRolesAssignableFor(delegatedRole))
+                    .thenReturn(MOCK_ROLES_ASSIGNABLE_FOR.getOrDefault(delegatedRole, Set.of(Role.COMMON)));
+
+            rolePolicyMockedStatic.when(RolePolicy::getDelegatableRoles)
+                    .thenReturn(MOCK_DELEGATABLE_ROLES);
+
+            Stream.concat(delegator.getRoles().stream(), delegatee.getRoles().stream()).forEach(role ->
+                    rolePolicyMockedStatic.when(() -> getRolePriority(role))
+                            .thenReturn(MOCK_ROLE_PRIORITY.get(role)));
+
+            rolePolicyMockedStatic.when(() -> canAssign(any(), any()))
+                    .thenCallRealMethod();
+
+            rolePolicyMockedStatic.when(() -> isPrivilegeInverted(any(), any()))
+                    .thenCallRealMethod();
+
+            assertions.run();
+        }
+    }
+
+    private void assertValidatorSuccess(Role delegatedRole) {
+        DelegatableRoleValidator validator = createValidator(delegatedRole);
+        withMockedRolePolicy(delegatedRole, () ->
+                assertThatCode(validator::validate)
+                        .doesNotThrowAnyException()
+        );
+    }
+
+    private void assertValidatorFail(Role delegatedRole) {
+        DelegatableRoleValidator validator = createValidator(delegatedRole);
+        withMockedRolePolicy(delegatedRole, () ->
+                assertThatThrownBy(validator::validate)
+                        .isInstanceOf(UnauthorizedException.class)
+                        .hasMessageContaining(MessageUtil.DELEGATE_ROLE_NOT_ALLOWED)
+                        .extracting("errorCode")
+                        .isEqualTo(ErrorCode.ASSIGN_ROLE_NOT_ALLOWED)
+        );
+    }
+}

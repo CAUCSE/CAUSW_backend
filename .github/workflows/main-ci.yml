@@ -10,57 +10,124 @@ permissions:
   checks: write
 
 jobs:
-  build:
-    name: Build in Github Actions
+  junit-test-app-main:
+    name: JUnit Test app-main Module
     runs-on: ubuntu-22.04
 
     steps:
       # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
       - name: Checkout branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      # java 버전 세팅(JDK 17)
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'zulu'
+      # JDK & Gradle 설정
+      - name: Setup JDK and Gradle
+        uses: ./.github/actions/setup-jdk-gradle
 
       # git ignore한 yml 파일들 github secret에서 복사해 오기
       - name: Copy secret
         env:
           APPLICATION_FILE: ${{ secrets.APPLICATION_PROFILE_PROD }}
           APPLICATION_PROD_FILE: ${{secrets.APPLICATION_PROD}}
-          DIR: ./src/main/resources
+          DIR: ./app-main/src/main/resources
 
           APPLICATION_FILE_NAME: application.yml
           APPLICATION_PROD_FILE_NAME: application-prod.yml
         run: |
+          mkdir -p $DIR
           touch $DIR/$APPLICATION_FILE_NAME
           touch $DIR/$APPLICATION_PROD_FILE_NAME
           echo "$APPLICATION_FILE" > $DIR/$APPLICATION_FILE_NAME
           echo "$APPLICATION_PROD_FILE" > $DIR/$APPLICATION_PROD_FILE_NAME
 
-      # gradlew 실행 권한 부여
-      - name: Run chmod to make gradlew executable
-        run: chmod +x ./gradlew
-        shell: bash
-
       # 테스트 실행
-      - name: Test with Gradle
-        run: ./gradlew test
+      - name: Test with Gradle (app-main)
+        run: ./gradlew :app-main:test
         shell: bash
-
-      # 테스트 결과 출력
-      - name: Publish test results to pr
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
-        with:
-          files: ./build/test-results/test/TEST-*.xml
 
       # 테스트 실패 시 fail된 부분 마크
       - name: Publish check comment on test failure
         uses: mikepenz/action-junit-report@v3
-        if: always()
+        if: ${{ failure() }}
         with:
-          report_paths: ./build/test-results/test/TEST-*.xml
+          report_paths: ./app-main/build/test-results/test/TEST-*.xml
+          check_name: "JUnit Failure Report (app-main)"
+
+      # 테스트 결과 아티팩트 업로드
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-main-test-results
+          path: ./app-main/build/test-results/test
+
+
+  junit-test-app-chat:
+    name: JUnit Test app-chat Module
+    runs-on: ubuntu-22.04
+
+    steps:
+      # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      # JDK & Gradle 설정
+      - name: Setup JDK and Gradle
+        uses: ./.github/actions/setup-jdk-gradle
+
+      # git ignore한 yml 파일들 github secret에서 복사해 오기
+      - name: Copy secret
+        env:
+          APPLICATION_FILE: ${{ secrets.APPLICATION_PROFILE_PROD }}
+          APPLICATION_PROD_FILE: ${{secrets.APPLICATION_PROD_APP_CHAT}}
+          DIR: ./app-chat/src/main/resources
+
+          APPLICATION_FILE_NAME: application.yml
+          APPLICATION_PROD_FILE_NAME: application-prod.yml
+        run: |
+          mkdir -p $DIR
+          touch $DIR/$APPLICATION_FILE_NAME
+          touch $DIR/$APPLICATION_PROD_FILE_NAME
+          echo "$APPLICATION_FILE" > $DIR/$APPLICATION_FILE_NAME
+          echo "$APPLICATION_PROD_FILE" > $DIR/$APPLICATION_PROD_FILE_NAME
+
+      # 테스트 실행
+      - name: Test with Gradle (app-chat)
+        run: ./gradlew :app-chat:test
+        shell: bash
+
+      # 테스트 실패 시 fail된 부분 마크
+      - name: Publish check comment on test failure
+        uses: mikepenz/action-junit-report@v3
+        if: ${{ failure() }}
+        with:
+          report_paths: ./app-chat/build/test-results/test/TEST-*.xml
+          check_name: "JUnit Failure Report (app-chat)"
+
+      # 테스트 결과 아티팩트 업로드
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-chat-test-results
+          path: ./app-chat/build/test-results/test
+
+
+  junit-test-result-summary:
+    name: Report JUnit Test Result Summary
+    runs-on: ubuntu-22.04
+    needs: [junit-test-app-main, junit-test-app-chat]
+
+    steps:
+      # 테스트 결과 아티팩트 다운로드
+      - name: Download all test results
+        uses: actions/download-artifact@v4
+        with:
+          path: combined
+
+      # 테스트 결과 출력
+      - name: Comment Test Results Summary
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: ${{ always() }}
+        with:
+          files: |
+            combined/app-main-test-results/TEST-*.xml
+            combined/app-chat-test-results/TEST-*.xml
+          check_name: "Test Results Summary"

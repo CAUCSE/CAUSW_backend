@@ -1,8 +1,12 @@
 version: 0.0
 os: linux
 files:
-  - source: /
-    destination: /home/ubuntu/app
+  - source: /app-main/build/libs/
+    destination: /home/ubuntu/app/app-main/
+    overwrite: yes
+
+  - source: /app-chat/build/libs/
+    destination: /home/ubuntu/app/app-chat/
     overwrite: yes
 
 permissions:
