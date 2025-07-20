@@ -83,7 +83,7 @@ jobs:
       - name: Upload Build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: build-artifacts
+          name: app-main-artifact
           path: |
             app-main/build/libs/*.jar
 
@@ -96,7 +96,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          name: build-artifacts
+          name: app-main-artifact
 
       # app-main 전용 디렉토리 생성
       - name: Ensure app-main folder exists on EC2
@@ -183,7 +183,7 @@ jobs:
       - name: Upload Build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: build-artifacts
+          name: app-chat-artifact
           path: |
             app-chat/build/libs/*.jar
   
@@ -197,7 +197,7 @@ jobs:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: build-artifacts
+          name: app-chat-artifact
 
       # app-chat 전용 디렉토리 생성
       - name: Ensure app-chat folder exists on EC2
