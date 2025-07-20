@@ -241,7 +241,7 @@ jobs:
     needs: [ app-main-deploy, app-chat-deploy ]
     runs-on: ubuntu-22.04
     if: always()
-
+    
     steps:
       # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
       - name: Checkout branch
