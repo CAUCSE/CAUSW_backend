@@ -275,6 +275,10 @@ jobs:
     if: always()
 
     steps:
+      # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
       - name: Notify Success
         if: ${{ needs.app-main-deploy.result == 'success' && needs.app-chat-deploy.result == 'success' }}
         uses: ./.github/actions/discord-notify
