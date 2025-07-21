@@ -60,7 +60,7 @@ jobs:
 
       # Build -> jar 파일 생성
       - name: Build app-main module
-        run: ./gradlew clean :app-main:build -x test
+        run: ./gradlew clean :app-main:bootJar -x test
 
       - name: Upload Build artifacts
         uses: actions/upload-artifact@v4
@@ -170,7 +170,7 @@ jobs:
 
       # Build -> jar 파일 생성
       - name: Build app-chat module
-        run: ./gradlew clean :app-chat:build -x test
+        run: ./gradlew clean :app-chat:bootJar -x test
 
       - name: Upload Build artifacts
         uses: actions/upload-artifact@v4
