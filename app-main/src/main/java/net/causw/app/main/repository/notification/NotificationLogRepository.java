@@ -31,4 +31,10 @@ public interface NotificationLogRepository extends JpaRepository<NotificationLog
 
 
     Optional<NotificationLog> findByIdAndUser(String id, User user);
+
+    @Query("SELECT nl FROM NotificationLog nl " +
+            "WHERE nl.user = :user " +
+            "AND nl.isRead = false")
+    List<NotificationLog> findUnreadLogsUpToLimit(@Param("user") User user, Pageable pageable);
+
 }

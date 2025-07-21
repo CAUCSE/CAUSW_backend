@@ -2,6 +2,7 @@ package net.causw.app.main.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import net.causw.app.main.dto.notification.NotificationCountResponseDto;
 import net.causw.app.main.dto.notification.NotificationResponseDto;
 import net.causw.app.main.service.notification.NotificationLogService;
 import net.causw.app.main.infrastructure.security.userdetails.CustomUserDetails;
@@ -77,6 +78,16 @@ public class NotificationLogController {
         notificationLogService.readNotification(userDetails.getUser(), id);
     }
 
+    @GetMapping("/count")
+    @ResponseStatus(value = HttpStatus.OK)
+    @Operation(summary = "유저에게 온 일반, 경조사 알림 중 읽지 않은 알림 총 개수 반환",
+            description = "유저의 읽지 않은 알림 개수를 반환합니다.<br>" +
+                    "UI 상에서 10개 이상은 9+로 표기되기 때문에 10개까지 카운팅 되도록 하였습니다.")
+    public NotificationCountResponseDto getNotificationLogCount(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ){
+        return notificationLogService.getNotificationLogCount(userDetails.getUser());
+    }
 
 
 

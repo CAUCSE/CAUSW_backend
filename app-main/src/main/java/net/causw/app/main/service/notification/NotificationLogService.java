@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import net.causw.app.main.domain.model.entity.notification.NotificationLog;
 import net.causw.app.main.repository.notification.NotificationLogRepository;
 import net.causw.app.main.domain.model.entity.user.User;
+import net.causw.app.main.dto.notification.NotificationCountResponseDto;
 import net.causw.app.main.dto.notification.NotificationResponseDto;
 import net.causw.app.main.dto.util.dtoMapper.NotificationDtoMapper;
 import net.causw.app.main.service.pageable.PageableFactory;
@@ -83,6 +84,15 @@ public class NotificationLogService {
                 )
         );
         notificationLog.setIsRead(true);
+    }
+
+    @Transactional(readOnly = true)
+    public NotificationCountResponseDto getNotificationLogCount(User user){
+        List<NotificationLog> unreadNotificationLogs = notificationLogRepository.findUnreadLogsUpToLimit(user,  pageableFactory.create(0, StaticValue.MAX_NOTIFICATION_COUNT));
+
+        return NotificationCountResponseDto.builder()
+                .notificationLogCount(unreadNotificationLogs.size())
+                .build();
     }
 
 
