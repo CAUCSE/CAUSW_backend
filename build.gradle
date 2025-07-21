@@ -1,131 +1,35 @@
-buildscript {
-    dependencies {
-        classpath 'org.flywaydb:flyway-mysql:9.22.3'
-        classpath 'com.mysql:mysql-connector-j:8.1.0'
-    }
-}
-
 plugins {
-    id 'org.springframework.boot' version '3.2.0'
-    id 'io.spring.dependency-management' version '1.1.4'
-    id 'org.flywaydb.flyway' version '9.22.3'
     id 'java'
-    id 'groovy'
+    id 'io.spring.dependency-management' version '1.1.4'
 }
 
-group = 'net.causw'
-version = '0.0.1-SNAPSHOT'
+allprojects {
+    group = 'net.causw'
+    version = '0.0.1-SNAPSHOT'
 
-sourceCompatibility = 17
-targetCompatibility = 17
-
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
+    repositories {
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
     }
 }
 
-repositories {
-    mavenCentral()
-    maven { url 'https://jitpack.io' }
-}
+// 공통 의존성 버전 관리
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'io.spring.dependency-management'
 
-jar {
-    enabled = false
-}
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 
-dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    /*
-    implementation('org.springframework.boot:spring-boot-starter-web'){
-        exclude module: 'spring-boot-starter-tomcat'
-    }
-    implementation('org.springframework.boot:spring-boot-starter-jetty')
-
-     */
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.boot:spring-boot-starter-mail'
-    implementation 'org.jsoup:jsoup:1.18.1'
-    implementation 'io.jsonwebtoken:jjwt:0.9.1'
-    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.security:spring-security-test'
-    implementation 'com.mysql:mysql-connector-j:8.1.0'
-
-    // Lombok
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-
-    // Swagger
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2'
-
-    // Discord LogBack
-    implementation 'com.github.napstr:logback-discord-appender:1.0.0'
-
-    // S3
-    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
-
-    // Redis
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-
-    // MapStruct
-    implementation 'org.mapstruct:mapstruct:1.4.2.Final'
-    annotationProcessor 'org.mapstruct:mapstruct-processor:1.4.2.Final'
-    implementation 'javax.xml.bind:jaxb-api:2.3.1'
-
-    // h2 database(테스트용)
-    runtimeOnly 'com.h2database:h2'
-
-    // monitoring
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
-
-    // Apache POI for Excel file generation
-    implementation 'org.apache.poi:poi-ooxml:5.2.3'
-
-    // Spring Batch
-    implementation 'org.springframework.boot:spring-boot-starter-batch'
-    implementation 'org.springframework.batch:spring-batch-core'
-
-    // Retry 관련
-    // https://mvnrepository.com/artifact/org.springframework.retry/spring-retry
-    implementation 'org.springframework.retry:spring-retry:1.0.3.RELEASE'
-
-    // FCM
-    implementation 'com.google.firebase:firebase-admin:9.2.0'
-
-    // Flyway
-    implementation 'org.flywaydb:flyway-core:9.22.3'
-    implementation 'org.flywaydb:flyway-mysql:9.22.3'
-
-    // logback json 형식 관련
-    implementation 'ch.qos.logback.contrib:logback-json-classic:0.1.5'
-    implementation 'ch.qos.logback.contrib:logback-jackson:0.1.5'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
-}
-
-test {
-    useJUnitPlatform()
-
-    exclude '**/SchemaValidationTest.class'
-
-    testLogging {
-        showStandardStreams = true
-        events = ["passed", "skipped", "failed"]
+    dependencies {
+        // Lombok
+        compileOnly 'org.projectlombok:lombok:1.18.30'
+        annotationProcessor 'org.projectlombok:lombok:1.18.30'
     }
 
-    afterSuite { desc, result ->
-        if (!desc.parent) {
-            println "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
+    configurations {
+        compileOnly {
+            extendsFrom annotationProcessor
         }
     }
 }
-
-// Custom Flyway configuration and tasks
-apply from: 'gradle/flyway/flyway-config.gradle'
-apply from: 'gradle/flyway/flyway-task.gradle'
-
-// JPA entity mapping test task
-apply from: 'gradle/test/schema-validation.gradle'

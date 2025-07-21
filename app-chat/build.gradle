@@ -1,0 +1,40 @@
+plugins {
+    id 'org.springframework.boot' version '3.2.0'
+}
+
+dependencies {
+    implementation project(':global')
+
+    // Spring Boot Starter
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // Test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+}
+
+bootJar {
+    enabled = true
+}
+jar {
+    enabled = false
+}
+
+test {
+    useJUnitPlatform()
+
+    testLogging {
+        showStandardStreams = true
+        events = ["passed", "skipped", "failed"]
+    }
+
+    afterSuite { desc, result ->
+        if (!desc.parent) {
+            println "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
+        }
+    }
+}

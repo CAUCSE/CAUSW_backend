@@ -1,0 +1,57 @@
+name: "Discord Notify"
+description: "Send deploy result to Discord"
+inputs:
+  repository:
+    description: "The GitHub repository"
+    required: true
+  status:
+    description: "The status of the job, e.g., success or failure"
+    required: true
+  branch:
+    description: "The branch name for the deployment"
+    required: true
+  sha:
+    description: "The commit SHA"
+    required: true
+  actor:
+    description: "The GitHub actor who triggered the workflow"
+    required: true
+  run_id:
+    description: "The GitHub Actions run ID"
+    required: true
+  webhook:
+    description: "Discord webhook URL"
+    required: true
+  role_id:
+    description: "Discord role ID to mention on failure"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Discord Notify (Always)
+      uses: sarisia/actions-status-discord@v1
+      with:
+        webhook: ${{ inputs.webhook }}
+
+        status: ${{ inputs.status }}
+
+        content: >-
+          ${{ inputs.status == 'success' &&
+              format('`[{0}]` 🎉 배포가 성공적으로 완료됐어요!', inputs.branch)
+          || format('`[{0}]` 🚨 배포 실패! <@&{1}> 확인해주세요.', inputs.branch, inputs.role_id) }}
+
+        title: >-
+          ${{ inputs.status == 'success' &&
+              format('✅ [{0}] 배포 성공', inputs.branch)
+          || format('❌ [{0}] 배포 실패', inputs.branch) }}
+
+        description: |
+          🛠 브랜치: `${{ inputs.branch }}`
+          🔖 커밋: `${{ inputs.sha }}`
+          🙋 작성자: `${{ inputs.actor }}`
+          🔗 [깃허브 액션 로그 보기](https://github.com/${{ inputs.repository }}/actions/runs/${{ inputs.run_id }})
+
+        color: ${{ inputs.status == 'success' && '0x00ff00' || '0xff0000' }}
+
+        username: "🚀 배포 봇"
