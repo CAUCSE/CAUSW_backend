@@ -63,6 +63,6 @@ app-*.yaml
 log/
 
 *.pem
-src/main/generated/net/causw/application/dto/util/*Impl.java
-src/main/generated/net/causw/application/dto/util/dtoMapper/*Impl.java
-src/main/generated/net/causw/application/dto/util/dtoMapper/custom/*Impl.java
+src/main/generated/net/causw/app.main/dto/util/*Impl.java
+src/main/generated/net/causw/app.main/dto/util/dtoMapper/*Impl.java
+src/main/generated/net/causw/app.main/dto/util/dtoMapper/custom/*Impl.java
