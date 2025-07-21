@@ -78,6 +78,19 @@ public class SecurityService {
         return isActiveUser() && SecurityHelper.isAcademicRecordCertified(getUserDetails());
     }
 
+
+    /**
+     * 현재 인증된 사용자의 학적이 졸업상태인지 확인하기 위함(GRADUATED)
+     * 크자회 전용 API 에서 사용
+     *
+     * 사용자 상태(UserState)가 ACTIVE고
+     * NONE 역할만을 가지고 있지 않고
+     * 학적 상태(AcademicStatus)가 GRADUATED 인 경우 졸업생으로 판단
+     * */
+    public boolean isGraduatedUser() {
+        return SecurityHelper.isGraduated(getUserDetails());
+    }
+
     private Authentication getAuthentication() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 

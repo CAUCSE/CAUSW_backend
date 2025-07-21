@@ -27,4 +27,6 @@ public interface BoardRepository extends JpaRepository<Board, String> {
 
     List<Board> findByIsAlumniTrueAndIsDeletedFalseOrderByCreatedAtAsc();
 
+    List<Board> findByIsHomeTrueAndIsAlumniTrueAndIsDeletedFalse();
+
 }

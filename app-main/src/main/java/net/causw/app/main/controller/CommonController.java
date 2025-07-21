@@ -30,12 +30,26 @@ public class CommonController {
 
     @GetMapping("/api/v1/home")
     @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("!@security.isGraduatedUser()")
     @Operation(summary = "홈페이지 불러오기 API(완료)",
             description = "동아리에 속하지 않고 삭제되지 않은 게시판과 해당 게시판의 최신 글 3개의 정보를 반환합니다.\n" +
-                    "개발 db상에는 동아리에 속하지 않은 많은 더미 데이터가 있지만 실제 운영될 때는 동아리에 속하지 않는 게시판은 학생회 공지게시판 뿐입니다.")
+                    "개발 db상에는 동아리에 속하지 않은 많은 더미 데이터가 있지만 실제 운영될 때는 동아리에 속하지 않는 게시판은 학생회 공지게시판 뿐입니다.\n" +
+                    "졸업생은 해당 api에 접근이 불가합니다."
+    )
     public List<HomePageResponseDto> getHomePage(@AuthenticationPrincipal CustomUserDetails userDetails) {
 
         return this.homePageService.getHomePage(userDetails.getUser());
+    }
+
+    @GetMapping("/api/v1/home/almumi")
+    @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@security.isGraduatedUser()")
+    @Operation(summary = "크자회 전용 홈페이지 불러오기 API(완료)",
+            description = "크자회 전용 홈페이지에 보여질 크자회 공지 게시판, 소통 게시판을 반환하기 위한 api 입니다.\n" +
+                    "db상에 isAlumni, isHome 값이 모두 true 인 경우를 반환합니다.")
+    public List<HomePageResponseDto> getAlumniHomePage(@AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        return this.homePageService.getAlumniHomePage(userDetails.getUser());
     }
 
     /*

@@ -33,6 +33,16 @@ public class SecurityHelper {
                         .anyMatch(authority -> authority.getAuthority().equals(role)));
     }
 
+    public static boolean isGraduated(CustomUserDetails userDetails){
+        AcademicStatus academicStatus = userDetails.getUser().getAcademicStatus();
+
+        if(academicStatus.equals(AcademicStatus.GRADUATED)){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public static boolean isAcademicRecordCertified(CustomUserDetails userDetails) {
         AcademicStatus academicStatus = userDetails.getUser().getAcademicStatus();
 
