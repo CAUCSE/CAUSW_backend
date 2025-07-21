@@ -24,4 +24,7 @@ public interface BoardRepository extends JpaRepository<Board, String> {
     Boolean existsByName(String name);
 
     Optional<Board> findByName(String name);
+
+    List<Board> findByIsAlumniTrueAndIsDeletedFalseOrderByCreatedAtAsc();
+
 }

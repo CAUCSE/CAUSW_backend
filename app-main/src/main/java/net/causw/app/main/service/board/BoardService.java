@@ -6,6 +6,7 @@ import net.causw.app.main.domain.model.entity.board.BoardApply;
 import net.causw.app.main.domain.model.entity.circle.Circle;
 import net.causw.app.main.domain.model.entity.circle.CircleMember;
 import net.causw.app.main.domain.model.entity.notification.UserBoardSubscribe;
+import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.repository.board.BoardApplyRepository;
 import net.causw.app.main.repository.board.BoardRepository;
 import net.causw.app.main.repository.circle.CircleMemberRepository;
@@ -102,6 +103,7 @@ public class BoardService {
             User user
     ) {
         Set<Role> roles = user.getRoles();
+        AcademicStatus academicStatus = user.getAcademicStatus();
 
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
@@ -112,7 +114,11 @@ public class BoardService {
 
         if (roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT)) {
             boards = boardRepository.findByOrderByCreatedAtAsc();
-        }else{
+        }
+        else if (academicStatus.equals(AcademicStatus.GRADUATED)){
+            boards = boardRepository.findByIsAlumniTrueAndIsDeletedFalseOrderByCreatedAtAsc();
+        }
+        else{
             List<Circle> joinCircles = circleMemberRepository.findByUser_Id(user.getId()).stream()
                 .filter(circleMember -> circleMember.getStatus() == CircleMemberStatus.MEMBER)
                 .map(CircleMember::getCircle)

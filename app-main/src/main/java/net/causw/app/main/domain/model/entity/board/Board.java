@@ -39,6 +39,11 @@ public class Board extends BaseEntity {
     @ColumnDefault("false")
     private Boolean isDefault;
 
+    @Column(name = "is_alumni", nullable = false)
+    @ColumnDefault("false")
+    private Boolean isAlumni;
+
+
     @Column(name = "is_anonymous_allowed", nullable = false)
     @ColumnDefault("false")
     private Boolean is_anonymous_allowed;
