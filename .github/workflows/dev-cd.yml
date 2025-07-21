@@ -66,8 +66,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app-main-artifact
-          path: |
-            app-main/build/libs/*.jar
+          path: "app-main/build/libs/*.jar"
 
 
   app-main-deploy:
@@ -80,18 +79,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: app-main-artifact
-          path: app-main/build/libs/
-
-      # app-main 전용 디렉토리 생성
-      - name: Ensure app-main folder exists on EC2
-        if: github.actor != 'nektos/act'
-        uses: appleboy/ssh-action@master
-        with:
-          key: ${{ secrets.EC2_KEY_DEV }}
-          host: ${{ secrets.EC2_HOST_DEV }}
-          username: ${{ secrets.EC2_USER_DEV }}
-          script: |
-            mkdir -p /home/ubuntu/app/app-main
 
       # app-main JAR 파일 EC2에 전송
       - name: SCP app-main JAR to EC2
@@ -101,7 +88,7 @@ jobs:
           key: ${{ secrets.EC2_KEY_DEV }}
           host: ${{ secrets.EC2_HOST_DEV }}
           username: ${{ secrets.EC2_USER_DEV }}
-          source: "app-main/build/libs/*.jar"
+          source: "*.jar"
           target: "/home/ubuntu/app/app-main"
 
       #      # Github Actions 빌드, 업로드 디버깅 용
@@ -176,8 +163,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app-chat-artifact
-          path: |
-            app-chat/build/libs/*.jar
+          path: "app-chat/build/libs/*.jar"
 
 
   app-chat-deploy:
@@ -190,18 +176,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: app-chat-artifact
-          path: app-chat/build/libs/
-
-      # app-chat 전용 디렉토리 생성
-      - name: Ensure app-chat folder exists on EC2
-        if: github.actor != 'nektos/act'
-        uses: appleboy/ssh-action@master
-        with:
-          key: ${{ secrets.EC2_KEY_DEV }}
-          host: ${{ secrets.EC2_HOST_DEV }}
-          username: ${{ secrets.EC2_USER_DEV }}
-          script: |
-            mkdir -p /home/ubuntu/app/app-chat
 
       # app-chat JAR 파일 EC2에 전송
       - name: SCP app-chat JAR to EC2
@@ -211,7 +185,7 @@ jobs:
           key: ${{ secrets.EC2_KEY_DEV }}
           host: ${{ secrets.EC2_HOST_DEV }}
           username: ${{ secrets.EC2_USER_DEV }}
-          source: "app-chat/build/libs/*.jar"
+          source: "*.jar"
           target: "/home/ubuntu/app/app-chat"
 
       #    # Github Actions 빌드, 업로드 디버깅 용
