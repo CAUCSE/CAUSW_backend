@@ -8,32 +8,7 @@ permissions:
   contents: read
 
 jobs:
-  global-build:
-    name: Prepare Build in Github Actions
-    runs-on: ubuntu-22.04
-
-    steps:
-      # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
-      - name: Checkout branch
-        uses: actions/checkout@v4
-
-      # JDK & Gradle 설정
-      - name: Setup JDK and Gradle
-        uses: ./.github/actions/setup-jdk-gradle
-
-      # global 모듈 빌드
-      - name: Build global module
-        run: ./gradlew clean :global:build
-
-      # global JAR 업로드
-      - name: Upload global jar
-        uses: actions/upload-artifact@v4
-        with:
-          name: global-artifact
-          path: global/build/libs/*.jar
-
   app-main-build:
-    needs: global-build
     runs-on: ubuntu-22.04
 
     steps:
@@ -72,11 +47,6 @@ jobs:
           echo "$ENV_PROD" > .env.prod
 
       # Build -> jar 파일 생성
-      - name: Download global jar
-        uses: actions/download-artifact@v4
-        with:
-          name: global-artifact
-
       - name: Build app-main
         run: ./gradlew clean :app-main:build -x test
 
@@ -148,7 +118,6 @@ jobs:
 
 
   app-chat-build:
-    needs: global-build
     name: Build & Deploy app-chat Module in Github Actions
     runs-on: ubuntu-22.04
 
@@ -177,11 +146,6 @@ jobs:
           echo "$APPLICATION_PROD_FILE" > $DIR/$APPLICATION_PROD_FILE_NAME
 
       # Build -> jar 파일 생성
-      - name: Download global jar
-        uses: actions/download-artifact@v4
-        with:
-          name: global-artifact
-
       - name: Build app-chat module
         run: ./gradlew clean :app-chat:build -x test
 
