@@ -112,6 +112,7 @@ jobs:
 
   junit-test-result-summary:
     name: Report JUnit Test Result Summary
+    if: ${{ always() }}
     runs-on: ubuntu-22.04
     needs: [junit-test-app-main, junit-test-app-chat]
 
@@ -125,7 +126,7 @@ jobs:
       # 테스트 결과 출력
       - name: Comment Test Results Summary
         uses: EnricoMi/publish-unit-test-result-action@v2
-        if: ${{ always() }}
+        if: github.actor != 'nektos/act'
         with:
           files: |
             combined/app-main-test-results/TEST-*.xml

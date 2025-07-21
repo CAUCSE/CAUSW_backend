@@ -96,7 +96,7 @@ jobs:
       - name: Upload Build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: build-artifacts
+          name: app-main-artifact
           path: |
             app-main/build/libs/*.jar
 
@@ -110,10 +110,12 @@ jobs:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: build-artifacts
+          name: app-main-artifact
+          path: app-main/build/libs/
 
       # app-main 전용 디렉토리 생성
       - name: Ensure app-main folder exists on EC2
+        if: github.actor != 'nektos/act'
         uses: appleboy/ssh-action@master
         with:
           key: ${{ secrets.EC2_KEY_DEV }}
@@ -124,6 +126,7 @@ jobs:
 
       # app-main JAR 파일 EC2에 전송
       - name: SCP app-main JAR to EC2
+        if: github.actor != 'nektos/act'
         uses: appleboy/scp-action@master
         with:
           key: ${{ secrets.EC2_KEY_DEV }}
@@ -144,6 +147,7 @@ jobs:
 
       # Redis Server 구동
       - name: Start redis-server
+        if: github.actor != 'nektos/act'
         uses: appleboy/ssh-action@master
         with:
           key: ${{ secrets.EC2_KEY_DEV }}
@@ -154,6 +158,7 @@ jobs:
 
       # 기존 서버 종료 및 app-main JAR 실행
       - name: Deploy app-main
+        if: github.actor != 'nektos/act'
         uses: appleboy/ssh-action@master
         with:
           key: ${{ secrets.EC2_KEY_DEV }}
@@ -207,7 +212,7 @@ jobs:
       - name: Upload Build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: build-artifacts
+          name: app-chat-artifact
           path: |
             app-chat/build/libs/*.jar
 
@@ -221,10 +226,12 @@ jobs:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: build-artifacts
+          name: app-chat-artifact
+          path: app-chat/build/libs/
 
       # app-chat 전용 디렉토리 생성
       - name: Ensure app-chat folder exists on EC2
+        if: github.actor != 'nektos/act'
         uses: appleboy/ssh-action@master
         with:
           key: ${{ secrets.EC2_KEY_DEV }}
@@ -235,6 +242,7 @@ jobs:
 
       # app-chat JAR 파일 EC2에 전송
       - name: SCP app-chat JAR to EC2
+        if: github.actor != 'nektos/act'
         uses: appleboy/scp-action@master
         with:
           key: ${{ secrets.EC2_KEY_DEV }}
@@ -255,6 +263,7 @@ jobs:
 
       # 기존 서버 종료 및 app-chat JAR 실행
       - name: Deploy app-chat
+        if: github.actor != 'nektos/act'
         uses: appleboy/ssh-action@master
         with:
           key: ${{ secrets.EC2_KEY_DEV }}
@@ -275,8 +284,12 @@ jobs:
     if: always()
 
     steps:
+      # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
       - name: Notify Success
-        if: ${{ needs.app-main-deploy.result == 'success' && needs.app-chat-deploy.result == 'success' }}
+        if: ${{ github.actor != 'nektos/act' && needs.app-main-deploy.result == 'success' && needs.app-chat-deploy.result == 'success' }}
         uses: ./.github/actions/discord-notify
         with:
           status: success
@@ -288,7 +301,7 @@ jobs:
           role_id: ${{ secrets.DISCORD_BACKEND_ROLE_ID }}
 
       - name: Notify Failure
-        if: ${{ needs.app-main-deploy.result != 'success' || needs.app-chat-deploy.result != 'success' }}
+        if: ${{ github.actor != 'nektos/act' && (needs.app-main-deploy.result != 'success' || needs.app-chat-deploy.result != 'success') }}
         uses: ./.github/actions/discord-notify
         with:
           status: failure
