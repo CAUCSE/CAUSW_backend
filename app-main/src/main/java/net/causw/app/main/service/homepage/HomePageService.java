@@ -75,6 +75,35 @@ public class HomePageService {
                 .collect(Collectors.toList());
     }
 
+    public List<HomePageResponseDto> getAlumniHomePage(User user) {
+        Set<Role> roles = user.getRoles();
+
+        List<Board> boards = boardRepository.findByIsHomeTrueAndIsAlumniTrueAndIsDeletedFalse();
+        if (boards.isEmpty()) {
+            throw new BadRequestException(
+                    ErrorCode.ROW_DOES_NOT_EXIST,
+                    MessageUtil.BOARD_NOT_FOUND
+            );
+        }
+
+        return boards
+                .stream()
+                .map(board -> HomePageResponseDto.of(
+                        toBoardResponseDto(board, roles),
+                        postRepository.findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(board.getId(), pageableFactory.create(0, StaticValue.ALUMNI_HOME_POST_PAGE_SIZE))
+                                .map(post -> PostDtoMapper.INSTANCE.toPostsResponseDto(
+                                        post,
+                                        postRepository.countAllCommentByPost_Id(post.getId()),
+                                        getNumOfPostLikes(post),
+                                        getNumOfPostFavorites(post),
+                                        !post.getPostAttachImageList().isEmpty() ? post.getPostAttachImageList().get(0) : null,
+                                        StatusPolicy.isPostVote(post),
+                                        post.getForm() != null
+                                )))
+                )
+                .collect(Collectors.toList());
+    }
+
     private BoardResponseDto toBoardResponseDto(Board board, Set<Role> userRoles) {
         List<String> roles = Arrays.asList(board.getCreateRoles().split(","));
         Boolean writable = userRoles.stream()

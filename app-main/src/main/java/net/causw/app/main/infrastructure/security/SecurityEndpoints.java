@@ -76,6 +76,7 @@ public class SecurityEndpoints {
      */
     public static final SecurityEndpoint[] CERTIFIED_USER_ENDPOINTS = {
             of("/api/v1/home", GET),
+            of("/api/v1/home/alumni", GET),
             of("/api/v1/users/academic-record/export", GET),
             of("/api/v1/votes/{voteId}", GET),
             of("/api/v1/boards/**"),
