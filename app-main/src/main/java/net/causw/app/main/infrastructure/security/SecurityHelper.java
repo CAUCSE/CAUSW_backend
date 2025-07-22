@@ -36,7 +36,7 @@ public class SecurityHelper {
     public static boolean isGraduated(CustomUserDetails userDetails){
         AcademicStatus academicStatus = userDetails.getUser().getAcademicStatus();
 
-        if(academicStatus.equals(AcademicStatus.GRADUATED)){
+        if(AcademicStatus.GRADUATED == academicStatus){
             return true;
         } else {
             return false;
