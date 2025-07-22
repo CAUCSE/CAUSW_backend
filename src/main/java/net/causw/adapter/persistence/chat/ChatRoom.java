@@ -3,9 +3,8 @@ package net.causw.adapter.persistence.chat;
 import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
-import net.causw.adapter.persistence.user.User;
 import net.causw.domain.model.enums.chat.ChatRoomType;
-import net.causw.domain.model.enums.chat.ParticipantRole;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -24,18 +23,21 @@ public class ChatRoom extends BaseEntity {
     @Column(name = "type", nullable = false)
     private ChatRoomType roomType;
 
+    @OneToOne(cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, mappedBy = "chatRoom")
+    private ChatRoomProfileImage roomProfileImage;
+
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private Set<ChatRoomParticipant> participants = new HashSet<>();
 
-    public static ChatRoom of(String roomName, ChatRoomType roomType, User owner) {
-        ChatRoom room = ChatRoom.builder()
+    public static ChatRoom of(
+            String roomName,
+            ChatRoomType roomType
+    ) {
+        return ChatRoom.builder()
                 .roomName(roomName)
                 .roomType(roomType)
                 .build();
-        ChatRoomParticipant ownerParticipant = ChatRoomParticipant.of(room, owner, ParticipantRole.ADMIN);
-        room.addParticipant(ownerParticipant);
-        return room;
     }
 
     public void addParticipant(ChatRoomParticipant participant) {

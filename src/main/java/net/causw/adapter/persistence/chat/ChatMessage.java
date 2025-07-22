@@ -1,6 +1,7 @@
 package net.causw.adapter.persistence.chat;
 
 import lombok.*;
+import net.causw.domain.model.enums.chat.MessageType;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -9,8 +10,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -30,7 +33,7 @@ public class ChatMessage {
     private String senderName;
 
     @Field("message_type")
-    private String messageType;
+    private MessageType messageType;
 
     @Field("content")
     private String content;
@@ -38,6 +41,9 @@ public class ChatMessage {
     @CreatedDate
     @Field("timestamp")
     private LocalDateTime timestamp;
+
+    @Field("file_ids")
+    private List<String> fileIds;
 
     @Field("is_deleted")
     @Builder.Default
