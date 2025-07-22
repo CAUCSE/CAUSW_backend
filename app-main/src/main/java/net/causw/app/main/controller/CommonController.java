@@ -41,7 +41,7 @@ public class CommonController {
         return this.homePageService.getHomePage(userDetails.getUser());
     }
 
-    @GetMapping("/api/v1/home/almumi")
+    @GetMapping("/api/v1/home/alumni")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@security.isGraduatedUser()")
     @Operation(summary = "크자회 전용 홈페이지 불러오기 API(완료)",
