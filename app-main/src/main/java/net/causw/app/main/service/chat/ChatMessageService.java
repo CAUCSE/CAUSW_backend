@@ -2,7 +2,10 @@ package net.causw.app.main.service.chat;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
+import net.causw.app.main.service.uuidFile.UuidFileService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +31,7 @@ public class ChatMessageService {
 	private final ChatMessageRepository chatMessageRepository;
 	private final ChatRoomParticipantService chatRoomParticipantService;
 	private final ChatRedisService redisService;
+	private final UuidFileService  uuidFileService;
 
 	@Transactional
 	public ChatMessage saveMessage(ChatMessageDto.SendMessageCommand command, String senderId) {
@@ -77,9 +81,18 @@ public class ChatMessageService {
 		redisService.clearUnreadCount(userId, roomId);
 		chatRoomParticipantService.updateLastReadAt(currentParticipant);
 
+		Map<ChatMessage, List<UuidFile>> messageUuidFiles = messages.stream()
+				.collect(Collectors.toMap(
+						message -> message,
+						message -> message.getFileIds().stream()
+								.map(uuidFileService::findUuidFileById)
+								.toList()
+				));
+
 		return ChatMessageDto.MessagePageResponse.builder()
 			.participants(participantsDto)
-			.messages(messages.stream().map(ChatMessageDto.MessageResponse::from).toList())
+			.messages(messages.stream().map(message ->
+					ChatMessageDto.MessageResponse.from(message, messageUuidFiles.get(message))).toList())
 			.hasNext(messages.size() == limit)
 			.build();
 	}
