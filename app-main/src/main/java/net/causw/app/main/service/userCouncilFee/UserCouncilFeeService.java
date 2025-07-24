@@ -262,6 +262,7 @@ public class UserCouncilFeeService {
 
     }
 
+    // FIXME
     public String getUserIdByStudentId(String studentId) {
         return userRepository.findByStudentId(studentId)
                 .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND))

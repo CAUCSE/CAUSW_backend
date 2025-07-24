@@ -186,6 +186,7 @@ public class UserCouncilFeeController {
        userCouncilFeeService.deleteUserCouncilFee(userDetails.getUser(), userCouncilFeeId);
     }
 
+    // FIXME
     @GetMapping("/getUserIdByStudentId")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
