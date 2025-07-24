@@ -564,14 +564,16 @@ public class UserService {
                 }
         );
 
-        this.userRepository.findByStudentId(userCreateRequestDto.getStudentId()).ifPresent(
+        if (!userCreateRequestDto.getStudentId().isBlank()) {
+            this.userRepository.findByStudentId(userCreateRequestDto.getStudentId()).ifPresent(
                 studentId -> {
                     throw new BadRequestException(
-                            ErrorCode.ROW_ALREADY_EXIST,
-                            MessageUtil.STUDENT_ID_ALREADY_EXIST
+                        ErrorCode.ROW_ALREADY_EXIST,
+                        MessageUtil.STUDENT_ID_ALREADY_EXIST
                     );
                 }
-        );
+            );
+        }
 
         User user = User.from(userCreateRequestDto, passwordEncoder.encode(userCreateRequestDto.getPassword()));
         this.userRepository.save(user);

@@ -30,7 +30,6 @@ public class UserCreateRequestDto {
     @Schema(description = "비밀번호", example = "password00!!")
     private String password;
 
-    @NotBlank(message = "학번을 입력해 주세요.")
     @Schema(description = "학번", example = "20209999")
     private String studentId;
 
