@@ -118,14 +118,12 @@ public class UserService {
     public void findPassword(
             UserFindPasswordRequestDto userFindPasswordRequestDto
     ) {
-        User requestUser = userRepository.findByEmailAndNameAndStudentId(
+        User requestUser = userRepository.findByEmailAndName(
                     userFindPasswordRequestDto.getEmail().trim(),
-                    userFindPasswordRequestDto.getName().trim(),
-                    userFindPasswordRequestDto.getStudentId().trim()
-                ).orElseThrow(() -> new NotFoundException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_NOT_FOUND
-                ));
+                    userFindPasswordRequestDto.getName().trim()
+                ).orElseThrow(() ->
+            new NotFoundException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND));
+
         // 임시 비밀번호 생성
         String newPassword = this.passwordGenerator.generate();
 
