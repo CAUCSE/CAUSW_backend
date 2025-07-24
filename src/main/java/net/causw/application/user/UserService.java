@@ -145,6 +145,21 @@ public class UserService {
         // ! dirty cecking 때문에 save 필요 없음
     }
 
+    public User findByUserId(String userId) {
+        return userRepository.findById(userId).orElseThrow(() -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND));
+    }
+
+    public List<User> findAllById(List<String> userIds) {
+        List<User> users = userRepository.findAllById(userIds);
+
+        if (userIds.size() != users.size()) {
+            throw new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND);
+        }
+
+        return users;
+    }
+
     // Find process of another user
     @Transactional(readOnly = true)
     public UserResponseDto findByUserId(String targetUserId, User requestUser) {

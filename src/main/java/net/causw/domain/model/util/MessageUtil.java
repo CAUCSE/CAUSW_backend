@@ -174,6 +174,14 @@ public class MessageUtil {
     public static final String VOTE_END_NOT_ACCESSIBLE = "투표 종료 권한이 존재하지 않습니다.";
     public static final String VOTE_RESTART_NOT_ACCESSIBLE = "투표 재시작 권한이 존재하지 않습니다.";
     public static final String VOTE_START_NOT_ACCESSIBLE = "투표 시작 권한이 존재하지 않습니다.";
+
+    // Chat
+    public static final String CHAT_ROOM_NOT_FOUND = "존재하지 않는 채팅방입니다.";
+    public static final String CHAT_ROOM_PARTICIPANT_NOT_FOUND = "존재하지 않는 채팅방 참여자입니다.";
+    public static final String CHAT_MESSAGE_NOT_FOUND = "존재하지 않는 메시지입니다.";
+    public static final String CHAT_MESSAGE_DELETE_NOT_ACCESSIBLE = "메시지 삭제 권한이 존재하지 않습니다.";
+
+
     // 500
     public static final String INTERNAL_SERVER_ERROR = "Internal Server Error";
     public static final String FILE_UPLOAD_FAIL = "파일 업로드에 실패했습니다.";

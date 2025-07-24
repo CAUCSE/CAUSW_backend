@@ -107,6 +107,12 @@ public class PostService {
     private final UserPostSubscribeRepository userPostSubscribeRepository;
     private final UserCommentSubscribeRepository userCommentSubscribeRepository;
 
+    public Post findPostById(String postId) {
+        return postRepository.findById(postId).orElseThrow(() -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                MessageUtil.POST_NOT_FOUND));
+    }
+
     public PostResponseDto findPostById(User user, String postId) {
         Post post = getPost(postId);
         ValidatorBucket validatorBucket = initializeValidator(user, post.getBoard());

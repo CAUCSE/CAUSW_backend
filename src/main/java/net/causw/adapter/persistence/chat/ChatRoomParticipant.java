@@ -50,9 +50,8 @@ public class ChatRoomParticipant extends BaseEntity {
     @Column(name = "pinned_at")
     private LocalDateTime pinnedAt;
 
-    public static ChatRoomParticipant of(ChatRoom chatRoom, User user, ParticipantRole role) {
+    public static ChatRoomParticipant of(User user, ParticipantRole role) {
         return ChatRoomParticipant.builder()
-                .chatRoom(chatRoom)
                 .user(user)
                 .role(role)
                 .build();

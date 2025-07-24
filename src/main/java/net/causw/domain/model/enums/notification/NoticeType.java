@@ -7,7 +7,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum NoticeType {
     POST("게시물 알림"),
-    COMMENT("댓글 알림")
+    COMMENT("댓글 알림"),
+    CHAT("메시지 알림")
     ,CEREMONY("경조사 알림")
     ,BOARD("보드 알림");
 

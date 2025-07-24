@@ -1,9 +1,9 @@
-package net.causw.adapter.persistence.chat;
+package net.causw.adapter.persistence.uuidFile.joinEntity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import net.causw.adapter.persistence.chat.ChatRoom;
 import net.causw.adapter.persistence.uuidFile.UuidFile;
-import net.causw.adapter.persistence.uuidFile.joinEntity.JoinEntity;
 
 @Getter
 @Builder(access = AccessLevel.PROTECTED)
@@ -22,13 +22,13 @@ public class ChatRoomProfileImage extends JoinEntity {
     @JoinColumn(name = "uuid_file_id", nullable = false, unique = true)
     public UuidFile uuidFile;
 
+    @Setter(AccessLevel.PROTECTED)
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_room_id", nullable = false)
     private ChatRoom chatRoom;
 
-    public static ChatRoomProfileImage of(ChatRoom chatRoom, UuidFile uuidFile) {
+    public static ChatRoomProfileImage of(UuidFile uuidFile) {
         return ChatRoomProfileImage.builder()
-                .chatRoom(chatRoom)
                 .uuidFile(uuidFile)
                 .build();
     }

@@ -47,6 +47,20 @@ public enum FilePath {
                     FileExtensionType.ETC
             )
     ),
+    CHAT(
+            "chat",
+            30 * 1024 * 1024L, // 30MB
+            10,
+            List.of(
+                    FileExtensionType.IMAGE,
+                    FileExtensionType.VIDEO,
+                    FileExtensionType.AUDIO,
+                    FileExtensionType.TEXT,
+                    FileExtensionType.DOCUMENT,
+                    FileExtensionType.COMPRESS,
+                    FileExtensionType.ETC
+            )
+    ),
     CALENDAR("calendar",
             50 * 1024 * 1024L, // 50MB
             1,

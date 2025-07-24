@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 @Configuration
-@EnableMongoRepositories("net.causw.adapter.persistence.repository.chat;")
+@EnableMongoRepositories("net.causw.adapter.persistence.repository.chat")
 @EnableMongoAuditing
 public class MongoDBConfig {
 

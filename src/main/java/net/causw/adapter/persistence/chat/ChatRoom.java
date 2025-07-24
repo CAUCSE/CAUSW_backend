@@ -3,6 +3,7 @@ package net.causw.adapter.persistence.chat;
 import jakarta.persistence.*;
 import lombok.*;
 import net.causw.adapter.persistence.base.BaseEntity;
+import net.causw.adapter.persistence.uuidFile.joinEntity.ChatRoomProfileImage;
 import net.causw.domain.model.enums.chat.ChatRoomType;
 
 import java.util.HashSet;
@@ -38,6 +39,11 @@ public class ChatRoom extends BaseEntity {
                 .roomName(roomName)
                 .roomType(roomType)
                 .build();
+    }
+
+    public void setRoomProfileImage(ChatRoomProfileImage roomProfileImage) {
+        roomProfileImage.setChatRoom(this);
+        this.roomProfileImage = roomProfileImage;
     }
 
     public void addParticipant(ChatRoomParticipant participant) {
