@@ -1,4 +1,4 @@
-package net.causw.adapter.web;
+package net.causw.app.main.controller;
 
 import java.security.Principal;
 import java.time.LocalDateTime;

@@ -1,8 +1,6 @@
-package net.causw.config.batch.listener;
+package net.causw.app.main.infrastructure.websocket;
 
 import lombok.RequiredArgsConstructor;
-
-import net.causw.application.common.WebSocketEventHandler;
 
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;

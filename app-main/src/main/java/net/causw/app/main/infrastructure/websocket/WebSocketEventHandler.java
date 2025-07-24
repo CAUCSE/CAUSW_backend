@@ -1,4 +1,4 @@
-package net.causw.application.common;
+package net.causw.app.main.infrastructure.websocket;
 
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;

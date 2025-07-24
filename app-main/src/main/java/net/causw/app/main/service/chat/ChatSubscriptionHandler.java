@@ -3,12 +3,11 @@ package net.causw.app.main.service.chat;
 import java.util.Set;
 
 import net.causw.app.main.infrastructure.redis.chat.ChatRedisService;
+import net.causw.app.main.infrastructure.websocket.WebSocketEventHandler;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
-
-import net.causw.application.common.WebSocketEventHandler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
