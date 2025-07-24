@@ -1,5 +1,9 @@
 package net.causw.app.main.infrastructure.websocket;
 
+import net.causw.app.main.infrastructure.security.JwtTokenProvider;
+import net.causw.global.constant.MessageUtil;
+import net.causw.global.exception.ErrorCode;
+import net.causw.global.exception.UnauthorizedException;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
@@ -7,11 +11,6 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
-
-import net.causw.config.security.JwtTokenProvider;
-import net.causw.domain.exceptions.ErrorCode;
-import net.causw.domain.exceptions.UnauthorizedException;
-import net.causw.domain.model.util.MessageUtil;
 
 import lombok.RequiredArgsConstructor;
 

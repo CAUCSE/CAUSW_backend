@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import net.causw.app.main.infrastructure.redis.auth.AuthRedisService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -101,9 +102,6 @@ import net.causw.app.main.repository.uuidFile.UserProfileImageRepository;
 import net.causw.app.main.service.excel.UserExcelService;
 import net.causw.app.main.service.pageable.PageableFactory;
 import net.causw.app.main.service.uuidFile.UuidFileService;
-import net.causw.application.dto.user.*;
-import net.causw.application.redis.auth.AuthRedisService;
-import net.causw.domain.exceptions.*;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;
 import net.causw.global.exception.BadRequestException;

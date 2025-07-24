@@ -1,7 +1,6 @@
-package net.causw.adapter.persistence.repository.uuidFile;
+package net.causw.app.main.repository.uuidFile;
 
-import net.causw.adapter.persistence.uuidFile.joinEntity.ChatRoomProfileImage;
-
+import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.ChatRoomProfileImage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

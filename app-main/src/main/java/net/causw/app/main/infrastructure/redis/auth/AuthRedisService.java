@@ -2,12 +2,11 @@ package net.causw.app.main.infrastructure.redis.auth;
 
 import java.util.concurrent.TimeUnit;
 
+import net.causw.global.constant.StaticValue;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import net.causw.domain.model.util.StaticValue;
-import net.causw.global.constant.StaticValue;
 
 import lombok.RequiredArgsConstructor;
 

@@ -1,16 +1,16 @@
-package net.causw.adapter.web;
+package net.causw.app.main.controller;
 
 import java.security.Principal;
 
+import net.causw.app.main.dto.chat.chat.ChatMessageDto;
+import net.causw.app.main.dto.chat.chat.ChatRoomDto;
+import net.causw.app.main.infrastructure.redis.chat.ChatRedisService;
+import net.causw.app.main.infrastructure.security.userdetails.CustomUserDetails;
+import net.causw.app.main.service.chat.ChatFacadeService;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 
-import net.causw.application.chat.ChatFacadeService;
-import net.causw.application.dto.chat.ChatMessageDto;
-import net.causw.application.dto.chat.ChatRoomDto;
-import net.causw.application.redis.chat.ChatRedisService;
-import net.causw.config.security.userdetails.CustomUserDetails;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +25,7 @@ public class ChatSocketController {
 
 	@MessageMapping("/chat/message")
 	public void handleChatMessage(ChatMessageDto.SendMessageRequest request,
-		@AuthenticationPrincipal CustomUserDetails userDetails) {
+								  @AuthenticationPrincipal CustomUserDetails userDetails) {
 		chatFacadeService.sendMessage(request, userDetails.getUser());
 	}
 

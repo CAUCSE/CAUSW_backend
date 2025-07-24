@@ -1,4 +1,4 @@
-package net.causw.config.redis;
+package net.causw.app.main.infrastructure.redis;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

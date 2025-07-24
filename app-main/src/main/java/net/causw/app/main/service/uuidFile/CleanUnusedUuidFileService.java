@@ -4,15 +4,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import net.causw.app.main.infrastructure.redis.uuidFile.CleanUnusedUuidFileRedisService;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.adapter.persistence.repository.uuidFile.*;
-import net.causw.adapter.persistence.uuidFile.*;
-import net.causw.adapter.persistence.uuidFile.joinEntity.*;
 import net.causw.app.main.domain.model.entity.uuidFile.UuidFile;
 import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.CalendarAttachImage;
 import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.CircleMainImage;
@@ -32,7 +30,6 @@ import net.causw.app.main.repository.uuidFile.UserAdmissionAttachImageRepository
 import net.causw.app.main.repository.uuidFile.UserAdmissionLogAttachImageRepository;
 import net.causw.app.main.repository.uuidFile.UserProfileImageRepository;
 import net.causw.app.main.repository.uuidFile.UuidFileRepository;
-import net.causw.application.redis.uuidFile.CleanUnusedUuidFileRedisService;
 import net.causw.global.constant.StaticValue;
 
 import lombok.RequiredArgsConstructor;
