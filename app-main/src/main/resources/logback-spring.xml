@@ -1,0 +1,96 @@
+<configuration>
+    <property name="LOG_DIR" value="${LOG_DIR:-./log}"/>
+
+    <!-- 콘솔 출력 설정 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="ch.qos.logback.contrib.json.classic.JsonLayout">
+                <appendLineSeparator>true</appendLineSeparator>
+                <jsonFormatter class="ch.qos.logback.contrib.jackson.JacksonJsonFormatter"/>
+                <timestampFormat>yyyy-MM-dd'T'HH:mm:ss.SSSZ</timestampFormat>
+                <timestampFormatTimezoneId>Asia/Seoul</timestampFormatTimezoneId>
+                <includeContextName>true</includeContextName>
+                <includeLoggerName>true</includeLoggerName>
+                <includeThreadName>true</includeThreadName>
+                <includeMdc>true</includeMdc> <!-- traceId, spanId 등 사용 가능 -->
+                <includeFormattedMessage>true</includeFormattedMessage>
+            </layout>
+        </encoder>
+    </appender>
+
+    <!-- 운영용 파일 출력 설정 -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/general.log</file>
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="ch.qos.logback.contrib.json.classic.JsonLayout">
+                <appendLineSeparator>true</appendLineSeparator>
+                <jsonFormatter class="ch.qos.logback.contrib.jackson.JacksonJsonFormatter"/>
+                <timestampFormat>yyyy-MM-dd'T'HH:mm:ss.SSSZ</timestampFormat>
+                <timestampFormatTimezoneId>Asia/Seoul</timestampFormatTimezoneId>
+                <includeContextName>true</includeContextName>
+                <includeLoggerName>true</includeLoggerName>
+                <includeThreadName>true</includeThreadName>
+                <includeMdc>true</includeMdc> <!-- traceId, spanId 등 사용 가능 -->
+                <includeFormattedMessage>true</includeFormattedMessage>
+            </layout>
+        </encoder>
+        <!-- 지난 로그는 loghistory로 저장 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 로그 파일 이름 설정: 날짜별 -->
+            <fileNamePattern>${LOG_DIR}/general-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>7</maxHistory> <!-- 로그 파일을 최대 7일 동안 유지 -->
+        </rollingPolicy>
+    </appender>
+
+    <!-- 개발 환경용 로그 파일 설정 -->
+    <appender name="DEV_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/dev.log</file>
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="ch.qos.logback.contrib.json.classic.JsonLayout">
+                <appendLineSeparator>true</appendLineSeparator>
+                <jsonFormatter class="ch.qos.logback.contrib.jackson.JacksonJsonFormatter"/>
+                <timestampFormat>yyyy-MM-dd'T'HH:mm:ss.SSSZ</timestampFormat>
+                <timestampFormatTimezoneId>Asia/Seoul</timestampFormatTimezoneId>
+                <includeContextName>true</includeContextName>
+                <includeLoggerName>true</includeLoggerName>
+                <includeThreadName>true</includeThreadName>
+                <includeMdc>true</includeMdc>
+                <includeFormattedMessage>true</includeFormattedMessage>
+            </layout>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/dev-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>3</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <!-- 배포 환경 -->
+    <springProfile name="prod">
+        <root level="info">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+        </root>
+    </springProfile>
+
+    <!-- 개발 환경 -->
+    <springProfile name="dev">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="DEV_FILE"/>
+        </root>
+    </springProfile>
+
+    <!-- 로컬 환경 -->
+    <springProfile name="local">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+</configuration>
