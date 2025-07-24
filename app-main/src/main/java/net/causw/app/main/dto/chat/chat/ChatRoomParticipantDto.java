@@ -16,16 +16,15 @@ public class ChatRoomParticipantDto {
 		private String userId;
 		private String name;
 		private String profileImageUrl;
-		private LocalDateTime updatedAt;
+		private LocalDateTime lastReadAt;
 
-		public static ParticipantResponse of(String userId, String name, String profileImageUrl,
-			LocalDateTime updatedAt) {
+		public static ParticipantResponse of(String userId, String name, String profileImageUrl, LocalDateTime lastReadAt) {
 			return ParticipantResponse.builder()
-				.userId(userId)
-				.name(name)
-				.profileImageUrl(profileImageUrl)
-				.updatedAt(updatedAt)
-				.build();
+					.userId(userId)
+					.name(name)
+					.profileImageUrl(profileImageUrl)
+					.lastReadAt(lastReadAt)
+					.build();
 		}
 	}
 }

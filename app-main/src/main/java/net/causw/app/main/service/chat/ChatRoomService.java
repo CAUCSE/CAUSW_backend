@@ -2,6 +2,8 @@ package net.causw.app.main.service.chat;
 
 import java.util.List;
 
+import net.causw.app.main.domain.model.enums.chat.MessageType;
+import net.causw.app.main.dto.chat.chat.ChatRoomParticipantDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -41,17 +43,17 @@ public class ChatRoomService {
 
 	@Transactional
 	public ChatMessageDto.FirstMessageResponse sendFirstOneToOneMessage(
-		ChatMessageDto.FirstOneToOneMessageRequest request,
-		List<UuidFile> messageFiles,
-		User sender
+			ChatMessageDto.FirstOneToOneMessageRequest request,
+			List<UuidFile> messageFiles,
+			User sender
 	) {
 		User target = userService.findByUserId(request.getTargetUserId());
 		ChatRoom room = findOneToOneRoom(sender.getId(), target.getId());
 
 		if (room == null) {
 			String roomName = request.getPostId() != null
-				? postService.findPostById(request.getPostId()).getTitle()
-				: target.getName();
+					? postService.findPostById(request.getPostId()).getTitle()
+					: target.getName();
 
 			ChatRoom newRoom = ChatRoom.of(roomName, ChatRoomType.ONE_TO_ONE);
 			newRoom.addParticipant(ChatRoomParticipant.of(sender, ParticipantRole.ADMIN));
@@ -65,13 +67,13 @@ public class ChatRoomService {
 
 	@Transactional
 	public ChatMessageDto.FirstMessageResponse sendFirstGroupMessage(
-		ChatMessageDto.FirstGroupMessageRequest request,
-		UuidFile roomProfileImageFile,
-		List<UuidFile> messageFiles,
-		User sender
+			ChatMessageDto.FirstGroupMessageRequest request,
+			UuidFile roomProfileImageFile,
+			List<UuidFile> messageFiles,
+			User sender
 	) {
 		ChatRoom newRoom = ChatRoom.of(request.getRoomName(), ChatRoomType.GROUP);
-		newRoom.setRoomProfileImage(ChatRoomProfileImage.of(roomProfileImageFile));
+		newRoom.setRoomProfileImage(ChatRoomProfileImage.of(newRoom, roomProfileImageFile));
 		newRoom.addParticipant(ChatRoomParticipant.of(sender, ParticipantRole.ADMIN));
 
 		List<User> targetUsers = userService.findAllById(request.getTargetUserIds());
@@ -87,54 +89,78 @@ public class ChatRoomService {
 	}
 
 	private ChatMessageDto.FirstMessageResponse sendFirstMessageToRoom(
-		ChatRoom room,
-		String content,
-		MessageType messageType,
-		List<UuidFile> messageFiles,
-		User sender
+			ChatRoom room,
+			String content,
+			MessageType messageType,
+			List<UuidFile> messageFiles,
+			User sender
 	) {
-		ChatMessageDto.SendMessageCommand command = ChatMessageDto.SendMessageCommand.of(room.getId(), content,
-			messageType, messageFiles);
+		ChatMessageDto.SendMessageCommand command = ChatMessageDto.SendMessageCommand.of(room.getId(), content, messageType, messageFiles);
 		ChatMessageDto.MessageResponse message = chatMessageSocketService.processIncomingMessage(command, room, sender);
 
-		ChatRoomDto.RoomDetail room = ChatRoomDto.RoomDetail.builder().build();
+		List<ChatRoomParticipantDto.ParticipantResponse> participants = room.getParticipants().stream().map(participant -> {
+			String profileImageUrl = participant.getUser().getUserProfileImage().getUuidFile().getFileUrl();
 
-		return ChatMessageDto.FirstMessageResponse.from(roomId, response);
-	}
+			return ChatRoomParticipantDto.ParticipantResponse.of(
+					participant.getId(),
+					participant.getUser().getName(),
+					profileImageUrl,
+					participant.getLastReadAt()
+			);
+		}).toList();
 
-	public ChatRoomDto.RoomListResponse getChatRooms(User user, int pageNum, int pageSize) {
-		Page<ChatRoom> rooms = chatRoomRepository.findActiveChatRoomsByParticipant(user,
-			PageRequest.of(pageNum, pageSize));
+		ChatRoomParticipant senderParticipant = room.getParticipants().stream()
+				.filter(participant -> participant.getId().equals(sender.getId()))
+				.findFirst()
+				.orElseThrow(() -> new BadRequestException(
+						ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.CHAT_ROOM_PARTICIPANT_NOT_FOUND));
 
-		List<ChatRoomDto.RoomDetail> roomDetails = rooms.stream().map(room -> {
-			int unreadCount = redisService.getUnreadCount(user.getId(), room.getId());
-			ChatMessage lastMessage = chatMessageService.findByRoomIdOrderByTimestampDesc(room.getId());
-
-			return ChatRoomDto.RoomDetail.builder()
+		ChatRoomDto.RoomDetail roomDetail = ChatRoomDto.RoomDetail.builder()
 				.roomId(room.getId())
 				.roomName(room.getRoomName())
-				.roomType(room.getRoomType().name())
-				.roomProfileUrl("")
-				.unreadCount(unreadCount)
-				.isPinned(room.getParticipants().stream()
-					.filter(p -> p.getUser().getId().equals(""))
-					.findFirst()
-					.map(p -> p.getPinnedAt() != null)
-					.orElse(false))
-				.lastMessage(lastMessage != null ? ChatRoomDto.LastMessageDto.from(lastMessage) : null)
-				.lastActivityAt(room.getCreatedAt()) // 수정 필요시 변경
+				.roomType(room.getRoomType())
+				.roomProfileUrl(room.getRoomProfileImage().getUuidFile().getFileUrl())
+				.unreadCount(redisService.getUnreadCount(sender.getId(), room.getId()))
+				.isPinned(senderParticipant.isPinned())
+				.lastActivityAt(message.getTimestamp())
 				.createdAt(room.getCreatedAt())
 				.build();
+
+		return ChatMessageDto.FirstMessageResponse.from(roomDetail, participants, message);
+	}
+
+
+	public ChatRoomDto.RoomListResponse getChatRooms(User user, int pageNum, int pageSize) {
+		Page<ChatRoom> rooms = chatRoomRepository.findActiveChatRoomsByParticipant(user, PageRequest.of(pageNum, pageSize));
+
+		List<ChatRoomDto.RoomWithPreviewMessage> roomWithPreviewMessages = rooms.stream().map(room -> {
+			int unreadCount = redisService.getUnreadCount(user.getId(), room.getId());
+			ChatMessage lastMessage = chatMessageService.findByRoomIdOrderByTimestampDesc(room.getId());
+			ChatRoomParticipant userParticipant = chatRoomParticipantService.findByRoomIdAndUserId(room.getId(), user.getId());
+			ChatRoomDto.RoomDetail roomDetail = ChatRoomDto.RoomDetail.builder()
+					.roomId(room.getId())
+					.roomName(room.getRoomName())
+					.roomType(room.getRoomType())
+					.roomProfileUrl(room.getRoomProfileImage().getUuidFile().getFileUrl())
+					.unreadCount(unreadCount)
+					.isPinned(userParticipant.isPinned())
+					.lastActivityAt(lastMessage.getTimestamp())
+					.createdAt(room.getCreatedAt())
+					.build();
+			ChatMessageDto.PreviewMessageResponse previewMessage = ChatMessageDto.PreviewMessageResponse.from(lastMessage);
+
+			return ChatRoomDto.RoomWithPreviewMessage.of(roomDetail, previewMessage);
 		}).toList();
 
 		int totalUnread = redisService.getTotalUnreadCount(user.getId());
 
-		return ChatRoomDto.RoomListResponse.builder()
-			.rooms(roomDetails)
-			.totalUnreadCount(totalUnread)
-			.hasNext(false) // 페이징 구현 시 수정
-			.build();
+		return ChatRoomDto.RoomListResponse.from(
+				roomWithPreviewMessages,
+				totalUnread,
+				rooms.hasNext()
+		);
 	}
+
 
 	@Transactional
 	public void leaveRoom(String roomId, String userId) {
@@ -151,14 +177,14 @@ public class ChatRoomService {
 
 	public ChatRoom findByRoomIdAndUserId(String roomId, String userId) {
 		return chatRoomRepository.findByIdAndParticipantsUserId(roomId, userId).orElseThrow(() ->
-			new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.CHAT_ROOM_NOT_FOUND));
+				new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.CHAT_ROOM_NOT_FOUND));
 	}
 
 	private ChatRoom findOneToOneRoom(String senderId, String targetUserId) {
 		List<ChatRoom> chatRooms = chatRoomRepository
-			.findByRoomTypeAndParticipantsUserIdIn(ChatRoomType.ONE_TO_ONE, List.of(senderId, targetUserId));
+				.findByRoomTypeAndParticipantsUserIdIn(ChatRoomType.ONE_TO_ONE, List.of(senderId, targetUserId));
 
 		return chatRooms.stream()
-			.filter(room -> room.getParticipants().size() == 2).findFirst().orElse(null);
+				.filter(room -> room.getParticipants().size() == 2).findFirst().orElse(null);
 	}
 }

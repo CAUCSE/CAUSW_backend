@@ -88,6 +88,10 @@ public class ChatRoomParticipant extends BaseEntity {
 		this.pinnedAt = null;
 	}
 
+	public boolean isPinned() {
+		return pinnedAt != null;
+	}
+
 	protected void setChatRoom(ChatRoom chatRoom) {
 		this.chatRoom = chatRoom;
 	}

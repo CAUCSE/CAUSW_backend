@@ -22,10 +22,10 @@ import lombok.Setter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "tb_chat_room_profile_uuid_file",
-	indexes = {
-		@Index(name = "idx_chat_room_profile_chat_room_id", columnList = "chat_room_id"),
-		@Index(name = "idx_chat_room_profile_uuid_file_id", columnList = "uuid_file_id")
-	})
+		indexes = {
+				@Index(name = "idx_chat_room_profile_chat_room_id", columnList = "chat_room_id"),
+				@Index(name = "idx_chat_room_profile_uuid_file_id", columnList = "uuid_file_id")
+		})
 public class ChatRoomProfileImage extends JoinEntity {
 
 	@Setter(AccessLevel.PUBLIC)
@@ -38,11 +38,10 @@ public class ChatRoomProfileImage extends JoinEntity {
 	@JoinColumn(name = "chat_room_id", nullable = false)
 	private ChatRoom chatRoom;
 
-	public static ChatRoomProfileImage of(UuidFile uuidFile) {
+	public static ChatRoomProfileImage of(ChatRoom room, UuidFile uuidFile) {
 		return ChatRoomProfileImage.builder()
-			.uuidFile(uuidFile)
-			.build();
+				.chatRoom(room)
+				.uuidFile(uuidFile)
+				.build();
 	}
 }
-
-

@@ -59,22 +59,22 @@ public class ChatMessageDto {
 
 	@Getter
 	@Setter
-	@Builder(access = AccessLevel.PRIVATE)
+	@Builder(access =  AccessLevel.PRIVATE)
 	public static class FirstMessageResponse {
 		private RoomDetail room;
 		private List<ParticipantResponse> participants;
 		private MessageResponse message;
 
 		public static FirstMessageResponse from(
-			RoomDetail room,
-			List<ParticipantResponse> participants,
-			MessageResponse message
+				RoomDetail room,
+				List<ParticipantResponse> participants,
+				MessageResponse message
 		) {
 			return FirstMessageResponse.builder()
-				.room(room)
-				.participants(participants)
-				.message(message)
-				.build();
+					.room(room)
+					.participants(participants)
+					.message(message)
+					.build();
 		}
 	}
 
@@ -94,10 +94,10 @@ public class ChatMessageDto {
 
 		public static SendMessageRequest of(String roomId, String content, MessageType messageType) {
 			return SendMessageRequest.builder()
-				.roomId(roomId)
-				.content(content)
-				.messageType(messageType)
-				.build();
+					.roomId(roomId)
+					.content(content)
+					.messageType(messageType)
+					.build();
 		}
 	}
 
@@ -112,32 +112,31 @@ public class ChatMessageDto {
 		private MessageType messageType;
 		private List<UuidFile> uuidFiles;
 
-		public static SendMessageCommand of(String roomId, String content, MessageType messageType,
-			List<UuidFile> uuidFiles) {
+		public static SendMessageCommand of(String roomId, String content, MessageType messageType, List<UuidFile> uuidFiles) {
 			return SendMessageCommand.builder()
-				.roomId(roomId)
-				.content(content)
-				.messageType(messageType)
-				.uuidFiles(uuidFiles)
-				.build();
+					.roomId(roomId)
+					.content(content)
+					.messageType(messageType)
+					.uuidFiles(uuidFiles)
+					.build();
 		}
 
 		public static SendMessageCommand from(SendMessageRequest request, List<UuidFile> uuidFiles) {
 			return SendMessageCommand.builder()
-				.roomId(request.getRoomId())
-				.content(request.getContent())
-				.messageType(request.getMessageType())
-				.uuidFiles(uuidFiles)
-				.build();
+					.roomId(request.getRoomId())
+					.content(request.getContent())
+					.messageType(request.getMessageType())
+					.uuidFiles(uuidFiles)
+					.build();
 		}
 
 		public static SendMessageCommand from(SendMessageRequest request) {
 			return SendMessageCommand.builder()
-				.roomId(request.getRoomId())
-				.content(request.getContent())
-				.messageType(request.getMessageType())
-				.uuidFiles(null)
-				.build();
+					.roomId(request.getRoomId())
+					.content(request.getContent())
+					.messageType(request.getMessageType())
+					.uuidFiles(null)
+					.build();
 		}
 	}
 
@@ -154,12 +153,12 @@ public class ChatMessageDto {
 
 		public static MessageResponse from(ChatMessage message, List<UuidFile> uuidFiles) {
 			MessageResponse response = MessageResponse.builder()
-				.id(message.getId())
-				.senderId(message.getSenderId())
-				.content(message.getContent())
-				.messageType(message.getMessageType())
-				.timestamp(message.getTimestamp())
-				.build();
+					.id(message.getId())
+					.senderId(message.getSenderId())
+					.content(message.getContent())
+					.messageType(message.getMessageType())
+					.timestamp(message.getTimestamp())
+					.build();
 
 			List<String> fileUrls = uuidFiles.stream().map(UuidFile::getFileUrl).toList();
 			response.setFileUrls(fileUrls);
@@ -170,7 +169,7 @@ public class ChatMessageDto {
 
 	@Getter
 	@Setter
-	@Builder(access = AccessLevel.PRIVATE)
+	@Builder(access =  AccessLevel.PRIVATE)
 	public static class PreviewMessageResponse {
 		private String content;
 		private String senderName;
@@ -179,11 +178,11 @@ public class ChatMessageDto {
 
 		public static PreviewMessageResponse from(ChatMessage message) {
 			return PreviewMessageResponse.builder()
-				.content(message.getContent())
-				.senderName(message.getSenderName())
-				.messageType(message.getMessageType())
-				.timestamp(message.getTimestamp())
-				.build();
+					.content(message.getContent())
+					.senderName(message.getSenderName())
+					.messageType(message.getMessageType())
+					.timestamp(message.getTimestamp())
+					.build();
 		}
 	}
 
