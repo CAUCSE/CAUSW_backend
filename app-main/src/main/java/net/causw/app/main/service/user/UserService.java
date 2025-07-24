@@ -1,5 +1,7 @@
 package net.causw.app.main.service.user;
 
+import static net.causw.global.constant.MessageUtil.STUDENT_WITHOUT_STUDENT_ID;
+
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
@@ -562,7 +564,7 @@ public class UserService {
                 }
         );
 
-        if (!userCreateRequestDto.getStudentId().isBlank()) {
+        if (userCreateRequestDto.getStudentId() != null) {
             this.userRepository.findByStudentId(userCreateRequestDto.getStudentId()).ifPresent(
                 studentId -> {
                     throw new BadRequestException(
@@ -665,6 +667,10 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public DuplicatedCheckResponseDto isDuplicatedStudentId(String studentId) {
+        if (studentId == null) {
+            return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(false);
+        }
+
         Optional<User> userFoundByStudentId = userRepository.findByStudentId(studentId);
         if (userFoundByStudentId.isPresent()) {
             UserState state = userFoundByStudentId.get().getState();
@@ -1225,6 +1231,13 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public List<UserResponseDto> findByStudentId(String studentId) {
+        if (studentId == null) {
+            throw new BadRequestException(
+                ErrorCode.INVALID_PARAMETER,
+                STUDENT_WITHOUT_STUDENT_ID
+            );
+        }
+
         List<User> userList = this.userRepository.findByStudentIdAndStateAndAcademicStatus(studentId, UserState.ACTIVE, AcademicStatus.ENROLLED);
 
         if (userList.isEmpty()) {

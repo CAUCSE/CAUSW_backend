@@ -1,5 +1,7 @@
 package net.causw.app.main.service.userCouncilFee;
 
+import static net.causw.global.constant.MessageUtil.STUDENT_WITHOUT_STUDENT_ID;
+
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import net.causw.app.main.repository.userCouncilFee.UserCouncilFeeLogRepository;
@@ -262,8 +264,14 @@ public class UserCouncilFeeService {
 
     }
 
-    // FIXME
     public String getUserIdByStudentId(String studentId) {
+        if (studentId == null) {
+            throw new BadRequestException(
+                ErrorCode.INVALID_PARAMETER,
+                STUDENT_WITHOUT_STUDENT_ID
+            );
+        }
+
         return userRepository.findByStudentId(studentId)
                 .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND))
                 .getId();
