@@ -1,10 +1,12 @@
 package net.causw.app.main.domain.model.entity.chat;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import lombok.*;
 import net.causw.app.main.domain.model.entity.base.BaseEntity;
+import net.causw.app.main.domain.model.entity.uuidFile.UuidFile;
 import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.ChatRoomProfileImage;
 import net.causw.app.main.domain.model.enums.chat.ChatRoomType;
 
@@ -53,5 +55,12 @@ public class ChatRoom extends BaseEntity {
 	public void addParticipant(ChatRoomParticipant participant) {
 		participant.setChatRoom(this);
 		this.participants.add(participant);
+	}
+
+	public String getRoomProfileImageUrl() {
+		return Optional.ofNullable(roomProfileImage)
+				.map(ChatRoomProfileImage::getUuidFile)
+				.map(UuidFile::getFileUrl)
+				.orElse(null);
 	}
 } 

@@ -160,7 +160,11 @@ public class ChatMessageDto {
 					.timestamp(message.getTimestamp())
 					.build();
 
-			List<String> fileUrls = uuidFiles.stream().map(UuidFile::getFileUrl).toList();
+			List<String> fileUrls =
+					uuidFiles != null
+							? uuidFiles.stream().map(UuidFile::getFileUrl).toList()
+							: List.of();
+
 			response.setFileUrls(fileUrls);
 
 			return response;

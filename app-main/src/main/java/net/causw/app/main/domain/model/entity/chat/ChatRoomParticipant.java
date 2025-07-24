@@ -1,9 +1,12 @@
 package net.causw.app.main.domain.model.entity.chat;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import net.causw.app.main.domain.model.entity.base.BaseEntity;
 import net.causw.app.main.domain.model.entity.user.User;
+import net.causw.app.main.domain.model.entity.uuidFile.UuidFile;
+import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.model.enums.chat.ParticipantRole;
 
 import jakarta.persistence.Column;
@@ -94,5 +97,13 @@ public class ChatRoomParticipant extends BaseEntity {
 
 	protected void setChatRoom(ChatRoom chatRoom) {
 		this.chatRoom = chatRoom;
+	}
+
+	public String getUserProfileImageUrl() {
+		return Optional.ofNullable(user)
+				.map(User::getUserProfileImage)
+				.map(UserProfileImage::getUuidFile)
+				.map(UuidFile::getFileUrl)
+				.orElse(null);
 	}
 } 

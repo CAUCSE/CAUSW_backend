@@ -2,6 +2,7 @@ package net.causw.app.main.service.chat;
 
 import java.util.List;
 
+import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.model.enums.chat.MessageType;
 import net.causw.app.main.dto.chat.chat.ChatRoomParticipantDto;
 import org.springframework.data.domain.Page;
@@ -98,19 +99,16 @@ public class ChatRoomService {
 		ChatMessageDto.SendMessageCommand command = ChatMessageDto.SendMessageCommand.of(room.getId(), content, messageType, messageFiles);
 		ChatMessageDto.MessageResponse message = chatMessageSocketService.processIncomingMessage(command, room, sender);
 
-		List<ChatRoomParticipantDto.ParticipantResponse> participants = room.getParticipants().stream().map(participant -> {
-			String profileImageUrl = participant.getUser().getUserProfileImage().getUuidFile().getFileUrl();
-
-			return ChatRoomParticipantDto.ParticipantResponse.of(
-					participant.getId(),
-					participant.getUser().getName(),
-					profileImageUrl,
-					participant.getLastReadAt()
-			);
-		}).toList();
+		List<ChatRoomParticipantDto.ParticipantResponse> participants = room.getParticipants().stream()
+				.map(participant -> ChatRoomParticipantDto.ParticipantResponse.of(
+                        participant.getId(),
+                        participant.getUser().getName(),
+                        participant.getUserProfileImageUrl(),
+                        participant.getLastReadAt()
+                )).toList();
 
 		ChatRoomParticipant senderParticipant = room.getParticipants().stream()
-				.filter(participant -> participant.getId().equals(sender.getId()))
+				.filter(participant -> participant.getUser().getId().equals(sender.getId()))
 				.findFirst()
 				.orElseThrow(() -> new BadRequestException(
 						ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.CHAT_ROOM_PARTICIPANT_NOT_FOUND));
@@ -119,7 +117,7 @@ public class ChatRoomService {
 				.roomId(room.getId())
 				.roomName(room.getRoomName())
 				.roomType(room.getRoomType())
-				.roomProfileUrl(room.getRoomProfileImage().getUuidFile().getFileUrl())
+				.roomProfileUrl(room.getRoomProfileImageUrl())
 				.unreadCount(redisService.getUnreadCount(sender.getId(), room.getId()))
 				.isPinned(senderParticipant.isPinned())
 				.lastActivityAt(message.getTimestamp())
@@ -141,7 +139,7 @@ public class ChatRoomService {
 					.roomId(room.getId())
 					.roomName(room.getRoomName())
 					.roomType(room.getRoomType())
-					.roomProfileUrl(room.getRoomProfileImage().getUuidFile().getFileUrl())
+					.roomProfileUrl(room.getRoomProfileImageUrl())
 					.unreadCount(unreadCount)
 					.isPinned(userParticipant.isPinned())
 					.lastActivityAt(lastMessage.getTimestamp())
