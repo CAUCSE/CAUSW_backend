@@ -6,6 +6,7 @@ import net.causw.adapter.persistence.base.BaseEntity;
 import net.causw.adapter.persistence.circle.CircleMember;
 import net.causw.adapter.persistence.locker.Locker;
 import net.causw.adapter.persistence.notification.CeremonyNotificationSetting;
+import net.causw.adapter.persistence.userInfo.UserInfo;
 import net.causw.adapter.persistence.uuidFile.joinEntity.UserProfileImage;
 import net.causw.adapter.persistence.vote.VoteRecord;
 import net.causw.application.dto.user.UserCreateRequestDto;
@@ -114,6 +115,9 @@ public class User extends BaseEntity {
     //fixme : db에러로 임시 설정
     @Column(name = "fcm_token")
     private String fcmToken;
+
+    @OneToOne(mappedBy = "user", fetch = FetchType.EAGER)
+    private UserInfo userDetail;
 
     public void delete() {
         this.email = "deleted_" + this.getId();

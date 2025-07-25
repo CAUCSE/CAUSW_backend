@@ -108,6 +108,9 @@ public class MessageUtil {
     public static final String GRANT_ROLE_NOT_ALLOWED = "권한을 부여할 수 없습니다.";
     public static final String DELEGATE_ROLE_NOT_ALLOWED = "권한을 위임할 수 없습니다.";
 
+    // UserInfo
+
+
     // Flag
     public static final String FLAG_UPDATE_FAILED = "플래그 업데이트에 실패했습니다.";
     public static final String FLAG_ALREADY_EXIST = "이미 존재하는 플래그 입니다.";
