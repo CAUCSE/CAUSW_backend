@@ -158,6 +158,10 @@ public class User extends BaseEntity {
         this.rejectionOrDropReason = reason;
     }
 
+    public void removeFcmToken(String targetToken){
+        this.fcmTokens.remove(targetToken);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

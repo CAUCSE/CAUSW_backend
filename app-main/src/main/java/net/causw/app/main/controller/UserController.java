@@ -596,9 +596,10 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "OK", content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "application/json", schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = UserSignInResponseDto.class)))
     })
     public UserSignOutResponseDto signOut(
-            @Valid @RequestBody UserSignOutRequestDto userSignOutRequestDto
+            @Valid @RequestBody UserSignOutRequestDto userSignOutRequestDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ){
-        return userService.signOut(userSignOutRequestDto);
+        return userService.signOut(userDetails.getUser(), userSignOutRequestDto);
     }
     /**
      * @param userFindIdRequestDto
