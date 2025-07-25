@@ -1214,9 +1214,14 @@ public class UserService {
                         ));
     }
 
-    public UserSignOutResponseDto signOut(UserSignOutRequestDto userSignOutRequestDto){
+    public UserSignOutResponseDto signOut(User user, UserSignOutRequestDto userSignOutRequestDto){
         redisUtils.addToBlacklist(userSignOutRequestDto.getAccessToken());
         redisUtils.deleteRefreshTokenData(userSignOutRequestDto.getRefreshToken());
+
+        if (userSignOutRequestDto.getFcmToken() != null) {
+            user.removeFcmToken(userSignOutRequestDto.getFcmToken());
+            userRepository.save(user);
+        }
 
         return UserDtoMapper.INSTANCE.toUserSignOutResponseDto("로그아웃 성공");
     }

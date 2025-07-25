@@ -111,9 +111,6 @@ public class User extends BaseEntity {
     @Column(name = "fcm_token_value")
     private Set<String> fcmTokens = new HashSet<>();
 
-    //fixme : db에러로 임시 설정
-    @Column(name = "fcm_token")
-    private String fcmToken;
 
     public void delete() {
         this.email = "deleted_" + this.getId();
@@ -156,6 +153,10 @@ public class User extends BaseEntity {
 
     public void updateRejectionOrDropReason(String reason) {
         this.rejectionOrDropReason = reason;
+    }
+
+    public void removeFcmToken(String targetToken){
+        this.fcmTokens.remove(targetToken);
     }
 
     @Override
