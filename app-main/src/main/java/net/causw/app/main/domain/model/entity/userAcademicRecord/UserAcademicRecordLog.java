@@ -35,7 +35,7 @@ public class UserAcademicRecordLog extends BaseEntity {
     @Column(name = "target_user_name", nullable = false)
     private String targetUserName;
 
-    @Column(name = "target_user_student_id", nullable = false)
+    @Column(name = "target_user_student_id", nullable = true)
     private String targetUserStudentId;
 
     @Enumerated(EnumType.STRING)
