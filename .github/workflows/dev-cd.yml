@@ -8,29 +8,25 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    name: Build in Github Actions
+  app-main-build:
+    name: Build & Deploy app-main Module in Github Actions
     runs-on: ubuntu-22.04
 
     steps:
       # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
       - name: Checkout branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      # java 버전 세팅(JDK 17)
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'zulu'
+      # JDK & Gradle 설정
+      - name: Setup JDK and Gradle
+        uses: ./.github/actions/setup-jdk-gradle
 
-      # git ignore한 yml 파일들 github secret에서 복사해 오기
-      - name: Copy secret
+      # .gitignore된 yml 파일들 github secret에서 복사
+      - name: Copy secret for app-main
         env:
           APPLICATION_FILE: ${{ secrets.APPLICATION_PROFILE_DEV }}
           APPLICATION_DEV_FILE: ${{ secrets.APPLICATION_DEV }}
-          DIR: ./src/main/resources
-
+          DIR: ./app-main/src/main/resources
           APPLICATION_FILE_NAME: application.yml
           APPLICATION_DEV_FILE_NAME: application-dev.yml
         run: |
@@ -44,7 +40,7 @@ jobs:
         env:
           FIREBASE_KEY: ${{ secrets.FIREBASE_KEY }}
           FIREBASE_KEY_FILENAME: dongnae_firebase_key.json
-          DIR: ./src/main/resources
+          DIR: ./app-main/src/main/resources
         run: |
           touch $DIR/$FIREBASE_KEY_FILENAME
           echo "$FIREBASE_KEY" > $DIR/$FIREBASE_KEY_FILENAME
@@ -58,61 +54,56 @@ jobs:
           $ENV_DEV
           EOF
 
-      # gradlew 실행 권한 부여
-      - name: Run chmod to make gradlew executable
-        run: chmod +x ./gradlew
-        shell: bash
-
       # Flyway 마이그레이션
       - name: Run Flyway migration
         run: ./gradlew flywayMigrate -Penv=dev
 
       # Build -> jar 파일 생성
-      - name: Build with Gradle
-        run: ./gradlew clean build -x test
-        shell: bash
+      - name: Build app-main module
+        run: ./gradlew clean :app-main:bootJar -x test
 
       - name: Upload Build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: build-artifacts
-          path: |
-            build/libs/*.jar
+          name: app-main-artifact
+          path: "app-main/build/libs/*.jar"
 
 
-  deploy:
-    name: CD with SSH
-    needs: build
+  app-main-deploy:
+    name: CD app-main Module with SSH
+    needs: app-main-build
     runs-on: ubuntu-22.04
 
     steps:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: build-artifacts
+          name: app-main-artifact
 
-      # JAR 파일을 EC2에 배포하는 step
-      - name: SCP JAR to EC2
+      # app-main JAR 파일 EC2에 전송
+      - name: SCP app-main JAR to EC2
+        if: github.actor != 'nektos/act'
         uses: appleboy/scp-action@master
         with:
           key: ${{ secrets.EC2_KEY_DEV }}
           host: ${{ secrets.EC2_HOST_DEV }}
           username: ${{ secrets.EC2_USER_DEV }}
           source: "*.jar"
-          target: "/home/ubuntu/app"
+          target: "/home/ubuntu/app/app-main"
 
-      # 전체 프로젝트 코드 Github Actions에서 어떻게 Build 되고, 업로드 될 지 Debugging 원할 시 주석 해제
-      #      - name: Upload project code
+      #      # Github Actions 빌드, 업로드 디버깅 용
+      #      - name: Upload project code (app-main)
       #        uses: appleboy/scp-action@master
       #        with:
       #          key: ${{ secrets.EC2_KEY_DEV }}
       #          host: ${{ secrets.EC2_HOST_DEV }}
       #          username: ${{ secrets.EC2_USER_DEV }}
-      #          target: /home/ubuntu/app/spring_source
-      #          source: .
+      #          target: /home/ubuntu/app/spring_source/app-main
+      #          source: app-main/**
 
       # Redis Server 구동
       - name: Start redis-server
+        if: github.actor != 'nektos/act'
         uses: appleboy/ssh-action@master
         with:
           key: ${{ secrets.EC2_KEY_DEV }}
@@ -121,49 +112,139 @@ jobs:
           script: |
             sudo systemctl start redis-server
 
-      # EC2에 SSH로 배포 커맨드를 입력하는 step
-      - name: Deploy SSH
+      # 기존 서버 종료 및 app-main JAR 실행
+      - name: Deploy app-main
+        if: github.actor != 'nektos/act'
         uses: appleboy/ssh-action@master
         with:
           key: ${{ secrets.EC2_KEY_DEV }}
           host: ${{ secrets.EC2_HOST_DEV }}
           username: ${{ secrets.EC2_USER_DEV }}
-          # 기존 실행 중인 서버 종료 후 jar 파일 실행
           script: |
-            sudo fuser -k -n tcp 8080
+            sudo fuser -k -n tcp 8080 || true
             sleep 15
-            sudo nohup java -jar /home/ubuntu/app/*.jar > ./nohup.out 2>&1 &
+            APP_MAIN_JAR=$(ls -t /home/ubuntu/app/app-main/*.jar | head -n 1)
+            sudo mkdir -p /var/log/spring-boot/app-main
+            sudo nohup java -DLOG_DIR=/var/log/spring-boot/app-main -jar "$APP_MAIN_JAR" 1>/dev/null 2>&1 & 
 
-      - name: Discord Notify (Always)
-        if: always()
-        uses: sarisia/actions-status-discord@v1
+
+  app-chat-build:
+    name: Build & Deploy app-chat Module in Github Actions
+    runs-on: ubuntu-22.04
+
+    steps:
+      # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      # JDK & Gradle 설정
+      - name: Setup JDK and Gradle
+        uses: ./.github/actions/setup-jdk-gradle
+
+      # .gitignore된 yml 파일들 github secret에서 복사
+      - name: Copy secret for app-chat
+        env:
+          APPLICATION_FILE: ${{ secrets.APPLICATION_PROFILE_DEV }}
+          APPLICATION_DEV_FILE: ${{ secrets.APPLICATION_DEV_APP_CHAT }}
+          DIR: ./app-chat/src/main/resources
+          APPLICATION_FILE_NAME: application.yml
+          APPLICATION_DEV_FILE_NAME: application-dev.yml
+        run: |
+          touch $DIR/$APPLICATION_FILE_NAME
+          touch $DIR/$APPLICATION_DEV_FILE_NAME
+          echo "$APPLICATION_FILE" > $DIR/$APPLICATION_FILE_NAME
+          echo "$APPLICATION_DEV_FILE" > $DIR/$APPLICATION_DEV_FILE_NAME
+
+      # Build -> jar 파일 생성
+      - name: Build app-chat module
+        run: ./gradlew clean :app-chat:bootJar -x test
+
+      - name: Upload Build artifacts
+        uses: actions/upload-artifact@v4
         with:
+          name: app-chat-artifact
+          path: "app-chat/build/libs/*.jar"
+
+
+  app-chat-deploy:
+    name: CD app-chat Module with SSH
+    needs: app-chat-build
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: app-chat-artifact
+
+      # app-chat JAR 파일 EC2에 전송
+      - name: SCP app-chat JAR to EC2
+        if: github.actor != 'nektos/act'
+        uses: appleboy/scp-action@master
+        with:
+          key: ${{ secrets.EC2_KEY_DEV }}
+          host: ${{ secrets.EC2_HOST_DEV }}
+          username: ${{ secrets.EC2_USER_DEV }}
+          source: "*.jar"
+          target: "/home/ubuntu/app/app-chat"
+
+      #    # Github Actions 빌드, 업로드 디버깅 용
+      #    - name: Upload project code (app-chat)
+      #      uses: appleboy/scp-action@master
+      #      with:
+      #        key: ${{ secrets.EC2_KEY_DEV }}
+      #        host: ${{ secrets.EC2_HOST_DEV }}
+      #        username: ${{ secrets.EC2_USER_DEV }}
+      #        target: /home/ubuntu/app/spring_source/app-chat
+      #        source: app-chat/**
+
+      # 기존 서버 종료 및 app-chat JAR 실행
+      - name: Deploy app-chat
+        if: github.actor != 'nektos/act'
+        uses: appleboy/ssh-action@master
+        with:
+          key: ${{ secrets.EC2_KEY_DEV }}
+          host: ${{ secrets.EC2_HOST_DEV }}
+          username: ${{ secrets.EC2_USER_DEV }}
+          script: |
+            sudo fuser -k -n tcp 8081 || true
+            sleep 15
+            APP_CHAT_JAR=$(ls -t /home/ubuntu/app/app-chat/*.jar | head -n 1)
+            sudo mkdir -p /var/log/spring-boot/app-chat
+            sudo nohup java -DLOG_DIR=/var/log/spring-boot/app-chat -jar "$APP_CHAT_JAR" 1>/dev/null 2>&1 & 
+
+
+  notify:
+    name: Discord Notify
+    needs: [ app-main-deploy, app-chat-deploy ]
+    runs-on: ubuntu-22.04
+    if: always()
+
+    steps:
+      # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Notify Success
+        if: ${{ github.actor != 'nektos/act' && needs.app-main-deploy.result == 'success' && needs.app-chat-deploy.result == 'success' }}
+        uses: ./.github/actions/discord-notify
+        with:
+          status: success
+          branch: ${{ github.ref_name }}
+          sha: ${{ github.sha }}
+          actor: ${{ github.actor }}
+          run_id: ${{ github.run_id }}
           webhook: ${{ secrets.DISCORD_DEPLOY_WEBHOOK_URL_DEV }}
+          role_id: ${{ secrets.DISCORD_BACKEND_ROLE_ID }}
 
-          # ✅ status 자동 감지
-          status: ${{ job.status }}
-
-          # ✅ content: 실패 시 역할 멘션 포함
-          content: >-
-            ${{ job.status == 'success' &&
-                format('`[{0}]` 🎉 배포가 성공적으로 완료됐어요!', github.ref_name)
-            || format('`[{0}]` 🚨 배포 실패! <@&{1}> 확인해주세요.', github.ref_name, secrets.DISCORD_BACKEND_ROLE_ID) }}
-
-          # ✅ title: 브랜치 prefix + 이모지 포함
-          title: >-
-            ${{ job.status == 'success' &&
-                format('✅ [{0}] 배포 성공', github.ref_name)
-            || format('❌ [{0}] 배포 실패', github.ref_name) }}
-
-          # ✅ Embed description
-          description: |
-            🛠 브랜치: `${{ github.ref_name }}`
-            🔖 커밋: `${{ github.sha }}`
-            🙋 작성자: `${{ github.actor }}`
-            🔗 [깃허브 액션 로그 보기](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-
-          # ✅ 상태별 색상
-          color: ${{ job.status == 'success' && '0x00ff00' || '0xff0000' }}
-
-          # ✅ 봇 이름 커스터마이징
-          username: "🚀 배포 봇"
+      - name: Notify Failure
+        if: ${{ github.actor != 'nektos/act' && (needs.app-main-deploy.result != 'success' || needs.app-chat-deploy.result != 'success') }}
+        uses: ./.github/actions/discord-notify
+        with:
+          status: failure
+          branch: ${{ github.ref_name }}
+          sha: ${{ github.sha }}
+          actor: ${{ github.actor }}
+          run_id: ${{ github.run_id }}
+          webhook: ${{ secrets.DISCORD_DEPLOY_WEBHOOK_URL_DEV }}
+          role_id: ${{ secrets.DISCORD_BACKEND_ROLE_ID }}
