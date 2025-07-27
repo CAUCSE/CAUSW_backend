@@ -1,18 +1,20 @@
 package net.causw.app.main.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
-import net.causw.app.main.dto.user.UserUpdateRequestDto;
 import net.causw.app.main.dto.userInfo.UserInfoResponseDto;
 import net.causw.app.main.dto.userInfo.UserInfoUpdateRequestDto;
-import net.causw.app.main.dto.userInfo.UsersInfoResponseDto;
-import net.causw.app.main.service.user.UserService;
+import net.causw.app.main.dto.userInfo.UserInfoSummaryResponseDto;
 import net.causw.app.main.infrastructure.security.userdetails.CustomUserDetails;
 import net.causw.app.main.service.userInfo.UserInfoService;
+import net.causw.global.exception.BadRequestException;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,10 +27,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/api/v1/user-info")
+@RequestMapping("/api/v1/users-info")
 @RequiredArgsConstructor
 public class UserInfoController {
-    private final UserService userService;
     private final UserInfoService userInfoService;
 
     /**
@@ -38,62 +39,65 @@ public class UserInfoController {
      */
     @GetMapping(value = "/{userId}")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
-    @Operation(summary = "사용자 세부정보 조회 API",
-            description = "UserId로 사용자 세부정보 (사용자 소개)를 조회합니다.")
+    @Operation(summary = "사용자 세부정보 조회 API")
     public UserInfoResponseDto getByUserId(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("userId") String userId
     ) {
-        return userInfoService.getUserInfo(userId);
+        return userInfoService.getByUserId(userId);
     }
 
-    @GetMapping(value = "")
+    @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
-    @Operation(summary = "전체 사용자 목록 (기본 정렬: 최근 수정순)")
-    public List<UsersInfoResponseDto> getUsersInfo(
+    @Operation(summary = "전체 사용자 세부정보 조회 API", description = "최근 수정된 순서대로 정렬")
+    public Page<UserInfoSummaryResponseDto> getAll(
             @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum
     ) {
-        return userInfoService.getUsersInfo(pageNum);
+        return userInfoService.getAllOrderByUpdatedAtDesc(pageNum);
     }
 
     @GetMapping(value = "/me")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
-    @Operation(summary = "자신의 세부정보 조회 API",
-        description = "자신의 세부정보 (사용자 소개)를 조회합니다.")
-    public UserInfoResponseDto getMyInfo(
-        @AuthenticationPrincipal CustomUserDetails userDetails,
-        @PathVariable("userId") String userId
+    @Operation(summary = "자신의 세부정보 조회 API")
+    public UserInfoResponseDto getCurrentUser(
+        @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return userInfoService.getUserInfo(userDetails.getUser().getId());
+        return userInfoService.getByUserId(userDetails.getUser().getId());
     }
 
     @PutMapping(value = "/me")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
-    @Operation(summary = "자신의 정보를 수정합니다.")
-    public UserInfoResponseDto updateMyInfo(
+    @Operation(summary = "자신의 세부정보 갱신 API")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
+        @ApiResponse(responseCode = "4000", description = "이메일 형식에 맞지 않습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+        @ApiResponse(responseCode = "4001", description = "전화번호 형식에 맞지 않습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+        @ApiResponse(responseCode = "4002", description = "한 줄 소개가 80자를 초과합니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+        @ApiResponse(responseCode = "4003", description = "사진의 용량이 10MB를 초과합니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+        @ApiResponse(responseCode = "4100", description = "종료일은 시작일 이후여야 합니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+        @ApiResponse(responseCode = "4101", description = "날짜 형식에 맞지 않습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+        @ApiResponse(responseCode = "4201", description = "github 주소 형식에 맞지 않습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+        @ApiResponse(responseCode = "4202", description = "linkedIn 주소 형식에 맞지 않습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+        @ApiResponse(responseCode = "4203", description = "velog 주소 형식에 맞지 않습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+        @ApiResponse(responseCode = "4204", description = "instagram 주소 형식에 맞지 않습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
+    })
+
+    public UserInfoResponseDto updateCurrentUser(
         @AuthenticationPrincipal CustomUserDetails userDetails,
         @RequestPart(value = "userInfoUpdateDto") @Valid UserInfoUpdateRequestDto userInfoUpdateDto,
         @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
     ) {
-        return userInfoService.update(userDetails.getUser().getId(), userInfoUpdateDto, profileImage);
+        return userInfoService.update(userDetails.getUser(), userInfoUpdateDto, profileImage);
     }
 
     @GetMapping(value = "/search")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@securityService.isActiveAndNotNoneUserAndAcademicRecordCertified()")
-    @Operation(summary = "특정 조건의 사용자 세부정보 (사용자 소개)를 조회합니다.")
-    public UsersInfoResponseDto getUsersInfoBySearch(
-        @AuthenticationPrincipal CustomUserDetails userDetails
+    @Operation(summary = "사용자 세부정보 조건 검색 API")
+    public Page<UserInfoSummaryResponseDto> search(
+        @RequestParam(name = "name", defaultValue = "") String name,
+        @RequestParam(name = "job", defaultValue = "") String job,
+        @RequestParam(name = "career", defaultValue = "") String career,
+        @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum
     ) {
-
-        return null;
+        return userInfoService.search(name, job, career, pageNum);
     }
-
-
-
 }
-

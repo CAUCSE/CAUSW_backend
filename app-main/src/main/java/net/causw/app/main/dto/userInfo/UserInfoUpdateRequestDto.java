@@ -13,12 +13,11 @@ public class UserInfoUpdateRequestDto {
 
   private String email;
   private String phoneNumber;
-  private UserProfileImage profileImageUrl;
 
   private String description;
   private String job;
 
-  private List<UserCareerResponseDto> career;
+  private List<UserCareerResponseDto> userCareer;
 
   private String githubLink;
   private String linkedInLink;
@@ -26,5 +25,5 @@ public class UserInfoUpdateRequestDto {
   private String notionLink;
   private String instagramLink;
 
-
+  private boolean isPhoneNumberVisible;
 }

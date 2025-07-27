@@ -20,7 +20,7 @@ import net.causw.app.main.repository.userInfo.UserInfoRepository;
 import net.causw.app.main.repository.user.UserRepository;
 import net.causw.app.main.domain.model.entity.userInfo.UserInfo;
 import net.causw.app.main.dto.userInfo.UserInfoResponseDto;
-import net.causw.app.main.dto.userInfo.UsersInfoResponseDto;
+import net.causw.app.main.dto.userInfo.UserInfoSummaryResponseDto;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,7 +33,7 @@ public class UserInfoService {
   private final UserCareerRepository userCareerRepository;
   private final UserService userService;
 
-  public List<UsersInfoResponseDto> getUsersInfo(Integer pageNum) {
+  public List<UserInfoSummaryResponseDto> getAllOrderByUpdatedAtDesc(Integer pageNum) {
 
     Pageable pageable = PageRequest.of(pageNum, 10);
     Page<UserInfo> userInfoPage = userInfoRepository.findAll(pageable);
@@ -43,16 +43,16 @@ public class UserInfoService {
     return toUsersInfoResponseDtoList(userInfoList);
   }
 
-  public UserInfoResponseDto getUserInfo(String userId) {
+  public UserInfoResponseDto getByUserId(String userId) {
 
     UserInfo userInfo = findUserInfo(userId);
 
     return toUserInfoResponseDto(userInfo);
   }
 
-  private List<UsersInfoResponseDto> toUsersInfoResponseDtoList (List<UserInfo> userInfoList) {
+  private List<UserInfoSummaryResponseDto> toUsersInfoResponseDtoList (List<UserInfo> userInfoList) {
     return userInfoList.stream()
-        .map(userInfo -> UsersInfoResponseDto.builder()
+        .map(userInfo -> UserInfoSummaryResponseDto.builder()
             .id(userInfo.getId())
             .name(userInfo.getUser().getName())
             .admissionYear(userInfo.getUser().getAdmissionYear())
@@ -89,7 +89,7 @@ public class UserInfoService {
         .admissionYear(userInfo.getUser().getAdmissionYear())
         .major(userInfo.getUser().getMajor())
         .roles(userInfo.getUser().getRoles())
-        .career(userCareerResponseDtoList)
+        .userCareer(userCareerResponseDtoList)
         .academicStatus(userInfo.getUser().getAcademicStatus())
         .description(userInfo.getDescription())
         .job(userInfo.getJob())
@@ -113,17 +113,16 @@ public class UserInfoService {
   }
 
   @Transactional
-  public UserInfoResponseDto update(String userId, UserInfoUpdateRequestDto request, MultipartFile profileImage) {
+  public UserInfoResponseDto update(User user, UserInfoUpdateRequestDto request, MultipartFile profileImage) {
 
-    final UserInfo userInfo = findUserInfo(userId);
-    final User user = userInfo.getUser();
+    final UserInfo userInfo = findUserInfo(user.getId());
 
     final UserUpdateRequestDto userUpdateRequestDto = UserUpdateRequestDto.builder()
         .nickname(user.getNickname())
         .phoneNumber(request.getPhoneNumber())
         .build();
 
-    final List<UserCareer> careerList = request.getCareer().stream().map(
+    final List<UserCareer> careerList = request.getUserCareer().stream().map(
         dto -> UserCareer.builder()
             .startYear(dto.getStartYear())
             .startMonth(dto.getStartMonth())
