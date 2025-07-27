@@ -52,7 +52,7 @@ public class UserInfoController {
     public Page<UserInfoSummaryResponseDto> getAll(
             @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum
     ) {
-        return userInfoService.getAllOrderByUpdatedAtDesc(pageNum);
+        return userInfoService.getAll(pageNum);
     }
 
     @GetMapping(value = "/me")
