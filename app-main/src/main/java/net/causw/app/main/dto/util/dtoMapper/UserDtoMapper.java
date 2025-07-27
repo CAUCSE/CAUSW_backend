@@ -1,5 +1,8 @@
 package net.causw.app.main.dto.util.dtoMapper;
 
+import java.util.stream.Collectors;
+import net.causw.app.main.domain.model.entity.userInfo.UserCareer;
+import net.causw.app.main.domain.model.entity.userInfo.UserInfo;
 import net.causw.app.main.dto.post.PostsResponseDto;
 import net.causw.app.main.domain.model.entity.board.Board;
 import net.causw.app.main.domain.model.entity.comment.Comment;
@@ -10,9 +13,13 @@ import net.causw.app.main.domain.model.entity.user.UserAdmissionLog;
 import net.causw.app.main.dto.comment.CommentsOfUserResponseDto;
 import net.causw.app.main.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.app.main.dto.user.*;
+import net.causw.app.main.dto.userInfo.UserCareerDto;
+import net.causw.app.main.dto.userInfo.UserInfoResponseDto;
+import net.causw.app.main.dto.userInfo.UserInfoSummaryResponseDto;
 import net.causw.app.main.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 import org.springframework.data.domain.Page;
 
@@ -175,4 +182,52 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 
     @Mapping(target = "fcmToken", source = "fcmTokens")
     UserFcmTokenResponseDto toUserFcmTokenResponseDto(User user);
+
+    @Mapping(target = "startYear", source = "userCareer.startYear")
+    @Mapping(target = "startMonth", source = "userCareer.startMonth")
+    @Mapping(target = "endYear", source = "userCareer.endYear")
+    @Mapping(target = "endMonth", source = "userCareer.endMonth")
+    @Mapping(target = "description", source = "userCareer.description")
+    UserCareerDto toUserCareerDto(UserCareer userCareer);
+
+    @Named("mapUserCareerListToUserCareerDtoList")
+    default List<UserCareerDto> mapUserCareerListToUserCareerDtoList(List<UserCareer> userCareerList) {
+        return userCareerList.stream().map(
+            career -> UserCareerDto.builder()
+                .startYear(career.getStartYear())
+                .startMonth(career.getStartMonth())
+                .endYear(career.getEndYear())
+                .endMonth(career.getEndMonth())
+                .description(career.getDescription())
+                .build()
+        ).collect(Collectors.toList());
+    }
+
+    @Mapping(target = "id", source = "userInfo.id")
+    @Mapping(target = "name", source = "userInfo.user.name")
+    @Mapping(target = "email", source = "userInfo.user.email")
+    @Mapping(target = "admissionYear", source = "userInfo.user.admissionYear")
+    @Mapping(target = "profileImageUrl", source = "userInfo.user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
+    @Mapping(target = "major", source = "userInfo.user.major")
+    @Mapping(target = "description", source = "userInfo.description")
+    @Mapping(target = "job", source = "userInfo.job")
+    @Mapping(target = "userCareer", source = "userInfo.userCareer", qualifiedByName = "mapUserCareerListToUserCareerDtoList")
+    UserInfoSummaryResponseDto toUserInfoSummaryResponseDto(UserInfo userInfo);
+
+    @Mapping(target = "id", source = "userInfo.id")
+    @Mapping(target = "name", source = "userInfo.user.name")
+    @Mapping(target = "email", source = "userInfo.user.email")
+    @Mapping(target = "admissionYear", source = "userInfo.user.admissionYear")
+    @Mapping(target = "profileImageUrl", source = "userInfo.user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
+    @Mapping(target = "major", source = "userInfo.user.major")
+    @Mapping(target = "description", source = "userInfo.description")
+    @Mapping(target = "job", source = "userInfo.job")
+    @Mapping(target = "userCareer", source = "userInfo.userCareer", qualifiedByName = "mapUserCareerListToResponseDtoList")
+    @Mapping(target = "githubLink", source = "userInfo.githubLink")
+    @Mapping(target = "linkedInLink", source = "userInfo.linkedInLink")
+    @Mapping(target = "velogLink", source = "userInfo.velogLink")
+    @Mapping(target = "notionLink", source = "userInfo.notionLink")
+    @Mapping(target = "instagramLink", source = "userInfo.instagramLink")
+    @Mapping(target = "isPhoneNumberVisible", source = "userInfo.isPhoneNumberVisible")
+    UserInfoResponseDto toUserInfoResponseDto(UserInfo userInfo);
 }

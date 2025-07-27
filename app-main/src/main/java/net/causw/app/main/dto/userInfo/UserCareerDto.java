@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class UserCareerResponseDto {
+public class UserCareerDto {
   private Integer startYear;
   private Integer startMonth;
   private Integer endYear;

@@ -31,6 +31,9 @@ public class UserInfo extends BaseEntity {
   @Column(name = "description", nullable = true)
   private String description;
 
+  @Column(name = "job", nullable = true)
+  private String job;
+
   @Column(name = "github_link", nullable = true)
   private String githubLink;
 
@@ -43,45 +46,30 @@ public class UserInfo extends BaseEntity {
   @Column(name = "notion_link", nullable = true)
   private String notionLink;
 
-  @Column(name = "gvelo_link", nullable = true)
+  @Column(name = "velog_link", nullable = true)
   private String velogLink;
-
-  @Column(name = "job", nullable = true)
-  private String job;
 
   @OneToMany(mappedBy = "userInfo", fetch = FetchType.LAZY)
   private List<UserCareer> userCareer;
 
+  @Column(name = "is_phonenumber_visible", nullable = false)
+  @Builder.Default
+  private boolean isPhoneNumberVisible = false;
 
-  public void updateJob(String job) {
-    this.job = job;
-  }
-
-  public void updateDescription(String description) {
+  public void update(
+      String description, String job,
+      String githubLink, String linkedInLink, String instagramLink, String notionLink, String velogLink,
+      List<UserCareer> userCareer,
+      boolean isPhoneNumberVisible
+  ) {
     this.description = description;
-  }
-
-  public void updateGithubLink(String githubLink) {
+    this.job = job;
     this.githubLink = githubLink;
-  }
-
-  public void updateLinkedInLink(String linkedInLink) {
     this.linkedInLink = linkedInLink;
-  }
-
-  public void updateInstagramLink(String instagramLink) {
     this.instagramLink = instagramLink;
-  }
-
-  public void updateNotionLink(String notionLink) {
     this.notionLink = notionLink;
-  }
-
-  public void updateVelogLink(String velogLink) {
     this.velogLink = velogLink;
-  }
-
-  public void updateUserCareer(List<UserCareer> userCareer) {
     this.userCareer = userCareer;
+    this.isPhoneNumberVisible = isPhoneNumberVisible;
   }
 }

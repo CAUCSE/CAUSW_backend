@@ -9,7 +9,6 @@ import net.causw.app.main.domain.model.entity.locker.Locker;
 import net.causw.app.main.domain.model.entity.notification.CeremonyNotificationSetting;
 import net.causw.app.main.domain.model.entity.vote.VoteRecord;
 import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.UserProfileImage;
-import net.causw.app.main.domain.model.entity.userInfo.UserInfo;
 import net.causw.app.main.dto.user.UserCreateRequestDto;
 import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.model.enums.user.GraduationType;
@@ -117,8 +116,6 @@ public class User extends BaseEntity {
     @Column(name = "fcm_token")
     private String fcmToken;
 
-    @OneToOne(mappedBy = "user", fetch = FetchType.EAGER)
-    private UserInfo userDetail;
 
     public void delete() {
         this.email = "deleted_" + this.getId();

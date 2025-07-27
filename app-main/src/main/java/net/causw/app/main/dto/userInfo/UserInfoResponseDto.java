@@ -25,7 +25,7 @@ public class UserInfoResponseDto {
   private String description;
   private String job;
 
-  private List<UserCareerResponseDto> userCareer;
+  private List<UserCareerDto> userCareer;
 
   private String githubLink;
   private String linkedInLink;
