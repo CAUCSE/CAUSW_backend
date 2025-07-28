@@ -56,8 +56,6 @@ dump.rdb
 **/resources/application-qa.yml
 **/resources/dongnae_firebase_key.json
 
-Dockerfile
-docker-compose.yaml
 deploy_*.sh
 app-*.yaml
 log/
