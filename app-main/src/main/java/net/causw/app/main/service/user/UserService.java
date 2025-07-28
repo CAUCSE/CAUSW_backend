@@ -118,14 +118,12 @@ public class UserService {
     public void findPassword(
             UserFindPasswordRequestDto userFindPasswordRequestDto
     ) {
-        User requestUser = userRepository.findByEmailAndNameAndStudentId(
+        User requestUser = userRepository.findByEmailAndName(
                     userFindPasswordRequestDto.getEmail().trim(),
-                    userFindPasswordRequestDto.getName().trim(),
-                    userFindPasswordRequestDto.getStudentId().trim()
-                ).orElseThrow(() -> new NotFoundException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_NOT_FOUND
-                ));
+                    userFindPasswordRequestDto.getName().trim()
+                ).orElseThrow(() ->
+            new NotFoundException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND));
+
         // 임시 비밀번호 생성
         String newPassword = this.passwordGenerator.generate();
 
@@ -545,16 +543,7 @@ public class UserService {
 
     @Transactional
     public UserResponseDto signUp(UserCreateRequestDto userCreateRequestDto) {
-        // Make domain model for generalized data model and validate the format of request parameter
-
-        // 학번 앞 4자리와 입학년도가 다른 경우 잘못된 요청이므로 예외처리
-        if (!userCreateRequestDto.getStudentId().substring(0, 4).equals(userCreateRequestDto.getAdmissionYear().toString())) {
-            throw new BadRequestException(
-                    ErrorCode.INVALID_USER_DATA_REQUEST,
-                    MessageUtil.INVALID_USER_DATA_REQUEST
-            );
-        }
-
+        // email, nickname, studentId 중복 검사
         this.userRepository.findByEmail(userCreateRequestDto.getEmail()).ifPresent(
                 email -> {
                     throw new BadRequestException(
@@ -573,20 +562,21 @@ public class UserService {
                 }
         );
 
-        this.userRepository.findByStudentId(userCreateRequestDto.getStudentId()).ifPresent(
+        if (userCreateRequestDto.getStudentId() != null){
+            this.userRepository.findByStudentId(userCreateRequestDto.getStudentId()).ifPresent(
                 studentId -> {
                     throw new BadRequestException(
-                            ErrorCode.ROW_ALREADY_EXIST,
-                            MessageUtil.STUDENT_ID_ALREADY_EXIST
+                        ErrorCode.ROW_ALREADY_EXIST,
+                        MessageUtil.STUDENT_ID_ALREADY_EXIST
                     );
                 }
-        );
+            );
+        }
 
         User user = User.from(userCreateRequestDto, passwordEncoder.encode(userCreateRequestDto.getPassword()));
-
         this.userRepository.save(user);
 
-        // Validate password format, admission year range, and whether the email is duplicate or not
+        // password, admission year 값 등 검사
         ValidatorBucket.of()
                 .consistOf(ConstraintValidator.of(user, this.validator))
                 .consistOf(PasswordFormatValidator.of(userCreateRequestDto.getPassword()))

@@ -69,8 +69,7 @@ public class UserAcademicRecordApplicationService {
         List<User> userList = userRepository.findAll();
 
         for (User user : userList) {
-            List<UserAcademicRecordLog> userAcademicRecordLogList = userAcademicRecordLogRepository.findAllByTargetUserStudentIdAndTargetUserEmailAndTargetUserName(
-                    user.getStudentId(),
+            List<UserAcademicRecordLog> userAcademicRecordLogList = userAcademicRecordLogRepository.findAllByTargetUserEmailAndTargetUserName(
                     user.getEmail(),
                     user.getName());
             userAcademicRecordInfoResponseDtoList.add(
@@ -344,8 +343,7 @@ public class UserAcademicRecordApplicationService {
     }
 
     private List<UserAcademicRecordLog> getUserAcademicRecordLogList(User user) {
-        return userAcademicRecordLogRepository.findAllByTargetUserStudentIdAndTargetUserEmailAndTargetUserName(
-                user.getStudentId(),
+        return userAcademicRecordLogRepository.findAllByTargetUserEmailAndTargetUserName(
                 user.getEmail(),
                 user.getName()
         );
