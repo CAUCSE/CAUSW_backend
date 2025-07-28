@@ -56,7 +56,7 @@ jobs:
 
       # Flyway 마이그레이션
       - name: Run Flyway migration
-        run: ./gradlew flywayMigrate -Penv=dev
+        run: ./gradlew :app-main:flywayMigrate -Dflyway.outOfOrder=true -Penv=dev
 
       # Build -> jar 파일 생성
       - name: Build app-main module
