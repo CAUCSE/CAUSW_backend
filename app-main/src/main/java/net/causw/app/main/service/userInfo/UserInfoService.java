@@ -39,7 +39,7 @@ public class UserInfoService {
     UserInfo userInfo = userInfoRepository.findByUserId(userId)
         .orElseThrow(() -> new BadRequestException(
             ErrorCode.ROW_DOES_NOT_EXIST,
-            MessageUtil.USER_NOT_FOUND
+            MessageUtil.USER_INFO_NOT_FOUND
         ));
 
     return UserDtoMapper.INSTANCE.toUserInfoResponseDto(userInfo);
@@ -55,18 +55,15 @@ public class UserInfoService {
 
     userService.update(user, userUpdateRequestDto, profileImage);
 
-    // 사용자 상세정보 갱신
+    // 사용자 상세정보 갱신 (또는 생성)
     final UserInfo userInfo = userInfoRepository.findByUserId(user.getId())
-        .orElseThrow(() -> new BadRequestException(
-            ErrorCode.ROW_DOES_NOT_EXIST,
-            MessageUtil.USER_NOT_FOUND
-        ));
+        .orElse(UserInfo.of(user));
 
     final List<UserCareer> careerList = request.getUserCareer().stream().map(
         dto -> UserCareer.of(
             userInfo,
-            dto.getStartYear(), dto.getStartMonth(), dto.getEndYear(), dto.getEndMonth(), dto.getDescription())
-    ).toList();
+            dto.getStartYear(), dto.getStartMonth(), dto.getEndYear(), dto.getEndMonth(), dto.getDescription()
+        )).toList();
 
     userInfo.update(
         request.getDescription(), request.getJob(),

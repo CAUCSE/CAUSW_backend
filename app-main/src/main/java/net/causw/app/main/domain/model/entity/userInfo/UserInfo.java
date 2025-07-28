@@ -25,7 +25,7 @@ import net.causw.app.main.domain.model.entity.user.User;
 public class UserInfo extends BaseEntity {
 
   @OneToOne
-  @JoinColumn(name = "user_id")
+  @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
   @Column(name = "description", nullable = true)
@@ -55,6 +55,13 @@ public class UserInfo extends BaseEntity {
   @Column(name = "is_phonenumber_visible", nullable = false)
   @Builder.Default
   private boolean isPhoneNumberVisible = false;
+
+
+  public static UserInfo of(User user) {
+    return UserInfo.builder()
+        .user(user)
+        .build();
+  }
 
   public void update(
       String description, String job,

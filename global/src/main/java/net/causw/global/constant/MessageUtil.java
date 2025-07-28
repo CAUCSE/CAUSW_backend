@@ -95,6 +95,7 @@ public class MessageUtil {
     // User
     public static final String API_NOT_ACCESSIBLE = "접근 권한이 없습니다.";
     public static final String USER_NOT_FOUND = "해당 사용자를 찾을 수 없습니다.";
+    public static final String USER_INFO_NOT_FOUND = "해당 사용자의 상세정보를 찾을 수 없습니다.";
     public static final String ADMISSION_EXCEPTION = "User id of the admission checked, but exception occurred";
     public static final String NO_ASSIGNED_CIRCLE_FOR_LEADER = "해당 동아리장이 배정된 동아리가 없습니다.";
     public static final String CIRCLE_ID_REQUIRED_FOR_LEADER_DELEGATION = "소모임장을 위임할 소모임 입력이 필요합니다.";
