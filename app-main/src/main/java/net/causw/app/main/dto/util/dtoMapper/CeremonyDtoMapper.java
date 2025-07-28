@@ -29,7 +29,16 @@ public interface CeremonyDtoMapper {
     @Mapping(target = "note", source = "note")
     @Mapping(target = "applicantStudentId", source = "user.studentId")
     @Mapping(target = "applicantName", source = "user.name")
+    @Mapping(target = "title", source = ".", qualifiedByName = "mapTitle")
     CeremonyResponseDto toCeremonyResponseDto(Ceremony ceremony);
+
+    @Named("mapTitle")
+    static String mapTitle(Ceremony ceremony) {
+        return String.format("%s(%s) - %s",
+                ceremony.getUser().getName(),
+                ceremony.getUser().getAdmissionYear().toString(),
+                ceremony.getCeremonyCategory().getLabel());
+    }
 
 
 

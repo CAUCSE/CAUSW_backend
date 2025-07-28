@@ -45,4 +45,7 @@ public class CeremonyResponseDto {
     @Schema(description = "경조사 신청자 이름")
     private String applicantName;
 
+    @Schema(description = "경조사 제목")
+    private String title;
+
 }
