@@ -148,7 +148,7 @@ public class BoardService {
 
         return boards.stream()
                 .map(board -> {
-                    List<PostContentDto> recentPosts = postRepository.findTop3ByBoard_IdAndIsDeletedOrderByCreatedAtDesc(board.getId(), false).stream()
+                    List<PostContentDto> recentPosts = postRepository.findTop2ByBoard_IdAndIsDeletedOrderByCreatedAtDesc(board.getId(), false).stream()
                             .map(PostDtoMapper.INSTANCE::toPostContentDto)
                             .peek(PostContentDto::updateAnonymousPostContent)
                             .collect(Collectors.toList());
