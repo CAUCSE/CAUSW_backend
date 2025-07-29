@@ -6,6 +6,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class UserCareerDto {
+  private String id;
   private Integer startYear;
   private Integer startMonth;
   private Integer endYear;

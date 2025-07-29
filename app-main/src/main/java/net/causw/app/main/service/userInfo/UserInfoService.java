@@ -3,11 +3,18 @@ package net.causw.app.main.service.userInfo;
 import static net.causw.global.constant.StaticValue.DEFAULT_PAGE_SIZE;
 
 import jakarta.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+import net.causw.app.main.domain.model.entity.base.BaseEntity;
+import net.causw.app.main.dto.userInfo.UserCareerDto;
 import net.causw.app.main.dto.util.dtoMapper.UserDtoMapper;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.domain.model.entity.userInfo.UserCareer;
 import net.causw.app.main.dto.user.UserUpdateRequestDto;
 import net.causw.app.main.dto.userInfo.UserInfoUpdateRequestDto;
+import net.causw.app.main.repository.user.UserRepository;
+import net.causw.app.main.repository.userInfo.UserCareerRepository;
 import net.causw.app.main.service.pageable.PageableFactory;
 import net.causw.app.main.service.user.UserService;
 import net.causw.global.exception.BadRequestException;
@@ -27,8 +34,10 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class UserInfoService {
   private final UserInfoRepository userInfoRepository;
+  private final UserRepository userRepository;
   private final UserService userService;
   private final PageableFactory pageableFactory;
+  private final UserCareerRepository userCareerRepository;
 
   public Page<UserInfoSummaryResponseDto> getAll(Integer pageNum) {
     return userInfoRepository.findAllByOrderByUpdatedAtDesc(pageableFactory.create(pageNum, DEFAULT_PAGE_SIZE))
@@ -36,11 +45,14 @@ public class UserInfoService {
   }
 
   public UserInfoResponseDto getByUserId(String userId) {
-    UserInfo userInfo = userInfoRepository.findByUserId(userId)
+    User user = userRepository.findById(userId)
         .orElseThrow(() -> new BadRequestException(
             ErrorCode.ROW_DOES_NOT_EXIST,
-            MessageUtil.USER_INFO_NOT_FOUND
+            MessageUtil.USER_NOT_FOUND
         ));
+
+    UserInfo userInfo = userInfoRepository.findByUserId(userId)
+        .orElse(UserInfo.of(user));
 
     return UserDtoMapper.INSTANCE.toUserInfoResponseDto(userInfo);
   }
@@ -53,27 +65,52 @@ public class UserInfoService {
         .phoneNumber(request.getPhoneNumber())
         .build();
 
-    userService.update(user, userUpdateRequestDto, profileImage);
+    userService.update(user, userUpdateRequestDto, profileImage); // 실패시 user, userInfo 전부 rollback
 
     // 사용자 상세정보 갱신 (또는 생성)
     final UserInfo userInfo = userInfoRepository.findByUserId(user.getId())
-        .orElse(UserInfo.of(user));
-
-    final List<UserCareer> careerList = request.getUserCareer().stream().map(
-        dto -> UserCareer.of(
-            userInfo,
-            dto.getStartYear(), dto.getStartMonth(), dto.getEndYear(), dto.getEndMonth(), dto.getDescription()
-        )).toList();
+        .orElse(userInfoRepository.save(UserInfo.of(user)));
 
     userInfo.update(
         request.getDescription(), request.getJob(),
         request.getGithubLink(), request.getLinkedInLink(), request.getInstagramLink(), request.getNotionLink(), request.getVelogLink(),
-        careerList,
         request.isPhoneNumberVisible());
 
-    UserInfo updatedUserInfo = userInfoRepository.save(userInfo);
+    // 사용자 커리어 갱신
+    Set<String> requestedIdSet = new HashSet<>();
 
-    return UserDtoMapper.INSTANCE.toUserInfoResponseDto(updatedUserInfo);
+    for (UserCareerDto userCareerDto : request.getUserCareer()) {
+
+      if (userCareerDto.getId() == null) { // 커리어 생성
+        UserCareer userCareer = UserCareer.of(
+            userInfo,
+            userCareerDto.getStartYear(), userCareerDto.getStartMonth(),
+            userCareerDto.getEndYear(), userCareerDto.getEndMonth(),
+            userCareerDto.getDescription());
+        userCareerRepository.save(userCareer);
+
+      } else { // 커리어 수정
+        requestedIdSet.add(userCareerDto.getId());
+
+        UserCareer userCareer = userCareerRepository.findById(userCareerDto.getId())
+            .orElseThrow(() -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                MessageUtil.USER_CAREER_NOT_FOUND
+            ));
+        userCareer.update(
+            userCareerDto.getStartYear(), userCareerDto.getStartMonth(),
+            userCareerDto.getEndYear(), userCareerDto.getEndMonth(),
+            userCareerDto.getDescription());
+      }
+    }
+
+    // 커리어 삭제
+    List<String> deletingIdList = userCareerRepository.findAllCareerByUserInfoId(userInfo.getId()).stream()
+        .map(BaseEntity::getId)
+        .filter(id -> !requestedIdSet.contains(id)).toList();
+    userCareerRepository.deleteAllByIdInBatch(deletingIdList);
+
+    return UserDtoMapper.INSTANCE.toUserInfoResponseDto(userInfo);
   }
 
   public Page<UserInfoSummaryResponseDto> search(final String name, final String job, final String career, final Integer pageNum) {

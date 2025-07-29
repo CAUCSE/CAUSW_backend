@@ -55,4 +55,16 @@ public class UserCareer extends BaseEntity {
             .description(description)
             .build();
     }
+
+    public void update(
+        Integer startYear, Integer startMonth,
+        Integer endYear, Integer endMonth,
+        String description
+    ) {
+        this.startYear = startYear;
+        this.startMonth = startMonth;
+        this.endYear = endYear;
+        this.endMonth = endMonth;
+        this.description = description;
+    }
 }

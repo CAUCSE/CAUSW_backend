@@ -7,6 +7,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -15,6 +16,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.causw.app.main.domain.model.entity.base.BaseEntity;
 import net.causw.app.main.domain.model.entity.user.User;
+import org.hibernate.annotations.ColumnDefault;
 
 @Getter
 @Entity
@@ -49,12 +51,13 @@ public class UserInfo extends BaseEntity {
   @Column(name = "velog_link", nullable = true)
   private String velogLink;
 
-  @OneToMany(mappedBy = "userInfo", fetch = FetchType.LAZY)
-  private List<UserCareer> userCareer;
+  @Column(name = "is_phone_number_visible", nullable = false)
+  @ColumnDefault("false")
+  private Boolean isPhoneNumberVisible;
 
-  @Column(name = "is_phonenumber_visible", nullable = false)
+  @OneToMany(mappedBy = "userInfo", fetch = FetchType.LAZY)
   @Builder.Default
-  private boolean isPhoneNumberVisible = false;
+  private List<UserCareer> userCareer = new ArrayList<>();
 
 
   public static UserInfo of(User user) {
@@ -66,7 +69,6 @@ public class UserInfo extends BaseEntity {
   public void update(
       String description, String job,
       String githubLink, String linkedInLink, String instagramLink, String notionLink, String velogLink,
-      List<UserCareer> userCareer,
       boolean isPhoneNumberVisible
   ) {
     this.description = description;
@@ -76,7 +78,6 @@ public class UserInfo extends BaseEntity {
     this.instagramLink = instagramLink;
     this.notionLink = notionLink;
     this.velogLink = velogLink;
-    this.userCareer = userCareer;
     this.isPhoneNumberVisible = isPhoneNumberVisible;
   }
 }

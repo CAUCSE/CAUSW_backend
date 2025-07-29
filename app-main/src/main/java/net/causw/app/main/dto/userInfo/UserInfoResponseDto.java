@@ -33,5 +33,5 @@ public class UserInfoResponseDto {
   private String notionLink;
   private String instagramLink;
 
-  private boolean isPhoneNumberVisible;
+  private Boolean isPhoneNumberVisible;
 }

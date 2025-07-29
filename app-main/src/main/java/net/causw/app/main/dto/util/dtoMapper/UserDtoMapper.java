@@ -183,17 +183,11 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "fcmToken", source = "fcmTokens")
     UserFcmTokenResponseDto toUserFcmTokenResponseDto(User user);
 
-    @Mapping(target = "startYear", source = "userCareer.startYear")
-    @Mapping(target = "startMonth", source = "userCareer.startMonth")
-    @Mapping(target = "endYear", source = "userCareer.endYear")
-    @Mapping(target = "endMonth", source = "userCareer.endMonth")
-    @Mapping(target = "description", source = "userCareer.description")
-    UserCareerDto toUserCareerDto(UserCareer userCareer);
-
-    @Named("mapUserCareerListToUserCareerDtoList")
-    default List<UserCareerDto> mapUserCareerListToUserCareerDtoList(List<UserCareer> userCareerList) {
+    @Named("mapUserCareerListToResponseDtoList")
+    default List<UserCareerDto> mapUserCareerListToResponseDtoList(List<UserCareer> userCareerList) {
         return userCareerList.stream().map(
             career -> UserCareerDto.builder()
+                .id(career.getId())
                 .startYear(career.getStartYear())
                 .startMonth(career.getStartMonth())
                 .endYear(career.getEndYear())
@@ -211,7 +205,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "major", source = "userInfo.user.major")
     @Mapping(target = "description", source = "userInfo.description")
     @Mapping(target = "job", source = "userInfo.job")
-    @Mapping(target = "userCareer", source = "userInfo.userCareer", qualifiedByName = "mapUserCareerListToUserCareerDtoList")
+    @Mapping(target = "userCareer", source = "userInfo.userCareer", qualifiedByName = "mapUserCareerListToResponseDtoList")
     UserInfoSummaryResponseDto toUserInfoSummaryResponseDto(UserInfo userInfo);
 
     @Mapping(target = "id", source = "userInfo.id")
@@ -220,6 +214,8 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "admissionYear", source = "userInfo.user.admissionYear")
     @Mapping(target = "profileImageUrl", source = "userInfo.user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
     @Mapping(target = "major", source = "userInfo.user.major")
+    @Mapping(target = "roles", source = "userInfo.user.roles")
+    @Mapping(target = "academicStatus", source = "userInfo.user.academicStatus")
     @Mapping(target = "description", source = "userInfo.description")
     @Mapping(target = "job", source = "userInfo.job")
     @Mapping(target = "userCareer", source = "userInfo.userCareer", qualifiedByName = "mapUserCareerListToResponseDtoList")

@@ -8,6 +8,7 @@ import lombok.Getter;
 @Builder
 public class UserInfoUpdateRequestDto {
 
+  private String id;
   private String email;
   private String phoneNumber;
 
