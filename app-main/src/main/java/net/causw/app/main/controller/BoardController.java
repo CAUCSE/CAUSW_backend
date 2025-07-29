@@ -29,7 +29,9 @@ public class BoardController {
 
     @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
-    @Operation(summary = "게시판 검색 API(완료)", description = "전체 게시판을 불러오는 api로 관리자 권한을 가진 경우 삭제된 게시판도 확인할 수 있습니다.")
+    @Operation(summary = "게시판 검색 API(완료)"
+            , description = "전체 게시판을 불러오는 api로 관리자 권한을 가진 경우 삭제된 게시판도 확인할 수 있습니다. <br>" +
+            "학적이 GRADUATED인 졸업생이 접근할 경우 크자회에게 제공되는 (isAlumni가 true) 게시판만 조회됩니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "4102", description = "추방된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
@@ -47,7 +49,9 @@ public class BoardController {
 
     @GetMapping("/main")
     @ResponseStatus(value = HttpStatus.OK)
-    @Operation(summary = "게시판 검색 API(완료)", description = "전체 게시판을 불러오는 api로 관리자 권한을 가진 경우 삭제된 게시판도 확인할 수 있습니다.")
+    @Operation(summary = "게시판 검색 API(완료)"
+            , description = "전체 게시판을 불러오는 api로 관리자 권한을 가진 경우 삭제된 게시판도 확인할 수 있습니다. <br>"
+            + "학적이 GRADUATED인 졸업생이 접근할 경우 크자회에게 제공되는 (isAlumni가 true) 게시판만 조회됩니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "4102", description = "추방된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),

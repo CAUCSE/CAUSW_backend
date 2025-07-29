@@ -65,6 +65,7 @@ public class BoardService {
             User user
     ) {
         Set<Role> roles = user.getRoles();
+        AcademicStatus academicStatus = user.getAcademicStatus();
 
         ValidatorBucket.of()
                 .consistOf(UserStateValidator.of(user.getState()))
@@ -75,7 +76,13 @@ public class BoardService {
             return boardRepository.findByOrderByCreatedAtAsc().stream()
                     .map(board -> toBoardResponseDto(board, roles))
                     .collect(Collectors.toList());
-        } else {
+        }
+        else if (academicStatus.equals(AcademicStatus.GRADUATED)){
+            return boardRepository.findByIsAlumniTrueAndIsDeletedFalseOrderByCreatedAtAsc().stream()
+                    .map(board -> toBoardResponseDto(board, roles))
+                    .collect(Collectors.toList());
+        }
+        else {
             List<Circle> joinCircles = circleMemberRepository.findByUser_Id(user.getId()).stream()
                     .filter(circleMember -> circleMember.getStatus() == CircleMemberStatus.MEMBER)
                     .map(CircleMember::getCircle)
