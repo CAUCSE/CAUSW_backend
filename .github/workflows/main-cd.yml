@@ -40,11 +40,18 @@ jobs:
         run: |
           echo "$FIREBASE_KEY" > $DIR/$FIREBASE_KEY_FILENAME
 
+      # .env.prod 파일 추가
       - name: Copy .env.prod from secret
         env:
           ENV_PROD: ${{ secrets.ENV_PROD }}
         run: |
-          echo "$ENV_PROD" > .env.prod
+          cat <<EOF > .env.prod
+          $ENV_PROD
+          EOF
+
+      # Flyway 마이그레이션
+      - name: Run Flyway migration
+        run: ./gradlew :app-main:flywayMigrate -Dflyway.outOfOrder=true -Penv=prod
 
       # Build -> jar 파일 생성
       - name: Build app-main
