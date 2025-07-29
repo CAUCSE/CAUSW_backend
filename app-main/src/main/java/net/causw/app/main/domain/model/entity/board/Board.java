@@ -116,6 +116,8 @@ public class Board extends BaseEntity {
                 .circle(circle)
                 .postSet(new HashSet<>())
                 .isDefaultNotice(false)
+                .isAlumni(false) //FIXME : 크자회 서비스의 게시글 생성 신청 구현시 변경
+                .isHome(false)
                 .build();
     }
 
