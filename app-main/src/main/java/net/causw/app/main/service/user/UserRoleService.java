@@ -161,13 +161,11 @@ public class UserRoleService {
         roles.remove(targetRole);
 
         // 권한이 비어 있을 시 COMMON을 부여 단 NONE을 삭제해 빈 경우 NONE을 유지
+        /* 위는 잘못 되었고, 현재 역할 부여시 NONE을 삭제하는 경우는 재학 신청서 승인 시만 존재함
+        * 따라서 NONE을 삭제해 비어도 그냥 역할이 비면 common이 추가되어야 함
+        * */
         if (roles.isEmpty()) {
-            if (targetRole.equals(Role.NONE)) {
-                roles.add(Role.NONE);
-            }
-            else {
-                roles.add(Role.COMMON);
-            }
+            roles.add(Role.COMMON);
         }
 
         targetUser.setRoles(roles);
