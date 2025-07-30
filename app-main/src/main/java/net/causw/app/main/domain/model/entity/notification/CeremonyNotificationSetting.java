@@ -25,7 +25,7 @@ public class CeremonyNotificationSetting extends BaseEntity {
     private boolean isNotificationActive = true;
 
     @Column(name = "is_set_all", nullable = false)
-    private boolean isSetAll = false;
+    private boolean isSetAll = true;    // 경조사 알림은 기본적으로 모든 학번에게 알림을 받음
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
