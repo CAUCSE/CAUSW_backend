@@ -120,8 +120,8 @@ public class UserRoleServiceTest {
         }
 
         @Test
-        @DisplayName("마지막으로 남은 NONE을 삭제했을 때 NONE이 부여될 경우 성공")
-        void whenOnlyNoneLeft_thenRemainAsNone() {
+        @DisplayName("마지막으로 남은 NONE을 삭제했을 때 COMMON이 부여될 경우 성공")
+        void whenOnlyNoneLeft_thenRemainAsCommon() {
             // given
             user.setRoles(Set.of(Role.NONE));
 
@@ -129,7 +129,7 @@ public class UserRoleServiceTest {
             userRoleService.removeRole(user, Role.NONE);
 
             // then
-            assertThat(user.getRoles()).isEqualTo(Set.of(Role.NONE));
+            assertThat(user.getRoles()).isEqualTo(Set.of(Role.COMMON));
         }
 
         private static Set<Role> getAllRolesWithoutNone() {
