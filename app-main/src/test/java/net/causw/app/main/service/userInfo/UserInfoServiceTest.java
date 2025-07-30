@@ -62,6 +62,11 @@ class UserInfoServiceTest {
       .startYear(2023).startMonth(1).endYear(2024).endMonth(1)
       .description("CAU Company Backend Developer")
       .build();
+  private final UserCareer userCareer = UserCareer.of(
+      userInfo,
+      careerDto.getStartYear(), careerDto.getStartMonth(),
+      careerDto.getEndYear(), careerDto.getEndMonth(),
+      careerDto.getDescription());
   private final UserInfoUpdateRequestDto updateRequestDto = UserInfoUpdateRequestDto.builder()
       .phoneNumber("010-1234-5678")
       .job("백엔드 개발자")
@@ -72,10 +77,11 @@ class UserInfoServiceTest {
   @Nested
   class UpdateTest {
     @Test
-    @DisplayName("유저 정보 생성 성공")
+    @DisplayName("상세정보 생성 성공")
     void createUserInfoSuccess() {
       // given
       given(userInfoRepository.findByUserId(user.getId())).willReturn(Optional.of(userInfo));
+      given(userCareerRepository.save(any(UserCareer.class))).willReturn(userCareer);
 
       // when
       UserInfoResponseDto result = userInfoService.update(user, updateRequestDto, profileImage);
@@ -88,7 +94,7 @@ class UserInfoServiceTest {
     }
 
     @Test
-    @DisplayName("유저 정보 삭제 성공")
+    @DisplayName("상세정보 삭제 성공")
     void deleteUserInfoSuccess() {
       // given
       UserInfoUpdateRequestDto updateRequestDto = UserInfoUpdateRequestDto.builder()
