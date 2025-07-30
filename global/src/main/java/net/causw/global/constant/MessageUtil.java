@@ -95,7 +95,6 @@ public class MessageUtil {
     // User
     public static final String API_NOT_ACCESSIBLE = "접근 권한이 없습니다.";
     public static final String USER_NOT_FOUND = "해당 사용자를 찾을 수 없습니다.";
-    public static final String USER_CAREER_NOT_FOUND = "해당 커리어 정보를 찾을 수 없습니다.";
     public static final String ADMISSION_EXCEPTION = "User id of the admission checked, but exception occurred";
     public static final String NO_ASSIGNED_CIRCLE_FOR_LEADER = "해당 동아리장이 배정된 동아리가 없습니다.";
     public static final String CIRCLE_ID_REQUIRED_FOR_LEADER_DELEGATION = "소모임장을 위임할 소모임 입력이 필요합니다.";
@@ -111,9 +110,6 @@ public class MessageUtil {
     public static final String INVALID_USER_APPLICATION_USER_STATE = "사용자 인증을 할 수 없는 상태의 사용자입니다(AWAIT / REJECT 상태만 인증 가능합니다).";
     public static final String GRANT_ROLE_NOT_ALLOWED = "권한을 부여할 수 없습니다.";
     public static final String DELEGATE_ROLE_NOT_ALLOWED = "권한을 위임할 수 없습니다.";
-
-    // UserInfo
-
 
     // Flag
     public static final String FLAG_UPDATE_FAILED = "플래그 업데이트에 실패했습니다.";
@@ -184,6 +180,7 @@ public class MessageUtil {
     public static final String VOTE_START_NOT_ACCESSIBLE = "투표 시작 권한이 존재하지 않습니다.";
 
     // UserInfo
+    public static final String USER_CAREER_NOT_FOUND = "해당 커리어 정보를 찾을 수 없습니다.";
     public static final String INVALID_CAREER_DATE = "커리어 날짜가 유효하지 않습니다.";
 
     // 500

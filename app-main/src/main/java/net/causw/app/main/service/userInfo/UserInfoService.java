@@ -111,7 +111,10 @@ public class UserInfoService {
     List<String> deletingIdList = userCareerRepository.findAllCareerByUserInfoId(userInfo.getId()).stream()
         .map(BaseEntity::getId)
         .filter(id -> !requestedIdSet.contains(id)).toList();
-    userCareerRepository.deleteAllByIdInBatch(deletingIdList);
+
+    if (!deletingIdList.isEmpty()) {
+      userCareerRepository.deleteAllByIdInBatch(deletingIdList);
+    }
 
     return UserDtoMapper.INSTANCE.toUserInfoResponseDto(userInfo);
   }
