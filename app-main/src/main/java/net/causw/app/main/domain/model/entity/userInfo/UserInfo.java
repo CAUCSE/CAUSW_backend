@@ -51,9 +51,9 @@ public class UserInfo extends BaseEntity {
   @Column(name = "velog_link", nullable = true)
   private String velogLink;
 
-  @Column(name = "is_phone_number_visible", nullable = false)
-  @ColumnDefault("false")
-  private Boolean isPhoneNumberVisible;
+  @Column(name = "is_phone_number_visible")
+  @Builder.Default
+  private Boolean isPhoneNumberVisible = false;
 
   @OneToMany(mappedBy = "userInfo", fetch = FetchType.LAZY)
   @Builder.Default
