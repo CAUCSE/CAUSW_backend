@@ -6,7 +6,7 @@ CREATE TABLE tb_user_info (
     updated_at DATETIME(6) NULL,
 
     user_id VARCHAR(255) NOT NULL UNIQUE,
-    description VARCHAR(500) NULL,
+    description VARCHAR(200) NULL,
     job VARCHAR(50) NULL,
     github_link VARCHAR(255) NULL,
     linkedin_link VARCHAR(255) NULL,

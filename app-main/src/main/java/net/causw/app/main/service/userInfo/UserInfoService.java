@@ -3,6 +3,7 @@ package net.causw.app.main.service.userInfo;
 import static net.causw.global.constant.StaticValue.DEFAULT_PAGE_SIZE;
 
 import jakarta.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -74,12 +75,14 @@ public class UserInfoService {
     userInfo.update(
         request.getDescription(), request.getJob(),
         request.getGithubLink(), request.getLinkedInLink(), request.getInstagramLink(), request.getNotionLink(), request.getVelogLink(),
-        request.isPhoneNumberVisible());
+        request.getIsPhoneNumberVisible());
 
     // 사용자 커리어 갱신
     Set<String> requestedIdSet = new HashSet<>();
 
     for (UserCareerDto userCareerDto : request.getUserCareer()) {
+
+      validateUserCareerDate(userCareerDto); // 커리어 시작 시점과 종료 시점 검사
 
       if (userCareerDto.getId() == null) { // 커리어 생성
         UserCareer userCareer = UserCareer.of(
@@ -116,5 +119,25 @@ public class UserInfoService {
   public Page<UserInfoSummaryResponseDto> search(final String name, final String job, final String career, final Integer pageNum) {
     return userInfoRepository.findByNameAndJobAndCareer(name, job, career, pageableFactory.create(pageNum, DEFAULT_PAGE_SIZE))
         .map(UserDtoMapper.INSTANCE::toUserInfoSummaryResponseDto);
+  }
+
+  private void validateUserCareerDate(UserCareerDto userCareerDto) {
+    int currentYear = LocalDateTime.now().getYear();
+
+    int startMonth = userCareerDto.getStartMonth();
+    int endMonth = userCareerDto.getEndMonth();
+    int startYear = userCareerDto.getStartYear();
+    int endYear = userCareerDto.getEndYear();
+
+    boolean isInvalidMonth = startMonth < 1 || startMonth > 12 || endMonth < 1 || endMonth > 12;
+    boolean isInvalidYear = startYear < 1 || startYear > currentYear || endYear < 1 || endYear > currentYear;
+    boolean isEndBeforeStart = startYear > endYear || (startYear == endYear && startMonth > endMonth);
+
+    if (isInvalidMonth || isInvalidYear || isEndBeforeStart) {
+      throw new BadRequestException(
+          ErrorCode.INVALID_PARAMETER,
+          MessageUtil.INVALID_CAREER_DATE
+      );
+    }
   }
 }

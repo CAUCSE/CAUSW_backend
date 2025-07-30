@@ -69,16 +69,8 @@ public class UserInfoController {
     @Operation(summary = "자신의 세부정보 갱신 API")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
-        @ApiResponse(responseCode = "4000", description = "이메일 형식에 맞지 않습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-        @ApiResponse(responseCode = "4001", description = "전화번호 형식에 맞지 않습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-        @ApiResponse(responseCode = "4002", description = "한 줄 소개가 80자를 초과합니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-        @ApiResponse(responseCode = "4003", description = "사진의 용량이 10MB를 초과합니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-        @ApiResponse(responseCode = "4100", description = "종료일은 시작일 이후여야 합니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-        @ApiResponse(responseCode = "4101", description = "날짜 형식에 맞지 않습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-        @ApiResponse(responseCode = "4201", description = "github 주소 형식에 맞지 않습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-        @ApiResponse(responseCode = "4202", description = "linkedIn 주소 형식에 맞지 않습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-        @ApiResponse(responseCode = "4203", description = "velog 주소 형식에 맞지 않습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
-        @ApiResponse(responseCode = "4204", description = "instagram 주소 형식에 맞지 않습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
+        @ApiResponse(responseCode = "4001", description = "커리어 날짜가 유효하지 않습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+        @ApiResponse(responseCode = "4002", description = "파일 크기(5MB)가 초과되었습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
 
     public UserInfoResponseDto updateCurrentUser(
