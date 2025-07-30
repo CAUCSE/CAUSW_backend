@@ -19,6 +19,7 @@ public interface CeremonyDtoMapper {
 
     CeremonyDtoMapper INSTANCE = Mappers.getMapper(CeremonyDtoMapper.class);
 
+    // general
     @Mapping(target = "id", source = "id")
     @Mapping(target = "description", source = "description")
     @Mapping(target = "startDate", source = "startDate")
@@ -30,9 +31,25 @@ public interface CeremonyDtoMapper {
     @Mapping(target = "applicantStudentId", source = "user.studentId")
     @Mapping(target = "applicantName", source = "user.name")
     @Mapping(target = "title", source = ".", qualifiedByName = "mapTitle")
-    @Mapping(target = "isSetAll", source = "ceremony.setAll")
-    @Mapping(target = "targetAdmissionYears", source = "targetAdmissionYears")
+    @Mapping(target = "isSetAll", ignore = true)    // general에서는 숨김
+    @Mapping(target = "targetAdmissionYears", ignore = true)    // general에서는 숨김
     CeremonyResponseDto toCeremonyResponseDto(Ceremony ceremony);
+
+    // admin, my
+    @Mapping(target = "id", source = "id")
+    @Mapping(target = "description", source = "description")
+    @Mapping(target = "startDate", source = "startDate")
+    @Mapping(target = "endDate", source = "endDate")
+    @Mapping(target = "category", source = "ceremonyCategory")
+    @Mapping(target = "ceremonyState", source = "ceremonyState")
+    @Mapping(target = "attachedImageUrlList", source = "ceremonyAttachImageList", qualifiedByName = "mapAttachedImages")
+    @Mapping(target = "note", source = "note")
+    @Mapping(target = "applicantStudentId", source = "user.studentId")
+    @Mapping(target = "applicantName", source = "user.name")
+    @Mapping(target = "title", source = ".", qualifiedByName = "mapTitle")
+    @Mapping(target = "isSetAll", source = "ceremony.setAll")  // 상세 조회에서는 표시
+    @Mapping(target = "targetAdmissionYears", source = "targetAdmissionYears")  // 상세 조회에서는 표시
+    CeremonyResponseDto toDetailedCeremonyResponseDto(Ceremony ceremony);
 
     @Named("mapTitle")
     static String mapTitle(Ceremony ceremony) {

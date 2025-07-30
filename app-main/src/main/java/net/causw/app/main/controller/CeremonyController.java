@@ -70,11 +70,16 @@ public class CeremonyController {
     @GetMapping("/{ceremonyId}")
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "유저 경조사 정보 상세 보기",
-            description = "유저 경조사 정보를 조회합니다.")
+            description = "유저 경조사 정보를 조회합니다. 접근한 페이지에 따라 Request Param을 다르게 해주세요.</br>" +
+                    "general : 전체 알림 페이지에서 접근</br>" +
+                    "my : 내 경조사 목록에서 접근</br>" +
+                    "admin : 관리자용 경조사 관리 페이지에서 접근</br>")
     public CeremonyResponseDto getUserCeremonyInfo(
-            @PathVariable("ceremonyId") String ceremonyId
+            @PathVariable("ceremonyId") String ceremonyId,
+            @RequestParam(name = "context", defaultValue = "general") String context,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return ceremonyService.getCeremony(ceremonyId);
+        return ceremonyService.getCeremony(ceremonyId, context, userDetails.getUser());
     }
 
     @PutMapping("/state")
