@@ -211,6 +211,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "id", source = "userInfo.id")
     @Mapping(target = "name", source = "userInfo.user.name")
     @Mapping(target = "email", source = "userInfo.user.email")
+    @Mapping(target = "phoneNumber", source = "userInfo.user.phoneNumber")
     @Mapping(target = "admissionYear", source = "userInfo.user.admissionYear")
     @Mapping(target = "profileImageUrl", source = "userInfo.user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
     @Mapping(target = "major", source = "userInfo.user.major")

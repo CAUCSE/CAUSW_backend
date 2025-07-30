@@ -63,18 +63,19 @@ public class UserInfoService {
     // 사용자 정보 갱신(전화번호, 프로필 이미지)
     final UserUpdateRequestDto userUpdateRequestDto = UserUpdateRequestDto.builder()
         .nickname(user.getNickname())
-        .phoneNumber(request.getPhoneNumber())
+        .phoneNumber(request.getPhoneNumber() == null ? user.getPhoneNumber() : request.getPhoneNumber())
         .build();
 
     userService.update(user, userUpdateRequestDto, profileImage); // 실패시 user, userInfo 전부 rollback
 
-    // 사용자 상세정보 갱신 (또는 생성)
+    // 사용자 상세정보 갱신
     final UserInfo userInfo = userInfoRepository.findByUserId(user.getId())
-        .orElse(userInfoRepository.save(UserInfo.of(user)));
+        .orElseGet(() -> userInfoRepository.save(UserInfo.of(user))); // 없는 경우 생성
 
     userInfo.update(
         request.getDescription(), request.getJob(),
-        request.getGithubLink(), request.getLinkedInLink(), request.getInstagramLink(), request.getNotionLink(), request.getVelogLink(),
+        request.getGithubLink(), request.getLinkedInLink(), request.getInstagramLink(),
+        request.getNotionLink(), request.getVelogLink(),
         request.getIsPhoneNumberVisible());
 
     // 사용자 커리어 갱신
@@ -90,11 +91,12 @@ public class UserInfoService {
             userCareerDto.getStartYear(), userCareerDto.getStartMonth(),
             userCareerDto.getEndYear(), userCareerDto.getEndMonth(),
             userCareerDto.getDescription());
-        userCareerRepository.save(userCareer);
+
+        UserCareer createdCareer = userCareerRepository.save(userCareer);
+
+        requestedIdSet.add(createdCareer.getId()); // 삭제 대상에서 제외
 
       } else { // 커리어 수정
-        requestedIdSet.add(userCareerDto.getId());
-
         UserCareer userCareer = userCareerRepository.findById(userCareerDto.getId())
             .orElseThrow(() -> new BadRequestException(
                 ErrorCode.ROW_DOES_NOT_EXIST,
@@ -104,16 +106,18 @@ public class UserInfoService {
             userCareerDto.getStartYear(), userCareerDto.getStartMonth(),
             userCareerDto.getEndYear(), userCareerDto.getEndMonth(),
             userCareerDto.getDescription());
+
+        requestedIdSet.add(userCareerDto.getId()); // 삭제 대상에서 제외
       }
     }
 
     // 커리어 삭제
-    List<String> deletingIdList = userCareerRepository.findAllCareerByUserInfoId(userInfo.getId()).stream()
+    List<String> idToDeleteList = userCareerRepository.findAllCareerByUserInfoId(userInfo.getId()).stream()
         .map(BaseEntity::getId)
         .filter(id -> !requestedIdSet.contains(id)).toList();
 
-    if (!deletingIdList.isEmpty()) {
-      userCareerRepository.deleteAllByIdInBatch(deletingIdList);
+    if (!idToDeleteList.isEmpty()) {
+      userCareerRepository.deleteAllByIdInBatch(idToDeleteList);
     }
 
     return UserDtoMapper.INSTANCE.toUserInfoResponseDto(userInfo);

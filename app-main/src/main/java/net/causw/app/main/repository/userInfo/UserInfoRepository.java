@@ -18,7 +18,7 @@ public interface UserInfoRepository extends JpaRepository<UserInfo, String> {
 
     @Query("""
     SELECT ui FROM UserInfo ui
-    JOIN ui.userCareer uc
+    LEFT JOIN ui.userCareer uc
     WHERE uc.description LIKE CONCAT('%', :career, '%')
     AND ui.user.name LIKE CONCAT('%', :name, '%')
     AND ui.job LIKE CONCAT('%', :job, '%')

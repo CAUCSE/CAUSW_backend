@@ -15,6 +15,7 @@ import net.causw.app.main.service.userInfo.UserInfoService;
 import net.causw.global.exception.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -64,7 +65,7 @@ public class UserInfoController {
         return userInfoService.getByUserId(userDetails.getUser().getId());
     }
 
-    @PutMapping(value = "/me")
+    @PutMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "자신의 세부정보 갱신 API")
     @ApiResponses({
