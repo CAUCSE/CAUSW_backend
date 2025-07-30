@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -44,6 +45,31 @@ public class CeremonyService {
             @Valid CreateCeremonyRequestDto createCeremonyRequestDTO,
             List<MultipartFile> imageFileList
     ) {
+        // 전체 알림 전송이 false인 경우, 대상 학번이 입력되었는지 검증
+        if(!createCeremonyRequestDTO.getIsSetAll()) {
+            if(createCeremonyRequestDTO.getTargetAdmissionYears() == null || createCeremonyRequestDTO.getTargetAdmissionYears().isEmpty()) {
+                throw new BadRequestException(
+                        ErrorCode.INVALID_PARAMETER,
+                        "전체 알림 전송이 false인 경우, 대상 학번은 필수 입력 값입니다."
+                );
+            }
+
+            // 학번 형식 (숫자 2자리) 검증
+            for (String admissionYear : createCeremonyRequestDTO.getTargetAdmissionYears()) {
+                if (!admissionYear.matches("^[0-9]{2}$")) {
+                    throw new BadRequestException(
+                            ErrorCode.INVALID_PARAMETER,
+                            "학번은 숫자 2자리로 입력해야 합니다. (ex. 05)"
+                    );
+                }
+            }
+        }
+
+        // 전체 알림 전송이 true인 경우, 대상 학번은 빈 리스트(null)로 설정
+        List<String> targetAdmissionYears = createCeremonyRequestDTO.getIsSetAll()
+                ? new ArrayList<>()
+                : createCeremonyRequestDTO.getTargetAdmissionYears();
+
         List<UuidFile> uuidFileList = (imageFileList == null || imageFileList.isEmpty())
                 ? List.of()
                 : uuidFileService.saveFileList(imageFileList, FilePath.USER_ACADEMIC_RECORD_APPLICATION);
@@ -54,6 +80,8 @@ public class CeremonyService {
                 createCeremonyRequestDTO.getDescription(),
                 createCeremonyRequestDTO.getStartDate(),
                 createCeremonyRequestDTO.getEndDate(),
+                createCeremonyRequestDTO.getIsSetAll(),
+                targetAdmissionYears,
                 uuidFileList
         );
         ceremonyRepository.save(ceremony);

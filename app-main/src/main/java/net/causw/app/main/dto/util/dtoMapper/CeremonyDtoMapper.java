@@ -30,6 +30,8 @@ public interface CeremonyDtoMapper {
     @Mapping(target = "applicantStudentId", source = "user.studentId")
     @Mapping(target = "applicantName", source = "user.name")
     @Mapping(target = "title", source = ".", qualifiedByName = "mapTitle")
+    @Mapping(target = "isSetAll", source = "ceremony.setAll")
+    @Mapping(target = "targetAdmissionYears", source = "targetAdmissionYears")
     CeremonyResponseDto toCeremonyResponseDto(Ceremony ceremony);
 
     @Named("mapTitle")
