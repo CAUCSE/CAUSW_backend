@@ -48,8 +48,8 @@ public class UserInfo extends BaseEntity {
   @Column(name = "notion_link", nullable = true)
   private String notionLink;
 
-  @Column(name = "velog_link", nullable = true)
-  private String velogLink;
+  @Column(name = "blog_link", nullable = true)
+  private String blogLink;
 
   @Column(name = "is_phone_number_visible")
   @Builder.Default
@@ -68,7 +68,7 @@ public class UserInfo extends BaseEntity {
 
   public void update(
       String description, String job,
-      String githubLink, String linkedInLink, String instagramLink, String notionLink, String velogLink,
+      String githubLink, String linkedInLink, String instagramLink, String notionLink, String blogLink,
       boolean isPhoneNumberVisible
   ) {
     this.description = description;
@@ -77,7 +77,7 @@ public class UserInfo extends BaseEntity {
     this.linkedInLink = linkedInLink;
     this.instagramLink = instagramLink;
     this.notionLink = notionLink;
-    this.velogLink = velogLink;
+    this.blogLink = blogLink;
     this.isPhoneNumberVisible = isPhoneNumberVisible;
   }
 }

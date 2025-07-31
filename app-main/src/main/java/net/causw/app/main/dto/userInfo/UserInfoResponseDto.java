@@ -29,7 +29,7 @@ public class UserInfoResponseDto {
 
   private String githubLink;
   private String linkedInLink;
-  private String velogLink;
+  private String blogLink;
   private String notionLink;
   private String instagramLink;
 

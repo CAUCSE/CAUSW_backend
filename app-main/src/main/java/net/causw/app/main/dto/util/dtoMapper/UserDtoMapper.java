@@ -222,7 +222,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "userCareer", source = "userInfo.userCareer", qualifiedByName = "mapUserCareerListToResponseDtoList")
     @Mapping(target = "githubLink", source = "userInfo.githubLink")
     @Mapping(target = "linkedInLink", source = "userInfo.linkedInLink")
-    @Mapping(target = "velogLink", source = "userInfo.velogLink")
+    @Mapping(target = "blogLink", source = "userInfo.blogLink")
     @Mapping(target = "notionLink", source = "userInfo.notionLink")
     @Mapping(target = "instagramLink", source = "userInfo.instagramLink")
     @Mapping(target = "isPhoneNumberVisible", source = "userInfo.isPhoneNumberVisible")

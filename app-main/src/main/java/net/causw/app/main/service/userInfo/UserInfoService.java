@@ -75,7 +75,7 @@ public class UserInfoService {
     userInfo.update(
         request.getDescription(), request.getJob(),
         request.getGithubLink(), request.getLinkedInLink(), request.getInstagramLink(),
-        request.getNotionLink(), request.getVelogLink(),
+        request.getNotionLink(), request.getBlogLink(),
         request.getIsPhoneNumberVisible());
 
     // 사용자 커리어 갱신
