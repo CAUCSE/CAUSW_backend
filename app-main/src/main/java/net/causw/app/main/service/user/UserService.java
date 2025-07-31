@@ -7,6 +7,7 @@ import net.causw.app.main.domain.model.entity.board.Board;
 import net.causw.app.main.domain.model.entity.circle.Circle;
 import net.causw.app.main.domain.model.entity.circle.CircleMember;
 import net.causw.app.main.domain.model.entity.locker.LockerLog;
+import net.causw.app.main.infrastructure.firebase.FcmUtils;
 import net.causw.app.main.repository.userAcademicRecord.UserAcademicRecordApplicationRepository;
 import net.causw.app.main.repository.uuidFile.UserAcademicRecordApplicationAttachImageRepository;
 import net.causw.app.main.repository.uuidFile.UserProfileImageRepository;
@@ -98,6 +99,7 @@ public class UserService {
     private final ChildCommentRepository childCommentRepository;
     private final UserAdmissionRepository userAdmissionRepository;
     private final RedisUtils redisUtils;
+    private final FcmUtils fcmUtils;
     private final LockerRepository lockerRepository;
     private final LockerLogRepository lockerLogRepository;
     private final UserAdmissionLogRepository userAdmissionLogRepository;
@@ -1210,9 +1212,7 @@ public class UserService {
         String fcmToken = userSignOutRequestDto.getFcmToken();
 
         if (fcmToken != null) {
-            user.removeFcmToken(fcmToken);
-            redisUtils.deleteFcmTokenData(fcmToken);
-            userRepository.save(user);
+            fcmUtils.removeFcmToken(user, fcmToken);
         }
 
         return UserDtoMapper.INSTANCE.toUserSignOutResponseDto("로그아웃 성공");
@@ -1324,68 +1324,25 @@ public class UserService {
 
     @Transactional
     public UserFcmTokenResponseDto createFcmToken(User user, UserFcmCreateRequestDto userFcmCreateRequestDto){
-        String refreshToken = userFcmCreateRequestDto.getRefreshToken();
-        String fcmToken = userFcmCreateRequestDto.getFcmToken();
+        String userIdFromRedis = getUserIdFromRefreshToken(userFcmCreateRequestDto.getRefreshToken());
 
-        String userIdFromRedis = getUserIdFromRefreshToken(refreshToken);
-
-        // 1. refreshtoken으로 유저 검증
+        // 1. 유효한 refreshToken인지 검증
         if(!user.getId().equals(userIdFromRedis)){
             throw new BadRequestException(
                     ErrorCode.INVALID_SIGNIN,
                     MessageUtil.INVALID_REFRESH_TOKEN
             );
         }
-
-        // 2. 유저 검증 성공 후 fcmToken db, redis 등록
-        // 리프레시 토큰과의 생명주기 통일을 위해 동일한 만료시간 사용
-        // 여기서 일단 redis에 fcmtoken을 저장하는데 사실 이 메서드를 분리하면서부터
-        // fcmtoken의 저장 조건은 푸시알림을 켠 상태의 사용자일 경우에만 이라는 조건을 만족하게됨
-        // 또한 redis와 같은 기간의 TTL을 적용하더라도 결국엔 refreshtoken과 정확히 일치하지 않고 기간의 차이가 존재할수 있기 때문에
-        // 푸시알림을 보낼때 매번 명확하게 refreshtoken과 생명주기 비교가 필요함
-        // 이 내용은 공통적이기 때문에 notificationservice에서 구현? 하면
-        // 일단 당장 여기서는 redis에서 fcmtoken이 있는지 확인 -> 없으면? db와 redis에 추가
-        // 있다면? 추가 당연히 안하겠지. 사실 있는지 비교하는건 getFcmToken에서 비교 먼저하고옴
-        // 그치만 여기서도 없을때 걍 아무일 없게 해야될라나? 일단 보류
-        if (!redisUtils.existsFcmToken(fcmToken)){
-            user.getFcmTokens().add(fcmToken);
-            redisUtils.setFcmTokenData(fcmToken, refreshToken, StaticValue.JWT_REFRESH_TOKEN_VALID_TIME);
-            userRepository.save(user);
-        }
-
+        // 2. fcmToken 최신화
+        fcmUtils.cleanInvalidFcmTokens(user);
+        // 3. fcmToken 추가
+        fcmUtils.addFcmToken(user, userFcmCreateRequestDto);
         return UserDtoMapper.INSTANCE.toUserFcmTokenResponseDto(user);
     }
 
-
-    //이게 이제 fcmtoken을 db에서 바로 가져오는게 아니라 redis에 있는지 유효성 검사도 해야되는거
-    // 그럼 불러오는 구조를 어떻게 할까?
-    // 여기서 user가 들어오고 db에서 user의 fcmtoken들을 불러옴
-    // 각 fcmToken으로 redis에 있는지 체크
-    // 있다면 리프레시토큰까지 redis에 있는지 체크
-    // 리프레시 토큰도 유효하다면? 유효한 fcmtoken들 반환
-
-    // 여기서 유효하지 않은 fcmtoken들을 다 버려? 아니면 토큰 정리를 푸시알림 보낼때 정리를 할까?
-    // 둘다 확인을 해야 유효하다고 볼 수 있음.
-    // 토큰을 불러올 때도 최신화가 당연히 되어야 함
-    // fcmToken을 저장할때는 당연히 리프레시 토큰으로 검사하고 저장을 함
-    // 그럼 직접 로그아웃에서는?
     @Transactional
     public UserFcmTokenResponseDto getUserFcmToken(User user) {
-        for (String fcmToken : user.getFcmTokens()) {
-            if (!redisUtils.existsFcmToken(fcmToken)){
-                //fcmtoken 자체가 redis에서 만료된 경우 db에서 삭제
-                user.removeFcmToken(fcmToken);
-            }
-            else {
-                String refreshToken = redisUtils.getFcmTokenData(fcmToken);
-                if (refreshToken == null || !redisUtils.existsRefreshToken(refreshToken)) {
-                    // refreshtoken이 null 이거나 redis에서 만료된 경우 유효하지 않은 fcmToken을 db와 redis에서 삭제
-                    user.removeFcmToken(fcmToken);
-                    redisUtils.deleteFcmTokenData(fcmToken);
-                }
-            }
-        }
-        userRepository.save(user);
+        fcmUtils.cleanInvalidFcmTokens(user);
         return UserDtoMapper.INSTANCE.toUserFcmTokenResponseDto(user);
     }
 
