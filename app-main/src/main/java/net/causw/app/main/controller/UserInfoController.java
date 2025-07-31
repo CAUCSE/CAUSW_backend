@@ -41,19 +41,19 @@ public class UserInfoController {
     @GetMapping(value = "/{userId}")
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "사용자 세부정보 조회 API")
-    public UserInfoResponseDto getByUserId(
+    public UserInfoResponseDto getUserInfoByUserId(
             @PathVariable("userId") String userId
     ) {
-        return userInfoService.getByUserId(userId);
+        return userInfoService.getUserInfoByUserId(userId);
     }
 
     @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "전체 사용자 세부정보 조회 API", description = "최근 수정된 순서대로 정렬")
-    public Page<UserInfoSummaryResponseDto> getAll(
+    public Page<UserInfoSummaryResponseDto> getAllUserInfos(
             @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum
     ) {
-        return userInfoService.getAll(pageNum);
+        return userInfoService.getAllUserInfos(pageNum);
     }
 
     @GetMapping(value = "/me")
@@ -62,7 +62,7 @@ public class UserInfoController {
     public UserInfoResponseDto getCurrentUser(
         @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return userInfoService.getByUserId(userDetails.getUser().getId());
+        return userInfoService.getUserInfoByUserId(userDetails.getUser().getId());
     }
 
     @PutMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)

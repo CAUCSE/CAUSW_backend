@@ -4,7 +4,6 @@ import static net.causw.global.constant.StaticValue.DEFAULT_PAGE_SIZE;
 
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import net.causw.app.main.domain.model.entity.base.BaseEntity;
@@ -40,12 +39,12 @@ public class UserInfoService {
   private final PageableFactory pageableFactory;
   private final UserCareerRepository userCareerRepository;
 
-  public Page<UserInfoSummaryResponseDto> getAll(Integer pageNum) {
+  public Page<UserInfoSummaryResponseDto> getAllUserInfos(Integer pageNum) {
     return userInfoRepository.findAllByOrderByUpdatedAtDesc(pageableFactory.create(pageNum, DEFAULT_PAGE_SIZE))
         .map(UserDtoMapper.INSTANCE::toUserInfoSummaryResponseDto);
   }
 
-  public UserInfoResponseDto getByUserId(String userId) {
+  public UserInfoResponseDto getUserInfoByUserId(String userId) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new BadRequestException(
             ErrorCode.ROW_DOES_NOT_EXIST,
