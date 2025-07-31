@@ -21,7 +21,6 @@ import net.causw.app.main.domain.model.enums.ceremony.CeremonyState;
 import net.causw.app.main.domain.model.enums.uuidFile.FilePath;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;
-import net.causw.app.main.domain.validation.AdmissionYearsValidator;
 import net.causw.app.main.domain.validation.ValidatorBucket;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -29,7 +28,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -180,12 +181,17 @@ public class CeremonyService {
 
     @Transactional
     public CeremonyNotificationSettingResponseDto createCeremonyNotificationSettings(User user, CreateCeremonyNotificationSettingDto createCeremonyNotificationSettingDTO) {
-        ValidatorBucket.of()
-                .consistOf(AdmissionYearsValidator.of(createCeremonyNotificationSettingDTO.getSubscribedAdmissionYears()))
-                .validate();
-        CeremonyNotificationSetting ceremonyNotificationSetting = CeremonyNotificationSetting.of(createCeremonyNotificationSettingDTO.getSubscribedAdmissionYears(),
-                createCeremonyNotificationSettingDTO.isSetAll(), createCeremonyNotificationSettingDTO.isNotificationActive(), user);
+        Set<String> admissionYears = validateAdmissionYears(createCeremonyNotificationSettingDTO);
+
+        CeremonyNotificationSetting ceremonyNotificationSetting =
+                CeremonyNotificationSetting.of(
+                        admissionYears,
+                        createCeremonyNotificationSettingDTO.isSetAll(),
+                        createCeremonyNotificationSettingDTO.isNotificationActive(),
+                        user
+                );
         ceremonyNotificationSettingRepository.save(ceremonyNotificationSetting);
+
         return CeremonyDtoMapper.INSTANCE.toCeremonyNotificationSettingResponseDto(ceremonyNotificationSetting);
     }
 
@@ -209,8 +215,10 @@ public class CeremonyService {
                 )
         );
 
+        Set<String> admissionYears = validateAdmissionYears(createCeremonyNotificationSettingDTO);
+
         ceremonyNotificationSetting.getSubscribedAdmissionYears().clear();
-        ceremonyNotificationSetting.getSubscribedAdmissionYears().addAll(createCeremonyNotificationSettingDTO.getSubscribedAdmissionYears());
+        ceremonyNotificationSetting.getSubscribedAdmissionYears().addAll( admissionYears );
         ceremonyNotificationSetting.updateIsSetAll(createCeremonyNotificationSettingDTO.isSetAll());
         ceremonyNotificationSetting.updateIsNotificationActive(createCeremonyNotificationSettingDTO.isNotificationActive());
 
@@ -218,6 +226,34 @@ public class CeremonyService {
 
         return CeremonyDtoMapper.INSTANCE.toCeremonyNotificationSettingResponseDto(ceremonyNotificationSetting);
 
+    }
+
+    // 입학년도 유효성 검사 및 반환
+    private Set<String> validateAdmissionYears(CreateCeremonyNotificationSettingDto dto) {
+        // setAll이 true인 경우 빈 Set 반환 (검증 불필요)
+        if (dto.isSetAll()) {
+            return new HashSet<>();
+        }
+
+        // setAll이 false인 경우 검증 후 입력값 반환
+        if (dto.getSubscribedAdmissionYears() == null || dto.getSubscribedAdmissionYears().isEmpty()) {
+            throw new BadRequestException(
+                    ErrorCode.INVALID_PARAMETER,
+                    "setAll이 false인 경우, 구독할 입학년도를 입력해야 합니다."
+            );
+        }
+
+        // 학번 형식 (2자리) 검증
+        for (String year : dto.getSubscribedAdmissionYears()) {
+            if (!year.matches("^[0-9]{2}$")) {
+                throw new BadRequestException(
+                        ErrorCode.INVALID_PARAMETER,
+                        String.format("유효하지 않은 입학년도입니다: %s. 2자리 숫자 문자열이어야 합니다. (예: \"78\", \"01\", \"14\", \"21\")", year)
+                );
+            }
+        }
+
+        return dto.getSubscribedAdmissionYears();
     }
 
 }

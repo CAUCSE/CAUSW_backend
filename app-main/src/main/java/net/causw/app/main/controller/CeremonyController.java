@@ -107,7 +107,7 @@ public class CeremonyController {
     @PostMapping("/notification-setting")
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "유저 경조사 알람 설정 생성",
-            description = "유저 경조사 알람 설정을 생성합니다.")
+            description = "유저 경조사 알람 설정을 생성합니다. 학번은 2자리로 입력해주세요. (ex. 19)")
     public CeremonyNotificationSettingResponseDto createCeremonyNotificationSetting(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody @Valid CreateCeremonyNotificationSettingDto ceremonyNotificationSettingDTO
@@ -125,7 +125,7 @@ public class CeremonyController {
 
     @PutMapping("/notification-setting")
     @ResponseStatus(value = HttpStatus.OK)
-    @Operation(summary = "유저 경조사 알람 설정 수정", description = "유저의 경조사 알람 설정을 수정합니다.")
+    @Operation(summary = "유저 경조사 알람 설정 수정", description = "유저의 경조사 알람 설정을 수정합니다. 학번은 2자리로 입력해주세요. (ex. 19)")
     public CeremonyNotificationSettingResponseDto updateCeremonyNotificationSetting(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody @Valid CreateCeremonyNotificationSettingDto createCeremonyNotificationSettingDTO
