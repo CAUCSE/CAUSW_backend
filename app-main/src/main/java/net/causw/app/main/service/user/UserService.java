@@ -1207,9 +1207,11 @@ public class UserService {
     public UserSignOutResponseDto signOut(User user, UserSignOutRequestDto userSignOutRequestDto){
         redisUtils.addToBlacklist(userSignOutRequestDto.getAccessToken());
         redisUtils.deleteRefreshTokenData(userSignOutRequestDto.getRefreshToken());
+        String fcmToken = userSignOutRequestDto.getFcmToken();
 
-        if (userSignOutRequestDto.getFcmToken() != null) {
-            user.removeFcmToken(userSignOutRequestDto.getFcmToken());
+        if (fcmToken != null) {
+            user.removeFcmToken(fcmToken);
+            redisUtils.deleteFcmTokenData(fcmToken);
             userRepository.save(user);
         }
 
@@ -1354,8 +1356,36 @@ public class UserService {
         return UserDtoMapper.INSTANCE.toUserFcmTokenResponseDto(user);
     }
 
-    @Transactional(readOnly = true)
-    public UserFcmTokenResponseDto getUserFcmToken(User user){
+
+    //이게 이제 fcmtoken을 db에서 바로 가져오는게 아니라 redis에 있는지 유효성 검사도 해야되는거
+    // 그럼 불러오는 구조를 어떻게 할까?
+    // 여기서 user가 들어오고 db에서 user의 fcmtoken들을 불러옴
+    // 각 fcmToken으로 redis에 있는지 체크
+    // 있다면 리프레시토큰까지 redis에 있는지 체크
+    // 리프레시 토큰도 유효하다면? 유효한 fcmtoken들 반환
+
+    // 여기서 유효하지 않은 fcmtoken들을 다 버려? 아니면 토큰 정리를 푸시알림 보낼때 정리를 할까?
+    // 둘다 확인을 해야 유효하다고 볼 수 있음.
+    // 토큰을 불러올 때도 최신화가 당연히 되어야 함
+    // fcmToken을 저장할때는 당연히 리프레시 토큰으로 검사하고 저장을 함
+    // 그럼 직접 로그아웃에서는?
+    @Transactional
+    public UserFcmTokenResponseDto getUserFcmToken(User user) {
+        for (String fcmToken : user.getFcmTokens()) {
+            if (!redisUtils.existsFcmToken(fcmToken)){
+                //fcmtoken 자체가 redis에서 만료된 경우 db에서 삭제
+                user.removeFcmToken(fcmToken);
+            }
+            else {
+                String refreshToken = redisUtils.getFcmTokenData(fcmToken);
+                if (refreshToken == null || !redisUtils.existsRefreshToken(refreshToken)) {
+                    // refreshtoken이 null 이거나 redis에서 만료된 경우 유효하지 않은 fcmToken을 db와 redis에서 삭제
+                    user.removeFcmToken(fcmToken);
+                    redisUtils.deleteFcmTokenData(fcmToken);
+                }
+            }
+        }
+        userRepository.save(user);
         return UserDtoMapper.INSTANCE.toUserFcmTokenResponseDto(user);
     }
 
