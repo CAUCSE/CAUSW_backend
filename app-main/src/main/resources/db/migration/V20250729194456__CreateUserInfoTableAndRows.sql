@@ -18,3 +18,11 @@ CREATE TABLE tb_user_info (
     CONSTRAINT fk_user_info_user_id
         FOREIGN KEY (user_id) REFERENCES tb_user(id)
 );
+
+INSERT INTO tb_user_info (id, created_at, updated_at, user_id)
+SELECT UUID(), NOW(), NOW(), u.id
+FROM tb_user u
+WHERE u.academic_status = 'GRADUATED'
+  AND NOT EXISTS (
+    SELECT 1 FROM tb_user_info ui WHERE ui.user_id = u.id
+);

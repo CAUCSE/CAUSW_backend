@@ -2,6 +2,7 @@ package net.causw.app.main.service.userAcademicRecord;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import net.causw.app.main.domain.model.entity.userInfo.UserInfo;
 import net.causw.app.main.repository.user.UserRepository;
 import net.causw.app.main.repository.userAcademicRecord.UserAcademicRecordApplicationRepository;
 import net.causw.app.main.repository.userAcademicRecord.UserAcademicRecordLogRepository;
@@ -14,6 +15,7 @@ import net.causw.app.main.dto.semester.CurrentSemesterResponseDto;
 import net.causw.app.main.dto.userAcademicRecordApplication.*;
 import net.causw.app.main.dto.util.dtoMapper.SemesterDtoMapper;
 import net.causw.app.main.dto.util.dtoMapper.UserAcademicRecordDtoMapper;
+import net.causw.app.main.repository.userInfo.UserInfoRepository;
 import net.causw.app.main.service.excel.UserAcademicRecordExcelService;
 import net.causw.app.main.service.semester.SemesterService;
 import net.causw.app.main.service.uuidFile.UuidFileService;
@@ -42,6 +44,7 @@ import java.util.List;
 public class UserAcademicRecordApplicationService {
 
     private final UserRepository userRepository;
+    private final UserInfoRepository userInfoRepository;
     private final UserAcademicRecordApplicationRepository userAcademicRecordApplicationRepository;
     private final UserAcademicRecordLogRepository userAcademicRecordLogRepository;
     private final UuidFileService uuidFileService;
@@ -169,6 +172,11 @@ public class UserAcademicRecordApplicationService {
 
             if (userAcademicRecordApplication.getTargetAcademicStatus().equals(AcademicStatus.ENROLLED)) {
                 targetUser.setCurrentCompletedSemester(userAcademicRecordApplication.getTargetCompletedSemester());
+            }
+
+            // 졸업생인 경우 동문수첨 프로필 생성
+            if (userAcademicRecordApplication.getTargetAcademicStatus().equals(AcademicStatus.GRADUATED)) {
+                userInfoRepository.save(UserInfo.of(targetUser));
             }
         }
 
