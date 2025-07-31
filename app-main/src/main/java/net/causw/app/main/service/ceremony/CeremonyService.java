@@ -87,7 +87,7 @@ public class CeremonyService {
         );
         ceremonyRepository.save(ceremony);
 
-        return CeremonyDtoMapper.INSTANCE.toCeremonyResponseDto(ceremony);
+        return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
     }
 
     @Transactional(readOnly = true)
@@ -151,14 +151,14 @@ public class CeremonyService {
             Integer writerAdmissionYear = ceremony.getUser().getAdmissionYear();
             ceremonyNotificationService.sendByAdmissionYear(writerAdmissionYear, ceremony);
         }
-        else{ //state가 reject, await, close로 바뀌는 경우(close는 별도 처리)
+        else{ // state가 reject, await, close로 바뀌는 경우 (close는 별도 처리)
             ceremony.updateNote(updateDto.getRejectMessage());
-            return CeremonyDtoMapper.INSTANCE.toCeremonyResponseDto(ceremony);
+            return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
         }
 
         ceremonyRepository.save(ceremony);
 
-        return CeremonyDtoMapper.INSTANCE.toCeremonyResponseDto(ceremony);
+        return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
     }
 
     @Transactional
@@ -174,7 +174,7 @@ public class CeremonyService {
 
         ceremonyRepository.save(ceremony);
 
-        return CeremonyDtoMapper.INSTANCE.toCeremonyResponseDto(ceremony);
+        return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
     }
 
 
