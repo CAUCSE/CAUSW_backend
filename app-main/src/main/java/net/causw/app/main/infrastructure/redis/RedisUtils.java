@@ -15,10 +15,14 @@ public class RedisUtils {
 
     /* 로그인 관련 Redis 메서드
     * 1. RefreshToken
-    * Key: RefreshToken:{RefreshToken 값}
+    * Key : RefreshToken:{RefreshToken 값}
     * Value: {User ID}
     *
-    * 2. Blacklist
+    * 2. FcmToken
+    * Key : FcmToken:{FcmToken 값}
+    * Value: {RefreshToken 값}
+    *
+    * 3. Blacklist
     * Key: Blacklist:{AccessToken 값}
     * Value: "BLACKLISTED"
      */
@@ -36,6 +40,33 @@ public class RedisUtils {
         String redisKey = "RefreshToken:" + key;
         redisTemplate.delete(redisKey);
     }
+
+    public boolean existsRefreshToken(String key) {
+        String redisKey = "RefreshToken:" + key;
+        return Boolean.TRUE.equals(redisTemplate.hasKey(redisKey));
+    }
+
+    public void setFcmTokenData(String fcmToken, String refreshToken, Long expiredTime) {
+        String redisKey = "FcmToken:" + fcmToken;
+        redisTemplate.opsForValue().set(redisKey, refreshToken, expiredTime, TimeUnit.MILLISECONDS);
+    }
+
+    public String getFcmTokenData(String fcmToken) {
+        String redisKey = "FcmToken:" + fcmToken;
+        return (String) redisTemplate.opsForValue().get(redisKey);
+    }
+
+    public void deleteFcmTokenData(String fcmToken) {
+        String redisKey = "FcmToken:" + fcmToken;
+        redisTemplate.delete(redisKey);
+    }
+
+    public boolean existsFcmToken(String fcmToken) {
+        String redisKey = "FcmToken:" + fcmToken;
+        return Boolean.TRUE.equals(redisTemplate.hasKey(redisKey));
+    }
+
+
 
     public void addToBlacklist(String token) {
         String redisKey = "Blacklist" + token;

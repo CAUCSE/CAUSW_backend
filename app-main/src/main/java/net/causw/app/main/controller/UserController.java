@@ -673,10 +673,9 @@ public class UserController {
     })
     public UserFcmTokenResponseDto createFcmToken(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestParam(name = "fcmToken") String fcmToken
+            @Valid @RequestBody UserFcmCreateRequestDto userFcmCreateRequestDto
     ) {
-        return userService.createFcmToken(userDetails.getUser(), fcmToken);
-
+        return userService.createFcmToken(userDetails.getUser(), userFcmCreateRequestDto);
     }
 
     @GetMapping(value = "/fcm")
