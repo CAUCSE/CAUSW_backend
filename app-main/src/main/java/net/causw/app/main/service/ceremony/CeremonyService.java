@@ -21,7 +21,6 @@ import net.causw.app.main.domain.model.enums.ceremony.CeremonyState;
 import net.causw.app.main.domain.model.enums.uuidFile.FilePath;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;
-import net.causw.app.main.domain.validation.ValidatorBucket;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

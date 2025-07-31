@@ -14,13 +14,17 @@ import net.causw.app.main.repository.notification.NotificationRepository;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.dto.notification.CeremonyNotificationDto;
 import net.causw.app.main.domain.model.enums.notification.NoticeType;
+import net.causw.global.exception.BadRequestException;
+import net.causw.global.exception.ErrorCode;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -56,13 +60,54 @@ public class CeremonyNotificationService implements NotificationService {
     @Async("asyncExecutor")
     @Transactional
     public void sendByAdmissionYear(Integer admissionYear, Ceremony ceremony) {
-        List<CeremonyNotificationSetting> ceremonyNotificationSettings = ceremonyNotificationSettingRepository.findByAdmissionYearOrSetAll(admissionYear);
-        CeremonyNotificationDto ceremonyNotificationDto = CeremonyNotificationDto.of(ceremony);
+        List<CeremonyNotificationSetting> ceremonyNotificationSettings;
 
-        Notification notification = Notification.of(ceremony.getUser(), ceremonyNotificationDto.getTitle(), ceremonyNotificationDto.getBody(), NoticeType.CEREMONY, ceremony.getId(), null);
+        if (ceremony.isSetAll()) {
+            // 모든 학번에게 알림
+            ceremonyNotificationSettings = ceremonyNotificationSettingRepository.findByAdmissionYearOrSetAll(admissionYear);
+        } else {
+            // 특정 학번에게만 알림
+            // 1차 필터링
+            List<Integer> targetYears = ceremony.getTargetAdmissionYears().stream()
+                    .map(studentId -> {
+                        int year = Integer.parseInt(studentId);
+                        // 72~99는 19xx, 나머지는 20xx
+                        return year >= 72 ? 1900 + year : 2000 + year;
+                    })
+                    .collect(Collectors.toList());
+            List<CeremonyNotificationSetting> filteredSettings = ceremonyNotificationSettingRepository.findByAdmissionYearsIn(targetYears);
+
+            // 2차 필터링
+            ceremonyNotificationSettings = filteredSettings.stream()
+                    .distinct()
+                    .filter(setting -> {
+                        // 알림이 비활성화된 경우 제외
+                        if (!setting.isNotificationActive()) { return false; }
+
+                        // isSetAll이 true면 모든 경조사 수신
+                        if (setting.isSetAll()) { return true; }
+
+                        // 특정 입학년도만 수신
+                        Integer ceremonyWriterYear = ceremony.getUser().getAdmissionYear();
+                        return setting.getSubscribedAdmissionYears().contains(ceremonyWriterYear);
+                    })
+                    .collect(Collectors.toList());
+        }
+
+        // 알림 생성 및 저장
+        CeremonyNotificationDto ceremonyNotificationDto = CeremonyNotificationDto.of(ceremony);
+        Notification notification = Notification.of(
+                ceremony.getUser(),
+                ceremonyNotificationDto.getTitle(),
+                ceremonyNotificationDto.getBody(),
+                NoticeType.CEREMONY,
+                ceremony.getId(),
+                null
+        );
 
         saveNotification(notification);
 
+        // 알림 전송
         ceremonyNotificationSettings.stream()
                 .map(CeremonyNotificationSetting::getUser)
                 .forEach(user -> {
