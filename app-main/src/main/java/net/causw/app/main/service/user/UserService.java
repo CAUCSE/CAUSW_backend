@@ -7,7 +7,9 @@ import net.causw.app.main.domain.model.entity.board.Board;
 import net.causw.app.main.domain.model.entity.circle.Circle;
 import net.causw.app.main.domain.model.entity.circle.CircleMember;
 import net.causw.app.main.domain.model.entity.locker.LockerLog;
+import net.causw.app.main.domain.model.entity.userInfo.UserInfo;
 import net.causw.app.main.repository.userAcademicRecord.UserAcademicRecordApplicationRepository;
+import net.causw.app.main.repository.userInfo.UserInfoRepository;
 import net.causw.app.main.repository.uuidFile.UserAcademicRecordApplicationAttachImageRepository;
 import net.causw.app.main.repository.uuidFile.UserProfileImageRepository;
 import net.causw.app.main.domain.model.entity.userAcademicRecord.UserAcademicRecordApplication;
@@ -90,6 +92,7 @@ public class UserService {
     private final Validator validator;
 
     private final UserRepository userRepository;
+    private final UserInfoRepository userInfoRepository;
     private final CircleRepository circleRepository;
     private final CircleMemberRepository circleMemberRepository;
     private final PostRepository postRepository;
@@ -585,6 +588,7 @@ public class UserService {
         User user = User.from(userCreateRequestDto, passwordEncoder.encode(userCreateRequestDto.getPassword()));
 
         this.userRepository.save(user);
+        userInfoRepository.save(UserInfo.of(user)); // 동문수첩 기본 프로필 생성
 
         // Validate password format, admission year range, and whether the email is duplicate or not
         ValidatorBucket.of()

@@ -122,8 +122,8 @@ public class UserInfoService {
     return UserDtoMapper.INSTANCE.toUserInfoResponseDto(userInfo);
   }
 
-  public Page<UserInfoSummaryResponseDto> search(final String name, final String job, final String career, final Integer pageNum) {
-    return userInfoRepository.findByNameAndJobAndCareer(name, job, career, pageableFactory.create(pageNum, DEFAULT_PAGE_SIZE))
+  public Page<UserInfoSummaryResponseDto> search(final String keyword, final Integer pageNum) {
+    return userInfoRepository.findAllByKeywordInNameOrJobOrCareer(keyword, pageableFactory.create(pageNum, DEFAULT_PAGE_SIZE))
         .map(UserDtoMapper.INSTANCE::toUserInfoSummaryResponseDto);
   }
 

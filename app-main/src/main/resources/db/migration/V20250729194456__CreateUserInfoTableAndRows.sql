@@ -19,10 +19,7 @@ CREATE TABLE tb_user_info (
         FOREIGN KEY (user_id) REFERENCES tb_user(id)
 );
 
+-- 기존 사용자 전체의 동문수첩 기본 프로필 생성
 INSERT INTO tb_user_info (id, created_at, updated_at, user_id)
-SELECT UUID(), NOW(), NOW(), u.id
-FROM tb_user u
-WHERE u.academic_status = 'GRADUATED'
-  AND NOT EXISTS (
-    SELECT 1 FROM tb_user_info ui WHERE ui.user_id = u.id
-);
+SELECT u.uuid, NOW(), NOW(), u.id
+FROM (SELECT UUID() AS uuid, u.id FROM tb_user u) AS u;

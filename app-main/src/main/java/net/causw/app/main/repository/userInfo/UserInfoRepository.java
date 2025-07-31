@@ -17,12 +17,12 @@ public interface UserInfoRepository extends JpaRepository<UserInfo, String> {
     Page<UserInfo> findAllByOrderByUpdatedAtDesc(Pageable pageable);
 
     @Query("""
-    SELECT ui FROM UserInfo ui
+    SELECT DISTINCT ui FROM UserInfo ui
     LEFT JOIN ui.userCareer uc
-    WHERE uc.description LIKE CONCAT('%', :career, '%')
-    AND ui.user.name LIKE CONCAT('%', :name, '%')
-    AND ui.job LIKE CONCAT('%', :job, '%')
+    WHERE uc.description LIKE CONCAT('%', :keyword, '%')
+    OR ui.user.name LIKE CONCAT('%', :keyword, '%')
+    OR ui.job LIKE CONCAT('%', :keyword, '%')
     ORDER BY ui.updatedAt DESC
     """)
-    Page<UserInfo> findByNameAndJobAndCareer(@Param("name") String name, @Param("job") String job, @Param("career") String career, Pageable pageable);
+    Page<UserInfo> findAllByKeywordInNameOrJobOrCareer(@Param("keyword") String keyword, Pageable pageable);
 }

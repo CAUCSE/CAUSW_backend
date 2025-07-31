@@ -173,11 +173,6 @@ public class UserAcademicRecordApplicationService {
             if (userAcademicRecordApplication.getTargetAcademicStatus().equals(AcademicStatus.ENROLLED)) {
                 targetUser.setCurrentCompletedSemester(userAcademicRecordApplication.getTargetCompletedSemester());
             }
-
-            // 졸업생인 경우 동문수첨 프로필 생성
-            if (userAcademicRecordApplication.getTargetAcademicStatus().equals(AcademicStatus.GRADUATED)) {
-                userInfoRepository.save(UserInfo.of(targetUser));
-            }
         }
 
         UserAcademicRecordLog userAcademicRecordLog = UserAcademicRecordLog.createWithApplication(

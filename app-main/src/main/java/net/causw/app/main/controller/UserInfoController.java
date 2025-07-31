@@ -86,11 +86,9 @@ public class UserInfoController {
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "사용자 세부정보 조건 검색 API")
     public Page<UserInfoSummaryResponseDto> search(
-        @RequestParam(name = "name", defaultValue = "") String name,
-        @RequestParam(name = "job", defaultValue = "") String job,
-        @RequestParam(name = "career", defaultValue = "") String career,
+        @RequestParam(name = "keyword", defaultValue = "") String keyword,
         @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum
     ) {
-        return userInfoService.search(name, job, career, pageNum);
+        return userInfoService.search(keyword, pageNum);
     }
 }
