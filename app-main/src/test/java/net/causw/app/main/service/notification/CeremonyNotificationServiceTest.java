@@ -74,6 +74,8 @@ class CeremonyNotificationServiceTest {
         given(mockCeremony.getStartDate()).willReturn(LocalDate.of(2024, 4, 15));
         given(mockCeremony.getEndDate()).willReturn(LocalDate.of(2024, 4, 16));
         given(mockCeremony.getCeremonyCategory()).willReturn(CeremonyCategory.MARRIAGE);
+        given(mockCeremony.isSetAll()).willReturn(false);
+        given(mockCeremony.getTargetAdmissionYears()).willReturn(Set.of("23", "24"));
     }
 
     @Test
@@ -105,7 +107,9 @@ class CeremonyNotificationServiceTest {
     @DisplayName("정상 토큰일 경우 푸시 알림 전송 성공")
     void sendByAdmissionYear_푸시성공() throws Exception {
         String validToken = "valid-token";
-        mockUser.getFcmTokens().add(validToken);
+        Set<String> fcmTokens = new HashSet<>();
+        fcmTokens.add(validToken);
+        mockUser.setFcmTokens(fcmTokens);
 
         given(ceremonyNotificationSettingRepository.findByAdmissionYearOrSetAll(2023))
                 .willReturn(List.of(CeremonyNotificationSetting.of(Set.of("23", "24"), true, true, mockUser)));
@@ -141,6 +145,10 @@ class CeremonyNotificationServiceTest {
         ceremonyNotificationService.sendByAdmissionYear(2023, mockCeremony);
 
         assertThat(mockUser.getFcmTokens()).doesNotContain(invalidToken);
+
+        // valid-token 호출도 검증
+        assertThat(mockUser.getFcmTokens()).containsExactly("valid-token");
+        verify(firebasePushNotificationService).sendNotification(eq("valid-token"), any(), any());
         verify(firebasePushNotificationService).sendNotification(eq(invalidToken), any(), any());
     }
 
