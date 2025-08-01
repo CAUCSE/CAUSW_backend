@@ -172,15 +172,15 @@ public class UserAcademicRecordApplicationService {
             userAcademicRecordApplication.setRejectMessage(updateUserAcademicRecordApplicationStateRequestDto.getRejectMessage());
 
         } else if (targetAcademicRecordRequestStatus == AcademicRecordRequestStatus.ACCEPT) {
-            // 학적 상태 및 학기 정보 변경
-            targetUser.setAcademicStatus(userAcademicRecordApplication.getTargetAcademicStatus());
-            targetUser.setCurrentCompletedSemester(userAcademicRecordApplication.getTargetCompletedSemester());
-            userRepository.save(targetUser);
-
             // 재학생의 동문수첩 기본 프로필 생성
             if (targetUser.getAcademicStatus() == AcademicStatus.UNDETERMINED) {
                 userInfoService.createDefaultProfile(targetUser.getId());
             }
+
+            // 학적 상태 및 학기 정보 변경
+            targetUser.setAcademicStatus(userAcademicRecordApplication.getTargetAcademicStatus());
+            targetUser.setCurrentCompletedSemester(userAcademicRecordApplication.getTargetCompletedSemester());
+            userRepository.save(targetUser);
         }
 
         // 학적 증빙 신청서 상태 변경
@@ -234,6 +234,11 @@ public class UserAcademicRecordApplicationService {
             );
 
         } else if (targetAcademicStatus == AcademicStatus.GRADUATED) {
+            // 졸업생의 동문수첩 기본 프로필 생성
+            if (user.getAcademicStatus() == AcademicStatus.UNDETERMINED) {
+                userInfoService.createDefaultProfile(user.getId());
+            }
+
             // 학적 상태 및 졸업 정보 변경
             user.setAcademicStatus(createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus());
             user.setGraduationYear(
@@ -241,11 +246,6 @@ public class UserAcademicRecordApplicationService {
             user.setGraduationType(
                 createUserAcademicRecordApplicationRequestDto.getGraduationType());
             userRepository.save(user);
-
-            // 졸업생의 동문수첩 기본 프로필 생성
-            if (user.getAcademicStatus() == AcademicStatus.UNDETERMINED) {
-                userInfoService.createDefaultProfile(user.getId());
-            }
 
             userAcademicRecordLog = UserAcademicRecordLog.createWithGraduation(
                 user,
@@ -257,14 +257,14 @@ public class UserAcademicRecordApplicationService {
             );
 
         } else if (targetAcademicStatus == AcademicStatus.LEAVE_OF_ABSENCE) {
-            // 학적 상태 변경
-            user.setAcademicStatus(createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus());
-            userRepository.save(user);
-
             // 휴학생의 동문수첩 기본 프로필 생성
             if (user.getAcademicStatus() == AcademicStatus.UNDETERMINED) {
                 userInfoService.createDefaultProfile(user.getId());
             }
+
+            // 학적 상태 변경
+            user.setAcademicStatus(createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus());
+            userRepository.save(user);
 
             userAcademicRecordLog = UserAcademicRecordLog.create(
                 user,
