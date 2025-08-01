@@ -1,6 +1,7 @@
 package net.causw.app.main.service.notification;
 
 import com.google.firebase.messaging.FirebaseMessagingException;
+
 import net.causw.app.main.domain.model.entity.ceremony.Ceremony;
 import net.causw.app.main.domain.model.entity.notification.CeremonyNotificationSetting;
 import net.causw.app.main.domain.model.entity.notification.Notification;
@@ -11,6 +12,7 @@ import net.causw.app.main.repository.notification.NotificationRepository;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.dto.user.UserCreateRequestDto;
 import net.causw.app.main.domain.model.enums.ceremony.CeremonyCategory;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,116 +34,114 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class CeremonyNotificationServiceTest {
 
-    @InjectMocks
-    private CeremonyNotificationService ceremonyNotificationService;
+	@InjectMocks
+	private CeremonyNotificationService ceremonyNotificationService;
 
-    @Mock
-    private FirebasePushNotificationService firebasePushNotificationService;
+	@Mock
+	private FirebasePushNotificationService firebasePushNotificationService;
 
-    @Mock
-    private CeremonyNotificationSettingRepository ceremonyNotificationSettingRepository;
+	@Mock
+	private CeremonyNotificationSettingRepository ceremonyNotificationSettingRepository;
 
-    @Mock
-    private NotificationRepository notificationRepository;
+	@Mock
+	private NotificationRepository notificationRepository;
 
-    @Mock
-    private NotificationLogRepository notificationLogRepository;
+	@Mock
+	private NotificationLogRepository notificationLogRepository;
 
-    private User mockUser;
-    private Ceremony mockCeremony;
+	private User mockUser;
+	private Ceremony mockCeremony;
 
-    @BeforeEach
-    void setUp() {
-        UserCreateRequestDto userCreateRequestDto = UserCreateRequestDto.builder()
-                .email("test@cau.ac.kr")
-                .name("테스트 유저")
-                .password("Password123!")
-                .studentId("20235555")
-                .admissionYear(2023)
-                .nickname("tester")
-                 .major("소프트웨어학부")
-                .phoneNumber("010-1234-5678")
-                .build();
+	@BeforeEach
+	void setUp() {
+		UserCreateRequestDto userCreateRequestDto = UserCreateRequestDto.builder()
+			.email("test@cau.ac.kr")
+			.name("테스트 유저")
+			.password("Password123!")
+			.studentId("20235555")
+			.admissionYear(2023)
+			.nickname("tester")
+			.major("소프트웨어학부")
+			.phoneNumber("010-1234-5678")
+			.build();
 
+		mockUser = User.from(userCreateRequestDto, "encodedPassword");
+		mockUser.setFcmTokens(new HashSet<>());
+		mockUser.getFcmTokens().add("valid-token");
 
-        mockUser = User.from(userCreateRequestDto, "encodedPassword");
-        mockUser.setFcmTokens(new HashSet<>());
-        mockUser.getFcmTokens().add("valid-token");
+		mockCeremony = mock(Ceremony.class);
+		given(mockCeremony.getId()).willReturn("ceremony-id");
+		given(mockCeremony.getUser()).willReturn(mockUser);
+		given(mockCeremony.getStartDate()).willReturn(LocalDate.of(2024, 4, 15));
+		given(mockCeremony.getEndDate()).willReturn(LocalDate.of(2024, 4, 16));
+		given(mockCeremony.getCeremonyCategory()).willReturn(CeremonyCategory.MARRIAGE);
+	}
 
-        mockCeremony = mock(Ceremony.class);
-        given(mockCeremony.getId()).willReturn("ceremony-id");
-        given(mockCeremony.getUser()).willReturn(mockUser);
-        given(mockCeremony.getStartDate()).willReturn(LocalDate.of(2024, 4, 15));
-        given(mockCeremony.getEndDate()).willReturn(LocalDate.of(2024, 4, 16));
-        given(mockCeremony.getCeremonyCategory()).willReturn(CeremonyCategory.MARRIAGE);
-    }
+	@Test
+	@DisplayName("경조사 알림설정 있는 경우 - 경조사 알림 정상 전송 및 로그 저장")
+	void sendByAdmissionYear_설정있음() {
+		given(ceremonyNotificationSettingRepository.findByAdmissionYearOrSetAll(2023))
+			.willReturn(List.of(CeremonyNotificationSetting.of(Set.of(2023, 2024), true, true, mockUser)));
 
-    @Test
-    @DisplayName("경조사 알림설정 있는 경우 - 경조사 알림 정상 전송 및 로그 저장")
-    void sendByAdmissionYear_설정있음()  {
-        given(ceremonyNotificationSettingRepository.findByAdmissionYearOrSetAll(2023))
-                .willReturn(List.of(CeremonyNotificationSetting.of(Set.of(2023, 2024), true, true, mockUser)));
+		ceremonyNotificationService.sendByAdmissionYear(2023, mockCeremony);
 
-        ceremonyNotificationService.sendByAdmissionYear(2023, mockCeremony);
+		verify(notificationRepository).save(any(Notification.class));
+		verify(notificationLogRepository).save(any(NotificationLog.class));
+	}
 
-        verify(notificationRepository).save(any(Notification.class));
-        verify(notificationLogRepository).save(any(NotificationLog.class));
-    }
+	@Test
+	@DisplayName("경조사 알림 설정이 없는 경우 - 경조사 알림 저장, 전송 없음, 로그 저장 없음")
+	void sendByAdmissionYear_설정없음() throws Exception {
+		given(ceremonyNotificationSettingRepository.findByAdmissionYearOrSetAll(2023))
+			.willReturn(List.of());
 
-    @Test
-    @DisplayName("경조사 알림 설정이 없는 경우 - 경조사 알림 저장, 전송 없음, 로그 저장 없음")
-    void sendByAdmissionYear_설정없음() throws Exception{
-        given(ceremonyNotificationSettingRepository.findByAdmissionYearOrSetAll(2023))
-                .willReturn(List.of());
+		ceremonyNotificationService.sendByAdmissionYear(2023, mockCeremony);
 
-        ceremonyNotificationService.sendByAdmissionYear(2023, mockCeremony);
+		verify(notificationRepository).save(any(Notification.class));
+		verify(notificationLogRepository, never()).save(any(NotificationLog.class));
+		verify(firebasePushNotificationService, never()).sendNotification(any(), any(), any());
+	}
 
-        verify(notificationRepository).save(any(Notification.class));
-        verify(notificationLogRepository, never()).save(any(NotificationLog.class));
-        verify(firebasePushNotificationService, never()).sendNotification(any(), any(), any());
-    }
+	@Test
+	@DisplayName("정상 토큰일 경우 푸시 알림 전송 성공")
+	void sendByAdmissionYear_푸시성공() throws Exception {
+		String validToken = "valid-token";
+		mockUser.getFcmTokens().add(validToken);
 
-    @Test
-    @DisplayName("정상 토큰일 경우 푸시 알림 전송 성공")
-    void sendByAdmissionYear_푸시성공() throws Exception {
-        String validToken = "valid-token";
-        mockUser.getFcmTokens().add(validToken);
+		given(ceremonyNotificationSettingRepository.findByAdmissionYearOrSetAll(2023))
+			.willReturn(List.of(CeremonyNotificationSetting.of(Set.of(2023, 2024), true, true, mockUser)));
 
-        given(ceremonyNotificationSettingRepository.findByAdmissionYearOrSetAll(2023))
-                .willReturn(List.of(CeremonyNotificationSetting.of(Set.of(2023, 2024), true, true, mockUser)));
+		given(mockCeremony.getUser()).willReturn(mockUser);
+		given(mockCeremony.getId()).willReturn("ceremony-id");
+		given(mockCeremony.getCeremonyCategory()).willReturn(CeremonyCategory.MARRIAGE);
+		given(mockCeremony.getStartDate()).willReturn(java.time.LocalDate.of(2024, 4, 15));
+		given(mockCeremony.getEndDate()).willReturn(java.time.LocalDate.of(2024, 4, 16));
 
-        given(mockCeremony.getUser()).willReturn(mockUser);
-        given(mockCeremony.getId()).willReturn("ceremony-id");
-        given(mockCeremony.getCeremonyCategory()).willReturn(CeremonyCategory.MARRIAGE);
-        given(mockCeremony.getStartDate()).willReturn(java.time.LocalDate.of(2024, 4, 15));
-        given(mockCeremony.getEndDate()).willReturn(java.time.LocalDate.of(2024, 4, 16));
+		ceremonyNotificationService.sendByAdmissionYear(2023, mockCeremony);
 
+		verify(firebasePushNotificationService).sendNotification(validToken, "테스트 유저(2023) - 결혼식",
+			"기간 : 2024-04-15 ~ 2024-04-16");
+		verify(notificationLogRepository).save(any(NotificationLog.class));
+	}
 
-        ceremonyNotificationService.sendByAdmissionYear(2023, mockCeremony);
+	@Test
+	@DisplayName("비정상 토큰일 경우 푸시 알림 실패, 토큰 제거")
+	void sendByAdmissionYear_푸시실패_토큰제거() throws Exception {
+		String invalidToken = "invalid-token";
+		mockUser.getFcmTokens().add(invalidToken);
 
-        verify(firebasePushNotificationService).sendNotification(validToken, "테스트 유저(2023) - 결혼식" , "기간 : 2024-04-15 ~ 2024-04-16");
-        verify(notificationLogRepository).save(any(NotificationLog.class));
-    }
+		given(ceremonyNotificationSettingRepository.findByAdmissionYearOrSetAll(2023))
+			.willReturn(List.of(CeremonyNotificationSetting.of(Set.of(2023, 2024), true, true, mockUser)));
 
+		FirebaseMessagingException exception = mock(FirebaseMessagingException.class);
+		doThrow(exception)
+			.when(firebasePushNotificationService)
+			.sendNotification(eq(invalidToken), any(), any());
 
-    @Test
-    @DisplayName("비정상 토큰일 경우 푸시 알림 실패, 토큰 제거")
-    void sendByAdmissionYear_푸시실패_토큰제거() throws Exception {
-        String invalidToken = "invalid-token";
-        mockUser.getFcmTokens().add(invalidToken);
+		ceremonyNotificationService.sendByAdmissionYear(2023, mockCeremony);
 
-        given(ceremonyNotificationSettingRepository.findByAdmissionYearOrSetAll(2023))
-                .willReturn(List.of(CeremonyNotificationSetting.of(Set.of(2023, 2024), true, true, mockUser)));
-
-        FirebaseMessagingException exception = mock(FirebaseMessagingException.class);
-        doThrow(exception)
-                .when(firebasePushNotificationService)
-                .sendNotification(eq(invalidToken), any(), any());
-
-        ceremonyNotificationService.sendByAdmissionYear(2023, mockCeremony);
-
-        assertThat(mockUser.getFcmTokens()).doesNotContain(invalidToken);
-        verify(firebasePushNotificationService).sendNotification(eq(invalidToken), any(), any());
-    }
+		assertThat(mockUser.getFcmTokens()).doesNotContain(invalidToken);
+		verify(firebasePushNotificationService).sendNotification(eq(invalidToken), any(), any());
+	}
 
 }

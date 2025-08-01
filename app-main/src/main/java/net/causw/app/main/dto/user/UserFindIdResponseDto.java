@@ -6,5 +6,5 @@ import lombok.Getter;
 @Getter
 @Builder
 public class UserFindIdResponseDto {
-    String email;
+	String email;
 }

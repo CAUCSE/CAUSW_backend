@@ -8,25 +8,25 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,N
 -- Table `BATCH_JOB_INSTANCE`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `BATCH_JOB_INSTANCE` (
-    `JOB_INSTANCE_ID` BIGINT NOT NULL,
-    `VERSION` BIGINT NULL DEFAULT NULL,
-    `JOB_NAME` VARCHAR(100) NOT NULL,
+                                                    `JOB_INSTANCE_ID` BIGINT NOT NULL,
+                                                    `VERSION` BIGINT NULL DEFAULT NULL,
+                                                    `JOB_NAME` VARCHAR(100) NOT NULL,
     `JOB_KEY` VARCHAR(32) NOT NULL,
     PRIMARY KEY (`JOB_INSTANCE_ID`),
     UNIQUE INDEX `JOB_INST_UN` (`JOB_NAME` ASC, `JOB_KEY` ASC) VISIBLE)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `BATCH_JOB_EXECUTION`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `BATCH_JOB_EXECUTION` (
-    `JOB_EXECUTION_ID` BIGINT NOT NULL,
-    `VERSION` BIGINT NULL DEFAULT NULL,
-    `JOB_INSTANCE_ID` BIGINT NOT NULL,
-    `CREATE_TIME` DATETIME(6) NOT NULL,
+                                                     `JOB_EXECUTION_ID` BIGINT NOT NULL,
+                                                     `VERSION` BIGINT NULL DEFAULT NULL,
+                                                     `JOB_INSTANCE_ID` BIGINT NOT NULL,
+                                                     `CREATE_TIME` DATETIME(6) NOT NULL,
     `START_TIME` DATETIME(6) NULL DEFAULT NULL,
     `END_TIME` DATETIME(6) NULL DEFAULT NULL,
     `STATUS` VARCHAR(10) NULL DEFAULT NULL,
@@ -38,33 +38,33 @@ CREATE TABLE IF NOT EXISTS `BATCH_JOB_EXECUTION` (
     CONSTRAINT `JOB_INST_EXEC_FK`
     FOREIGN KEY (`JOB_INSTANCE_ID`)
     REFERENCES `BATCH_JOB_INSTANCE` (`JOB_INSTANCE_ID`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `BATCH_JOB_EXECUTION_CONTEXT`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `BATCH_JOB_EXECUTION_CONTEXT` (
-    `JOB_EXECUTION_ID` BIGINT NOT NULL,
-    `SHORT_CONTEXT` VARCHAR(2500) NOT NULL,
+                                                             `JOB_EXECUTION_ID` BIGINT NOT NULL,
+                                                             `SHORT_CONTEXT` VARCHAR(2500) NOT NULL,
     `SERIALIZED_CONTEXT` TEXT NULL DEFAULT NULL,
     PRIMARY KEY (`JOB_EXECUTION_ID`),
     CONSTRAINT `JOB_EXEC_CTX_FK`
     FOREIGN KEY (`JOB_EXECUTION_ID`)
     REFERENCES `BATCH_JOB_EXECUTION` (`JOB_EXECUTION_ID`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `BATCH_JOB_EXECUTION_PARAMS`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `BATCH_JOB_EXECUTION_PARAMS` (
-    `JOB_EXECUTION_ID` BIGINT NOT NULL,
-    `PARAMETER_NAME` VARCHAR(100) NOT NULL,
+                                                            `JOB_EXECUTION_ID` BIGINT NOT NULL,
+                                                            `PARAMETER_NAME` VARCHAR(100) NOT NULL,
     `PARAMETER_TYPE` VARCHAR(100) NOT NULL,
     `PARAMETER_VALUE` VARCHAR(2500) NULL DEFAULT NULL,
     `IDENTIFYING` CHAR(1) NOT NULL,
@@ -72,42 +72,42 @@ CREATE TABLE IF NOT EXISTS `BATCH_JOB_EXECUTION_PARAMS` (
     CONSTRAINT `JOB_EXEC_PARAMS_FK`
     FOREIGN KEY (`JOB_EXECUTION_ID`)
     REFERENCES `BATCH_JOB_EXECUTION` (`JOB_EXECUTION_ID`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `BATCH_JOB_EXECUTION_SEQ`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `BATCH_JOB_EXECUTION_SEQ` (
-    `ID` BIGINT NOT NULL,
-    `UNIQUE_KEY` CHAR(1) NOT NULL,
+                                                         `ID` BIGINT NOT NULL,
+                                                         `UNIQUE_KEY` CHAR(1) NOT NULL,
     UNIQUE INDEX `UNIQUE_KEY_UN` (`UNIQUE_KEY` ASC))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `BATCH_JOB_SEQ`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `BATCH_JOB_SEQ` (
-    `ID` BIGINT NOT NULL,
-    `UNIQUE_KEY` CHAR(1) NOT NULL,
+                                               `ID` BIGINT NOT NULL,
+                                               `UNIQUE_KEY` CHAR(1) NOT NULL,
     UNIQUE INDEX `UNIQUE_KEY_UN` (`UNIQUE_KEY` ASC))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `BATCH_STEP_EXECUTION`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `BATCH_STEP_EXECUTION` (
-    `STEP_EXECUTION_ID` BIGINT NOT NULL,
-    `VERSION` BIGINT NOT NULL,
-    `STEP_NAME` VARCHAR(100) NOT NULL,
+                                                      `STEP_EXECUTION_ID` BIGINT NOT NULL,
+                                                      `VERSION` BIGINT NOT NULL,
+                                                      `STEP_NAME` VARCHAR(100) NOT NULL,
     `JOB_EXECUTION_ID` BIGINT NOT NULL,
     `CREATE_TIME` DATETIME(6) NOT NULL,
     `START_TIME` DATETIME(6) NULL DEFAULT NULL,
@@ -129,59 +129,59 @@ CREATE TABLE IF NOT EXISTS `BATCH_STEP_EXECUTION` (
     CONSTRAINT `JOB_EXEC_STEP_FK`
     FOREIGN KEY (`JOB_EXECUTION_ID`)
     REFERENCES `BATCH_JOB_EXECUTION` (`JOB_EXECUTION_ID`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `BATCH_STEP_EXECUTION_CONTEXT`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `BATCH_STEP_EXECUTION_CONTEXT` (
-    `STEP_EXECUTION_ID` BIGINT NOT NULL,
-    `SHORT_CONTEXT` VARCHAR(2500) NOT NULL,
+                                                              `STEP_EXECUTION_ID` BIGINT NOT NULL,
+                                                              `SHORT_CONTEXT` VARCHAR(2500) NOT NULL,
     `SERIALIZED_CONTEXT` TEXT NULL DEFAULT NULL,
     PRIMARY KEY (`STEP_EXECUTION_ID`),
     CONSTRAINT `STEP_EXEC_CTX_FK`
     FOREIGN KEY (`STEP_EXECUTION_ID`)
     REFERENCES `BATCH_STEP_EXECUTION` (`STEP_EXECUTION_ID`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `BATCH_STEP_EXECUTION_SEQ`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `BATCH_STEP_EXECUTION_SEQ` (
-    `ID` BIGINT NOT NULL,
-    `UNIQUE_KEY` CHAR(1) NOT NULL,
+                                                          `ID` BIGINT NOT NULL,
+                                                          `UNIQUE_KEY` CHAR(1) NOT NULL,
     UNIQUE INDEX `UNIQUE_KEY_UN` (`UNIQUE_KEY` ASC))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_locker_location`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_locker_location` (
-    `id` VARCHAR(255) NOT NULL,
+                                                    `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `name` ENUM('SECOND', 'THIRD', 'FOURTH') NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE INDEX `UK_5n4i9ncqv3c3ns9tunyxq1vww` (`name` ASC) VISIBLE)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_locker`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_locker` (
-    `id` VARCHAR(255) NOT NULL,
+                                           `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `expire_date` DATETIME(6) NULL DEFAULT NULL,
@@ -198,16 +198,16 @@ CREATE TABLE IF NOT EXISTS `tb_locker` (
     CONSTRAINT `FKfprmp8bd5hasx3nh5h9xuaijt`
     FOREIGN KEY (`user_id`)
     REFERENCES `tb_user` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_user`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_user` (
-    `id` VARCHAR(255) NOT NULL,
+                                         `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `academic_status` ENUM('ENROLLED', 'LEAVE_OF_ABSENCE', 'GRADUATED', 'DROPPED_OUT', 'SUSPEND', 'EXPEL', 'PROFESSOR', 'UNDETERMINED') NOT NULL,
@@ -237,16 +237,16 @@ CREATE TABLE IF NOT EXISTS `tb_user` (
     CONSTRAINT `FK6df4nyawh2hwx7pxbl9qxep2a`
     FOREIGN KEY (`locker_id`)
     REFERENCES `tb_locker` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `ceremony`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `ceremony` (
-    `id` VARCHAR(255) NOT NULL,
+                                          `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `ceremony_category` ENUM('MARRIAGE', 'FUNERAL', 'ETC') NOT NULL,
@@ -261,16 +261,16 @@ CREATE TABLE IF NOT EXISTS `ceremony` (
     CONSTRAINT `FK68hi5kpp95tb3qu6fcfxq7fa7`
     FOREIGN KEY (`user_id`)
     REFERENCES `tb_user` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_circle`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_circle` (
-    `id` VARCHAR(255) NOT NULL,
+                                           `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `circle_tax` INT NULL DEFAULT NULL,
@@ -286,16 +286,16 @@ CREATE TABLE IF NOT EXISTS `tb_circle` (
     CONSTRAINT `FKsyy3e5thj8ighbjoa6owk3a37`
     FOREIGN KEY (`leader_id`)
     REFERENCES `tb_user` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_board`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_board` (
-    `id` VARCHAR(255) NOT NULL,
+                                          `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `category` VARCHAR(255) NOT NULL,
@@ -313,16 +313,16 @@ CREATE TABLE IF NOT EXISTS `tb_board` (
     CONSTRAINT `FKf56nd4y1y3jqyec9a19gl4i43`
     FOREIGN KEY (`circle_id`)
     REFERENCES `tb_circle` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_board_apply`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_board_apply` (
-    `id` VARCHAR(255) NOT NULL,
+                                                `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `accept_status` ENUM('AWAIT', 'ACCEPTED', 'REJECT') NOT NULL,
@@ -342,31 +342,31 @@ CREATE TABLE IF NOT EXISTS `tb_board_apply` (
     CONSTRAINT `FKde6dcpov54bln9k8pm0eo02wj`
     FOREIGN KEY (`user_id`)
     REFERENCES `tb_user` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_calendar`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_calendar` (
-    `id` VARCHAR(255) NOT NULL,
+                                             `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `month` INT NOT NULL,
     `year` INT NOT NULL,
     PRIMARY KEY (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_uuid_file`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_uuid_file` (
-    `id` VARCHAR(255) NOT NULL,
+                                              `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `extension` VARCHAR(255) NOT NULL,
@@ -379,16 +379,16 @@ CREATE TABLE IF NOT EXISTS `tb_uuid_file` (
     PRIMARY KEY (`id`),
     UNIQUE INDEX `UK_ok1ekub9dpdyhsx9vexnkn1sn` (`file_key` ASC) VISIBLE,
     UNIQUE INDEX `UK_o61trieqgmab71n786b9aic93` (`uuid` ASC) VISIBLE)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_calendar_attach_image_uuid_file`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_calendar_attach_image_uuid_file` (
-    `id` VARCHAR(255) NOT NULL,
+                                                                    `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `calendar_id` VARCHAR(255) NOT NULL,
@@ -404,16 +404,16 @@ CREATE TABLE IF NOT EXISTS `tb_calendar_attach_image_uuid_file` (
     CONSTRAINT `FKmfj3gxbrsl39bow3q5hgmlxhd`
     FOREIGN KEY (`uuid_file_id`)
     REFERENCES `tb_uuid_file` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_ceremony`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_ceremony` (
-    `id` VARCHAR(255) NOT NULL,
+                                             `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `ceremony_category` ENUM('MARRIAGE', 'FUNERAL', 'ETC') NOT NULL,
@@ -428,16 +428,16 @@ CREATE TABLE IF NOT EXISTS `tb_ceremony` (
     CONSTRAINT `FK1r9gjgpwdqf6rxp0i9l8k3qgo`
     FOREIGN KEY (`user_id`)
     REFERENCES `tb_user` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_ceremony_attach_image_uuid_file`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_ceremony_attach_image_uuid_file` (
-    `id` VARCHAR(255) NOT NULL,
+                                                                    `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `ceremony_id` VARCHAR(255) NOT NULL,
@@ -452,16 +452,16 @@ CREATE TABLE IF NOT EXISTS `tb_ceremony_attach_image_uuid_file` (
     CONSTRAINT `FKh6htdl05nwrom8kat1s79u265`
     FOREIGN KEY (`ceremony_id`)
     REFERENCES `tb_ceremony` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_ceremony_push_notification`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_ceremony_push_notification` (
-    `id` VARCHAR(255) NOT NULL,
+                                                               `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `is_notification_active` BIT(1) NOT NULL,
@@ -472,31 +472,31 @@ CREATE TABLE IF NOT EXISTS `tb_ceremony_push_notification` (
     CONSTRAINT `FKndjbnnmuuyj2v8myo498jci87`
     FOREIGN KEY (`user_id`)
     REFERENCES `tb_user` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_ceremony_subscribe_year`
 -- -----------------------------------------------------
-    CREATE TABLE IF NOT EXISTS `tb_ceremony_subscribe_year` (
-    `notification_id` VARCHAR(255) NOT NULL,
+CREATE TABLE IF NOT EXISTS `tb_ceremony_subscribe_year` (
+                                                            `notification_id` VARCHAR(255) NOT NULL,
     `admission_year` INT NULL DEFAULT NULL,
     INDEX `FK36lyx1t3etyvq6gloftmklrt3` (`notification_id` ASC) VISIBLE,
     CONSTRAINT `FK36lyx1t3etyvq6gloftmklrt3`
     FOREIGN KEY (`notification_id`)
     REFERENCES `tb_ceremony_push_notification` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_vote`
 -- -----------------------------------------------------
-    CREATE TABLE IF NOT EXISTS `tb_vote` (
-    `id` VARCHAR(255) NOT NULL,
+CREATE TABLE IF NOT EXISTS `tb_vote` (
+                                         `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `allow_anonymous` BIT(1) NOT NULL,
@@ -504,16 +504,16 @@ COLLATE = utf8mb4_0900_ai_ci;
     `is_end` BIT(1) NOT NULL,
     `title` VARCHAR(255) NULL DEFAULT NULL,
     PRIMARY KEY (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_form`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_form` (
-    `id` VARCHAR(255) NOT NULL,
+                                         `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `enrolled_registered_semester` VARCHAR(255) NULL DEFAULT NULL,
@@ -532,16 +532,16 @@ CREATE TABLE IF NOT EXISTS `tb_form` (
     CONSTRAINT `FKsihc207xm6hj4jd97lvyixgvg`
     FOREIGN KEY (`circle_id`)
     REFERENCES `tb_circle` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_post`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_post` (
-    `id` VARCHAR(255) NOT NULL,
+                                         `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `content` TEXT NOT NULL,
@@ -571,16 +571,16 @@ CREATE TABLE IF NOT EXISTS `tb_post` (
     CONSTRAINT `FKsn6tvkjtynqrfxsooaojns5uu`
     FOREIGN KEY (`board_id`)
     REFERENCES `tb_board` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_comment`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_comment` (
-    `id` VARCHAR(255) NOT NULL,
+                                            `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `content` VARCHAR(255) NOT NULL,
@@ -597,16 +597,16 @@ CREATE TABLE IF NOT EXISTS `tb_comment` (
     CONSTRAINT `FKebak8c8m45519djplq0wanuj3`
     FOREIGN KEY (`post_id`)
     REFERENCES `tb_post` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_child_comment`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_child_comment` (
-    `id` VARCHAR(255) NOT NULL,
+                                                  `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `content` VARCHAR(255) NOT NULL,
@@ -624,16 +624,16 @@ CREATE TABLE IF NOT EXISTS `tb_child_comment` (
     CONSTRAINT `FKss4sg42rfphnmx0vdx1w98y4k`
     FOREIGN KEY (`parent_comment_id`)
     REFERENCES `tb_comment` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_circle_main_image_uuid_file`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_circle_main_image_uuid_file` (
-    `id` VARCHAR(255) NOT NULL,
+                                                                `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `circle_id` VARCHAR(255) NOT NULL,
@@ -649,16 +649,16 @@ CREATE TABLE IF NOT EXISTS `tb_circle_main_image_uuid_file` (
     CONSTRAINT `FKt1pk1d2ndfpb72k6klp8mip9j`
     FOREIGN KEY (`uuid_file_id`)
     REFERENCES `tb_uuid_file` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_reply`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_reply` (
-    `id` VARCHAR(255) NOT NULL,
+                                          `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `form_id` VARCHAR(255) NOT NULL,
@@ -672,16 +672,16 @@ CREATE TABLE IF NOT EXISTS `tb_reply` (
     CONSTRAINT `FKkjv6in4jhfr484po2uqetymy9`
     FOREIGN KEY (`user_id`)
     REFERENCES `tb_user` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_circle_member`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_circle_member` (
-    `id` VARCHAR(255) NOT NULL,
+                                                  `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `status` ENUM('AWAIT', 'MEMBER', 'LEAVE', 'DROP', 'REJECT') NOT NULL,
@@ -711,16 +711,16 @@ CREATE TABLE IF NOT EXISTS `tb_circle_member` (
     CONSTRAINT `FKrt9v3qda9jgpjlnbwstaxwp0k`
     FOREIGN KEY (`user_circle_id`)
     REFERENCES `tb_user` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_council_fee_fake_user`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_council_fee_fake_user` (
-    `id` VARCHAR(255) NOT NULL,
+                                                          `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `academic_status` ENUM('ENROLLED', 'LEAVE_OF_ABSENCE', 'GRADUATED', 'DROPPED_OUT', 'SUSPEND', 'EXPEL', 'PROFESSOR', 'UNDETERMINED') NOT NULL,
@@ -733,16 +733,16 @@ CREATE TABLE IF NOT EXISTS `tb_council_fee_fake_user` (
     `phone_number` VARCHAR(255) NOT NULL,
     `student_id` VARCHAR(255) NOT NULL,
     PRIMARY KEY (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_crawled_notice`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_crawled_notice` (
-    `id` VARCHAR(255) NOT NULL,
+                                                   `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `announce_date` DATE NOT NULL,
@@ -754,16 +754,16 @@ CREATE TABLE IF NOT EXISTS `tb_crawled_notice` (
     `type` VARCHAR(255) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE INDEX `UK_5jsgsfwrca8bepsku2i3rjosl` (`link` ASC) VISIBLE)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_crawled_file_link`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_crawled_file_link` (
-    `id` VARCHAR(255) NOT NULL,
+                                                      `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `file_link` VARCHAR(255) NOT NULL,
@@ -774,31 +774,31 @@ CREATE TABLE IF NOT EXISTS `tb_crawled_file_link` (
     CONSTRAINT `FK3gwbq5o1qaosqlaimu5ci73by`
     FOREIGN KEY (`crawled_notice_id`)
     REFERENCES `tb_crawled_notice` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_event`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_event` (
-    `id` VARCHAR(255) NOT NULL,
+                                          `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `is_deleted` BIT(1) NULL DEFAULT b'0',
     `url` VARCHAR(255) NOT NULL,
     PRIMARY KEY (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_event_attach_image_uuid_file`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_event_attach_image_uuid_file` (
-    `id` VARCHAR(255) NOT NULL,
+                                                                 `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `event_id` VARCHAR(255) NOT NULL,
@@ -814,16 +814,16 @@ CREATE TABLE IF NOT EXISTS `tb_event_attach_image_uuid_file` (
     CONSTRAINT `FKploeaqbyn6lhkll4pge14us7d`
     FOREIGN KEY (`uuid_file_id`)
     REFERENCES `tb_uuid_file` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_favorite_board`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_favorite_board` (
-    `id` VARCHAR(255) NOT NULL,
+                                                   `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `board_id` VARCHAR(255) NOT NULL,
@@ -837,16 +837,16 @@ CREATE TABLE IF NOT EXISTS `tb_favorite_board` (
     CONSTRAINT `FKti6ydu5ij1enqjndfsa3eavqu`
     FOREIGN KEY (`user_id`)
     REFERENCES `tb_user` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_favorite_post`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_favorite_post` (
-    `id` VARCHAR(255) NOT NULL,
+                                                  `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `is_deleted` BIT(1) NULL DEFAULT b'0',
@@ -861,32 +861,32 @@ CREATE TABLE IF NOT EXISTS `tb_favorite_post` (
     CONSTRAINT `FKqavkdq0v03v53woarf9k8jb3e`
     FOREIGN KEY (`post_id`)
     REFERENCES `tb_post` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_flag`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_flag` (
-    `id` VARCHAR(255) NOT NULL,
+                                         `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `tb_key` VARCHAR(255) NOT NULL,
     `value` BIT(1) NULL DEFAULT b'0',
     PRIMARY KEY (`id`),
     UNIQUE INDEX `UK_9mxdy90sn6d8r6ri8dfudruhr` (`tb_key` ASC) VISIBLE)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_form_question`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_form_question` (
-    `id` VARCHAR(255) NOT NULL,
+                                                  `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `is_multiple` BIT(1) NOT NULL,
@@ -899,16 +899,16 @@ CREATE TABLE IF NOT EXISTS `tb_form_question` (
     CONSTRAINT `FKka1hcmtgi37phx060r96uuniq`
     FOREIGN KEY (`form_id`)
     REFERENCES `tb_form` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_form_question_option`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_form_question_option` (
-    `id` VARCHAR(255) NOT NULL,
+                                                         `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `number` INT NOT NULL,
@@ -919,16 +919,16 @@ CREATE TABLE IF NOT EXISTS `tb_form_question_option` (
     CONSTRAINT `FKkv1jic6yn7rrr2mrlluilwj9n`
     FOREIGN KEY (`form_question_id`)
     REFERENCES `tb_form_question` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_inquiry`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_inquiry` (
-    `id` VARCHAR(255) NOT NULL,
+                                            `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `content` TEXT NOT NULL,
@@ -940,31 +940,31 @@ CREATE TABLE IF NOT EXISTS `tb_inquiry` (
     CONSTRAINT `FKlkre2tncjdw7t8mq5x9onalme`
     FOREIGN KEY (`user_id`)
     REFERENCES `tb_user` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_latest_crawl`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_latest_crawl` (
-    `id` VARCHAR(255) NOT NULL,
+                                                 `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `crawl_category` ENUM('CAU_SW_NOTICE', 'CAU_PORTAL_NOTICE') NOT NULL,
     `latest_url` VARCHAR(255) NOT NULL,
     PRIMARY KEY (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_like_child_comment`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_like_child_comment` (
-    `id` VARCHAR(255) NOT NULL,
+                                                       `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `child_comment_id` VARCHAR(255) NULL DEFAULT NULL,
@@ -978,16 +978,16 @@ CREATE TABLE IF NOT EXISTS `tb_like_child_comment` (
     CONSTRAINT `FKpcfrmcqr6j5p96w4o6ekg5v84`
     FOREIGN KEY (`child_comment_id`)
     REFERENCES `tb_child_comment` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_like_comment`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_like_comment` (
-    `id` VARCHAR(255) NOT NULL,
+                                                 `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `comment_id` VARCHAR(255) NULL DEFAULT NULL,
@@ -1001,16 +1001,16 @@ CREATE TABLE IF NOT EXISTS `tb_like_comment` (
     CONSTRAINT `FKf0cu0ei1kpmat8xvl7rwm1urv`
     FOREIGN KEY (`comment_id`)
     REFERENCES `tb_comment` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_like_post`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_like_post` (
-    `id` VARCHAR(255) NOT NULL,
+                                              `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `post_id` VARCHAR(255) NULL DEFAULT NULL,
@@ -1024,16 +1024,16 @@ CREATE TABLE IF NOT EXISTS `tb_like_post` (
     CONSTRAINT `FK73pv6iorxfcdvctu0mpg206x8`
     FOREIGN KEY (`post_id`)
     REFERENCES `tb_post` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_locker_log`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_locker_log` (
-    `id` VARCHAR(255) NOT NULL,
+                                               `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `action` ENUM('ENABLE', 'DISABLE', 'REGISTER', 'RETURN', 'EXTEND') NOT NULL,
@@ -1043,16 +1043,16 @@ CREATE TABLE IF NOT EXISTS `tb_locker_log` (
     `user_email` VARCHAR(255) NULL DEFAULT NULL,
     `user_name` VARCHAR(255) NULL DEFAULT NULL,
     PRIMARY KEY (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_notification`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_notification` (
-    `id` VARCHAR(255) NOT NULL,
+                                                 `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `content` VARCHAR(255) NULL DEFAULT NULL,
@@ -1068,16 +1068,16 @@ CREATE TABLE IF NOT EXISTS `tb_notification` (
     CONSTRAINT `FK9ihj3k9lv33u6qd10wq18f482`
     FOREIGN KEY (`user_id`)
     REFERENCES `tb_user` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_notification_log`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_notification_log` (
-    `id` VARCHAR(255) NOT NULL,
+                                                     `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `is_read` BIT(1) NOT NULL,
@@ -1092,16 +1092,16 @@ CREATE TABLE IF NOT EXISTS `tb_notification_log` (
     CONSTRAINT `FKnm0qj8np5hpys0e9rfe4jlu3b`
     FOREIGN KEY (`notification_id`)
     REFERENCES `tb_notification` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_post_attach_image_uuid_file`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_post_attach_image_uuid_file` (
-    `id` VARCHAR(255) NOT NULL,
+                                                                `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `post_id` VARCHAR(255) NOT NULL,
@@ -1116,16 +1116,16 @@ CREATE TABLE IF NOT EXISTS `tb_post_attach_image_uuid_file` (
     CONSTRAINT `FKj0wonhfu05hwn6p38any0mycy`
     FOREIGN KEY (`post_id`)
     REFERENCES `tb_post` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_reply_question`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_reply_question` (
-    `id` VARCHAR(255) NOT NULL,
+                                                   `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `question_answer` TEXT NULL DEFAULT NULL,
@@ -1141,16 +1141,16 @@ CREATE TABLE IF NOT EXISTS `tb_reply_question` (
     CONSTRAINT `FKngdilacqipy027g6fgup9fw6r`
     FOREIGN KEY (`form_question_id`)
     REFERENCES `tb_form_question` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_semester`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_semester` (
-    `id` VARCHAR(255) NOT NULL,
+                                             `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `end_date` DATE NOT NULL,
@@ -1164,32 +1164,32 @@ CREATE TABLE IF NOT EXISTS `tb_semester` (
     CONSTRAINT `FK1f7qdbcou7kki27na1yhgn4a5`
     FOREIGN KEY (`update_user_id`)
     REFERENCES `tb_user` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_text_field`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_text_field` (
-    `id` VARCHAR(255) NOT NULL,
+                                               `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `tb_key` VARCHAR(255) NOT NULL,
     `value` VARCHAR(255) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE INDEX `UK_1jym6b281dx706drcf9gbc8iw` (`tb_key` ASC) VISIBLE)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_user_academic_record_application`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_user_academic_record_application` (
-    `id` VARCHAR(255) NOT NULL,
+                                                                     `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `academic_record_request_status` ENUM('ACCEPT', 'REJECT', 'AWAIT', 'CLOSE') NOT NULL,
@@ -1203,16 +1203,16 @@ CREATE TABLE IF NOT EXISTS `tb_user_academic_record_application` (
     CONSTRAINT `FK6o42vtjrql4spa3qheorq57e7`
     FOREIGN KEY (`user_id`)
     REFERENCES `tb_user` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_user_academic_record_application_attach_image_uuid_file`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_user_academic_record_application_attach_image_uuid_file` (
-    `id` VARCHAR(255) NOT NULL,
+                                                                                            `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `user_academic_record_application_id` VARCHAR(255) NOT NULL,
@@ -1227,16 +1227,16 @@ CREATE TABLE IF NOT EXISTS `tb_user_academic_record_application_attach_image_uui
     CONSTRAINT `FKs0kth7tg0drbg2a74rhdy67ck`
     FOREIGN KEY (`uuid_file_id`)
     REFERENCES `tb_uuid_file` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_user_academic_record_log`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_user_academic_record_log` (
-    `id` VARCHAR(255) NOT NULL,
+                                                             `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `controlled_user_email` VARCHAR(255) NOT NULL,
@@ -1252,16 +1252,16 @@ CREATE TABLE IF NOT EXISTS `tb_user_academic_record_log` (
     `target_user_name` VARCHAR(255) NOT NULL,
     `target_user_student_id` VARCHAR(255) NOT NULL,
     PRIMARY KEY (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_user_academic_record_log_attach_image`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_user_academic_record_log_attach_image` (
-    `id` VARCHAR(255) NOT NULL,
+                                                                          `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `user_academic_record_log_id` VARCHAR(255) NOT NULL,
@@ -1275,16 +1275,16 @@ CREATE TABLE IF NOT EXISTS `tb_user_academic_record_log_attach_image` (
     CONSTRAINT `FKn6qscetye4wllnxsjwx2ault1`
     FOREIGN KEY (`uuid_file_id`)
     REFERENCES `tb_uuid_file` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_user_admission`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_user_admission` (
-    `id` VARCHAR(255) NOT NULL,
+                                                   `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `description` VARCHAR(255) NULL DEFAULT NULL,
@@ -1294,16 +1294,16 @@ CREATE TABLE IF NOT EXISTS `tb_user_admission` (
     CONSTRAINT `FKdkcgsxmu3ph4cddd7gydgfx3p`
     FOREIGN KEY (`user_id`)
     REFERENCES `tb_user` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_user_admission_attach_image_uuid_file`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_user_admission_attach_image_uuid_file` (
-    `id` VARCHAR(255) NOT NULL,
+                                                                          `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `user_admission_id` VARCHAR(255) NOT NULL,
@@ -1318,16 +1318,16 @@ CREATE TABLE IF NOT EXISTS `tb_user_admission_attach_image_uuid_file` (
     CONSTRAINT `FKnemwteegkkpge96155ubd3ss8`
     FOREIGN KEY (`user_admission_id`)
     REFERENCES `tb_user_admission` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_user_admission_log`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_user_admission_log` (
-    `id` VARCHAR(255) NOT NULL,
+                                                       `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `action` ENUM('ACCEPT', 'REJECT') NOT NULL,
@@ -1338,16 +1338,16 @@ CREATE TABLE IF NOT EXISTS `tb_user_admission_log` (
     `user_email` VARCHAR(255) NOT NULL,
     `user_name` VARCHAR(255) NOT NULL,
     PRIMARY KEY (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_user_admission_log_attach_image_uuid_file`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_user_admission_log_attach_image_uuid_file` (
-    `id` VARCHAR(255) NOT NULL,
+                                                                              `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `user_admission_log_id` VARCHAR(255) NOT NULL,
@@ -1362,16 +1362,16 @@ CREATE TABLE IF NOT EXISTS `tb_user_admission_log_attach_image_uuid_file` (
     CONSTRAINT `FKg8j9u8vgj2vswq0hltfhvbsm9`
     FOREIGN KEY (`user_admission_log_id`)
     REFERENCES `tb_user_admission_log` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_user_board_subscribe`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_user_board_subscribe` (
-    `id` VARCHAR(255) NOT NULL,
+                                                         `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `is_subscribed` BIT(1) NULL DEFAULT NULL,
@@ -1386,16 +1386,16 @@ CREATE TABLE IF NOT EXISTS `tb_user_board_subscribe` (
     CONSTRAINT `FKps9i1rpnulrnluj7m6fl212x`
     FOREIGN KEY (`user_id`)
     REFERENCES `tb_user` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_user_comment_subscribe`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_user_comment_subscribe` (
-    `id` VARCHAR(255) NOT NULL,
+                                                           `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `is_subscribed` BIT(1) NULL DEFAULT NULL,
@@ -1410,16 +1410,16 @@ CREATE TABLE IF NOT EXISTS `tb_user_comment_subscribe` (
     CONSTRAINT `FKsmjykxko0wkguyduujxljy9p1`
     FOREIGN KEY (`comment_id`)
     REFERENCES `tb_comment` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_user_council_fee`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_user_council_fee` (
-    `id` VARCHAR(255) NOT NULL,
+                                                     `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `is_joined_service` BIT(1) NOT NULL,
@@ -1438,16 +1438,16 @@ CREATE TABLE IF NOT EXISTS `tb_user_council_fee` (
     CONSTRAINT `FKa2vx6xctboiyveok54n93qfr7`
     FOREIGN KEY (`council_fee_fake_user_id`)
     REFERENCES `tb_council_fee_fake_user` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_user_council_fee_log`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_user_council_fee_log` (
-    `id` VARCHAR(255) NOT NULL,
+                                                         `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `academic_status` ENUM('ENROLLED', 'LEAVE_OF_ABSENCE', 'GRADUATED', 'DROPPED_OUT', 'SUSPEND', 'EXPEL', 'PROFESSOR', 'UNDETERMINED') NOT NULL,
@@ -1475,32 +1475,32 @@ CREATE TABLE IF NOT EXISTS `tb_user_council_fee_log` (
     `time_of_semester_year` INT NOT NULL,
     `user_name` VARCHAR(255) NOT NULL,
     PRIMARY KEY (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_user_fcm_token`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_user_fcm_token` (
-    `user_id` VARCHAR(255) NOT NULL,
+                                                   `user_id` VARCHAR(255) NOT NULL,
     `fcm_token` VARCHAR(255) NULL DEFAULT NULL,
     `fcm_token_value` VARCHAR(255) NULL DEFAULT NULL,
     INDEX `FK67eb8vcoda8mx5odsy07fc1fh` (`user_id` ASC) VISIBLE,
     CONSTRAINT `FK67eb8vcoda8mx5odsy07fc1fh`
     FOREIGN KEY (`user_id`)
     REFERENCES `tb_user` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_user_post_subscribe`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_user_post_subscribe` (
-    `id` VARCHAR(255) NOT NULL,
+                                                        `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `is_subscribed` BIT(1) NULL DEFAULT NULL,
@@ -1515,16 +1515,16 @@ CREATE TABLE IF NOT EXISTS `tb_user_post_subscribe` (
     CONSTRAINT `FKlny56nrqcq87bftis6i91x2y7`
     FOREIGN KEY (`user_id`)
     REFERENCES `tb_user` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_user_profile_uuid_file`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_user_profile_uuid_file` (
-    `id` VARCHAR(255) NOT NULL,
+                                                           `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `user_id` VARCHAR(255) NOT NULL,
@@ -1540,16 +1540,16 @@ CREATE TABLE IF NOT EXISTS `tb_user_profile_uuid_file` (
     CONSTRAINT `FKkciuncg6fgjygqctb69iyh0nt`
     FOREIGN KEY (`uuid_file_id`)
     REFERENCES `tb_uuid_file` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_vote_option`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_vote_option` (
-    `id` VARCHAR(255) NOT NULL,
+                                                `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `option_name` VARCHAR(255) NULL DEFAULT NULL,
@@ -1559,16 +1559,16 @@ CREATE TABLE IF NOT EXISTS `tb_vote_option` (
     CONSTRAINT `FKnni9i6g97ug9egsfw6n01titi`
     FOREIGN KEY (`vote_id`)
     REFERENCES `tb_vote` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `tb_vote_record`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_vote_record` (
-    `id` VARCHAR(255) NOT NULL,
+                                                `id` VARCHAR(255) NOT NULL,
     `created_at` DATETIME(6) NULL DEFAULT NULL,
     `updated_at` DATETIME(6) NULL DEFAULT NULL,
     `user_id` VARCHAR(255) NULL DEFAULT NULL,
@@ -1582,24 +1582,24 @@ CREATE TABLE IF NOT EXISTS `tb_vote_record` (
     CONSTRAINT `FKj1rlo6wtl6qibjq8an1qj0ucl`
     FOREIGN KEY (`user_id`)
     REFERENCES `tb_user` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
 -- Table `user_roles`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `user_roles` (
-    `user_id` VARCHAR(255) NOT NULL,
+                                            `user_id` VARCHAR(255) NOT NULL,
     `role` ENUM('ADMIN', 'PRESIDENT', 'VICE_PRESIDENT', 'COUNCIL', 'LEADER_1', 'LEADER_2', 'LEADER_3', 'LEADER_4', 'LEADER_CIRCLE', 'LEADER_ALUMNI', 'COMMON', 'NONE', 'PROFESSOR') NOT NULL,
     PRIMARY KEY (`user_id`, `role`),
     CONSTRAINT `FKlqb868dhpatxi3e1m1nu3ukr5`
     FOREIGN KEY (`user_id`)
     REFERENCES `tb_user` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
 SET SQL_MODE=@OLD_SQL_MODE;

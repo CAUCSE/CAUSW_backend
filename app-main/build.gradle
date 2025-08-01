@@ -85,6 +85,12 @@ dependencies {
     implementation 'ch.qos.logback.contrib:logback-json-classic:0.1.5'
     implementation 'ch.qos.logback.contrib:logback-jackson:0.1.5'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+
+    //mongodb
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
+    // chatting
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
 }
 
 bootJar {

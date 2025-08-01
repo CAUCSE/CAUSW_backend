@@ -34,62 +34,62 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class JsoupCrawlerTest {
 
-    @InjectMocks
-    private JsoupCrawler jsoupCrawler;
+	@InjectMocks
+	private JsoupCrawler jsoupCrawler;
 
-    @Nested
-    @DisplayName("크롤링 성공 테스트")
-    class CrawlSuccessTest {
+	@Nested
+	@DisplayName("크롤링 성공 테스트")
+	class CrawlSuccessTest {
 
-        @Test
-        @DisplayName("빈 목록 페이지 처리")
-        void crawl_shouldReturnEmptyList_whenNoNotices() throws IOException {
-            // given
-            Document mockDoc = mock(Document.class);
-            Elements mockRows = mock(Elements.class);
+		@Test
+		@DisplayName("빈 목록 페이지 처리")
+		void crawl_shouldReturnEmptyList_whenNoNotices() throws IOException {
+			// given
+			Document mockDoc = mock(Document.class);
+			Elements mockRows = mock(Elements.class);
 
-            when(mockDoc.select("table.table-basic tbody tr")).thenReturn(mockRows);
-            when(mockRows.isEmpty()).thenReturn(true);
+			when(mockDoc.select("table.table-basic tbody tr")).thenReturn(mockRows);
+			when(mockRows.isEmpty()).thenReturn(true);
 
-            try (MockedStatic<Jsoup> mockedJsoup = mockStatic(Jsoup.class)) {
-                Connection mockConnection = mock(Connection.class);
-                mockedJsoup.when(() -> Jsoup.connect(anyString())).thenReturn(mockConnection);
-                when(mockConnection.userAgent(anyString())).thenReturn(mockConnection);
-                when(mockConnection.get()).thenReturn(mockDoc);
+			try (MockedStatic<Jsoup> mockedJsoup = mockStatic(Jsoup.class)) {
+				Connection mockConnection = mock(Connection.class);
+				mockedJsoup.when(() -> Jsoup.connect(anyString())).thenReturn(mockConnection);
+				when(mockConnection.userAgent(anyString())).thenReturn(mockConnection);
+				when(mockConnection.get()).thenReturn(mockDoc);
 
-                // when
-                List<CrawledNotice> result = jsoupCrawler.crawl();
+				// when
+				List<CrawledNotice> result = jsoupCrawler.crawl();
 
-                // then
-                assertThat(result).isEmpty();
-            }
-        }
-    }
+				// then
+				assertThat(result).isEmpty();
+			}
+		}
+	}
 
-    @Nested
-    @DisplayName("크롤링 실패 테스트")
-    class CrawlFailureTest {
+	@Nested
+	@DisplayName("크롤링 실패 테스트")
+	class CrawlFailureTest {
 
-        @Test
-        @DisplayName("네트워크 오류 시 재시도 후 예외 발생")
-        void crawl_shouldThrowException_whenNetworkError() throws IOException {
-            // given
-            try (MockedStatic<Jsoup> mockedJsoup = mockStatic(Jsoup.class)) {
-                Connection mockConnection = mock(Connection.class);
-                mockedJsoup.when(() -> Jsoup.connect(anyString())).thenReturn(mockConnection);
-                when(mockConnection.userAgent(anyString())).thenReturn(mockConnection);
-                when(mockConnection.get()).thenThrow(new IOException("Network error"));
+		@Test
+		@DisplayName("네트워크 오류 시 재시도 후 예외 발생")
+		void crawl_shouldThrowException_whenNetworkError() throws IOException {
+			// given
+			try (MockedStatic<Jsoup> mockedJsoup = mockStatic(Jsoup.class)) {
+				Connection mockConnection = mock(Connection.class);
+				mockedJsoup.when(() -> Jsoup.connect(anyString())).thenReturn(mockConnection);
+				when(mockConnection.userAgent(anyString())).thenReturn(mockConnection);
+				when(mockConnection.get()).thenThrow(new IOException("Network error"));
 
-                // when & then
-                assertThatThrownBy(() -> jsoupCrawler.crawl())
-                    .isInstanceOf(InternalServerException.class)
-                    .hasMessageContaining(MessageUtil.FAIL_TO_CRAWL_CAU_SW_NOTICE_SITE)
-                    .extracting("errorCode")
-                    .isEqualTo(ErrorCode.INTERNAL_SERVER);
+				// when & then
+				assertThatThrownBy(() -> jsoupCrawler.crawl())
+					.isInstanceOf(InternalServerException.class)
+					.hasMessageContaining(MessageUtil.FAIL_TO_CRAWL_CAU_SW_NOTICE_SITE)
+					.extracting("errorCode")
+					.isEqualTo(ErrorCode.INTERNAL_SERVER);
 
-                // 재시도 확인 (MAX_RETRIES * 페이지 수)
-                verify(mockConnection, atLeast(StaticValue.CRAWLING_MAX_RETRIES)).get();
-            }
-        }
-    }
+				// 재시도 확인 (MAX_RETRIES * 페이지 수)
+				verify(mockConnection, atLeast(StaticValue.CRAWLING_MAX_RETRIES)).get();
+			}
+		}
+	}
 } 

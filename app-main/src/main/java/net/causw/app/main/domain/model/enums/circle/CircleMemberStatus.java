@@ -4,15 +4,15 @@ import lombok.Getter;
 
 @Getter
 public enum CircleMemberStatus {
-    AWAIT("AWAIT"),
-    MEMBER("MEMBER"),
-    LEAVE("LEAVE"),
-    DROP("DROP"),
-    REJECT("REJECT");
+	AWAIT("AWAIT"),
+	MEMBER("MEMBER"),
+	LEAVE("LEAVE"),
+	DROP("DROP"),
+	REJECT("REJECT");
 
-    private final String value;
+	private final String value;
 
-    CircleMemberStatus(String value) {
-        this.value = value;
-    }
+	CircleMemberStatus(String value) {
+		this.value = value;
+	}
 }

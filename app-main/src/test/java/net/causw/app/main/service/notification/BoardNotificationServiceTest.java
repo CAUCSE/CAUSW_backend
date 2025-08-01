@@ -1,6 +1,7 @@
 package net.causw.app.main.service.notification;
 
 import com.google.firebase.messaging.FirebaseMessagingException;
+
 import net.causw.app.main.domain.model.entity.board.Board;
 import net.causw.app.main.domain.model.entity.notification.Notification;
 import net.causw.app.main.domain.model.entity.notification.NotificationLog;
@@ -11,6 +12,7 @@ import net.causw.app.main.repository.notification.NotificationRepository;
 import net.causw.app.main.repository.notification.UserBoardSubscribeRepository;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.dto.user.UserCreateRequestDto;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,121 +32,117 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class BoardNotificationServiceTest {
 
-    @InjectMocks
-    private BoardNotificationService boardNotificationService;
+	@InjectMocks
+	private BoardNotificationService boardNotificationService;
 
-    @Mock
-    private FirebasePushNotificationService firebasePushNotificationService;
+	@Mock
+	private FirebasePushNotificationService firebasePushNotificationService;
 
-    @Mock
-    private NotificationRepository notificationRepository;
+	@Mock
+	private NotificationRepository notificationRepository;
 
-    @Mock
-    private NotificationLogRepository notificationLogRepository;
+	@Mock
+	private NotificationLogRepository notificationLogRepository;
 
-    @Mock
-    private UserBoardSubscribeRepository userBoardSubscribeRepository;
+	@Mock
+	private UserBoardSubscribeRepository userBoardSubscribeRepository;
 
-    private User mockUser;
-    private Board mockBoard;
-    private Post mockPost;
+	private User mockUser;
+	private Board mockBoard;
+	private Post mockPost;
 
+	@BeforeEach
+	void setUp() {
+		UserCreateRequestDto userCreateRequestDto = UserCreateRequestDto.builder()
+			.email("test@cau.ac.kr")
+			.name("테스트 유저")
+			.password("Password123!")
+			.studentId("20235555")
+			.admissionYear(2023)
+			.nickname("tester")
+			.major("소프트웨어학부")
+			.phoneNumber("010-1234-5678")
+			.build();
 
-    @BeforeEach
-    void setUp() {
-        UserCreateRequestDto userCreateRequestDto = UserCreateRequestDto.builder()
-                .email("test@cau.ac.kr")
-                .name("테스트 유저")
-                .password("Password123!")
-                .studentId("20235555")
-                .admissionYear(2023)
-                .nickname("tester")
-                .major("소프트웨어학부")
-                .phoneNumber("010-1234-5678")
-                .build();
+		mockUser = User.from(userCreateRequestDto, "encodedPassword");
+		mockUser.setFcmTokens(new HashSet<>());
+		mockUser.getFcmTokens().add("dummy-token");
 
-        mockUser = User.from(userCreateRequestDto, "encodedPassword");
-        mockUser.setFcmTokens(new HashSet<>());
-        mockUser.getFcmTokens().add("dummy-token");
+		mockBoard = mock(Board.class);
+		mockPost = mock(Post.class);
+	}
 
-        mockBoard = mock(Board.class);
-        mockPost = mock(Post.class);
-    }
+	@Test
+	@DisplayName("게시판 구독 시 알림 및 로그 저장")
+	void sendByBoardIsSubscribedTrue_서비스알림() {
+		given(mockPost.getWriter()).willReturn(mockUser);
+		given(mockPost.getId()).willReturn("post-id");
 
-    @Test
-    @DisplayName("게시판 구독 시 알림 및 로그 저장")
-    void sendByBoardIsSubscribedTrue_서비스알림() {
-        given(mockPost.getWriter()).willReturn(mockUser);
-        given(mockPost.getId()).willReturn("post-id");
+		given(userBoardSubscribeRepository.findByBoardAndIsSubscribedTrue(mockBoard))
+			.willReturn(List.of(UserBoardSubscribe.of(mockUser, mockBoard, true)));
 
-        given(userBoardSubscribeRepository.findByBoardAndIsSubscribedTrue(mockBoard))
-                .willReturn(List.of(UserBoardSubscribe.of(mockUser, mockBoard, true)));
+		boardNotificationService.sendByBoardIsSubscribed(mockBoard, mockPost);
 
-        boardNotificationService.sendByBoardIsSubscribed(mockBoard, mockPost);
+		verify(notificationRepository).save(any(Notification.class));
+		verify(notificationLogRepository).save(any(NotificationLog.class));
+	}
 
-        verify(notificationRepository).save(any(Notification.class));
-        verify(notificationLogRepository).save(any(NotificationLog.class));
-    }
+	@Test
+	@DisplayName("게시판 구독 안된 경우 알림 로그 저장 안됨")
+	void sendByBoardIsSubscribedFalse_서비스알림() {
+		given(mockPost.getWriter()).willReturn(mockUser);
+		given(mockPost.getId()).willReturn("post-id");
 
+		given(userBoardSubscribeRepository.findByBoardAndIsSubscribedTrue(mockBoard))
+			.willReturn(List.of());
 
+		boardNotificationService.sendByBoardIsSubscribed(mockBoard, mockPost);
 
-    @Test
-    @DisplayName("게시판 구독 안된 경우 알림 로그 저장 안됨")
-    void sendByBoardIsSubscribedFalse_서비스알림() {
-        given(mockPost.getWriter()).willReturn(mockUser);
-        given(mockPost.getId()).willReturn("post-id");
+		verify(notificationRepository).save(any(Notification.class));
+		verify(notificationLogRepository, never()).save(any(NotificationLog.class));
+	}
 
-        given(userBoardSubscribeRepository.findByBoardAndIsSubscribedTrue(mockBoard))
-                .willReturn(List.of());
+	@Test
+	@DisplayName("정상 토큰일 경우 푸시 알림 전송 성공")
+	void sendByBoardIsSubscribedTrue_푸시알림_성공() throws Exception {
+		String validToken = "valid-token";
+		mockUser.getFcmTokens().add(validToken);
 
-        boardNotificationService.sendByBoardIsSubscribed(mockBoard, mockPost);
+		given(mockPost.getWriter()).willReturn(mockUser);
+		given(mockPost.getId()).willReturn("post-id");
+		given(mockBoard.getName()).willReturn("게시판 알림");
+		given(mockPost.getTitle()).willReturn("게시글 내용");
 
-        verify(notificationRepository).save(any(Notification.class));
-        verify(notificationLogRepository, never()).save(any(NotificationLog.class));
-    }
+		given(userBoardSubscribeRepository.findByBoardAndIsSubscribedTrue(mockBoard))
+			.willReturn(List.of(UserBoardSubscribe.of(mockUser, mockBoard, true)));
 
-    @Test
-    @DisplayName("정상 토큰일 경우 푸시 알림 전송 성공")
-    void sendByBoardIsSubscribedTrue_푸시알림_성공() throws Exception {
-        String validToken = "valid-token";
-        mockUser.getFcmTokens().add(validToken);
+		boardNotificationService.sendByBoardIsSubscribed(mockBoard, mockPost);
 
-        given(mockPost.getWriter()).willReturn(mockUser);
-        given(mockPost.getId()).willReturn("post-id");
-        given(mockBoard.getName()).willReturn("게시판 알림");
-        given(mockPost.getTitle()).willReturn("게시글 내용");
+		verify(firebasePushNotificationService).sendNotification(validToken, "게시판 알림", "새 게시글 : 게시글 내용");
+		verify(notificationLogRepository).save(any(NotificationLog.class));
+	}
 
-        given(userBoardSubscribeRepository.findByBoardAndIsSubscribedTrue(mockBoard))
-                .willReturn(List.of(UserBoardSubscribe.of(mockUser, mockBoard, true)));
+	@Test
+	@DisplayName("비정상 토큰일 경우 푸시 알림 실패, 토큰 제거")
+	void sendByBoardIsSubscribedTrue_푸시알림_실패() throws Exception {
+		String invalidToken = "invalid-token";
+		mockUser.getFcmTokens().add(invalidToken);
 
-        boardNotificationService.sendByBoardIsSubscribed(mockBoard, mockPost);
+		given(mockPost.getWriter()).willReturn(mockUser);
+		given(mockPost.getId()).willReturn("post-id");
 
-        verify(firebasePushNotificationService).sendNotification(validToken, "게시판 알림", "새 게시글 : 게시글 내용");
-        verify(notificationLogRepository).save(any(NotificationLog.class));
-    }
+		given(userBoardSubscribeRepository.findByBoardAndIsSubscribedTrue(mockBoard))
+			.willReturn(List.of(UserBoardSubscribe.of(mockUser, mockBoard, true)));
 
-    @Test
-    @DisplayName("비정상 토큰일 경우 푸시 알림 실패, 토큰 제거")
-    void sendByBoardIsSubscribedTrue_푸시알림_실패() throws Exception {
-        String invalidToken = "invalid-token";
-        mockUser.getFcmTokens().add(invalidToken);
+		FirebaseMessagingException mockException = mock(FirebaseMessagingException.class);
+		doThrow(mockException)
+			.when(firebasePushNotificationService)
+			.sendNotification(eq(invalidToken), any(), any());
 
-        given(mockPost.getWriter()).willReturn(mockUser);
-        given(mockPost.getId()).willReturn("post-id");
+		boardNotificationService.sendByBoardIsSubscribed(mockBoard, mockPost);
 
-        given(userBoardSubscribeRepository.findByBoardAndIsSubscribedTrue(mockBoard))
-                .willReturn(List.of(UserBoardSubscribe.of(mockUser, mockBoard, true)));
-
-        FirebaseMessagingException mockException = mock(FirebaseMessagingException.class);
-        doThrow(mockException)
-                .when(firebasePushNotificationService)
-                .sendNotification(eq(invalidToken), any(), any());
-
-        boardNotificationService.sendByBoardIsSubscribed(mockBoard, mockPost);
-
-        assertThat(mockUser.getFcmTokens()).doesNotContain(invalidToken);
-        verify(firebasePushNotificationService).sendNotification(eq(invalidToken), any(), any());
-    }
-
+		assertThat(mockUser.getFcmTokens()).doesNotContain(invalidToken);
+		verify(firebasePushNotificationService).sendNotification(eq(invalidToken), any(), any());
+	}
 
 }

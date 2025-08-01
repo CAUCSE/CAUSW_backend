@@ -3,9 +3,11 @@ package net.causw.app.main.infrastructure.batch;
 import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.InternalServerException;
 import net.causw.global.constant.MessageUtil;
+
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -21,25 +23,24 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class BatchScheduler {
 
+	private final JobLauncher jobLauncher;
 
-    private final JobLauncher jobLauncher;
+	@Resource(name = "cleanUpUnusedFilesJob")
+	private Job cleanUpUnusedFilesJob;
 
-    @Resource(name = "cleanUpUnusedFilesJob")
-    private Job cleanUpUnusedFilesJob;
+	@Scheduled(cron = "0 0 3 1 * ?") // 매달 1일 오전 3시에 실행
+	public void scheduleCleanUpJob() {
+		try {
+			JobParameters jobParameters = new JobParametersBuilder()
+				.addLong("timestamp", System.currentTimeMillis())
+				.addLocalDateTime("dateTime", LocalDateTime.now())
+				.toJobParameters();
 
-    @Scheduled(cron = "0 0 3 1 * ?") // 매달 1일 오전 3시에 실행
-    public void scheduleCleanUpJob() {
-        try {
-            JobParameters jobParameters = new JobParametersBuilder()
-                    .addLong("timestamp", System.currentTimeMillis())
-                    .addLocalDateTime("dateTime", LocalDateTime.now())
-                    .toJobParameters();
-
-            jobLauncher.run(cleanUpUnusedFilesJob, jobParameters);
-        } catch (Exception e) {
-            log.error("Batch job failed: {}", e.getMessage());  // 예외 로깅 추가
-            throw new InternalServerException(ErrorCode.INTERNAL_SERVER, MessageUtil.BATCH_FAIL + e.getMessage());
-        }
-    }
+			jobLauncher.run(cleanUpUnusedFilesJob, jobParameters);
+		} catch (Exception e) {
+			log.error("Batch job failed: {}", e.getMessage());  // 예외 로깅 추가
+			throw new InternalServerException(ErrorCode.INTERNAL_SERVER, MessageUtil.BATCH_FAIL + e.getMessage());
+		}
+	}
 
 }

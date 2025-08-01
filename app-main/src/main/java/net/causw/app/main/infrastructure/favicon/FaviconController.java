@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 class FaviconController {
 
-    @GetMapping("/favicon.ico")
-    void returnNoFavicon() {
-    }
+	@GetMapping("/favicon.ico")
+	void returnNoFavicon() {
+	}
 }

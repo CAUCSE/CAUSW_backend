@@ -1,6 +1,7 @@
 package net.causw.app.main.repository.circle;
 
 import net.causw.app.main.domain.model.entity.circle.Circle;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -9,10 +10,11 @@ import java.util.Optional;
 
 @Repository
 public interface CircleRepository extends JpaRepository<Circle, String> {
-    List<Circle> findByLeader_Id(String leader_id);
+	List<Circle> findByLeader_Id(String leader_id);
 
-    Optional<Circle> findByName(String name);
+	Optional<Circle> findByName(String name);
 
-    Optional<Circle> findByIdAndIsDeletedIsFalse(String id);
-    List<Circle> findAllByIsDeletedIsFalse();
+	Optional<Circle> findByIdAndIsDeletedIsFalse(String id);
+
+	List<Circle> findAllByIsDeletedIsFalse();
 }

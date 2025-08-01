@@ -8,8 +8,8 @@ import static org.springframework.web.bind.annotation.RequestMethod.*;
 
 @RestController
 public class DummyController {
-    @RequestMapping(value = "/**", method = {GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD, TRACE})
-    public ResponseEntity<Void> fallback() {
-        return ResponseEntity.notFound().build();
-    }
+	@RequestMapping(value = "/**", method = {GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD, TRACE})
+	public ResponseEntity<Void> fallback() {
+		return ResponseEntity.notFound().build();
+	}
 }
