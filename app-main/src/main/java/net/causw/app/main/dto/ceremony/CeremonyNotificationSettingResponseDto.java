@@ -13,7 +13,7 @@ import java.util.Set;
 public class CeremonyNotificationSettingResponseDto {
     private boolean isNotificationActive;
     private boolean isSetAll;
-    private Set<Integer> subscribedAdmissionYears;
+    private Set<String> subscribedAdmissionYears;
 
 
     public static CeremonyNotificationSettingResponseDto from(CeremonyNotificationSetting ceremonyNotificationSetting) {

@@ -48,4 +48,9 @@ public class CeremonyResponseDto {
     @Schema(description = "경조사 제목")
     private String title;
 
+    @Schema(description = "모든 학번에게 알림 전송 여부 (권한 없으면 null)", example = "true")
+    private Boolean isSetAll;
+
+    @Schema(description = "알림 대상 학번 (권한 없으면 null)", example = "[19, 21, 22]")
+    private List<String> targetAdmissionYears;
 }
