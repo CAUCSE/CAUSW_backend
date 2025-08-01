@@ -79,7 +79,7 @@ public class UserInfoController {
         @RequestPart(value = "userInfoUpdateDto") @Valid UserInfoUpdateRequestDto userInfoUpdateDto,
         @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
     ) {
-        return userInfoService.update(userDetails.getUser(), userInfoUpdateDto, profileImage);
+        return userInfoService.update(userDetails.getUser().getId(), userInfoUpdateDto, profileImage);
     }
 
     @GetMapping(value = "/search")

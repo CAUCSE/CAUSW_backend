@@ -588,7 +588,6 @@ public class UserService {
         User user = User.from(userCreateRequestDto, passwordEncoder.encode(userCreateRequestDto.getPassword()));
 
         this.userRepository.save(user);
-        userInfoRepository.save(UserInfo.of(user)); // 동문수첩 기본 프로필 생성
 
         // Validate password format, admission year range, and whether the email is duplicate or not
         ValidatorBucket.of()
@@ -1082,8 +1081,8 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .validate();
 
-        // NONE role 삭제 후 COMMON으로 변경
-        userRoleService.removeRole(userAdmission.getUser(), Role.NONE);
+        // 사용자 역할을 NONE에서 COMMON으로 변경
+        userRoleService.updateRole(userAdmission.getUser(), Role.COMMON);
 
         // Add admission log
         UserAdmissionLog userAdmissionLog = UserAdmissionLog.of(

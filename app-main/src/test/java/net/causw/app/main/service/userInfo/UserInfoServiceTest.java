@@ -24,6 +24,8 @@ import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
 
+import org.aspectj.lang.annotation.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -74,17 +76,25 @@ class UserInfoServiceTest {
       .isPhoneNumberVisible(true)
       .build();
 
+
+
   @Nested
   class UpdateTest {
+
+    @BeforeEach
+    public void setup() {
+      given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+    }
+
     @Test
     @DisplayName("상세정보 생성 성공")
     void createUserInfoSuccess() {
       // given
-      given(userInfoRepository.findByUserId(user.getId())).willReturn(Optional.of(userInfo));
       given(userCareerRepository.save(any(UserCareer.class))).willReturn(userCareer);
+      given(userInfoRepository.findByUserId(user.getId())).willReturn(Optional.of(userInfo));
 
       // when
-      UserInfoResponseDto result = userInfoService.update(user, updateRequestDto, profileImage);
+      UserInfoResponseDto result = userInfoService.update(user.getId(), updateRequestDto, profileImage);
 
       // then
       assertThat(result).isNotNull();
@@ -112,7 +122,7 @@ class UserInfoServiceTest {
       given(userCareerRepository.findAllCareerByUserInfoId(userInfo.getId())).willReturn(List.of(userCareer));
 
       // when
-      UserInfoResponseDto result = userInfoService.update(user, updateRequestDto, profileImage);
+      UserInfoResponseDto result = userInfoService.update(user.getId(), updateRequestDto, profileImage);
 
       // then
       assertThat(result).isNotNull();
@@ -137,7 +147,7 @@ class UserInfoServiceTest {
       given(userInfoRepository.findByUserId(user.getId())).willReturn(Optional.of(userInfo));
 
       // when & then
-      assertThatThrownBy(() -> userInfoService.update(user, updateRequestDto, profileImage))
+      assertThatThrownBy(() -> userInfoService.update(user.getId(), updateRequestDto, profileImage))
           .isInstanceOf(BadRequestException.class)
           .extracting("errorCode").isEqualTo(ErrorCode.INVALID_PARAMETER);
     }
@@ -150,7 +160,7 @@ class UserInfoServiceTest {
           .when(userService).update(eq(user), any(UserUpdateRequestDto.class), eq(profileImage));
 
       // when & then
-      assertThatThrownBy(() -> userInfoService.update(user, updateRequestDto, profileImage))
+      assertThatThrownBy(() -> userInfoService.update(user.getId(), updateRequestDto, profileImage))
           .isInstanceOf(BadRequestException.class)
           .extracting("errorCode").isEqualTo(ErrorCode.ROW_ALREADY_EXIST);
     }

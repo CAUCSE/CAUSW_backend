@@ -45,11 +45,7 @@ public class UserInfoService {
   }
 
   public UserInfoResponseDto getUserInfoByUserId(String userId) {
-    User user = userRepository.findById(userId)
-        .orElseThrow(() -> new BadRequestException(
-            ErrorCode.ROW_DOES_NOT_EXIST,
-            MessageUtil.USER_NOT_FOUND
-        ));
+    User user = findUserById(userId);
 
     UserInfo userInfo = userInfoRepository.findByUserId(userId)
         .orElse(UserInfo.of(user));
@@ -58,7 +54,17 @@ public class UserInfoService {
   }
 
   @Transactional
-  public UserInfoResponseDto update(User user, UserInfoUpdateRequestDto request, MultipartFile profileImage) {
+  public void createDefaultProfile(String userId) {
+    User user = findUserById(userId);
+
+    userInfoRepository.findByUserId(userId)
+        .orElseGet(() -> userInfoRepository.save(UserInfo.of(user)));
+  }
+
+  @Transactional
+  public UserInfoResponseDto update(String userId, UserInfoUpdateRequestDto request, MultipartFile profileImage) {
+    User user = findUserById(userId);
+
     // 사용자 정보 갱신(전화번호, 프로필 이미지)
     final UserUpdateRequestDto userUpdateRequestDto = UserUpdateRequestDto.builder()
         .nickname(user.getNickname())
@@ -68,7 +74,7 @@ public class UserInfoService {
     userService.update(user, userUpdateRequestDto, profileImage); // 실패시 user, userInfo 전부 rollback
 
     // 사용자 상세정보 갱신
-    final UserInfo userInfo = userInfoRepository.findByUserId(user.getId())
+    final UserInfo userInfo = userInfoRepository.findByUserId(userId)
         .orElseGet(() -> userInfoRepository.save(UserInfo.of(user))); // 없는 경우 생성
 
     userInfo.update(
@@ -125,6 +131,14 @@ public class UserInfoService {
   public Page<UserInfoSummaryResponseDto> search(final String keyword, final Integer pageNum) {
     return userInfoRepository.findAllByKeywordInNameOrJobOrCareer(keyword, pageableFactory.create(pageNum, DEFAULT_PAGE_SIZE))
         .map(UserDtoMapper.INSTANCE::toUserInfoSummaryResponseDto);
+  }
+
+  private User findUserById(String userId) {
+    return userRepository.findById(userId)
+        .orElseThrow(() -> new BadRequestException(
+            ErrorCode.ROW_DOES_NOT_EXIST,
+            MessageUtil.USER_NOT_FOUND
+        ));
   }
 
   private void validateUserCareerDate(UserCareerDto userCareerDto) {
