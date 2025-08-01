@@ -2,6 +2,7 @@ package net.causw.app.main.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import net.causw.app.main.domain.model.enums.ceremony.CeremonyContext;
 import net.causw.app.main.service.ceremony.CeremonyService;
 import net.causw.app.main.dto.ceremony.*;
 import net.causw.app.main.dto.notification.CeremonyNotificationDto;
@@ -76,9 +77,10 @@ public class CeremonyController {
                     "admin : 관리자용 경조사 관리 페이지에서 접근</br>")
     public CeremonyResponseDto getUserCeremonyInfo(
             @PathVariable("ceremonyId") String ceremonyId,
-            @RequestParam(name = "context", defaultValue = "general") String context,
+            @RequestParam(name = "context") String contextParam,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        CeremonyContext context = CeremonyContext.fromString(contextParam);
         return ceremonyService.getCeremony(ceremonyId, context, userDetails.getUser());
     }
 

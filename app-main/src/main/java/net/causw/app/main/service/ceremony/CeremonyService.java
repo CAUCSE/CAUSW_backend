@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.app.main.domain.model.entity.ceremony.Ceremony;
 import net.causw.app.main.domain.model.entity.notification.CeremonyNotificationSetting;
+import net.causw.app.main.domain.model.enums.ceremony.CeremonyContext;
 import net.causw.app.main.domain.model.enums.user.Role;
 import net.causw.app.main.repository.notification.CeremonyNotificationSettingRepository;
 import net.causw.app.main.repository.ceremony.CeremonyRepository;
@@ -105,7 +106,7 @@ public class CeremonyService {
     }
 
     @Transactional(readOnly = true)
-    public CeremonyResponseDto getCeremony(String ceremonyId, String context, User user) {
+    public CeremonyResponseDto getCeremony(String ceremonyId, CeremonyContext context, User user) {
         Ceremony ceremony = ceremonyRepository.findById(ceremonyId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -114,8 +115,8 @@ public class CeremonyService {
         );
 
         // context에 따라 다르게 처리
-        switch (context.toLowerCase()) {
-            case "my":      // 내 경조사 목록
+        switch (context) {
+            case MY:      // 내 경조사 목록
                 if (!ceremony.getUser().getId().equals(user.getId())) {
                     throw new BadRequestException(
                             ErrorCode.API_NOT_ACCESSIBLE,
@@ -123,7 +124,7 @@ public class CeremonyService {
                     );
                 }
                 return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
-            case "admin":       // 관리자용 경조사 관리 페이지
+            case ADMIN:       // 관리자용 경조사 관리 페이지
                 if(!user.getRoles().contains(Role.ADMIN)) {
                     throw new BadRequestException(
                             ErrorCode.API_NOT_ACCESSIBLE,
@@ -131,7 +132,7 @@ public class CeremonyService {
                     );
                 }
                 return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
-            case "general":
+            case GENERAL:
             default:
                 return CeremonyDtoMapper.INSTANCE.toCeremonyResponseDto(ceremony);
         }
