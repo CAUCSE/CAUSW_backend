@@ -18,9 +18,9 @@ CREATE TABLE tb_ceremony_target_admission_years (
 );
 
 -- 기존 CeremonyNotificationSetting의 is_set_all 기본값 true로 변경
-ALTER TABLE TB_CEREMONY_PUSH_NOTIFICATION
+ALTER TABLE tb_ceremony_push_notification
 MODIFY COLUMN is_set_all BIT(1) NOT NULL DEFAULT 1;
 
 -- CeremonyNotificationSetting의 admission_year 컬럼을 2자리 문자열로 변경
-ALTER TABLE TB_CEREMONY_SUBSCRIBE_YEAR
+ALTER TABLE tb_ceremony_subscribe_year
 MODIFY COLUMN admission_year VARCHAR(2) NOT NULL;
