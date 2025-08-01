@@ -14,13 +14,10 @@ import net.causw.app.main.repository.notification.NotificationRepository;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.dto.notification.CeremonyNotificationDto;
 import net.causw.app.main.domain.model.enums.notification.NoticeType;
-import net.causw.global.exception.BadRequestException;
-import net.causw.global.exception.ErrorCode;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;

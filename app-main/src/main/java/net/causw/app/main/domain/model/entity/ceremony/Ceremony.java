@@ -12,7 +12,9 @@ import net.causw.app.main.domain.model.enums.ceremony.CeremonyState;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 @Getter
@@ -56,7 +58,7 @@ public class Ceremony extends BaseEntity {
     @CollectionTable(name = "tb_ceremony_target_admission_years", joinColumns = @JoinColumn(name = "ceremony_id"))
     @Column(name = "admission_year")
     @Builder.Default
-    private List<String> targetAdmissionYears  = new ArrayList<>();
+    private Set<String> targetAdmissionYears  = new HashSet<>();
 
     @Setter(value = AccessLevel.PRIVATE)
     @OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "ceremony")
@@ -80,6 +82,10 @@ public class Ceremony extends BaseEntity {
             boolean isSetAll,
             List<String> targetAdmissionYears
     ) {
+        Set<String> targetYearsSet = targetAdmissionYears != null
+                ? new HashSet<>(targetAdmissionYears)
+                : new HashSet<>();
+
         return Ceremony.builder()
                 .user(user)
                 .ceremonyCategory(ceremonyCategory)
@@ -87,7 +93,7 @@ public class Ceremony extends BaseEntity {
                 .startDate(startDate)
                 .endDate(endDate)
                 .isSetAll(isSetAll)
-                .targetAdmissionYears(targetAdmissionYears != null ? targetAdmissionYears : new ArrayList<>())
+                .targetAdmissionYears(targetYearsSet)
                 .build();
     }
 

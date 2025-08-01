@@ -11,6 +11,7 @@ ADD COLUMN is_set_all BIT(1) NOT NULL DEFAULT 0;
 CREATE TABLE tb_ceremony_target_admission_years (
     ceremony_id VARCHAR(255) NOT NULL,
     admission_year VARCHAR(255) NOT NULL,
+    UNIQUE KEY unique_ceremony_admission (ceremony_id, admission_year),
     INDEX idx_ceremony_id (ceremony_id),
     CONSTRAINT fk_ceremony_target_admission_years_ceremony
         FOREIGN KEY (ceremony_id) REFERENCES tb_ceremony(id) ON DELETE CASCADE
