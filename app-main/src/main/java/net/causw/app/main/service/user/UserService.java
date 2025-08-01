@@ -54,7 +54,7 @@ import net.causw.app.main.domain.model.enums.user.UserState;
 import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.model.enums.uuidFile.FilePath;
 import net.causw.global.constant.MessageUtil;
-import net.causw.app.main.infrastructure.redis.RedisUtils;
+import net.causw.app.main.infrastructure.redis.auth.AuthRedisService;
 import net.causw.global.constant.StaticValue;
 import net.causw.app.main.domain.validation.*;
 import net.causw.global.exception.BadRequestException;
@@ -97,7 +97,6 @@ public class UserService {
     private final CommentRepository commentRepository;
     private final ChildCommentRepository childCommentRepository;
     private final UserAdmissionRepository userAdmissionRepository;
-    private final RedisUtils redisUtils;
     private final LockerRepository lockerRepository;
     private final LockerLogRepository lockerLogRepository;
     private final UserAdmissionLogRepository userAdmissionLogRepository;
@@ -113,6 +112,7 @@ public class UserService {
 
     private final UserDtoMapper userDtoMapper;
     private final PostDtoMapper postDtoMapper;
+    private final AuthRedisService authRedisService;
 
     @Transactional
     public void findPassword(
@@ -612,7 +612,7 @@ public class UserService {
 
         // refreshToken은 redis에 보관
         String refreshToken = jwtTokenProvider.createRefreshToken();
-        redisUtils.setRefreshTokenData(refreshToken, user.getId(), StaticValue.JWT_REFRESH_TOKEN_VALID_TIME);
+        authRedisService.setRefreshTokenData(refreshToken, user.getId(), StaticValue.JWT_REFRESH_TOKEN_VALID_TIME);
 
         return UserDtoMapper.INSTANCE.toUserSignInResponseDto(
                 jwtTokenProvider.createAccessToken(user.getId(), user.getRoles(), user.getState()),
@@ -1197,7 +1197,7 @@ public class UserService {
     }
 
     private String getUserIdFromRefreshToken(String refreshToken) {
-        return Optional.ofNullable(redisUtils.getRefreshTokenData(refreshToken))
+        return Optional.ofNullable(authRedisService.getRefreshTokenData(refreshToken))
                 .orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.INVALID_REFRESH_TOKEN
@@ -1205,8 +1205,8 @@ public class UserService {
     }
 
     public UserSignOutResponseDto signOut(User user, UserSignOutRequestDto userSignOutRequestDto){
-        redisUtils.addToBlacklist(userSignOutRequestDto.getAccessToken());
-        redisUtils.deleteRefreshTokenData(userSignOutRequestDto.getRefreshToken());
+        authRedisService.addToBlacklist(userSignOutRequestDto.getAccessToken());
+        authRedisService.deleteRefreshTokenData(userSignOutRequestDto.getRefreshToken());
 
         if (userSignOutRequestDto.getFcmToken() != null) {
             user.removeFcmToken(userSignOutRequestDto.getFcmToken());

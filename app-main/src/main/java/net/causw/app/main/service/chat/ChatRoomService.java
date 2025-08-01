@@ -22,6 +22,7 @@ import net.causw.app.main.dto.chat.chat.ChatMessageDto;
 import net.causw.app.main.dto.chat.chat.ChatRoomDto;
 import net.causw.app.main.infrastructure.redis.chat.ChatRedisService;
 import net.causw.app.main.repository.chat.ChatRoomRepository;
+import net.causw.app.main.repository.user.UserRepository;
 import net.causw.app.main.service.post.PostService;
 import net.causw.app.main.service.user.UserService;
 import net.causw.global.constant.MessageUtil;
@@ -40,6 +41,7 @@ public class ChatRoomService {
 	private final ChatRoomParticipantService chatRoomParticipantService;
 	private final ChatRedisService redisService;
 	private final UserService userService;
+	private final UserRepository userRepository;
 	private final PostService postService;
 
 	@Transactional
@@ -48,7 +50,11 @@ public class ChatRoomService {
 			List<UuidFile> messageFiles,
 			User sender
 	) {
-		User target = userService.findByUserId(request.getTargetUserId());
+		User target = userRepository.findById(request.getTargetUserId())
+				.orElseThrow(() -> new BadRequestException(
+						ErrorCode.ROW_DOES_NOT_EXIST,
+						MessageUtil.USER_NOT_FOUND
+				));
 		ChatRoom room = findOneToOneRoom(sender.getId(), target.getId());
 
 		if (room == null) {
@@ -77,7 +83,7 @@ public class ChatRoomService {
 		newRoom.setRoomProfileImage(ChatRoomProfileImage.of(newRoom, roomProfileImageFile));
 		newRoom.addParticipant(ChatRoomParticipant.of(sender, ParticipantRole.ADMIN));
 
-		List<User> targetUsers = userService.findAllById(request.getTargetUserIds());
+		List<User> targetUsers = userRepository.findAllById(request.getTargetUserIds());
 		targetUsers.forEach(user -> {
 			if (!user.getId().equals(sender.getId())) {
 				newRoom.addParticipant(ChatRoomParticipant.of(user, ParticipantRole.MEMBER));
