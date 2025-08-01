@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.model.enums.ceremony;
 
+import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
 
@@ -24,7 +25,7 @@ public enum CeremonyContext {
         if (context == null || context.isEmpty()) {
             throw new BadRequestException(
                     ErrorCode.INVALID_PARAMETER,
-                    "context 값은 필수입니다."
+                    MessageUtil.CEREMONY_INVALID_CONTEXT_VALUE
             );
         }
 
@@ -36,7 +37,7 @@ public enum CeremonyContext {
 
         throw new BadRequestException(
                 ErrorCode.INVALID_PARAMETER,
-                "유효하지 않은 context 값입니다. 사용 가능한 값: general, my, admin"
+                MessageUtil.CEREMONY_INVALID_CONTEXT_VALUE
         );
     }
 }

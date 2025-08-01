@@ -161,6 +161,12 @@ public class MessageUtil {
     // Ceremony
     public static final String CEREMONY_NOT_FOUND = "존재하지 않는 경조사입니다.";
     public static final String CEREMONY_NOTIFICATION_SETTING_NOT_FOUND = "유저의 경조사 알람 설정이 되어있지 않습니다.";
+    public static final String CEREMONY_INVALID_CONTEXT_VALUE = "유효하지 않은 context 값입니다. 사용 가능한 값: general, my, admin";
+    public static final String CEREMONY_TARGET_ADMISSION_YEARS_REQUIRED = "전체 알림 전송이 false인 경우, 대상 학번은 필수 입력 값입니다.";
+    public static final String CEREMONY_INVALID_ADMISSION_YEAR_FORMAT = "학번은 숫자 2자리로 입력해야 합니다. (ex. 72, 05, 21)";
+    public static final String CEREMONY_ACCESS_MY_ONLY = "본인의 경조사만 상세 조회할 수 있습니다.";
+    public static final String CEREMONY_ACCESS_ADMIN_ONLY = "관리자만 접근할 수 있는 경조사입니다.";
+    public static final String CEREMONY_NOTIFICATION_SUBSCRIPTION_REQUIRED = "setAll이 false인 경우, 구독할 입학년도를 입력해야 합니다.";
 
     // Notification
     public static final String NOTIFICATION_NOT_FOUND = "존재하지 않는 알람입니다.";

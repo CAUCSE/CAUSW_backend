@@ -52,7 +52,7 @@ public class CeremonyService {
             if(createCeremonyRequestDTO.getTargetAdmissionYears() == null || createCeremonyRequestDTO.getTargetAdmissionYears().isEmpty()) {
                 throw new BadRequestException(
                         ErrorCode.INVALID_PARAMETER,
-                        "전체 알림 전송이 false인 경우, 대상 학번은 필수 입력 값입니다."
+                        MessageUtil.CEREMONY_TARGET_ADMISSION_YEARS_REQUIRED
                 );
             }
 
@@ -61,7 +61,7 @@ public class CeremonyService {
                 if (!admissionYear.matches("^[0-9]{2}$")) {
                     throw new BadRequestException(
                             ErrorCode.INVALID_PARAMETER,
-                            "학번은 숫자 2자리로 입력해야 합니다. (ex. 05)"
+                            MessageUtil.CEREMONY_INVALID_ADMISSION_YEAR_FORMAT
                     );
                 }
             }
@@ -120,7 +120,7 @@ public class CeremonyService {
                 if (!ceremony.getUser().getId().equals(user.getId())) {
                     throw new BadRequestException(
                             ErrorCode.API_NOT_ACCESSIBLE,
-                            "본인의 경조사만 상세 조회할 수 있습니다."
+                            MessageUtil.CEREMONY_ACCESS_MY_ONLY
                     );
                 }
                 return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
@@ -128,7 +128,7 @@ public class CeremonyService {
                 if(!user.getRoles().contains(Role.ADMIN)) {
                     throw new BadRequestException(
                             ErrorCode.API_NOT_ACCESSIBLE,
-                            "관리자만 접근할 수 있는 경조사입니다."
+                            MessageUtil.CEREMONY_ACCESS_ADMIN_ONLY
                     );
                 }
                 return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
@@ -239,7 +239,7 @@ public class CeremonyService {
         if (dto.getSubscribedAdmissionYears() == null || dto.getSubscribedAdmissionYears().isEmpty()) {
             throw new BadRequestException(
                     ErrorCode.INVALID_PARAMETER,
-                    "setAll이 false인 경우, 구독할 입학년도를 입력해야 합니다."
+                    MessageUtil.CEREMONY_NOTIFICATION_SUBSCRIPTION_REQUIRED
             );
         }
 
@@ -248,7 +248,7 @@ public class CeremonyService {
             if (!year.matches("^[0-9]{2}$")) {
                 throw new BadRequestException(
                         ErrorCode.INVALID_PARAMETER,
-                        String.format("유효하지 않은 입학년도입니다: %s. 2자리 숫자 문자열이어야 합니다. (예: \"78\", \"01\", \"14\", \"21\")", year)
+                        MessageUtil.CEREMONY_INVALID_ADMISSION_YEAR_FORMAT
                 );
             }
         }
