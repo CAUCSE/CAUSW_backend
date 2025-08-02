@@ -3,6 +3,7 @@ package net.causw.app.main.domain.validation;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.UnauthorizedException;
 import net.causw.app.main.domain.model.enums.user.UserState;
+import net.causw.global.constant.MessageUtil;
 
 public class UserStateValidator extends AbstractValidator {
 
@@ -36,6 +37,13 @@ public class UserStateValidator extends AbstractValidator {
             throw new UnauthorizedException(
                     ErrorCode.DELETED_USER,
                     "삭제된 사용자 입니다."
+            );
+        }
+
+        if (this.userState == UserState.SUSPENDED) {
+            throw new UnauthorizedException(
+                    ErrorCode.BLOCKED_USER,
+                    MessageUtil.REPORT_USER_SUSPENDED_LOGIN
             );
         }
 

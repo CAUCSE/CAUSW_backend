@@ -43,6 +43,7 @@ public class SecurityEndpoints {
             of("/api/v1/storage/**"),
             of("/api/v1/users/password/find", PUT),
             of("/api/v1/users/user-id/find", POST),
+            of("/api/v1/fcm/reports", POST),
             of("/swagger-ui/**"),
             of("/api/v1/fcm/send", POST),
             of("/v3/api-docs/**"),
