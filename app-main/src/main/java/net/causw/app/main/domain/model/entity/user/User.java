@@ -14,6 +14,7 @@ import net.causw.app.main.domain.model.enums.user.GraduationType;
 import net.causw.app.main.domain.model.enums.user.Role;
 import net.causw.app.main.domain.model.enums.user.UserState;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -111,6 +112,11 @@ public class User extends BaseEntity {
     @Column(name = "fcm_token_value")
     private Set<String> fcmTokens = new HashSet<>();
 
+    // 신고 관련 필드
+    @Column(name = "report_count", nullable = false)
+    @Builder.Default
+    private Integer reportCount = 0;
+
 
     public void delete() {
         this.email = "deleted_" + this.getId();
@@ -157,6 +163,18 @@ public class User extends BaseEntity {
 
     public void removeFcmToken(String targetToken){
         this.fcmTokens.remove(targetToken);
+    }
+
+    // 신고 관련 메소드
+    public void increaseReportCount() {
+        this.reportCount++;
+        if (this.reportCount >= 5) {
+            this.state = UserState.SUSPENDED;
+        }
+    }
+
+    public boolean isSuspended() {
+        return this.state == UserState.SUSPENDED;
     }
 
     @Override

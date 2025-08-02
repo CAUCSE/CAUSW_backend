@@ -190,6 +190,12 @@ public class MessageUtil {
 
     public static final String USER_CURRENT_COMPLETE_SEMESTER_DOES_NOT_EXIST = "사용자의 현재 등록 완료 학기 정보가 존재하지 않습니다.";
 
+    // Report
+    public static final String REPORT_SUCCESS = "신고가 접수되었습니다. 검토까지는 최대 24시간이 소요됩니다.";
+    public static final String REPORT_ALREADY_REPORTED = "이미 신고한 콘텐츠입니다.";
+    public static final String REPORT_USER_SUSPENDED_LOGIN = "계정이 정지되어 로그인할 수 없습니다. 문의사항은 caucsedongne@gmail.com으로 연락해주세요.";
+    public static final String CHILD_COMMENT_NOT_FOUND = "대댓글을 찾을 수 없습니다.";
+
     //Hash
     public static final String HASH_ALGORITHM_NOT_FOUND = "SHA-256 알고리즘을 찾을 수 없습니다";
 }
