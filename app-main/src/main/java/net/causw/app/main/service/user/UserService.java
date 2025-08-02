@@ -8,7 +8,9 @@ import net.causw.app.main.domain.model.entity.circle.Circle;
 import net.causw.app.main.domain.model.entity.circle.CircleMember;
 import net.causw.app.main.domain.model.entity.locker.LockerLog;
 import net.causw.app.main.infrastructure.firebase.FcmUtils;
+import net.causw.app.main.domain.model.entity.userInfo.UserInfo;
 import net.causw.app.main.repository.userAcademicRecord.UserAcademicRecordApplicationRepository;
+import net.causw.app.main.repository.userInfo.UserInfoRepository;
 import net.causw.app.main.repository.uuidFile.UserAcademicRecordApplicationAttachImageRepository;
 import net.causw.app.main.repository.uuidFile.UserProfileImageRepository;
 import net.causw.app.main.domain.model.entity.userAcademicRecord.UserAcademicRecordApplication;
@@ -91,6 +93,7 @@ public class UserService {
     private final Validator validator;
 
     private final UserRepository userRepository;
+    private final UserInfoRepository userInfoRepository;
     private final CircleRepository circleRepository;
     private final CircleMemberRepository circleMemberRepository;
     private final PostRepository postRepository;
@@ -1070,8 +1073,8 @@ public class UserService {
                 .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .validate();
 
-        // NONE role 삭제 후 COMMON으로 변경
-        userRoleService.removeRole(userAdmission.getUser(), Role.NONE);
+        // 사용자 역할을 NONE에서 COMMON으로 변경
+        userRoleService.updateRole(userAdmission.getUser(), Role.COMMON);
 
         // Add admission log
         UserAdmissionLog userAdmissionLog = UserAdmissionLog.of(

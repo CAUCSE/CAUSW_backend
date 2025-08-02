@@ -19,20 +19,20 @@ public class CeremonyNotificationSetting extends BaseEntity {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "TB_CEREMONY_SUBSCRIBE_YEAR", joinColumns = @JoinColumn(name = "notification_id"))
     @Column(name = "admission_year")
-    private Set<Integer> subscribedAdmissionYears = new HashSet<>();
+    private Set<String> subscribedAdmissionYears = new HashSet<>();
 
     @Column(name = "is_notification_active", nullable = false)
     private boolean isNotificationActive = true;
 
     @Column(name = "is_set_all", nullable = false)
-    private boolean isSetAll = false;
+    private boolean isSetAll = true;    // 경조사 알림은 기본적으로 모든 학번에게 알림을 받음
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     public static CeremonyNotificationSetting of(
-            Set<Integer> subscribedAdmissionYears,
+            Set<String> subscribedAdmissionYears,
             boolean isSetAll,
             boolean receivePushNotification,
             User user

@@ -90,7 +90,8 @@ public class SecurityEndpoints {
             of("/api/v1/lockers/**"),
             of("/api/v1/notifications/log/**"),
             of("/api/v1/posts/**"),
-            of("/api/v1/semesters/**")
+            of("/api/v1/semesters/**"),
+            of("/api/v1/users-info/**")
     };
 
     /**

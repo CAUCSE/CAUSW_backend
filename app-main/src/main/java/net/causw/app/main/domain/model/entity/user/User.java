@@ -2,6 +2,7 @@ package net.causw.app.main.domain.model.entity.user;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import net.causw.app.main.domain.model.entity.base.BaseEntity;
 import net.causw.app.main.domain.model.entity.circle.CircleMember;
 import net.causw.app.main.domain.model.entity.locker.Locker;
@@ -110,6 +111,7 @@ public class User extends BaseEntity {
     )
     @Column(name = "fcm_token_value")
     private Set<String> fcmTokens = new HashSet<>();
+
 
 
     public void delete() {

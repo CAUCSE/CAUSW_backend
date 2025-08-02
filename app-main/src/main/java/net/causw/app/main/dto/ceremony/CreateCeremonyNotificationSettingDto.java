@@ -9,9 +9,8 @@ import java.util.Set;
 public class CreateCeremonyNotificationSettingDto {
 
     // 여러 학번을 받을 수 있는 변수 추가
-    @NotNull
     @Schema(description = "구독을 원하는 입학년도를 입력해주세요")
-    private Set<Integer> subscribedAdmissionYears;
+    private Set<String> subscribedAdmissionYears;
 
     @NotNull
     @Schema(description = "모든 입학년도 설정에 대한 flag")

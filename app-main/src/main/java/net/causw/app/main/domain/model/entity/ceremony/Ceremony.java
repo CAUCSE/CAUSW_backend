@@ -12,7 +12,9 @@ import net.causw.app.main.domain.model.enums.ceremony.CeremonyState;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 @Getter
@@ -48,6 +50,16 @@ public class Ceremony extends BaseEntity {
     @Column(name = "note", nullable = true)
     private String note = "";
 
+    @Column(name = "is_set_all", nullable = false)
+    @Builder.Default
+    private boolean isSetAll = false;
+
+    @ElementCollection
+    @CollectionTable(name = "tb_ceremony_target_admission_years", joinColumns = @JoinColumn(name = "ceremony_id"))
+    @Column(name = "admission_year")
+    @Builder.Default
+    private Set<String> targetAdmissionYears  = new HashSet<>();
+
     @Setter(value = AccessLevel.PRIVATE)
     @OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "ceremony")
     @Builder.Default
@@ -66,14 +78,22 @@ public class Ceremony extends BaseEntity {
             CeremonyCategory ceremonyCategory,
             String description,
             LocalDate startDate,
-            LocalDate endDate
+            LocalDate endDate,
+            boolean isSetAll,
+            List<String> targetAdmissionYears
     ) {
+        Set<String> targetYearsSet = targetAdmissionYears != null
+                ? new HashSet<>(targetAdmissionYears)
+                : new HashSet<>();
+
         return Ceremony.builder()
                 .user(user)
                 .ceremonyCategory(ceremonyCategory)
                 .description(description)
                 .startDate(startDate)
                 .endDate(endDate)
+                .isSetAll(isSetAll)
+                .targetAdmissionYears(targetYearsSet)
                 .build();
     }
 
@@ -83,6 +103,8 @@ public class Ceremony extends BaseEntity {
             String description,
             LocalDate startDate,
             LocalDate endDate,
+            boolean isSetAll,
+            List<String> targetAdmissionYears,
             List<UuidFile> ceremonyAttachImageUuidFileList
     ) {
         Ceremony ceremony = Ceremony.of(
@@ -90,7 +112,9 @@ public class Ceremony extends BaseEntity {
                 ceremonyCategory,
                 description,
                 startDate,
-                endDate
+                endDate,
+                isSetAll,
+                targetAdmissionYears
         );
         List<CeremonyAttachImage> ceremonyAttachImageList = ceremonyAttachImageUuidFileList.stream()
                 .map(uuidFile -> CeremonyAttachImage.of(ceremony, uuidFile))

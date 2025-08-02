@@ -6,6 +6,7 @@ import lombok.Getter;
 import net.causw.app.main.domain.model.enums.ceremony.CeremonyCategory;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 public class CreateCeremonyRequestDto {
@@ -25,4 +26,11 @@ public class CreateCeremonyRequestDto {
     @Schema(description = "행사 카테고리", requiredMode = Schema.RequiredMode.REQUIRED, example = "MARRIAGE")
     @NotNull(message = "카테고리는 필수 입력 값입니다.")
     private CeremonyCategory category;
+
+    @Schema(description = "모든 학번에게 알림 전송 여부", requiredMode = Schema.RequiredMode.REQUIRED, example = "true")
+    @NotNull(message = "전체 알림 전송 여부는 필수 입력 값입니다.")
+    private Boolean isSetAll;
+
+    @Schema(description = "알림 대상 학번", requiredMode = Schema.RequiredMode.REQUIRED, example = "[19, 21, 22]")
+    private List<String> targetAdmissionYears;
 }
