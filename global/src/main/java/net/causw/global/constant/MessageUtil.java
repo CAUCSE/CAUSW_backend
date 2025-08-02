@@ -172,7 +172,6 @@ public class MessageUtil {
     public static final String NOTIFICATION_NOT_FOUND = "존재하지 않는 알람입니다.";
     public static final String NOTIFICATION_LOG_NOT_FOUND = "존재하지 않는 알람 로그입니다.";
 
-
     // Vote
     public static final String VOTE_OPTION_NOT_FOUND = "존재하지 않는 투표 옵션입니다.";
     public static final String VOTE_OPTION_NOT_PROVIDED = "투표 옵션이 제공되지 않았습니다.";
@@ -185,6 +184,11 @@ public class MessageUtil {
     public static final String VOTE_END_NOT_ACCESSIBLE = "투표 종료 권한이 존재하지 않습니다.";
     public static final String VOTE_RESTART_NOT_ACCESSIBLE = "투표 재시작 권한이 존재하지 않습니다.";
     public static final String VOTE_START_NOT_ACCESSIBLE = "투표 시작 권한이 존재하지 않습니다.";
+
+    // UserInfo
+    public static final String USER_CAREER_NOT_FOUND = "해당 커리어 정보를 찾을 수 없습니다.";
+    public static final String INVALID_CAREER_DATE = "커리어 날짜가 유효하지 않습니다.";
+
     // 500
     public static final String INTERNAL_SERVER_ERROR = "Internal Server Error";
     public static final String FILE_UPLOAD_FAIL = "파일 업로드에 실패했습니다.";
