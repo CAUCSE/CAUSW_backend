@@ -2,6 +2,7 @@ package net.causw.app.main.domain.model.entity.user;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import net.causw.app.main.domain.model.entity.base.BaseEntity;
 import net.causw.app.main.domain.model.entity.circle.CircleMember;
 import net.causw.app.main.domain.model.entity.locker.Locker;
@@ -116,6 +117,7 @@ public class User extends BaseEntity {
     @Column(name = "report_count", nullable = false)
     @Builder.Default
     private Integer reportCount = 0;
+
 
 
     public void delete() {

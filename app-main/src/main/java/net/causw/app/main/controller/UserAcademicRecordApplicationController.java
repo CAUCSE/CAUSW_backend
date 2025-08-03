@@ -213,7 +213,7 @@ public class UserAcademicRecordApplicationController {
             @RequestPart(value = "createUserAcademicRecordApplicationRequestDto") @Valid CreateUserAcademicRecordApplicationRequestDto createUserAcademicRecordApplicationRequestDto,
             @RequestPart(value = "imageFileList", required = false) List<MultipartFile> imageFileList
     ) {
-        return userAcademicRecordApplicationService.createUserAcademicRecordApplication(userDetails.getUser(), createUserAcademicRecordApplicationRequestDto, imageFileList);
+        return userAcademicRecordApplicationService.createUserAcademicRecordApplication(userDetails.getUser().getId(), createUserAcademicRecordApplicationRequestDto, imageFileList);
     }
 
 }
