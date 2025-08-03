@@ -3,7 +3,6 @@ package net.causw.app.main.domain.validation;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.UnauthorizedException;
 import net.causw.app.main.domain.model.enums.user.UserState;
-import net.causw.global.constant.MessageUtil;
 
 public class UserStateValidator extends AbstractValidator {
 
