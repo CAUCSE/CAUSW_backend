@@ -2,11 +2,6 @@
 ALTER TABLE tb_user
     ADD COLUMN report_count INT NOT NULL DEFAULT 0;
 
--- SUSPENDED 상태 추가
-ALTER TABLE tb_user
-    MODIFY COLUMN state ENUM('AWAIT', 'ACTIVE', 'INACTIVE', 'REJECT', 'DROP', 'SUSPENDED', 'DELETED') NOT NULL;
-
-
 -- Report테이블 생성
 CREATE TABLE tb_report
 (

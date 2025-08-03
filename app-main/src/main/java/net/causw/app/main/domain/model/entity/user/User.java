@@ -168,13 +168,6 @@ public class User extends BaseEntity {
     // 신고 관련 메소드
     public void increaseReportCount() {
         this.reportCount++;
-        if (this.reportCount >= 5) {
-            this.state = UserState.SUSPENDED;
-        }
-    }
-
-    public boolean isSuspended() {
-        return this.state == UserState.SUSPENDED;
     }
 
     @Override

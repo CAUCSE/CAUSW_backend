@@ -39,13 +39,5 @@ public class UserStateValidator extends AbstractValidator {
                     "삭제된 사용자 입니다."
             );
         }
-
-        if (this.userState == UserState.SUSPENDED) {
-            throw new UnauthorizedException(
-                    ErrorCode.BLOCKED_USER,
-                    MessageUtil.REPORT_USER_SUSPENDED_LOGIN
-            );
-        }
-
     }
 }
