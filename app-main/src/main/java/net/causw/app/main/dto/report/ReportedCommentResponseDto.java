@@ -37,42 +37,4 @@ public class ReportedCommentResponseDto {
     
     @Schema(description = "게시글 URL", example = "/board/board-id/post-id")
     private final String url;
-    
-    public static ReportedCommentResponseDto from(ReportedCommentNativeProjection projection) {
-        return ReportedCommentResponseDto.builder()
-                .reportId(projection.getReportId())
-                .commentId(projection.getContentId())
-                .commentContent(projection.getContent())
-                .parentPostTitle(projection.getPostTitle())
-                .parentPostId(projection.getPostId())
-                .writerName(projection.getWriterName())
-                .reportReasonDescription(ReportReason.valueOf(projection.getReportReason()).getDescription())
-                .reportCreatedAt(projection.getReportCreatedAt())
-                .url("/board/" + projection.getBoardId() + "/" + projection.getPostId())
-                .build();
-    }
-
-    public static ReportedCommentResponseDto of(
-            String reportId,
-            String commentId,
-            String commentContent,
-            String parentPostTitle,
-            String parentPostId,
-            String writerName,
-            String reportReasonDescription,
-            LocalDateTime reportCreatedAt,
-            String url
-    ) {
-        return ReportedCommentResponseDto.builder()
-                .reportId(reportId)
-                .commentId(commentId)
-                .commentContent(commentContent)
-                .parentPostTitle(parentPostTitle)
-                .parentPostId(parentPostId)
-                .writerName(writerName)
-                .reportReasonDescription(reportReasonDescription)
-                .reportCreatedAt(reportCreatedAt)
-                .url(url)
-                .build();
-    }
 }

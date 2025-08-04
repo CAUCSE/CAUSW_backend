@@ -22,20 +22,4 @@ public class ReportedUserResponseDto {
     
     @Schema(description = "총 신고 받은 횟수", example = "5")
     private final Integer totalReportCount;
-    
-    public static ReportedUserResponseDto of(
-            String userId,
-            String userName,
-            String userNickname,
-            String profileImage,
-            Integer totalReportCount
-    ) {
-        return ReportedUserResponseDto.builder()
-                .userId(userId)
-                .userName(userName)
-                .userNickname(userNickname)
-                .profileImage(profileImage)
-                .totalReportCount(totalReportCount)
-                .build();
-    }
 }
