@@ -42,6 +42,8 @@ services:
     ports:
       - "8080:8080"
     environment:
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 1234
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/db_caucse?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
       SPRING_PROFILES_ACTIVE: local

@@ -56,6 +56,9 @@ dump.rdb
 **/resources/application-qa.yml
 **/resources/dongnae_firebase_key.json
 
+**/mysql_data
+**/redis_data
+
 deploy_*.sh
 app-*.yaml
 log/
