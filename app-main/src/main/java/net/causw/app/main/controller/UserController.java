@@ -671,11 +671,11 @@ public class UserController {
             @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
-    public UserFcmTokenResponseDto createFcmToken(
+    public UserFcmTokenResponseDto registerFcmToken(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody UserFcmCreateRequestDto userFcmCreateRequestDto
     ) {
-        return userService.createFcmToken(userDetails.getUser(), userFcmCreateRequestDto);
+        return userService.registerFcmToken(userDetails.getUser(), userFcmCreateRequestDto);
     }
 
     @GetMapping(value = "/fcm")

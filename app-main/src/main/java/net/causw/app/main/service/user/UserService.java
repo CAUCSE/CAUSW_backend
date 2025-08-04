@@ -1326,8 +1326,10 @@ public class UserService {
     }
 
     @Transactional
-    public UserFcmTokenResponseDto createFcmToken(User user, UserFcmCreateRequestDto userFcmCreateRequestDto){
-        String userIdFromRedis = getUserIdFromRefreshToken(userFcmCreateRequestDto.getRefreshToken());
+    public UserFcmTokenResponseDto registerFcmToken(User user, UserFcmCreateRequestDto userFcmCreateRequestDto){
+        String fcmToken = userFcmCreateRequestDto.getFcmToken();
+        String refreshToken = userFcmCreateRequestDto.getRefreshToken();
+        String userIdFromRedis = getUserIdFromRefreshToken(refreshToken);
 
         // 1. 유효한 refreshToken인지 검증
         if(!user.getId().equals(userIdFromRedis)){
@@ -1339,7 +1341,7 @@ public class UserService {
         // 2. fcmToken 최신화
         fcmUtils.cleanInvalidFcmTokens(user);
         // 3. fcmToken 추가
-        fcmUtils.addFcmToken(user, userFcmCreateRequestDto);
+        fcmUtils.addFcmToken(user, refreshToken, fcmToken);
         return UserDtoMapper.INSTANCE.toUserFcmTokenResponseDto(user);
     }
 

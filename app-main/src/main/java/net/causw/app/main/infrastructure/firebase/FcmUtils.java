@@ -2,7 +2,6 @@ package net.causw.app.main.infrastructure.firebase;
 
 import lombok.RequiredArgsConstructor;
 import net.causw.app.main.domain.model.entity.user.User;
-import net.causw.app.main.dto.user.UserFcmCreateRequestDto;
 import net.causw.app.main.infrastructure.redis.RedisUtils;
 import net.causw.app.main.repository.user.UserRepository;
 import net.causw.global.constant.StaticValue;
@@ -46,10 +45,7 @@ public class FcmUtils {
     }
 
 
-    public void addFcmToken(User user, UserFcmCreateRequestDto userFcmCreateRequestDto){
-        String refreshToken = userFcmCreateRequestDto.getRefreshToken();
-        String fcmToken = userFcmCreateRequestDto.getFcmToken();
-
+    public void addFcmToken(User user, String refreshToken, String fcmToken){
         if (!redisUtils.existsFcmToken(fcmToken)){
             user.getFcmTokens().add(fcmToken);
             redisUtils.setFcmTokenData(fcmToken, refreshToken, StaticValue.JWT_REFRESH_TOKEN_VALID_TIME);
