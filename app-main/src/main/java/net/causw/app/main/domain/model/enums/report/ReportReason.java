@@ -7,7 +7,8 @@ public enum ReportReason {
     INAPPROPRIATE_CONTENT("음란물/불건전한 만남 및 대화"),
     FRAUD_IMPERSONATION("유출/사칭/사기"),
     OFF_TOPIC("게시판 성격에 부적절함"),
-    POLITICAL_CONTENT("정당/정치인 비하 및 선거운동");
+    POLITICAL_CONTENT("정당/정치인 비하 및 선거운동"),
+    ILLEGAL_VIDEO("불법촬영물 등의 유통");
 
     private final String description;
 
