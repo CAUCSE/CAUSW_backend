@@ -40,7 +40,7 @@ public class ReportController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody @Valid ReportCreateRequestDto request
     ) {
-        return reportService.createReport(userDetails.getUser().getId(), request);
+        return reportService.createReport(userDetails.getUser(), request);
     }
     
     @GetMapping("/posts")

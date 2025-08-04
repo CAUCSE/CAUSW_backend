@@ -2,9 +2,8 @@ package net.causw.app.main.repository.report;
 
 import net.causw.app.main.domain.model.entity.report.Report;
 import net.causw.app.main.domain.model.entity.user.User;
-import net.causw.app.main.domain.model.enums.report.ReportReason;
 import net.causw.app.main.domain.model.enums.report.ReportType;
-import net.causw.app.main.dto.report.ReportedPostResponseDto;
+import net.causw.app.main.dto.report.ReportedPostNativeProjection;
 import net.causw.app.main.dto.report.ReportedCommentNativeProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,58 +12,79 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface ReportRepository extends JpaRepository<Report, String> {
-    
+
     // 중복 신고 체크
     boolean existsByReporterAndReportTypeAndTargetId(User reporter, ReportType reportType, String targetId);
-    
-    // 게시글 신고 목록 조회 (DTO Projection으로 객체 반환하도록 함)
-    @Query("SELECT new net.causw.app.main.dto.report.ReportedPostResponseDto(" +
-           "    r.id, " +
-           "    p.id, " +
-           "    p.title, " +
-           "    u.name, " +
-           "    r.reportReason, " +
-           "    r.createdAt, " +
-           "    b.name, " +
-           "    b.id" +
-           ") " +
-           "FROM Report r " +
-           "JOIN Post p ON r.targetId = p.id " +
-           "JOIN p.writer u " +
-           "JOIN p.board b " +
-           "WHERE r.reportType = :reportType " +
-           "ORDER BY r.createdAt DESC")
-    Page<ReportedPostResponseDto> findPostReportsWithDetails(@Param("reportType") ReportType reportType,
-                                                            Pageable pageable);
-    
+
+    // 게시글 신고 목록 조회(native Query로 통일)
+    @Query(
+            value = """
+            SELECT 
+                r.id AS reportId,
+                p.id AS postId,
+                p.title AS postTitle,
+                u.name AS writerName,
+                r.report_reason AS reportReason,
+                r.created_at AS reportCreatedAt,
+                b.name AS boardName,
+                b.id AS boardId
+            FROM tb_report r 
+            JOIN tb_post p ON r.target_id = p.id 
+            JOIN tb_user u ON p.user_id = u.id 
+            JOIN tb_board b ON p.board_id = b.id 
+            WHERE r.report_type = :reportType 
+            ORDER BY r.created_at DESC
+            """,
+            countQuery = """
+            SELECT COUNT(*)
+            FROM tb_report r 
+            JOIN tb_post p ON r.target_id = p.id 
+            WHERE r.report_type = :reportType
+            """,
+            nativeQuery = true
+    )
+    Page<ReportedPostNativeProjection> findPostReportsWithDetails(@Param("reportType") String reportType,
+                                                                  Pageable pageable);
+
     // 신고된 사용자 목록 조회
     @Query("SELECT u FROM User u " +
-           "WHERE u.reportCount > 0 " +
-           "ORDER BY u.reportCount DESC")
+            "WHERE u.reportCount > 0 " +
+            "ORDER BY u.reportCount DESC")
     Page<User> findReportedUsersByReportCount(Pageable pageable);
-    
-    // 특정 사용자의 신고된 게시글 목록 (DTO Projection으로 객체 반환하도록 함)
-    @Query("SELECT new net.causw.app.main.dto.report.ReportedPostResponseDto(" +
-           "    r.id, " +
-           "    p.id, " +
-           "    p.title, " +
-           "    u.name, " +
-           "    r.reportReason, " +
-           "    r.createdAt, " +
-           "    b.name, " +
-           "    b.id" +
-           ") " +
-           "FROM Report r " +
-           "JOIN Post p ON r.targetId = p.id " +
-           "JOIN p.writer u " +
-           "JOIN p.board b " +
-           "WHERE r.reportType = 'POST' AND u.id = :userId " +
-           "ORDER BY r.createdAt DESC")
-    Page<ReportedPostResponseDto> findPostReportsByUserIdWithDetails(@Param("userId") String userId, Pageable pageable);
-    
+
+    // 특정 사용자의 신고된 게시글 목록
+    @Query(
+            value = """
+            SELECT 
+                r.id AS reportId,
+                p.id AS postId,
+                p.title AS postTitle,
+                u.name AS writerName,
+                r.report_reason AS reportReason,
+                r.created_at AS reportCreatedAt,
+                b.name AS boardName,
+                b.id AS boardId
+            FROM tb_report r 
+            JOIN tb_post p ON r.target_id = p.id 
+            JOIN tb_user u ON p.user_id = u.id 
+            JOIN tb_board b ON p.board_id = b.id 
+            WHERE r.report_type = 'POST' AND u.id = :userId 
+            ORDER BY r.created_at DESC
+            """,
+            countQuery = """
+            SELECT COUNT(*)
+            FROM tb_report r 
+            JOIN tb_post p ON r.target_id = p.id 
+            JOIN tb_user u ON p.user_id = u.id 
+            WHERE r.report_type = 'POST' AND u.id = :userId
+            """,
+            nativeQuery = true
+    )
+    Page<ReportedPostNativeProjection> findPostReportsByUserIdWithDetails(@Param("userId") String userId, Pageable pageable);
+
     // 댓글, 대댓글 신고 목록 조회(메모리 문제를 막기 위해 Native Query와 UNION ALL로 DB 내에서 처리하도록 함)
     @Query(
-        value = """
+            value = """
             SELECT 
                 reportId, contentId, content, postTitle, postId, boardId, writerName, reportReason, reportCreatedAt 
             FROM ( 
@@ -101,7 +121,7 @@ public interface ReportRepository extends JpaRepository<Report, String> {
             ) AS combined_reports 
             ORDER BY reportCreatedAt DESC
             """,
-        countQuery = """
+            countQuery = """
             SELECT COUNT(*) FROM ( 
                 SELECT r.id 
                 FROM tb_report r 
@@ -112,13 +132,13 @@ public interface ReportRepository extends JpaRepository<Report, String> {
                 JOIN tb_child_comment cc ON r.target_id = cc.id AND r.report_type = 'CHILD_COMMENT' 
             ) AS T
             """,
-        nativeQuery = true
+            nativeQuery = true
     )
     Page<ReportedCommentNativeProjection> findCombinedCommentReports(Pageable pageable);
-    
+
     // 특정 사용자의 댓글, 대댓글 신고 목록 조회(메모리 문제를 막기 위해 Native Query와 UNION ALL로 DB 내에서 처리하도록 함)
     @Query(
-        value = """
+            value = """
             SELECT 
                 reportId, contentId, content, postTitle, postId, boardId, writerName, reportReason, reportCreatedAt 
             FROM ( 
@@ -157,7 +177,7 @@ public interface ReportRepository extends JpaRepository<Report, String> {
             ) AS combined_reports 
             ORDER BY reportCreatedAt DESC
             """,
-        countQuery = """
+            countQuery = """
             SELECT COUNT(*) FROM ( 
                 SELECT r.id 
                 FROM tb_report r 
@@ -172,10 +192,10 @@ public interface ReportRepository extends JpaRepository<Report, String> {
                 WHERE u.id = :userId
             ) AS T
             """,
-        nativeQuery = true
+            nativeQuery = true
     )
     Page<ReportedCommentNativeProjection> findCombinedCommentReportsByUserId(
-        @Param("userId") String userId, 
-        Pageable pageable
+            @Param("userId") String userId,
+            Pageable pageable
     );
 }

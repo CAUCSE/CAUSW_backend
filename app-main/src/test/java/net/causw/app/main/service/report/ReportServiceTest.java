@@ -9,6 +9,9 @@ import net.causw.app.main.domain.model.enums.report.ReportReason;
 import net.causw.app.main.domain.model.enums.report.ReportType;
 import net.causw.app.main.domain.model.enums.user.UserState;
 import net.causw.app.main.dto.report.*;
+import net.causw.app.main.dto.util.dtoMapper.ReportDtoMapper;
+import net.causw.app.main.service.pageable.PageableFactory;
+import net.causw.global.constant.StaticValue;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,7 +23,6 @@ import net.causw.app.main.repository.user.UserRepository;
 import net.causw.app.main.util.ObjectFixtures;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
-import net.causw.global.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -55,6 +57,8 @@ class ReportServiceTest {
     private CommentRepository commentRepository;
     @Mock
     private ChildCommentRepository childCommentRepository;
+    @Mock
+    private PageableFactory pageableFactory;
 
     private final User reporter = ObjectFixtures.getUser();
     private final User contentWriter = ObjectFixtures.getUser();
@@ -87,13 +91,12 @@ class ReportServiceTest {
         @DisplayName("게시글 신고 성공")
         void createPostReport_success() {
             // given
-            given(userRepository.findById("reporter-id")).willReturn(Optional.of(reporter));
             given(reportRepository.existsByReporterAndReportTypeAndTargetId(
                     reporter, ReportType.POST, "target-id")).willReturn(false);
             given(postRepository.findById("target-id")).willReturn(Optional.of(post));
 
             // when
-            ReportCreateResponseDto response = reportService.createReport("reporter-id", reportRequest);
+            ReportCreateResponseDto response = reportService.createReport(reporter, reportRequest);
 
             // then
             assertThat(response.getMessage()).isEqualTo(MessageUtil.REPORT_SUCCESS);
@@ -117,13 +120,12 @@ class ReportServiceTest {
             // given
             reportRequest.setReportType(ReportType.COMMENT);
 
-            given(userRepository.findById("reporter-id")).willReturn(Optional.of(reporter));
             given(reportRepository.existsByReporterAndReportTypeAndTargetId(
                     reporter, ReportType.COMMENT, "target-id")).willReturn(false);
             given(commentRepository.findById("target-id")).willReturn(Optional.of(comment));
 
             // when
-            ReportCreateResponseDto response = reportService.createReport("reporter-id", reportRequest);
+            ReportCreateResponseDto response = reportService.createReport(reporter, reportRequest);
 
             // then
             assertThat(response.getMessage()).isEqualTo(MessageUtil.REPORT_SUCCESS);
@@ -136,13 +138,12 @@ class ReportServiceTest {
             // given
             reportRequest.setReportType(ReportType.CHILD_COMMENT);
 
-            given(userRepository.findById("reporter-id")).willReturn(Optional.of(reporter));
             given(reportRepository.existsByReporterAndReportTypeAndTargetId(
                     reporter, ReportType.CHILD_COMMENT, "target-id")).willReturn(false);
             given(childCommentRepository.findById("target-id")).willReturn(Optional.of(childComment));
 
             // when
-            ReportCreateResponseDto response = reportService.createReport("reporter-id", reportRequest);
+            ReportCreateResponseDto response = reportService.createReport(reporter, reportRequest);
 
             // then
             assertThat(response.getMessage()).isEqualTo(MessageUtil.REPORT_SUCCESS);
@@ -153,12 +154,11 @@ class ReportServiceTest {
         @DisplayName("중복 신고 시 예외 발생")
         void createReport_alreadyReported() {
             // given
-            given(userRepository.findById("reporter-id")).willReturn(Optional.of(reporter));
             given(reportRepository.existsByReporterAndReportTypeAndTargetId(
                     reporter, ReportType.POST, "target-id")).willReturn(true);
 
             // when & then
-            assertThatThrownBy(() -> reportService.createReport("reporter-id", reportRequest))
+            assertThatThrownBy(() -> reportService.createReport(reporter, reportRequest))
                     .isInstanceOf(BadRequestException.class)
                     .hasMessage(MessageUtil.REPORT_ALREADY_REPORTED);
         }
@@ -173,17 +173,19 @@ class ReportServiceTest {
         void getReportedPosts_success() {
             // given
             Pageable pageable = PageRequest.of(0, 20);
-            Page<ReportedPostResponseDto> expectedPage = Page.empty();
+            given(pageableFactory.create(0, StaticValue.DEFAULT_REPORT_PAGE_SIZE)).willReturn(pageable);
+            Page<ReportedPostNativeProjection> projectionPage = Page.empty();
+            Page<ReportedPostResponseDto> expectedPage = projectionPage.map(ReportDtoMapper.INSTANCE::toReportedPostDto);
 
-            given(reportRepository.findPostReportsWithDetails(ReportType.POST, pageable))
-                    .willReturn(expectedPage);
+            given(reportRepository.findPostReportsWithDetails("POST", pageable))
+                    .willReturn(projectionPage);
 
             // when
-            Page<ReportedPostResponseDto> result = reportService.getReportedPosts(pageable);
+            Page<ReportedPostResponseDto> result = reportService.getReportedPosts(pageableFactory.create(0, StaticValue.DEFAULT_REPORT_PAGE_SIZE));
 
             // then
             assertThat(result).isEqualTo(expectedPage);
-            verify(reportRepository).findPostReportsWithDetails(ReportType.POST, pageable);
+            verify(reportRepository).findPostReportsWithDetails("POST", pageable);
         }
 
         @Test
@@ -191,13 +193,14 @@ class ReportServiceTest {
         void getReportedComments_success() {
             // given
             Pageable pageable = PageRequest.of(0, 20);
+            given(pageableFactory.create(0, StaticValue.DEFAULT_REPORT_PAGE_SIZE)).willReturn(pageable);
             Page<ReportedCommentNativeProjection> nativePage = Page.empty();
 
             given(reportRepository.findCombinedCommentReports(pageable))
                     .willReturn(nativePage);
 
             // when
-            Page<ReportedCommentResponseDto> result = reportService.getReportedComments(pageable);
+            Page<ReportedCommentResponseDto> result = reportService.getReportedComments(pageableFactory.create(0, StaticValue.DEFAULT_REPORT_PAGE_SIZE));
 
             // then
             assertThat(result).isNotNull();
@@ -209,13 +212,14 @@ class ReportServiceTest {
         void getReportedUsers_success() {
             // given
             Pageable pageable = PageRequest.of(0, 20);
+            given(pageableFactory.create(0, StaticValue.DEFAULT_REPORT_PAGE_SIZE)).willReturn(pageable);
             Page<User> userPage = Page.empty();
 
             given(reportRepository.findReportedUsersByReportCount(pageable))
                     .willReturn(userPage);
 
             // when
-            Page<ReportedUserResponseDto> result = reportService.getReportedUsers(pageable);
+            Page<ReportedUserResponseDto> result = reportService.getReportedUsers(pageableFactory.create(0, StaticValue.DEFAULT_REPORT_PAGE_SIZE));
 
             // then
             assertThat(result).isNotNull();
@@ -228,14 +232,16 @@ class ReportServiceTest {
             // given
             String userId = "test-user-id";
             Pageable pageable = PageRequest.of(0, 20);
-            Page<ReportedPostResponseDto> expectedPage = Page.empty();
+            given(pageableFactory.create(0, StaticValue.DEFAULT_REPORT_PAGE_SIZE)).willReturn(pageable);
+            Page<ReportedPostNativeProjection> projectionPage = Page.empty();
+            Page<ReportedPostResponseDto> expectedPage = projectionPage.map(ReportDtoMapper.INSTANCE::toReportedPostDto);
 
             given(userRepository.existsById(userId)).willReturn(true);
             given(reportRepository.findPostReportsByUserIdWithDetails(userId, pageable))
-                    .willReturn(expectedPage);
+                    .willReturn(projectionPage);
 
             // when
-            Page<ReportedPostResponseDto> result = reportService.getReportedPostsByUser(userId, pageable);
+            Page<ReportedPostResponseDto> result = reportService.getReportedPostsByUser(userId, pageableFactory.create(0, StaticValue.DEFAULT_REPORT_PAGE_SIZE));
 
             // then
             assertThat(result).isEqualTo(expectedPage);

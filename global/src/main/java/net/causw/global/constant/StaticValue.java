@@ -15,6 +15,7 @@ public class StaticValue {
     public static final Integer DEFAULT_PAGE_SIZE = 20;
     public static final Integer DEFAULT_POST_PAGE_SIZE = 20;
     public static final Integer DEFAULT_COMMENT_PAGE_SIZE = 20;
+    public static final Integer DEFAULT_REPORT_PAGE_SIZE = 20;
     public static final Integer HOME_POST_PAGE_SIZE = 3;
     public static final Integer ALUMNI_HOME_POST_PAGE_SIZE = 4;
     public final static Integer USER_LIST_PAGE_SIZE = 30;
