@@ -44,6 +44,16 @@ public class UserInfoService {
         .map(UserDtoMapper.INSTANCE::toUserInfoSummaryResponseDto);
   }
 
+  public UserInfoResponseDto getUserInfoById(String userInfoId) {
+    UserInfo userInfo = userInfoRepository.findById(userInfoId)
+        .orElseThrow(() -> new BadRequestException(
+            ErrorCode.ROW_DOES_NOT_EXIST,
+            MessageUtil.USER_INFO_NOT_FOUND
+        ));
+
+    return UserDtoMapper.INSTANCE.toUserInfoResponseDto(userInfo);
+  }
+
   public UserInfoResponseDto getUserInfoByUserId(String userId) {
     User user = findUserById(userId);
 
