@@ -12,6 +12,7 @@ import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
 public class UserInfoResponseDto {
 
   private String id;
+  private String userId;
   private String name;
   private String email;
   private String phoneNumber;

@@ -2,7 +2,6 @@ package net.causw.app.main.service.userInfo;
 
 import static net.causw.global.constant.StaticValue.DEFAULT_PAGE_SIZE;
 
-import com.google.firestore.v1.TransactionOptions.ReadOnly;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -44,17 +43,6 @@ public class UserInfoService {
   public Page<UserInfoSummaryResponseDto> getAllUserInfos(Integer pageNum) {
     return userInfoRepository.findAllByOrderByUpdatedAtDesc(pageableFactory.create(pageNum, DEFAULT_PAGE_SIZE))
         .map(UserDtoMapper.INSTANCE::toUserInfoSummaryResponseDto);
-  }
-
-  @Transactional(readOnly = true)
-  public UserInfoResponseDto getUserInfoById(String userInfoId) {
-    UserInfo userInfo = userInfoRepository.findById(userInfoId)
-        .orElseThrow(() -> new BadRequestException(
-            ErrorCode.ROW_DOES_NOT_EXIST,
-            MessageUtil.USER_INFO_NOT_FOUND
-        ));
-
-    return UserDtoMapper.INSTANCE.toUserInfoResponseDto(userInfo);
   }
 
   @Transactional(readOnly = true)

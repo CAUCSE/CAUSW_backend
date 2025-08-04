@@ -198,6 +198,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
     }
 
     @Mapping(target = "id", source = "userInfo.id")
+    @Mapping(target = "userId", source = "userInfo.user.id")
     @Mapping(target = "name", source = "userInfo.user.name")
     @Mapping(target = "email", source = "userInfo.user.email")
     @Mapping(target = "admissionYear", source = "userInfo.user.admissionYear")
@@ -209,6 +210,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
     UserInfoSummaryResponseDto toUserInfoSummaryResponseDto(UserInfo userInfo);
 
     @Mapping(target = "id", source = "userInfo.id")
+    @Mapping(target = "userId", source = "userInfo.user.id")
     @Mapping(target = "name", source = "userInfo.user.name")
     @Mapping(target = "email", source = "userInfo.user.email")
     @Mapping(target = "phoneNumber", source = "userInfo.user.phoneNumber")
