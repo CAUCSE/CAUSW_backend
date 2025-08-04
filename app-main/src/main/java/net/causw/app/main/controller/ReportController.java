@@ -14,8 +14,6 @@ import net.causw.app.main.service.report.ReportService;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.UnauthorizedException;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -54,8 +52,7 @@ public class ReportController {
     public Page<ReportedPostResponseDto> getReportedPosts(
             @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum
             ) {
-        Pageable pageable = PageRequest.of(pageNum, 20);
-        return reportService.getReportedPosts(pageable);
+        return reportService.getReportedPosts(pageNum);
     }
     
     @GetMapping("/comments")
@@ -69,8 +66,7 @@ public class ReportController {
     public Page<ReportedCommentResponseDto> getReportedComments(
             @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum
     ) {
-        Pageable pageable = PageRequest.of(pageNum, 20);
-        return reportService.getReportedComments(pageable);
+        return reportService.getReportedComments(pageNum);
     }
     
     @GetMapping("/users")
@@ -84,8 +80,7 @@ public class ReportController {
     public Page<ReportedUserResponseDto> getReportedUsers(
             @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum
     ) {
-        Pageable pageable = PageRequest.of(pageNum, 20);
-        return reportService.getReportedUsers(pageable);
+        return reportService.getReportedUsers(pageNum);
     }
     
     @GetMapping("/users/{userId}/posts")
@@ -101,8 +96,7 @@ public class ReportController {
             @PathVariable String userId,
             @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum
     ) {
-        Pageable pageable = PageRequest.of(pageNum, 20);
-        return reportService.getReportedPostsByUser(userId, pageable);
+        return reportService.getReportedPostsByUser(userId, pageNum);
     }
     
     @GetMapping("/users/{userId}/comments")
@@ -118,7 +112,6 @@ public class ReportController {
             @PathVariable String userId,
             @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum
     ) {
-        Pageable pageable = PageRequest.of(pageNum, 20);
-        return reportService.getReportedCommentsByUser(userId, pageable);
+        return reportService.getReportedCommentsByUser(userId, pageNum);
     }
 }

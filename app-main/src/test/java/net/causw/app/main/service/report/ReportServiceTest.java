@@ -60,6 +60,7 @@ class ReportServiceTest {
     @Mock
     private PageableFactory pageableFactory;
 
+    private static final int pageNum = 0;
     private final User reporter = ObjectFixtures.getUser();
     private final User contentWriter = ObjectFixtures.getUser();
     private final Post post = ObjectFixtures.getPost(contentWriter, ObjectFixtures.getBoard());
@@ -177,15 +178,15 @@ class ReportServiceTest {
             Page<ReportedPostNativeProjection> projectionPage = Page.empty();
             Page<ReportedPostResponseDto> expectedPage = projectionPage.map(ReportDtoMapper.INSTANCE::toReportedPostDto);
 
-            given(reportRepository.findPostReportsWithDetails("POST", pageable))
+            given(reportRepository.findPostReportsWithDetails("POST", null, pageable))
                     .willReturn(projectionPage);
 
             // when
-            Page<ReportedPostResponseDto> result = reportService.getReportedPosts(pageableFactory.create(0, StaticValue.DEFAULT_REPORT_PAGE_SIZE));
+            Page<ReportedPostResponseDto> result = reportService.getReportedPosts(pageNum);
 
             // then
             assertThat(result).isEqualTo(expectedPage);
-            verify(reportRepository).findPostReportsWithDetails("POST", pageable);
+            verify(reportRepository).findPostReportsWithDetails("POST", null, pageable);
         }
 
         @Test
@@ -196,15 +197,15 @@ class ReportServiceTest {
             given(pageableFactory.create(0, StaticValue.DEFAULT_REPORT_PAGE_SIZE)).willReturn(pageable);
             Page<ReportedCommentNativeProjection> nativePage = Page.empty();
 
-            given(reportRepository.findCombinedCommentReports(pageable))
+            given(reportRepository.findCombinedCommentReports(null, pageable))
                     .willReturn(nativePage);
 
             // when
-            Page<ReportedCommentResponseDto> result = reportService.getReportedComments(pageableFactory.create(0, StaticValue.DEFAULT_REPORT_PAGE_SIZE));
+            Page<ReportedCommentResponseDto> result = reportService.getReportedComments(pageNum);
 
             // then
             assertThat(result).isNotNull();
-            verify(reportRepository).findCombinedCommentReports(pageable);
+            verify(reportRepository).findCombinedCommentReports(null, pageable);
         }
 
         @Test
@@ -219,7 +220,7 @@ class ReportServiceTest {
                     .willReturn(userPage);
 
             // when
-            Page<ReportedUserResponseDto> result = reportService.getReportedUsers(pageableFactory.create(0, StaticValue.DEFAULT_REPORT_PAGE_SIZE));
+            Page<ReportedUserResponseDto> result = reportService.getReportedUsers(pageNum);
 
             // then
             assertThat(result).isNotNull();
@@ -237,16 +238,38 @@ class ReportServiceTest {
             Page<ReportedPostResponseDto> expectedPage = projectionPage.map(ReportDtoMapper.INSTANCE::toReportedPostDto);
 
             given(userRepository.existsById(userId)).willReturn(true);
-            given(reportRepository.findPostReportsByUserIdWithDetails(userId, pageable))
+            given(reportRepository.findPostReportsWithDetails("POST", userId, pageable))
                     .willReturn(projectionPage);
 
             // when
-            Page<ReportedPostResponseDto> result = reportService.getReportedPostsByUser(userId, pageableFactory.create(0, StaticValue.DEFAULT_REPORT_PAGE_SIZE));
+            Page<ReportedPostResponseDto> result = reportService.getReportedPostsByUser(userId, pageNum);
 
             // then
             assertThat(result).isEqualTo(expectedPage);
             verify(userRepository).existsById(userId);
-            verify(reportRepository).findPostReportsByUserIdWithDetails(userId, pageable);
+            verify(reportRepository).findPostReportsWithDetails("POST", userId, pageable);
+        }
+
+        @Test
+        @DisplayName("특정 사용자의 신고된 댓글/대댓글 목록 조회 성공")
+        void getReportedCommentsByUser_success() {
+            // given
+            String userId = "test-user-id";
+            Pageable pageable = PageRequest.of(pageNum, 20);
+            given(pageableFactory.create(pageNum, StaticValue.DEFAULT_REPORT_PAGE_SIZE)).willReturn(pageable);
+            Page<ReportedCommentNativeProjection> nativePage = Page.empty();
+
+            given(userRepository.existsById(userId)).willReturn(true);
+            given(reportRepository.findCombinedCommentReports(userId, pageable))
+                    .willReturn(nativePage);
+
+            // when
+            Page<ReportedCommentResponseDto> result = reportService.getReportedCommentsByUser(userId, pageNum);
+
+            // then
+            assertThat(result).isNotNull();
+            verify(userRepository).existsById(userId);
+            verify(reportRepository).findCombinedCommentReports(userId, pageable);
         }
     }
 }

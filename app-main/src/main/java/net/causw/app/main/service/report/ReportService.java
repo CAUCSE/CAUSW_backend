@@ -14,6 +14,8 @@ import net.causw.app.main.repository.comment.CommentRepository;
 import net.causw.app.main.repository.post.PostRepository;
 import net.causw.app.main.repository.report.ReportRepository;
 import net.causw.app.main.repository.user.UserRepository;
+import net.causw.app.main.service.pageable.PageableFactory;
+import net.causw.global.constant.StaticValue;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
@@ -26,30 +28,32 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class ReportService {
-
+    
     private final ReportRepository reportRepository;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final ChildCommentRepository childCommentRepository;
-
+    private final PageableFactory pageableFactory;
+    
     // 신고하기
     @Transactional
     public ReportCreateResponseDto createReport(User reporter, ReportCreateRequestDto request) {
+        
         // 중복 신고 체크
         boolean alreadyReported = reportRepository.existsByReporterAndReportTypeAndTargetId(
                 reporter, request.getReportType(), request.getTargetId());
-
+        
         if (alreadyReported) {
             throw new BadRequestException(
                     ErrorCode.CANNOT_PERFORMED,
                     MessageUtil.REPORT_ALREADY_REPORTED
             );
         }
-
+        
         // 신고 대상 콘텐츠, 작성자 조회
         User contentWriter = getContentWriter(request.getReportType(), request.getTargetId());
-
+        
         // 자기 자신 신고 방지
         if (reporter.getId().equals(contentWriter.getId())) {
             throw new BadRequestException(
@@ -57,7 +61,7 @@ public class ReportService {
                     MessageUtil.REPORT_CANNOT_SELF
             );
         }
-
+        
         Report report = Report.of(
                 reporter,
                 request.getReportType(),
@@ -65,65 +69,71 @@ public class ReportService {
                 request.getReportReason()
         );
         reportRepository.save(report);
-
+        
         // 신고 대상 사용자의 신고 횟수 증가
         contentWriter.increaseReportCount();
-
+        
         return ReportDtoMapper.INSTANCE.toReportCreateResponseDto(MessageUtil.REPORT_SUCCESS);
     }
-
+    
     // 게시글 신고 목록 조회
     @Transactional(readOnly = true)
-    public Page<ReportedPostResponseDto> getReportedPosts(Pageable pageable) {
-        return reportRepository.findPostReportsWithDetails("POST", pageable)
-                .map(ReportDtoMapper.INSTANCE::toReportedPostDto);
+    public Page<ReportedPostResponseDto> getReportedPosts(Integer pageNum) {
+        Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_REPORT_PAGE_SIZE);
+        return reportRepository.findPostReportsWithDetails("POST", null, pageable)
+                              .map(ReportDtoMapper.INSTANCE::toReportedPostDto);
     }
-
+    
     // 댓글/대댓글 신고 목록 조회
     @Transactional(readOnly = true)
-    public Page<ReportedCommentResponseDto> getReportedComments(Pageable pageable) {
-        return reportRepository.findCombinedCommentReports(pageable)
-                .map(ReportDtoMapper.INSTANCE::toReportedCommentDto);
+    public Page<ReportedCommentResponseDto> getReportedComments(Integer pageNum) {
+        Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_REPORT_PAGE_SIZE);
+        return reportRepository.findCombinedCommentReports(null, pageable)
+                              .map(ReportDtoMapper.INSTANCE::toReportedCommentDto);
     }
-
+    
     // 신고된 사용자 목록 조회
     @Transactional(readOnly = true)
-    public Page<ReportedUserResponseDto> getReportedUsers(Pageable pageable) {
-        return reportRepository.findReportedUsersByReportCount(pageable)
-                .map(ReportDtoMapper.INSTANCE::toReportedUserDto);
+    public Page<ReportedUserResponseDto> getReportedUsers(Integer pageNum) {
+        Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_REPORT_PAGE_SIZE);
+        Page<User> users = reportRepository.findReportedUsersByReportCount(pageable);
+        return users.map(ReportDtoMapper.INSTANCE::toReportedUserDto);
     }
-
+    
     // 특정 사용자의 신고된 게시글 목록 조회
     @Transactional(readOnly = true)
     public Page<ReportedPostResponseDto> getReportedPostsByUser(
             String userId,
-            Pageable pageable
+            Integer pageNum
     ) {
+        Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_REPORT_PAGE_SIZE);
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException(
                     ErrorCode.ROW_DOES_NOT_EXIST,
                     MessageUtil.USER_NOT_FOUND
             );
         }
-
-        return reportRepository.findPostReportsByUserIdWithDetails(userId, pageable)
-                .map(ReportDtoMapper.INSTANCE::toReportedPostDto);
+        
+        return reportRepository.findPostReportsWithDetails("POST", userId, pageable)
+                              .map(ReportDtoMapper.INSTANCE::toReportedPostDto);
     }
-
+    
     // 특정 사용자의 신고된 댓글, 대댓글 목록 조회
     @Transactional(readOnly = true)
     public Page<ReportedCommentResponseDto> getReportedCommentsByUser(
             String userId,
-            Pageable pageable
+            Integer pageNum
     ) {
+        Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_REPORT_PAGE_SIZE);
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException(
                     ErrorCode.ROW_DOES_NOT_EXIST,
                     MessageUtil.USER_NOT_FOUND
             );
         }
-        return reportRepository.findCombinedCommentReportsByUserId(userId, pageable)
-                .map(ReportDtoMapper.INSTANCE::toReportedCommentDto);
+        
+        return reportRepository.findCombinedCommentReports(userId, pageable)
+                              .map(ReportDtoMapper.INSTANCE::toReportedCommentDto);
     }
 
     // 신고 대상의 작성자 조회
