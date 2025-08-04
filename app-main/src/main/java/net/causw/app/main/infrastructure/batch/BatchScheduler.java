@@ -52,7 +52,7 @@ public class BatchScheduler {
     }
 
 
-    @Scheduled(cron = "0 0 4 ? * MON")
+    @Scheduled(cron = "0 0 5 ? * MON")
     public void scheduleCleanInvalidFcmTokens() {
         if(!isEvenWeek()) return;
 
