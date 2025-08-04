@@ -34,13 +34,13 @@ public class UserInfoController {
     private final UserInfoService userInfoService;
 
     /**
-     * 사용자 고유 id 값으로 사용자 세부정보를 조회하는 API
+     *  사용자 고유 id 값으로 사용자 세부정보를 조회하는 API
      * @param userId
      * @return
      */
     @GetMapping(value = "/{userId}")
     @ResponseStatus(value = HttpStatus.OK)
-    @Operation(summary = "사용자 세부정보 조회 API")
+    @Operation(summary = "사용자 id로 사용자 세부정보 조회 API")
     public UserInfoResponseDto getUserInfoByUserId(
             @PathVariable("userId") String userId
     ) {

@@ -186,6 +186,7 @@ public class MessageUtil {
     public static final String VOTE_START_NOT_ACCESSIBLE = "투표 시작 권한이 존재하지 않습니다.";
 
     // UserInfo
+    public static final String USER_INFO_NOT_FOUND = "해당 사용자 상세정보를 찾을 수 없습니다.";
     public static final String USER_CAREER_NOT_FOUND = "해당 커리어 정보를 찾을 수 없습니다.";
     public static final String INVALID_CAREER_DATE = "커리어 날짜가 유효하지 않습니다.";
 

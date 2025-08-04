@@ -9,6 +9,7 @@ import lombok.Getter;
 public class UserInfoSummaryResponseDto {
 
   private String id;
+  private String userId;
   private String name;
   private String email;
   private Integer admissionYear;
