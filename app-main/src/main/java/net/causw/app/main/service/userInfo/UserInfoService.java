@@ -2,7 +2,8 @@ package net.causw.app.main.service.userInfo;
 
 import static net.causw.global.constant.StaticValue.DEFAULT_PAGE_SIZE;
 
-import jakarta.transaction.Transactional;
+import com.google.firestore.v1.TransactionOptions.ReadOnly;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -39,11 +40,13 @@ public class UserInfoService {
   private final PageableFactory pageableFactory;
   private final UserCareerRepository userCareerRepository;
 
+  @Transactional(readOnly = true)
   public Page<UserInfoSummaryResponseDto> getAllUserInfos(Integer pageNum) {
     return userInfoRepository.findAllByOrderByUpdatedAtDesc(pageableFactory.create(pageNum, DEFAULT_PAGE_SIZE))
         .map(UserDtoMapper.INSTANCE::toUserInfoSummaryResponseDto);
   }
 
+  @Transactional(readOnly = true)
   public UserInfoResponseDto getUserInfoById(String userInfoId) {
     UserInfo userInfo = userInfoRepository.findById(userInfoId)
         .orElseThrow(() -> new BadRequestException(
@@ -54,6 +57,7 @@ public class UserInfoService {
     return UserDtoMapper.INSTANCE.toUserInfoResponseDto(userInfo);
   }
 
+  @Transactional(readOnly = true)
   public UserInfoResponseDto getUserInfoByUserId(String userId) {
     User user = findUserById(userId);
 
@@ -138,6 +142,7 @@ public class UserInfoService {
     return UserDtoMapper.INSTANCE.toUserInfoResponseDto(userInfo);
   }
 
+  @Transactional(readOnly = true)
   public Page<UserInfoSummaryResponseDto> search(final String keyword, final Integer pageNum) {
     return userInfoRepository.findAllByKeywordInNameOrJobOrCareer(keyword, pageableFactory.create(pageNum, DEFAULT_PAGE_SIZE))
         .map(UserDtoMapper.INSTANCE::toUserInfoSummaryResponseDto);
