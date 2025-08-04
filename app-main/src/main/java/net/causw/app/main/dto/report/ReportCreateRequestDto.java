@@ -19,7 +19,7 @@ public class ReportCreateRequestDto {
     @NotNull(message = "신고 대상 컨텐츠 ID는 필수입니다.")
     private String targetId;
     
-    @Schema(description = "신고 사유(SPAM_AD | ABUSE_LANGUAGE | COMMERCIAL_AD | INAPPROPRIATE_CONTENT | FRAUD_IMPERSONATION | OFF_TOPIC | POLITICAL_CONTENT)", example = "SPAM_AD")
+    @Schema(description = "신고 사유(SPAM_AD | ABUSE_LANGUAGE | COMMERCIAL_AD | INAPPROPRIATE_CONTENT | FRAUD_IMPERSONATION | OFF_TOPIC | POLITICAL_CONTENT | ILLEGAL_VIDEO)", example = "SPAM_AD")
     @NotNull(message = "신고 사유는 필수입니다.")
     private ReportReason reportReason;
 }
