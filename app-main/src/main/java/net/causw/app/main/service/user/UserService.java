@@ -7,6 +7,7 @@ import net.causw.app.main.domain.model.entity.board.Board;
 import net.causw.app.main.domain.model.entity.circle.Circle;
 import net.causw.app.main.domain.model.entity.circle.CircleMember;
 import net.causw.app.main.domain.model.entity.locker.LockerLog;
+import net.causw.app.main.infrastructure.firebase.FcmUtils;
 import net.causw.app.main.domain.model.entity.userInfo.UserInfo;
 import net.causw.app.main.repository.userAcademicRecord.UserAcademicRecordApplicationRepository;
 import net.causw.app.main.repository.userInfo.UserInfoRepository;
@@ -101,6 +102,7 @@ public class UserService {
     private final ChildCommentRepository childCommentRepository;
     private final UserAdmissionRepository userAdmissionRepository;
     private final RedisUtils redisUtils;
+    private final FcmUtils fcmUtils;
     private final LockerRepository lockerRepository;
     private final LockerLogRepository lockerLogRepository;
     private final UserAdmissionLogRepository userAdmissionLogRepository;
@@ -1210,10 +1212,10 @@ public class UserService {
     public UserSignOutResponseDto signOut(User user, UserSignOutRequestDto userSignOutRequestDto){
         redisUtils.addToBlacklist(userSignOutRequestDto.getAccessToken());
         redisUtils.deleteRefreshTokenData(userSignOutRequestDto.getRefreshToken());
+        String fcmToken = userSignOutRequestDto.getFcmToken();
 
-        if (userSignOutRequestDto.getFcmToken() != null) {
-            user.removeFcmToken(userSignOutRequestDto.getFcmToken());
-            userRepository.save(user);
+        if (fcmToken != null) {
+            fcmUtils.removeFcmToken(user, fcmToken);
         }
 
         return UserDtoMapper.INSTANCE.toUserSignOutResponseDto("로그아웃 성공");
@@ -1324,17 +1326,28 @@ public class UserService {
     }
 
     @Transactional
-    public UserFcmTokenResponseDto createFcmToken(User user, String fcmToken){
-        if (!user.getFcmTokens().contains(fcmToken)) {
-            user.getFcmTokens().add(fcmToken);
-        }
+    public UserFcmTokenResponseDto registerFcmToken(User user, UserFcmCreateRequestDto userFcmCreateRequestDto){
+        String fcmToken = userFcmCreateRequestDto.getFcmToken();
+        String refreshToken = userFcmCreateRequestDto.getRefreshToken();
+        String userIdFromRedis = getUserIdFromRefreshToken(refreshToken);
 
-        userRepository.save(user);
+        // 1. 유효한 refreshToken인지 검증
+        if(!user.getId().equals(userIdFromRedis)){
+            throw new BadRequestException(
+                    ErrorCode.INVALID_SIGNIN,
+                    MessageUtil.INVALID_REFRESH_TOKEN
+            );
+        }
+        // 2. fcmToken 최신화
+        fcmUtils.cleanInvalidFcmTokens(user);
+        // 3. fcmToken 추가
+        fcmUtils.addFcmToken(user, refreshToken, fcmToken);
         return UserDtoMapper.INSTANCE.toUserFcmTokenResponseDto(user);
     }
 
-    @Transactional(readOnly = true)
-    public UserFcmTokenResponseDto getUserFcmToken(User user){
+    @Transactional
+    public UserFcmTokenResponseDto getUserFcmToken(User user) {
+        fcmUtils.cleanInvalidFcmTokens(user);
         return UserDtoMapper.INSTANCE.toUserFcmTokenResponseDto(user);
     }
 

@@ -5,6 +5,7 @@ import net.causw.app.main.domain.model.entity.ceremony.Ceremony;
 import net.causw.app.main.domain.model.entity.notification.CeremonyNotificationSetting;
 import net.causw.app.main.domain.model.entity.notification.Notification;
 import net.causw.app.main.domain.model.entity.notification.NotificationLog;
+import net.causw.app.main.infrastructure.firebase.FcmUtils;
 import net.causw.app.main.repository.notification.CeremonyNotificationSettingRepository;
 import net.causw.app.main.repository.notification.NotificationLogRepository;
 import net.causw.app.main.repository.notification.NotificationRepository;
@@ -46,6 +47,9 @@ class CeremonyNotificationServiceTest {
 
     @Mock
     private NotificationLogRepository notificationLogRepository;
+
+    @Mock
+    private FcmUtils fcmUtils;
 
     private User mockUser;
     private Ceremony mockCeremony;
@@ -135,6 +139,14 @@ class CeremonyNotificationServiceTest {
         doThrow(exception)
                 .when(firebasePushNotificationService)
                 .sendNotification(eq(invalidToken), any(), any());
+
+        doAnswer(invocation -> {
+            User user = invocation.getArgument(0);
+            String token = invocation.getArgument(1);
+            user.removeFcmToken(token);
+            return null;
+        }).when(fcmUtils).removeFcmToken(any(User.class), anyString());
+
 
         ceremonyNotificationService.sendByAdmissionYear(2023, mockCeremony);
 

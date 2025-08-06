@@ -8,6 +8,7 @@ import net.causw.app.main.domain.model.entity.notification.Notification;
 import net.causw.app.main.domain.model.entity.notification.NotificationLog;
 import net.causw.app.main.domain.model.entity.notification.UserCommentSubscribe;
 import net.causw.app.main.domain.model.entity.post.Post;
+import net.causw.app.main.infrastructure.firebase.FcmUtils;
 import net.causw.app.main.repository.notification.NotificationLogRepository;
 import net.causw.app.main.repository.notification.NotificationRepository;
 import net.causw.app.main.repository.notification.UserCommentSubscribeRepository;
@@ -46,6 +47,9 @@ class CommentNotificationServiceTest {
 
     @Mock
     private UserCommentSubscribeRepository userCommentSubscribeRepository;
+
+    @Mock
+    private FcmUtils fcmUtils;
 
     private User mockUser;
     private Comment mockComment;
@@ -150,6 +154,13 @@ class CommentNotificationServiceTest {
         FirebaseMessagingException mockException = mock(FirebaseMessagingException.class);
         doThrow(mockException).when(firebasePushNotificationService)
                 .sendNotification(eq(invalidToken), any(), any());
+
+        doAnswer(invocation -> {
+            User user = invocation.getArgument(0);
+            String token = invocation.getArgument(1);
+            user.removeFcmToken(token);
+            return null;
+        }).when(fcmUtils).removeFcmToken(any(User.class), anyString());
 
         commentNotificationService.sendByCommentIsSubscribed(mockComment, mockChildComment);
 

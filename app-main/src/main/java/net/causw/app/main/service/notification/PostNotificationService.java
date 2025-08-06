@@ -8,6 +8,7 @@ import net.causw.app.main.domain.model.entity.notification.Notification;
 import net.causw.app.main.domain.model.entity.notification.NotificationLog;
 import net.causw.app.main.domain.model.entity.notification.UserPostSubscribe;
 import net.causw.app.main.domain.model.entity.post.Post;
+import net.causw.app.main.infrastructure.firebase.FcmUtils;
 import net.causw.app.main.repository.notification.NotificationLogRepository;
 import net.causw.app.main.repository.notification.NotificationRepository;
 import net.causw.app.main.repository.notification.UserPostSubscribeRepository;
@@ -30,13 +31,15 @@ public class PostNotificationService implements NotificationService{
     private final NotificationRepository notificationRepository;
     private final NotificationLogRepository notificationLogRepository;
     private final UserPostSubscribeRepository userPostSubscribeRepository;
+    private final FcmUtils fcmUtils;
+
     @Override
     public void send(User user, String targetToken, String title, String body) {
         try {
             firebasePushNotificationService.sendNotification(targetToken, title, body);
         } catch (FirebaseMessagingException e) {
             log.warn("FCM 전송 실패: {}, 이유: {}", targetToken, e.getMessage());
-            user.getFcmTokens().remove(targetToken);
+            fcmUtils.removeFcmToken(user, targetToken);
             log.info("오류 발생으로 FCM 토큰 제거됨: {}", targetToken);
         } catch (Exception e) {
             log.error("FCM 전송 중 알 수 없는 예외 발생: {}", e.getMessage(), e);
@@ -66,6 +69,7 @@ public class PostNotificationService implements NotificationService{
         userPostSubscribeList.stream()
                 .map(UserPostSubscribe::getUser)
                 .forEach(user -> {
+                    fcmUtils.cleanInvalidFcmTokens(user);
                     Set<String> copy = new HashSet<>(user.getFcmTokens());
                     copy.forEach(token -> send(user, token, postNotificationDto.getTitle(), postNotificationDto.getBody()));
                     saveNotificationLog(user, notification);
