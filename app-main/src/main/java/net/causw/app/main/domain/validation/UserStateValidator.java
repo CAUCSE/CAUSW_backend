@@ -38,6 +38,5 @@ public class UserStateValidator extends AbstractValidator {
                     "삭제된 사용자 입니다."
             );
         }
-
     }
 }

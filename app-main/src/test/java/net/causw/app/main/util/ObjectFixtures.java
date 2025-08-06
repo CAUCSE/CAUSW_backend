@@ -2,6 +2,8 @@ package net.causw.app.main.util;
 
 import java.util.List;
 import net.causw.app.main.domain.model.entity.board.Board;
+import net.causw.app.main.domain.model.entity.comment.ChildComment;
+import net.causw.app.main.domain.model.entity.comment.Comment;
 import net.causw.app.main.domain.model.entity.post.Post;
 import net.causw.app.main.domain.model.entity.semester.Semester;
 import net.causw.app.main.domain.model.entity.user.User;
@@ -113,6 +115,26 @@ public class ObjectFixtures {
         null,
         List.of()
     );
+  }
+
+  public static Comment getComment(User user, Post post) {
+    return Comment.of(
+            "테스트 댓글",
+            false,
+            false,
+            user,
+            post);
+
+  }
+
+  public static ChildComment getChildComment(User user, Comment parentComment) {
+    return ChildComment.of(
+            "테스트 대댓글",
+            false,
+            false,
+            user,
+            parentComment
+            );
   }
 
   public static List<VoteOption> getVoteOptions() {
