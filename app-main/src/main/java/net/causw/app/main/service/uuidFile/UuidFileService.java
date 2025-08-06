@@ -126,7 +126,7 @@ public class UuidFileService extends StorageManager {
         if (extension == null) {
             throw new BadRequestException(ErrorCode.INVALID_FILE_EXTENSION, MessageUtil.FILE_EXTENSION_IS_NULL);
         }
-        return extension;
+        return extension.toLowerCase();
     }
 
     // 파일 크기, 확장자, Null 검증
