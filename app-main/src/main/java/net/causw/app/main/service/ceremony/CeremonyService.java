@@ -7,6 +7,7 @@ import net.causw.app.main.domain.model.entity.notification.CeremonyNotificationS
 import net.causw.app.main.domain.model.enums.ceremony.CeremonyContext;
 import net.causw.app.main.domain.model.enums.user.Role;
 import net.causw.app.main.dto.notification.CeremonyListNotificationDto;
+import net.causw.app.main.dto.util.dtoMapper.NotificationDtoMapper;
 import net.causw.app.main.repository.notification.CeremonyNotificationSettingRepository;
 import net.causw.app.main.repository.ceremony.CeremonyRepository;
 import net.causw.app.main.domain.model.entity.user.User;
@@ -95,14 +96,14 @@ public class CeremonyService {
     public Page<CeremonyListNotificationDto> getUserCeremonyResponses(User user, CeremonyState state, Integer pageNum) {
         Page<Ceremony> ceremonies = ceremonyRepository.findAllByUserAndCeremonyStateOrderByCreatedAtDesc(user, state, pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE));
 
-        return ceremonies.map(CeremonyListNotificationDto::of);
+        return ceremonies.map(NotificationDtoMapper.INSTANCE::toCeremonyListNotificationDto);
     }
 
     @Transactional(readOnly = true)
     public Page<CeremonyListNotificationDto> getAllUserAwaitingCeremonyPage(Integer pageNum) {
         Page<Ceremony> ceremonies = ceremonyRepository.findByCeremonyStateOrderByCreatedAtDesc(CeremonyState.AWAIT, pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE));
 
-        return ceremonies.map(CeremonyListNotificationDto::of);
+        return ceremonies.map(NotificationDtoMapper.INSTANCE::toCeremonyListNotificationDto);
     }
 
     @Transactional(readOnly = true)
