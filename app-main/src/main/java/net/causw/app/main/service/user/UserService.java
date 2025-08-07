@@ -548,7 +548,7 @@ public class UserService {
 
     @Transactional
     public UserResponseDto signUp(UserCreateRequestDto userCreateRequestDto) {
-        // email, nickname, studentId 중복 검사
+        // email, nickname, phoneNumber, studentId 중복 검사
         this.userRepository.findByEmail(userCreateRequestDto.getEmail()).ifPresent(
                 email -> {
                     throw new BadRequestException(
@@ -563,6 +563,15 @@ public class UserService {
                     throw new BadRequestException(
                             ErrorCode.ROW_ALREADY_EXIST,
                             MessageUtil.NICKNAME_ALREADY_EXIST
+                    );
+                }
+        );
+
+        this.userRepository.findByPhoneNumber(userCreateRequestDto.getPhoneNumber()).ifPresent(
+                phoneNumber -> {
+                    throw new BadRequestException(
+                            ErrorCode.ROW_ALREADY_EXIST,
+                            MessageUtil.PHONE_NUMBER_ALREADY_EXIST
                     );
                 }
         );
@@ -683,6 +692,27 @@ public class UserService {
         return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(userFoundByStudentId.isPresent());
     }
 
+    /**
+     * 전화번호 중복 확인 메소드
+     *
+     * @param phoneNumber
+     * @return DuplicatedCheckResponseDto
+     */
+    @Transactional(readOnly = true)
+    public DuplicatedCheckResponseDto isDuplicatedPhoneNumber(String phoneNumber) {
+        Optional<User> userFoundByPhoneNumber = userRepository.findByPhoneNumber(phoneNumber);
+        if (userFoundByPhoneNumber.isPresent()) {
+            UserState state = userFoundByPhoneNumber.get().getState();
+            if (state.equals(UserState.INACTIVE) || state.equals(UserState.DROP)) {
+                throw new BadRequestException(
+                        ErrorCode.ROW_ALREADY_EXIST,
+                        MessageUtil.USER_ALREADY_APPLY
+                );
+            }
+        }
+        return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(userFoundByPhoneNumber.isPresent());
+    }
+
     @Transactional
     public UserResponseDto update(User user, UserUpdateRequestDto userUpdateRequestDto, MultipartFile profileImage) {
         User srcUser = userRepository.findById(user.getId()).orElseThrow(
@@ -701,6 +731,20 @@ public class UserService {
                         throw new BadRequestException(
                                 ErrorCode.ROW_ALREADY_EXIST,
                                 MessageUtil.NICKNAME_ALREADY_EXIST
+                        );
+                    }
+            );
+        }
+
+        // 전화번호가 변경되었을 때 중복 체크
+        if (srcUser.getPhoneNumber() == null
+                || !srcUser.getPhoneNumber().equals(userUpdateRequestDto.getPhoneNumber())
+        ) {
+            userRepository.findByPhoneNumber(userUpdateRequestDto.getPhoneNumber()).ifPresent(
+                    phoneNumber -> {
+                        throw new BadRequestException(
+                                ErrorCode.ROW_ALREADY_EXIST,
+                                MessageUtil.PHONE_NUMBER_ALREADY_EXIST
                         );
                     }
             );
