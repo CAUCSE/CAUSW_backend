@@ -1,6 +1,6 @@
 -- Migration: CreateDefaultCeremonyNotificationSettings
 
-INSERT INTO TB_CEREMONY_PUSH_NOTIFICATION (
+INSERT INTO tb_ceremony_push_notification (
     id,
     user_id,
     is_notification_active,
@@ -18,6 +18,6 @@ SELECT
 FROM tb_user u
 WHERE u.academic_status IN ('ENROLLED', 'GRADUATED', 'LEAVE_OF_ABSENCE')
   AND NOT EXISTS (
-    SELECT 1 FROM TB_CEREMONY_PUSH_NOTIFICATION cpn
+    SELECT 1 FROM tb_ceremony_push_notification cpn
     WHERE cpn.user_id = u.id
 );
