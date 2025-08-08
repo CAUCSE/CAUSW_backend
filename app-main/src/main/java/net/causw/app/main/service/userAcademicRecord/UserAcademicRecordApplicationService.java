@@ -262,6 +262,16 @@ public class UserAcademicRecordApplicationService {
                 createUserAcademicRecordApplicationRequestDto.getGraduationType());
             userRepository.save(user);
 
+            // 경조사 알림 설정 기본값 생성
+            if (!ceremonyNotificationSettingRepository.existsByUser(user)) {
+                CreateCeremonyNotificationSettingDto defaultDto = new CreateCeremonyNotificationSettingDto(
+                        Collections.emptySet(),
+                        true,
+                        true
+                );
+                ceremonyService.createCeremonyNotificationSettings(user, defaultDto);
+            }
+
             userAcademicRecordLog = UserAcademicRecordLog.createWithGraduation(
                 user,
                 user,
@@ -280,6 +290,16 @@ public class UserAcademicRecordApplicationService {
             // 학적 상태 변경
             user.setAcademicStatus(createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus());
             userRepository.save(user);
+
+            // 경조사 알림 설정 기본값 생성
+            if (!ceremonyNotificationSettingRepository.existsByUser(user)) {
+                CreateCeremonyNotificationSettingDto defaultDto = new CreateCeremonyNotificationSettingDto(
+                        Collections.emptySet(),
+                        true,
+                        true
+                );
+                ceremonyService.createCeremonyNotificationSettings(user, defaultDto);
+            }
 
             userAcademicRecordLog = UserAcademicRecordLog.create(
                 user,
