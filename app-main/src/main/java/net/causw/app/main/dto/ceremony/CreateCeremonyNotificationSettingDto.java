@@ -19,4 +19,11 @@ public class CreateCeremonyNotificationSettingDto {
     @NotNull
     @Schema(description = "푸시알람 수신 여부에 대한 flag")
     private boolean notificationActive;
+
+    // 생성자
+    public CreateCeremonyNotificationSettingDto(Set<String> subscribedAdmissionYears, boolean setAll, boolean notificationActive) {
+        this.subscribedAdmissionYears = subscribedAdmissionYears;
+        this.setAll = setAll;
+        this.notificationActive = notificationActive;
+    }
 }
