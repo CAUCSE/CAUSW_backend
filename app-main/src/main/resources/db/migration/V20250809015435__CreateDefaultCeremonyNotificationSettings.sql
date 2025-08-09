@@ -17,7 +17,13 @@ SELECT
     NOW() as updated_at
 FROM tb_user u
 WHERE u.academic_status IN ('ENROLLED', 'GRADUATED', 'LEAVE_OF_ABSENCE')
-  AND NOT EXISTS (
+AND u.state = 'ACTIVE'
+AND EXISTS (
+    SELECT 1 FROM user_roles ur
+    WHERE ur.user_id = u.id
+    AND ur.role != 'NONE'
+)
+AND NOT EXISTS (
     SELECT 1 FROM tb_ceremony_push_notification cpn
     WHERE cpn.user_id = u.id
 );
