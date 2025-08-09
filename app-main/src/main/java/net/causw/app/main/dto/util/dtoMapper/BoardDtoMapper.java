@@ -53,11 +53,11 @@ public interface BoardDtoMapper {
     @Mapping(target = "isAnonymousAllowed", source = "boardApply.isAnonymousAllowed")
     @Mapping(target = "user", source = "user")
     @Mapping(target = "circleResponseDto", source = "circleResponseDto")
-    NormalBoardApplyResponseDto toNormalBoardApplyResponseDto(BoardApply boardApply, UserResponseDto user, CircleResponseDto circleResponseDto);
+    BoardApplyResponseDto toBoardApplyResponseDto(BoardApply boardApply, UserResponseDto user, CircleResponseDto circleResponseDto);
 
     @Mapping(target = "id", source = "boardApply.id")
     @Mapping(target = "boardName", source = "boardApply.boardName")
-    NormalBoardAppliesResponseDto toNormalBoardAppliesResponseDto(BoardApply boardApply);
+    BoardAppliesResponseDto toBoardAppliesResponseDto(BoardApply boardApply);
 
 
 

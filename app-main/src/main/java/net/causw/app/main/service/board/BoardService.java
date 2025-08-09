@@ -6,7 +6,6 @@ import net.causw.app.main.domain.model.entity.board.BoardApply;
 import net.causw.app.main.domain.model.entity.circle.Circle;
 import net.causw.app.main.domain.model.entity.circle.CircleMember;
 import net.causw.app.main.domain.model.entity.notification.UserBoardSubscribe;
-import net.causw.app.main.domain.model.enums.user.RoleGroup;
 import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.dto.circle.CircleResponseDto;
 import net.causw.app.main.dto.user.UserResponseDto;
@@ -172,9 +171,9 @@ public class BoardService {
     @Transactional
     public void applyBoard(
             User creator,
-            NormalBoardApplyRequestDto normalBoardApplyRequestDto
+            BoardApplyRequestDto boardApplyRequestDto
     ) {
-        if (boardRepository.existsByName(normalBoardApplyRequestDto.getBoardName())) {
+        if (boardRepository.existsByName(boardApplyRequestDto.getBoardName())) {
             throw new BadRequestException(
                     ErrorCode.ROW_ALREADY_EXIST,
                     MessageUtil.BOARD_NAME_ALREADY_EXISTS
@@ -183,11 +182,11 @@ public class BoardService {
 
         BoardApply newBoardApply = BoardApply.of(
                 creator,
-                normalBoardApplyRequestDto.getBoardName(),
-                normalBoardApplyRequestDto.getDescription(),
+                boardApplyRequestDto.getBoardName(),
+                boardApplyRequestDto.getDescription(),
                 StaticValue.BOARD_NAME_APP_FREE,
-                normalBoardApplyRequestDto.getIsAnonymousAllowed(),
-                getCircle(normalBoardApplyRequestDto.getCircleId())
+                boardApplyRequestDto.getIsAnonymousAllowed(),
+                getCircle(boardApplyRequestDto.getCircleId())
         );
 
         boardApplyRepository.save(newBoardApply);
@@ -243,16 +242,16 @@ public class BoardService {
     }
 
     @Transactional(readOnly = true)
-    public List<NormalBoardAppliesResponseDto> findAllBoardApply() {
+    public List<BoardAppliesResponseDto> findAllBoardApply() {
         // 관리자, 학생회장, 부학생회장만 게시판 관리 기능 사용 가능
         return this.boardApplyRepository.findAllByAcceptStatus(BoardApplyStatus.AWAIT)
                 .stream()
-                .map(BoardDtoMapper.INSTANCE::toNormalBoardAppliesResponseDto)
+                .map(BoardDtoMapper.INSTANCE::toBoardAppliesResponseDto)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public NormalBoardApplyResponseDto findBoardApplyByApplyId(String applyId) {
+    public BoardApplyResponseDto findBoardApplyByApplyId(String applyId) {
         // 관리자, 학생회장, 부학생회장만 게시판 관리 기능 사용 가능
         BoardApply boardApply = this.boardApplyRepository.findById(applyId)
                 .orElseThrow(() -> new BadRequestException(
@@ -260,11 +259,11 @@ public class BoardService {
                         MessageUtil.APPLY_NOT_FOUND
                 ));
 
-        return toNormalBoardApplyResponseDto(boardApply);
+        return toBoardApplyResponseDto(boardApply);
     }
 
     @Transactional
-    public NormalBoardApplyResponseDto accept(String boardApplyId) {
+    public BoardApplyResponseDto accept(String boardApplyId) {
         BoardApply boardApply = this.boardApplyRepository.findById(boardApplyId)
                 .orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -300,11 +299,11 @@ public class BoardService {
 
         this.boardRepository.save(newBoard);
 
-        return toNormalBoardApplyResponseDto(boardApply);
+        return toBoardApplyResponseDto(boardApply);
     }
 
     @Transactional
-    public NormalBoardApplyResponseDto reject(String boardApplyId) {
+    public BoardApplyResponseDto reject(String boardApplyId) {
         BoardApply boardApply = this.boardApplyRepository.findById(boardApplyId)
                 .orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -328,7 +327,7 @@ public class BoardService {
         boardApply.updateAcceptStatus(BoardApplyStatus.REJECT); // 해당 boardApply의 상태를 REJECT로 변경
         this.boardApplyRepository.save(boardApply);
 
-        return toNormalBoardApplyResponseDto(boardApply);
+        return toBoardApplyResponseDto(boardApply);
     }
 
     @Transactional
@@ -483,13 +482,13 @@ public class BoardService {
         );
     }
 
-    private NormalBoardApplyResponseDto toNormalBoardApplyResponseDto(BoardApply boardApply) {
+    private BoardApplyResponseDto toBoardApplyResponseDto(BoardApply boardApply) {
         UserResponseDto userResponseDto = UserDtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null);
         CircleResponseDto circleResponseDto = Optional.ofNullable(boardApply.getCircle())
             .map(CircleDtoMapper.INSTANCE::toCircleResponseDto)
             .orElse(null);
 
-        return BoardDtoMapper.INSTANCE.toNormalBoardApplyResponseDto(
+        return BoardDtoMapper.INSTANCE.toBoardApplyResponseDto(
             boardApply,
             userResponseDto,
             circleResponseDto

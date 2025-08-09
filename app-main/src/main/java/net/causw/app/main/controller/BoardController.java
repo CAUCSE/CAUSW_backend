@@ -92,10 +92,10 @@ public class BoardController {
             @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
     })
     public void applyBoard(
-            @RequestBody @Valid NormalBoardApplyRequestDto normalBoardApplyRequestDto,
+            @RequestBody @Valid BoardApplyRequestDto boardApplyRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        this.boardService.applyBoard(userDetails.getUser(), normalBoardApplyRequestDto);
+        this.boardService.applyBoard(userDetails.getUser(), boardApplyRequestDto);
     }
 
 
@@ -131,7 +131,7 @@ public class BoardController {
             @ApiResponse(responseCode = "4109", description = "가입이 거절된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
             @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
     })
-    public List<NormalBoardAppliesResponseDto> findAllBoardApply() {
+    public List<BoardAppliesResponseDto> findAllBoardApply() {
         return this.boardService.findAllBoardApply();
     }
 
@@ -147,7 +147,7 @@ public class BoardController {
             @ApiResponse(responseCode = "4109", description = "가입이 거절된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
             @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
     })
-    public NormalBoardApplyResponseDto findBoardApplyById(
+    public BoardApplyResponseDto findBoardApplyById(
             @PathVariable("id") String id
     ) {
         return this.boardService.findBoardApplyByApplyId(id);
@@ -166,7 +166,7 @@ public class BoardController {
             @ApiResponse(responseCode = "4109", description = "가입이 거절된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
             @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
     })
-    public NormalBoardApplyResponseDto acceptApply(
+    public BoardApplyResponseDto acceptApply(
             @PathVariable("applyId") String applyId
     ) {
         return this.boardService.accept(applyId);
@@ -186,7 +186,7 @@ public class BoardController {
             @ApiResponse(responseCode = "4109", description = "가입이 거절된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
             @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
     })
-    public NormalBoardApplyResponseDto rejectApply(
+    public BoardApplyResponseDto rejectApply(
             @PathVariable("applyId") String applyId
     ) {
         return this.boardService.reject(applyId);
