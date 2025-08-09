@@ -6,6 +6,7 @@ import net.causw.app.main.domain.model.entity.board.BoardApply;
 import net.causw.app.main.domain.model.entity.circle.Circle;
 import net.causw.app.main.domain.model.entity.circle.CircleMember;
 import net.causw.app.main.domain.model.entity.notification.UserBoardSubscribe;
+import net.causw.app.main.domain.model.enums.user.RoleGroup;
 import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.repository.board.BoardApplyRepository;
 import net.causw.app.main.repository.board.BoardRepository;
@@ -167,7 +168,7 @@ public class BoardService {
     }
 
     @Transactional
-    public void applyNormalBoard(
+    public void applyBoard(
             User creator,
             NormalBoardApplyRequestDto normalBoardApplyRequestDto
     ) {
@@ -181,26 +182,6 @@ public class BoardService {
         Circle circle = ( normalBoardApplyRequestDto.getCircleId() == null || normalBoardApplyRequestDto.getCircleId().isEmpty() ) ?
                 null :
                 getCircle(normalBoardApplyRequestDto.getCircleId());
-
-        if (creator.getRoles().contains(Role.ADMIN) ||
-                creator.getRoles().contains(Role.PRESIDENT) ||
-                creator.getRoles().contains(Role.VICE_PRESIDENT)
-        ) {
-            List<String> createRoleList = new ArrayList<>();
-            createRoleList.add("ALL"); // 일반 사용자의 게시판 신청은 항상 글 작성 권한이 '상관없음'임
-            Board newBoard = Board.of(
-                    normalBoardApplyRequestDto.getBoardName(),
-                    normalBoardApplyRequestDto.getDescription(),
-                    createRoleList,
-                    StaticValue.BOARD_NAME_APP_FREE,
-                    normalBoardApplyRequestDto.getIsAnonymousAllowed(),
-                    circle
-            );
-
-            boardRepository.save(newBoard);
-
-            return;
-        }
 
         BoardApply newBoardApply = BoardApply.of(
                 creator,
@@ -226,26 +207,40 @@ public class BoardService {
             );
         }
 
-        if ( !(boardCreateRequestDto.getBoardCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE) ||
-            boardCreateRequestDto.getBoardCategory().equals(StaticValue.BOARD_NAME_APP_FREE))
-        ) {
-            throw new BadRequestException(
-                    ErrorCode.INVALID_BOARD_CATEGORY,
-                    MessageUtil.INVALID_BOARD_CATEGORY
+        String circleId = boardCreateRequestDto.getCircleId();
+        Circle circle = ( circleId == null || circleId.isEmpty() ) ?
+            null :
+            getCircle(boardCreateRequestDto.getCircleId());
+
+        String boardCategory = boardCreateRequestDto.getBoardCategory();
+
+        Board newBoard;
+        if (StaticValue.BOARD_NAME_APP_FREE.equals(boardCategory)) {
+            newBoard = Board.of(
+                boardCreateRequestDto.getBoardName(),
+                boardCreateRequestDto.getDescription(),
+                StaticValue.BOARD_NAME_APP_FREE,
+                boardCreateRequestDto.getIsAnonymousAllowed(),
+                circle
             );
-        }
 
-
-        Board newBoard = Board.of(
+        } else if (StaticValue.BOARD_NAME_APP_NOTICE.equals(boardCategory)) {
+            newBoard = Board.createNoticeBoard(
                 boardCreateRequestDto.getBoardName(),
                 boardCreateRequestDto.getDescription(),
                 boardCreateRequestDto.getCreateRoleList(),
                 boardCreateRequestDto.getBoardCategory(),
                 boardCreateRequestDto.getIsAnonymousAllowed(),
-                ( boardCreateRequestDto.getCircleId() == null || boardCreateRequestDto.getCircleId().isEmpty() ) ?
-                        null :
-                        getCircle(boardCreateRequestDto.getCircleId())
-        );
+                boardCreateRequestDto.getIsAlumni(),
+                circle
+            );
+
+        } else {
+            throw new BadRequestException(
+                ErrorCode.INVALID_BOARD_CATEGORY,
+                MessageUtil.INVALID_BOARD_CATEGORY
+            );
+        }
 
         BoardResponseDto boardResponseDto = toBoardResponseDto(boardRepository.save(newBoard), creator.getRoles());
 
@@ -304,14 +299,9 @@ public class BoardService {
         boardApply.updateAcceptStatus(BoardApplyStatus.ACCEPTED); // 해당 boardApply의 상태를 ACCEPTED로 변경
         this.boardApplyRepository.save(boardApply);
 
-        List<String> createRoleList = new ArrayList<>(Arrays.stream(boardApply.getCreateRoles().split(",")).toList());
-        // TODO: Board.of 메서드에서 정상적으로 createRole 받을 수 있도록 수정 필요
-        //createRoleList.add("ALL"); // 일반 사용자의 게시판 신청은 항상 글 작성 권한이 '상관없음'임 -> Board.of에서 처리
-
-        Board newBoard = Board.of(
+        Board newBoard = Board.of( // 일반 게시판 생성
                 boardApply.getBoardName(),
                 boardApply.getDescription(),
-                createRoleList,
                 boardApply.getCategory(),
                 boardApply.getIsAnonymousAllowed(),
                 boardApply.getCircle() == null ? null : getCircle(boardApply.getCircle().getId())
@@ -542,6 +532,7 @@ public class BoardService {
         Board board = getBoard(boardId);
         List<User> allUsers = userRepository.findAll();
 
+        // TODO: isAlumni가 true라면 졸업생에게도 구독 정보 생성
         List<UserBoardSubscribe> subscriptions = allUsers.stream()
                 .map(user -> UserBoardSubscribe.of(user, board, true))
                 .collect(Collectors.toList());
@@ -563,6 +554,4 @@ public class BoardService {
 
         return BoardDtoMapper.INSTANCE.toBoardSubscribeResponseDto(subscription);
     }
-
-
 }

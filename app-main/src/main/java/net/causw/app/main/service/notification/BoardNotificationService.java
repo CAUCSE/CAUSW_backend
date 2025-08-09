@@ -57,6 +57,7 @@ public class BoardNotificationService implements NotificationService {
         notificationLogRepository.save(NotificationLog.of(user, notification));
     }
 
+    // TODO: 알림 전송전에 게시판이 졸업생에게 표출되는지 확인 + 졸업생이 구독중이라면 구독 취소
     @Async("asyncExecutor")
     @Transactional
     public void sendByBoardIsSubscribed(Board board, Post post){

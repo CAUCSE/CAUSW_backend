@@ -95,7 +95,7 @@ public class BoardController {
             @RequestBody @Valid NormalBoardApplyRequestDto normalBoardApplyRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        this.boardService.applyNormalBoard(userDetails.getUser(), normalBoardApplyRequestDto);
+        this.boardService.applyBoard(userDetails.getUser(), normalBoardApplyRequestDto);
     }
 
 
