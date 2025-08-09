@@ -8,6 +8,8 @@ import net.causw.app.main.domain.model.entity.circle.CircleMember;
 import net.causw.app.main.domain.model.entity.notification.UserBoardSubscribe;
 import net.causw.app.main.domain.model.enums.user.RoleGroup;
 import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.dto.circle.CircleResponseDto;
+import net.causw.app.main.dto.user.UserResponseDto;
 import net.causw.app.main.repository.board.BoardApplyRepository;
 import net.causw.app.main.repository.board.BoardRepository;
 import net.causw.app.main.repository.circle.CircleMemberRepository;
@@ -179,17 +181,13 @@ public class BoardService {
             );
         }
 
-        Circle circle = ( normalBoardApplyRequestDto.getCircleId() == null || normalBoardApplyRequestDto.getCircleId().isEmpty() ) ?
-                null :
-                getCircle(normalBoardApplyRequestDto.getCircleId());
-
         BoardApply newBoardApply = BoardApply.of(
                 creator,
                 normalBoardApplyRequestDto.getBoardName(),
                 normalBoardApplyRequestDto.getDescription(),
                 StaticValue.BOARD_NAME_APP_FREE,
                 normalBoardApplyRequestDto.getIsAnonymousAllowed(),
-                circle
+                getCircle(normalBoardApplyRequestDto.getCircleId())
         );
 
         boardApplyRepository.save(newBoardApply);
@@ -207,11 +205,6 @@ public class BoardService {
             );
         }
 
-        String circleId = boardCreateRequestDto.getCircleId();
-        Circle circle = ( circleId == null || circleId.isEmpty() ) ?
-            null :
-            getCircle(boardCreateRequestDto.getCircleId());
-
         String boardCategory = boardCreateRequestDto.getBoardCategory();
 
         Board newBoard;
@@ -219,9 +212,9 @@ public class BoardService {
             newBoard = Board.of(
                 boardCreateRequestDto.getBoardName(),
                 boardCreateRequestDto.getDescription(),
-                StaticValue.BOARD_NAME_APP_FREE,
+                boardCategory,
                 boardCreateRequestDto.getIsAnonymousAllowed(),
-                circle
+                getCircle(boardCreateRequestDto.getCircleId())
             );
 
         } else if (StaticValue.BOARD_NAME_APP_NOTICE.equals(boardCategory)) {
@@ -232,7 +225,7 @@ public class BoardService {
                 boardCreateRequestDto.getBoardCategory(),
                 boardCreateRequestDto.getIsAnonymousAllowed(),
                 boardCreateRequestDto.getIsAlumni(),
-                circle
+                getCircle(boardCreateRequestDto.getCircleId())
             );
 
         } else {
@@ -267,11 +260,7 @@ public class BoardService {
                         MessageUtil.APPLY_NOT_FOUND
                 ));
 
-        return BoardDtoMapper.INSTANCE.toNormalBoardApplyResponseDto(
-                boardApply,
-                UserDtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null),
-                boardApply.getCircle() == null ? null : CircleDtoMapper.INSTANCE.toCircleResponseDto(boardApply.getCircle())
-        );
+        return toNormalBoardApplyResponseDto(boardApply);
     }
 
     @Transactional
@@ -304,16 +293,14 @@ public class BoardService {
                 boardApply.getDescription(),
                 boardApply.getCategory(),
                 boardApply.getIsAnonymousAllowed(),
-                boardApply.getCircle() == null ? null : getCircle(boardApply.getCircle().getId())
+                Optional.ofNullable(boardApply.getCircle())
+                    .map(circle -> getCircle(circle.getId()))
+                    .orElse(null)
         );
 
         this.boardRepository.save(newBoard);
 
-        return BoardDtoMapper.INSTANCE.toNormalBoardApplyResponseDto(
-                boardApply,
-                UserDtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null),
-                boardApply.getCircle() == null ? null : CircleDtoMapper.INSTANCE.toCircleResponseDto(boardApply.getCircle())
-        );
+        return toNormalBoardApplyResponseDto(boardApply);
     }
 
     @Transactional
@@ -341,11 +328,7 @@ public class BoardService {
         boardApply.updateAcceptStatus(BoardApplyStatus.REJECT); // 해당 boardApply의 상태를 REJECT로 변경
         this.boardApplyRepository.save(boardApply);
 
-        return BoardDtoMapper.INSTANCE.toNormalBoardApplyResponseDto(
-                boardApply,
-                UserDtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null),
-                boardApply.getCircle() == null ? null : CircleDtoMapper.INSTANCE.toCircleResponseDto(boardApply.getCircle())
-        );
+        return toNormalBoardApplyResponseDto(boardApply);
     }
 
     @Transactional
@@ -500,6 +483,19 @@ public class BoardService {
         );
     }
 
+    private NormalBoardApplyResponseDto toNormalBoardApplyResponseDto(BoardApply boardApply) {
+        UserResponseDto userResponseDto = UserDtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null);
+        CircleResponseDto circleResponseDto = Optional.ofNullable(boardApply.getCircle())
+            .map(CircleDtoMapper.INSTANCE::toCircleResponseDto)
+            .orElse(null);
+
+        return BoardDtoMapper.INSTANCE.toNormalBoardApplyResponseDto(
+            boardApply,
+            userResponseDto,
+            circleResponseDto
+        );
+    }
+
     private User getUser(String userId) {
         return userRepository.findById(userId).orElseThrow(
                 () -> new BadRequestException(
@@ -519,6 +515,10 @@ public class BoardService {
     }
 
     private Circle getCircle(String circleId) {
+        if (circleId == null || circleId.isEmpty()) {
+            return null;
+        }
+
         return circleRepository.findById(circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
