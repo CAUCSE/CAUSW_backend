@@ -9,6 +9,7 @@ import net.causw.app.main.domain.model.entity.notification.Notification;
 import net.causw.app.main.domain.model.entity.notification.NotificationLog;
 import net.causw.app.main.domain.model.entity.notification.UserBoardSubscribe;
 import net.causw.app.main.domain.model.entity.post.Post;
+import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.infrastructure.firebase.FcmUtils;
 import net.causw.app.main.infrastructure.redis.RedisUtils;
 import net.causw.app.main.repository.notification.NotificationLogRepository;
@@ -57,11 +58,14 @@ public class BoardNotificationService implements NotificationService {
         notificationLogRepository.save(NotificationLog.of(user, notification));
     }
 
-    // TODO: 알림 전송전에 게시판이 졸업생에게 표출되는지 확인 + 졸업생이 구독중이라면 구독 취소
     @Async("asyncExecutor")
     @Transactional
     public void sendByBoardIsSubscribed(Board board, Post post){
-        List<UserBoardSubscribe> userBoardSubscribeList = userBoardSubscribeRepository.findByBoardAndIsSubscribedTrue(board);
+        List<UserBoardSubscribe> userBoardSubscribeList = userBoardSubscribeRepository.findByBoardAndIsSubscribedTrue(board).stream()
+            .filter(subscribe -> board.getIsAlumni() // 동문회 허용 게시판인 경우 졸업생에게 게시판 알림
+                || !AcademicStatus.GRADUATED.equals(subscribe.getUser().getAcademicStatus())
+            ).toList();
+
         BoardNotificationDto boardNotificationDto = BoardNotificationDto.of(board, post);
 
         Notification notification = Notification.of(post.getWriter(), boardNotificationDto.getTitle(), boardNotificationDto.getBody(), NoticeType.BOARD, post.getId(), board.getId());
@@ -69,13 +73,13 @@ public class BoardNotificationService implements NotificationService {
         saveNotification(notification);
 
         userBoardSubscribeList.stream()
-                .map(UserBoardSubscribe::getUser)
-                .forEach(user -> {
-                    fcmUtils.cleanInvalidFcmTokens(user);
-                    Set<String> copy = new HashSet<>(user.getFcmTokens());
-                    copy.forEach(token -> send(user, token, boardNotificationDto.getTitle(), boardNotificationDto.getBody()));
-                    saveNotificationLog(user, notification);
-                });
-
+            .map(UserBoardSubscribe::getUser)
+            .forEach(user -> {
+                fcmUtils.cleanInvalidFcmTokens(user);
+                Set<String> copy = new HashSet<>(user.getFcmTokens());
+                copy.forEach(token -> send(user, token, boardNotificationDto.getTitle(), boardNotificationDto.getBody()));
+                saveNotificationLog(user, notification);
+            }
+        );
     }
 }
