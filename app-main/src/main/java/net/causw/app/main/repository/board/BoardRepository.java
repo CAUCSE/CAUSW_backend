@@ -29,4 +29,5 @@ public interface BoardRepository extends JpaRepository<Board, String> {
 
     List<Board> findByIsHomeTrueAndIsAlumniTrueAndIsDeletedFalse();
 
+    List<Board> findAllByCategory(String boardCategory);
 }

@@ -799,6 +799,7 @@ public class UserService {
                         this.updateStatus(circleMember.getId(), CircleMemberStatus.LEAVE)
                 );
 
+        // FIXME: UuidFile룰 참조하는 UserAcademicRecordLogAttachImage 먼저 삭제
         List<UserAcademicRecordApplication> userAcademicRecordApplicationList = userAcademicRecordApplicationRepository.findByUserId(deleteUser.getId());
 
         if (!userAcademicRecordApplicationList.isEmpty()) {

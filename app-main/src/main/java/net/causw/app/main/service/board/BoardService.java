@@ -1,11 +1,15 @@
 package net.causw.app.main.service.board;
 
 import lombok.RequiredArgsConstructor;
+import net.causw.app.main.domain.event.AcademicStatusChangeEvent;
+import net.causw.app.main.domain.event.InitialAcademicCertificationEvent;
 import net.causw.app.main.domain.model.entity.board.Board;
 import net.causw.app.main.domain.model.entity.board.BoardApply;
 import net.causw.app.main.domain.model.entity.circle.Circle;
 import net.causw.app.main.domain.model.entity.circle.CircleMember;
 import net.causw.app.main.domain.model.entity.notification.UserBoardSubscribe;
+import net.causw.app.main.domain.model.enums.user.RoleGroup;
+import net.causw.app.main.domain.model.enums.user.UserState;
 import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.dto.circle.CircleResponseDto;
 import net.causw.app.main.dto.user.UserResponseDto;
@@ -41,6 +45,7 @@ import net.causw.app.main.domain.validation.UserStateValidator;
 import net.causw.app.main.domain.validation.TargetIsNotDeletedValidator;
 import net.causw.app.main.domain.validation.ValidatorBucket;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.validation.Validator;
@@ -48,6 +53,8 @@ import jakarta.validation.Validator;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.springframework.transaction.event.TransactionalEventListener;
+
 @MeasureTime
 @Service
 @RequiredArgsConstructor
@@ -227,6 +234,8 @@ public class BoardService {
                 getCircle(boardCreateRequestDto.getCircleId())
             );
 
+            createBoardSubscribe(newBoard.getId());
+
         } else {
             throw new BadRequestException(
                 ErrorCode.INVALID_BOARD_CATEGORY,
@@ -235,8 +244,6 @@ public class BoardService {
         }
 
         BoardResponseDto boardResponseDto = toBoardResponseDto(boardRepository.save(newBoard), creator.getRoles());
-
-        createBoardSubscribe(newBoard.getId());
 
         return boardResponseDto;
     }
@@ -529,16 +536,24 @@ public class BoardService {
     @Transactional
     public void createBoardSubscribe(String boardId) {
         Board board = getBoard(boardId);
-        List<User> allUsers = userRepository.findAll();
 
-        // TODO: isAlumni가 true라면 졸업생에게도 구독 정보 생성
-        List<UserBoardSubscribe> subscriptions = allUsers.stream()
-                .map(user -> UserBoardSubscribe.of(user, board, true))
-                .collect(Collectors.toList());
+        // 게시판 접근 권한이 있는 인증 사용자 필터링
+        List<User> certifiedUsers = userRepository.findAllByState(UserState.ACTIVE).stream()
+            .filter(user -> user.getAcademicStatus() != AcademicStatus.UNDETERMINED // 학적 인증이 완료된 일반 사용자
+                    || RoleGroup.EXECUTIVES_AND_PROFESSOR.getRoles().stream() // 집행부/교수 역할의 사용자
+                        .anyMatch(user.getRoles()::contains))
+            .toList();
+
+
+        // 구독 생성
+        List<UserBoardSubscribe> subscriptions = certifiedUsers.stream()
+            .filter(user -> board.getIsAlumni() // 동문회 허용 게시판인 경우 졸업생 구독 허용
+                    || !AcademicStatus.GRADUATED.equals(user.getAcademicStatus()))
+            .map(user -> UserBoardSubscribe.of(user, board, true))
+            .collect(Collectors.toList());
 
         userBoardSubscribeRepository.saveAll(subscriptions);
     }
-
 
     @Transactional
     public BoardSubscribeResponseDto setBoardSubscribe(User user, String boardId, Boolean isSubscribed) {
@@ -552,5 +567,50 @@ public class BoardService {
                 .orElseGet(() -> userBoardSubscribeRepository.save(UserBoardSubscribe.of(user, board, isSubscribed)));
 
         return BoardDtoMapper.INSTANCE.toBoardSubscribeResponseDto(subscription);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @TransactionalEventListener
+    public void createNoticeBoardsSubscribe(InitialAcademicCertificationEvent event) {
+        User user = getUser(event.userId());
+
+        List<Board> noticeBoards = boardRepository.findAllByCategory(StaticValue.BOARD_NAME_APP_NOTICE);
+
+        // 구독중인 공지 게시판 id 조회
+        Set<String> subscribedNoticeBoardIds = userBoardSubscribeRepository.findByUserAndBoardIn(user, noticeBoards).stream()
+            .map(UserBoardSubscribe::getId).collect(Collectors.toSet());
+
+        // 구독 생성
+        List<UserBoardSubscribe> newSubscriptions;
+        if (AcademicStatus.GRADUATED.equals(user.getAcademicStatus())) {
+            newSubscriptions = noticeBoards.stream()
+                .filter(board -> !subscribedNoticeBoardIds.contains(board.getId()))
+                .filter(Board::getIsAlumni) // 졸업생인 경우 동문회 허용 게시판만 구독
+                .map(board -> UserBoardSubscribe.of(user, board, true))
+                .toList();
+
+        } else {
+            newSubscriptions = noticeBoards.stream()
+                .filter(board -> !subscribedNoticeBoardIds.contains(board.getId()))
+                .map(board -> UserBoardSubscribe.of(user, board, true))
+                .toList();
+        }
+
+        userBoardSubscribeRepository.saveAll(newSubscriptions);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @TransactionalEventListener
+    public void updateBoardsSubscribe(AcademicStatusChangeEvent event) {
+        if (!AcademicStatus.GRADUATED.equals(event.oldStatus())
+            && AcademicStatus.GRADUATED.equals(event.newStatus())) {
+
+            User user = getUser(event.userId());
+
+            // 졸업생이 된 경우, 동문회 게시판 외 구독 취소
+            userBoardSubscribeRepository.findByUserAndIsSubscribedTrue(user).stream()
+                .filter(subscribe -> !subscribe.getBoard().getIsAlumni())
+                .forEach(subscribe -> subscribe.setIsSubscribed(false));
+        }
     }
 }
