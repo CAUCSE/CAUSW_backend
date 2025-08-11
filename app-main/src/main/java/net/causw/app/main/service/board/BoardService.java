@@ -200,7 +200,7 @@ public class BoardService {
     }
 
     @Transactional
-    public BoardResponseDto createBoard(
+    public BoardResponseDto createNoticeBoard(
             User creator,
             BoardCreateRequestDto boardCreateRequestDto
     ) {
@@ -211,20 +211,8 @@ public class BoardService {
             );
         }
 
-        String boardCategory = boardCreateRequestDto.getBoardCategory();
-
-        Board newBoard;
-        if (StaticValue.BOARD_NAME_APP_FREE.equals(boardCategory)) {
-            newBoard = Board.of(
-                boardCreateRequestDto.getBoardName(),
-                boardCreateRequestDto.getDescription(),
-                boardCategory,
-                boardCreateRequestDto.getIsAnonymousAllowed(),
-                getCircle(boardCreateRequestDto.getCircleId())
-            );
-
-        } else if (StaticValue.BOARD_NAME_APP_NOTICE.equals(boardCategory)) {
-            newBoard = Board.createNoticeBoard(
+        Board newBoard = boardRepository.save(
+            Board.createNoticeBoard(
                 boardCreateRequestDto.getBoardName(),
                 boardCreateRequestDto.getDescription(),
                 boardCreateRequestDto.getCreateRoleList(),
@@ -232,20 +220,11 @@ public class BoardService {
                 boardCreateRequestDto.getIsAnonymousAllowed(),
                 boardCreateRequestDto.getIsAlumni(),
                 getCircle(boardCreateRequestDto.getCircleId())
-            );
+        ));
 
-            createBoardSubscribe(newBoard.getId());
+        createBoardSubscribe(newBoard.getId());
 
-        } else {
-            throw new BadRequestException(
-                ErrorCode.INVALID_BOARD_CATEGORY,
-                MessageUtil.INVALID_BOARD_CATEGORY
-            );
-        }
-
-        BoardResponseDto boardResponseDto = toBoardResponseDto(boardRepository.save(newBoard), creator.getRoles());
-
-        return boardResponseDto;
+        return toBoardResponseDto(newBoard, creator.getRoles());
     }
 
     @Transactional(readOnly = true)
@@ -581,20 +560,12 @@ public class BoardService {
             .map(UserBoardSubscribe::getId).collect(Collectors.toSet());
 
         // 구독 생성
-        List<UserBoardSubscribe> newSubscriptions;
-        if (AcademicStatus.GRADUATED.equals(user.getAcademicStatus())) {
-            newSubscriptions = noticeBoards.stream()
-                .filter(board -> !subscribedNoticeBoardIds.contains(board.getId()))
-                .filter(Board::getIsAlumni) // 졸업생인 경우 동문회 허용 게시판만 구독
-                .map(board -> UserBoardSubscribe.of(user, board, true))
-                .toList();
-
-        } else {
-            newSubscriptions = noticeBoards.stream()
-                .filter(board -> !subscribedNoticeBoardIds.contains(board.getId()))
-                .map(board -> UserBoardSubscribe.of(user, board, true))
-                .toList();
-        }
+        List<UserBoardSubscribe> newSubscriptions = noticeBoards.stream()
+            .filter(board -> !subscribedNoticeBoardIds.contains(board.getId())) // 이미 구독중인 게시판 제외
+            .filter(board -> board.getIsAlumni() // 졸업생인 경우 동문회 허용 게시판만 구독
+                || !AcademicStatus.GRADUATED.equals(user.getAcademicStatus()))
+            .map(board -> UserBoardSubscribe.of(user, board, true))
+            .toList();
 
         userBoardSubscribeRepository.saveAll(newSubscriptions);
     }

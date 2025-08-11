@@ -116,7 +116,7 @@ public class BoardController {
             @Valid @RequestBody BoardCreateRequestDto boardCreateRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return this.boardService.createBoard(userDetails.getUser(), boardCreateRequestDto);
+        return this.boardService.createNoticeBoard(userDetails.getUser(), boardCreateRequestDto);
     }
 
     @GetMapping(value = "/apply/list")
