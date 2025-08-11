@@ -1,5 +1,7 @@
 package net.causw.app.main.domain.validation;
 
+import jakarta.mail.Message;
+import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.UnauthorizedException;
 import net.causw.app.main.domain.model.enums.user.UserState;
@@ -21,21 +23,21 @@ public class UserStateValidator extends AbstractValidator {
         if (this.userState == UserState.DROP) {
             throw new UnauthorizedException(
                     ErrorCode.BLOCKED_USER,
-                    "추방된 사용자 입니다."
+                    MessageUtil.USER_DROPPED_CONTACT_EMAIL
             );
         }
 
         if (this.userState == UserState.INACTIVE) {
             throw new UnauthorizedException(
                     ErrorCode.INACTIVE_USER,
-                    "비활성화된 사용자 입니다."
+                    MessageUtil.USER_INACTIVE_CAN_REJOIN
             );
         }
 
         if (this.userState == UserState.DELETED) {
             throw new UnauthorizedException(
                     ErrorCode.DELETED_USER,
-                    "삭제된 사용자 입니다."
+                    MessageUtil.USER_DELETED
             );
         }
     }
