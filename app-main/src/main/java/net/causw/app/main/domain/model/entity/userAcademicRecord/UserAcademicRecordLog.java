@@ -26,7 +26,7 @@ public class UserAcademicRecordLog extends BaseEntity {
     @Column(name = "controlled_user_name", nullable = false)
     private String controlledUserName;
 
-    @Column(name = "controlled_user_student_id", nullable = false)
+    @Column(name = "controlled_user_student_id", nullable = true)
     private String controlledUserStudentId;
 
     @Column(name = "target_user_email", nullable = false)

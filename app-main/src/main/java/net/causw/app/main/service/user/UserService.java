@@ -546,50 +546,77 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+
     @Transactional
-    public UserResponseDto signUp(UserCreateRequestDto userCreateRequestDto) {
-        // email, nickname, studentId 중복 검사
-        this.userRepository.findByEmail(userCreateRequestDto.getEmail()).ifPresent(
-                email -> {
-                    throw new BadRequestException(
-                            ErrorCode.ROW_ALREADY_EXIST,
-                            MessageUtil.EMAIL_ALREADY_EXIST
-                    );
-                }
-        );
+    public UserResponseDto signUp(UserCreateRequestDto dto) {
 
-        this.userRepository.findByNickname(userCreateRequestDto.getNickname()).ifPresent(
-                nickname -> {
-                    throw new BadRequestException(
-                            ErrorCode.ROW_ALREADY_EXIST,
-                            MessageUtil.NICKNAME_ALREADY_EXIST
-                    );
-                }
-        );
+        // 이메일 우선 조회 -> 가장 기본이 되는 식별자
+        Optional<User> byEmail = userRepository.findByEmail(dto.getEmail());
+        if (byEmail.isPresent()) {
+            User user = byEmail.get();
+            UserState state = user.getState();
 
-        if (userCreateRequestDto.getStudentId() != null){
-            this.userRepository.findByStudentId(userCreateRequestDto.getStudentId()).ifPresent(
-                studentId -> {
-                    throw new BadRequestException(
-                        ErrorCode.ROW_ALREADY_EXIST,
-                        MessageUtil.STUDENT_ID_ALREADY_EXIST
-                    );
-                }
-            );
+            //AWAIT, REJECT, INACTIVE인 경우 정보 업데이트 진행
+            if (state == UserState.AWAIT || state == UserState.REJECT || state == UserState.INACTIVE) {
+                validateUniqueness(dto, user);
+                user.updateInfo(dto, passwordEncoder.encode(dto.getPassword()));
+                validateUser(dto, user);
+                userRepository.save(user);
+                return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
+            }
+            // ACTIVE, DROP은 가입 허용 X
+            else if (state == UserState.ACTIVE) {
+                throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.EMAIL_ALREADY_EXIST);
+            } else if (state == UserState.DROP) {
+                throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.USER_DROPPED_CONTACT_EMAIL);
+            }
+            throw new InternalServerException(ErrorCode.INTERNAL_SERVER, MessageUtil.INTERNAL_SERVER_ERROR);
         }
 
-        User user = User.from(userCreateRequestDto, passwordEncoder.encode(userCreateRequestDto.getPassword()));
-        this.userRepository.save(user);
+        // 유령 계정 복구 : 이메일로 사용자 찾지 못한 경우, 다른 필드의 오타로 인해 버려진 계정일 가능성 확인
+        Optional<User> byPhone = userRepository.findByPhoneNumber(dto.getPhoneNumber());
+        if (byPhone.isPresent()) {
+            User ghostuser = byPhone.get();
+            UserState state = ghostuser.getState();
 
-        // password, admission year 값 등 검사
+            // 찾은 계정이 AWAIT, REJECT, INACTIVE인지 확인
+            if (state == UserState.AWAIT || state == UserState.REJECT || state == UserState.INACTIVE) {
+
+                // 복구하려는 새 이메일이 다른 계정에서 사용중인지 확인(이중 확인)
+                userRepository.findByEmail(dto.getEmail()).ifPresent(gu -> {
+                    if (!gu.getId().equals(ghostuser.getId())) {
+                        throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.EMAIL_ALREADY_EXIST);
+                    }
+                });
+                validateUniqueness(dto, ghostuser);
+                ghostuser.updateInfo(dto, passwordEncoder.encode(dto.getPassword()));
+                validateUser(dto, ghostuser);
+                userRepository.save(ghostuser);
+                return UserDtoMapper.INSTANCE.toUserResponseDto(ghostuser, null, null);
+            } else if (state == UserState.ACTIVE) {
+                throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.PHONE_NUMBER_ALREADY_EXIST);
+            } else if (state == UserState.DROP) {
+                throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.USER_DROPPED_CONTACT_EMAIL);
+            }
+            throw new InternalServerException(ErrorCode.INTERNAL_SERVER, MessageUtil.INTERNAL_SERVER_ERROR);
+        }
+
+        // 신규 사용자 생성
+        validateUniqueness(dto, null);
+        User newUser = User.from(dto, passwordEncoder.encode(dto.getPassword()));
+        validateUser(dto, newUser);
+        userRepository.save(newUser);
+        return UserDtoMapper.INSTANCE.toUserResponseDto(newUser, null, null);
+    }
+
+    // 유효성 검사 메서드
+    private void validateUser(UserCreateRequestDto dto, User user) {
         ValidatorBucket.of()
                 .consistOf(ConstraintValidator.of(user, this.validator))
-                .consistOf(PasswordFormatValidator.of(userCreateRequestDto.getPassword()))
-                .consistOf(AdmissionYearValidator.of(userCreateRequestDto.getAdmissionYear()))
-                .consistOf(PhoneNumberFormatValidator.of(userCreateRequestDto.getPhoneNumber()))
+                .consistOf(PasswordFormatValidator.of(dto.getPassword()))
+                .consistOf(AdmissionYearValidator.of(dto.getAdmissionYear()))
+                .consistOf(PhoneNumberFormatValidator.of(dto.getPhoneNumber()))
                 .validate();
-
-        return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
     }
 
     @Transactional
@@ -621,7 +648,7 @@ public class UserService {
 
         return UserDtoMapper.INSTANCE.toUserSignInResponseDto(
                 jwtTokenProvider.createAccessToken(user.getId(), user.getRoles(), user.getState()),
-                jwtTokenProvider.createRefreshToken()
+                refreshToken
         );
     }
 
@@ -636,14 +663,19 @@ public class UserService {
         Optional<User> userFoundByEmail = userRepository.findByEmail(email);
         if (userFoundByEmail.isPresent()) {
             UserState state = userFoundByEmail.get().getState();
-            if (state.equals(UserState.INACTIVE) || state.equals(UserState.DROP)) {
+            // ACTIVE 상태일 경우 중복
+            if (state == UserState.ACTIVE ) {
+                return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(true);
+            }
+            // DROP 상태일 경우, 문의 메시지
+            else if (state == UserState.DROP) {
                 throw new BadRequestException(
                         ErrorCode.ROW_ALREADY_EXIST,
-                        MessageUtil.USER_ALREADY_APPLY
+                        MessageUtil.USER_DROPPED_CONTACT_EMAIL
                 );
             }
         }
-        return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(userFoundByEmail.isPresent());
+        return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(false);
     }
 
     /**
@@ -658,14 +690,20 @@ public class UserService {
         Optional<User> userFoundByNickname = userRepository.findByNickname(nickname);
         if (userFoundByNickname.isPresent()) {
             UserState state = userFoundByNickname.get().getState();
-            if (state.equals(UserState.INACTIVE) || state.equals(UserState.DROP)) {
+
+            // ACTIVE 상태일 경우 중복
+            if (state == UserState.ACTIVE ) {
+                return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(true);
+            }
+            // DROP 상태일 경우, 문의 메시지
+            else if (state == UserState.DROP) {
                 throw new BadRequestException(
                         ErrorCode.ROW_ALREADY_EXIST,
-                        MessageUtil.USER_ALREADY_APPLY
+                        MessageUtil.USER_DROPPED_CONTACT_EMAIL
                 );
             }
         }
-        return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(userFoundByNickname.isPresent());
+        return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(false);
     }
 
     @Transactional(readOnly = true)
@@ -673,14 +711,45 @@ public class UserService {
         Optional<User> userFoundByStudentId = userRepository.findByStudentId(studentId);
         if (userFoundByStudentId.isPresent()) {
             UserState state = userFoundByStudentId.get().getState();
-            if (state.equals(UserState.INACTIVE) || state.equals(UserState.DROP)) {
+            // ACTIVE 상태일 경우 중복
+            if (state == UserState.ACTIVE ) {
+                return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(true);
+            }
+            // DROP 상태일 경우, 문의 메시지
+            else if (state == UserState.DROP) {
                 throw new BadRequestException(
                         ErrorCode.ROW_ALREADY_EXIST,
-                        MessageUtil.USER_ALREADY_APPLY
+                        MessageUtil.USER_DROPPED_CONTACT_EMAIL
                 );
             }
         }
-        return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(userFoundByStudentId.isPresent());
+        return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(false);
+    }
+
+    /**
+     * 전화번호 중복 확인 메소드
+     *
+     * @param phoneNumber
+     * @return DuplicatedCheckResponseDto
+     */
+    @Transactional(readOnly = true)
+    public DuplicatedCheckResponseDto isDuplicatedPhoneNumber(String phoneNumber) {
+        Optional<User> userFoundByPhoneNumber = userRepository.findByPhoneNumber(phoneNumber);
+        if (userFoundByPhoneNumber.isPresent()) {
+            UserState state = userFoundByPhoneNumber.get().getState();
+            // ACTIVE 상태일 경우 중복
+            if (state == UserState.ACTIVE ) {
+                return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(true);
+            }
+            // DROP 상태일 경우, 문의 메시지
+            else if (state == UserState.DROP) {
+                throw new BadRequestException(
+                        ErrorCode.ROW_ALREADY_EXIST,
+                        MessageUtil.USER_DROPPED_CONTACT_EMAIL
+                );
+            }
+        }
+        return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(false);
     }
 
     @Transactional
@@ -701,6 +770,20 @@ public class UserService {
                         throw new BadRequestException(
                                 ErrorCode.ROW_ALREADY_EXIST,
                                 MessageUtil.NICKNAME_ALREADY_EXIST
+                        );
+                    }
+            );
+        }
+
+        // 전화번호가 변경되었을 때 중복 체크
+        if (srcUser.getPhoneNumber() == null
+                || !srcUser.getPhoneNumber().equals(userUpdateRequestDto.getPhoneNumber())
+        ) {
+            userRepository.findByPhoneNumber(userUpdateRequestDto.getPhoneNumber()).ifPresent(
+                    phoneNumber -> {
+                        throw new BadRequestException(
+                                ErrorCode.ROW_ALREADY_EXIST,
+                                MessageUtil.PHONE_NUMBER_ALREADY_EXIST
                         );
                     }
             );
@@ -950,6 +1033,53 @@ public class UserService {
         return UserDtoMapper.INSTANCE.toUserResponseDto(droppedUser, null, null);
     }
 
+    /**
+     * 사용자 정보의 유일성을 검증하는 헬퍼 메소드.
+     * DB에 저장하기 전에 호출 애플리케이션 단에서 미리 중복 확인
+     *
+     * @param dto         새로 가입 또는 수정하려는 정보
+     * @param currentUser 정보를 수정하려는 기존 사용자 (신규 가입 시에는 null)
+     */
+    private void validateUniqueness(UserCreateRequestDto dto, User currentUser) {
+        // 닉네임 검사
+        userRepository.findByNickname(dto.getNickname()).ifPresent(foundUser -> {
+            // 다른 유저가 이 닉네임을 이미 사용하고 있다면 에러 발생
+            if (currentUser == null || !foundUser.getId().equals(currentUser.getId())) {
+                if (foundUser.getState() == UserState.ACTIVE) {
+                    throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.NICKNAME_ALREADY_EXIST);
+                } else if (foundUser.getState() == UserState.DROP) {
+                    throw  new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.USER_DROPPED_CONTACT_EMAIL);
+                }
+            }
+        });
+
+        // 전화번호 검사
+        userRepository.findByPhoneNumber(dto.getPhoneNumber()).ifPresent(foundUser -> {
+            // 다른 유저가 이 전화번호를 이미 사용하고 있다면 에러 발생
+            if (currentUser == null || !foundUser.getId().equals(currentUser.getId())) {
+                if (foundUser.getState() == UserState.ACTIVE) {
+                    throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.PHONE_NUMBER_ALREADY_EXIST);
+                } else if (foundUser.getState() == UserState.DROP) {
+                    throw  new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.USER_DROPPED_CONTACT_EMAIL);
+                }
+            }
+        });
+
+        // 학번 검사
+        if (dto.getStudentId() != null) {
+            userRepository.findByStudentId(dto.getStudentId()).ifPresent(foundUser -> {
+                // 다른 유저가 이 학번을 이미 사용하고 있다면 에러 발생
+                if (currentUser == null || !foundUser.getId().equals(currentUser.getId())) {
+                    if (foundUser.getState() == UserState.ACTIVE) {
+                        throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.STUDENT_ID_ALREADY_EXIST);
+                    } else if (foundUser.getState() == UserState.DROP) {
+                        throw  new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.USER_DROPPED_CONTACT_EMAIL);
+                    }
+                }
+            });
+        }
+    }
+
     @Transactional(readOnly = true)
     public UserAdmissionResponseDto findAdmissionById(User requestUser, String admissionId) {
         Set<Role> roles = requestUser.getRoles();
@@ -1073,6 +1203,9 @@ public class UserService {
                 .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(UserRoleValidator.of(roles, Set.of()))
                 .validate();
+
+        //승인 전 중복체크
+        validateDuplicateBeforeAccept(userAdmission.getUser());
 
         // 사용자 역할을 NONE에서 COMMON으로 변경
         userRoleService.updateRole(userAdmission.getUser(), Role.COMMON);
@@ -1436,6 +1569,46 @@ public class UserService {
                     return UserDtoMapper.INSTANCE.toUserResponseDto(user);
                 }
             }).toList();
+    }
+    private void validateDuplicateBeforeAccept(User user) {
+        // 이메일, 닉네임, 전화번호, 학번이 다른 ACTIVE 사용자와 중복되는지 확인
+        userRepository.findByEmail(user.getEmail()).ifPresent(existingUser -> {
+            if (!existingUser.getId().equals(user.getId()) && existingUser.getState() == UserState.ACTIVE) {
+                throw new BadRequestException(
+                        ErrorCode.ROW_ALREADY_EXIST,
+                        MessageUtil.EMAIL_ALREADY_EXIST
+                );
+            }
+        });
+
+        userRepository.findByNickname(user.getNickname()).ifPresent(existingUser -> {
+            if (!existingUser.getId().equals(user.getId()) && existingUser.getState() == UserState.ACTIVE) {
+                throw new BadRequestException(
+                        ErrorCode.ROW_ALREADY_EXIST,
+                        MessageUtil.NICKNAME_ALREADY_EXIST
+                );
+            }
+        });
+
+        userRepository.findByPhoneNumber(user.getPhoneNumber()).ifPresent(existingUser -> {
+            if (!existingUser.getId().equals(user.getId()) && existingUser.getState() == UserState.ACTIVE) {
+                throw new BadRequestException(
+                        ErrorCode.ROW_ALREADY_EXIST,
+                        MessageUtil.PHONE_NUMBER_ALREADY_EXIST
+                );
+            }
+        });
+
+        if (user.getStudentId() != null) {
+            userRepository.findByStudentId(user.getStudentId()).ifPresent(existingUser -> {
+                if (!existingUser.getId().equals(user.getId()) && existingUser.getState() == UserState.ACTIVE) {
+                    throw new BadRequestException(
+                            ErrorCode.ROW_ALREADY_EXIST,
+                            MessageUtil.STUDENT_ID_ALREADY_EXIST
+                    );
+                }
+            });
+        }
     }
 
 

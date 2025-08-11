@@ -163,6 +163,19 @@ public class User extends BaseEntity {
         this.rejectionOrDropReason = reason;
     }
 
+    public void updateInfo(UserCreateRequestDto userCreateRequestDto, String encodedPassword) {
+        this.email = userCreateRequestDto.getEmail();
+        this.name = userCreateRequestDto.getName();
+        this.nickname = userCreateRequestDto.getNickname();
+        this.phoneNumber = userCreateRequestDto.getPhoneNumber();
+        this.studentId = userCreateRequestDto.getStudentId();
+        this.admissionYear = userCreateRequestDto.getAdmissionYear();
+        this.major = userCreateRequestDto.getMajor();
+        this.password = encodedPassword;
+        this.state = UserState.AWAIT;
+        this.rejectionOrDropReason = null; // 거절 사유 초기화
+    }
+
     public void removeFcmToken(String targetToken){
         this.fcmTokens.remove(targetToken);
     }

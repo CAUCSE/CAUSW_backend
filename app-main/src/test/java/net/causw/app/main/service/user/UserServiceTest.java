@@ -3,9 +3,14 @@ package net.causw.app.main.service.user;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+
+import jakarta.validation.Validator;
 import net.causw.app.main.domain.model.entity.post.LikePost;
 import net.causw.app.main.domain.model.entity.post.Post;
+import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.UserProfileImage;
+import net.causw.app.main.dto.user.UserCreateRequestDto;
 import net.causw.app.main.repository.post.FavoritePostRepository;
 import net.causw.app.main.repository.post.LikePostRepository;
 import net.causw.app.main.repository.post.PostRepository;
@@ -25,6 +30,8 @@ import net.causw.app.main.domain.model.enums.user.UserState;
 
 import net.causw.app.main.util.ObjectFixtures;
 import net.causw.global.constant.StaticValue;
+import net.causw.global.exception.BadRequestException;
+import net.causw.global.exception.ErrorCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -37,8 +44,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -46,10 +56,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -78,6 +85,12 @@ class UserServiceTest {
 
   @Mock
   HttpServletResponse response;
+
+  @Mock
+  PasswordEncoder passwordEncoder;
+
+  @Mock
+  Validator validator;
 
 
   @Nested
@@ -220,5 +233,140 @@ class UserServiceTest {
 
     }
 
+  }
+
+  @Nested
+  @DisplayName("회원가입 테스트")
+  class SignUpTest {
+
+    private UserCreateRequestDto signUpRequest;
+    private User existingUser;
+
+    @BeforeEach
+    void setUp() {
+      signUpRequest = ObjectFixtures.getUserCreateRequestDto();
+      existingUser = ObjectFixtures.getUser();
+
+      ReflectionTestUtils.setField(existingUser, "id", "testUserId");
+
+      // 공통 Mock
+      lenient().when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
+      lenient().when(userDtoMapper.toUserResponseDto(any(User.class), any(), any()))
+              .thenReturn(mock(UserResponseDto.class));
+    }
+
+    @Test
+    @DisplayName("신규 사용자 회원가입 성공")
+    void signUp_NewUser_Success() {
+      // given - 모든 조회에서 빈 결과 반환
+      given(userRepository.findByEmail(anyString())).willReturn(Optional.empty());
+      given(userRepository.findByPhoneNumber(anyString())).willReturn(Optional.empty());
+      given(userRepository.findByStudentId(anyString())).willReturn(Optional.empty());
+      given(userRepository.findByNickname(anyString())).willReturn(Optional.empty());
+
+      // when
+      UserResponseDto result = userService.signUp(signUpRequest);
+
+      // then
+      verify(userRepository, times(1)).save(any(User.class));
+      assertThat(result).isNotNull();
+    }
+
+    @Test
+    @DisplayName("거절 상태 사용자의 재가입 성공")
+    void signUp_RejectedUser_Success() {
+      // given
+      existingUser.setState(UserState.REJECT);
+      given(userRepository.findByEmail(signUpRequest.getEmail()))
+              .willReturn(Optional.of(existingUser));
+      // 다른 필드들은 동일한 사용자로 반환
+      given(userRepository.findByNickname(anyString())).willReturn(Optional.of(existingUser));
+      given(userRepository.findByPhoneNumber(anyString())).willReturn(Optional.of(existingUser));
+      given(userRepository.findByStudentId(anyString())).willReturn(Optional.of(existingUser));
+
+      // when
+      UserResponseDto result = userService.signUp(signUpRequest);
+
+      // then
+      verify(userRepository, times(1)).save(existingUser);
+      assertThat(existingUser.getState()).isEqualTo(UserState.AWAIT);
+      assertThat(result).isNotNull();
+    }
+
+    @Test
+    @DisplayName("이메일 오타로 인한 유령 계정 복구 성공")
+    void signUp_EmailTypoRecovery_Success() {
+      // given
+      User ghostUser = ObjectFixtures.getUser();
+      ghostUser.setState(UserState.REJECT);
+      ReflectionTestUtils.setField(ghostUser, "id", "ghostUserId");
+
+      // 잘못 입력한 이메일, 제대로 입력한 전화번호 상황
+      given(userRepository.findByEmail(signUpRequest.getEmail())).willReturn(Optional.empty());
+      given(userRepository.findByPhoneNumber(signUpRequest.getPhoneNumber()))
+              .willReturn(Optional.of(ghostUser));
+      // 다른 정보들은 유령 계정과 일치
+      given(userRepository.findByNickname(anyString())).willReturn(Optional.of(ghostUser));
+      given(userRepository.findByStudentId(anyString())).willReturn(Optional.of(ghostUser));
+
+      // when
+      UserResponseDto result = userService.signUp(signUpRequest);
+
+      // then - 유령 계정이 업데이트되어 저장되었는지 확인
+      verify(userRepository, times(1)).save(ghostUser);
+      assertThat(ghostUser.getEmail()).isEqualTo(signUpRequest.getEmail()); // 이메일 교정 확인
+      assertThat(ghostUser.getState()).isEqualTo(UserState.AWAIT);
+      assertThat(result).isNotNull();
+    }
+
+    @Test
+    @DisplayName("ACTIVE 유저와 동일한 이메일로 가입 시도 시 실패")
+    void signUp_DuplicateActiveUserEmail_ThrowsException() {
+      // given
+      existingUser.setState(UserState.ACTIVE);
+      given(userRepository.findByEmail(signUpRequest.getEmail()))
+              .willReturn(Optional.of(existingUser));
+
+      // when & then
+      BadRequestException exception = assertThrows(BadRequestException.class,
+              () -> userService.signUp(signUpRequest));
+
+      assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.ROW_ALREADY_EXIST);
+      verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("추방(DROP)된 사용자의 재가입 시도 시 실패")
+    void signUp_DroppedUser_ThrowsException() {
+      // given
+      existingUser.setState(UserState.DROP);
+      given(userRepository.findByEmail(signUpRequest.getEmail()))
+              .willReturn(Optional.of(existingUser));
+
+      // when & then
+      assertThrows(BadRequestException.class, () -> userService.signUp(signUpRequest));
+      verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("탈퇴(INACTIVE)한 사용자가 재가입 성공")
+    void signUp_InactiveUser_Success() {
+      // given
+      existingUser.setState(UserState.INACTIVE);
+      given(userRepository.findByEmail(signUpRequest.getEmail()))
+              .willReturn(Optional.of(existingUser));
+
+      given(userRepository.findByNickname(anyString())).willReturn(Optional.of(existingUser));
+      given(userRepository.findByPhoneNumber(anyString())).willReturn(Optional.of(existingUser));
+      given(userRepository.findByStudentId(anyString())).willReturn(Optional.of(existingUser));
+
+      // when
+      UserResponseDto result = userService.signUp(signUpRequest);
+
+      // then - 재가입 신청이 제대로 되었는지 확인
+      verify(userRepository, times(1)).save(existingUser);
+      assertThat(existingUser.getState()).isEqualTo(UserState.AWAIT);
+      assertThat(result).isNotNull();
+    }
   }
 }

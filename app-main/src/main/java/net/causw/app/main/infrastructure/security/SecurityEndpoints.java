@@ -38,6 +38,7 @@ public class SecurityEndpoints {
             of("/api/v1/users/{email}/is-duplicated", GET),
             of("/api/v1/users/{nickname}/is-duplicated-nickname", GET),
             of("/api/v1/users/{studentId}/is-duplicated-student-id", GET),
+            of("/api/v1/users/{phoneNumber}/is-duplicated-phone-number", GET),
             of("/api/v1/users/password", PUT),
             of("/api/v1/users/token/update", PUT),
             of("/api/v1/storage/**"),
