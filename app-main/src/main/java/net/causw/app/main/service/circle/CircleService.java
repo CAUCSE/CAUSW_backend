@@ -471,7 +471,6 @@ public class CircleService {
                 .consistOf(UserStateValidator.of(user.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(roles))
                 .consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-                .consistOf(StudentIdIsNullValidator.of(user.getStudentId()))
                 .validate();
 
         CircleMember circleMember = circleMemberRepository.findByUser_IdAndCircle_Id(user.getId(), circle.getId())

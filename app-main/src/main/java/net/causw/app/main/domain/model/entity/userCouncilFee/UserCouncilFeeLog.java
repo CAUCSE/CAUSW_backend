@@ -26,7 +26,7 @@ public class UserCouncilFeeLog extends BaseEntity {
     @Column(name = "controlled_user_name", nullable = false)
     private String controlledUserName;
 
-    @Column(name = "controlled_user_student_id", nullable = false)
+    @Column(name = "controlled_user_student_id", nullable = true)
     private String controlledUserStudentId;
 
     @Enumerated(EnumType.STRING)
@@ -49,7 +49,7 @@ public class UserCouncilFeeLog extends BaseEntity {
     @Column(name = "user_name", nullable = false)
     private String userName;
 
-    @Column(name = "student_id", nullable = false)
+    @Column(name = "student_id", nullable = true)
     private String studentId;
 
     @Column(name = "admission_year", nullable = false)
