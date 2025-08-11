@@ -347,5 +347,26 @@ class UserServiceTest {
       assertThrows(BadRequestException.class, () -> userService.signUp(signUpRequest));
       verify(userRepository, never()).save(any(User.class));
     }
+
+    @Test
+    @DisplayName("탈퇴(INACTIVE)한 사용자가 재가입 성공")
+    void signUp_InactiveUser_Success() {
+      // given
+      existingUser.setState(UserState.INACTIVE);
+      given(userRepository.findByEmail(signUpRequest.getEmail()))
+              .willReturn(Optional.of(existingUser));
+
+      given(userRepository.findByNickname(anyString())).willReturn(Optional.of(existingUser));
+      given(userRepository.findByPhoneNumber(anyString())).willReturn(Optional.of(existingUser));
+      given(userRepository.findByStudentId(anyString())).willReturn(Optional.of(existingUser));
+
+      // when
+      UserResponseDto result = userService.signUp(signUpRequest);
+
+      // then - 재가입 신청이 제대로 되었는지 확인
+      verify(userRepository, times(1)).save(existingUser);
+      assertThat(existingUser.getState()).isEqualTo(UserState.AWAIT);
+      assertThat(result).isNotNull();
+    }
   }
 }

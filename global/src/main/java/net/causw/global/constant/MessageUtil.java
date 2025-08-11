@@ -111,7 +111,7 @@ public class MessageUtil {
     public static final String GRANT_ROLE_NOT_ALLOWED = "권한을 부여할 수 없습니다.";
     public static final String DELEGATE_ROLE_NOT_ALLOWED = "권한을 위임할 수 없습니다.";
     public static final String USER_DROPPED_CONTACT_EMAIL = "추방된 계정입니다. 재가입 문의는 caucsedongne@gmail.com으로 연락해주세요";
-    public static final String USER_INACTIVE_CAN_REJOIN = "탈퇴한 계정입니다. 동일한 정보로 재가입해주세요";
+    public static final String USER_INACTIVE_CAN_REJOIN = "탈퇴한 계정입니다. 새롭게 회원가입을 진행해주세요";
     public static final String USER_DELETED =  "삭제된 계정입니다. 회원가입 페이지에서 새로운 정보로 가입해주세요.";
 
     // Flag
