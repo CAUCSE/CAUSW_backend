@@ -14,6 +14,8 @@ import java.util.Optional;
 public interface CeremonyNotificationSettingRepository extends JpaRepository<CeremonyNotificationSetting, String> {
     Optional<CeremonyNotificationSetting> findByUser(User user);
 
+    boolean existsByUser(User user);
+
     @Query("SELECT DISTINCT c FROM CeremonyNotificationSetting c " +
             "WHERE :admissionYear MEMBER OF c.subscribedAdmissionYears OR c.isSetAll = true")
     List<CeremonyNotificationSetting> findByAdmissionYearOrSetAll(@Param("admissionYear") Integer admissionYear);
