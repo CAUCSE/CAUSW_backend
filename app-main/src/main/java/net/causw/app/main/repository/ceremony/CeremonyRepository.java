@@ -11,8 +11,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface CeremonyRepository extends JpaRepository<Ceremony, String> {
-    Page<Ceremony> findAllByUserAndCeremonyState(User user, CeremonyState ceremonyState, Pageable pageable);
-    Page<Ceremony> findByCeremonyState(CeremonyState ceremonyState, Pageable pageable);
+    Page<Ceremony> findAllByUserAndCeremonyStateOrderByCreatedAtDesc(User user, CeremonyState ceremonyState, Pageable pageable);
+    Page<Ceremony> findByCeremonyStateOrderByCreatedAtDesc(CeremonyState ceremonyState, Pageable pageable);
 
     Optional<Ceremony> findByIdAndUser(String id, User user);
 

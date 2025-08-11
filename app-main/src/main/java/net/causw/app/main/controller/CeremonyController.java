@@ -3,9 +3,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.app.main.domain.model.enums.ceremony.CeremonyContext;
+import net.causw.app.main.dto.notification.CeremonyListNotificationDto;
 import net.causw.app.main.service.ceremony.CeremonyService;
 import net.causw.app.main.dto.ceremony.*;
-import net.causw.app.main.dto.notification.CeremonyNotificationDto;
 import net.causw.app.main.infrastructure.security.userdetails.CustomUserDetails;
 import net.causw.app.main.domain.model.enums.ceremony.CeremonyState;
 import org.springframework.data.domain.Page;
@@ -48,7 +48,7 @@ public class CeremonyController {
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "사용자 본인의 경조사 신청 내역 조회",
             description = "사용자 본인의 경조사 신청 내역을 조회합니다.")
-    public Page<CeremonyNotificationDto> getCeremonies(
+    public Page<CeremonyListNotificationDto> getCeremonies(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(name = "ceremonyState", defaultValue = "ACCEPT") CeremonyState state,
             @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum
@@ -62,7 +62,7 @@ public class CeremonyController {
     @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
     @Operation(summary = "전체 경조사 승인 대기 목록 조회(관리자용)",
             description = "전체 경조사 승인 대기 목록을 조회합니다.")
-    public Page<CeremonyNotificationDto> getAllUserAwaitingCeremonyPage(
+    public Page<CeremonyListNotificationDto> getAllUserAwaitingCeremonyPage(
             @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum
     ) {
         return ceremonyService.getAllUserAwaitingCeremonyPage(pageNum);
