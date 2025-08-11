@@ -94,10 +94,6 @@ public class ObjectFixtures {
     return Board.of(
         "boardName",
         "boardDescription",
-        List.of(
-            "ADMIN", "PRESIDENT", "VICE_PRESIDENT",
-            "COUNCIL", "LEADER_1", "LEADER_2", "LEADER_3", "LEADER_4",
-            "LEADER_CIRCLE", "LEADER_ALUMNI", "COMMON", "PROFESSOR"),
         "category",
         true,
         null

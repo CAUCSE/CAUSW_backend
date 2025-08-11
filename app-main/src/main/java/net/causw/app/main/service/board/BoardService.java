@@ -211,6 +211,13 @@ public class BoardService {
             );
         }
 
+        if (!StaticValue.BOARD_NAME_APP_NOTICE.equals(boardCreateRequestDto.getBoardCategory())) {
+            throw new BadRequestException(
+                ErrorCode.INVALID_PARAMETER,
+                MessageUtil.INVALID_BOARD_CATEGORY
+            );
+        }
+
         Board newBoard = boardRepository.save(
             Board.createNoticeBoard(
                 boardCreateRequestDto.getBoardName(),
@@ -518,7 +525,7 @@ public class BoardService {
 
         // 게시판 접근 권한이 있는 인증 사용자 필터링
         List<User> certifiedUsers = userRepository.findAllByState(UserState.ACTIVE).stream()
-            .filter(user -> user.getAcademicStatus() != AcademicStatus.UNDETERMINED // 학적 인증이 완료된 일반 사용자
+            .filter(user -> !AcademicStatus.UNDETERMINED.equals(user.getAcademicStatus()) // 학적 인증이 완료된 일반 사용자
                     || RoleGroup.EXECUTIVES_AND_PROFESSOR.getRoles().stream() // 집행부/교수 역할의 사용자
                         .anyMatch(user.getRoles()::contains))
             .toList();
