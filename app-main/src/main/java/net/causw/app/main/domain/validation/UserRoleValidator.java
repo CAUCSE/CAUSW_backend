@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.validation;
 
+import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.UnauthorizedException;
 import net.causw.app.main.domain.model.enums.user.Role;
@@ -35,7 +36,7 @@ public class UserRoleValidator extends AbstractValidator {
 
         throw new UnauthorizedException(
                 ErrorCode.API_NOT_ALLOWED,
-                "접근 권한이 없습니다. 사용자 역할: " + this.requestUserRoles + ", 허용된 역할: " + this.targetRoleSet
+                MessageUtil.API_NOT_ACCESSIBLE
         );
     }
 }
