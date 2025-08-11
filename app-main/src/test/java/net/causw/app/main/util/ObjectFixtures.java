@@ -20,20 +20,24 @@ import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
 public class ObjectFixtures {
 
   public static User getUser() {
-    UserCreateRequestDto userCreateRequestDto = new UserCreateRequestDto(
-        "email@cau.ac.kr",
-        "name",
-        "password",
-        "20002000",
-        2000,
-        "nickName",
-        "major",
-        "010-2000-2000"
-    );
-
+    UserCreateRequestDto userCreateRequestDto = getUserCreateRequestDto();
     User user = User.from(userCreateRequestDto, "password");
     user.setCurrentCompletedSemester(4);
     return user;
+  }
+
+
+  public static UserCreateRequestDto getUserCreateRequestDto() {
+    return new UserCreateRequestDto(
+            "email@cau.ac.kr",
+            "name",
+            "password123!",
+            "20002000",
+            2000,
+            "nickName",
+            "major",
+            "010-2000-2000"
+    );
   }
 
   public static CouncilFeeFakeUser getCouncilFeeFakeUser() {
