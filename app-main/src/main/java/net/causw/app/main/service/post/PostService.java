@@ -230,7 +230,7 @@ public class PostService {
 
         Board board = getBoard(postCreateRequestDto.getBoardId());
 
-        if (!board.getIs_anonymous_allowed() && postCreateRequestDto.getIsAnonymous()) {
+        if (!board.getIsAnonymousAllowed() && postCreateRequestDto.getIsAnonymous()) {
             throw new BadRequestException(
                 ErrorCode.INVALID_PARAMETER,
                 MessageUtil.ANONYMOUS_NOT_ALLOWED
