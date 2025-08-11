@@ -229,6 +229,14 @@ public class PostService {
         Set<Role> roles = creator.getRoles();
 
         Board board = getBoard(postCreateRequestDto.getBoardId());
+
+        if (!board.getIs_anonymous_allowed() && postCreateRequestDto.getIsAnonymous()) {
+            throw new BadRequestException(
+                ErrorCode.INVALID_PARAMETER,
+                MessageUtil.ANONYMOUS_NOT_ALLOWED
+            );
+        }
+
         List<String> createRoles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
 
         List<UuidFile> uuidFileList = (attachImageList == null || attachImageList.isEmpty()) ?
