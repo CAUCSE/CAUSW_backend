@@ -17,7 +17,7 @@ public class CouncilFeeFakeUser extends BaseEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "student_id", nullable = false)
+    @Column(name = "student_id", nullable = true)
     private String studentId;
 
     @Column(name = "phone_number", nullable = false)

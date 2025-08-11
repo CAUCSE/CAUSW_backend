@@ -164,6 +164,7 @@ public class User extends BaseEntity {
     }
 
     public void updateInfo(UserCreateRequestDto userCreateRequestDto, String encodedPassword) {
+        this.email = userCreateRequestDto.getEmail();
         this.name = userCreateRequestDto.getName();
         this.nickname = userCreateRequestDto.getNickname();
         this.phoneNumber = userCreateRequestDto.getPhoneNumber();
