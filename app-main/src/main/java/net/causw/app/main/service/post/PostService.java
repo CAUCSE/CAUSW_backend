@@ -225,18 +225,9 @@ public class PostService {
     //3. 이 게시판의 구독자들에게 sendByBoardIsSubscribed로 푸시 알림 보내기 & 서비스 알람 로그 저장하기
     @Transactional
     public  PostCreateResponseDto createPost(User creator, PostCreateRequestDto postCreateRequestDto, List<MultipartFile> attachImageList) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
         Set<Role> roles = creator.getRoles();
 
         Board board = getBoard(postCreateRequestDto.getBoardId());
-
-        if (!board.getIsAnonymousAllowed() && postCreateRequestDto.getIsAnonymous()) {
-            throw new BadRequestException(
-                ErrorCode.INVALID_PARAMETER,
-                MessageUtil.ANONYMOUS_NOT_ALLOWED
-            );
-        }
-
         List<String> createRoles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
 
         List<UuidFile> uuidFileList = (attachImageList == null || attachImageList.isEmpty()) ?
@@ -254,6 +245,9 @@ public class PostService {
                 uuidFileList
         );
 
+        validateAnonymousAllowed(board, postCreateRequestDto.getIsAnonymous());
+
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
         validatorBucket
                 .consistOf(UserStateValidator.of(creator.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(roles))
@@ -308,19 +302,10 @@ public class PostService {
             PostCreateWithFormRequestDto postCreateWithFormRequestDto,
             List<MultipartFile> attachImageList
     ) {
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
         Set<Role> roles = creator.getRoles();
 
         Board board = getBoard(postCreateWithFormRequestDto.getBoardId());
         List<String> createRoles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
-
-        if (board.getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
-            validatorBucket
-                    .consistOf(UserRoleValidator.of(
-                            roles,
-                            Set.of()
-                    ));
-        }
 
         List<UuidFile> uuidFileList = (attachImageList == null || attachImageList.isEmpty()) ?
                 new ArrayList<>() :
@@ -341,11 +326,17 @@ public class PostService {
                 uuidFileList
         );
 
-        Set<Role> targetRoleSet = Arrays.stream(board.getCreateRoles().split(","))
-                .map(String::trim) // 공백 제거
-                .map(Role::of) // Optional로 변환
-                .collect(Collectors.toSet());
-        System.out.println(targetRoleSet);
+        validateAnonymousAllowed(board, postCreateWithFormRequestDto.getIsAnonymous());
+
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+        if (board.getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
+            validatorBucket
+                .consistOf(UserRoleValidator.of(
+                    roles,
+                    Set.of()
+                ));
+        }
+
         validatorBucket
                 .consistOf(UserStateValidator.of(creator.getState()))
                 .consistOf(UserRoleIsNoneValidator.of(roles))
@@ -944,7 +935,7 @@ public class PostService {
 
         PostsResponseDto postsResponseDto = PostDtoMapper.INSTANCE.toPostsResponseDto(
                 post,
-                postRepository.countAllCommentByPost_Id(post.getId()),
+                getNumOfComments(post),
                 getNumOfPostLikes(post),
                 getNumOfPostFavorites(post),
                 postThumbnailFile,
@@ -961,9 +952,9 @@ public class PostService {
 
     private PostResponseDto toPostResponseDtoExtended(Post post, User user) {
         return PostDtoMapper.INSTANCE.toPostResponseDtoExtended(
-                postRepository.save(post),
+                post,
                 findCommentsByPostIdByPage(user, post, 0),
-                postRepository.countAllCommentByPost_Id(post.getId()),
+                getNumOfComments(post),
                 getNumOfPostLikes(post),
                 getNumOfPostFavorites(post),
                 isPostLiked(user, post.getId()),
@@ -1012,6 +1003,10 @@ public class PostService {
                 StatusPolicy.isUpdatable(childComment, user),
                 StatusPolicy.isDeletable(childComment, user, board)
         );
+    }
+
+    private Long getNumOfComments(Post post) {
+        return postRepository.countAllCommentByPost_Id(post.getId());
     }
 
     private Long getNumOfPostLikes(Post post){
@@ -1185,5 +1180,19 @@ public class PostService {
         validatorBucket
             .consistOf(UserStateIsDeletedValidator.of(post.getWriter().getState()))
             .validate();
+    }
+
+    /**
+     * 익명 글이 허용되지 않는 게시판에서 익명 글 작성 시 예외 처리
+     * @param board  글이 작성될 게시판
+     * @param isAnonymous 익명 글 여부
+     */
+    private void validateAnonymousAllowed(Board board, boolean isAnonymous) {
+        if (!board.getIsAnonymousAllowed() && isAnonymous) {
+            throw new BadRequestException(
+                ErrorCode.INVALID_PARAMETER,
+                MessageUtil.ANONYMOUS_NOT_ALLOWED
+            );
+        }
     }
 }
