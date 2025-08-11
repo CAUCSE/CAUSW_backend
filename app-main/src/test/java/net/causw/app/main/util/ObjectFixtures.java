@@ -1,6 +1,7 @@
 package net.causw.app.main.util;
 
 import java.util.List;
+import java.util.Set;
 import net.causw.app.main.domain.model.entity.board.Board;
 import net.causw.app.main.domain.model.entity.comment.ChildComment;
 import net.causw.app.main.domain.model.entity.comment.Comment;
@@ -12,10 +13,14 @@ import net.causw.app.main.domain.model.entity.userCouncilFee.CouncilFeeFakeUser;
 import net.causw.app.main.domain.model.entity.userCouncilFee.UserCouncilFee;
 import net.causw.app.main.domain.model.entity.vote.Vote;
 import net.causw.app.main.domain.model.entity.vote.VoteOption;
+import net.causw.app.main.domain.model.enums.user.Role;
+import net.causw.app.main.domain.model.enums.user.RoleGroup;
+import net.causw.app.main.domain.model.enums.user.UserState;
 import net.causw.app.main.dto.user.UserCreateRequestDto;
 import net.causw.app.main.domain.model.enums.semester.SemesterType;
 import net.causw.app.main.domain.model.enums.user.GraduationType;
 import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.global.constant.StaticValue;
 
 public class ObjectFixtures {
 
@@ -33,6 +38,15 @@ public class ObjectFixtures {
 
     User user = User.from(userCreateRequestDto, "password");
     user.setCurrentCompletedSemester(4);
+    return user;
+  }
+
+  public static User getCertifiedUser() {
+    User user = getUser();
+    user.setState(UserState.ACTIVE);
+    user.setAcademicStatus(AcademicStatus.ENROLLED);
+    user.setRoles(Set.of(Role.COMMON));
+
     return user;
   }
 
@@ -96,6 +110,18 @@ public class ObjectFixtures {
         "boardDescription",
         "category",
         true,
+        null
+    );
+  }
+
+  public static Board getNoticeBoard(boolean isAlumni) {
+    return Board.createNoticeBoard(
+        "noticeBoardName",
+        "boardDescription",
+        List.of("ADMIN", "PRESIDENT", "VICE_PRESIDENT"),
+        StaticValue.BOARD_NAME_APP_NOTICE,
+        false,
+        isAlumni,
         null
     );
   }
