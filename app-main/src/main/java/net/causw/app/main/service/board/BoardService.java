@@ -565,7 +565,8 @@ public class BoardService {
 
         // 구독중인 공지 게시판 id 조회
         Set<String> subscribedNoticeBoardIds = userBoardSubscribeRepository.findByUserAndBoardIn(user, noticeBoards).stream()
-            .map(UserBoardSubscribe::getId).collect(Collectors.toSet());
+            .map(subscribe -> subscribe.getBoard().getId())
+            .collect(Collectors.toSet());
 
         // 구독 생성
         List<UserBoardSubscribe> newSubscriptions = noticeBoards.stream()

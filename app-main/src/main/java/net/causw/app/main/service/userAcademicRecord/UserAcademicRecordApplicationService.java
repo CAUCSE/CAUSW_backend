@@ -4,7 +4,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import net.causw.app.main.domain.event.AcademicStatusChangeEvent;
 import net.causw.app.main.domain.event.InitialAcademicCertificationEvent;
-import net.causw.app.main.dto.ceremony.CreateCeremonyNotificationSettingDto;
 import net.causw.app.main.repository.notification.CeremonyNotificationSettingRepository;
 import net.causw.app.main.repository.user.UserRepository;
 import net.causw.app.main.repository.userAcademicRecord.UserAcademicRecordApplicationRepository;
@@ -39,9 +38,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+
 @MeasureTime
 @Service
 @Transactional(readOnly = true)
@@ -55,8 +54,6 @@ public class UserAcademicRecordApplicationService {
     private final SemesterService semesterService;
     private final UserAcademicRecordExcelService userAcademicRecordExcelService;
     private final ApplicationEventPublisher eventPublisher;
-    private final CeremonyNotificationSettingRepository ceremonyNotificationSettingRepository;
-    private final CeremonyService ceremonyService;
 
     public void exportUserAcademicRecordListToExcel(HttpServletResponse response) {
         String fileName = "학적상태명단";
@@ -186,16 +183,6 @@ public class UserAcademicRecordApplicationService {
             targetUser.setAcademicStatus(userAcademicRecordApplication.getTargetAcademicStatus());
             targetUser.setCurrentCompletedSemester(userAcademicRecordApplication.getTargetCompletedSemester());
             userRepository.save(targetUser);
-
-            // 경조사 알림 설정 기본값 생성
-            if (!ceremonyNotificationSettingRepository.existsByUser(targetUser)) {
-                CreateCeremonyNotificationSettingDto defaultDto = new CreateCeremonyNotificationSettingDto(
-                        Collections.emptySet(),
-                        true,
-                        true
-                );
-                ceremonyService.createCeremonyNotificationSettings(targetUser, defaultDto);
-            }
         }
 
         // 학적 증빙 신청서 상태 변경
@@ -267,16 +254,6 @@ public class UserAcademicRecordApplicationService {
                 createUserAcademicRecordApplicationRequestDto.getGraduationType());
             userRepository.save(user);
 
-            // 경조사 알림 설정 기본값 생성
-            if (!ceremonyNotificationSettingRepository.existsByUser(user)) {
-                CreateCeremonyNotificationSettingDto defaultDto = new CreateCeremonyNotificationSettingDto(
-                        Collections.emptySet(),
-                        true,
-                        true
-                );
-                ceremonyService.createCeremonyNotificationSettings(user, defaultDto);
-            }
-
             userAcademicRecordLog = UserAcademicRecordLog.createWithGraduation(
                 user,
                 user,
@@ -295,16 +272,6 @@ public class UserAcademicRecordApplicationService {
             // 학적 상태 변경
             user.setAcademicStatus(createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus());
             userRepository.save(user);
-
-            // 경조사 알림 설정 기본값 생성
-            if (!ceremonyNotificationSettingRepository.existsByUser(user)) {
-                CreateCeremonyNotificationSettingDto defaultDto = new CreateCeremonyNotificationSettingDto(
-                        Collections.emptySet(),
-                        true,
-                        true
-                );
-                ceremonyService.createCeremonyNotificationSettings(user, defaultDto);
-            }
 
             userAcademicRecordLog = UserAcademicRecordLog.create(
                 user,
