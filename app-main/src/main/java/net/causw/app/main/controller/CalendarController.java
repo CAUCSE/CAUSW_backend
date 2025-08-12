@@ -27,8 +27,7 @@ public class CalendarController {
     private final CalendarService calendarService;
 
     @GetMapping
-    @Operation(summary = "캘린더 조회 API", description = "캘린더 조회 API 입니다.")
-    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
+    @Operation(summary = "캘린더 조회 API", description = "캘린더 조회 API 입니다. 년도별 조회.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CalendarsResponseDto.class))),
             @ApiResponse(responseCode = "4000", description = "캘린더를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
