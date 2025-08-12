@@ -50,7 +50,7 @@ public class Board extends BaseEntity {
 
     @Column(name = "is_anonymous_allowed", nullable = false)
     @ColumnDefault("false")
-    private Boolean is_anonymous_allowed;
+    private Boolean isAnonymousAllowed;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "circle_id", nullable = true)
@@ -68,7 +68,7 @@ public class Board extends BaseEntity {
             String description,
             List<String> createRoleList,
             String category,
-            Boolean is_anonymous_allowed,
+            Boolean isAnonymousAllowed,
             Circle circle
     ) {
         if (createRoleList != null) {
@@ -112,7 +112,7 @@ public class Board extends BaseEntity {
                 .category(category)
                 .isDeleted(false)
                 .isDefault(false)
-                .is_anonymous_allowed(is_anonymous_allowed)
+                .isAnonymousAllowed(isAnonymousAllowed)
                 .circle(circle)
                 .postSet(new HashSet<>())
                 .isDefaultNotice(false)
