@@ -109,6 +109,15 @@ public class PostService {
 
     public PostResponseDto findPostById(User user, String postId) {
         Post post = getPost(postId);
+
+        // 삭제된 게시글 열람 차단
+        if (isPostDeleted(post)) {
+            throw new BadRequestException(
+                    ErrorCode.TARGET_DELETED,
+                    MessageUtil.POST_DELETED
+            );
+        }
+
         ValidatorBucket validatorBucket = initializeValidator(user, post.getBoard());
         validatorBucket.validate();
 
