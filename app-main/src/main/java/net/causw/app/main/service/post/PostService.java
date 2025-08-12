@@ -109,7 +109,9 @@ public class PostService {
 
     public PostResponseDto findPostById(User user, String postId) {
         Post post = getPost(postId);
+
         ValidatorBucket validatorBucket = initializeValidator(user, post.getBoard());
+        validatorBucket.consistOf(TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST));
         validatorBucket.validate();
 
         PostResponseDto postResponseDto = toPostResponseDtoExtended(post, user);

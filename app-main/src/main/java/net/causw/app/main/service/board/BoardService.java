@@ -367,6 +367,10 @@ public class BoardService {
         validatorBucket.validate();
 
         board.setIsDeleted(true);
+
+        // 해당 게시판의 모든 게시글을 삭제 처리
+        postRepository.deleteAllPostsByBoardId(boardId);
+
         return toBoardResponseDto(boardRepository.save(board), roles);
     }
 
