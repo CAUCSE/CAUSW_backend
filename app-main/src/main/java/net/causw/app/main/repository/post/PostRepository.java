@@ -6,6 +6,7 @@ import net.causw.app.main.domain.model.entity.post.Post;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -70,4 +71,10 @@ public interface PostRepository extends JpaRepository<Post, String> {
     
     //특정 게시판의 모든 게시글 조회 (해시 계산용)
     List<Post> findAllByBoardAndIsDeletedIsFalse(Board board);
+
+    // 게시판 삭제 시, 게시글도 함께 삭제
+    @Query("UPDATE Post p SET p.isDeleted = true " +
+            "WHERE p.board.id = :boardId AND p.isDeleted = false")
+    @Modifying
+    int deleteAllPostsByBoardId(@Param("boardId") String boardId);
 }
