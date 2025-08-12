@@ -7,6 +7,7 @@ import net.causw.app.main.domain.model.entity.circle.Circle;
 import net.causw.app.main.domain.model.entity.circle.CircleMember;
 import net.causw.app.main.domain.model.entity.form.*;
 import net.causw.app.main.domain.model.entity.post.Post;
+import net.causw.app.main.domain.model.enums.user.RoleGroup;
 import net.causw.app.main.repository.board.BoardRepository;
 import net.causw.app.main.repository.circle.CircleMemberRepository;
 import net.causw.app.main.repository.circle.CircleRepository;
@@ -65,7 +66,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static net.causw.app.main.dto.board.BoardOfCircleResponseDto.isWriteable;
 @MeasureTime
@@ -289,15 +289,16 @@ public class CircleService {
         circleRepository.save(circle);
 
         // Create boards of circle
-        Board noticeBoard = Board.of(
-                circle.getName() + "공지 게시판",
-                circle.getName() + "공지 게시판",
-                Stream.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT, Role.LEADER_CIRCLE)
-                        .map(Role::getValue)
-                        .collect(Collectors.toList()),
-                "동아리 공지 게시판",
-                false,
-                circle
+        List<String> createRoleList = RoleGroup.EXECUTIVES_AND_CIRCLE_LEADER.getRoles().stream().map(Role::getValue).toList();
+
+        Board noticeBoard = Board.createNoticeBoard(
+            circle.getName() + "공지 게시판",
+            circle.getName() + "공지 게시판",
+            createRoleList,
+            "동아리 공지 게시판",
+            false,
+            false,
+            circle
         );
         boardRepository.save(noticeBoard);
 

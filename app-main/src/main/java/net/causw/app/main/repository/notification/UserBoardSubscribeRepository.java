@@ -17,4 +17,11 @@ public interface UserBoardSubscribeRepository extends JpaRepository<UserBoardSub
 
     @EntityGraph(attributePaths = {"user"})
     List<UserBoardSubscribe> findByBoardAndIsSubscribedTrue(Board board);
+
+    @EntityGraph(attributePaths = {"board"})
+    List<UserBoardSubscribe> findByUserAndIsSubscribedTrue(User user);
+
+    List<UserBoardSubscribe> findByUserAndBoardIn(User user, List<Board> boards);
+
+    void deleteAllByUserAndBoard_IsAlumniFalse(User user);
 }

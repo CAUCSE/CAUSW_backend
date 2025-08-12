@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class NormalBoardAppliesResponseDto {
+public class BoardAppliesResponseDto {
     @Schema(description = "게시판 신청 id 값", example = "uuid 형식의 String 값입니다.")
     private String id;
 

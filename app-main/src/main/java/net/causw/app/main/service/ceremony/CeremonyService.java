@@ -2,6 +2,7 @@ package net.causw.app.main.service.ceremony;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import net.causw.app.main.domain.event.InitialAcademicCertificationEvent;
 import net.causw.app.main.domain.model.entity.ceremony.Ceremony;
 import net.causw.app.main.domain.model.entity.notification.CeremonyNotificationSetting;
 import net.causw.app.main.domain.model.enums.ceremony.CeremonyContext;
@@ -14,6 +15,7 @@ import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.domain.model.entity.uuidFile.UuidFile;
 import net.causw.app.main.dto.ceremony.*;
 import net.causw.app.main.dto.util.dtoMapper.CeremonyDtoMapper;
+import net.causw.app.main.repository.user.UserRepository;
 import net.causw.app.main.service.notification.CeremonyNotificationService;
 import net.causw.app.main.service.pageable.PageableFactory;
 import net.causw.app.main.service.uuidFile.UuidFileService;
@@ -23,6 +25,7 @@ import net.causw.app.main.domain.model.enums.ceremony.CeremonyState;
 import net.causw.app.main.domain.model.enums.uuidFile.FilePath;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +40,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class CeremonyService {
     private final CeremonyRepository ceremonyRepository;
+    private final UserRepository userRepository;
     private final CeremonyNotificationService ceremonyNotificationService;
     private final UuidFileService uuidFileService;
     private final CeremonyNotificationSettingRepository ceremonyNotificationSettingRepository;
@@ -194,6 +198,24 @@ public class CeremonyService {
         ceremonyNotificationSettingRepository.save(ceremonyNotificationSetting);
 
         return CeremonyDtoMapper.INSTANCE.toCeremonyNotificationSettingResponseDto(ceremonyNotificationSetting);
+    }
+
+    @EventListener // 기본 경조사 설정 생성 실패시, 학적 인증과 함께 롤백
+    public void createDefaultCeremonyNotificationSetting(InitialAcademicCertificationEvent event) {
+        User user = userRepository.findById(event.userId())
+            .orElseThrow(() -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                MessageUtil.USER_NOT_FOUND
+            ));
+
+        ceremonyNotificationSettingRepository.findByUser(user)
+            .orElseGet(() -> ceremonyNotificationSettingRepository.save(
+                CeremonyNotificationSetting.of(
+                    new HashSet<>(),
+                    true,
+                    true,
+                    user
+                )));
     }
 
     @Transactional(readOnly = true)

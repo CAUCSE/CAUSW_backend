@@ -32,6 +32,10 @@ public class BoardCreateRequestDto {
     @Schema(description = "익명 허용 여부", example = "true -> boolean으로 받아야함", requiredMode = Schema.RequiredMode.REQUIRED)
     private Boolean isAnonymousAllowed;
 
+    @NotNull(message = "동문회 허용 여부는 필수 입력 값입니다.")
+    @Schema(description = "동문회 허용 여부", example = "true -> boolean으로 받아야함", requiredMode = Schema.RequiredMode.REQUIRED)
+    private Boolean isAlumni;
+
     @Schema(description = "게시판이 속한 동아리 id입니다. 만약 동아리 게시판이 없을 시 null로 보내면 됩니다.", example = "uuid 형식의 String 값입니다(nullable).", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String circleId;
 }

@@ -882,6 +882,7 @@ public class UserService {
                         this.updateStatus(circleMember.getId(), CircleMemberStatus.LEAVE)
                 );
 
+        // FIXME: 영구삭제 시 UuidFile, User FK 제약 조건 위반 발생
         List<UserAcademicRecordApplication> userAcademicRecordApplicationList = userAcademicRecordApplicationRepository.findByUserId(deleteUser.getId());
 
         if (!userAcademicRecordApplicationList.isEmpty()) {

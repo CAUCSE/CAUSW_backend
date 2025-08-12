@@ -1,12 +1,18 @@
 package net.causw.app.main.service.board;
 
 import lombok.RequiredArgsConstructor;
+import net.causw.app.main.domain.event.AcademicStatusChangeEvent;
+import net.causw.app.main.domain.event.InitialAcademicCertificationEvent;
 import net.causw.app.main.domain.model.entity.board.Board;
 import net.causw.app.main.domain.model.entity.board.BoardApply;
 import net.causw.app.main.domain.model.entity.circle.Circle;
 import net.causw.app.main.domain.model.entity.circle.CircleMember;
 import net.causw.app.main.domain.model.entity.notification.UserBoardSubscribe;
+import net.causw.app.main.domain.model.enums.user.RoleGroup;
+import net.causw.app.main.domain.model.enums.user.UserState;
 import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.dto.circle.CircleResponseDto;
+import net.causw.app.main.dto.user.UserResponseDto;
 import net.causw.app.main.repository.board.BoardApplyRepository;
 import net.causw.app.main.repository.board.BoardRepository;
 import net.causw.app.main.repository.circle.CircleMemberRepository;
@@ -39,6 +45,7 @@ import net.causw.app.main.domain.validation.UserStateValidator;
 import net.causw.app.main.domain.validation.TargetIsNotDeletedValidator;
 import net.causw.app.main.domain.validation.ValidatorBucket;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.validation.Validator;
@@ -46,6 +53,8 @@ import jakarta.validation.Validator;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.springframework.transaction.event.TransactionalEventListener;
+
 @MeasureTime
 @Service
 @RequiredArgsConstructor
@@ -167,55 +176,31 @@ public class BoardService {
     }
 
     @Transactional
-    public void applyNormalBoard(
+    public void applyBoard(
             User creator,
-            NormalBoardApplyRequestDto normalBoardApplyRequestDto
+            BoardApplyRequestDto boardApplyRequestDto
     ) {
-        if (boardRepository.existsByName(normalBoardApplyRequestDto.getBoardName())) {
+        if (boardRepository.existsByName(boardApplyRequestDto.getBoardName())) {
             throw new BadRequestException(
                     ErrorCode.ROW_ALREADY_EXIST,
                     MessageUtil.BOARD_NAME_ALREADY_EXISTS
             );
         }
 
-        Circle circle = ( normalBoardApplyRequestDto.getCircleId() == null || normalBoardApplyRequestDto.getCircleId().isEmpty() ) ?
-                null :
-                getCircle(normalBoardApplyRequestDto.getCircleId());
-
-        if (creator.getRoles().contains(Role.ADMIN) ||
-                creator.getRoles().contains(Role.PRESIDENT) ||
-                creator.getRoles().contains(Role.VICE_PRESIDENT)
-        ) {
-            List<String> createRoleList = new ArrayList<>();
-            createRoleList.add("ALL"); // 일반 사용자의 게시판 신청은 항상 글 작성 권한이 '상관없음'임
-            Board newBoard = Board.of(
-                    normalBoardApplyRequestDto.getBoardName(),
-                    normalBoardApplyRequestDto.getDescription(),
-                    createRoleList,
-                    StaticValue.BOARD_NAME_APP_FREE,
-                    normalBoardApplyRequestDto.getIsAnonymousAllowed(),
-                    circle
-            );
-
-            boardRepository.save(newBoard);
-
-            return;
-        }
-
         BoardApply newBoardApply = BoardApply.of(
                 creator,
-                normalBoardApplyRequestDto.getBoardName(),
-                normalBoardApplyRequestDto.getDescription(),
+                boardApplyRequestDto.getBoardName(),
+                boardApplyRequestDto.getDescription(),
                 StaticValue.BOARD_NAME_APP_FREE,
-                normalBoardApplyRequestDto.getIsAnonymousAllowed(),
-                circle
+                boardApplyRequestDto.getIsAnonymousAllowed(),
+                getCircle(boardApplyRequestDto.getCircleId())
         );
 
         boardApplyRepository.save(newBoardApply);
     }
 
     @Transactional
-    public BoardResponseDto createBoard(
+    public BoardResponseDto createNoticeBoard(
             User creator,
             BoardCreateRequestDto boardCreateRequestDto
     ) {
@@ -226,45 +211,40 @@ public class BoardService {
             );
         }
 
-        if ( !(boardCreateRequestDto.getBoardCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE) ||
-            boardCreateRequestDto.getBoardCategory().equals(StaticValue.BOARD_NAME_APP_FREE))
-        ) {
+        if (!StaticValue.BOARD_NAME_APP_NOTICE.equals(boardCreateRequestDto.getBoardCategory())) {
             throw new BadRequestException(
-                    ErrorCode.INVALID_BOARD_CATEGORY,
-                    MessageUtil.INVALID_BOARD_CATEGORY
+                ErrorCode.INVALID_PARAMETER,
+                MessageUtil.INVALID_BOARD_CATEGORY
             );
         }
 
-
-        Board newBoard = Board.of(
+        Board newBoard = boardRepository.save(
+            Board.createNoticeBoard(
                 boardCreateRequestDto.getBoardName(),
                 boardCreateRequestDto.getDescription(),
                 boardCreateRequestDto.getCreateRoleList(),
                 boardCreateRequestDto.getBoardCategory(),
                 boardCreateRequestDto.getIsAnonymousAllowed(),
-                ( boardCreateRequestDto.getCircleId() == null || boardCreateRequestDto.getCircleId().isEmpty() ) ?
-                        null :
-                        getCircle(boardCreateRequestDto.getCircleId())
-        );
-
-        BoardResponseDto boardResponseDto = toBoardResponseDto(boardRepository.save(newBoard), creator.getRoles());
+                boardCreateRequestDto.getIsAlumni(),
+                getCircle(boardCreateRequestDto.getCircleId())
+        ));
 
         createBoardSubscribe(newBoard.getId());
 
-        return boardResponseDto;
+        return toBoardResponseDto(newBoard, creator.getRoles());
     }
 
     @Transactional(readOnly = true)
-    public List<NormalBoardAppliesResponseDto> findAllBoardApply() {
+    public List<BoardAppliesResponseDto> findAllBoardApply() {
         // 관리자, 학생회장, 부학생회장만 게시판 관리 기능 사용 가능
         return this.boardApplyRepository.findAllByAcceptStatus(BoardApplyStatus.AWAIT)
                 .stream()
-                .map(BoardDtoMapper.INSTANCE::toNormalBoardAppliesResponseDto)
+                .map(BoardDtoMapper.INSTANCE::toBoardAppliesResponseDto)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public NormalBoardApplyResponseDto findBoardApplyByApplyId(String applyId) {
+    public BoardApplyResponseDto findBoardApplyByApplyId(String applyId) {
         // 관리자, 학생회장, 부학생회장만 게시판 관리 기능 사용 가능
         BoardApply boardApply = this.boardApplyRepository.findById(applyId)
                 .orElseThrow(() -> new BadRequestException(
@@ -272,15 +252,11 @@ public class BoardService {
                         MessageUtil.APPLY_NOT_FOUND
                 ));
 
-        return BoardDtoMapper.INSTANCE.toNormalBoardApplyResponseDto(
-                boardApply,
-                UserDtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null),
-                boardApply.getCircle() == null ? null : CircleDtoMapper.INSTANCE.toCircleResponseDto(boardApply.getCircle())
-        );
+        return toBoardApplyResponseDto(boardApply);
     }
 
     @Transactional
-    public NormalBoardApplyResponseDto accept(String boardApplyId) {
+    public BoardApplyResponseDto accept(String boardApplyId) {
         BoardApply boardApply = this.boardApplyRepository.findById(boardApplyId)
                 .orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -304,30 +280,23 @@ public class BoardService {
         boardApply.updateAcceptStatus(BoardApplyStatus.ACCEPTED); // 해당 boardApply의 상태를 ACCEPTED로 변경
         this.boardApplyRepository.save(boardApply);
 
-        List<String> createRoleList = new ArrayList<>(Arrays.stream(boardApply.getCreateRoles().split(",")).toList());
-        // TODO: Board.of 메서드에서 정상적으로 createRole 받을 수 있도록 수정 필요
-        //createRoleList.add("ALL"); // 일반 사용자의 게시판 신청은 항상 글 작성 권한이 '상관없음'임 -> Board.of에서 처리
-
-        Board newBoard = Board.of(
+        Board newBoard = Board.of( // 일반 게시판 생성
                 boardApply.getBoardName(),
                 boardApply.getDescription(),
-                createRoleList,
                 boardApply.getCategory(),
                 boardApply.getIsAnonymousAllowed(),
-                boardApply.getCircle() == null ? null : getCircle(boardApply.getCircle().getId())
+                Optional.ofNullable(boardApply.getCircle())
+                    .map(circle -> getCircle(circle.getId()))
+                    .orElse(null)
         );
 
         this.boardRepository.save(newBoard);
 
-        return BoardDtoMapper.INSTANCE.toNormalBoardApplyResponseDto(
-                boardApply,
-                UserDtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null),
-                boardApply.getCircle() == null ? null : CircleDtoMapper.INSTANCE.toCircleResponseDto(boardApply.getCircle())
-        );
+        return toBoardApplyResponseDto(boardApply);
     }
 
     @Transactional
-    public NormalBoardApplyResponseDto reject(String boardApplyId) {
+    public BoardApplyResponseDto reject(String boardApplyId) {
         BoardApply boardApply = this.boardApplyRepository.findById(boardApplyId)
                 .orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -351,11 +320,7 @@ public class BoardService {
         boardApply.updateAcceptStatus(BoardApplyStatus.REJECT); // 해당 boardApply의 상태를 REJECT로 변경
         this.boardApplyRepository.save(boardApply);
 
-        return BoardDtoMapper.INSTANCE.toNormalBoardApplyResponseDto(
-                boardApply,
-                UserDtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null),
-                boardApply.getCircle() == null ? null : CircleDtoMapper.INSTANCE.toCircleResponseDto(boardApply.getCircle())
-        );
+        return toBoardApplyResponseDto(boardApply);
     }
 
     @Transactional
@@ -510,6 +475,19 @@ public class BoardService {
         );
     }
 
+    private BoardApplyResponseDto toBoardApplyResponseDto(BoardApply boardApply) {
+        UserResponseDto userResponseDto = UserDtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null);
+        CircleResponseDto circleResponseDto = Optional.ofNullable(boardApply.getCircle())
+            .map(CircleDtoMapper.INSTANCE::toCircleResponseDto)
+            .orElse(null);
+
+        return BoardDtoMapper.INSTANCE.toBoardApplyResponseDto(
+            boardApply,
+            userResponseDto,
+            circleResponseDto
+        );
+    }
+
     private User getUser(String userId) {
         return userRepository.findById(userId).orElseThrow(
                 () -> new BadRequestException(
@@ -529,6 +507,10 @@ public class BoardService {
     }
 
     private Circle getCircle(String circleId) {
+        if (circleId == null || circleId.isEmpty()) {
+            return null;
+        }
+
         return circleRepository.findById(circleId).orElseThrow(
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
@@ -540,15 +522,24 @@ public class BoardService {
     @Transactional
     public void createBoardSubscribe(String boardId) {
         Board board = getBoard(boardId);
-        List<User> allUsers = userRepository.findAll();
 
-        List<UserBoardSubscribe> subscriptions = allUsers.stream()
-                .map(user -> UserBoardSubscribe.of(user, board, true))
-                .collect(Collectors.toList());
+        // 게시판 접근 권한이 있는 인증 사용자 필터링
+        List<User> certifiedUsers = userRepository.findAllByState(UserState.ACTIVE).stream()
+            .filter(user -> !AcademicStatus.UNDETERMINED.equals(user.getAcademicStatus()) // 학적 인증이 완료된 일반 사용자
+                    || RoleGroup.EXECUTIVES_AND_PROFESSOR.getRoles().stream() // 집행부/교수 역할의 사용자
+                        .anyMatch(user.getRoles()::contains))
+            .toList();
+
+
+        // 구독 생성
+        List<UserBoardSubscribe> subscriptions = certifiedUsers.stream()
+            .filter(user -> board.getIsAlumni() // 동문회 허용 게시판인 경우 졸업생 구독 허용
+                    || user.getAcademicStatus() != AcademicStatus.GRADUATED)
+            .map(user -> UserBoardSubscribe.of(user, board, true))
+            .collect(Collectors.toList());
 
         userBoardSubscribeRepository.saveAll(subscriptions);
     }
-
 
     @Transactional
     public BoardSubscribeResponseDto setBoardSubscribe(User user, String boardId, Boolean isSubscribed) {
@@ -564,5 +555,41 @@ public class BoardService {
         return BoardDtoMapper.INSTANCE.toBoardSubscribeResponseDto(subscription);
     }
 
+    // 학적 인증 변경사항 커밋 후, 새로운 트랜잭션 시작
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @TransactionalEventListener
+    public void createNoticeBoardsSubscribe(InitialAcademicCertificationEvent event) {
+        User user = getUser(event.userId());
 
+        List<Board> noticeBoards = boardRepository.findAllByCategory(StaticValue.BOARD_NAME_APP_NOTICE);
+
+        // 구독중인 공지 게시판 id 조회
+        Set<String> subscribedNoticeBoardIds = userBoardSubscribeRepository.findByUserAndBoardIn(user, noticeBoards).stream()
+            .map(subscribe -> subscribe.getBoard().getId())
+            .collect(Collectors.toSet());
+
+        // 구독 생성
+        List<UserBoardSubscribe> newSubscriptions = noticeBoards.stream()
+            .filter(board -> !subscribedNoticeBoardIds.contains(board.getId())) // 이미 구독중인 게시판 제외
+            .filter(board -> board.getIsAlumni() // 졸업생인 경우 동문회 허용 게시판만 구독
+                || user.getAcademicStatus() != AcademicStatus.GRADUATED)
+            .map(board -> UserBoardSubscribe.of(user, board, true))
+            .toList();
+
+        userBoardSubscribeRepository.saveAll(newSubscriptions);
+    }
+
+    // 학적 인증 변경사항 커밋 후, 새로운 트랜잭션 시작
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @TransactionalEventListener
+    public void updateBoardsSubscribe(AcademicStatusChangeEvent event) {
+        if (event.oldStatus() != AcademicStatus.GRADUATED
+            && event.newStatus() == AcademicStatus.GRADUATED) {
+
+            User user = getUser(event.userId());
+
+            // 졸업생이 된 경우, 동문회 게시판 외 구독 취소
+            userBoardSubscribeRepository.deleteAllByUserAndBoard_IsAlumniFalse(user);
+        }
+    }
 }

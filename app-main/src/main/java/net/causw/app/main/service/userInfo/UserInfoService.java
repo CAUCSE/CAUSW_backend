@@ -2,6 +2,9 @@ package net.causw.app.main.service.userInfo;
 
 import static net.causw.global.constant.StaticValue.DEFAULT_PAGE_SIZE;
 
+import net.causw.app.main.domain.event.InitialAcademicCertificationEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -28,6 +31,7 @@ import net.causw.app.main.domain.model.entity.userInfo.UserInfo;
 import net.causw.app.main.dto.userInfo.UserInfoResponseDto;
 import net.causw.app.main.dto.userInfo.UserInfoSummaryResponseDto;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -55,11 +59,11 @@ public class UserInfoService {
     return UserDtoMapper.INSTANCE.toUserInfoResponseDto(userInfo);
   }
 
-  @Transactional
-  public void createDefaultProfile(String userId) {
-    User user = findUserById(userId);
+  @EventListener // 동문수첩 기본 프로필 생성 실패시, 학적 인증과 함께 롤백
+  public void createDefaultProfile(InitialAcademicCertificationEvent event) {
+    User user = findUserById(event.userId());
 
-    userInfoRepository.findByUserId(userId)
+    userInfoRepository.findByUserId(event.userId())
         .orElseGet(() -> userInfoRepository.save(UserInfo.of(user)));
   }
 

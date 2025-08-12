@@ -1,15 +1,16 @@
 package net.causw.app.main.domain.model.entity.board;
 
 import jakarta.persistence.*;
+import java.util.stream.Collectors;
 import lombok.*;
 import net.causw.app.main.domain.model.entity.base.BaseEntity;
 import net.causw.app.main.domain.model.entity.circle.Circle;
 import net.causw.app.main.domain.model.entity.post.Post;
 import net.causw.app.main.domain.model.enums.user.Role;
+import net.causw.app.main.domain.model.enums.user.RoleGroup;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Getter
 @Entity
@@ -66,49 +67,22 @@ public class Board extends BaseEntity {
     public static Board of(
             String name,
             String description,
-            List<String> createRoleList,
             String category,
             Boolean isAnonymousAllowed,
             Circle circle
     ) {
-        if (createRoleList != null) {
-            if (createRoleList.isEmpty()) {
-                createRoleList.add(Role.ADMIN.getValue());
-                createRoleList.add(Role.PRESIDENT.getValue());
-                createRoleList.add(Role.VICE_PRESIDENT.getValue());
-            } else if (createRoleList.contains("ALL")) {
-                createRoleList.addAll(
-                        Arrays.stream(Role.values())
-                                .map(Role::getValue)
-                                .toList()
-                );
-                createRoleList.remove(Role.NONE.getValue());
-                createRoleList.remove("ALL");
-            } else {
-                createRoleList = createRoleList
-                        .stream()
-                        .map(Role::of)
-                        .map(Role::getValue)
-                        .collect(Collectors.toList());
-                createRoleList.remove(Role.NONE.getValue());
-                if (!createRoleList.contains(Role.ADMIN.getValue())) {
-                    createRoleList.add(Role.ADMIN.getValue());
-                }
-                if (!createRoleList.contains(Role.PRESIDENT.getValue())) {
-                    createRoleList.add(Role.PRESIDENT.getValue());
-                }
-                if (!createRoleList.contains(Role.VICE_PRESIDENT.getValue())) {
-                    createRoleList.add(Role.VICE_PRESIDENT.getValue());
-                }
-            }
-        }
+        Set<String> roleSet = Arrays.stream(Role.values()) // 일반 게시판 생성시 글쓰기 권한 '모두 허용'
+            .map(Role::getValue)
+            .collect(Collectors.toSet());
+
+        roleSet.remove(Role.NONE.getValue()); // 비회원 글쓰기 권한 제한
+
+        String createRoles = String.join(",", roleSet);
 
         return Board.builder()
                 .name(name)
                 .description(description)
-                .createRoles(createRoleList == null ? "" :
-                        String.join(",", createRoleList)
-                )
+                .createRoles(createRoles)
                 .category(category)
                 .isDeleted(false)
                 .isDefault(false)
@@ -119,6 +93,48 @@ public class Board extends BaseEntity {
                 .isAlumni(false) //FIXME : 크자회 서비스의 게시글 생성 신청 구현시 변경
                 .isHome(false)
                 .build();
+    }
+
+    public static Board createNoticeBoard(
+        String name,
+        String description,
+        List<String> createRoleList,
+        String category,
+        Boolean isAnonymousAllowed,
+        Boolean isAlumni,
+        Circle circle
+    ) {
+        Set<String> roleSet = RoleGroup.EXECUTIVES.getRoles().stream() // 집행부(관리자, 학생회장, 부학생회장) 글쓰기 권한 보장
+            .map(Role::getValue)
+            .collect(Collectors.toSet());
+
+        if (createRoleList != null) {
+            roleSet.addAll(
+                createRoleList.stream() // 공지 게시판 생성시 글쓰기 권한 '선택적 허용'
+                    .map(Role::of)
+                    .map(Role::getValue)
+                    .collect(Collectors.toSet())
+            );
+        }
+
+        roleSet.remove(Role.NONE.getValue()); // 비회원 글쓰기 권한 제한
+
+        String createRoles = String.join(",", roleSet);
+
+        return Board.builder()
+            .name(name)
+            .description(description)
+            .createRoles(createRoles)
+            .category(category)
+            .isDeleted(false)
+            .isDefault(false)
+            .isAnonymousAllowed(isAnonymousAllowed)
+            .circle(circle)
+            .postSet(new HashSet<>())
+            .isDefaultNotice(false)
+            .isAlumni(isAlumni != null ? isAlumni : false)
+            .isHome(false)
+            .build();
     }
 
     public void update(String name, String description, String createRoles, String category){
