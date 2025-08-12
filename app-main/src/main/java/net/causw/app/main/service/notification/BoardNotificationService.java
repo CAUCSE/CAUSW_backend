@@ -63,7 +63,7 @@ public class BoardNotificationService implements NotificationService {
     public void sendByBoardIsSubscribed(Board board, Post post){
         List<UserBoardSubscribe> userBoardSubscribeList = userBoardSubscribeRepository.findByBoardAndIsSubscribedTrue(board).stream()
             .filter(subscribe -> board.getIsAlumni() // 동문회 허용 게시판인 경우 졸업생에게 게시판 알림
-                || !AcademicStatus.GRADUATED.equals(subscribe.getUser().getAcademicStatus())
+                || subscribe.getUser().getAcademicStatus() != AcademicStatus.GRADUATED
             ).toList();
 
         BoardNotificationDto boardNotificationDto = BoardNotificationDto.of(board, post);

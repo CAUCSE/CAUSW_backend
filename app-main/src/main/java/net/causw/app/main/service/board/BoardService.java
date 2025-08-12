@@ -534,7 +534,7 @@ public class BoardService {
         // 구독 생성
         List<UserBoardSubscribe> subscriptions = certifiedUsers.stream()
             .filter(user -> board.getIsAlumni() // 동문회 허용 게시판인 경우 졸업생 구독 허용
-                    || !AcademicStatus.GRADUATED.equals(user.getAcademicStatus()))
+                    || user.getAcademicStatus() != AcademicStatus.GRADUATED)
             .map(user -> UserBoardSubscribe.of(user, board, true))
             .collect(Collectors.toList());
 
@@ -570,7 +570,7 @@ public class BoardService {
         List<UserBoardSubscribe> newSubscriptions = noticeBoards.stream()
             .filter(board -> !subscribedNoticeBoardIds.contains(board.getId())) // 이미 구독중인 게시판 제외
             .filter(board -> board.getIsAlumni() // 졸업생인 경우 동문회 허용 게시판만 구독
-                || !AcademicStatus.GRADUATED.equals(user.getAcademicStatus()))
+                || user.getAcademicStatus() != AcademicStatus.GRADUATED)
             .map(board -> UserBoardSubscribe.of(user, board, true))
             .toList();
 
@@ -580,15 +580,13 @@ public class BoardService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener
     public void updateBoardsSubscribe(AcademicStatusChangeEvent event) {
-        if (!AcademicStatus.GRADUATED.equals(event.oldStatus())
-            && AcademicStatus.GRADUATED.equals(event.newStatus())) {
+        if (event.oldStatus() != AcademicStatus.GRADUATED
+            && event.newStatus() == AcademicStatus.GRADUATED) {
 
             User user = getUser(event.userId());
 
             // 졸업생이 된 경우, 동문회 게시판 외 구독 취소
-            userBoardSubscribeRepository.findByUserAndIsSubscribedTrue(user).stream()
-                .filter(subscribe -> !subscribe.getBoard().getIsAlumni())
-                .forEach(subscribe -> subscribe.setIsSubscribed(false));
+            userBoardSubscribeRepository.deleteAllByUserAndBoard_IsAlumniFalse(user);
         }
     }
 }

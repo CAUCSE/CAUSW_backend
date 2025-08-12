@@ -22,4 +22,6 @@ public interface UserBoardSubscribeRepository extends JpaRepository<UserBoardSub
     List<UserBoardSubscribe> findByUserAndIsSubscribedTrue(User user);
 
     List<UserBoardSubscribe> findByUserAndBoardIn(User user, List<Board> boards);
+
+    void deleteAllByUserAndBoard_IsAlumniFalse(User user);
 }
