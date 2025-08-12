@@ -555,6 +555,7 @@ public class BoardService {
         return BoardDtoMapper.INSTANCE.toBoardSubscribeResponseDto(subscription);
     }
 
+    // 학적 인증 변경사항 커밋 후, 새로운 트랜잭션 시작
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener
     public void createNoticeBoardsSubscribe(InitialAcademicCertificationEvent event) {
@@ -577,6 +578,7 @@ public class BoardService {
         userBoardSubscribeRepository.saveAll(newSubscriptions);
     }
 
+    // 학적 인증 변경사항 커밋 후, 새로운 트랜잭션 시작
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener
     public void updateBoardsSubscribe(AcademicStatusChangeEvent event) {

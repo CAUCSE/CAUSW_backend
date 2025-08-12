@@ -3,6 +3,7 @@ package net.causw.app.main.service.userInfo;
 import static net.causw.global.constant.StaticValue.DEFAULT_PAGE_SIZE;
 
 import net.causw.app.main.domain.event.InitialAcademicCertificationEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
@@ -58,8 +59,7 @@ public class UserInfoService {
     return UserDtoMapper.INSTANCE.toUserInfoResponseDto(userInfo);
   }
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
-  @TransactionalEventListener
+  @EventListener // 동문수첩 기본 프로필 생성 실패시, 학적 인증과 함께 롤백
   public void createDefaultProfile(InitialAcademicCertificationEvent event) {
     User user = findUserById(event.userId());
 
