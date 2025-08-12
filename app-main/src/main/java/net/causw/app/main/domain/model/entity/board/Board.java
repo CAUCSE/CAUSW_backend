@@ -51,7 +51,7 @@ public class Board extends BaseEntity {
 
     @Column(name = "is_anonymous_allowed", nullable = false)
     @ColumnDefault("false")
-    private Boolean is_anonymous_allowed;
+    private Boolean isAnonymousAllowed;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "circle_id", nullable = true)
@@ -68,7 +68,7 @@ public class Board extends BaseEntity {
             String name,
             String description,
             String category,
-            Boolean is_anonymous_allowed,
+            Boolean isAnonymousAllowed,
             Circle circle
     ) {
         Set<String> roleSet = Arrays.stream(Role.values()) // 일반 게시판 생성시 글쓰기 권한 '모두 허용'
@@ -86,7 +86,7 @@ public class Board extends BaseEntity {
                 .category(category)
                 .isDeleted(false)
                 .isDefault(false)
-                .is_anonymous_allowed(is_anonymous_allowed)
+                .isAnonymousAllowed(isAnonymousAllowed)
                 .circle(circle)
                 .postSet(new HashSet<>())
                 .isDefaultNotice(false)
@@ -100,7 +100,7 @@ public class Board extends BaseEntity {
         String description,
         List<String> createRoleList,
         String category,
-        Boolean is_anonymous_allowed,
+        Boolean isAnonymousAllowed,
         Boolean isAlumni,
         Circle circle
     ) {
@@ -128,7 +128,7 @@ public class Board extends BaseEntity {
             .category(category)
             .isDeleted(false)
             .isDefault(false)
-            .is_anonymous_allowed(is_anonymous_allowed)
+            .isAnonymousAllowed(isAnonymousAllowed)
             .circle(circle)
             .postSet(new HashSet<>())
             .isDefaultNotice(false)
