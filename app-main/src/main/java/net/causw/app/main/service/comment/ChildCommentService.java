@@ -182,12 +182,9 @@ public class ChildCommentService {
     public void likeChildComment(User user, String childCommentId) {
         ChildComment childComment = getChildComment(childCommentId);
 
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-        validatorBucket
-                .consistOf(UserStateIsDeletedValidator.of(childComment.getWriter().getState()))
-                .validate();
+        validateWriterNotDeleted(childComment);
 
-        if (isChildCommentAlreadyLike(user, childCommentId)) {
+        if (isChildCommentLiked(user, childCommentId)) {
             throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.CHILD_COMMENT_ALREADY_LIKED);
         }
 
@@ -195,10 +192,22 @@ public class ChildCommentService {
         likeChildCommentRepository.save(likeChildComment);
     }
 
+    @Transactional
+    public void cancelLikeChildComment(final User user, final String childCommentId) {
+        ChildComment childComment = getChildComment(childCommentId);
+
+        this.validateWriterNotDeleted(childComment);
+
+        if (!isChildCommentLiked(user, childCommentId)) {
+            throw new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.CHILD_COMMENT_NOT_LIKED);
+        }
+
+        likeChildCommentRepository.deleteLikeByChildCommentIdAndUserId(childCommentId, user.getId());
+    }
 
 
 
-    private Boolean isChildCommentAlreadyLike(User user, String childCommentId) {
+    private Boolean isChildCommentLiked(User user, String childCommentId) {
         return likeChildCommentRepository.existsByChildCommentIdAndUserId(childCommentId, user.getId());
     }
 
@@ -235,7 +244,7 @@ public class ChildCommentService {
         return CommentDtoMapper.INSTANCE.toChildCommentResponseDto(
                 childComment,
                 getNumOfChildCommentLikes(childComment),
-                isChildCommentAlreadyLike(user, childComment.getId()),
+                isChildCommentLiked(user, childComment.getId()),
                 StatusPolicy.isChildCommentOwner(childComment, user),
                 StatusPolicy.isUpdatable(childComment, user),
                 StatusPolicy.isDeletable(childComment, user, board)
@@ -286,4 +295,12 @@ public class ChildCommentService {
                 )
         );
     }
+
+    private void validateWriterNotDeleted(final ChildComment childComment) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+        validatorBucket
+                .consistOf(UserStateIsDeletedValidator.of(childComment.getWriter().getState()))
+                .validate();
+    }
 }
+

@@ -209,4 +209,26 @@ public class CommentController {
     ){
         return commentService.setCommentSubscribe(userDetails.getUser(), id, false);
     }
+
+    @DeleteMapping(value ="/{id}/like" )
+    @ResponseStatus(value = HttpStatus.OK)
+    @Operation(summary = "댓글 좋아요 취소 API(완료)",
+            description = "특정 유저가 특정 댓글에 좋아요를 누른 걸 취소하는 Api 입니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4000", description = "댓글을 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4000", description = "좋아요를 누르지 않은 댓글입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4102", description = "추방된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+            @ApiResponse(responseCode = "4103", description = "비활성화된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+            @ApiResponse(responseCode = "4104", description = "대기 중인 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+            @ApiResponse(responseCode = "4109", description = "가입이 거절된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class))),
+            @ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+    })
+    public void cancelLikeComment(
+            @PathVariable("id") String id,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ){
+        this.commentService.cancelLikeComment(userDetails.getUser(), id);
+    }
 }

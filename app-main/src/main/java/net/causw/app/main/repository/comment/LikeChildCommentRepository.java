@@ -8,4 +8,6 @@ public interface LikeChildCommentRepository extends JpaRepository<LikeChildComme
 
     Long countByChildCommentId(String childCommentId);
 
+    void deleteLikeByChildCommentIdAndUserId(String postId, String childCommentId);
+
 }
