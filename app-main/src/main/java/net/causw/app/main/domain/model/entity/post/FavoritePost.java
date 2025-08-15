@@ -7,6 +7,7 @@ import net.causw.app.main.domain.model.entity.user.User;
 import org.hibernate.annotations.ColumnDefault;
 
 @Getter
+@Setter
 @Entity
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
