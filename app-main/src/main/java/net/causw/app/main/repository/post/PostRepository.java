@@ -17,10 +17,19 @@ import java.util.Optional;
 @Repository
 public interface PostRepository extends JpaRepository<Post, String> {
     Page<Post> findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(String boardId, Pageable pageable);
-    Page<Post> findAllByBoard_IdAndIsDeletedOrderByCreatedAtDesc(String boardId, Pageable pageable, boolean IsDeleted);
-    Page<Post> findAllByBoard_IdOrderByCreatedAtDesc(String boardId, Pageable pageable);
     Optional<Post> findTop1ByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(String boardId);
-    List<Post> findTop2ByBoard_IdAndIsDeletedOrderByCreatedAtDesc(String boardId, Boolean isDeleted);
+
+    @Query("SELECT p FROM Post p " +
+            "LEFT JOIN FETCH p.writer w " +
+            "WHERE p.board.id = :boardId AND p.isDeleted = :isDeleted " +
+            "ORDER BY p.createdAt DESC")
+    Page<Post> findAllByBoard_IdAndIsDeletedOrderByCreatedAtDesc(@Param("boardId") String boardId, Pageable pageable, @Param("isDeleted") boolean isDeleted);
+
+    @Query("SELECT p FROM Post p " +
+            "LEFT JOIN FETCH p.writer w " +
+            "WHERE p.board.id = :boardId " +
+            "ORDER BY p.createdAt DESC")
+    Page<Post> findAllByBoard_IdOrderByCreatedAtDesc(@Param("boardId") String boardId, Pageable pageable);
 
     //특정 게시판에서 삭제 여부와 관계없이 title 혹은 content 에 keyword 가 포함된 게시글 검색
     @Query(value = "SELECT * " +

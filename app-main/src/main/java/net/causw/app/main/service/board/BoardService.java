@@ -28,6 +28,7 @@ import net.causw.app.main.dto.util.dtoMapper.CircleDtoMapper;
 import net.causw.app.main.dto.util.dtoMapper.PostDtoMapper;
 import net.causw.app.main.dto.util.dtoMapper.UserDtoMapper;
 import net.causw.app.main.infrastructure.aop.annotation.MeasureTime;
+import net.causw.app.main.service.post.PostService;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.UnauthorizedException;
@@ -44,6 +45,7 @@ import net.causw.app.main.domain.validation.UserRoleValidator;
 import net.causw.app.main.domain.validation.UserStateValidator;
 import net.causw.app.main.domain.validation.TargetIsNotDeletedValidator;
 import net.causw.app.main.domain.validation.ValidatorBucket;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,6 +69,7 @@ public class BoardService {
     private final UserBoardSubscribeRepository userBoardSubscribeRepository;
     private final BoardApplyRepository boardApplyRepository;
     private final Validator validator;
+    private final PostService postService;
 
 
     @Transactional(readOnly = true)
@@ -157,9 +160,20 @@ public class BoardService {
 
         return boards.stream()
                 .map(board -> {
-                    List<PostContentDto> recentPosts = postRepository.findTop2ByBoard_IdAndIsDeletedOrderByCreatedAtDesc(board.getId(), false).stream()
-                            .map(PostDtoMapper.INSTANCE::toPostContentDto)
-                            .peek(PostContentDto::updateAnonymousPostContent)
+                    List<PostContentDto> recentPosts = postRepository.findAllByBoard_IdAndIsDeletedOrderByCreatedAtDesc(
+                            board.getId(), PageRequest.of(0, 2), false)
+                            .getContent()
+                            .stream()
+                            .map(post -> {
+                                        PostContentDto postContentDto = PostDtoMapper.INSTANCE.toPostContentDto(post);
+                                        postContentDto.updateAnonymousPostContent();
+
+                                        // 화면에 표시될 작성자 닉네임 설정
+                                        User writer = post.getWriter();
+                                        postContentDto.setDisplayWriterNickname(postService.getDisplayWriterNickname(writer, postContentDto.getIsAnonymous(), postContentDto.getWriterNickname()));
+
+                                        return postContentDto;
+                                    })
                             .collect(Collectors.toList());
                     return BoardDtoMapper.INSTANCE.toBoardMainResponseDto(board, recentPosts);
                 })

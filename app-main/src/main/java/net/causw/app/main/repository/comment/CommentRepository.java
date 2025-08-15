@@ -11,7 +11,12 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, String> {
-    Page<Comment> findByPost_IdOrderByCreatedAt(String postId, Pageable pageable);
+
+    @Query("SELECT c FROM Comment c " +
+            "LEFT JOIN FETCH c.writer w " +
+            "WHERE c.post.id = :postId " +
+            "ORDER BY c.createdAt")
+    Page<Comment> findByPost_IdOrderByCreatedAt(@Param("postId") String postId, Pageable pageable);
 
     Boolean existsByPostIdAndIsDeletedFalse(String postId);
 
