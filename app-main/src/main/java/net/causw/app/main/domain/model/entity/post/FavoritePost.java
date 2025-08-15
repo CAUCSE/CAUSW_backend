@@ -6,7 +6,6 @@ import net.causw.app.main.domain.model.entity.base.BaseEntity;
 import net.causw.app.main.domain.model.entity.user.User;
 
 @Getter
-@Setter
 @Entity
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
