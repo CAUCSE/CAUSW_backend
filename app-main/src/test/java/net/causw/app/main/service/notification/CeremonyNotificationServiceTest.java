@@ -6,6 +6,7 @@ import net.causw.app.main.domain.model.entity.notification.CeremonyNotificationS
 import net.causw.app.main.domain.model.entity.notification.Notification;
 import net.causw.app.main.domain.model.entity.notification.NotificationLog;
 import net.causw.app.main.infrastructure.firebase.FcmUtils;
+import net.causw.app.main.repository.ceremony.CeremonyRepository;
 import net.causw.app.main.repository.notification.CeremonyNotificationSettingRepository;
 import net.causw.app.main.repository.notification.NotificationLogRepository;
 import net.causw.app.main.repository.notification.NotificationRepository;
@@ -23,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -47,6 +49,9 @@ class CeremonyNotificationServiceTest {
 
     @Mock
     private NotificationLogRepository notificationLogRepository;
+
+    @Mock
+    private CeremonyRepository ceremonyRepository;
 
     @Mock
     private FcmUtils fcmUtils;
@@ -79,6 +84,7 @@ class CeremonyNotificationServiceTest {
         given(mockCeremony.getEndDate()).willReturn(LocalDate.of(2024, 4, 16));
         given(mockCeremony.getCeremonyCategory()).willReturn(CeremonyCategory.MARRIAGE);
         given(mockCeremony.isSetAll()).willReturn(true);
+        given(ceremonyRepository.findById("ceremony-id")).willReturn(Optional.of(mockCeremony));
     }
 
     @Test
