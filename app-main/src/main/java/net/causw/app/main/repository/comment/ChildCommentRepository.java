@@ -17,7 +17,10 @@ public interface ChildCommentRepository extends JpaRepository<ChildComment, Stri
 
     Long countByParentComment_IdAndIsDeletedIsFalse(String parentCommentId);
 
-    @Query("select c from ChildComment c where c.parentComment.id = :parentCommentId order by c.createdAt asc")
+    @Query("SELECT c FROM ChildComment c " +
+            "LEFT JOIN FETCH c.writer w " +
+            "WHERE c.parentComment.id = :parentCommentId " +
+            "ORDER BY c.createdAt ASC")
     List<ChildComment> findByParentComment_Id(@Param("parentCommentId") String parentCommentId);
 
     @Query("SELECT DISTINCT p " +

@@ -23,6 +23,9 @@ public class ChildCommentResponseDto {
     @Schema(description = "대댓글 작성자 닉네임", example = "푸앙이")
     private String writerNickname;
 
+    @Schema(description = "표시될 대댓글 작성자 닉네임", example = "[닉네임/비활성 유저/익명]")
+    private String displayWriterNickname;
+
     private Integer writerAdmissionYear;
     private String writerProfileImage;
     private Boolean updatable;

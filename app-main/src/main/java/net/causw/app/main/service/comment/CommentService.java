@@ -8,6 +8,7 @@ import net.causw.app.main.domain.model.entity.comment.ChildComment;
 import net.causw.app.main.domain.model.entity.comment.Comment;
 import net.causw.app.main.domain.model.entity.comment.LikeComment;
 import net.causw.app.main.domain.model.entity.notification.UserCommentSubscribe;
+import net.causw.app.main.domain.model.enums.user.UserState;
 import net.causw.app.main.repository.notification.UserCommentSubscribeRepository;
 import net.causw.app.main.dto.comment.*;
 import net.causw.app.main.service.notification.PostNotificationService;
@@ -95,7 +96,7 @@ public class CommentService {
         );
         comments.forEach(comment -> comment.setChildCommentList(childCommentRepository.findByParentComment_Id(comment.getId())));
 
-        return comments.map(comment -> toCommentResponseDto(comment, user, post.getBoard()));
+        return comments.map(comment -> toCommentResponseDtoWithInactiveCheck(comment, user, post.getBoard()));
     }
 
     @Transactional
@@ -251,6 +252,34 @@ public class CommentService {
         );
     }
 
+    private CommentResponseDto toCommentResponseDtoWithInactiveCheck(Comment comment, User user, Board board) {
+        CommentResponseDto commentResponseDto = CommentDtoMapper.INSTANCE.toCommentResponseDto(
+                comment,
+                childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
+                getNumOfCommentLikes(comment),
+                isCommentAlreadyLike(user, comment.getId()),
+                StatusPolicy.isCommentOwner(comment, user),
+                comment.getChildCommentList().stream()
+                        .map(childComment -> toChildCommentResponseDtoWithInactiveCheck(childComment, user, board))
+                        .collect(Collectors.toList()),
+                StatusPolicy.isUpdatable(comment, user),
+                StatusPolicy.isDeletable(comment, user, board),
+                isCommentSubscribed(user, comment)
+        );
+
+        // 화면에 표시될 닉네임 설정
+        User writer = comment.getWriter();
+        if (writer != null && writer.getState() == UserState.INACTIVE) {
+            commentResponseDto.setDisplayWriterNickname("비활성 유저");
+        } else if (Boolean.TRUE.equals(commentResponseDto.getIsAnonymous())) {
+            commentResponseDto.setDisplayWriterNickname("익명");
+        } else {
+            commentResponseDto.setDisplayWriterNickname(commentResponseDto.getWriterNickname());
+        }
+
+        return commentResponseDto;
+    }
+
     private ChildCommentResponseDto toChildCommentResponseDto(ChildComment childComment, User user, Board board) {
         return CommentDtoMapper.INSTANCE.toChildCommentResponseDto(
                 childComment,
@@ -260,6 +289,29 @@ public class CommentService {
                 StatusPolicy.isUpdatable(childComment, user),
                 StatusPolicy.isDeletable(childComment, user, board)
         );
+    }
+
+    private ChildCommentResponseDto toChildCommentResponseDtoWithInactiveCheck(ChildComment childComment, User user, Board board) {
+        ChildCommentResponseDto childCommentResponseDto = CommentDtoMapper.INSTANCE.toChildCommentResponseDto(
+                childComment,
+                getNumOfChildCommentLikes(childComment),
+                isChildCommentAlreadyLike(user, childComment.getId()),
+                StatusPolicy.isChildCommentOwner(childComment, user),
+                StatusPolicy.isUpdatable(childComment, user),
+                StatusPolicy.isDeletable(childComment, user, board)
+        );
+
+        // 화면에 표시될 닉네임 설정
+        User writer = childComment.getWriter();
+        if (writer != null && writer.getState() == UserState.INACTIVE) {
+            childCommentResponseDto.setDisplayWriterNickname("비활성 유저");
+        } else if (Boolean.TRUE.equals(childCommentResponseDto.getIsAnonymous())) {
+            childCommentResponseDto.setDisplayWriterNickname("익명");
+        } else {
+            childCommentResponseDto.setDisplayWriterNickname(childCommentResponseDto.getWriterNickname());
+        }
+
+        return childCommentResponseDto;
     }
 
     private Long getNumOfCommentLikes(Comment comment){
