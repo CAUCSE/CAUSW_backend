@@ -1204,6 +1204,7 @@ public class PostService {
     // 게시글이 즐겨찾기 되어있는지 확인
     private Boolean isPostFavorited(User user, String postId) {
         return favoritePostRepository.existsByPostIdAndUserId(postId, user.getId());
+    }
 
     // 화면에 표시할 작성자 닉네임 설정 (닉네임 / 비활성 유저 / 익명)
     public String getDisplayWriterNickname(User writer, Boolean isAnonymous, String originalNickname) {
