@@ -87,7 +87,7 @@ class CeremonyNotificationServiceTest {
         given(ceremonyNotificationSettingRepository.findByAdmissionYearOrSetAll(2023))
                 .willReturn(List.of(CeremonyNotificationSetting.of(Set.of("23", "24"), true, true, mockUser)));
 
-        ceremonyNotificationService.sendByAdmissionYear(2023, mockCeremony);
+        ceremonyNotificationService.sendByAdmissionYear(2023, mockCeremony.getId());
 
         verify(notificationRepository).save(any(Notification.class));
         verify(notificationLogRepository).save(any(NotificationLog.class));
@@ -99,7 +99,7 @@ class CeremonyNotificationServiceTest {
         given(ceremonyNotificationSettingRepository.findByAdmissionYearOrSetAll(2023))
                 .willReturn(List.of());
 
-        ceremonyNotificationService.sendByAdmissionYear(2023, mockCeremony);
+        ceremonyNotificationService.sendByAdmissionYear(2023, mockCeremony.getId());
 
         verify(notificationRepository).save(any(Notification.class));
         verify(notificationLogRepository, never()).save(any(NotificationLog.class));
@@ -117,7 +117,7 @@ class CeremonyNotificationServiceTest {
         given(ceremonyNotificationSettingRepository.findByAdmissionYearOrSetAll(2023))
                 .willReturn(List.of(CeremonyNotificationSetting.of(Set.of("23", "24"), true, true, mockUser)));
 
-        ceremonyNotificationService.sendByAdmissionYear(2023, mockCeremony);
+        ceremonyNotificationService.sendByAdmissionYear(2023, mockCeremony.getId());
 
         verify(firebasePushNotificationService).sendNotification(validToken, "테스트 유저(2023) - 결혼식" , "기간 : 2024-04-15 ~ 2024-04-16");
         verify(notificationLogRepository).save(any(NotificationLog.class));
@@ -148,7 +148,7 @@ class CeremonyNotificationServiceTest {
         }).when(fcmUtils).removeFcmToken(any(User.class), anyString());
 
 
-        ceremonyNotificationService.sendByAdmissionYear(2023, mockCeremony);
+        ceremonyNotificationService.sendByAdmissionYear(2023, mockCeremony.getId());
 
         assertThat(mockUser.getFcmTokens()).doesNotContain(invalidToken);
         assertThat(mockUser.getFcmTokens()).containsExactly("valid-token");

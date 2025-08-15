@@ -151,7 +151,8 @@ public class CeremonyService {
 
         if(updateDto.getTargetCeremonyState() == CeremonyState.ACCEPT){
             Integer writerAdmissionYear = ceremony.getUser().getAdmissionYear();
-            ceremonyNotificationService.sendByAdmissionYear(writerAdmissionYear, ceremony);
+
+            ceremonyNotificationService.sendByAdmissionYear(writerAdmissionYear, updateDto.getCeremonyId());
         }
         else{ // state가 reject, await, close로 바뀌는 경우 (close는 별도 처리)
             ceremony.updateNote(updateDto.getRejectMessage());
