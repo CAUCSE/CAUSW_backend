@@ -217,7 +217,7 @@ class UserServiceTest {
 
       given(postRepository.countAllCommentByPost_Id(mockPost.getId())).willReturn(1L);
       given(likePostRepository.countByPostId(mockPost.getId())).willReturn(1L);
-      given(favoritePostRepository.countByPostIdAndIsDeletedFalse(mockPost.getId())).willReturn(1L);
+      given(favoritePostRepository.countByPostId(mockPost.getId())).willReturn(1L);
       given(mockLikePost.getPost().getPostAttachImageList()).willReturn(List.of());
       given(mockPost.getVote()).willReturn(null);
       given(mockPost.getVote()).willReturn(null);

@@ -67,6 +67,7 @@ public class MessageUtil {
     public static final String POST_ALREADY_LIKED = "좋아요를 이미 누른 게시글 입니다.";
     public static final String POST_NOT_LIKED = "좋아요을 누르지 않은 게시글입니다.";
     public static final String POST_ALREADY_FAVORITED = "즐겨찾기를 이미 누른 게시글 입니다.";
+    public static final String POST_NOT_FAVORITED = "즐겨찾기를 누르지 않은 게시글입니다.";
     public static final String COMMENT_ALREADY_LIKED = "좋아요를 이미 누른 댓글입니다.";
     public static final String COMMENT_NOT_LIKED = "좋아요를 누르지 않은 댓글입니다.";
     public static final String CHILD_COMMENT_NOT_LIKED = "좋아요를 누르지 않은 대댓글입니다.";

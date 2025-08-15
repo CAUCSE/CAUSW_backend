@@ -1543,7 +1543,7 @@ public class UserService {
     }
 
     private Long getNumOfPostFavorites(Post post){
-        return favoritePostRepository.countByPostIdAndIsDeletedFalse(post.getId());
+        return favoritePostRepository.countByPostId(post.getId());
     }
 
     private List<User> getUsersByState(UserState state) {

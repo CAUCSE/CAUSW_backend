@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import net.causw.app.main.domain.model.entity.base.BaseEntity;
 import net.causw.app.main.domain.model.entity.user.User;
-import org.hibernate.annotations.ColumnDefault;
 
 @Getter
 @Setter
@@ -22,20 +21,11 @@ public class FavoritePost extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(name = "is_deleted")
-    @ColumnDefault("false")
-    private Boolean isDeleted;
-
-    public static  FavoritePost of(Post post, User user, Boolean isDeleted) {
+    public static FavoritePost of(Post post, User user) {
         return FavoritePost.builder()
                 .post(post)
                 .user(user)
-                .isDeleted(isDeleted)
                 .build();
-    }
-
-    public void setIsDeleted(Boolean isDeleted) {
-        this.isDeleted = isDeleted;
     }
 
 }

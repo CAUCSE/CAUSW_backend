@@ -688,17 +688,12 @@ public class PostService {
             throw new BadRequestException(ErrorCode.TARGET_DELETED, MessageUtil.POST_DELETED);
         }
 
-        FavoritePost favoritePost;
-        if (isPostAlreadyFavorite(user, postId)) {
-            favoritePost = getFavoritePost(user, postId);
-            if (favoritePost.getIsDeleted()) {
-                favoritePost.setIsDeleted(false);
-            } else {
-                throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.POST_ALREADY_FAVORITED);
-            }
-        } else {
-            favoritePost = FavoritePost.of(post, user, false);
+        // 이미 즐겨찾기가 있는지 확인
+        if (isPostFavorited(user, postId)) {
+            throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.POST_ALREADY_FAVORITED);
         }
+
+        FavoritePost favoritePost = FavoritePost.of(post, user);
 
         favoritePostRepository.save(favoritePost);
     }
@@ -713,14 +708,12 @@ public class PostService {
             throw new BadRequestException(ErrorCode.TARGET_DELETED, MessageUtil.POST_DELETED);
         }
 
-        FavoritePost favoritePost = getFavoritePost(user, postId);
-        if (favoritePost.getIsDeleted()) {
-            throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.FAVORITE_POST_ALREADY_DELETED);
-        } else {
-            favoritePost.setIsDeleted(true);
+        // 즐겨찾기 없는지 확인
+        if (!isPostFavorited(user, postId)) {
+            throw new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.POST_NOT_FAVORITED);
         }
 
-        favoritePostRepository.save(favoritePost);
+        favoritePostRepository.deleteFavoriteByPostIdAndUserId(postId, user.getId());
     }
 
     public void createPostSubscribe(User user, String postId){
@@ -1016,7 +1009,7 @@ public class PostService {
     }
 
     private Long getNumOfPostFavorites(Post post){
-        return favoritePostRepository.countByPostIdAndIsDeletedFalse(post.getId());
+        return favoritePostRepository.countByPostId(post.getId());
     }
 
     private Long getNumOfCommentLikes(Comment comment){
@@ -1196,5 +1189,10 @@ public class PostService {
                 MessageUtil.ANONYMOUS_NOT_ALLOWED
             );
         }
+    }
+
+    // 게시글이 즐겨찾기 되어있는지 확인
+    private Boolean isPostFavorited(User user, String postId) {
+        return favoritePostRepository.existsByPostIdAndUserId(postId, user.getId());
     }
 }

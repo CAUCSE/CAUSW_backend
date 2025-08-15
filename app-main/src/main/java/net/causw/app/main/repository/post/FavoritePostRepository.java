@@ -14,12 +14,14 @@ public interface FavoritePostRepository extends JpaRepository<FavoritePost, Stri
 
     Optional<FavoritePost> findByPostIdAndUserId(String postId, String userId);
 
-    Long countByPostIdAndIsDeletedFalse(String postId);
+    Long countByPostId(String postId);
+
+    void deleteFavoriteByPostIdAndUserId(String postId, String userId);
 
     @Query("SELECT fp " +
             "FROM FavoritePost fp " +
             "JOIN fp.post p " +
-            "WHERE fp.user.id = :userId AND fp.isDeleted = false " +
+            "WHERE fp.user.id = :userId " +
             "ORDER BY p.createdAt DESC")
     Page<FavoritePost> findByUserId(@Param("userId") String userId, Pageable pageable);
 }
