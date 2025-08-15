@@ -8,6 +8,7 @@ import net.causw.app.main.domain.model.entity.comment.ChildComment;
 import net.causw.app.main.domain.model.entity.comment.Comment;
 import net.causw.app.main.domain.model.entity.comment.LikeComment;
 import net.causw.app.main.domain.model.entity.notification.UserCommentSubscribe;
+import net.causw.app.main.domain.model.enums.user.UserState;
 import net.causw.app.main.repository.notification.UserCommentSubscribeRepository;
 import net.causw.app.main.dto.comment.*;
 import net.causw.app.main.service.notification.PostNotificationService;
@@ -24,6 +25,7 @@ import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.dto.util.dtoMapper.CommentDtoMapper;
 import net.causw.app.main.domain.policy.StatusPolicy;
 import net.causw.app.main.infrastructure.aop.annotation.MeasureTime;
+import net.causw.app.main.service.post.PostService;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.InternalServerException;
@@ -58,6 +60,7 @@ public class CommentService {
     private final Validator validator;
     private final UserCommentSubscribeRepository userCommentSubscribeRepository;
     private final PostNotificationService postNotificationService;
+    private final PostService postService;
 
     @Transactional
     public CommentResponseDto createComment(User creator, CommentCreateRequestDto commentCreateDto) {
@@ -246,7 +249,7 @@ public class CommentService {
     }
 
     private CommentResponseDto toCommentResponseDto(Comment comment, User user, Board board) {
-        return CommentDtoMapper.INSTANCE.toCommentResponseDto(
+        CommentResponseDto commentResponseDto = CommentDtoMapper.INSTANCE.toCommentResponseDto(
                 comment,
                 childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
                 getNumOfCommentLikes(comment),
@@ -259,10 +262,16 @@ public class CommentService {
                 StatusPolicy.isDeletable(comment, user, board),
                 isCommentSubscribed(user, comment)
         );
+
+        // 화면에 표시될 닉네임 설정
+        User writer = comment.getWriter();
+        commentResponseDto.setDisplayWriterNickname(postService.getDisplayWriterNickname(writer, commentResponseDto.getIsAnonymous(), commentResponseDto.getWriterNickname()));
+
+        return commentResponseDto;
     }
 
     private ChildCommentResponseDto toChildCommentResponseDto(ChildComment childComment, User user, Board board) {
-        return CommentDtoMapper.INSTANCE.toChildCommentResponseDto(
+        ChildCommentResponseDto childCommentResponseDto = CommentDtoMapper.INSTANCE.toChildCommentResponseDto(
                 childComment,
                 getNumOfChildCommentLikes(childComment),
                 isChildCommentLiked(user, childComment.getId()),
@@ -270,6 +279,12 @@ public class CommentService {
                 StatusPolicy.isUpdatable(childComment, user),
                 StatusPolicy.isDeletable(childComment, user, board)
         );
+
+        // 화면에 표시될 닉네임 설정
+        User writer = childComment.getWriter();
+        childCommentResponseDto.setDisplayWriterNickname(postService.getDisplayWriterNickname(writer, childCommentResponseDto.getIsAnonymous(), childCommentResponseDto.getWriterNickname()));
+
+        return childCommentResponseDto;
     }
 
     private Long getNumOfCommentLikes(Comment comment){

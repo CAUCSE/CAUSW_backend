@@ -29,6 +29,9 @@ PostsResponseDto {
     @Schema(description = "게시글 작성자 닉네임", example = "푸앙이")
     private String writerNickname;
 
+    @Schema(description = "표시될 게시글 작성자 닉네임", example = "[닉네임/비활성 유저/익명]")
+    private String displayWriterNickname;
+
     @Schema(description = "게시글 작성자의 승인년도", example = "2020")
     private Integer writerAdmissionYear;
 
