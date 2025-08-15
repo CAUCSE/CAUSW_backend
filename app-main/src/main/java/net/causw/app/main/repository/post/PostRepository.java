@@ -23,7 +23,7 @@ public interface PostRepository extends JpaRepository<Post, String> {
             "LEFT JOIN FETCH p.writer w " +
             "WHERE p.board.id = :boardId AND p.isDeleted = :isDeleted " +
             "ORDER BY p.createdAt DESC")
-    Page<Post> findAllByBoard_IdAndIsDeletedOrderByCreatedAtDesc(@Param("boardId") String boardId, Pageable pageable, @Param("isDeleted") boolean IsDeleted);
+    Page<Post> findAllByBoard_IdAndIsDeletedOrderByCreatedAtDesc(@Param("boardId") String boardId, Pageable pageable, @Param("isDeleted") boolean isDeleted);
 
     @Query("SELECT p FROM Post p " +
             "LEFT JOIN FETCH p.writer w " +
