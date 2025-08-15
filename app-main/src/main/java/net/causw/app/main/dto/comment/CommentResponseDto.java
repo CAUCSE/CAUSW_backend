@@ -25,6 +25,9 @@ public class CommentResponseDto {
     @Schema(description = "댓글 작성자 닉네임", example = "푸앙이")
     private String writerNickname;
 
+    @Schema(description = "표시될 댓글 작성자 닉네임", example = "[닉네임/비활성 유저/익명]")
+    private String displayWriterNickname;
+
     @Schema(description = "작성자의 입학연도", example = "2022")
     private Integer writerAdmissionYear;
 

@@ -12,6 +12,7 @@ import net.causw.app.main.domain.model.entity.form.FormQuestion;
 import net.causw.app.main.domain.model.entity.notification.UserBoardSubscribe;
 import net.causw.app.main.domain.model.entity.notification.UserCommentSubscribe;
 import net.causw.app.main.domain.model.entity.notification.UserPostSubscribe;
+import net.causw.app.main.domain.model.enums.user.UserState;
 import net.causw.app.main.repository.form.FormRepository;
 import net.causw.app.main.repository.notification.UserBoardSubscribeRepository;
 import net.causw.app.main.repository.notification.UserCommentSubscribeRepository;
@@ -949,11 +950,14 @@ public class PostService {
             postsResponseDto.updateAnonymousPosts();
         }
 
+        // 화면에 표시할 작성자 닉네임 설정
+        User writer = post.getWriter();
+        postsResponseDto.setDisplayWriterNickname(getDisplayWriterNickname(writer, postsResponseDto.getIsAnonymous(), postsResponseDto.getWriterNickname()));
         return postsResponseDto;
     }
 
     private PostResponseDto toPostResponseDtoExtended(Post post, User user) {
-        return PostDtoMapper.INSTANCE.toPostResponseDtoExtended(
+        PostResponseDto postResponseDto = PostDtoMapper.INSTANCE.toPostResponseDtoExtended(
                 post,
                 findCommentsByPostIdByPage(user, post, 0),
                 getNumOfComments(post),
@@ -961,7 +965,7 @@ public class PostService {
                 getNumOfPostFavorites(post),
                 isPostLiked(user, post.getId()),
                 isPostAlreadyFavorite(user, post.getId()),
-                StatusPolicy.isPostOwner(post,user),
+                StatusPolicy.isPostOwner(post, user),
                 StatusPolicy.isUpdatable(post, user, isPostHasComment(post.getId())),
                 StatusPolicy.isDeletable(post, user, post.getBoard(), isPostHasComment(post.getId())),
                 StatusPolicy.isPostForm(post) ? toFormResponseDto(post.getForm()) : null,
@@ -970,6 +974,12 @@ public class PostService {
                 StatusPolicy.isPostForm(post),
                 isPostSubscribed(user, post)
         );
+
+        // 화면에 표시할 작성자 닉네임 설정
+        User writer = post.getWriter();
+        postResponseDto.setDisplayWriterNickname(getDisplayWriterNickname(writer, postResponseDto.getIsAnonymous(), postResponseDto.getWriterNickname()));
+
+        return postResponseDto;
     }
 
     private Page<CommentResponseDto> findCommentsByPostIdByPage(User user, Post post, Integer pageNum) {
@@ -1195,6 +1205,17 @@ public class PostService {
                 ErrorCode.INVALID_PARAMETER,
                 MessageUtil.ANONYMOUS_NOT_ALLOWED
             );
+        }
+    }
+
+    // 화면에 표시할 작성자 닉네임 설정 (닉네임 / 비활성 유저 / 익명)
+    public String getDisplayWriterNickname(User writer, Boolean isAnonymous, String originalNickname) {
+        if (writer != null && writer.getState() == UserState.INACTIVE) {
+            return StaticValue.INACTIVE_USER_NICKNAME;
+        } else if (Boolean.TRUE.equals(isAnonymous)) {
+            return StaticValue.ANONYMOUS_USER_NICKNAME;
+        } else {
+            return originalNickname;
         }
     }
 }

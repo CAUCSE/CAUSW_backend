@@ -22,6 +22,9 @@ public class PostContentDto {
     @Schema(description = "게시글 작성자 닉네임")
     private String writerNickname;
 
+    @Schema(description = "표시될 게시글 작성자 닉네임", example = "[닉네임/비활성 유저/익명]")
+    private String displayWriterNickname;
+
     @Schema(description = "게시글 생성 시간", example = "2024-01-26T18:40:40.643Z")
     private LocalDateTime createdAt;
 
