@@ -44,6 +44,7 @@ import net.causw.app.main.domain.validation.UserRoleValidator;
 import net.causw.app.main.domain.validation.UserStateValidator;
 import net.causw.app.main.domain.validation.TargetIsNotDeletedValidator;
 import net.causw.app.main.domain.validation.ValidatorBucket;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -157,9 +158,26 @@ public class BoardService {
 
         return boards.stream()
                 .map(board -> {
-                    List<PostContentDto> recentPosts = postRepository.findTop2ByBoard_IdAndIsDeletedOrderByCreatedAtDesc(board.getId(), false).stream()
-                            .map(PostDtoMapper.INSTANCE::toPostContentDto)
-                            .peek(PostContentDto::updateAnonymousPostContent)
+                    List<PostContentDto> recentPosts = postRepository.findAllByBoard_IdAndIsDeletedOrderByCreatedAtDesc(
+                            board.getId(), PageRequest.of(0, 2), false)
+                            .getContent()
+                            .stream()
+                            .map(post -> {
+                                        PostContentDto postContentDto = PostDtoMapper.INSTANCE.toPostContentDto(post);
+                                        postContentDto.updateAnonymousPostContent();
+
+                                        // 화면에 표시될 작성자 닉네임 설정
+                                        User writer = post.getWriter();
+                                        if (writer != null && writer.getState() == UserState.INACTIVE) {
+                                            postContentDto.setDisplayWriterNickname("비활성 유저");
+                                        } else if (Boolean.TRUE.equals(postContentDto.getIsAnonymous())) {
+                                            postContentDto.setDisplayWriterNickname("익명");
+                                        } else {
+                                            postContentDto.setDisplayWriterNickname(postContentDto.getWriterNickname());
+                                        }
+
+                                        return postContentDto;
+                                    })
                             .collect(Collectors.toList());
                     return BoardDtoMapper.INSTANCE.toBoardMainResponseDto(board, recentPosts);
                 })
