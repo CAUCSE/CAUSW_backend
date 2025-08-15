@@ -952,18 +952,12 @@ public class PostService {
 
         // 화면에 표시할 작성자 닉네임 설정
         User writer = post.getWriter();
-        if (writer != null && writer.getState() == UserState.INACTIVE) {
-            postsResponseDto.setDisplayWriterNickname("비활성 유저");
-        } else if (Boolean.TRUE.equals(postsResponseDto.getIsAnonymous())) {
-            postsResponseDto.setDisplayWriterNickname("익명");
-        } else {
-            postsResponseDto.setDisplayWriterNickname(postsResponseDto.getWriterNickname());
-        }
+        postsResponseDto.setDisplayWriterNickname(getDisplayWriterNickname(writer, postsResponseDto.getIsAnonymous(), postsResponseDto.getWriterNickname()));
         return postsResponseDto;
     }
 
     private PostResponseDto toPostResponseDtoExtended(Post post, User user) {
-        PostResponseDto dto = PostDtoMapper.INSTANCE.toPostResponseDtoExtended(
+        PostResponseDto postResponseDto = PostDtoMapper.INSTANCE.toPostResponseDtoExtended(
                 post,
                 findCommentsByPostIdByPage(user, post, 0),
                 getNumOfComments(post),
@@ -983,15 +977,9 @@ public class PostService {
 
         // 화면에 표시할 작성자 닉네임 설정
         User writer = post.getWriter();
-        if (writer != null && writer.getState() == UserState.INACTIVE) {
-            dto.setDisplayWriterNickname("비활성 유저");
-        } else if (Boolean.TRUE.equals(dto.getIsAnonymous())) {
-            dto.setDisplayWriterNickname("익명");
-        } else {
-            dto.setDisplayWriterNickname(dto.getWriterNickname());
-        }
+        postResponseDto.setDisplayWriterNickname(getDisplayWriterNickname(writer, postResponseDto.getIsAnonymous(), postResponseDto.getWriterNickname()));
 
-        return dto;
+        return postResponseDto;
     }
 
     private Page<CommentResponseDto> findCommentsByPostIdByPage(User user, Post post, Integer pageNum) {
@@ -1217,6 +1205,16 @@ public class PostService {
                 ErrorCode.INVALID_PARAMETER,
                 MessageUtil.ANONYMOUS_NOT_ALLOWED
             );
+        }
+    }
+
+    public String getDisplayWriterNickname(User writer, Boolean isAnonymous, String originalNickname) {
+        if (writer != null && writer.getState() == UserState.INACTIVE) {
+            return "비활성 유저";
+        } else if (Boolean.TRUE.equals(isAnonymous)) {
+            return "익명";
+        } else {
+            return originalNickname;
         }
     }
 }

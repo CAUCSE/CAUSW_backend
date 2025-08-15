@@ -28,6 +28,7 @@ import net.causw.app.main.dto.util.dtoMapper.CircleDtoMapper;
 import net.causw.app.main.dto.util.dtoMapper.PostDtoMapper;
 import net.causw.app.main.dto.util.dtoMapper.UserDtoMapper;
 import net.causw.app.main.infrastructure.aop.annotation.MeasureTime;
+import net.causw.app.main.service.post.PostService;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.UnauthorizedException;
@@ -68,6 +69,7 @@ public class BoardService {
     private final UserBoardSubscribeRepository userBoardSubscribeRepository;
     private final BoardApplyRepository boardApplyRepository;
     private final Validator validator;
+    private final PostService postService;
 
 
     @Transactional(readOnly = true)
@@ -168,13 +170,7 @@ public class BoardService {
 
                                         // 화면에 표시될 작성자 닉네임 설정
                                         User writer = post.getWriter();
-                                        if (writer != null && writer.getState() == UserState.INACTIVE) {
-                                            postContentDto.setDisplayWriterNickname("비활성 유저");
-                                        } else if (Boolean.TRUE.equals(postContentDto.getIsAnonymous())) {
-                                            postContentDto.setDisplayWriterNickname("익명");
-                                        } else {
-                                            postContentDto.setDisplayWriterNickname(postContentDto.getWriterNickname());
-                                        }
+                                        postContentDto.setDisplayWriterNickname(postService.getDisplayWriterNickname(writer, postContentDto.getIsAnonymous(), postContentDto.getWriterNickname()));
 
                                         return postContentDto;
                                     })

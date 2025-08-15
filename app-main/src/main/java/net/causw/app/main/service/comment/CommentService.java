@@ -25,6 +25,7 @@ import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.dto.util.dtoMapper.CommentDtoMapper;
 import net.causw.app.main.domain.policy.StatusPolicy;
 import net.causw.app.main.infrastructure.aop.annotation.MeasureTime;
+import net.causw.app.main.service.post.PostService;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.InternalServerException;
@@ -59,6 +60,7 @@ public class CommentService {
     private final Validator validator;
     private final UserCommentSubscribeRepository userCommentSubscribeRepository;
     private final PostNotificationService postNotificationService;
+    private final PostService postService;
 
     @Transactional
     public CommentResponseDto createComment(User creator, CommentCreateRequestDto commentCreateDto) {
@@ -269,13 +271,7 @@ public class CommentService {
 
         // 화면에 표시될 닉네임 설정
         User writer = comment.getWriter();
-        if (writer != null && writer.getState() == UserState.INACTIVE) {
-            commentResponseDto.setDisplayWriterNickname("비활성 유저");
-        } else if (Boolean.TRUE.equals(commentResponseDto.getIsAnonymous())) {
-            commentResponseDto.setDisplayWriterNickname("익명");
-        } else {
-            commentResponseDto.setDisplayWriterNickname(commentResponseDto.getWriterNickname());
-        }
+        commentResponseDto.setDisplayWriterNickname(postService.getDisplayWriterNickname(writer, commentResponseDto.getIsAnonymous(), commentResponseDto.getWriterNickname()));
 
         return commentResponseDto;
     }
@@ -303,13 +299,7 @@ public class CommentService {
 
         // 화면에 표시될 닉네임 설정
         User writer = childComment.getWriter();
-        if (writer != null && writer.getState() == UserState.INACTIVE) {
-            childCommentResponseDto.setDisplayWriterNickname("비활성 유저");
-        } else if (Boolean.TRUE.equals(childCommentResponseDto.getIsAnonymous())) {
-            childCommentResponseDto.setDisplayWriterNickname("익명");
-        } else {
-            childCommentResponseDto.setDisplayWriterNickname(childCommentResponseDto.getWriterNickname());
-        }
+        childCommentResponseDto.setDisplayWriterNickname(postService.getDisplayWriterNickname(writer, childCommentResponseDto.getIsAnonymous(), childCommentResponseDto.getWriterNickname()));
 
         return childCommentResponseDto;
     }
