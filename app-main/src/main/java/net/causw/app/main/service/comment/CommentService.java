@@ -98,7 +98,7 @@ public class CommentService {
         );
         comments.forEach(comment -> comment.setChildCommentList(childCommentRepository.findByParentComment_Id(comment.getId())));
 
-        return comments.map(comment -> toCommentResponseDtoWithInactiveCheck(comment, user, post.getBoard()));
+        return comments.map(comment -> toCommentResponseDto(comment, user, post.getBoard()));
     }
 
     @Transactional
@@ -239,22 +239,6 @@ public class CommentService {
     }
 
     private CommentResponseDto toCommentResponseDto(Comment comment, User user, Board board) {
-        return CommentDtoMapper.INSTANCE.toCommentResponseDto(
-                comment,
-                childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
-                getNumOfCommentLikes(comment),
-                isCommentAlreadyLike(user, comment.getId()),
-                StatusPolicy.isCommentOwner(comment, user),
-                comment.getChildCommentList().stream()
-                        .map(childComment -> toChildCommentResponseDto(childComment, user, board))
-                        .collect(Collectors.toList()),
-                StatusPolicy.isUpdatable(comment, user),
-                StatusPolicy.isDeletable(comment, user, board),
-                isCommentSubscribed(user, comment)
-        );
-    }
-
-    private CommentResponseDto toCommentResponseDtoWithInactiveCheck(Comment comment, User user, Board board) {
         CommentResponseDto commentResponseDto = CommentDtoMapper.INSTANCE.toCommentResponseDto(
                 comment,
                 childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
@@ -262,7 +246,7 @@ public class CommentService {
                 isCommentAlreadyLike(user, comment.getId()),
                 StatusPolicy.isCommentOwner(comment, user),
                 comment.getChildCommentList().stream()
-                        .map(childComment -> toChildCommentResponseDtoWithInactiveCheck(childComment, user, board))
+                        .map(childComment -> toChildCommentResponseDto(childComment, user, board))
                         .collect(Collectors.toList()),
                 StatusPolicy.isUpdatable(comment, user),
                 StatusPolicy.isDeletable(comment, user, board),
@@ -277,17 +261,6 @@ public class CommentService {
     }
 
     private ChildCommentResponseDto toChildCommentResponseDto(ChildComment childComment, User user, Board board) {
-        return CommentDtoMapper.INSTANCE.toChildCommentResponseDto(
-                childComment,
-                getNumOfChildCommentLikes(childComment),
-                isChildCommentAlreadyLike(user, childComment.getId()),
-                StatusPolicy.isChildCommentOwner(childComment, user),
-                StatusPolicy.isUpdatable(childComment, user),
-                StatusPolicy.isDeletable(childComment, user, board)
-        );
-    }
-
-    private ChildCommentResponseDto toChildCommentResponseDtoWithInactiveCheck(ChildComment childComment, User user, Board board) {
         ChildCommentResponseDto childCommentResponseDto = CommentDtoMapper.INSTANCE.toChildCommentResponseDto(
                 childComment,
                 getNumOfChildCommentLikes(childComment),
