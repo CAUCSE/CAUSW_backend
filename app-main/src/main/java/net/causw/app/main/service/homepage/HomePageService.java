@@ -125,6 +125,6 @@ public class HomePageService {
     }
 
     private Long getNumOfPostFavorites(Post post){
-        return favoritePostRepository.countByPostIdAndIsDeletedFalse(post.getId());
+        return favoritePostRepository.countByPostId(post.getId());
     }
 }
