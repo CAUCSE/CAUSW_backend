@@ -191,12 +191,10 @@ public class CommentService {
     public void likeComment(User user, String commentId) {
         Comment comment = getComment(commentId);
 
-        ValidatorBucket validatorBucket = ValidatorBucket.of();
-        validatorBucket
-                .consistOf(UserStateIsDeletedValidator.of(comment.getWriter().getState()))
-                .validate();
+        validateWriterNotDeleted(comment);
 
-        if (isCommentAlreadyLike(user, commentId)) {
+
+        if (isCommentLiked(user, commentId)) {
             throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.COMMENT_ALREADY_LIKED);
         }
 
@@ -204,6 +202,18 @@ public class CommentService {
         likeCommentRepository.save(likeComment);
     }
 
+    @Transactional
+    public void cancelLikeComment(final User user, final String commentId) {
+        Comment comment = getComment(commentId);
+
+        this.validateWriterNotDeleted(comment);
+
+        if (!isCommentLiked(user, commentId)) {
+            throw new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.COMMENT_NOT_LIKED);
+        }
+
+        likeCommentRepository.deleteLikeByCommentIdAndUserId(commentId, user.getId());
+    }
 
     public void createCommentSubscribe(User user, String commentId){
         Comment comment = getComment(commentId);
@@ -227,11 +237,11 @@ public class CommentService {
     }
 
 
-    private Boolean isCommentAlreadyLike(User user, String commentId) {
+    private Boolean isCommentLiked(User user, String commentId) {
         return likeCommentRepository.existsByCommentIdAndUserId(commentId, user.getId());
     }
 
-    private Boolean isChildCommentAlreadyLike(User user, String childCommentId) {
+    private Boolean isChildCommentLiked(User user, String childCommentId) {
         return likeChildCommentRepository.existsByChildCommentIdAndUserId(childCommentId, user.getId());
     }
 
@@ -240,7 +250,7 @@ public class CommentService {
                 comment,
                 childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
                 getNumOfCommentLikes(comment),
-                isCommentAlreadyLike(user, comment.getId()),
+                isCommentLiked(user, comment.getId()),
                 StatusPolicy.isCommentOwner(comment, user),
                 comment.getChildCommentList().stream()
                         .map(childComment -> toChildCommentResponseDto(childComment, user, board))
@@ -255,7 +265,7 @@ public class CommentService {
         return CommentDtoMapper.INSTANCE.toChildCommentResponseDto(
                 childComment,
                 getNumOfChildCommentLikes(childComment),
-                isChildCommentAlreadyLike(user, childComment.getId()),
+                isChildCommentLiked(user, childComment.getId()),
                 StatusPolicy.isChildCommentOwner(childComment, user),
                 StatusPolicy.isUpdatable(childComment, user),
                 StatusPolicy.isDeletable(childComment, user, board)
@@ -337,4 +347,16 @@ public class CommentService {
                 .orElse(false);
     }
 
+    private void validateWriterNotDeleted(final Comment comment) {
+        ValidatorBucket validatorBucket = ValidatorBucket.of();
+        validatorBucket
+                .consistOf(UserStateIsDeletedValidator.of(comment.getWriter().getState()))
+                .validate();
+    }
+
 }
+
+
+
+
+
