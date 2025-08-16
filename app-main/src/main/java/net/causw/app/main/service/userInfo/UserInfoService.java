@@ -3,6 +3,7 @@ package net.causw.app.main.service.userInfo;
 import static net.causw.global.constant.StaticValue.DEFAULT_PAGE_SIZE;
 
 import net.causw.app.main.domain.event.InitialAcademicCertificationEvent;
+import net.causw.app.main.domain.model.enums.user.UserState;
 import org.springframework.context.event.EventListener;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,13 +46,20 @@ public class UserInfoService {
 
   @Transactional(readOnly = true)
   public Page<UserInfoSummaryResponseDto> getAllUserInfos(Integer pageNum) {
-    return userInfoRepository.findAllByOrderByUpdatedAtDesc(pageableFactory.create(pageNum, DEFAULT_PAGE_SIZE))
+    return userInfoRepository.findAllByUser_StateOrderByUpdatedAtDesc(UserState.ACTIVE, pageableFactory.create(pageNum, DEFAULT_PAGE_SIZE))
         .map(UserDtoMapper.INSTANCE::toUserInfoSummaryResponseDto);
   }
 
   @Transactional(readOnly = true)
   public UserInfoResponseDto getUserInfoByUserId(String userId) {
     User user = findUserById(userId);
+
+    if (user.getState() != UserState.ACTIVE) {
+      throw new BadRequestException(
+          ErrorCode.INVALID_REQUEST_USER_STATE,
+          MessageUtil.USER_INFO_NOT_ACCESSIBLE
+      );
+    }
 
     UserInfo userInfo = userInfoRepository.findByUserId(userId)
         .orElse(UserInfo.of(user));
@@ -136,7 +144,8 @@ public class UserInfoService {
 
   @Transactional(readOnly = true)
   public Page<UserInfoSummaryResponseDto> search(final String keyword, final Integer pageNum) {
-    return userInfoRepository.findAllByKeywordInNameOrJobOrCareer(keyword, pageableFactory.create(pageNum, DEFAULT_PAGE_SIZE))
+    return userInfoRepository.findAllByUserStateAndKeywordInNameOrJobOrCareer(
+        UserState.ACTIVE, keyword, pageableFactory.create(pageNum, DEFAULT_PAGE_SIZE))
         .map(UserDtoMapper.INSTANCE::toUserInfoSummaryResponseDto);
   }
 
