@@ -24,6 +24,7 @@ public interface ReportRepository extends JpaRepository<Report, String> {
                 p.id AS postId,
                 p.title AS postTitle,
                 u.name AS writerName,
+                u.state AS writerState,
                 r.report_reason AS reportReason,
                 r.created_at AS reportCreatedAt,
                 b.name AS boardName,
@@ -73,7 +74,7 @@ public interface ReportRepository extends JpaRepository<Report, String> {
     @Query(
             value = """
             SELECT 
-                reportId, contentId, content, postTitle, postId, boardId, writerName, reportReason, reportCreatedAt 
+                reportId, contentId, content, postTitle, postId, boardId, writerName, writerState, reportReason, reportCreatedAt 
             FROM ( 
                 SELECT 
                     r.id AS reportId, 
@@ -83,6 +84,7 @@ public interface ReportRepository extends JpaRepository<Report, String> {
                     p.id AS postId, 
                     p.board_id AS boardId,
                     u.name AS writerName, 
+                    u.state AS writerState,
                     r.report_reason AS reportReason, 
                     r.created_at AS reportCreatedAt
                 FROM tb_report r 
@@ -99,6 +101,7 @@ public interface ReportRepository extends JpaRepository<Report, String> {
                     p.id AS postId, 
                     p.board_id AS boardId,
                     u.name AS writerName, 
+                    u.state AS writerState,
                     r.report_reason AS reportReason, 
                     r.created_at AS reportCreatedAt
                 FROM tb_report r 
