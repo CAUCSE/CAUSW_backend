@@ -17,6 +17,7 @@ import net.causw.app.main.dto.userInfo.UserCareerDto;
 import net.causw.app.main.dto.userInfo.UserInfoResponseDto;
 import net.causw.app.main.dto.userInfo.UserInfoSummaryResponseDto;
 import net.causw.app.main.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
+import net.causw.global.constant.StaticValue;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -236,8 +237,8 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
         if (phoneNumber == null) {
             return null;
         }
-        if (phoneNumber.startsWith("temp-")) {
-            return "전화번호 없음";
+        if (phoneNumber.startsWith(StaticValue.TEMP_PHONE_NUMBER_PREFIX)) {
+            return StaticValue.NO_PHONE_NUMBER_MESSAGE;
         }
         return phoneNumber;
     }
