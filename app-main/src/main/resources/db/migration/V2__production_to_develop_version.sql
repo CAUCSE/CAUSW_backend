@@ -99,18 +99,14 @@ ALTER TABLE tb_ceremony_push_notification
 DROP COLUMN is_push_active;
 
 -- 10. tb_user_council_fee 테이블 수정
--- is_paid 컬럼 타입 변경 (bit -> int)
+-- is_paid drop
 ALTER TABLE tb_user_council_fee
-    MODIFY COLUMN is_paid INT NOT NULL;
+    DROP COLUMN is_paid;
 
 -- 11. tb_user_council_fee_log 테이블 수정
 -- academic_status enum 값 변경
 ALTER TABLE tb_user_council_fee_log
-    MODIFY COLUMN academic_status ENUM('ENROLLED', 'LEAVE_OF_ABSENCE', 'GRADUATED', 'DROPPED_OUT', 'SUSPEND', 'EXPEL', 'PROFESSOR', 'UNDETERMINED') NOT NULL;
-
--- num_of_paid_semester 컬럼 타입 변경 (int -> bit)
-ALTER TABLE tb_user_council_fee_log
-    MODIFY COLUMN num_of_paid_semester BIT(1) NOT NULL;
+    MODIFY COLUMN academic_status enum('ENROLLED', 'LEAVE_OF_ABSENCE', 'GRADUATED', 'DROPPED_OUT', 'SUSPEND', 'EXPEL', 'PROFESSOR', 'UNDETERMINED') NOT NULL;
 
 -- 12. tb_user_academic_record_application 테이블 수정
 -- target_academic_status enum 값 변경

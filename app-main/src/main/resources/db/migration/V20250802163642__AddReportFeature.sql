@@ -7,7 +7,7 @@ CREATE TABLE tb_report
 (
     id            VARCHAR(36) NOT NULL PRIMARY KEY,
     reporter_id   VARCHAR(36) NOT NULL,
-    report_type   VARCHAR(20) NOT NULL,
+    report_type   ENUM('POST','COMMENT','CHILD_COMMENT') NOT NULL,
     target_id     VARCHAR(36) NOT NULL,
     report_reason VARCHAR(30) NOT NULL,
     created_at    DATETIME    NOT NULL,
