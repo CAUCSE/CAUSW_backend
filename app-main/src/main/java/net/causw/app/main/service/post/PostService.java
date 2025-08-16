@@ -1208,7 +1208,9 @@ public class PostService {
 
     // 화면에 표시할 작성자 닉네임 설정 (닉네임 / 비활성 유저 / 익명)
     public String getDisplayWriterNickname(User writer, Boolean isAnonymous, String originalNickname) {
-        if (writer != null && writer.getState() == UserState.INACTIVE) {
+        if (writer != null && (writer.getState() == UserState.INACTIVE
+                || writer.getState() == UserState.DROP
+                || writer.getState() == UserState.DELETED)) {
             return StaticValue.INACTIVE_USER_NICKNAME;
         } else if (Boolean.TRUE.equals(isAnonymous)) {
             return StaticValue.ANONYMOUS_USER_NICKNAME;
