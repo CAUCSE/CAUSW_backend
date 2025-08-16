@@ -39,6 +39,7 @@ public interface ReportDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "userNickname", source = "nickname")
     @Mapping(target = "totalReportCount", source = "reportCount")
     @Mapping(target = "profileImage", source = "userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
+    @Mapping(target = "userState", source = "state")
     ReportedUserResponseDto toReportedUserDto(User user);
 
     // Native Query용 description 변환

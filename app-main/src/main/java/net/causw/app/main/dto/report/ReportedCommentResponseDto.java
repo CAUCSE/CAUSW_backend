@@ -28,6 +28,9 @@ public class ReportedCommentResponseDto {
     
     @Schema(description = "작성자 실명", example = "김철수")
     private final String writerName;
+
+    @Schema(description = "작성자 유저 상태", example = "ACTIVE")
+    private final String writerState;
     
     @Schema(description = "신고 사유 설명", example = "욕설/비하")
     private final String reportReasonDescription;

@@ -24,6 +24,7 @@ public interface ReportRepository extends JpaRepository<Report, String> {
                 p.id AS postId,
                 p.title AS postTitle,
                 u.name AS writerName,
+                u.state AS writerState,
                 r.report_reason AS reportReason,
                 r.created_at AS reportCreatedAt,
                 b.name AS boardName,
@@ -53,16 +54,29 @@ public interface ReportRepository extends JpaRepository<Report, String> {
     );
 
     // 신고된 사용자 목록 조회
-    @Query("SELECT u FROM User u " +
-            "WHERE u.reportCount > 0 " +
-            "ORDER BY u.reportCount DESC")
+    @Query(value = """
+            SELECT u
+            FROM User u
+            WHERE u.reportCount > 0
+            ORDER BY CASE
+                         WHEN u.state = 'ACTIVE' THEN 0
+                         WHEN u.state = 'AWAIT' THEN 1
+                         WHEN u.state = 'INACTIVE' THEN 2
+                         WHEN u.state = 'REJECT' THEN 3
+                         WHEN u.state = 'DROP' THEN 4
+                         WHEN u.state = 'DELETED' THEN 5
+                         ELSE 99
+                         END,
+                     u.reportCount DESC
+         """
+        )
     Page<User> findReportedUsersByReportCount(Pageable pageable);
 
     // 댓글, 대댓글 신고 목록 조회(메모리 문제를 막기 위해 Native Query와 UNION ALL로 DB 내에서 처리하도록 함)
     @Query(
             value = """
             SELECT 
-                reportId, contentId, content, postTitle, postId, boardId, writerName, reportReason, reportCreatedAt 
+                reportId, contentId, content, postTitle, postId, boardId, writerName, writerState, reportReason, reportCreatedAt 
             FROM ( 
                 SELECT 
                     r.id AS reportId, 
@@ -72,6 +86,7 @@ public interface ReportRepository extends JpaRepository<Report, String> {
                     p.id AS postId, 
                     p.board_id AS boardId,
                     u.name AS writerName, 
+                    u.state AS writerState,
                     r.report_reason AS reportReason, 
                     r.created_at AS reportCreatedAt
                 FROM tb_report r 
@@ -88,6 +103,7 @@ public interface ReportRepository extends JpaRepository<Report, String> {
                     p.id AS postId, 
                     p.board_id AS boardId,
                     u.name AS writerName, 
+                    u.state AS writerState,
                     r.report_reason AS reportReason, 
                     r.created_at AS reportCreatedAt
                 FROM tb_report r 
