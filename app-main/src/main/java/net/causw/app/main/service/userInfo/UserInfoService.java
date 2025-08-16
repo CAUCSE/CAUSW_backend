@@ -46,7 +46,7 @@ public class UserInfoService {
 
   @Transactional(readOnly = true)
   public Page<UserInfoSummaryResponseDto> getAllUserInfos(Integer pageNum) {
-    return userInfoRepository.findAllByUser_StateOrderByUpdatedAtDesc(UserState.ACTIVE, pageableFactory.create(pageNum, DEFAULT_PAGE_SIZE))
+    return userInfoRepository.findAllByUserStateOrderByUpdatedAtDesc(UserState.ACTIVE, pageableFactory.create(pageNum, DEFAULT_PAGE_SIZE))
         .map(UserDtoMapper.INSTANCE::toUserInfoSummaryResponseDto);
   }
 

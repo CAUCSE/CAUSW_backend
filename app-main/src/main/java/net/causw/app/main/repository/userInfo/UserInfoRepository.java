@@ -15,7 +15,7 @@ public interface UserInfoRepository extends JpaRepository<UserInfo, String> {
 
     Optional<UserInfo> findByUserId(String userId);
 
-    Page<UserInfo> findAllByUser_StateOrderByUpdatedAtDesc(UserState state, Pageable pageable);
+    Page<UserInfo> findAllByUserStateOrderByUpdatedAtDesc(UserState state, Pageable pageable);
 
     @Query("""
     SELECT DISTINCT ui FROM UserInfo ui
