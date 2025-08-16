@@ -48,7 +48,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "currentCompletedSemester", source = "user.currentCompletedSemester")
     @Mapping(target = "graduationYear", source = "user.graduationYear")
     @Mapping(target = "graduationType", source = "user.graduationType")
-    @Mapping(target = "phoneNumber", source = "user.phoneNumber")
+    @Mapping(target = "phoneNumber", source = "user.phoneNumber", qualifiedByName = "maskPhoneNumber")
     @Mapping(target = "rejectionOrDropReason", source = "user.rejectionOrDropReason")
     @Mapping(target = "createdAt", source = "user.createdAt")
     @Mapping(target = "updatedAt", source = "user.updatedAt")
@@ -69,7 +69,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "currentCompletedSemester", source = "user.currentCompletedSemester")
     @Mapping(target = "graduationYear", source = "user.graduationYear")
     @Mapping(target = "graduationType", source = "user.graduationType")
-    @Mapping(target = "phoneNumber", source = "user.phoneNumber")
+    @Mapping(target = "phoneNumber", source = "user.phoneNumber", qualifiedByName = "maskPhoneNumber")
     @Mapping(target = "rejectionOrDropReason", source = "user.rejectionOrDropReason")
     @Mapping(target = "createdAt", source = "user.createdAt")
     @Mapping(target = "updatedAt", source = "user.updatedAt")
@@ -213,7 +213,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "userId", source = "userInfo.user.id")
     @Mapping(target = "name", source = "userInfo.user.name")
     @Mapping(target = "email", source = "userInfo.user.email")
-    @Mapping(target = "phoneNumber", source = "userInfo.user.phoneNumber")
+    @Mapping(target = "phoneNumber", source = "userInfo.user.phoneNumber", qualifiedByName = "maskPhoneNumber")
     @Mapping(target = "admissionYear", source = "userInfo.user.admissionYear")
     @Mapping(target = "profileImageUrl", source = "userInfo.user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
     @Mapping(target = "major", source = "userInfo.user.major")
@@ -229,4 +229,18 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "instagramLink", source = "userInfo.instagramLink")
     @Mapping(target = "isPhoneNumberVisible", source = "userInfo.isPhoneNumberVisible")
     UserInfoResponseDto toUserInfoResponseDto(UserInfo userInfo);
+
+    //TODO : 운영계 반영 성공시 삭제
+    @Named("maskPhoneNumber")
+    default String maskPhoneNumber(String phoneNumber) {
+        if (phoneNumber == null) {
+            return null;
+        }
+        if (phoneNumber.startsWith("temp-")) {
+            return "전화번호 없음";
+        }
+        return phoneNumber;
+    }
+
+
 }
