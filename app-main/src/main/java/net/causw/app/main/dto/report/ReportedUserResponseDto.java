@@ -1,5 +1,7 @@
 package net.causw.app.main.dto.report;
 
+import net.causw.app.main.domain.model.enums.user.UserState;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,4 +24,7 @@ public class ReportedUserResponseDto {
     
     @Schema(description = "총 신고 받은 횟수", example = "5")
     private final Integer totalReportCount;
+
+    @Schema(description = "유저 상태", example = "ACTIVE")
+    private final UserState userState;
 }
