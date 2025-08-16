@@ -22,6 +22,14 @@ public enum RoleGroup {
             Role.PROFESSOR
     )),
 
+
+    EXECUTIVES_AND_LEADER_ALUMNI(Set.of( // 집행부 + 동문회장
+            Role.ADMIN,
+            Role.PRESIDENT,
+            Role.VICE_PRESIDENT,
+            Role.LEADER_ALUMNI
+    )),
+
     EXECUTIVES_AND_CIRCLE_LEADER(Set.of( // 집행부 + 동아리장
             Role.ADMIN,
             Role.PRESIDENT,
@@ -52,6 +60,8 @@ public enum RoleGroup {
     @Component("RoleGroup")
     public static class RoleGroupComponent {
         public static final RoleGroup EXECUTIVES = RoleGroup.EXECUTIVES;
+
+        public static final RoleGroup EXECUTIVES_AND_LEADER_ALUMNI = RoleGroup.EXECUTIVES_AND_LEADER_ALUMNI;
         public static final RoleGroup EXECUTIVES_AND_PROFESSOR = RoleGroup.EXECUTIVES_AND_PROFESSOR;
         public static final RoleGroup EXECUTIVES_AND_CIRCLE_LEADER = RoleGroup.EXECUTIVES_AND_CIRCLE_LEADER;
         public static final RoleGroup CAN_LEAVE = RoleGroup.CAN_LEAVE;
