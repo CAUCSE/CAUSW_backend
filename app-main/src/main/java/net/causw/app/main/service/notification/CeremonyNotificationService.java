@@ -9,12 +9,16 @@ import net.causw.app.main.domain.model.entity.notification.CeremonyNotificationS
 import net.causw.app.main.domain.model.entity.notification.Notification;
 import net.causw.app.main.domain.model.entity.notification.NotificationLog;
 import net.causw.app.main.infrastructure.firebase.FcmUtils;
+import net.causw.app.main.repository.ceremony.CeremonyRepository;
 import net.causw.app.main.repository.notification.CeremonyNotificationSettingRepository;
 import net.causw.app.main.repository.notification.NotificationLogRepository;
 import net.causw.app.main.repository.notification.NotificationRepository;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.dto.notification.CeremonyNotificationDto;
 import net.causw.app.main.domain.model.enums.notification.NoticeType;
+import net.causw.global.constant.MessageUtil;
+import net.causw.global.exception.BadRequestException;
+import net.causw.global.exception.ErrorCode;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +37,7 @@ public class CeremonyNotificationService implements NotificationService {
     private final NotificationRepository notificationRepository;
     private final NotificationLogRepository notificationLogRepository;
     private final FcmUtils fcmUtils;
+    private final CeremonyRepository ceremonyRepository;
 
     @Override
     public void send(User user, String targetToken, String title, String body) {
@@ -59,7 +64,14 @@ public class CeremonyNotificationService implements NotificationService {
 
     @Async("asyncExecutor")
     @Transactional
-    public void sendByAdmissionYear(Integer admissionYear, Ceremony ceremony) {
+    public void sendByAdmissionYear(Integer admissionYear, String ceremonyId) {
+        Ceremony ceremony = ceremonyRepository.findById(ceremonyId).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.CEREMONY_NOT_FOUND
+                )
+        );
+
         List<CeremonyNotificationSetting> ceremonyNotificationSettings;
 
         if (ceremony.isSetAll()) {
