@@ -106,4 +106,8 @@ public class StaticValue {
     // nickname
     public static final String INACTIVE_USER_NICKNAME = "비활성 유저";
     public static final String ANONYMOUS_USER_NICKNAME = "익명";
+
+    //Temp Prefix
+    public static final String NO_PHONE_NUMBER_MESSAGE = "전화번호 없음";
+    public static final String TEMP_PHONE_NUMBER_PREFIX = "temp-";
 }
