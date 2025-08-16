@@ -59,7 +59,7 @@ public class CeremonyController {
 
     @GetMapping("/list/await")
     @ResponseStatus(value = HttpStatus.OK)
-    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES_AND_LEADER_ALUMNI)")
     @Operation(summary = "전체 경조사 승인 대기 목록 조회(관리자용)",
             description = "전체 경조사 승인 대기 목록을 조회합니다.")
     public Page<CeremonyListNotificationDto> getAllUserAwaitingCeremonyPage(
