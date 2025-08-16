@@ -54,20 +54,19 @@ public interface ReportRepository extends JpaRepository<Report, String> {
     );
 
     // 신고된 사용자 목록 조회
-    @Query("SELECT u "
-        + "FROM User u "
-        + "WHERE u.reportCount > 0 "
-        + "ORDER BY "
-        + "  CASE u.state "
-        + "    WHEN net.causw.app.main.domain.model.enums.user.UserState.ACTIVE   THEN 0"
-        + "    WHEN net.causw.app.main.domain.model.enums.user.UserState.AWAIT    THEN 1"
-        + "    WHEN net.causw.app.main.domain.model.enums.user.UserState.INACTIVE THEN 2"
-        + "    WHEN net.causw.app.main.domain.model.enums.user.UserState.REJECT   THEN 3"
-        + "    WHEN net.causw.app.main.domain.model.enums.user.UserState.DROP     THEN 4"
-        + "    WHEN net.causw.app.main.domain.model.enums.user.UserState.DELETED  THEN 5"
-        + "    ELSE 99"
-        + "  END,"
-        + "  u.reportCount DESC")
+    @Query("SELECT u FROM User u " +
+        "WHERE u.reportCount > 0 " +
+        "ORDER BY " +
+        "CASE " +
+        "  WHEN u.state = 'ACTIVE' THEN 0 " +
+        "  WHEN u.state = 'AWAIT' THEN 1 " +
+        "  WHEN u.state = 'INACTIVE' THEN 2 " +
+        "  WHEN u.state = 'REJECT' THEN 3 " +
+        "  WHEN u.state = 'DROP' THEN 4 " +
+        "  WHEN u.state = 'DELETED' THEN 5 " +
+        "  ELSE 99 " +
+        "END, " +
+        "u.reportCount DESC")
     Page<User> findReportedUsersByReportCount(Pageable pageable);
 
     // 댓글, 대댓글 신고 목록 조회(메모리 문제를 막기 위해 Native Query와 UNION ALL로 DB 내에서 처리하도록 함)
