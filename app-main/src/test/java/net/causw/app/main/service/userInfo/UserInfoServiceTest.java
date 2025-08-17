@@ -58,8 +58,8 @@ class UserInfoServiceTest {
   @Mock
   private MultipartFile profileImage;
 
-  private final User user = ObjectFixtures.getUser();
-  private final UserInfo userInfo = UserInfo.of(user);
+  private final User certifiedUser = ObjectFixtures.getCertifiedUserWithId("userId");
+  private final UserInfo userInfo = UserInfo.of(certifiedUser);
   private final UserCareerDto careerDto =  UserCareerDto.builder()
       .startYear(2023).startMonth(1).endYear(2024).endMonth(1)
       .description("CAU Company Backend Developer")
@@ -83,7 +83,7 @@ class UserInfoServiceTest {
 
     @BeforeEach
     public void setup() {
-      given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+      given(userRepository.findById(certifiedUser.getId())).willReturn(Optional.of(certifiedUser));
     }
 
     @Test
@@ -91,15 +91,15 @@ class UserInfoServiceTest {
     void createUserInfoSuccess() {
       // given
       given(userCareerRepository.save(any(UserCareer.class))).willReturn(userCareer);
-      given(userInfoRepository.findByUserId(user.getId())).willReturn(Optional.of(userInfo));
+      given(userInfoRepository.findByUserId(certifiedUser.getId())).willReturn(Optional.of(userInfo));
 
       // when
-      UserInfoResponseDto result = userInfoService.update(user.getId(), updateRequestDto, profileImage);
+      UserInfoResponseDto result = userInfoService.update(certifiedUser.getId(), updateRequestDto, profileImage);
 
       // then
       assertThat(result).isNotNull();
-      assertThat(result.getId()).isEqualTo(user.getId());
-      verify(userService).update(eq(user), any(UserUpdateRequestDto.class), eq(profileImage));
+      assertThat(result.getUserId()).isEqualTo(certifiedUser.getId());
+      verify(userService).update(eq(certifiedUser), any(UserUpdateRequestDto.class), eq(profileImage));
       verify(userCareerRepository).save(any(UserCareer.class));
     }
 
@@ -118,15 +118,15 @@ class UserInfoServiceTest {
           careerDto.getDescription()
       );
 
-      given(userInfoRepository.findByUserId(user.getId())).willReturn(Optional.of(userInfo));
+      given(userInfoRepository.findByUserId(certifiedUser.getId())).willReturn(Optional.of(userInfo));
       given(userCareerRepository.findAllCareerByUserInfoId(userInfo.getId())).willReturn(List.of(userCareer));
 
       // when
-      UserInfoResponseDto result = userInfoService.update(user.getId(), updateRequestDto, profileImage);
+      UserInfoResponseDto result = userInfoService.update(certifiedUser.getId(), updateRequestDto, profileImage);
 
       // then
       assertThat(result).isNotNull();
-      assertThat(result.getId()).isEqualTo(user.getId());
+      assertThat(result.getUserId()).isEqualTo(certifiedUser.getId());
       verify(userCareerRepository).deleteAllByIdInBatch(anyList());
     }
 
@@ -144,12 +144,36 @@ class UserInfoServiceTest {
           .isPhoneNumberVisible(true)
           .build();
 
-      given(userInfoRepository.findByUserId(user.getId())).willReturn(Optional.of(userInfo));
+      given(userInfoRepository.findByUserId(certifiedUser.getId())).willReturn(Optional.of(userInfo));
 
       // when & then
-      assertThatThrownBy(() -> userInfoService.update(user.getId(), updateRequestDto, profileImage))
+      assertThatThrownBy(() -> userInfoService.update(certifiedUser.getId(), updateRequestDto, profileImage))
           .isInstanceOf(BadRequestException.class)
           .extracting("errorCode").isEqualTo(ErrorCode.INVALID_PARAMETER);
+    }
+
+    @Test
+    @DisplayName("중복된 전화번호 입력시 예외 발생")
+    void duplicatedPhoneNumberThrowsException() {
+      // given
+      String duplicatedPhoneNumber = "010-0000-0000";
+
+      certifiedUser.setPhoneNumber(duplicatedPhoneNumber);
+
+      User foundUser = ObjectFixtures.getCertifiedUserWithId("foundUserId");
+      foundUser.setPhoneNumber(duplicatedPhoneNumber);
+
+      UserInfoUpdateRequestDto updateRequestDto = UserInfoUpdateRequestDto.builder()
+          .phoneNumber(duplicatedPhoneNumber)
+          .isPhoneNumberVisible(true)
+          .build();
+
+      given(userRepository.findByPhoneNumber(duplicatedPhoneNumber)).willReturn(Optional.of(foundUser));
+
+      // when & then
+      assertThatThrownBy(() -> userInfoService.update(certifiedUser.getId(), updateRequestDto, profileImage))
+          .isInstanceOf(BadRequestException.class)
+          .extracting("errorCode").isEqualTo(ErrorCode.ROW_ALREADY_EXIST);
     }
 
     @Test
@@ -157,10 +181,10 @@ class UserInfoServiceTest {
     void userServiceUpdateFailedThenUserInfoServiceUpdateFailed() {
       // given
       doThrow(new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.NICKNAME_ALREADY_EXIST))
-          .when(userService).update(eq(user), any(UserUpdateRequestDto.class), eq(profileImage));
+          .when(userService).update(eq(certifiedUser), any(UserUpdateRequestDto.class), eq(profileImage));
 
       // when & then
-      assertThatThrownBy(() -> userInfoService.update(user.getId(), updateRequestDto, profileImage))
+      assertThatThrownBy(() -> userInfoService.update(certifiedUser.getId(), updateRequestDto, profileImage))
           .isInstanceOf(BadRequestException.class)
           .extracting("errorCode").isEqualTo(ErrorCode.ROW_ALREADY_EXIST);
     }
