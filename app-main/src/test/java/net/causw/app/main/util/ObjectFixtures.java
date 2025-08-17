@@ -21,6 +21,7 @@ import net.causw.app.main.domain.model.enums.semester.SemesterType;
 import net.causw.app.main.domain.model.enums.user.GraduationType;
 import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
 import net.causw.global.constant.StaticValue;
+import org.springframework.test.util.ReflectionTestUtils;
 
 public class ObjectFixtures {
 
@@ -36,6 +37,13 @@ public class ObjectFixtures {
     user.setState(UserState.ACTIVE);
     user.setAcademicStatus(AcademicStatus.ENROLLED);
     user.setRoles(Set.of(Role.COMMON));
+
+    return user;
+  }
+
+  public static User getCertifiedUserWithId(String userId) {
+    User user = getCertifiedUser();
+    ReflectionTestUtils.setField(user, "id", userId);
 
     return user;
   }

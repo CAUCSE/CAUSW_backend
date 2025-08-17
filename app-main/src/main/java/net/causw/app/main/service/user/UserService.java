@@ -1060,7 +1060,7 @@ public class UserService {
                 if (foundUser.getState() == UserState.ACTIVE) {
                     throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.PHONE_NUMBER_ALREADY_EXIST);
                 } else if (foundUser.getState() == UserState.DROP) {
-                    throw  new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.USER_DROPPED_CONTACT_EMAIL);
+                    throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.DROPPED_USER_PHONE_NUMBER);
                 }
             }
         });
