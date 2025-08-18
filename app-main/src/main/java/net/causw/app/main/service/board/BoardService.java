@@ -277,6 +277,14 @@ public class BoardService {
                         MessageUtil.APPLY_NOT_FOUND
                 ));
 
+        // 게시판명 중복 체크
+        if (boardRepository.existsByName(boardApply.getBoardName())) {
+            throw new BadRequestException(
+                    ErrorCode.ROW_ALREADY_EXIST,
+                    MessageUtil.BOARD_NAME_ALREADY_EXISTS
+            );
+        }
+
         if (boardApply.getAcceptStatus() == BoardApplyStatus.ACCEPTED) { // 해당 신청이 이미 승인된 경우
             throw new BadRequestException(
                     ErrorCode.CANNOT_PERFORMED,
