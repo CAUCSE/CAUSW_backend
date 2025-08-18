@@ -808,7 +808,7 @@ public class UserService {
             }
         }
 
-        srcUser.update(userUpdateRequestDto.getNickname(), userProfileImage,userUpdateRequestDto.getPhoneNumber());
+        srcUser.update(userUpdateRequestDto.getNickname(), userProfileImage, userUpdateRequestDto.getPhoneNumber());
 
         User updatedUser = userRepository.save(srcUser);
 

@@ -4,6 +4,8 @@ import static net.causw.global.constant.StaticValue.DEFAULT_PAGE_SIZE;
 
 import net.causw.app.main.domain.event.InitialAcademicCertificationEvent;
 import net.causw.app.main.domain.model.enums.user.UserState;
+import net.causw.app.main.domain.validation.PhoneNumberFormatValidator;
+import net.causw.app.main.domain.validation.ValidatorBucket;
 import org.springframework.context.event.EventListener;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -104,6 +106,9 @@ public class UserInfoService {
         .nickname(user.getNickname())
         .phoneNumber(phoneNumber == null ? user.getPhoneNumber() : phoneNumber)
         .build();
+
+    ValidatorBucket validatorBucket = ValidatorBucket.of();
+    validatorBucket.consistOf(PhoneNumberFormatValidator.of(phoneNumber));
 
     userService.update(user, userUpdateRequestDto, profileImage); // 실패시 user, userInfo 전부 rollback
 
