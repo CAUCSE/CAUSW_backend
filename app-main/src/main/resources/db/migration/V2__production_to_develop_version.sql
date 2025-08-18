@@ -65,21 +65,24 @@ ALTER TABLE tb_user
 ALTER TABLE tb_user
     ADD COLUMN locker_id VARCHAR(255) NULL;
 
--- unique 제약조건 추가
-ALTER TABLE tb_user
-    ADD CONSTRAINT UK_6md40q5ok3w1xs81lgqgutfhjd UNIQUE (student_id);
+-- unique 제약조건 수정
+alter table tb_user
+drop key UK_djjmuep18k7xs81lgqgutfhjd;
 
 ALTER TABLE tb_user
-    ADD CONSTRAINT UK_6md40q5ok3w1xs81lgqgutfhjc UNIQUE (locker_id);
+    ADD CONSTRAINT uk_user_student_id UNIQUE (student_id);
+
+ALTER TABLE tb_user
+    ADD CONSTRAINT uk_user_locker_id UNIQUE (locker_id);
 
 -- 4. tb_locker 테이블 수정
 -- user_id unique 제약조건 추가
 ALTER TABLE tb_locker
-    ADD CONSTRAINT UK_kfx69bjr0mcgnwsluuohuvhpb UNIQUE (user_id);
+    ADD CONSTRAINT uk_locker_user_id UNIQUE (user_id);
 
 -- 5. tb_user와 tb_locker 간의 FK 관계 설정
 ALTER TABLE tb_user
-    ADD CONSTRAINT FK6df4nyawh2hwx7pxbl9qxep2a
+    ADD CONSTRAINT fk_user_to_locker_id
         FOREIGN KEY (locker_id) REFERENCES tb_locker (id);
 
 -- 6. tb_council_fee_fake_user 테이블 수정
@@ -95,7 +98,7 @@ ALTER TABLE tb_ceremony_attach_image_uuid_file
 DROP FOREIGN KEY FKpqnnjrm67d4rnlds18tutw542;
 
 ALTER TABLE tb_ceremony_attach_image_uuid_file
-    ADD CONSTRAINT FKh6htdl05nwrom8kat1s79u265
+    ADD CONSTRAINT fk_ceremony_attach_image_to_ceremony_id
         FOREIGN KEY (ceremony_id) REFERENCES tb_ceremony (id);
 
 -- 9. tb_ceremony_push_notification 테이블 수정
@@ -133,11 +136,11 @@ CREATE TABLE IF NOT EXISTS tb_notification_log (
     notification_id VARCHAR(255) NOT NULL,
     user_id VARCHAR(255) NOT NULL,
     PRIMARY KEY (id),
-    INDEX FKnm0qj8np5hpys0e9rfe4jlu3b (notification_id ASC) VISIBLE,
-    INDEX FKl2q98bs3s4gdkf77nfntwbgyk (user_id ASC) VISIBLE,
-    CONSTRAINT FKl2q98bs3s4gdkf77nfntwbgyk
+    INDEX tb_notification_log_notification_id_index (notification_id ASC) VISIBLE,
+    INDEX tb_notification_log_user_id_index (user_id ASC) VISIBLE,
+    CONSTRAINT fk_notification_log_to_user_id
     FOREIGN KEY (user_id) REFERENCES tb_user (id),
-    CONSTRAINT FKnm0qj8np5hpys0e9rfe4jlu3b
+    CONSTRAINT fk_notification_log_to_notification_id
     FOREIGN KEY (notification_id) REFERENCES tb_notification (id)
     ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -150,11 +153,11 @@ CREATE TABLE IF NOT EXISTS tb_user_comment_subscribe (
     comment_id VARCHAR(255) NULL DEFAULT NULL,
     user_id VARCHAR(255) NULL DEFAULT NULL,
     PRIMARY KEY (id),
-    INDEX FKsmjykxko0wkguyduujxljy9p1 (comment_id ASC) VISIBLE,
-    INDEX FKhtvmhbqf9n7whwlkpvakadg1x (user_id ASC) VISIBLE,
-    CONSTRAINT FKhtvmhbqf9n7whwlkpvakadg1x
+    INDEX tb_user_comment_subscribe_comment_id_index (comment_id ASC) VISIBLE,
+    INDEX tb_user_comment_subscribe_user_id_index (user_id ASC) VISIBLE,
+    CONSTRAINT fK_user_comment_subscribe_to_user_id
     FOREIGN KEY (user_id) REFERENCES tb_user (id),
-    CONSTRAINT FKsmjykxko0wkguyduujxljy9p1
+    CONSTRAINT fK_user_comment_subscribe_to_comment_id
     FOREIGN KEY (comment_id) REFERENCES tb_comment (id)
     ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -163,8 +166,8 @@ CREATE TABLE IF NOT EXISTS tb_user_fcm_token (
                                                  user_id VARCHAR(255) NOT NULL,
     fcm_token VARCHAR(255) NULL DEFAULT NULL,
     fcm_token_value VARCHAR(255) NULL DEFAULT NULL,
-    INDEX FK67eb8vcoda8mx5odsy07fc1fh (user_id ASC) VISIBLE,
-    CONSTRAINT FK67eb8vcoda8mx5odsy07fc1fh
+    INDEX tb_user_fcm_token_user_id_index (user_id ASC) VISIBLE,
+    CONSTRAINT fk_user_fcm_token_to_user_id
     FOREIGN KEY (user_id) REFERENCES tb_user (id)
     ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -177,11 +180,11 @@ CREATE TABLE IF NOT EXISTS tb_user_post_subscribe (
     post_id VARCHAR(255) NULL DEFAULT NULL,
     user_id VARCHAR(255) NULL DEFAULT NULL,
     PRIMARY KEY (id),
-    INDEX FK7sqkcrntbyp1x61eqmio1bp1e (post_id ASC) VISIBLE,
-    INDEX FKlny56nrqcq87bftis6i91x2y7 (user_id ASC) VISIBLE,
-    CONSTRAINT FK7sqkcrntbyp1x61eqmio1bp1e
+    INDEX tb_user_post_subscribe_post_id_index (post_id ASC) VISIBLE,
+    INDEX tb_user_post_subscribe_user_id_index (user_id ASC) VISIBLE,
+    CONSTRAINT fk_user_post_subscribe_to_post_id
     FOREIGN KEY (post_id) REFERENCES tb_post (id),
-    CONSTRAINT FKlny56nrqcq87bftis6i91x2y7
+    CONSTRAINT fk_user_post_subscribe_to_user_id
     FOREIGN KEY (user_id) REFERENCES tb_user (id)
     ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
