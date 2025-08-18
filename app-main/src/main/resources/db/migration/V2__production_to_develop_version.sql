@@ -128,7 +128,7 @@ ALTER TABLE tb_user_academic_record_log
 
 -- 14. 새로운 테이블들 생성
 -- tb_notification_log 테이블 생성
-CREATE TABLE IF NOT EXISTS tb_notification_log (
+CREATE TABLE tb_notification_log (
                                                    id VARCHAR(255) NOT NULL,
     created_at DATETIME(6) NULL DEFAULT NULL,
     updated_at DATETIME(6) NULL DEFAULT NULL,
@@ -145,7 +145,7 @@ CREATE TABLE IF NOT EXISTS tb_notification_log (
     ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 -- tb_user_comment_subscribe 테이블 생성
-CREATE TABLE IF NOT EXISTS tb_user_comment_subscribe (
+CREATE TABLE tb_user_comment_subscribe (
                                                          id VARCHAR(255) NOT NULL,
     created_at DATETIME(6) NULL DEFAULT NULL,
     updated_at DATETIME(6) NULL DEFAULT NULL,
@@ -155,14 +155,14 @@ CREATE TABLE IF NOT EXISTS tb_user_comment_subscribe (
     PRIMARY KEY (id),
     INDEX tb_user_comment_subscribe_comment_id_index (comment_id ASC) VISIBLE,
     INDEX tb_user_comment_subscribe_user_id_index (user_id ASC) VISIBLE,
-    CONSTRAINT fK_user_comment_subscribe_to_user_id
+    CONSTRAINT fk_user_comment_subscribe_to_user_id
     FOREIGN KEY (user_id) REFERENCES tb_user (id),
-    CONSTRAINT fK_user_comment_subscribe_to_comment_id
+    CONSTRAINT fk_user_comment_subscribe_to_comment_id
     FOREIGN KEY (comment_id) REFERENCES tb_comment (id)
     ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 -- tb_user_fcm_token 테이블 생성
-CREATE TABLE IF NOT EXISTS tb_user_fcm_token (
+CREATE TABLE tb_user_fcm_token (
                                                  user_id VARCHAR(255) NOT NULL,
     fcm_token VARCHAR(255) NULL DEFAULT NULL,
     fcm_token_value VARCHAR(255) NULL DEFAULT NULL,
@@ -172,7 +172,7 @@ CREATE TABLE IF NOT EXISTS tb_user_fcm_token (
     ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 -- tb_user_post_subscribe 테이블 생성
-CREATE TABLE IF NOT EXISTS tb_user_post_subscribe (
+CREATE TABLE tb_user_post_subscribe (
                                                       id VARCHAR(255) NOT NULL,
     created_at DATETIME(6) NULL DEFAULT NULL,
     updated_at DATETIME(6) NULL DEFAULT NULL,
