@@ -1,0 +1,4 @@
+-- Migration: ModifyPriorAcademicRecordApplicationIdColumnName
+
+ALTER TABLE tb_user_academic_record_log
+    RENAME COLUMN prior_academic_record_application_id TO prior_academic_record_application_status;

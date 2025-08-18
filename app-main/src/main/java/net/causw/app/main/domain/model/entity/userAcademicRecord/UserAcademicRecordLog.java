@@ -39,7 +39,7 @@ public class UserAcademicRecordLog extends BaseEntity {
     private String targetUserStudentId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "prior_academic_record_application_id", nullable = false)
+    @Column(name = "prior_academic_record_application_status", nullable = false)
     private AcademicStatus targetAcademicRecordStatus;
 
     @Enumerated(EnumType.STRING)
