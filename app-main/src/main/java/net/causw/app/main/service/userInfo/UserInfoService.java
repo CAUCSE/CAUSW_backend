@@ -107,8 +107,11 @@ public class UserInfoService {
         .phoneNumber(phoneNumber == null ? user.getPhoneNumber() : phoneNumber)
         .build();
 
-    ValidatorBucket validatorBucket = ValidatorBucket.of();
-    validatorBucket.consistOf(PhoneNumberFormatValidator.of(phoneNumber));
+    if (phoneNumber != null) {
+      ValidatorBucket.of()
+              .consistOf(PhoneNumberFormatValidator.of(phoneNumber))
+              .validate();
+    }
 
     userService.update(user, userUpdateRequestDto, profileImage); // 실패시 user, userInfo 전부 rollback
 
