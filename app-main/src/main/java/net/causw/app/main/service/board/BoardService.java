@@ -291,6 +291,14 @@ public class BoardService {
             );
         }
 
+        // 게시판명 중복 체크
+        if (boardRepository.existsByName(boardApply.getBoardName())) {
+            throw new BadRequestException(
+                    ErrorCode.ROW_ALREADY_EXIST,
+                    MessageUtil.BOARD_NAME_ALREADY_EXISTS
+            );
+        }
+
         boardApply.updateAcceptStatus(BoardApplyStatus.ACCEPTED); // 해당 boardApply의 상태를 ACCEPTED로 변경
         this.boardApplyRepository.save(boardApply);
 
