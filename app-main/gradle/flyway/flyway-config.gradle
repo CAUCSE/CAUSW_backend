@@ -74,7 +74,7 @@ flyway {
             logger.lifecycle("💻 Applying LOCAL Flyway configuration")
             outOfOrder = true
             ignoreMigrationPatterns = ['*:ignored', '*:pending']
-            validateOnMigrate = false
+            validateOnMigrate = true
             cleanDisabled = false
             baselineOnMigrate = true
     }
