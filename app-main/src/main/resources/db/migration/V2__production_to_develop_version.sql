@@ -6,6 +6,11 @@
 ALTER TABLE tb_user
     MODIFY COLUMN academic_status ENUM('ENROLLED', 'LEAVE_OF_ABSENCE', 'GRADUATED', 'DROPPED_OUT', 'SUSPEND', 'EXPEL', 'PROFESSOR', 'UNDETERMINED') NOT NULL;
 
+-- major not null로 변경 이전에 NULL 값 치환
+UPDATE tb_user
+SET major = '미정'
+WHERE major IS NULL;
+
 -- major 컬럼을 NOT NULL로 변경
 ALTER TABLE tb_user
     MODIFY COLUMN major VARCHAR(255) NOT NULL;
@@ -52,9 +57,9 @@ ALTER TABLE tb_user
 ALTER TABLE tb_user
     MODIFY COLUMN phone_number VARCHAR(255) NOT NULL;
 
--- student_id 컬럼을 NOT NULL로 변경
-ALTER TABLE tb_user
-    MODIFY COLUMN student_id VARCHAR(255) NOT NULL;
+-- -- student_id 컬럼을 NOT NULL로 변경 -> 이후 버전에서 null로 다시 변경하기 때문에 주석처리
+-- ALTER TABLE tb_user
+--     MODIFY COLUMN student_id VARCHAR(255) NOT NULL;
 
 -- locker_id 컬럼 추가
 ALTER TABLE tb_user
