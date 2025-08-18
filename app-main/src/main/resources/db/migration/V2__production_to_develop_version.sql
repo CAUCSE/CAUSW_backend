@@ -66,8 +66,8 @@ ALTER TABLE tb_user
     ADD COLUMN locker_id VARCHAR(255) NULL;
 
 -- unique 제약조건 수정
-alter table tb_user
-drop key UK_djjmuep18k7xs81lgqgutfhjd;
+ALTER TABLE tb_user
+DROP KEY UK_djjmuep18k7xs81lgqgutfhjd;
 
 ALTER TABLE tb_user
     ADD CONSTRAINT uk_user_student_id UNIQUE (student_id);
