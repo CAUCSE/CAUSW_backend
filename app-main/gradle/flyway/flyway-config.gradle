@@ -46,7 +46,6 @@ flyway {
         case 'dev':
             logger.lifecycle("🚀 Applying DEV Flyway configuration")
             outOfOrder = true
-            ignoreMigrationPatterns = ['*:ignored']
             validateOnMigrate = true
             cleanDisabled = false
             baselineOnMigrate = true
@@ -73,7 +72,6 @@ flyway {
         default:
             logger.lifecycle("💻 Applying LOCAL Flyway configuration")
             outOfOrder = true
-            ignoreMigrationPatterns = ['*:ignored', '*:pending']
             validateOnMigrate = true
             cleanDisabled = false
             baselineOnMigrate = true
