@@ -1,5 +1,6 @@
 HELP.md
 .gradle
+.env*
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
@@ -59,8 +60,9 @@ Dockerfile
 docker-compose.yaml
 deploy_*.sh
 app-*.yaml
+log/
 
 *.pem
-src/main/generated/net/causw/application/dto/util/*Impl.java
-src/main/generated/net/causw/application/dto/util/dtoMapper/*Impl.java
-src/main/generated/net/causw/application/dto/util/dtoMapper/custom/*Impl.java
+/app-main/src/main/generated/net/causw/app/main/dto/util/*Impl.java
+/app-main/src/main/generated/net/causw/app/main/dto/util/dtoMapper/*Impl.java
+/app-main/src/main/generated/net/causw/app/main/dto/util/dtoMapper/custom/*Impl.java

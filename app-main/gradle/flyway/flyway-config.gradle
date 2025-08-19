@@ -1,0 +1,90 @@
+// flyway-config.gradle
+
+// 1. 환경(env) 설정
+def env = project.hasProperty("env") ? project.property("env") : "local"
+
+// 2. .env.${env} 파싱
+def envFile = project.rootProject.file(".env.${env}")
+if (envFile.exists()) {
+    project.logger.lifecycle("🔧 Loading to project.ext from .env.${env}")
+    envFile.eachLine { line ->
+        def trimmedLine = line.trim()
+        if (!trimmedLine || trimmedLine.startsWith('#')) return
+
+        def (key, value) = line.split('=', 2)
+        if (key && value) {
+            project.ext.set(key.trim(), value.trim())
+        }
+    }
+}
+
+/* 3. 환경변수 설정
+ *
+ * 우선순위
+ * (1) Gradle -P 옵션 (e.g. ./gradlew flywayInfo -PDB_URL=... -PDB_USERNAME=... -PDB_PASSWORD=...)
+ * (2) .env.{env}
+ * (3) 환경변수 설정 생략
+ */
+def dbUrl = project.hasProperty("DB_URL") ? project.property("DB_URL") : null
+def dbUsername = project.hasProperty("DB_USERNAME") ? project.property("DB_USERNAME") : null
+def dbPassword = project.hasProperty("DB_PASSWORD") ? project.property("DB_PASSWORD") : null
+
+if (!dbUrl || !dbUsername || !dbPassword) {
+    logger.lifecycle("Skip Flyway configuration in Gradle: required DB properties not found.")
+    return
+}
+
+// 4. Flyway 기본 설정
+flyway {
+    url = dbUrl
+    user = dbUsername
+    password = dbPassword
+    locations = ["filesystem:src/main/resources/db/migration"]
+
+    // 5. 환경별 추가 설정
+    switch(env) {
+        case "test":
+            logger.lifecycle("🧪 Applying TEST(CI) Flyway configuration")
+            outOfOrder = true
+            validateOnMigrate = true
+            cleanDisabled = false
+            baselineOnMigrate = true
+            break
+
+        case 'dev':
+            logger.lifecycle("🚀 Applying DEV Flyway configuration")
+            outOfOrder = true
+            validateOnMigrate = true
+            cleanDisabled = true
+            baselineOnMigrate = true
+            break
+
+        case 'staging':
+            logger.lifecycle("🎯 Applying STAGING Flyway configuration")
+            outOfOrder = false
+            validateOnMigrate = true
+            cleanDisabled = true
+            baselineOnMigrate = false
+            break
+
+        case 'prod':
+            logger.lifecycle("🔒 Applying PRODUCTION Flyway configuration")
+            outOfOrder = false
+            validateOnMigrate = true
+            cleanDisabled = true
+            baselineOnMigrate = false
+            // ignoreMigrationPatterns 설정 안함 (무시된 마이그레이션 허용 안함)
+            break
+
+        case 'local':
+            logger.lifecycle("💻 Applying LOCAL Flyway configuration")
+            outOfOrder = true
+            validateOnMigrate = true
+            cleanDisabled = false
+            baselineOnMigrate = true
+            break
+
+        default:
+            throw new GradleException("❌ 지원하지 않는 env 값입니다: ${env}")
+    }
+}

@@ -3,84 +3,49 @@
 git init
 
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
-
 echo "> branch $BRANCH"
 
+function deploy_module() {
+  local MODULE_NAME=$1
+  local REPOSITORY=$2
+  local PORT=$3
+
+  echo "> [$MODULE_NAME] 현재 구동 중인 애플리케이션 pid 확인 (포트 $PORT)"
+  CURRENT_PID=$(lsof -ti tcp:$PORT)
+  echo "[$MODULE_NAME] 현재 구동 중인 애플리케이션 pid: $CURRENT_PID"
+
+  if [ -z "$CURRENT_PID" ]; then
+    echo "[$MODULE_NAME] 현재 구동 중인 애플리케이션이 없으므로 종료하지 않음"
+  else
+    echo "[$MODULE_NAME] kill -9 $CURRENT_PID"
+    sudo kill -9 "$CURRENT_PID"
+    sleep 5
+  fi
+
+  echo "[$MODULE_NAME] 새 애플리케이션 배포"
+  JAR_NAME=$(ls -tr $REPOSITORY/*.jar | tail -n 1)
+  echo "[$MODULE_NAME] JAR NAME: $JAR_NAME"
+
+  chmod +x $JAR_NAME
+
+  echo "[$MODULE_NAME] 애플리케이션 실행"
+  nohup java -jar -Duser.timezone=Asia/Seoul $JAR_NAME >> $REPOSITORY/nohup_${MODULE_NAME}.out
+ 2>&1 &
+  echo "[$MODULE_NAME] 실행 완료"
+}
+
 if [ "$BRANCH" = "main" ]; then
+  echo "Deploying on main branch"
 
-    # main 브랜치에 대한 동작
-    echo "Deploying on main branch"
-
-    REPOSITORY=/home/ubuntu/app/build/libs
-
-    echo "> 현재 구동 중인 애플리케이션 pid 확인"
-
-    CURRENT_PID=$(lsof -ti tcp:8080)
-
-    echo "현재 구동 중인 애플리케이션 pid: $CURRENT_PID"
-
-    if [ -z "${CURRENT_PID}" ]
-    then
-      echo "현재 구동 중인 애플리케이션이 없으므로 종료 X"
-    else
-      echo "> kill -9 $CURRENT_PID"
-      sudo kill -9 "$CURRENT_PID"
-      sleep 5
-    fi
-
-    echo "> 새 애플리케이션 배포"
-
-    JAR_NAME=$(ls -tr $REPOSITORY/*SNAPSHOT.jar | tail -n 1)
-
-    echo "> JAR NAME: $JAR_NAME"
-
-    echo "> $JAR_NAME 에 실행권한 추가"
-
-    chmod +x $JAR_NAME
-
-    echo "> $JAR_NAME 실행"
-
-    nohup java -jar -Dspring.config.location=/home/ubuntu/app/src/main/resources/application.yml,/home/ubuntu/app/src/main/resources/application-prod.yml,/home/ubuntu/app/src/main/resources/email-config.yaml,/home/ubuntu/app/src/main/resources/password-config.yaml -Duser.timezone=Asia/Seoul $JAR_NAME >> $REPOSITORY/nohup.out 2>&1 &
-
-    echo "> jar 실행 완료"
-
+  deploy_module "app-main" "/home/ubuntu/app/app-main" 8080
+  deploy_module "app-chat" "/home/ubuntu/app/app-chat" 8081
 
 elif [ "$BRANCH" = "develop" ]; then
+  echo "Deploying on develop branch"
 
-    # develop 브랜치에 대한 동작
-    echo "Deploying on develop branch"
+  deploy_module "app-main" "/home/ubuntu/app/app-main" 8080
+  deploy_module "app-chat" "/home/ubuntu/app/app-chat" 8081
 
-    REPOSITORY=/home/ubuntu/app/build/libs
-
-    echo "> 현재 구동 중인 애플리케이션 pid 확인"
-
-    CURRENT_PID=$(lsof -ti tcp:8080)
-
-    echo "현재 구동 중인 애플리케이션 pid: $CURRENT_PID"
-
-    if [ -z "${CURRENT_PID}" ]
-    then
-      echo "현재 구동 중인 애플리케이션이 없으므로 종료 X"
-    else
-      echo "> kill -9 $CURRENT_PID"
-      sudo kill -9 "$CURRENT_PID"
-      sleep 5
-    fi
-
-    echo "> 새 애플리케이션 배포"
-
-    JAR_NAME=$(ls -tr $REPOSITORY/*SNAPSHOT.jar | tail -n 1)
-
-    echo "> JAR NAME: $JAR_NAME"
-
-    echo "> $JAR_NAME 에 실행권한 추가"
-
-    chmod +x $JAR_NAME
-
-    echo "> $JAR_NAME 실행"
-
-    nohup java -jar -Dspring.config.location=/home/ubuntu/app/src/main/resources/application.yml,/home/ubuntu/app/src/main/resources/application-dev.yml,/home/ubuntu/app/src/main/resources/email-config.yaml,/home/ubuntu/app/src/main/resources/password-config.yaml -Duser.timezone=Asia/Seoul $JAR_NAME >> $REPOSITORY/nohup.out 2>&1 &
-
-    echo "> jar 실행 완료"
-
+else
+  echo "Deploy script does not support branch: $BRANCH"
 fi
