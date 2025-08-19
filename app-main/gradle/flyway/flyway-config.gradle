@@ -43,6 +43,14 @@ flyway {
 
     // 5. 환경별 추가 설정
     switch(env) {
+        case "test":
+            logger.lifecycle("🧪 Applying TEST(CI) Flyway configuration")
+            outOfOrder = true
+            validateOnMigrate = true
+            cleanDisabled = false
+            baselineOnMigrate = true
+            break
+
         case 'dev':
             logger.lifecycle("🚀 Applying DEV Flyway configuration")
             outOfOrder = true
@@ -75,7 +83,7 @@ flyway {
             cleanDisabled = false
             baselineOnMigrate = true
             break
-        
+
         default:
             throw new GradleException("❌ 지원하지 않는 env 값입니다: ${env}")
     }
