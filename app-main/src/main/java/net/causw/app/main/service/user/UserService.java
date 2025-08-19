@@ -1411,8 +1411,8 @@ public class UserService {
     }
 
     public UserFindIdResponseDto findUserId(UserFindIdRequestDto userIdFindRequestDto) {
-        User user = this.userRepository.findByStudentIdAndName(
-                userIdFindRequestDto.getStudentId().trim(),
+        User user = this.userRepository.findByPhoneNumberAndName(
+                userIdFindRequestDto.getPhoneNumber().trim(),
                 userIdFindRequestDto.getName().trim()
         ).orElseThrow(() -> new BadRequestException(
                 ErrorCode.ROW_DOES_NOT_EXIST,
