@@ -47,7 +47,7 @@ flyway {
             logger.lifecycle("🚀 Applying DEV Flyway configuration")
             outOfOrder = true
             validateOnMigrate = true
-            cleanDisabled = false
+            cleanDisabled = true
             baselineOnMigrate = true
             break
 
