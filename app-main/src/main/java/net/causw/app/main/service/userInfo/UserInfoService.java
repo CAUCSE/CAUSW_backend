@@ -85,10 +85,6 @@ public class UserInfoService {
 
         String phoneNumber = request.getPhoneNumber();
         if (phoneNumber != null) {
-            ValidatorBucket.of()
-                    .consistOf(PhoneNumberFormatValidator.of(phoneNumber))
-                    .validate();
-
             validatePhoneNumberDuplication(phoneNumber, user);
         }
 
