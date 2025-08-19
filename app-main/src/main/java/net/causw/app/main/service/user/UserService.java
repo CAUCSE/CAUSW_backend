@@ -131,6 +131,10 @@ public class UserService {
                 ).orElseThrow(() ->
             new NotFoundException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND));
 
+        if (!requestUser.getPhoneNumber().equals(userFindPasswordRequestDto.getPhoneNumber())) {
+            throw new NotFoundException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND);
+        }
+
         // 임시 비밀번호 생성
         String newPassword = this.passwordGenerator.generate();
 
@@ -1411,8 +1415,8 @@ public class UserService {
     }
 
     public UserFindIdResponseDto findUserId(UserFindIdRequestDto userIdFindRequestDto) {
-        User user = this.userRepository.findByStudentIdAndName(
-                userIdFindRequestDto.getStudentId().trim(),
+        User user = this.userRepository.findByPhoneNumberAndName(
+                userIdFindRequestDto.getPhoneNumber().trim(),
                 userIdFindRequestDto.getName().trim()
         ).orElseThrow(() -> new BadRequestException(
                 ErrorCode.ROW_DOES_NOT_EXIST,
