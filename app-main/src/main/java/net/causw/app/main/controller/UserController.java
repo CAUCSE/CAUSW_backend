@@ -31,7 +31,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
-@Slf4j
 public class UserController {
     private final UserService userService;
     private final UserRoleService userRoleService;
@@ -266,7 +265,6 @@ public class UserController {
         ) {
         String userAgent = request.getHeader("User-Agent");
         String ipAddress = extractClientIp(request);
-        log.info("로그인 요청: IP: {}, User-Agent: {}, 아이디: {}, 비밀번호: {}", ipAddress, userAgent, userSignInRequestDto.getEmail(), userSignInRequestDto.getPassword());
         return this.userService.signIn(userSignInRequestDto);
     }
 
