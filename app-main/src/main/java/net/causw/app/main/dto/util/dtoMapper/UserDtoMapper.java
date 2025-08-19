@@ -253,7 +253,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
         String localPart = parts[0];
         String domainPart = parts[1];
 
-        // 최소 1글자만 보이고 나머지 마스킹
+        // 로컬 파트의 앞 2글자까지 보여주고 나머지는 마스킹
         int visibleCount = Math.min(2, localPart.length());
         String visible = localPart.substring(0, visibleCount);
         String masked = "*".repeat(Math.max(0, localPart.length() - visibleCount));
