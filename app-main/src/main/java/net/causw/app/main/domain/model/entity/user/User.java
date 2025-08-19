@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import static net.causw.global.constant.StaticValue.NO_PHONE_NUMBER_MESSAGE;
+
 @Getter
 @Builder(access = AccessLevel.PROTECTED)
 @Setter
@@ -153,10 +155,13 @@ public class User extends BaseEntity {
                 .build();
     }
 
+
     public void update(String nickname, UserProfileImage userProfileImage, String phoneNumber) {
         this.nickname = nickname;
         this.userProfileImage = userProfileImage;
-        this.phoneNumber = phoneNumber;
+        if (phoneNumber != null && !NO_PHONE_NUMBER_MESSAGE.equals(phoneNumber)) {
+            this.phoneNumber = phoneNumber;
+        }
     }
 
     public void updateRejectionOrDropReason(String reason) {
