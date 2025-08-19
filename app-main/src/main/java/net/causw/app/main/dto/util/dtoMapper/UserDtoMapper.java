@@ -32,7 +32,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 
     UserDtoMapper INSTANCE = Mappers.getMapper(UserDtoMapper.class);
 
-    @Mapping(target = "email", source = "user.email")
+    @Mapping(target = "email", source = "user.email", qualifiedByName = "maskEmail")
     UserFindIdResponseDto toUserfindIdResponseDto(User user);
 
     @Mapping(target = "id", source = "user.id")
@@ -243,5 +243,21 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
         return phoneNumber;
     }
 
+    @Named("maskEmail")
+    default String maskEmail(String email) {
+        if (email == null || !email.contains("@")) {
+            return email; // 잘못된 형식은 그냥 리턴
+        }
 
+        String[] parts = email.split("@", 2);
+        String localPart = parts[0];
+        String domainPart = parts[1];
+
+        // 로컬 파트의 앞 2글자까지 보여주고 나머지는 마스킹
+        int visibleCount = Math.min(2, localPart.length());
+        String visible = localPart.substring(0, visibleCount);
+        String masked = "*".repeat(Math.max(0, localPart.length() - visibleCount));
+
+        return visible + masked + "@" + domainPart;
+    }
 }
