@@ -29,6 +29,7 @@ import net.causw.app.main.service.pageable.PageableFactory;
 import net.causw.app.main.domain.model.enums.user.Role;
 import net.causw.app.main.domain.model.enums.user.UserState;
 
+import net.causw.app.main.service.post.PostService;
 import net.causw.app.main.util.ObjectFixtures;
 import net.causw.global.constant.StaticValue;
 import net.causw.global.exception.BadRequestException;
@@ -83,6 +84,8 @@ class UserServiceTest {
   PostRepository postRepository;
   @Mock
   FavoritePostRepository favoritePostRepository;
+  @Mock
+  PostService postService;
 
   @Mock
   HttpServletResponse response;
