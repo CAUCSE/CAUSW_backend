@@ -287,17 +287,30 @@ public class UserService {
             .validate();
 
         return userDtoMapper.toUserPostsResponseDto(
-            requestUser,
-            this.likePostRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
-                .map(likePost -> postDtoMapper.toPostsResponseDto(
-                    likePost.getPost(),
-                    getNumOfComment(likePost.getPost()),
-                    getNumOfPostLikes(likePost.getPost()),
-                    getNumOfPostFavorites(likePost.getPost()),
-                    !likePost.getPost().getPostAttachImageList().isEmpty() ? likePost.getPost().getPostAttachImageList().get(0) : null,
-                    StatusPolicy.isPostVote(likePost.getPost()),
-                    StatusPolicy.isPostForm(likePost.getPost())
-                ))
+                requestUser,
+                this.likePostRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
+                        .map(likePost -> {
+                            Post post = likePost.getPost();
+                            PostsResponseDto dto = postDtoMapper.toPostsResponseDto(
+                                    post,
+                                    getNumOfComment(post),
+                                    getNumOfPostLikes(post),
+                                    getNumOfPostFavorites(post),
+                                    !post.getPostAttachImageList().isEmpty() ? post.getPostAttachImageList().get(0) : null,
+                                    StatusPolicy.isPostVote(post),
+                                    StatusPolicy.isPostForm(post)
+                            );
+
+                            // 화면에 표시될 작성자 닉네임 설정
+                            String displayNickname = postService.getDisplayWriterNickname(
+                                    post.getWriter(),
+                                    post.getIsAnonymous(),
+                                    post.getWriter() != null ? post.getWriter().getNickname() : null
+                            );
+                            dto.setDisplayWriterNickname(displayNickname);
+
+                            return dto;
+                        })
         );
     }
 
