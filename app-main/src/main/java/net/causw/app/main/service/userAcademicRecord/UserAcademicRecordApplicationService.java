@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import net.causw.app.main.domain.event.AcademicStatusChangeEvent;
 import net.causw.app.main.domain.event.InitialAcademicCertificationEvent;
+import net.causw.app.main.dto.user.UserAcademicStatusNoteUpdateDto;
 import net.causw.app.main.repository.notification.CeremonyNotificationSettingRepository;
 import net.causw.app.main.repository.user.UserRepository;
 import net.causw.app.main.repository.userAcademicRecord.UserAcademicRecordApplicationRepository;
@@ -106,10 +107,10 @@ public class UserAcademicRecordApplicationService {
     }
 
     @Transactional
-    public UserAcademicRecordInfoResponseDto updateUserAcademicRecordNote(String userId, String note) {
+    public UserAcademicRecordInfoResponseDto updateUserAcademicRecordNote(String userId, UserAcademicStatusNoteUpdateDto userAcademicStatusNoteUpdateDto) {
         User user = getUser(userId);
 
-        user.setAcademicStatusNote(note);
+        user.setAcademicStatusNote(userAcademicStatusNoteUpdateDto.getNote());
 
         userRepository.save(user);
 
@@ -468,12 +469,19 @@ public class UserAcademicRecordApplicationService {
     }
 
     private UserAcademicRecordInfoResponseDto toUserAcademicRecordInfoResponseDto(User user, List<UserAcademicRecordLog> userAcademicRecordLogList) {
-        return UserAcademicRecordDtoMapper.INSTANCE.toUserAcademicRecordInfoResponseDto(
+        UserAcademicRecordInfoResponseDto responseDto = UserAcademicRecordDtoMapper.INSTANCE.toUserAcademicRecordInfoResponseDto(
                 user,
                 userAcademicRecordLogList.stream()
                         .map(this::toUserAcademicRecordApplicationResponseDto)
                         .toList()
         );
+
+        // 따옴표 제거
+        if (responseDto.getNote() != null) {
+            responseDto.setNote(responseDto.getNote().replaceAll("^\"|\"$", ""));
+        }
+
+        return responseDto;
     }
 
     private UserAcademicRecordApplicationResponseDto toUserAcademicRecordApplicationResponseDto(UserAcademicRecordLog userAcademicRecordLog) {

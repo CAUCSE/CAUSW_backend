@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.app.main.dto.semester.CurrentSemesterResponseDto;
+import net.causw.app.main.dto.user.UserAcademicStatusNoteUpdateDto;
 import net.causw.app.main.dto.userAcademicRecordApplication.*;
 import net.causw.app.main.service.semester.SemesterService;
 import net.causw.app.main.service.userAcademicRecord.UserAcademicRecordApplicationService;
@@ -100,7 +101,7 @@ public class UserAcademicRecordApplicationController {
     /**
      * 유저 학적 정보 노트 변경
      * @param userId
-     * @param note
+     * @param userAcademicStatusNoteUpdateDto
      * @return Void
      */
     @PutMapping("/record/{userId}")
@@ -110,9 +111,9 @@ public class UserAcademicRecordApplicationController {
             description = "유저 학적 정보 노트를 변경합니다.")
     public UserAcademicRecordInfoResponseDto updateUserAcademicRecordNote(
             @PathVariable("userId") String userId,
-            @RequestBody String note
-    ) {
-        return userAcademicRecordApplicationService.updateUserAcademicRecordNote(userId, note);
+            @RequestBody UserAcademicStatusNoteUpdateDto userAcademicStatusNoteUpdateDto
+            ) {
+        return userAcademicRecordApplicationService.updateUserAcademicRecordNote(userId, userAcademicStatusNoteUpdateDto);
     }
 
     /**

@@ -4,11 +4,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
 
 import java.util.List;
 
 @Getter
+@Setter
 @Builder
 @AllArgsConstructor
 public class UserAcademicRecordInfoResponseDto {
