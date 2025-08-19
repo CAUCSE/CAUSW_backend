@@ -374,10 +374,17 @@ public class UserAcademicRecordApplicationService {
     }
 
     private UserAcademicRecordInfoResponseDto getUserAcademicRecordInfoResponseDto(User user) {
-        return toUserAcademicRecordInfoResponseDto(
+        UserAcademicRecordInfoResponseDto responseDto = toUserAcademicRecordInfoResponseDto(
                 user,
                 getUserAcademicRecordLogList(user)
         );
+
+        // 따옴표 제거
+        if (responseDto.getNote() != null) {
+            responseDto.setNote(responseDto.getNote().replaceAll("^\"|\"$", ""));
+        }
+
+        return responseDto;
     }
 
     private List<UserAcademicRecordLog> getUserAcademicRecordLogList(User user) {
