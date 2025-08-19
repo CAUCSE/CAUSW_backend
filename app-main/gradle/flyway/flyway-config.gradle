@@ -69,11 +69,14 @@ flyway {
             break
 
         case 'local':
-        default:
             logger.lifecycle("💻 Applying LOCAL Flyway configuration")
             outOfOrder = true
             validateOnMigrate = true
             cleanDisabled = false
             baselineOnMigrate = true
+            break
+        
+        default:
+            throw new GradleException("❌ 지원하지 않는 env 값입니다: ${env}")
     }
 }
