@@ -8,7 +8,6 @@ import net.causw.app.main.domain.model.entity.circle.Circle;
 import net.causw.app.main.domain.model.entity.circle.CircleMember;
 import net.causw.app.main.domain.model.entity.locker.LockerLog;
 import net.causw.app.main.infrastructure.firebase.FcmUtils;
-import net.causw.app.main.domain.model.entity.userInfo.UserInfo;
 import net.causw.app.main.repository.userAcademicRecord.UserAcademicRecordApplicationRepository;
 import net.causw.app.main.repository.userInfo.UserInfoRepository;
 import net.causw.app.main.repository.uuidFile.UserAcademicRecordApplicationAttachImageRepository;
@@ -773,28 +772,14 @@ public class UserService {
         if (srcUser.getNickname() == null
                 || !srcUser.getNickname().equals(userUpdateRequestDto.getNickname())
         ) {
-            userRepository.findByNickname(userUpdateRequestDto.getNickname()).ifPresent(
-                    nickname -> {
-                        throw new BadRequestException(
-                                ErrorCode.ROW_ALREADY_EXIST,
-                                MessageUtil.NICKNAME_ALREADY_EXIST
-                        );
-                    }
-            );
+            validateNicknameUniqueness(userUpdateRequestDto.getNickname(), srcUser);
         }
 
         // 전화번호가 변경되었을 때 중복 체크
         if (srcUser.getPhoneNumber() == null
                 || !srcUser.getPhoneNumber().equals(userUpdateRequestDto.getPhoneNumber())
         ) {
-            userRepository.findByPhoneNumber(userUpdateRequestDto.getPhoneNumber()).ifPresent(
-                    phoneNumber -> {
-                        throw new BadRequestException(
-                                ErrorCode.ROW_ALREADY_EXIST,
-                                MessageUtil.PHONE_NUMBER_ALREADY_EXIST
-                        );
-                    }
-            );
+            validatePhoneNumberUniqueness(userUpdateRequestDto.getPhoneNumber(), srcUser);
         }
 
         UserProfileImage userProfileImage = srcUser.getUserProfileImage();
@@ -1043,50 +1028,71 @@ public class UserService {
 
     /**
      * 사용자 정보의 유일성을 검증하는 헬퍼 메소드.
-     * DB에 저장하기 전에 호출 애플리케이션 단에서 미리 중복 확인
+     * DB에 저장하기 전에 호출, 애플리케이션 단에서 미리 중복 확인
      *
      * @param dto         새로 가입 또는 수정하려는 정보
      * @param currentUser 정보를 수정하려는 기존 사용자 (신규 가입 시에는 null)
      */
     private void validateUniqueness(UserCreateRequestDto dto, User currentUser) {
-        // 닉네임 검사
-        userRepository.findByNickname(dto.getNickname()).ifPresent(foundUser -> {
-            // 다른 유저가 이 닉네임을 이미 사용하고 있다면 에러 발생
-            if (currentUser == null || !foundUser.getId().equals(currentUser.getId())) {
-                if (foundUser.getState() == UserState.ACTIVE) {
-                    throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.NICKNAME_ALREADY_EXIST);
-                } else if (foundUser.getState() == UserState.DROP) {
-                    throw  new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.USER_DROPPED_CONTACT_EMAIL);
-                }
-            }
-        });
+        validateNicknameUniqueness(dto.getNickname(), currentUser);
+        validatePhoneNumberUniqueness(dto.getPhoneNumber(), currentUser);
 
-        // 전화번호 검사
-        userRepository.findByPhoneNumber(dto.getPhoneNumber()).ifPresent(foundUser -> {
-            // 다른 유저가 이 전화번호를 이미 사용하고 있다면 에러 발생
-            if (currentUser == null || !foundUser.getId().equals(currentUser.getId())) {
-                if (foundUser.getState() == UserState.ACTIVE) {
-                    throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.PHONE_NUMBER_ALREADY_EXIST);
-                } else if (foundUser.getState() == UserState.DROP) {
-                    throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.DROPPED_USER_PHONE_NUMBER);
-                }
-            }
-        });
-
-        // 학번 검사
         if (dto.getStudentId() != null) {
-            userRepository.findByStudentId(dto.getStudentId()).ifPresent(foundUser -> {
-                // 다른 유저가 이 학번을 이미 사용하고 있다면 에러 발생
-                if (currentUser == null || !foundUser.getId().equals(currentUser.getId())) {
-                    if (foundUser.getState() == UserState.ACTIVE) {
-                        throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.STUDENT_ID_ALREADY_EXIST);
-                    } else if (foundUser.getState() == UserState.DROP) {
-                        throw  new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.USER_DROPPED_CONTACT_EMAIL);
-                    }
-                }
-            });
+            validateStudentIdUniqueness(dto.getStudentId(), currentUser);
         }
     }
+
+    private void validateNicknameUniqueness(String nickname, User currentUser) {
+        userRepository.findByNickname(nickname).ifPresent(foundUser -> {
+            if (currentUser == null || !foundUser.getId().equals(currentUser.getId())) {
+                if (foundUser.getState() == UserState.ACTIVE || foundUser.getState() == UserState.INACTIVE) {
+                    throw new BadRequestException(
+                            ErrorCode.ROW_ALREADY_EXIST,
+                            MessageUtil.NICKNAME_ALREADY_EXIST);
+
+                } else if (foundUser.getState() == UserState.DROP) {
+                    throw new BadRequestException(
+                            ErrorCode.ROW_ALREADY_EXIST,
+                            MessageUtil.USER_DROPPED_CONTACT_EMAIL);
+                }
+            }
+        });
+    }
+
+    private void validatePhoneNumberUniqueness(String phoneNumber, User currentUser) {
+        userRepository.findByPhoneNumber(phoneNumber).ifPresent(foundUser -> {
+            if (currentUser == null || !foundUser.getId().equals(currentUser.getId())) {
+                if (foundUser.getState() == UserState.ACTIVE || foundUser.getState() == UserState.INACTIVE) {
+                    throw new BadRequestException(
+                            ErrorCode.ROW_ALREADY_EXIST,
+                            MessageUtil.PHONE_NUMBER_ALREADY_EXIST);
+
+                } else if (foundUser.getState() == UserState.DROP) {
+                    throw new BadRequestException(
+                            ErrorCode.ROW_ALREADY_EXIST,
+                            MessageUtil.USER_DROPPED_CONTACT_EMAIL);
+                }
+            }
+        });
+    }
+
+    private void validateStudentIdUniqueness(String studentId, User currentUser) {
+        userRepository.findByStudentId(studentId).ifPresent(foundUser -> {
+            if (currentUser == null || !foundUser.getId().equals(currentUser.getId())) {
+                if (foundUser.getState() == UserState.ACTIVE || foundUser.getState() == UserState.INACTIVE) {
+                    throw new BadRequestException(
+                            ErrorCode.ROW_ALREADY_EXIST,
+                            MessageUtil.STUDENT_ID_ALREADY_EXIST);
+
+                } else if (foundUser.getState() == UserState.DROP) {
+                    throw new BadRequestException(
+                            ErrorCode.ROW_ALREADY_EXIST,
+                            MessageUtil.USER_DROPPED_CONTACT_EMAIL);
+                }
+            }
+        });
+    }
+
 
     @Transactional(readOnly = true)
     public UserAdmissionResponseDto findAdmissionById(User requestUser, String admissionId) {

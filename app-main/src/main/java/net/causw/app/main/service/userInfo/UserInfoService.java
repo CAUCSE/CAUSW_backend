@@ -83,15 +83,10 @@ public class UserInfoService {
     public UserInfoResponseDto update(String userId, UserInfoUpdateRequestDto request, MultipartFile profileImage) {
         User user = findUserById(userId);
 
-        String phoneNumber = request.getPhoneNumber();
-        if (phoneNumber != null) {
-            validatePhoneNumberDuplication(phoneNumber, user);
-        }
-
         // 사용자 정보 갱신(전화번호, 프로필 이미지)
         final UserUpdateRequestDto userUpdateRequestDto = UserUpdateRequestDto.builder()
                 .nickname(user.getNickname())
-                .phoneNumber(phoneNumber == null ? user.getPhoneNumber() : phoneNumber)
+                .phoneNumber(request.getPhoneNumber() == null ? user.getPhoneNumber() : request.getPhoneNumber())
                 .build();
 
         userService.update(user, userUpdateRequestDto, profileImage); // 실패시 user, userInfo 전부 rollback
@@ -190,23 +185,5 @@ public class UserInfoService {
                     MessageUtil.INVALID_CAREER_DATE
             );
         }
-    }
-
-    private void validatePhoneNumberDuplication(String phoneNumber, User user) {
-        userRepository.findByPhoneNumber(phoneNumber)
-                .ifPresent(foundUser -> {
-                    if (foundUser.getId().equals(user.getId())) return;
-
-                    if (foundUser.getState() == UserState.ACTIVE || foundUser.getState() == UserState.INACTIVE) {
-                        throw new BadRequestException(
-                                ErrorCode.ROW_ALREADY_EXIST,
-                                MessageUtil.PHONE_NUMBER_ALREADY_EXIST);
-
-                    } else if (foundUser.getState() == UserState.DROP) {
-                        throw new BadRequestException(
-                                ErrorCode.ROW_ALREADY_EXIST,
-                                MessageUtil.DROPPED_USER_PHONE_NUMBER);
-                    }
-                });
     }
 }
