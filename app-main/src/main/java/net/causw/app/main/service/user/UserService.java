@@ -7,6 +7,7 @@ import net.causw.app.main.domain.model.entity.board.Board;
 import net.causw.app.main.domain.model.entity.circle.Circle;
 import net.causw.app.main.domain.model.entity.circle.CircleMember;
 import net.causw.app.main.domain.model.entity.locker.LockerLog;
+import net.causw.app.main.dto.post.PostsResponseDto;
 import net.causw.app.main.infrastructure.firebase.FcmUtils;
 import net.causw.app.main.repository.userAcademicRecord.UserAcademicRecordApplicationRepository;
 import net.causw.app.main.repository.userInfo.UserInfoRepository;
@@ -45,6 +46,7 @@ import net.causw.app.main.dto.util.dtoMapper.BoardDtoMapper;
 import net.causw.app.main.dto.util.dtoMapper.CircleDtoMapper;
 import net.causw.app.main.dto.util.dtoMapper.PostDtoMapper;
 import net.causw.app.main.dto.util.dtoMapper.UserDtoMapper;
+import net.causw.app.main.service.post.PostService;
 import net.causw.app.main.service.uuidFile.UuidFileService;
 import net.causw.app.main.infrastructure.security.JwtTokenProvider;
 import net.causw.app.main.infrastructure.aop.annotation.MeasureTime;
@@ -117,6 +119,7 @@ public class UserService {
 
     private final UserDtoMapper userDtoMapper;
     private final PostDtoMapper postDtoMapper;
+    private final PostService postService;
 
     @Transactional
     public void findPassword(
@@ -243,15 +246,28 @@ public class UserService {
         return UserDtoMapper.INSTANCE.toUserPostsResponseDto(
                 requestUser,
                 this.favoritePostRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
-                        .map(favoritePost -> PostDtoMapper.INSTANCE.toPostsResponseDto(
-                                favoritePost.getPost(),
-                                getNumOfComment(favoritePost.getPost()),
-                                getNumOfPostLikes(favoritePost.getPost()),
-                                getNumOfPostFavorites(favoritePost.getPost()),
-                                !favoritePost.getPost().getPostAttachImageList().isEmpty() ? favoritePost.getPost().getPostAttachImageList().get(0) : null,
-                                StatusPolicy.isPostVote(favoritePost.getPost()),
-                                StatusPolicy.isPostForm(favoritePost.getPost())
-                        ))
+                        .map(favoritePost -> {
+                            Post post = favoritePost.getPost();
+                            PostsResponseDto dto = PostDtoMapper.INSTANCE.toPostsResponseDto(
+                                    post,
+                                    getNumOfComment(post),
+                                    getNumOfPostLikes(post),
+                                    getNumOfPostFavorites(post),
+                                    !post.getPostAttachImageList().isEmpty() ? post.getPostAttachImageList().get(0) : null,
+                                    StatusPolicy.isPostVote(post),
+                                    StatusPolicy.isPostForm(post)
+                            );
+
+                            // 화면에 표시될 작성자 닉네임 설정
+                            String displayNickname = postService.getDisplayWriterNickname(
+                                    post.getWriter(),
+                                    post.getIsAnonymous(),
+                                    post.getWriter() != null ? post.getWriter().getNickname() : null
+                            );
+                            dto.setDisplayWriterNickname(displayNickname);
+
+                            return dto;
+                        })
         );
     }
 
