@@ -34,10 +34,49 @@ if (!dbUrl || !dbUsername || !dbPassword) {
     return
 }
 
-// 4. Flyway 설정
+// 4. Flyway 기본 설정
 flyway {
     url = dbUrl
     user = dbUsername
     password = dbPassword
     locations = ["filesystem:src/main/resources/db/migration"]
+
+    // 5. 환경별 추가 설정
+    switch(env) {
+        case 'dev':
+            logger.lifecycle("🚀 Applying DEV Flyway configuration")
+            outOfOrder = true
+            validateOnMigrate = true
+            cleanDisabled = true
+            baselineOnMigrate = true
+            break
+
+        case 'staging':
+            logger.lifecycle("🎯 Applying STAGING Flyway configuration")
+            outOfOrder = false
+            validateOnMigrate = true
+            cleanDisabled = true
+            baselineOnMigrate = false
+            break
+
+        case 'prod':
+            logger.lifecycle("🔒 Applying PRODUCTION Flyway configuration")
+            outOfOrder = false
+            validateOnMigrate = true
+            cleanDisabled = true
+            baselineOnMigrate = false
+            // ignoreMigrationPatterns 설정 안함 (무시된 마이그레이션 허용 안함)
+            break
+
+        case 'local':
+            logger.lifecycle("💻 Applying LOCAL Flyway configuration")
+            outOfOrder = true
+            validateOnMigrate = true
+            cleanDisabled = false
+            baselineOnMigrate = true
+            break
+        
+        default:
+            throw new GradleException("❌ 지원하지 않는 env 값입니다: ${env}")
+    }
 }

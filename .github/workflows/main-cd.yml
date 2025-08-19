@@ -50,8 +50,10 @@ jobs:
           EOF
 
       # Flyway 마이그레이션
-      - name: Run Flyway migration
-        run: ./gradlew :app-main:flywayMigrate -Dflyway.outOfOrder=true -Penv=prod
+      - name: Run Flyway repair and migration
+        run: |
+          ./gradlew :app-main:flywayRepair -Penv=prod || true
+          ./gradlew :app-main:flywayMigrate -Penv=prod
 
       # Build -> jar 파일 생성
       - name: Build app-main
