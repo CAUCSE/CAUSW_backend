@@ -374,17 +374,10 @@ public class UserAcademicRecordApplicationService {
     }
 
     private UserAcademicRecordInfoResponseDto getUserAcademicRecordInfoResponseDto(User user) {
-        UserAcademicRecordInfoResponseDto responseDto = toUserAcademicRecordInfoResponseDto(
+        return toUserAcademicRecordInfoResponseDto(
                 user,
                 getUserAcademicRecordLogList(user)
         );
-
-        // 따옴표 제거
-        if (responseDto.getNote() != null) {
-            responseDto.setNote(responseDto.getNote().replaceAll("^\"|\"$", ""));
-        }
-
-        return responseDto;
     }
 
     private List<UserAcademicRecordLog> getUserAcademicRecordLogList(User user) {
@@ -476,12 +469,19 @@ public class UserAcademicRecordApplicationService {
     }
 
     private UserAcademicRecordInfoResponseDto toUserAcademicRecordInfoResponseDto(User user, List<UserAcademicRecordLog> userAcademicRecordLogList) {
-        return UserAcademicRecordDtoMapper.INSTANCE.toUserAcademicRecordInfoResponseDto(
+        UserAcademicRecordInfoResponseDto responseDto = UserAcademicRecordDtoMapper.INSTANCE.toUserAcademicRecordInfoResponseDto(
                 user,
                 userAcademicRecordLogList.stream()
                         .map(this::toUserAcademicRecordApplicationResponseDto)
                         .toList()
         );
+
+        // 따옴표 제거
+        if (responseDto.getNote() != null) {
+            responseDto.setNote(responseDto.getNote().replaceAll("^\"|\"$", ""));
+        }
+
+        return responseDto;
     }
 
     private UserAcademicRecordApplicationResponseDto toUserAcademicRecordApplicationResponseDto(UserAcademicRecordLog userAcademicRecordLog) {
