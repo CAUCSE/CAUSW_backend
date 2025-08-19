@@ -132,7 +132,7 @@ public class UserService {
             new NotFoundException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND));
 
         if (!requestUser.getPhoneNumber().equals(userFindPasswordRequestDto.getPhoneNumber())) {
-            throw new NotFoundException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND));
+            throw new NotFoundException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND);
         }
 
         // 임시 비밀번호 생성
