@@ -88,7 +88,7 @@ public class UserInfoService {
               .ifPresent(foundUser -> {
                 if (foundUser.getId().equals(user.getId())) return;
 
-                if (foundUser.getState() == UserState.ACTIVE) {
+                if (foundUser.getState() == UserState.ACTIVE || foundUser.getState() == UserState.INACTIVE) {
                   throw new BadRequestException(
                       ErrorCode.ROW_ALREADY_EXIST,
                       MessageUtil.PHONE_NUMBER_ALREADY_EXIST);
