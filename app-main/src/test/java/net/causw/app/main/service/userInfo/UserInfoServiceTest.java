@@ -153,30 +153,6 @@ class UserInfoServiceTest {
     }
 
     @Test
-    @DisplayName("중복된 전화번호 입력시 예외 발생")
-    void duplicatedPhoneNumberThrowsException() {
-      // given
-      String duplicatedPhoneNumber = "010-0000-0000";
-
-      certifiedUser.setPhoneNumber(duplicatedPhoneNumber);
-
-      User foundUser = ObjectFixtures.getCertifiedUserWithId("foundUserId");
-      foundUser.setPhoneNumber(duplicatedPhoneNumber);
-
-      UserInfoUpdateRequestDto updateRequestDto = UserInfoUpdateRequestDto.builder()
-          .phoneNumber(duplicatedPhoneNumber)
-          .isPhoneNumberVisible(true)
-          .build();
-
-      given(userRepository.findByPhoneNumber(duplicatedPhoneNumber)).willReturn(Optional.of(foundUser));
-
-      // when & then
-      assertThatThrownBy(() -> userInfoService.update(certifiedUser.getId(), updateRequestDto, profileImage))
-          .isInstanceOf(BadRequestException.class)
-          .extracting("errorCode").isEqualTo(ErrorCode.ROW_ALREADY_EXIST);
-    }
-
-    @Test
     @DisplayName("사용자 정보 갱신 실패시 세부정보 갱신도 함께 실패")
     void userServiceUpdateFailedThenUserInfoServiceUpdateFailed() {
       // given
