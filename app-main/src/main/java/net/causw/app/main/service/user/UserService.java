@@ -340,15 +340,27 @@ public class UserService {
 
         return UserDtoMapper.INSTANCE.toUserPostsResponseDto(
                 requestUser,
-                combinedPostsPage.map(post -> PostDtoMapper.INSTANCE.toPostsResponseDto(
-                        post,
-                        getNumOfComment(post),
-                        getNumOfPostLikes(post),
-                        getNumOfPostFavorites(post),
-                        !post.getPostAttachImageList().isEmpty() ? post.getPostAttachImageList().get(0) : null,
-                        StatusPolicy.isPostVote(post),
-                        StatusPolicy.isPostForm(post)
-                ))
+                combinedPostsPage.map(post -> {
+                    PostsResponseDto dto = PostDtoMapper.INSTANCE.toPostsResponseDto(
+                            post,
+                            getNumOfComment(post),
+                            getNumOfPostLikes(post),
+                            getNumOfPostFavorites(post),
+                            !post.getPostAttachImageList().isEmpty() ? post.getPostAttachImageList().get(0) : null,
+                            StatusPolicy.isPostVote(post),
+                            StatusPolicy.isPostForm(post)
+                    );
+
+                    // 화면에 표시될 작성자 닉네임 설정
+                    String displayNickname = postService.getDisplayWriterNickname(
+                            post.getWriter(),
+                            post.getIsAnonymous(),
+                            post.getWriter() != null ? post.getWriter().getNickname() : null
+                    );
+                    dto.setDisplayWriterNickname(displayNickname);
+
+                    return dto;
+                })
         );
     }
 
