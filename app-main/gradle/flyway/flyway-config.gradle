@@ -47,7 +47,7 @@ flyway {
             logger.lifecycle("🧪 Applying TEST(CI) Flyway configuration")
             outOfOrder = true
             validateOnMigrate = true
-            cleanDisabled = true
+            cleanDisabled = false
             baselineOnMigrate = true
             break
 
