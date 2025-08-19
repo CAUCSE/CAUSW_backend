@@ -556,13 +556,17 @@ public class UserService {
             User user = byEmail.get();
             UserState state = user.getState();
 
-            //AWAIT, REJECT, INACTIVE인 경우 정보 업데이트 진행
-            if (state == UserState.AWAIT || state == UserState.REJECT || state == UserState.INACTIVE) {
+            //AWAIT, REJECT인 경우 정보 업데이트 진행
+            if (state == UserState.AWAIT || state == UserState.REJECT) {
                 validateUniqueness(dto, user);
                 user.updateInfo(dto, passwordEncoder.encode(dto.getPassword()));
                 validateUser(dto, user);
                 userRepository.save(user);
                 return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
+            }
+            // INACTIVE는 복구 API를 통해 처리
+            else if (state == UserState.INACTIVE) {
+                throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.USER_INACTIVE_CAN_REJOIN);
             }
             // ACTIVE, DROP은 가입 허용 X
             else if (state == UserState.ACTIVE) {
@@ -579,8 +583,8 @@ public class UserService {
             User ghostuser = byPhone.get();
             UserState state = ghostuser.getState();
 
-            // 찾은 계정이 AWAIT, REJECT, INACTIVE인지 확인
-            if (state == UserState.AWAIT || state == UserState.REJECT || state == UserState.INACTIVE) {
+            // 찾은 계정이 AWAIT, REJECT인지 확인
+            if (state == UserState.AWAIT || state == UserState.REJECT) {
 
                 // 복구하려는 새 이메일이 다른 계정에서 사용중인지 확인(이중 확인)
                 userRepository.findByEmail(dto.getEmail()).ifPresent(gu -> {
@@ -593,6 +597,10 @@ public class UserService {
                 validateUser(dto, ghostuser);
                 userRepository.save(ghostuser);
                 return UserDtoMapper.INSTANCE.toUserResponseDto(ghostuser, null, null);
+            }
+            // INACTIVE는 복구 API를 통해 처리
+            else if (state == UserState.INACTIVE) {
+                throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.USER_INACTIVE_CAN_REJOIN);
             } else if (state == UserState.ACTIVE) {
                 throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.PHONE_NUMBER_ALREADY_EXIST);
             } else if (state == UserState.DROP) {
@@ -663,8 +671,8 @@ public class UserService {
         Optional<User> userFoundByEmail = userRepository.findByEmail(email);
         if (userFoundByEmail.isPresent()) {
             UserState state = userFoundByEmail.get().getState();
-            // ACTIVE 상태일 경우 중복
-            if (state == UserState.ACTIVE ) {
+            // ACTIVE, INACTIVE 상태일 경우 중복
+            if (state == UserState.ACTIVE || state == UserState.INACTIVE) {
                 return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(true);
             }
             // DROP 상태일 경우, 문의 메시지
@@ -691,8 +699,8 @@ public class UserService {
         if (userFoundByNickname.isPresent()) {
             UserState state = userFoundByNickname.get().getState();
 
-            // ACTIVE 상태일 경우 중복
-            if (state == UserState.ACTIVE ) {
+            // ACTIVE, INACTIVE 상태일 경우 중복
+            if (state == UserState.ACTIVE || state == UserState.INACTIVE) {
                 return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(true);
             }
             // DROP 상태일 경우, 문의 메시지
@@ -711,8 +719,8 @@ public class UserService {
         Optional<User> userFoundByStudentId = userRepository.findByStudentId(studentId);
         if (userFoundByStudentId.isPresent()) {
             UserState state = userFoundByStudentId.get().getState();
-            // ACTIVE 상태일 경우 중복
-            if (state == UserState.ACTIVE ) {
+            // ACTIVE, INACTIVE 상태일 경우 중복
+            if (state == UserState.ACTIVE || state == UserState.INACTIVE) {
                 return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(true);
             }
             // DROP 상태일 경우, 문의 메시지
@@ -737,8 +745,8 @@ public class UserService {
         Optional<User> userFoundByPhoneNumber = userRepository.findByPhoneNumber(phoneNumber);
         if (userFoundByPhoneNumber.isPresent()) {
             UserState state = userFoundByPhoneNumber.get().getState();
-            // ACTIVE 상태일 경우 중복
-            if (state == UserState.ACTIVE ) {
+            // ACTIVE, INACTIVE 상태일 경우 중복
+            if (state == UserState.ACTIVE || state == UserState.INACTIVE) {
                 return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(true);
             }
             // DROP 상태일 경우, 문의 메시지
@@ -1611,5 +1619,47 @@ public class UserService {
         }
     }
 
+    /**
+     * INACTIVE 사용자 계정 복구 API
+     * 
+     * @param email 복구할 사용자 이메일
+     * @return UserSignInResponseDto 로그인 응답 (액세스 토큰, 리프레시 토큰)
+     */
+    @Transactional
+    public UserSignInResponseDto recoverUser(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(
+                () -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.USER_NOT_FOUND
+                )
+        );
+
+        // 사용자 상태가 INACTIVE인지 확인
+        if (user.getState() != UserState.INACTIVE) {
+            throw new BadRequestException(
+                    ErrorCode.INVALID_PARAMETER,
+                    MessageUtil.USER_RECOVER_INVALID_STATE
+            );
+        }
+
+        // 사용자 상태를 ACTIVE로 변경
+        user.setState(UserState.ACTIVE);
+        
+        // 역할을 COMMON으로 설정
+        Set<Role> roles = new HashSet<>();
+        roles.add(Role.COMMON);
+        user.setRoles(roles);
+
+        userRepository.save(user);
+
+        // 토큰 발급
+        String refreshToken = jwtTokenProvider.createRefreshToken();
+        redisUtils.setRefreshTokenData(refreshToken, user.getId(), StaticValue.JWT_REFRESH_TOKEN_VALID_TIME);
+
+        return UserDtoMapper.INSTANCE.toUserSignInResponseDto(
+                jwtTokenProvider.createAccessToken(user.getId(), user.getRoles(), user.getState()),
+                refreshToken
+        );
+    }
 
 }
