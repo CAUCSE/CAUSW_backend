@@ -1646,9 +1646,10 @@ public class UserService {
         user.setState(UserState.ACTIVE);
         
         // 역할을 COMMON으로 설정
-        Set<Role> roles = new HashSet<>();
+        Set<Role> roles = user.getRoles();
+        roles.clear();
         roles.add(Role.COMMON);
-        user.setRoles(roles);
+
 
         userRepository.save(user);
 
