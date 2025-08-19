@@ -263,6 +263,23 @@ public class UserController {
     }
 
     /**
+     * INACTIVE 사용자 계정 복구 컨트롤러
+     * @param userRecoverRequestDto 복구 요청 정보
+     * @return UserSignInResponseDto
+     */
+    @PutMapping(value = "/recover")
+    @ResponseStatus(value = HttpStatus.OK)
+    @Operation(summary = "INACTIVE 사용자 계정 복구 API", description = "탈퇴한 계정을 복구하여 ACTIVE 상태로 변경하고 로그인 토큰을 발급합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserSignInResponseDto.class))),
+            @ApiResponse(responseCode = "4000", description = "해당 사용자를 찾을 수 없습니다", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+            @ApiResponse(responseCode = "4002", description = "복구할 수 없는 계정 상태입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
+    })
+    public UserSignInResponseDto recoverUser(@Valid @RequestBody UserRecoverRequestDto userRecoverRequestDto) {
+        return this.userService.recoverUser(userRecoverRequestDto.getEmail());
+    }
+
+    /**
      * 이메일 중복 확인 컨트롤러
      * @param email
      * @return DuplicatedCheckResponseDto

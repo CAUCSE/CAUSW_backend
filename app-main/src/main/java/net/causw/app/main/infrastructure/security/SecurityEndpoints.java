@@ -33,6 +33,7 @@ public class SecurityEndpoints {
             of("/h2-console/**"),
             of("/api/v1/users/sign-in", POST),
             of("/api/v1/users/sign-up", POST),
+            of("/api/v1/users/recover", PUT),
             of("/healthy", GET),
             of("/api/v1/users/admissions/apply", POST),
             of("/api/v1/users/{email}/is-duplicated", GET),
