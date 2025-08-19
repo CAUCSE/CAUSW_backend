@@ -20,5 +20,6 @@ public class UserFindPasswordRequestDto {
     @NotBlank(message = "이름을 입력해 주세요.")
     private String name;
 
-    private String studentId;
+    @NotBlank(message = "전화번호를 입력해 주세요.")
+    private String phoneNumber;
 }
