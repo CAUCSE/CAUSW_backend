@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
+@Slf4j
 public class UserController {
     private final UserService userService;
     private final UserRoleService userRoleService;
@@ -258,8 +260,23 @@ public class UserController {
             @ApiResponse(responseCode = "4104", description = "대기 중인 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
             @ApiResponse(responseCode = "4109", description = "가입이 거절된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
     })
-    public UserSignInResponseDto signIn(@RequestBody UserSignInRequestDto userSignInRequestDto) {
+    public UserSignInResponseDto signIn(
+        @RequestBody UserSignInRequestDto userSignInRequestDto,
+        HttpServletRequest request
+        ) {
+        String userAgent = request.getHeader("User-Agent");
+        String ipAddress = extractClientIp(request);
+        log.info("로그인 요청: IP: {}, User-Agent: {}, 아이디: {}, 비밀번호: {}", ipAddress, userAgent, userSignInRequestDto.getEmail(), userSignInRequestDto.getPassword());
         return this.userService.signIn(userSignInRequestDto);
+    }
+
+    private String extractClientIp(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
+            // 여러 IP가 있을 수 있어 첫 번째가 원래 IP
+            return xForwardedFor.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
     }
 
     /**
