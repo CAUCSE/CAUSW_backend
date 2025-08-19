@@ -1,16 +1,17 @@
 package net.causw.app.main.service.user;
 
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+
+import java.util.*;
 
 import jakarta.validation.Validator;
 import net.causw.app.main.domain.model.entity.post.LikePost;
 import net.causw.app.main.domain.model.entity.post.Post;
 import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.UserProfileImage;
 import net.causw.app.main.dto.user.UserCreateRequestDto;
+import net.causw.app.main.dto.user.UserSignInResponseDto;
+import net.causw.app.main.infrastructure.redis.RedisUtils;
+import net.causw.app.main.infrastructure.security.JwtTokenProvider;
 import net.causw.app.main.repository.post.FavoritePostRepository;
 import net.causw.app.main.repository.post.LikePostRepository;
 import net.causw.app.main.repository.post.PostRepository;
@@ -91,6 +92,12 @@ class UserServiceTest {
 
   @Mock
   Validator validator;
+
+  @Mock
+  JwtTokenProvider jwtTokenProvider;
+
+  @Mock
+  RedisUtils redisUtils;
 
 
   @Nested
@@ -349,24 +356,52 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("탈퇴(INACTIVE)한 사용자가 재가입 성공")
-    void signUp_InactiveUser_Success() {
+    @DisplayName("탈퇴(INACTIVE)한 사용자가 재가입 시도 시 실패")
+    void signUp_InactiveUser_ThrowsException() {
       // given
       existingUser.setState(UserState.INACTIVE);
       given(userRepository.findByEmail(signUpRequest.getEmail()))
               .willReturn(Optional.of(existingUser));
 
-      given(userRepository.findByNickname(anyString())).willReturn(Optional.of(existingUser));
-      given(userRepository.findByPhoneNumber(anyString())).willReturn(Optional.of(existingUser));
-      given(userRepository.findByStudentId(anyString())).willReturn(Optional.of(existingUser));
+      // when & then
+      BadRequestException exception = assertThrows(BadRequestException.class,
+              () -> userService.signUp(signUpRequest));
+
+      assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.ROW_ALREADY_EXIST);
+      verify(userRepository, never()).save(any(User.class));
+    }
+  }
+
+  @Nested
+  class RecoverUserTest {
+
+    @Test
+    @DisplayName("INACTIVE 사용자 계정 복구 성공")
+    void recoverUser_InactiveUser_Success() {
+
+      User inactiveUser = ObjectFixtures.getCertifiedUserWithId("test-user-id");
+      inactiveUser.setState(UserState.INACTIVE);
+      inactiveUser.setRoles(new HashSet<>(Set.of(Role.NONE)));
+
+      // given
+      given(userRepository.findByEmail("test@cau.ac.kr"))
+              .willReturn(Optional.of(inactiveUser));
+      given(jwtTokenProvider.createRefreshToken()).willReturn("refresh-token");
+      given(jwtTokenProvider.createAccessToken(
+              eq("test-user-id"),
+              eq(Set.of(Role.COMMON)),
+              eq(UserState.ACTIVE)
+      )).willReturn("access-token");
 
       // when
-      UserResponseDto result = userService.signUp(signUpRequest);
+      UserSignInResponseDto result = userService.recoverUser("test@cau.ac.kr");
 
-      // then - 재가입 신청이 제대로 되었는지 확인
-      verify(userRepository, times(1)).save(existingUser);
-      assertThat(existingUser.getState()).isEqualTo(UserState.AWAIT);
-      assertThat(result).isNotNull();
+      // then
+      verify(userRepository).save(inactiveUser);
+      assertThat(inactiveUser.getState()).isEqualTo(UserState.ACTIVE);
+      assertThat(inactiveUser.getRoles()).containsExactly(Role.COMMON);
+      assertThat(result.getAccessToken()).isEqualTo("access-token");
+      assertThat(result.getRefreshToken()).isEqualTo("refresh-token");
     }
   }
 }
