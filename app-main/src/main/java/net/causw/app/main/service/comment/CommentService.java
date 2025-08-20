@@ -67,8 +67,6 @@ public class CommentService {
         Post post = getPost(commentCreateDto.getPostId());
         Comment comment = Comment.of(commentCreateDto.getContent(), false, commentCreateDto.getIsAnonymous(), creator, post);
 
-
-
         ValidatorBucket validatorBucket = initializeValidator(creator, post);
         validatorBucket.
                 consistOf(ConstraintValidator.of(comment, this.validator));
@@ -80,7 +78,6 @@ public class CommentService {
 
         //2. comment가 달린 게시글의 구독자에게 전송
         postNotificationService.sendByPostIsSubscribed(post, comment);
-
 
         return commentResponseDto;
     }
@@ -94,7 +91,7 @@ public class CommentService {
 
         Page<Comment> comments = commentRepository.findByPost_IdOrderByCreatedAt(
                 postId,
-                pageableFactory.create(pageNum, StaticValue.DEFAULT_COMMENT_PAGE_SIZE)
+                pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE)
         );
         comments.forEach(comment -> comment.setChildCommentList(childCommentRepository.findByParentComment_Id(comment.getId())));
 
@@ -265,7 +262,14 @@ public class CommentService {
 
         // 화면에 표시될 닉네임 설정
         User writer = comment.getWriter();
-        commentResponseDto.setDisplayWriterNickname(postService.getDisplayWriterNickname(writer, commentResponseDto.getIsAnonymous(), commentResponseDto.getWriterNickname()));
+        commentResponseDto.setDisplayWriterNickname(
+            postService.getDisplayWriterNickname(writer, commentResponseDto.getIsAnonymous(),
+                commentResponseDto.getWriterNickname())
+        );
+
+        if (comment.getIsAnonymous()) {
+            commentResponseDto.updateAnonymousUserInfo();
+        }
 
         return commentResponseDto;
     }
@@ -282,7 +286,13 @@ public class CommentService {
 
         // 화면에 표시될 닉네임 설정
         User writer = childComment.getWriter();
-        childCommentResponseDto.setDisplayWriterNickname(postService.getDisplayWriterNickname(writer, childCommentResponseDto.getIsAnonymous(), childCommentResponseDto.getWriterNickname()));
+        childCommentResponseDto.setDisplayWriterNickname(
+            postService.getDisplayWriterNickname(writer, childCommentResponseDto.getIsAnonymous(),
+                childCommentResponseDto.getWriterNickname()));
+
+        if (childCommentResponseDto.getIsAnonymous()) {
+            childCommentResponseDto.updateAnonymousUserInfo();
+        }
 
         return childCommentResponseDto;
     }

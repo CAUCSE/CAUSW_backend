@@ -69,7 +69,7 @@ PostsResponseDto {
     private Boolean isPostForm;
 
 
-    public void updateAnonymousPosts() {
+    public void updateAnonymousWriterInfo() {
         if (Boolean.TRUE.equals(this.isAnonymous)) {
             this.writerName = null;
             this.writerNickname = null;
