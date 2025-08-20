@@ -9,6 +9,7 @@ import net.causw.app.main.domain.model.entity.comment.Comment;
 import net.causw.app.main.domain.model.entity.comment.LikeComment;
 import net.causw.app.main.domain.model.entity.notification.UserCommentSubscribe;
 import net.causw.app.main.domain.model.enums.user.UserState;
+import net.causw.app.main.repository.comment.projection.CommentCountProjection;
 import net.causw.app.main.repository.notification.UserCommentSubscribeRepository;
 import net.causw.app.main.dto.comment.*;
 import net.causw.app.main.service.notification.PostNotificationService;
@@ -41,6 +42,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.validation.Validator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -379,6 +381,15 @@ public class CommentService {
                 .validate();
     }
 
+    public Map<String, Long> getCommentCountsByPostIds(List<String> postIds) {
+
+        return commentRepository.findCommentCountsByPostIds(postIds)
+            .stream()
+            .collect(Collectors.toMap(
+                CommentCountProjection::getPostId,
+                CommentCountProjection::getCommentCount
+            ));
+    }
 }
 
 

@@ -1,6 +1,10 @@
 package net.causw.app.main.repository.post;
 
+import java.util.List;
+
 import net.causw.app.main.domain.model.entity.post.LikePost;
+import net.causw.app.main.repository.post.projection.PostLikeCountProjection;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -23,4 +27,14 @@ public interface LikePostRepository extends JpaRepository<LikePost, String> {
         "ORDER BY p.createdAt DESC")
     @EntityGraph(attributePaths = {"post"})
     Page<LikePost> findByUserId(@Param("userId") String userId, Pageable pageable);
+
+    @Query(
+        value = """
+    SELECT lp.post.id as postId, COUNT(lp.id) as likeCount
+    FROM LikePost lp
+    WHERE lp.post.id IN :postIds
+    GROUP BY lp.post.id
+    """
+    )
+    List<PostLikeCountProjection> countByPostId(@Param("postIds") List<String> postIds);
 }

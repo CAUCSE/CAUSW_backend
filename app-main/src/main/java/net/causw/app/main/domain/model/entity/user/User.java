@@ -14,6 +14,7 @@ import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.model.enums.user.GraduationType;
 import net.causw.app.main.domain.model.enums.user.Role;
 import net.causw.app.main.domain.model.enums.user.UserState;
+import net.causw.global.constant.StaticValue;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -201,5 +202,20 @@ public class User extends BaseEntity {
     @Override
     public int hashCode() {
         return Objects.hash(getId());
+    }
+
+    /**
+     * 유저 상태 혹은 익명 여부에 따라 표시용 닉네임 다르게 노출
+     * @param isAnonymous 익명 여부
+     * @return 표시용 닉네임
+     */
+    public String getDisplayWriterNicName(Boolean isAnonymous) {
+        if (List.of(UserState.INACTIVE, UserState.DROP, UserState.DELETED).contains(this.getState())) {
+            return StaticValue.INACTIVE_USER_NICKNAME;
+        } else if (Boolean.TRUE.equals(isAnonymous)) {
+            return StaticValue.ANONYMOUS_USER_NICKNAME;
+        }
+
+        return nickname;
     }
 }

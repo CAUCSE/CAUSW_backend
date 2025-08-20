@@ -70,6 +70,7 @@ import net.causw.global.constant.StaticValue;
 import net.causw.app.main.domain.validation.*;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -135,7 +136,7 @@ public class PostService {
         validatorBucket.validate();
 
         // 동아리 리더 여부 확인
-        Boolean isCircleLeader = false;
+        boolean isCircleLeader = false;
         if (roles.contains(Role.LEADER_CIRCLE)) {
             isCircleLeader = getCircleLeader(board.getCircle()).getId().equals(user.getId());
         }
@@ -750,7 +751,7 @@ public class PostService {
         return post.getIsDeleted();
     }
 
-    private ValidatorBucket initializeValidator(User user, Board board) {
+    public ValidatorBucket initializeValidator(User user, Board board) {
         Set<Role> roles = user.getRoles();
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         validatorBucket
@@ -1106,7 +1107,7 @@ public class PostService {
         );
     }
 
-    private User getCircleLeader(Circle circle) {
+    public User getCircleLeader(Circle circle) {
         User leader = circle.getLeader().orElse(null);
         if (leader == null) {
             throw new InternalServerException(
@@ -1218,5 +1219,17 @@ public class PostService {
         } else {
             return originalNickname;
         }
+    }
+
+    public Page<Post> getBoardPostsWithOutDeleted(String boardId, Integer pageNum) {
+        Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
+
+        return postRepository.findAllByBoard_IdAndIsDeletedOrderByCreatedAtDesc(boardId, pageable, false);
+    }
+
+    public Page<Post> getBoardPostsWithDeleted(String boardId, Integer pageNum) {
+        Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
+
+        return postRepository.findAllByBoard_IdOrderByCreatedAtDesc(boardId, pageable);
     }
 }
