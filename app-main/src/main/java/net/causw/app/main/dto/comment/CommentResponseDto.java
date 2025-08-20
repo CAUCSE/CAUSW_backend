@@ -58,4 +58,10 @@ public class CommentResponseDto {
     @Schema(description = "대댓글 DTO 리스트", example ="대댓글 DTO 리스트 입니다.")
     private List<ChildCommentResponseDto> childCommentList;
 
+    public void updateAnonymousComment() {
+        this.writerName = null;
+        this.writerNickname = null;
+        this.writerAdmissionYear = null;
+        this.writerProfileImage = null;
+    }
 }
