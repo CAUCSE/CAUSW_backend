@@ -42,4 +42,11 @@ public class ChildCommentResponseDto {
 
     @Schema(description = "대댓글 종아요 수", example = "10")
     private Long numLike;
+
+    public void updateAnonymousUserInfo() {
+        this.writerName = null;
+        this.writerNickname = null;
+        this.writerAdmissionYear = null;
+        this.writerProfileImage = null;
+    }
 }

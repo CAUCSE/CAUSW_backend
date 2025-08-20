@@ -264,11 +264,15 @@ public class UserService {
 
                             // 화면에 표시될 작성자 닉네임 설정
                             String displayNickname = postService.getDisplayWriterNickname(
-                                    post.getWriter(),
-                                    post.getIsAnonymous(),
-                                    post.getWriter() != null ? post.getWriter().getNickname() : null
+                                post.getWriter(),
+                                post.getIsAnonymous(),
+                                post.getWriter() != null ? post.getWriter().getNickname() : null
                             );
                             dto.setDisplayWriterNickname(displayNickname);
+
+                            if (dto.getIsAnonymous()) {
+                                dto.updateAnonymousWriterInfo();
+                            }
 
                             return dto;
                         })

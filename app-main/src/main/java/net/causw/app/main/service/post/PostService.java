@@ -939,13 +939,16 @@ public class PostService {
                 StatusPolicy.isPostForm(post)
         );
 
-        if(postsResponseDto.getIsAnonymous()){
-            postsResponseDto.updateAnonymousPosts();
-        }
-
         // 화면에 표시할 작성자 닉네임 설정
         User writer = post.getWriter();
-        postsResponseDto.setDisplayWriterNickname(getDisplayWriterNickname(writer, postsResponseDto.getIsAnonymous(), postsResponseDto.getWriterNickname()));
+        postsResponseDto.setDisplayWriterNickname(
+            getDisplayWriterNickname(writer, postsResponseDto.getIsAnonymous(), postsResponseDto.getWriterNickname()));
+
+
+        if(postsResponseDto.getIsAnonymous()){
+            postsResponseDto.updateAnonymousWriterInfo();
+        }
+
         return postsResponseDto;
     }
 
