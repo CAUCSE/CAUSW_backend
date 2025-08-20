@@ -940,12 +940,9 @@ public class PostService {
         );
 
         if(postsResponseDto.getIsAnonymous()){
-            postsResponseDto.updateAnonymousPosts();
+            postsResponseDto.updateAnonymousWriterInfo();
         }
 
-        // 화면에 표시할 작성자 닉네임 설정
-        User writer = post.getWriter();
-        postsResponseDto.setDisplayWriterNickname(getDisplayWriterNickname(writer, postsResponseDto.getIsAnonymous(), postsResponseDto.getWriterNickname()));
         return postsResponseDto;
     }
 

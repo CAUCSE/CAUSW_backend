@@ -91,7 +91,7 @@ public class CommentService {
 
         Page<Comment> comments = commentRepository.findByPost_IdOrderByCreatedAt(
                 postId,
-                pageableFactory.create(pageNum, 2)
+                pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE)
         );
         comments.forEach(comment -> comment.setChildCommentList(childCommentRepository.findByParentComment_Id(comment.getId())));
 
@@ -261,7 +261,7 @@ public class CommentService {
         );
 
         if (comment.getIsAnonymous()) {
-            commentResponseDto.updateAnonymousComment();
+            commentResponseDto.updateAnonymousUserInfo();
         }
 
         return commentResponseDto;
@@ -277,9 +277,9 @@ public class CommentService {
                 StatusPolicy.isDeletable(childComment, user, board)
         );
 
-        // 화면에 표시될 닉네임 설정
-        User writer = childComment.getWriter();
-        childCommentResponseDto.setDisplayWriterNickname(postService.getDisplayWriterNickname(writer, childCommentResponseDto.getIsAnonymous(), childCommentResponseDto.getWriterNickname()));
+        if (childCommentResponseDto.getIsAnonymous()) {
+            childCommentResponseDto.updateAnonymousUserInfo();
+        }
 
         return childCommentResponseDto;
     }

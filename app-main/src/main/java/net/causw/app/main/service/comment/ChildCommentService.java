@@ -241,23 +241,20 @@ public class ChildCommentService {
     }
 
     private ChildCommentResponseDto  toChildCommentResponseDto(ChildComment childComment, User user, Board board) {
-        return CommentDtoMapper.INSTANCE.toChildCommentResponseDto(
-                childComment,
-                getNumOfChildCommentLikes(childComment),
-                isChildCommentLiked(user, childComment.getId()),
-                StatusPolicy.isChildCommentOwner(childComment, user),
-                StatusPolicy.isUpdatable(childComment, user),
-                StatusPolicy.isDeletable(childComment, user, board)
+        ChildCommentResponseDto childCommentResponseDto = CommentDtoMapper.INSTANCE.toChildCommentResponseDto(
+            childComment,
+            getNumOfChildCommentLikes(childComment),
+            isChildCommentLiked(user, childComment.getId()),
+            StatusPolicy.isChildCommentOwner(childComment, user),
+            StatusPolicy.isUpdatable(childComment, user),
+            StatusPolicy.isDeletable(childComment, user, board)
         );
-    }
 
-    private User getUser(String userId) {
-        return userRepository.findById(userId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_NOT_FOUND
-                )
-        );
+        if (childCommentResponseDto.getIsAnonymous()) {
+            childCommentResponseDto.updateAnonymousUserInfo();
+        }
+
+        return childCommentResponseDto;
     }
 
     private Post getPost(String postId) {
