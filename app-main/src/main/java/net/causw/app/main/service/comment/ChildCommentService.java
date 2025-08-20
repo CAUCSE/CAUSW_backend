@@ -23,6 +23,7 @@ import net.causw.app.main.dto.util.dtoMapper.CommentDtoMapper;
 import net.causw.app.main.domain.policy.StatusPolicy;
 import net.causw.app.main.service.notification.CommentNotificationService;
 import net.causw.app.main.infrastructure.aop.annotation.MeasureTime;
+import net.causw.app.main.service.post.PostService;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.InternalServerException;
@@ -54,6 +55,7 @@ public class ChildCommentService {
     private final NotificationRepository notificationRepository;
     private final Validator validator;
     private final CommentNotificationService commentNotificationService;
+    private final PostService postService;
 
     @Transactional
     public ChildCommentResponseDto createChildComment(User creator, ChildCommentCreateRequestDto childCommentCreateRequestDto) {
@@ -249,6 +251,12 @@ public class ChildCommentService {
             StatusPolicy.isUpdatable(childComment, user),
             StatusPolicy.isDeletable(childComment, user, board)
         );
+
+        // 화면에 표시될 닉네임 설정
+        User writer = childComment.getWriter();
+        childCommentResponseDto.setDisplayWriterNickname(
+            postService.getDisplayWriterNickname(writer, childCommentResponseDto.getIsAnonymous(),
+                childCommentResponseDto.getWriterNickname()));
 
         if (childCommentResponseDto.getIsAnonymous()) {
             childCommentResponseDto.updateAnonymousUserInfo();
