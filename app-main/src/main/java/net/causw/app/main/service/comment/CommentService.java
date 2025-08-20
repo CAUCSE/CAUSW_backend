@@ -260,6 +260,13 @@ public class CommentService {
                 isCommentSubscribed(user, comment)
         );
 
+        // 화면에 표시될 닉네임 설정
+        User writer = comment.getWriter();
+        commentResponseDto.setDisplayWriterNickname(
+            postService.getDisplayWriterNickname(writer, commentResponseDto.getIsAnonymous(),
+                commentResponseDto.getWriterNickname())
+        );
+
         if (comment.getIsAnonymous()) {
             commentResponseDto.updateAnonymousUserInfo();
         }
@@ -276,6 +283,12 @@ public class CommentService {
                 StatusPolicy.isUpdatable(childComment, user),
                 StatusPolicy.isDeletable(childComment, user, board)
         );
+
+        // 화면에 표시될 닉네임 설정
+        User writer = childComment.getWriter();
+        childCommentResponseDto.setDisplayWriterNickname(
+            postService.getDisplayWriterNickname(writer, childCommentResponseDto.getIsAnonymous(),
+                childCommentResponseDto.getWriterNickname()));
 
         if (childCommentResponseDto.getIsAnonymous()) {
             childCommentResponseDto.updateAnonymousUserInfo();
