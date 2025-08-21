@@ -57,3 +57,28 @@
 ## Contact
 
 **Email** : <a href="mailto:caucsedongne@gmail.com">caucsedongne@gmail.com</a>
+
+## Docker Compose를 이용한 테스트 환경 구축 및 사용법
+
+### 1. app-main 빌드
+
+> 변경된 코드나 의존성이 있을 경우 이미지를 다시 빌드해야 합니다.
+
+### 2. 컨테이너 및 볼륨 정리 (선택 사항)
+
+> docker compose down -v
+
+- **설명:**  
+  모든 컨테이너와 네트워크, **그리고 연결된 볼륨까지 모두 삭제**할 때 사용합니다.
+    - DB를 초기화하거나, 깨끗한 환경에서 테스트를 진행하고 싶을 때 유용합니다.
+    - 일부 데이터(예: DB 볼륨)를 보존하려면 `-v` 옵션 없이 `docker compose down`만 실행하세요.
+
+### 3. 컨테이너 실행
+
+> docker compose up
+
+- **설명:**  
+  `docker-compose.yml`에 정의된 모든 서비스가 실행됩니다.
+- 백그라운드(Detached) 모드로 실행하려면:
+
+> docker compose up -d
