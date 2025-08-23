@@ -1029,6 +1029,15 @@ public class PostService {
         return likeChildCommentRepository.existsByChildCommentIdAndUserId(childCommentId, user.getId());
     }
 
+    public Post getPostById(String postId) {
+        return postRepository.findById(postId).orElseThrow(
+            () -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                MessageUtil.POST_NOT_FOUND
+            )
+        );
+    }
+
     private Post getPost(String postId) {
         return postRepository.findById(postId).orElseThrow(
                 () -> new BadRequestException(

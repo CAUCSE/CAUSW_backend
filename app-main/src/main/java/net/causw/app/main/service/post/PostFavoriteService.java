@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import net.causw.app.main.domain.model.entity.post.Post;
+import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.repository.post.FavoritePostRepository;
 import net.causw.app.main.repository.post.projection.PostsFavoriteCountProjection;
 
@@ -28,5 +30,13 @@ public class PostFavoriteService {
 				PostsFavoriteCountProjection::getPostId,
 				PostsFavoriteCountProjection::getFavoriteCount
 			));
+	}
+
+	public Long getNumOfPostFavorites(Post post){
+		return favoritePostRepository.countByPostId(post.getId());
+	}
+
+	public boolean getIsPostAlreadyFavorite(User user, String postId) {
+		return favoritePostRepository.existsByPostIdAndUserId(postId, user.getId());
 	}
 }

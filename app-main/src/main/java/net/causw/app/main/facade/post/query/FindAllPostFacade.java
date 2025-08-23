@@ -15,7 +15,7 @@ import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.domain.model.enums.user.Role;
 import net.causw.app.main.domain.validation.ValidatorBucket;
 import net.causw.app.main.dto.post.BoardPostsResponseDto;
-import net.causw.app.main.mapper.PostResponseMapper;
+import net.causw.app.main.mapper.BoardPostsResponseMapper;
 import net.causw.app.main.service.board.BoardService;
 import net.causw.app.main.service.board.FavoriteBoardService;
 import net.causw.app.main.service.board.UserBoardSubscribeService;
@@ -34,7 +34,7 @@ public class FindAllPostFacade {
 	private final PostService postService;
 	private final BoardService boardService;
 	private final FavoriteBoardService favoriteBoardService;
-	private final PostResponseMapper postResponseMapper;
+	private final BoardPostsResponseMapper boardPostsResponseMapper;
 	private final UserBoardSubscribeService userBoardSubscribeService;
 	private final CommentService commentService;
 	private final PostLikeService postLikeService;
@@ -49,7 +49,7 @@ public class FindAllPostFacade {
 		Page<Post> posts = retrievePosts(boardId, pageNum, context.hasDeletedItemAccess());
 		PostMetrics metrics = collectPostMetrics(posts);
 
-		return postResponseMapper.toBoardPostsResponseDto(
+		return boardPostsResponseMapper.toBoardPostsResponseDto(
 			board,
 			user.getRoles(),
 			context.isFavorite(),

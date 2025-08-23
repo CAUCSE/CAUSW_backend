@@ -390,6 +390,21 @@ public class CommentService {
                 CommentCountProjection::getCommentCount
             ));
     }
+
+    public Page<CommentResponseDto> findCommentsByPostIdByPage(User user, Post post, Integer pageNum) {
+        return commentRepository.findByPost_IdOrderByCreatedAt(
+            post.getId(),
+            pageableFactory.create(pageNum, StaticValue.DEFAULT_COMMENT_PAGE_SIZE)
+        ).map(comment -> toCommentResponseDto(comment, user, post.getBoard()));
+    }
+
+    public Long getNumOfComments(Post post) {
+        return postRepository.countAllCommentByPost_Id(post.getId());
+    }
+
+    public boolean isPostHasComment(String postId){
+        return commentRepository.existsByPostIdAndIsDeletedFalse(postId);
+    }
 }
 
 

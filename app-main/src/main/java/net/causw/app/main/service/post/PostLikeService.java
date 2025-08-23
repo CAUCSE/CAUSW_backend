@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import net.causw.app.main.domain.model.entity.post.Post;
+import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.repository.post.LikePostRepository;
 import net.causw.app.main.repository.post.projection.PostLikeCountProjection;
 
@@ -28,5 +30,13 @@ public class PostLikeService {
 				PostLikeCountProjection::getPostId,
 				PostLikeCountProjection::getLikeCount
 			));
+	}
+
+	public Long getNumOfPostLikes(Post post){
+		return likePostRepository.countByPostId(post.getId());
+	}
+
+	public boolean getIsPostLiked(User user, String postId) {
+		return likePostRepository.existsByPostIdAndUserId(postId, user.getId());
 	}
 }
