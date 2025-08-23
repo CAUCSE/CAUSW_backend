@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.causw.app.main.dto.post.*;
+import net.causw.app.main.facade.post.query.FindAllPostFacade;
+import net.causw.app.main.facade.post.query.FindByPostIdFacade;
 import net.causw.app.main.service.post.PostService;
 import net.causw.app.main.infrastructure.security.userdetails.CustomUserDetails;
 import net.causw.global.exception.BadRequestException;
@@ -28,6 +30,8 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
+    private final FindAllPostFacade findAllPostFacade;
+    private final FindByPostIdFacade findByPostIdFacade;
 
     @GetMapping(value = "/{id}", produces = "application/json")
     @ResponseStatus(value = HttpStatus.OK)
@@ -53,7 +57,7 @@ public class PostController {
             @PathVariable("id") String id,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return this.postService.findPostById(userDetails.getUser(), id);
+        return findByPostIdFacade.execute(userDetails.getUser(), id);
     }
 
     @GetMapping
@@ -82,7 +86,7 @@ public class PostController {
             @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum, // PageNation
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return this.postService.findAllPost(userDetails.getUser(), boardId, pageNum);
+        return findAllPostFacade.execute(userDetails.getUser(), boardId, pageNum);
     }
 
     @GetMapping("/search")

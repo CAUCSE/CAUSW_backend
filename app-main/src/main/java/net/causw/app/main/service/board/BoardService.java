@@ -449,6 +449,15 @@ public class BoardService {
         return toBoardResponseDto(boardRepository.save(board), roles);
     }
 
+    public Board getBoard(String boardId) {
+        return boardRepository.findById(boardId).orElseThrow(
+            () -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                MessageUtil.BOARD_NOT_FOUND
+            )
+        );
+    }
+
     private ValidatorBucket initializeValidatorBucket(User user, Board board) {
         Set<Role> roles = user.getRoles();
         ValidatorBucket validatorBucket = ValidatorBucket.of();
@@ -519,15 +528,6 @@ public class BoardService {
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.USER_NOT_FOUND
-                )
-        );
-    }
-
-    private Board getBoard(String boardId) {
-        return boardRepository.findById(boardId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.BOARD_NOT_FOUND
                 )
         );
     }

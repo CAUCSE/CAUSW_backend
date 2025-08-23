@@ -1,7 +1,12 @@
 package net.causw.app.main.repository.comment;
 
+import java.util.List;
+import java.util.Map;
+
 import net.causw.app.main.domain.model.entity.comment.Comment;
 import net.causw.app.main.domain.model.entity.post.Post;
+import net.causw.app.main.repository.comment.projection.CommentCountProjection;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -36,4 +41,12 @@ public interface CommentRepository extends JpaRepository<Comment, String> {
             "ORDER BY p.createdAt DESC")
     Page<Post> findPostsByUserId(@Param("userId") String userId, Pageable pageable);
 
+    @Query(value = """
+        SELECT c.post.id as postId, COUNT(c.id) as commentCount
+        FROM Comment c
+        WHERE c.post.id IN :postIds
+        GROUP BY c.post.id
+      """
+    )
+    List<CommentCountProjection> findCommentCountsByPostIds(@Param("postIds") List<String> postIds);
 }

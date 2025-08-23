@@ -70,6 +70,7 @@ import net.causw.global.constant.StaticValue;
 import net.causw.app.main.domain.validation.*;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -120,48 +121,6 @@ public class PostService {
             postResponseDto.updateAnonymousPost();
         }
         return postResponseDto;
-    }
-
-    public BoardPostsResponseDto findAllPost(
-            User user,
-            String boardId,
-            Integer pageNum
-    ) {
-        Set<Role> roles = user.getRoles();  // 사용자의 역할 가져오기
-        Board board = getBoard(boardId);    // 게시판 정보 가져오기
-
-        // 유효성 검사 초기화 및 실행
-        ValidatorBucket validatorBucket = initializeValidator(user, board);
-        validatorBucket.validate();
-
-        // 동아리 리더 여부 확인
-        Boolean isCircleLeader = false;
-        if (roles.contains(Role.LEADER_CIRCLE)) {
-            isCircleLeader = getCircleLeader(board.getCircle()).getId().equals(user.getId());
-        }
-
-
-        if (isCircleLeader || roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT)) {
-            // 게시글 조회: 리더, 관리자, 회장인 경우 삭제된 게시글도 포함하여 조회
-            return toBoardPostsResponseDto(
-                    board,
-                    roles,
-                    isFavorite(user.getId(), board.getId()),
-                    isBoardSubscribed(user, board),
-                    postRepository.findAllByBoard_IdOrderByCreatedAtDesc(boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
-                            .map(this::toPostsResponseDto)
-            );
-        } else {
-            // 일반 사용자는 삭제되지 않은 게시글만 조회
-            return toBoardPostsResponseDto(
-                    board,
-                    roles,
-                    isFavorite(user.getId(), board.getId()),
-                    isBoardSubscribed(user, board),
-                    postRepository.findAllByBoard_IdAndIsDeletedOrderByCreatedAtDesc(boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), false)
-                            .map(this::toPostsResponseDto)
-            );
-        }
     }
 
     @Transactional(readOnly = true)
@@ -750,7 +709,7 @@ public class PostService {
         return post.getIsDeleted();
     }
 
-    private ValidatorBucket initializeValidator(User user, Board board) {
+    public ValidatorBucket initializeValidator(User user, Board board) {
         Set<Role> roles = user.getRoles();
         ValidatorBucket validatorBucket = ValidatorBucket.of();
         validatorBucket
@@ -1070,6 +1029,15 @@ public class PostService {
         return likeChildCommentRepository.existsByChildCommentIdAndUserId(childCommentId, user.getId());
     }
 
+    public Post getPostById(String postId) {
+        return postRepository.findById(postId).orElseThrow(
+            () -> new BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                MessageUtil.POST_NOT_FOUND
+            )
+        );
+    }
+
     private Post getPost(String postId) {
         return postRepository.findById(postId).orElseThrow(
                 () -> new BadRequestException(
@@ -1106,7 +1074,7 @@ public class PostService {
         );
     }
 
-    private User getCircleLeader(Circle circle) {
+    public User getCircleLeader(Circle circle) {
         User leader = circle.getLeader().orElse(null);
         if (leader == null) {
             throw new InternalServerException(
@@ -1218,5 +1186,17 @@ public class PostService {
         } else {
             return originalNickname;
         }
+    }
+
+    public Page<Post> getBoardPostsWithOutDeleted(String boardId, Integer pageNum) {
+        Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
+
+        return postRepository.findAllByBoard_IdAndIsDeletedOrderByCreatedAtDesc(boardId, pageable, false);
+    }
+
+    public Page<Post> getBoardPostsWithDeleted(String boardId, Integer pageNum) {
+        Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
+
+        return postRepository.findAllByBoard_IdOrderByCreatedAtDesc(boardId, pageable);
     }
 }
