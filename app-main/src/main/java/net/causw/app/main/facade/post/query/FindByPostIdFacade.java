@@ -36,25 +36,19 @@ public class FindByPostIdFacade {
 		validateUserPermission(user, post);
 
 		Page<CommentResponseDto> commentsPage = commentService.findCommentsByPostIdByPage(user, post, 0);
-		Long numOfComments = commentService.getNumOfComments(post);
-		Long numOfPostLikes = postLikeService.getNumOfPostLikes(post);
-		Long numOfPostFavorites = postFavoriteService.getNumOfPostFavorites(post);
-		boolean postLiked = postLikeService.getIsPostLiked(user, postId);
-		boolean postAlreadyFavorite = postFavoriteService.getIsPostAlreadyFavorite(user, postId);
-		boolean isPostHasComment = commentService.isPostHasComment(postId);
-		Boolean postSubscribed = postSubscribeService.isPostSubscribed(user, post);
+		PostStats stats = collectPostStats(user, post);
 
 		return postResponseMapper.toPostResponseDto(
 			post,
 			user,
 			commentsPage,
-			numOfComments,
-			numOfPostLikes,
-			numOfPostFavorites,
-			postLiked,
-			postAlreadyFavorite,
-			isPostHasComment,
-			postSubscribed
+			stats.numOfComments(),
+			stats.numOfLikes(),
+			stats.numOfFavorites(),
+			stats.isLiked(),
+			stats.isFavorited(),
+			stats.hasComments(),
+			stats.isSubscribed()
 		);
 	}
 
@@ -62,5 +56,30 @@ public class FindByPostIdFacade {
 		ValidatorBucket validatorBucket = postService.initializeValidator(user, post.getBoard());
 		validatorBucket.consistOf(TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST));
 		validatorBucket.validate();
+	}
+
+	// 내부 레코드로 데이터 그룹핑
+	private record PostStats(
+		Long numOfComments,
+		Long numOfLikes,
+		Long numOfFavorites,
+		boolean isLiked,
+		boolean isFavorited,
+		boolean hasComments,
+		Boolean isSubscribed
+	) {}
+
+
+	private PostStats collectPostStats(User user, Post post) {
+		String postId = post.getId();
+		return new PostStats(
+			commentService.getNumOfComments(post),
+			postLikeService.getNumOfPostLikes(post),
+			postFavoriteService.getNumOfPostFavorites(post),
+			postLikeService.getIsPostLiked(user, postId),
+			postFavoriteService.getIsPostAlreadyFavorite(user, postId),
+			commentService.isPostHasComment(postId),
+			postSubscribeService.isPostSubscribed(user, post)
+		);
 	}
 }
