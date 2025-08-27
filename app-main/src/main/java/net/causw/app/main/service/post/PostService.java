@@ -959,7 +959,6 @@ public class PostService {
     private PostResponseDto toPostResponseDtoExtended(Post post, User user) {
         PostResponseDto postResponseDto = PostDtoMapper.INSTANCE.toPostResponseDtoExtended(
                 post,
-                findCommentsByPostIdByPage(user, post, 0),
                 getNumOfComments(post),
                 getNumOfPostLikes(post),
                 getNumOfPostFavorites(post),
@@ -982,41 +981,6 @@ public class PostService {
         return postResponseDto;
     }
 
-    private Page<CommentResponseDto> findCommentsByPostIdByPage(User user, Post post, Integer pageNum) {
-        return commentRepository.findByPost_IdOrderByCreatedAt(
-                post.getId(),
-                pageableFactory.create(pageNum, StaticValue.DEFAULT_COMMENT_PAGE_SIZE)
-            ).map(comment -> toCommentResponseDto(comment, user, post.getBoard()));
-
-    }
-
-    private CommentResponseDto toCommentResponseDto(Comment comment, User user, Board board) {
-        return CommentDtoMapper.INSTANCE.toCommentResponseDto(
-                comment,
-                childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
-                getNumOfCommentLikes(comment),
-                isCommentAlreadyLike(user, comment.getId()),
-                StatusPolicy.isCommentOwner(comment, user),
-                comment.getChildCommentList().stream()
-                        .map(childComment -> toChildCommentResponseDto(childComment, user, board))
-                        .collect(Collectors.toList()),
-                StatusPolicy.isUpdatable(comment, user),
-                StatusPolicy.isDeletable(comment, user, board),
-                isCommentSubscribed(user, comment)
-        );
-    }
-
-    private ChildCommentResponseDto toChildCommentResponseDto(ChildComment childComment, User user, Board board) {
-        return CommentDtoMapper.INSTANCE.toChildCommentResponseDto(
-                childComment,
-                getNumOfChildCommentLikes(childComment),
-                isChildCommentAlreadyLike(user, childComment.getId()),
-                StatusPolicy.isChildCommentOwner(childComment, user),
-                StatusPolicy.isUpdatable(childComment, user),
-                StatusPolicy.isDeletable(childComment, user, board)
-        );
-    }
-
     private Long getNumOfComments(Post post) {
         return postRepository.countAllCommentByPost_Id(post.getId());
     }
@@ -1027,14 +991,6 @@ public class PostService {
 
     private Long getNumOfPostFavorites(Post post){
         return favoritePostRepository.countByPostId(post.getId());
-    }
-
-    private Long getNumOfCommentLikes(Comment comment){
-        return likeCommentRepository.countByCommentId(comment.getId());
-    }
-
-    private Long getNumOfChildCommentLikes(ChildComment childComment) {
-        return likeChildCommentRepository.countByChildCommentId(childComment.getId());
     }
 
     private Boolean isFavorite(String userId, String boardId) {
@@ -1056,22 +1012,8 @@ public class PostService {
                 .orElse(false);
     }
 
-    private Boolean isCommentSubscribed(User user, Comment comment){
-        return userCommentSubscribeRepository.findByUserAndComment(user, comment)
-                .map(UserCommentSubscribe::getIsSubscribed)
-                .orElse(false);
-    }
-
     private Boolean isPostHasComment(String postId){
         return commentRepository.existsByPostIdAndIsDeletedFalse(postId);
-    }
-
-    private Boolean isCommentAlreadyLike(User user, String commentId) {
-        return likeCommentRepository.existsByCommentIdAndUserId(commentId, user.getId());
-    }
-
-    private Boolean isChildCommentAlreadyLike(User user, String childCommentId) {
-        return likeChildCommentRepository.existsByChildCommentIdAndUserId(childCommentId, user.getId());
     }
 
     private Post getPost(String postId) {
@@ -1079,15 +1021,6 @@ public class PostService {
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.POST_NOT_FOUND
-                )
-        );
-    }
-
-    private User getUser(String userId) {
-        return userRepository.findById(userId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_NOT_FOUND
                 )
         );
     }
@@ -1119,15 +1052,6 @@ public class PostService {
             );
         }
         return leader;
-    }
-
-    private FavoritePost getFavoritePost(User user, String postId) {
-        return favoritePostRepository.findByPostIdAndUserId(postId, user.getId()).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.FAVORITE_POST_NOT_FOUND
-                )
-        );
     }
 
     private FormResponseDto toFormResponseDto(Form form) {

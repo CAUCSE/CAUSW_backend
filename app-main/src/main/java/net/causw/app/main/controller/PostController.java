@@ -215,6 +215,14 @@ public class PostController {
         postService.deletePost(userDetails.getUser(), id);
     }
 
+    /**
+     * @deprecated
+     * (2025.08.27 기준 프론트에서 사용하지 않고 있음)
+     * @param userDetails 유저 디테일
+     * @param id id
+     * @param postUpdateRequestDto postUpdateRequestDto
+     * @param attachImageList attachImageList
+     */
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(value = HttpStatus.OK)
     @Operation(summary = "게시글 업데이트 API(완료)",
