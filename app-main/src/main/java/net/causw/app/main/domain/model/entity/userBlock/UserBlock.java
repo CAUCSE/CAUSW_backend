@@ -11,8 +11,8 @@ import net.causw.app.main.domain.model.entity.report.BlockScope;
 @Table(name = "tb_user_block",
     uniqueConstraints = {
         // 활성 차단은 동일 스코프로 중복 생성 방지
-        @UniqueConstraint(name = "uq_block_active",
-            columnNames = {"blocker_id", "blockee_id", "scope", "scope_ref_id", "active"})
+        @UniqueConstraint(name = "uq_block",
+            columnNames = {"blocker_id", "blockee_id"})
     }
 )
 @Getter
@@ -63,12 +63,6 @@ public class UserBlock extends BaseEntity {
     private String contentSnapshot;
 
     /**
-     * 활성/비활성(해제) 플래그
-     */
-    @Column(name = "active", nullable = false)
-    private boolean active;
-
-    /**
      * 새로운 차단 생성
      *
      * @param blockerId 차단한 사용자 ID
@@ -96,7 +90,6 @@ public class UserBlock extends BaseEntity {
             .scopeRefId(scopeRefId)
             .blockeeAnonymous(blockeeAnonymous)
             .contentSnapshot(truncateContentSnapshot(contentSnapshot))
-            .active(true)
             .build();
     }
 
@@ -219,7 +212,6 @@ public class UserBlock extends BaseEntity {
             ", blockeeId=" + blockeeId +
             ", scope=" + scope +
             ", scopeRefId=" + scopeRefId +
-            ", active=" + active +
             '}';
     }
 
