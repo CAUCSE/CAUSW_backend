@@ -31,7 +31,7 @@ public class BlockByCommentUseCaseService {
 
 		validateSelfBlock(currentUser, commentWriter);
 
-		boolean isAlreadyBlocked = userBlockService.existsActiveBlockByUsers(currentUser, commentWriter);
+		boolean isAlreadyBlocked = userBlockService.existsBlockByUsers(currentUser, commentWriter);
 
 		if (comment.getIsAnonymous()) {
 			return handleAnonymousCommentBlock(currentUser, comment, isAlreadyBlocked);

@@ -55,11 +55,11 @@ import net.causw.app.main.dto.comment.CommentResponseDto;
 import net.causw.app.main.dto.post.*;
 import net.causw.app.main.domain.policy.StatusPolicy;
 import net.causw.app.main.service.userBlock.UserBlockEntityService;
-import net.causw.app.main.service.userBlock.useCase.BlockByPostUseCaseService;
 import net.causw.app.main.service.uuidFile.UuidFileService;
 import net.causw.app.main.infrastructure.aop.annotation.MeasureTime;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
+import net.causw.global.exception.ForbiddenException;
 import net.causw.global.exception.InternalServerException;
 import net.causw.global.exception.UnauthorizedException;
 import net.causw.app.main.domain.model.enums.circle.CircleMemberStatus;
@@ -111,7 +111,6 @@ public class PostService {
     private final UserPostSubscribeRepository userPostSubscribeRepository;
     private final UserCommentSubscribeRepository userCommentSubscribeRepository;
     private final UserBlockEntityService userBlockEntityService;
-    private final BlockByPostUseCaseService blockByPostUseCaseService;
 
     public PostResponseDto findPostById(User user, String postId) {
         Post post = getPost(postId);
@@ -120,10 +119,16 @@ public class PostService {
         validatorBucket.consistOf(TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST));
         validatorBucket.validate();
 
+        boolean existsBlockByUsers = userBlockEntityService.existsBlockByUsers(user, post.getWriter());
+        if (existsBlockByUsers) {
+            throw new ForbiddenException(ErrorCode.BLOCKED_USERS_CONTENT, MessageUtil.BLOCKED_USERS_CONTENT);
+        }
+
         PostResponseDto postResponseDto = toPostResponseDtoExtended(post, user);
         if(postResponseDto.getIsAnonymous()){
             postResponseDto.updateAnonymousPost();
         }
+
         return postResponseDto;
     }
 

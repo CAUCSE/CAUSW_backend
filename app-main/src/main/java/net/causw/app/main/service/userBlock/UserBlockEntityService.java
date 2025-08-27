@@ -25,7 +25,7 @@ public class UserBlockEntityService {
 	 * @param blockee
 	 * @return
 	 */
-	public boolean existsActiveBlockByUsers(User blocker, User blockee) {
+	public boolean existsBlockByUsers(User blocker, User blockee) {
 		return userBlockRepository.existsByBlockerIdAndBlockeeId(blocker.getId(), blockee.getId());
 	}
 

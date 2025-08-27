@@ -31,7 +31,7 @@ public class BlockByPostUseCaseService {
 
 		validateSelfBlock(currentUser, postWriter);
 
-		boolean isAlreadyBlocked = userBlockService.existsActiveBlockByUsers(currentUser, postWriter);
+		boolean isAlreadyBlocked = userBlockService.existsBlockByUsers(currentUser, postWriter);
 
 		if (post.getIsAnonymous()) {
 			return handleAnonymousPostBlock(currentUser, post, isAlreadyBlocked);
