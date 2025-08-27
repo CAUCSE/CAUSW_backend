@@ -19,17 +19,19 @@ public interface PostRepository extends JpaRepository<Post, String> {
     Page<Post> findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(String boardId, Pageable pageable);
     Optional<Post> findTop1ByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(String boardId);
 
+    // Repository
     @Query("SELECT p FROM Post p " +
-            "LEFT JOIN FETCH p.writer w " +
-            "WHERE p.board.id = :boardId AND p.isDeleted = :isDeleted " +
-            "ORDER BY p.createdAt DESC")
-    Page<Post> findAllByBoard_IdAndIsDeletedOrderByCreatedAtDesc(@Param("boardId") String boardId, Pageable pageable, @Param("isDeleted") boolean isDeleted);
-
-    @Query("SELECT p FROM Post p " +
-            "LEFT JOIN FETCH p.writer w " +
-            "WHERE p.board.id = :boardId " +
-            "ORDER BY p.createdAt DESC")
-    Page<Post> findAllByBoard_IdOrderByCreatedAtDesc(@Param("boardId") String boardId, Pageable pageable);
+        "LEFT JOIN FETCH p.writer w " +
+        "WHERE p.board.id = :boardId " +
+        "AND (:includeDeleted = true OR p.isDeleted = false) " +
+        "AND (:#{#blockedUserIds.size()} = 0 OR p.writer.id NOT IN :blockedUserIds) " +
+        "ORDER BY p.createdAt DESC")
+    Page<Post> findPostsByBoardWithFilters(
+        @Param("boardId") String boardId,
+        @Param("includeDeleted") boolean includeDeleted,
+        @Param("blockedUserIds") List<String> blockedUserIds,
+        Pageable pageable
+    );
 
     //특정 게시판에서 삭제 여부와 관계없이 title 혹은 content 에 keyword 가 포함된 게시글 검색
     @Query(value = "SELECT * " +

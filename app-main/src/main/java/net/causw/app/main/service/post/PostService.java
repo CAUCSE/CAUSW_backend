@@ -54,6 +54,8 @@ import net.causw.app.main.dto.comment.ChildCommentResponseDto;
 import net.causw.app.main.dto.comment.CommentResponseDto;
 import net.causw.app.main.dto.post.*;
 import net.causw.app.main.domain.policy.StatusPolicy;
+import net.causw.app.main.service.userBlock.UserBlockEntityService;
+import net.causw.app.main.service.userBlock.useCase.BlockByPostUseCaseService;
 import net.causw.app.main.service.uuidFile.UuidFileService;
 import net.causw.app.main.infrastructure.aop.annotation.MeasureTime;
 import net.causw.global.exception.BadRequestException;
@@ -70,6 +72,7 @@ import net.causw.global.constant.StaticValue;
 import net.causw.app.main.domain.validation.*;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -107,6 +110,8 @@ public class PostService {
     private final UserBoardSubscribeRepository userBoardSubscribeRepository;
     private final UserPostSubscribeRepository userPostSubscribeRepository;
     private final UserCommentSubscribeRepository userCommentSubscribeRepository;
+    private final UserBlockEntityService userBlockEntityService;
+    private final BlockByPostUseCaseService blockByPostUseCaseService;
 
     public PostResponseDto findPostById(User user, String postId) {
         Post post = getPost(postId);
@@ -135,33 +140,22 @@ public class PostService {
         validatorBucket.validate();
 
         // 동아리 리더 여부 확인
-        Boolean isCircleLeader = false;
+        boolean isCircleLeader = false;
         if (roles.contains(Role.LEADER_CIRCLE)) {
             isCircleLeader = getCircleLeader(board.getCircle()).getId().equals(user.getId());
         }
 
+        List<String> blockedUserIds = userBlockEntityService.findBlockedUserIdsByUser(user);
 
-        if (isCircleLeader || roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT)) {
-            // 게시글 조회: 리더, 관리자, 회장인 경우 삭제된 게시글도 포함하여 조회
-            return toBoardPostsResponseDto(
-                    board,
-                    roles,
-                    isFavorite(user.getId(), board.getId()),
-                    isBoardSubscribed(user, board),
-                    postRepository.findAllByBoard_IdOrderByCreatedAtDesc(boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
-                            .map(this::toPostsResponseDto)
-            );
-        } else {
-            // 일반 사용자는 삭제되지 않은 게시글만 조회
-            return toBoardPostsResponseDto(
-                    board,
-                    roles,
-                    isFavorite(user.getId(), board.getId()),
-                    isBoardSubscribed(user, board),
-                    postRepository.findAllByBoard_IdAndIsDeletedOrderByCreatedAtDesc(boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), false)
-                            .map(this::toPostsResponseDto)
-            );
-        }
+        Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
+
+        boolean includeDeleted = isCircleLeader || roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT);
+        Page<PostsResponseDto> posts = postRepository
+            .findPostsByBoardWithFilters(boardId, includeDeleted, blockedUserIds, pageable)
+            .map(this::toPostsResponseDto);
+
+        return toBoardPostsResponseDto(board, roles, isFavorite(user.getId(), boardId), isBoardSubscribed(user, board),
+            posts);
     }
 
     @Transactional(readOnly = true)
@@ -213,13 +207,19 @@ public class PostService {
                 )
         );
 
+        List<String> blockedUserIds = userBlockEntityService.findBlockedUserIdsByUser(user);
+        Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
+
+        boolean includeDeleted = false;
+        Page<PostsResponseDto> posts = postRepository
+            .findPostsByBoardWithFilters(board.getId(), includeDeleted, blockedUserIds, pageable)
+            .map(this::toPostsResponseDto);
+
         return toBoardPostsResponseDto(
                 board,
                 roles,
                 isFavorite(user.getId(), board.getId()),
-                isBoardSubscribed(user, board),
-                postRepository.findAllByBoard_IdOrderByCreatedAtDesc(board.getId(), pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
-                        .map(this::toPostsResponseDto));
+                isBoardSubscribed(user, board), posts);
     }
 
     //게시글이 생성될 때 발생할 일

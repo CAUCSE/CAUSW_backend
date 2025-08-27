@@ -31,8 +31,10 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
           System.currentTimeMillis() % 100000,
           requestId % 10000);
       MDC.put("traceId", traceId);
-      MDC.put("path", request.getRequestURI());
-      MDC.put("httpMethod", request.getMethod());
+      String requestURI = request.getRequestURI();
+      MDC.put("path", requestURI);
+      String method = request.getMethod();
+      MDC.put("httpMethod", method);
       MDC.put("remoteIP", request.getRemoteAddr());
 
       String userId = getUserId();
@@ -47,7 +49,7 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
       MDC.put("status", String.valueOf(wrappedResponse.getStatus()));
       MDC.put("duration", String.valueOf(duration));
 
-      log.info("Request processed");
+      log.info(" Request processed API URI: " + "[" + method + "] " + requestURI);
     } finally {
       MDC.clear(); // 누락되면 memory leak
     }

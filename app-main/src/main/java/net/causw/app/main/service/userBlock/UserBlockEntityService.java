@@ -1,5 +1,7 @@
 package net.causw.app.main.service.userBlock;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import net.causw.app.main.domain.model.entity.comment.ChildComment;
@@ -82,5 +84,9 @@ public class UserBlockEntityService {
 		);
 
 		userBlockRepository.save(userBlock);
+	}
+
+	public List<String> findBlockedUserIdsByUser(User user) {
+		return userBlockRepository.findBlockeeIdsByBlockerUserId(user.getId());
 	}
 }

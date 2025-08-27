@@ -29,6 +29,7 @@ import net.causw.app.main.dto.util.dtoMapper.PostDtoMapper;
 import net.causw.app.main.dto.util.dtoMapper.UserDtoMapper;
 import net.causw.app.main.infrastructure.aop.annotation.MeasureTime;
 import net.causw.app.main.service.post.PostService;
+import net.causw.app.main.service.userBlock.UserBlockEntityService;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.UnauthorizedException;
@@ -70,7 +71,7 @@ public class BoardService {
     private final BoardApplyRepository boardApplyRepository;
     private final Validator validator;
     private final PostService postService;
-
+    private final UserBlockEntityService userBlockEntityService;
 
     @Transactional(readOnly = true)
     public List<BoardResponseDto> findAllBoard(
@@ -158,10 +159,16 @@ public class BoardService {
             }
         }
 
+        List<String> blockedUserIds = userBlockEntityService.findBlockedUserIdsByUser(user);
+
         return boards.stream()
                 .map(board -> {
-                    List<PostContentDto> recentPosts = postRepository.findAllByBoard_IdAndIsDeletedOrderByCreatedAtDesc(
-                            board.getId(), PageRequest.of(0, 2), false)
+                    List<PostContentDto> recentPosts = postRepository.findPostsByBoardWithFilters(
+                            board.getId(),
+                            false,
+                            blockedUserIds,
+                            PageRequest.of(0, 2)
+                        )
                             .getContent()
                             .stream()
                             .map(post -> {
