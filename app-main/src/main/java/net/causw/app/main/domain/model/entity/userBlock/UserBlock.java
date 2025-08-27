@@ -25,13 +25,13 @@ public class UserBlock extends BaseEntity {
      * 누가 차단했는지
      */
     @Column(name = "blocker_id", nullable = false, updatable = false)
-    private Long blockerId;
+    private String blockerId;
 
     /**
      * 누구를 차단했는지
      */
     @Column(name = "blockee_id", nullable = false, updatable = false)
-    private Long blockeeId;
+    private String blockeeId;
 
     /**
      * 차단 경로
@@ -46,7 +46,7 @@ public class UserBlock extends BaseEntity {
      *  - (POST/COMMENT/CHILD_COMMENT 등)
      */
     @Column(name = "scope_ref_id", nullable = false)
-    private Long scopeRefId;
+    private String scopeRefId;
 
     /**
      * 상대가 당시 익명 노출이었는지(차단 해제 리스트 UI용 메타)
