@@ -327,7 +327,7 @@ public class PostServiceTest {
 
       given(pageableFactory.create(anyInt(), anyInt())).willReturn(pageable);
       given(postRepository.findPostsByBoardWithFilters(
-          eq(boardId), eq(false), eq(List.of()), eq(keyword), eq(pageable))).willReturn(postPage);
+          eq(boardId), eq(false), eq(Set.of()), eq(keyword), eq(pageable))).willReturn(postPage);
 
       // when
       BoardPostsResponseDto result = postService.searchPost(user, boardId, keyword, pageNum);
@@ -351,7 +351,7 @@ public class PostServiceTest {
 
       given(pageableFactory.create(anyInt(), anyInt())).willReturn(pageable);
       given(postRepository.findPostsByBoardWithFilters(
-          eq(boardId), eq(false), eq(List.of()), eq(keyword), eq(pageable)
+          eq(boardId), eq(false), eq(Set.of()), eq(keyword), eq(pageable)
       )).willReturn(emptyPage);
 
       // when
@@ -370,7 +370,7 @@ public class PostServiceTest {
       Page<Post> postPage = new PageImpl<>(List.of(post), pageable, 1);
 
       given(pageableFactory.create(anyInt(), anyInt())).willReturn(pageable);
-      given(postRepository.findPostsByBoardWithFilters(eq(boardId), eq(false), eq(List.of()), eq(keyword),
+      given(postRepository.findPostsByBoardWithFilters(eq(boardId), eq(false), eq(Set.of()), eq(keyword),
           eq(pageable))).willReturn(postPage);
 
       //when
@@ -391,7 +391,7 @@ public class PostServiceTest {
 
       given(pageableFactory.create(anyInt(), anyInt())).willReturn(pageable);
       given(postRepository.findPostsByBoardWithFilters(
-          eq(boardId),eq(true), eq(List.of()), eq(keyword), eq(pageable))).willReturn(postPage);
+          eq(boardId),eq(true), eq(Set.of()), eq(keyword), eq(pageable))).willReturn(postPage);
 
       //when
       BoardPostsResponseDto result = postService.searchPost(user, boardId, keyword, pageNum);
