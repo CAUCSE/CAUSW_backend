@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class UserBlockService {
+public class UserBlockEntityService {
 
 	private final UserBlockRepository userBlockRepository;
 

@@ -8,7 +8,7 @@ import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.dto.userBlock.response.CreateBlockByPostResponseDto;
 import net.causw.app.main.infrastructure.security.userdetails.CustomUserDetails;
 import net.causw.app.main.service.post.PostEntityService;
-import net.causw.app.main.service.userBlock.UserBlockService;
+import net.causw.app.main.service.userBlock.UserBlockEntityService;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class BlockByPostUseCaseService {
 
 	private final PostEntityService postService;
-	private final UserBlockService userBlockService;
+	private final UserBlockEntityService userBlockService;
 
 	public CreateBlockByPostResponseDto execute(CustomUserDetails userDetails, String postId) {
 

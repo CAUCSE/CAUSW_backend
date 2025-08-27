@@ -8,7 +8,7 @@ import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.dto.userBlock.response.CreateBlockByCommentResponseDto;
 import net.causw.app.main.infrastructure.security.userdetails.CustomUserDetails;
 import net.causw.app.main.service.comment.CommentEntityService;
-import net.causw.app.main.service.userBlock.UserBlockService;
+import net.causw.app.main.service.userBlock.UserBlockEntityService;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class BlockByCommentUseCaseService {
 
 	private final CommentEntityService commentEntityService;
-	private final UserBlockService userBlockService;
+	private final UserBlockEntityService userBlockService;
 
 	public CreateBlockByCommentResponseDto execute(CustomUserDetails userDetails, String commentId) {
 
