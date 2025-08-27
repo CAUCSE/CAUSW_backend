@@ -25,13 +25,13 @@ public class UserBlock extends BaseEntity {
      * 누가 차단했는지
      */
     @Column(name = "blocker_id", nullable = false, updatable = false)
-    private Long blockerId;
+    private String blockerId;
 
     /**
      * 누구를 차단했는지
      */
     @Column(name = "blockee_id", nullable = false, updatable = false)
-    private Long blockeeId;
+    private String blockeeId;
 
     /**
      * 차단 경로
@@ -46,7 +46,7 @@ public class UserBlock extends BaseEntity {
      *  - (POST/COMMENT/CHILD_COMMENT 등)
      */
     @Column(name = "scope_ref_id", nullable = false)
-    private Long scopeRefId;
+    private String scopeRefId;
 
     /**
      * 상대가 당시 익명 노출이었는지(차단 해제 리스트 UI용 메타)
@@ -80,10 +80,10 @@ public class UserBlock extends BaseEntity {
      * @return 새로운 UserBlock 인스턴스
      */
     public static UserBlock create(
-        Long blockerId,
-        Long blockeeId,
+        String blockerId,
+        String blockeeId,
         BlockScope scope,
-        Long scopeRefId,
+        String scopeRefId,
         boolean blockeeAnonymous,
         String contentSnapshot) {
 
@@ -111,9 +111,9 @@ public class UserBlock extends BaseEntity {
      * @return 댓글 차단 UserBlock 인스턴스
      */
     public static UserBlock createForComment(
-        Long blockerId,
-        Long blockeeId,
-        Long commentId,
+        String blockerId,
+        String blockeeId,
+        String commentId,
         boolean isAnonymous,
         String commentContent) {
 
@@ -138,9 +138,9 @@ public class UserBlock extends BaseEntity {
      * @return 대댓글 차단 UserBlock 인스턴스
      */
     public static UserBlock createForChildComment(
-        Long blockerId,
-        Long blockeeId,
-        Long childCommentId,
+        String blockerId,
+        String blockeeId,
+        String childCommentId,
         boolean isAnonymous,
         String childCommentContent) {
 
@@ -165,9 +165,9 @@ public class UserBlock extends BaseEntity {
      * @return 게시글 차단 UserBlock 인스턴스
      */
     public static UserBlock createForPost(
-        Long blockerId,
-        Long blockeeId,
-        Long postId,
+        String blockerId,
+        String blockeeId,
+        String postId,
         boolean isAnonymous,
         String postContent) {
 
@@ -201,7 +201,7 @@ public class UserBlock extends BaseEntity {
     /**
      * 차단 요청 유효성 검증
      */
-    private static void validateBlockRequest(Long blockerId, Long blockeeId) {
+    private static void validateBlockRequest(String blockerId, String blockeeId) {
         if (blockerId == null || blockeeId == null) {
             throw new IllegalArgumentException("차단자 ID와 피차단자 ID는 필수입니다.");
         }
