@@ -1,6 +1,7 @@
 package net.causw.app.main.service.userBlock;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
@@ -86,7 +87,7 @@ public class UserBlockEntityService {
 		userBlockRepository.save(userBlock);
 	}
 
-	public List<String> findBlockedUserIdsByUser(User user) {
+	public Set<String> findBlockedUserIdsByUser(User user) {
 		return userBlockRepository.findBlockeeIdsByBlockerUserId(user.getId());
 	}
 }

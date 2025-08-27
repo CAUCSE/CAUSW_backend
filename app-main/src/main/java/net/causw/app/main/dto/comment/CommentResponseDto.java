@@ -37,6 +37,9 @@ public class CommentResponseDto {
     private Boolean updatable;
     private Boolean deletable;
 
+    @Schema(description = "차단된 컨텐츠 여부", example = "False")
+    private Boolean isBlocked;
+
     @Schema(description = "익명글 여부", example = "False")
     private Boolean isAnonymous;
 

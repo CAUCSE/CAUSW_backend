@@ -4,13 +4,10 @@ import lombok.RequiredArgsConstructor;
 import net.causw.app.main.domain.model.entity.board.Board;
 import net.causw.app.main.domain.model.entity.circle.Circle;
 import net.causw.app.main.domain.model.entity.circle.CircleMember;
-import net.causw.app.main.domain.model.entity.comment.ChildComment;
-import net.causw.app.main.domain.model.entity.comment.Comment;
 import net.causw.app.main.domain.model.entity.form.Form;
 import net.causw.app.main.domain.model.entity.form.FormQuestionOption;
 import net.causw.app.main.domain.model.entity.form.FormQuestion;
 import net.causw.app.main.domain.model.entity.notification.UserBoardSubscribe;
-import net.causw.app.main.domain.model.entity.notification.UserCommentSubscribe;
 import net.causw.app.main.domain.model.entity.notification.UserPostSubscribe;
 import net.causw.app.main.domain.model.enums.user.UserState;
 import net.causw.app.main.repository.form.FormRepository;
@@ -150,7 +147,7 @@ public class PostService {
             isCircleLeader = getCircleLeader(board.getCircle()).getId().equals(user.getId());
         }
 
-        List<String> blockedUserIds = userBlockEntityService.findBlockedUserIdsByUser(user);
+        Set<String> blockedUserIds = userBlockEntityService.findBlockedUserIdsByUser(user);
 
         Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
 
@@ -186,7 +183,7 @@ public class PostService {
         // 권한 확인 및 차단 사용자 목록 조회
         boolean includeDeleted = isCircleLeader || roles.contains(Role.ADMIN) ||
             roles.contains(Role.PRESIDENT) || roles.contains(Role.VICE_PRESIDENT);
-        List<String> blockedUserIds = userBlockEntityService.findBlockedUserIdsByUser(user);
+        Set<String> blockedUserIds = userBlockEntityService.findBlockedUserIdsByUser(user);
         Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
 
         Page<PostsResponseDto> posts = postRepository
@@ -211,7 +208,7 @@ public class PostService {
                 )
         );
 
-        List<String> blockedUserIds = userBlockEntityService.findBlockedUserIdsByUser(user);
+        Set<String> blockedUserIds = userBlockEntityService.findBlockedUserIdsByUser(user);
         Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
 
         boolean includeDeleted = false;

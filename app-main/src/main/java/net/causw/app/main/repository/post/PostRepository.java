@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, String> {
@@ -34,7 +35,7 @@ public interface PostRepository extends JpaRepository<Post, String> {
     Page<Post> findPostsByBoardWithFilters(
         @Param("boardId") String boardId,
         @Param("includeDeleted") boolean includeDeleted,
-        @Param("blockedUserIds") List<String> blockedUserIds,
+        @Param("blockedUserIds") Set<String> blockedUserIds,
         @Param("keyword") String keyword,
         Pageable pageable
     );
