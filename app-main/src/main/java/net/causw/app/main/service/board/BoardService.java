@@ -167,6 +167,7 @@ public class BoardService {
                             board.getId(),
                             false,
                             blockedUserIds,
+                            null,
                             PageRequest.of(0, 2)
                         )
                             .getContent()

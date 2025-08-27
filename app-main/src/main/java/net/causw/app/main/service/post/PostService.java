@@ -151,7 +151,7 @@ public class PostService {
 
         boolean includeDeleted = isCircleLeader || roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT);
         Page<PostsResponseDto> posts = postRepository
-            .findPostsByBoardWithFilters(boardId, includeDeleted, blockedUserIds, pageable)
+            .findPostsByBoardWithFilters(boardId, includeDeleted, blockedUserIds, null, pageable)
             .map(this::toPostsResponseDto);
 
         return toBoardPostsResponseDto(board, roles, isFavorite(user.getId(), boardId), isBoardSubscribed(user, board),
@@ -160,42 +160,41 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public BoardPostsResponseDto searchPost(
-            User user,
-            String boardId,
-            String keyword,
-            Integer pageNum
+        User user,
+        String boardId,
+        String keyword,
+        Integer pageNum
     ) {
         Set<Role> roles = user.getRoles();
         Board board = getBoard(boardId);
 
         ValidatorBucket validatorBucket = initializeValidator(user, board);
         validatorBucket
-                .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD))
-                .validate();
+            .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD))
+            .validate();
 
         boolean isCircleLeader = false;
         if (roles.contains(Role.LEADER_CIRCLE)) {
             isCircleLeader = getCircleLeader(board.getCircle()).getId().equals(user.getId());
         }
 
-        // 동아리장, Admin, 학생회장인 경우 삭제된 글 포함 검색. 그외의 경우 삭제되지 않는 글만 검색
-        if (isCircleLeader || roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT) || roles.contains(Role.VICE_PRESIDENT)) {
-            return toBoardPostsResponseDto(
-                    board,
-                    roles,
-                    isFavorite(user.getId(), board.getId()),
-                    isBoardSubscribed(user, board),
-                    postRepository.findByBoardIdAndKeyword(keyword, boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
-                            .map(this::toPostsResponseDto));
-        } else {
-            return toBoardPostsResponseDto(
-                    board,
-                    roles,
-                    isFavorite(user.getId(), board.getId()),
-                    isBoardSubscribed(user, board),
-                    postRepository.findByBoardIdAndKeywordAndIsDeleted(keyword, boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), false)
-                            .map(this::toPostsResponseDto));
-        }
+        // 권한 확인 및 차단 사용자 목록 조회
+        boolean includeDeleted = isCircleLeader || roles.contains(Role.ADMIN) ||
+            roles.contains(Role.PRESIDENT) || roles.contains(Role.VICE_PRESIDENT);
+        List<String> blockedUserIds = userBlockEntityService.findBlockedUserIdsByUser(user);
+        Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
+
+        Page<PostsResponseDto> posts = postRepository
+            .findPostsByBoardWithFilters(boardId, includeDeleted, blockedUserIds, keyword, pageable)
+            .map(this::toPostsResponseDto);
+
+        return toBoardPostsResponseDto(
+            board,
+            roles,
+            isFavorite(user.getId(), board.getId()),
+            isBoardSubscribed(user, board),
+            posts
+        );
     }
 
     public BoardPostsResponseDto findAllAppNotice(User user, Integer pageNum) {
@@ -212,7 +211,7 @@ public class PostService {
 
         boolean includeDeleted = false;
         Page<PostsResponseDto> posts = postRepository
-            .findPostsByBoardWithFilters(board.getId(), includeDeleted, blockedUserIds, pageable)
+            .findPostsByBoardWithFilters(board.getId(), includeDeleted, blockedUserIds, null, pageable)
             .map(this::toPostsResponseDto);
 
         return toBoardPostsResponseDto(

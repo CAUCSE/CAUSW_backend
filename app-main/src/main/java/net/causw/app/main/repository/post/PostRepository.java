@@ -20,34 +20,24 @@ public interface PostRepository extends JpaRepository<Post, String> {
     Optional<Post> findTop1ByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(String boardId);
 
     // Repository
-    @Query("SELECT p FROM Post p " +
-        "LEFT JOIN FETCH p.writer w " +
-        "WHERE p.board.id = :boardId " +
-        "AND (:includeDeleted = true OR p.isDeleted = false) " +
-        "AND (:#{#blockedUserIds.size()} = 0 OR p.writer.id NOT IN :blockedUserIds) " +
-        "ORDER BY p.createdAt DESC")
+    @Query("""
+       SELECT p FROM Post p
+       LEFT JOIN FETCH p.writer w
+       WHERE p.board.id = :boardId
+       AND (:includeDeleted = true OR p.isDeleted = false)
+       AND (:#{#blockedUserIds.size()} = 0 OR p.writer.id NOT IN :blockedUserIds)
+       AND (:keyword IS NULL OR :keyword = '' OR
+            p.title LIKE CONCAT('%', :keyword, '%') OR
+            p.content LIKE CONCAT('%', :keyword, '%'))
+       ORDER BY p.createdAt DESC
+   """)
     Page<Post> findPostsByBoardWithFilters(
         @Param("boardId") String boardId,
         @Param("includeDeleted") boolean includeDeleted,
         @Param("blockedUserIds") List<String> blockedUserIds,
+        @Param("keyword") String keyword,
         Pageable pageable
     );
-
-    //특정 게시판에서 삭제 여부와 관계없이 title 혹은 content 에 keyword 가 포함된 게시글 검색
-    @Query(value = "SELECT * " +
-        "FROM tb_post AS p " +
-        "WHERE p.board_id = :boardId " +
-        "AND (p.title LIKE CONCAT('%', :keyword, '%') OR p.content LIKE CONCAT('%', :keyword, '%'))" +
-        "ORDER BY p.created_at DESC", nativeQuery = true)
-    Page<Post> findByBoardIdAndKeyword(@Param("keyword") String keyword, @Param("boardId") String boardId, Pageable pageable);
-
-    //특정 게시판에서 삭제 여부를 고려하여 title 혹은 content 에 keyword 가 포함된 게시글 검색
-    @Query(value = "SELECT * " +
-        "FROM tb_post AS p " +
-        "WHERE p.board_id = :boardId AND p.is_deleted = :isDeleted " +
-        "AND (p.title LIKE CONCAT('%', :keyword, '%') OR p.content LIKE CONCAT('%', :keyword, '%'))" +
-        "ORDER BY p.created_at DESC", nativeQuery = true)
-    Page<Post> findByBoardIdAndKeywordAndIsDeleted(@Param("keyword") String keyword, @Param("boardId") String boardId, Pageable pageable, @Param("isDeleted") boolean isDeleted);
 
     // 특정 사용자가 작성한 게시글 검색
     @Query("SELECT p " +

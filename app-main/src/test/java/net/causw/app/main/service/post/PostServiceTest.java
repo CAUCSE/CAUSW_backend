@@ -25,6 +25,7 @@ import net.causw.app.main.repository.post.FavoritePostRepository;
 import net.causw.app.main.repository.post.LikePostRepository;
 import net.causw.app.main.repository.post.PostRepository;
 import net.causw.app.main.domain.model.entity.user.User;
+import net.causw.app.main.service.userBlock.UserBlockEntityService;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.UnauthorizedException;
@@ -72,6 +73,9 @@ public class PostServiceTest {
 
   @Mock
   PageableFactory pageableFactory;
+
+  @Mock
+  UserBlockEntityService userBlockEntityService;
 
   @Mock
   FavoriteBoardRepository favoriteBoardRepository;
@@ -322,8 +326,8 @@ public class PostServiceTest {
       Page<Post> postPage = new PageImpl<>(List.of(post), pageable, 1);
 
       given(pageableFactory.create(anyInt(), anyInt())).willReturn(pageable);
-      given(postRepository.findByBoardIdAndKeywordAndIsDeleted(
-          eq(keyword), eq(boardId), eq(pageable), eq(false))).willReturn(postPage);
+      given(postRepository.findPostsByBoardWithFilters(
+          eq(boardId), eq(false), eq(List.of()), eq(keyword), eq(pageable))).willReturn(postPage);
 
       // when
       BoardPostsResponseDto result = postService.searchPost(user, boardId, keyword, pageNum);
@@ -346,8 +350,9 @@ public class PostServiceTest {
       Page<Post> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
 
       given(pageableFactory.create(anyInt(), anyInt())).willReturn(pageable);
-      given(postRepository.findByBoardIdAndKeywordAndIsDeleted(
-          eq(keyword), eq(boardId), eq(pageable), eq(false))).willReturn(emptyPage);
+      given(postRepository.findPostsByBoardWithFilters(
+          eq(boardId), eq(false), eq(List.of()), eq(keyword), eq(pageable)
+      )).willReturn(emptyPage);
 
       // when
       BoardPostsResponseDto result = postService.searchPost(user, boardId, keyword, pageNum);
@@ -365,8 +370,8 @@ public class PostServiceTest {
       Page<Post> postPage = new PageImpl<>(List.of(post), pageable, 1);
 
       given(pageableFactory.create(anyInt(), anyInt())).willReturn(pageable);
-      given(postRepository.findByBoardIdAndKeywordAndIsDeleted(
-          eq(keyword), eq(boardId), eq(pageable), eq(false))).willReturn(postPage);
+      given(postRepository.findPostsByBoardWithFilters(eq(boardId), eq(false), eq(List.of()), eq(keyword),
+          eq(pageable))).willReturn(postPage);
 
       //when
       BoardPostsResponseDto result = postService.searchPost(user, boardId, keyword, pageNum);
@@ -385,8 +390,8 @@ public class PostServiceTest {
       Page<Post> postPage = new PageImpl<>(List.of(post), pageable, 1);
 
       given(pageableFactory.create(anyInt(), anyInt())).willReturn(pageable);
-      given(postRepository.findByBoardIdAndKeyword(
-          eq(keyword), eq(boardId), eq(pageable))).willReturn(postPage);
+      given(postRepository.findPostsByBoardWithFilters(
+          eq(boardId),eq(true), eq(List.of()), eq(keyword), eq(pageable))).willReturn(postPage);
 
       //when
       BoardPostsResponseDto result = postService.searchPost(user, boardId, keyword, pageNum);
