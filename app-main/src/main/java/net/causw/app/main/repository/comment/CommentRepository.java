@@ -1,5 +1,7 @@
 package net.causw.app.main.repository.comment;
 
+import java.util.Optional;
+
 import net.causw.app.main.domain.model.entity.comment.Comment;
 import net.causw.app.main.domain.model.entity.post.Post;
 import org.springframework.data.domain.Page;
@@ -35,5 +37,7 @@ public interface CommentRepository extends JpaRepository<Comment, String> {
             "WHERE c.writer.id = :userId AND c.isDeleted = false " +
             "ORDER BY p.createdAt DESC")
     Page<Post> findPostsByUserId(@Param("userId") String userId, Pageable pageable);
+
+    Optional<Comment> findByIdAndIsDeletedFalse(String commentId);
 
 }

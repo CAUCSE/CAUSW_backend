@@ -15,12 +15,12 @@ import lombok.RequiredArgsConstructor;
 public class PostEntityService {
 	private final PostRepository postRepository;
 
-	public Post findById(String postId) {
+	public Post findByIdNotDeleted(String postId) {
 
-		return postRepository.findById(postId).orElseThrow(() ->
+		return postRepository.findByIdAndIsDeletedFalse(postId).orElseThrow(() ->
 			new NotFoundException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.VOTE_NOT_FOUND
+				MessageUtil.POST_NOT_FOUND
 			)
 		);
 	}

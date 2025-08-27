@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.causw.app.main.dto.exception.ConstraintExceptionDto;
 import net.causw.app.main.dto.exception.ExceptionDto;
 import net.causw.global.exception.BadRequestException;
+import net.causw.global.exception.BaseRuntimeException;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.UnauthorizedException;
 import net.causw.global.exception.ServiceUnavailableException;
@@ -84,6 +85,12 @@ public class GlobalExceptionHandler {
     public ExceptionDto handleAccessDeniedException(AccessDeniedException exception) {
         GlobalExceptionHandler.log.error("error message", exception);
         return ExceptionDto.of(ErrorCode.API_NOT_ACCESSIBLE, exception.getMessage());
+    }
+
+    @ExceptionHandler(value = {BaseRuntimeException.class})
+    public ExceptionDto handleBaseRequestException(BaseRuntimeException exception) {
+        GlobalExceptionHandler.log.error("error message", exception);
+        return ExceptionDto.of(exception.getErrorCode(), exception.getMessage());
     }
 
     @ExceptionHandler(value = {Exception.class})

@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ChildCommentRepository extends JpaRepository<ChildComment, String> {
@@ -30,4 +31,6 @@ public interface ChildCommentRepository extends JpaRepository<ChildComment, Stri
             "WHERE cc.writer.id = :userId AND cc.isDeleted = false " +
             "ORDER BY p.createdAt DESC")
     Page<Post> findPostsByUserId(@Param("userId") String userId, Pageable pageable);
+
+    Optional<ChildComment> findByIdAndIsDeletedFalse(String id);
 }
