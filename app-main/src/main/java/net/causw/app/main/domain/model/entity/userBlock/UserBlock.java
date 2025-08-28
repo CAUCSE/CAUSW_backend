@@ -1,5 +1,7 @@
 package net.causw.app.main.domain.model.entity.userBlock;
 
+import java.util.Objects;
+
 import org.hibernate.annotations.Comment;
 
 import net.causw.app.main.domain.model.entity.base.BaseEntity;
@@ -238,6 +240,6 @@ public class UserBlock extends BaseEntity {
 
 	@Override
 	public int hashCode() {
-		return getClass().hashCode();
+		return Objects.hash(getId());
 	}
 }
