@@ -65,11 +65,7 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
       return true;
     }
 
-    return uri.startsWith("/static/")
-        || uri.startsWith("/actuator/")
-        || uri.equals("/favicon.ico")
-        || uri.equals("/healthy")
-        || uri.equals("/robots.txt");
+    return !(uri.toLowerCase().startsWith("/api/v1"));
   }
 
   private String getUserId() {
