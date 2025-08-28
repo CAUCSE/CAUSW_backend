@@ -47,6 +47,8 @@ public enum ErrorCode {
     EXPIRED_JWT(4110),
     DELETED_USER(4111),
 
+    BLOCKED_USERS_CONTENT(4030),
+
     /**
      * 500 Internal Server Error
      */

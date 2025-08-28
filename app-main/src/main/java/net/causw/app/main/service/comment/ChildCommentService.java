@@ -249,7 +249,8 @@ public class ChildCommentService {
             isChildCommentLiked(user, childComment.getId()),
             StatusPolicy.isChildCommentOwner(childComment, user),
             StatusPolicy.isUpdatable(childComment, user),
-            StatusPolicy.isDeletable(childComment, user, board)
+            StatusPolicy.isDeletable(childComment, user, board),
+            false
         );
 
         // 화면에 표시될 닉네임 설정

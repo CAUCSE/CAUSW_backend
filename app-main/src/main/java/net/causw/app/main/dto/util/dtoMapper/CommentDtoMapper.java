@@ -27,6 +27,8 @@ public interface CommentDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target ="numLike", source = "numCommentLike")
     @Mapping(target = "childCommentList", source = "childCommentList")
     @Mapping(target = "isCommentSubscribed", source = "isCommentSubscribed")
+    @Mapping(target = "isBlocked", source = "isBlocked")
+    @Mapping(target = "content", expression = "java(mapContentForComment(comment.getContent(), isBlocked))")
     CommentResponseDto toCommentResponseDto(
             Comment comment,
             Long numChildComment,
@@ -36,7 +38,9 @@ public interface CommentDtoMapper extends UuidFileToUrlDtoMapper {
             List<ChildCommentResponseDto> childCommentList,
             Boolean updatable,
             Boolean deletable,
-            Boolean isCommentSubscribed);
+            Boolean isCommentSubscribed,
+            Boolean isBlocked
+    );
 
     @Mapping(target = "writerName", source = "childComment.writer.name")
     @Mapping(target ="writerNickname", source = "childComment.writer.nickname")
@@ -44,13 +48,17 @@ public interface CommentDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "writerProfileImage", source = "childComment.writer.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
     @Mapping(target = "isAnonymous", source = "childComment.isAnonymous")
     @Mapping(target ="numLike", source = "numChildCommentLike")
+    @Mapping(target = "isBlocked", source = "isBlocked")
+    @Mapping(target = "content", expression = "java(mapContentForChildComment(childComment.getContent(), isBlocked))")
     ChildCommentResponseDto toChildCommentResponseDto(
             ChildComment childComment,
             Long numChildCommentLike,
             Boolean isChildCommentLike,
             Boolean isOwner,
             Boolean updatable,
-            Boolean deletable);
+            Boolean deletable,
+            Boolean isBlocked
+    );
 
 
 
@@ -59,4 +67,12 @@ public interface CommentDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "isSubscribed", source = "isSubscribed")
     CommentSubscribeResponseDto toCommentSubscribeResponseDto(UserCommentSubscribe userCommentSubscribe);
 
+    // Default 메서드들 추가
+    default String mapContentForComment(String content, Boolean isBlocked) {
+        return Boolean.TRUE.equals(isBlocked) ? null : content;
+    }
+
+    default String mapContentForChildComment(String content, Boolean isBlocked) {
+        return Boolean.TRUE.equals(isBlocked) ? null : content;
+    }
 }

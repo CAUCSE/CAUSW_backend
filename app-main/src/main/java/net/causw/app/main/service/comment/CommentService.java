@@ -8,7 +8,6 @@ import net.causw.app.main.domain.model.entity.comment.ChildComment;
 import net.causw.app.main.domain.model.entity.comment.Comment;
 import net.causw.app.main.domain.model.entity.comment.LikeComment;
 import net.causw.app.main.domain.model.entity.notification.UserCommentSubscribe;
-import net.causw.app.main.domain.model.enums.user.UserState;
 import net.causw.app.main.repository.notification.UserCommentSubscribeRepository;
 import net.causw.app.main.dto.comment.*;
 import net.causw.app.main.service.notification.PostNotificationService;
@@ -20,12 +19,12 @@ import net.causw.app.main.repository.comment.CommentRepository;
 import net.causw.app.main.repository.comment.LikeChildCommentRepository;
 import net.causw.app.main.repository.comment.LikeCommentRepository;
 import net.causw.app.main.repository.post.PostRepository;
-import net.causw.app.main.repository.user.UserRepository;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.dto.util.dtoMapper.CommentDtoMapper;
 import net.causw.app.main.domain.policy.StatusPolicy;
 import net.causw.app.main.infrastructure.aop.annotation.MeasureTime;
 import net.causw.app.main.service.post.PostService;
+import net.causw.app.main.service.userBlock.UserBlockEntityService;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.InternalServerException;
@@ -50,7 +49,6 @@ import java.util.stream.Collectors;
 public class CommentService {
 
     private final CommentRepository commentRepository;
-    private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final CircleMemberRepository circleMemberRepository;
     private final ChildCommentRepository childCommentRepository;
@@ -61,6 +59,7 @@ public class CommentService {
     private final UserCommentSubscribeRepository userCommentSubscribeRepository;
     private final PostNotificationService postNotificationService;
     private final PostService postService;
+    private final UserBlockEntityService userBlockEntityService;
 
     @Transactional
     public CommentResponseDto createComment(User creator, CommentCreateRequestDto commentCreateDto) {
@@ -72,7 +71,9 @@ public class CommentService {
                 consistOf(ConstraintValidator.of(comment, this.validator));
         validatorBucket.validate();
         //1. comment의 구독 여부 저장
-        CommentResponseDto commentResponseDto = toCommentResponseDto(commentRepository.save(comment), creator, post.getBoard());
+        CommentResponseDto commentResponseDto = toCommentResponseDto(
+            commentRepository.save(comment), creator, post.getBoard()
+            , Set.of());
 
         createCommentSubscribe(creator, comment.getId());
 
@@ -89,13 +90,15 @@ public class CommentService {
         ValidatorBucket validatorBucket = initializeValidator(user, post);
         validatorBucket.validate();
 
+        Set<String> blockedUserIds = userBlockEntityService.findBlockedUserIdsByUser(user);
+
         Page<Comment> comments = commentRepository.findByPost_IdOrderByCreatedAt(
                 postId,
                 pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE)
         );
         comments.forEach(comment -> comment.setChildCommentList(childCommentRepository.findByParentComment_Id(comment.getId())));
 
-        return comments.map(comment -> toCommentResponseDto(comment, user, post.getBoard()));
+        return comments.map(comment -> toCommentResponseDto(comment, user, post.getBoard(), blockedUserIds));
     }
 
     @Transactional
@@ -122,7 +125,7 @@ public class CommentService {
 
         comment.update(commentUpdateRequestDto.getContent());
 
-        return toCommentResponseDto(commentRepository.save(comment), updater, post.getBoard());
+        return toCommentResponseDto(commentRepository.save(comment), updater, post.getBoard(), Set.of());
     }
 
 
@@ -184,7 +187,7 @@ public class CommentService {
 
         comment.delete();
 
-        return toCommentResponseDto(commentRepository.save(comment), deleter, post.getBoard());
+        return toCommentResponseDto(commentRepository.save(comment), deleter, post.getBoard(), Set.of());
     }
 
     @Transactional
@@ -245,19 +248,31 @@ public class CommentService {
         return likeChildCommentRepository.existsByChildCommentIdAndUserId(childCommentId, user.getId());
     }
 
-    private CommentResponseDto toCommentResponseDto(Comment comment, User user, Board board) {
+    /**
+     * todo: 리스트용 매핑로직 분리 및 매핑 클래스 분리
+     * todo: childCommentService 의 공통 로직또한 매핑 클래스로 분리
+     * @param comment 댓글
+     * @param user 조회자
+     * @param board 게시판
+     * @param blockedUserIds 조회자의 차단 유저 id 리스트 (댓글 리스트에서만 사용)
+     * @return 댓글 dto
+     */
+    private CommentResponseDto toCommentResponseDto(Comment comment, User user, Board board, Set<String> blockedUserIds) {
+        boolean isBlockedContent = blockedUserIds.contains(comment.getWriter().getId());
+
         CommentResponseDto commentResponseDto = CommentDtoMapper.INSTANCE.toCommentResponseDto(
-                comment,
-                childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
-                getNumOfCommentLikes(comment),
-                isCommentLiked(user, comment.getId()),
-                StatusPolicy.isCommentOwner(comment, user),
-                comment.getChildCommentList().stream()
-                        .map(childComment -> toChildCommentResponseDto(childComment, user, board))
-                        .collect(Collectors.toList()),
-                StatusPolicy.isUpdatable(comment, user),
-                StatusPolicy.isDeletable(comment, user, board),
-                isCommentSubscribed(user, comment)
+            comment,
+            childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
+            getNumOfCommentLikes(comment),
+            isCommentLiked(user, comment.getId()),
+            StatusPolicy.isCommentOwner(comment, user),
+            comment.getChildCommentList().stream()
+                .map(childComment -> toChildCommentResponseDto(childComment, user, board, blockedUserIds))
+                .collect(Collectors.toList()),
+            StatusPolicy.isUpdatable(comment, user),
+            StatusPolicy.isDeletable(comment, user, board),
+            isCommentSubscribed(user, comment),
+            isBlockedContent
         );
 
         // 화면에 표시될 닉네임 설정
@@ -274,14 +289,18 @@ public class CommentService {
         return commentResponseDto;
     }
 
-    private ChildCommentResponseDto toChildCommentResponseDto(ChildComment childComment, User user, Board board) {
+    private ChildCommentResponseDto toChildCommentResponseDto(ChildComment childComment, User user, Board board,
+        Set<String> blockedUserIds) {
+        boolean isBlockedContent = blockedUserIds.contains(childComment.getWriter().getId());
+
         ChildCommentResponseDto childCommentResponseDto = CommentDtoMapper.INSTANCE.toChildCommentResponseDto(
                 childComment,
                 getNumOfChildCommentLikes(childComment),
                 isChildCommentLiked(user, childComment.getId()),
                 StatusPolicy.isChildCommentOwner(childComment, user),
                 StatusPolicy.isUpdatable(childComment, user),
-                StatusPolicy.isDeletable(childComment, user, board)
+                StatusPolicy.isDeletable(childComment, user, board),
+                isBlockedContent
         );
 
         // 화면에 표시될 닉네임 설정
@@ -328,15 +347,6 @@ public class CommentService {
                             ));
                 });
         return validatorBucket;
-    }
-
-    private User getUser(String userId) {
-        return userRepository.findById(userId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_NOT_FOUND
-                )
-        );
     }
 
     private Post getPost(String postId) {

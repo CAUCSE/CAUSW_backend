@@ -41,7 +41,8 @@ public class Comment extends BaseEntity {
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
-    @OneToMany(mappedBy = "parentComment")
+    @Setter
+	@OneToMany(mappedBy = "parentComment")
     @Builder.Default
     private List<ChildComment> childCommentList = new ArrayList<>(); // 필드 초기화 없으면 NPE
 
@@ -61,11 +62,7 @@ public class Comment extends BaseEntity {
                 .build();
     }
 
-    public void setChildCommentList(List<ChildComment> childCommentList) {
-        this.childCommentList = childCommentList;
-    }
-
-    public void update(String content) {
+	public void update(String content) {
         this.content = content;
     }
 

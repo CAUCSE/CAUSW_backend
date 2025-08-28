@@ -4,13 +4,10 @@ import lombok.RequiredArgsConstructor;
 import net.causw.app.main.domain.model.entity.board.Board;
 import net.causw.app.main.domain.model.entity.circle.Circle;
 import net.causw.app.main.domain.model.entity.circle.CircleMember;
-import net.causw.app.main.domain.model.entity.comment.ChildComment;
-import net.causw.app.main.domain.model.entity.comment.Comment;
 import net.causw.app.main.domain.model.entity.form.Form;
 import net.causw.app.main.domain.model.entity.form.FormQuestionOption;
 import net.causw.app.main.domain.model.entity.form.FormQuestion;
 import net.causw.app.main.domain.model.entity.notification.UserBoardSubscribe;
-import net.causw.app.main.domain.model.entity.notification.UserCommentSubscribe;
 import net.causw.app.main.domain.model.entity.notification.UserPostSubscribe;
 import net.causw.app.main.domain.model.enums.user.UserState;
 import net.causw.app.main.repository.form.FormRepository;
@@ -54,10 +51,12 @@ import net.causw.app.main.dto.comment.ChildCommentResponseDto;
 import net.causw.app.main.dto.comment.CommentResponseDto;
 import net.causw.app.main.dto.post.*;
 import net.causw.app.main.domain.policy.StatusPolicy;
+import net.causw.app.main.service.userBlock.UserBlockEntityService;
 import net.causw.app.main.service.uuidFile.UuidFileService;
 import net.causw.app.main.infrastructure.aop.annotation.MeasureTime;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
+import net.causw.global.exception.ForbiddenException;
 import net.causw.global.exception.InternalServerException;
 import net.causw.global.exception.UnauthorizedException;
 import net.causw.app.main.domain.model.enums.circle.CircleMemberStatus;
@@ -70,6 +69,7 @@ import net.causw.global.constant.StaticValue;
 import net.causw.app.main.domain.validation.*;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -107,6 +107,7 @@ public class PostService {
     private final UserBoardSubscribeRepository userBoardSubscribeRepository;
     private final UserPostSubscribeRepository userPostSubscribeRepository;
     private final UserCommentSubscribeRepository userCommentSubscribeRepository;
+    private final UserBlockEntityService userBlockEntityService;
 
     public PostResponseDto findPostById(User user, String postId) {
         Post post = getPost(postId);
@@ -115,10 +116,16 @@ public class PostService {
         validatorBucket.consistOf(TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST));
         validatorBucket.validate();
 
+        boolean existsBlockByUsers = userBlockEntityService.existsBlockByUsers(user, post.getWriter());
+        if (existsBlockByUsers) {
+            throw new ForbiddenException(ErrorCode.BLOCKED_USERS_CONTENT, MessageUtil.BLOCKED_USERS_CONTENT);
+        }
+
         PostResponseDto postResponseDto = toPostResponseDtoExtended(post, user);
         if(postResponseDto.getIsAnonymous()){
             postResponseDto.updateAnonymousPost();
         }
+
         return postResponseDto;
     }
 
@@ -135,73 +142,61 @@ public class PostService {
         validatorBucket.validate();
 
         // 동아리 리더 여부 확인
-        Boolean isCircleLeader = false;
+        boolean isCircleLeader = false;
         if (roles.contains(Role.LEADER_CIRCLE)) {
             isCircleLeader = getCircleLeader(board.getCircle()).getId().equals(user.getId());
         }
 
+        Set<String> blockedUserIds = userBlockEntityService.findBlockedUserIdsByUser(user);
 
-        if (isCircleLeader || roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT)) {
-            // 게시글 조회: 리더, 관리자, 회장인 경우 삭제된 게시글도 포함하여 조회
-            return toBoardPostsResponseDto(
-                    board,
-                    roles,
-                    isFavorite(user.getId(), board.getId()),
-                    isBoardSubscribed(user, board),
-                    postRepository.findAllByBoard_IdOrderByCreatedAtDesc(boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
-                            .map(this::toPostsResponseDto)
-            );
-        } else {
-            // 일반 사용자는 삭제되지 않은 게시글만 조회
-            return toBoardPostsResponseDto(
-                    board,
-                    roles,
-                    isFavorite(user.getId(), board.getId()),
-                    isBoardSubscribed(user, board),
-                    postRepository.findAllByBoard_IdAndIsDeletedOrderByCreatedAtDesc(boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), false)
-                            .map(this::toPostsResponseDto)
-            );
-        }
+        Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
+
+        boolean includeDeleted = isCircleLeader || roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT);
+        Page<PostsResponseDto> posts = postRepository
+            .findPostsByBoardWithFilters(boardId, includeDeleted, blockedUserIds, null, pageable)
+            .map(this::toPostsResponseDto);
+
+        return toBoardPostsResponseDto(board, roles, isFavorite(user.getId(), boardId), isBoardSubscribed(user, board),
+            posts);
     }
 
     @Transactional(readOnly = true)
     public BoardPostsResponseDto searchPost(
-            User user,
-            String boardId,
-            String keyword,
-            Integer pageNum
+        User user,
+        String boardId,
+        String keyword,
+        Integer pageNum
     ) {
         Set<Role> roles = user.getRoles();
         Board board = getBoard(boardId);
 
         ValidatorBucket validatorBucket = initializeValidator(user, board);
         validatorBucket
-                .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD))
-                .validate();
+            .consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD))
+            .validate();
 
         boolean isCircleLeader = false;
         if (roles.contains(Role.LEADER_CIRCLE)) {
             isCircleLeader = getCircleLeader(board.getCircle()).getId().equals(user.getId());
         }
 
-        // 동아리장, Admin, 학생회장인 경우 삭제된 글 포함 검색. 그외의 경우 삭제되지 않는 글만 검색
-        if (isCircleLeader || roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT) || roles.contains(Role.VICE_PRESIDENT)) {
-            return toBoardPostsResponseDto(
-                    board,
-                    roles,
-                    isFavorite(user.getId(), board.getId()),
-                    isBoardSubscribed(user, board),
-                    postRepository.findByBoardIdAndKeyword(keyword, boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
-                            .map(this::toPostsResponseDto));
-        } else {
-            return toBoardPostsResponseDto(
-                    board,
-                    roles,
-                    isFavorite(user.getId(), board.getId()),
-                    isBoardSubscribed(user, board),
-                    postRepository.findByBoardIdAndKeywordAndIsDeleted(keyword, boardId, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE), false)
-                            .map(this::toPostsResponseDto));
-        }
+        // 권한 확인 및 차단 사용자 목록 조회
+        boolean includeDeleted = isCircleLeader || roles.contains(Role.ADMIN) ||
+            roles.contains(Role.PRESIDENT) || roles.contains(Role.VICE_PRESIDENT);
+        Set<String> blockedUserIds = userBlockEntityService.findBlockedUserIdsByUser(user);
+        Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
+
+        Page<PostsResponseDto> posts = postRepository
+            .findPostsByBoardWithFilters(boardId, includeDeleted, blockedUserIds, keyword, pageable)
+            .map(this::toPostsResponseDto);
+
+        return toBoardPostsResponseDto(
+            board,
+            roles,
+            isFavorite(user.getId(), board.getId()),
+            isBoardSubscribed(user, board),
+            posts
+        );
     }
 
     public BoardPostsResponseDto findAllAppNotice(User user, Integer pageNum) {
@@ -213,13 +208,19 @@ public class PostService {
                 )
         );
 
+        Set<String> blockedUserIds = userBlockEntityService.findBlockedUserIdsByUser(user);
+        Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
+
+        boolean includeDeleted = false;
+        Page<PostsResponseDto> posts = postRepository
+            .findPostsByBoardWithFilters(board.getId(), includeDeleted, blockedUserIds, null, pageable)
+            .map(this::toPostsResponseDto);
+
         return toBoardPostsResponseDto(
                 board,
                 roles,
                 isFavorite(user.getId(), board.getId()),
-                isBoardSubscribed(user, board),
-                postRepository.findAllByBoard_IdOrderByCreatedAtDesc(board.getId(), pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
-                        .map(this::toPostsResponseDto));
+                isBoardSubscribed(user, board), posts);
     }
 
     //게시글이 생성될 때 발생할 일
@@ -955,7 +956,6 @@ public class PostService {
     private PostResponseDto toPostResponseDtoExtended(Post post, User user) {
         PostResponseDto postResponseDto = PostDtoMapper.INSTANCE.toPostResponseDtoExtended(
                 post,
-                findCommentsByPostIdByPage(user, post, 0),
                 getNumOfComments(post),
                 getNumOfPostLikes(post),
                 getNumOfPostFavorites(post),
@@ -978,41 +978,6 @@ public class PostService {
         return postResponseDto;
     }
 
-    private Page<CommentResponseDto> findCommentsByPostIdByPage(User user, Post post, Integer pageNum) {
-        return commentRepository.findByPost_IdOrderByCreatedAt(
-                post.getId(),
-                pageableFactory.create(pageNum, StaticValue.DEFAULT_COMMENT_PAGE_SIZE)
-            ).map(comment -> toCommentResponseDto(comment, user, post.getBoard()));
-
-    }
-
-    private CommentResponseDto toCommentResponseDto(Comment comment, User user, Board board) {
-        return CommentDtoMapper.INSTANCE.toCommentResponseDto(
-                comment,
-                childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
-                getNumOfCommentLikes(comment),
-                isCommentAlreadyLike(user, comment.getId()),
-                StatusPolicy.isCommentOwner(comment, user),
-                comment.getChildCommentList().stream()
-                        .map(childComment -> toChildCommentResponseDto(childComment, user, board))
-                        .collect(Collectors.toList()),
-                StatusPolicy.isUpdatable(comment, user),
-                StatusPolicy.isDeletable(comment, user, board),
-                isCommentSubscribed(user, comment)
-        );
-    }
-
-    private ChildCommentResponseDto toChildCommentResponseDto(ChildComment childComment, User user, Board board) {
-        return CommentDtoMapper.INSTANCE.toChildCommentResponseDto(
-                childComment,
-                getNumOfChildCommentLikes(childComment),
-                isChildCommentAlreadyLike(user, childComment.getId()),
-                StatusPolicy.isChildCommentOwner(childComment, user),
-                StatusPolicy.isUpdatable(childComment, user),
-                StatusPolicy.isDeletable(childComment, user, board)
-        );
-    }
-
     private Long getNumOfComments(Post post) {
         return postRepository.countAllCommentByPost_Id(post.getId());
     }
@@ -1023,14 +988,6 @@ public class PostService {
 
     private Long getNumOfPostFavorites(Post post){
         return favoritePostRepository.countByPostId(post.getId());
-    }
-
-    private Long getNumOfCommentLikes(Comment comment){
-        return likeCommentRepository.countByCommentId(comment.getId());
-    }
-
-    private Long getNumOfChildCommentLikes(ChildComment childComment) {
-        return likeChildCommentRepository.countByChildCommentId(childComment.getId());
     }
 
     private Boolean isFavorite(String userId, String boardId) {
@@ -1052,22 +1009,8 @@ public class PostService {
                 .orElse(false);
     }
 
-    private Boolean isCommentSubscribed(User user, Comment comment){
-        return userCommentSubscribeRepository.findByUserAndComment(user, comment)
-                .map(UserCommentSubscribe::getIsSubscribed)
-                .orElse(false);
-    }
-
     private Boolean isPostHasComment(String postId){
         return commentRepository.existsByPostIdAndIsDeletedFalse(postId);
-    }
-
-    private Boolean isCommentAlreadyLike(User user, String commentId) {
-        return likeCommentRepository.existsByCommentIdAndUserId(commentId, user.getId());
-    }
-
-    private Boolean isChildCommentAlreadyLike(User user, String childCommentId) {
-        return likeChildCommentRepository.existsByChildCommentIdAndUserId(childCommentId, user.getId());
     }
 
     private Post getPost(String postId) {
@@ -1075,15 +1018,6 @@ public class PostService {
                 () -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.POST_NOT_FOUND
-                )
-        );
-    }
-
-    private User getUser(String userId) {
-        return userRepository.findById(userId).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.USER_NOT_FOUND
                 )
         );
     }
@@ -1115,15 +1049,6 @@ public class PostService {
             );
         }
         return leader;
-    }
-
-    private FavoritePost getFavoritePost(User user, String postId) {
-        return favoritePostRepository.findByPostIdAndUserId(postId, user.getId()).orElseThrow(
-                () -> new BadRequestException(
-                        ErrorCode.ROW_DOES_NOT_EXIST,
-                        MessageUtil.FAVORITE_POST_NOT_FOUND
-                )
-        );
     }
 
     private FormResponseDto toFormResponseDto(Form form) {

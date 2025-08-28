@@ -217,6 +217,11 @@ public class MessageUtil {
     public static final String REPORT_CANNOT_SELF = "자신이 작성한 콘텐츠는 신고할 수 없습니다.";
     public static final String CHILD_COMMENT_NOT_FOUND = "대댓글을 찾을 수 없습니다.";
 
+    // block
+    public static final String BLOCK_SUCCESS = "차단에 성공했습니다.";
+    public static final String BLOCK_ALREADY_EXIST = "이미 차단한 유저입니다.";
+    public static final String BLOCKED_USERS_CONTENT = "차단한 유저의 컨텐츠입니다.";
+
     //Hash
     public static final String HASH_ALGORITHM_NOT_FOUND = "SHA-256 알고리즘을 찾을 수 없습니다";
 }
