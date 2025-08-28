@@ -6,6 +6,7 @@ import net.causw.app.main.dto.exception.ExceptionDto;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.BaseRuntimeException;
 import net.causw.global.exception.ErrorCode;
+import net.causw.global.exception.ForbiddenException;
 import net.causw.global.exception.UnauthorizedException;
 import net.causw.global.exception.ServiceUnavailableException;
 import org.springframework.http.HttpStatus;
@@ -27,69 +28,77 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = {MethodArgumentNotValidException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ExceptionDto handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
-        GlobalExceptionHandler.log.error("error message", exception);
+        GlobalExceptionHandler.log.error("Validation failed for method argument", exception);
         return ExceptionDto.of(ErrorCode.VALIDATION_FAILED, exception.getBindingResult().getAllErrors().get(0).getDefaultMessage());
     }
 
     @ExceptionHandler(value = {BadRequestException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ExceptionDto handleBadRequestException(BadRequestException exception) {
-        GlobalExceptionHandler.log.error("error message", exception);
+        GlobalExceptionHandler.log.error("Bad request exception occurred", exception);
         return ExceptionDto.of(exception.getErrorCode(), exception.getMessage());
     }
 
     @ExceptionHandler(value = {ConstraintViolationException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ConstraintExceptionDto handleConstraintViolationException(ConstraintViolationException exception) {
-        GlobalExceptionHandler.log.error("error message", exception);
+        GlobalExceptionHandler.log.error("Constraint violation occurred", exception);
         return ConstraintExceptionDto.of(ErrorCode.INVALID_PARAMETER, exception.getMessage(), exception);
     }
 
     @ExceptionHandler(value = {IllegalArgumentException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ExceptionDto handleIllegalArgumentException(IllegalArgumentException exception) {
-        GlobalExceptionHandler.log.error("error message", exception);
+        GlobalExceptionHandler.log.error("Illegal argument provided", exception);
         return ExceptionDto.of(ErrorCode.INVALID_PARAMETER, exception.getMessage());
     }
 
     @ExceptionHandler(value = {HttpRequestMethodNotSupportedException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ExceptionDto handleBadHttpRequestMethodException(HttpRequestMethodNotSupportedException exception) {
-        GlobalExceptionHandler.log.error("error message", exception);
+        GlobalExceptionHandler.log.error("Unsupported HTTP method: {}", exception.getMethod(), exception);
         return ExceptionDto.of(ErrorCode.INVALID_HTTP_METHOD, "Invalid request http method (GET, POST, PUT, DELETE)");
     }
 
     @ExceptionHandler(value = {UnauthorizedException.class})
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ExceptionDto handleUnauthorizedException(UnauthorizedException exception) {
-        GlobalExceptionHandler.log.error("error message", exception);
+        GlobalExceptionHandler.log.error("Unauthorized access attempt", exception);
+        return ExceptionDto.of(exception.getErrorCode(), exception.getMessage());
+    }
+
+    @ExceptionHandler(value = {ForbiddenException.class})
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ExceptionDto handleForbiddenException(ForbiddenException exception) {
+        GlobalExceptionHandler.log.error("Access forbidden", exception);
         return ExceptionDto.of(exception.getErrorCode(), exception.getMessage());
     }
 
     @ExceptionHandler(value = {ServiceUnavailableException.class})
     @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
     public ExceptionDto handleServiceUnavailableException(ServiceUnavailableException exception) {
-        GlobalExceptionHandler.log.error("error message", exception);
+        GlobalExceptionHandler.log.error("Service unavailable", exception);
         return ExceptionDto.of(exception.getErrorCode(), exception.getMessage());
     }
 
     @ExceptionHandler(value = {java.nio.file.AccessDeniedException.class})
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ExceptionDto handleFileAccessDeniedException(java.nio.file.AccessDeniedException exception) {
-        GlobalExceptionHandler.log.error("error message", exception);
+        GlobalExceptionHandler.log.error("File access denied", exception);
         return ExceptionDto.of(ErrorCode.API_NOT_ACCESSIBLE, exception.getMessage());
     }
 
     @ExceptionHandler(value = {AccessDeniedException.class})
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ExceptionDto handleAccessDeniedException(AccessDeniedException exception) {
-        GlobalExceptionHandler.log.error("error message", exception);
+        GlobalExceptionHandler.log.error("Spring Security access denied", exception);
         return ExceptionDto.of(ErrorCode.API_NOT_ACCESSIBLE, exception.getMessage());
     }
 
     @ExceptionHandler(value = {BaseRuntimeException.class})
-    public ExceptionDto handleBaseRequestException(BaseRuntimeException exception) {
-        GlobalExceptionHandler.log.error("error message", exception);
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)  // 기본적으로 500으로 설정
+    public ExceptionDto handleBaseRuntimeException(BaseRuntimeException exception) {
+        GlobalExceptionHandler.log.error("Unhandled BaseRuntimeException", exception);
         return ExceptionDto.of(exception.getErrorCode(), exception.getMessage());
     }
 
