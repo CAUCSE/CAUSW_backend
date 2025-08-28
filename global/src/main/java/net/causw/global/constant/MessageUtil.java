@@ -219,8 +219,7 @@ public class MessageUtil {
 
     // block
     public static final String BLOCK_SUCCESS = "차단에 성공했습니다.";
-    public static final String BLOCK_ALREADY_EXIST = "이미 차단하신 유저입니다.";
-    public static final String CANNOT_BLOCK_SELF = "본인은 차단할 수 없습니다.";
+    public static final String BLOCK_ALREADY_EXIST = "이미 차단한 유저입니다.";
     public static final String BLOCKED_USERS_CONTENT = "차단한 유저의 컨텐츠입니다.";
 
     //Hash
