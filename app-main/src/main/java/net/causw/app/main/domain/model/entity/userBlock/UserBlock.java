@@ -1,11 +1,22 @@
 package net.causw.app.main.domain.model.entity.userBlock;
 
-import jakarta.persistence.*;
-import lombok.*;
 import org.hibernate.annotations.Comment;
 
 import net.causw.app.main.domain.model.entity.base.BaseEntity;
 import net.causw.app.main.domain.model.entity.report.BlockScope;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Lob;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "tb_user_block",
