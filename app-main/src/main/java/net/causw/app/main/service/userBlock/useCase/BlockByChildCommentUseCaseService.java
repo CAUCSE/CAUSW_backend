@@ -23,25 +23,11 @@ public class BlockByChildCommentUseCaseService {
 	private final ChildCommentEntityService childCommentEntityService;
 	private final UserBlockEntityService userBlockService;
 
-	/**
-	 * 차단 시도자와 대상자가 같은 인물인지 확인하는 로직
-	 *
-	 * @param currentUser 차단 시도자
-	 * @param postWriter 차단 대상자
-	 */
-	private static void validateSelfBlock(User currentUser, User postWriter) {
-		if (currentUser.equals(postWriter)) {
-			throw new BadRequestException(ErrorCode.CANNOT_PERFORMED, MessageUtil.CANNOT_BLOCK_SELF);
-		}
-	}
-
 	public CreateBlockByChildCommentResponseDto execute(CustomUserDetails userDetails, String commentId) {
 
 		User currentUser = userDetails.getUser();
 		ChildComment childComment = childCommentEntityService.findByIdNotDeleted(commentId);
 		User commentWriter = childComment.getWriter();
-
-		validateSelfBlock(currentUser, commentWriter);
 
 		boolean isAlreadyBlocked = userBlockService.existsBlockByUsers(currentUser, commentWriter);
 
