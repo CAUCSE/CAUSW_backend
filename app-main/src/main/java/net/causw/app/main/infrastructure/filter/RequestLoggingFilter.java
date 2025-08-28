@@ -49,7 +49,7 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
       MDC.put("status", String.valueOf(wrappedResponse.getStatus()));
       MDC.put("duration", String.valueOf(duration));
 
-      log.info(" Request processed API URI: " + "[" + method + "] " + requestURI);
+      log.info("Request processed API URI: " + "[" + method + "] " + requestURI);
     } finally {
       MDC.clear(); // 누락되면 memory leak
     }
