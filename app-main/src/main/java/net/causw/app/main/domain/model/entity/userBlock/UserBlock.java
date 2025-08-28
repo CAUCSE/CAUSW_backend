@@ -21,6 +21,8 @@ import net.causw.app.main.domain.model.entity.report.BlockScope;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class UserBlock extends BaseEntity {
 
+    private static final int MAX_SNAPSHOT_LENGTH = 100;
+
     /**
      * 누가 차단했는지
      */
@@ -181,8 +183,6 @@ public class UserBlock extends BaseEntity {
         if (content == null) {
             return null;
         }
-
-        final int MAX_SNAPSHOT_LENGTH = 100;
 
         if (content.length() > MAX_SNAPSHOT_LENGTH) {
             return content.substring(0, MAX_SNAPSHOT_LENGTH) + "...";
