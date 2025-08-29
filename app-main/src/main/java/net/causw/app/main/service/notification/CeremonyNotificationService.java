@@ -16,6 +16,7 @@ import net.causw.app.main.repository.notification.NotificationRepository;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.dto.notification.CeremonyNotificationDto;
 import net.causw.app.main.domain.model.enums.notification.NoticeType;
+import net.causw.app.main.service.userBlock.UserBlockEntityService;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
@@ -38,6 +39,7 @@ public class CeremonyNotificationService implements NotificationService {
     private final NotificationLogRepository notificationLogRepository;
     private final FcmUtils fcmUtils;
     private final CeremonyRepository ceremonyRepository;
+    private final UserBlockEntityService userBlockEntityService;
 
     @Override
     public void send(User user, String targetToken, String title, String body) {
@@ -74,9 +76,16 @@ public class CeremonyNotificationService implements NotificationService {
 
         List<CeremonyNotificationSetting> ceremonyNotificationSettings;
 
+        User ceremonyUser = ceremony.getUser();
+
+        Set<String> blockerUserIdsByBlockee = userBlockEntityService.findBlockerUserIdsByBlockee(ceremonyUser);
+
         if (ceremony.isSetAll()) {
             // 모든 학번에게 알림
-            ceremonyNotificationSettings = ceremonyNotificationSettingRepository.findByAdmissionYearOrSetAll(admissionYear);
+            ceremonyNotificationSettings = ceremonyNotificationSettingRepository.findByAdmissionYearOrSetAll(
+                admissionYear,
+                blockerUserIdsByBlockee
+            );
         } else {
             // 특정 학번에게만 알림
             // 1차 필터링
@@ -87,7 +96,8 @@ public class CeremonyNotificationService implements NotificationService {
                         return year >= 72 ? 1900 + year : 2000 + year;
                     })
                     .collect(Collectors.toList());
-            List<CeremonyNotificationSetting> filteredSettings = ceremonyNotificationSettingRepository.findByAdmissionYearsIn(targetYears);
+            List<CeremonyNotificationSetting> filteredSettings = ceremonyNotificationSettingRepository
+                .findByAdmissionYearsIn(targetYears, blockerUserIdsByBlockee);
 
             // 2차 필터링
             ceremonyNotificationSettings = filteredSettings.stream()
@@ -100,7 +110,7 @@ public class CeremonyNotificationService implements NotificationService {
                         if (setting.isSetAll()) { return true; }
 
                         // 특정 입학년도만 수신
-                        Integer ceremonyWriterYear = ceremony.getUser().getAdmissionYear();
+                        Integer ceremonyWriterYear = ceremonyUser.getAdmissionYear();
                         return setting.getSubscribedAdmissionYears().contains(ceremonyWriterYear);
                     })
                     .collect(Collectors.toList());
@@ -109,7 +119,7 @@ public class CeremonyNotificationService implements NotificationService {
         // 알림 생성 및 저장
         CeremonyNotificationDto ceremonyNotificationDto = CeremonyNotificationDto.of(ceremony);
         Notification notification = Notification.of(
-                ceremony.getUser(),
+            ceremonyUser,
                 ceremonyNotificationDto.getTitle(),
                 ceremonyNotificationDto.getBody(),
                 NoticeType.CEREMONY,

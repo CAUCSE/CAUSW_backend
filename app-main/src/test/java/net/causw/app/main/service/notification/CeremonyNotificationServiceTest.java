@@ -90,7 +90,8 @@ class CeremonyNotificationServiceTest {
     @Test
     @DisplayName("경조사 알림설정 있는 경우 - 경조사 알림 정상 전송 및 로그 저장")
     void sendByAdmissionYear_설정있음()  {
-        given(ceremonyNotificationSettingRepository.findByAdmissionYearOrSetAll(2023))
+        Set<String> blockerUserIds = Set.of();
+        given(ceremonyNotificationSettingRepository.findByAdmissionYearOrSetAll(2023, blockerUserIds))
                 .willReturn(List.of(CeremonyNotificationSetting.of(Set.of("23", "24"), true, true, mockUser)));
 
         ceremonyNotificationService.sendByAdmissionYear(2023, mockCeremony.getId());
@@ -102,7 +103,8 @@ class CeremonyNotificationServiceTest {
     @Test
     @DisplayName("경조사 알림 설정이 없는 경우 - 경조사 알림 저장, 전송 없음, 로그 저장 없음")
     void sendByAdmissionYear_설정없음() throws Exception{
-        given(ceremonyNotificationSettingRepository.findByAdmissionYearOrSetAll(2023))
+        Set<String> blockerUserIds = Set.of();
+        given(ceremonyNotificationSettingRepository.findByAdmissionYearOrSetAll(2023, blockerUserIds))
                 .willReturn(List.of());
 
         ceremonyNotificationService.sendByAdmissionYear(2023, mockCeremony.getId());
@@ -120,7 +122,9 @@ class CeremonyNotificationServiceTest {
         fcmTokens.add(validToken);
         mockUser.setFcmTokens(fcmTokens);
 
-        given(ceremonyNotificationSettingRepository.findByAdmissionYearOrSetAll(2023))
+        Set<String> blockerUserIds = Set.of();
+
+        given(ceremonyNotificationSettingRepository.findByAdmissionYearOrSetAll(2023, blockerUserIds))
                 .willReturn(List.of(CeremonyNotificationSetting.of(Set.of("23", "24"), true, true, mockUser)));
 
         ceremonyNotificationService.sendByAdmissionYear(2023, mockCeremony.getId());
@@ -138,7 +142,9 @@ class CeremonyNotificationServiceTest {
         Set<String> fcmTokens = new HashSet<>(Set.of("valid-token", invalidToken));
         mockUser.setFcmTokens(fcmTokens);
 
-        given(ceremonyNotificationSettingRepository.findByAdmissionYearOrSetAll(2023))
+        Set<String> blockerUserIds = Set.of();
+
+        given(ceremonyNotificationSettingRepository.findByAdmissionYearOrSetAll(2023, blockerUserIds))
                 .willReturn(List.of(CeremonyNotificationSetting.of(Set.of("23", "24"), true, true, mockUser)));
 
         FirebaseMessagingException exception = mock(FirebaseMessagingException.class);
