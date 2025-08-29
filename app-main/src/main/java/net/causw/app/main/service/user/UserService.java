@@ -7,6 +7,8 @@ import net.causw.app.main.domain.model.entity.board.Board;
 import net.causw.app.main.domain.model.entity.circle.Circle;
 import net.causw.app.main.domain.model.entity.circle.CircleMember;
 import net.causw.app.main.domain.model.entity.locker.LockerLog;
+import net.causw.app.main.domain.model.entity.post.FavoritePost;
+import net.causw.app.main.domain.model.entity.post.LikePost;
 import net.causw.app.main.dto.post.PostsResponseDto;
 import net.causw.app.main.infrastructure.firebase.FcmUtils;
 import net.causw.app.main.repository.userAcademicRecord.UserAcademicRecordApplicationRepository;
@@ -47,6 +49,7 @@ import net.causw.app.main.dto.util.dtoMapper.CircleDtoMapper;
 import net.causw.app.main.dto.util.dtoMapper.PostDtoMapper;
 import net.causw.app.main.dto.util.dtoMapper.UserDtoMapper;
 import net.causw.app.main.service.post.PostService;
+import net.causw.app.main.service.userBlock.UserBlockEntityService;
 import net.causw.app.main.service.uuidFile.UuidFileService;
 import net.causw.app.main.infrastructure.security.JwtTokenProvider;
 import net.causw.app.main.infrastructure.aop.annotation.MeasureTime;
@@ -120,6 +123,7 @@ public class UserService {
     private final UserDtoMapper userDtoMapper;
     private final PostDtoMapper postDtoMapper;
     private final PostService postService;
+    private final UserBlockEntityService userBlockEntityService;
 
     @Transactional
     public void findPassword(
@@ -247,9 +251,14 @@ public class UserService {
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .validate();
 
+        Set<String> blockedUserIds = userBlockEntityService.findBlockedUserIdsByUser(requestUser);
+        Pageable pageable = this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
+        // todo: postRepository 로 이동 및 (entity)service 단으로 계층 분리
+        Page<FavoritePost> favoritePostPage = this.favoritePostRepository.findByUserId(requestUser.getId(), blockedUserIds, pageable);
+
         return UserDtoMapper.INSTANCE.toUserPostsResponseDto(
                 requestUser,
-                this.favoritePostRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
+                favoritePostPage
                         .map(favoritePost -> {
                             Post post = favoritePost.getPost();
                             PostsResponseDto dto = PostDtoMapper.INSTANCE.toPostsResponseDto(
@@ -294,9 +303,13 @@ public class UserService {
             .consistOf(UserStateValidator.of(requestUser.getState()))
             .validate();
 
+        Set<String> blockedUserIds = userBlockEntityService.findBlockedUserIdsByUser(requestUser);
+        Pageable pageable = this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
+        Page<LikePost> likePostPage = this.likePostRepository.findByUserId(requestUser.getId(), blockedUserIds, pageable);
+
         return userDtoMapper.toUserPostsResponseDto(
                 requestUser,
-                this.likePostRepository.findByUserId(requestUser.getId(), this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
+                likePostPage
                         .map(likePost -> {
                             Post post = likePost.getPost();
                             PostsResponseDto dto = postDtoMapper.toPostsResponseDto(
@@ -333,8 +346,10 @@ public class UserService {
 
         Pageable pageable = this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE / 2 + 5);
 
-        Page<Post> postsFromComments = this.commentRepository.findPostsByUserId(requestUser.getId(), pageable);
-        Page<Post> postsFromChildComments = this.childCommentRepository.findPostsByUserId(requestUser.getId(), pageable);
+        // todo: 추후 해당 로직들 postRepository 로 옮기고, (entity)service 단으로 계층 분리해서 재사용성 높이기
+        Set<String> blockedUserIdsByUser = userBlockEntityService.findBlockedUserIdsByUser(requestUser);
+        Page<Post> postsFromComments = this.commentRepository.findPostsByUserId(requestUser.getId(), blockedUserIdsByUser, pageable);
+        Page<Post> postsFromChildComments = this.childCommentRepository.findPostsByUserId(requestUser.getId(), blockedUserIdsByUser, pageable);
 
         //Comment와 ChildComment의 Post 중복 제거
         Set<Post> combinedPosts = new HashSet<>();
@@ -346,6 +361,7 @@ public class UserService {
         combinedPostsList.sort((post1, post2) -> post2.getCreatedAt().compareTo(post1.getCreatedAt()));
         Page<Post> combinedPostsPage = new PageImpl<>(combinedPostsList, pageable, combinedPostsList.size());
 
+        // todo: n+1 발생하는 내용 추후 해결해야함
         return UserDtoMapper.INSTANCE.toUserPostsResponseDto(
                 requestUser,
                 combinedPostsPage.map(post -> {

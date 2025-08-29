@@ -86,6 +86,9 @@ public class PostServiceTest {
   @Mock
   FavoritePostRepository favoritePostRepository;
 
+  @Mock
+  PostEntityService postEntityService;
+
   @Nested
   @DisplayName("게시글 좋아요 테스트")
   class PostLikeTest {
@@ -326,7 +329,7 @@ public class PostServiceTest {
       Page<Post> postPage = new PageImpl<>(List.of(post), pageable, 1);
 
       given(pageableFactory.create(anyInt(), anyInt())).willReturn(pageable);
-      given(postRepository.findPostsByBoardWithFilters(
+      given(postEntityService.findPostsByBoardWithFilters(
           eq(boardId), eq(false), eq(Set.of()), eq(keyword), eq(pageable))).willReturn(postPage);
 
       // when
@@ -350,7 +353,7 @@ public class PostServiceTest {
       Page<Post> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
 
       given(pageableFactory.create(anyInt(), anyInt())).willReturn(pageable);
-      given(postRepository.findPostsByBoardWithFilters(
+      given(postEntityService.findPostsByBoardWithFilters(
           eq(boardId), eq(false), eq(Set.of()), eq(keyword), eq(pageable)
       )).willReturn(emptyPage);
 
@@ -370,7 +373,7 @@ public class PostServiceTest {
       Page<Post> postPage = new PageImpl<>(List.of(post), pageable, 1);
 
       given(pageableFactory.create(anyInt(), anyInt())).willReturn(pageable);
-      given(postRepository.findPostsByBoardWithFilters(eq(boardId), eq(false), eq(Set.of()), eq(keyword),
+      given(postEntityService.findPostsByBoardWithFilters(eq(boardId), eq(false), eq(Set.of()), eq(keyword),
           eq(pageable))).willReturn(postPage);
 
       //when
@@ -390,7 +393,7 @@ public class PostServiceTest {
       Page<Post> postPage = new PageImpl<>(List.of(post), pageable, 1);
 
       given(pageableFactory.create(anyInt(), anyInt())).willReturn(pageable);
-      given(postRepository.findPostsByBoardWithFilters(
+      given(postEntityService.findPostsByBoardWithFilters(
           eq(boardId),eq(true), eq(Set.of()), eq(keyword), eq(pageable))).willReturn(postPage);
 
       //when

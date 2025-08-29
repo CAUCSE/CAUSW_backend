@@ -1,6 +1,7 @@
 package net.causw.app.main.repository.comment;
 
 import java.util.Optional;
+import java.util.Set;
 
 import net.causw.app.main.domain.model.entity.comment.Comment;
 import net.causw.app.main.domain.model.entity.post.Post;
@@ -31,12 +32,16 @@ public interface CommentRepository extends JpaRepository<Comment, String> {
             "and (c.id is null or (c.is_deleted = false and cm.status = 'MEMBER')) ORDER BY p.created_at DESC", nativeQuery = true)
     Page<Comment> findByUserId(@Param("user_id") String userId, Pageable pageable);
 
-    @Query("SELECT DISTINCT p " +
-            "FROM Comment c " +
-            "JOIN c.post p " +
-            "WHERE c.writer.id = :userId AND c.isDeleted = false " +
-            "ORDER BY p.createdAt DESC")
-    Page<Post> findPostsByUserId(@Param("userId") String userId, Pageable pageable);
+    @Query("""
+        SELECT DISTINCT p
+          FROM Comment c
+          JOIN c.post p
+          WHERE c.writer.id = :userId AND c.isDeleted = false
+          AND (:#{#blockedUserIds.size()} = 0 OR p.writer.id NOT IN :blockedUserIds)
+          ORDER BY p.createdAt DESC
+        """
+    )
+    Page<Post> findPostsByUserId(@Param("userId") String userId, @Param("blockedUserIds") Set<String> blockedUserIds, Pageable pageable);
 
     Optional<Comment> findByIdAndIsDeletedFalse(String commentId);
 
