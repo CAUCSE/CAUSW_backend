@@ -23,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
@@ -86,7 +87,7 @@ class PostNotificationServiceTest {
         given(mockBoard.getId()).willReturn("board-id");
         lenient().when(mockComment.getPost()).thenReturn(mockPost);
 
-        given(userPostSubscribeRepository.findByPostAndIsSubscribedTrue(mockPost))
+        given(userPostSubscribeRepository.findByPostAndIsSubscribedTrue(mockPost, Set.of()))
                 .willReturn(List.of(UserPostSubscribe.of(mockUser, mockPost, true)));
 
         postNotificationService.sendByPostIsSubscribed(mockPost, mockComment);
@@ -103,7 +104,7 @@ class PostNotificationServiceTest {
         given(mockBoard.getId()).willReturn("board-id");
         lenient().when(mockComment.getPost()).thenReturn(mockPost);
 
-        given(userPostSubscribeRepository.findByPostAndIsSubscribedTrue(mockPost))
+        given(userPostSubscribeRepository.findByPostAndIsSubscribedTrue(mockPost, Set.of()))
                 .willReturn(List.of());
 
         postNotificationService.sendByPostIsSubscribed(mockPost, mockComment);
@@ -125,7 +126,7 @@ class PostNotificationServiceTest {
         given(mockComment.getContent()).willReturn("댓글 내용");
 
 
-        given(userPostSubscribeRepository.findByPostAndIsSubscribedTrue(mockPost))
+        given(userPostSubscribeRepository.findByPostAndIsSubscribedTrue(mockPost, Set.of()))
                 .willReturn(List.of(UserPostSubscribe.of(mockUser, mockPost, true)));
 
         postNotificationService.sendByPostIsSubscribed(mockPost, mockComment);
@@ -145,7 +146,7 @@ class PostNotificationServiceTest {
         given(mockBoard.getId()).willReturn("board-id");
         given(mockComment.getPost()).willReturn(mockPost);
 
-        given(userPostSubscribeRepository.findByPostAndIsSubscribedTrue(mockPost))
+        given(userPostSubscribeRepository.findByPostAndIsSubscribedTrue(mockPost, Set.of()))
                 .willReturn(List.of(UserPostSubscribe.of(mockUser, mockPost, true)));
 
         FirebaseMessagingException mockException = mock(FirebaseMessagingException.class);
