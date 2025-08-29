@@ -28,6 +28,7 @@ import net.causw.app.main.dto.util.dtoMapper.CircleDtoMapper;
 import net.causw.app.main.dto.util.dtoMapper.PostDtoMapper;
 import net.causw.app.main.dto.util.dtoMapper.UserDtoMapper;
 import net.causw.app.main.infrastructure.aop.annotation.MeasureTime;
+import net.causw.app.main.service.post.PostEntityService;
 import net.causw.app.main.service.post.PostService;
 import net.causw.app.main.service.userBlock.UserBlockEntityService;
 import net.causw.global.exception.BadRequestException;
@@ -72,6 +73,7 @@ public class BoardService {
     private final Validator validator;
     private final PostService postService;
     private final UserBlockEntityService userBlockEntityService;
+    private final PostEntityService postEntityService;
 
     @Transactional(readOnly = true)
     public List<BoardResponseDto> findAllBoard(
@@ -163,7 +165,7 @@ public class BoardService {
 
         return boards.stream()
                 .map(board -> {
-                    List<PostContentDto> recentPosts = postRepository.findPostsByBoardWithFilters(
+                    List<PostContentDto> recentPosts = postEntityService.findPostsByBoardWithFilters(
                             board.getId(),
                             false,
                             blockedUserIds,

@@ -108,6 +108,7 @@ public class PostService {
     private final UserPostSubscribeRepository userPostSubscribeRepository;
     private final UserCommentSubscribeRepository userCommentSubscribeRepository;
     private final UserBlockEntityService userBlockEntityService;
+    private final PostEntityService postEntityService;
 
     public PostResponseDto findPostById(User user, String postId) {
         Post post = getPost(postId);
@@ -152,7 +153,7 @@ public class PostService {
         Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
 
         boolean includeDeleted = isCircleLeader || roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT);
-        Page<PostsResponseDto> posts = postRepository
+        Page<PostsResponseDto> posts = postEntityService
             .findPostsByBoardWithFilters(boardId, includeDeleted, blockedUserIds, null, pageable)
             .map(this::toPostsResponseDto);
 
@@ -186,7 +187,7 @@ public class PostService {
         Set<String> blockedUserIds = userBlockEntityService.findBlockedUserIdsByUser(user);
         Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
 
-        Page<PostsResponseDto> posts = postRepository
+        Page<PostsResponseDto> posts = postEntityService
             .findPostsByBoardWithFilters(boardId, includeDeleted, blockedUserIds, keyword, pageable)
             .map(this::toPostsResponseDto);
 
@@ -212,7 +213,7 @@ public class PostService {
         Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
 
         boolean includeDeleted = false;
-        Page<PostsResponseDto> posts = postRepository
+        Page<PostsResponseDto> posts = postEntityService
             .findPostsByBoardWithFilters(board.getId(), includeDeleted, blockedUserIds, null, pageable)
             .map(this::toPostsResponseDto);
 
