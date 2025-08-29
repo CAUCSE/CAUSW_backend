@@ -12,6 +12,8 @@ import net.causw.app.main.repository.notification.NotificationRepository;
 import net.causw.app.main.repository.notification.UserBoardSubscribeRepository;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.dto.user.UserCreateRequestDto;
+import net.causw.app.main.service.userBlock.UserBlockEntityService;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,6 +39,9 @@ class BoardNotificationServiceTest {
 
     @Mock
     private FirebasePushNotificationService firebasePushNotificationService;
+
+    @Mock
+    private UserBlockEntityService userBlockEntityService;
 
     @Mock
     private NotificationRepository notificationRepository;
@@ -83,7 +88,7 @@ class BoardNotificationServiceTest {
         given(mockPost.getWriter()).willReturn(mockUser);
         given(mockPost.getId()).willReturn("post-id");
 
-        given(userBoardSubscribeRepository.findByBoardAndIsSubscribedTrueExcludingBlockedUsers(mockBoard, Set.of()))
+        given(userBoardSubscribeRepository.findByBoardAndIsSubscribedTrueExcludingBlockerUsers(mockBoard, Set.of()))
                 .willReturn(List.of(UserBoardSubscribe.of(mockUser, mockBoard, true)));
 
         boardNotificationService.sendByBoardIsSubscribed(mockBoard, mockPost);
@@ -100,7 +105,7 @@ class BoardNotificationServiceTest {
         given(mockPost.getWriter()).willReturn(mockUser);
         given(mockPost.getId()).willReturn("post-id");
 
-        given(userBoardSubscribeRepository.findByBoardAndIsSubscribedTrueExcludingBlockedUsers(mockBoard, Set.of()))
+        given(userBoardSubscribeRepository.findByBoardAndIsSubscribedTrueExcludingBlockerUsers(mockBoard, Set.of()))
                 .willReturn(List.of());
 
         boardNotificationService.sendByBoardIsSubscribed(mockBoard, mockPost);
@@ -120,7 +125,7 @@ class BoardNotificationServiceTest {
         given(mockBoard.getName()).willReturn("게시판 알림");
         given(mockPost.getTitle()).willReturn("게시글 내용");
 
-        given(userBoardSubscribeRepository.findByBoardAndIsSubscribedTrueExcludingBlockedUsers(mockBoard, Set.of()))
+        given(userBoardSubscribeRepository.findByBoardAndIsSubscribedTrueExcludingBlockerUsers(mockBoard, Set.of()))
                 .willReturn(List.of(UserBoardSubscribe.of(mockUser, mockBoard, true)));
 
         boardNotificationService.sendByBoardIsSubscribed(mockBoard, mockPost);
@@ -138,7 +143,7 @@ class BoardNotificationServiceTest {
         given(mockPost.getWriter()).willReturn(mockUser);
         given(mockPost.getId()).willReturn("post-id");
 
-        given(userBoardSubscribeRepository.findByBoardAndIsSubscribedTrueExcludingBlockedUsers(mockBoard, Set.of()))
+        given(userBoardSubscribeRepository.findByBoardAndIsSubscribedTrueExcludingBlockerUsers(mockBoard, Set.of()))
                 .willReturn(List.of(UserBoardSubscribe.of(mockUser, mockBoard, true)));
 
         FirebaseMessagingException mockException = mock(FirebaseMessagingException.class);
