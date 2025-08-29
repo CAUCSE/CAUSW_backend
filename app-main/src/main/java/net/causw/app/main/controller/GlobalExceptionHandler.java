@@ -125,14 +125,26 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = {BaseRuntimeException.class})
     public ResponseEntity<ExceptionDto> handleBaseRuntimeException(BaseRuntimeException exception) {
-        HttpStatus status = determineHttpStatus(exception.getErrorCode());
-        if (status.is4xxClientError()) {
-            log.warn("Client error - {}: {}", exception.getErrorCode(), exception.getMessage());
-        } else {
-            log.error("Server error - {}: {}", exception.getErrorCode(), exception.getMessage(), exception);
-        }
+        ErrorCode errorCode = exception.getErrorCode();
 
-        return ResponseEntity.status(status).body(ExceptionDto.of(exception.getErrorCode(), exception.getMessage()));
+        try {
+            // HTTP 상태 코드 변환
+            int httpStatusCode = errorCode.getHttpStatusCode();
+            HttpStatus httpStatus = HttpStatus.valueOf(httpStatusCode);
+
+            // 로깅
+            logException(httpStatus, errorCode, exception);
+
+            return ResponseEntity.status(httpStatus)
+                .body(ExceptionDto.of(errorCode, exception.getMessage()));
+
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid HTTP status code {} for ErrorCode {}",
+                errorCode.getHttpStatusCode(), errorCode, e);
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ExceptionDto.of(ErrorCode.INTERNAL_SERVER, "Internal server error"));
+        }
     }
 
     @ExceptionHandler(value = {Exception.class})
@@ -144,21 +156,18 @@ public class GlobalExceptionHandler {
     }
 
     // ErrorCode를 기반으로 HTTP 상태 코드 결정하는 헬퍼 메서드
-    private HttpStatus determineHttpStatus(ErrorCode errorCode) {
-        int code = errorCode.getCode();
-
-        if (code >= 4000 && code < 4100) {
-            return HttpStatus.BAD_REQUEST;
-        } else if (code >= 4100 && code < 4200) {
-            return HttpStatus.UNAUTHORIZED;
-        } else if (code >= 4200 && code < 4300) {
-            return HttpStatus.FORBIDDEN;
-        } else if (code >= 5000 && code < 5030) {
-            return HttpStatus.INTERNAL_SERVER_ERROR;
-        } else if (code >= 5030 && code < 5100) {
-            return HttpStatus.SERVICE_UNAVAILABLE;
+    private void logException(HttpStatus httpStatus, ErrorCode errorCode, BaseRuntimeException exception) {
+        if (httpStatus.is4xxClientError()) {
+            // 4xx 에러는 클라이언트 실수이므로 WARN 레벨
+            log.warn("Client error - Code: {}, Message: {}",
+                errorCode, exception.getMessage());
+        } else if (httpStatus.is5xxServerError()) {
+            // 5xx 에러는 서버 문제이므로 ERROR 레벨 + 스택트레이스
+            log.error("Server error - Code: {}, Message: {}",
+                errorCode, exception.getMessage(), exception);
+        } else {
+            log.warn("Unexpected status code {} - Code: {}, Message: {}",
+                httpStatus, errorCode, exception.getMessage());
         }
-
-        return HttpStatus.INTERNAL_SERVER_ERROR;
     }
 }
