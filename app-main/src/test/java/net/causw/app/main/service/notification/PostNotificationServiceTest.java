@@ -13,6 +13,8 @@ import net.causw.app.main.repository.notification.NotificationRepository;
 import net.causw.app.main.repository.notification.UserPostSubscribeRepository;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.dto.user.UserCreateRequestDto;
+import net.causw.app.main.service.userBlock.UserBlockEntityService;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,6 +37,9 @@ class PostNotificationServiceTest {
 
     @InjectMocks
     private PostNotificationService postNotificationService;
+
+    @Mock
+    private UserBlockEntityService userBlockEntityService;
 
     @Mock
     private FirebasePushNotificationService firebasePushNotificationService;

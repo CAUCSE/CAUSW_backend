@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -87,9 +88,12 @@ public class PostNotificationService implements NotificationService{
                 });
     }
 
-    private Set<String> getBlockerUserIds(User postWirter, User commentWriter) {
-        Set<String> blockeeUserIds = Stream.of(postWirter, commentWriter).map(
-            BaseEntity::getId).collect(Collectors.toSet());
+    private Set<String> getBlockerUserIds(User postWriter, User commentWriter) {
+        Set<String> blockeeUserIds =
+            Stream.of(postWriter, commentWriter)
+                .filter(Objects::nonNull)
+                .map(BaseEntity::getId)
+                .collect(Collectors.toSet());
 
         return userBlockEntityService.findBlockerUserIdsByUserIds(blockeeUserIds);
     }

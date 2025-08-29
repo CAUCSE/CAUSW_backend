@@ -13,6 +13,8 @@ import net.causw.app.main.repository.notification.NotificationRepository;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.dto.user.UserCreateRequestDto;
 import net.causw.app.main.domain.model.enums.ceremony.CeremonyCategory;
+import net.causw.app.main.service.userBlock.UserBlockEntityService;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -40,6 +42,9 @@ class CeremonyNotificationServiceTest {
 
     @Mock
     private FirebasePushNotificationService firebasePushNotificationService;
+
+    @Mock
+    UserBlockEntityService userBlockEntityService;
 
     @Mock
     private CeremonyNotificationSettingRepository ceremonyNotificationSettingRepository;

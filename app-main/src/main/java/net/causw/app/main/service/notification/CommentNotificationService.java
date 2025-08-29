@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -96,8 +97,11 @@ public class CommentNotificationService implements NotificationService{
      * @return 차단한 유저 ids Set
      */
     private Set<String> getBlockerUserIds(User commentWriter, User childCommentWriter) {
-        Set<String> blockeeUserIds = Stream.of(commentWriter, childCommentWriter).map(
-            BaseEntity::getId).collect(Collectors.toSet());
+        Set<String> blockeeUserIds =
+            Stream.of(commentWriter, childCommentWriter)
+                .filter(Objects::nonNull)
+                .map(BaseEntity::getId)
+                .collect(Collectors.toSet());
 
         return userBlockEntityService.findBlockerUserIdsByUserIds(blockeeUserIds);
     }
