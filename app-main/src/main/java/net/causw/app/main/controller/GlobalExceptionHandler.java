@@ -1,5 +1,7 @@
 package net.causw.app.main.controller;
 
+import java.time.format.DateTimeParseException;
+
 import lombok.extern.slf4j.Slf4j;
 import net.causw.app.main.dto.exception.ConstraintExceptionDto;
 import net.causw.app.main.dto.exception.ExceptionDto;
@@ -10,6 +12,7 @@ import net.causw.global.exception.ForbiddenException;
 import net.causw.global.exception.UnauthorizedException;
 import net.causw.global.exception.ServiceUnavailableException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -19,6 +22,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.security.access.AccessDeniedException;
+
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 @Component
 @Slf4j
@@ -88,6 +93,27 @@ public class GlobalExceptionHandler {
         return ExceptionDto.of(ErrorCode.API_NOT_ACCESSIBLE, exception.getMessage());
     }
 
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ExceptionDto handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+        String message = "잘못된 요청 형식입니다.";
+
+        // 날짜 파싱 에러 체크
+        if (ex.getCause() instanceof JsonMappingException jme) {
+            if (jme.getCause() instanceof DateTimeParseException dtpe) {
+                message = "날짜 형식이 올바르지 않습니다.";
+                log.warn("Invalid date format in request: {}", dtpe.getParsedString(), dtpe);
+            } else {
+                log.warn("JSON mapping error: {}", jme.getMessage(), jme);
+            }
+        } else {
+            log.warn("HTTP message not readable: {}", ex.getMessage(), ex);
+        }
+
+        return ExceptionDto.of(ErrorCode.INVALID_PARAMETER, message);
+    }
+
+    // 500 에러
 
     @ExceptionHandler(value = {ServiceUnavailableException.class})
     @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
@@ -105,7 +131,6 @@ public class GlobalExceptionHandler {
         } else {
             log.error("Server error - {}: {}", exception.getErrorCode(), exception.getMessage(), exception);
         }
-        GlobalExceptionHandler.log.error("Unhandled BaseRuntimeException", exception);
 
         return ExceptionDto.of(exception.getErrorCode(), exception.getMessage());
     }
@@ -113,7 +138,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = {Exception.class})
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ExceptionDto unknownException(Exception exception) {
-        GlobalExceptionHandler.log.error("error message", exception);
+        log.error("Internal server error", exception);
+
         return ExceptionDto.of(ErrorCode.INTERNAL_SERVER, "Internal server error");
     }
 
