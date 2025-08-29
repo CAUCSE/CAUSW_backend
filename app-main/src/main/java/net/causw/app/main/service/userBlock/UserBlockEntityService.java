@@ -106,7 +106,7 @@ public class UserBlockEntityService {
 	}
 
 	/**
-	 차단을 한 유저의 아이디를 가져오는 메서드
+	 * 피차단자 ID 목록으로 차단자 ID 목록을 조회하는 메서드
 	 * @param blockeeUserIds 차단당한 자들의 아이디 Set
 	 * @return 차단자 id Set
 	 */
