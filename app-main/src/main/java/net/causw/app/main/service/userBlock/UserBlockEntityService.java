@@ -11,6 +11,7 @@ import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.domain.model.entity.userBlock.UserBlock;
 import net.causw.app.main.repository.userBlock.UserBlockRepository;
 
+import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -102,5 +103,14 @@ public class UserBlockEntityService {
 	 */
 	public Set<String> findBlockerUserIdsByBlockee(User blockee) {
 		return userBlockRepository.findBlockerIdsByBlockeeUserId(blockee.getId());
+	}
+
+	/**
+	 차단을 한 유저의 아이디를 가져오는 메서드
+	 * @param blockeeUserIds 차단당한 자들의 아이디 Set
+	 * @return 차단자 id Set
+	 */
+	public Set<String> findBlockerUserIdsByUserIds(@NotEmpty Set<String> blockeeUserIds) {
+		return userBlockRepository.findBlockerIdsByBlockeeUserIds(blockeeUserIds);
 	}
 }

@@ -3,6 +3,8 @@ package net.causw.app.main.service.notification;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import net.causw.app.main.domain.model.entity.base.BaseEntity;
 import net.causw.app.main.domain.model.entity.comment.ChildComment;
 import net.causw.app.main.domain.model.entity.comment.Comment;
 import net.causw.app.main.domain.model.entity.notification.Notification;
@@ -15,6 +17,8 @@ import net.causw.app.main.repository.notification.UserCommentSubscribeRepository
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.dto.notification.CommentNotificationDto;
 import net.causw.app.main.domain.model.enums.notification.NoticeType;
+import net.causw.app.main.service.userBlock.UserBlockEntityService;
+
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +26,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Slf4j
@@ -32,6 +38,7 @@ public class CommentNotificationService implements NotificationService{
     private final NotificationLogRepository notificationLogRepository;
     private final UserCommentSubscribeRepository userCommentSubscribeRepository;
     private final FcmUtils fcmUtils;
+    private final UserBlockEntityService userBlockEntityService;
 
     @Override
     public void send(User user, String targetToken, String title, String body) {
@@ -59,10 +66,15 @@ public class CommentNotificationService implements NotificationService{
     @Async("asyncExecutor")
     @Transactional
     public void sendByCommentIsSubscribed(Comment comment, ChildComment childComment){
-        List<UserCommentSubscribe> userCommentSubscribeList = userCommentSubscribeRepository.findByCommentAndIsSubscribedTrue(comment);
+        User commentWriter = comment.getWriter();
+        User childCommentWriter = childComment.getWriter();
+
+        Set<String> blockerUserIds = getBlockerUserIds(commentWriter, childCommentWriter);
+
+        List<UserCommentSubscribe> userCommentSubscribeList = userCommentSubscribeRepository.findByCommentAndIsSubscribedTrue(comment, blockerUserIds);
         CommentNotificationDto commentNotificationDto = CommentNotificationDto.of(comment, childComment);
 
-        Notification notification = Notification.of(childComment.getWriter(), commentNotificationDto.getTitle(), commentNotificationDto.getBody(), NoticeType.COMMENT, comment.getPost().getId(), comment.getPost().getBoard().getId());
+        Notification notification = Notification.of(childCommentWriter, commentNotificationDto.getTitle(), commentNotificationDto.getBody(), NoticeType.COMMENT, comment.getPost().getId(), comment.getPost().getBoard().getId());
 
         saveNotification(notification);
 
@@ -74,5 +86,19 @@ public class CommentNotificationService implements NotificationService{
                     copy.forEach(token -> send(user, token, commentNotificationDto.getTitle(), commentNotificationDto.getBody()));
                     saveNotificationLog(user, notification);
                 });
+    }
+
+    /**
+     * 해당 댓글들에 대해 차단을 진행한 user의 id 가져오는 로직
+     *
+     * @param commentWriter 댓글 작성자
+     * @param childCommentWriter 대댓글 작성자
+     * @return 차단한 유저 ids Set
+     */
+    private Set<String> getBlockerUserIds(User commentWriter, User childCommentWriter) {
+        Set<String> blockeeUserIds = Stream.of(commentWriter, childCommentWriter).map(
+            BaseEntity::getId).collect(Collectors.toSet());
+
+        return userBlockEntityService.findBlockerUserIdsByUserIds(blockeeUserIds);
     }
 }

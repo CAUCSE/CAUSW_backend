@@ -24,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
@@ -90,8 +91,8 @@ class CommentNotificationServiceTest {
         given(mockPost.getBoard()).willReturn(mockBoard);
         given(mockBoard.getId()).willReturn("board-id");
 
-
-        given(userCommentSubscribeRepository.findByCommentAndIsSubscribedTrue(mockComment))
+        Set<String> blockerUserIds = Set.of();
+        given(userCommentSubscribeRepository.findByCommentAndIsSubscribedTrue(mockComment, blockerUserIds))
                 .willReturn(List.of(UserCommentSubscribe.of(mockUser, mockComment, true)));
 
         commentNotificationService.sendByCommentIsSubscribed(mockComment, mockChildComment);
@@ -106,7 +107,8 @@ class CommentNotificationServiceTest {
         given(mockPost.getId()).willReturn("post-id");
         given(mockPost.getBoard()).willReturn(mockBoard);
         given(mockBoard.getId()).willReturn("board-id");
-        given(userCommentSubscribeRepository.findByCommentAndIsSubscribedTrue(mockComment))
+        Set<String> blockerUserIds = Set.of();
+        given(userCommentSubscribeRepository.findByCommentAndIsSubscribedTrue(mockComment, blockerUserIds))
                 .willReturn(List.of());
 
         commentNotificationService.sendByCommentIsSubscribed(mockComment, mockChildComment);
@@ -127,8 +129,8 @@ class CommentNotificationServiceTest {
         given(mockChildComment.getWriter()).willReturn(mockUser);
         given(mockComment.getContent()).willReturn("부모 댓글");
         given(mockChildComment.getContent()).willReturn("대댓글 내용");
-
-        given(userCommentSubscribeRepository.findByCommentAndIsSubscribedTrue(mockComment))
+        Set<String> blockerUserIds = Set.of();
+        given(userCommentSubscribeRepository.findByCommentAndIsSubscribedTrue(mockComment, blockerUserIds))
                 .willReturn(List.of(UserCommentSubscribe.of(mockUser, mockComment, true)));
 
         commentNotificationService.sendByCommentIsSubscribed(mockComment, mockChildComment);
@@ -147,8 +149,8 @@ class CommentNotificationServiceTest {
         given(mockPost.getBoard()).willReturn(mockBoard);
         given(mockBoard.getId()).willReturn("board-id");
         given(mockChildComment.getWriter()).willReturn(mockUser);
-
-        given(userCommentSubscribeRepository.findByCommentAndIsSubscribedTrue(mockComment))
+        Set<String> blockerUserIds = Set.of();
+        given(userCommentSubscribeRepository.findByCommentAndIsSubscribedTrue(mockComment, blockerUserIds))
                 .willReturn(List.of(UserCommentSubscribe.of(mockUser, mockComment, true)));
 
         FirebaseMessagingException mockException = mock(FirebaseMessagingException.class);

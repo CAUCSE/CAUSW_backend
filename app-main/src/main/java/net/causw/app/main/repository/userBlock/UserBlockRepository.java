@@ -17,4 +17,8 @@ public interface UserBlockRepository extends JpaRepository<UserBlock, String> {
 
 	@Query("SELECT b.blockerId FROM UserBlock b WHERE b.blockeeId = :userId")
 	Set<String> findBlockerIdsByBlockeeUserId(@Param("userId") String userId);
+
+
+	@Query("SELECT b.blockerId FROM UserBlock b WHERE b.blockeeId IN :userIds")
+	Set<String> findBlockerIdsByBlockeeUserIds(Set<String> userIds);
 }
