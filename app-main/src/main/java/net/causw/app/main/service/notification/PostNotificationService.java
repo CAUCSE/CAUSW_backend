@@ -70,7 +70,7 @@ public class PostNotificationService implements NotificationService{
         User postWriter = post.getWriter();
         User commentWriter = comment.getWriter();
         Set<String> blockerUserIds = getBlockerUserIds(postWriter, commentWriter);
-        List<UserPostSubscribe> userPostSubscribeList = userPostSubscribeRepository.findByPostAndIsSubscribedTrue(post, blockerUserIds);
+        List<UserPostSubscribe> userPostSubscribeList = userPostSubscribeRepository.findByPostAndIsSubscribedTrueExcludingBlockers(post, blockerUserIds);
 
         PostNotificationDto postNotificationDto = PostNotificationDto.of(post, comment);
 

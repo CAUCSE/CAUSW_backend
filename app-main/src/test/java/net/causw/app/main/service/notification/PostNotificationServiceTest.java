@@ -92,7 +92,7 @@ class PostNotificationServiceTest {
         given(mockBoard.getId()).willReturn("board-id");
         lenient().when(mockComment.getPost()).thenReturn(mockPost);
 
-        given(userPostSubscribeRepository.findByPostAndIsSubscribedTrue(mockPost, Set.of()))
+        given(userPostSubscribeRepository.findByPostAndIsSubscribedTrueExcludingBlockers(mockPost, Set.of()))
                 .willReturn(List.of(UserPostSubscribe.of(mockUser, mockPost, true)));
 
         postNotificationService.sendByPostIsSubscribed(mockPost, mockComment);
@@ -109,7 +109,7 @@ class PostNotificationServiceTest {
         given(mockBoard.getId()).willReturn("board-id");
         lenient().when(mockComment.getPost()).thenReturn(mockPost);
 
-        given(userPostSubscribeRepository.findByPostAndIsSubscribedTrue(mockPost, Set.of()))
+        given(userPostSubscribeRepository.findByPostAndIsSubscribedTrueExcludingBlockers(mockPost, Set.of()))
                 .willReturn(List.of());
 
         postNotificationService.sendByPostIsSubscribed(mockPost, mockComment);
@@ -131,7 +131,7 @@ class PostNotificationServiceTest {
         given(mockComment.getContent()).willReturn("댓글 내용");
 
 
-        given(userPostSubscribeRepository.findByPostAndIsSubscribedTrue(mockPost, Set.of()))
+        given(userPostSubscribeRepository.findByPostAndIsSubscribedTrueExcludingBlockers(mockPost, Set.of()))
                 .willReturn(List.of(UserPostSubscribe.of(mockUser, mockPost, true)));
 
         postNotificationService.sendByPostIsSubscribed(mockPost, mockComment);
@@ -151,7 +151,7 @@ class PostNotificationServiceTest {
         given(mockBoard.getId()).willReturn("board-id");
         given(mockComment.getPost()).willReturn(mockPost);
 
-        given(userPostSubscribeRepository.findByPostAndIsSubscribedTrue(mockPost, Set.of()))
+        given(userPostSubscribeRepository.findByPostAndIsSubscribedTrueExcludingBlockers(mockPost, Set.of()))
                 .willReturn(List.of(UserPostSubscribe.of(mockUser, mockPost, true)));
 
         FirebaseMessagingException mockException = mock(FirebaseMessagingException.class);

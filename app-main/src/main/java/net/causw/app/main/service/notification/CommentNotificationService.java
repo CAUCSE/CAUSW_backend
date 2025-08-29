@@ -72,7 +72,7 @@ public class CommentNotificationService implements NotificationService{
 
         Set<String> blockerUserIds = getBlockerUserIds(commentWriter, childCommentWriter);
 
-        List<UserCommentSubscribe> userCommentSubscribeList = userCommentSubscribeRepository.findByCommentAndIsSubscribedTrue(comment, blockerUserIds);
+        List<UserCommentSubscribe> userCommentSubscribeList = userCommentSubscribeRepository.findByBoardAndIsSubscribedTrueExcludingBlockerUsers(comment, blockerUserIds);
         CommentNotificationDto commentNotificationDto = CommentNotificationDto.of(comment, childComment);
 
         Notification notification = Notification.of(childCommentWriter, commentNotificationDto.getTitle(), commentNotificationDto.getBody(), NoticeType.COMMENT, comment.getPost().getId(), comment.getPost().getBoard().getId());

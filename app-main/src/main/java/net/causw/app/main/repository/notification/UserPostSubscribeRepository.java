@@ -20,7 +20,7 @@ public interface UserPostSubscribeRepository extends JpaRepository<UserPostSubsc
    WHERE ups.post = :post AND ups.isSubscribed = true
    AND (:#{#blockerUserIds.size()} = 0 OR ups.user.id NOT IN :blockerUserIds)
    """)
-    List<UserPostSubscribe> findByPostAndIsSubscribedTrue(
+    List<UserPostSubscribe> findByPostAndIsSubscribedTrueExcludingBlockers(
         @Param("post") Post post,
         @Param("blockerUserIds") Set<String> blockerUserIds
     );
