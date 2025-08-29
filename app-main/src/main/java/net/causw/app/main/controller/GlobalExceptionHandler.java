@@ -12,6 +12,7 @@ import net.causw.global.exception.ForbiddenException;
 import net.causw.global.exception.UnauthorizedException;
 import net.causw.global.exception.ServiceUnavailableException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -123,8 +124,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(value = {BaseRuntimeException.class})
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)  // 기본적으로 500으로 설정
-    public ExceptionDto handleBaseRuntimeException(BaseRuntimeException exception) {
+    public ResponseEntity<ExceptionDto> handleBaseRuntimeException(BaseRuntimeException exception) {
         HttpStatus status = determineHttpStatus(exception.getErrorCode());
         if (status.is4xxClientError()) {
             log.warn("Client error - {}: {}", exception.getErrorCode(), exception.getMessage());
@@ -132,7 +132,7 @@ public class GlobalExceptionHandler {
             log.error("Server error - {}: {}", exception.getErrorCode(), exception.getMessage(), exception);
         }
 
-        return ExceptionDto.of(exception.getErrorCode(), exception.getMessage());
+        return ResponseEntity.status(status).body(ExceptionDto.of(exception.getErrorCode(), exception.getMessage()));
     }
 
     @ExceptionHandler(value = {Exception.class})
