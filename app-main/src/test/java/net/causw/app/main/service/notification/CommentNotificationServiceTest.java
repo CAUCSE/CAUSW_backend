@@ -97,7 +97,7 @@ class CommentNotificationServiceTest {
         given(mockBoard.getId()).willReturn("board-id");
 
         Set<String> blockerUserIds = Set.of();
-        given(userCommentSubscribeRepository.findByBoardAndIsSubscribedTrueExcludingBlockerUsers(mockComment, blockerUserIds))
+        given(userCommentSubscribeRepository.findByCommentAndIsSubscribedTrueExcludingBlockerUsers(mockComment, blockerUserIds))
                 .willReturn(List.of(UserCommentSubscribe.of(mockUser, mockComment, true)));
 
         commentNotificationService.sendByCommentIsSubscribed(mockComment, mockChildComment);
@@ -113,7 +113,7 @@ class CommentNotificationServiceTest {
         given(mockPost.getBoard()).willReturn(mockBoard);
         given(mockBoard.getId()).willReturn("board-id");
         Set<String> blockerUserIds = Set.of();
-        given(userCommentSubscribeRepository.findByBoardAndIsSubscribedTrueExcludingBlockerUsers(mockComment, blockerUserIds))
+        given(userCommentSubscribeRepository.findByCommentAndIsSubscribedTrueExcludingBlockerUsers(mockComment, blockerUserIds))
                 .willReturn(List.of());
 
         commentNotificationService.sendByCommentIsSubscribed(mockComment, mockChildComment);
@@ -135,7 +135,7 @@ class CommentNotificationServiceTest {
         given(mockComment.getContent()).willReturn("부모 댓글");
         given(mockChildComment.getContent()).willReturn("대댓글 내용");
         Set<String> blockerUserIds = Set.of();
-        given(userCommentSubscribeRepository.findByBoardAndIsSubscribedTrueExcludingBlockerUsers(mockComment, blockerUserIds))
+        given(userCommentSubscribeRepository.findByCommentAndIsSubscribedTrueExcludingBlockerUsers(mockComment, blockerUserIds))
                 .willReturn(List.of(UserCommentSubscribe.of(mockUser, mockComment, true)));
 
         commentNotificationService.sendByCommentIsSubscribed(mockComment, mockChildComment);
@@ -155,7 +155,7 @@ class CommentNotificationServiceTest {
         given(mockBoard.getId()).willReturn("board-id");
         given(mockChildComment.getWriter()).willReturn(mockUser);
         Set<String> blockerUserIds = Set.of();
-        given(userCommentSubscribeRepository.findByBoardAndIsSubscribedTrueExcludingBlockerUsers(mockComment, blockerUserIds))
+        given(userCommentSubscribeRepository.findByCommentAndIsSubscribedTrueExcludingBlockerUsers(mockComment, blockerUserIds))
                 .willReturn(List.of(UserCommentSubscribe.of(mockUser, mockComment, true)));
 
         FirebaseMessagingException mockException = mock(FirebaseMessagingException.class);
