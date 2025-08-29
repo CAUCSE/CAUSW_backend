@@ -69,7 +69,7 @@ public class BoardNotificationService implements NotificationService {
         Set<String> blockerUserIdsByBlockee = userBlockEntityService.findBlockerUserIdsByBlockee(writer);
         // 3. 게시글 작성자를 차단한 유저를 제외한 구독목록 가져오기
         List<UserBoardSubscribe> userBoardSubscribes = userBoardSubscribeRepository
-            .findByBoardAndIsSubscribedTrueExcludingBlockedUsers(board, blockerUserIdsByBlockee);
+            .findByBoardAndIsSubscribedTrueExcludingBlockerUsers(board, blockerUserIdsByBlockee);
 
         List<UserBoardSubscribe> userBoardSubscribeList = userBoardSubscribes
             .stream()

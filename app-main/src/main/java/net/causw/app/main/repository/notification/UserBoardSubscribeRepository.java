@@ -22,12 +22,16 @@ public interface UserBoardSubscribeRepository extends JpaRepository<UserBoardSub
     List<UserBoardSubscribe> findByBoardAndIsSubscribedTrue(Board board);
 
     @EntityGraph(attributePaths = {"user"})
-    @Query("SELECT ubs FROM UserBoardSubscribe ubs " +
-        "WHERE ubs.board = :board AND ubs.isSubscribed = true " +
-        "AND ubs.user.id NOT IN :blockedUserIds")
-    List<UserBoardSubscribe> findByBoardAndIsSubscribedTrueExcludingBlockedUsers(
+    @Query(
+        """
+        SELECT ubs FROM UserBoardSubscribe ubs
+        WHERE ubs.board = :board AND ubs.isSubscribed = true
+        AND (:#{#blockerUserIds.size()} = 0 OR ubs.user.id NOT IN :blockerUserIds)
+        """
+    )
+    List<UserBoardSubscribe> findByBoardAndIsSubscribedTrueExcludingBlockerUsers(
         @Param("board") Board board,
-        @Param("blockedUserIds") Set<String> blockedUserIds);
+        @Param("blockerUserIds") Set<String> blockerUserIds);
 
     @EntityGraph(attributePaths = {"board"})
     List<UserBoardSubscribe> findByUserAndIsSubscribedTrue(User user);
