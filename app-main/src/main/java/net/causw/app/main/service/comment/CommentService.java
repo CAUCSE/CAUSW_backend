@@ -90,7 +90,7 @@ public class CommentService {
         ValidatorBucket validatorBucket = initializeValidator(user, post);
         validatorBucket.validate();
 
-        Set<String> blockedUserIds = userBlockEntityService.findBlockedUserIdsByUser(user);
+        Set<String> blockedUserIds = userBlockEntityService.findBlockeeUserIdsByBlocker(user);
 
         Page<Comment> comments = commentRepository.findByPost_IdOrderByCreatedAt(
                 postId,

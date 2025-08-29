@@ -86,7 +86,21 @@ public class UserBlockEntityService {
 		userBlockRepository.save(userBlock);
 	}
 
-	public Set<String> findBlockedUserIdsByUser(User user) {
-		return userBlockRepository.findBlockeeIdsByBlockerUserId(user.getId());
+	/**
+	 * 차단당한 유저의 아이디를 가져오는 메서드
+	 * @param blocker 차단자
+	 * @return 피차단자 id Set
+	 */
+	public Set<String> findBlockeeUserIdsByBlocker(User blocker) {
+		return userBlockRepository.findBlockeeIdsByBlockerUserId(blocker.getId());
+	}
+
+	/**
+	 * 차단을 한 유저의 아이디를 가져오는 메서드
+	 * @param blockee 차단당한 자
+	 * @return 차단자 id Set
+	 */
+	public Set<String> findBlockerUserIdsByBlockee(User blockee) {
+		return userBlockRepository.findBlockerIdsByBlockeeUserId(blockee.getId());
 	}
 }

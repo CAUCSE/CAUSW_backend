@@ -251,7 +251,7 @@ public class UserService {
                 .consistOf(UserStateValidator.of(requestUser.getState()))
                 .validate();
 
-        Set<String> blockedUserIds = userBlockEntityService.findBlockedUserIdsByUser(requestUser);
+        Set<String> blockedUserIds = userBlockEntityService.findBlockeeUserIdsByBlocker(requestUser);
         Pageable pageable = this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
         // todo: postRepository 로 이동 및 (entity)service 단으로 계층 분리
         Page<FavoritePost> favoritePostPage = this.favoritePostRepository.findByUserId(requestUser.getId(), blockedUserIds, pageable);
@@ -303,7 +303,7 @@ public class UserService {
             .consistOf(UserStateValidator.of(requestUser.getState()))
             .validate();
 
-        Set<String> blockedUserIds = userBlockEntityService.findBlockedUserIdsByUser(requestUser);
+        Set<String> blockedUserIds = userBlockEntityService.findBlockeeUserIdsByBlocker(requestUser);
         Pageable pageable = this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
         Page<LikePost> likePostPage = this.likePostRepository.findByUserId(requestUser.getId(), blockedUserIds, pageable);
 
@@ -347,7 +347,7 @@ public class UserService {
         Pageable pageable = this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE / 2 + 5);
 
         // todo: 추후 해당 로직들 postRepository 로 옮기고, (entity)service 단으로 계층 분리해서 재사용성 높이기
-        Set<String> blockedUserIdsByUser = userBlockEntityService.findBlockedUserIdsByUser(requestUser);
+        Set<String> blockedUserIdsByUser = userBlockEntityService.findBlockeeUserIdsByBlocker(requestUser);
         Page<Post> postsFromComments = this.commentRepository.findPostsByUserId(requestUser.getId(), blockedUserIdsByUser, pageable);
         Page<Post> postsFromChildComments = this.childCommentRepository.findPostsByUserId(requestUser.getId(), blockedUserIdsByUser, pageable);
 

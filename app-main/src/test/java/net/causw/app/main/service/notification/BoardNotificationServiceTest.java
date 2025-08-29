@@ -22,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -82,7 +83,7 @@ class BoardNotificationServiceTest {
         given(mockPost.getWriter()).willReturn(mockUser);
         given(mockPost.getId()).willReturn("post-id");
 
-        given(userBoardSubscribeRepository.findByBoardAndIsSubscribedTrue(mockBoard))
+        given(userBoardSubscribeRepository.findByBoardAndIsSubscribedTrueExcludingBlockedUsers(mockBoard, Set.of()))
                 .willReturn(List.of(UserBoardSubscribe.of(mockUser, mockBoard, true)));
 
         boardNotificationService.sendByBoardIsSubscribed(mockBoard, mockPost);
@@ -99,7 +100,7 @@ class BoardNotificationServiceTest {
         given(mockPost.getWriter()).willReturn(mockUser);
         given(mockPost.getId()).willReturn("post-id");
 
-        given(userBoardSubscribeRepository.findByBoardAndIsSubscribedTrue(mockBoard))
+        given(userBoardSubscribeRepository.findByBoardAndIsSubscribedTrueExcludingBlockedUsers(mockBoard, Set.of()))
                 .willReturn(List.of());
 
         boardNotificationService.sendByBoardIsSubscribed(mockBoard, mockPost);
@@ -119,7 +120,7 @@ class BoardNotificationServiceTest {
         given(mockBoard.getName()).willReturn("게시판 알림");
         given(mockPost.getTitle()).willReturn("게시글 내용");
 
-        given(userBoardSubscribeRepository.findByBoardAndIsSubscribedTrue(mockBoard))
+        given(userBoardSubscribeRepository.findByBoardAndIsSubscribedTrueExcludingBlockedUsers(mockBoard, Set.of()))
                 .willReturn(List.of(UserBoardSubscribe.of(mockUser, mockBoard, true)));
 
         boardNotificationService.sendByBoardIsSubscribed(mockBoard, mockPost);
@@ -137,7 +138,7 @@ class BoardNotificationServiceTest {
         given(mockPost.getWriter()).willReturn(mockUser);
         given(mockPost.getId()).willReturn("post-id");
 
-        given(userBoardSubscribeRepository.findByBoardAndIsSubscribedTrue(mockBoard))
+        given(userBoardSubscribeRepository.findByBoardAndIsSubscribedTrueExcludingBlockedUsers(mockBoard, Set.of()))
                 .willReturn(List.of(UserBoardSubscribe.of(mockUser, mockBoard, true)));
 
         FirebaseMessagingException mockException = mock(FirebaseMessagingException.class);

@@ -161,7 +161,7 @@ public class BoardService {
             }
         }
 
-        Set<String> blockedUserIds = userBlockEntityService.findBlockedUserIdsByUser(user);
+        Set<String> blockedUserIds = userBlockEntityService.findBlockeeUserIdsByBlocker(user);
 
         return boards.stream()
                 .map(board -> {

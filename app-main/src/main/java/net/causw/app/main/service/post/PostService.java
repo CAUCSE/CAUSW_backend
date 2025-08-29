@@ -47,8 +47,6 @@ import net.causw.app.main.repository.post.PostRepository;
 import net.causw.app.main.repository.user.UserRepository;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.domain.model.entity.uuidFile.UuidFile;
-import net.causw.app.main.dto.comment.ChildCommentResponseDto;
-import net.causw.app.main.dto.comment.CommentResponseDto;
 import net.causw.app.main.dto.post.*;
 import net.causw.app.main.domain.policy.StatusPolicy;
 import net.causw.app.main.service.userBlock.UserBlockEntityService;
@@ -148,7 +146,7 @@ public class PostService {
             isCircleLeader = getCircleLeader(board.getCircle()).getId().equals(user.getId());
         }
 
-        Set<String> blockedUserIds = userBlockEntityService.findBlockedUserIdsByUser(user);
+        Set<String> blockedUserIds = userBlockEntityService.findBlockeeUserIdsByBlocker(user);
 
         Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
 
@@ -184,7 +182,7 @@ public class PostService {
         // 권한 확인 및 차단 사용자 목록 조회
         boolean includeDeleted = isCircleLeader || roles.contains(Role.ADMIN) ||
             roles.contains(Role.PRESIDENT) || roles.contains(Role.VICE_PRESIDENT);
-        Set<String> blockedUserIds = userBlockEntityService.findBlockedUserIdsByUser(user);
+        Set<String> blockedUserIds = userBlockEntityService.findBlockeeUserIdsByBlocker(user);
         Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
 
         Page<PostsResponseDto> posts = postEntityService
@@ -209,7 +207,7 @@ public class PostService {
                 )
         );
 
-        Set<String> blockedUserIds = userBlockEntityService.findBlockedUserIdsByUser(user);
+        Set<String> blockedUserIds = userBlockEntityService.findBlockeeUserIdsByBlocker(user);
         Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
 
         boolean includeDeleted = false;
