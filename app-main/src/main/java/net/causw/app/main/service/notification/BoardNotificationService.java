@@ -11,13 +11,14 @@ import net.causw.app.main.domain.model.entity.notification.UserBoardSubscribe;
 import net.causw.app.main.domain.model.entity.post.Post;
 import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.infrastructure.firebase.FcmUtils;
-import net.causw.app.main.infrastructure.redis.RedisUtils;
 import net.causw.app.main.repository.notification.NotificationLogRepository;
 import net.causw.app.main.repository.notification.NotificationRepository;
 import net.causw.app.main.repository.notification.UserBoardSubscribeRepository;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.dto.notification.BoardNotificationDto;
 import net.causw.app.main.domain.model.enums.notification.NoticeType;
+import net.causw.app.main.service.userBlock.UserBlockEntityService;
+
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +36,7 @@ public class BoardNotificationService implements NotificationService {
     private final NotificationLogRepository notificationLogRepository;
     private final UserBoardSubscribeRepository userBoardSubscribeRepository;
     private final FcmUtils fcmUtils;
+    private final UserBlockEntityService userBlockEntityService;
 
     public void send(User user, String targetToken, String title, String body) {
         try {
@@ -61,7 +63,16 @@ public class BoardNotificationService implements NotificationService {
     @Async("asyncExecutor")
     @Transactional
     public void sendByBoardIsSubscribed(Board board, Post post){
-        List<UserBoardSubscribe> userBoardSubscribeList = userBoardSubscribeRepository.findByBoardAndIsSubscribedTrue(board).stream()
+        // 1. 게시글 작성자 추출
+        User writer = post.getWriter();
+        // 2. 게시글 작성자를 차단한 유저 추출
+        Set<String> blockerUserIdsByBlockee = userBlockEntityService.findBlockerUserIdsByBlockee(writer);
+        // 3. 게시글 작성자를 차단한 유저를 제외한 구독목록 가져오기
+        List<UserBoardSubscribe> userBoardSubscribes = userBoardSubscribeRepository
+            .findByBoardAndIsSubscribedTrueExcludingBlockerUsers(board, blockerUserIdsByBlockee);
+
+        List<UserBoardSubscribe> userBoardSubscribeList = userBoardSubscribes
+            .stream()
             .filter(subscribe -> board.getIsAlumni() // 동문회 허용 게시판인 경우 졸업생에게 게시판 알림
                 || subscribe.getUser().getAcademicStatus() != AcademicStatus.GRADUATED
             ).toList();

@@ -48,11 +48,9 @@ public class ChildCommentService {
 
     private final ChildCommentRepository childCommentRepository;
     private final CommentRepository commentRepository;
-    private final UserRepository userRepository;
     private final CircleMemberRepository circleMemberRepository;
     private final PostRepository postRepository;
     private final LikeChildCommentRepository likeChildCommentRepository;
-    private final NotificationRepository notificationRepository;
     private final Validator validator;
     private final CommentNotificationService commentNotificationService;
     private final PostService postService;

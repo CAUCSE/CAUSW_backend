@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface ChildCommentRepository extends JpaRepository<ChildComment, String> {
@@ -24,13 +25,17 @@ public interface ChildCommentRepository extends JpaRepository<ChildComment, Stri
             "ORDER BY c.createdAt ASC")
     List<ChildComment> findByParentComment_Id(@Param("parentCommentId") String parentCommentId);
 
-    @Query("SELECT DISTINCT p " +
-            "FROM ChildComment cc " +
-            "JOIN cc.parentComment c " +
-            "JOIN c.post p " +
-            "WHERE cc.writer.id = :userId AND cc.isDeleted = false " +
-            "ORDER BY p.createdAt DESC")
-    Page<Post> findPostsByUserId(@Param("userId") String userId, Pageable pageable);
+    @Query("""
+        SELECT DISTINCT p
+        FROM ChildComment cc
+        JOIN cc.parentComment c
+        JOIN c.post p
+        WHERE cc.writer.id = :userId AND cc.isDeleted = false
+        AND (:#{#blockedUserIds.size()} = 0 OR p.writer.id NOT IN :blockedUserIds)
+        ORDER BY p.createdAt DESC
+        """
+    )
+    Page<Post> findPostsByUserId(@Param("userId") String userId,@Param("blockedUserIds") Set<String> blockedUserIds, Pageable pageable);
 
     Optional<ChildComment> findByIdAndIsDeletedFalse(String id);
 }

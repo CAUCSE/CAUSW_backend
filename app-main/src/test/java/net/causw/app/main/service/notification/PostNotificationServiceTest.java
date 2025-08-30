@@ -13,6 +13,8 @@ import net.causw.app.main.repository.notification.NotificationRepository;
 import net.causw.app.main.repository.notification.UserPostSubscribeRepository;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.dto.user.UserCreateRequestDto;
+import net.causw.app.main.service.userBlock.UserBlockEntityService;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,6 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
@@ -34,6 +37,9 @@ class PostNotificationServiceTest {
 
     @InjectMocks
     private PostNotificationService postNotificationService;
+
+    @Mock
+    private UserBlockEntityService userBlockEntityService;
 
     @Mock
     private FirebasePushNotificationService firebasePushNotificationService;
@@ -86,7 +92,7 @@ class PostNotificationServiceTest {
         given(mockBoard.getId()).willReturn("board-id");
         lenient().when(mockComment.getPost()).thenReturn(mockPost);
 
-        given(userPostSubscribeRepository.findByPostAndIsSubscribedTrue(mockPost))
+        given(userPostSubscribeRepository.findByPostAndIsSubscribedTrueExcludingBlockers(mockPost, Set.of()))
                 .willReturn(List.of(UserPostSubscribe.of(mockUser, mockPost, true)));
 
         postNotificationService.sendByPostIsSubscribed(mockPost, mockComment);
@@ -103,7 +109,7 @@ class PostNotificationServiceTest {
         given(mockBoard.getId()).willReturn("board-id");
         lenient().when(mockComment.getPost()).thenReturn(mockPost);
 
-        given(userPostSubscribeRepository.findByPostAndIsSubscribedTrue(mockPost))
+        given(userPostSubscribeRepository.findByPostAndIsSubscribedTrueExcludingBlockers(mockPost, Set.of()))
                 .willReturn(List.of());
 
         postNotificationService.sendByPostIsSubscribed(mockPost, mockComment);
@@ -125,7 +131,7 @@ class PostNotificationServiceTest {
         given(mockComment.getContent()).willReturn("댓글 내용");
 
 
-        given(userPostSubscribeRepository.findByPostAndIsSubscribedTrue(mockPost))
+        given(userPostSubscribeRepository.findByPostAndIsSubscribedTrueExcludingBlockers(mockPost, Set.of()))
                 .willReturn(List.of(UserPostSubscribe.of(mockUser, mockPost, true)));
 
         postNotificationService.sendByPostIsSubscribed(mockPost, mockComment);
@@ -145,7 +151,7 @@ class PostNotificationServiceTest {
         given(mockBoard.getId()).willReturn("board-id");
         given(mockComment.getPost()).willReturn(mockPost);
 
-        given(userPostSubscribeRepository.findByPostAndIsSubscribedTrue(mockPost))
+        given(userPostSubscribeRepository.findByPostAndIsSubscribedTrueExcludingBlockers(mockPost, Set.of()))
                 .willReturn(List.of(UserPostSubscribe.of(mockUser, mockPost, true)));
 
         FirebaseMessagingException mockException = mock(FirebaseMessagingException.class);

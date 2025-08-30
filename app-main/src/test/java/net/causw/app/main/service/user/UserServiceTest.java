@@ -7,7 +7,6 @@ import java.util.*;
 import jakarta.validation.Validator;
 import net.causw.app.main.domain.model.entity.post.LikePost;
 import net.causw.app.main.domain.model.entity.post.Post;
-import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.UserProfileImage;
 import net.causw.app.main.dto.user.UserCreateRequestDto;
 import net.causw.app.main.dto.user.UserSignInResponseDto;
 import net.causw.app.main.infrastructure.redis.RedisUtils;
@@ -30,6 +29,7 @@ import net.causw.app.main.domain.model.enums.user.Role;
 import net.causw.app.main.domain.model.enums.user.UserState;
 
 import net.causw.app.main.service.post.PostService;
+import net.causw.app.main.service.userBlock.UserBlockEntityService;
 import net.causw.app.main.util.ObjectFixtures;
 import net.causw.global.constant.StaticValue;
 import net.causw.global.exception.BadRequestException;
@@ -68,6 +68,10 @@ class UserServiceTest {
 
   @Mock
   UserExcelService userExcelService;
+
+  @Mock
+  UserBlockEntityService userBlockEntityService;
+
   @Mock
   UserRepository userRepository;
   @Mock
@@ -205,8 +209,10 @@ class UserServiceTest {
 
       when(pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE)).thenReturn(
           pageable);
+      Set<String> blockedUserIds = Set.of();
+
       when(likePostRepository.findByUserId(user.getId(),
-          pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE)))
+		  blockedUserIds, pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE)))
           .thenReturn(mockLikePostPages);
 
       PostsResponseDto mockPostDto = mock(PostsResponseDto.class);
@@ -237,7 +243,7 @@ class UserServiceTest {
       // then
       assertThat(result).isEqualTo(expectedResponseDto);
 
-      verify(likePostRepository, times(1)).findByUserId(userId, pageable);
+      verify(likePostRepository, times(1)).findByUserId(userId, blockedUserIds, pageable);
       verify(postDtoMapper, times(1)).toPostsResponseDto(any(), anyLong(), anyLong(), anyLong(), any(), anyBoolean(), anyBoolean());
       verify(userDtoMapper, times(1)).toUserPostsResponseDto(eq(user), any());
 
