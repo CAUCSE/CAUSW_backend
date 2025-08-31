@@ -186,8 +186,8 @@ public class UserInfoService {
             );
         }
 
-        // 종료일이 있는 경우에만 검증 (null, 0(default)은 현재 재직 중으로 판단)
-        if (endYear != null && endYear > 0 && endMonth != null && endMonth > 0) {
+        // 종료일이 있는 경우에만 검증 (null은 현재 재직 중으로 판단)
+        if (endYear != null && endMonth != null) {
             boolean isInvalidEndMonth = endMonth < 1 || endMonth > 12;
             boolean isInvalidEndYear = endYear < 1 || endYear > currentYear;
             boolean isEndBeforeStart = startYear > endYear || (startYear == endYear && startMonth > endMonth);
