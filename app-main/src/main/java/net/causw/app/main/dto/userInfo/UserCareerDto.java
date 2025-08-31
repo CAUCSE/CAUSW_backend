@@ -16,10 +16,8 @@ public class UserCareerDto {
   @NotNull
   private Integer startMonth;
 
-  @NotNull
   private Integer endYear;
 
-  @NotNull
   private Integer endMonth;
 
   @NotNull
