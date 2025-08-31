@@ -64,6 +64,11 @@ class UserInfoServiceTest {
       .startYear(2023).startMonth(1).endYear(2024).endMonth(1)
       .description("CAU Company Backend Developer")
       .build();
+  
+  private final UserCareerDto currentCareerDto = UserCareerDto.builder()
+      .startYear(2024).startMonth(2).endYear(null).endMonth(null)
+      .description("Current Company Frontend Developer")
+      .build();
   private final UserCareer userCareer = UserCareer.of(
       userInfo,
       careerDto.getStartYear(), careerDto.getStartMonth(),

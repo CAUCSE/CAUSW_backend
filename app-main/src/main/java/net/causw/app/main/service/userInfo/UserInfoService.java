@@ -171,19 +171,33 @@ public class UserInfoService {
         int currentYear = LocalDateTime.now().getYear();
 
         int startMonth = userCareerDto.getStartMonth();
-        int endMonth = userCareerDto.getEndMonth();
         int startYear = userCareerDto.getStartYear();
-        int endYear = userCareerDto.getEndYear();
+        Integer endMonth = userCareerDto.getEndMonth();
+        Integer endYear = userCareerDto.getEndYear();
 
-        boolean isInvalidMonth = startMonth < 1 || startMonth > 12 || endMonth < 1 || endMonth > 12;
-        boolean isInvalidYear = startYear < 1 || startYear > currentYear || endYear < 1 || endYear > currentYear;
-        boolean isEndBeforeStart = startYear > endYear || (startYear == endYear && startMonth > endMonth);
+        // 시작일 검증
+        boolean isInvalidStartMonth = startMonth < 1 || startMonth > 12;
+        boolean isInvalidStartYear = startYear < 1 || startYear > currentYear;
 
-        if (isInvalidMonth || isInvalidYear || isEndBeforeStart) {
+        if (isInvalidStartMonth || isInvalidStartYear) {
             throw new BadRequestException(
                     ErrorCode.INVALID_PARAMETER,
                     MessageUtil.INVALID_CAREER_DATE
             );
+        }
+
+        // 종료일이 있는 경우에만 검증 (null, 0(default)은 현재 재직 중으로 판단)
+        if (endYear != null && endYear > 0 && endMonth != null && endMonth > 0) {
+            boolean isInvalidEndMonth = endMonth < 1 || endMonth > 12;
+            boolean isInvalidEndYear = endYear < 1 || endYear > currentYear;
+            boolean isEndBeforeStart = startYear > endYear || (startYear == endYear && startMonth > endMonth);
+
+            if (isInvalidEndMonth || isInvalidEndYear || isEndBeforeStart) {
+                throw new BadRequestException(
+                        ErrorCode.INVALID_PARAMETER,
+                        MessageUtil.INVALID_CAREER_DATE
+                );
+            }
         }
     }
 }
