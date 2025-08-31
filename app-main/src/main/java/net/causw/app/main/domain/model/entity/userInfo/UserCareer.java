@@ -31,10 +31,10 @@ public class UserCareer extends BaseEntity {
     @Column(name = "start_month", nullable = false)
     private Integer startMonth;
 
-    @Column(name = "end_year", nullable = false)
+    @Column(name = "end_year", nullable = true)
     private Integer endYear;
 
-    @Column(name = "end_month", nullable = false)
+    @Column(name = "end_month", nullable = true)
     private Integer endMonth;
 
     @Column(name = "description", nullable = false)

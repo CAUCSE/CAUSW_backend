@@ -76,7 +76,6 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
     @Mapping(target = "isPostSubscribed", source = "isPostSubscribed")
     PostResponseDto toPostResponseDtoExtended(
             Post post,
-            Page<CommentResponseDto> commentList,
             Long numComment,
             Long numPostLike,
             Long numPostFavorite,

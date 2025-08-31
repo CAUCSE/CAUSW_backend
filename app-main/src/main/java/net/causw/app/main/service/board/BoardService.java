@@ -28,7 +28,9 @@ import net.causw.app.main.dto.util.dtoMapper.CircleDtoMapper;
 import net.causw.app.main.dto.util.dtoMapper.PostDtoMapper;
 import net.causw.app.main.dto.util.dtoMapper.UserDtoMapper;
 import net.causw.app.main.infrastructure.aop.annotation.MeasureTime;
+import net.causw.app.main.service.post.PostEntityService;
 import net.causw.app.main.service.post.PostService;
+import net.causw.app.main.service.userBlock.UserBlockEntityService;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.UnauthorizedException;
@@ -70,7 +72,8 @@ public class BoardService {
     private final BoardApplyRepository boardApplyRepository;
     private final Validator validator;
     private final PostService postService;
-
+    private final UserBlockEntityService userBlockEntityService;
+    private final PostEntityService postEntityService;
 
     @Transactional(readOnly = true)
     public List<BoardResponseDto> findAllBoard(
@@ -158,10 +161,17 @@ public class BoardService {
             }
         }
 
+        Set<String> blockedUserIds = userBlockEntityService.findBlockeeUserIdsByBlocker(user);
+
         return boards.stream()
                 .map(board -> {
-                    List<PostContentDto> recentPosts = postRepository.findAllByBoard_IdAndIsDeletedOrderByCreatedAtDesc(
-                            board.getId(), PageRequest.of(0, 2), false)
+                    List<PostContentDto> recentPosts = postEntityService.findPostsByBoardWithFilters(
+                            board.getId(),
+                            false,
+                            blockedUserIds,
+                            null,
+                            PageRequest.of(0, 2)
+                        )
                             .getContent()
                             .stream()
                             .map(post -> {

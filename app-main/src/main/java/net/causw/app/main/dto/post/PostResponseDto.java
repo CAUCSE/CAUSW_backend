@@ -91,9 +91,6 @@ public class PostResponseDto {
     @Schema(description = "게시글 업데이트 시간", example = "2024-01-26T18:40:40.643Z")
     private LocalDateTime updatedAt;
 
-    @Schema(description = "게시글의 답글 정보", example = "답글에 대한 정보 조회")
-    private Page<CommentResponseDto> commentList;
-
     @Schema(description = "게시판 이름", example = "게시판 이름입니다.")
     private String boardName;
 
