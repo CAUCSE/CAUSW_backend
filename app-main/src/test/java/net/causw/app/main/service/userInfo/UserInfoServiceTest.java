@@ -64,6 +64,11 @@ class UserInfoServiceTest {
       .startYear(2023).startMonth(1).endYear(2024).endMonth(1)
       .description("CAU Company Backend Developer")
       .build();
+  
+  private final UserCareerDto currentCareerDto = UserCareerDto.builder()
+      .startYear(2024).startMonth(2).endYear(null).endMonth(null)
+      .description("Current Company Frontend Developer")
+      .build();
   private final UserCareer userCareer = UserCareer.of(
       userInfo,
       careerDto.getStartYear(), careerDto.getStartMonth(),
@@ -163,6 +168,34 @@ class UserInfoServiceTest {
       assertThatThrownBy(() -> userInfoService.update(certifiedUser.getId(), updateRequestDto, profileImage))
           .isInstanceOf(BadRequestException.class)
           .extracting("errorCode").isEqualTo(ErrorCode.ROW_ALREADY_EXIST);
+    }
+
+    @Test
+    @DisplayName("현재 재직 중인 경력 추가 성공")
+    void createCurrentCareerSuccess() {
+      // given
+      UserInfoUpdateRequestDto currentCareerRequest = UserInfoUpdateRequestDto.builder()
+          .userCareer(List.of(currentCareerDto))
+          .isPhoneNumberVisible(true)
+          .build();
+
+      UserCareer currentCareer = UserCareer.of(
+          userInfo,
+          currentCareerDto.getStartYear(), currentCareerDto.getStartMonth(),
+          null, null,
+          currentCareerDto.getDescription()
+      );
+
+      given(userCareerRepository.save(any(UserCareer.class))).willReturn(currentCareer);
+      given(userInfoRepository.findByUserId(certifiedUser.getId())).willReturn(Optional.of(userInfo));
+
+      // when
+      UserInfoResponseDto result = userInfoService.update(certifiedUser.getId(), currentCareerRequest, profileImage);
+
+      // then
+      assertThat(result).isNotNull();
+      assertThat(result.getUserId()).isEqualTo(certifiedUser.getId());
+      verify(userCareerRepository).save(any(UserCareer.class));
     }
   }
 }
