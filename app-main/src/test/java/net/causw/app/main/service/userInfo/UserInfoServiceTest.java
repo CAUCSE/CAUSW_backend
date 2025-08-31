@@ -169,5 +169,33 @@ class UserInfoServiceTest {
           .isInstanceOf(BadRequestException.class)
           .extracting("errorCode").isEqualTo(ErrorCode.ROW_ALREADY_EXIST);
     }
+
+    @Test
+    @DisplayName("현재 재직 중인 경력 추가 성공")
+    void createCurrentCareerSuccess() {
+      // given
+      UserInfoUpdateRequestDto currentCareerRequest = UserInfoUpdateRequestDto.builder()
+          .userCareer(List.of(currentCareerDto))
+          .isPhoneNumberVisible(true)
+          .build();
+
+      UserCareer currentCareer = UserCareer.of(
+          userInfo,
+          currentCareerDto.getStartYear(), currentCareerDto.getStartMonth(),
+          null, null,
+          currentCareerDto.getDescription()
+      );
+
+      given(userCareerRepository.save(any(UserCareer.class))).willReturn(currentCareer);
+      given(userInfoRepository.findByUserId(certifiedUser.getId())).willReturn(Optional.of(userInfo));
+
+      // when
+      UserInfoResponseDto result = userInfoService.update(certifiedUser.getId(), currentCareerRequest, profileImage);
+
+      // then
+      assertThat(result).isNotNull();
+      assertThat(result.getUserId()).isEqualTo(certifiedUser.getId());
+      verify(userCareerRepository).save(any(UserCareer.class));
+    }
   }
 }
