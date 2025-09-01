@@ -424,7 +424,7 @@ public class LockerService {
         // 연장 시작일 < 연장 종료일 체크
         if (!lockerExtendPeriodRequestDto.getExtendStartAt().isBefore(lockerExtendPeriodRequestDto.getExtendEndAt())) {
             throw new BadRequestException(
-                    ErrorCode.INVALID_EXTEND_PERIOD,
+                    ErrorCode.INVALID_PERIOD,
                     MessageUtil.LOCKER_INVALID_EXTEND_PERIOD
             );
         }
