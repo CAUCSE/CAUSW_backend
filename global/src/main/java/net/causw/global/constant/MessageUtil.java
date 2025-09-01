@@ -94,12 +94,14 @@ public class MessageUtil {
     public static final String LOCKER_USED = "사용 중인 사물함입니다.";
     public static final String LOCKER_DELETED = "사물함 삭제";
     public static final String LOCKER_ACTION_ERROR = "사물함 액션 실행 중 에러가 발생하였습니다.";
+    public static final String LOCKER_REGISTER_NOT_ALLOWED = "사물함 신청 기간이 아닙니다. 공지를 확인해주세요.";
     public static final String LOCKER_EXTEND_NOT_ALLOWED = "사물함 연장 신청 기간이 아닙니다. 공지를 확인해주세요.";
     public static final String LOCKER_INVALID_EXPIRE_DATE = "현재 만료일보다 이전 날짜로 설정할 수 없습니다.";
     public static final String LOCKER_EXPIRE_DATE_NOT_FOUND = "만료일 정보를 찾을 수 없습니다.";
     public static final String LOCKER_INVALID_EXTEND_PERIOD = "연장 시작일은 연장 종료일보다 이전 날짜여야 합니다.";
     public static final String LOCKER_INVALID_NEXT_EXPIRE_DATE = "다음 만료일은 현재 만료일보다 이후 날짜여야 합니다.";
     public static final String LOCKER_INVALID_REGISTER_PERIOD = "신청 시작일은 신청 종료일보다 이전 날짜여야 합니다.";
+    public static final String LOCKER_ALREADY_EXTENDED = "이미 연장된 사물함입니다.";
 
 
     // User
