@@ -399,6 +399,7 @@ public class LockerService {
         commonService.findByKeyInTextField(StaticValue.EXPIRED_AT)
                 .ifPresentOrElse(textField -> {
                             ValidatorBucket.of()
+                                    // FIXME : LockerExpiredAtValidator에서 기존값보다 이전 날짜로 변경하는 것을 막을 필요가 있는지 검토 필요 (만료일, 반납에 대한 정책 정리 필요)
                                     .consistOf(LockerExpiredAtValidator.of(
                                             LocalDateTime.parse(textField, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")),
                                             lockerExpiredAtRequestDto.getExpiredAt()))
