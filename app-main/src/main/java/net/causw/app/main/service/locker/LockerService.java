@@ -529,6 +529,13 @@ public class LockerService {
         }
     }
 
+    @Transactional
+    public void returnAndSaveLocker(Locker locker) {
+        locker.returnLocker();
+        lockerRepository.saveAndFlush(locker);
+//        lockerRepository.flush();
+    }
+
 
     // private methods
 
@@ -573,10 +580,4 @@ public class LockerService {
                 );
     }
 
-    @Transactional
-    public void returnAndSaveLocker(Locker locker) {
-        locker.returnLocker();
-        lockerRepository.saveAndFlush(locker);
-//        lockerRepository.flush();
-    }
 }
