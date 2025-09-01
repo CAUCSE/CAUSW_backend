@@ -444,43 +444,13 @@ public class LockerService {
         }
 
         // 연장 시작일 설정
-        commonService.findByKeyInTextField(StaticValue.EXTEND_START_AT)
-                .ifPresentOrElse(textField -> {
-                            commonService.updateTextField(
-                                    StaticValue.EXTEND_START_AT,
-                                    lockerExtendPeriodRequestDto.getExtendStartAt().toString()
-                            );
-                        },
-                        () -> commonService.createTextField(
-                                StaticValue.EXTEND_START_AT,
-                                lockerExtendPeriodRequestDto.getExtendStartAt().toString())
-                );
+        setOrUpdateTextField(StaticValue.EXTEND_START_AT, lockerExtendPeriodRequestDto.getExtendStartAt().toString());
 
         // 연장 종료일 설정
-        commonService.findByKeyInTextField(StaticValue.EXTEND_END_AT)
-                .ifPresentOrElse(textField -> {
-                            commonService.updateTextField(
-                                    StaticValue.EXTEND_END_AT,
-                                    lockerExtendPeriodRequestDto.getExtendEndAt().toString()
-                            );
-                        },
-                        () -> commonService.createTextField(
-                                StaticValue.EXTEND_END_AT,
-                                lockerExtendPeriodRequestDto.getExtendEndAt().toString())
-                );
+        setOrUpdateTextField(StaticValue.EXTEND_END_AT, lockerExtendPeriodRequestDto.getExtendEndAt().toString());
 
         // 다음 만료일 설정
-        commonService.findByKeyInTextField(StaticValue.NEXT_EXPIRED_AT)
-                .ifPresentOrElse(textField -> {
-                            commonService.updateTextField(
-                                    StaticValue.NEXT_EXPIRED_AT,
-                                    lockerExtendPeriodRequestDto.getNextExpiredAt().toString()
-                            );
-                        },
-                        () -> commonService.createTextField(
-                                StaticValue.NEXT_EXPIRED_AT,
-                                lockerExtendPeriodRequestDto.getNextExpiredAt().toString())
-                );
+        setOrUpdateTextField(StaticValue.NEXT_EXPIRED_AT, lockerExtendPeriodRequestDto.getNextExpiredAt().toString());
     }
 
     @Transactional
@@ -505,30 +475,10 @@ public class LockerService {
         }
 
         // 신청 시작일 설정
-        commonService.findByKeyInTextField(StaticValue.REGISTER_START_AT)
-                .ifPresentOrElse(textField -> {
-                            commonService.updateTextField(
-                                    StaticValue.REGISTER_START_AT,
-                                    lockerRegisterPeriodRequestDto.getRegisterStartAt().toString()
-                            );
-                        },
-                        () -> commonService.createTextField(
-                                StaticValue.REGISTER_START_AT,
-                                lockerRegisterPeriodRequestDto.getRegisterStartAt().toString())
-                );
+        setOrUpdateTextField(StaticValue.REGISTER_START_AT, lockerRegisterPeriodRequestDto.getRegisterStartAt().toString());
 
         // 신청 종료일 설정
-        commonService.findByKeyInTextField(StaticValue.REGISTER_END_AT)
-                .ifPresentOrElse(textField -> {
-                            commonService.updateTextField(
-                                    StaticValue.REGISTER_END_AT,
-                                    lockerRegisterPeriodRequestDto.getRegisterEndAt().toString()
-                            );
-                        },
-                        () -> commonService.createTextField(
-                                StaticValue.REGISTER_END_AT,
-                                lockerRegisterPeriodRequestDto.getRegisterEndAt().toString())
-                );
+        setOrUpdateTextField(StaticValue.REGISTER_END_AT, lockerRegisterPeriodRequestDto.getRegisterEndAt().toString());
     }
 
     @Transactional
@@ -614,6 +564,14 @@ public class LockerService {
             );
             lockerLogRepository.save(lockerLog);
         }
+    }
+
+    private void setOrUpdateTextField(String key, String value) {
+        commonService.findByKeyInTextField(key)
+                .ifPresentOrElse(
+                        textField -> commonService.updateTextField(key, value),
+                        () -> commonService.createTextField(key, value)
+                );
     }
 
     @Transactional
