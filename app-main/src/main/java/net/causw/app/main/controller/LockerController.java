@@ -171,11 +171,11 @@ public class LockerController {
     @Operation(summary = "사물함 연장 기한 설정 Api(관리자/회장 전용)", description = "사물함 연장 기한을 설정하는 API입니다.(학생회장만 가능)")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
-    public void setExtendDate(
-            @Valid @RequestBody LockerExtendDateRequestDto lockerExtendDateRequestDto,
+    public void setExtendPeriod(
+            @Valid @RequestBody LockerExtendPeriodRequestDto lockerExtendPeriodRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        this.lockerService.setExtendDate(userDetails.getUser(), lockerExtendDateRequestDto);
+        this.lockerService.setExtendPeriod(userDetails.getUser(), lockerExtendPeriodRequestDto);
     }
 
     @PostMapping(value = "/createAll")

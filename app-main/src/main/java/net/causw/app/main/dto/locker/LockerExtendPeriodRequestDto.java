@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class LockerExtendDateRequestDto {
+public class LockerExtendPeriodRequestDto {
     @NotNull(message = "연장 시작일을 입력해 주세요.")
     @Schema(description = "Extend period start date", example = "2025-09-03T00:00", requiredMode = Schema.RequiredMode.REQUIRED)
     private LocalDateTime extendStartAt;

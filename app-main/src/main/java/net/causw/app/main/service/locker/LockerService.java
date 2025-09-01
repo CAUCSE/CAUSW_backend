@@ -407,9 +407,9 @@ public class LockerService {
     }
 
     @Transactional
-    public void setExtendDate(
+    public void setExtendPeriod(
             User user,
-            LockerExtendDateRequestDto lockerExtendDateRequestDto
+            LockerExtendPeriodRequestDto lockerExtendPeriodRequestDto
     ) {
         Set<Role> roles = user.getRoles();
 
@@ -422,10 +422,10 @@ public class LockerService {
         // FIXME : 위의 Validator 관련 결정사항이 결정되면 여기 3개 모두 validator 적용 (현재는 아래 if문으로 처리)
 
         // 연장 시작일 < 연장 종료일 체크
-        if (!lockerExtendDateRequestDto.getExtendStartAt().isBefore(lockerExtendDateRequestDto.getExtendEndAt())) {
+        if (!lockerExtendPeriodRequestDto.getExtendStartAt().isBefore(lockerExtendPeriodRequestDto.getExtendEndAt())) {
             throw new BadRequestException(
-                    ErrorCode.INVALID_EXTEND_DATE,
-                    MessageUtil.LOCKER_INVALID_EXTEND_DATE
+                    ErrorCode.INVALID_EXTEND_PERIOD,
+                    MessageUtil.LOCKER_INVALID_EXTEND_PERIOD
             );
         }
 
@@ -436,7 +436,7 @@ public class LockerService {
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.LOCKER_EXPIRE_DATE_NOT_FOUND
                 ));
-        if (!currentExpiredAt.isBefore(lockerExtendDateRequestDto.getNextExpiredAt())) {
+        if (!currentExpiredAt.isBefore(lockerExtendPeriodRequestDto.getNextExpiredAt())) {
             throw new BadRequestException(
                     ErrorCode.INVALID_EXPIRE_DATE,
                     MessageUtil.LOCKER_INVALID_NEXT_EXPIRE_DATE
@@ -448,12 +448,12 @@ public class LockerService {
                 .ifPresentOrElse(textField -> {
                             commonService.updateTextField(
                                     StaticValue.EXTEND_START_AT,
-                                    lockerExtendDateRequestDto.getExtendStartAt().toString()
+                                    lockerExtendPeriodRequestDto.getExtendStartAt().toString()
                             );
                         },
                         () -> commonService.createTextField(
                                 StaticValue.EXTEND_START_AT,
-                                lockerExtendDateRequestDto.getExtendStartAt().toString())
+                                lockerExtendPeriodRequestDto.getExtendStartAt().toString())
                 );
 
         // 연장 종료일 설정
@@ -461,12 +461,12 @@ public class LockerService {
                 .ifPresentOrElse(textField -> {
                             commonService.updateTextField(
                                     StaticValue.EXTEND_END_AT,
-                                    lockerExtendDateRequestDto.getExtendEndAt().toString()
+                                    lockerExtendPeriodRequestDto.getExtendEndAt().toString()
                             );
                         },
                         () -> commonService.createTextField(
                                 StaticValue.EXTEND_END_AT,
-                                lockerExtendDateRequestDto.getExtendEndAt().toString())
+                                lockerExtendPeriodRequestDto.getExtendEndAt().toString())
                 );
 
         // 다음 만료일 설정
@@ -474,12 +474,12 @@ public class LockerService {
                 .ifPresentOrElse(textField -> {
                             commonService.updateTextField(
                                     StaticValue.NEXT_EXPIRED_AT,
-                                    lockerExtendDateRequestDto.getNextExpiredAt().toString()
+                                    lockerExtendPeriodRequestDto.getNextExpiredAt().toString()
                             );
                         },
                         () -> commonService.createTextField(
                                 StaticValue.NEXT_EXPIRED_AT,
-                                lockerExtendDateRequestDto.getNextExpiredAt().toString())
+                                lockerExtendPeriodRequestDto.getNextExpiredAt().toString())
                 );
     }
 
