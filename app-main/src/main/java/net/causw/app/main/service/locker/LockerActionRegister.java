@@ -43,7 +43,7 @@ public class LockerActionRegister implements LockerAction {
 
             lockerService.findByUserId(user.getId()).ifPresent(existingLocker -> {
                 lockerService.returnAndSaveLocker(existingLocker);
-               LockerLog lockerLog = LockerLog.of(
+                LockerLog lockerLog = LockerLog.of(
                         existingLocker.getLockerNumber(),
                         existingLocker.getLocation().getName(),
                         user.getEmail(),
@@ -59,7 +59,7 @@ public class LockerActionRegister implements LockerAction {
                 LocalDateTime.parse(commonService.findByKeyInTextField(StaticValue.EXPIRED_AT).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
-                                MessageUtil.LOCKER_RETURN_TIME_NOT_SET
+                                MessageUtil.LOCKER_EXPIRE_TIME_NOT_SET
                         )
                 ), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"))
         );

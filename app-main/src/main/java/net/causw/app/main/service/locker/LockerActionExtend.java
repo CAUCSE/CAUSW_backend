@@ -47,10 +47,10 @@ public class LockerActionExtend implements LockerAction {
                     .validate();
         }
         // 연장일 확인
-        LocalDateTime expiredAtToExtend = LocalDateTime.parse(commonService.findByKeyInTextField(StaticValue.EXPIRED_AT).orElseThrow(
+        LocalDateTime expiredAtToExtend = LocalDateTime.parse(commonService.findByKeyInTextField(StaticValue.NEXT_EXPIRED_AT).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        MessageUtil.LOCKER_RETURN_TIME_NOT_SET
+                        MessageUtil.LOCKER_NEXT_EXPIRE_TIME_NOT_SET
                 )
         ), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"));
 

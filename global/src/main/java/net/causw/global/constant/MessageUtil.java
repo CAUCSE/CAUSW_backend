@@ -89,7 +89,8 @@ public class MessageUtil {
     public static final String LOCKER_DUPLICATE_NUMBER = "중복된 사물함 번호입니다.";
     public static final String LOCKER_ALREADY_REGISTERED = "이미 등록된 사물함 위치입니다.";
     public static final String LOCKER_ALREADY_EXIST = "사물함 위치에 사물함이 존재합니다.";
-    public static final String LOCKER_RETURN_TIME_NOT_SET = "사물함 반납 시간이 설정되지 않았습니다.";
+    public static final String LOCKER_EXPIRE_TIME_NOT_SET = "사물함 만료 시간이 설정되지 않았습니다.";
+    public static final String LOCKER_NEXT_EXPIRE_TIME_NOT_SET = "사물함 다음 만료 시간이 설정되지 않았습니다.";
     public static final String LOCKER_UNUSED = "사용 중인 사물함이 아닙니다.";
     public static final String LOCKER_USED = "사용 중인 사물함입니다.";
     public static final String LOCKER_DELETED = "사물함 삭제";
