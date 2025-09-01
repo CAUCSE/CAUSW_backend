@@ -34,7 +34,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.validation.Validator;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -391,7 +390,7 @@ public class LockerService {
                             ValidatorBucket.of()
                                     // FIXME : LockerExpiredAtValidator에서 기존값보다 이전 날짜로 변경하는 것을 막을 필요가 있는지 검토 필요 (만료일, 반납에 대한 정책 정리 필요)
                                     .consistOf(LockerExpiredAtValidator.of(
-                                            LocalDateTime.parse(textField, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")),
+                                            LocalDateTime.parse(textField, StaticValue.LOCKER_DATE_TIME_FORMATTER),
                                             lockerExpiredAtRequestDto.getExpiredAt()))
                                     .validate();
 
@@ -431,7 +430,7 @@ public class LockerService {
 
         // 현재 만료일 < 다음 만료일 체크
         LocalDateTime currentExpiredAt = commonService.findByKeyInTextField(StaticValue.EXPIRED_AT)
-                .map(dateString -> LocalDateTime.parse(dateString, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")))
+                .map(dateString -> LocalDateTime.parse(dateString, StaticValue.LOCKER_DATE_TIME_FORMATTER))
                 .orElseThrow(() -> new BadRequestException(
                         ErrorCode.ROW_DOES_NOT_EXIST,
                         MessageUtil.LOCKER_EXPIRE_DATE_NOT_FOUND

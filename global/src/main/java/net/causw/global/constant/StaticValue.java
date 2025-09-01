@@ -1,5 +1,6 @@
 package net.causw.global.constant;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class StaticValue {
@@ -115,4 +116,7 @@ public class StaticValue {
     //Temp Prefix
     public static final String NO_PHONE_NUMBER_MESSAGE = "전화번호 없음";
     public static final String TEMP_PHONE_NUMBER_PREFIX = "temp-";
+
+    // Date Time Format
+    public static final DateTimeFormatter LOCKER_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
 }

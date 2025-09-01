@@ -17,7 +17,6 @@ import net.causw.app.main.domain.validation.LockerIsDeactivatedValidator;
 import net.causw.app.main.domain.validation.ValidatorBucket;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 import static net.causw.global.constant.StaticValue.LOCKER_ACCESS;
@@ -62,7 +61,7 @@ public class LockerActionRegister implements LockerAction {
                                 ErrorCode.INTERNAL_SERVER,
                                 MessageUtil.LOCKER_EXPIRE_TIME_NOT_SET
                         )
-                ), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"))
+                ), StaticValue.LOCKER_DATE_TIME_FORMATTER)
         );
 
         return Optional.of(locker);
