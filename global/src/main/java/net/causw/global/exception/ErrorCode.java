@@ -32,6 +32,7 @@ public enum ErrorCode {
     INVALID_ACADEMIC_RECORD_REQUEST_STATUS(4020, HttpStatusCodes.BAD_REQUEST),
     NOT_ALLOWED_TO_REPLY_FORM(4021, HttpStatusCodes.BAD_REQUEST),
     INVALID_BOARD_CATEGORY(4022, HttpStatusCodes.BAD_REQUEST),
+    INVALID_EXTEND_DATE(4023, HttpStatusCodes.BAD_REQUEST),
 
     /**
      * 401 Unauthorized

@@ -6,6 +6,7 @@ import net.causw.app.main.domain.model.entity.locker.Locker;
 import net.causw.app.main.domain.model.entity.locker.LockerLocation;
 import net.causw.app.main.domain.model.entity.locker.LockerLog;
 import net.causw.app.main.domain.model.entity.locker.LockerName;
+import net.causw.app.main.dto.locker.*;
 import net.causw.app.main.repository.flag.FlagRepository;
 import net.causw.app.main.repository.locker.LockerLocationRepository;
 import net.causw.app.main.repository.locker.LockerLogRepository;
@@ -13,17 +14,6 @@ import net.causw.app.main.repository.locker.LockerRepository;
 import net.causw.app.main.repository.user.UserRepository;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.service.common.CommonService;
-import net.causw.app.main.dto.locker.LockerCreateRequestDto;
-import net.causw.app.main.dto.locker.LockerExpiredAtRequestDto;
-import net.causw.app.main.dto.locker.LockerLocationCreateRequestDto;
-import net.causw.app.main.dto.locker.LockerLocationResponseDto;
-import net.causw.app.main.dto.locker.LockerLocationUpdateRequestDto;
-import net.causw.app.main.dto.locker.LockerLocationsResponseDto;
-import net.causw.app.main.dto.locker.LockerLogResponseDto;
-import net.causw.app.main.dto.locker.LockerMoveRequestDto;
-import net.causw.app.main.dto.locker.LockerResponseDto;
-import net.causw.app.main.dto.locker.LockerUpdateRequestDto;
-import net.causw.app.main.dto.locker.LockersResponseDto;
 import net.causw.app.main.infrastructure.aop.annotation.MeasureTime;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
@@ -413,6 +403,83 @@ public class LockerService {
                         () -> commonService.createTextField(
                                 StaticValue.EXPIRED_AT,
                                 lockerExpiredAtRequestDto.getExpiredAt().toString())
+                );
+    }
+
+    @Transactional
+    public void setExtendDate(
+            User user,
+            LockerExtendDateRequestDto lockerExtendDateRequestDto
+    ) {
+        Set<Role> roles = user.getRoles();
+
+        ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(UserRoleValidator.of(roles, Set.of()))
+                .validate();
+
+        // FIXME : 위의 Validator 관련 결정사항이 결정되면 여기 3개 모두 validator 적용 (현재는 아래 if문으로 처리)
+
+        // 연장 시작일 < 연장 종료일 체크
+        if (!lockerExtendDateRequestDto.getExtendStartAt().isBefore(lockerExtendDateRequestDto.getExtendEndAt())) {
+            throw new BadRequestException(
+                    ErrorCode.INVALID_EXTEND_DATE,
+                    MessageUtil.LOCKER_INVALID_EXTEND_DATE
+            );
+        }
+
+        // 현재 만료일 < 다음 만료일 체크
+        LocalDateTime currentExpiredAt = commonService.findByKeyInTextField(StaticValue.EXPIRED_AT)
+                .map(dateString -> LocalDateTime.parse(dateString, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")))
+                .orElseThrow(() -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.LOCKER_EXPIRE_DATE_NOT_FOUND
+                ));
+        if (!currentExpiredAt.isBefore(lockerExtendDateRequestDto.getNextExpiredAt())) {
+            throw new BadRequestException(
+                    ErrorCode.INVALID_EXPIRE_DATE,
+                    MessageUtil.LOCKER_INVALID_NEXT_EXPIRE_DATE
+            );
+        }
+
+        // 연장 시작일 설정
+        commonService.findByKeyInTextField(StaticValue.EXTEND_START_AT)
+                .ifPresentOrElse(textField -> {
+                            commonService.updateTextField(
+                                    StaticValue.EXTEND_START_AT,
+                                    lockerExtendDateRequestDto.getExtendStartAt().toString()
+                            );
+                        },
+                        () -> commonService.createTextField(
+                                StaticValue.EXTEND_START_AT,
+                                lockerExtendDateRequestDto.getExtendStartAt().toString())
+                );
+
+        // 연장 종료일 설정
+        commonService.findByKeyInTextField(StaticValue.EXTEND_END_AT)
+                .ifPresentOrElse(textField -> {
+                            commonService.updateTextField(
+                                    StaticValue.EXTEND_END_AT,
+                                    lockerExtendDateRequestDto.getExtendEndAt().toString()
+                            );
+                        },
+                        () -> commonService.createTextField(
+                                StaticValue.EXTEND_END_AT,
+                                lockerExtendDateRequestDto.getExtendEndAt().toString())
+                );
+
+        // 다음 만료일 설정
+        commonService.findByKeyInTextField(StaticValue.NEXT_EXPIRED_AT)
+                .ifPresentOrElse(textField -> {
+                            commonService.updateTextField(
+                                    StaticValue.NEXT_EXPIRED_AT,
+                                    lockerExtendDateRequestDto.getNextExpiredAt().toString()
+                            );
+                        },
+                        () -> commonService.createTextField(
+                                StaticValue.NEXT_EXPIRED_AT,
+                                lockerExtendDateRequestDto.getNextExpiredAt().toString())
                 );
     }
 

@@ -74,6 +74,9 @@ public class StaticValue {
 
     // Text Field
     public static final String EXPIRED_AT = "EXPIRE_DATE";
+    public static final String EXTEND_START_AT = "LOCKER_EXTEND_START_DATE";
+    public static final String EXTEND_END_AT = "LOCKER_EXTEND_END_DATE";
+    public static final String NEXT_EXPIRED_AT = "NEXT_EXPIRE";
 
     // UserAcademicRecordApplication
     public static final String USER_APPLIED = "[사용자 신청]";

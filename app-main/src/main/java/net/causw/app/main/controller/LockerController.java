@@ -3,18 +3,8 @@ package net.causw.app.main.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import net.causw.app.main.dto.locker.*;
 import net.causw.app.main.service.locker.LockerService;
-import net.causw.app.main.dto.locker.LockerExpiredAtRequestDto;
-import net.causw.app.main.dto.locker.LockerLocationsResponseDto;
-import net.causw.app.main.dto.locker.LockersResponseDto;
-import net.causw.app.main.dto.locker.LockerCreateRequestDto;
-import net.causw.app.main.dto.locker.LockerLocationCreateRequestDto;
-import net.causw.app.main.dto.locker.LockerLocationResponseDto;
-import net.causw.app.main.dto.locker.LockerLocationUpdateRequestDto;
-import net.causw.app.main.dto.locker.LockerLogResponseDto;
-import net.causw.app.main.dto.locker.LockerMoveRequestDto;
-import net.causw.app.main.dto.locker.LockerResponseDto;
-import net.causw.app.main.dto.locker.LockerUpdateRequestDto;
 import net.causw.app.main.infrastructure.security.userdetails.CustomUserDetails;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -175,6 +165,17 @@ public class LockerController {
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         this.lockerService.setExpireAt(userDetails.getUser(), lockerExpiredAtRequestDto);
+    }
+
+    @PostMapping(value = "/extend")
+    @Operation(summary = "사물함 연장 기한 설정 Api(관리자/회장 전용)", description = "사물함 연장 기한을 설정하는 API입니다.(학생회장만 가능)")
+    @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
+    public void setExtendDate(
+            @Valid @RequestBody LockerExtendDateRequestDto lockerExtendDateRequestDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        this.lockerService.setExtendDate(userDetails.getUser(), lockerExtendDateRequestDto);
     }
 
     @PostMapping(value = "/createAll")
