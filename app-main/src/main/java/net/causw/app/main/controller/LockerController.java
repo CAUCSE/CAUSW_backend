@@ -167,7 +167,7 @@ public class LockerController {
         this.lockerService.setExpireAt(userDetails.getUser(), lockerExpiredAtRequestDto);
     }
 
-    @PostMapping(value = "/extend")
+    @PostMapping(value = "/extend-period")
     @Operation(summary = "사물함 연장 기한 설정 Api(관리자/회장 전용)", description = "사물함 연장 기한을 설정하는 API입니다.(학생회장만 가능)")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
