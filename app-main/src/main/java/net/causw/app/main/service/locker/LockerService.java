@@ -499,7 +499,7 @@ public class LockerService {
         // 신청 시작일 < 신청 종료일 체크
         if (!lockerRegisterPeriodRequestDto.getRegisterStartAt().isBefore(lockerRegisterPeriodRequestDto.getRegisterEndAt())) {
             throw new BadRequestException(
-                    ErrorCode.INVALID_EXTEND_PERIOD,
+                    ErrorCode.INVALID_PERIOD,
                     MessageUtil.LOCKER_INVALID_REGISTER_PERIOD
             );
         }
