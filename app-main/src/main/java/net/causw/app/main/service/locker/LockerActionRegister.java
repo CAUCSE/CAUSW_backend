@@ -38,6 +38,7 @@ public class LockerActionRegister implements LockerAction {
 
         if (!user.getRoles().contains(Role.ADMIN)) {
             ValidatorBucket.of()
+                    // FIXME : 추후 Flag 대신 날짜 검증 로직으로 일괄 변경 요망
                     .consistOf(LockerAccessValidator.of(commonService.findByKeyInFlag(LOCKER_ACCESS).orElse(false)))
                     .validate();
 
