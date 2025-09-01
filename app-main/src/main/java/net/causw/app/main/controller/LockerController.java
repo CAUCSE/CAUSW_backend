@@ -197,4 +197,12 @@ public class LockerController {
     public void createAllLockers(@AuthenticationPrincipal CustomUserDetails userDetails){
         this.lockerService.createAllLockers(userDetails.getUser());
     }
+
+    @PostMapping(value = "/return-expired")
+    @Operation(summary = "만료된 사물함 일괄 반납 API(관리자/회장 전용)", description = "만료된 사물함을 일괄 반납 처리하는 API입니다.")
+    @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
+    public void returnExpiredLockers(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        this.lockerService.returnExpiredLockers(userDetails.getUser());
+    }
 }

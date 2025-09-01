@@ -85,6 +85,7 @@ public class MessageUtil {
     // Locker
     public static final String LOCKER_WRONG_POSITION = "등록된 사물함 위치가 아닙니다.";
     public static final String LOCKER_FIRST_CREATED = "사물함 최초 생성";
+    public static final String LOCKER_EXPIRED_ALL_RETURNED = "만료된 사물함 일괄 반납";
     public static final String LOCKER_NOT_FOUND = "사물함을 찾을 수 없습니다.";
     public static final String LOCKER_DUPLICATE_NUMBER = "중복된 사물함 번호입니다.";
     public static final String LOCKER_ALREADY_REGISTERED = "이미 등록된 사물함 위치입니다.";

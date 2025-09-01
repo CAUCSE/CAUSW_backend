@@ -8,6 +8,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import jakarta.persistence.LockModeType;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,5 +34,7 @@ public interface LockerRepository extends JpaRepository<Locker, String> {
     long countByLocationIdAndIsActiveIsTrueAndUserIdIsNull(String locationId);
 
     long countByLocationId(String locationId);
+
+    List<Locker> findAllByExpireDateBeforeAndUserIsNotNull(LocalDateTime expireDate);
 
 }

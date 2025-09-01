@@ -550,6 +550,36 @@ public class LockerService {
         createLockerByLockerLocationAndEndLockerNumber(lockerLocationFourthFloor, validatorBucket, user, 32L);
     }
 
+    @Transactional
+    public void returnExpiredLockers(User user) {
+        Set<Role> roles = user.getRoles();
+
+        ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(UserRoleValidator.of(roles, Set.of()))
+                .validate();
+
+        LocalDateTime now = LocalDateTime.now();
+
+        // 만료된 사물함 조회
+        List<Locker> expiredLockers = lockerRepository.findAllByExpireDateBeforeAndUserIsNotNull(now);
+
+        for (Locker locker : expiredLockers) {
+            this.returnAndSaveLocker(locker);
+
+            LockerLog lockerLog = LockerLog.of(
+                    locker.getLockerNumber(),
+                    locker.getLocation().getName(),
+                    user.getEmail(),
+                    user.getName(),
+                    LockerLogAction.RETURN,
+                    MessageUtil.LOCKER_EXPIRED_ALL_RETURNED
+            );
+            lockerLogRepository.save(lockerLog);
+        }
+    }
+
 
     // private methods
 
