@@ -484,6 +484,54 @@ public class LockerService {
     }
 
     @Transactional
+    public void setRegisterPeriod(
+            User user,
+            LockerRegisterPeriodRequestDto lockerRegisterPeriodRequestDto
+    ) {
+        Set<Role> roles = user.getRoles();
+
+        ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(UserRoleValidator.of(roles, Set.of()))
+                .validate();
+
+        // 신청 시작일 < 신청 종료일 체크
+        if (!lockerRegisterPeriodRequestDto.getRegisterStartAt().isBefore(lockerRegisterPeriodRequestDto.getRegisterEndAt())) {
+            throw new BadRequestException(
+                    ErrorCode.INVALID_EXTEND_PERIOD,
+                    MessageUtil.LOCKER_INVALID_REGISTER_PERIOD
+            );
+        }
+
+        // 신청 시작일 설정
+        commonService.findByKeyInTextField(StaticValue.REGISTER_START_AT)
+                .ifPresentOrElse(textField -> {
+                            commonService.updateTextField(
+                                    StaticValue.REGISTER_START_AT,
+                                    lockerRegisterPeriodRequestDto.getRegisterStartAt().toString()
+                            );
+                        },
+                        () -> commonService.createTextField(
+                                StaticValue.REGISTER_START_AT,
+                                lockerRegisterPeriodRequestDto.getRegisterStartAt().toString())
+                );
+
+        // 신청 종료일 설정
+        commonService.findByKeyInTextField(StaticValue.REGISTER_END_AT)
+                .ifPresentOrElse(textField -> {
+                            commonService.updateTextField(
+                                    StaticValue.REGISTER_END_AT,
+                                    lockerRegisterPeriodRequestDto.getRegisterEndAt().toString()
+                            );
+                        },
+                        () -> commonService.createTextField(
+                                StaticValue.REGISTER_END_AT,
+                                lockerRegisterPeriodRequestDto.getRegisterEndAt().toString())
+                );
+    }
+
+    @Transactional
     public void createAllLockers(User user) {
         ValidatorBucket validatorBucket = ValidatorBucket.of();
 

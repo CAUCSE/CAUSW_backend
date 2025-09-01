@@ -178,6 +178,18 @@ public class LockerController {
         this.lockerService.setExtendPeriod(userDetails.getUser(), lockerExtendPeriodRequestDto);
     }
 
+    @PostMapping(value = "/register-period")
+    @Operation(summary = "사물함 신청 기한 설정 Api(관리자/회장 전용)", description = "사물함 신청 기간을 설정하는 API입니다.(학생회장만 가능)")
+    @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
+    public void setRegisterPeriod(
+            @Valid @RequestBody LockerRegisterPeriodRequestDto lockerRegisterPeriodRequestDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        this.lockerService.setRegisterPeriod(userDetails.getUser(), lockerRegisterPeriodRequestDto);
+    }
+
+
     @PostMapping(value = "/createAll")
     @Operation(summary = "사물함 전체 생성 API(관리자/회장 전용)" , description = "현재 존재하는 모든 사물함을 생성하는 API입니다.")
     @ResponseStatus(value = HttpStatus.OK)

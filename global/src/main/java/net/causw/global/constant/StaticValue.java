@@ -77,6 +77,8 @@ public class StaticValue {
     public static final String EXTEND_START_AT = "LOCKER_EXTEND_START_DATE";
     public static final String EXTEND_END_AT = "LOCKER_EXTEND_END_DATE";
     public static final String NEXT_EXPIRED_AT = "NEXT_EXPIRE";
+    public static final String REGISTER_START_AT = "LOCKER_REGISTER_START_DATE";
+    public static final String REGISTER_END_AT = "LOCKER_REGISTER_END_DATE";
 
     // UserAcademicRecordApplication
     public static final String USER_APPLIED = "[사용자 신청]";
