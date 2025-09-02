@@ -66,6 +66,9 @@ dependencies {
     // Apache POI for Excel file generation
     implementation 'org.apache.poi:poi-ooxml:5.2.3'
 
+    // Apache Common CSV
+    implementation 'org.apache.commons:commons-csv:1.14.1'
+
     // Spring Batch
     implementation 'org.springframework.boot:spring-boot-starter-batch'
     implementation 'org.springframework.batch:spring-batch-core'
