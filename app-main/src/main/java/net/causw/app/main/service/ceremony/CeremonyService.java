@@ -2,7 +2,7 @@ package net.causw.app.main.service.ceremony;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import net.causw.app.main.domain.event.InitialAcademicCertificationEvent;
+import net.causw.app.main.domain.event.CertifiedUserCreatedEvent;
 import net.causw.app.main.domain.model.entity.ceremony.Ceremony;
 import net.causw.app.main.domain.model.entity.notification.CeremonyNotificationSetting;
 import net.causw.app.main.domain.model.enums.ceremony.CeremonyContext;
@@ -202,7 +202,7 @@ public class CeremonyService {
     }
 
     @EventListener // 기본 경조사 설정 생성 실패시, 학적 인증과 함께 롤백
-    public void createDefaultCeremonyNotificationSetting(InitialAcademicCertificationEvent event) {
+    public void createDefaultCeremonyNotificationSetting(CertifiedUserCreatedEvent event) {
         User user = userRepository.findById(event.userId())
             .orElseThrow(() -> new BadRequestException(
                 ErrorCode.ROW_DOES_NOT_EXIST,

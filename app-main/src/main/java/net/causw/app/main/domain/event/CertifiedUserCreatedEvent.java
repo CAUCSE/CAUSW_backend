@@ -9,4 +9,4 @@ package net.causw.app.main.domain.event;
  *
  * @param userId 학적 인증된 사용자의 ID
  */
-public record InitialAcademicCertificationEvent(String userId) {}
+public record CertifiedUserCreatedEvent(String userId) {}
