@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.validation;
 
+import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
 
@@ -29,7 +30,7 @@ public class ExtendLockerExpiredAtValidator extends AbstractValidator {
         if (src.isEqual(dst)) {
             throw new BadRequestException(
                     ErrorCode.INVALID_EXPIRE_DATE,
-                    "이미 사물함 반납을 연장하였습니다."
+                    MessageUtil.LOCKER_ALREADY_EXTENDED
             );
         }
     }

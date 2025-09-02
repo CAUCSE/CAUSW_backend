@@ -13,7 +13,6 @@ import net.causw.global.constant.StaticValue;
 import net.causw.app.main.domain.validation.*;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.Set;
 
@@ -47,12 +46,12 @@ public class LockerActionExtend implements LockerAction {
                     .validate();
         }
         // 연장일 확인
-        LocalDateTime expiredAtToExtend = LocalDateTime.parse(commonService.findByKeyInTextField(StaticValue.EXPIRED_AT).orElseThrow(
+        LocalDateTime expiredAtToExtend = LocalDateTime.parse(commonService.findByKeyInTextField(StaticValue.NEXT_EXPIRED_AT).orElseThrow(
                 () -> new InternalServerException(
                         ErrorCode.INTERNAL_SERVER,
-                        MessageUtil.LOCKER_RETURN_TIME_NOT_SET
+                        MessageUtil.LOCKER_NEXT_EXPIRE_TIME_NOT_SET
                 )
-        ), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"));
+        ), StaticValue.LOCKER_DATE_TIME_FORMATTER);
 
         Optional.ofNullable(locker.getExpireDate()).ifPresent(expiredAt ->
                 ValidatorBucket.of()

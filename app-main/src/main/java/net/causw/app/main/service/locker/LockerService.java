@@ -6,6 +6,7 @@ import net.causw.app.main.domain.model.entity.locker.Locker;
 import net.causw.app.main.domain.model.entity.locker.LockerLocation;
 import net.causw.app.main.domain.model.entity.locker.LockerLog;
 import net.causw.app.main.domain.model.entity.locker.LockerName;
+import net.causw.app.main.dto.locker.*;
 import net.causw.app.main.repository.flag.FlagRepository;
 import net.causw.app.main.repository.locker.LockerLocationRepository;
 import net.causw.app.main.repository.locker.LockerLogRepository;
@@ -13,17 +14,6 @@ import net.causw.app.main.repository.locker.LockerRepository;
 import net.causw.app.main.repository.user.UserRepository;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.service.common.CommonService;
-import net.causw.app.main.dto.locker.LockerCreateRequestDto;
-import net.causw.app.main.dto.locker.LockerExpiredAtRequestDto;
-import net.causw.app.main.dto.locker.LockerLocationCreateRequestDto;
-import net.causw.app.main.dto.locker.LockerLocationResponseDto;
-import net.causw.app.main.dto.locker.LockerLocationUpdateRequestDto;
-import net.causw.app.main.dto.locker.LockerLocationsResponseDto;
-import net.causw.app.main.dto.locker.LockerLogResponseDto;
-import net.causw.app.main.dto.locker.LockerMoveRequestDto;
-import net.causw.app.main.dto.locker.LockerResponseDto;
-import net.causw.app.main.dto.locker.LockerUpdateRequestDto;
-import net.causw.app.main.dto.locker.LockersResponseDto;
 import net.causw.app.main.infrastructure.aop.annotation.MeasureTime;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
@@ -44,7 +34,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.validation.Validator;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -399,8 +388,9 @@ public class LockerService {
         commonService.findByKeyInTextField(StaticValue.EXPIRED_AT)
                 .ifPresentOrElse(textField -> {
                             ValidatorBucket.of()
+                                    // FIXME : LockerExpiredAtValidator에서 기존값보다 이전 날짜로 변경하는 것을 막을 필요가 있는지 검토 필요 (만료일, 반납에 대한 정책 정리 필요)
                                     .consistOf(LockerExpiredAtValidator.of(
-                                            LocalDateTime.parse(textField, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")),
+                                            LocalDateTime.parse(textField, StaticValue.LOCKER_DATE_TIME_FORMATTER),
                                             lockerExpiredAtRequestDto.getExpiredAt()))
                                     .validate();
 
@@ -413,6 +403,81 @@ public class LockerService {
                                 StaticValue.EXPIRED_AT,
                                 lockerExpiredAtRequestDto.getExpiredAt().toString())
                 );
+    }
+
+    @Transactional
+    public void setExtendPeriod(
+            User user,
+            LockerExtendPeriodRequestDto lockerExtendPeriodRequestDto
+    ) {
+        Set<Role> roles = user.getRoles();
+
+        ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(UserRoleValidator.of(roles, Set.of()))
+                .validate();
+
+        // FIXME : 위의 Validator 관련 결정사항이 결정되면 여기 3개 모두 validator 적용 (현재는 아래 if문으로 처리)
+
+        // 연장 시작일 < 연장 종료일 체크
+        if (!lockerExtendPeriodRequestDto.getExtendStartAt().isBefore(lockerExtendPeriodRequestDto.getExtendEndAt())) {
+            throw new BadRequestException(
+                    ErrorCode.INVALID_PERIOD,
+                    MessageUtil.LOCKER_INVALID_EXTEND_PERIOD
+            );
+        }
+
+        // 현재 만료일 < 다음 만료일 체크
+        LocalDateTime currentExpiredAt = commonService.findByKeyInTextField(StaticValue.EXPIRED_AT)
+                .map(dateString -> LocalDateTime.parse(dateString, StaticValue.LOCKER_DATE_TIME_FORMATTER))
+                .orElseThrow(() -> new BadRequestException(
+                        ErrorCode.ROW_DOES_NOT_EXIST,
+                        MessageUtil.LOCKER_EXPIRE_DATE_NOT_FOUND
+                ));
+        if (!currentExpiredAt.isBefore(lockerExtendPeriodRequestDto.getNextExpiredAt())) {
+            throw new BadRequestException(
+                    ErrorCode.INVALID_EXPIRE_DATE,
+                    MessageUtil.LOCKER_INVALID_NEXT_EXPIRE_DATE
+            );
+        }
+
+        // 연장 시작일 설정
+        setOrUpdateTextField(StaticValue.EXTEND_START_AT, lockerExtendPeriodRequestDto.getExtendStartAt().toString());
+
+        // 연장 종료일 설정
+        setOrUpdateTextField(StaticValue.EXTEND_END_AT, lockerExtendPeriodRequestDto.getExtendEndAt().toString());
+
+        // 다음 만료일 설정
+        setOrUpdateTextField(StaticValue.NEXT_EXPIRED_AT, lockerExtendPeriodRequestDto.getNextExpiredAt().toString());
+    }
+
+    @Transactional
+    public void setRegisterPeriod(
+            User user,
+            LockerRegisterPeriodRequestDto lockerRegisterPeriodRequestDto
+    ) {
+        Set<Role> roles = user.getRoles();
+
+        ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(UserRoleValidator.of(roles, Set.of()))
+                .validate();
+
+        // 신청 시작일 < 신청 종료일 체크
+        if (!lockerRegisterPeriodRequestDto.getRegisterStartAt().isBefore(lockerRegisterPeriodRequestDto.getRegisterEndAt())) {
+            throw new BadRequestException(
+                    ErrorCode.INVALID_PERIOD,
+                    MessageUtil.LOCKER_INVALID_REGISTER_PERIOD
+            );
+        }
+
+        // 신청 시작일 설정
+        setOrUpdateTextField(StaticValue.REGISTER_START_AT, lockerRegisterPeriodRequestDto.getRegisterStartAt().toString());
+
+        // 신청 종료일 설정
+        setOrUpdateTextField(StaticValue.REGISTER_END_AT, lockerRegisterPeriodRequestDto.getRegisterEndAt().toString());
     }
 
     @Transactional
@@ -432,6 +497,43 @@ public class LockerService {
         createLockerByLockerLocationAndEndLockerNumber(lockerLocationSecondFloor, validatorBucket, user, 136L);
         createLockerByLockerLocationAndEndLockerNumber(lockerLocationThirdFloor, validatorBucket, user, 168L);
         createLockerByLockerLocationAndEndLockerNumber(lockerLocationFourthFloor, validatorBucket, user, 32L);
+    }
+
+    @Transactional
+    public void returnExpiredLockers(User user) {
+        Set<Role> roles = user.getRoles();
+
+        ValidatorBucket.of()
+                .consistOf(UserStateValidator.of(user.getState()))
+                .consistOf(UserRoleIsNoneValidator.of(roles))
+                .consistOf(UserRoleValidator.of(roles, Set.of()))
+                .validate();
+
+        LocalDateTime now = LocalDateTime.now();
+
+        // 만료된 사물함 조회
+        List<Locker> expiredLockers = lockerRepository.findAllByExpireDateBeforeAndUserIsNotNull(now);
+
+        for (Locker locker : expiredLockers) {
+            this.returnAndSaveLocker(locker);
+
+            LockerLog lockerLog = LockerLog.of(
+                    locker.getLockerNumber(),
+                    locker.getLocation().getName(),
+                    user.getEmail(),
+                    user.getName(),
+                    LockerLogAction.RETURN,
+                    MessageUtil.LOCKER_EXPIRED_ALL_RETURNED
+            );
+            lockerLogRepository.save(lockerLog);
+        }
+    }
+
+    @Transactional
+    public void returnAndSaveLocker(Locker locker) {
+        locker.returnLocker();
+        lockerRepository.saveAndFlush(locker);
+//        lockerRepository.flush();
     }
 
 
@@ -470,10 +572,12 @@ public class LockerService {
         }
     }
 
-    @Transactional
-    public void returnAndSaveLocker(Locker locker) {
-        locker.returnLocker();
-        lockerRepository.saveAndFlush(locker);
-//        lockerRepository.flush();
+    private void setOrUpdateTextField(String key, String value) {
+        commonService.findByKeyInTextField(key)
+                .ifPresentOrElse(
+                        textField -> commonService.updateTextField(key, value),
+                        () -> commonService.createTextField(key, value)
+                );
     }
+
 }

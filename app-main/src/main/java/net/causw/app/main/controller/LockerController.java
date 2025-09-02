@@ -3,18 +3,8 @@ package net.causw.app.main.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import net.causw.app.main.dto.locker.*;
 import net.causw.app.main.service.locker.LockerService;
-import net.causw.app.main.dto.locker.LockerExpiredAtRequestDto;
-import net.causw.app.main.dto.locker.LockerLocationsResponseDto;
-import net.causw.app.main.dto.locker.LockersResponseDto;
-import net.causw.app.main.dto.locker.LockerCreateRequestDto;
-import net.causw.app.main.dto.locker.LockerLocationCreateRequestDto;
-import net.causw.app.main.dto.locker.LockerLocationResponseDto;
-import net.causw.app.main.dto.locker.LockerLocationUpdateRequestDto;
-import net.causw.app.main.dto.locker.LockerLogResponseDto;
-import net.causw.app.main.dto.locker.LockerMoveRequestDto;
-import net.causw.app.main.dto.locker.LockerResponseDto;
-import net.causw.app.main.dto.locker.LockerUpdateRequestDto;
 import net.causw.app.main.infrastructure.security.userdetails.CustomUserDetails;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -177,11 +167,42 @@ public class LockerController {
         this.lockerService.setExpireAt(userDetails.getUser(), lockerExpiredAtRequestDto);
     }
 
+    @PostMapping(value = "/extend-period")
+    @Operation(summary = "사물함 연장 기한 설정 Api(관리자/회장 전용)", description = "사물함 연장 기한을 설정하는 API입니다.(학생회장만 가능)")
+    @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
+    public void setExtendPeriod(
+            @Valid @RequestBody LockerExtendPeriodRequestDto lockerExtendPeriodRequestDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        this.lockerService.setExtendPeriod(userDetails.getUser(), lockerExtendPeriodRequestDto);
+    }
+
+    @PostMapping(value = "/register-period")
+    @Operation(summary = "사물함 신청 기한 설정 Api(관리자/회장 전용)", description = "사물함 신청 기간을 설정하는 API입니다.(학생회장만 가능)")
+    @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
+    public void setRegisterPeriod(
+            @Valid @RequestBody LockerRegisterPeriodRequestDto lockerRegisterPeriodRequestDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        this.lockerService.setRegisterPeriod(userDetails.getUser(), lockerRegisterPeriodRequestDto);
+    }
+
+
     @PostMapping(value = "/createAll")
     @Operation(summary = "사물함 전체 생성 API(관리자/회장 전용)" , description = "현재 존재하는 모든 사물함을 생성하는 API입니다.")
     @ResponseStatus(value = HttpStatus.OK)
     @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
     public void createAllLockers(@AuthenticationPrincipal CustomUserDetails userDetails){
         this.lockerService.createAllLockers(userDetails.getUser());
+    }
+
+    @PostMapping(value = "/return-expired")
+    @Operation(summary = "만료된 사물함 일괄 반납 API(관리자/회장 전용)", description = "만료된 사물함을 일괄 반납 처리하는 API입니다.")
+    @ResponseStatus(value = HttpStatus.OK)
+    @PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
+    public void returnExpiredLockers(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        this.lockerService.returnExpiredLockers(userDetails.getUser());
     }
 }
