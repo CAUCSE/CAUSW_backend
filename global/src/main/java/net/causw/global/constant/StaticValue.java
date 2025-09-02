@@ -1,5 +1,6 @@
 package net.causw.global.constant;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class StaticValue {
@@ -74,6 +75,11 @@ public class StaticValue {
 
     // Text Field
     public static final String EXPIRED_AT = "EXPIRE_DATE";
+    public static final String EXTEND_START_AT = "LOCKER_EXTEND_START_DATE";
+    public static final String EXTEND_END_AT = "LOCKER_EXTEND_END_DATE";
+    public static final String NEXT_EXPIRED_AT = "NEXT_EXPIRE";
+    public static final String REGISTER_START_AT = "LOCKER_REGISTER_START_DATE";
+    public static final String REGISTER_END_AT = "LOCKER_REGISTER_END_DATE";
 
     // UserAcademicRecordApplication
     public static final String USER_APPLIED = "[사용자 신청]";
@@ -110,4 +116,7 @@ public class StaticValue {
     //Temp Prefix
     public static final String NO_PHONE_NUMBER_MESSAGE = "전화번호 없음";
     public static final String TEMP_PHONE_NUMBER_PREFIX = "temp-";
+
+    // Date Time Format
+    public static final DateTimeFormatter LOCKER_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
 }

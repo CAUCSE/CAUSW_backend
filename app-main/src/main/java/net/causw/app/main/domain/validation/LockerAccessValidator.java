@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.validation;
 
+import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
 
@@ -19,7 +20,7 @@ public class LockerAccessValidator extends AbstractValidator {
         if (!flag) {
             throw new BadRequestException(
                     ErrorCode.FLAG_NOT_AVAILABLE,
-                    "사물함 신청 기간이 아닙니다. 공지를 확인해주세요."
+                    MessageUtil.LOCKER_REGISTER_NOT_ALLOWED
             );
         }
     }

@@ -17,7 +17,6 @@ import net.causw.app.main.domain.validation.LockerIsDeactivatedValidator;
 import net.causw.app.main.domain.validation.ValidatorBucket;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 import static net.causw.global.constant.StaticValue.LOCKER_ACCESS;
@@ -38,12 +37,13 @@ public class LockerActionRegister implements LockerAction {
 
         if (!user.getRoles().contains(Role.ADMIN)) {
             ValidatorBucket.of()
+                    // FIXME : 추후 Flag 대신 날짜 검증 로직으로 일괄 변경 요망
                     .consistOf(LockerAccessValidator.of(commonService.findByKeyInFlag(LOCKER_ACCESS).orElse(false)))
                     .validate();
 
             lockerService.findByUserId(user.getId()).ifPresent(existingLocker -> {
                 lockerService.returnAndSaveLocker(existingLocker);
-               LockerLog lockerLog = LockerLog.of(
+                LockerLog lockerLog = LockerLog.of(
                         existingLocker.getLockerNumber(),
                         existingLocker.getLocation().getName(),
                         user.getEmail(),
@@ -59,9 +59,9 @@ public class LockerActionRegister implements LockerAction {
                 LocalDateTime.parse(commonService.findByKeyInTextField(StaticValue.EXPIRED_AT).orElseThrow(
                         () -> new InternalServerException(
                                 ErrorCode.INTERNAL_SERVER,
-                                MessageUtil.LOCKER_RETURN_TIME_NOT_SET
+                                MessageUtil.LOCKER_EXPIRE_TIME_NOT_SET
                         )
-                ), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"))
+                ), StaticValue.LOCKER_DATE_TIME_FORMATTER)
         );
 
         return Optional.of(locker);

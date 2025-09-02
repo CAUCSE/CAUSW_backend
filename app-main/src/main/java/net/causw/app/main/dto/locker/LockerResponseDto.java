@@ -5,9 +5,9 @@ import lombok.Getter;
 import lombok.Setter;
 import net.causw.app.main.domain.model.entity.locker.Locker;
 import net.causw.app.main.domain.model.entity.user.User;
+import net.causw.global.constant.StaticValue;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 @Getter
@@ -28,7 +28,7 @@ public class LockerResponseDto {
                 .isActive(locker.getIsActive())
                 .isMine(locker.getUser().map(User::getId).orElse("").equals(user.getId()))
                 .expireAt(Optional.ofNullable(locker.getExpireDate()).map(
-                        expire -> expire.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"))).orElse(null))
+                        expire -> expire.format(StaticValue.LOCKER_DATE_TIME_FORMATTER)).orElse(null))
                 .updatedAt(locker.getUpdatedAt())
                 .build();
     }
@@ -46,7 +46,7 @@ public class LockerResponseDto {
                 .isActive(locker.getIsActive())
                 .isMine(locker.getUser().map(User::getId).orElse("").equals(user.getId()))
                 .expireAt(Optional.ofNullable(locker.getExpireDate()).map(
-                        expire -> expire.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"))).orElse(null))
+                        expire -> expire.format(StaticValue.LOCKER_DATE_TIME_FORMATTER)).orElse(null))
                 .updatedAt(locker.getUpdatedAt())
                 .build();
     }
