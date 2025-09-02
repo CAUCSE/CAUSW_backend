@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import net.causw.app.main.dto.user.BatchRegisterResponseDto;
 import net.causw.app.main.dto.user.GraduatedUserRegisterRequestDto;
 import net.causw.app.main.service.user.UserService;
+import net.causw.global.constant.MessageUtil;
+import net.causw.global.constant.StaticValue;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.InternalServerException;
@@ -33,13 +35,19 @@ public class RegisterGraduatedUsersUseCaseService {
 
 
     public BatchRegisterResponseDto execute(MultipartFile csvFile) {
+        if (csvFile.getSize() > StaticValue.CSV_FILE_SIZE) {
+            throw new BadRequestException(
+                    ErrorCode.INVALID_PARAMETER,
+                    "CSV " + MessageUtil.FILE_SIZE_EXCEEDED
+            );
+        }
+
         int success = 0;
         int fail = 0;
         List<String> failureMessages = new ArrayList<>();
 
         List<CSVRecord> records = parse(csvFile);
 
-        int rowIndex = 1; // header 제외
         for (CSVRecord record : records) {
             try {
                 GraduatedUserRegisterRequestDto dto = toDto(record);
@@ -50,8 +58,6 @@ public class RegisterGraduatedUsersUseCaseService {
                 fail++;
                 failureMessages.add("Row " + (record.getRecordNumber() - 1) + ": " + e.getMessage());
             }
-
-            rowIndex++;
         }
 
         return new BatchRegisterResponseDto(success, fail, failureMessages);
@@ -73,7 +79,10 @@ public class RegisterGraduatedUsersUseCaseService {
                     }).toList();
 
         } catch (IOException e) {
-            throw new InternalServerException(ErrorCode.INTERNAL_SERVER, "CSV 파일을 읽을 수 없습니다.");
+            throw new InternalServerException(
+                    ErrorCode.INTERNAL_SERVER,
+                    "CSV " + MessageUtil.FILE_READ_FAIL
+            );
         }
     }
 
@@ -82,7 +91,7 @@ public class RegisterGraduatedUsersUseCaseService {
         if (!isPrivacyPolicyAccepted) {
             throw new BadRequestException(
                     ErrorCode.INVALID_PARAMETER,
-                    "개인정보 수집 동의가 필요합니다."
+                    MessageUtil.PRIVACY_POLICY_REQUIRED
             );
         }
 

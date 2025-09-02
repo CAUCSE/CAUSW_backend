@@ -47,7 +47,9 @@ public class StaticValue {
     public static final Long POST_IMAGE_SIZE = (long) (10 * 1024 * 1024);
     public static final Long CALENDAR_IMAGE_SIZE = (long) (50 * 1024 * 1024);
     public static final Long EVENT_IMAGE_SIZE = (long) (50 * 1024 * 1024);
+    public static final Long CSV_FILE_SIZE = (long) (1024 * 1024);
     public static final Long ETC_FILE_SIZE = (long) (100 * 1024 * 1024);
+
     // 파일 개수 제한
     public static final Integer MAX_NUM_USER_PROFILE_IMAGE = 1;
     public static final Integer MAX_NUM_USER_ADMISSION_IMAGE = 5;
@@ -57,6 +59,7 @@ public class StaticValue {
     public static final Integer MAX_NUM_CALENDAR_IMAGE = 1;
     public static final Integer MAX_NUM_EVENT_IMAGE = 1;
     public static final Integer MAX_NUM_ETC_FILE = 10;
+
     // 파일 확장자 제한
     public static final List<String> IMAGE_FILE_EXTENSION_LIST = List.of("JPEG", "JPG", "PNG");
 

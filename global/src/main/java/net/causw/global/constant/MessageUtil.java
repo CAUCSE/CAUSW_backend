@@ -120,6 +120,7 @@ public class MessageUtil {
     public static final String USER_INACTIVE_CAN_REJOIN = "탈퇴한 계정입니다. 계정 복구를 진행해주세요";
     public static final String USER_RECOVER_INVALID_STATE = "복구할 수 없는 계정 상태입니다.";
     public static final String USER_DELETED =  "삭제된 계정입니다. 회원가입 페이지에서 새로운 정보로 가입해주세요.";
+    public static final String PRIVACY_POLICY_REQUIRED = "개인정보 수집 동의가 필요합니다.";
 
     // Flag
     public static final String FLAG_UPDATE_FAILED = "플래그 업데이트에 실패했습니다.";
@@ -204,6 +205,7 @@ public class MessageUtil {
     public static final String INTERNAL_SERVER_ERROR = "Internal Server Error";
     public static final String FILE_UPLOAD_FAIL = "파일 업로드에 실패했습니다.";
     public static final String FILE_DELETE_FAIL = "파일 삭제에 실패했습니다.";
+    public static final String FILE_READ_FAIL = "파일을 읽을 수 없습니다.";
     public static final String FAIL_TO_GENERATE_EXCEL_FILE = "엑셀 파일 생성에 실패했습니다.";
     public static final String BATCH_FAIL = "[배치 실행에 실패했습니다.]";
 
