@@ -24,6 +24,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 import java.util.stream.StreamSupport;
 
 @Service
@@ -97,7 +98,7 @@ public class RegisterGraduatedUsersUseCaseService {
 
         return GraduatedUserRegisterRequestDto.builder()
                 .name(record.get(3).trim())
-                .nickname(record.get(3).trim())
+                .nickname("user-" + UUID.randomUUID().toString().substring(0, 8)) // 임시 닉네임
                 .admissionYear(Integer.parseInt(record.get(4).trim()))
                 .graduationYear(Integer.parseInt(record.get(5).trim()))
                 .email(record.get(6).trim())
