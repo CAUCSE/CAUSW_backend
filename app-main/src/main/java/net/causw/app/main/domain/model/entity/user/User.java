@@ -9,6 +9,7 @@ import net.causw.app.main.domain.model.entity.locker.Locker;
 import net.causw.app.main.domain.model.entity.notification.CeremonyNotificationSetting;
 import net.causw.app.main.domain.model.entity.vote.VoteRecord;
 import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.UserProfileImage;
+import net.causw.app.main.dto.user.GraduatedUserRegisterRequestDto;
 import net.causw.app.main.dto.user.UserCreateRequestDto;
 import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.model.enums.user.GraduationType;
@@ -155,6 +156,26 @@ public class User extends BaseEntity {
                 .build();
     }
 
+    public static User createGraduatedUser (
+            GraduatedUserRegisterRequestDto graduatedUserRegisterRequestDto,
+            String encodedPassword
+    ) {
+        return User.builder()
+                .email(graduatedUserRegisterRequestDto.getEmail())
+                .name(graduatedUserRegisterRequestDto.getName())
+                .roles(Set.of(Role.COMMON))
+                .state(UserState.ACTIVE)
+                .password(encodedPassword)
+                .studentId(graduatedUserRegisterRequestDto.getStudentId())
+                .admissionYear(graduatedUserRegisterRequestDto.getAdmissionYear())
+                .graduationYear(graduatedUserRegisterRequestDto.getGraduationYear())
+                .nickname(graduatedUserRegisterRequestDto.getNickname())
+                .major(graduatedUserRegisterRequestDto.getMajor())
+                .academicStatus(AcademicStatus.GRADUATED)
+                .phoneNumber(graduatedUserRegisterRequestDto.getPhoneNumber())
+                .isV2(true)
+                .build();
+    }
 
     public void update(String nickname, UserProfileImage userProfileImage, String phoneNumber) {
         this.nickname = nickname;

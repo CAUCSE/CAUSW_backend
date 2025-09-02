@@ -3,6 +3,7 @@ package net.causw.app.main.service.user;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
+import net.causw.app.main.domain.event.CertifiedUserCreatedEvent;
 import net.causw.app.main.domain.model.entity.board.Board;
 import net.causw.app.main.domain.model.entity.circle.Circle;
 import net.causw.app.main.domain.model.entity.circle.CircleMember;
@@ -67,6 +68,7 @@ import net.causw.global.exception.InternalServerException;
 import net.causw.global.exception.NotFoundException;
 import net.causw.global.exception.UnauthorizedException;
 import net.causw.app.main.infrastructure.mail.GoogleMailSender;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -74,6 +76,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.validation.Validator;
@@ -82,6 +85,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+
 @MeasureTime
 @Service
 @RequiredArgsConstructor
@@ -92,9 +96,9 @@ public class UserService {
     private final PasswordGenerator passwordGenerator;
     private final PasswordEncoder passwordEncoder;
     private final Validator validator;
+    private final ApplicationEventPublisher eventPublisher;
 
     private final UserRepository userRepository;
-    private final UserInfoRepository userInfoRepository;
     private final CircleRepository circleRepository;
     private final CircleMemberRepository circleMemberRepository;
     private final PostRepository postRepository;
@@ -606,7 +610,7 @@ public class UserService {
 
             //AWAIT, REJECT인 경우 정보 업데이트 진행
             if (state == UserState.AWAIT || state == UserState.REJECT) {
-                validateUniqueness(dto, user);
+                validateUniqueness(dto.getNickname(), dto.getPhoneNumber(), dto.getStudentId(), user);
                 user.updateInfo(dto, passwordEncoder.encode(dto.getPassword()));
                 validateUser(dto, user);
                 userRepository.save(user);
@@ -640,7 +644,7 @@ public class UserService {
                         throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.EMAIL_ALREADY_EXIST);
                     }
                 });
-                validateUniqueness(dto, ghostuser);
+                validateUniqueness(dto.getNickname(), dto.getPhoneNumber(), dto.getStudentId(), ghostuser);
                 ghostuser.updateInfo(dto, passwordEncoder.encode(dto.getPassword()));
                 validateUser(dto, ghostuser);
                 userRepository.save(ghostuser);
@@ -658,11 +662,33 @@ public class UserService {
         }
 
         // 신규 사용자 생성
-        validateUniqueness(dto, null);
+        validateUniqueness(dto.getNickname(), dto.getPhoneNumber(), dto.getStudentId(), null);
         User newUser = User.from(dto, passwordEncoder.encode(dto.getPassword()));
         validateUser(dto, newUser);
         userRepository.save(newUser);
         return UserDtoMapper.INSTANCE.toUserResponseDto(newUser, null, null);
+    }
+
+    /**
+     * 졸업생을 사용자로 등록하는 메소드
+     * <p>
+     * 가입 신청이나 학적 증빙 절차를 거치지 않고 바로 등록하며,
+     * 등록 완료 후 {@link CertifiedUserCreatedEvent} 이벤트를 발행하여 기본 리소스를 초기화합니다.
+     * {@link org.springframework.transaction.annotation.Propagation#REQUIRES_NEW}로 개별 사용자를 등록하고 즉시 커밋하여,
+     * 다른 사용자 등록에는 영향을 주지 않습니다.
+     * </p>
+     *
+     * @param dto
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void registerGraduatedUser(GraduatedUserRegisterRequestDto dto) {
+        validateEmailUniqueness(dto.getEmail(), null);
+        validateUniqueness(dto.getNickname(), dto.getPhoneNumber(), dto.getStudentId(), null);
+
+        User registeredUser = userRepository.save(
+                User.createGraduatedUser(dto, passwordEncoder.encode(dto.getPassword())));
+
+        eventPublisher.publishEvent(new CertifiedUserCreatedEvent(registeredUser.getId()));
     }
 
     // 유효성 검사 메서드
@@ -1079,15 +1105,17 @@ public class UserService {
      * 사용자 정보의 유일성을 검증하는 헬퍼 메소드.
      * DB에 저장하기 전에 호출, 애플리케이션 단에서 미리 중복 확인
      *
-     * @param dto         새로 가입 또는 수정하려는 정보
+     * @param nickName
+     * @param phoneNumber
+     * @param studentId
      * @param currentUser 정보를 수정하려는 기존 사용자 (신규 가입 시에는 null)
      */
-    private void validateUniqueness(UserCreateRequestDto dto, User currentUser) {
-        validateNicknameUniqueness(dto.getNickname(), currentUser);
-        validatePhoneNumberUniqueness(dto.getPhoneNumber(), currentUser);
+    private void validateUniqueness(String nickName, String phoneNumber, String studentId, User currentUser) {
+        validateNicknameUniqueness(nickName, currentUser);
+        validatePhoneNumberUniqueness(phoneNumber, currentUser);
 
-        if (dto.getStudentId() != null) {
-            validateStudentIdUniqueness(dto.getStudentId(), currentUser);
+        if (studentId != null) {
+            validateStudentIdUniqueness(studentId, currentUser);
         }
     }
 
@@ -1132,6 +1160,23 @@ public class UserService {
                     throw new BadRequestException(
                             ErrorCode.ROW_ALREADY_EXIST,
                             MessageUtil.STUDENT_ID_ALREADY_EXIST);
+
+                } else if (foundUser.getState() == UserState.DROP) {
+                    throw new BadRequestException(
+                            ErrorCode.ROW_ALREADY_EXIST,
+                            MessageUtil.USER_DROPPED_CONTACT_EMAIL);
+                }
+            }
+        });
+    }
+
+    private void validateEmailUniqueness(String email, User currentUser) {
+        userRepository.findByEmail(email).ifPresent(foundUser -> {
+            if (currentUser == null || !foundUser.getId().equals(currentUser.getId())) {
+                if (foundUser.getState() == UserState.ACTIVE || foundUser.getState() == UserState.INACTIVE) {
+                    throw new BadRequestException(
+                            ErrorCode.ROW_ALREADY_EXIST,
+                            MessageUtil.EMAIL_ALREADY_EXIST);
 
                 } else if (foundUser.getState() == UserState.DROP) {
                     throw new BadRequestException(
@@ -1717,5 +1762,6 @@ public class UserService {
                 refreshToken
         );
     }
+
 
 }
