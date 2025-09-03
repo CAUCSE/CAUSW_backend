@@ -1,6 +1,7 @@
 package net.causw.app.main.service.user.useCase;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.causw.app.main.dto.user.BatchRegisterResponseDto;
 import net.causw.app.main.dto.user.GraduatedUserRegisterRequestDto;
 import net.causw.app.main.service.user.UserService;
@@ -30,6 +31,7 @@ import java.util.stream.StreamSupport;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class RegisterGraduatedUsersUseCaseService {
 
     private static final int PRIVACY_POLICY_COLUMN = 2;
@@ -44,12 +46,7 @@ public class RegisterGraduatedUsersUseCaseService {
     private final UserService userService;
 
     public BatchRegisterResponseDto execute(MultipartFile csvFile) {
-        if (csvFile.getSize() > StaticValue.CSV_FILE_SIZE) {
-            throw new BadRequestException(
-                    ErrorCode.INVALID_PARAMETER,
-                    "CSV " + MessageUtil.FILE_SIZE_EXCEEDED
-            );
-        }
+        validateCsvFileSize(csvFile);
 
         int success = 0;
         int fail = 0;
@@ -61,15 +58,28 @@ public class RegisterGraduatedUsersUseCaseService {
             try {
                 GraduatedUserRegisterRequestDto dto = toDto(record);
                 userService.registerGraduatedUser(dto);
+
                 success++;
 
             } catch (Exception e) {
+                String message = "Row " + (record.getRecordNumber() - 1) + ": " + e.getMessage();
+                failureMessages.add(message);
+                log.warn("CSV 파일로 졸업생 등록 실패 - {}", message, e);
+
                 fail++;
-                failureMessages.add("Row " + (record.getRecordNumber() - 1) + ": " + e.getMessage());
             }
         }
 
         return new BatchRegisterResponseDto(success, fail, failureMessages);
+    }
+
+    private static void validateCsvFileSize(MultipartFile csvFile) {
+        if (csvFile.getSize() > StaticValue.CSV_FILE_SIZE) {
+            throw new BadRequestException(
+                    ErrorCode.INVALID_PARAMETER,
+                    "CSV " + MessageUtil.FILE_SIZE_EXCEEDED
+            );
+        }
     }
 
     private List<CSVRecord> parse(MultipartFile csvFile) {
@@ -80,7 +90,7 @@ public class RegisterGraduatedUsersUseCaseService {
                     DateTimeFormatter.ofPattern("yyyy/MM/dd h:mm:ss a", Locale.KOREAN);
 
             return StreamSupport.stream(csvParser.spliterator(), false)
-                    .skip(1) // 헤더 무시
+                    .skip(1) // 헤더 제외
                     .sorted((r1, r2) -> {
                         LocalDateTime t1 = LocalDateTime.parse(r1.get(0).split("GMT")[0].trim(), formatter);
                         LocalDateTime t2 = LocalDateTime.parse(r2.get(0).split("GMT")[0].trim(), formatter);
