@@ -682,11 +682,11 @@ public class UserService {
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void registerGraduatedUser(GraduatedUserRegisterRequestDto dto) {
-        validateEmailUniqueness(dto.getEmail(), null);
-        validateUniqueness(dto.getNickname(), dto.getPhoneNumber(), dto.getStudentId(), null);
+        validateEmailUniqueness(dto.email(), null);
+        validateUniqueness(dto.nickname(), dto.phoneNumber(), dto.studentId(), null);
 
         User registeredUser = userRepository.save(
-                User.createGraduatedUser(dto, passwordEncoder.encode(dto.getPassword())));
+                User.createGraduatedUser(dto.toCreateGraduatedUserCommand(), passwordEncoder.encode(dto.password())));
 
         eventPublisher.publishEvent(new CertifiedUserCreatedEvent(registeredUser.getId()));
     }

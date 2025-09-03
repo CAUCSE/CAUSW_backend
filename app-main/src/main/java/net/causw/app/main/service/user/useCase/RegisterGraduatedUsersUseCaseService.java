@@ -32,8 +32,16 @@ import java.util.stream.StreamSupport;
 @Transactional
 public class RegisterGraduatedUsersUseCaseService {
 
-    private final UserService userService;
+    private static final int PRIVACY_POLICY_COLUMN = 2;
+    private static final int NAME_COLUMN = 3;
+    private static final int ADMISSION_YEAR_COLUMN = 4;
+    private static final int GRADUATION_YEAR_COLUMN = 5;
+    private static final int EMAIL_COLUMN = 6;
+    private static final int PHONE_NUMBER_COLUMN = 7;
+    private static final int MAJOR_COLUMN = 8;
+    private static final int STUDENT_ID_COLUMN = 9;
 
+    private final UserService userService;
 
     public BatchRegisterResponseDto execute(MultipartFile csvFile) {
         if (csvFile.getSize() > StaticValue.CSV_FILE_SIZE) {
@@ -88,7 +96,7 @@ public class RegisterGraduatedUsersUseCaseService {
     }
 
     private GraduatedUserRegisterRequestDto toDto(CSVRecord record) {
-        boolean isPrivacyPolicyAccepted = record.get(2).trim().equals("동의");
+        boolean isPrivacyPolicyAccepted = record.get(PRIVACY_POLICY_COLUMN).trim().equals("동의");
         if (!isPrivacyPolicyAccepted) {
             throw new BadRequestException(
                     ErrorCode.INVALID_PARAMETER,
@@ -96,16 +104,16 @@ public class RegisterGraduatedUsersUseCaseService {
             );
         }
 
-        return GraduatedUserRegisterRequestDto.builder()
-                .name(record.get(3).trim())
-                .nickname("user-" + UUID.randomUUID().toString().substring(0, 8)) // 임시 닉네임
-                .admissionYear(Integer.parseInt(record.get(4).trim()))
-                .graduationYear(Integer.parseInt(record.get(5).trim()))
-                .email(record.get(6).trim())
-                .password(record.get(6).trim()) // 임시 비밀번호
-                .phoneNumber(record.get(7).trim())
-                .major(record.get(8).trim())
-                .studentId(record.get(9).trim().isEmpty() ? null : record.get(9).trim())
-                .build();
+        return new GraduatedUserRegisterRequestDto(
+                record.get(NAME_COLUMN).trim(),
+                "user-" + UUID.randomUUID().toString().substring(0, 8), // 임시 닉네임
+                Integer.parseInt(record.get(ADMISSION_YEAR_COLUMN).trim()),
+                Integer.parseInt(record.get(GRADUATION_YEAR_COLUMN).trim()),
+                record.get(EMAIL_COLUMN).trim(),
+                record.get(EMAIL_COLUMN).trim(), // 임시 비밀번호
+                record.get(PHONE_NUMBER_COLUMN).trim(),
+                record.get(MAJOR_COLUMN).trim(),
+                record.get(STUDENT_ID_COLUMN).trim().isEmpty() ? null : record.get(9).trim()
+        );
     }
 }

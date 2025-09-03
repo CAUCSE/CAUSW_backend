@@ -9,7 +9,7 @@ import net.causw.app.main.domain.model.entity.locker.Locker;
 import net.causw.app.main.domain.model.entity.notification.CeremonyNotificationSetting;
 import net.causw.app.main.domain.model.entity.vote.VoteRecord;
 import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.UserProfileImage;
-import net.causw.app.main.dto.user.GraduatedUserRegisterRequestDto;
+import net.causw.app.main.dto.user.CreateGraduatedUserCommand;
 import net.causw.app.main.dto.user.UserCreateRequestDto;
 import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.model.enums.user.GraduationType;
@@ -157,22 +157,22 @@ public class User extends BaseEntity {
     }
 
     public static User createGraduatedUser (
-            GraduatedUserRegisterRequestDto graduatedUserRegisterRequestDto,
+            CreateGraduatedUserCommand createGraduatedUserCommand,
             String encodedPassword
     ) {
         return User.builder()
-                .email(graduatedUserRegisterRequestDto.getEmail())
-                .name(graduatedUserRegisterRequestDto.getName())
+                .email(createGraduatedUserCommand.email())
+                .name(createGraduatedUserCommand.name())
                 .roles(Set.of(Role.COMMON))
                 .state(UserState.ACTIVE)
                 .password(encodedPassword)
-                .studentId(graduatedUserRegisterRequestDto.getStudentId())
-                .admissionYear(graduatedUserRegisterRequestDto.getAdmissionYear())
-                .graduationYear(graduatedUserRegisterRequestDto.getGraduationYear())
-                .nickname(graduatedUserRegisterRequestDto.getNickname())
-                .major(graduatedUserRegisterRequestDto.getMajor())
+                .studentId(createGraduatedUserCommand.studentId())
+                .admissionYear(createGraduatedUserCommand.admissionYear())
+                .graduationYear(createGraduatedUserCommand.graduationYear())
+                .nickname(createGraduatedUserCommand.nickname())
+                .major(createGraduatedUserCommand.major())
                 .academicStatus(AcademicStatus.GRADUATED)
-                .phoneNumber(graduatedUserRegisterRequestDto.getPhoneNumber())
+                .phoneNumber(createGraduatedUserCommand.phoneNumber())
                 .isV2(true)
                 .build();
     }

@@ -4,40 +4,46 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
-import lombok.*;
 
-@Getter
-@Setter
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-public class GraduatedUserRegisterRequestDto {
+public record GraduatedUserRegisterRequestDto(
+        @NotBlank
+        String name,
 
-    @Email
-    @NotBlank
-    private String email;
+        @NotBlank
+        String nickname,
 
-    @NotBlank
-    private String name;
+        @NotNull
+        Integer admissionYear,
 
-    @NotBlank
-    private String password;
+        @NotNull
+        Integer graduationYear,
 
-    private String studentId;
+        @Email
+        @NotBlank
+        String email,
 
-    @NotNull
-    private Integer admissionYear;
+        @NotBlank
+        String password,
 
-    @NotNull
-    private Integer graduationYear;
+        @NotBlank
+        @Pattern(regexp = "^01(?:0|1|[6-9])-(\\d{3}|\\d{4})-\\d{4}$", message = "전화번호 형식에 맞지 않습니다.")
+        String phoneNumber,
 
-    @NotBlank
-    private String nickname;
+        @NotBlank
+        String major,
 
-    @NotBlank
-    private String major;
-
-    @NotBlank
-    @Pattern(regexp = "^01(?:0|1|[6-9])-(\\d{3}|\\d{4})-\\d{4}$", message = "전화번호 형식에 맞지 않습니다.")
-    private String phoneNumber;
+        String studentId
+) {
+    public CreateGraduatedUserCommand toCreateGraduatedUserCommand() {
+        return new CreateGraduatedUserCommand(
+                this.email,
+                this.name,
+                this.studentId,
+                this.admissionYear,
+                this.graduationYear,
+                this.nickname,
+                this.major,
+                this.phoneNumber
+        );
+    }
 }
