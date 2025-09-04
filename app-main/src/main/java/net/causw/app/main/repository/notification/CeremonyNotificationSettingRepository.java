@@ -19,25 +19,25 @@ public interface CeremonyNotificationSettingRepository extends JpaRepository<Cer
 	boolean existsByUser(User user);
 
 	@Query("""
-			SELECT DISTINCT c
-			FROM CeremonyNotificationSetting c
-			WHERE (:admissionYear MEMBER OF c.subscribedAdmissionYears OR c.isSetAll = true)
-			AND (:#{#blockerUserIds.size()} = 0 OR c.user.id NOT IN :blockerUserIds)
-			"""
+		SELECT DISTINCT c
+		FROM CeremonyNotificationSetting c
+		WHERE (:admissionYear MEMBER OF c.subscribedAdmissionYears OR c.isSetAll = true)
+		AND (:#{#blockerUserIds.size()} = 0 OR c.user.id NOT IN :blockerUserIds)
+		"""
 	)
 	List<CeremonyNotificationSetting> findByAdmissionYearOrSetAll(
-        @Param("admissionYear") Integer admissionYear,
+		@Param("admissionYear") Integer admissionYear,
 		@Param("blockerUserIds") Set<String> blockerUserIds
-    );
+	);
 
 	@Query("""
-            SELECT DISTINCT c FROM CeremonyNotificationSetting c
-            WHERE EXISTS (SELECT 1 FROM c.subscribedAdmissionYears s WHERE s IN :admissionYears) OR c.isSetAll = true
-            AND (:#{#blockerUserIds.size()} = 0 OR c.user.id NOT IN :blockerUserIds)
-            """
-    )
+		SELECT DISTINCT c FROM CeremonyNotificationSetting c
+		WHERE EXISTS (SELECT 1 FROM c.subscribedAdmissionYears s WHERE s IN :admissionYears) OR c.isSetAll = true
+		AND (:#{#blockerUserIds.size()} = 0 OR c.user.id NOT IN :blockerUserIds)
+		"""
+	)
 	List<CeremonyNotificationSetting> findByAdmissionYearsIn(
-        @Param("admissionYears") List<Integer> admissionYears,
-        @Param("blockerUserIds") Set<String> blockerUserIds
-    );
+		@Param("admissionYears") List<Integer> admissionYears,
+		@Param("blockerUserIds") Set<String> blockerUserIds
+	);
 }

@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class BoardNameCheckResponseDto {
-    Boolean isPresent;
+	Boolean isPresent;
 }

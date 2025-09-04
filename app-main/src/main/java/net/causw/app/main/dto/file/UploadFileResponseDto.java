@@ -8,11 +8,11 @@ import lombok.Setter;
 @Setter
 @Builder
 public class UploadFileResponseDto {
-    private String path;
+	private String path;
 
-    public static UploadFileResponseDto from(String path) {
-        return UploadFileResponseDto.builder()
-                .path(path)
-                .build();
-    }
+	public static UploadFileResponseDto from(String path) {
+		return UploadFileResponseDto.builder()
+			.path(path)
+			.build();
+	}
 }

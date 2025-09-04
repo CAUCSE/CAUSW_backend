@@ -12,7 +12,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class LockerMoveRequestDto {
 
-    @NotBlank(message = "사물함 위치 id(locker location id)를 입력해 주세요. locker id와 다릅니다.")
-    private String lockerLocationId;
+	@NotBlank(message = "사물함 위치 id(locker location id)를 입력해 주세요. locker id와 다릅니다.")
+	private String lockerLocationId;
 
 }

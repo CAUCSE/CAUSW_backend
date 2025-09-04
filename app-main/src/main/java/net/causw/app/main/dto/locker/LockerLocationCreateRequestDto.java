@@ -11,6 +11,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LockerLocationCreateRequestDto {
-    @NotBlank(message = "사물함 위치 이름을 입력해 주세요.")
-    private String name;
+	@NotBlank(message = "사물함 위치 이름을 입력해 주세요.")
+	private String name;
 }

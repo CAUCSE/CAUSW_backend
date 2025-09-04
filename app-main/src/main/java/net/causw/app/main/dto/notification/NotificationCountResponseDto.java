@@ -11,7 +11,7 @@ import lombok.Setter;
 @Builder
 @AllArgsConstructor
 public class NotificationCountResponseDto {
-    @Schema(description = "읽지 않은 알림 개수", example = "1, 2, 3,...")
-    private Integer notificationLogCount;
+	@Schema(description = "읽지 않은 알림 개수", example = "1, 2, 3,...")
+	private Integer notificationLogCount;
 }
 

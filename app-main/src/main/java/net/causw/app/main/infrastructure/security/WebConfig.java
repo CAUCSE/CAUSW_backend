@@ -9,15 +9,15 @@ import java.util.List;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
-    private OctetStreamReadMsgConverter octetStreamReadMsgConverter;
+	private OctetStreamReadMsgConverter octetStreamReadMsgConverter;
 
-    @Autowired
-    public WebConfig(OctetStreamReadMsgConverter octetStreamReadMsgConverter) {
-        this.octetStreamReadMsgConverter = octetStreamReadMsgConverter;
-    }
+	@Autowired
+	public WebConfig(OctetStreamReadMsgConverter octetStreamReadMsgConverter) {
+		this.octetStreamReadMsgConverter = octetStreamReadMsgConverter;
+	}
 
-    @Override
-    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-        converters.add(octetStreamReadMsgConverter);
-    }
+	@Override
+	public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+		converters.add(octetStreamReadMsgConverter);
+	}
 }

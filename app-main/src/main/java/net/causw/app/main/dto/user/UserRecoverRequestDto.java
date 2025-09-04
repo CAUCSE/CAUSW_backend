@@ -14,8 +14,8 @@ import lombok.Setter;
 @NoArgsConstructor
 public class UserRecoverRequestDto {
 
-    @Email(message = "이메일 형식에 맞지 않습니다.")
-    @NotBlank(message = "이메일을 입력해 주세요.")
-    @Schema(description = "이메일", example = "yebin@cau.ac.kr")
-    private String email;
+	@Email(message = "이메일 형식에 맞지 않습니다.")
+	@NotBlank(message = "이메일을 입력해 주세요.")
+	@Schema(description = "이메일", example = "yebin@cau.ac.kr")
+	private String email;
 }
