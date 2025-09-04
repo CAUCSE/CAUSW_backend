@@ -22,11 +22,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.StreamSupport;
 
@@ -55,6 +54,7 @@ public class RegisterGraduatedUsersUseCaseService {
 		List<String> failureMessages = new ArrayList<>();
 
 		List<CSVRecord> records = parse(csvFile);
+		validateCsvRecordDuplicates(records);
 
 		for (CSVRecord record : records) {
 			try {
@@ -84,20 +84,52 @@ public class RegisterGraduatedUsersUseCaseService {
 		}
 	}
 
+	/**
+	 * 이메일, 전화번호, 학번 컬럼을 기준으로 사용자 정보 중복을 감지합니다.
+	 *
+	 * @param records
+	 */
+	private void validateCsvRecordDuplicates(List<CSVRecord> records) {
+		Set<String> emailSet = new HashSet<>();
+		Set<String> phoneNumberSet = new HashSet<>();
+		Set<String> studentIdSet = new HashSet<>();
+
+		for (CSVRecord record : records) {
+			String rowLabel = "Row " + (record.getRecordNumber() - 1) + ": ";
+
+			String email = record.get(EMAIL_COLUMN).trim();
+			if (!email.isEmpty() && !emailSet.add(email)) {
+				throw new BadRequestException(
+					ErrorCode.INVALID_PARAMETER,
+					rowLabel + MessageUtil.EMAIL_ALREADY_EXIST
+				);
+			}
+
+			String phoneNumber = record.get(PHONE_NUMBER_COLUMN).trim();
+			if (!phoneNumber.isEmpty() && !phoneNumberSet.add(phoneNumber)) {
+				throw new BadRequestException(
+					ErrorCode.INVALID_PARAMETER,
+					rowLabel + MessageUtil.PHONE_NUMBER_ALREADY_EXIST
+				);
+			}
+
+			String studentId = record.get(STUDENT_ID_COLUMN).trim();
+			if (!studentId.isEmpty() && !studentIdSet.add(studentId)) {
+				throw new BadRequestException(
+					ErrorCode.INVALID_PARAMETER,
+					rowLabel + MessageUtil.STUDENT_ID_ALREADY_EXIST
+				);
+			}
+		}
+	}
+
 	private List<CSVRecord> parse(MultipartFile csvFile) {
 		try (Reader reader = new InputStreamReader(csvFile.getInputStream());
 			 CSVParser csvParser = CSVParser.parse(reader, CSVFormat.DEFAULT)
 		) {
-			DateTimeFormatter formatter =
-				DateTimeFormatter.ofPattern("yyyy/MM/dd h:mm:ss a", Locale.KOREAN);
-
 			return StreamSupport.stream(csvParser.spliterator(), false)
 				.skip(1) // 헤더 제외
-				.sorted((r1, r2) -> {
-					LocalDateTime t1 = LocalDateTime.parse(r1.get(0).split("GMT")[0].trim(), formatter);
-					LocalDateTime t2 = LocalDateTime.parse(r2.get(0).split("GMT")[0].trim(), formatter);
-					return t2.compareTo(t1); // 최신 등록순 정렬
-				}).toList();
+				.toList();
 
 		} catch (IOException e) {
 			throw new InternalServerException(
