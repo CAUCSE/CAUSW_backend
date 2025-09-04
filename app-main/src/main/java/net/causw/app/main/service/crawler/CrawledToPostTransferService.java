@@ -82,15 +82,11 @@ public class CrawledToPostTransferService {
 		// Post 변환 시점에서 첨부파일 링크 추가
 		String contentHtml = buildContentWithAttachmentsAndLink(notice);
 
-		// 제목으로 기존 게시글 조회
-		Post existingPost = findExistingPostByTitle(board, title);
-
-		Post postToSave;	// 저장할 Post 객체
-
-		if (existingPost != null) {
+		Post postToSave = findExistingPostByTitle(board, title);
+		// 기존 게시글이 존재하는지 확인
+		if (postToSave != null) {
 			// 기존 Post 업데이트
-			existingPost.update(title, contentHtml, existingPost.getForm(), existingPost.getPostAttachImageList());
-			postToSave = existingPost;
+			postToSave.update(title, contentHtml, postToSave.getForm(), postToSave.getPostAttachImageList());
 		} else {
 			// 새 Post 생성
 			postToSave = Post.of(
