@@ -85,12 +85,15 @@ public class CrawledToPostTransferService {
 		// 제목으로 기존 게시글 조회
 		Post existingPost = findExistingPostByTitle(board, title);
 
+		Post postToSave;	// 저장할 Post 객체
+
 		if (existingPost != null) {
 			// 기존 Post 업데이트
 			existingPost.update(title, contentHtml, existingPost.getForm(), existingPost.getPostAttachImageList());
+			postToSave = existingPost;
 		} else {
 			// 새 Post 생성
-			existingPost = Post.of(
+			postToSave = Post.of(
 				title,
 				contentHtml,
 				adminUser,
@@ -101,10 +104,10 @@ public class CrawledToPostTransferService {
 				new ArrayList<>()
 			);
 		}
-		postRepository.save(existingPost);
+		postRepository.save(postToSave);
 
 		// 알림 전송
-		boardNotificationService.sendByBoardIsSubscribed(board, existingPost);
+		boardNotificationService.sendByBoardIsSubscribed(board, postToSave);
 		return true;
 	}
 
