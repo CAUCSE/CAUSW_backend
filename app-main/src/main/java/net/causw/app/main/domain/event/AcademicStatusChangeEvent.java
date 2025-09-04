@@ -9,4 +9,5 @@ import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
  * @param oldStatus 변경 전 학적 상태
  * @param newStatus 변경 후 학적 상태
  */
-public record AcademicStatusChangeEvent(String userId, AcademicStatus oldStatus, AcademicStatus newStatus) {}
+public record AcademicStatusChangeEvent(String userId, AcademicStatus oldStatus, AcademicStatus newStatus) {
+}

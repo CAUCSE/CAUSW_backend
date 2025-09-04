@@ -12,13 +12,13 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CommentCreateRequestDto {
-    @NotBlank(message = "댓글 내용을 입력해 주세요.")
-    private String content;
+	@NotBlank(message = "댓글 내용을 입력해 주세요.")
+	private String content;
 
-    @NotBlank(message = "게시물 id를 입력해 주세요.")
-    private String postId;
+	@NotBlank(message = "게시물 id를 입력해 주세요.")
+	private String postId;
 
-    @Schema(description = "익명글 여부", example = "False")
-    private Boolean isAnonymous;
+	@Schema(description = "익명글 여부", example = "False")
+	private Boolean isAnonymous;
 
 }

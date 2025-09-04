@@ -1,16 +1,14 @@
 package net.causw.app.main.repository.post;
 
-import net.causw.app.main.domain.model.entity.post.FavoritePost;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.security.core.parameters.P;
 
-import java.util.Optional;
-import java.util.Set;
+import net.causw.app.main.domain.model.entity.post.FavoritePost;
 
 public interface FavoritePostRepository extends JpaRepository<FavoritePost, String> {
 	Boolean existsByPostIdAndUserId(String postId, String userId);
