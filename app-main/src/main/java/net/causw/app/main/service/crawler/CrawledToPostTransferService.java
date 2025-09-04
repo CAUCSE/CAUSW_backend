@@ -15,6 +15,7 @@ import net.causw.app.main.repository.board.BoardRepository;
 import net.causw.app.main.repository.crawled.CrawledNoticeRepository;
 import net.causw.app.main.repository.post.PostRepository;
 import net.causw.app.main.repository.user.UserRepository;
+import net.causw.app.main.service.notification.BoardNotificationService;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;
 import net.causw.global.exception.BadRequestException;
@@ -31,6 +32,7 @@ public class CrawledToPostTransferService {
 	private final PostRepository postRepository;
 	private final UserRepository userRepository;
 	private final BoardRepository boardRepository;
+	private final BoardNotificationService boardNotificationService;
 
 	//크롤링 된 공지를 게시글로 반환
 	@Transactional
@@ -80,17 +82,14 @@ public class CrawledToPostTransferService {
 		// Post 변환 시점에서 첨부파일 링크 추가
 		String contentHtml = buildContentWithAttachmentsAndLink(notice);
 
-		// 제목으로 기존 게시글 조회
-		Post existingPost = findExistingPostByTitle(board, title);
-
-		if (existingPost != null) {
+		Post postToSave = findExistingPostByTitle(board, title);
+		// 기존 게시글이 존재하는지 확인
+		if (postToSave != null) {
 			// 기존 Post 업데이트
-			existingPost.update(title, contentHtml, existingPost.getForm(), existingPost.getPostAttachImageList());
-			postRepository.save(existingPost);
-			return true;
+			postToSave.update(title, contentHtml, postToSave.getForm(), postToSave.getPostAttachImageList());
 		} else {
 			// 새 Post 생성
-			Post post = Post.of(
+			postToSave = Post.of(
 				title,
 				contentHtml,
 				adminUser,
@@ -100,9 +99,12 @@ public class CrawledToPostTransferService {
 				null,
 				new ArrayList<>()
 			);
-			postRepository.save(post);
-			return true;
 		}
+		postRepository.save(postToSave);
+
+		// 알림 전송
+		boardNotificationService.sendByBoardIsSubscribed(board, postToSave);
+		return true;
 	}
 
 	//본문 내용에 첨부파일 링크를 추가하여 반환

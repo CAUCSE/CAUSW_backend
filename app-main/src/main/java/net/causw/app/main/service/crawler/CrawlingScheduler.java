@@ -13,16 +13,16 @@ public class CrawlingScheduler {
 	private final CrawlingAndSavingService crawlingAndSavingService;
 	private final CrawledToPostTransferService crawledToPostTransferService;
 
-	//새벽 3시 - 크롤링 및 저장
+	//정시 - 크롤링 및 저장
 	//    @Scheduled(fixedRate = 10000)
-	@Scheduled(cron = "0 0 3 * * *") // 새벽 3시
+	@Scheduled(cron = "0 0 */1 * * *") // 매 1시간 (정시)
 	public void crawlAndSave() {
 		crawlingAndSavingService.crawlAndDetectUpdates();
 	}
 
-	//새벽 4시 - 게시글 변환
+	//5분 후 - 게시글 변환
 	//    @Scheduled(fixedRate = 10000)
-	@Scheduled(cron = "0 0 4 * * *") // 새벽 4시
+	@Scheduled(cron = "0 5 */1 * * *") // 매 1시간 5분 후
 	public void transferToPosts() {
 		crawledToPostTransferService.transferToPosts();
 	}

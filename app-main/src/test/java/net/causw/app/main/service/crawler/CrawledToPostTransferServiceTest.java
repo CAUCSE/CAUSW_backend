@@ -24,6 +24,7 @@ import net.causw.app.main.repository.board.BoardRepository;
 import net.causw.app.main.repository.crawled.CrawledNoticeRepository;
 import net.causw.app.main.repository.post.PostRepository;
 import net.causw.app.main.repository.user.UserRepository;
+import net.causw.app.main.service.notification.BoardNotificationService;
 import net.causw.global.constant.StaticValue;
 
 @ExtendWith(MockitoExtension.class)
@@ -45,6 +46,9 @@ public class CrawledToPostTransferServiceTest {
 
 	@Mock
 	private BoardRepository boardRepository;
+
+	@Mock
+	private BoardNotificationService boardNotificationService;
 
 	@Test
 	@DisplayName("새 공지사항이 Post로 변환되어 저장됨")
@@ -69,6 +73,8 @@ public class CrawledToPostTransferServiceTest {
 		// then
 		verify(postRepository).save(any(Post.class));
 		verify(crawledNoticeRepository).save(newNotice);
+
+		verify(boardNotificationService).sendByBoardIsSubscribed(eq(mockBoard), any(Post.class));
 	}
 
 	@Test
