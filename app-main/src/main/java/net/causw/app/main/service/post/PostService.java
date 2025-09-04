@@ -13,7 +13,6 @@ import net.causw.app.main.domain.model.entity.notification.UserPostSubscribe;
 import net.causw.app.main.domain.model.enums.user.UserState;
 import net.causw.app.main.repository.form.FormRepository;
 import net.causw.app.main.repository.notification.UserBoardSubscribeRepository;
-import net.causw.app.main.repository.notification.UserCommentSubscribeRepository;
 import net.causw.app.main.repository.notification.UserPostSubscribeRepository;
 import net.causw.app.main.repository.uuidFile.PostAttachImageRepository;
 import net.causw.app.main.repository.vote.VoteRecordRepository;
@@ -38,14 +37,10 @@ import net.causw.app.main.domain.model.entity.post.Post;
 import net.causw.app.main.repository.board.BoardRepository;
 import net.causw.app.main.repository.board.FavoriteBoardRepository;
 import net.causw.app.main.repository.circle.CircleMemberRepository;
-import net.causw.app.main.repository.comment.ChildCommentRepository;
 import net.causw.app.main.repository.comment.CommentRepository;
-import net.causw.app.main.repository.comment.LikeChildCommentRepository;
-import net.causw.app.main.repository.comment.LikeCommentRepository;
 import net.causw.app.main.repository.post.FavoritePostRepository;
 import net.causw.app.main.repository.post.LikePostRepository;
 import net.causw.app.main.repository.post.PostRepository;
-import net.causw.app.main.repository.user.UserRepository;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.domain.model.entity.uuidFile.UuidFile;
 import net.causw.app.main.dto.post.*;
@@ -88,17 +83,13 @@ import java.util.stream.Collectors;
 public class PostService {
 
 	private final PostRepository postRepository;
-	private final UserRepository userRepository;
 	private final BoardRepository boardRepository;
 	private final CircleMemberRepository circleMemberRepository;
 	private final VoteRecordRepository voteRecordRepository;
 	private final CommentRepository commentRepository;
-	private final ChildCommentRepository childCommentRepository;
 	private final FavoriteBoardRepository favoriteBoardRepository;
 	private final LikePostRepository likePostRepository;
 	private final FavoritePostRepository favoritePostRepository;
-	private final LikeCommentRepository likeCommentRepository;
-	private final LikeChildCommentRepository likeChildCommentRepository;
 	private final PageableFactory pageableFactory;
 	private final Validator validator;
 	private final UuidFileService uuidFileService;
@@ -107,7 +98,6 @@ public class PostService {
 	private final BoardNotificationService boardNotificationService;
 	private final UserBoardSubscribeRepository userBoardSubscribeRepository;
 	private final UserPostSubscribeRepository userPostSubscribeRepository;
-	private final UserCommentSubscribeRepository userCommentSubscribeRepository;
 	private final UserBlockEntityService userBlockEntityService;
 	private final PostEntityService postEntityService;
 
