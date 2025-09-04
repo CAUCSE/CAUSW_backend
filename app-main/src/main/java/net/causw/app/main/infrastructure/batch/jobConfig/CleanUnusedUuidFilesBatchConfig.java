@@ -1,12 +1,5 @@
 package net.causw.app.main.infrastructure.batch.jobConfig;
 
-import lombok.RequiredArgsConstructor;
-
-import net.causw.app.main.service.uuidFile.CleanUnusedUuidFileService;
-import net.causw.app.main.infrastructure.batch.listener.CheckMeasureStepListener;
-import net.causw.app.main.infrastructure.batch.listener.DeleteFileStepListener;
-import net.causw.app.main.infrastructure.batch.listener.DeleteUnusedFileJobCompletionNotificationListener;
-
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -20,6 +13,13 @@ import org.springframework.retry.backoff.FixedBackOffPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
+
+import net.causw.app.main.infrastructure.batch.listener.CheckMeasureStepListener;
+import net.causw.app.main.infrastructure.batch.listener.DeleteFileStepListener;
+import net.causw.app.main.infrastructure.batch.listener.DeleteUnusedFileJobCompletionNotificationListener;
+import net.causw.app.main.service.uuidFile.CleanUnusedUuidFileService;
+
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 @RequiredArgsConstructor

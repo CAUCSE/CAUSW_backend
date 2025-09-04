@@ -1,7 +1,8 @@
 package net.causw.app.main.repository.comment;
 
-import net.causw.app.main.domain.model.entity.comment.ChildComment;
-import net.causw.app.main.domain.model.entity.post.Post;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,9 +11,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import net.causw.app.main.domain.model.entity.comment.ChildComment;
+import net.causw.app.main.domain.model.entity.post.Post;
 
 @Repository
 public interface ChildCommentRepository extends JpaRepository<ChildComment, String> {

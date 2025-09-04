@@ -1,9 +1,9 @@
 package net.causw.app.main.infrastructure.filter;
 
+import java.io.IOException;
+
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpServletResponseWrapper;
-
-import java.io.IOException;
 
 public class StatusCaptureWrapper extends HttpServletResponseWrapper {
 	private int httpStatus = SC_OK;

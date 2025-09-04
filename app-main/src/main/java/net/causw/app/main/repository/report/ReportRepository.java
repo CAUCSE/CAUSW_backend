@@ -1,16 +1,16 @@
 package net.causw.app.main.repository.report;
 
-import net.causw.app.main.domain.model.entity.report.Report;
-import net.causw.app.main.domain.model.entity.user.User;
-import net.causw.app.main.domain.model.enums.report.ReportType;
-import net.causw.app.main.dto.report.ReportedPostNativeProjection;
-import net.causw.app.main.dto.report.ReportedCommentNativeProjection;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import net.causw.app.main.domain.model.entity.report.Report;
+import net.causw.app.main.domain.model.entity.user.User;
+import net.causw.app.main.domain.model.enums.report.ReportType;
+import net.causw.app.main.dto.report.ReportedCommentNativeProjection;
+import net.causw.app.main.dto.report.ReportedPostNativeProjection;
 
 public interface ReportRepository extends JpaRepository<Report, String> {
 

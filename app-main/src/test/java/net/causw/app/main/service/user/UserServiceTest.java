@@ -1,40 +1,16 @@
 package net.causw.app.main.service.user;
 
-import jakarta.servlet.http.HttpServletResponse;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
+import static org.mockito.Mockito.*;
 
-import java.util.*;
-
-import jakarta.validation.Validator;
-
-import net.causw.app.main.domain.model.entity.post.LikePost;
-import net.causw.app.main.domain.model.entity.post.Post;
-import net.causw.app.main.dto.user.UserCreateRequestDto;
-import net.causw.app.main.dto.user.UserSignInResponseDto;
-import net.causw.app.main.infrastructure.redis.RedisUtils;
-import net.causw.app.main.infrastructure.security.JwtTokenProvider;
-import net.causw.app.main.repository.post.FavoritePostRepository;
-import net.causw.app.main.repository.post.LikePostRepository;
-import net.causw.app.main.repository.post.PostRepository;
-import net.causw.app.main.repository.user.UserAdmissionRepository;
-import net.causw.app.main.repository.user.UserRepository;
-import net.causw.app.main.domain.model.entity.user.User;
-import net.causw.app.main.domain.model.entity.user.UserAdmission;
-import net.causw.app.main.dto.post.PostsResponseDto;
-import net.causw.app.main.dto.user.UserPostsResponseDto;
-import net.causw.app.main.dto.user.UserResponseDto;
-import net.causw.app.main.dto.util.dtoMapper.PostDtoMapper;
-import net.causw.app.main.dto.util.dtoMapper.UserDtoMapper;
-import net.causw.app.main.service.excel.UserExcelService;
-import net.causw.app.main.service.pageable.PageableFactory;
-import net.causw.app.main.domain.model.enums.user.Role;
-import net.causw.app.main.domain.model.enums.user.UserState;
-
-import net.causw.app.main.service.post.PostService;
-import net.causw.app.main.service.userBlock.UserBlockEntityService;
-import net.causw.app.main.util.ObjectFixtures;
-import net.causw.global.constant.StaticValue;
-import net.causw.global.exception.BadRequestException;
-import net.causw.global.exception.ErrorCode;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -51,16 +27,37 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
+import net.causw.app.main.domain.model.entity.post.LikePost;
+import net.causw.app.main.domain.model.entity.post.Post;
+import net.causw.app.main.domain.model.entity.user.User;
+import net.causw.app.main.domain.model.entity.user.UserAdmission;
+import net.causw.app.main.domain.model.enums.user.Role;
+import net.causw.app.main.domain.model.enums.user.UserState;
+import net.causw.app.main.dto.post.PostsResponseDto;
+import net.causw.app.main.dto.user.UserCreateRequestDto;
+import net.causw.app.main.dto.user.UserPostsResponseDto;
+import net.causw.app.main.dto.user.UserResponseDto;
+import net.causw.app.main.dto.user.UserSignInResponseDto;
+import net.causw.app.main.dto.util.dtoMapper.PostDtoMapper;
+import net.causw.app.main.dto.util.dtoMapper.UserDtoMapper;
+import net.causw.app.main.infrastructure.redis.RedisUtils;
+import net.causw.app.main.infrastructure.security.JwtTokenProvider;
+import net.causw.app.main.repository.post.FavoritePostRepository;
+import net.causw.app.main.repository.post.LikePostRepository;
+import net.causw.app.main.repository.post.PostRepository;
+import net.causw.app.main.repository.user.UserAdmissionRepository;
+import net.causw.app.main.repository.user.UserRepository;
+import net.causw.app.main.service.excel.UserExcelService;
+import net.causw.app.main.service.pageable.PageableFactory;
+import net.causw.app.main.service.post.PostService;
+import net.causw.app.main.service.userBlock.UserBlockEntityService;
+import net.causw.app.main.util.ObjectFixtures;
+import net.causw.global.constant.StaticValue;
+import net.causw.global.exception.BadRequestException;
+import net.causw.global.exception.ErrorCode;
+
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Validator;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {

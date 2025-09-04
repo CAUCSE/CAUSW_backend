@@ -1,7 +1,6 @@
 package net.causw.app.main.domain.policy;
 
-import net.causw.app.main.domain.model.enums.user.Role;
-import net.causw.app.main.domain.policy.RolePolicy;
+import static org.assertj.core.api.AssertionsForClassTypes.*;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,7 +8,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import net.causw.app.main.domain.model.enums.user.Role;
 
 @ExtendWith(MockitoExtension.class)
 public class RolePolicyTest {

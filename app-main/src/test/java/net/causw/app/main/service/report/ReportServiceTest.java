@@ -1,30 +1,10 @@
 package net.causw.app.main.service.report;
 
-import net.causw.app.main.domain.model.entity.comment.ChildComment;
-import net.causw.app.main.domain.model.entity.comment.Comment;
-import net.causw.app.main.domain.model.entity.post.Post;
-import net.causw.app.main.domain.model.entity.report.Report;
-import net.causw.app.main.domain.model.entity.user.User;
-import net.causw.app.main.domain.model.enums.report.ReportReason;
-import net.causw.app.main.domain.model.enums.report.ReportType;
-import net.causw.app.main.domain.model.enums.user.UserState;
-import net.causw.app.main.dto.report.*;
-import net.causw.app.main.dto.util.dtoMapper.ReportDtoMapper;
-import net.causw.app.main.service.pageable.PageableFactory;
-import net.causw.global.constant.StaticValue;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.BDDMockito.*;
+import static org.mockito.Mockito.*;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-
-import net.causw.app.main.repository.comment.ChildCommentRepository;
-import net.causw.app.main.repository.comment.CommentRepository;
-import net.causw.app.main.repository.post.PostRepository;
-import net.causw.app.main.repository.report.ReportRepository;
-import net.causw.app.main.repository.user.UserRepository;
-import net.causw.app.main.util.ObjectFixtures;
-import net.causw.global.constant.MessageUtil;
-import net.causw.global.exception.BadRequestException;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -35,14 +15,37 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
+import net.causw.app.main.domain.model.entity.comment.ChildComment;
+import net.causw.app.main.domain.model.entity.comment.Comment;
+import net.causw.app.main.domain.model.entity.post.Post;
+import net.causw.app.main.domain.model.entity.report.Report;
+import net.causw.app.main.domain.model.entity.user.User;
+import net.causw.app.main.domain.model.enums.report.ReportReason;
+import net.causw.app.main.domain.model.enums.report.ReportType;
+import net.causw.app.main.domain.model.enums.user.UserState;
+import net.causw.app.main.dto.report.ReportCreateRequestDto;
+import net.causw.app.main.dto.report.ReportCreateResponseDto;
+import net.causw.app.main.dto.report.ReportedCommentNativeProjection;
+import net.causw.app.main.dto.report.ReportedCommentResponseDto;
+import net.causw.app.main.dto.report.ReportedPostNativeProjection;
+import net.causw.app.main.dto.report.ReportedPostResponseDto;
+import net.causw.app.main.dto.report.ReportedUserResponseDto;
+import net.causw.app.main.dto.util.dtoMapper.ReportDtoMapper;
+import net.causw.app.main.repository.comment.ChildCommentRepository;
+import net.causw.app.main.repository.comment.CommentRepository;
+import net.causw.app.main.repository.post.PostRepository;
+import net.causw.app.main.repository.report.ReportRepository;
+import net.causw.app.main.repository.user.UserRepository;
+import net.causw.app.main.service.pageable.PageableFactory;
+import net.causw.app.main.util.ObjectFixtures;
+import net.causw.global.constant.MessageUtil;
+import net.causw.global.constant.StaticValue;
+import net.causw.global.exception.BadRequestException;
 
 @ExtendWith(MockitoExtension.class)
 class ReportServiceTest {

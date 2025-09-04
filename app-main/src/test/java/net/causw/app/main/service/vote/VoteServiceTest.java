@@ -1,38 +1,13 @@
 package net.causw.app.main.service.vote;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
+import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-
-import net.causw.app.main.domain.model.entity.board.Board;
-import net.causw.app.main.domain.model.entity.post.Post;
-import net.causw.app.main.repository.post.PostRepository;
-import net.causw.app.main.repository.vote.VoteOptionRepository;
-import net.causw.app.main.repository.vote.VoteRecordRepository;
-import net.causw.app.main.repository.vote.VoteRepository;
-import net.causw.app.main.domain.model.entity.user.User;
-import net.causw.app.main.domain.model.entity.vote.Vote;
-import net.causw.app.main.domain.model.entity.vote.VoteOption;
-import net.causw.app.main.domain.model.entity.vote.VoteRecord;
-import net.causw.app.main.dto.vote.CastVoteRequestDto;
-import net.causw.app.main.dto.vote.CreateVoteRequestDto;
-import net.causw.app.main.dto.vote.VoteOptionResponseDto;
-import net.causw.app.main.dto.vote.VoteResponseDto;
-import net.causw.global.exception.BadRequestException;
-import net.causw.global.exception.ErrorCode;
-import net.causw.app.main.util.ObjectFixtures;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,6 +19,24 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+
+import net.causw.app.main.domain.model.entity.board.Board;
+import net.causw.app.main.domain.model.entity.post.Post;
+import net.causw.app.main.domain.model.entity.user.User;
+import net.causw.app.main.domain.model.entity.vote.Vote;
+import net.causw.app.main.domain.model.entity.vote.VoteOption;
+import net.causw.app.main.domain.model.entity.vote.VoteRecord;
+import net.causw.app.main.dto.vote.CastVoteRequestDto;
+import net.causw.app.main.dto.vote.CreateVoteRequestDto;
+import net.causw.app.main.dto.vote.VoteOptionResponseDto;
+import net.causw.app.main.dto.vote.VoteResponseDto;
+import net.causw.app.main.repository.post.PostRepository;
+import net.causw.app.main.repository.vote.VoteOptionRepository;
+import net.causw.app.main.repository.vote.VoteRecordRepository;
+import net.causw.app.main.repository.vote.VoteRepository;
+import net.causw.app.main.util.ObjectFixtures;
+import net.causw.global.exception.BadRequestException;
+import net.causw.global.exception.ErrorCode;
 
 @ExtendWith(MockitoExtension.class)
 public class VoteServiceTest {

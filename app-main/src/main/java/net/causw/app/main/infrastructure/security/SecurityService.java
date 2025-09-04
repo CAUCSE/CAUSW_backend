@@ -1,13 +1,6 @@
 package net.causw.app.main.infrastructure.security;
 
-import lombok.RequiredArgsConstructor;
-
-import net.causw.app.main.domain.model.entity.user.User;
-import net.causw.app.main.infrastructure.security.userdetails.CustomUserDetails;
-import net.causw.app.main.infrastructure.aop.annotation.MeasureTime;
-import net.causw.app.main.domain.model.enums.user.RoleGroup;
-import net.causw.app.main.domain.model.enums.user.Role;
-import net.causw.global.constant.MessageUtil;
+import java.util.Collection;
 
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -16,7 +9,13 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
+import net.causw.app.main.domain.model.enums.user.Role;
+import net.causw.app.main.domain.model.enums.user.RoleGroup;
+import net.causw.app.main.infrastructure.aop.annotation.MeasureTime;
+import net.causw.app.main.infrastructure.security.userdetails.CustomUserDetails;
+import net.causw.global.constant.MessageUtil;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * 현재 인증된 사용자(SecurityContext 기준)의 권한, 상태 등을 조회하기 위한 Service 클래스

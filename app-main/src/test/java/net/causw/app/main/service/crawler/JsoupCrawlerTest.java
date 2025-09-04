@@ -1,24 +1,14 @@
 package net.causw.app.main.service.crawler;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.BDDMockito.given;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
-
-import net.causw.app.main.domain.model.entity.crawled.CrawledNotice;
-import net.causw.global.exception.ErrorCode;
-import net.causw.global.exception.InternalServerException;
-import net.causw.global.constant.MessageUtil;
-import net.causw.global.constant.StaticValue;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -29,6 +19,12 @@ import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+
+import net.causw.app.main.domain.model.entity.crawled.CrawledNotice;
+import net.causw.global.constant.MessageUtil;
+import net.causw.global.constant.StaticValue;
+import net.causw.global.exception.ErrorCode;
+import net.causw.global.exception.InternalServerException;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)

@@ -1,18 +1,18 @@
 package net.causw.app.main.infrastructure.security.userdetails;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-
-import net.causw.app.main.domain.model.entity.user.User;
-import net.causw.app.main.domain.model.enums.user.UserState;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.stream.Collectors;
+import net.causw.app.main.domain.model.entity.user.User;
+import net.causw.app.main.domain.model.enums.user.UserState;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 
 @Getter
 @Builder

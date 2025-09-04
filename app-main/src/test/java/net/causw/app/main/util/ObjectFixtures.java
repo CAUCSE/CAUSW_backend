@@ -3,6 +3,8 @@ package net.causw.app.main.util;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.test.util.ReflectionTestUtils;
+
 import net.causw.app.main.domain.model.entity.board.Board;
 import net.causw.app.main.domain.model.entity.comment.ChildComment;
 import net.causw.app.main.domain.model.entity.comment.Comment;
@@ -14,16 +16,13 @@ import net.causw.app.main.domain.model.entity.userCouncilFee.CouncilFeeFakeUser;
 import net.causw.app.main.domain.model.entity.userCouncilFee.UserCouncilFee;
 import net.causw.app.main.domain.model.entity.vote.Vote;
 import net.causw.app.main.domain.model.entity.vote.VoteOption;
-import net.causw.app.main.domain.model.enums.user.Role;
-import net.causw.app.main.domain.model.enums.user.RoleGroup;
-import net.causw.app.main.domain.model.enums.user.UserState;
-import net.causw.app.main.dto.user.UserCreateRequestDto;
 import net.causw.app.main.domain.model.enums.semester.SemesterType;
 import net.causw.app.main.domain.model.enums.user.GraduationType;
+import net.causw.app.main.domain.model.enums.user.Role;
+import net.causw.app.main.domain.model.enums.user.UserState;
 import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.dto.user.UserCreateRequestDto;
 import net.causw.global.constant.StaticValue;
-
-import org.springframework.test.util.ReflectionTestUtils;
 
 public class ObjectFixtures {
 

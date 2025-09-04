@@ -1,13 +1,13 @@
 package net.causw.app.main.infrastructure.security;
 
-import net.causw.global.util.PatternUtil;
+import static net.causw.app.main.infrastructure.security.SecurityEndpoints.SecurityEndpoint.*;
+import static org.springframework.http.HttpMethod.*;
 
 import org.springframework.http.HttpMethod;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
-import static net.causw.app.main.infrastructure.security.SecurityEndpoints.SecurityEndpoint.*;
-import static org.springframework.http.HttpMethod.*;
+import net.causw.global.util.PatternUtil;
 
 /**
  * Spring Security에서 사용할 엔드포인트 패턴을 그룹별로 정의한 클래스

@@ -1,13 +1,13 @@
 package net.causw.app.main.infrastructure.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.lang.reflect.Type;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
 import org.springframework.stereotype.Component;
 
-import java.lang.reflect.Type;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 public class OctetStreamReadMsgConverter extends AbstractJackson2HttpMessageConverter {

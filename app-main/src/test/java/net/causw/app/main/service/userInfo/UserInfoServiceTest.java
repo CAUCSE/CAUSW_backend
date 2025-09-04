@@ -1,19 +1,28 @@
 package net.causw.app.main.service.userInfo;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
-import java.util.Optional;
 import java.util.List;
+import java.util.Optional;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.domain.model.entity.userInfo.UserCareer;
 import net.causw.app.main.domain.model.entity.userInfo.UserInfo;
 import net.causw.app.main.dto.user.UserUpdateRequestDto;
 import net.causw.app.main.dto.userInfo.UserCareerDto;
-import net.causw.app.main.dto.userInfo.UserInfoUpdateRequestDto;
 import net.causw.app.main.dto.userInfo.UserInfoResponseDto;
+import net.causw.app.main.dto.userInfo.UserInfoUpdateRequestDto;
 import net.causw.app.main.repository.user.UserRepository;
 import net.causw.app.main.repository.userInfo.UserCareerRepository;
 import net.causw.app.main.repository.userInfo.UserInfoRepository;
@@ -23,16 +32,6 @@ import net.causw.app.main.util.ObjectFixtures;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
-
-import org.aspectj.lang.annotation.Before;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.multipart.MultipartFile;
 
 @ExtendWith(MockitoExtension.class)
 class UserInfoServiceTest {

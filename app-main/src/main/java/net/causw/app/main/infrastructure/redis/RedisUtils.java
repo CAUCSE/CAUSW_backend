@@ -1,13 +1,13 @@
 package net.causw.app.main.infrastructure.redis;
 
-import lombok.RequiredArgsConstructor;
-
-import net.causw.global.constant.StaticValue;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.concurrent.TimeUnit;
+import net.causw.global.constant.StaticValue;
+
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Service

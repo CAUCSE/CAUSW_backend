@@ -1,15 +1,15 @@
 package net.causw.app.main.repository.notification;
 
-import net.causw.app.main.domain.model.entity.notification.Notification;
-import net.causw.app.main.domain.model.entity.user.User;
-import net.causw.app.main.domain.model.enums.notification.NoticeType;
+import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import net.causw.app.main.domain.model.entity.notification.Notification;
+import net.causw.app.main.domain.model.entity.user.User;
+import net.causw.app.main.domain.model.enums.notification.NoticeType;
 
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, String> {

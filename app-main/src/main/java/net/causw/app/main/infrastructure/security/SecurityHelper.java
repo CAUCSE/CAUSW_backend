@@ -1,15 +1,14 @@
 package net.causw.app.main.infrastructure.security;
 
-import net.causw.app.main.domain.model.entity.user.User;
-import net.causw.app.main.infrastructure.security.userdetails.CustomUserDetails;
+import java.util.Collection;
+
+import org.springframework.security.core.GrantedAuthority;
+
 import net.causw.app.main.domain.model.enums.user.Role;
 import net.causw.app.main.domain.model.enums.user.RoleGroup;
 import net.causw.app.main.domain.model.enums.user.UserState;
 import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
-
-import org.springframework.security.core.GrantedAuthority;
-
-import java.util.Collection;
+import net.causw.app.main.infrastructure.security.userdetails.CustomUserDetails;
 
 public class SecurityHelper {
 

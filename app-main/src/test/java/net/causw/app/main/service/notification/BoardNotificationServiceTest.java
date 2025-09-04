@@ -1,19 +1,15 @@
 package net.causw.app.main.service.notification;
 
-import com.google.firebase.messaging.FirebaseMessagingException;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.*;
 
-import net.causw.app.main.domain.model.entity.board.Board;
-import net.causw.app.main.domain.model.entity.notification.Notification;
-import net.causw.app.main.domain.model.entity.notification.NotificationLog;
-import net.causw.app.main.domain.model.entity.notification.UserBoardSubscribe;
-import net.causw.app.main.domain.model.entity.post.Post;
-import net.causw.app.main.infrastructure.firebase.FcmUtils;
-import net.causw.app.main.repository.notification.NotificationLogRepository;
-import net.causw.app.main.repository.notification.NotificationRepository;
-import net.causw.app.main.repository.notification.UserBoardSubscribeRepository;
-import net.causw.app.main.domain.model.entity.user.User;
-import net.causw.app.main.dto.user.UserCreateRequestDto;
-import net.causw.app.main.service.userBlock.UserBlockEntityService;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,14 +19,20 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import net.causw.app.main.domain.model.entity.board.Board;
+import net.causw.app.main.domain.model.entity.notification.Notification;
+import net.causw.app.main.domain.model.entity.notification.NotificationLog;
+import net.causw.app.main.domain.model.entity.notification.UserBoardSubscribe;
+import net.causw.app.main.domain.model.entity.post.Post;
+import net.causw.app.main.domain.model.entity.user.User;
+import net.causw.app.main.dto.user.UserCreateRequestDto;
+import net.causw.app.main.infrastructure.firebase.FcmUtils;
+import net.causw.app.main.repository.notification.NotificationLogRepository;
+import net.causw.app.main.repository.notification.NotificationRepository;
+import net.causw.app.main.repository.notification.UserBoardSubscribeRepository;
+import net.causw.app.main.service.userBlock.UserBlockEntityService;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
+import com.google.firebase.messaging.FirebaseMessagingException;
 
 @ExtendWith(MockitoExtension.class)
 class BoardNotificationServiceTest {

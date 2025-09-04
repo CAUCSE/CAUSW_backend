@@ -1,12 +1,14 @@
 package net.causw.app.main.domain.validation;
 
-import net.causw.app.main.domain.model.entity.user.User;
-import net.causw.global.exception.ErrorCode;
-import net.causw.global.exception.UnauthorizedException;
-import net.causw.app.main.domain.model.enums.user.Role;
-import net.causw.global.constant.MessageUtil;
-import net.causw.app.main.util.ObjectFixtures;
-import net.causw.app.main.domain.policy.RolePolicy;
+import static java.util.Map.entry;
+import static net.causw.app.main.domain.model.enums.user.Role.*;
+import static net.causw.app.main.domain.policy.RolePolicy.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,15 +17,13 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import static java.util.Map.entry;
-import static net.causw.app.main.domain.model.enums.user.Role.*;
-import static net.causw.app.main.domain.policy.RolePolicy.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import net.causw.app.main.domain.model.entity.user.User;
+import net.causw.app.main.domain.model.enums.user.Role;
+import net.causw.app.main.domain.policy.RolePolicy;
+import net.causw.app.main.util.ObjectFixtures;
+import net.causw.global.constant.MessageUtil;
+import net.causw.global.exception.ErrorCode;
+import net.causw.global.exception.UnauthorizedException;
 
 @ExtendWith(MockitoExtension.class)
 public class DelegatableRoleValidatorTest {

@@ -1,18 +1,17 @@
 package net.causw.app.main.infrastructure.mail;
 
-import lombok.RequiredArgsConstructor;
-
-import net.causw.global.exception.ErrorCode;
-import net.causw.global.exception.ServiceUnavailableException;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
+import net.causw.global.exception.ErrorCode;
+import net.causw.global.exception.ServiceUnavailableException;
+
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor

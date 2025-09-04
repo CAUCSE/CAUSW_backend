@@ -1,17 +1,7 @@
 package net.causw.app.main.infrastructure.batch;
 
-import jakarta.annotation.Resource;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
-import net.causw.app.main.domain.model.entity.user.User;
-import net.causw.app.main.infrastructure.firebase.FcmUtils;
-import net.causw.app.main.repository.user.UserRepository;
-import net.causw.app.main.service.pageable.PageableFactory;
-import net.causw.global.constant.StaticValue;
-import net.causw.global.exception.ErrorCode;
-import net.causw.global.exception.InternalServerException;
-import net.causw.global.constant.MessageUtil;
+import java.time.LocalDateTime;
+import java.time.temporal.IsoFields;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
@@ -21,8 +11,18 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Page;
 import org.springframework.scheduling.annotation.Scheduled;
 
-import java.time.LocalDateTime;
-import java.time.temporal.IsoFields;
+import net.causw.app.main.domain.model.entity.user.User;
+import net.causw.app.main.infrastructure.firebase.FcmUtils;
+import net.causw.app.main.repository.user.UserRepository;
+import net.causw.app.main.service.pageable.PageableFactory;
+import net.causw.global.constant.MessageUtil;
+import net.causw.global.constant.StaticValue;
+import net.causw.global.exception.ErrorCode;
+import net.causw.global.exception.InternalServerException;
+
+import jakarta.annotation.Resource;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Configuration

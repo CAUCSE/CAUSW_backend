@@ -1,15 +1,12 @@
 package net.causw.app.main.service.crawler;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
 import java.util.Optional;
-
-import net.causw.app.main.domain.model.entity.crawled.CrawledNotice;
-import net.causw.app.main.repository.crawled.CrawledNoticeRepository;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,6 +16,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+
+import net.causw.app.main.domain.model.entity.crawled.CrawledNotice;
+import net.causw.app.main.repository.crawled.CrawledNoticeRepository;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)

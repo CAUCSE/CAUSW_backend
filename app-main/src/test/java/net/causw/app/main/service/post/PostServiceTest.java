@@ -1,61 +1,55 @@
 package net.causw.app.main.service.post;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
+import static org.mockito.Mockito.*;
 
-import java.util.Optional;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
+import net.causw.app.main.domain.model.entity.board.Board;
 import net.causw.app.main.domain.model.entity.post.LikePost;
 import net.causw.app.main.domain.model.entity.post.Post;
+import net.causw.app.main.domain.model.entity.user.User;
+import net.causw.app.main.domain.model.enums.user.Role;
+import net.causw.app.main.domain.model.enums.user.UserState;
+import net.causw.app.main.dto.post.BoardPostsResponseDto;
+import net.causw.app.main.dto.post.PostsResponseDto;
+import net.causw.app.main.repository.board.BoardRepository;
 import net.causw.app.main.repository.board.FavoriteBoardRepository;
 import net.causw.app.main.repository.notification.UserBoardSubscribeRepository;
 import net.causw.app.main.repository.post.FavoritePostRepository;
 import net.causw.app.main.repository.post.LikePostRepository;
 import net.causw.app.main.repository.post.PostRepository;
-import net.causw.app.main.domain.model.entity.user.User;
+import net.causw.app.main.service.pageable.PageableFactory;
 import net.causw.app.main.service.userBlock.UserBlockEntityService;
+import net.causw.app.main.util.ObjectFixtures;
+import net.causw.global.constant.MessageUtil;
+import net.causw.global.constant.StaticValue;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.UnauthorizedException;
-import net.causw.app.main.domain.model.enums.user.UserState;
-import net.causw.global.constant.MessageUtil;
-import net.causw.app.main.domain.model.entity.board.Board;
-import net.causw.app.main.repository.board.BoardRepository;
-import net.causw.app.main.dto.post.BoardPostsResponseDto;
-import net.causw.app.main.dto.post.PostsResponseDto;
-import net.causw.app.main.service.pageable.PageableFactory;
-import net.causw.app.main.domain.model.enums.user.Role;
-import net.causw.app.main.util.ObjectFixtures;
-import net.causw.global.constant.StaticValue;
-
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {

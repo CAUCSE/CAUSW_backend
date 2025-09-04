@@ -1,16 +1,9 @@
 package net.causw.app.main.infrastructure.security;
 
-import io.jsonwebtoken.*;
-import lombok.RequiredArgsConstructor;
-
-import net.causw.app.main.infrastructure.security.userdetails.CustomUserDetailsService;
-import net.causw.global.exception.ErrorCode;
-import net.causw.global.exception.UnauthorizedException;
-import net.causw.app.main.domain.model.enums.user.Role;
-import net.causw.global.constant.MessageUtil;
-import net.causw.app.main.infrastructure.redis.RedisUtils;
-import net.causw.global.constant.StaticValue;
-import net.causw.app.main.domain.model.enums.user.UserState;
+import java.util.Base64;
+import java.util.Date;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,11 +11,23 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import net.causw.app.main.domain.model.enums.user.Role;
+import net.causw.app.main.domain.model.enums.user.UserState;
+import net.causw.app.main.infrastructure.redis.RedisUtils;
+import net.causw.app.main.infrastructure.security.userdetails.CustomUserDetailsService;
+import net.causw.global.constant.MessageUtil;
+import net.causw.global.constant.StaticValue;
+import net.causw.global.exception.ErrorCode;
+import net.causw.global.exception.UnauthorizedException;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
-
-import java.util.*;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Component

@@ -1,21 +1,13 @@
 package net.causw.app.main.service.notification;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.verify;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
+import static org.mockito.Mockito.*;
 
-import net.causw.app.main.domain.model.entity.notification.Notification;
-import net.causw.app.main.domain.model.entity.notification.NotificationLog;
-import net.causw.app.main.repository.notification.NotificationLogRepository;
-import net.causw.app.main.domain.model.entity.user.User;
-import net.causw.app.main.dto.notification.NotificationResponseDto;
-import net.causw.app.main.dto.user.UserCreateRequestDto;
-import net.causw.app.main.service.pageable.PageableFactory;
-import net.causw.global.exception.BadRequestException;
-import net.causw.app.main.domain.model.enums.notification.NoticeType;
-import net.causw.global.constant.MessageUtil;
+import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -30,9 +22,16 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.List;
+import net.causw.app.main.domain.model.entity.notification.Notification;
+import net.causw.app.main.domain.model.entity.notification.NotificationLog;
+import net.causw.app.main.domain.model.entity.user.User;
+import net.causw.app.main.domain.model.enums.notification.NoticeType;
+import net.causw.app.main.dto.notification.NotificationResponseDto;
+import net.causw.app.main.dto.user.UserCreateRequestDto;
+import net.causw.app.main.repository.notification.NotificationLogRepository;
+import net.causw.app.main.service.pageable.PageableFactory;
+import net.causw.global.constant.MessageUtil;
+import net.causw.global.exception.BadRequestException;
 
 @ExtendWith(MockitoExtension.class)
 public class NotificationLogServiceTest {

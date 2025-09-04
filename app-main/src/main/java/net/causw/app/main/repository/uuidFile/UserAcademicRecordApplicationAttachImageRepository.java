@@ -1,11 +1,11 @@
 package net.causw.app.main.repository.uuidFile;
 
-import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.UserAcademicRecordApplicationAttachImage;
+import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.UserAcademicRecordApplicationAttachImage;
 
 @Repository
 public interface UserAcademicRecordApplicationAttachImageRepository

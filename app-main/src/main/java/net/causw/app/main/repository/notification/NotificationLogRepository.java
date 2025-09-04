@@ -1,8 +1,7 @@
 package net.causw.app.main.repository.notification;
 
-import net.causw.app.main.domain.model.entity.notification.NotificationLog;
-import net.causw.app.main.domain.model.entity.user.User;
-import net.causw.app.main.domain.model.enums.notification.NoticeType;
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,8 +9,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
-import java.util.Optional;
+import net.causw.app.main.domain.model.entity.notification.NotificationLog;
+import net.causw.app.main.domain.model.entity.user.User;
+import net.causw.app.main.domain.model.enums.notification.NoticeType;
 
 public interface NotificationLogRepository extends JpaRepository<NotificationLog, String> {
 

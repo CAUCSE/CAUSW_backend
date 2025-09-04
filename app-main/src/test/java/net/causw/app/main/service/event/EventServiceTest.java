@@ -1,29 +1,13 @@
 package net.causw.app.main.service.event;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
+import static org.mockito.Mockito.*;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
-
-import net.causw.app.main.domain.model.entity.event.Event;
-import net.causw.app.main.repository.event.EventRepository;
-import net.causw.app.main.domain.model.entity.uuidFile.UuidFile;
-import net.causw.app.main.dto.event.EventCreateRequestDto;
-import net.causw.app.main.dto.event.EventResponseDto;
-import net.causw.app.main.dto.event.EventUpdateRequestDto;
-import net.causw.app.main.dto.event.EventsResponseDto;
-import net.causw.app.main.service.uuidFile.UuidFileService;
-import net.causw.global.exception.BadRequestException;
-import net.causw.global.exception.ErrorCode;
-import net.causw.app.main.domain.model.enums.uuidFile.FilePath;
-import net.causw.global.constant.MessageUtil;
-import net.causw.global.constant.StaticValue;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -35,6 +19,20 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
+
+import net.causw.app.main.domain.model.entity.event.Event;
+import net.causw.app.main.domain.model.entity.uuidFile.UuidFile;
+import net.causw.app.main.domain.model.enums.uuidFile.FilePath;
+import net.causw.app.main.dto.event.EventCreateRequestDto;
+import net.causw.app.main.dto.event.EventResponseDto;
+import net.causw.app.main.dto.event.EventUpdateRequestDto;
+import net.causw.app.main.dto.event.EventsResponseDto;
+import net.causw.app.main.repository.event.EventRepository;
+import net.causw.app.main.service.uuidFile.UuidFileService;
+import net.causw.global.constant.MessageUtil;
+import net.causw.global.constant.StaticValue;
+import net.causw.global.exception.BadRequestException;
+import net.causw.global.exception.ErrorCode;
 
 @ExtendWith(MockitoExtension.class)
 public class EventServiceTest {

@@ -1,22 +1,12 @@
 package net.causw.app.main.service.userCouncilFee;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-
-import jakarta.servlet.http.HttpServletResponse;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
+import static org.mockito.Mockito.*;
 
 import java.util.LinkedHashMap;
 import java.util.List;
-
-import net.causw.app.main.repository.userCouncilFee.UserCouncilFeeRepository;
-import net.causw.app.main.domain.model.entity.semester.Semester;
-import net.causw.app.main.domain.model.entity.userCouncilFee.UserCouncilFee;
-import net.causw.app.main.dto.userCouncilFee.UserCouncilFeeResponseDto;
-import net.causw.app.main.service.excel.CouncilFeeExcelService;
-import net.causw.app.main.service.semester.SemesterService;
-import net.causw.app.main.util.ObjectFixtures;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -28,9 +18,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import net.causw.app.main.domain.model.entity.semester.Semester;
+import net.causw.app.main.domain.model.entity.userCouncilFee.UserCouncilFee;
+import net.causw.app.main.dto.userCouncilFee.UserCouncilFeeResponseDto;
+import net.causw.app.main.repository.userCouncilFee.UserCouncilFeeRepository;
+import net.causw.app.main.service.excel.CouncilFeeExcelService;
+import net.causw.app.main.service.semester.SemesterService;
+import net.causw.app.main.util.ObjectFixtures;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 @ExtendWith(MockitoExtension.class)
 public class UserCouncilFeeServiceTest {

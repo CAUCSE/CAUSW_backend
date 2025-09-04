@@ -1,15 +1,28 @@
 package net.causw.app.main.service.user;
 
-import net.causw.app.main.repository.user.UserRepository;
-import net.causw.app.main.domain.model.entity.user.User;
-import net.causw.app.main.dto.user.UserResponseDto;
-import net.causw.app.main.dto.user.UserUpdateRoleRequestDto;
-import net.causw.app.main.domain.model.enums.user.Role;
-import net.causw.app.main.domain.model.enums.user.UserState;
-import net.causw.app.main.util.ObjectFixtures;
-import net.causw.app.main.domain.policy.RolePolicy;
+import static java.util.Map.entry;
+import static net.causw.app.main.domain.model.enums.user.Role.*;
+import static net.causw.app.main.domain.policy.RolePolicy.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
-import org.junit.jupiter.api.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -19,18 +32,14 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
-import static java.util.Map.entry;
-import static net.causw.app.main.domain.model.enums.user.Role.*;
-import static net.causw.app.main.domain.model.enums.user.Role.COMMON;
-import static net.causw.app.main.domain.policy.RolePolicy.*;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import net.causw.app.main.domain.model.entity.user.User;
+import net.causw.app.main.domain.model.enums.user.Role;
+import net.causw.app.main.domain.model.enums.user.UserState;
+import net.causw.app.main.domain.policy.RolePolicy;
+import net.causw.app.main.dto.user.UserResponseDto;
+import net.causw.app.main.dto.user.UserUpdateRoleRequestDto;
+import net.causw.app.main.repository.user.UserRepository;
+import net.causw.app.main.util.ObjectFixtures;
 
 @ExtendWith(MockitoExtension.class)
 public class UserRoleServiceTest {
