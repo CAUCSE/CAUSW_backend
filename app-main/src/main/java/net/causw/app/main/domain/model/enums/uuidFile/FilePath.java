@@ -36,7 +36,7 @@ public enum FilePath {
     POST(
             "post",
             10 * 1024 * 1024L, // 10MB
-            10,
+            20,
             List.of(
                     FileExtensionType.IMAGE,
                     FileExtensionType.VIDEO,
