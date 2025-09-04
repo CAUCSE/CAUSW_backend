@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.event.AcademicStatusChangeEvent;
-import net.causw.app.main.domain.event.InitialAcademicCertificationEvent;
+import net.causw.app.main.domain.event.CertifiedUserCreatedEvent;
 import net.causw.app.main.domain.model.entity.semester.Semester;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.domain.model.entity.userAcademicRecord.UserAcademicRecordApplication;
@@ -189,7 +189,7 @@ public class UserAcademicRecordApplicationService {
 		} else if (targetAcademicRecordRequestStatus == AcademicRecordRequestStatus.ACCEPT) {
 			// 재학생의 학적 최초 인증 이벤트 발행
 			if (targetUser.getAcademicStatus() == AcademicStatus.UNDETERMINED) {
-				eventPublisher.publishEvent(new InitialAcademicCertificationEvent(targetUser.getId()));
+				eventPublisher.publishEvent(new CertifiedUserCreatedEvent(targetUser.getId()));
 			}
 
 			// 학적 상태 및 학기 정보 변경
@@ -252,7 +252,7 @@ public class UserAcademicRecordApplicationService {
 		} else if (targetAcademicStatus == AcademicStatus.GRADUATED) {
 			// 졸업생의 학적 최초 인증 이벤트 발행
 			if (user.getAcademicStatus() == AcademicStatus.UNDETERMINED) {
-				eventPublisher.publishEvent(new InitialAcademicCertificationEvent(user.getId()));
+				eventPublisher.publishEvent(new CertifiedUserCreatedEvent(user.getId()));
 
 				// 이미 학적 상태가 설정되어 있는 경우, 학적 변경 이벤트 발행
 			} else {
@@ -280,7 +280,7 @@ public class UserAcademicRecordApplicationService {
 		} else if (targetAcademicStatus == AcademicStatus.LEAVE_OF_ABSENCE) {
 			// 휴학생의 학적 최초 인증 이벤트 발행
 			if (user.getAcademicStatus() == AcademicStatus.UNDETERMINED) {
-				eventPublisher.publishEvent(new InitialAcademicCertificationEvent(user.getId()));
+				eventPublisher.publishEvent(new CertifiedUserCreatedEvent(user.getId()));
 			}
 
 			// 학적 상태 변경

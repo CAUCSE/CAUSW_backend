@@ -23,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.dto.circle.CircleResponseDto;
 import net.causw.app.main.dto.duplicate.DuplicatedCheckResponseDto;
+import net.causw.app.main.dto.user.BatchRegisterResponseDto;
 import net.causw.app.main.dto.user.UserAdmissionCreateRequestDto;
 import net.causw.app.main.dto.user.UserAdmissionResponseDto;
 import net.causw.app.main.dto.user.UserAdmissionsResponseDto;
@@ -48,6 +49,7 @@ import net.causw.app.main.dto.user.UserUpdateTokenRequestDto;
 import net.causw.app.main.infrastructure.security.userdetails.CustomUserDetails;
 import net.causw.app.main.service.user.UserRoleService;
 import net.causw.app.main.service.user.UserService;
+import net.causw.app.main.service.user.useCase.RegisterGraduatedUsersUseCaseService;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.UnauthorizedException;
 
@@ -67,6 +69,7 @@ import lombok.RequiredArgsConstructor;
 public class UserController {
 	private final UserService userService;
 	private final UserRoleService userRoleService;
+	private final RegisterGraduatedUsersUseCaseService registerGraduatedUsersUseCaseService;
 
 	/**
 	 * 사용자 고유 id 값으로 사용자 정보를 조회하는 API
@@ -308,6 +311,26 @@ public class UserController {
 			return xForwardedFor.split(",")[0].trim();
 		}
 		return request.getRemoteAddr();
+	}
+
+	/**
+	 * 동문회 졸업생 일괄 등록 컨트롤러
+	 * @param csvFile 졸업생 정보를 포함하는 구글폼 응답 결과
+	 * @return BatchRegisterResponseDto
+	 */
+	@PostMapping(value = "/register-alumni", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(value = HttpStatus.CREATED)
+	@PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
+	@Operation(summary = "동문회 졸업생 일괄 등록 API", description = "CSV 파일로 사용자 정보를 입력받아 승인 절차없이 사용자를 일괄 등록합니다.")
+	@ApiResponses({
+		@ApiResponse(responseCode = "201", description = "Created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BatchRegisterResponseDto.class))),
+		@ApiResponse(responseCode = "4001", description = "이미 존재하는 이메일입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+		@ApiResponse(responseCode = "4001", description = "이미 존재하는 닉네임입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+		@ApiResponse(responseCode = "4001", description = "이미 존재하는 전화번호입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
+		@ApiResponse(responseCode = "4001", description = "이미 존재하는 학번입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
+	})
+	public BatchRegisterResponseDto registerAlumni(@RequestParam("csvFile") MultipartFile csvFile) {
+		return registerGraduatedUsersUseCaseService.execute(csvFile);
 	}
 
 	/**

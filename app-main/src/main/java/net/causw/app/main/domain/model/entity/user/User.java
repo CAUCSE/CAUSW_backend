@@ -18,6 +18,7 @@ import net.causw.app.main.domain.model.enums.user.Role;
 import net.causw.app.main.domain.model.enums.user.UserState;
 import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.dto.user.UserCreateRequestDto;
+import net.causw.app.main.dto.user.CreateGraduatedUserCommand;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
@@ -162,6 +163,27 @@ public class User extends BaseEntity {
 			.major(userCreateRequestDto.getMajor())
 			.academicStatus(AcademicStatus.UNDETERMINED)
 			.phoneNumber(userCreateRequestDto.getPhoneNumber())
+			.isV2(true)
+			.build();
+	}
+
+	public static User createGraduatedUser(
+		CreateGraduatedUserCommand createGraduatedUserCommand,
+		String encodedPassword
+	) {
+		return User.builder()
+			.email(createGraduatedUserCommand.email())
+			.name(createGraduatedUserCommand.name())
+			.roles(Set.of(Role.COMMON))
+			.state(UserState.ACTIVE)
+			.password(encodedPassword)
+			.studentId(createGraduatedUserCommand.studentId())
+			.admissionYear(createGraduatedUserCommand.admissionYear())
+			.graduationYear(createGraduatedUserCommand.graduationYear())
+			.nickname(createGraduatedUserCommand.nickname())
+			.major(createGraduatedUserCommand.major())
+			.academicStatus(AcademicStatus.GRADUATED)
+			.phoneNumber(createGraduatedUserCommand.phoneNumber())
 			.isV2(true)
 			.build();
 	}

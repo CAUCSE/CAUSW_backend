@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import net.causw.app.main.domain.event.InitialAcademicCertificationEvent;
+import net.causw.app.main.domain.event.CertifiedUserCreatedEvent;
 import net.causw.app.main.domain.model.entity.base.BaseEntity;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.domain.model.entity.userInfo.UserCareer;
@@ -70,7 +70,7 @@ public class UserInfoService {
 	}
 
 	@EventListener // 동문수첩 기본 프로필 생성 실패시, 학적 인증과 함께 롤백
-	public void createDefaultProfile(InitialAcademicCertificationEvent event) {
+	public void createDefaultProfile(CertifiedUserCreatedEvent event) {
 		User user = findUserById(event.userId());
 
 		userInfoRepository.findByUserId(event.userId())

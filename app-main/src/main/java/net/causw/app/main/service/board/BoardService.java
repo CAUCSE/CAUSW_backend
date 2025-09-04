@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import net.causw.app.main.domain.event.AcademicStatusChangeEvent;
-import net.causw.app.main.domain.event.InitialAcademicCertificationEvent;
+import net.causw.app.main.domain.event.CertifiedUserCreatedEvent;
 import net.causw.app.main.domain.model.entity.board.Board;
 import net.causw.app.main.domain.model.entity.board.BoardApply;
 import net.causw.app.main.domain.model.entity.circle.Circle;
@@ -604,7 +604,7 @@ public class BoardService {
 	// 학적 인증 변경사항 커밋 후, 새로운 트랜잭션 시작
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	@TransactionalEventListener
-	public void createNoticeBoardsSubscribe(InitialAcademicCertificationEvent event) {
+	public void createNoticeBoardsSubscribe(CertifiedUserCreatedEvent event) {
 		User user = getUser(event.userId());
 
 		List<Board> noticeBoards = boardRepository.findAllByCategory(StaticValue.BOARD_NAME_APP_NOTICE);
