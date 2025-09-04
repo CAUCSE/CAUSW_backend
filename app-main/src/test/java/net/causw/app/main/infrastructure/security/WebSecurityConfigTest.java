@@ -1,11 +1,16 @@
 package net.causw.app.main.infrastructure.security;
 
-import net.causw.app.main.util.DummyController;
-import net.causw.app.main.infrastructure.security.SecurityService;
-import net.causw.app.main.util.WithMockCustomUser;
-import net.causw.app.main.domain.model.enums.user.Role;
-import net.causw.app.main.domain.model.enums.user.UserState;
-import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
+import static net.causw.app.main.infrastructure.security.SecurityEndpoints.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -22,17 +27,11 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static net.causw.app.main.infrastructure.security.SecurityEndpoints.SecurityEndpoint;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import net.causw.app.main.domain.model.enums.user.Role;
+import net.causw.app.main.domain.model.enums.user.UserState;
+import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.util.DummyController;
+import net.causw.app.main.util.WithMockCustomUser;
 
 @WebMvcTest(DummyController.class)
 @Import({CustomAuthorizationManager.class, SecurityService.class, WebSecurityConfig.class,

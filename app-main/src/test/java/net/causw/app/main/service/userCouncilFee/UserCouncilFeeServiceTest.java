@@ -3,7 +3,6 @@ package net.causw.app.main.service.userCouncilFee;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
-import static org.mockito.Mockito.*;
 
 import java.util.LinkedHashMap;
 import java.util.List;

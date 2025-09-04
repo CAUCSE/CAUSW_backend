@@ -2,10 +2,14 @@ package net.causw.app.main.service.notification;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.doAnswer;
+import static org.mockito.BDDMockito.doThrow;
+import static org.mockito.BDDMockito.mock;
+import static org.mockito.BDDMockito.never;
+import static org.mockito.BDDMockito.verify;
 import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.*;
 
 import java.util.HashSet;
 import java.util.List;

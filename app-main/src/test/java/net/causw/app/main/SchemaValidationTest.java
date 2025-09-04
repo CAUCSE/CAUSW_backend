@@ -1,7 +1,5 @@
 package net.causw.app.main;
 
-import jakarta.persistence.EntityManagerFactory;
-
 import java.util.Properties;
 
 import javax.sql.DataSource;
@@ -20,6 +18,8 @@ import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.PlatformTransactionManager;
+
+import jakarta.persistence.EntityManagerFactory;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = SchemaValidationTest.Config.class)

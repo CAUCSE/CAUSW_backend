@@ -3,7 +3,6 @@ package net.causw.app.main.service.notification;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
-import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;

@@ -1,18 +1,18 @@
 package net.causw.app.main.infrastructure.security;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.http.HttpMethod;
+import static net.causw.app.main.infrastructure.security.SecurityEndpoints.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static net.causw.app.main.infrastructure.security.SecurityEndpoints.*;
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.http.HttpMethod;
 
 public class SecurityEndpointsTest {
 

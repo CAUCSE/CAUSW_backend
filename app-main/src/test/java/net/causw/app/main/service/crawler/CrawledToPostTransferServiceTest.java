@@ -2,7 +2,6 @@ package net.causw.app.main.service.crawler;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
-import static org.mockito.Mockito.*;
 
 import java.util.Collections;
 import java.util.List;

@@ -2,7 +2,6 @@ package net.causw.app.main.service.report;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
-import static org.mockito.Mockito.*;
 
 import java.util.Optional;
 

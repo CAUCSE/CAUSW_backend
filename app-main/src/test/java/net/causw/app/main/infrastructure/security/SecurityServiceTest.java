@@ -1,10 +1,8 @@
 package net.causw.app.main.infrastructure.security;
 
-import net.causw.app.main.util.WithMockCustomUser;
-import net.causw.app.main.domain.model.enums.user.Role;
-import net.causw.app.main.domain.model.enums.user.RoleGroup;
-import net.causw.app.main.domain.model.enums.user.UserState;
-import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -16,9 +14,11 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import net.causw.app.main.domain.model.enums.user.Role;
+import net.causw.app.main.domain.model.enums.user.RoleGroup;
+import net.causw.app.main.domain.model.enums.user.UserState;
+import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.util.WithMockCustomUser;
 
 @ExtendWith({MockitoExtension.class, SpringExtension.class})
 class SecurityServiceTest {
