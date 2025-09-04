@@ -10,24 +10,22 @@ import lombok.Getter;
 @AllArgsConstructor
 public class UserCouncilFeeListResponseDto {
 
-    @Schema(description = "userCouncilFee 고유 id값", example = "uuid 형식의 String 값입니다.")
-    private String userCouncilFeeId;
+	@Schema(description = "userCouncilFee 고유 id값", example = "uuid 형식의 String 값입니다.")
+	private String userCouncilFeeId;
 
-    @Schema(description = "동문네트워크 서비스 가입 여부", example = "true")
-    private Boolean isJoinedService;
+	@Schema(description = "동문네트워크 서비스 가입 여부", example = "true")
+	private Boolean isJoinedService;
 
-    @Schema(description = "user 고유 id값", example = "uuid 형식의 String 값입니다.")
-    private String userId;
+	@Schema(description = "user 고유 id값", example = "uuid 형식의 String 값입니다.")
+	private String userId;
 
-    @Schema(description = "councilFeeFakeUser 고유 id값", example = "uuid 형식의 String 값입니다.")
-    private String councilFeeFakeUserId;
+	@Schema(description = "councilFeeFakeUser 고유 id값", example = "uuid 형식의 String 값입니다.")
+	private String councilFeeFakeUserId;
 
-    @Schema(description = "이름", example = "정상제")
-    private String userName;
+	@Schema(description = "이름", example = "정상제")
+	private String userName;
 
-    @Schema(description = "학번", example = "20191234")
-    private String studentId;
-
-
+	@Schema(description = "학번", example = "20191234")
+	private String studentId;
 
 }

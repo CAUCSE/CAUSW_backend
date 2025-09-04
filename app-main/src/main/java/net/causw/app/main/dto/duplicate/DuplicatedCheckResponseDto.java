@@ -12,7 +12,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class DuplicatedCheckResponseDto {
 
-    @Schema(description = "중복 여부 boolean 값", example = "true")
-    private Boolean result;
+	@Schema(description = "중복 여부 boolean 값", example = "true")
+	private Boolean result;
 
 }

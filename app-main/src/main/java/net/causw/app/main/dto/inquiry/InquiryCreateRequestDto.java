@@ -11,8 +11,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class InquiryCreateRequestDto {
-    @NotBlank(message = "설문 제목을 입력해 주세요.")
-    private String title;
-    @NotBlank(message = "설문 내용을 입력해 주세요.")
-    private String content;
+	@NotBlank(message = "설문 제목을 입력해 주세요.")
+	private String title;
+	@NotBlank(message = "설문 내용을 입력해 주세요.")
+	private String content;
 }

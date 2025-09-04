@@ -1,8 +1,9 @@
 package net.causw.app.main.service.crawler;
 
-import net.causw.app.main.domain.model.entity.crawled.CrawledNotice;
 import java.util.List;
 
+import net.causw.app.main.domain.model.entity.crawled.CrawledNotice;
+
 public interface Crawler {
-    List<CrawledNotice> crawl();
+	List<CrawledNotice> crawl();
 }

@@ -1,10 +1,5 @@
 package net.causw.app.main.domain.model.entity.locker;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Builder;
 import net.causw.app.main.domain.model.entity.base.BaseEntity;
 import net.causw.app.main.domain.model.enums.locker.LockerLogAction;
 
@@ -13,6 +8,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
@@ -21,40 +21,40 @@ import jakarta.persistence.Table;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "TB_LOCKER_LOG")
 public class LockerLog extends BaseEntity {
-    @Column(name = "locker_number", nullable = false)
-    private Long lockerNumber;
+	@Column(name = "locker_number", nullable = false)
+	private Long lockerNumber;
 
-    @Column(name = "locker_location_name")
-    private String lockerLocationName;
+	@Column(name = "locker_location_name")
+	private String lockerLocationName;
 
-    @Column(name = "user_email", nullable = true)
-    private String userEmail;
+	@Column(name = "user_email", nullable = true)
+	private String userEmail;
 
-    @Column(name = "user_name", nullable = true)
-    private String userName;
+	@Column(name = "user_name", nullable = true)
+	private String userName;
 
-    @Column(name = "action", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private LockerLogAction action;
+	@Column(name = "action", nullable = false)
+	@Enumerated(EnumType.STRING)
+	private LockerLogAction action;
 
-    @Column(name = "message", nullable = true)
-    private String message;
+	@Column(name = "message", nullable = true)
+	private String message;
 
-    public static LockerLog of(
-            Long lockerNumber,
-            String lockerLocationName,
-            String userEmail,
-            String userName,
-            LockerLogAction action,
-            String message
-    ) {
-        return LockerLog.builder()
-                .lockerNumber(lockerNumber)
-                .lockerLocationName(lockerLocationName)
-                .userEmail(userEmail)
-                .userName(userName)
-                .action(action)
-                .message(message)
-                .build();
-    }
+	public static LockerLog of(
+		Long lockerNumber,
+		String lockerLocationName,
+		String userEmail,
+		String userName,
+		LockerLogAction action,
+		String message
+	) {
+		return LockerLog.builder()
+			.lockerNumber(lockerNumber)
+			.lockerLocationName(lockerLocationName)
+			.userEmail(userEmail)
+			.userName(userName)
+			.action(action)
+			.message(message)
+			.build();
+	}
 }

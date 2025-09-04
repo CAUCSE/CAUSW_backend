@@ -1,27 +1,43 @@
 package net.causw.app.main.domain.model.entity.user;
 
-import jakarta.persistence.*;
-import lombok.*;
-
-import net.causw.app.main.domain.model.entity.base.BaseEntity;
-import net.causw.app.main.domain.model.entity.circle.CircleMember;
-import net.causw.app.main.domain.model.entity.locker.Locker;
-import net.causw.app.main.domain.model.entity.notification.CeremonyNotificationSetting;
-import net.causw.app.main.domain.model.entity.vote.VoteRecord;
-import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.UserProfileImage;
-import net.causw.app.main.dto.user.CreateGraduatedUserCommand;
-import net.causw.app.main.dto.user.UserCreateRequestDto;
-import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
-import net.causw.app.main.domain.model.enums.user.GraduationType;
-import net.causw.app.main.domain.model.enums.user.Role;
-import net.causw.app.main.domain.model.enums.user.UserState;
+import static net.causw.global.constant.StaticValue.*;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import static net.causw.global.constant.StaticValue.NO_PHONE_NUMBER_MESSAGE;
+import net.causw.app.main.domain.model.entity.base.BaseEntity;
+import net.causw.app.main.domain.model.entity.circle.CircleMember;
+import net.causw.app.main.domain.model.entity.locker.Locker;
+import net.causw.app.main.domain.model.entity.notification.CeremonyNotificationSetting;
+import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.model.entity.vote.VoteRecord;
+import net.causw.app.main.domain.model.enums.user.GraduationType;
+import net.causw.app.main.domain.model.enums.user.Role;
+import net.causw.app.main.domain.model.enums.user.UserState;
+import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.dto.user.UserCreateRequestDto;
+import net.causw.app.main.dto.user.CreateGraduatedUserCommand;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Builder(access = AccessLevel.PROTECTED)

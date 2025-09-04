@@ -1,29 +1,31 @@
 package net.causw.app.main.dto.ceremony;
 
+import java.util.Set;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
-import java.util.Set;
 
 @Getter
 public class CreateCeremonyNotificationSettingDto {
 
-    // 여러 학번을 받을 수 있는 변수 추가
-    @Schema(description = "구독을 원하는 입학년도를 입력해주세요")
-    private Set<String> subscribedAdmissionYears;
+	// 여러 학번을 받을 수 있는 변수 추가
+	@Schema(description = "구독을 원하는 입학년도를 입력해주세요")
+	private Set<String> subscribedAdmissionYears;
 
-    @NotNull
-    @Schema(description = "모든 입학년도 설정에 대한 flag")
-    private boolean setAll;
+	@NotNull
+	@Schema(description = "모든 입학년도 설정에 대한 flag")
+	private boolean setAll;
 
-    @NotNull
-    @Schema(description = "푸시알람 수신 여부에 대한 flag")
-    private boolean notificationActive;
+	@NotNull
+	@Schema(description = "푸시알람 수신 여부에 대한 flag")
+	private boolean notificationActive;
 
-    // 생성자
-    public CreateCeremonyNotificationSettingDto(Set<String> subscribedAdmissionYears, boolean setAll, boolean notificationActive) {
-        this.subscribedAdmissionYears = subscribedAdmissionYears;
-        this.setAll = setAll;
-        this.notificationActive = notificationActive;
-    }
+	// 생성자
+	public CreateCeremonyNotificationSettingDto(Set<String> subscribedAdmissionYears, boolean setAll,
+		boolean notificationActive) {
+		this.subscribedAdmissionYears = subscribedAdmissionYears;
+		this.setAll = setAll;
+		this.notificationActive = notificationActive;
+	}
 }

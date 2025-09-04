@@ -10,6 +10,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserFcmCreateRequestDto {
-    private String fcmToken;
-    private String refreshToken;
+	private String fcmToken;
+	private String refreshToken;
 }

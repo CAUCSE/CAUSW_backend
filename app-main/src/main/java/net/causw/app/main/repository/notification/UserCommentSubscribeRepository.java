@@ -1,18 +1,30 @@
 package net.causw.app.main.repository.notification;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 import net.causw.app.main.domain.model.entity.comment.Comment;
 import net.causw.app.main.domain.model.entity.notification.UserCommentSubscribe;
 import net.causw.app.main.domain.model.entity.user.User;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
-import java.util.Optional;
+public interface UserCommentSubscribeRepository extends JpaRepository<UserCommentSubscribe, String> {
 
-public interface UserCommentSubscribeRepository extends JpaRepository<UserCommentSubscribe,String> {
+	@EntityGraph(attributePaths = {"user"})
+	@Query("""
+		SELECT ucs FROM UserCommentSubscribe ucs
+		WHERE ucs.comment = :comment AND ucs.isSubscribed = true
+		AND (:#{#blockerUserIds.size()} = 0 OR ucs.user.id NOT IN :blockerUserIds)
+		""")
+	List<UserCommentSubscribe> findByCommentAndIsSubscribedTrueExcludingBlockerUsers(
+		@Param("comment") Comment comment,
+		@Param("blockerUserIds") Set<String> blockerUserIds
+	);
 
-    @EntityGraph(attributePaths = {"user"})
-    List<UserCommentSubscribe> findByCommentAndIsSubscribedTrue(Comment comment);
-
-    Optional<UserCommentSubscribe> findByUserAndComment(User user, Comment comment);
+	Optional<UserCommentSubscribe> findByUserAndComment(User user, Comment comment);
 }

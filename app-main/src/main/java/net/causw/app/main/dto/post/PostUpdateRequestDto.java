@@ -13,12 +13,12 @@ import lombok.Setter;
 @NoArgsConstructor
 public class PostUpdateRequestDto {
 
-    @NotBlank(message = "게시글 제목을 입력해 주세요.")
-    @Schema(description = "게시글 제목", example = "게시글의 제목입니다.")
-    private String title;
+	@NotBlank(message = "게시글 제목을 입력해 주세요.")
+	@Schema(description = "게시글 제목", example = "게시글의 제목입니다.")
+	private String title;
 
-    @NotBlank(message = "게시글 내용을 입력해 주세요.")
-    @Schema(description = "게시글 내용", example = "게시글의 내용입니다.")
-    private String content;
+	@NotBlank(message = "게시글 내용을 입력해 주세요.")
+	@Schema(description = "게시글 내용", example = "게시글의 내용입니다.")
+	private String content;
 
 }

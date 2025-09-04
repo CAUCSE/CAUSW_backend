@@ -6,9 +6,9 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum UserAdmissionLogAction {
-    ACCEPT("accept"),
-    REJECT("reject");
+	ACCEPT("accept"),
+	REJECT("reject");
 
-    private final String value;
+	private final String value;
 
 }

@@ -1,29 +1,97 @@
 package net.causw.app.main.service.user;
 
-import jakarta.servlet.http.HttpServletResponse;
-
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.event.CertifiedUserCreatedEvent;
 import net.causw.app.main.domain.model.entity.board.Board;
 import net.causw.app.main.domain.model.entity.circle.Circle;
 import net.causw.app.main.domain.model.entity.circle.CircleMember;
 import net.causw.app.main.domain.model.entity.locker.LockerLog;
-import net.causw.app.main.dto.post.PostsResponseDto;
-import net.causw.app.main.infrastructure.firebase.FcmUtils;
-import net.causw.app.main.repository.userAcademicRecord.UserAcademicRecordApplicationRepository;
-import net.causw.app.main.repository.uuidFile.UserAcademicRecordApplicationAttachImageRepository;
-import net.causw.app.main.repository.uuidFile.UserProfileImageRepository;
+import net.causw.app.main.domain.model.entity.post.FavoritePost;
+import net.causw.app.main.domain.model.entity.post.LikePost;
+import net.causw.app.main.domain.model.entity.post.Post;
+import net.causw.app.main.domain.model.entity.user.User;
+import net.causw.app.main.domain.model.entity.user.UserAdmission;
+import net.causw.app.main.domain.model.entity.user.UserAdmissionLog;
 import net.causw.app.main.domain.model.entity.userAcademicRecord.UserAcademicRecordApplication;
+import net.causw.app.main.domain.model.entity.uuidFile.UuidFile;
 import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.UserAcademicRecordApplicationAttachImage;
 import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.UserAdmissionAttachImage;
 import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.model.enums.circle.CircleMemberStatus;
+import net.causw.app.main.domain.model.enums.locker.LockerLogAction;
+import net.causw.app.main.domain.model.enums.user.Role;
+import net.causw.app.main.domain.model.enums.user.UserAdmissionLogAction;
+import net.causw.app.main.domain.model.enums.user.UserState;
+import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.model.enums.uuidFile.FilePath;
 import net.causw.app.main.domain.policy.StatusPolicy;
-import net.causw.app.main.service.excel.UserExcelService;
-import net.causw.app.main.service.pageable.PageableFactory;
-import net.causw.app.main.domain.model.entity.post.Post;
+import net.causw.app.main.domain.validation.AdmissionYearValidator;
+import net.causw.app.main.domain.validation.ConstraintValidator;
+import net.causw.app.main.domain.validation.PasswordCorrectValidator;
+import net.causw.app.main.domain.validation.PasswordFormatValidator;
+import net.causw.app.main.domain.validation.PhoneNumberFormatValidator;
+import net.causw.app.main.domain.validation.UserRoleIsNoneValidator;
+import net.causw.app.main.domain.validation.UserRoleValidator;
+import net.causw.app.main.domain.validation.UserRoleWithoutAdminValidator;
+import net.causw.app.main.domain.validation.UserStateIsDropOrIsInActiveValidator;
+import net.causw.app.main.domain.validation.UserStateIsNotDropAndActiveValidator;
+import net.causw.app.main.domain.validation.UserStateValidator;
+import net.causw.app.main.domain.validation.ValidatorBucket;
+import net.causw.app.main.dto.board.BoardResponseDto;
+import net.causw.app.main.dto.circle.CircleResponseDto;
+import net.causw.app.main.dto.duplicate.DuplicatedCheckResponseDto;
+import net.causw.app.main.dto.post.PostsResponseDto;
+import net.causw.app.main.dto.user.GraduatedUserRegisterRequestDto;
+import net.causw.app.main.dto.user.UserAdmissionCreateRequestDto;
+import net.causw.app.main.dto.user.UserAdmissionResponseDto;
+import net.causw.app.main.dto.user.UserAdmissionsResponseDto;
+import net.causw.app.main.dto.user.UserCommentsResponseDto;
+import net.causw.app.main.dto.user.UserCreateRequestDto;
+import net.causw.app.main.dto.user.UserFcmCreateRequestDto;
+import net.causw.app.main.dto.user.UserFcmTokenResponseDto;
+import net.causw.app.main.dto.user.UserFindIdRequestDto;
+import net.causw.app.main.dto.user.UserFindIdResponseDto;
+import net.causw.app.main.dto.user.UserFindPasswordRequestDto;
+import net.causw.app.main.dto.user.UserPostsResponseDto;
+import net.causw.app.main.dto.user.UserPrivilegedResponseDto;
+import net.causw.app.main.dto.user.UserResponseDto;
+import net.causw.app.main.dto.user.UserSignInRequestDto;
+import net.causw.app.main.dto.user.UserSignInResponseDto;
+import net.causw.app.main.dto.user.UserSignOutRequestDto;
+import net.causw.app.main.dto.user.UserSignOutResponseDto;
+import net.causw.app.main.dto.user.UserUpdatePasswordRequestDto;
+import net.causw.app.main.dto.user.UserUpdateRequestDto;
+import net.causw.app.main.dto.util.dtoMapper.BoardDtoMapper;
+import net.causw.app.main.dto.util.dtoMapper.CircleDtoMapper;
+import net.causw.app.main.dto.util.dtoMapper.PostDtoMapper;
+import net.causw.app.main.dto.util.dtoMapper.UserDtoMapper;
+import net.causw.app.main.infrastructure.aop.annotation.MeasureTime;
+import net.causw.app.main.infrastructure.firebase.FcmUtils;
+import net.causw.app.main.infrastructure.mail.GoogleMailSender;
+import net.causw.app.main.infrastructure.redis.RedisUtils;
+import net.causw.app.main.infrastructure.security.JwtTokenProvider;
 import net.causw.app.main.repository.board.BoardRepository;
 import net.causw.app.main.repository.circle.CircleMemberRepository;
 import net.causw.app.main.repository.circle.CircleRepository;
@@ -37,58 +105,26 @@ import net.causw.app.main.repository.post.PostRepository;
 import net.causw.app.main.repository.user.UserAdmissionLogRepository;
 import net.causw.app.main.repository.user.UserAdmissionRepository;
 import net.causw.app.main.repository.user.UserRepository;
-import net.causw.app.main.domain.model.entity.user.User;
-import net.causw.app.main.domain.model.entity.user.UserAdmission;
-import net.causw.app.main.domain.model.entity.user.UserAdmissionLog;
-import net.causw.app.main.domain.model.entity.uuidFile.UuidFile;
-import net.causw.app.main.dto.duplicate.DuplicatedCheckResponseDto;
-import net.causw.app.main.dto.board.BoardResponseDto;
-import net.causw.app.main.dto.circle.CircleResponseDto;
-import net.causw.app.main.dto.user.*;
-import net.causw.app.main.dto.util.dtoMapper.BoardDtoMapper;
-import net.causw.app.main.dto.util.dtoMapper.CircleDtoMapper;
-import net.causw.app.main.dto.util.dtoMapper.PostDtoMapper;
-import net.causw.app.main.dto.util.dtoMapper.UserDtoMapper;
+import net.causw.app.main.repository.userAcademicRecord.UserAcademicRecordApplicationRepository;
+import net.causw.app.main.repository.userInfo.UserInfoRepository;
+import net.causw.app.main.repository.uuidFile.UserAcademicRecordApplicationAttachImageRepository;
+import net.causw.app.main.repository.uuidFile.UserProfileImageRepository;
+import net.causw.app.main.service.excel.UserExcelService;
+import net.causw.app.main.service.pageable.PageableFactory;
 import net.causw.app.main.service.post.PostService;
+import net.causw.app.main.service.userBlock.UserBlockEntityService;
 import net.causw.app.main.service.uuidFile.UuidFileService;
-import net.causw.app.main.infrastructure.security.JwtTokenProvider;
-import net.causw.app.main.infrastructure.aop.annotation.MeasureTime;
-import net.causw.app.main.domain.model.enums.circle.CircleMemberStatus;
-import net.causw.app.main.domain.model.enums.locker.LockerLogAction;
-import net.causw.app.main.domain.model.enums.user.Role;
-import net.causw.app.main.domain.model.enums.user.UserAdmissionLogAction;
-import net.causw.app.main.domain.model.enums.user.UserState;
-import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
-import net.causw.app.main.domain.model.enums.uuidFile.FilePath;
 import net.causw.global.constant.MessageUtil;
-import net.causw.app.main.infrastructure.redis.RedisUtils;
 import net.causw.global.constant.StaticValue;
-import net.causw.app.main.domain.validation.*;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.InternalServerException;
 import net.causw.global.exception.NotFoundException;
 import net.causw.global.exception.UnauthorizedException;
-import net.causw.app.main.infrastructure.mail.GoogleMailSender;
 
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Validator;
-
-import org.springframework.web.multipart.MultipartFile;
-
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 
 @MeasureTime
 @Service
@@ -103,6 +139,7 @@ public class UserService {
 	private final ApplicationEventPublisher eventPublisher;
 
 	private final UserRepository userRepository;
+	private final UserInfoRepository userInfoRepository;
 	private final CircleRepository circleRepository;
 	private final CircleMemberRepository circleMemberRepository;
 	private final PostRepository postRepository;
@@ -128,6 +165,7 @@ public class UserService {
 	private final UserDtoMapper userDtoMapper;
 	private final PostDtoMapper postDtoMapper;
 	private final PostService postService;
+	private final UserBlockEntityService userBlockEntityService;
 
 	@Transactional
 	public void findPassword(
@@ -256,10 +294,15 @@ public class UserService {
 			.consistOf(UserStateValidator.of(requestUser.getState()))
 			.validate();
 
+		Set<String> blockedUserIds = userBlockEntityService.findBlockeeUserIdsByBlocker(requestUser);
+		Pageable pageable = this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
+		// todo: postRepository 로 이동 및 (entity)service 단으로 계층 분리
+		Page<FavoritePost> favoritePostPage = this.favoritePostRepository.findByUserId(requestUser.getId(),
+			blockedUserIds, pageable);
+
 		return UserDtoMapper.INSTANCE.toUserPostsResponseDto(
 			requestUser,
-			this.favoritePostRepository.findByUserId(requestUser.getId(),
-					this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
+			favoritePostPage
 				.map(favoritePost -> {
 					Post post = favoritePost.getPost();
 					PostsResponseDto dto = PostDtoMapper.INSTANCE.toPostsResponseDto(
@@ -304,10 +347,14 @@ public class UserService {
 			.consistOf(UserStateValidator.of(requestUser.getState()))
 			.validate();
 
+		Set<String> blockedUserIds = userBlockEntityService.findBlockeeUserIdsByBlocker(requestUser);
+		Pageable pageable = this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
+		Page<LikePost> likePostPage = this.likePostRepository.findByUserId(requestUser.getId(), blockedUserIds,
+			pageable);
+
 		return userDtoMapper.toUserPostsResponseDto(
 			requestUser,
-			this.likePostRepository.findByUserId(requestUser.getId(),
-					this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
+			likePostPage
 				.map(likePost -> {
 					Post post = likePost.getPost();
 					PostsResponseDto dto = postDtoMapper.toPostsResponseDto(
@@ -344,9 +391,12 @@ public class UserService {
 
 		Pageable pageable = this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE / 2 + 5);
 
-		Page<Post> postsFromComments = this.commentRepository.findPostsByUserId(requestUser.getId(), pageable);
+		// todo: 추후 해당 로직들 postRepository 로 옮기고, (entity)service 단으로 계층 분리해서 재사용성 높이기
+		Set<String> blockedUserIdsByUser = userBlockEntityService.findBlockeeUserIdsByBlocker(requestUser);
+		Page<Post> postsFromComments = this.commentRepository.findPostsByUserId(requestUser.getId(),
+			blockedUserIdsByUser, pageable);
 		Page<Post> postsFromChildComments = this.childCommentRepository.findPostsByUserId(requestUser.getId(),
-			pageable);
+			blockedUserIdsByUser, pageable);
 
 		//Comment와 ChildComment의 Post 중복 제거
 		Set<Post> combinedPosts = new HashSet<>();
@@ -358,6 +408,7 @@ public class UserService {
 		combinedPostsList.sort((post1, post2) -> post2.getCreatedAt().compareTo(post1.getCreatedAt()));
 		Page<Post> combinedPostsPage = new PageImpl<>(combinedPostsList, pageable, combinedPostsList.size());
 
+		// todo: n+1 발생하는 내용 추후 해결해야함
 		return UserDtoMapper.INSTANCE.toUserPostsResponseDto(
 			requestUser,
 			combinedPostsPage.map(post -> {

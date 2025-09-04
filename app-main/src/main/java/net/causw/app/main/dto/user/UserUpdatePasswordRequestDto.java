@@ -11,8 +11,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserUpdatePasswordRequestDto {
-    @NotBlank(message = "기존 비밀번호를 입력해 주세요.")
-    private String originPassword;
-    @NotBlank(message = "새로운 비밀번호를 입력해 주세요.")
-    private String updatedPassword;
+	@NotBlank(message = "기존 비밀번호를 입력해 주세요.")
+	private String originPassword;
+	@NotBlank(message = "새로운 비밀번호를 입력해 주세요.")
+	private String updatedPassword;
 }
