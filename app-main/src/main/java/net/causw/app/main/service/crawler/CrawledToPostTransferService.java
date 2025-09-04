@@ -82,14 +82,16 @@ public class CrawledToPostTransferService {
 		// Post 변환 시점에서 첨부파일 링크 추가
 		String contentHtml = buildContentWithAttachmentsAndLink(notice);
 
-		Post postToSave = findExistingPostByTitle(board, title);
-		// 기존 게시글이 존재하는지 확인
-		if (postToSave != null) {
+		// 제목으로 기존 게시글 조회
+		Post existingPost = findExistingPostByTitle(board, title);
+
+		if (existingPost != null) {
 			// 기존 Post 업데이트
-			postToSave.update(title, contentHtml, postToSave.getForm(), postToSave.getPostAttachImageList());
+			existingPost.update(title, contentHtml, existingPost.getForm(), existingPost.getPostAttachImageList());
+			postRepository.save(existingPost);
 		} else {
 			// 새 Post 생성
-			postToSave = Post.of(
+			Post newPost = Post.of(
 				title,
 				contentHtml,
 				adminUser,
@@ -99,11 +101,11 @@ public class CrawledToPostTransferService {
 				null,
 				new ArrayList<>()
 			);
-		}
-		postRepository.save(postToSave);
+			postRepository.save(newPost);
 
-		// 알림 전송
-		boardNotificationService.sendByBoardIsSubscribed(board, postToSave);
+			// 새 게시글인 경우에만 알림 전송
+			boardNotificationService.sendByBoardIsSubscribed(board, newPost);
+		}
 		return true;
 	}
 
