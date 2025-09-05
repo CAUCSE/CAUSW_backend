@@ -13,8 +13,8 @@ import lombok.Setter;
 @NoArgsConstructor
 public class EventCreateRequestDto {
 
-    @NotBlank(message = "이벤트 배너 URL은 필수 입력값 입니다.")
-    @Schema(description = "이벤트 URL")
-    private String url;
+	@NotBlank(message = "이벤트 배너 URL은 필수 입력값 입니다.")
+	@Schema(description = "이벤트 URL")
+	private String url;
 
 }

@@ -1,0 +1,49 @@
+package net.causw.app.main.dto.user;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+
+public record GraduatedUserRegisterRequestDto(
+	@NotBlank
+	String name,
+
+	@NotBlank
+	String nickname,
+
+	@NotNull
+	Integer admissionYear,
+
+	@NotNull
+	Integer graduationYear,
+
+	@Email
+	@NotBlank
+	String email,
+
+	@NotBlank
+	String password,
+
+	@NotBlank
+	@Pattern(regexp = "^01(?:0|1|[6-9])-(\\d{3}|\\d{4})-\\d{4}$", message = "전화번호 형식에 맞지 않습니다.")
+	String phoneNumber,
+
+	@NotBlank
+	String major,
+
+	String studentId
+) {
+	public CreateGraduatedUserCommand toCreateGraduatedUserCommand() {
+		return new CreateGraduatedUserCommand(
+			this.email,
+			this.name,
+			this.studentId,
+			this.admissionYear,
+			this.graduationYear,
+			this.nickname,
+			this.major,
+			this.phoneNumber
+		);
+	}
+}

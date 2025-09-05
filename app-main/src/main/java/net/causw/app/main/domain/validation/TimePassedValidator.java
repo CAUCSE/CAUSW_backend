@@ -1,43 +1,43 @@
 package net.causw.app.main.domain.validation;
 
-import net.causw.global.exception.BadRequestException;
-import net.causw.global.exception.ErrorCode;
-import net.causw.global.constant.StaticValue;
-
 import java.time.Duration;
 import java.time.LocalDateTime;
 
+import net.causw.global.constant.StaticValue;
+import net.causw.global.exception.BadRequestException;
+import net.causw.global.exception.ErrorCode;
+
 public class TimePassedValidator extends AbstractValidator {
-    private final LocalDateTime updatedAt;
+	private final LocalDateTime updatedAt;
 
-    private TimePassedValidator(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
+	private TimePassedValidator(LocalDateTime updatedAt) {
+		this.updatedAt = updatedAt;
+	}
 
-    public static TimePassedValidator of(LocalDateTime updatedAt) {
-        return new TimePassedValidator(updatedAt);
-    }
+	public static TimePassedValidator of(LocalDateTime updatedAt) {
+		return new TimePassedValidator(updatedAt);
+	}
 
-    @Override
-    public void validate() {
-        Duration duration = Duration.between(this.updatedAt, LocalDateTime.now());
+	@Override
+	public void validate() {
+		Duration duration = Duration.between(this.updatedAt, LocalDateTime.now());
 
-        if (duration.getSeconds() < StaticValue.JWT_ACCESS_THRESHOLD) {
-            LocalDateTime allowedTime = this.updatedAt.plusSeconds(StaticValue.JWT_ACCESS_THRESHOLD);
+		if (duration.getSeconds() < StaticValue.JWT_ACCESS_THRESHOLD) {
+			LocalDateTime allowedTime = this.updatedAt.plusSeconds(StaticValue.JWT_ACCESS_THRESHOLD);
 
-            String message =
-                            allowedTime.getYear() + "-" +
-                            allowedTime.getMonthValue() + "-" +
-                            allowedTime.getDayOfMonth() + " " +
-                            allowedTime.getHour() + ":" +
-                            allowedTime.getMinute() + ":" +
-                            allowedTime.getSecond() +
-                            " 이후에 다시 시도해주세요.";
+			String message =
+				allowedTime.getYear() + "-" +
+					allowedTime.getMonthValue() + "-" +
+					allowedTime.getDayOfMonth() + " " +
+					allowedTime.getHour() + ":" +
+					allowedTime.getMinute() + ":" +
+					allowedTime.getSecond() +
+					" 이후에 다시 시도해주세요.";
 
-            throw new BadRequestException(
-                    ErrorCode.TIME_NOT_PASSED,
-                    message
-            );
-        }
-    }
+			throw new BadRequestException(
+				ErrorCode.TIME_NOT_PASSED,
+				message
+			);
+		}
+	}
 }

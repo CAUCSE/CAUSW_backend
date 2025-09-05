@@ -11,6 +11,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChildCommentUpdateRequestDto {
-    @NotBlank(message = "대댓글 내용을 입력해 주세요.")
-    private String content;
+	@NotBlank(message = "대댓글 내용을 입력해 주세요.")
+	private String content;
 }

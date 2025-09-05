@@ -1,12 +1,22 @@
 package net.causw.app.main.domain.model.entity.vote;
 
-import jakarta.persistence.*;
-import lombok.*;
+import java.util.ArrayList;
+import java.util.List;
+
 import net.causw.app.main.domain.model.entity.base.BaseEntity;
 import net.causw.app.main.domain.model.entity.post.Post;
 
-import java.util.ArrayList;
-import java.util.List;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
@@ -15,33 +25,34 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_vote")
 public class Vote extends BaseEntity {
-    private String title;
-    private boolean allowAnonymous;
-    private boolean allowMultiple;
-    private boolean isEnd;
+	private String title;
+	private boolean allowAnonymous;
+	private boolean allowMultiple;
+	private boolean isEnd;
 
-    @OneToMany(mappedBy = "vote", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    @Builder.Default
-    private List<VoteOption> voteOptions = new ArrayList<>();
+	@OneToMany(mappedBy = "vote", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+	@Builder.Default
+	private List<VoteOption> voteOptions = new ArrayList<>();
 
-    @OneToOne(mappedBy = "vote", fetch = FetchType.EAGER)
-    private Post post;
+	@OneToOne(mappedBy = "vote", fetch = FetchType.EAGER)
+	private Post post;
 
-    public static Vote of(String title, boolean allowAnonymous, boolean allowMultiple, List<VoteOption> voteOptions, Post post) {
-        return Vote.builder()
-                .title(title)
-                .allowAnonymous(allowAnonymous)
-                .allowMultiple(allowMultiple)
-                .voteOptions(voteOptions)
-                .post(post)
-                .build();
-    }
+	public static Vote of(String title, boolean allowAnonymous, boolean allowMultiple, List<VoteOption> voteOptions,
+		Post post) {
+		return Vote.builder()
+			.title(title)
+			.allowAnonymous(allowAnonymous)
+			.allowMultiple(allowMultiple)
+			.voteOptions(voteOptions)
+			.post(post)
+			.build();
+	}
 
-    public void endVote(){
-        this.isEnd = true;
-    }
+	public void endVote() {
+		this.isEnd = true;
+	}
 
-    public void restartVote(){
-        this.isEnd = false;
-    }
+	public void restartVote() {
+		this.isEnd = false;
+	}
 }

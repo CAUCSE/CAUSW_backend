@@ -10,7 +10,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserSignOutRequestDto {
-    private String refreshToken;
-    private String accessToken;
-    private String fcmToken;
+	private String refreshToken;
+	private String accessToken;
+	private String fcmToken;
 }

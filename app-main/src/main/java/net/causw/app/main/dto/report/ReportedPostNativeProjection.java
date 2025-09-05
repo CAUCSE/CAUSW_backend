@@ -9,13 +9,21 @@ import net.causw.app.main.domain.model.enums.user.UserState;
  * 게시글 신고를 조회할 때 사용
  */
 public interface ReportedPostNativeProjection {
-    String getReportId();
-    String getPostId();
-    String getPostTitle();
-    String getWriterName();
-    UserState getWriterState();
-    String getReportReason();
-    LocalDateTime getReportCreatedAt();
-    String getBoardName();
-    String getBoardId();
+	String getReportId();
+
+	String getPostId();
+
+	String getPostTitle();
+
+	String getWriterName();
+
+	UserState getWriterState();
+
+	String getReportReason();
+
+	LocalDateTime getReportCreatedAt();
+
+	String getBoardName();
+
+	String getBoardId();
 }

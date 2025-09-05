@@ -14,12 +14,12 @@ import lombok.Setter;
 @NoArgsConstructor
 public class UserAdmissionCreateRequestDto {
 
-    @Email(message = "이메일 형식에 맞지 않습니다.")
-    @NotBlank(message = "이메일을 입력해 주세요.")
-    @Schema(description = "이메일", example = "yebin@cau.ac.kr")
-    private String email;
+	@Email(message = "이메일 형식에 맞지 않습니다.")
+	@NotBlank(message = "이메일을 입력해 주세요.")
+	@Schema(description = "이메일", example = "yebin@cau.ac.kr")
+	private String email;
 
-    @Schema(description = "자기소개 글 (255자 이내)", example = "안녕하세요! 코딩을 좋아하는 신입생 이예빈입니다.")
-    private String description;
+	@Schema(description = "자기소개 글 (255자 이내)", example = "안녕하세요! 코딩을 좋아하는 신입생 이예빈입니다.")
+	private String description;
 
 }

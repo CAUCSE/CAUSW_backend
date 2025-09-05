@@ -1,6 +1,5 @@
 package net.causw.app.main.infrastructure.aop;
 
-import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -10,39 +9,42 @@ import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
 @Aspect
 @Component
 public class LogAspect {
 
-    // @MeasureTime 애노테이션이 붙은 클래스의 메서드를 대상으로 설정
-    @Pointcut("@within(net.causw.app.main.infrastructure.aop.annotation.MeasureTime)")
-    private void timer(){}
+	// @MeasureTime 애노테이션이 붙은 클래스의 메서드를 대상으로 설정
+	@Pointcut("@within(net.causw.app.main.infrastructure.aop.annotation.MeasureTime)")
+	private void timer() {
+	}
 
-    // 메서드 실행 전,후로 시간을 측정하고, 실행된 메서드와 실행시간을 로깅
-    @Around("timer()")
-    public Object loggingExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
-        StopWatch stopWatch = new StopWatch();
+	// 메서드 실행 전,후로 시간을 측정하고, 실행된 메서드와 실행시간을 로깅
+	@Around("timer()")
+	public Object loggingExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
+		StopWatch stopWatch = new StopWatch();
 
-        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-        String methodName = signature.getMethod().getName();
-        MDC.put("methodName", methodName); // 메서드명 기록
+		MethodSignature signature = (MethodSignature)joinPoint.getSignature();
+		String methodName = signature.getMethod().getName();
+		MDC.put("methodName", methodName); // 메서드명 기록
 
-        try {
-            stopWatch.start();
-            Object result = joinPoint.proceed(); // 메서드 실행
-            stopWatch.stop();
+		try {
+			stopWatch.start();
+			Object result = joinPoint.proceed(); // 메서드 실행
+			stopWatch.stop();
 
-            long totalTimeMillis = stopWatch.getTotalTimeMillis();
-            final String totalTimeStringMillis = String.valueOf(totalTimeMillis);
-            MDC.put("executionTimeMs", totalTimeStringMillis); // 실행시간 기록
+			long totalTimeMillis = stopWatch.getTotalTimeMillis();
+			final String totalTimeStringMillis = String.valueOf(totalTimeMillis);
+			MDC.put("executionTimeMs", totalTimeStringMillis); // 실행시간 기록
 
-            log.debug("실행된 메서드: {}, 실행시간 = {}ms", methodName, totalTimeStringMillis);
+			log.debug("실행된 메서드: {}, 실행시간 = {}ms", methodName, totalTimeStringMillis);
 
-            return result;
-        } finally {
-            MDC.remove("methodName");
-            MDC.remove("executionTimeMs");
-        }
-    }
+			return result;
+		} finally {
+			MDC.remove("methodName");
+			MDC.remove("executionTimeMs");
+		}
+	}
 }

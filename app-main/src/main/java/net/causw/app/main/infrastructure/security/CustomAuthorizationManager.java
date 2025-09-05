@@ -1,12 +1,12 @@
 package net.causw.app.main.infrastructure.security;
 
-import lombok.RequiredArgsConstructor;
-import net.causw.app.main.infrastructure.security.SecurityService;
 import org.springframework.security.authorization.AuthenticatedAuthorizationManager;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.stereotype.Component;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * Spring Security의 AuthorizationManager를 선언적으로 정의하는 래퍼 클래스
@@ -20,27 +20,27 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class CustomAuthorizationManager {
-    private final SecurityService securityService;
+	private final SecurityService securityService;
 
-    public AuthorizationManager<RequestAuthorizationContext> isCertifiedUser() {
-        return (authentication, context) -> {
-            boolean isAuthenticated = securityService.isCertifiedUser();
-            return new AuthorizationDecision(isAuthenticated);
-        };
-    }
+	public AuthorizationManager<RequestAuthorizationContext> isCertifiedUser() {
+		return (authentication, context) -> {
+			boolean isAuthenticated = securityService.isCertifiedUser();
+			return new AuthorizationDecision(isAuthenticated);
+		};
+	}
 
-    public AuthorizationManager<RequestAuthorizationContext> isActiveUser() {
-        return (authentication, context) -> {
-            boolean isAuthenticated = securityService.isActiveUser();
-            return new AuthorizationDecision(isAuthenticated);
-        };
-    }
+	public AuthorizationManager<RequestAuthorizationContext> isActiveUser() {
+		return (authentication, context) -> {
+			boolean isAuthenticated = securityService.isActiveUser();
+			return new AuthorizationDecision(isAuthenticated);
+		};
+	}
 
-    public AuthorizationManager<RequestAuthorizationContext> permitAll() {
-        return (authentication, context) -> new AuthorizationDecision(true);
-    }
+	public AuthorizationManager<RequestAuthorizationContext> permitAll() {
+		return (authentication, context) -> new AuthorizationDecision(true);
+	}
 
-    public AuthorizationManager<RequestAuthorizationContext> authenticated() {
-        return AuthenticatedAuthorizationManager.authenticated();
-    }
+	public AuthorizationManager<RequestAuthorizationContext> authenticated() {
+		return AuthenticatedAuthorizationManager.authenticated();
+	}
 }

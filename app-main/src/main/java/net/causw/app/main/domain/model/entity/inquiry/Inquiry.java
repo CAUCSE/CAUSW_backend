@@ -1,15 +1,21 @@
 package net.causw.app.main.domain.model.entity.inquiry;
 
-import lombok.*;
-import net.causw.app.main.domain.model.entity.user.User;
-import net.causw.app.main.domain.model.entity.base.BaseEntity;
 import org.hibernate.annotations.ColumnDefault;
+
+import net.causw.app.main.domain.model.entity.base.BaseEntity;
+import net.causw.app.main.domain.model.entity.user.User;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -19,30 +25,30 @@ import jakarta.persistence.Table;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "TB_INQUIRY")
 public class Inquiry extends BaseEntity {
-    @Column(name = "title",nullable = false)
-    private String title;
+	@Column(name = "title", nullable = false)
+	private String title;
 
-    @Column(columnDefinition = "TEXT", name = "content", nullable = false)
-    private String content;
+	@Column(columnDefinition = "TEXT", name = "content", nullable = false)
+	private String content;
 
-    @ManyToOne(targetEntity = User.class)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User writer;
+	@ManyToOne(targetEntity = User.class)
+	@JoinColumn(name = "user_id", nullable = false)
+	private User writer;
 
-    @Column(name = "is_deleted")
-    @ColumnDefault("false")
-    private Boolean isDeleted;
+	@Column(name = "is_deleted")
+	@ColumnDefault("false")
+	private Boolean isDeleted;
 
-    public static Inquiry of(
-            String title,
-            String content,
-            User writer
-    ) {
-        return Inquiry.builder()
-                .title(title)
-                .content(content)
-                .writer(writer)
-                .isDeleted(false)
-                .build();
-    }
+	public static Inquiry of(
+		String title,
+		String content,
+		User writer
+	) {
+		return Inquiry.builder()
+			.title(title)
+			.content(content)
+			.writer(writer)
+			.isDeleted(false)
+			.build();
+	}
 }

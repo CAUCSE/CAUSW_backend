@@ -12,6 +12,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class UserAcademicStatusNoteUpdateDto {
 
-    @Schema(description = "사용자 학적 상태에 대한 비고", example = "비고입니다.")
-    private String note;
+	@Schema(description = "사용자 학적 상태에 대한 비고", example = "비고입니다.")
+	private String note;
 }

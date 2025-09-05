@@ -6,10 +6,10 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum SemesterType {
-    FIRST("1학기"),
-    SECOND("2학기"),
-    SUMMER("여름학기"),
-    WINTER("겨울학기");
+	FIRST("1학기"),
+	SECOND("2학기"),
+	SUMMER("여름학기"),
+	WINTER("겨울학기");
 
-    private final String value;
+	private final String value;
 }
