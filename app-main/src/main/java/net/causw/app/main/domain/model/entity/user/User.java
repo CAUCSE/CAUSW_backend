@@ -13,6 +13,7 @@ import net.causw.app.main.domain.model.entity.locker.Locker;
 import net.causw.app.main.domain.model.entity.notification.CeremonyNotificationSetting;
 import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.model.entity.vote.VoteRecord;
+import net.causw.app.main.domain.model.enums.user.Department;
 import net.causw.app.main.domain.model.enums.user.GraduationType;
 import net.causw.app.main.domain.model.enums.user.Role;
 import net.causw.app.main.domain.model.enums.user.UserState;
@@ -69,8 +70,13 @@ public class User extends BaseEntity {
 	@Column(name = "nickname", unique = true, nullable = false)
 	private String nickname;
 
+	// TODO: 기존값들 department에 매핑한 뒤 삭제 예정
 	@Column(name = "major", nullable = false)
 	private String major;
+
+	@Column(name = "department", nullable = false)
+	@Enumerated(EnumType.STRING)
+	private Department department;
 
 	@Column(name = "academic_status", nullable = false)
 	@Enumerated(EnumType.STRING)
