@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -26,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.event.CertifiedUserCreatedEvent;
+import net.causw.app.main.domain.model.entity.base.BaseEntity;
 import net.causw.app.main.domain.model.entity.board.Board;
 import net.causw.app.main.domain.model.entity.circle.Circle;
 import net.causw.app.main.domain.model.entity.circle.CircleMember;
@@ -97,6 +99,8 @@ import net.causw.app.main.infrastructure.security.JwtTokenProvider;
 import net.causw.app.main.repository.board.BoardRepository;
 import net.causw.app.main.repository.circle.CircleMemberRepository;
 import net.causw.app.main.repository.circle.CircleRepository;
+import net.causw.app.main.repository.circle.query.CircleQueryRepository;
+import net.causw.app.main.repository.circle.query.CircleQueryRepository.CircleLeaderProjection;
 import net.causw.app.main.repository.comment.ChildCommentRepository;
 import net.causw.app.main.repository.comment.CommentRepository;
 import net.causw.app.main.repository.locker.LockerLogRepository;
@@ -171,6 +175,7 @@ public class UserService {
 	private final UserBlockEntityService userBlockEntityService;
 	private final UserQueryRepository userQueryRepository;
 	private final WebInvocationPrivilegeEvaluator privilegeEvaluator;
+	private final CircleQueryRepository circleQueryRepository;
 
 	@Transactional
 	public void findPassword(
@@ -526,14 +531,9 @@ public class UserService {
 			.consistOf(UserRoleValidator.of(roles, Set.of()))
 			.validate();
 
-		//todo: 현재 겸직을 고려하기 위해 _N_ 사용 중이나 port 와 domain model 삭제를 위해 배제
-		//때문에 추후 userRole 관리 리팩토링 후 겸직을 고려하게 변경 필요
-
 		List<Role> roleEnumList = Role.getPrivilegedRoles();
 
 		List<User> allPrivilegedUsers = userQueryRepository.findAllActiveUsersByRoles(roleEnumList);
-
-		// 방법 1: Role Enum을 사용하여 우선순위 기반 그룹핑
 		Map<Role, List<UserResponseDto>> usersByRole = roleEnumList.stream()
 			.collect(Collectors.toMap(
 				role -> role,
@@ -543,6 +543,8 @@ public class UserService {
 					.collect(Collectors.toList())
 			));
 
+		List<UserResponseDto> leaderUsers = usersByRole.getOrDefault(Role.LEADER_CIRCLE, List.of());
+		validateCircleLeaderUsersWithOutCircle(leaderUsers);
 
 		return UserDtoMapper.INSTANCE.toUserPrivilegedResponseDto(
 			usersByRole.getOrDefault(Role.PRESIDENT, List.of()),
@@ -552,19 +554,37 @@ public class UserService {
 			usersByRole.getOrDefault(Role.LEADER_2, List.of()),
 			usersByRole.getOrDefault(Role.LEADER_3, List.of()),
 			usersByRole.getOrDefault(Role.LEADER_4, List.of()),
-			usersByRole.getOrDefault(Role.LEADER_CIRCLE, List.of()).stream()
-				.peek(userDomainModel -> {
-					List<Circle> ownCircles = this.circleRepository.findByLeader_Id(userDomainModel.getId());
-					if (ownCircles.isEmpty()) {
-						throw new InternalServerException(
-							ErrorCode.INTERNAL_SERVER,
-							MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER
-						);
-					}
-				})
-				.collect(Collectors.toList()),
+			usersByRole.getOrDefault(Role.LEADER_CIRCLE, List.of()),
 			usersByRole.getOrDefault(Role.LEADER_ALUMNI, List.of())
 		);
+	}
+
+	/**
+	 * cirlce 이 존재하지 않는 circleLeader 발견 시 오류 발생
+	 * @param circleLeaders 동아리 리더 dto 리스트
+	 */
+	private void validateCircleLeaderUsersWithOutCircle(List<UserResponseDto> circleLeaders) {
+		List<String> leaderUserIds = circleLeaders
+			.stream()
+			.map(UserResponseDto::getId)
+			.toList();
+		List<CircleLeaderProjection> circleLeaderProjectionByLeaderIds = circleQueryRepository
+			.findCircleLeaderProjectionByLeaderIds(leaderUserIds);
+
+		Set<String> foundLeaderIds = circleLeaderProjectionByLeaderIds.stream()
+			.map(CircleLeaderProjection::getLeaderId)
+			.collect(Collectors.toSet());
+
+		List<String> leadersWithoutCircle = leaderUserIds.stream()
+			.filter(leaderId -> !foundLeaderIds.contains(leaderId))
+			.toList();
+
+		if (!leadersWithoutCircle.isEmpty()) {
+			throw new InternalServerException(
+				ErrorCode.INTERNAL_SERVER,
+				MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER
+			);
+		}
 	}
 
 	@Transactional
