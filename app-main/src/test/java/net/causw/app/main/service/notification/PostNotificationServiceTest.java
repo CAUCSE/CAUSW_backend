@@ -29,6 +29,7 @@ import net.causw.app.main.repository.notification.NotificationLogRepository;
 import net.causw.app.main.repository.notification.NotificationRepository;
 import net.causw.app.main.repository.notification.UserPostSubscribeRepository;
 import net.causw.app.main.service.userBlock.UserBlockEntityService;
+import net.causw.app.main.util.ObjectFixtures;
 
 import com.google.firebase.messaging.FirebaseMessagingException;
 
@@ -63,18 +64,7 @@ class PostNotificationServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		UserCreateRequestDto userCreateRequestDto = UserCreateRequestDto.builder()
-			.email("test@cau.ac.kr")
-			.name("테스트 유저")
-			.password("Password123!")
-			.studentId("20235555")
-			.admissionYear(2023)
-			.nickname("tester")
-			.major("소프트웨어학부")
-			.phoneNumber("010-1234-5678")
-			.build();
-
-		mockUser = User.from(userCreateRequestDto, "encodedPassword");
+		mockUser = ObjectFixtures.getUser();
 		mockUser.setFcmTokens(new HashSet<>());
 		mockUser.getFcmTokens().add("dummy-token");
 
