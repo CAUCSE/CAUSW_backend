@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import org.hibernate.annotations.BatchSize;
+
 import net.causw.app.main.domain.model.entity.base.BaseEntity;
 import net.causw.app.main.domain.model.entity.circle.CircleMember;
 import net.causw.app.main.domain.model.entity.locker.Locker;
@@ -89,9 +91,10 @@ public class User extends BaseEntity {
 	@Column(name = "graduation_type", nullable = true)
 	private GraduationType graduationType;
 
-	@ElementCollection(fetch = FetchType.EAGER)
+	@ElementCollection(fetch = FetchType.LAZY)
 	@Enumerated(EnumType.STRING)
 	@Column(name = "role", nullable = false)
+	@BatchSize(size = 100)
 	private Set<Role> roles;
 
 	@OneToOne(cascade = {CascadeType.REMOVE, CascadeType.PERSIST}, mappedBy = "user")
@@ -121,7 +124,7 @@ public class User extends BaseEntity {
 	@Builder.Default
 	private Boolean isV2 = true;
 
-	@ElementCollection(fetch = FetchType.EAGER)
+	@ElementCollection(fetch = FetchType.LAZY)
 	@CollectionTable(
 		name = "tb_user_fcm_token",
 		joinColumns = @JoinColumn(name = "user_id")

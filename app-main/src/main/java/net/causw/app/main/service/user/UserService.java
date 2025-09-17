@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -105,6 +107,7 @@ import net.causw.app.main.repository.post.PostRepository;
 import net.causw.app.main.repository.user.UserAdmissionLogRepository;
 import net.causw.app.main.repository.user.UserAdmissionRepository;
 import net.causw.app.main.repository.user.UserRepository;
+import net.causw.app.main.repository.user.query.UserQueryRepository;
 import net.causw.app.main.repository.userAcademicRecord.UserAcademicRecordApplicationRepository;
 import net.causw.app.main.repository.userInfo.UserInfoRepository;
 import net.causw.app.main.repository.uuidFile.UserAcademicRecordApplicationAttachImageRepository;
@@ -166,6 +169,8 @@ public class UserService {
 	private final PostDtoMapper postDtoMapper;
 	private final PostService postService;
 	private final UserBlockEntityService userBlockEntityService;
+	private final UserQueryRepository userQueryRepository;
+	private final WebInvocationPrivilegeEvaluator privilegeEvaluator;
 
 	@Transactional
 	public void findPassword(
@@ -523,38 +528,32 @@ public class UserService {
 
 		//todo: 현재 겸직을 고려하기 위해 _N_ 사용 중이나 port 와 domain model 삭제를 위해 배제
 		//때문에 추후 userRole 관리 리팩토링 후 겸직을 고려하게 변경 필요
+
+		List<Role> roleEnumList = Role.getPrivilegedRoles();
+
+		List<User> allPrivilegedUsers = userQueryRepository.findAllActiveUsersByRoles(roleEnumList);
+
+		// 방법 1: Role Enum을 사용하여 우선순위 기반 그룹핑
+		Map<Role, List<UserResponseDto>> usersByRole = roleEnumList.stream()
+			.collect(Collectors.toMap(
+				role -> role,
+				role -> allPrivilegedUsers.stream()
+					.filter(privilegedUser -> privilegedUser.getRoles().contains(role))
+					.map(privilegedUser -> UserDtoMapper.INSTANCE.toUserResponseDto(privilegedUser, null, null))
+					.collect(Collectors.toList())
+			));
+
+
 		return UserDtoMapper.INSTANCE.toUserPrivilegedResponseDto(
-			this.userRepository.findByRoleAndState(Role.PRESIDENT, UserState.ACTIVE)
-				.stream()
-				.map(president -> UserDtoMapper.INSTANCE.toUserResponseDto(president, null, null))
-				.collect(Collectors.toList()),
-			this.userRepository.findByRoleAndState(Role.VICE_PRESIDENT, UserState.ACTIVE)
-				.stream()
-				.map(vicePresident -> UserDtoMapper.INSTANCE.toUserResponseDto(vicePresident, null, null))
-				.collect(Collectors.toList()),
-			this.userRepository.findByRoleAndState(Role.COUNCIL, UserState.ACTIVE)
-				.stream()
-				.map(council -> UserDtoMapper.INSTANCE.toUserResponseDto(council, null, null))
-				.collect(Collectors.toList()),
-			this.userRepository.findByRoleAndState(Role.LEADER_1, UserState.ACTIVE)
-				.stream()
-				.map(leader1 -> UserDtoMapper.INSTANCE.toUserResponseDto(leader1, null, null))
-				.collect(Collectors.toList()),
-			this.userRepository.findByRoleAndState(Role.LEADER_2, UserState.ACTIVE)
-				.stream()
-				.map(leader2 -> UserDtoMapper.INSTANCE.toUserResponseDto(leader2, null, null))
-				.collect(Collectors.toList()),
-			this.userRepository.findByRoleAndState(Role.LEADER_3, UserState.ACTIVE)
-				.stream()
-				.map(leader3 -> UserDtoMapper.INSTANCE.toUserResponseDto(leader3, null, null))
-				.collect(Collectors.toList()),
-			this.userRepository.findByRoleAndState(Role.LEADER_4, UserState.ACTIVE)
-				.stream()
-				.map(leader4 -> UserDtoMapper.INSTANCE.toUserResponseDto(leader4, null, null))
-				.collect(Collectors.toList()),
-			this.userRepository.findByRoleAndState(Role.LEADER_CIRCLE, UserState.ACTIVE)
-				.stream()
-				.map(userDomainModel -> {
+			usersByRole.getOrDefault(Role.PRESIDENT, List.of()),
+			usersByRole.getOrDefault(Role.VICE_PRESIDENT, List.of()),
+			usersByRole.getOrDefault(Role.COUNCIL, List.of()),
+			usersByRole.getOrDefault(Role.LEADER_1, List.of()),
+			usersByRole.getOrDefault(Role.LEADER_2, List.of()),
+			usersByRole.getOrDefault(Role.LEADER_3, List.of()),
+			usersByRole.getOrDefault(Role.LEADER_4, List.of()),
+			usersByRole.getOrDefault(Role.LEADER_CIRCLE, List.of()).stream()
+				.peek(userDomainModel -> {
 					List<Circle> ownCircles = this.circleRepository.findByLeader_Id(userDomainModel.getId());
 					if (ownCircles.isEmpty()) {
 						throw new InternalServerException(
@@ -562,17 +561,9 @@ public class UserService {
 							MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER
 						);
 					}
-					return UserDtoMapper.INSTANCE.toUserResponseDto(
-						userDomainModel,
-						ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
-						ownCircles.stream().map(Circle::getName).collect(Collectors.toList())
-					);
 				})
 				.collect(Collectors.toList()),
-			this.userRepository.findByRoleAndState(Role.LEADER_ALUMNI, UserState.ACTIVE)
-				.stream()
-				.map(alumni -> UserDtoMapper.INSTANCE.toUserResponseDto(alumni, null, null))
-				.collect(Collectors.toList())
+			usersByRole.getOrDefault(Role.LEADER_ALUMNI, List.of())
 		);
 	}
 
