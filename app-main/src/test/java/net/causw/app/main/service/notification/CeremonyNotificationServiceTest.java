@@ -24,6 +24,7 @@ import net.causw.app.main.domain.model.entity.notification.Notification;
 import net.causw.app.main.domain.model.entity.notification.NotificationLog;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.domain.model.enums.ceremony.CeremonyCategory;
+import net.causw.app.main.domain.model.enums.user.Department;
 import net.causw.app.main.dto.user.UserCreateRequestDto;
 import net.causw.app.main.infrastructure.firebase.FcmUtils;
 import net.causw.app.main.repository.ceremony.CeremonyRepository;
@@ -73,7 +74,7 @@ class CeremonyNotificationServiceTest {
 			.studentId("20235555")
 			.admissionYear(2023)
 			.nickname("tester")
-			.major("소프트웨어학부")
+			.department(Department.SW_SCHOOL)
 			.phoneNumber("010-1234-5678")
 			.build();
 
