@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.model.enums.user;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.stereotype.Component;
 
@@ -22,6 +23,7 @@ public enum Role {
 	LEADER_3("LEADER_3", "3학년 대표"),
 	LEADER_4("LEADER_4", "4학년 대표"),
 	LEADER_ALUMNI("LEADER_ALUMNI", "동문회장"),
+	ALUMNI_MANAGER("ALUMNI_MANAGER", "크자회 운영자"),
 	COMMON("COMMON", "일반"),
 	NONE("NONE", "없음"),
 
@@ -48,6 +50,21 @@ public enum Role {
 		return "ROLE_" + value;
 	}
 
+	public static List<Role> getPrivilegedRoles() {
+		return List.of(
+			ADMIN,
+			PRESIDENT,
+			VICE_PRESIDENT,
+			COUNCIL,
+			LEADER_1,
+			LEADER_2,
+			LEADER_3,
+			LEADER_4,
+			LEADER_ALUMNI,
+			ALUMNI_MANAGER
+		);
+	}
+
 	@Component("Role")
 	public static class RoleComponent {
 		public static final Role ADMIN = Role.ADMIN;
@@ -59,6 +76,7 @@ public enum Role {
 		public static final Role LEADER_3 = Role.LEADER_3;
 		public static final Role LEADER_4 = Role.LEADER_4;
 		public static final Role LEADER_ALUMNI = Role.LEADER_ALUMNI;
+		public static final Role ALUMNI_MANAGER = Role.ALUMNI_MANAGER;
 		public static final Role COMMON = Role.COMMON;
 		public static final Role NONE = Role.NONE;
 
