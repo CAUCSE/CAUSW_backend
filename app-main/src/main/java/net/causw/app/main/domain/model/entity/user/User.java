@@ -70,11 +70,12 @@ public class User extends BaseEntity {
 	@Column(name = "nickname", unique = true, nullable = false)
 	private String nickname;
 
-	// TODO: 기존값들 department에 매핑한 뒤 삭제 예정
-	@Column(name = "major", nullable = false)
+	// TODO: 기존값들 department로 마이그레이션 후 삭제
+	@Column(name = "major", nullable = true)
 	private String major;
 
-	@Column(name = "department", nullable = false)
+	// TODO: null 임시 허용 제거
+	@Column(name = "department", nullable = true)
 	@Enumerated(EnumType.STRING)
 	private Department department;
 
@@ -167,6 +168,11 @@ public class User extends BaseEntity {
 			.admissionYear(userCreateRequestDto.getAdmissionYear())
 			.nickname(userCreateRequestDto.getNickname())
 			.major(userCreateRequestDto.getMajor())
+			.department(
+				Department.fromAdmissionYearOrRequest(
+					userCreateRequestDto.getAdmissionYear(),
+					userCreateRequestDto.getDepartment()
+			))
 			.academicStatus(AcademicStatus.UNDETERMINED)
 			.phoneNumber(userCreateRequestDto.getPhoneNumber())
 			.isV2(true)
@@ -188,6 +194,7 @@ public class User extends BaseEntity {
 			.graduationYear(createGraduatedUserCommand.graduationYear())
 			.nickname(createGraduatedUserCommand.nickname())
 			.major(createGraduatedUserCommand.major())
+
 			.academicStatus(AcademicStatus.GRADUATED)
 			.phoneNumber(createGraduatedUserCommand.phoneNumber())
 			.isV2(true)

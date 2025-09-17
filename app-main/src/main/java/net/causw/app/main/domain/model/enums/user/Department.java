@@ -2,6 +2,7 @@ package net.causw.app.main.domain.model.enums.user;
 
 import java.util.Arrays;
 
+import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
 
@@ -33,10 +34,10 @@ public enum Department {
 	}
 
 	public static Department fromAdmissionYear(Integer admissionYear) {
-		if (admissionYear >= 2021) { // 2021년도 입학부터 소프트웨어학부, AI학과 선택 가능
+		if (admissionYear >= DEPT_OF_AI.startYear) { // 2021년도 입학부터 소프트웨어학부, AI학과 선택 가능
 			throw new BadRequestException(
 				ErrorCode.INVALID_REQUEST_DEPARTMENT,
-				String.format("admissionYear '%s' is ambiguous : need explicit department name", admissionYear)
+				MessageUtil.DEPARTMENT_EXPLICITLY_REQUIRED
 			);
 		}
 
@@ -45,7 +46,21 @@ public enum Department {
 			.findFirst()
 			.orElseThrow(() -> new BadRequestException(
 				ErrorCode.INVALID_REQUEST_DEPARTMENT,
-				String.format("admissionYear '%s' is invalid : not supported", admissionYear)
+				MessageUtil.INVALID_ADMISSION_YEAR
 			));
+	}
+
+	public static Department fromAdmissionYearOrRequest(Integer admissionYear, Department request) {
+		if (admissionYear < DEPT_OF_AI.getStartYear()) {
+			return fromAdmissionYear(admissionYear);
+		}
+
+		if (request == null) {
+			throw new BadRequestException(
+				ErrorCode.INVALID_REQUEST_DEPARTMENT,
+				MessageUtil.DEPARTMENT_EXPLICITLY_REQUIRED
+			);
+		}
+		return request;
 	}
 }
