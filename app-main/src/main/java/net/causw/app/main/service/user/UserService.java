@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -27,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.event.CertifiedUserCreatedEvent;
-import net.causw.app.main.domain.model.entity.base.BaseEntity;
 import net.causw.app.main.domain.model.entity.board.Board;
 import net.causw.app.main.domain.model.entity.circle.Circle;
 import net.causw.app.main.domain.model.entity.circle.CircleMember;
@@ -100,7 +98,6 @@ import net.causw.app.main.repository.board.BoardRepository;
 import net.causw.app.main.repository.circle.CircleMemberRepository;
 import net.causw.app.main.repository.circle.CircleRepository;
 import net.causw.app.main.repository.circle.query.CircleQueryRepository;
-import net.causw.app.main.repository.circle.query.CircleQueryRepository.CircleLeaderProjection;
 import net.causw.app.main.repository.comment.ChildCommentRepository;
 import net.causw.app.main.repository.comment.CommentRepository;
 import net.causw.app.main.repository.locker.LockerLogRepository;
@@ -532,19 +529,44 @@ public class UserService {
 			.validate();
 
 		List<Role> roleEnumList = Role.getPrivilegedRoles();
-
 		List<User> allPrivilegedUsers = userQueryRepository.findAllActiveUsersByRoles(roleEnumList);
+
+		// 동아리 리더
+		List<String> leaderUserIds = allPrivilegedUsers.stream()
+			.filter(privilegedUser -> privilegedUser.getRoles().contains(Role.LEADER_CIRCLE))
+			.map(User::getId)
+			.toList();
+		List<Circle> circles = circleQueryRepository
+			.findCirclesByLeaderIds(leaderUserIds);
+
+		Map<String, List<Circle>> circlesByLeaderId = circles.stream()
+			.filter(circle -> circle.getLeader().isPresent())
+			.collect(Collectors.groupingBy(circle -> circle.getLeader().get().getId()));
+
+		validateCircleLeaderUsersWithOutCircle(leaderUserIds, circlesByLeaderId);
+
 		Map<Role, List<UserResponseDto>> usersByRole = roleEnumList.stream()
 			.collect(Collectors.toMap(
 				role -> role,
 				role -> allPrivilegedUsers.stream()
 					.filter(privilegedUser -> privilegedUser.getRoles().contains(role))
-					.map(privilegedUser -> UserDtoMapper.INSTANCE.toUserResponseDto(privilegedUser, null, null))
+					.map(privilegedUser -> {
+						if (role == Role.LEADER_CIRCLE) {
+							List<Circle> userCircles = circlesByLeaderId.getOrDefault(privilegedUser.getId(),
+								List.of());
+							List<String> circleIds = userCircles.stream()
+								.map(Circle::getId)
+								.collect(Collectors.toList());
+							List<String> circleNames = userCircles.stream()
+								.map(Circle::getName)
+								.collect(Collectors.toList());
+							return UserDtoMapper.INSTANCE.toUserResponseDto(privilegedUser, circleIds, circleNames);
+						} else {
+							return UserDtoMapper.INSTANCE.toUserResponseDto(privilegedUser, null, null);
+						}
+					})
 					.collect(Collectors.toList())
 			));
-
-		List<UserResponseDto> leaderUsers = usersByRole.getOrDefault(Role.LEADER_CIRCLE, List.of());
-		validateCircleLeaderUsersWithOutCircle(leaderUsers);
 
 		return UserDtoMapper.INSTANCE.toUserPrivilegedResponseDto(
 			usersByRole.getOrDefault(Role.PRESIDENT, List.of()),
@@ -563,20 +585,10 @@ public class UserService {
 	 * cirlce 이 존재하지 않는 circleLeader 발견 시 오류 발생
 	 * @param circleLeaders 동아리 리더 dto 리스트
 	 */
-	private void validateCircleLeaderUsersWithOutCircle(List<UserResponseDto> circleLeaders) {
-		List<String> leaderUserIds = circleLeaders
-			.stream()
-			.map(UserResponseDto::getId)
-			.toList();
-		List<CircleLeaderProjection> circleLeaderProjectionByLeaderIds = circleQueryRepository
-			.findCircleLeaderProjectionByLeaderIds(leaderUserIds);
-
-		Set<String> foundLeaderIds = circleLeaderProjectionByLeaderIds.stream()
-			.map(CircleLeaderProjection::getLeaderId)
-			.collect(Collectors.toSet());
-
+	private void validateCircleLeaderUsersWithOutCircle(List<String> leaderUserIds,
+		Map<String, List<Circle>> circlesByLeaderId) {
 		List<String> leadersWithoutCircle = leaderUserIds.stream()
-			.filter(leaderId -> !foundLeaderIds.contains(leaderId))
+			.filter(leaderId -> !circlesByLeaderId.containsKey(leaderId) || circlesByLeaderId.get(leaderId).isEmpty())
 			.toList();
 
 		if (!leadersWithoutCircle.isEmpty()) {

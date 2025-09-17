@@ -26,6 +26,7 @@ public class RolePolicy {
 		entry(LEADER_3, false),
 		entry(LEADER_4, false),
 		entry(LEADER_ALUMNI, true),
+		entry(ALUMNI_MANAGER, false),
 		entry(COMMON, false),
 		entry(NONE, false),
 
@@ -48,6 +49,7 @@ public class RolePolicy {
 		entry(LEADER_3, 4),
 		entry(LEADER_4, 4),
 		entry(LEADER_ALUMNI, 5),
+		entry(ALUMNI_MANAGER, 5),
 		entry(COMMON, 99),
 		entry(NONE, 100),
 
@@ -88,6 +90,7 @@ public class RolePolicy {
 			LEADER_3,
 			LEADER_4,
 			LEADER_ALUMNI,
+			ALUMNI_MANAGER,
 			COMMON
 		),
 
@@ -99,6 +102,7 @@ public class RolePolicy {
 			LEADER_3,
 			LEADER_4,
 			LEADER_ALUMNI,
+			ALUMNI_MANAGER,
 			COMMON
 		)
 	);
@@ -117,7 +121,8 @@ public class RolePolicy {
 			LEADER_2,
 			LEADER_3,
 			LEADER_4,
-			LEADER_ALUMNI
+			LEADER_ALUMNI,
+			ALUMNI_MANAGER
 		),
 
 		PRESIDENT, Set.of(
@@ -127,7 +132,8 @@ public class RolePolicy {
 			LEADER_2,
 			LEADER_3,
 			LEADER_4,
-			LEADER_ALUMNI
+			LEADER_ALUMNI,
+			ALUMNI_MANAGER
 		)
 	);
 

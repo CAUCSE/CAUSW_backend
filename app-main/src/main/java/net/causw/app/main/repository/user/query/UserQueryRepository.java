@@ -49,8 +49,8 @@ public class UserQueryRepository {
 		QUser user = QUser.user;
 		User result = jpaQueryFactory.selectFrom(user)
 			.where(user.id.eq(userId))
+			.leftJoin(user.roles).fetchJoin()
 			.leftJoin(user.ceremonyNotificationSetting).fetchJoin()
-			.leftJoin(user.ceremonyNotificationSetting.subscribedAdmissionYears).fetchJoin()
 			.leftJoin(user.locker).fetchJoin()
 			.leftJoin(user.userProfileImage).fetchJoin()
 			.leftJoin(user.userProfileImage.uuidFile).fetchJoin()
