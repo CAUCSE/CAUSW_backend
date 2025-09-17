@@ -14,11 +14,12 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public enum Department {
 
-	CS_DEPT("전자계산학과", 1972),
-	DEPT_OF_CSE("컴퓨터공학과", 1993),
-	SCHOOL_OF_CSE("컴퓨터공학부", 2003),
+	// 최신순
+	DEPT_OF_AI("AI학과", 2021),
 	SW_SCHOOL("소프트웨어학부", 2018),
-	DEPT_OF_AI("AI학과", 2021);
+	SCHOOL_OF_CSE("컴퓨터공학부", 2003),
+	DEPT_OF_CSE("컴퓨터공학과", 1993),
+	CS_DEPT("전자계산학과", 1972);
 
 	private final String name;
 	private final Integer startYear;
@@ -43,7 +44,7 @@ public enum Department {
 
 		return Arrays.stream(Department.values())
 			.filter(dept -> admissionYear >= dept.startYear)
-			.findFirst()
+			.findFirst() // 필터 조건에 해당하는 가장 최신의 학과/학부 선택
 			.orElseThrow(() -> new BadRequestException(
 				ErrorCode.INVALID_REQUEST_DEPARTMENT,
 				MessageUtil.INVALID_ADMISSION_YEAR
