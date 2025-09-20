@@ -27,7 +27,9 @@ public enum RoleGroup {
 		Role.ADMIN,
 		Role.PRESIDENT,
 		Role.VICE_PRESIDENT,
-		Role.LEADER_ALUMNI
+		Role.LEADER_ALUMNI,
+		Role.ALUMNI_MANAGER
+
 	)),
 
 	EXECUTIVES_AND_CIRCLE_LEADER(Set.of( // 집행부 + 동아리장
@@ -52,7 +54,8 @@ public enum RoleGroup {
 		Role.LEADER_2,
 		Role.LEADER_3,
 		Role.LEADER_4,
-		Role.LEADER_ALUMNI
+		Role.LEADER_ALUMNI,
+		Role.ALUMNI_MANAGER
 	));
 
 	private final Set<Role> roles;

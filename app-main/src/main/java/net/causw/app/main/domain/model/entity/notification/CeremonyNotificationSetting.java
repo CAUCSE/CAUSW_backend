@@ -3,6 +3,8 @@ package net.causw.app.main.domain.model.entity.notification;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.hibernate.annotations.BatchSize;
+
 import net.causw.app.main.domain.model.entity.base.BaseEntity;
 import net.causw.app.main.domain.model.entity.user.User;
 
@@ -31,6 +33,7 @@ public class CeremonyNotificationSetting extends BaseEntity {
 	@ElementCollection(fetch = FetchType.EAGER)
 	@CollectionTable(name = "TB_CEREMONY_SUBSCRIBE_YEAR", joinColumns = @JoinColumn(name = "notification_id"))
 	@Column(name = "admission_year")
+	@BatchSize(size = 100)
 	private Set<String> subscribedAdmissionYears = new HashSet<>();
 
 	@Column(name = "is_notification_active", nullable = false)
