@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -516,88 +519,6 @@ public class UserService {
 			.filter(user -> user.getState().equals(UserState.ACTIVE))
 			.map(user -> UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null))
 			.collect(Collectors.toList());
-	}
-
-	@Transactional(readOnly = true)
-	public UserPrivilegedResponseDto findPrivilegedUsers(User user) {
-		Set<Role> roles = user.getRoles();
-
-		ValidatorBucket.of()
-			.consistOf(UserStateValidator.of(user.getState()))
-			.consistOf(UserRoleIsNoneValidator.of(roles))
-			.consistOf(UserRoleValidator.of(roles, Set.of()))
-			.validate();
-
-		List<Role> roleEnumList = Role.getPrivilegedRoles();
-		List<User> allPrivilegedUsers = userQueryRepository.findAllActiveUsersByRoles(roleEnumList);
-
-		// 동아리 리더
-		List<String> leaderUserIds = allPrivilegedUsers.stream()
-			.filter(privilegedUser -> privilegedUser.getRoles().contains(Role.LEADER_CIRCLE))
-			.map(User::getId)
-			.toList();
-		List<Circle> circles = circleQueryRepository
-			.findCirclesByLeaderIds(leaderUserIds);
-
-		Map<String, List<Circle>> circlesByLeaderId = circles.stream()
-			.filter(circle -> circle.getLeader().isPresent())
-			.collect(Collectors.groupingBy(circle -> circle.getLeader().get().getId()));
-
-		validateCircleLeaderUsersWithOutCircle(leaderUserIds, circlesByLeaderId);
-
-		Map<Role, List<UserResponseDto>> usersByRole = roleEnumList.stream()
-			.collect(Collectors.toMap(
-				role -> role,
-				role -> allPrivilegedUsers.stream()
-					.filter(privilegedUser -> privilegedUser.getRoles().contains(role))
-					.map(privilegedUser -> {
-						if (role == Role.LEADER_CIRCLE) {
-							List<Circle> userCircles = circlesByLeaderId.getOrDefault(privilegedUser.getId(),
-								List.of());
-							List<String> circleIds = userCircles.stream()
-								.map(Circle::getId)
-								.collect(Collectors.toList());
-							List<String> circleNames = userCircles.stream()
-								.map(Circle::getName)
-								.collect(Collectors.toList());
-							return UserDtoMapper.INSTANCE.toUserResponseDto(privilegedUser, circleIds, circleNames);
-						} else {
-							return UserDtoMapper.INSTANCE.toUserResponseDto(privilegedUser, null, null);
-						}
-					})
-					.collect(Collectors.toList())
-			));
-
-		return UserDtoMapper.INSTANCE.toUserPrivilegedResponseDto(
-			usersByRole.getOrDefault(Role.PRESIDENT, List.of()),
-			usersByRole.getOrDefault(Role.VICE_PRESIDENT, List.of()),
-			usersByRole.getOrDefault(Role.COUNCIL, List.of()),
-			usersByRole.getOrDefault(Role.LEADER_1, List.of()),
-			usersByRole.getOrDefault(Role.LEADER_2, List.of()),
-			usersByRole.getOrDefault(Role.LEADER_3, List.of()),
-			usersByRole.getOrDefault(Role.LEADER_4, List.of()),
-			usersByRole.getOrDefault(Role.LEADER_CIRCLE, List.of()),
-			usersByRole.getOrDefault(Role.LEADER_ALUMNI, List.of()),
-			usersByRole.getOrDefault(Role.ALUMNI_MANAGER, List.of())
-		);
-	}
-
-	/**
-	 * cirlce 이 존재하지 않는 circleLeader 발견 시 오류 발생
-	 * @param circleLeaders 동아리 리더 dto 리스트
-	 */
-	private void validateCircleLeaderUsersWithOutCircle(List<String> leaderUserIds,
-		Map<String, List<Circle>> circlesByLeaderId) {
-		List<String> leadersWithoutCircle = leaderUserIds.stream()
-			.filter(leaderId -> !circlesByLeaderId.containsKey(leaderId) || circlesByLeaderId.get(leaderId).isEmpty())
-			.toList();
-
-		if (!leadersWithoutCircle.isEmpty()) {
-			throw new InternalServerException(
-				ErrorCode.INTERNAL_SERVER,
-				MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER
-			);
-		}
 	}
 
 	@Transactional
