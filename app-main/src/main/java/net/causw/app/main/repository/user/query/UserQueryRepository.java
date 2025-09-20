@@ -1,10 +1,7 @@
 package net.causw.app.main.repository.user.query;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 
@@ -36,8 +33,7 @@ public class UserQueryRepository {
 
 		return jpaQueryFactory.selectFrom(user)
 			.where(predicate)
-			.leftJoin(user.ceremonyNotificationSetting).fetchJoin() // ToOne 관계만 패치 조인
-			.leftJoin(user.ceremonyNotificationSetting.subscribedAdmissionYears).fetchJoin() // ToOne 관계만 패치 조인
+			.leftJoin(user.ceremonyNotificationSetting).fetchJoin()
 			.leftJoin(user.locker).fetchJoin()
 			.leftJoin(user.userProfileImage).fetchJoin()
 			.leftJoin(user.userProfileImage.uuidFile).fetchJoin()
