@@ -54,4 +54,19 @@ public class UserQueryRepository {
 
 		return Optional.ofNullable(result);
 	}
+
+	public Optional<User> findByEmail(String email) {
+		QUser user = QUser.user;
+
+		User result = jpaQueryFactory.selectFrom(user)
+			.where(user.email.eq(email))
+			.leftJoin(user.roles).fetchJoin()
+			.leftJoin(user.ceremonyNotificationSetting).fetchJoin()
+			.leftJoin(user.locker).fetchJoin()
+			.leftJoin(user.userProfileImage).fetchJoin()
+			.leftJoin(user.userProfileImage.uuidFile).fetchJoin()
+			.fetchOne();
+
+		return Optional.ofNullable(result);
+	}
 }

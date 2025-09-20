@@ -133,7 +133,9 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 		List<UserResponseDto> leaderGrade3,
 		List<UserResponseDto> leaderGrade4,
 		List<UserResponseDto> leaderCircle,
-		List<UserResponseDto> alumni
+		List<UserResponseDto> alumniLeader,
+		List<UserResponseDto> alumniManager
+
 	) {
 		List<UserResponseDto> leaderGrade = new LinkedList<>(leaderGrade1);
 		leaderGrade.addAll(leaderGrade2);
@@ -145,7 +147,8 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 			.councilUsers(council)
 			.leaderGradeUsers(leaderGrade)
 			.leaderCircleUsers(leaderCircle)
-			.leaderAlumni(alumni)
+			.leaderAlumni(alumniLeader)
+			.alumniManager(alumniManager)
 			.build();
 	}
 

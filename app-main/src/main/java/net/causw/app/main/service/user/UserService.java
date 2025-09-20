@@ -577,7 +577,8 @@ public class UserService {
 			usersByRole.getOrDefault(Role.LEADER_3, List.of()),
 			usersByRole.getOrDefault(Role.LEADER_4, List.of()),
 			usersByRole.getOrDefault(Role.LEADER_CIRCLE, List.of()),
-			usersByRole.getOrDefault(Role.LEADER_ALUMNI, List.of())
+			usersByRole.getOrDefault(Role.LEADER_ALUMNI, List.of()),
+			usersByRole.getOrDefault(Role.ALUMNI_MANAGER, List.of())
 		);
 	}
 
