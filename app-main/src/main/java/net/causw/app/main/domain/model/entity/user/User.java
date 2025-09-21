@@ -18,6 +18,7 @@ import net.causw.app.main.domain.model.enums.user.GraduationType;
 import net.causw.app.main.domain.model.enums.user.Role;
 import net.causw.app.main.domain.model.enums.user.UserState;
 import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.resolver.DepartmentResolver;
 import net.causw.app.main.dto.user.UserCreateRequestDto;
 import net.causw.app.main.dto.user.CreateGraduatedUserCommand;
 
@@ -169,7 +170,7 @@ public class User extends BaseEntity {
 			.nickname(userCreateRequestDto.getNickname())
 			.major(userCreateRequestDto.getMajor())
 			.department(
-				Department.fromAdmissionYearOrRequest(
+				DepartmentResolver.resolveByAdmissionYearOrRequest(
 					userCreateRequestDto.getAdmissionYear(),
 					userCreateRequestDto.getDepartment()
 			))
