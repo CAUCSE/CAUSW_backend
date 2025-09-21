@@ -59,7 +59,7 @@ public class ObjectFixtures {
 			2000,
 			"nickName",
 			"major",
-			Department.SW_SCHOOL,
+			Department.SCHOOL_OF_SW,
 			"010-2000-2000"
 		);
 	}

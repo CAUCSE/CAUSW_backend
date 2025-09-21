@@ -16,10 +16,10 @@ public class DepartmentResolver {
 	 * - AI 학과 개설 이후로는 입학년도 기준으로 학과/학부명 결정할 수 없음
 	 */
 	private static final List<DepartmentPeriod> departmentPeriods = List.of(
-		new DepartmentPeriod(Department.SW_SCHOOL, 2018, StaticValue.CAU_AI_START_YEAR - 1),
+		new DepartmentPeriod(Department.SCHOOL_OF_SW, 2018, StaticValue.CAU_AI_START_YEAR - 1),
 		new DepartmentPeriod(Department.SCHOOL_OF_CSE, 2003, 2017),
 		new DepartmentPeriod(Department.DEPT_OF_CSE, 1993, 2002),
-		new DepartmentPeriod(Department.CS_DEPT, StaticValue.CAU_SW_START_YEAR, 1992)
+		new DepartmentPeriod(Department.DEPT_OF_CS, StaticValue.CAU_SW_START_YEAR, 1992)
 	);
 
 	public static Department resolveByAdmissionYearOrRequest(Integer admissionYear, Department request) {

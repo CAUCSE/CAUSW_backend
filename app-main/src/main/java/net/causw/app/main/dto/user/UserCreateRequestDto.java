@@ -52,7 +52,7 @@ public class UserCreateRequestDto {
 	@Schema(description = "학부/학과", example = "소프트웨어학부")
 	private String major;
 
-	@Schema(description = "학부/학과", example = "SW_SCHOOL(소프트웨어학부), DEPT_OF_AI(AI학과)")
+	@Schema(description = "학부/학과", example = "SCHOOL_OF_SW(소프트웨어학부), DEPT_OF_AI(AI학과)")
 	private Department department;
 
 	@NotBlank(message = "전화번호를 입력해 주세요.")

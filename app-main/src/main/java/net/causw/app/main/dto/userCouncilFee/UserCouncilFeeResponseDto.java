@@ -47,7 +47,7 @@ public class UserCouncilFeeResponseDto {
 	@Schema(description = "전공", example = "컴퓨터공학과")
 	private String major;
 
-	@Schema(description = "학부/학과", example = "CS_DEPT(전자계산학과), DEPT_OF_CSE(컴퓨터공학과), SCHOOL_OF_CSE(컴퓨터공학부), SW_SCHOOL(소프트웨어학부), DEPT_OF_AI(AI학과)")
+	@Schema(description = "학부/학과", example = "DEPT_OF_CS(전자계산학과), DEPT_OF_CSE(컴퓨터공학과), SCHOOL_OF_CSE(컴퓨터공학부), SCHOOL_OF_SW(소프트웨어학부), DEPT_OF_AI(AI학과)")
 	private Department department;
 
 	@Schema(description = "학적상태", example = "재학")

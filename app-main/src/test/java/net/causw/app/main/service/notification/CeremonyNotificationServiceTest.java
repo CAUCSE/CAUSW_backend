@@ -74,7 +74,7 @@ class CeremonyNotificationServiceTest {
 			.studentId("20235555")
 			.admissionYear(2023)
 			.nickname("tester")
-			.department(Department.SW_SCHOOL)
+			.department(Department.SCHOOL_OF_SW)
 			.phoneNumber("010-1234-5678")
 			.build();
 
