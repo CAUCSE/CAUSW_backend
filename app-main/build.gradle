@@ -10,6 +10,10 @@ plugins {
     id 'org.flywaydb.flyway' version '9.22.3'
 }
 
+ext {
+    queryDslVersion = "6.10.1"
+}
+
 dependencies {
     implementation project(':global')
 
@@ -88,6 +92,13 @@ dependencies {
     implementation 'ch.qos.logback.contrib:logback-json-classic:0.1.5'
     implementation 'ch.qos.logback.contrib:logback-jackson:0.1.5'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+
+    // query-dsl
+    implementation "io.github.openfeign.querydsl:querydsl-core:${queryDslVersion}"
+    implementation "io.github.openfeign.querydsl:querydsl-jpa:${queryDslVersion}"
+    annotationProcessor "io.github.openfeign.querydsl:querydsl-apt:${queryDslVersion}:jpa"
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 }
 
 bootJar {
@@ -111,6 +122,18 @@ test {
         if (!desc.parent) {
             println "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
         }
+    }
+}
+
+def querydslDir = layout.buildDirectory.dir("generated/querydsl").get().asFile;
+
+tasks.withType(JavaCompile) {
+    options.generatedSourceOutputDirectory = file(querydslDir)
+}
+
+tasks.named("clean") {
+    doLast {
+        delete file(querydslDir)
     }
 }
 

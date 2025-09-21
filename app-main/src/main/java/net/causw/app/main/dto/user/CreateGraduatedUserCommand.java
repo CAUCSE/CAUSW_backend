@@ -9,4 +9,5 @@ public record CreateGraduatedUserCommand(
 	String nickname,
 	String major,
 	String phoneNumber
-) {}
+) {
+}
