@@ -41,6 +41,11 @@ public class StorageManager {
 		ObjectMetadata objectMetadata = new ObjectMetadata();
 		objectMetadata.setContentType(multipartFile.getContentType());
 
+		// Content-Disposition : attachment 헤더 추가
+		// 브라우저가 파일을 열지 않고 다운로드하도록 도움
+		String contentDisposition = "attachment; filename=\"" + rawFileName + "." + extension + "\"";
+		objectMetadata.setContentDisposition(contentDisposition);
+
 		try (InputStream inputStream = multipartFile.getInputStream()) {
 			amazonS3Client.putObject(new PutObjectRequest(bucketName, fileKey, inputStream, objectMetadata)
 				.withCannedAcl(CannedAccessControlList.PublicRead));
