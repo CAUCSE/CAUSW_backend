@@ -116,6 +116,9 @@ public class JsoupCrawler implements Crawler {
 
 		Element contentElement = detailDoc.select("div.fr-view").first();
 		String contentHtml = contentElement != null ? contentElement.html() : "<p>내용 없음</p>";
+		
+		// 이미지 URL 정규화: HTTP -> HTTPS 변환, data-src -> src 치환
+		contentHtml = normalizeImageUrls(contentHtml);
 
 		List<CrawledFileLink> fileLinks = extractDownloadLink(detailDoc);
 		return CrawledNotice.of(
@@ -224,5 +227,70 @@ public class JsoupCrawler implements Crawler {
 		}
 
 		return uniqueLinks;
+	}
+
+	// HTML 내 이미지 URL을 정규화
+	private String normalizeImageUrls(String html) {
+		if (html == null || html.isBlank()) {
+			return html;
+		}
+
+		try {
+			Document doc = Jsoup.parseBodyFragment(html);
+			
+			// 모든 img 태그 처리
+			Elements images = doc.select("img");
+			for (Element img : images) {
+				// 1. src 우선순위: src > data-src > data-original > data-lazy
+				String src = img.attr("src");
+				if (src.isBlank()) {
+					src = img.attr("data-src");
+				}
+				if (src.isBlank()) {
+					src = img.attr("data-original");
+				}
+				if (src.isBlank()) {
+					src = img.attr("data-lazy");
+				}
+				
+				if (!src.isBlank()) {
+					// 2. 절대경로로 변환
+					String absoluteUrl = img.absUrl("src");
+					if (absoluteUrl.isBlank()) {
+						absoluteUrl = src;
+					}
+					
+					// 3. HTTP -> HTTPS 변환
+					String httpsUrl = forceHttps(absoluteUrl);
+					
+					// 4. src 속성 설정 및 data-* 속성 제거
+					img.attr("src", httpsUrl);
+					img.removeAttr("data-src");
+					img.removeAttr("data-original");
+					img.removeAttr("data-lazy");
+					img.removeAttr("srcset");
+				}
+			}
+			
+			return doc.body().html();
+		} catch (Exception e) {
+			return html;
+		}
+	}
+
+	// HTTP URL을 HTTPS로 변환합니다.
+	private String forceHttps(String url) {
+		if (url == null || url.isBlank()) {
+			return url;
+		}
+		
+		try {
+			if (url.startsWith("http://")) {
+				return url.replaceFirst("http://", "https://");
+			}
+			return url;
+		} catch (Exception e) {
+			return url;
+		}
 	}
 }
