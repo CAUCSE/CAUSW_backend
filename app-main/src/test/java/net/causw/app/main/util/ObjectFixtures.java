@@ -17,6 +17,7 @@ import net.causw.app.main.domain.model.entity.userCouncilFee.UserCouncilFee;
 import net.causw.app.main.domain.model.entity.vote.Vote;
 import net.causw.app.main.domain.model.entity.vote.VoteOption;
 import net.causw.app.main.domain.model.enums.semester.SemesterType;
+import net.causw.app.main.domain.model.enums.user.Department;
 import net.causw.app.main.domain.model.enums.user.GraduationType;
 import net.causw.app.main.domain.model.enums.user.Role;
 import net.causw.app.main.domain.model.enums.user.UserState;
@@ -58,6 +59,7 @@ public class ObjectFixtures {
 			2000,
 			"nickName",
 			"major",
+			Department.SCHOOL_OF_SW,
 			"010-2000-2000"
 		);
 	}

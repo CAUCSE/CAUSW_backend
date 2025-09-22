@@ -15,10 +15,12 @@ import net.causw.app.main.domain.model.entity.locker.Locker;
 import net.causw.app.main.domain.model.entity.notification.CeremonyNotificationSetting;
 import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.model.entity.vote.VoteRecord;
+import net.causw.app.main.domain.model.enums.user.Department;
 import net.causw.app.main.domain.model.enums.user.GraduationType;
 import net.causw.app.main.domain.model.enums.user.Role;
 import net.causw.app.main.domain.model.enums.user.UserState;
 import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.resolver.DepartmentResolver;
 import net.causw.app.main.dto.user.UserCreateRequestDto;
 import net.causw.app.main.dto.user.CreateGraduatedUserCommand;
 
@@ -71,8 +73,14 @@ public class User extends BaseEntity {
 	@Column(name = "nickname", unique = true, nullable = false)
 	private String nickname;
 
-	@Column(name = "major", nullable = false)
+	// TODO: 기존값들 department로 마이그레이션 후 삭제
+	@Column(name = "major", nullable = true)
 	private String major;
+
+	// TODO: null 임시 허용 제거
+	@Column(name = "department", nullable = true)
+	@Enumerated(EnumType.STRING)
+	private Department department;
 
 	@Column(name = "academic_status", nullable = false)
 	@Enumerated(EnumType.STRING)
@@ -164,6 +172,11 @@ public class User extends BaseEntity {
 			.admissionYear(userCreateRequestDto.getAdmissionYear())
 			.nickname(userCreateRequestDto.getNickname())
 			.major(userCreateRequestDto.getMajor())
+			.department(
+				DepartmentResolver.resolveByAdmissionYearOrRequest(
+					userCreateRequestDto.getAdmissionYear(),
+					userCreateRequestDto.getDepartment()
+			))
 			.academicStatus(AcademicStatus.UNDETERMINED)
 			.phoneNumber(userCreateRequestDto.getPhoneNumber())
 			.isV2(true)
@@ -185,6 +198,7 @@ public class User extends BaseEntity {
 			.graduationYear(createGraduatedUserCommand.graduationYear())
 			.nickname(createGraduatedUserCommand.nickname())
 			.major(createGraduatedUserCommand.major())
+
 			.academicStatus(AcademicStatus.GRADUATED)
 			.phoneNumber(createGraduatedUserCommand.phoneNumber())
 			.isV2(true)

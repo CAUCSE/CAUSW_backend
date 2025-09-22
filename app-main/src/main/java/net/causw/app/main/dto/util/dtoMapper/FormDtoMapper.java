@@ -127,6 +127,7 @@ public interface FormDtoMapper {
 	@Mapping(target = "admissionYear", source = "user.admissionYear")
 	@Mapping(target = "studentId", source = "user.studentId")
 	@Mapping(target = "major", source = "user.major")
+	@Mapping(target = "department", source = "user.department")
 	@Mapping(target = "phoneNumber", source = "user.phoneNumber")
 	@Mapping(target = "academicStatus", source = "user.academicStatus")
 	@Mapping(target = "currentCompletedSemester", source = "user.currentCompletedSemester")
