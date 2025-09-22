@@ -9,7 +9,8 @@ public class StaticValue {
 
 	public static final String BOARD_NAME_APP_FREE = "APP_FREE";
 
-	public static final Integer CAUSW_CREATED = 1972;
+	public static final Integer CAU_SW_START_YEAR = 1972;
+	public static final Integer CAU_AI_START_YEAR = 2021;
 	public static final Integer MAX_NUM_FILE_ATTACHMENTS = 3;
 
 	// Pagination

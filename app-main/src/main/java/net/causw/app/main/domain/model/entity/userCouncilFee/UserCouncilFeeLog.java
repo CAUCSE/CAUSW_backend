@@ -6,6 +6,7 @@ import net.causw.app.main.domain.model.entity.base.BaseEntity;
 import net.causw.app.main.domain.model.entity.semester.Semester;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.domain.model.enums.semester.SemesterType;
+import net.causw.app.main.domain.model.enums.user.Department;
 import net.causw.app.main.domain.model.enums.user.GraduationType;
 import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.model.enums.userCouncilFee.CouncilFeeLogType;
@@ -64,8 +65,14 @@ public class UserCouncilFeeLog extends BaseEntity {
 	@Column(name = "admission_year", nullable = false)
 	private Integer admissionYear;
 
-	@Column(name = "major", nullable = false)
+	// TODO: user 테이블의 major 필드 삭제 후 함께 제거
+	@Column(name = "major", nullable = true)
 	private String major;
+
+	// TODO: null 임시 허용 제거
+	@Enumerated(EnumType.STRING)
+	@Column(name = "department", nullable = true)
+	private Department department;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "academic_status", nullable = false)
@@ -126,7 +133,8 @@ public class UserCouncilFeeLog extends BaseEntity {
 			.userName(targetUser.getName())
 			.studentId(targetUser.getStudentId())
 			.admissionYear(targetUser.getAdmissionYear())
-			.major(targetUser.getMajor())
+			.major(targetUser.getMajor()) // TODO: user 테이블의 major 필드 삭제 후 함께 제거
+			.department(targetUser.getDepartment())
 			.academicStatus(targetUser.getAcademicStatus())
 			.currentCompletedSemester(targetUser.getCurrentCompletedSemester())
 			.graduationYear(targetUser.getGraduationYear())

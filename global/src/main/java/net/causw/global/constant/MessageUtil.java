@@ -127,6 +127,8 @@ public class MessageUtil {
 	public static final String USER_RECOVER_INVALID_STATE = "복구할 수 없는 계정 상태입니다.";
 	public static final String USER_DELETED = "삭제된 계정입니다. 회원가입 페이지에서 새로운 정보로 가입해주세요.";
 	public static final String PRIVACY_POLICY_REQUIRED = "개인정보 수집 동의가 필요합니다.";
+	public static final String DEPARTMENT_EXPLICITLY_REQUIRED = "2021년 이후 입학생은 학과/학부를 반드시 선택해야 합니다.";
+	public static final String INVALID_ADMISSION_YEAR = "해당 입학년도에 맞는 학과를 찾을 수 없습니다.";
 
 	// Flag
 	public static final String FLAG_UPDATE_FAILED = "플래그 업데이트에 실패했습니다.";

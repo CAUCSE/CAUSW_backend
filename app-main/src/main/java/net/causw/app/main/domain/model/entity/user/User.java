@@ -7,16 +7,20 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import org.hibernate.annotations.BatchSize;
+
 import net.causw.app.main.domain.model.entity.base.BaseEntity;
 import net.causw.app.main.domain.model.entity.circle.CircleMember;
 import net.causw.app.main.domain.model.entity.locker.Locker;
 import net.causw.app.main.domain.model.entity.notification.CeremonyNotificationSetting;
 import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.model.entity.vote.VoteRecord;
+import net.causw.app.main.domain.model.enums.user.Department;
 import net.causw.app.main.domain.model.enums.user.GraduationType;
 import net.causw.app.main.domain.model.enums.user.Role;
 import net.causw.app.main.domain.model.enums.user.UserState;
 import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.resolver.DepartmentResolver;
 import net.causw.app.main.dto.user.UserCreateRequestDto;
 import net.causw.app.main.dto.user.CreateGraduatedUserCommand;
 
@@ -69,8 +73,14 @@ public class User extends BaseEntity {
 	@Column(name = "nickname", unique = true, nullable = false)
 	private String nickname;
 
-	@Column(name = "major", nullable = false)
+	// TODO: 기존값들 department로 마이그레이션 후 삭제
+	@Column(name = "major", nullable = true)
 	private String major;
+
+	// TODO: null 임시 허용 제거
+	@Column(name = "department", nullable = true)
+	@Enumerated(EnumType.STRING)
+	private Department department;
 
 	@Column(name = "academic_status", nullable = false)
 	@Enumerated(EnumType.STRING)
@@ -89,9 +99,10 @@ public class User extends BaseEntity {
 	@Column(name = "graduation_type", nullable = true)
 	private GraduationType graduationType;
 
-	@ElementCollection(fetch = FetchType.EAGER)
+	@ElementCollection(fetch = FetchType.LAZY)
 	@Enumerated(EnumType.STRING)
 	@Column(name = "role", nullable = false)
+	@BatchSize(size = 100)
 	private Set<Role> roles;
 
 	@OneToOne(cascade = {CascadeType.REMOVE, CascadeType.PERSIST}, mappedBy = "user")
@@ -121,7 +132,7 @@ public class User extends BaseEntity {
 	@Builder.Default
 	private Boolean isV2 = true;
 
-	@ElementCollection(fetch = FetchType.EAGER)
+	@ElementCollection(fetch = FetchType.LAZY)
 	@CollectionTable(
 		name = "tb_user_fcm_token",
 		joinColumns = @JoinColumn(name = "user_id")
@@ -161,6 +172,11 @@ public class User extends BaseEntity {
 			.admissionYear(userCreateRequestDto.getAdmissionYear())
 			.nickname(userCreateRequestDto.getNickname())
 			.major(userCreateRequestDto.getMajor())
+			.department(
+				DepartmentResolver.resolveByAdmissionYearOrRequest(
+					userCreateRequestDto.getAdmissionYear(),
+					userCreateRequestDto.getDepartment()
+			))
 			.academicStatus(AcademicStatus.UNDETERMINED)
 			.phoneNumber(userCreateRequestDto.getPhoneNumber())
 			.isV2(true)
@@ -182,6 +198,7 @@ public class User extends BaseEntity {
 			.graduationYear(createGraduatedUserCommand.graduationYear())
 			.nickname(createGraduatedUserCommand.nickname())
 			.major(createGraduatedUserCommand.major())
+
 			.academicStatus(AcademicStatus.GRADUATED)
 			.phoneNumber(createGraduatedUserCommand.phoneNumber())
 			.isV2(true)

@@ -16,4 +16,5 @@ public class UserPrivilegedResponseDto {
 	private List<UserResponseDto> leaderGradeUsers;
 	private List<UserResponseDto> leaderCircleUsers;
 	private List<UserResponseDto> leaderAlumni;
+	private List<UserResponseDto> alumniManager;
 }

@@ -29,7 +29,7 @@ public class AdmissionYearValidator extends AbstractValidator {
 	}
 
 	public boolean validateAdmissionYear() {
-		if (this.admissionYear < StaticValue.CAUSW_CREATED) {
+		if (this.admissionYear < StaticValue.CAU_SW_START_YEAR) {
 			return false;
 		}
 

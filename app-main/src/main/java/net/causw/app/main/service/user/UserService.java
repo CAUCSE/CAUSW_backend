@@ -4,9 +4,13 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -18,6 +22,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -95,6 +100,7 @@ import net.causw.app.main.infrastructure.security.JwtTokenProvider;
 import net.causw.app.main.repository.board.BoardRepository;
 import net.causw.app.main.repository.circle.CircleMemberRepository;
 import net.causw.app.main.repository.circle.CircleRepository;
+import net.causw.app.main.repository.circle.query.CircleQueryRepository;
 import net.causw.app.main.repository.comment.ChildCommentRepository;
 import net.causw.app.main.repository.comment.CommentRepository;
 import net.causw.app.main.repository.locker.LockerLogRepository;
@@ -105,6 +111,7 @@ import net.causw.app.main.repository.post.PostRepository;
 import net.causw.app.main.repository.user.UserAdmissionLogRepository;
 import net.causw.app.main.repository.user.UserAdmissionRepository;
 import net.causw.app.main.repository.user.UserRepository;
+import net.causw.app.main.repository.user.query.UserQueryRepository;
 import net.causw.app.main.repository.userAcademicRecord.UserAcademicRecordApplicationRepository;
 import net.causw.app.main.repository.userInfo.UserInfoRepository;
 import net.causw.app.main.repository.uuidFile.UserAcademicRecordApplicationAttachImageRepository;
@@ -166,6 +173,9 @@ public class UserService {
 	private final PostDtoMapper postDtoMapper;
 	private final PostService postService;
 	private final UserBlockEntityService userBlockEntityService;
+	private final UserQueryRepository userQueryRepository;
+	private final WebInvocationPrivilegeEvaluator privilegeEvaluator;
+	private final CircleQueryRepository circleQueryRepository;
 
 	@Transactional
 	public void findPassword(
@@ -509,71 +519,6 @@ public class UserService {
 			.filter(user -> user.getState().equals(UserState.ACTIVE))
 			.map(user -> UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null))
 			.collect(Collectors.toList());
-	}
-
-	@Transactional(readOnly = true)
-	public UserPrivilegedResponseDto findPrivilegedUsers(User user) {
-		Set<Role> roles = user.getRoles();
-
-		ValidatorBucket.of()
-			.consistOf(UserStateValidator.of(user.getState()))
-			.consistOf(UserRoleIsNoneValidator.of(roles))
-			.consistOf(UserRoleValidator.of(roles, Set.of()))
-			.validate();
-
-		//todo: 현재 겸직을 고려하기 위해 _N_ 사용 중이나 port 와 domain model 삭제를 위해 배제
-		//때문에 추후 userRole 관리 리팩토링 후 겸직을 고려하게 변경 필요
-		return UserDtoMapper.INSTANCE.toUserPrivilegedResponseDto(
-			this.userRepository.findByRoleAndState(Role.PRESIDENT, UserState.ACTIVE)
-				.stream()
-				.map(president -> UserDtoMapper.INSTANCE.toUserResponseDto(president, null, null))
-				.collect(Collectors.toList()),
-			this.userRepository.findByRoleAndState(Role.VICE_PRESIDENT, UserState.ACTIVE)
-				.stream()
-				.map(vicePresident -> UserDtoMapper.INSTANCE.toUserResponseDto(vicePresident, null, null))
-				.collect(Collectors.toList()),
-			this.userRepository.findByRoleAndState(Role.COUNCIL, UserState.ACTIVE)
-				.stream()
-				.map(council -> UserDtoMapper.INSTANCE.toUserResponseDto(council, null, null))
-				.collect(Collectors.toList()),
-			this.userRepository.findByRoleAndState(Role.LEADER_1, UserState.ACTIVE)
-				.stream()
-				.map(leader1 -> UserDtoMapper.INSTANCE.toUserResponseDto(leader1, null, null))
-				.collect(Collectors.toList()),
-			this.userRepository.findByRoleAndState(Role.LEADER_2, UserState.ACTIVE)
-				.stream()
-				.map(leader2 -> UserDtoMapper.INSTANCE.toUserResponseDto(leader2, null, null))
-				.collect(Collectors.toList()),
-			this.userRepository.findByRoleAndState(Role.LEADER_3, UserState.ACTIVE)
-				.stream()
-				.map(leader3 -> UserDtoMapper.INSTANCE.toUserResponseDto(leader3, null, null))
-				.collect(Collectors.toList()),
-			this.userRepository.findByRoleAndState(Role.LEADER_4, UserState.ACTIVE)
-				.stream()
-				.map(leader4 -> UserDtoMapper.INSTANCE.toUserResponseDto(leader4, null, null))
-				.collect(Collectors.toList()),
-			this.userRepository.findByRoleAndState(Role.LEADER_CIRCLE, UserState.ACTIVE)
-				.stream()
-				.map(userDomainModel -> {
-					List<Circle> ownCircles = this.circleRepository.findByLeader_Id(userDomainModel.getId());
-					if (ownCircles.isEmpty()) {
-						throw new InternalServerException(
-							ErrorCode.INTERNAL_SERVER,
-							MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER
-						);
-					}
-					return UserDtoMapper.INSTANCE.toUserResponseDto(
-						userDomainModel,
-						ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
-						ownCircles.stream().map(Circle::getName).collect(Collectors.toList())
-					);
-				})
-				.collect(Collectors.toList()),
-			this.userRepository.findByRoleAndState(Role.LEADER_ALUMNI, UserState.ACTIVE)
-				.stream()
-				.map(alumni -> UserDtoMapper.INSTANCE.toUserResponseDto(alumni, null, null))
-				.collect(Collectors.toList())
-		);
 	}
 
 	@Transactional

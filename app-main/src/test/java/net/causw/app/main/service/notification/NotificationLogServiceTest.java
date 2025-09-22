@@ -29,6 +29,7 @@ import net.causw.app.main.dto.notification.NotificationResponseDto;
 import net.causw.app.main.dto.user.UserCreateRequestDto;
 import net.causw.app.main.repository.notification.NotificationLogRepository;
 import net.causw.app.main.service.pageable.PageableFactory;
+import net.causw.app.main.util.ObjectFixtures;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 
@@ -50,18 +51,7 @@ public class NotificationLogServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		UserCreateRequestDto userCreateRequestDto = UserCreateRequestDto.builder()
-			.email("test@cau.ac.kr")
-			.name("테스트 유저")
-			.password("Password123!")
-			.studentId("20235555")
-			.admissionYear(2023)
-			.nickname("tester")
-			.major("소프트웨어학부")
-			.phoneNumber("010-1234-5678")
-			.build();
-
-		mockUser = User.from(userCreateRequestDto, "encodedPassword");
+		mockUser = ObjectFixtures.getUser();
 		pageable = PageRequest.of(0, 10);
 		lenient().when(pageableFactory.create(anyInt(), anyInt())).thenReturn(pageable);
 	}
