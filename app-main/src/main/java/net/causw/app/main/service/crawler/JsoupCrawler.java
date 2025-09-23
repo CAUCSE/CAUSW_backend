@@ -236,34 +236,21 @@ public class JsoupCrawler implements Crawler {
 			return;
 		}
 
-		List<String> srcAttributes = List.of("src", "data-src", "data-original", "data-lazy");
-
 		for (Element img : element.select("img")) {
-			String srcUrl = "";
-			String srcAttrFound = "";
+			// 우선순위에 따라 이미지 URL 찾기 및 처리
+			StaticValue.IMAGE_SRC_ATTRIBUTES.stream()
+				.filter(attr -> !img.attr(attr).isBlank())
+				.findFirst()
+				.ifPresent(srcAttrFound -> {
+					String srcUrl = img.attr(srcAttrFound);
+					// baseUri를 유지하면서 절대 경로로 변환
+					String absoluteUrl = img.absUrl(srcAttrFound);
+					String httpsUrl = forceHttps(absoluteUrl.isBlank() ? srcUrl : absoluteUrl);
 
-			// 우선순위에 따라 이미지 URL 찾기
-			for (String attr : srcAttributes) {
-				String url = img.attr(attr);
-				if (!url.isBlank()) {
-					srcUrl = url;
-					srcAttrFound = attr;
-					break;
-				}
-			}
-
-			if (!srcUrl.isBlank()) {
-				// baseUri를 유지하면서 절대 경로로 변환
-				String absoluteUrl = img.absUrl(srcAttrFound);
-				String httpsUrl = forceHttps(absoluteUrl.isBlank() ? srcUrl : absoluteUrl);
-
-				// src 속성 설정 및 data-* 속성 제거
-				img.attr("src", httpsUrl);
-				img.removeAttr("data-src");
-				img.removeAttr("data-original");
-				img.removeAttr("data-lazy");
-				img.removeAttr("srcset");
-			}
+					// src 속성 설정 및 data-* 속성 제거
+					img.attr("src", httpsUrl);
+					StaticValue.REMOVABLE_IMAGE_ATTRIBUTES.forEach(img::removeAttr);
+				});
 		}
 	}
 
