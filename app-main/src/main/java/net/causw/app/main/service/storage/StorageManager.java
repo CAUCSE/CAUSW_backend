@@ -2,10 +2,12 @@ package net.causw.app.main.service.storage;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ContentDisposition;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -40,6 +42,15 @@ public class StorageManager {
 
 		ObjectMetadata objectMetadata = new ObjectMetadata();
 		objectMetadata.setContentType(multipartFile.getContentType());
+
+		// Content-Disposition : attachment 헤더 추가
+		// 브라우저가 파일을 열지 않고 다운로드하도록 도움
+		String originalFileName = rawFileName + "." + extension;
+		String contentDisposition = ContentDisposition.builder("attachment")
+			.filename(originalFileName, StandardCharsets.UTF_8)
+			.build()
+			.toString();
+		objectMetadata.setContentDisposition(contentDisposition);
 
 		try (InputStream inputStream = multipartFile.getInputStream()) {
 			amazonS3Client.putObject(new PutObjectRequest(bucketName, fileKey, inputStream, objectMetadata)
