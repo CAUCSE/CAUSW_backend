@@ -105,17 +105,17 @@ public class User extends BaseEntity {
 	@BatchSize(size = 100)
 	private Set<Role> roles;
 
-	@OneToOne(cascade = {CascadeType.REMOVE, CascadeType.PERSIST}, mappedBy = "user")
+	@OneToOne(cascade = {CascadeType.REMOVE, CascadeType.PERSIST}, mappedBy = "user", fetch = FetchType.LAZY)
 	private UserProfileImage userProfileImage;
 
 	@Column(name = "state", nullable = false)
 	@Enumerated(EnumType.STRING)
 	private UserState state;
 
-	@OneToOne(mappedBy = "user", fetch = FetchType.EAGER)
+	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
 	private Locker locker;
 
-	@OneToOne(mappedBy = "user", fetch = FetchType.EAGER)
+	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
 	private CeremonyNotificationSetting ceremonyNotificationSetting;
 
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
