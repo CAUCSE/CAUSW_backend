@@ -1,7 +1,5 @@
 package net.causw.app.main.service.userInfo;
 
-import static net.causw.global.constant.StaticValue.*;
-
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -23,16 +21,13 @@ import net.causw.app.main.domain.model.enums.user.UserState;
 import net.causw.app.main.dto.user.UserUpdateRequestDto;
 import net.causw.app.main.dto.userInfo.UserCareerDto;
 import net.causw.app.main.dto.userInfo.UserInfoResponseDto;
-import net.causw.app.main.dto.userInfo.UserInfoSearchCondition;
-import net.causw.app.main.dto.userInfo.UserInfoSummaryResponseDto;
+import net.causw.app.main.dto.userInfo.UserInfoSearchConditionDto;
 import net.causw.app.main.dto.userInfo.UserInfoUpdateRequestDto;
 import net.causw.app.main.dto.util.dtoMapper.UserDtoMapper;
 import net.causw.app.main.repository.user.UserRepository;
 import net.causw.app.main.repository.userInfo.UserCareerRepository;
 import net.causw.app.main.repository.userInfo.UserInfoRepository;
 import net.causw.app.main.repository.userInfo.query.UserInfoQueryRepository;
-import net.causw.app.main.repository.userInfo.query.UserInfoQueryRepositoryImpl;
-import net.causw.app.main.service.pageable.PageableFactory;
 import net.causw.app.main.service.user.UserService;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
@@ -46,7 +41,6 @@ public class UserInfoService {
 	private final UserInfoRepository userInfoRepository;
 	private final UserRepository userRepository;
 	private final UserService userService;
-	private final PageableFactory pageableFactory;
 	private final UserCareerRepository userCareerRepository;
 	private final UserInfoQueryRepository userInfoQueryRepository;
 
@@ -148,15 +142,7 @@ public class UserInfoService {
 		}
 	}
 
-	@Transactional(readOnly = true)
-	public Page<UserInfoSummaryResponseDto> search(final String keyword, final Integer pageNum) {
-
-		return userInfoRepository.findAllByUserStateAndKeywordInNameOrJobOrCareer(
-				UserState.ACTIVE, keyword, pageableFactory.create(pageNum, DEFAULT_PAGE_SIZE))
-			.map(UserDtoMapper.INSTANCE::toUserInfoSummaryResponseDto);
-	}
-
-	public Page<UserInfo> searchUserInfo(Pageable pageable, UserInfoSearchCondition userInfoSearchCondition) {
+	public Page<UserInfo> searchUserInfo(Pageable pageable, UserInfoSearchConditionDto userInfoSearchCondition) {
 		return userInfoQueryRepository.searchUserInfo(userInfoSearchCondition, pageable);
 	}
 

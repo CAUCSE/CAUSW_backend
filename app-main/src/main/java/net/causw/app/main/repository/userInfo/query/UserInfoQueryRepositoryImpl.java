@@ -15,7 +15,7 @@ import net.causw.app.main.domain.model.entity.uuidFile.QUuidFile;
 import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.QUserProfileImage;
 import net.causw.app.main.domain.model.enums.user.UserState;
 import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
-import net.causw.app.main.dto.userInfo.UserInfoSearchCondition;
+import net.causw.app.main.dto.userInfo.UserInfoSearchConditionDto;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.JPAExpressions;
@@ -29,7 +29,7 @@ public class UserInfoQueryRepositoryImpl implements UserInfoQueryRepository {
 	private final JPAQueryFactory jpaQueryFactory;
 
 	@Override
-	public Page<UserInfo> searchUserInfo(UserInfoSearchCondition userInfoSearchCondition, Pageable pageable) {
+	public Page<UserInfo> searchUserInfo(UserInfoSearchConditionDto userInfoSearchCondition, Pageable pageable) {
 		// keyword는 이름, 직업, 경력, like 검색
 		// user, job, user.carrer
 		QUserInfo userInfo = QUserInfo.userInfo;
@@ -71,7 +71,7 @@ public class UserInfoQueryRepositoryImpl implements UserInfoQueryRepository {
 	 * @return 검색 조건 booleanBuilder
 	 */
 	private BooleanBuilder buildSearchPredicate(
-		UserInfoSearchCondition userInfoSearchCondition,
+		UserInfoSearchConditionDto userInfoSearchCondition,
 		QUserInfo userInfo
 	) {
 		BooleanBuilder predicate = new BooleanBuilder();

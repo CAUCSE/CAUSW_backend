@@ -4,7 +4,7 @@ import java.util.List;
 
 import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
 
-public record UserInfoSearchCondition(
+public record UserInfoSearchConditionDto(
 	String keyword,
 	Integer admissionYearStart,
 	Integer admissionYearEnd,

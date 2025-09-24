@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.dto.userInfo.UserInfoResponseDto;
-import net.causw.app.main.dto.userInfo.UserInfoSearchCondition;
+import net.causw.app.main.dto.userInfo.UserInfoSearchConditionDto;
 import net.causw.app.main.dto.userInfo.UserInfoSummaryResponseDto;
 import net.causw.app.main.dto.userInfo.UserInfoUpdateRequestDto;
 import net.causw.app.main.infrastructure.security.userdetails.CustomUserDetails;
@@ -56,9 +56,9 @@ public class UserInfoController {
 	@GetMapping
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "전체 사용자 리스트 검색 및 조회 API", description = "최근 수정된 순서대로 정렬")
-	public Page<UserInfoSummaryResponseDto> userInfoList(
+	public Page<UserInfoSummaryResponseDto> searchUserInfos	(
 		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
-		@ModelAttribute UserInfoSearchCondition userInfoSearchCondition
+		@ModelAttribute UserInfoSearchConditionDto userInfoSearchCondition
 	) {
 		return searchUserInfoListUseCaseService.execute(userInfoSearchCondition, pageNum);
 	}

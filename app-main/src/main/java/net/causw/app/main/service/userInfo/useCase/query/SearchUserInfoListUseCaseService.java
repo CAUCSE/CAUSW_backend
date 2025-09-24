@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.dto.userInfo.UserInfoSearchCondition;
+import net.causw.app.main.dto.userInfo.UserInfoSearchConditionDto;
 import net.causw.app.main.dto.userInfo.UserInfoSummaryResponseDto;
 import net.causw.app.main.dto.util.dtoMapper.UserDtoMapper;
 import net.causw.app.main.service.pageable.PageableFactory;
@@ -24,7 +24,7 @@ public class SearchUserInfoListUseCaseService {
 	private final PageableFactory pageableFactory;
 	private final UserDtoMapper userDtoMapper;
 
-	public Page<UserInfoSummaryResponseDto> execute(UserInfoSearchCondition userInfoSearchCondition, Integer pageNum) {
+	public Page<UserInfoSummaryResponseDto> execute(UserInfoSearchConditionDto userInfoSearchCondition, Integer pageNum) {
 		Pageable pageable = pageableFactory.create(pageNum, DEFAULT_PAGE_SIZE);
 
 		return userInfoService.searchUserInfo(pageable, userInfoSearchCondition)
