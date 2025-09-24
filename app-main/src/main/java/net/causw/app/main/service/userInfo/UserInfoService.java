@@ -156,16 +156,16 @@ public class UserInfoService {
 			.map(UserDtoMapper.INSTANCE::toUserInfoSummaryResponseDto);
 	}
 
+	public Page<UserInfo> searchUserInfo(Pageable pageable, UserInfoSearchCondition userInfoSearchCondition) {
+		return userInfoQueryRepository.searchUserInfo(userInfoSearchCondition, pageable);
+	}
+
 	private User findUserById(String userId) {
 		return userRepository.findById(userId)
 			.orElseThrow(() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
 				MessageUtil.USER_NOT_FOUND
 			));
-	}
-
-	public Page<UserInfo> searchUserInfo(Pageable pageable, UserInfoSearchCondition userInfoSearchCondition) {
-		return userInfoQueryRepository.searchUserInfo(userInfoSearchCondition, pageable);
 	}
 
 	private void validateUserCareerDate(UserCareerDto userCareerDto) {
