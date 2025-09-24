@@ -51,7 +51,7 @@ public class UserInfoController {
 
 	@GetMapping
 	@ResponseStatus(value = HttpStatus.OK)
-	@Operation(summary = "전체 사용자 세부정보 조회 API", description = "최근 수정된 순서대로 정렬")
+	@Operation(summary = "전체 사용자 리스트 조회 API", description = "최근 수정된 순서대로 정렬")
 	public Page<UserInfoSummaryResponseDto> getAllUserInfos(
 		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum
 	) {
