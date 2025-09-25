@@ -20,7 +20,6 @@ import net.causw.app.main.dto.userInfo.UserInfoSearchConditionDto;
 import net.causw.app.main.dto.userInfo.UserInfoSummaryResponseDto;
 import net.causw.app.main.dto.userInfo.UserInfoUpdateRequestDto;
 import net.causw.app.main.infrastructure.security.userdetails.CustomUserDetails;
-import net.causw.app.main.service.userInfo.UserInfoService;
 import net.causw.app.main.service.userInfo.useCase.command.UpdateUserInfoUseCaseService;
 import net.causw.app.main.service.userInfo.useCase.query.GetUserInfoUseCaseService;
 import net.causw.app.main.service.userInfo.useCase.query.SearchUserInfoListUseCaseService;
@@ -39,7 +38,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserInfoController {
 
-	private final UserInfoService userInfoService;
 	private final SearchUserInfoListUseCaseService searchUserInfoListUseCaseService;
 	private final GetUserInfoUseCaseService getUserInfoUseCaseService;
 	private final UpdateUserInfoUseCaseService updateUserInfoUseCaseService;
