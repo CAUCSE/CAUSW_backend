@@ -91,6 +91,6 @@ public class UserInfoController {
 		@RequestPart(value = "userInfoUpdateDto") @Valid UserInfoUpdateRequestDto userInfoUpdateDto,
 		@RequestPart(value = "profileImage", required = false) MultipartFile profileImage
 	) {
-		return updateUserInfoUseCaseService.execute(userDetails.getUser().getId(), userInfoUpdateDto, profileImage);
+		return updateUserInfoUseCaseService.execute(userDetails.getUserId(), userInfoUpdateDto, profileImage);
 	}
 }
