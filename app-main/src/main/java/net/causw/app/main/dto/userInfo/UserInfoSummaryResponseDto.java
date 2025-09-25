@@ -23,5 +23,5 @@ public class UserInfoSummaryResponseDto {
 	private String description;
 	private String job;
 
-	private List<UserCareerDto> userCareer;
+	// private List<UserCareerDto> userCareer;
 }

@@ -25,11 +25,7 @@ public class UserInfoUpdateRequestDto {
 	@Valid
 	private List<UserCareerDto> userCareer;
 
-	private String githubLink;
-	private String linkedInLink;
-	private String blogLink;
-	private String notionLink;
-	private String instagramLink;
+	private List<String> socialLinks;
 
 	@NotNull
 	private Boolean isPhoneNumberVisible;

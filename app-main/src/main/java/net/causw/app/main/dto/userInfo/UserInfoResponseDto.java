@@ -32,11 +32,7 @@ public class UserInfoResponseDto {
 
 	private List<UserCareerDto> userCareer;
 
-	private String githubLink;
-	private String linkedInLink;
-	private String blogLink;
-	private String notionLink;
-	private String instagramLink;
+	private List<String> socialLinks;
 
 	private Boolean isPhoneNumberVisible;
 }

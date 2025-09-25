@@ -86,10 +86,7 @@ public class UserInfoService {
 			.orElseGet(() -> userInfoRepository.save(UserInfo.of(user))); // 없는 경우 생성
 
 		userInfo.update(
-			request.getDescription(), request.getJob(),
-			request.getGithubLink(), request.getLinkedInLink(), request.getInstagramLink(),
-			request.getNotionLink(), request.getBlogLink(),
-			request.getIsPhoneNumberVisible());
+			request.getDescription(), request.getJob(), request.getSocialLinks(), request.getIsPhoneNumberVisible());
 
 		// 사용자 커리어 갱신
 		updateUserCareer(request.getUserCareer(), userInfo);
