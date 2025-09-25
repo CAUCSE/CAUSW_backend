@@ -103,35 +103,6 @@ public class PostController {
 		return this.postService.findAllPost(userDetails.getUser(), boardId, keyword, pageNum);
 	}
 
-	@GetMapping("/search")
-	@ResponseStatus(value = HttpStatus.OK)
-	@Operation(summary = "게시글 검색 API(완료)",
-		description = "게시글을 검색하는 API로 제목의 연관검색어로 검색 가능합니다.")
-	@ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
-	@ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
-	@ApiResponse(responseCode = "4000", description = "게시글을 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
-	@ApiResponse(responseCode = "4102", description = "추방된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
-	@ApiResponse(responseCode = "4103", description = "비활성화된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
-	@ApiResponse(responseCode = "4104", description = "대기 중인 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
-	@ApiResponse(responseCode = "4109", description = "가입이 거절된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
-	@ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
-	@ApiResponse(responseCode = "4108", description = "로그인된 사용자가 동아리 멤버가 아닙니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
-	@ApiResponse(responseCode = "4004", description = "삭제된 동아리입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
-	@ApiResponse(responseCode = "4001", description = "이미 동아리에 가입한 사용자입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
-	@ApiResponse(responseCode = "4006", description = "동아리를 떠난 사용자입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
-	@ApiResponse(responseCode = "4008", description = "동아리 가입 대기 중인 사용자입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
-	@ApiResponse(responseCode = "4102", description = "동아리 가입 거절된 사용자입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
-	@ApiResponse(responseCode = "4102", description = "동아리에서 추방된 사용자입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
-	@ApiResponse(responseCode = "4004", description = "삭제된 게시판입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
-	public BoardPostsResponseDto searchPost(
-		@RequestParam("boardId") String boardId,
-		@RequestParam(name = "keyword", defaultValue = "") String keyword,
-		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
-		@AuthenticationPrincipal CustomUserDetails userDetails
-	) {
-		return this.postService.searchPost(userDetails.getUser(), boardId, keyword, pageNum);
-	}
-
 	@GetMapping("/app/notice")
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "앱 자체 공지사항 확인 API(프론트에 없음)", description = "현재 프론트단에 코드가 존재하지 않습니다")

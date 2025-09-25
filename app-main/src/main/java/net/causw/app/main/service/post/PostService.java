@@ -188,45 +188,6 @@ public class PostService {
 		);
 	}
 
-	@Transactional(readOnly = true)
-	public BoardPostsResponseDto searchPost(
-		User user,
-		String boardId,
-		String keyword,
-		Integer pageNum
-	) {
-		Set<Role> roles = user.getRoles();
-		Board board = getBoard(boardId);
-
-		ValidatorBucket validatorBucket = initializeValidator(user, board);
-		validatorBucket
-			.consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD))
-			.validate();
-
-		boolean isCircleLeader = false;
-		if (roles.contains(Role.LEADER_CIRCLE)) {
-			isCircleLeader = getCircleLeader(board.getCircle()).getId().equals(user.getId());
-		}
-
-		// 권한 확인 및 차단 사용자 목록 조회
-		boolean includeDeleted = isCircleLeader || roles.contains(Role.ADMIN) ||
-			roles.contains(Role.PRESIDENT) || roles.contains(Role.VICE_PRESIDENT);
-		Set<String> blockedUserIds = userBlockEntityService.findBlockeeUserIdsByBlocker(user);
-		Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
-
-		Page<PostsResponseDto> posts = postEntityService
-			.findPostsByBoardWithFilters(boardId, includeDeleted, blockedUserIds, keyword, pageable)
-			.map(this::toPostsResponseDto);
-
-		return toBoardPostsResponseDto(
-			board,
-			roles,
-			isFavorite(user.getId(), board.getId()),
-			isBoardSubscribed(user, board),
-			posts
-		);
-	}
-
 	public BoardPostsResponseDto findAllAppNotice(User user, Integer pageNum) {
 		Set<Role> roles = user.getRoles();
 		Board board = boardRepository.findAppNotice().orElseThrow(
