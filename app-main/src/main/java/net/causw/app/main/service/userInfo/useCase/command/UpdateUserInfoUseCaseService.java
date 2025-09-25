@@ -63,7 +63,7 @@ public class UpdateUserInfoUseCaseService {
 		return UserDtoMapper.INSTANCE.toUserInfoResponseDto(userInfo);
 	}
 
-	protected void updateUserCareer(List<UserCareerDto> userCareerDtoList, UserInfo userInfo) {
+	private void updateUserCareer(List<UserCareerDto> userCareerDtoList, UserInfo userInfo) {
 		Set<String> requestedIdSet = new HashSet<>();
 
 		for (UserCareerDto userCareerDto : userCareerDtoList) {
