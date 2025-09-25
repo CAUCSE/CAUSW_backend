@@ -1,7 +1,5 @@
 package net.causw.app.main.service.userInfo;
 
-import static net.causw.global.constant.StaticValue.*;
-
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -9,6 +7,7 @@ import java.util.Set;
 
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,13 +21,13 @@ import net.causw.app.main.domain.model.enums.user.UserState;
 import net.causw.app.main.dto.user.UserUpdateRequestDto;
 import net.causw.app.main.dto.userInfo.UserCareerDto;
 import net.causw.app.main.dto.userInfo.UserInfoResponseDto;
-import net.causw.app.main.dto.userInfo.UserInfoSummaryResponseDto;
+import net.causw.app.main.dto.userInfo.UserInfoSearchConditionDto;
 import net.causw.app.main.dto.userInfo.UserInfoUpdateRequestDto;
 import net.causw.app.main.dto.util.dtoMapper.UserDtoMapper;
 import net.causw.app.main.repository.user.UserRepository;
 import net.causw.app.main.repository.userInfo.UserCareerRepository;
 import net.causw.app.main.repository.userInfo.UserInfoRepository;
-import net.causw.app.main.service.pageable.PageableFactory;
+import net.causw.app.main.repository.userInfo.query.UserInfoQueryRepository;
 import net.causw.app.main.service.user.UserService;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
@@ -42,15 +41,8 @@ public class UserInfoService {
 	private final UserInfoRepository userInfoRepository;
 	private final UserRepository userRepository;
 	private final UserService userService;
-	private final PageableFactory pageableFactory;
 	private final UserCareerRepository userCareerRepository;
-
-	@Transactional(readOnly = true)
-	public Page<UserInfoSummaryResponseDto> getAllUserInfos(Integer pageNum) {
-		return userInfoRepository.findAllByUserStateOrderByUpdatedAtDesc(UserState.ACTIVE,
-				pageableFactory.create(pageNum, DEFAULT_PAGE_SIZE))
-			.map(UserDtoMapper.INSTANCE::toUserInfoSummaryResponseDto);
-	}
+	private final UserInfoQueryRepository userInfoQueryRepository;
 
 	@Transactional(readOnly = true)
 	public UserInfoResponseDto getUserInfoByUserId(String userId) {
@@ -150,11 +142,8 @@ public class UserInfoService {
 		}
 	}
 
-	@Transactional(readOnly = true)
-	public Page<UserInfoSummaryResponseDto> search(final String keyword, final Integer pageNum) {
-		return userInfoRepository.findAllByUserStateAndKeywordInNameOrJobOrCareer(
-				UserState.ACTIVE, keyword, pageableFactory.create(pageNum, DEFAULT_PAGE_SIZE))
-			.map(UserDtoMapper.INSTANCE::toUserInfoSummaryResponseDto);
+	public Page<UserInfo> searchUserInfo(Pageable pageable, UserInfoSearchConditionDto userInfoSearchCondition) {
+		return userInfoQueryRepository.searchUserInfo(userInfoSearchCondition, pageable);
 	}
 
 	private User findUserById(String userId) {

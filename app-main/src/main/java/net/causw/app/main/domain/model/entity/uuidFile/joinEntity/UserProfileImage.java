@@ -29,7 +29,7 @@ import lombok.Setter;
 public class UserProfileImage extends JoinEntity {
 
 	@Setter(AccessLevel.PUBLIC)
-	@OneToOne(fetch = FetchType.EAGER)
+	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "uuid_file_id", nullable = false, unique = true)
 	public UuidFile uuidFile;
 
