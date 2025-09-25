@@ -47,6 +47,7 @@ public class UserInfoQueryRepositoryImpl implements UserInfoQueryRepository {
 			.leftJoin(user.ceremonyNotificationSetting).fetchJoin()
 			.leftJoin(user.locker).fetchJoin()
 			.where(user.state.eq(UserState.ACTIVE))
+			.where(user.academicStatus.ne(AcademicStatus.UNDETERMINED))
 			.where(predicate)
 			.orderBy(userInfo.updatedAt.desc())
 			.offset(pageable.getOffset())
