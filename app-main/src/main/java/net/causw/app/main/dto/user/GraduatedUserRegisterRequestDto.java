@@ -1,7 +1,5 @@
 package net.causw.app.main.dto.user;
 
-import net.causw.app.main.domain.model.enums.user.Department;
-
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

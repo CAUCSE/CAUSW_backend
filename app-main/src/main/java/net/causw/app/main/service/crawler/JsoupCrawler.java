@@ -115,10 +115,10 @@ public class JsoupCrawler implements Crawler {
 		String imageLink = detailDoc.select("div.fr-view > p > img").attr("abs:src");
 
 		Element contentElement = detailDoc.select("div.fr-view").first();
-		
+
 		// 이미지 URL 정규화: HTTP -> HTTPS 변환, data-src -> src 치환
 		normalizeImageUrls(contentElement);
-		
+
 		String contentHtml = contentElement != null ? contentElement.html() : "<p>내용 없음</p>";
 
 		List<CrawledFileLink> fileLinks = extractDownloadLink(detailDoc);
@@ -259,7 +259,7 @@ public class JsoupCrawler implements Crawler {
 		if (url == null || url.isBlank()) {
 			return url;
 		}
-		
+
 		if (url.startsWith("http://")) {
 			return url.replaceFirst("http://", "https://");
 		}

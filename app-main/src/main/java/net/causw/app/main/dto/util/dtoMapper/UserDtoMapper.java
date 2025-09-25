@@ -224,7 +224,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "department", source = "userInfo.user.department")
 	@Mapping(target = "description", source = "userInfo.description")
 	@Mapping(target = "job", source = "userInfo.job")
-	// @Mapping(target = "userCareer", source = "userInfo.userCareer", qualifiedByName = "mapUserCareerListToResponseDtoList")
+		// @Mapping(target = "userCareer", source = "userInfo.userCareer", qualifiedByName = "mapUserCareerListToResponseDtoList")
 	UserInfoSummaryResponseDto toUserInfoSummaryResponseDto(UserInfo userInfo);
 
 	@Mapping(target = "id", source = "userInfo.id")

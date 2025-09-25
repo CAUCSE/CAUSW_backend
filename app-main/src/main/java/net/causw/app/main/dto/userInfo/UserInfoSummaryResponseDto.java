@@ -1,7 +1,5 @@
 package net.causw.app.main.dto.userInfo;
 
-import java.util.List;
-
 import net.causw.app.main.domain.model.enums.user.Department;
 
 import lombok.Builder;
