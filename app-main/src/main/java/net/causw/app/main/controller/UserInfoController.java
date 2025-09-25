@@ -21,6 +21,8 @@ import net.causw.app.main.dto.userInfo.UserInfoSummaryResponseDto;
 import net.causw.app.main.dto.userInfo.UserInfoUpdateRequestDto;
 import net.causw.app.main.infrastructure.security.userdetails.CustomUserDetails;
 import net.causw.app.main.service.userInfo.UserInfoService;
+import net.causw.app.main.service.userInfo.useCase.command.UpdateUserInfoUseCaseService;
+import net.causw.app.main.service.userInfo.useCase.query.GetUserInfoUseCaseService;
 import net.causw.app.main.service.userInfo.useCase.query.SearchUserInfoListUseCaseService;
 import net.causw.global.exception.BadRequestException;
 
@@ -36,8 +38,11 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/users-info")
 @RequiredArgsConstructor
 public class UserInfoController {
+
 	private final UserInfoService userInfoService;
 	private final SearchUserInfoListUseCaseService searchUserInfoListUseCaseService;
+	private final GetUserInfoUseCaseService getUserInfoUseCaseService;
+	private final UpdateUserInfoUseCaseService updateUserInfoUseCaseService;
 
 	/**
 	 *  사용자 고유 id 값으로 사용자 세부정보를 조회하는 API
@@ -50,7 +55,7 @@ public class UserInfoController {
 	public UserInfoResponseDto getUserInfoByUserId(
 		@PathVariable("userId") String userId
 	) {
-		return userInfoService.getUserInfoByUserId(userId);
+		return getUserInfoUseCaseService.execute(userId);
 	}
 
 	@GetMapping
@@ -69,7 +74,7 @@ public class UserInfoController {
 	public UserInfoResponseDto getCurrentUser(
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		return userInfoService.getUserInfoByUserId(userDetails.getUser().getId());
+		return getUserInfoUseCaseService.execute(userDetails.getUserId());
 	}
 
 	@PutMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -86,6 +91,6 @@ public class UserInfoController {
 		@RequestPart(value = "userInfoUpdateDto") @Valid UserInfoUpdateRequestDto userInfoUpdateDto,
 		@RequestPart(value = "profileImage", required = false) MultipartFile profileImage
 	) {
-		return userInfoService.update(userDetails.getUser().getId(), userInfoUpdateDto, profileImage);
+		return updateUserInfoUseCaseService.execute(userDetails.getUser().getId(), userInfoUpdateDto, profileImage);
 	}
 }
