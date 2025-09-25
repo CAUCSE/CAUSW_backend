@@ -161,7 +161,8 @@ public class PostService {
 
 		// 유효성 검사 초기화 및 실행
 		ValidatorBucket validatorBucket = initializeValidator(user, board);
-		validatorBucket.validate();
+		validatorBucket
+			.consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD)).validate();
 
 		// 동아리 리더 여부 확인
 		boolean isCircleLeader = false;

@@ -41,6 +41,8 @@ import net.causw.app.main.repository.notification.UserBoardSubscribeRepository;
 import net.causw.app.main.repository.post.FavoritePostRepository;
 import net.causw.app.main.repository.post.LikePostRepository;
 import net.causw.app.main.repository.post.PostRepository;
+import net.causw.app.main.repository.post.query.PostQueryRepository;
+import net.causw.app.main.repository.post.query.PostQueryResult;
 import net.causw.app.main.service.pageable.PageableFactory;
 import net.causw.app.main.service.userBlock.UserBlockEntityService;
 import net.causw.app.main.util.ObjectFixtures;
@@ -58,6 +60,9 @@ public class PostServiceTest {
 
 	@Mock
 	PostRepository postRepository;
+
+	@Mock
+	PostQueryRepository postQueryRepository;
 
 	@Mock
 	LikePostRepository likePostRepository;
@@ -246,7 +251,7 @@ public class PostServiceTest {
 	}
 
 	@Nested
-	class SearchPostTest {
+	class findAllPostTest {
 
 		static final String boardId = "boardId";
 		static final String keyword = "keyword";
@@ -255,6 +260,7 @@ public class PostServiceTest {
 		Board board;
 		Post post;
 		Pageable pageable;
+		PostQueryResult postQueryResult;
 
 		@BeforeEach
 		public void setUp() {
@@ -262,6 +268,24 @@ public class PostServiceTest {
 			board = ObjectFixtures.getBoard();
 			post = ObjectFixtures.getPost(user, board);
 			pageable = PageRequest.of(pageNum, StaticValue.DEFAULT_PAGE_SIZE);
+			postQueryResult = new PostQueryResult(
+				post.getId(),
+				post.getTitle(),
+				post.getContent(),
+				0L, 0L, 0L,
+				post.getIsAnonymous(),
+				post.getIsQuestion(),
+				false, false,
+				post.getIsDeleted(),
+				true, // writer 존재 여부
+				post.getWriter().getName(),
+				post.getWriter().getNickname(),
+				post.getWriter().getAdmissionYear(),
+				post.getWriter().getState(),
+				post.getCreatedAt(),
+				post.getUpdatedAt(),
+				null // 썸네일 url
+			);
 
 			user.setRoles(Set.of(Role.COMMON));
 
@@ -294,20 +318,20 @@ public class PostServiceTest {
 			user.setState(state);
 
 			// when & then
-			assertThatThrownBy(() -> postService.searchPost(user, boardId, keyword, pageNum))
+			assertThatThrownBy(() -> postService.findAllPost(user, boardId, keyword, pageNum))
 				.isInstanceOf(UnauthorizedException.class);
 		}
 
 		@DisplayName("삭제된 게시판의 게시글 조회 불가능")
 		@Test
-		void testSearchPostByDeletedBoard() {
+		void testfindAllPostByDeletedBoard() {
 			//given
 			user.setRoles(Set.of(Role.COMMON));
 			board.setIsDeleted(true);
 
 			//when & then
 			assertThatThrownBy(() ->
-				postService.searchPost(user, boardId, keyword, pageNum))
+				postService.findAllPost(user, boardId, keyword, pageNum))
 				.isInstanceOf(BadRequestException.class)
 				.extracting("errorCode")
 				.isEqualTo(ErrorCode.TARGET_DELETED);
@@ -316,22 +340,41 @@ public class PostServiceTest {
 		@DisplayName("제목 또는 내용에 키워드를 포함한 게시글 조회 성공")
 		@ParameterizedTest
 		@MethodSource("provideSearchByKeywordSuccessCases")
-		void testSearchPostWithKeyword(String title, String content) {
+		void testfindAllPostWithKeyword(String title, String content) {
 			// given
 			String keyword = "키워드";
-			post.update(title, content, null, null);
-			Page<Post> postPage = new PageImpl<>(List.of(post), pageable, 1);
+			PostQueryResult postQueryResult = new PostQueryResult(
+				post.getId(),
+				title,
+				content,
+				0L, 0L, 0L,
+				post.getIsAnonymous(),
+				post.getIsQuestion(),
+				false, false,
+				post.getIsDeleted(),
+				true, // writer 존재 여부
+				post.getWriter().getName(),
+				post.getWriter().getNickname(),
+				post.getWriter().getAdmissionYear(),
+				post.getWriter().getState(),
+				post.getCreatedAt(),
+				post.getUpdatedAt(),
+				null // 썸네일 url
+			);
+
+			Page<PostQueryResult> postPage = new PageImpl<>(List.of(postQueryResult), pageable, 1);
 
 			given(pageableFactory.create(anyInt(), anyInt())).willReturn(pageable);
-			given(postEntityService.findPostsByBoardWithFilters(
-				eq(boardId), eq(false), eq(Set.of()), eq(keyword), eq(pageable))).willReturn(postPage);
+			given(postQueryRepository.findPostsByBoardWithFilters(
+				eq(boardId), eq(false), eq(Set.of()), eq(keyword), eq(pageable)))
+				.willReturn(postPage);
 
 			// when
-			BoardPostsResponseDto result = postService.searchPost(user, boardId, keyword, pageNum);
+			BoardPostsResponseDto result = postService.findAllPost(user, boardId, keyword, pageNum);
 
 			// then
 			Page<PostsResponseDto> searchedPagedPost = result.getPost();
-			verifyPost(searchedPagedPost, false);
+			verifyPost(searchedPagedPost, false, title, content);
 
 			PostsResponseDto firstPost = searchedPagedPost.getContent().get(0);
 			Optional.ofNullable(firstPost.getTitle())
@@ -342,17 +385,17 @@ public class PostServiceTest {
 
 		@DisplayName("제목과 내용에 키워드 포함하지 않는 경우 게시글 조회 결과 없음")
 		@Test
-		void testSearchPostNoResult() {
+		void testfindAllPostNoResult() {
 			// given
-			Page<Post> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+			Page<PostQueryResult> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
 
 			given(pageableFactory.create(anyInt(), anyInt())).willReturn(pageable);
-			given(postEntityService.findPostsByBoardWithFilters(
+			given(postQueryRepository.findPostsByBoardWithFilters(
 				eq(boardId), eq(false), eq(Set.of()), eq(keyword), eq(pageable)
 			)).willReturn(emptyPage);
 
 			// when
-			BoardPostsResponseDto result = postService.searchPost(user, boardId, keyword, pageNum);
+			BoardPostsResponseDto result = postService.findAllPost(user, boardId, keyword, pageNum);
 
 			// then
 			Page<PostsResponseDto> searchedPagedPost = result.getPost();
@@ -362,43 +405,64 @@ public class PostServiceTest {
 
 		@DisplayName("일반 사용자는 삭제된 게시글 조회 불가능")
 		@Test
-		void testSearchPostByCommonUser() {
+		void testfindAllPostByCommonUser() {
 			//given
-			Page<Post> postPage = new PageImpl<>(List.of(post), pageable, 1);
+			Page<PostQueryResult> postPage = new PageImpl<>(List.of(postQueryResult), pageable, 1);
 
 			given(pageableFactory.create(anyInt(), anyInt())).willReturn(pageable);
-			given(postEntityService.findPostsByBoardWithFilters(eq(boardId), eq(false), eq(Set.of()), eq(keyword),
+			given(postQueryRepository.findPostsByBoardWithFilters(eq(boardId), eq(false), eq(Set.of()), eq(keyword),
 				eq(pageable))).willReturn(postPage);
 
 			//when
-			BoardPostsResponseDto result = postService.searchPost(user, boardId, keyword, pageNum);
+			BoardPostsResponseDto result = postService.findAllPost(user, boardId, keyword, pageNum);
 
 			//then
 			Page<PostsResponseDto> searchedPagedPost = result.getPost();
-			verifyPost(searchedPagedPost, false);
+			verifyPost(searchedPagedPost, false, post.getTitle(), post.getContent());
 		}
 
 		@DisplayName("관리자는 삭제된 게시글 조회 가능")
 		@Test
-		void testSearchPostByAdmin() {
+		void testfindAllPostByAdmin() {
 			//given
 			user.setRoles(Set.of(Role.ADMIN));
 			post.setIsDeleted(true);
-			Page<Post> postPage = new PageImpl<>(List.of(post), pageable, 1);
+			PostQueryResult postQueryResult = new PostQueryResult(
+				post.getId(),
+				post.getTitle(),
+				post.getContent(),
+				0L, 0L, 0L,
+				post.getIsAnonymous(),
+				post.getIsQuestion(),
+				false, false,
+				post.getIsDeleted(),
+				true, // writer 존재 여부
+				post.getWriter().getName(),
+				post.getWriter().getNickname(),
+				post.getWriter().getAdmissionYear(),
+				post.getWriter().getState(),
+				post.getCreatedAt(),
+				post.getUpdatedAt(),
+				null // 썸네일 url
+			);
+			Page<PostQueryResult> postPage = new PageImpl<>(List.of(postQueryResult), pageable, 1);
 
 			given(pageableFactory.create(anyInt(), anyInt())).willReturn(pageable);
-			given(postEntityService.findPostsByBoardWithFilters(
+			given(postQueryRepository.findPostsByBoardWithFilters(
 				eq(boardId), eq(true), eq(Set.of()), eq(keyword), eq(pageable))).willReturn(postPage);
 
 			//when
-			BoardPostsResponseDto result = postService.searchPost(user, boardId, keyword, pageNum);
+			BoardPostsResponseDto result = postService.findAllPost(user, boardId, keyword, pageNum);
 
 			//then
 			Page<PostsResponseDto> searchedPagedPost = result.getPost();
-			verifyPost(searchedPagedPost, true);
+			verifyPost(searchedPagedPost, true, post.getTitle(), post.getContent());
 		}
 
-		private void verifyPost(Page<PostsResponseDto> searchedPagedPost, boolean isDeleted) {
+		private void verifyPost(
+			Page<PostsResponseDto> searchedPagedPost,
+			boolean isDeleted, String title, String content
+		) {
 			assertThat(searchedPagedPost).isNotNull();
 			assertThat(searchedPagedPost.getTotalElements()).isEqualTo(1);
 			assertThat(searchedPagedPost.getTotalPages()).isEqualTo(1);
@@ -408,8 +472,8 @@ public class PostServiceTest {
 					assertThat(postResponseDto).isNotNull();
 					assertAll(
 						() -> assertThat(postResponseDto.getIsDeleted()).isEqualTo(isDeleted),
-						() -> assertThat(postResponseDto.getTitle()).isEqualTo(post.getTitle()),
-						() -> assertThat(postResponseDto.getContent()).isEqualTo(post.getContent()),
+						() -> assertThat(postResponseDto.getTitle()).isEqualTo(title),
+						() -> assertThat(postResponseDto.getContent()).isEqualTo(content),
 						() -> assertThat(postResponseDto.getWriterNickname()).isEqualTo(user.getNickname())
 					);
 				});
