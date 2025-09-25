@@ -52,7 +52,7 @@ public class UpdateUserInfoUseCaseService {
 		userService.update(user, userUpdateRequestDto, profileImage); // 실패시 user, userInfo 전부 rollback
 
 		// 사용자 상세정보 갱신
-		final UserInfo userInfo = userInfoService.upsertUserInfoFromUser(user);
+		final UserInfo userInfo = userInfoService.getOrCreateUserInfoFromUser(user);
 
 		userInfo.update(
 			request.getDescription(), request.getJob(), request.getSocialLinks(), request.getIsPhoneNumberVisible());

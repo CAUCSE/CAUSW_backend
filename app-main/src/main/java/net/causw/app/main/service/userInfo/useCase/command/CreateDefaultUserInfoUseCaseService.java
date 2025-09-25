@@ -23,6 +23,6 @@ public class CreateDefaultUserInfoUseCaseService {
 	public void createDefaultProfile(CertifiedUserCreatedEvent event) {
 		User user = userEntityService.findUserByUserId(event.userId());
 
-		userInfoService.upsertUserInfoFromUser(user);
+		userInfoService.getOrCreateUserInfoFromUser(user);
 	}
 }

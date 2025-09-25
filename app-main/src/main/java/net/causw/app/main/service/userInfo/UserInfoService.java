@@ -44,7 +44,7 @@ public class UserInfoService {
 	 * @param user 유저
 	 * @return 유저 동문수첩 정보
 	 */
-	public UserInfo upsertUserInfoFromUser(User user) {
+	public UserInfo getOrCreateUserInfoFromUser(User user) {
 
 		return userInfoRepository.findByUserId(user.getId())
 			.orElseGet(() -> userInfoRepository.save(UserInfo.of(user)));
