@@ -201,15 +201,17 @@ public class PostService {
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
 
 		boolean includeDeleted = false;
-		Page<PostsResponseDto> posts = postEntityService
+		Page<PostsResponseDto> posts = postQueryRepository
 			.findPostsByBoardWithFilters(board.getId(), includeDeleted, blockedUserIds, null, pageable)
-			.map(this::toPostsResponseDto);
+			.map(PostDtoMapper.INSTANCE::toPostsResponseDto);
 
 		return toBoardPostsResponseDto(
 			board,
 			roles,
 			isFavorite(user.getId(), board.getId()),
-			isBoardSubscribed(user, board), posts);
+			isBoardSubscribed(user, board),
+			posts
+		);
 	}
 
 	//게시글이 생성될 때 발생할 일
@@ -914,42 +916,6 @@ public class PostService {
 			isBoardSubscribed,
 			post
 		);
-	}
-
-	private PostsResponseDto toPostsResponseDto(Post post) {
-		PostAttachImage postThumbnailFile =
-			(post.getPostAttachImageList() == null || post.getPostAttachImageList().isEmpty()) ?
-				null :
-				post.getPostAttachImageList()
-					.stream()
-					.filter(postAttachImage ->
-						FileExtensionType.IMAGE.getExtensionList()
-							.contains(postAttachImage.getUuidFile().getExtension())
-					)
-					.sorted(Comparator.comparing(PostAttachImage::getCreatedAt)) // 오름차순 정렬
-					.findFirst()
-					.orElse(null);
-
-		PostsResponseDto postsResponseDto = PostDtoMapper.INSTANCE.toPostsResponseDto(
-			post,
-			getNumOfComments(post),
-			getNumOfPostLikes(post),
-			getNumOfPostFavorites(post),
-			postThumbnailFile,
-			StatusPolicy.isPostVote(post),
-			StatusPolicy.isPostForm(post)
-		);
-
-		// 화면에 표시할 작성자 닉네임 설정
-		User writer = post.getWriter();
-		postsResponseDto.setDisplayWriterNickname(
-			getDisplayWriterNickname(writer, postsResponseDto.getIsAnonymous(), postsResponseDto.getWriterNickname()));
-
-		if (postsResponseDto.getIsAnonymous()) {
-			postsResponseDto.updateAnonymousWriterInfo();
-		}
-
-		return postsResponseDto;
 	}
 
 	private PostResponseDto toPostResponseDtoExtended(Post post, User user) {
