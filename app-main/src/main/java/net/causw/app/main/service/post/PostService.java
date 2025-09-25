@@ -86,6 +86,7 @@ import net.causw.app.main.repository.notification.UserPostSubscribeRepository;
 import net.causw.app.main.repository.post.FavoritePostRepository;
 import net.causw.app.main.repository.post.LikePostRepository;
 import net.causw.app.main.repository.post.PostRepository;
+import net.causw.app.main.repository.post.query.PostQueryRepository;
 import net.causw.app.main.repository.uuidFile.PostAttachImageRepository;
 import net.causw.app.main.repository.vote.VoteRecordRepository;
 import net.causw.app.main.service.notification.BoardNotificationService;
@@ -109,6 +110,7 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 public class PostService {
 
+	private final PostQueryRepository postQueryRepository;
 	private final PostRepository postRepository;
 	private final BoardRepository boardRepository;
 	private final CircleMemberRepository circleMemberRepository;
@@ -151,6 +153,7 @@ public class PostService {
 	public BoardPostsResponseDto findAllPost(
 		User user,
 		String boardId,
+		String keyword,
 		Integer pageNum
 	) {
 		Set<Role> roles = user.getRoles();  // 사용자의 역할 가져오기
@@ -171,12 +174,18 @@ public class PostService {
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
 
 		boolean includeDeleted = isCircleLeader || roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT);
-		Page<PostsResponseDto> posts = postEntityService
-			.findPostsByBoardWithFilters(boardId, includeDeleted, blockedUserIds, null, pageable)
-			.map(this::toPostsResponseDto);
 
-		return toBoardPostsResponseDto(board, roles, isFavorite(user.getId(), boardId), isBoardSubscribed(user, board),
-			posts);
+		Page<PostsResponseDto> posts = postQueryRepository
+			.findPostsByBoardWithFilters(boardId, includeDeleted, blockedUserIds, keyword, pageable)
+			.map(PostDtoMapper.INSTANCE::toPostsResponseDto);
+
+		return toBoardPostsResponseDto(
+			board,
+			roles,
+			isFavorite(user.getId(), board.getId()),
+			isBoardSubscribed(user, board),
+			posts
+		);
 	}
 
 	@Transactional(readOnly = true)

@@ -96,10 +96,11 @@ public class PostController {
 	})
 	public BoardPostsResponseDto findAllPost(
 		@RequestParam("boardId") String boardId, // 게시판 id
+		@RequestParam(name = "keyword", defaultValue = "") String keyword,
 		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum, // PageNation
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		return this.postService.findAllPost(userDetails.getUser(), boardId, pageNum);
+		return this.postService.findAllPost(userDetails.getUser(), boardId, keyword, pageNum);
 	}
 
 	@GetMapping("/search")

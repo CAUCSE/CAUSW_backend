@@ -12,8 +12,7 @@ import lombok.Setter;
 @Setter
 @Builder
 @AllArgsConstructor
-public class
-PostsResponseDto {
+public class PostsResponseDto {
 	@Schema(description = "게시글 id", example = "uuid 형식의 String 값입니다.")
 	private String id;
 

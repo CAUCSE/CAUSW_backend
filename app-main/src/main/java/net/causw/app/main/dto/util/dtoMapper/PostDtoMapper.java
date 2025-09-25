@@ -4,6 +4,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.List;
 import java.util.Set;
 
 import org.mapstruct.Mapper;
@@ -16,6 +17,7 @@ import net.causw.app.main.domain.model.entity.notification.UserPostSubscribe;
 import net.causw.app.main.domain.model.entity.post.Post;
 import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.PostAttachImage;
 import net.causw.app.main.domain.model.enums.user.Role;
+import net.causw.app.main.domain.model.enums.user.UserState;
 import net.causw.app.main.dto.form.response.FormResponseDto;
 import net.causw.app.main.dto.post.BoardPostsResponseDto;
 import net.causw.app.main.dto.post.PostContentDto;
@@ -25,6 +27,8 @@ import net.causw.app.main.dto.post.PostSubscribeResponseDto;
 import net.causw.app.main.dto.post.PostsResponseDto;
 import net.causw.app.main.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 import net.causw.app.main.dto.vote.VoteResponseDto;
+import net.causw.app.main.repository.post.query.PostQueryResult;
+import net.causw.global.constant.StaticValue;
 
 // Custom Annotation을 사용하여 중복되는 @Mapping을 줄일 수 있습니다.
 @Retention(RetentionPolicy.CLASS)
@@ -57,6 +61,41 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "isPostForm", source = "isPostForm")
 	PostsResponseDto toPostsResponseDto(Post post, Long numComment, Long numPostLike, Long numPostFavorite,
 		PostAttachImage thumbnail, Boolean isPostVote, Boolean isPostForm);
+
+
+
+	@Mapping(target = "id", source = "queryResult.postId")
+	@Mapping(target = "title", source = "queryResult.title")
+	@Mapping(target = "writerName", source = "queryResult.writerName")
+	@Mapping(target = "writerNickname", source = "queryResult.writerNickname")
+	@Mapping(target = "writerAdmissionYear", source = "queryResult.writerAdmissionYear")
+	@Mapping(target = "numComment", source = "queryResult.numComment")
+	@Mapping(target = "numLike", source = "queryResult.numLike")
+	@Mapping(target = "numFavorite", source = "queryResult.numFavorite")
+	@Mapping(target = "isAnonymous", source = "queryResult.isAnonymous")
+	@Mapping(target = "isQuestion", source = "queryResult.isQuestion")
+	@Mapping(target = "createdAt", source = "queryResult.createdAt")
+	@Mapping(target = "updatedAt", source = "queryResult.updatedAt")
+	@Mapping(target = "isDeleted", source = "queryResult.isDeleted")
+	@Mapping(target = "postAttachImage", source = "queryResult.postAttachImage")
+	@Mapping(target = "isPostVote", source = "queryResult.isPostVote")
+	@Mapping(target = "isPostForm", source = "queryResult.isPostForm")
+	@Mapping(target = "displayWriterNickname",
+		expression = "java(getDisplayWriterNickname(queryResult.hasWriter(), queryResult.writerUserState(), queryResult.isAnonymous(), queryResult.writerNickname()))")
+	PostsResponseDto toPostsResponseDto(PostQueryResult queryResult);
+
+	default String getDisplayWriterNickname(boolean hasWriter, UserState state, boolean isAnonymous, String nickname) {
+		if (hasWriter &&
+			List.of(UserState.INACTIVE, UserState.DROP, UserState.DELETED).contains(state)) {
+			return StaticValue.INACTIVE_USER_NICKNAME;
+
+		} else if (isAnonymous) {
+			return StaticValue.ANONYMOUS_USER_NICKNAME;
+
+		} else {
+			return nickname;
+		}
+	}
 
 	@Mapping(target = "title", source = "post.title")
 	@Mapping(target = "writerName", source = "post.writer.name")
