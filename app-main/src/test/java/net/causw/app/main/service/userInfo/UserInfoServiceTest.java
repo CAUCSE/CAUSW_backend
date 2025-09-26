@@ -27,6 +27,7 @@ import net.causw.app.main.repository.userInfo.UserInfoRepository;
 import net.causw.app.main.repository.userInfo.query.UserInfoQueryRepository;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
+import net.causw.global.exception.NotFoundException;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("UserInfoService 테스트")
@@ -80,7 +81,7 @@ class UserInfoServiceTest {
 
 			// when & then
 			assertThatThrownBy(() -> userInfoService.getUserInfoByUser(testUser))
-				.isInstanceOf(BadRequestException.class)
+				.isInstanceOf(NotFoundException.class)
 				.hasFieldOrPropertyWithValue("errorCode", ErrorCode.ROW_DOES_NOT_EXIST);
 
 			verify(userInfoRepository, times(1)).findByUserId(testUser.getId());
