@@ -40,7 +40,11 @@ public class UpdateUserInfoUseCaseService {
 	private final UserService userService;
 	private final UserCareerRepository userCareerRepository;
 
-	public UserInfoResponseDto execute(String userId, UserInfoUpdateRequestDto request, MultipartFile profileImage) {
+	public UserInfoResponseDto execute(
+		String userId,
+		UserInfoUpdateRequestDto request,
+		MultipartFile profileImage
+	) {
 		User user = userEntityService.findUserByUserId(userId);
 
 		// 사용자 정보 갱신(전화번호, 프로필 이미지)

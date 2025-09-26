@@ -5,6 +5,9 @@ import java.util.List;
 
 import net.causw.app.main.domain.model.entity.base.BaseEntity;
 import net.causw.app.main.domain.model.entity.user.User;
+import net.causw.global.constant.MessageUtil;
+import net.causw.global.exception.BadRequestException;
+import net.causw.global.exception.ErrorCode;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -63,6 +66,13 @@ public class UserInfo extends BaseEntity {
 		List<String> socialLinks,
 		boolean isPhoneNumberVisible
 	) {
+		if (socialLinks.size() > 10) {
+			throw new BadRequestException(
+				ErrorCode.INVALID_PARAMETER,
+				MessageUtil.INVALID_SOCIAL_LINK
+			);
+		}
+
 		this.description = description;
 		this.job = job;
 		this.isPhoneNumberVisible = isPhoneNumberVisible;

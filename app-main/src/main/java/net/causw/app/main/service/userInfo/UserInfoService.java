@@ -12,6 +12,7 @@ import net.causw.app.main.repository.userInfo.query.UserInfoQueryRepository;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
+import net.causw.global.exception.NotFoundException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,7 +29,7 @@ public class UserInfoService {
 	 */
 	public UserInfo getUserInfoByUser(User user) {
 		return userInfoRepository.findByUserId(user.getId())
-			.orElseThrow(() -> new BadRequestException(
+			.orElseThrow(() -> new NotFoundException(
 					ErrorCode.ROW_DOES_NOT_EXIST,
 					MessageUtil.USER_NOT_FOUND
 				)
