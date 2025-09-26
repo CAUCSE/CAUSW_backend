@@ -30,8 +30,9 @@ public interface PostRepository extends JpaRepository<Post, String> {
 		    AND (:includeDeleted = true OR p.isDeleted = false)
 		    AND (:#{#blockedUserIds.size()} = 0 OR p.writer.id NOT IN :blockedUserIds)
 		    AND (:keyword IS NULL OR :keyword = '' OR
-		         p.title LIKE CONCAT('%', :keyword, '%') OR
-		         p.content LIKE CONCAT('%', :keyword, '%'))
+				 p.title LIKE CONCAT('%', :keyword, '%') OR
+		         p.content LIKE CONCAT('%', :keyword, '%') OR
+				 p.writer.nickname LIKE CONCAT('%', :keyword, '%'))
 		    ORDER BY p.createdAt DESC
 		""")
 	Page<Post> findPostsByBoardWithFilters(
