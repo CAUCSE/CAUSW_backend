@@ -21,8 +21,8 @@ import net.causw.app.main.domain.model.enums.user.Role;
 import net.causw.app.main.domain.model.enums.user.UserState;
 import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.resolver.DepartmentResolver;
-import net.causw.app.main.dto.user.UserCreateRequestDto;
 import net.causw.app.main.dto.user.CreateGraduatedUserCommand;
+import net.causw.app.main.dto.user.UserCreateRequestDto;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
@@ -176,7 +176,7 @@ public class User extends BaseEntity {
 				DepartmentResolver.resolveByAdmissionYearOrRequest(
 					userCreateRequestDto.getAdmissionYear(),
 					userCreateRequestDto.getDepartment()
-			))
+				))
 			.academicStatus(AcademicStatus.UNDETERMINED)
 			.phoneNumber(userCreateRequestDto.getPhoneNumber())
 			.isV2(true)

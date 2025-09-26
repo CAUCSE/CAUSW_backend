@@ -41,7 +41,7 @@ public class DepartmentResolver {
 	public static Department resolveByAdmissionYear(int admissionYear) {
 		return departmentPeriods.stream()
 			.filter(period ->
-				admissionYear >= period.startYear() &&  admissionYear <= period.endYear())
+				admissionYear >= period.startYear() && admissionYear <= period.endYear())
 			.findFirst()
 			.map(DepartmentPeriod::department)
 			.orElseThrow(() -> new BadRequestException(
@@ -50,5 +50,6 @@ public class DepartmentResolver {
 			));
 	}
 
-	private record DepartmentPeriod(Department department, Integer startYear, Integer endYear) {}
+	private record DepartmentPeriod(Department department, Integer startYear, Integer endYear) {
+	}
 }

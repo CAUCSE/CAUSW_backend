@@ -36,7 +36,6 @@ public class FindPrivilegedUsersUseCaseService {
 	private final CircleEntityService circleEntityService;
 	private final UserEntityService userEntityService;
 
-
 	@Transactional(readOnly = true)
 	public UserPrivilegedResponseDto execute(User requestUser) {
 		validateRequestUser(requestUser);
@@ -108,7 +107,6 @@ public class FindPrivilegedUsersUseCaseService {
 			usersByRole.getOrDefault(Role.ALUMNI_MANAGER, List.of())
 		);
 	}
-
 
 	private void validateRequestUser(User requester) {
 		Set<Role> roles = requester.getRoles();

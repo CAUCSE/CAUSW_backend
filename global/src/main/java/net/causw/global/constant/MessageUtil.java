@@ -208,6 +208,7 @@ public class MessageUtil {
 	public static final String USER_INFO_NOT_ACCESSIBLE = "해당 사용자의 상세정보에 접근할 수 없습니다.";
 	public static final String USER_CAREER_NOT_FOUND = "해당 커리어 정보를 찾을 수 없습니다.";
 	public static final String INVALID_CAREER_DATE = "커리어 날짜가 유효하지 않습니다.";
+	public static final String INVALID_SOCIAL_LINK = "소셜 링크는 최대 10개까지 지정 가능합니다.";
 
 	// 500
 	public static final String INTERNAL_SERVER_ERROR = "Internal Server Error";

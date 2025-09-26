@@ -5,8 +5,12 @@ import java.util.List;
 
 import net.causw.app.main.domain.model.entity.base.BaseEntity;
 import net.causw.app.main.domain.model.entity.user.User;
+import net.causw.global.constant.MessageUtil;
+import net.causw.global.exception.BadRequestException;
+import net.causw.global.exception.ErrorCode;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
@@ -37,20 +41,10 @@ public class UserInfo extends BaseEntity {
 	@Column(name = "job", nullable = true)
 	private String job;
 
-	@Column(name = "github_link", nullable = true)
-	private String githubLink;
-
-	@Column(name = "linkedin_link", nullable = true)
-	private String linkedInLink;
-
-	@Column(name = "instagram_link", nullable = true)
-	private String instagramLink;
-
-	@Column(name = "notion_link", nullable = true)
-	private String notionLink;
-
-	@Column(name = "blog_link", nullable = true)
-	private String blogLink;
+	@Column(name = "social_links", columnDefinition = "TEXT")
+	@Convert(converter = SocialLinksConverter.class)
+	@Builder.Default
+	private List<String> socialLinks = new ArrayList<>();
 
 	@Column(name = "is_phone_number_visible")
 	@Builder.Default
@@ -67,17 +61,21 @@ public class UserInfo extends BaseEntity {
 	}
 
 	public void update(
-		String description, String job,
-		String githubLink, String linkedInLink, String instagramLink, String notionLink, String blogLink,
+		String description,
+		String job,
+		List<String> socialLinks,
 		boolean isPhoneNumberVisible
 	) {
+		if (socialLinks.size() > 10) {
+			throw new BadRequestException(
+				ErrorCode.INVALID_PARAMETER,
+				MessageUtil.INVALID_SOCIAL_LINK
+			);
+		}
+
 		this.description = description;
 		this.job = job;
-		this.githubLink = githubLink;
-		this.linkedInLink = linkedInLink;
-		this.instagramLink = instagramLink;
-		this.notionLink = notionLink;
-		this.blogLink = blogLink;
 		this.isPhoneNumberVisible = isPhoneNumberVisible;
+		this.socialLinks = socialLinks;
 	}
 }

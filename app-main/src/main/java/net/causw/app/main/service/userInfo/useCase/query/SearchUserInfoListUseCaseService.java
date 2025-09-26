@@ -24,7 +24,8 @@ public class SearchUserInfoListUseCaseService {
 	private final PageableFactory pageableFactory;
 	private final UserDtoMapper userDtoMapper;
 
-	public Page<UserInfoSummaryResponseDto> execute(UserInfoSearchConditionDto userInfoSearchCondition, Integer pageNum) {
+	public Page<UserInfoSummaryResponseDto> execute(UserInfoSearchConditionDto userInfoSearchCondition,
+		Integer pageNum) {
 		Pageable pageable = pageableFactory.create(pageNum, DEFAULT_PAGE_SIZE);
 
 		return userInfoService.searchUserInfo(pageable, userInfoSearchCondition)

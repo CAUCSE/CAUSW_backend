@@ -31,7 +31,7 @@ public class UserInfoQueryRepositoryImpl implements UserInfoQueryRepository {
 	@Override
 	public Page<UserInfo> searchUserInfo(UserInfoSearchConditionDto userInfoSearchCondition, Pageable pageable) {
 		// keyword는 이름, 직업, 경력, like 검색
-		// user, job, user.carrer
+		// user, job, user.career
 		QUserInfo userInfo = QUserInfo.userInfo;
 		BooleanBuilder predicate = buildSearchPredicate(userInfoSearchCondition, userInfo);
 

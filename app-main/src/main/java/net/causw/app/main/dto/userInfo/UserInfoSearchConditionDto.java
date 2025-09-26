@@ -16,5 +16,5 @@ public record UserInfoSearchConditionDto(
 	Integer admissionYearEnd,
 	@Schema(description = "학적 상태(ENROLLED, LEAVE_OF_ABSENCE, GRADUATED, 그외 등등)", example = "ENROLLED")
 	List<AcademicStatus> academicStatus
-	) {
+) {
 }
