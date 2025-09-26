@@ -83,10 +83,9 @@ public class PostQueryRepository {
 	private BooleanExpression containsKeyword(QPost post, QUser writer, String keyword) {
 		if (keyword == null || keyword.isBlank()) return NO_CONDITION;
 
-		String normalizedKeyword = keyword.trim().toLowerCase();
-		return post.title.contains(normalizedKeyword)
-			.or(post.content.contains(normalizedKeyword))
-			.or(writer.nickname.contains(normalizedKeyword));
+		return post.title.contains(keyword) // MySQL에서 utf8mb4_0900_ai_ci Collation 사용중이므로, 기본적으로 대소문자 무시
+			.or(post.content.contains(keyword))
+			.or(writer.nickname.contains(keyword));
 	}
 
 	private static QPostQueryResult toPostQueryResult(QPost post, QUser writer) {
