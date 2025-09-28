@@ -36,8 +36,8 @@ public record GraduatedUserRegisterRequestDto(
 
 	String studentId
 ) {
-	public CreateGraduatedUserCommand toCreateGraduatedUserCommand() {
-		return new CreateGraduatedUserCommand(
+	public GraduatedUserCommand toGraduatedUserCommand() {
+		return new GraduatedUserCommand(
 			this.email,
 			this.name,
 			this.studentId,
