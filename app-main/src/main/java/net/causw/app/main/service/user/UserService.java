@@ -697,6 +697,7 @@ public class UserService {
 
 				} else if (user.getAcademicStatus() == AcademicStatus.UNDETERMINED) {
 					user.setAcademicStatus(AcademicStatus.GRADUATED);
+					user.setGraduationYear(dto.graduationYear());
 					return user;
 
 				} else { // 이미 인증된 계정이 존재하는 경우
