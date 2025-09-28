@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import net.causw.app.main.domain.model.enums.user.Department;
+import net.causw.app.main.domain.resolver.DepartmentResolver;
 import net.causw.app.main.dto.user.BatchRegisterResponseDto;
 import net.causw.app.main.dto.user.GraduatedUserRegisterRequestDto;
 import net.causw.app.main.service.user.UserService;
@@ -41,7 +43,7 @@ public class RegisterGraduatedUsersUseCaseService {
 	private static final int GRADUATION_YEAR_COLUMN = 5;
 	private static final int EMAIL_COLUMN = 6;
 	private static final int PHONE_NUMBER_COLUMN = 7;
-	private static final int MAJOR_COLUMN = 8;
+	private static final int DEPARTMENT_COLUMN = 8;
 	private static final int STUDENT_ID_COLUMN = 9;
 
 	private final UserService userService;
@@ -148,16 +150,28 @@ public class RegisterGraduatedUsersUseCaseService {
 			);
 		}
 
+		String name = record.get(NAME_COLUMN).trim();
+		String tempNickname = "user-" + UUID.randomUUID().toString().substring(0, 8);
+		String email = record.get(EMAIL_COLUMN).trim();
+		Integer admissionYear = Integer.parseInt(record.get(ADMISSION_YEAR_COLUMN).trim());
+		Integer graduationYear = Integer.parseInt(record.get(GRADUATION_YEAR_COLUMN).trim());
+		Department department = DepartmentResolver.resolveByAdmissionYearOrDepartmentName(
+			admissionYear,
+			record.get(DEPARTMENT_COLUMN).trim()
+		);
+		String phoneNumber = record.get(PHONE_NUMBER_COLUMN).trim();
+		String studentId = record.get(STUDENT_ID_COLUMN).trim();
+
 		return new GraduatedUserRegisterRequestDto(
-			record.get(NAME_COLUMN).trim(),
-			"user-" + UUID.randomUUID().toString().substring(0, 8), // 임시 닉네임
-			Integer.parseInt(record.get(ADMISSION_YEAR_COLUMN).trim()),
-			Integer.parseInt(record.get(GRADUATION_YEAR_COLUMN).trim()),
-			record.get(EMAIL_COLUMN).trim(),
-			record.get(EMAIL_COLUMN).trim(), // 임시 비밀번호
-			record.get(PHONE_NUMBER_COLUMN).trim(),
-			record.get(MAJOR_COLUMN).trim(),
-			record.get(STUDENT_ID_COLUMN).trim().isEmpty() ? null : record.get(9).trim()
+			name,
+			tempNickname,
+			admissionYear,
+			graduationYear,
+			email,
+			email, // 임시 비밀번호
+			phoneNumber,
+			department,
+			studentId.isEmpty() ? null : studentId // 학번 입력 선택적
 		);
 	}
 }

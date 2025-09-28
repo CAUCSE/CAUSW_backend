@@ -173,7 +173,7 @@ public class User extends BaseEntity {
 			.nickname(userCreateRequestDto.getNickname())
 			.major(userCreateRequestDto.getMajor())
 			.department(
-				DepartmentResolver.resolveByAdmissionYearOrRequest(
+				DepartmentResolver.resolveByAdmissionYearOrDepartment(
 					userCreateRequestDto.getAdmissionYear(),
 					userCreateRequestDto.getDepartment()
 				))
@@ -197,7 +197,7 @@ public class User extends BaseEntity {
 			.admissionYear(createGraduatedUserCommand.admissionYear())
 			.graduationYear(createGraduatedUserCommand.graduationYear())
 			.nickname(createGraduatedUserCommand.nickname())
-			.major(createGraduatedUserCommand.major())
+			.department(createGraduatedUserCommand.department())
 
 			.academicStatus(AcademicStatus.GRADUATED)
 			.phoneNumber(createGraduatedUserCommand.phoneNumber())
