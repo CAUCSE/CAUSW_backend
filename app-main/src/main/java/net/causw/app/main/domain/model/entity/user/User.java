@@ -183,7 +183,7 @@ public class User extends BaseEntity {
 			.build();
 	}
 
-	public static User createGraduatedUser(
+	public static User createGraduate(
 		GraduatedUserCommand graduatedUserCommand,
 		String encodedPassword
 	) {
@@ -198,14 +198,13 @@ public class User extends BaseEntity {
 			.graduationYear(graduatedUserCommand.graduationYear())
 			.nickname(graduatedUserCommand.nickname())
 			.department(graduatedUserCommand.department())
-
 			.academicStatus(AcademicStatus.GRADUATED)
 			.phoneNumber(graduatedUserCommand.phoneNumber())
 			.isV2(true)
 			.build();
 	}
 
-	public void update(String nickname, UserProfileImage userProfileImage, String phoneNumber) {
+	public void updateProfile(String nickname, UserProfileImage userProfileImage, String phoneNumber) {
 		this.nickname = nickname;
 		this.userProfileImage = userProfileImage;
 		if (phoneNumber != null && !NO_PHONE_NUMBER_MESSAGE.equals(phoneNumber)) {
@@ -213,13 +212,10 @@ public class User extends BaseEntity {
 		}
 	}
 
-	public void updateRejectionOrDropReason(String reason) {
-		this.rejectionOrDropReason = reason;
-	}
-
-	public void updateUser(
+	public void updateDetails(
 		String email, String name, String phoneNumber, String encodedPassword,
-		String studentId, Integer admissionYear, String nickname
+		String studentId, Integer admissionYear, String nickname,
+		String major, Department department
 	) {
 		this.email = email;
 		this.name = name;
@@ -228,36 +224,21 @@ public class User extends BaseEntity {
 		this.studentId = studentId;
 		this.admissionYear = admissionYear;
 		this.nickname = nickname;
+		this.major = major;
+		this.department = department;
 	}
 
-	public void updateAwaitOrRejectedUser(UserCreateRequestDto userCreateRequestDto, String encodedPassword) {
-		updateUser(
-			userCreateRequestDto.getEmail(),
-			userCreateRequestDto.getName(),
-			userCreateRequestDto.getPhoneNumber(),
-			encodedPassword,
-			userCreateRequestDto.getStudentId(),
-			userCreateRequestDto.getAdmissionYear(),
-			userCreateRequestDto.getNickname()
-		);
-		this.major = userCreateRequestDto.getMajor();
-		this.department = userCreateRequestDto.getDepartment();
+	public void updateRejectionOrDropReason(String reason) {
+		this.rejectionOrDropReason = reason;
+	}
+
+	public void markAsAwait() {
 		this.state = UserState.AWAIT;
 		this.rejectionOrDropReason = null; // 거절 사유 초기화
 	}
 
-	public void updateGraduatedUser(GraduatedUserCommand graduatedUserCommand, String encodedPassword) {
-		updateUser(
-			graduatedUserCommand.email(),
-			graduatedUserCommand.name(),
-			graduatedUserCommand.phoneNumber(),
-			encodedPassword,
-			graduatedUserCommand.studentId(),
-			graduatedUserCommand.admissionYear(),
-			graduatedUserCommand.nickname()
-		);
-		this.graduationYear = graduatedUserCommand.graduationYear();
-		this.department = graduatedUserCommand.department();
+	public void markAsCertifiedGraduate(Integer graduationYear) {
+		this.graduationYear = graduationYear;
 		this.state = UserState.ACTIVE;
 		this.roles = Set.of(Role.COMMON);
 		this.academicStatus = AcademicStatus.GRADUATED;

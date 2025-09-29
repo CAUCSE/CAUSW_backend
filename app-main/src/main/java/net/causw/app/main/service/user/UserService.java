@@ -612,7 +612,18 @@ public class UserService {
 			//AWAIT, REJECT인 경우 정보 업데이트 진행
 			if (state == UserState.AWAIT || state == UserState.REJECT) {
 				validateUniqueness(dto.getNickname(), dto.getPhoneNumber(), dto.getStudentId(), user);
-				user.updateAwaitOrRejectedUser(dto, passwordEncoder.encode(dto.getPassword()));
+				user.updateDetails(
+					dto.getEmail(),
+					dto.getName(),
+					dto.getPhoneNumber(),
+					passwordEncoder.encode(dto.getPassword()),
+					dto.getStudentId(),
+					dto.getAdmissionYear(),
+					dto.getNickname(),
+					dto.getMajor(),
+					dto.getDepartment()
+				);
+				user.markAsAwait();
 				validateUser(dto, user);
 				userRepository.save(user);
 				return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
@@ -646,7 +657,18 @@ public class UserService {
 					}
 				});
 				validateUniqueness(dto.getNickname(), dto.getPhoneNumber(), dto.getStudentId(), ghostuser);
-				ghostuser.updateAwaitOrRejectedUser(dto, passwordEncoder.encode(dto.getPassword()));
+				ghostuser.updateDetails(
+					dto.getEmail(),
+					dto.getName(),
+					dto.getPhoneNumber(),
+					passwordEncoder.encode(dto.getPassword()),
+					dto.getStudentId(),
+					dto.getAdmissionYear(),
+					dto.getNickname(),
+					dto.getMajor(),
+					dto.getDepartment()
+				);
+				ghostuser.markAsAwait();
 				validateUser(dto, ghostuser);
 				userRepository.save(ghostuser);
 				return UserDtoMapper.INSTANCE.toUserResponseDto(ghostuser, null, null);
@@ -683,7 +705,6 @@ public class UserService {
 	 */
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void registerGraduatedUser(GraduatedUserRegisterRequestDto dto) {
-		GraduatedUserCommand command = dto.toGraduatedUserCommand();
 		String encodedPassword = passwordEncoder.encode(dto.password());
 
 		User registeredUser = userRepository.findByEmail(dto.email())
@@ -692,12 +713,23 @@ public class UserService {
 				if (user.getState() == UserState.AWAIT || user.getState() == UserState.REJECT) {
 					validateEmailUniqueness(dto.email(), user);
 					validateUniqueness(dto.nickname(), dto.phoneNumber(), dto.studentId(), user);
-					user.updateGraduatedUser(command, encodedPassword);
+
+					user.updateDetails(
+						dto.email(),
+						dto.name(),
+						dto.phoneNumber(),
+						encodedPassword,
+						dto.studentId(),
+						dto.admissionYear(),
+						dto.nickname(),
+						null,
+						dto.department()
+					);
+					user.markAsCertifiedGraduate(dto.graduationYear());
 					return user;
 
 				} else if (user.getAcademicStatus() == AcademicStatus.UNDETERMINED) {
-					user.setAcademicStatus(AcademicStatus.GRADUATED);
-					user.setGraduationYear(dto.graduationYear());
+					user.markAsCertifiedGraduate(dto.graduationYear());
 					return user;
 
 				} else { // 이미 인증된 계정이 존재하는 경우
@@ -710,7 +742,7 @@ public class UserService {
 			.orElseGet(() -> {
 				validateEmailUniqueness(dto.email(), null);
 				validateUniqueness(dto.nickname(), dto.phoneNumber(), dto.studentId(), null);
-				return userRepository.save(User.createGraduatedUser(command, encodedPassword));
+				return userRepository.save(User.createGraduate(dto.toGraduatedUserCommand(), encodedPassword));
 			});
 
 		eventPublisher.publishEvent(new CertifiedUserCreatedEvent(registeredUser.getId()));
@@ -901,7 +933,7 @@ public class UserService {
 			}
 		}
 
-		srcUser.update(userUpdateRequestDto.getNickname(), userProfileImage, userUpdateRequestDto.getPhoneNumber());
+		srcUser.updateProfile(userUpdateRequestDto.getNickname(), userProfileImage, userUpdateRequestDto.getPhoneNumber());
 
 		User updatedUser = userRepository.save(srcUser);
 
