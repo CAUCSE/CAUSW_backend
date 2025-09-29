@@ -21,7 +21,7 @@ import net.causw.app.main.domain.model.enums.user.Role;
 import net.causw.app.main.domain.model.enums.user.UserState;
 import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.resolver.DepartmentResolver;
-import net.causw.app.main.dto.user.CreateGraduatedUserCommand;
+import net.causw.app.main.dto.user.GraduatedUserCommand;
 import net.causw.app.main.dto.user.UserCreateRequestDto;
 
 import jakarta.persistence.CascadeType;
@@ -173,7 +173,7 @@ public class User extends BaseEntity {
 			.nickname(userCreateRequestDto.getNickname())
 			.major(userCreateRequestDto.getMajor())
 			.department(
-				DepartmentResolver.resolveByAdmissionYearOrRequest(
+				DepartmentResolver.resolveByAdmissionYearOrDepartment(
 					userCreateRequestDto.getAdmissionYear(),
 					userCreateRequestDto.getDepartment()
 				))
@@ -183,29 +183,28 @@ public class User extends BaseEntity {
 			.build();
 	}
 
-	public static User createGraduatedUser(
-		CreateGraduatedUserCommand createGraduatedUserCommand,
+	public static User createGraduate(
+		GraduatedUserCommand graduatedUserCommand,
 		String encodedPassword
 	) {
 		return User.builder()
-			.email(createGraduatedUserCommand.email())
-			.name(createGraduatedUserCommand.name())
+			.email(graduatedUserCommand.email())
+			.name(graduatedUserCommand.name())
 			.roles(Set.of(Role.COMMON))
 			.state(UserState.ACTIVE)
 			.password(encodedPassword)
-			.studentId(createGraduatedUserCommand.studentId())
-			.admissionYear(createGraduatedUserCommand.admissionYear())
-			.graduationYear(createGraduatedUserCommand.graduationYear())
-			.nickname(createGraduatedUserCommand.nickname())
-			.major(createGraduatedUserCommand.major())
-
+			.studentId(graduatedUserCommand.studentId())
+			.admissionYear(graduatedUserCommand.admissionYear())
+			.graduationYear(graduatedUserCommand.graduationYear())
+			.nickname(graduatedUserCommand.nickname())
+			.department(graduatedUserCommand.department())
 			.academicStatus(AcademicStatus.GRADUATED)
-			.phoneNumber(createGraduatedUserCommand.phoneNumber())
+			.phoneNumber(graduatedUserCommand.phoneNumber())
 			.isV2(true)
 			.build();
 	}
 
-	public void update(String nickname, UserProfileImage userProfileImage, String phoneNumber) {
+	public void updateProfile(String nickname, UserProfileImage userProfileImage, String phoneNumber) {
 		this.nickname = nickname;
 		this.userProfileImage = userProfileImage;
 		if (phoneNumber != null && !NO_PHONE_NUMBER_MESSAGE.equals(phoneNumber)) {
@@ -213,20 +212,36 @@ public class User extends BaseEntity {
 		}
 	}
 
+	public void updateDetails(
+		String email, String name, String phoneNumber, String encodedPassword,
+		String studentId, Integer admissionYear, String nickname,
+		String major, Department department
+	) {
+		this.email = email;
+		this.name = name;
+		this.phoneNumber = phoneNumber;
+		this.password = encodedPassword;
+		this.studentId = studentId;
+		this.admissionYear = admissionYear;
+		this.nickname = nickname;
+		this.major = major;
+		this.department = department;
+	}
+
 	public void updateRejectionOrDropReason(String reason) {
 		this.rejectionOrDropReason = reason;
 	}
 
-	public void updateInfo(UserCreateRequestDto userCreateRequestDto, String encodedPassword) {
-		this.email = userCreateRequestDto.getEmail();
-		this.name = userCreateRequestDto.getName();
-		this.nickname = userCreateRequestDto.getNickname();
-		this.phoneNumber = userCreateRequestDto.getPhoneNumber();
-		this.studentId = userCreateRequestDto.getStudentId();
-		this.admissionYear = userCreateRequestDto.getAdmissionYear();
-		this.major = userCreateRequestDto.getMajor();
-		this.password = encodedPassword;
+	public void markAsAwait() {
 		this.state = UserState.AWAIT;
+		this.rejectionOrDropReason = null; // 거절 사유 초기화
+	}
+
+	public void markAsCertifiedGraduate(Integer graduationYear) {
+		this.graduationYear = graduationYear;
+		this.state = UserState.ACTIVE;
+		this.roles = Set.of(Role.COMMON);
+		this.academicStatus = AcademicStatus.GRADUATED;
 		this.rejectionOrDropReason = null; // 거절 사유 초기화
 	}
 

@@ -64,6 +64,7 @@ import net.causw.app.main.dto.board.BoardResponseDto;
 import net.causw.app.main.dto.circle.CircleResponseDto;
 import net.causw.app.main.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.app.main.dto.post.PostsResponseDto;
+import net.causw.app.main.dto.user.GraduatedUserCommand;
 import net.causw.app.main.dto.user.GraduatedUserRegisterRequestDto;
 import net.causw.app.main.dto.user.UserAdmissionCreateRequestDto;
 import net.causw.app.main.dto.user.UserAdmissionResponseDto;
@@ -611,7 +612,18 @@ public class UserService {
 			//AWAIT, REJECT인 경우 정보 업데이트 진행
 			if (state == UserState.AWAIT || state == UserState.REJECT) {
 				validateUniqueness(dto.getNickname(), dto.getPhoneNumber(), dto.getStudentId(), user);
-				user.updateInfo(dto, passwordEncoder.encode(dto.getPassword()));
+				user.updateDetails(
+					dto.getEmail(),
+					dto.getName(),
+					dto.getPhoneNumber(),
+					passwordEncoder.encode(dto.getPassword()),
+					dto.getStudentId(),
+					dto.getAdmissionYear(),
+					dto.getNickname(),
+					dto.getMajor(),
+					dto.getDepartment()
+				);
+				user.markAsAwait();
 				validateUser(dto, user);
 				userRepository.save(user);
 				return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
@@ -645,7 +657,18 @@ public class UserService {
 					}
 				});
 				validateUniqueness(dto.getNickname(), dto.getPhoneNumber(), dto.getStudentId(), ghostuser);
-				ghostuser.updateInfo(dto, passwordEncoder.encode(dto.getPassword()));
+				ghostuser.updateDetails(
+					dto.getEmail(),
+					dto.getName(),
+					dto.getPhoneNumber(),
+					passwordEncoder.encode(dto.getPassword()),
+					dto.getStudentId(),
+					dto.getAdmissionYear(),
+					dto.getNickname(),
+					dto.getMajor(),
+					dto.getDepartment()
+				);
+				ghostuser.markAsAwait();
 				validateUser(dto, ghostuser);
 				userRepository.save(ghostuser);
 				return UserDtoMapper.INSTANCE.toUserResponseDto(ghostuser, null, null);
@@ -682,11 +705,45 @@ public class UserService {
 	 */
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void registerGraduatedUser(GraduatedUserRegisterRequestDto dto) {
-		validateEmailUniqueness(dto.email(), null);
-		validateUniqueness(dto.nickname(), dto.phoneNumber(), dto.studentId(), null);
+		String encodedPassword = passwordEncoder.encode(dto.password());
 
-		User registeredUser = userRepository.save(
-			User.createGraduatedUser(dto.toCreateGraduatedUserCommand(), passwordEncoder.encode(dto.password())));
+		User registeredUser = userRepository.findByEmail(dto.email())
+			.map(user -> {
+				//이미 가입 신청한 경우 정보 업데이트
+				if (user.getState() == UserState.AWAIT || user.getState() == UserState.REJECT) {
+					validateEmailUniqueness(dto.email(), user);
+					validateUniqueness(dto.nickname(), dto.phoneNumber(), dto.studentId(), user);
+
+					user.updateDetails(
+						dto.email(),
+						dto.name(),
+						dto.phoneNumber(),
+						encodedPassword,
+						dto.studentId(),
+						dto.admissionYear(),
+						dto.nickname(),
+						null,
+						dto.department()
+					);
+					user.markAsCertifiedGraduate(dto.graduationYear());
+					return user;
+
+				} else if (user.getAcademicStatus() == AcademicStatus.UNDETERMINED) {
+					user.markAsCertifiedGraduate(dto.graduationYear());
+					return user;
+
+				} else { // 이미 인증된 계정이 존재하는 경우
+					throw new BadRequestException(
+						ErrorCode.ROW_ALREADY_EXIST,
+						MessageUtil.USER_ALREADY_REGISTERD
+					);
+				}
+			})
+			.orElseGet(() -> {
+				validateEmailUniqueness(dto.email(), null);
+				validateUniqueness(dto.nickname(), dto.phoneNumber(), dto.studentId(), null);
+				return userRepository.save(User.createGraduate(dto.toGraduatedUserCommand(), encodedPassword));
+			});
 
 		eventPublisher.publishEvent(new CertifiedUserCreatedEvent(registeredUser.getId()));
 	}
@@ -876,7 +933,7 @@ public class UserService {
 			}
 		}
 
-		srcUser.update(userUpdateRequestDto.getNickname(), userProfileImage, userUpdateRequestDto.getPhoneNumber());
+		srcUser.updateProfile(userUpdateRequestDto.getNickname(), userProfileImage, userUpdateRequestDto.getPhoneNumber());
 
 		User updatedUser = userRepository.save(srcUser);
 
