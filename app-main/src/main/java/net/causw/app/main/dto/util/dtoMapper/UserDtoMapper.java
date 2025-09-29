@@ -56,6 +56,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "state", source = "user.state")
 	@Mapping(target = "nickname", source = "user.nickname")
 	@Mapping(target = "major", source = "user.major")
+	@Mapping(target = "department", source = "user.department")
 	@Mapping(target = "academicStatus", source = "user.academicStatus")
 	@Mapping(target = "currentCompletedSemester", source = "user.currentCompletedSemester")
 	@Mapping(target = "graduationYear", source = "user.graduationYear")
@@ -77,6 +78,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "state", source = "user.state")
 	@Mapping(target = "nickname", source = "user.nickname")
 	@Mapping(target = "major", source = "user.major")
+	@Mapping(target = "department", source = "user.department")
 	@Mapping(target = "academicStatus", source = "user.academicStatus")
 	@Mapping(target = "currentCompletedSemester", source = "user.currentCompletedSemester")
 	@Mapping(target = "graduationYear", source = "user.graduationYear")
@@ -133,7 +135,9 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 		List<UserResponseDto> leaderGrade3,
 		List<UserResponseDto> leaderGrade4,
 		List<UserResponseDto> leaderCircle,
-		List<UserResponseDto> alumni
+		List<UserResponseDto> alumniLeader,
+		List<UserResponseDto> alumniManager
+
 	) {
 		List<UserResponseDto> leaderGrade = new LinkedList<>(leaderGrade1);
 		leaderGrade.addAll(leaderGrade2);
@@ -145,7 +149,8 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 			.councilUsers(council)
 			.leaderGradeUsers(leaderGrade)
 			.leaderCircleUsers(leaderCircle)
-			.leaderAlumni(alumni)
+			.leaderAlumni(alumniLeader)
+			.alumniManager(alumniManager)
 			.build();
 	}
 
@@ -216,9 +221,10 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "admissionYear", source = "userInfo.user.admissionYear")
 	@Mapping(target = "profileImageUrl", source = "userInfo.user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
 	@Mapping(target = "major", source = "userInfo.user.major")
+	@Mapping(target = "department", source = "userInfo.user.department")
 	@Mapping(target = "description", source = "userInfo.description")
 	@Mapping(target = "job", source = "userInfo.job")
-	@Mapping(target = "userCareer", source = "userInfo.userCareer", qualifiedByName = "mapUserCareerListToResponseDtoList")
+		// @Mapping(target = "userCareer", source = "userInfo.userCareer", qualifiedByName = "mapUserCareerListToResponseDtoList")
 	UserInfoSummaryResponseDto toUserInfoSummaryResponseDto(UserInfo userInfo);
 
 	@Mapping(target = "id", source = "userInfo.id")
@@ -229,16 +235,13 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "admissionYear", source = "userInfo.user.admissionYear")
 	@Mapping(target = "profileImageUrl", source = "userInfo.user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
 	@Mapping(target = "major", source = "userInfo.user.major")
+	@Mapping(target = "department", source = "userInfo.user.department")
 	@Mapping(target = "roles", source = "userInfo.user.roles")
 	@Mapping(target = "academicStatus", source = "userInfo.user.academicStatus")
 	@Mapping(target = "description", source = "userInfo.description")
 	@Mapping(target = "job", source = "userInfo.job")
 	@Mapping(target = "userCareer", source = "userInfo.userCareer", qualifiedByName = "mapUserCareerListToResponseDtoList")
-	@Mapping(target = "githubLink", source = "userInfo.githubLink")
-	@Mapping(target = "linkedInLink", source = "userInfo.linkedInLink")
-	@Mapping(target = "blogLink", source = "userInfo.blogLink")
-	@Mapping(target = "notionLink", source = "userInfo.notionLink")
-	@Mapping(target = "instagramLink", source = "userInfo.instagramLink")
+	@Mapping(target = "socialLinks", source = "userInfo.socialLinks")
 	@Mapping(target = "isPhoneNumberVisible", source = "userInfo.isPhoneNumberVisible")
 	UserInfoResponseDto toUserInfoResponseDto(UserInfo userInfo);
 

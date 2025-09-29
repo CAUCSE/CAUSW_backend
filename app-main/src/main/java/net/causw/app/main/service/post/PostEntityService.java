@@ -45,7 +45,6 @@ public class PostEntityService {
 		String keyword,
 		Pageable pageable
 	) {
-
 		return postRepository.findPostsByBoardWithFilters(boardId, includeDeleted, blockedUserIds, keyword, pageable);
 	}
 }

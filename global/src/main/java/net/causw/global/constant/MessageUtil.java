@@ -113,6 +113,7 @@ public class MessageUtil {
 	public static final String EMAIL_ALREADY_EXIST = "이미 존재하는 이메일입니다.";
 	public static final String EMAIL_INVALID = "잘못된 이메일입니다.";
 	public static final String USER_ALREADY_APPLY = "이미 신청한 사용자 입니다.";
+	public static final String USER_ALREADY_REGISTERD = "이미 등록된 사용자입니다.";
 	public static final String NO_APPLICATION = "신청서를 작성하지 않았습니다.";
 	public static final String CONCURRENT_JOB_IMPOSSIBLE = "겸직이 불가합니다.";
 	public static final String NICKNAME_ALREADY_EXIST = "이미 존재하는 닉네임입니다.";
@@ -127,6 +128,8 @@ public class MessageUtil {
 	public static final String USER_RECOVER_INVALID_STATE = "복구할 수 없는 계정 상태입니다.";
 	public static final String USER_DELETED = "삭제된 계정입니다. 회원가입 페이지에서 새로운 정보로 가입해주세요.";
 	public static final String PRIVACY_POLICY_REQUIRED = "개인정보 수집 동의가 필요합니다.";
+	public static final String DEPARTMENT_EXPLICITLY_REQUIRED = "2021년 이후 입학생은 학과/학부를 반드시 선택해야 합니다.";
+	public static final String INVALID_ADMISSION_YEAR = "해당 입학년도에 맞는 학과를 찾을 수 없습니다.";
 
 	// Flag
 	public static final String FLAG_UPDATE_FAILED = "플래그 업데이트에 실패했습니다.";
@@ -206,6 +209,7 @@ public class MessageUtil {
 	public static final String USER_INFO_NOT_ACCESSIBLE = "해당 사용자의 상세정보에 접근할 수 없습니다.";
 	public static final String USER_CAREER_NOT_FOUND = "해당 커리어 정보를 찾을 수 없습니다.";
 	public static final String INVALID_CAREER_DATE = "커리어 날짜가 유효하지 않습니다.";
+	public static final String INVALID_SOCIAL_LINK = "소셜 링크는 최대 10개까지 지정 가능합니다.";
 
 	// 500
 	public static final String INTERNAL_SERVER_ERROR = "Internal Server Error";

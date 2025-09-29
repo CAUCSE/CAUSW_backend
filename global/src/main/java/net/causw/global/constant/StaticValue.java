@@ -9,7 +9,8 @@ public class StaticValue {
 
 	public static final String BOARD_NAME_APP_FREE = "APP_FREE";
 
-	public static final Integer CAUSW_CREATED = 1972;
+	public static final Integer CAU_SW_START_YEAR = 1972;
+	public static final Integer CAU_AI_START_YEAR = 2021;
 	public static final Integer MAX_NUM_FILE_ATTACHMENTS = 3;
 
 	// Pagination
@@ -105,6 +106,9 @@ public class StaticValue {
 		"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15",
 		"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 	};
+	// 이미지 URL 정규화 관련 상수
+	public static final List<String> IMAGE_SRC_ATTRIBUTES = List.of("src", "data-src", "data-original", "data-lazy");
+	public static final List<String> REMOVABLE_IMAGE_ATTRIBUTES = List.of("data-src", "data-original", "data-lazy", "srcset");
 
 	// Hash
 	public static final String HASH_ALGORITHM = "SHA-256";

@@ -1,12 +1,15 @@
 package net.causw.app.main.dto.user;
 
-public record CreateGraduatedUserCommand(
+import net.causw.app.main.domain.model.enums.user.Department;
+
+public record GraduatedUserCommand(
 	String email,
 	String name,
 	String studentId,
 	Integer admissionYear,
 	Integer graduationYear,
 	String nickname,
-	String major,
+	Department department,
 	String phoneNumber
-) {}
+) {
+}

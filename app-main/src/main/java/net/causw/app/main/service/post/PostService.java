@@ -86,6 +86,7 @@ import net.causw.app.main.repository.notification.UserPostSubscribeRepository;
 import net.causw.app.main.repository.post.FavoritePostRepository;
 import net.causw.app.main.repository.post.LikePostRepository;
 import net.causw.app.main.repository.post.PostRepository;
+import net.causw.app.main.repository.post.query.PostQueryRepository;
 import net.causw.app.main.repository.uuidFile.PostAttachImageRepository;
 import net.causw.app.main.repository.vote.VoteRecordRepository;
 import net.causw.app.main.service.notification.BoardNotificationService;
@@ -109,6 +110,7 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 public class PostService {
 
+	private final PostQueryRepository postQueryRepository;
 	private final PostRepository postRepository;
 	private final BoardRepository boardRepository;
 	private final CircleMemberRepository circleMemberRepository;
@@ -151,6 +153,7 @@ public class PostService {
 	public BoardPostsResponseDto findAllPost(
 		User user,
 		String boardId,
+		String keyword,
 		Integer pageNum
 	) {
 		Set<Role> roles = user.getRoles();  // 사용자의 역할 가져오기
@@ -158,7 +161,8 @@ public class PostService {
 
 		// 유효성 검사 초기화 및 실행
 		ValidatorBucket validatorBucket = initializeValidator(user, board);
-		validatorBucket.validate();
+		validatorBucket
+			.consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD)).validate();
 
 		// 동아리 리더 여부 확인
 		boolean isCircleLeader = false;
@@ -171,43 +175,10 @@ public class PostService {
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
 
 		boolean includeDeleted = isCircleLeader || roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT);
-		Page<PostsResponseDto> posts = postEntityService
-			.findPostsByBoardWithFilters(boardId, includeDeleted, blockedUserIds, null, pageable)
-			.map(this::toPostsResponseDto);
 
-		return toBoardPostsResponseDto(board, roles, isFavorite(user.getId(), boardId), isBoardSubscribed(user, board),
-			posts);
-	}
-
-	@Transactional(readOnly = true)
-	public BoardPostsResponseDto searchPost(
-		User user,
-		String boardId,
-		String keyword,
-		Integer pageNum
-	) {
-		Set<Role> roles = user.getRoles();
-		Board board = getBoard(boardId);
-
-		ValidatorBucket validatorBucket = initializeValidator(user, board);
-		validatorBucket
-			.consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD))
-			.validate();
-
-		boolean isCircleLeader = false;
-		if (roles.contains(Role.LEADER_CIRCLE)) {
-			isCircleLeader = getCircleLeader(board.getCircle()).getId().equals(user.getId());
-		}
-
-		// 권한 확인 및 차단 사용자 목록 조회
-		boolean includeDeleted = isCircleLeader || roles.contains(Role.ADMIN) ||
-			roles.contains(Role.PRESIDENT) || roles.contains(Role.VICE_PRESIDENT);
-		Set<String> blockedUserIds = userBlockEntityService.findBlockeeUserIdsByBlocker(user);
-		Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
-
-		Page<PostsResponseDto> posts = postEntityService
+		Page<PostsResponseDto> posts = postQueryRepository
 			.findPostsByBoardWithFilters(boardId, includeDeleted, blockedUserIds, keyword, pageable)
-			.map(this::toPostsResponseDto);
+			.map(PostDtoMapper.INSTANCE::toPostsResponseDto);
 
 		return toBoardPostsResponseDto(
 			board,
@@ -231,15 +202,17 @@ public class PostService {
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
 
 		boolean includeDeleted = false;
-		Page<PostsResponseDto> posts = postEntityService
+		Page<PostsResponseDto> posts = postQueryRepository
 			.findPostsByBoardWithFilters(board.getId(), includeDeleted, blockedUserIds, null, pageable)
-			.map(this::toPostsResponseDto);
+			.map(PostDtoMapper.INSTANCE::toPostsResponseDto);
 
 		return toBoardPostsResponseDto(
 			board,
 			roles,
 			isFavorite(user.getId(), board.getId()),
-			isBoardSubscribed(user, board), posts);
+			isBoardSubscribed(user, board),
+			posts
+		);
 	}
 
 	//게시글이 생성될 때 발생할 일
@@ -944,42 +917,6 @@ public class PostService {
 			isBoardSubscribed,
 			post
 		);
-	}
-
-	private PostsResponseDto toPostsResponseDto(Post post) {
-		PostAttachImage postThumbnailFile =
-			(post.getPostAttachImageList() == null || post.getPostAttachImageList().isEmpty()) ?
-				null :
-				post.getPostAttachImageList()
-					.stream()
-					.filter(postAttachImage ->
-						FileExtensionType.IMAGE.getExtensionList()
-							.contains(postAttachImage.getUuidFile().getExtension())
-					)
-					.sorted(Comparator.comparing(PostAttachImage::getCreatedAt)) // 오름차순 정렬
-					.findFirst()
-					.orElse(null);
-
-		PostsResponseDto postsResponseDto = PostDtoMapper.INSTANCE.toPostsResponseDto(
-			post,
-			getNumOfComments(post),
-			getNumOfPostLikes(post),
-			getNumOfPostFavorites(post),
-			postThumbnailFile,
-			StatusPolicy.isPostVote(post),
-			StatusPolicy.isPostForm(post)
-		);
-
-		// 화면에 표시할 작성자 닉네임 설정
-		User writer = post.getWriter();
-		postsResponseDto.setDisplayWriterNickname(
-			getDisplayWriterNickname(writer, postsResponseDto.getIsAnonymous(), postsResponseDto.getWriterNickname()));
-
-		if (postsResponseDto.getIsAnonymous()) {
-			postsResponseDto.updateAnonymousWriterInfo();
-		}
-
-		return postsResponseDto;
 	}
 
 	private PostResponseDto toPostResponseDtoExtended(Post post, User user) {

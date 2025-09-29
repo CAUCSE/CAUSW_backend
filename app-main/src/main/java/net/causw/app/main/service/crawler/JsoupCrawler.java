@@ -115,6 +115,10 @@ public class JsoupCrawler implements Crawler {
 		String imageLink = detailDoc.select("div.fr-view > p > img").attr("abs:src");
 
 		Element contentElement = detailDoc.select("div.fr-view").first();
+
+		// 이미지 URL 정규화: HTTP -> HTTPS 변환, data-src -> src 치환
+		normalizeImageUrls(contentElement);
+
 		String contentHtml = contentElement != null ? contentElement.html() : "<p>내용 없음</p>";
 
 		List<CrawledFileLink> fileLinks = extractDownloadLink(detailDoc);
@@ -224,5 +228,41 @@ public class JsoupCrawler implements Crawler {
 		}
 
 		return uniqueLinks;
+	}
+
+	// Element 내 이미지 URL을 정규화
+	private void normalizeImageUrls(Element element) {
+		if (element == null) {
+			return;
+		}
+
+		for (Element img : element.select("img")) {
+			// 우선순위에 따라 이미지 URL 찾기 및 처리
+			StaticValue.IMAGE_SRC_ATTRIBUTES.stream()
+				.filter(attr -> !img.attr(attr).isBlank())
+				.findFirst()
+				.ifPresent(srcAttrFound -> {
+					String srcUrl = img.attr(srcAttrFound);
+					// baseUri를 유지하면서 절대 경로로 변환
+					String absoluteUrl = img.absUrl(srcAttrFound);
+					String httpsUrl = forceHttps(absoluteUrl.isBlank() ? srcUrl : absoluteUrl);
+
+					// src 속성 설정 및 data-* 속성 제거
+					img.attr("src", httpsUrl);
+					StaticValue.REMOVABLE_IMAGE_ATTRIBUTES.forEach(img::removeAttr);
+				});
+		}
+	}
+
+	// HTTP URL을 HTTPS로 변환
+	private String forceHttps(String url) {
+		if (url == null || url.isBlank()) {
+			return url;
+		}
+
+		if (url.startsWith("http://")) {
+			return url.replaceFirst("http://", "https://");
+		}
+		return url;
 	}
 }

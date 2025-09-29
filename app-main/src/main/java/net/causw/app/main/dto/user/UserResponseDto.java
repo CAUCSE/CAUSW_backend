@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
+import net.causw.app.main.domain.model.enums.user.Department;
 import net.causw.app.main.domain.model.enums.user.GraduationType;
 import net.causw.app.main.domain.model.enums.user.Role;
 import net.causw.app.main.domain.model.enums.user.UserState;
@@ -55,8 +56,12 @@ public class UserResponseDto {
 	@Schema(description = "닉네임", example = "푸앙")
 	private String nickname;
 
+	// TODO: user 테이블의 major 필드 삭제 후 함께 제거
 	@Schema(description = "학부/학과", example = "소프트웨어학부")
 	private String major;
+
+	@Schema(description = "학부/학과", example = "DEPT_OF_CS(전자계산학과), DEPT_OF_CSE(컴퓨터공학과), SCHOOL_OF_CSE(컴퓨터공학부), SCHOOL_OF_SW(소프트웨어학부), DEPT_OF_AI(AI학과)")
+	private Department department;
 
 	@Schema(description = "학적상태", example = "ENROLLED")
 	private AcademicStatus academicStatus;

@@ -18,6 +18,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,6 +64,7 @@ import net.causw.app.main.dto.board.BoardResponseDto;
 import net.causw.app.main.dto.circle.CircleResponseDto;
 import net.causw.app.main.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.app.main.dto.post.PostsResponseDto;
+import net.causw.app.main.dto.user.GraduatedUserCommand;
 import net.causw.app.main.dto.user.GraduatedUserRegisterRequestDto;
 import net.causw.app.main.dto.user.UserAdmissionCreateRequestDto;
 import net.causw.app.main.dto.user.UserAdmissionResponseDto;
@@ -75,7 +77,6 @@ import net.causw.app.main.dto.user.UserFindIdRequestDto;
 import net.causw.app.main.dto.user.UserFindIdResponseDto;
 import net.causw.app.main.dto.user.UserFindPasswordRequestDto;
 import net.causw.app.main.dto.user.UserPostsResponseDto;
-import net.causw.app.main.dto.user.UserPrivilegedResponseDto;
 import net.causw.app.main.dto.user.UserResponseDto;
 import net.causw.app.main.dto.user.UserSignInRequestDto;
 import net.causw.app.main.dto.user.UserSignInResponseDto;
@@ -95,6 +96,7 @@ import net.causw.app.main.infrastructure.security.JwtTokenProvider;
 import net.causw.app.main.repository.board.BoardRepository;
 import net.causw.app.main.repository.circle.CircleMemberRepository;
 import net.causw.app.main.repository.circle.CircleRepository;
+import net.causw.app.main.repository.circle.query.CircleQueryRepository;
 import net.causw.app.main.repository.comment.ChildCommentRepository;
 import net.causw.app.main.repository.comment.CommentRepository;
 import net.causw.app.main.repository.locker.LockerLogRepository;
@@ -105,6 +107,7 @@ import net.causw.app.main.repository.post.PostRepository;
 import net.causw.app.main.repository.user.UserAdmissionLogRepository;
 import net.causw.app.main.repository.user.UserAdmissionRepository;
 import net.causw.app.main.repository.user.UserRepository;
+import net.causw.app.main.repository.user.query.UserQueryRepository;
 import net.causw.app.main.repository.userAcademicRecord.UserAcademicRecordApplicationRepository;
 import net.causw.app.main.repository.userInfo.UserInfoRepository;
 import net.causw.app.main.repository.uuidFile.UserAcademicRecordApplicationAttachImageRepository;
@@ -166,6 +169,9 @@ public class UserService {
 	private final PostDtoMapper postDtoMapper;
 	private final PostService postService;
 	private final UserBlockEntityService userBlockEntityService;
+	private final UserQueryRepository userQueryRepository;
+	private final WebInvocationPrivilegeEvaluator privilegeEvaluator;
+	private final CircleQueryRepository circleQueryRepository;
 
 	@Transactional
 	public void findPassword(
@@ -511,71 +517,6 @@ public class UserService {
 			.collect(Collectors.toList());
 	}
 
-	@Transactional(readOnly = true)
-	public UserPrivilegedResponseDto findPrivilegedUsers(User user) {
-		Set<Role> roles = user.getRoles();
-
-		ValidatorBucket.of()
-			.consistOf(UserStateValidator.of(user.getState()))
-			.consistOf(UserRoleIsNoneValidator.of(roles))
-			.consistOf(UserRoleValidator.of(roles, Set.of()))
-			.validate();
-
-		//todo: 현재 겸직을 고려하기 위해 _N_ 사용 중이나 port 와 domain model 삭제를 위해 배제
-		//때문에 추후 userRole 관리 리팩토링 후 겸직을 고려하게 변경 필요
-		return UserDtoMapper.INSTANCE.toUserPrivilegedResponseDto(
-			this.userRepository.findByRoleAndState(Role.PRESIDENT, UserState.ACTIVE)
-				.stream()
-				.map(president -> UserDtoMapper.INSTANCE.toUserResponseDto(president, null, null))
-				.collect(Collectors.toList()),
-			this.userRepository.findByRoleAndState(Role.VICE_PRESIDENT, UserState.ACTIVE)
-				.stream()
-				.map(vicePresident -> UserDtoMapper.INSTANCE.toUserResponseDto(vicePresident, null, null))
-				.collect(Collectors.toList()),
-			this.userRepository.findByRoleAndState(Role.COUNCIL, UserState.ACTIVE)
-				.stream()
-				.map(council -> UserDtoMapper.INSTANCE.toUserResponseDto(council, null, null))
-				.collect(Collectors.toList()),
-			this.userRepository.findByRoleAndState(Role.LEADER_1, UserState.ACTIVE)
-				.stream()
-				.map(leader1 -> UserDtoMapper.INSTANCE.toUserResponseDto(leader1, null, null))
-				.collect(Collectors.toList()),
-			this.userRepository.findByRoleAndState(Role.LEADER_2, UserState.ACTIVE)
-				.stream()
-				.map(leader2 -> UserDtoMapper.INSTANCE.toUserResponseDto(leader2, null, null))
-				.collect(Collectors.toList()),
-			this.userRepository.findByRoleAndState(Role.LEADER_3, UserState.ACTIVE)
-				.stream()
-				.map(leader3 -> UserDtoMapper.INSTANCE.toUserResponseDto(leader3, null, null))
-				.collect(Collectors.toList()),
-			this.userRepository.findByRoleAndState(Role.LEADER_4, UserState.ACTIVE)
-				.stream()
-				.map(leader4 -> UserDtoMapper.INSTANCE.toUserResponseDto(leader4, null, null))
-				.collect(Collectors.toList()),
-			this.userRepository.findByRoleAndState(Role.LEADER_CIRCLE, UserState.ACTIVE)
-				.stream()
-				.map(userDomainModel -> {
-					List<Circle> ownCircles = this.circleRepository.findByLeader_Id(userDomainModel.getId());
-					if (ownCircles.isEmpty()) {
-						throw new InternalServerException(
-							ErrorCode.INTERNAL_SERVER,
-							MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER
-						);
-					}
-					return UserDtoMapper.INSTANCE.toUserResponseDto(
-						userDomainModel,
-						ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
-						ownCircles.stream().map(Circle::getName).collect(Collectors.toList())
-					);
-				})
-				.collect(Collectors.toList()),
-			this.userRepository.findByRoleAndState(Role.LEADER_ALUMNI, UserState.ACTIVE)
-				.stream()
-				.map(alumni -> UserDtoMapper.INSTANCE.toUserResponseDto(alumni, null, null))
-				.collect(Collectors.toList())
-		);
-	}
-
 	@Transactional
 	public Page<UserResponseDto> findByState(
 		User user,
@@ -671,7 +612,18 @@ public class UserService {
 			//AWAIT, REJECT인 경우 정보 업데이트 진행
 			if (state == UserState.AWAIT || state == UserState.REJECT) {
 				validateUniqueness(dto.getNickname(), dto.getPhoneNumber(), dto.getStudentId(), user);
-				user.updateInfo(dto, passwordEncoder.encode(dto.getPassword()));
+				user.updateDetails(
+					dto.getEmail(),
+					dto.getName(),
+					dto.getPhoneNumber(),
+					passwordEncoder.encode(dto.getPassword()),
+					dto.getStudentId(),
+					dto.getAdmissionYear(),
+					dto.getNickname(),
+					dto.getMajor(),
+					dto.getDepartment()
+				);
+				user.markAsAwait();
 				validateUser(dto, user);
 				userRepository.save(user);
 				return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
@@ -705,7 +657,18 @@ public class UserService {
 					}
 				});
 				validateUniqueness(dto.getNickname(), dto.getPhoneNumber(), dto.getStudentId(), ghostuser);
-				ghostuser.updateInfo(dto, passwordEncoder.encode(dto.getPassword()));
+				ghostuser.updateDetails(
+					dto.getEmail(),
+					dto.getName(),
+					dto.getPhoneNumber(),
+					passwordEncoder.encode(dto.getPassword()),
+					dto.getStudentId(),
+					dto.getAdmissionYear(),
+					dto.getNickname(),
+					dto.getMajor(),
+					dto.getDepartment()
+				);
+				ghostuser.markAsAwait();
 				validateUser(dto, ghostuser);
 				userRepository.save(ghostuser);
 				return UserDtoMapper.INSTANCE.toUserResponseDto(ghostuser, null, null);
@@ -742,11 +705,45 @@ public class UserService {
 	 */
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void registerGraduatedUser(GraduatedUserRegisterRequestDto dto) {
-		validateEmailUniqueness(dto.email(), null);
-		validateUniqueness(dto.nickname(), dto.phoneNumber(), dto.studentId(), null);
+		String encodedPassword = passwordEncoder.encode(dto.password());
 
-		User registeredUser = userRepository.save(
-			User.createGraduatedUser(dto.toCreateGraduatedUserCommand(), passwordEncoder.encode(dto.password())));
+		User registeredUser = userRepository.findByEmail(dto.email())
+			.map(user -> {
+				//이미 가입 신청한 경우 정보 업데이트
+				if (user.getState() == UserState.AWAIT || user.getState() == UserState.REJECT) {
+					validateEmailUniqueness(dto.email(), user);
+					validateUniqueness(dto.nickname(), dto.phoneNumber(), dto.studentId(), user);
+
+					user.updateDetails(
+						dto.email(),
+						dto.name(),
+						dto.phoneNumber(),
+						encodedPassword,
+						dto.studentId(),
+						dto.admissionYear(),
+						dto.nickname(),
+						null,
+						dto.department()
+					);
+					user.markAsCertifiedGraduate(dto.graduationYear());
+					return user;
+
+				} else if (user.getAcademicStatus() == AcademicStatus.UNDETERMINED) {
+					user.markAsCertifiedGraduate(dto.graduationYear());
+					return user;
+
+				} else { // 이미 인증된 계정이 존재하는 경우
+					throw new BadRequestException(
+						ErrorCode.ROW_ALREADY_EXIST,
+						MessageUtil.USER_ALREADY_REGISTERD
+					);
+				}
+			})
+			.orElseGet(() -> {
+				validateEmailUniqueness(dto.email(), null);
+				validateUniqueness(dto.nickname(), dto.phoneNumber(), dto.studentId(), null);
+				return userRepository.save(User.createGraduate(dto.toGraduatedUserCommand(), encodedPassword));
+			});
 
 		eventPublisher.publishEvent(new CertifiedUserCreatedEvent(registeredUser.getId()));
 	}
@@ -936,7 +933,7 @@ public class UserService {
 			}
 		}
 
-		srcUser.update(userUpdateRequestDto.getNickname(), userProfileImage, userUpdateRequestDto.getPhoneNumber());
+		srcUser.updateProfile(userUpdateRequestDto.getNickname(), userProfileImage, userUpdateRequestDto.getPhoneNumber());
 
 		User updatedUser = userRepository.save(srcUser);
 

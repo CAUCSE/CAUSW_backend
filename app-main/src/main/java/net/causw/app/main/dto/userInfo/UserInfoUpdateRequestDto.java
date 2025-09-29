@@ -25,11 +25,8 @@ public class UserInfoUpdateRequestDto {
 	@Valid
 	private List<UserCareerDto> userCareer;
 
-	private String githubLink;
-	private String linkedInLink;
-	private String blogLink;
-	private String notionLink;
-	private String instagramLink;
+	@Size(max = 10, message = "소셜 링크는 최대 10개까지 등록할 수 있습니다.")
+	private List<String> socialLinks;
 
 	@NotNull
 	private Boolean isPhoneNumberVisible;

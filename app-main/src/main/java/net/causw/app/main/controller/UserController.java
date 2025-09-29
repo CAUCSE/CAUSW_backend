@@ -49,6 +49,7 @@ import net.causw.app.main.dto.user.UserUpdateTokenRequestDto;
 import net.causw.app.main.infrastructure.security.userdetails.CustomUserDetails;
 import net.causw.app.main.service.user.UserRoleService;
 import net.causw.app.main.service.user.UserService;
+import net.causw.app.main.service.user.useCase.FindPrivilegedUsersUseCaseService;
 import net.causw.app.main.service.user.useCase.RegisterGraduatedUsersUseCaseService;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.UnauthorizedException;
@@ -70,6 +71,7 @@ public class UserController {
 	private final UserService userService;
 	private final UserRoleService userRoleService;
 	private final RegisterGraduatedUsersUseCaseService registerGraduatedUsersUseCaseService;
+	private final FindPrivilegedUsersUseCaseService findPrivilegedUsersUseCaseService;
 
 	/**
 	 * 사용자 고유 id 값으로 사용자 정보를 조회하는 API
@@ -238,7 +240,7 @@ public class UserController {
 	public UserPrivilegedResponseDto findPrivilegedUsers(
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		return this.userService.findPrivilegedUsers(userDetails.getUser());
+		return findPrivilegedUsersUseCaseService.execute(userDetails.getUser());
 	}
 
 	@GetMapping(value = "/state/{state}")

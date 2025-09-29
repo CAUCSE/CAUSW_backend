@@ -1,5 +1,7 @@
 package net.causw.app.main.dto.user;
 
+import net.causw.app.main.domain.model.enums.user.Department;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -46,9 +48,12 @@ public class UserCreateRequestDto {
 	@Schema(description = "닉네임", example = "푸앙")
 	private String nickname;
 
-	@NotBlank(message = "학부 또는 학과를 입력해 주세요.")
+	// TODO: user 테이블의 major 필드 삭제 후 함께 제거
 	@Schema(description = "학부/학과", example = "소프트웨어학부")
 	private String major;
+
+	@Schema(description = "학부/학과", example = "SCHOOL_OF_SW(소프트웨어학부), DEPT_OF_AI(AI학과)")
+	private Department department;
 
 	@NotBlank(message = "전화번호를 입력해 주세요.")
 	@Schema(description = "전화번호", example = "010-1234-5678", requiredMode = Schema.RequiredMode.REQUIRED)

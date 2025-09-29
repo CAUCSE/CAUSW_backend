@@ -1,5 +1,7 @@
 package net.causw.app.main.dto.user;
 
+import net.causw.app.main.domain.model.enums.user.Department;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -29,20 +31,20 @@ public record GraduatedUserRegisterRequestDto(
 	@Pattern(regexp = "^01(?:0|1|[6-9])-(\\d{3}|\\d{4})-\\d{4}$", message = "전화번호 형식에 맞지 않습니다.")
 	String phoneNumber,
 
-	@NotBlank
-	String major,
+	@NotNull
+	Department department,
 
 	String studentId
 ) {
-	public CreateGraduatedUserCommand toCreateGraduatedUserCommand() {
-		return new CreateGraduatedUserCommand(
+	public GraduatedUserCommand toGraduatedUserCommand() {
+		return new GraduatedUserCommand(
 			this.email,
 			this.name,
 			this.studentId,
 			this.admissionYear,
 			this.graduationYear,
 			this.nickname,
-			this.major,
+			this.department,
 			this.phoneNumber
 		);
 	}

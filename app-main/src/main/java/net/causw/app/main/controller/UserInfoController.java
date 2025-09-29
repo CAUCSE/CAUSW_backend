@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,10 +16,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.dto.userInfo.UserInfoResponseDto;
+import net.causw.app.main.dto.userInfo.UserInfoSearchConditionDto;
 import net.causw.app.main.dto.userInfo.UserInfoSummaryResponseDto;
 import net.causw.app.main.dto.userInfo.UserInfoUpdateRequestDto;
 import net.causw.app.main.infrastructure.security.userdetails.CustomUserDetails;
-import net.causw.app.main.service.userInfo.UserInfoService;
+import net.causw.app.main.service.userInfo.useCase.command.UpdateUserInfoUseCaseService;
+import net.causw.app.main.service.userInfo.useCase.query.GetUserInfoUseCaseService;
+import net.causw.app.main.service.userInfo.useCase.query.SearchUserInfoListUseCaseService;
 import net.causw.global.exception.BadRequestException;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,7 +37,10 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/users-info")
 @RequiredArgsConstructor
 public class UserInfoController {
-	private final UserInfoService userInfoService;
+
+	private final SearchUserInfoListUseCaseService searchUserInfoListUseCaseService;
+	private final GetUserInfoUseCaseService getUserInfoUseCaseService;
+	private final UpdateUserInfoUseCaseService updateUserInfoUseCaseService;
 
 	/**
 	 *  사용자 고유 id 값으로 사용자 세부정보를 조회하는 API
@@ -46,16 +53,17 @@ public class UserInfoController {
 	public UserInfoResponseDto getUserInfoByUserId(
 		@PathVariable("userId") String userId
 	) {
-		return userInfoService.getUserInfoByUserId(userId);
+		return getUserInfoUseCaseService.execute(userId);
 	}
 
 	@GetMapping
 	@ResponseStatus(value = HttpStatus.OK)
-	@Operation(summary = "전체 사용자 세부정보 조회 API", description = "최근 수정된 순서대로 정렬")
-	public Page<UserInfoSummaryResponseDto> getAllUserInfos(
-		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum
+	@Operation(summary = "전체 사용자 리스트 검색 및 조회 API", description = "최근 수정된 순서대로 정렬")
+	public Page<UserInfoSummaryResponseDto> searchUserInfos(
+		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
+		@ModelAttribute UserInfoSearchConditionDto userInfoSearchCondition
 	) {
-		return userInfoService.getAllUserInfos(pageNum);
+		return searchUserInfoListUseCaseService.execute(userInfoSearchCondition, pageNum);
 	}
 
 	@GetMapping(value = "/me")
@@ -64,7 +72,7 @@ public class UserInfoController {
 	public UserInfoResponseDto getCurrentUser(
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		return userInfoService.getUserInfoByUserId(userDetails.getUser().getId());
+		return getUserInfoUseCaseService.execute(userDetails.getUserId());
 	}
 
 	@PutMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -81,16 +89,6 @@ public class UserInfoController {
 		@RequestPart(value = "userInfoUpdateDto") @Valid UserInfoUpdateRequestDto userInfoUpdateDto,
 		@RequestPart(value = "profileImage", required = false) MultipartFile profileImage
 	) {
-		return userInfoService.update(userDetails.getUser().getId(), userInfoUpdateDto, profileImage);
-	}
-
-	@GetMapping(value = "/search")
-	@ResponseStatus(value = HttpStatus.OK)
-	@Operation(summary = "사용자 세부정보 조건 검색 API")
-	public Page<UserInfoSummaryResponseDto> search(
-		@RequestParam(name = "keyword", defaultValue = "") String keyword,
-		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum
-	) {
-		return userInfoService.search(keyword, pageNum);
+		return updateUserInfoUseCaseService.execute(userDetails.getUserId(), userInfoUpdateDto, profileImage);
 	}
 }

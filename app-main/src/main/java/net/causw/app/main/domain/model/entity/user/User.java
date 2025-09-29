@@ -7,18 +7,22 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import org.hibernate.annotations.BatchSize;
+
 import net.causw.app.main.domain.model.entity.base.BaseEntity;
 import net.causw.app.main.domain.model.entity.circle.CircleMember;
 import net.causw.app.main.domain.model.entity.locker.Locker;
 import net.causw.app.main.domain.model.entity.notification.CeremonyNotificationSetting;
 import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.model.entity.vote.VoteRecord;
+import net.causw.app.main.domain.model.enums.user.Department;
 import net.causw.app.main.domain.model.enums.user.GraduationType;
 import net.causw.app.main.domain.model.enums.user.Role;
 import net.causw.app.main.domain.model.enums.user.UserState;
 import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.resolver.DepartmentResolver;
+import net.causw.app.main.dto.user.GraduatedUserCommand;
 import net.causw.app.main.dto.user.UserCreateRequestDto;
-import net.causw.app.main.dto.user.CreateGraduatedUserCommand;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
@@ -69,8 +73,14 @@ public class User extends BaseEntity {
 	@Column(name = "nickname", unique = true, nullable = false)
 	private String nickname;
 
-	@Column(name = "major", nullable = false)
+	// TODO: 기존값들 department로 마이그레이션 후 삭제
+	@Column(name = "major", nullable = true)
 	private String major;
+
+	// TODO: null 임시 허용 제거
+	@Column(name = "department", nullable = true)
+	@Enumerated(EnumType.STRING)
+	private Department department;
 
 	@Column(name = "academic_status", nullable = false)
 	@Enumerated(EnumType.STRING)
@@ -89,22 +99,23 @@ public class User extends BaseEntity {
 	@Column(name = "graduation_type", nullable = true)
 	private GraduationType graduationType;
 
-	@ElementCollection(fetch = FetchType.EAGER)
+	@ElementCollection(fetch = FetchType.LAZY)
 	@Enumerated(EnumType.STRING)
 	@Column(name = "role", nullable = false)
+	@BatchSize(size = 100)
 	private Set<Role> roles;
 
-	@OneToOne(cascade = {CascadeType.REMOVE, CascadeType.PERSIST}, mappedBy = "user")
+	@OneToOne(cascade = {CascadeType.REMOVE, CascadeType.PERSIST}, mappedBy = "user", fetch = FetchType.LAZY)
 	private UserProfileImage userProfileImage;
 
 	@Column(name = "state", nullable = false)
 	@Enumerated(EnumType.STRING)
 	private UserState state;
 
-	@OneToOne(mappedBy = "user", fetch = FetchType.EAGER)
+	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
 	private Locker locker;
 
-	@OneToOne(mappedBy = "user", fetch = FetchType.EAGER)
+	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
 	private CeremonyNotificationSetting ceremonyNotificationSetting;
 
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
@@ -121,7 +132,7 @@ public class User extends BaseEntity {
 	@Builder.Default
 	private Boolean isV2 = true;
 
-	@ElementCollection(fetch = FetchType.EAGER)
+	@ElementCollection(fetch = FetchType.LAZY)
 	@CollectionTable(
 		name = "tb_user_fcm_token",
 		joinColumns = @JoinColumn(name = "user_id")
@@ -161,34 +172,39 @@ public class User extends BaseEntity {
 			.admissionYear(userCreateRequestDto.getAdmissionYear())
 			.nickname(userCreateRequestDto.getNickname())
 			.major(userCreateRequestDto.getMajor())
+			.department(
+				DepartmentResolver.resolveByAdmissionYearOrDepartment(
+					userCreateRequestDto.getAdmissionYear(),
+					userCreateRequestDto.getDepartment()
+				))
 			.academicStatus(AcademicStatus.UNDETERMINED)
 			.phoneNumber(userCreateRequestDto.getPhoneNumber())
 			.isV2(true)
 			.build();
 	}
 
-	public static User createGraduatedUser(
-		CreateGraduatedUserCommand createGraduatedUserCommand,
+	public static User createGraduate(
+		GraduatedUserCommand graduatedUserCommand,
 		String encodedPassword
 	) {
 		return User.builder()
-			.email(createGraduatedUserCommand.email())
-			.name(createGraduatedUserCommand.name())
+			.email(graduatedUserCommand.email())
+			.name(graduatedUserCommand.name())
 			.roles(Set.of(Role.COMMON))
 			.state(UserState.ACTIVE)
 			.password(encodedPassword)
-			.studentId(createGraduatedUserCommand.studentId())
-			.admissionYear(createGraduatedUserCommand.admissionYear())
-			.graduationYear(createGraduatedUserCommand.graduationYear())
-			.nickname(createGraduatedUserCommand.nickname())
-			.major(createGraduatedUserCommand.major())
+			.studentId(graduatedUserCommand.studentId())
+			.admissionYear(graduatedUserCommand.admissionYear())
+			.graduationYear(graduatedUserCommand.graduationYear())
+			.nickname(graduatedUserCommand.nickname())
+			.department(graduatedUserCommand.department())
 			.academicStatus(AcademicStatus.GRADUATED)
-			.phoneNumber(createGraduatedUserCommand.phoneNumber())
+			.phoneNumber(graduatedUserCommand.phoneNumber())
 			.isV2(true)
 			.build();
 	}
 
-	public void update(String nickname, UserProfileImage userProfileImage, String phoneNumber) {
+	public void updateProfile(String nickname, UserProfileImage userProfileImage, String phoneNumber) {
 		this.nickname = nickname;
 		this.userProfileImage = userProfileImage;
 		if (phoneNumber != null && !NO_PHONE_NUMBER_MESSAGE.equals(phoneNumber)) {
@@ -196,20 +212,36 @@ public class User extends BaseEntity {
 		}
 	}
 
+	public void updateDetails(
+		String email, String name, String phoneNumber, String encodedPassword,
+		String studentId, Integer admissionYear, String nickname,
+		String major, Department department
+	) {
+		this.email = email;
+		this.name = name;
+		this.phoneNumber = phoneNumber;
+		this.password = encodedPassword;
+		this.studentId = studentId;
+		this.admissionYear = admissionYear;
+		this.nickname = nickname;
+		this.major = major;
+		this.department = department;
+	}
+
 	public void updateRejectionOrDropReason(String reason) {
 		this.rejectionOrDropReason = reason;
 	}
 
-	public void updateInfo(UserCreateRequestDto userCreateRequestDto, String encodedPassword) {
-		this.email = userCreateRequestDto.getEmail();
-		this.name = userCreateRequestDto.getName();
-		this.nickname = userCreateRequestDto.getNickname();
-		this.phoneNumber = userCreateRequestDto.getPhoneNumber();
-		this.studentId = userCreateRequestDto.getStudentId();
-		this.admissionYear = userCreateRequestDto.getAdmissionYear();
-		this.major = userCreateRequestDto.getMajor();
-		this.password = encodedPassword;
+	public void markAsAwait() {
 		this.state = UserState.AWAIT;
+		this.rejectionOrDropReason = null; // 거절 사유 초기화
+	}
+
+	public void markAsCertifiedGraduate(Integer graduationYear) {
+		this.graduationYear = graduationYear;
+		this.state = UserState.ACTIVE;
+		this.roles = Set.of(Role.COMMON);
+		this.academicStatus = AcademicStatus.GRADUATED;
 		this.rejectionOrDropReason = null; // 거절 사유 초기화
 	}
 
