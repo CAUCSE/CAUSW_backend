@@ -172,6 +172,7 @@ public class UserService {
 	private final UserQueryRepository userQueryRepository;
 	private final WebInvocationPrivilegeEvaluator privilegeEvaluator;
 	private final CircleQueryRepository circleQueryRepository;
+	private final UserEntityService userEntityService;
 
 	@Transactional
 	public void findPassword(
@@ -1631,28 +1632,31 @@ public class UserService {
 
 	@Transactional
 	public UserFcmTokenResponseDto registerFcmToken(User user, UserFcmCreateRequestDto userFcmCreateRequestDto) {
+		User transactionUser = userEntityService.findUserByUserId(user.getId());
 		String fcmToken = userFcmCreateRequestDto.getFcmToken();
 		String refreshToken = userFcmCreateRequestDto.getRefreshToken();
 		String userIdFromRedis = getUserIdFromRefreshToken(refreshToken);
 
 		// 1. 유효한 refreshToken인지 검증
-		if (!user.getId().equals(userIdFromRedis)) {
+		if (!transactionUser.getId().equals(userIdFromRedis)) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_SIGNIN,
 				MessageUtil.INVALID_REFRESH_TOKEN
 			);
 		}
 		// 2. fcmToken 최신화
-		fcmUtils.cleanInvalidFcmTokens(user);
+		fcmUtils.cleanInvalidFcmTokens(transactionUser);
 		// 3. fcmToken 추가
-		fcmUtils.addFcmToken(user, refreshToken, fcmToken);
-		return UserDtoMapper.INSTANCE.toUserFcmTokenResponseDto(user);
+		fcmUtils.addFcmToken(transactionUser, refreshToken, fcmToken);
+		return UserDtoMapper.INSTANCE.toUserFcmTokenResponseDto(transactionUser);
 	}
 
 	@Transactional
 	public UserFcmTokenResponseDto getUserFcmToken(User user) {
-		fcmUtils.cleanInvalidFcmTokens(user);
-		return UserDtoMapper.INSTANCE.toUserFcmTokenResponseDto(user);
+		User transactionUser = userEntityService.findUserByUserId(user.getId());
+
+		fcmUtils.cleanInvalidFcmTokens(transactionUser);
+		return UserDtoMapper.INSTANCE.toUserFcmTokenResponseDto(transactionUser);
 	}
 
 	// private methods
