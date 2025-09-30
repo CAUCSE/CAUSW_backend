@@ -132,7 +132,7 @@ public class User extends BaseEntity {
 	@Builder.Default
 	private Boolean isV2 = true;
 
-	@ElementCollection(fetch = FetchType.LAZY)
+	@ElementCollection(fetch = FetchType.EAGER)
 	@CollectionTable(
 		name = "tb_user_fcm_token",
 		joinColumns = @JoinColumn(name = "user_id")
