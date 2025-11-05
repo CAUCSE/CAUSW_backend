@@ -21,8 +21,11 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-import net.causw.app.main.dto.user.UserResponseDto;
-import net.causw.app.main.dto.userCouncilFee.UserCouncilFeeResponseDto;
+import net.causw.app.main.domain.moving.dto.user.UserResponseDto;
+import net.causw.app.main.domain.moving.dto.userCouncilFee.UserCouncilFeeResponseDto;
+import net.causw.app.main.domain.moving.service.excel.CouncilFeeExcelService;
+import net.causw.app.main.domain.moving.service.excel.ExcelAbstractService;
+import net.causw.app.main.domain.moving.service.excel.UserExcelService;
 import net.causw.global.exception.InternalServerException;
 
 public class ExcelAbstractServiceTest {

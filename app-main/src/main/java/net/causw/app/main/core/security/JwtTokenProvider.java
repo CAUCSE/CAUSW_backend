@@ -11,8 +11,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import net.causw.app.main.domain.model.enums.user.Role;
-import net.causw.app.main.domain.model.enums.user.UserState;
+import net.causw.app.main.domain.moving.model.enums.user.Role;
+import net.causw.app.main.domain.moving.model.enums.user.UserState;
 import net.causw.app.main.shared.infra.redis.RedisUtils;
 import net.causw.app.main.core.security.userdetails.CustomUserDetailsService;
 import net.causw.global.constant.MessageUtil;

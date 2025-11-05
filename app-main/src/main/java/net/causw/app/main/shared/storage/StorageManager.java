@@ -11,7 +11,7 @@ import org.springframework.http.ContentDisposition;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
-import net.causw.app.main.domain.model.enums.uuidFile.FilePath;
+import net.causw.app.main.domain.moving.model.enums.uuidFile.FilePath;
 import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.ErrorCode;

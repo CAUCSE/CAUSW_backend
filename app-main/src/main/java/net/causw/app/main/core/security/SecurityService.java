@@ -10,8 +10,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import net.causw.app.main.core.security.userdetails.CustomUserDetails;
-import net.causw.app.main.domain.model.enums.user.Role;
-import net.causw.app.main.domain.model.enums.user.RoleGroup;
+import net.causw.app.main.domain.moving.model.enums.user.Role;
+import net.causw.app.main.domain.moving.model.enums.user.RoleGroup;
 import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.global.constant.MessageUtil;
 

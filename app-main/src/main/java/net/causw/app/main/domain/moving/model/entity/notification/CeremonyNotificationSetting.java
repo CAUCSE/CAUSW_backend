@@ -1,0 +1,74 @@
+package net.causw.app.main.domain.moving.model.entity.notification;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import org.hibernate.annotations.BatchSize;
+
+import net.causw.app.main.shared.entity.BaseEntity;
+import net.causw.app.main.domain.user.entity.user.User;
+
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "TB_CEREMONY_PUSH_NOTIFICATION")
+@Getter
+@Builder(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+public class CeremonyNotificationSetting extends BaseEntity {
+
+	@ElementCollection(fetch = FetchType.EAGER)
+	@CollectionTable(name = "TB_CEREMONY_SUBSCRIBE_YEAR", joinColumns = @JoinColumn(name = "notification_id"))
+	@Column(name = "admission_year")
+	@BatchSize(size = 100)
+	private Set<String> subscribedAdmissionYears = new HashSet<>();
+
+	@Column(name = "is_notification_active", nullable = false)
+	private boolean isNotificationActive = true;
+
+	@Column(name = "is_set_all", nullable = false)
+	private boolean isSetAll = true;    // 경조사 알림은 기본적으로 모든 학번에게 알림을 받음
+
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", nullable = false)
+	private User user;
+
+	public static CeremonyNotificationSetting of(
+		Set<String> subscribedAdmissionYears,
+		boolean isSetAll,
+		boolean receivePushNotification,
+		User user
+	) {
+		return CeremonyNotificationSetting.builder()
+			.subscribedAdmissionYears(subscribedAdmissionYears)
+			.isSetAll(isSetAll)
+			.isNotificationActive(receivePushNotification)
+			.user(user)
+			.build();
+	}
+
+	public void updateIsSetAll(boolean isSetAll) {
+		this.isSetAll = isSetAll;
+	}
+
+	public void updateIsNotificationActive(boolean isNotificationActive) {
+		this.isNotificationActive = isNotificationActive;
+	}
+
+	public void toggleNotification() {
+		this.isNotificationActive = !this.isNotificationActive;
+	}
+}

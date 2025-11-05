@@ -5,9 +5,9 @@ import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
-import net.causw.app.main.domain.model.entity.user.User;
+import net.causw.app.main.domain.user.entity.user.User;
 import net.causw.app.main.shared.infra.redis.RedisUtils;
-import net.causw.app.main.repository.user.UserRepository;
+import net.causw.app.main.domain.user.repository.user.UserRepository;
 import net.causw.global.constant.StaticValue;
 
 import lombok.RequiredArgsConstructor;

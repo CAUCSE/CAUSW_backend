@@ -5,9 +5,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import net.causw.app.main.domain.model.entity.user.User;
-import net.causw.app.main.repository.user.UserRepository;
-import net.causw.app.main.repository.user.query.UserQueryRepository;
+import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.domain.user.repository.user.UserRepository;
+import net.causw.app.main.domain.user.repository.user.query.UserQueryRepository;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;

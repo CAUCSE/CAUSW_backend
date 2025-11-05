@@ -14,12 +14,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import net.causw.app.main.dto.comment.CommentCreateRequestDto;
-import net.causw.app.main.dto.comment.CommentResponseDto;
-import net.causw.app.main.dto.comment.CommentSubscribeResponseDto;
-import net.causw.app.main.dto.comment.CommentUpdateRequestDto;
+import net.causw.app.main.domain.moving.dto.comment.CommentCreateRequestDto;
+import net.causw.app.main.domain.moving.dto.comment.CommentResponseDto;
+import net.causw.app.main.domain.moving.dto.comment.CommentSubscribeResponseDto;
+import net.causw.app.main.domain.moving.dto.comment.CommentUpdateRequestDto;
 import net.causw.app.main.core.security.userdetails.CustomUserDetails;
-import net.causw.app.main.service.comment.CommentService;
+import net.causw.app.main.domain.moving.service.comment.CommentService;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.UnauthorizedException;
 

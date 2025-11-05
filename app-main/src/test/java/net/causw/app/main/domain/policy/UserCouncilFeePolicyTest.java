@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.policy;
 
-import static net.causw.app.main.domain.policy.UserCouncilFeePolicy.*;
+import static net.causw.app.main.domain.moving.policy.UserCouncilFeePolicy.*;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.stream.Stream;
@@ -10,11 +10,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import net.causw.app.main.domain.model.entity.semester.Semester;
-import net.causw.app.main.domain.model.entity.user.User;
-import net.causw.app.main.domain.model.entity.userCouncilFee.UserCouncilFee;
-import net.causw.app.main.domain.model.enums.semester.SemesterType;
-import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.moving.model.entity.semester.Semester;
+import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.domain.user.entity.userCouncilFee.UserCouncilFee;
+import net.causw.app.main.domain.moving.model.enums.semester.SemesterType;
+import net.causw.app.main.domain.moving.model.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.util.ObjectFixtures;
 
 public class UserCouncilFeePolicyTest {

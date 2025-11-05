@@ -12,8 +12,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import net.causw.app.main.shared.infra.firebase.FcmUtils;
-import net.causw.app.main.domain.model.entity.user.User;
-import net.causw.app.main.repository.user.UserRepository;
+import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.domain.user.repository.user.UserRepository;
 import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;

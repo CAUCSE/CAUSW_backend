@@ -11,11 +11,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import net.causw.app.main.dto.vote.CastVoteRequestDto;
-import net.causw.app.main.dto.vote.CreateVoteRequestDto;
-import net.causw.app.main.dto.vote.VoteResponseDto;
+import net.causw.app.main.domain.moving.dto.vote.CastVoteRequestDto;
+import net.causw.app.main.domain.moving.dto.vote.CreateVoteRequestDto;
+import net.causw.app.main.domain.moving.dto.vote.VoteResponseDto;
 import net.causw.app.main.core.security.userdetails.CustomUserDetails;
-import net.causw.app.main.service.vote.VoteService;
+import net.causw.app.main.domain.moving.service.vote.VoteService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;

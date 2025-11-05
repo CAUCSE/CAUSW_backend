@@ -17,7 +17,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import net.causw.app.main.core.batch.listener.CheckMeasureStepListener;
 import net.causw.app.main.core.batch.listener.DeleteFileStepListener;
 import net.causw.app.main.core.batch.listener.DeleteUnusedFileJobCompletionNotificationListener;
-import net.causw.app.main.service.uuidFile.CleanUnusedUuidFileService;
+import net.causw.app.main.domain.moving.service.uuidFile.CleanUnusedUuidFileService;
 
 import lombok.RequiredArgsConstructor;
 

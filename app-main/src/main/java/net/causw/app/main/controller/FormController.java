@@ -17,13 +17,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import net.causw.app.main.dto.form.request.FormReplyRequestDto;
-import net.causw.app.main.dto.form.response.FormResponseDto;
-import net.causw.app.main.dto.form.response.QuestionSummaryResponseDto;
-import net.causw.app.main.dto.form.response.reply.ReplyPageResponseDto;
-import net.causw.app.main.dto.form.response.reply.UserReplyResponseDto;
+import net.causw.app.main.domain.moving.dto.form.request.FormReplyRequestDto;
+import net.causw.app.main.domain.moving.dto.form.response.FormResponseDto;
+import net.causw.app.main.domain.moving.dto.form.response.QuestionSummaryResponseDto;
+import net.causw.app.main.domain.moving.dto.form.response.reply.ReplyPageResponseDto;
+import net.causw.app.main.domain.moving.dto.form.response.reply.UserReplyResponseDto;
 import net.causw.app.main.core.security.userdetails.CustomUserDetails;
-import net.causw.app.main.service.form.FormService;
+import net.causw.app.main.domain.moving.service.form.FormService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;

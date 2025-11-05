@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import net.causw.app.main.dto.inquiry.InquiryCreateRequestDto;
-import net.causw.app.main.dto.inquiry.InquiryResponseDto;
-import net.causw.app.main.service.inquiry.InquiryService;
+import net.causw.app.main.domain.moving.dto.inquiry.InquiryCreateRequestDto;
+import net.causw.app.main.domain.moving.dto.inquiry.InquiryResponseDto;
+import net.causw.app.main.domain.moving.service.inquiry.InquiryService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

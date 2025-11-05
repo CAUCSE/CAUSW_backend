@@ -12,11 +12,11 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import net.causw.app.main.dto.event.EventCreateRequestDto;
-import net.causw.app.main.dto.event.EventResponseDto;
-import net.causw.app.main.dto.event.EventUpdateRequestDto;
-import net.causw.app.main.dto.event.EventsResponseDto;
-import net.causw.app.main.service.event.EventService;
+import net.causw.app.main.domain.moving.dto.event.EventCreateRequestDto;
+import net.causw.app.main.domain.moving.dto.event.EventResponseDto;
+import net.causw.app.main.domain.moving.dto.event.EventUpdateRequestDto;
+import net.causw.app.main.domain.moving.dto.event.EventsResponseDto;
+import net.causw.app.main.domain.moving.service.event.EventService;
 import net.causw.global.exception.BadRequestException;
 
 import io.swagger.v3.oas.annotations.Operation;

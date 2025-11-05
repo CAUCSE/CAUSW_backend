@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import net.causw.app.main.dto.exception.ConstraintExceptionDto;
-import net.causw.app.main.dto.exception.ExceptionDto;
+import net.causw.app.main.domain.moving.dto.exception.ConstraintExceptionDto;
+import net.causw.app.main.domain.moving.dto.exception.ExceptionDto;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.BaseRuntimeException;
 import net.causw.global.exception.ErrorCode;

@@ -8,7 +8,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import net.causw.app.main.domain.model.enums.user.Role;
+import net.causw.app.main.domain.moving.model.enums.user.Role;
+import net.causw.app.main.domain.moving.policy.RolePolicy;
 
 @ExtendWith(MockitoExtension.class)
 public class RolePolicyTest {

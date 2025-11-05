@@ -1,8 +1,7 @@
 package net.causw.app.main.service.user;
 
 import static java.util.Map.entry;
-import static net.causw.app.main.domain.model.enums.user.Role.*;
-import static net.causw.app.main.domain.policy.RolePolicy.*;
+import static net.causw.app.main.domain.moving.policy.RolePolicy.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -32,13 +31,14 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import net.causw.app.main.domain.model.entity.user.User;
-import net.causw.app.main.domain.model.enums.user.Role;
-import net.causw.app.main.domain.model.enums.user.UserState;
-import net.causw.app.main.domain.policy.RolePolicy;
-import net.causw.app.main.dto.user.UserResponseDto;
-import net.causw.app.main.dto.user.UserUpdateRoleRequestDto;
-import net.causw.app.main.repository.user.UserRepository;
+import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.domain.moving.model.enums.user.Role;
+import net.causw.app.main.domain.moving.model.enums.user.UserState;
+import net.causw.app.main.domain.moving.policy.RolePolicy;
+import net.causw.app.main.domain.user.service.UserRoleService;
+import net.causw.app.main.domain.moving.dto.user.UserResponseDto;
+import net.causw.app.main.domain.moving.dto.user.UserUpdateRoleRequestDto;
+import net.causw.app.main.domain.user.repository.user.UserRepository;
 import net.causw.app.main.util.ObjectFixtures;
 
 @ExtendWith(MockitoExtension.class)

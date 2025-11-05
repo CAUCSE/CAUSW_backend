@@ -20,7 +20,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-import net.causw.app.main.domain.model.entity.crawled.CrawledNotice;
+import net.causw.app.main.domain.moving.model.entity.crawled.CrawledNotice;
+import net.causw.app.main.domain.moving.service.crawler.JsoupCrawler;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;
 import net.causw.global.exception.ErrorCode;

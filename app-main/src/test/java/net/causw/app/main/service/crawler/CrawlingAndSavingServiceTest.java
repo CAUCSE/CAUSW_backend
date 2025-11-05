@@ -16,8 +16,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-import net.causw.app.main.domain.model.entity.crawled.CrawledNotice;
-import net.causw.app.main.repository.crawled.CrawledNoticeRepository;
+import net.causw.app.main.domain.moving.model.entity.crawled.CrawledNotice;
+import net.causw.app.main.domain.moving.repository.crawled.CrawledNoticeRepository;
+import net.causw.app.main.domain.moving.service.crawler.Crawler;
+import net.causw.app.main.domain.moving.service.crawler.CrawlingAndSavingService;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)

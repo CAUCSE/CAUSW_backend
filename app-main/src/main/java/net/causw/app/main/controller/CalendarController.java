@@ -15,11 +15,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import net.causw.app.main.dto.calendar.CalendarCreateRequestDto;
-import net.causw.app.main.dto.calendar.CalendarResponseDto;
-import net.causw.app.main.dto.calendar.CalendarUpdateRequestDto;
-import net.causw.app.main.dto.calendar.CalendarsResponseDto;
-import net.causw.app.main.service.calendar.CalendarService;
+import net.causw.app.main.domain.moving.dto.calendar.CalendarCreateRequestDto;
+import net.causw.app.main.domain.moving.dto.calendar.CalendarResponseDto;
+import net.causw.app.main.domain.moving.dto.calendar.CalendarUpdateRequestDto;
+import net.causw.app.main.domain.moving.dto.calendar.CalendarsResponseDto;
+import net.causw.app.main.domain.moving.service.calendar.CalendarService;
 import net.causw.global.exception.BadRequestException;
 
 import io.swagger.v3.oas.annotations.Operation;
