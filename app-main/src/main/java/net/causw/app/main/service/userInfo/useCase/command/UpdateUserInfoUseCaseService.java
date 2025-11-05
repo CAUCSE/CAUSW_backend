@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import net.causw.app.main.domain.model.entity.base.BaseEntity;
+import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.domain.model.entity.userInfo.UserCareer;
 import net.causw.app.main.domain.model.entity.userInfo.UserInfo;

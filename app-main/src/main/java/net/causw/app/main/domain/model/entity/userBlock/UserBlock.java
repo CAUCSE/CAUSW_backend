@@ -4,7 +4,7 @@ import java.util.Objects;
 
 import org.hibernate.annotations.Comment;
 
-import net.causw.app.main.domain.model.entity.base.BaseEntity;
+import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.app.main.domain.model.entity.report.BlockScope;
 
 import jakarta.persistence.Column;

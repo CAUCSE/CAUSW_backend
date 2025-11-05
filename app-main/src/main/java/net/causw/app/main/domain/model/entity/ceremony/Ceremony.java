@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import net.causw.app.main.domain.model.entity.base.BaseEntity;
+import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.domain.model.entity.uuidFile.UuidFile;
 import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.CeremonyAttachImage;

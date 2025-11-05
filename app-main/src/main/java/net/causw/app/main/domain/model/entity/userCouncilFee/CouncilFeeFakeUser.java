@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.model.entity.userCouncilFee;
 
-import net.causw.app.main.domain.model.entity.base.BaseEntity;
+import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.app.main.domain.model.enums.user.GraduationType;
 import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
 

@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.hibernate.annotations.ColumnDefault;
 
-import net.causw.app.main.domain.model.entity.base.BaseEntity;
+import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.app.main.domain.model.entity.board.Board;
 import net.causw.app.main.domain.model.entity.form.Form;
 import net.causw.app.main.domain.model.entity.user.User;

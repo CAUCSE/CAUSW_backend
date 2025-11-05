@@ -21,7 +21,7 @@ import net.causw.app.main.dto.userCouncilFee.CurrentUserCouncilFeeResponseDto;
 import net.causw.app.main.dto.userCouncilFee.UserCouncilFeeListResponseDto;
 import net.causw.app.main.dto.userCouncilFee.UserCouncilFeeResponseDto;
 import net.causw.app.main.dto.util.dtoMapper.UserCouncilFeeDtoMapper;
-import net.causw.app.main.infrastructure.aop.annotation.MeasureTime;
+import net.causw.app.main.shared.infra.aop.annotation.MeasureTime;
 import net.causw.app.main.repository.user.UserRepository;
 import net.causw.app.main.repository.userCouncilFee.UserCouncilFeeLogRepository;
 import net.causw.app.main.repository.userCouncilFee.UserCouncilFeeRepository;

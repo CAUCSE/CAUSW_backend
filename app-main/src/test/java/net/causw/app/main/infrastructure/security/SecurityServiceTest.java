@@ -18,6 +18,8 @@ import net.causw.app.main.domain.model.enums.user.Role;
 import net.causw.app.main.domain.model.enums.user.RoleGroup;
 import net.causw.app.main.domain.model.enums.user.UserState;
 import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.shared.infra.security.SecurityHelper;
+import net.causw.app.main.shared.infra.security.SecurityService;
 import net.causw.app.main.util.WithMockCustomUser;
 
 @ExtendWith({MockitoExtension.class, SpringExtension.class})

@@ -11,7 +11,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.model.entity.base.BaseEntity;
+import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.app.main.domain.model.entity.comment.Comment;
 import net.causw.app.main.domain.model.entity.notification.Notification;
 import net.causw.app.main.domain.model.entity.notification.NotificationLog;
@@ -20,7 +20,7 @@ import net.causw.app.main.domain.model.entity.post.Post;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.domain.model.enums.notification.NoticeType;
 import net.causw.app.main.dto.notification.PostNotificationDto;
-import net.causw.app.main.infrastructure.firebase.FcmUtils;
+import net.causw.app.main.shared.infra.firebase.FcmUtils;
 import net.causw.app.main.repository.notification.NotificationLogRepository;
 import net.causw.app.main.repository.notification.NotificationRepository;
 import net.causw.app.main.repository.notification.UserPostSubscribeRepository;

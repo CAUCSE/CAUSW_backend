@@ -28,7 +28,7 @@ import net.causw.app.main.dto.locker.LockerRegisterPeriodRequestDto;
 import net.causw.app.main.dto.locker.LockerResponseDto;
 import net.causw.app.main.dto.locker.LockerUpdateRequestDto;
 import net.causw.app.main.dto.locker.LockersResponseDto;
-import net.causw.app.main.infrastructure.security.userdetails.CustomUserDetails;
+import net.causw.app.main.shared.infra.security.userdetails.CustomUserDetails;
 import net.causw.app.main.service.locker.LockerService;
 
 import io.swagger.v3.oas.annotations.Operation;

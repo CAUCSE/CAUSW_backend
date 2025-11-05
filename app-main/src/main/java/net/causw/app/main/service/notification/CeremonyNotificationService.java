@@ -16,7 +16,7 @@ import net.causw.app.main.domain.model.entity.notification.NotificationLog;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.domain.model.enums.notification.NoticeType;
 import net.causw.app.main.dto.notification.CeremonyNotificationDto;
-import net.causw.app.main.infrastructure.firebase.FcmUtils;
+import net.causw.app.main.shared.infra.firebase.FcmUtils;
 import net.causw.app.main.repository.ceremony.CeremonyRepository;
 import net.causw.app.main.repository.notification.CeremonyNotificationSettingRepository;
 import net.causw.app.main.repository.notification.NotificationLogRepository;

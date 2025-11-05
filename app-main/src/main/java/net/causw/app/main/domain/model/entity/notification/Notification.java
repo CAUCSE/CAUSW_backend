@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.model.entity.notification;
 
-import net.causw.app.main.domain.model.entity.base.BaseEntity;
+import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.domain.model.enums.notification.NoticeType;
 

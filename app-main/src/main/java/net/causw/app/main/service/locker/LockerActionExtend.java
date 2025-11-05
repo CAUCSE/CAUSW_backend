@@ -12,7 +12,7 @@ import net.causw.app.main.domain.model.enums.user.Role;
 import net.causw.app.main.domain.validation.ExtendLockerExpiredAtValidator;
 import net.causw.app.main.domain.validation.LockerExtendAccessValidator;
 import net.causw.app.main.domain.validation.UserRoleValidator;
-import net.causw.app.main.domain.validation.ValidatorBucket;
+import net.causw.app.main.shared.ValidatorBucket;
 import net.causw.app.main.service.common.CommonService;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;

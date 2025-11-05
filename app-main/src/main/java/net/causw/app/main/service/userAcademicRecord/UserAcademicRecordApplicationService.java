@@ -34,7 +34,7 @@ import net.causw.app.main.dto.userAcademicRecordApplication.UserAcademicRecordIn
 import net.causw.app.main.dto.userAcademicRecordApplication.UserAcademicRecordListResponseDto;
 import net.causw.app.main.dto.util.dtoMapper.SemesterDtoMapper;
 import net.causw.app.main.dto.util.dtoMapper.UserAcademicRecordDtoMapper;
-import net.causw.app.main.infrastructure.aop.annotation.MeasureTime;
+import net.causw.app.main.shared.infra.aop.annotation.MeasureTime;
 import net.causw.app.main.repository.user.UserRepository;
 import net.causw.app.main.repository.userAcademicRecord.UserAcademicRecordApplicationRepository;
 import net.causw.app.main.repository.userAcademicRecord.UserAcademicRecordLogRepository;

@@ -34,7 +34,7 @@ import net.causw.app.main.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.app.main.dto.form.request.FormReplyRequestDto;
 import net.causw.app.main.dto.form.request.create.FormCreateRequestDto;
 import net.causw.app.main.dto.form.response.FormResponseDto;
-import net.causw.app.main.infrastructure.security.userdetails.CustomUserDetails;
+import net.causw.app.main.shared.infra.security.userdetails.CustomUserDetails;
 import net.causw.app.main.service.circle.CircleService;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.InternalServerException;

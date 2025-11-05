@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import net.causw.app.main.dto.userBlock.response.CreateBlockByChildCommentResponseDto;
 import net.causw.app.main.dto.userBlock.response.CreateBlockByCommentResponseDto;
 import net.causw.app.main.dto.userBlock.response.CreateBlockByPostResponseDto;
-import net.causw.app.main.infrastructure.security.userdetails.CustomUserDetails;
+import net.causw.app.main.shared.infra.security.userdetails.CustomUserDetails;
 import net.causw.app.main.service.userBlock.useCase.BlockByChildCommentUseCaseService;
 import net.causw.app.main.service.userBlock.useCase.BlockByCommentUseCaseService;
 import net.causw.app.main.service.userBlock.useCase.BlockByPostUseCaseService;

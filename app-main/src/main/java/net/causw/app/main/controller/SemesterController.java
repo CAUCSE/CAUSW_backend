@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import net.causw.app.main.dto.semester.CreateSemesterRequestDto;
 import net.causw.app.main.dto.semester.CurrentSemesterResponseDto;
-import net.causw.app.main.infrastructure.security.userdetails.CustomUserDetails;
+import net.causw.app.main.shared.infra.security.userdetails.CustomUserDetails;
 import net.causw.app.main.service.semester.SemesterService;
 
 import io.swagger.v3.oas.annotations.Operation;

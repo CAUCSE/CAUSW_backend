@@ -2,7 +2,7 @@ package net.causw.app.main.domain.model.entity.userCouncilFee;
 
 import java.time.LocalDate;
 
-import net.causw.app.main.domain.model.entity.base.BaseEntity;
+import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.app.main.domain.model.entity.semester.Semester;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.domain.model.enums.semester.SemesterType;

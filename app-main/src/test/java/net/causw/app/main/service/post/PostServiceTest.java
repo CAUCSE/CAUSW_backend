@@ -43,7 +43,7 @@ import net.causw.app.main.repository.post.LikePostRepository;
 import net.causw.app.main.repository.post.PostRepository;
 import net.causw.app.main.repository.post.query.PostQueryRepository;
 import net.causw.app.main.repository.post.query.PostQueryResult;
-import net.causw.app.main.service.pageable.PageableFactory;
+import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.app.main.service.userBlock.UserBlockEntityService;
 import net.causw.app.main.util.ObjectFixtures;
 import net.causw.global.constant.MessageUtil;

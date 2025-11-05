@@ -16,7 +16,7 @@ import net.causw.app.main.domain.model.enums.user.Role;
 import net.causw.app.main.domain.validation.UserRoleIsNoneValidator;
 import net.causw.app.main.domain.validation.UserRoleValidator;
 import net.causw.app.main.domain.validation.UserStateValidator;
-import net.causw.app.main.domain.validation.ValidatorBucket;
+import net.causw.app.main.shared.ValidatorBucket;
 import net.causw.app.main.dto.user.UserPrivilegedResponseDto;
 import net.causw.app.main.dto.user.UserResponseDto;
 import net.causw.app.main.dto.util.dtoMapper.UserDtoMapper;

@@ -2,7 +2,7 @@ package net.causw.app.main.domain.model.entity.event;
 
 import org.hibernate.annotations.ColumnDefault;
 
-import net.causw.app.main.domain.model.entity.base.BaseEntity;
+import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.app.main.domain.model.entity.uuidFile.UuidFile;
 import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.EventAttachImage;
 

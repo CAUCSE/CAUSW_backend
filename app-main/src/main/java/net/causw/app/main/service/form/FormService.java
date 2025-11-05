@@ -49,7 +49,7 @@ import net.causw.app.main.dto.form.response.reply.excel.ExcelReplyListResponseDt
 import net.causw.app.main.dto.form.response.reply.excel.ExcelReplyQuestionResponseDto;
 import net.causw.app.main.dto.form.response.reply.excel.ExcelReplyResponseDto;
 import net.causw.app.main.dto.util.dtoMapper.FormDtoMapper;
-import net.causw.app.main.infrastructure.aop.annotation.MeasureTime;
+import net.causw.app.main.shared.infra.aop.annotation.MeasureTime;
 import net.causw.app.main.repository.board.BoardRepository;
 import net.causw.app.main.repository.circle.CircleMemberRepository;
 import net.causw.app.main.repository.circle.CircleRepository;

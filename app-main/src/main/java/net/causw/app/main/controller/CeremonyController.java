@@ -27,7 +27,7 @@ import net.causw.app.main.dto.ceremony.CreateCeremonyNotificationSettingDto;
 import net.causw.app.main.dto.ceremony.CreateCeremonyRequestDto;
 import net.causw.app.main.dto.ceremony.UpdateCeremonyStateRequestDto;
 import net.causw.app.main.dto.notification.CeremonyListNotificationDto;
-import net.causw.app.main.infrastructure.security.userdetails.CustomUserDetails;
+import net.causw.app.main.shared.infra.security.userdetails.CustomUserDetails;
 import net.causw.app.main.service.ceremony.CeremonyService;
 
 import io.swagger.v3.oas.annotations.Operation;

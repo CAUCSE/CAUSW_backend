@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.validation;
 
+import net.causw.app.main.shared.AbstractValidator;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
 

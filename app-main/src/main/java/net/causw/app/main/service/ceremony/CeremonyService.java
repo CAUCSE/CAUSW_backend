@@ -32,7 +32,7 @@ import net.causw.app.main.repository.ceremony.CeremonyRepository;
 import net.causw.app.main.repository.notification.CeremonyNotificationSettingRepository;
 import net.causw.app.main.repository.user.UserRepository;
 import net.causw.app.main.service.notification.CeremonyNotificationService;
-import net.causw.app.main.service.pageable.PageableFactory;
+import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.app.main.service.uuidFile.UuidFileService;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;

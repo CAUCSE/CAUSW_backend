@@ -15,7 +15,7 @@ import net.causw.app.main.dto.notification.NotificationCountResponseDto;
 import net.causw.app.main.dto.notification.NotificationResponseDto;
 import net.causw.app.main.dto.util.dtoMapper.NotificationDtoMapper;
 import net.causw.app.main.repository.notification.NotificationLogRepository;
-import net.causw.app.main.service.pageable.PageableFactory;
+import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;
 import net.causw.global.exception.BadRequestException;

@@ -2,6 +2,7 @@ package net.causw.app.main.domain.validation;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import net.causw.app.main.shared.AbstractValidator;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.UnauthorizedException;
 

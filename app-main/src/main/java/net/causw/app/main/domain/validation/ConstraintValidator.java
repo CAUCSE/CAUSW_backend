@@ -2,6 +2,8 @@ package net.causw.app.main.domain.validation;
 
 import java.util.Set;
 
+import net.causw.app.main.shared.AbstractValidator;
+
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;

@@ -21,7 +21,7 @@ import net.causw.app.main.dto.vote.CastVoteRequestDto;
 import net.causw.app.main.dto.vote.CreateVoteRequestDto;
 import net.causw.app.main.dto.vote.VoteOptionResponseDto;
 import net.causw.app.main.dto.vote.VoteResponseDto;
-import net.causw.app.main.infrastructure.aop.annotation.MeasureTime;
+import net.causw.app.main.shared.infra.aop.annotation.MeasureTime;
 import net.causw.app.main.repository.post.PostRepository;
 import net.causw.app.main.repository.vote.VoteOptionRepository;
 import net.causw.app.main.repository.vote.VoteRecordRepository;

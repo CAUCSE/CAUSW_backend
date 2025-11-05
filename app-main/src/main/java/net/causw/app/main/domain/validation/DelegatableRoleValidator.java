@@ -5,6 +5,7 @@ import static net.causw.app.main.domain.policy.RolePolicy.*;
 import java.util.Set;
 
 import net.causw.app.main.domain.model.enums.user.Role;
+import net.causw.app.main.shared.AbstractValidator;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.UnauthorizedException;

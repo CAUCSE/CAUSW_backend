@@ -15,7 +15,7 @@ import net.causw.app.main.dto.calendar.CalendarResponseDto;
 import net.causw.app.main.dto.calendar.CalendarUpdateRequestDto;
 import net.causw.app.main.dto.calendar.CalendarsResponseDto;
 import net.causw.app.main.dto.util.dtoMapper.CalendarDtoMapper;
-import net.causw.app.main.infrastructure.aop.annotation.MeasureTime;
+import net.causw.app.main.shared.infra.aop.annotation.MeasureTime;
 import net.causw.app.main.repository.calendar.CalendarRepository;
 import net.causw.app.main.repository.uuidFile.CalendarAttachImageRepository;
 import net.causw.app.main.service.uuidFile.UuidFileService;

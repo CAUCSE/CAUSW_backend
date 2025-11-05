@@ -3,6 +3,7 @@ package net.causw.app.main.domain.validation;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.causw.app.main.shared.AbstractValidator;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
 

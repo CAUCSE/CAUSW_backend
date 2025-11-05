@@ -1,6 +1,6 @@
 package net.causw.app.main.infrastructure.security;
 
-import static net.causw.app.main.infrastructure.security.SecurityEndpoints.*;
+import static net.causw.app.main.shared.infra.security.SecurityEndpoints.*;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.HashMap;

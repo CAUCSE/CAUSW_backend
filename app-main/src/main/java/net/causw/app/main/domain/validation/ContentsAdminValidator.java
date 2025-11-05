@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import net.causw.app.main.domain.model.enums.user.Role;
+import net.causw.app.main.shared.AbstractValidator;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.UnauthorizedException;
 

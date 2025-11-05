@@ -7,7 +7,7 @@ import net.causw.app.main.domain.model.entity.locker.Locker;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.domain.validation.LockerIsDeactivatedValidator;
 import net.causw.app.main.domain.validation.UserRoleValidator;
-import net.causw.app.main.domain.validation.ValidatorBucket;
+import net.causw.app.main.shared.ValidatorBucket;
 import net.causw.app.main.service.common.CommonService;
 
 import lombok.NoArgsConstructor;

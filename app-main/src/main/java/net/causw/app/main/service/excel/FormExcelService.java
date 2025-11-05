@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 import net.causw.app.main.dto.form.response.reply.excel.ExcelReplyQuestionResponseDto;
 import net.causw.app.main.dto.form.response.reply.excel.ExcelReplyResponseDto;
-import net.causw.app.main.infrastructure.aop.annotation.MeasureTime;
+import net.causw.app.main.shared.infra.aop.annotation.MeasureTime;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.InternalServerException;

@@ -3,7 +3,7 @@ package net.causw.app.main.domain.model.entity.userInfo;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.causw.app.main.domain.model.entity.base.BaseEntity;
+import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;

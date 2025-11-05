@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.model.entity.post;
 
-import net.causw.app.main.domain.model.entity.base.BaseEntity;
+import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.app.main.domain.model.entity.user.User;
 
 import jakarta.persistence.Entity;

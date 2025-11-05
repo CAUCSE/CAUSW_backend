@@ -22,7 +22,7 @@ import net.causw.app.main.dto.userCouncilFee.CreateUserCouncilFeeWithUserRequest
 import net.causw.app.main.dto.userCouncilFee.CurrentUserCouncilFeeResponseDto;
 import net.causw.app.main.dto.userCouncilFee.UserCouncilFeeListResponseDto;
 import net.causw.app.main.dto.userCouncilFee.UserCouncilFeeResponseDto;
-import net.causw.app.main.infrastructure.security.userdetails.CustomUserDetails;
+import net.causw.app.main.shared.infra.security.userdetails.CustomUserDetails;
 import net.causw.app.main.service.userCouncilFee.UserCouncilFeeService;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;

@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import net.causw.app.main.dto.userInfo.UserInfoSearchConditionDto;
 import net.causw.app.main.dto.userInfo.UserInfoSummaryResponseDto;
 import net.causw.app.main.dto.util.dtoMapper.UserDtoMapper;
-import net.causw.app.main.service.pageable.PageableFactory;
+import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.app.main.service.userInfo.UserInfoService;
 
 import lombok.RequiredArgsConstructor;

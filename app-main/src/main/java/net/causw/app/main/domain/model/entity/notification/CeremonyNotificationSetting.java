@@ -5,7 +5,7 @@ import java.util.Set;
 
 import org.hibernate.annotations.BatchSize;
 
-import net.causw.app.main.domain.model.entity.base.BaseEntity;
+import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.app.main.domain.model.entity.user.User;
 
 import jakarta.persistence.CollectionTable;

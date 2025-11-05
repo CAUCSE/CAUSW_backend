@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import net.causw.app.main.domain.model.entity.comment.ChildComment;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.dto.userBlock.response.CreateBlockByChildCommentResponseDto;
-import net.causw.app.main.infrastructure.security.userdetails.CustomUserDetails;
+import net.causw.app.main.shared.infra.security.userdetails.CustomUserDetails;
 import net.causw.app.main.service.comment.ChildCommentEntityService;
 import net.causw.app.main.service.userBlock.UserBlockEntityService;
 import net.causw.global.constant.MessageUtil;

@@ -3,7 +3,7 @@ package net.causw.app.main.domain.model.entity.user;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.causw.app.main.domain.model.entity.base.BaseEntity;
+import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.app.main.domain.model.entity.uuidFile.UuidFile;
 import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.UserAdmissionAttachImage;
 

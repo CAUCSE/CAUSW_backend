@@ -19,8 +19,8 @@ import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.UserAcademicRe
 import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.UserAdmissionAttachImage;
 import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.UserAdmissionLogAttachImage;
 import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.UserProfileImage;
-import net.causw.app.main.infrastructure.aop.annotation.MeasureTime;
-import net.causw.app.main.infrastructure.redis.RedisUtils;
+import net.causw.app.main.shared.infra.aop.annotation.MeasureTime;
+import net.causw.app.main.shared.infra.redis.RedisUtils;
 import net.causw.app.main.repository.uuidFile.CalendarAttachImageRepository;
 import net.causw.app.main.repository.uuidFile.CircleMainImageRepository;
 import net.causw.app.main.repository.uuidFile.EventAttachImageRepository;

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import net.causw.app.main.domain.model.enums.user.GraduationType;
 import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.dto.userCouncilFee.UserCouncilFeeResponseDto;
-import net.causw.app.main.infrastructure.aop.annotation.MeasureTime;
+import net.causw.app.main.shared.infra.aop.annotation.MeasureTime;
 
 @MeasureTime
 @Service

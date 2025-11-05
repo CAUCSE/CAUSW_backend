@@ -3,7 +3,7 @@ package net.causw.app.main.domain.model.entity.vote;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.causw.app.main.domain.model.entity.base.BaseEntity;
+import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.app.main.domain.model.entity.post.Post;
 
 import jakarta.persistence.CascadeType;

@@ -14,7 +14,7 @@ import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.dto.semester.CreateSemesterRequestDto;
 import net.causw.app.main.dto.semester.CurrentSemesterResponseDto;
 import net.causw.app.main.dto.util.dtoMapper.SemesterDtoMapper;
-import net.causw.app.main.infrastructure.aop.annotation.MeasureTime;
+import net.causw.app.main.shared.infra.aop.annotation.MeasureTime;
 import net.causw.app.main.repository.semester.SemesterRepository;
 import net.causw.app.main.repository.user.UserRepository;
 import net.causw.app.main.repository.userCouncilFee.CouncilFeeFakeUserRepository;
