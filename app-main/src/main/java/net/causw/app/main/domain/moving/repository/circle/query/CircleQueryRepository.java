@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Repository;
 
 import net.causw.app.main.domain.moving.model.entity.circle.Circle;
-import net.causw.app.main.domain.model.entity.circle.QCircle;
+import net.causw.app.main.domain.moving.model.entity.circle.QCircle;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 

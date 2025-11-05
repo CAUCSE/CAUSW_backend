@@ -8,12 +8,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import net.causw.app.main.domain.moving.dto.userInfo.UserInfoSearchConditionDto;
-import net.causw.app.main.domain.model.entity.user.QUser;
-import net.causw.app.main.domain.model.entity.userInfo.QUserCareer;
-import net.causw.app.main.domain.model.entity.userInfo.QUserInfo;
+import net.causw.app.main.domain.moving.model.entity.uuidFile.QUuidFile;
+import net.causw.app.main.domain.moving.model.entity.uuidFile.joinEntity.QUserProfileImage;
+import net.causw.app.main.domain.user.entity.user.QUser;
+import net.causw.app.main.domain.user.entity.userInfo.QUserCareer;
+import net.causw.app.main.domain.user.entity.userInfo.QUserInfo;
 import net.causw.app.main.domain.user.entity.userInfo.UserInfo;
-import net.causw.app.main.domain.model.entity.uuidFile.QUuidFile;
-import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.QUserProfileImage;
 import net.causw.app.main.domain.moving.model.enums.user.UserState;
 import net.causw.app.main.domain.moving.model.enums.userAcademicRecord.AcademicStatus;
 

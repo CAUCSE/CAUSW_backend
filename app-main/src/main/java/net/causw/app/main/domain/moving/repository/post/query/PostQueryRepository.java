@@ -9,14 +9,13 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import net.causw.app.main.domain.model.entity.comment.QComment;
-import net.causw.app.main.domain.model.entity.post.QFavoritePost;
-import net.causw.app.main.domain.model.entity.post.QLikePost;
-import net.causw.app.main.domain.model.entity.post.QPost;
-import net.causw.app.main.domain.model.entity.user.QUser;
-import net.causw.app.main.domain.model.entity.uuidFile.joinEntity.QPostAttachImage;
+import net.causw.app.main.domain.moving.model.entity.comment.QComment;
+import net.causw.app.main.domain.moving.model.entity.post.QFavoritePost;
+import net.causw.app.main.domain.moving.model.entity.post.QLikePost;
+import net.causw.app.main.domain.moving.model.entity.post.QPost;
+import net.causw.app.main.domain.moving.model.entity.uuidFile.joinEntity.QPostAttachImage;
 import net.causw.app.main.domain.moving.model.enums.uuidFile.FileExtensionType;
-import net.causw.app.main.repository.post.query.QPostQueryResult;
+import net.causw.app.main.domain.user.entity.user.QUser;
 
 import com.querydsl.core.types.SubQueryExpression;
 import com.querydsl.core.types.dsl.BooleanExpression;

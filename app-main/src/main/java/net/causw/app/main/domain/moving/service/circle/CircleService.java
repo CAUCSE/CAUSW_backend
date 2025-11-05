@@ -1344,7 +1344,7 @@ public class CircleService {
 	private BoardOfCircleResponseDto toBoardOfCircleResponseDto(Board board, Set<Role> userRoles) {
 		return CircleDtoMapper.INSTANCE.toBoardOfCircleResponseDto(
 			board,
-			isWriteable(board, userRoles)
+			BoardOfCircleResponseDto.isWriteable(board, userRoles)
 		);
 	}
 
@@ -1352,7 +1352,7 @@ public class CircleService {
 		Long numComment) {
 		return CircleDtoMapper.INSTANCE.toBoardOfCircleResponseDtoExtended(
 			board,
-			isWriteable(board, userRoles),
+			BoardOfCircleResponseDto.isWriteable(board, userRoles),
 			post,
 			numComment
 		);

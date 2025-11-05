@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.moving.policy;
 
 import static java.util.Map.*;
+import static net.causw.app.main.domain.moving.model.enums.user.Role.*;
 
 import java.util.EnumSet;
 import java.util.Map;
