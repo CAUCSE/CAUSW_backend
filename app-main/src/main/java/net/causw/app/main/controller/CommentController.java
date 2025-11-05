@@ -18,7 +18,7 @@ import net.causw.app.main.dto.comment.CommentCreateRequestDto;
 import net.causw.app.main.dto.comment.CommentResponseDto;
 import net.causw.app.main.dto.comment.CommentSubscribeResponseDto;
 import net.causw.app.main.dto.comment.CommentUpdateRequestDto;
-import net.causw.app.main.shared.infra.security.userdetails.CustomUserDetails;
+import net.causw.app.main.core.security.userdetails.CustomUserDetails;
 import net.causw.app.main.service.comment.CommentService;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.UnauthorizedException;

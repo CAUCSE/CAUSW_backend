@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import net.causw.app.main.dto.vote.CastVoteRequestDto;
 import net.causw.app.main.dto.vote.CreateVoteRequestDto;
 import net.causw.app.main.dto.vote.VoteResponseDto;
-import net.causw.app.main.shared.infra.security.userdetails.CustomUserDetails;
+import net.causw.app.main.core.security.userdetails.CustomUserDetails;
 import net.causw.app.main.service.vote.VoteService;
 
 import io.swagger.v3.oas.annotations.Operation;

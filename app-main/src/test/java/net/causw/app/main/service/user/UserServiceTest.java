@@ -40,7 +40,7 @@ import net.causw.app.main.dto.user.UserSignInResponseDto;
 import net.causw.app.main.dto.util.dtoMapper.PostDtoMapper;
 import net.causw.app.main.dto.util.dtoMapper.UserDtoMapper;
 import net.causw.app.main.shared.infra.redis.RedisUtils;
-import net.causw.app.main.shared.infra.security.JwtTokenProvider;
+import net.causw.app.main.core.security.JwtTokenProvider;
 import net.causw.app.main.repository.post.FavoritePostRepository;
 import net.causw.app.main.repository.post.LikePostRepository;
 import net.causw.app.main.repository.post.PostRepository;

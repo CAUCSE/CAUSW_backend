@@ -12,7 +12,7 @@ import net.causw.app.main.domain.validation.UserStateValidator;
 import net.causw.app.main.shared.ValidatorBucket;
 import net.causw.app.main.dto.inquiry.InquiryCreateRequestDto;
 import net.causw.app.main.dto.inquiry.InquiryResponseDto;
-import net.causw.app.main.shared.infra.aop.annotation.MeasureTime;
+import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.repository.inquiry.InquiryRepository;
 import net.causw.app.main.repository.user.UserRepository;
 import net.causw.global.constant.MessageUtil;

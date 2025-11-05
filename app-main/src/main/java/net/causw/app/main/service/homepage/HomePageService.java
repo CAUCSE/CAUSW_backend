@@ -21,7 +21,7 @@ import net.causw.app.main.dto.board.BoardResponseDto;
 import net.causw.app.main.dto.homepage.HomePageResponseDto;
 import net.causw.app.main.dto.util.dtoMapper.BoardDtoMapper;
 import net.causw.app.main.dto.util.dtoMapper.PostDtoMapper;
-import net.causw.app.main.shared.infra.aop.annotation.MeasureTime;
+import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.repository.board.BoardRepository;
 import net.causw.app.main.repository.post.FavoritePostRepository;
 import net.causw.app.main.repository.post.LikePostRepository;

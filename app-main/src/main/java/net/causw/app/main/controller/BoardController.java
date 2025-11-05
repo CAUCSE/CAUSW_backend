@@ -26,7 +26,7 @@ import net.causw.app.main.dto.board.BoardNameCheckResponseDto;
 import net.causw.app.main.dto.board.BoardResponseDto;
 import net.causw.app.main.dto.board.BoardSubscribeResponseDto;
 import net.causw.app.main.dto.board.BoardUpdateRequestDto;
-import net.causw.app.main.shared.infra.security.userdetails.CustomUserDetails;
+import net.causw.app.main.core.security.userdetails.CustomUserDetails;
 import net.causw.app.main.service.board.BoardService;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.InternalServerException;

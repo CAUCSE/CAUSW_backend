@@ -52,7 +52,7 @@ import net.causw.app.main.dto.util.dtoMapper.BoardDtoMapper;
 import net.causw.app.main.dto.util.dtoMapper.CircleDtoMapper;
 import net.causw.app.main.dto.util.dtoMapper.PostDtoMapper;
 import net.causw.app.main.dto.util.dtoMapper.UserDtoMapper;
-import net.causw.app.main.shared.infra.aop.annotation.MeasureTime;
+import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.repository.board.BoardApplyRepository;
 import net.causw.app.main.repository.board.BoardRepository;
 import net.causw.app.main.repository.circle.CircleMemberRepository;

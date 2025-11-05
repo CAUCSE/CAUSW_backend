@@ -37,7 +37,7 @@ import net.causw.app.main.dto.locker.LockerRegisterPeriodRequestDto;
 import net.causw.app.main.dto.locker.LockerResponseDto;
 import net.causw.app.main.dto.locker.LockerUpdateRequestDto;
 import net.causw.app.main.dto.locker.LockersResponseDto;
-import net.causw.app.main.shared.infra.aop.annotation.MeasureTime;
+import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.repository.flag.FlagRepository;
 import net.causw.app.main.repository.locker.LockerLocationRepository;
 import net.causw.app.main.repository.locker.LockerLogRepository;

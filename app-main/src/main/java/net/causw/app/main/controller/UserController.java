@@ -46,7 +46,7 @@ import net.causw.app.main.dto.user.UserUpdatePasswordRequestDto;
 import net.causw.app.main.dto.user.UserUpdateRequestDto;
 import net.causw.app.main.dto.user.UserUpdateRoleRequestDto;
 import net.causw.app.main.dto.user.UserUpdateTokenRequestDto;
-import net.causw.app.main.shared.infra.security.userdetails.CustomUserDetails;
+import net.causw.app.main.core.security.userdetails.CustomUserDetails;
 import net.causw.app.main.service.user.UserRoleService;
 import net.causw.app.main.service.user.UserService;
 import net.causw.app.main.service.user.useCase.FindPrivilegedUsersUseCaseService;

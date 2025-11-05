@@ -25,7 +25,7 @@ import net.causw.app.main.dto.post.PostResponseDto;
 import net.causw.app.main.dto.post.PostSubscribeResponseDto;
 import net.causw.app.main.dto.post.PostUpdateRequestDto;
 import net.causw.app.main.dto.post.PostUpdateWithFormRequestDto;
-import net.causw.app.main.shared.infra.security.userdetails.CustomUserDetails;
+import net.causw.app.main.core.security.userdetails.CustomUserDetails;
 import net.causw.app.main.service.post.PostService;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.InternalServerException;

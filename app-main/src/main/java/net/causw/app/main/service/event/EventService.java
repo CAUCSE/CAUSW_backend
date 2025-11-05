@@ -15,7 +15,7 @@ import net.causw.app.main.dto.event.EventResponseDto;
 import net.causw.app.main.dto.event.EventUpdateRequestDto;
 import net.causw.app.main.dto.event.EventsResponseDto;
 import net.causw.app.main.dto.util.dtoMapper.EventDtoMapper;
-import net.causw.app.main.shared.infra.aop.annotation.MeasureTime;
+import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.repository.event.EventRepository;
 import net.causw.app.main.service.uuidFile.UuidFileService;
 import net.causw.global.constant.MessageUtil;

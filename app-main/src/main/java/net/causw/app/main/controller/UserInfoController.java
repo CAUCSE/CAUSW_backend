@@ -19,7 +19,7 @@ import net.causw.app.main.dto.userInfo.UserInfoResponseDto;
 import net.causw.app.main.dto.userInfo.UserInfoSearchConditionDto;
 import net.causw.app.main.dto.userInfo.UserInfoSummaryResponseDto;
 import net.causw.app.main.dto.userInfo.UserInfoUpdateRequestDto;
-import net.causw.app.main.shared.infra.security.userdetails.CustomUserDetails;
+import net.causw.app.main.core.security.userdetails.CustomUserDetails;
 import net.causw.app.main.service.userInfo.useCase.command.UpdateUserInfoUseCaseService;
 import net.causw.app.main.service.userInfo.useCase.query.GetUserInfoUseCaseService;
 import net.causw.app.main.service.userInfo.useCase.query.SearchUserInfoListUseCaseService;

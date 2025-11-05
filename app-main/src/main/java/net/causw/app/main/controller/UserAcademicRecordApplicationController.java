@@ -32,7 +32,7 @@ import net.causw.app.main.dto.userAcademicRecordApplication.UserAcademicRecordAp
 import net.causw.app.main.dto.userAcademicRecordApplication.UserAcademicRecordApplicationResponseDto;
 import net.causw.app.main.dto.userAcademicRecordApplication.UserAcademicRecordInfoResponseDto;
 import net.causw.app.main.dto.userAcademicRecordApplication.UserAcademicRecordListResponseDto;
-import net.causw.app.main.shared.infra.security.userdetails.CustomUserDetails;
+import net.causw.app.main.core.security.userdetails.CustomUserDetails;
 import net.causw.app.main.service.semester.SemesterService;
 import net.causw.app.main.service.userAcademicRecord.UserAcademicRecordApplicationService;
 

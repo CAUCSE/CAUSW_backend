@@ -36,7 +36,7 @@ import net.causw.app.main.dto.comment.CommentResponseDto;
 import net.causw.app.main.dto.comment.CommentSubscribeResponseDto;
 import net.causw.app.main.dto.comment.CommentUpdateRequestDto;
 import net.causw.app.main.dto.util.dtoMapper.CommentDtoMapper;
-import net.causw.app.main.shared.infra.aop.annotation.MeasureTime;
+import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.repository.circle.CircleMemberRepository;
 import net.causw.app.main.repository.comment.ChildCommentRepository;
 import net.causw.app.main.repository.comment.CommentRepository;

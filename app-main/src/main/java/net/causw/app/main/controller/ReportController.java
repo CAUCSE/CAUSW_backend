@@ -18,7 +18,7 @@ import net.causw.app.main.dto.report.ReportCreateResponseDto;
 import net.causw.app.main.dto.report.ReportedCommentResponseDto;
 import net.causw.app.main.dto.report.ReportedPostResponseDto;
 import net.causw.app.main.dto.report.ReportedUserResponseDto;
-import net.causw.app.main.shared.infra.security.userdetails.CustomUserDetails;
+import net.causw.app.main.core.security.userdetails.CustomUserDetails;
 import net.causw.app.main.service.report.ReportService;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.UnauthorizedException;

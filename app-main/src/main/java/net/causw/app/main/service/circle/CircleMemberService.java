@@ -12,7 +12,7 @@ import net.causw.app.main.domain.model.entity.circle.CircleMember;
 import net.causw.app.main.domain.model.entity.form.Reply;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.domain.model.enums.circle.CircleMemberStatus;
-import net.causw.app.main.shared.infra.aop.annotation.MeasureTime;
+import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.repository.circle.CircleMemberRepository;
 
 import lombok.RequiredArgsConstructor;

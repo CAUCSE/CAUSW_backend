@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import net.causw.app.main.domain.model.entity.post.Post;
 import net.causw.app.main.domain.model.entity.user.User;
 import net.causw.app.main.dto.userBlock.response.CreateBlockByPostResponseDto;
-import net.causw.app.main.shared.infra.security.userdetails.CustomUserDetails;
+import net.causw.app.main.core.security.userdetails.CustomUserDetails;
 import net.causw.app.main.service.post.PostEntityService;
 import net.causw.app.main.service.userBlock.UserBlockEntityService;
 import net.causw.global.constant.MessageUtil;

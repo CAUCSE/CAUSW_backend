@@ -74,7 +74,7 @@ import net.causw.app.main.dto.util.dtoMapper.UserDtoMapper;
 import net.causw.app.main.dto.util.dtoMapper.VoteDtoMapper;
 import net.causw.app.main.dto.vote.VoteOptionResponseDto;
 import net.causw.app.main.dto.vote.VoteResponseDto;
-import net.causw.app.main.shared.infra.aop.annotation.MeasureTime;
+import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.repository.board.BoardRepository;
 import net.causw.app.main.repository.board.FavoriteBoardRepository;
 import net.causw.app.main.repository.circle.CircleMemberRepository;

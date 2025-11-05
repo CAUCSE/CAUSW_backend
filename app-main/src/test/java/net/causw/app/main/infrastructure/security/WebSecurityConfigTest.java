@@ -1,6 +1,6 @@
 package net.causw.app.main.infrastructure.security;
 
-import static net.causw.app.main.shared.infra.security.SecurityEndpoints.*;
+import static net.causw.app.main.core.security.SecurityEndpoints.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -30,12 +30,12 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import net.causw.app.main.domain.model.enums.user.Role;
 import net.causw.app.main.domain.model.enums.user.UserState;
 import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
-import net.causw.app.main.shared.infra.security.CustomAuthenticationEntryPoint;
-import net.causw.app.main.shared.infra.security.CustomAuthorizationManager;
-import net.causw.app.main.shared.infra.security.JwtTokenProvider;
-import net.causw.app.main.shared.infra.security.SecurityEndpoints;
-import net.causw.app.main.shared.infra.security.SecurityService;
-import net.causw.app.main.shared.infra.security.WebSecurityConfig;
+import net.causw.app.main.core.security.CustomAuthenticationEntryPoint;
+import net.causw.app.main.core.security.CustomAuthorizationManager;
+import net.causw.app.main.core.security.JwtTokenProvider;
+import net.causw.app.main.core.security.SecurityEndpoints;
+import net.causw.app.main.core.security.SecurityService;
+import net.causw.app.main.core.security.WebSecurityConfig;
 import net.causw.app.main.util.DummyController;
 import net.causw.app.main.util.WithMockCustomUser;
 

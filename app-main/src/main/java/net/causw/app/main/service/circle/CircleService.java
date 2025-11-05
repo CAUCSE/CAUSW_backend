@@ -72,7 +72,7 @@ import net.causw.app.main.dto.form.response.QuestionResponseDto;
 import net.causw.app.main.dto.user.UserResponseDto;
 import net.causw.app.main.dto.util.dtoMapper.CircleDtoMapper;
 import net.causw.app.main.dto.util.dtoMapper.FormDtoMapper;
-import net.causw.app.main.shared.infra.aop.annotation.MeasureTime;
+import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.repository.board.BoardRepository;
 import net.causw.app.main.repository.circle.CircleMemberRepository;
 import net.causw.app.main.repository.circle.CircleRepository;
