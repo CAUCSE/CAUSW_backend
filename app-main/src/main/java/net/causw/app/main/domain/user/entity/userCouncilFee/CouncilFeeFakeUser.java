@@ -1,8 +1,8 @@
 package net.causw.app.main.domain.user.entity.userCouncilFee;
 
+import net.causw.app.main.domain.user.enums.user.GraduationType;
+import net.causw.app.main.domain.user.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.shared.entity.BaseEntity;
-import net.causw.app.main.domain.moving.model.enums.user.GraduationType;
-import net.causw.app.main.domain.moving.model.enums.userAcademicRecord.AcademicStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -6,11 +6,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import net.causw.app.main.domain.moving.model.entity.report.Report;
-import net.causw.app.main.domain.user.entity.user.User;
-import net.causw.app.main.domain.moving.model.enums.report.ReportType;
 import net.causw.app.main.domain.moving.dto.report.ReportedCommentNativeProjection;
 import net.causw.app.main.domain.moving.dto.report.ReportedPostNativeProjection;
+import net.causw.app.main.domain.moving.model.entity.report.Report;
+import net.causw.app.main.domain.moving.model.enums.report.ReportType;
+import net.causw.app.main.domain.user.entity.user.User;
 
 public interface ReportRepository extends JpaRepository<Report, String> {
 

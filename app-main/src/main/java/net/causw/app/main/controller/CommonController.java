@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import net.causw.app.main.domain.moving.dto.homepage.HomePageResponseDto;
 import net.causw.app.main.core.security.userdetails.CustomUserDetails;
+import net.causw.app.main.domain.moving.dto.homepage.HomePageResponseDto;
 import net.causw.app.main.domain.moving.service.common.CommonService;
 import net.causw.app.main.domain.moving.service.homepage.HomePageService;
 

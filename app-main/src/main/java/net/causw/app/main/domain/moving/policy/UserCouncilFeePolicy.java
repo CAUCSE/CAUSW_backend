@@ -1,9 +1,9 @@
 package net.causw.app.main.domain.moving.policy;
 
 import net.causw.app.main.domain.moving.model.entity.semester.Semester;
-import net.causw.app.main.domain.user.entity.userCouncilFee.UserCouncilFee;
 import net.causw.app.main.domain.moving.model.enums.semester.SemesterType;
-import net.causw.app.main.domain.moving.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.user.entity.userCouncilFee.UserCouncilFee;
+import net.causw.app.main.domain.user.enums.userAcademicRecord.AcademicStatus;
 
 public class UserCouncilFeePolicy {
 

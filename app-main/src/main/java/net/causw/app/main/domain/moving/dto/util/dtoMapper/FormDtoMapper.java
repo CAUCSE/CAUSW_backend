@@ -9,6 +9,17 @@ import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 import org.springframework.data.domain.Page;
 
+import net.causw.app.main.domain.community.entity.form.Form;
+import net.causw.app.main.domain.community.entity.form.FormQuestion;
+import net.causw.app.main.domain.community.entity.form.FormQuestionOption;
+import net.causw.app.main.domain.community.entity.form.Reply;
+import net.causw.app.main.domain.community.entity.form.ReplyQuestion;
+import net.causw.app.main.domain.community.enums.form.RegisteredSemester;
+import net.causw.app.main.domain.moving.dto.form.response.FormResponseDto;
+import net.causw.app.main.domain.moving.dto.form.response.OptionResponseDto;
+import net.causw.app.main.domain.moving.dto.form.response.OptionSummaryResponseDto;
+import net.causw.app.main.domain.moving.dto.form.response.QuestionResponseDto;
+import net.causw.app.main.domain.moving.dto.form.response.QuestionSummaryResponseDto;
 import net.causw.app.main.domain.moving.dto.form.response.reply.ReplyPageResponseDto;
 import net.causw.app.main.domain.moving.dto.form.response.reply.ReplyQuestionResponseDto;
 import net.causw.app.main.domain.moving.dto.form.response.reply.ReplyResponseDto;
@@ -17,19 +28,8 @@ import net.causw.app.main.domain.moving.dto.form.response.reply.UserReplyRespons
 import net.causw.app.main.domain.moving.dto.form.response.reply.excel.ExcelReplyListResponseDto;
 import net.causw.app.main.domain.moving.dto.form.response.reply.excel.ExcelReplyQuestionResponseDto;
 import net.causw.app.main.domain.moving.dto.form.response.reply.excel.ExcelReplyResponseDto;
-import net.causw.app.main.domain.moving.model.entity.form.Form;
-import net.causw.app.main.domain.moving.model.entity.form.FormQuestion;
-import net.causw.app.main.domain.moving.model.entity.form.FormQuestionOption;
-import net.causw.app.main.domain.moving.model.entity.form.Reply;
-import net.causw.app.main.domain.moving.model.entity.form.ReplyQuestion;
-import net.causw.app.main.domain.moving.model.enums.form.RegisteredSemester;
 import net.causw.app.main.domain.user.entity.user.User;
 import net.causw.app.main.domain.user.entity.userCouncilFee.UserCouncilFee;
-import net.causw.app.main.domain.moving.dto.form.response.FormResponseDto;
-import net.causw.app.main.domain.moving.dto.form.response.OptionResponseDto;
-import net.causw.app.main.domain.moving.dto.form.response.OptionSummaryResponseDto;
-import net.causw.app.main.domain.moving.dto.form.response.QuestionResponseDto;
-import net.causw.app.main.domain.moving.dto.form.response.QuestionSummaryResponseDto;
 
 @Mapper(componentModel = "spring")
 public interface FormDtoMapper {

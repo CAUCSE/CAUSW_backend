@@ -2,7 +2,7 @@ package net.causw.app.main.domain.moving.dto.report;
 
 import java.time.LocalDateTime;
 
-import net.causw.app.main.domain.moving.model.enums.user.UserState;
+import net.causw.app.main.domain.user.enums.user.UserState;
 
 /**
  * Native Query 결과를 받기 위한 Projection 인터페이스

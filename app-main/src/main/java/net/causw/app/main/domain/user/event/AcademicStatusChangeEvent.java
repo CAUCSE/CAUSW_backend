@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.user.event;
 
-import net.causw.app.main.domain.moving.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.user.enums.userAcademicRecord.AcademicStatus;
 
 /**
  * 사용자의 학적 상태가 변경될 때, 후속 처리가 필요한 경우 발행되는 이벤트입니다.

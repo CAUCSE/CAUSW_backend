@@ -1,7 +1,7 @@
 package net.causw.app.main.domain.moving.dto.circle;
 
-import net.causw.app.main.domain.moving.model.enums.circle.CircleMemberStatus;
 import net.causw.app.main.domain.moving.dto.user.UserResponseDto;
+import net.causw.app.main.domain.moving.model.enums.circle.CircleMemberStatus;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.moving.dto.userInfo;
 
-import net.causw.app.main.domain.moving.model.enums.user.Department;
+import net.causw.app.main.domain.user.enums.user.Department;
 
 import lombok.Builder;
 import lombok.Getter;

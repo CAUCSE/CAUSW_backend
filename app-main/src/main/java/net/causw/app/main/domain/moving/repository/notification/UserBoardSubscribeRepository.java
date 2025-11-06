@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import net.causw.app.main.domain.moving.model.entity.board.Board;
+import net.causw.app.main.domain.community.entity.board.Board;
 import net.causw.app.main.domain.moving.model.entity.notification.UserBoardSubscribe;
 import net.causw.app.main.domain.user.entity.user.User;
 

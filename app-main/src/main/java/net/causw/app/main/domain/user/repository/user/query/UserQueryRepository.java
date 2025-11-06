@@ -7,8 +7,8 @@ import org.springframework.stereotype.Repository;
 
 import net.causw.app.main.domain.user.entity.user.QUser;
 import net.causw.app.main.domain.user.entity.user.User;
-import net.causw.app.main.domain.moving.model.enums.user.Role;
-import net.causw.app.main.domain.moving.model.enums.user.UserState;
+import net.causw.app.main.domain.user.enums.user.Role;
+import net.causw.app.main.domain.user.enums.user.UserState;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;

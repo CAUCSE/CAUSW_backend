@@ -4,9 +4,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import net.causw.app.main.domain.moving.dto.userInfo.UserInfoSearchConditionDto;
 import net.causw.app.main.domain.user.entity.user.User;
 import net.causw.app.main.domain.user.entity.userInfo.UserInfo;
-import net.causw.app.main.domain.moving.dto.userInfo.UserInfoSearchConditionDto;
 import net.causw.app.main.domain.user.repository.userInfo.UserInfoRepository;
 import net.causw.app.main.domain.user.repository.userInfo.query.UserInfoQueryRepository;
 import net.causw.global.constant.MessageUtil;

@@ -4,11 +4,11 @@ import java.util.Optional;
 import java.util.Set;
 
 import net.causw.app.main.domain.moving.model.entity.locker.Locker;
-import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.domain.moving.service.common.CommonService;
 import net.causw.app.main.domain.moving.validation.LockerIsDeactivatedValidator;
+import net.causw.app.main.domain.user.entity.user.User;
 import net.causw.app.main.domain.user.util.UserRoleValidator;
 import net.causw.app.main.shared.ValidatorBucket;
-import net.causw.app.main.domain.moving.service.common.CommonService;
 
 import lombok.NoArgsConstructor;
 

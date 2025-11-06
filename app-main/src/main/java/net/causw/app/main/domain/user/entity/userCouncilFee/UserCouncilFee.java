@@ -1,7 +1,7 @@
 package net.causw.app.main.domain.user.entity.userCouncilFee;
 
-import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.shared.entity.BaseEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

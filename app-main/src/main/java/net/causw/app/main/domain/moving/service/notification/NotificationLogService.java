@@ -8,13 +8,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.moving.model.entity.notification.NotificationLog;
-import net.causw.app.main.domain.user.entity.user.User;
-import net.causw.app.main.domain.moving.model.enums.notification.NoticeType;
 import net.causw.app.main.domain.moving.dto.notification.NotificationCountResponseDto;
 import net.causw.app.main.domain.moving.dto.notification.NotificationResponseDto;
 import net.causw.app.main.domain.moving.dto.util.dtoMapper.NotificationDtoMapper;
+import net.causw.app.main.domain.moving.model.entity.notification.NotificationLog;
+import net.causw.app.main.domain.moving.model.enums.notification.NoticeType;
 import net.causw.app.main.domain.moving.repository.notification.NotificationLogRepository;
+import net.causw.app.main.domain.user.entity.user.User;
 import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;

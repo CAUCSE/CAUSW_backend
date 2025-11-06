@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import net.causw.app.main.domain.user.entity.user.User;
-import net.causw.app.main.domain.moving.model.enums.user.Role;
+import net.causw.app.main.domain.user.enums.user.Role;
 import net.causw.app.main.domain.user.repository.user.UserRepository;
 import net.causw.app.main.domain.user.repository.user.query.UserQueryRepository;
 import net.causw.global.constant.MessageUtil;

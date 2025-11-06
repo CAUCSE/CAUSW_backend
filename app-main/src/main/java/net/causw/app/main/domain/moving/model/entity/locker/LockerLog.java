@@ -1,7 +1,7 @@
 package net.causw.app.main.domain.moving.model.entity.locker;
 
-import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.app.main.domain.moving.model.enums.locker.LockerLogAction;
+import net.causw.app.main.shared.entity.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

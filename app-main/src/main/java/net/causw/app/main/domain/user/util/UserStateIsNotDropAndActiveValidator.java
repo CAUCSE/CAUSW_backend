@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.user.util;
 
-import net.causw.app.main.domain.moving.model.enums.user.UserState;
+import net.causw.app.main.domain.user.enums.user.UserState;
 import net.causw.app.main.shared.AbstractValidator;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.UnauthorizedException;

@@ -14,8 +14,8 @@ import net.causw.app.main.domain.user.entity.user.QUser;
 import net.causw.app.main.domain.user.entity.userInfo.QUserCareer;
 import net.causw.app.main.domain.user.entity.userInfo.QUserInfo;
 import net.causw.app.main.domain.user.entity.userInfo.UserInfo;
-import net.causw.app.main.domain.moving.model.enums.user.UserState;
-import net.causw.app.main.domain.moving.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.user.enums.user.UserState;
+import net.causw.app.main.domain.user.enums.userAcademicRecord.AcademicStatus;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.JPAExpressions;

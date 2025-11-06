@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.domain.moving.model.entity.uuidFile.UuidFile;
 import net.causw.app.main.domain.moving.model.entity.uuidFile.joinEntity.CalendarAttachImage;
 import net.causw.app.main.domain.moving.model.entity.uuidFile.joinEntity.CircleMainImage;
@@ -19,17 +20,16 @@ import net.causw.app.main.domain.moving.model.entity.uuidFile.joinEntity.UserAca
 import net.causw.app.main.domain.moving.model.entity.uuidFile.joinEntity.UserAdmissionAttachImage;
 import net.causw.app.main.domain.moving.model.entity.uuidFile.joinEntity.UserAdmissionLogAttachImage;
 import net.causw.app.main.domain.moving.model.entity.uuidFile.joinEntity.UserProfileImage;
-import net.causw.app.main.core.aop.annotation.MeasureTime;
-import net.causw.app.main.domain.moving.repository.uuidFile.UserAdmissionLogAttachImageRepository;
-import net.causw.app.main.domain.moving.repository.uuidFile.UserProfileImageRepository;
-import net.causw.app.main.domain.moving.repository.uuidFile.UuidFileRepository;
-import net.causw.app.main.shared.infra.redis.RedisUtils;
 import net.causw.app.main.domain.moving.repository.uuidFile.CalendarAttachImageRepository;
 import net.causw.app.main.domain.moving.repository.uuidFile.CircleMainImageRepository;
 import net.causw.app.main.domain.moving.repository.uuidFile.EventAttachImageRepository;
 import net.causw.app.main.domain.moving.repository.uuidFile.PostAttachImageRepository;
 import net.causw.app.main.domain.moving.repository.uuidFile.UserAcademicRecordApplicationAttachImageRepository;
 import net.causw.app.main.domain.moving.repository.uuidFile.UserAdmissionAttachImageRepository;
+import net.causw.app.main.domain.moving.repository.uuidFile.UserAdmissionLogAttachImageRepository;
+import net.causw.app.main.domain.moving.repository.uuidFile.UserProfileImageRepository;
+import net.causw.app.main.domain.moving.repository.uuidFile.UuidFileRepository;
+import net.causw.app.main.shared.infra.redis.RedisUtils;
 import net.causw.global.constant.StaticValue;
 
 import lombok.RequiredArgsConstructor;

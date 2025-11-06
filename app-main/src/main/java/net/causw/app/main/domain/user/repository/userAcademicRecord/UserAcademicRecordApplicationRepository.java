@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import net.causw.app.main.domain.user.entity.user.User;
 import net.causw.app.main.domain.user.entity.userAcademicRecord.UserAcademicRecordApplication;
-import net.causw.app.main.domain.moving.model.enums.userAcademicRecord.AcademicRecordRequestStatus;
+import net.causw.app.main.domain.user.enums.userAcademicRecord.AcademicRecordRequestStatus;
 
 @Repository
 public interface UserAcademicRecordApplicationRepository extends JpaRepository<UserAcademicRecordApplication, String> {

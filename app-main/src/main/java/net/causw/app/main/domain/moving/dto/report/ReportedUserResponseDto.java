@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.moving.dto.report;
 
-import net.causw.app.main.domain.moving.model.enums.user.UserState;
+import net.causw.app.main.domain.user.enums.user.UserState;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;

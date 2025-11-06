@@ -6,12 +6,12 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
+import net.causw.app.main.domain.community.entity.comment.ChildComment;
+import net.causw.app.main.domain.community.entity.comment.Comment;
 import net.causw.app.main.domain.moving.dto.comment.ChildCommentResponseDto;
 import net.causw.app.main.domain.moving.dto.comment.CommentResponseDto;
 import net.causw.app.main.domain.moving.dto.comment.CommentSubscribeResponseDto;
 import net.causw.app.main.domain.moving.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
-import net.causw.app.main.domain.moving.model.entity.comment.ChildComment;
-import net.causw.app.main.domain.moving.model.entity.comment.Comment;
 import net.causw.app.main.domain.moving.model.entity.notification.UserCommentSubscribe;
 
 @Mapper(componentModel = "spring")

@@ -1,8 +1,8 @@
 package net.causw.app.main.domain.moving.model.entity.notification;
 
-import net.causw.app.main.shared.entity.BaseEntity;
-import net.causw.app.main.domain.moving.model.entity.comment.Comment;
+import net.causw.app.main.domain.community.entity.comment.Comment;
 import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.shared.entity.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

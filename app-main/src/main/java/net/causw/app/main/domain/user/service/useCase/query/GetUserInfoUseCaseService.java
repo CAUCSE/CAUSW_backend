@@ -3,11 +3,11 @@ package net.causw.app.main.domain.user.service.useCase.query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.user.entity.user.User;
-import net.causw.app.main.domain.user.entity.userInfo.UserInfo;
-import net.causw.app.main.domain.moving.model.enums.user.UserState;
 import net.causw.app.main.domain.moving.dto.userInfo.UserInfoResponseDto;
 import net.causw.app.main.domain.moving.dto.util.dtoMapper.UserDtoMapper;
+import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.domain.user.entity.userInfo.UserInfo;
+import net.causw.app.main.domain.user.enums.user.UserState;
 import net.causw.app.main.domain.user.service.UserEntityService;
 import net.causw.app.main.domain.user.service.UserInfoService;
 import net.causw.global.constant.MessageUtil;

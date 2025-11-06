@@ -14,10 +14,10 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import net.causw.app.main.domain.moving.model.enums.user.Role;
-import net.causw.app.main.domain.moving.model.enums.user.RoleGroup;
-import net.causw.app.main.domain.moving.model.enums.user.UserState;
-import net.causw.app.main.domain.moving.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.user.enums.user.Role;
+import net.causw.app.main.domain.user.enums.user.RoleGroup;
+import net.causw.app.main.domain.user.enums.user.UserState;
+import net.causw.app.main.domain.user.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.core.security.SecurityHelper;
 import net.causw.app.main.core.security.SecurityService;
 import net.causw.app.main.util.WithMockCustomUser;

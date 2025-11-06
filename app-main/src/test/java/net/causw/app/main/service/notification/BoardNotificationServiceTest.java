@@ -23,11 +23,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import net.causw.app.main.domain.moving.model.entity.board.Board;
+import net.causw.app.main.domain.community.entity.board.Board;
 import net.causw.app.main.domain.moving.model.entity.notification.Notification;
 import net.causw.app.main.domain.moving.model.entity.notification.NotificationLog;
 import net.causw.app.main.domain.moving.model.entity.notification.UserBoardSubscribe;
-import net.causw.app.main.domain.moving.model.entity.post.Post;
+import net.causw.app.main.domain.community.entity.post.Post;
 import net.causw.app.main.domain.moving.service.notification.BoardNotificationService;
 import net.causw.app.main.domain.moving.service.notification.FirebasePushNotificationService;
 import net.causw.app.main.domain.user.entity.user.User;

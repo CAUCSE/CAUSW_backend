@@ -8,7 +8,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import net.causw.app.main.domain.user.entity.user.User;
-import net.causw.app.main.domain.moving.model.enums.user.UserState;
+import net.causw.app.main.domain.user.enums.user.UserState;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

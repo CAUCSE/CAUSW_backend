@@ -13,12 +13,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.causw.app.main.core.security.userdetails.CustomUserDetails;
 import net.causw.app.main.domain.moving.dto.report.ReportCreateRequestDto;
 import net.causw.app.main.domain.moving.dto.report.ReportCreateResponseDto;
 import net.causw.app.main.domain.moving.dto.report.ReportedCommentResponseDto;
 import net.causw.app.main.domain.moving.dto.report.ReportedPostResponseDto;
 import net.causw.app.main.domain.moving.dto.report.ReportedUserResponseDto;
-import net.causw.app.main.core.security.userdetails.CustomUserDetails;
 import net.causw.app.main.domain.moving.service.report.ReportService;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.UnauthorizedException;

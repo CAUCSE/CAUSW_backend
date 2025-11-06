@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 import net.causw.app.main.domain.moving.model.entity.inquiry.Inquiry;
 import net.causw.app.main.domain.user.entity.user.User;
-import net.causw.app.main.domain.moving.model.enums.user.Role;
+import net.causw.app.main.domain.user.enums.user.Role;
 
 import lombok.Builder;
 import lombok.Getter;

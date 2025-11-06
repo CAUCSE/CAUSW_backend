@@ -4,9 +4,9 @@ import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
-import net.causw.app.main.domain.moving.model.entity.comment.ChildComment;
-import net.causw.app.main.domain.moving.model.entity.comment.Comment;
-import net.causw.app.main.domain.moving.model.entity.post.Post;
+import net.causw.app.main.domain.community.entity.comment.ChildComment;
+import net.causw.app.main.domain.community.entity.comment.Comment;
+import net.causw.app.main.domain.community.entity.post.Post;
 import net.causw.app.main.domain.user.entity.user.User;
 import net.causw.app.main.domain.user.entity.userBlock.UserBlock;
 import net.causw.app.main.domain.user.repository.userBlock.UserBlockRepository;

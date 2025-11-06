@@ -6,12 +6,12 @@ import java.util.Optional;
 import java.util.Set;
 
 import net.causw.app.main.domain.moving.model.entity.locker.Locker;
-import net.causw.app.main.domain.user.entity.user.User;
-import net.causw.app.main.domain.moving.model.enums.user.Role;
+import net.causw.app.main.domain.moving.service.common.CommonService;
 import net.causw.app.main.domain.moving.validation.LockerAccessValidator;
+import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.domain.user.enums.user.Role;
 import net.causw.app.main.domain.user.util.UserRoleValidator;
 import net.causw.app.main.shared.ValidatorBucket;
-import net.causw.app.main.domain.moving.service.common.CommonService;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;

@@ -27,9 +27,9 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import net.causw.app.main.domain.moving.model.enums.user.Role;
-import net.causw.app.main.domain.moving.model.enums.user.UserState;
-import net.causw.app.main.domain.moving.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.user.enums.user.Role;
+import net.causw.app.main.domain.user.enums.user.UserState;
+import net.causw.app.main.domain.user.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.core.security.CustomAuthenticationEntryPoint;
 import net.causw.app.main.core.security.CustomAuthorizationManager;
 import net.causw.app.main.core.security.JwtTokenProvider;

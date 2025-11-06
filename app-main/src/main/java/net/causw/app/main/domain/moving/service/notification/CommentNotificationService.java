@@ -11,20 +11,20 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.shared.entity.BaseEntity;
-import net.causw.app.main.domain.moving.model.entity.comment.ChildComment;
-import net.causw.app.main.domain.moving.model.entity.comment.Comment;
+import net.causw.app.main.domain.community.entity.comment.ChildComment;
+import net.causw.app.main.domain.community.entity.comment.Comment;
+import net.causw.app.main.domain.moving.dto.notification.CommentNotificationDto;
 import net.causw.app.main.domain.moving.model.entity.notification.Notification;
 import net.causw.app.main.domain.moving.model.entity.notification.NotificationLog;
 import net.causw.app.main.domain.moving.model.entity.notification.UserCommentSubscribe;
-import net.causw.app.main.domain.user.entity.user.User;
 import net.causw.app.main.domain.moving.model.enums.notification.NoticeType;
-import net.causw.app.main.domain.moving.dto.notification.CommentNotificationDto;
-import net.causw.app.main.shared.infra.firebase.FcmUtils;
 import net.causw.app.main.domain.moving.repository.notification.NotificationLogRepository;
 import net.causw.app.main.domain.moving.repository.notification.NotificationRepository;
 import net.causw.app.main.domain.moving.repository.notification.UserCommentSubscribeRepository;
+import net.causw.app.main.domain.user.entity.user.User;
 import net.causw.app.main.domain.user.service.UserBlockEntityService;
+import net.causw.app.main.shared.entity.BaseEntity;
+import net.causw.app.main.shared.infra.firebase.FcmUtils;
 
 import com.google.firebase.messaging.FirebaseMessagingException;
 

@@ -4,8 +4,8 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.user.event.CertifiedUserCreatedEvent;
 import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.domain.user.event.CertifiedUserCreatedEvent;
 import net.causw.app.main.domain.user.service.UserEntityService;
 import net.causw.app.main.domain.user.service.UserInfoService;
 

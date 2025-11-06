@@ -3,11 +3,11 @@ package net.causw.app.main.domain.user.service.useCase.command;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.moving.model.entity.comment.ChildComment;
-import net.causw.app.main.domain.user.entity.user.User;
-import net.causw.app.main.domain.moving.dto.userBlock.response.CreateBlockByChildCommentResponseDto;
 import net.causw.app.main.core.security.userdetails.CustomUserDetails;
-import net.causw.app.main.domain.moving.service.comment.ChildCommentEntityService;
+import net.causw.app.main.domain.community.entity.comment.ChildComment;
+import net.causw.app.main.domain.community.service.comment.ChildCommentEntityService;
+import net.causw.app.main.domain.moving.dto.userBlock.response.CreateBlockByChildCommentResponseDto;
+import net.causw.app.main.domain.user.entity.user.User;
 import net.causw.app.main.domain.user.service.UserBlockEntityService;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;

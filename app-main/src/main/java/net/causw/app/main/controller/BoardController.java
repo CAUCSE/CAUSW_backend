@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.causw.app.main.core.security.userdetails.CustomUserDetails;
+import net.causw.app.main.domain.community.service.board.BoardService;
 import net.causw.app.main.domain.moving.dto.board.BoardAppliesResponseDto;
 import net.causw.app.main.domain.moving.dto.board.BoardApplyRequestDto;
 import net.causw.app.main.domain.moving.dto.board.BoardApplyResponseDto;
@@ -26,8 +28,6 @@ import net.causw.app.main.domain.moving.dto.board.BoardNameCheckResponseDto;
 import net.causw.app.main.domain.moving.dto.board.BoardResponseDto;
 import net.causw.app.main.domain.moving.dto.board.BoardSubscribeResponseDto;
 import net.causw.app.main.domain.moving.dto.board.BoardUpdateRequestDto;
-import net.causw.app.main.core.security.userdetails.CustomUserDetails;
-import net.causw.app.main.domain.moving.service.board.BoardService;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.InternalServerException;
 import net.causw.global.exception.UnauthorizedException;

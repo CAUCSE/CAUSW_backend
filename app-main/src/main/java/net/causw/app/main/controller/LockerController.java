@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.causw.app.main.core.security.userdetails.CustomUserDetails;
 import net.causw.app.main.domain.moving.dto.locker.LockerCreateRequestDto;
 import net.causw.app.main.domain.moving.dto.locker.LockerExpiredAtRequestDto;
 import net.causw.app.main.domain.moving.dto.locker.LockerExtendPeriodRequestDto;
@@ -28,7 +29,6 @@ import net.causw.app.main.domain.moving.dto.locker.LockerRegisterPeriodRequestDt
 import net.causw.app.main.domain.moving.dto.locker.LockerResponseDto;
 import net.causw.app.main.domain.moving.dto.locker.LockerUpdateRequestDto;
 import net.causw.app.main.domain.moving.dto.locker.LockersResponseDto;
-import net.causw.app.main.core.security.userdetails.CustomUserDetails;
 import net.causw.app.main.domain.moving.service.locker.LockerService;
 
 import io.swagger.v3.oas.annotations.Operation;

@@ -2,8 +2,8 @@ package net.causw.app.main.domain.moving.model.entity.inquiry;
 
 import org.hibernate.annotations.ColumnDefault;
 
-import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.shared.entity.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,6 +24,9 @@ import lombok.Setter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "TB_INQUIRY")
+/**
+ * @deprecated
+ */
 public class Inquiry extends BaseEntity {
 	@Column(name = "title", nullable = false)
 	private String title;

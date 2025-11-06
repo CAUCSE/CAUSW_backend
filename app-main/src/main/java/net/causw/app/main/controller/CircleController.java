@@ -22,8 +22,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import net.causw.app.main.domain.moving.model.enums.circle.CircleMemberStatus;
-import net.causw.app.main.domain.moving.validation.ConstraintValidator;
+import net.causw.app.main.core.security.userdetails.CustomUserDetails;
 import net.causw.app.main.domain.moving.dto.circle.CircleBoardsResponseDto;
 import net.causw.app.main.domain.moving.dto.circle.CircleCreateRequestDto;
 import net.causw.app.main.domain.moving.dto.circle.CircleMemberResponseDto;
@@ -34,8 +33,9 @@ import net.causw.app.main.domain.moving.dto.duplicate.DuplicatedCheckResponseDto
 import net.causw.app.main.domain.moving.dto.form.request.FormReplyRequestDto;
 import net.causw.app.main.domain.moving.dto.form.request.create.FormCreateRequestDto;
 import net.causw.app.main.domain.moving.dto.form.response.FormResponseDto;
-import net.causw.app.main.core.security.userdetails.CustomUserDetails;
+import net.causw.app.main.domain.moving.model.enums.circle.CircleMemberStatus;
 import net.causw.app.main.domain.moving.service.circle.CircleService;
+import net.causw.app.main.domain.moving.validation.ConstraintValidator;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.InternalServerException;
 import net.causw.global.exception.UnauthorizedException;

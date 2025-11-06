@@ -4,10 +4,10 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import net.causw.app.main.domain.community.entity.vote.Vote;
+import net.causw.app.main.domain.community.entity.vote.VoteOption;
+import net.causw.app.main.domain.community.entity.vote.VoteRecord;
 import net.causw.app.main.domain.user.entity.user.User;
-import net.causw.app.main.domain.moving.model.entity.vote.Vote;
-import net.causw.app.main.domain.moving.model.entity.vote.VoteOption;
-import net.causw.app.main.domain.moving.model.entity.vote.VoteRecord;
 
 public interface VoteRecordRepository extends JpaRepository<VoteRecord, String> {
 	List<VoteRecord> findAllByVoteOption(VoteOption voteOption);

@@ -5,10 +5,10 @@ import java.util.Collection;
 import org.springframework.security.core.GrantedAuthority;
 
 import net.causw.app.main.core.security.userdetails.CustomUserDetails;
-import net.causw.app.main.domain.moving.model.enums.user.Role;
-import net.causw.app.main.domain.moving.model.enums.user.RoleGroup;
-import net.causw.app.main.domain.moving.model.enums.user.UserState;
-import net.causw.app.main.domain.moving.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.user.enums.user.Role;
+import net.causw.app.main.domain.user.enums.user.RoleGroup;
+import net.causw.app.main.domain.user.enums.user.UserState;
+import net.causw.app.main.domain.user.enums.userAcademicRecord.AcademicStatus;
 
 public class SecurityHelper {
 

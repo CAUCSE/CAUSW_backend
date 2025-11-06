@@ -8,20 +8,20 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.moving.model.entity.board.Board;
+import net.causw.app.main.domain.community.entity.board.Board;
+import net.causw.app.main.domain.community.entity.post.Post;
+import net.causw.app.main.domain.moving.dto.notification.BoardNotificationDto;
 import net.causw.app.main.domain.moving.model.entity.notification.Notification;
 import net.causw.app.main.domain.moving.model.entity.notification.NotificationLog;
 import net.causw.app.main.domain.moving.model.entity.notification.UserBoardSubscribe;
-import net.causw.app.main.domain.moving.model.entity.post.Post;
-import net.causw.app.main.domain.user.entity.user.User;
 import net.causw.app.main.domain.moving.model.enums.notification.NoticeType;
-import net.causw.app.main.domain.moving.model.enums.userAcademicRecord.AcademicStatus;
-import net.causw.app.main.domain.moving.dto.notification.BoardNotificationDto;
-import net.causw.app.main.shared.infra.firebase.FcmUtils;
 import net.causw.app.main.domain.moving.repository.notification.NotificationLogRepository;
 import net.causw.app.main.domain.moving.repository.notification.NotificationRepository;
 import net.causw.app.main.domain.moving.repository.notification.UserBoardSubscribeRepository;
+import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.domain.user.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.service.UserBlockEntityService;
+import net.causw.app.main.shared.infra.firebase.FcmUtils;
 
 import com.google.firebase.messaging.FirebaseMessagingException;
 

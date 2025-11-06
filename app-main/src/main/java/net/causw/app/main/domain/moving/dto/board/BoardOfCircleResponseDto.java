@@ -5,8 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import net.causw.app.main.domain.moving.model.entity.board.Board;
-import net.causw.app.main.domain.moving.model.enums.user.Role;
+import net.causw.app.main.domain.community.entity.board.Board;
+import net.causw.app.main.domain.user.enums.user.Role;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

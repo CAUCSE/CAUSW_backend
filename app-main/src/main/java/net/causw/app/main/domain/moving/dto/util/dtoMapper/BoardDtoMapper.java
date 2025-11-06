@@ -6,6 +6,9 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
+import net.causw.app.main.domain.community.entity.board.Board;
+import net.causw.app.main.domain.community.entity.board.BoardApply;
+import net.causw.app.main.domain.community.entity.post.Post;
 import net.causw.app.main.domain.moving.dto.board.BoardAppliesResponseDto;
 import net.causw.app.main.domain.moving.dto.board.BoardApplyResponseDto;
 import net.causw.app.main.domain.moving.dto.board.BoardMainResponseDto;
@@ -16,10 +19,7 @@ import net.causw.app.main.domain.moving.dto.board.BoardSubscribeResponseDto;
 import net.causw.app.main.domain.moving.dto.circle.CircleResponseDto;
 import net.causw.app.main.domain.moving.dto.post.PostContentDto;
 import net.causw.app.main.domain.moving.dto.user.UserResponseDto;
-import net.causw.app.main.domain.moving.model.entity.board.Board;
-import net.causw.app.main.domain.moving.model.entity.board.BoardApply;
 import net.causw.app.main.domain.moving.model.entity.notification.UserBoardSubscribe;
-import net.causw.app.main.domain.moving.model.entity.post.Post;
 
 @Mapper(componentModel = "spring")
 public interface BoardDtoMapper {

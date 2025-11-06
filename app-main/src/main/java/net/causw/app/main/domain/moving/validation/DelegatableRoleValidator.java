@@ -4,7 +4,7 @@ import static net.causw.app.main.domain.moving.policy.RolePolicy.*;
 
 import java.util.Set;
 
-import net.causw.app.main.domain.moving.model.enums.user.Role;
+import net.causw.app.main.domain.user.enums.user.Role;
 import net.causw.app.main.shared.AbstractValidator;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.ErrorCode;

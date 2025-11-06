@@ -2,7 +2,7 @@ package net.causw.app.main.domain.user.util;
 
 import java.util.Set;
 
-import net.causw.app.main.domain.moving.model.enums.user.Role;
+import net.causw.app.main.domain.user.enums.user.Role;
 import net.causw.app.main.shared.AbstractValidator;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.UnauthorizedException;

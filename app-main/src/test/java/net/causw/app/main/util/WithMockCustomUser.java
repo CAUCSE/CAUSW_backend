@@ -8,9 +8,9 @@ import java.lang.annotation.Target;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithSecurityContext;
 
-import net.causw.app.main.domain.moving.model.enums.user.Role;
-import net.causw.app.main.domain.moving.model.enums.user.UserState;
-import net.causw.app.main.domain.moving.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.user.enums.user.Role;
+import net.causw.app.main.domain.user.enums.user.UserState;
+import net.causw.app.main.domain.user.enums.userAcademicRecord.AcademicStatus;
 
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)

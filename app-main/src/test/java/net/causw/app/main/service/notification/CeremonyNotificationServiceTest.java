@@ -26,7 +26,7 @@ import net.causw.app.main.domain.moving.service.notification.CeremonyNotificatio
 import net.causw.app.main.domain.moving.service.notification.FirebasePushNotificationService;
 import net.causw.app.main.domain.user.entity.user.User;
 import net.causw.app.main.domain.moving.model.enums.ceremony.CeremonyCategory;
-import net.causw.app.main.domain.moving.model.enums.user.Department;
+import net.causw.app.main.domain.user.enums.user.Department;
 import net.causw.app.main.domain.moving.dto.user.UserCreateRequestDto;
 import net.causw.app.main.shared.infra.firebase.FcmUtils;
 import net.causw.app.main.domain.moving.repository.ceremony.CeremonyRepository;

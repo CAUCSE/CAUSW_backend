@@ -9,20 +9,19 @@ import java.util.Set;
 
 import org.hibernate.annotations.BatchSize;
 
-import net.causw.app.main.shared.entity.BaseEntity;
+import net.causw.app.main.domain.community.entity.vote.VoteRecord;
+import net.causw.app.main.domain.moving.dto.user.GraduatedUserCommand;
+import net.causw.app.main.domain.moving.dto.user.UserCreateRequestDto;
 import net.causw.app.main.domain.moving.model.entity.circle.CircleMember;
 import net.causw.app.main.domain.moving.model.entity.locker.Locker;
 import net.causw.app.main.domain.moving.model.entity.notification.CeremonyNotificationSetting;
 import net.causw.app.main.domain.moving.model.entity.uuidFile.joinEntity.UserProfileImage;
-import net.causw.app.main.domain.moving.model.entity.vote.VoteRecord;
-import net.causw.app.main.domain.moving.model.enums.user.Department;
-import net.causw.app.main.domain.moving.model.enums.user.GraduationType;
-import net.causw.app.main.domain.moving.model.enums.user.Role;
-import net.causw.app.main.domain.moving.model.enums.user.UserState;
-import net.causw.app.main.domain.moving.model.enums.userAcademicRecord.AcademicStatus;
-import net.causw.app.main.domain.moving.resolver.DepartmentResolver;
-import net.causw.app.main.domain.moving.dto.user.GraduatedUserCommand;
-import net.causw.app.main.domain.moving.dto.user.UserCreateRequestDto;
+import net.causw.app.main.domain.user.enums.user.Department;
+import net.causw.app.main.domain.user.enums.user.GraduationType;
+import net.causw.app.main.domain.user.enums.user.Role;
+import net.causw.app.main.domain.user.enums.user.UserState;
+import net.causw.app.main.domain.user.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.shared.entity.BaseEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;

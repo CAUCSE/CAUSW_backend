@@ -3,9 +3,9 @@ package net.causw.app.main.domain.moving.dto.userInfo;
 import java.util.List;
 import java.util.Set;
 
-import net.causw.app.main.domain.moving.model.enums.user.Department;
-import net.causw.app.main.domain.moving.model.enums.user.Role;
-import net.causw.app.main.domain.moving.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.user.enums.user.Department;
+import net.causw.app.main.domain.user.enums.user.Role;
+import net.causw.app.main.domain.user.enums.userAcademicRecord.AcademicStatus;
 
 import lombok.Builder;
 import lombok.Getter;

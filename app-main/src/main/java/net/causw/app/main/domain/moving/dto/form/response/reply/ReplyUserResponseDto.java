@@ -2,9 +2,9 @@ package net.causw.app.main.domain.moving.dto.form.response.reply;
 
 import java.time.LocalDateTime;
 
-import net.causw.app.main.domain.moving.model.enums.user.Department;
-import net.causw.app.main.domain.moving.model.enums.user.GraduationType;
-import net.causw.app.main.domain.moving.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.user.enums.user.Department;
+import net.causw.app.main.domain.user.enums.user.GraduationType;
+import net.causw.app.main.domain.user.enums.userAcademicRecord.AcademicStatus;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

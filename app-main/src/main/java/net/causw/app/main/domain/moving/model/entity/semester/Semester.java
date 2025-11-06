@@ -2,9 +2,9 @@ package net.causw.app.main.domain.moving.model.entity.semester;
 
 import java.time.LocalDate;
 
-import net.causw.app.main.shared.entity.BaseEntity;
-import net.causw.app.main.domain.user.entity.user.User;
 import net.causw.app.main.domain.moving.model.enums.semester.SemesterType;
+import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.shared.entity.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

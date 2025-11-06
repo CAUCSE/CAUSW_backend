@@ -10,12 +10,12 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.springframework.stereotype.Service;
 
-import net.causw.app.main.domain.moving.model.enums.user.GraduationType;
-import net.causw.app.main.domain.moving.model.enums.user.Role;
-import net.causw.app.main.domain.moving.model.enums.user.UserState;
-import net.causw.app.main.domain.moving.model.enums.userAcademicRecord.AcademicStatus;
-import net.causw.app.main.domain.moving.dto.user.UserResponseDto;
 import net.causw.app.main.core.aop.annotation.MeasureTime;
+import net.causw.app.main.domain.moving.dto.user.UserResponseDto;
+import net.causw.app.main.domain.user.enums.user.GraduationType;
+import net.causw.app.main.domain.user.enums.user.Role;
+import net.causw.app.main.domain.user.enums.user.UserState;
+import net.causw.app.main.domain.user.enums.userAcademicRecord.AcademicStatus;
 
 @MeasureTime
 @Service

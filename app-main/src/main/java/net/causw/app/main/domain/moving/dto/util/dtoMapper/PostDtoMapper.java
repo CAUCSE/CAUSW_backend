@@ -12,6 +12,10 @@ import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 import org.springframework.data.domain.Page;
 
+import net.causw.app.main.domain.community.entity.board.Board;
+import net.causw.app.main.domain.community.entity.post.Post;
+import net.causw.app.main.domain.community.repository.post.query.PostQueryResult;
+import net.causw.app.main.domain.moving.dto.form.response.FormResponseDto;
 import net.causw.app.main.domain.moving.dto.post.BoardPostsResponseDto;
 import net.causw.app.main.domain.moving.dto.post.PostContentDto;
 import net.causw.app.main.domain.moving.dto.post.PostCreateResponseDto;
@@ -20,14 +24,10 @@ import net.causw.app.main.domain.moving.dto.post.PostSubscribeResponseDto;
 import net.causw.app.main.domain.moving.dto.post.PostsResponseDto;
 import net.causw.app.main.domain.moving.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 import net.causw.app.main.domain.moving.dto.vote.VoteResponseDto;
-import net.causw.app.main.domain.moving.model.entity.board.Board;
 import net.causw.app.main.domain.moving.model.entity.notification.UserPostSubscribe;
-import net.causw.app.main.domain.moving.model.entity.post.Post;
 import net.causw.app.main.domain.moving.model.entity.uuidFile.joinEntity.PostAttachImage;
-import net.causw.app.main.domain.moving.model.enums.user.Role;
-import net.causw.app.main.domain.moving.model.enums.user.UserState;
-import net.causw.app.main.domain.moving.repository.post.query.PostQueryResult;
-import net.causw.app.main.domain.moving.dto.form.response.FormResponseDto;
+import net.causw.app.main.domain.user.enums.user.Role;
+import net.causw.app.main.domain.user.enums.user.UserState;
 import net.causw.global.constant.StaticValue;
 
 // Custom Annotation을 사용하여 중복되는 @Mapping을 줄일 수 있습니다.
@@ -61,8 +61,6 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "isPostForm", source = "isPostForm")
 	PostsResponseDto toPostsResponseDto(Post post, Long numComment, Long numPostLike, Long numPostFavorite,
 		PostAttachImage thumbnail, Boolean isPostVote, Boolean isPostForm);
-
-
 
 	@Mapping(target = "id", source = "queryResult.postId")
 	@Mapping(target = "title", source = "queryResult.title")

@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import net.causw.app.main.core.security.userdetails.CustomUserDetails;
 import net.causw.app.main.domain.moving.dto.circle.CircleResponseDto;
 import net.causw.app.main.domain.moving.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.app.main.domain.moving.dto.user.BatchRegisterResponseDto;
@@ -46,11 +47,10 @@ import net.causw.app.main.domain.moving.dto.user.UserUpdatePasswordRequestDto;
 import net.causw.app.main.domain.moving.dto.user.UserUpdateRequestDto;
 import net.causw.app.main.domain.moving.dto.user.UserUpdateRoleRequestDto;
 import net.causw.app.main.domain.moving.dto.user.UserUpdateTokenRequestDto;
-import net.causw.app.main.core.security.userdetails.CustomUserDetails;
 import net.causw.app.main.domain.user.service.UserRoleService;
 import net.causw.app.main.domain.user.service.UserService;
-import net.causw.app.main.domain.user.service.useCase.query.FindPrivilegedUsersUseCaseService;
 import net.causw.app.main.domain.user.service.useCase.command.RegisterGraduatedUsersUseCaseService;
+import net.causw.app.main.domain.user.service.useCase.query.FindPrivilegedUsersUseCaseService;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.UnauthorizedException;
 

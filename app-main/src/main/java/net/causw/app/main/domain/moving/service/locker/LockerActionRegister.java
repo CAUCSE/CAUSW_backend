@@ -7,14 +7,14 @@ import java.util.Optional;
 
 import net.causw.app.main.domain.moving.model.entity.locker.Locker;
 import net.causw.app.main.domain.moving.model.entity.locker.LockerLog;
-import net.causw.app.main.domain.user.entity.user.User;
 import net.causw.app.main.domain.moving.model.enums.locker.LockerLogAction;
-import net.causw.app.main.domain.moving.model.enums.user.Role;
+import net.causw.app.main.domain.moving.service.common.CommonService;
 import net.causw.app.main.domain.moving.validation.LockerAccessValidator;
 import net.causw.app.main.domain.moving.validation.LockerInUseValidator;
 import net.causw.app.main.domain.moving.validation.LockerIsDeactivatedValidator;
+import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.domain.user.enums.user.Role;
 import net.causw.app.main.shared.ValidatorBucket;
-import net.causw.app.main.domain.moving.service.common.CommonService;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;
 import net.causw.global.exception.ErrorCode;

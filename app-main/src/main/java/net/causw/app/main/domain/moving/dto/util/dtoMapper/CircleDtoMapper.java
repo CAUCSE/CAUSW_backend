@@ -11,6 +11,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
+import net.causw.app.main.domain.community.entity.board.Board;
+import net.causw.app.main.domain.community.entity.post.Post;
 import net.causw.app.main.domain.moving.dto.board.BoardOfCircleResponseDto;
 import net.causw.app.main.domain.moving.dto.circle.CircleBoardsResponseDto;
 import net.causw.app.main.domain.moving.dto.circle.CircleMemberResponseDto;
@@ -20,10 +22,8 @@ import net.causw.app.main.domain.moving.dto.circle.ExportCircleMemberToExcelResp
 import net.causw.app.main.domain.moving.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.app.main.domain.moving.dto.user.UserResponseDto;
 import net.causw.app.main.domain.moving.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
-import net.causw.app.main.domain.moving.model.entity.board.Board;
 import net.causw.app.main.domain.moving.model.entity.circle.Circle;
 import net.causw.app.main.domain.moving.model.entity.circle.CircleMember;
-import net.causw.app.main.domain.moving.model.entity.post.Post;
 import net.causw.app.main.domain.user.entity.user.User;
 import net.causw.app.main.domain.user.entity.userCouncilFee.UserCouncilFee;
 

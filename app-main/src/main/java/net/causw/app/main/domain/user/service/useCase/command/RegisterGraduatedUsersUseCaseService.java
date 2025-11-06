@@ -17,10 +17,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import net.causw.app.main.domain.moving.model.enums.user.Department;
-import net.causw.app.main.domain.moving.resolver.DepartmentResolver;
 import net.causw.app.main.domain.moving.dto.user.BatchRegisterResponseDto;
 import net.causw.app.main.domain.moving.dto.user.GraduatedUserRegisterRequestDto;
+import net.causw.app.main.domain.user.entity.user.DepartmentResolver;
+import net.causw.app.main.domain.user.enums.user.Department;
 import net.causw.app.main.domain.user.service.UserService;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;

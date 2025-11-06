@@ -3,7 +3,7 @@ package net.causw.app.main.domain.moving.dto.userAcademicRecordApplication;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import net.causw.app.main.domain.moving.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.user.enums.userAcademicRecord.AcademicStatus;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

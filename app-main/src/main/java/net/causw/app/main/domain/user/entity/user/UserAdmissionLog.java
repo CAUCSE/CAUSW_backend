@@ -3,10 +3,10 @@ package net.causw.app.main.domain.user.entity.user;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.app.main.domain.moving.model.entity.uuidFile.UuidFile;
 import net.causw.app.main.domain.moving.model.entity.uuidFile.joinEntity.UserAdmissionLogAttachImage;
-import net.causw.app.main.domain.moving.model.enums.user.UserAdmissionLogAction;
+import net.causw.app.main.domain.user.enums.user.UserAdmissionLogAction;
+import net.causw.app.main.shared.entity.BaseEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

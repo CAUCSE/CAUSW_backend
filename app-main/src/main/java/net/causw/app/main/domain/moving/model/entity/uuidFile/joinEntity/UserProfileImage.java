@@ -1,7 +1,7 @@
 package net.causw.app.main.domain.moving.model.entity.uuidFile.joinEntity;
 
-import net.causw.app.main.domain.user.entity.user.User;
 import net.causw.app.main.domain.moving.model.entity.uuidFile.UuidFile;
+import net.causw.app.main.domain.user.entity.user.User;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

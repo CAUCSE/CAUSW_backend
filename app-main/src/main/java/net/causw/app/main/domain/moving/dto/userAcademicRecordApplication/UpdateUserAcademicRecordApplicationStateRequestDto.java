@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.moving.dto.userAcademicRecordApplication;
 
-import net.causw.app.main.domain.moving.model.enums.userAcademicRecord.AcademicRecordRequestStatus;
+import net.causw.app.main.domain.user.enums.userAcademicRecord.AcademicRecordRequestStatus;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;

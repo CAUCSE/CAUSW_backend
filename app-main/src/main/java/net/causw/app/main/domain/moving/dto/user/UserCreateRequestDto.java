@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.moving.dto.user;
 
-import net.causw.app.main.domain.moving.model.enums.user.Department;
+import net.causw.app.main.domain.user.enums.user.Department;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;

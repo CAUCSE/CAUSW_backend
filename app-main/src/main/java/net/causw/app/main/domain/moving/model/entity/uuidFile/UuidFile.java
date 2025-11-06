@@ -2,8 +2,8 @@ package net.causw.app.main.domain.moving.model.entity.uuidFile;
 
 import org.hibernate.annotations.ColumnDefault;
 
-import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.app.main.domain.moving.model.enums.uuidFile.FilePath;
+import net.causw.app.main.shared.entity.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

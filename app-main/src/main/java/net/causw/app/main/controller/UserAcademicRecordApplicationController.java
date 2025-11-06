@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import net.causw.app.main.domain.moving.model.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.core.security.userdetails.CustomUserDetails;
 import net.causw.app.main.domain.moving.dto.semester.CurrentSemesterResponseDto;
 import net.causw.app.main.domain.moving.dto.user.UserAcademicStatusNoteUpdateDto;
 import net.causw.app.main.domain.moving.dto.userAcademicRecordApplication.CreateUserAcademicRecordApplicationRequestDto;
@@ -32,8 +32,8 @@ import net.causw.app.main.domain.moving.dto.userAcademicRecordApplication.UserAc
 import net.causw.app.main.domain.moving.dto.userAcademicRecordApplication.UserAcademicRecordApplicationResponseDto;
 import net.causw.app.main.domain.moving.dto.userAcademicRecordApplication.UserAcademicRecordInfoResponseDto;
 import net.causw.app.main.domain.moving.dto.userAcademicRecordApplication.UserAcademicRecordListResponseDto;
-import net.causw.app.main.core.security.userdetails.CustomUserDetails;
 import net.causw.app.main.domain.moving.service.semester.SemesterService;
+import net.causw.app.main.domain.user.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.service.UserAcademicRecordApplicationService;
 
 import io.swagger.v3.oas.annotations.Operation;

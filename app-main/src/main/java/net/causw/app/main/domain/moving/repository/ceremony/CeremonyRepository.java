@@ -7,8 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import net.causw.app.main.domain.moving.model.entity.ceremony.Ceremony;
-import net.causw.app.main.domain.user.entity.user.User;
 import net.causw.app.main.domain.moving.model.enums.ceremony.CeremonyState;
+import net.causw.app.main.domain.user.entity.user.User;
 
 public interface CeremonyRepository extends JpaRepository<Ceremony, String> {
 	Page<Ceremony> findAllByUserAndCeremonyStateOrderByCreatedAtDesc(User user, CeremonyState ceremonyState,
