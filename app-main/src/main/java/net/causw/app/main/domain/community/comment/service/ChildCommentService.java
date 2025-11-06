@@ -22,11 +22,11 @@ import net.causw.app.main.domain.moving.dto.comment.ChildCommentCreateRequestDto
 import net.causw.app.main.domain.moving.dto.comment.ChildCommentResponseDto;
 import net.causw.app.main.domain.moving.dto.comment.ChildCommentUpdateRequestDto;
 import net.causw.app.main.domain.moving.dto.util.dtoMapper.CommentDtoMapper;
-import net.causw.app.main.domain.moving.model.entity.circle.Circle;
-import net.causw.app.main.domain.moving.model.entity.circle.CircleMember;
+import net.causw.app.main.domain.campus.circle.entity.Circle;
+import net.causw.app.main.domain.campus.circle.entity.CircleMember;
 import net.causw.app.main.domain.moving.model.enums.circle.CircleMemberStatus;
 import net.causw.app.main.domain.moving.policy.StatusPolicy;
-import net.causw.app.main.domain.moving.repository.circle.CircleMemberRepository;
+import net.causw.app.main.domain.campus.circle.repository.CircleMemberRepository;
 import net.causw.app.main.domain.moving.service.notification.CommentNotificationService;
 import net.causw.app.main.domain.moving.validation.CircleMemberStatusValidator;
 import net.causw.app.main.domain.moving.validation.ConstraintValidator;

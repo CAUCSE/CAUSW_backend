@@ -52,12 +52,12 @@ import net.causw.app.main.domain.moving.dto.form.response.reply.excel.ExcelReply
 import net.causw.app.main.domain.moving.dto.form.response.reply.excel.ExcelReplyQuestionResponseDto;
 import net.causw.app.main.domain.moving.dto.form.response.reply.excel.ExcelReplyResponseDto;
 import net.causw.app.main.domain.moving.dto.util.dtoMapper.FormDtoMapper;
-import net.causw.app.main.domain.moving.model.entity.circle.Circle;
-import net.causw.app.main.domain.moving.model.entity.circle.CircleMember;
+import net.causw.app.main.domain.campus.circle.entity.Circle;
+import net.causw.app.main.domain.campus.circle.entity.CircleMember;
 import net.causw.app.main.domain.moving.model.enums.circle.CircleMemberStatus;
-import net.causw.app.main.domain.moving.policy.UserCouncilFeePolicy;
-import net.causw.app.main.domain.moving.repository.circle.CircleMemberRepository;
-import net.causw.app.main.domain.moving.repository.circle.CircleRepository;
+import net.causw.app.main.domain.finance.userCouncilFee.policy.UserCouncilFeePolicy;
+import net.causw.app.main.domain.campus.circle.repository.CircleMemberRepository;
+import net.causw.app.main.domain.campus.circle.repository.CircleRepository;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;

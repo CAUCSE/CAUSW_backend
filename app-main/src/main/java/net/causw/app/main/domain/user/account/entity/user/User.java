@@ -12,7 +12,7 @@ import org.hibernate.annotations.BatchSize;
 import net.causw.app.main.domain.community.post.entity.VoteRecord;
 import net.causw.app.main.domain.moving.dto.user.GraduatedUserCommand;
 import net.causw.app.main.domain.moving.dto.user.UserCreateRequestDto;
-import net.causw.app.main.domain.moving.model.entity.circle.CircleMember;
+import net.causw.app.main.domain.campus.circle.entity.CircleMember;
 import net.causw.app.main.domain.moving.model.entity.locker.Locker;
 import net.causw.app.main.domain.moving.model.entity.notification.CeremonyNotificationSetting;
 import net.causw.app.main.domain.moving.model.entity.uuidFile.joinEntity.UserProfileImage;

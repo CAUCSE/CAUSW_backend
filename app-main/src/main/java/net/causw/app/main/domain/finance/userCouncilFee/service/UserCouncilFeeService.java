@@ -22,9 +22,9 @@ import net.causw.app.main.domain.moving.dto.userCouncilFee.CurrentUserCouncilFee
 import net.causw.app.main.domain.moving.dto.userCouncilFee.UserCouncilFeeListResponseDto;
 import net.causw.app.main.domain.moving.dto.userCouncilFee.UserCouncilFeeResponseDto;
 import net.causw.app.main.domain.moving.dto.util.dtoMapper.UserCouncilFeeDtoMapper;
-import net.causw.app.main.domain.moving.model.entity.semester.Semester;
-import net.causw.app.main.domain.moving.policy.UserCouncilFeePolicy;
-import net.causw.app.main.domain.moving.service.semester.SemesterService;
+import net.causw.app.main.domain.campus.semester.entity.Semester;
+import net.causw.app.main.domain.finance.userCouncilFee.policy.UserCouncilFeePolicy;
+import net.causw.app.main.domain.campus.semester.service.SemesterService;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.global.constant.MessageUtil;

@@ -14,14 +14,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import net.causw.app.main.domain.moving.model.entity.calendar.Calendar;
+import net.causw.app.main.domain.campus.schedule.entity.Calendar;
 import net.causw.app.main.domain.moving.model.entity.uuidFile.UuidFile;
 import net.causw.app.main.domain.moving.model.entity.uuidFile.joinEntity.CalendarAttachImage;
 import net.causw.app.main.domain.moving.model.enums.uuidFile.FilePath;
 import net.causw.app.main.domain.moving.dto.calendar.CalendarResponseDto;
-import net.causw.app.main.domain.moving.repository.calendar.CalendarRepository;
+import net.causw.app.main.domain.campus.schedule.repository.CalendarRepository;
 import net.causw.app.main.domain.moving.repository.uuidFile.CalendarAttachImageRepository;
-import net.causw.app.main.domain.moving.service.calendar.CalendarService;
+import net.causw.app.main.domain.campus.schedule.service.CalendarService;
 import net.causw.app.main.domain.moving.service.uuidFile.UuidFileService;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;

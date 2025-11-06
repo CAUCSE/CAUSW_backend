@@ -10,7 +10,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 import net.causw.app.main.domain.moving.dto.semester.CurrentSemesterResponseDto;
-import net.causw.app.main.domain.moving.model.entity.semester.Semester;
+import net.causw.app.main.domain.campus.semester.entity.Semester;
 
 @Retention(RetentionPolicy.CLASS)
 @Target({ElementType.METHOD})

@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.policy;
 
-import static net.causw.app.main.domain.moving.policy.UserCouncilFeePolicy.*;
+import static net.causw.app.main.domain.finance.userCouncilFee.policy.UserCouncilFeePolicy.*;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.stream.Stream;
@@ -10,7 +10,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import net.causw.app.main.domain.moving.model.entity.semester.Semester;
+import net.causw.app.main.domain.campus.semester.entity.Semester;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.finance.userCouncilFee.entity.userCouncilFee.UserCouncilFee;
 import net.causw.app.main.domain.moving.model.enums.semester.SemesterType;

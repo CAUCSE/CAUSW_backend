@@ -23,8 +23,8 @@ import net.causw.app.main.domain.moving.dto.circle.ExportCircleMemberToExcelResp
 import net.causw.app.main.domain.moving.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.app.main.domain.moving.dto.user.UserResponseDto;
 import net.causw.app.main.domain.moving.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
-import net.causw.app.main.domain.moving.model.entity.circle.Circle;
-import net.causw.app.main.domain.moving.model.entity.circle.CircleMember;
+import net.causw.app.main.domain.campus.circle.entity.Circle;
+import net.causw.app.main.domain.campus.circle.entity.CircleMember;
 import net.causw.app.main.domain.user.account.entity.user.User;
 
 // Custom Annotation을 사용하여 중복되는 @Mapping을 줄일 수 있습니다.

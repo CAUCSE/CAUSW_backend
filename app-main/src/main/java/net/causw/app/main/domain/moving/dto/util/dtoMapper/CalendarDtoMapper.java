@@ -10,7 +10,7 @@ import net.causw.app.main.domain.moving.dto.calendar.CalendarResponseDto;
 import net.causw.app.main.domain.moving.dto.calendar.CalendarsResponseDto;
 import net.causw.app.main.domain.moving.dto.util.dtoMapper.custom.FormatDateTimeDtoMapper;
 import net.causw.app.main.domain.moving.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
-import net.causw.app.main.domain.moving.model.entity.calendar.Calendar;
+import net.causw.app.main.domain.campus.schedule.entity.Calendar;
 
 @Mapper(componentModel = "spring")
 public interface CalendarDtoMapper extends FormatDateTimeDtoMapper, UuidFileToUrlDtoMapper {

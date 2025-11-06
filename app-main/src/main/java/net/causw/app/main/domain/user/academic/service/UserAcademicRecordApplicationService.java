@@ -26,10 +26,10 @@ import net.causw.app.main.domain.moving.dto.userAcademicRecordApplication.UserAc
 import net.causw.app.main.domain.moving.dto.userAcademicRecordApplication.UserAcademicRecordListResponseDto;
 import net.causw.app.main.domain.moving.dto.util.dtoMapper.SemesterDtoMapper;
 import net.causw.app.main.domain.moving.dto.util.dtoMapper.UserAcademicRecordDtoMapper;
-import net.causw.app.main.domain.moving.model.entity.semester.Semester;
+import net.causw.app.main.domain.campus.semester.entity.Semester;
 import net.causw.app.main.domain.moving.model.entity.uuidFile.UuidFile;
 import net.causw.app.main.domain.moving.model.enums.uuidFile.FilePath;
-import net.causw.app.main.domain.moving.service.semester.SemesterService;
+import net.causw.app.main.domain.campus.semester.service.SemesterService;
 import net.causw.app.main.domain.moving.service.uuidFile.UuidFileService;
 import net.causw.app.main.domain.user.academic.entity.userAcademicRecord.UserAcademicRecordApplication;
 import net.causw.app.main.domain.user.academic.entity.userAcademicRecord.UserAcademicRecordLog;

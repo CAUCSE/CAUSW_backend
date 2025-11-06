@@ -10,7 +10,7 @@ import net.causw.app.main.domain.moving.dto.event.EventResponseDto;
 import net.causw.app.main.domain.moving.dto.event.EventsResponseDto;
 import net.causw.app.main.domain.moving.dto.util.dtoMapper.custom.FormatDateTimeDtoMapper;
 import net.causw.app.main.domain.moving.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
-import net.causw.app.main.domain.moving.model.entity.event.Event;
+import net.causw.app.main.domain.campus.event.entity.Event;
 
 @Mapper(componentModel = "spring")
 public interface EventDtoMapper extends FormatDateTimeDtoMapper, UuidFileToUrlDtoMapper {

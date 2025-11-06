@@ -19,7 +19,7 @@ import net.causw.app.main.domain.moving.dto.board.BoardResponseDto;
 import net.causw.app.main.domain.moving.dto.homepage.HomePageResponseDto;
 import net.causw.app.main.domain.moving.dto.util.dtoMapper.BoardDtoMapper;
 import net.causw.app.main.domain.moving.dto.util.dtoMapper.PostDtoMapper;
-import net.causw.app.main.domain.moving.model.entity.circle.Circle;
+import net.causw.app.main.domain.campus.circle.entity.Circle;
 import net.causw.app.main.domain.moving.policy.StatusPolicy;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;

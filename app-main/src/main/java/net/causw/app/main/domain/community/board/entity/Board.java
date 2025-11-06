@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 import org.hibernate.annotations.ColumnDefault;
 
 import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.domain.moving.model.entity.circle.Circle;
+import net.causw.app.main.domain.campus.circle.entity.Circle;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.RoleGroup;
 import net.causw.app.main.shared.entity.BaseEntity;

@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import net.causw.app.main.domain.community.form.entity.Form;
-import net.causw.app.main.domain.moving.model.entity.circle.Circle;
+import net.causw.app.main.domain.campus.circle.entity.Circle;
 
 @Repository
 public interface FormRepository extends JpaRepository<Form, String> {

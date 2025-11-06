@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.moving.model.entity.uuidFile.joinEntity;
 
-import net.causw.app.main.domain.moving.model.entity.circle.Circle;
+import net.causw.app.main.domain.campus.circle.entity.Circle;
 import net.causw.app.main.domain.moving.model.entity.uuidFile.UuidFile;
 
 import jakarta.persistence.Entity;

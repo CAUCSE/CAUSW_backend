@@ -32,7 +32,7 @@ import net.causw.app.main.domain.moving.dto.userAcademicRecordApplication.UserAc
 import net.causw.app.main.domain.moving.dto.userAcademicRecordApplication.UserAcademicRecordApplicationResponseDto;
 import net.causw.app.main.domain.moving.dto.userAcademicRecordApplication.UserAcademicRecordInfoResponseDto;
 import net.causw.app.main.domain.moving.dto.userAcademicRecordApplication.UserAcademicRecordListResponseDto;
-import net.causw.app.main.domain.moving.service.semester.SemesterService;
+import net.causw.app.main.domain.campus.semester.service.SemesterService;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.academic.service.UserAcademicRecordApplicationService;
 

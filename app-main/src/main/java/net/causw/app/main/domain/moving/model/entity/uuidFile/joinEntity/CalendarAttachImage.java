@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.moving.model.entity.uuidFile.joinEntity;
 
-import net.causw.app.main.domain.moving.model.entity.calendar.Calendar;
+import net.causw.app.main.domain.campus.schedule.entity.Calendar;
 import net.causw.app.main.domain.moving.model.entity.uuidFile.UuidFile;
 
 import jakarta.persistence.Entity;

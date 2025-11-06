@@ -34,7 +34,7 @@ import net.causw.app.main.domain.moving.dto.form.request.FormReplyRequestDto;
 import net.causw.app.main.domain.moving.dto.form.request.create.FormCreateRequestDto;
 import net.causw.app.main.domain.moving.dto.form.response.FormResponseDto;
 import net.causw.app.main.domain.moving.model.enums.circle.CircleMemberStatus;
-import net.causw.app.main.domain.moving.service.circle.CircleService;
+import net.causw.app.main.domain.campus.circle.service.CircleService;
 import net.causw.app.main.domain.moving.validation.ConstraintValidator;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.InternalServerException;

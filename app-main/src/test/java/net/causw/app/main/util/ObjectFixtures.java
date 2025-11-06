@@ -9,7 +9,7 @@ import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.domain.moving.model.entity.semester.Semester;
+import net.causw.app.main.domain.campus.semester.entity.Semester;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
 import net.causw.app.main.domain.finance.userCouncilFee.entity.userCouncilFee.CouncilFeeFakeUser;

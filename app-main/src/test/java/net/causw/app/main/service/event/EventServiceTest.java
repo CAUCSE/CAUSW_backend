@@ -19,14 +19,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
-import net.causw.app.main.domain.moving.model.entity.event.Event;
+import net.causw.app.main.domain.campus.event.entity.Event;
 import net.causw.app.main.domain.moving.model.entity.uuidFile.UuidFile;
 import net.causw.app.main.domain.moving.model.enums.uuidFile.FilePath;
 import net.causw.app.main.domain.moving.dto.event.EventCreateRequestDto;
 import net.causw.app.main.domain.moving.dto.event.EventResponseDto;
 import net.causw.app.main.domain.moving.dto.event.EventUpdateRequestDto;
 import net.causw.app.main.domain.moving.dto.event.EventsResponseDto;
-import net.causw.app.main.domain.moving.repository.event.EventRepository;
+import net.causw.app.main.domain.campus.event.repository.EventRepository;
 import net.causw.app.main.domain.moving.service.event.EventService;
 import net.causw.app.main.domain.moving.service.uuidFile.UuidFileService;
 import net.causw.global.constant.MessageUtil;

@@ -17,7 +17,7 @@ import net.causw.app.main.domain.moving.dto.userAcademicRecordApplication.UserAc
 import net.causw.app.main.domain.moving.dto.userAcademicRecordApplication.UserAcademicRecordInfoResponseDto;
 import net.causw.app.main.domain.moving.dto.userAcademicRecordApplication.UserAcademicRecordListResponseDto;
 import net.causw.app.main.domain.moving.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
-import net.causw.app.main.domain.moving.model.entity.semester.Semester;
+import net.causw.app.main.domain.campus.semester.entity.Semester;
 import net.causw.app.main.domain.user.academic.entity.userAcademicRecord.UserAcademicRecordApplication;
 import net.causw.app.main.domain.user.academic.entity.userAcademicRecord.UserAcademicRecordLog;
 import net.causw.app.main.domain.user.account.entity.user.User;

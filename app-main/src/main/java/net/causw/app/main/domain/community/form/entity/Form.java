@@ -8,7 +8,7 @@ import net.causw.app.main.domain.community.form.enums.FormType;
 import net.causw.app.main.domain.community.form.enums.RegisteredSemester;
 import net.causw.app.main.domain.community.form.enums.RegisteredSemesterManager;
 import net.causw.app.main.domain.moving.dto.form.request.create.FormCreateRequestDto;
-import net.causw.app.main.domain.moving.model.entity.circle.Circle;
+import net.causw.app.main.domain.campus.circle.entity.Circle;
 import net.causw.app.main.shared.entity.BaseEntity;
 
 import jakarta.persistence.CascadeType;
