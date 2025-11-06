@@ -22,7 +22,7 @@ import net.causw.app.main.domain.finance.userCouncilFee.entity.userCouncilFee.Us
 import net.causw.app.main.domain.finance.userCouncilFee.service.UserCouncilFeeService;
 import net.causw.app.main.domain.moving.dto.userCouncilFee.UserCouncilFeeResponseDto;
 import net.causw.app.main.domain.finance.userCouncilFee.repository.userCouncilFee.UserCouncilFeeRepository;
-import net.causw.app.main.domain.integration.service.excel.CouncilFeeExcelService;
+import net.causw.app.main.domain.integration.export.service.CouncilFeeExcelService;
 import net.causw.app.main.domain.moving.service.semester.SemesterService;
 import net.causw.app.main.util.ObjectFixtures;
 

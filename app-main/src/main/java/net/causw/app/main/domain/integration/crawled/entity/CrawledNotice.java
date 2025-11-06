@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.integration.entity.crawled;
+package net.causw.app.main.domain.integration.crawled.entity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

@@ -17,12 +17,12 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 import net.causw.app.main.domain.community.board.entity.Board;
-import net.causw.app.main.domain.integration.entity.crawled.CrawledNotice;
+import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
 import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.domain.integration.service.crawler.CrawledToPostTransferService;
+import net.causw.app.main.domain.integration.crawled.service.CrawledToPostTransferService;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.community.board.repository.BoardRepository;
-import net.causw.app.main.domain.integration.repository.crawled.CrawledNoticeRepository;
+import net.causw.app.main.domain.integration.crawled.repository.CrawledNoticeRepository;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.domain.moving.service.notification.BoardNotificationService;

@@ -37,7 +37,7 @@ import net.causw.app.main.domain.community.post.repository.FavoritePostRepositor
 import net.causw.app.main.domain.community.post.repository.LikePostRepository;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.community.post.service.PostService;
-import net.causw.app.main.domain.integration.service.excel.UserExcelService;
+import net.causw.app.main.domain.integration.export.service.UserExcelService;
 import net.causw.app.main.domain.moving.dto.board.BoardResponseDto;
 import net.causw.app.main.domain.moving.dto.circle.CircleResponseDto;
 import net.causw.app.main.domain.moving.dto.duplicate.DuplicatedCheckResponseDto;

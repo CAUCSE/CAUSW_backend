@@ -47,7 +47,7 @@ import net.causw.app.main.domain.community.post.repository.LikePostRepository;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.user.account.repository.user.UserAdmissionRepository;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
-import net.causw.app.main.domain.integration.service.excel.UserExcelService;
+import net.causw.app.main.domain.integration.export.service.UserExcelService;
 import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.app.main.domain.community.post.service.PostService;
 import net.causw.app.main.domain.user.relation.service.UserBlockEntityService;

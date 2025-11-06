@@ -36,7 +36,7 @@ import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.finance.userCouncilFee.entity.userCouncilFee.UserCouncilFee;
 import net.causw.app.main.domain.finance.userCouncilFee.repository.userCouncilFee.UserCouncilFeeRepository;
-import net.causw.app.main.domain.integration.service.excel.CircleExcelService;
+import net.causw.app.main.domain.integration.export.service.CircleExcelService;
 import net.causw.app.main.domain.moving.dto.board.BoardOfCircleResponseDto;
 import net.causw.app.main.domain.moving.dto.circle.CircleBoardsResponseDto;
 import net.causw.app.main.domain.moving.dto.circle.CircleCreateRequestDto;

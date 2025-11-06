@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.integration.service.crawler;
+package net.causw.app.main.domain.integration.crawled.service;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,8 +13,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Component;
 
-import net.causw.app.main.domain.integration.entity.crawled.CrawledFileLink;
-import net.causw.app.main.domain.integration.entity.crawled.CrawledNotice;
+import net.causw.app.main.domain.integration.crawled.entity.CrawledFileLink;
+import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;
 import net.causw.global.exception.ErrorCode;

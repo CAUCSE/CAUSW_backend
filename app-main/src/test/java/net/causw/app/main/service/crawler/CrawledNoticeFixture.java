@@ -3,7 +3,7 @@ package net.causw.app.main.service.crawler;
 import java.time.LocalDate;
 import java.util.Collections;
 
-import net.causw.app.main.domain.integration.entity.crawled.CrawledNotice;
+import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
 
 public class CrawledNoticeFixture {
 

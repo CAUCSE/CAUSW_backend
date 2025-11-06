@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.integration.service.crawler;
+package net.causw.app.main.domain.integration.crawled.service;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;

@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.integration.service.crawler;
+package net.causw.app.main.domain.integration.crawled.service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,8 +7,8 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.integration.entity.crawled.CrawledNotice;
-import net.causw.app.main.domain.integration.repository.crawled.CrawledNoticeRepository;
+import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
+import net.causw.app.main.domain.integration.crawled.repository.CrawledNoticeRepository;
 import net.causw.global.constant.StaticValue;
 
 import lombok.RequiredArgsConstructor;

@@ -1,11 +1,11 @@
-package net.causw.app.main.domain.integration.repository.crawled;
+package net.causw.app.main.domain.integration.crawled.repository;
 
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import net.causw.app.main.domain.integration.entity.crawled.CrawledNotice;
+import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
 
 public interface CrawledNoticeRepository extends JpaRepository<CrawledNotice, String> {
 	List<CrawledNotice> findTop30ByOrderByAnnounceDateDesc();

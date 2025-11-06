@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.core.aop.annotation.MeasureTime;
-import net.causw.app.main.domain.integration.service.excel.UserAcademicRecordExcelService;
+import net.causw.app.main.domain.integration.export.service.UserAcademicRecordExcelService;
 import net.causw.app.main.domain.moving.dto.semester.CurrentSemesterResponseDto;
 import net.causw.app.main.domain.moving.dto.user.UserAcademicStatusNoteUpdateDto;
 import net.causw.app.main.domain.moving.dto.userAcademicRecordApplication.CreateUserAcademicRecordApplicationRequestDto;

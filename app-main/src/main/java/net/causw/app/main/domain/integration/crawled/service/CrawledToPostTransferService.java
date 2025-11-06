@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.integration.service.crawler;
+package net.causw.app.main.domain.integration.crawled.service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,9 +10,9 @@ import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.repository.BoardRepository;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
-import net.causw.app.main.domain.integration.entity.crawled.CrawledFileLink;
-import net.causw.app.main.domain.integration.entity.crawled.CrawledNotice;
-import net.causw.app.main.domain.integration.repository.crawled.CrawledNoticeRepository;
+import net.causw.app.main.domain.integration.crawled.entity.CrawledFileLink;
+import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
+import net.causw.app.main.domain.integration.crawled.repository.CrawledNoticeRepository;
 import net.causw.app.main.domain.moving.service.notification.BoardNotificationService;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
