@@ -6,8 +6,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
-import net.causw.app.main.domain.community.entity.vote.Vote;
-import net.causw.app.main.domain.community.entity.vote.VoteOption;
+import net.causw.app.main.domain.community.post.entity.Vote;
+import net.causw.app.main.domain.community.post.entity.VoteOption;
 import net.causw.app.main.domain.moving.dto.user.UserResponseDto;
 import net.causw.app.main.domain.moving.dto.vote.VoteOptionResponseDto;
 import net.causw.app.main.domain.moving.dto.vote.VoteResponseDto;

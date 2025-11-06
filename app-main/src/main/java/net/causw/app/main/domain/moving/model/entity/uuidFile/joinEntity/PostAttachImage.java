@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.moving.model.entity.uuidFile.joinEntity;
 
-import net.causw.app.main.domain.community.entity.post.Post;
+import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.moving.model.entity.uuidFile.UuidFile;
 
 import jakarta.persistence.Entity;

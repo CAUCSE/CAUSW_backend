@@ -16,14 +16,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import net.causw.app.main.domain.community.entity.board.Board;
+import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.moving.model.entity.notification.UserBoardSubscribe;
-import net.causw.app.main.domain.community.service.board.BoardService;
+import net.causw.app.main.domain.community.board.service.BoardService;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.moving.dto.board.BoardCreateRequestDto;
 import net.causw.app.main.domain.moving.dto.board.BoardResponseDto;
-import net.causw.app.main.domain.community.event.board.BoardRepository;
+import net.causw.app.main.domain.community.board.repository.BoardRepository;
 import net.causw.app.main.domain.moving.repository.notification.UserBoardSubscribeRepository;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.util.ObjectFixtures;

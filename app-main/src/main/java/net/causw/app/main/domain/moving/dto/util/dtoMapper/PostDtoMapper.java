@@ -12,9 +12,9 @@ import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 import org.springframework.data.domain.Page;
 
-import net.causw.app.main.domain.community.entity.board.Board;
-import net.causw.app.main.domain.community.entity.post.Post;
-import net.causw.app.main.domain.community.repository.post.query.PostQueryResult;
+import net.causw.app.main.domain.community.board.entity.Board;
+import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.repository.query.PostQueryResult;
 import net.causw.app.main.domain.moving.dto.form.response.FormResponseDto;
 import net.causw.app.main.domain.moving.dto.post.BoardPostsResponseDto;
 import net.causw.app.main.domain.moving.dto.post.PostContentDto;

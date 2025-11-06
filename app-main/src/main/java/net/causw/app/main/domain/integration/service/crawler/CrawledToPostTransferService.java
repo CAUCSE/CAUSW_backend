@@ -6,10 +6,10 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.community.entity.board.Board;
-import net.causw.app.main.domain.community.entity.post.Post;
-import net.causw.app.main.domain.community.event.board.BoardRepository;
-import net.causw.app.main.domain.community.repository.post.PostRepository;
+import net.causw.app.main.domain.community.board.entity.Board;
+import net.causw.app.main.domain.community.board.repository.BoardRepository;
+import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.integration.entity.crawled.CrawledFileLink;
 import net.causw.app.main.domain.integration.entity.crawled.CrawledNotice;
 import net.causw.app.main.domain.integration.repository.crawled.CrawledNoticeRepository;

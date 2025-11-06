@@ -5,12 +5,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.community.entity.comment.ChildComment;
-import net.causw.app.main.domain.community.entity.comment.Comment;
-import net.causw.app.main.domain.community.entity.post.Post;
-import net.causw.app.main.domain.community.repository.comment.ChildCommentRepository;
-import net.causw.app.main.domain.community.repository.comment.CommentRepository;
-import net.causw.app.main.domain.community.repository.post.PostRepository;
+import net.causw.app.main.domain.community.comment.entity.ChildComment;
+import net.causw.app.main.domain.community.comment.entity.Comment;
+import net.causw.app.main.domain.community.comment.repository.ChildCommentRepository;
+import net.causw.app.main.domain.community.comment.repository.CommentRepository;
+import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.moving.dto.report.ReportCreateRequestDto;
 import net.causw.app.main.domain.moving.dto.report.ReportCreateResponseDto;
 import net.causw.app.main.domain.moving.dto.report.ReportedCommentResponseDto;

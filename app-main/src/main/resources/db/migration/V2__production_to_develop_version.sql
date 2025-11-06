@@ -13,7 +13,7 @@ WHERE major IS NULL;
 
 -- major 컬럼을 NOT NULL로 변경
 ALTER TABLE tb_user
-    MODIFY COLUMN major VARCHAR(255) NOT NULL;
+    MODIFY COLUMN major VARCHAR (255) NOT NULL;
 
 -- nickname null인 회원 데이터 처리
 UPDATE tb_user u
@@ -25,13 +25,14 @@ UPDATE tb_user u
     ORDER BY u1.id
     ) AS rn,
     (
-    SELECT COUNT(*)
+    SELECT COUNT (*)
     FROM tb_user x
     WHERE x.nickname REGEXP CONCAT('^', u1.name, '(_[0-9]+)?$')
     ) AS existing_cnt
     FROM tb_user u1
     WHERE u1.nickname IS NULL
-    ) t ON u.id = t.id
+    ) t
+ON u.id = t.id
     SET u.nickname =
         CASE
         WHEN t.existing_cnt + t.rn - 1 = 0 THEN t.name
@@ -46,16 +47,17 @@ UPDATE tb_user
     CONCAT('temp-', ROW_NUMBER() OVER (ORDER BY id) - 1) AS new_phone
     FROM tb_user
     WHERE phone_number IS NULL
-    ) AS temp_data ON tb_user.id = temp_data.id
+    ) AS temp_data
+ON tb_user.id = temp_data.id
     SET tb_user.phone_number = temp_data.new_phone;
 
 -- nickname 컬럼을 NOT NULL로 변경
 ALTER TABLE tb_user
-    MODIFY COLUMN nickname VARCHAR(255) NOT NULL;
+    MODIFY COLUMN nickname VARCHAR (255) NOT NULL;
 
 -- phone_number 컬럼을 NOT NULL로 변경
 ALTER TABLE tb_user
-    MODIFY COLUMN phone_number VARCHAR(255) NOT NULL;
+    MODIFY COLUMN phone_number VARCHAR (255) NOT NULL;
 
 -- -- student_id 컬럼을 NOT NULL로 변경 -> 이후 버전에서 null로 다시 변경하기 때문에 주석처리
 -- ALTER TABLE tb_user
@@ -67,7 +69,8 @@ ALTER TABLE tb_user
 
 -- unique 제약조건 수정
 ALTER TABLE tb_user
-DROP KEY UK_djjmuep18k7xs81lgqgutfhjd;
+DROP
+KEY UK_djjmuep18k7xs81lgqgutfhjd;
 
 ALTER TABLE tb_user
     ADD CONSTRAINT uk_user_student_id UNIQUE (student_id);
@@ -91,11 +94,13 @@ ALTER TABLE tb_council_fee_fake_user
     MODIFY COLUMN academic_status ENUM('ENROLLED', 'LEAVE_OF_ABSENCE', 'GRADUATED', 'DROPPED_OUT', 'SUSPEND', 'EXPEL', 'PROFESSOR', 'UNDETERMINED') NOT NULL;
 
 -- 7. ceremony 테이블을 tb_ceremony로 이름 변경
-RENAME TABLE ceremony TO tb_ceremony;
+RENAME
+TABLE ceremony TO tb_ceremony;
 
 -- 8. tb_ceremony_attach_image_uuid_file 테이블의 FK 제약조건 수정
 ALTER TABLE tb_ceremony_attach_image_uuid_file
-DROP FOREIGN KEY FKpqnnjrm67d4rnlds18tutw542;
+DROP
+FOREIGN KEY FKpqnnjrm67d4rnlds18tutw542;
 
 ALTER TABLE tb_ceremony_attach_image_uuid_file
     ADD CONSTRAINT fk_ceremony_attach_image_to_ceremony_id
@@ -104,12 +109,14 @@ ALTER TABLE tb_ceremony_attach_image_uuid_file
 -- 9. tb_ceremony_push_notification 테이블 수정
 -- is_push_active 컬럼 제거
 ALTER TABLE tb_ceremony_push_notification
-DROP COLUMN is_push_active;
+DROP
+COLUMN is_push_active;
 
 -- 10. tb_user_council_fee 테이블 수정
 -- is_paid drop
 ALTER TABLE tb_user_council_fee
-    DROP COLUMN is_paid;
+DROP
+COLUMN is_paid;
 
 -- 11. tb_user_council_fee_log 테이블 수정
 -- academic_status enum 값 변경
@@ -128,65 +135,69 @@ ALTER TABLE tb_user_academic_record_log
 
 -- 14. 새로운 테이블들 생성
 -- tb_notification_log 테이블 생성
-CREATE TABLE tb_notification_log (
-                                                   id VARCHAR(255) NOT NULL,
-    created_at DATETIME(6) NULL DEFAULT NULL,
-    updated_at DATETIME(6) NULL DEFAULT NULL,
-    is_read BIT(1) NOT NULL,
+CREATE TABLE tb_notification_log
+(
+    id              VARCHAR(255) NOT NULL,
+    created_at      DATETIME(6) NULL DEFAULT NULL,
+    updated_at      DATETIME(6) NULL DEFAULT NULL,
+    is_read         BIT(1)       NOT NULL,
     notification_id VARCHAR(255) NOT NULL,
-    user_id VARCHAR(255) NOT NULL,
+    user_id         VARCHAR(255) NOT NULL,
     PRIMARY KEY (id),
-    INDEX tb_notification_log_notification_id_index (notification_id ASC) VISIBLE,
-    INDEX tb_notification_log_user_id_index (user_id ASC) VISIBLE,
+    INDEX           tb_notification_log_notification_id_index (notification_id ASC) VISIBLE,
+    INDEX           tb_notification_log_user_id_index (user_id ASC) VISIBLE,
     CONSTRAINT fk_notification_log_to_user_id
-    FOREIGN KEY (user_id) REFERENCES tb_user (id),
+        FOREIGN KEY (user_id) REFERENCES tb_user (id),
     CONSTRAINT fk_notification_log_to_notification_id
-    FOREIGN KEY (notification_id) REFERENCES tb_notification (id)
-    ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+        FOREIGN KEY (notification_id) REFERENCES tb_notification (id)
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 -- tb_user_comment_subscribe 테이블 생성
-CREATE TABLE tb_user_comment_subscribe (
-                                                         id VARCHAR(255) NOT NULL,
-    created_at DATETIME(6) NULL DEFAULT NULL,
-    updated_at DATETIME(6) NULL DEFAULT NULL,
+CREATE TABLE tb_user_comment_subscribe
+(
+    id            VARCHAR(255) NOT NULL,
+    created_at    DATETIME(6) NULL DEFAULT NULL,
+    updated_at    DATETIME(6) NULL DEFAULT NULL,
     is_subscribed BIT(1) NULL DEFAULT NULL,
-    comment_id VARCHAR(255) NULL DEFAULT NULL,
-    user_id VARCHAR(255) NULL DEFAULT NULL,
+    comment_id    VARCHAR(255) NULL DEFAULT NULL,
+    user_id       VARCHAR(255) NULL DEFAULT NULL,
     PRIMARY KEY (id),
-    INDEX tb_user_comment_subscribe_comment_id_index (comment_id ASC) VISIBLE,
-    INDEX tb_user_comment_subscribe_user_id_index (user_id ASC) VISIBLE,
+    INDEX         tb_user_comment_subscribe_comment_id_index (comment_id ASC) VISIBLE,
+    INDEX         tb_user_comment_subscribe_user_id_index (user_id ASC) VISIBLE,
     CONSTRAINT fk_user_comment_subscribe_to_user_id
-    FOREIGN KEY (user_id) REFERENCES tb_user (id),
+        FOREIGN KEY (user_id) REFERENCES tb_user (id),
     CONSTRAINT fk_user_comment_subscribe_to_comment_id
-    FOREIGN KEY (comment_id) REFERENCES tb_comment (id)
-    ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+        FOREIGN KEY (comment_id) REFERENCES tb_comment (id)
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 -- tb_user_fcm_token 테이블 생성
-CREATE TABLE tb_user_fcm_token (
-                                                 user_id VARCHAR(255) NOT NULL,
-    fcm_token VARCHAR(255) NULL DEFAULT NULL,
+CREATE TABLE tb_user_fcm_token
+(
+    user_id         VARCHAR(255) NOT NULL,
+    fcm_token       VARCHAR(255) NULL DEFAULT NULL,
     fcm_token_value VARCHAR(255) NULL DEFAULT NULL,
-    INDEX tb_user_fcm_token_user_id_index (user_id ASC) VISIBLE,
+    INDEX           tb_user_fcm_token_user_id_index (user_id ASC) VISIBLE,
     CONSTRAINT fk_user_fcm_token_to_user_id
-    FOREIGN KEY (user_id) REFERENCES tb_user (id)
-    ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+        FOREIGN KEY (user_id) REFERENCES tb_user (id)
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 -- tb_user_post_subscribe 테이블 생성
-CREATE TABLE tb_user_post_subscribe (
-                                                      id VARCHAR(255) NOT NULL,
-    created_at DATETIME(6) NULL DEFAULT NULL,
-    updated_at DATETIME(6) NULL DEFAULT NULL,
+CREATE TABLE tb_user_post_subscribe
+(
+    id            VARCHAR(255) NOT NULL,
+    created_at    DATETIME(6) NULL DEFAULT NULL,
+    updated_at    DATETIME(6) NULL DEFAULT NULL,
     is_subscribed BIT(1) NULL DEFAULT NULL,
-    post_id VARCHAR(255) NULL DEFAULT NULL,
-    user_id VARCHAR(255) NULL DEFAULT NULL,
+    post_id       VARCHAR(255) NULL DEFAULT NULL,
+    user_id       VARCHAR(255) NULL DEFAULT NULL,
     PRIMARY KEY (id),
-    INDEX tb_user_post_subscribe_post_id_index (post_id ASC) VISIBLE,
-    INDEX tb_user_post_subscribe_user_id_index (user_id ASC) VISIBLE,
+    INDEX         tb_user_post_subscribe_post_id_index (post_id ASC) VISIBLE,
+    INDEX         tb_user_post_subscribe_user_id_index (user_id ASC) VISIBLE,
     CONSTRAINT fk_user_post_subscribe_to_post_id
-    FOREIGN KEY (post_id) REFERENCES tb_post (id),
+        FOREIGN KEY (post_id) REFERENCES tb_post (id),
     CONSTRAINT fk_user_post_subscribe_to_user_id
-    FOREIGN KEY (user_id) REFERENCES tb_user (id)
-    ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+        FOREIGN KEY (user_id) REFERENCES tb_user (id)
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 -- 15. tb_notification 테이블에 컬럼 추가
 ALTER TABLE tb_notification

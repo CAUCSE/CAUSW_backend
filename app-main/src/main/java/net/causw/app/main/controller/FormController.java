@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.causw.app.main.core.security.userdetails.CustomUserDetails;
-import net.causw.app.main.domain.community.service.form.FormService;
+import net.causw.app.main.domain.community.form.service.FormService;
 import net.causw.app.main.domain.moving.dto.form.request.FormReplyRequestDto;
 import net.causw.app.main.domain.moving.dto.form.response.FormResponseDto;
 import net.causw.app.main.domain.moving.dto.form.response.QuestionSummaryResponseDto;

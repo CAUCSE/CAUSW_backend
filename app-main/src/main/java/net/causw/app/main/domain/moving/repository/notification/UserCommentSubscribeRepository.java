@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import net.causw.app.main.domain.community.entity.comment.Comment;
+import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.moving.model.entity.notification.UserCommentSubscribe;
 import net.causw.app.main.domain.user.account.entity.user.User;
 

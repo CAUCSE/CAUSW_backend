@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import net.causw.app.main.domain.community.entity.vote.Vote;
-import net.causw.app.main.domain.community.entity.vote.VoteOption;
-import net.causw.app.main.domain.community.entity.vote.VoteRecord;
+import net.causw.app.main.domain.community.post.entity.Vote;
+import net.causw.app.main.domain.community.post.entity.VoteOption;
+import net.causw.app.main.domain.community.post.entity.VoteRecord;
 import net.causw.app.main.domain.user.account.entity.user.User;
 
 public interface VoteRecordRepository extends JpaRepository<VoteRecord, String> {

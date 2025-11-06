@@ -5,17 +5,17 @@ import java.util.Set;
 
 import org.springframework.test.util.ReflectionTestUtils;
 
-import net.causw.app.main.domain.community.entity.board.Board;
-import net.causw.app.main.domain.community.entity.comment.ChildComment;
-import net.causw.app.main.domain.community.entity.comment.Comment;
-import net.causw.app.main.domain.community.entity.post.Post;
+import net.causw.app.main.domain.community.board.entity.Board;
+import net.causw.app.main.domain.community.comment.entity.ChildComment;
+import net.causw.app.main.domain.community.comment.entity.Comment;
+import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.moving.model.entity.semester.Semester;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
 import net.causw.app.main.domain.finance.userCouncilFee.entity.userCouncilFee.CouncilFeeFakeUser;
 import net.causw.app.main.domain.finance.userCouncilFee.entity.userCouncilFee.UserCouncilFee;
-import net.causw.app.main.domain.community.entity.vote.Vote;
-import net.causw.app.main.domain.community.entity.vote.VoteOption;
+import net.causw.app.main.domain.community.post.entity.Vote;
+import net.causw.app.main.domain.community.post.entity.VoteOption;
 import net.causw.app.main.domain.moving.model.enums.semester.SemesterType;
 import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.GraduationType;

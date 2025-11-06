@@ -1,7 +1,7 @@
 package net.causw.app.main.domain.moving.dto.notification;
 
-import net.causw.app.main.domain.community.entity.comment.ChildComment;
-import net.causw.app.main.domain.community.entity.comment.Comment;
+import net.causw.app.main.domain.community.comment.entity.ChildComment;
+import net.causw.app.main.domain.community.comment.entity.Comment;
 
 import lombok.Builder;
 import lombok.Getter;

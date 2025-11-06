@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.core.security.userdetails.CustomUserDetails;
-import net.causw.app.main.domain.community.service.post.PostService;
+import net.causw.app.main.domain.community.post.service.PostService;
 import net.causw.app.main.domain.moving.dto.post.BoardPostsResponseDto;
 import net.causw.app.main.domain.moving.dto.post.PostCreateRequestDto;
 import net.causw.app.main.domain.moving.dto.post.PostCreateResponseDto;

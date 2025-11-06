@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.moving.model.entity.notification;
 
-import net.causw.app.main.domain.community.entity.comment.Comment;
+import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.entity.BaseEntity;
 

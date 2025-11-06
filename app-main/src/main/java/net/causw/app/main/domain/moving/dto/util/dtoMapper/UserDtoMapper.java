@@ -10,9 +10,9 @@ import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 import org.springframework.data.domain.Page;
 
-import net.causw.app.main.domain.community.entity.board.Board;
-import net.causw.app.main.domain.community.entity.comment.Comment;
-import net.causw.app.main.domain.community.entity.post.Post;
+import net.causw.app.main.domain.community.board.entity.Board;
+import net.causw.app.main.domain.community.comment.entity.Comment;
+import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.moving.dto.comment.CommentsOfUserResponseDto;
 import net.causw.app.main.domain.moving.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.app.main.domain.moving.dto.post.PostsResponseDto;

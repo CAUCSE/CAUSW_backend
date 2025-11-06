@@ -4,8 +4,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.core.security.userdetails.CustomUserDetails;
-import net.causw.app.main.domain.community.entity.comment.ChildComment;
-import net.causw.app.main.domain.community.service.comment.ChildCommentEntityService;
+import net.causw.app.main.domain.community.comment.entity.ChildComment;
+import net.causw.app.main.domain.community.comment.service.ChildCommentEntityService;
 import net.causw.app.main.domain.moving.dto.userBlock.response.CreateBlockByChildCommentResponseDto;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.global.constant.MessageUtil;

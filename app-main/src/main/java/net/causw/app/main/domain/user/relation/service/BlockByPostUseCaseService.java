@@ -4,8 +4,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.core.security.userdetails.CustomUserDetails;
-import net.causw.app.main.domain.community.entity.post.Post;
-import net.causw.app.main.domain.community.service.post.PostEntityService;
+import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.service.PostEntityService;
 import net.causw.app.main.domain.moving.dto.userBlock.response.CreateBlockByPostResponseDto;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.global.constant.MessageUtil;

@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import net.causw.app.main.domain.community.entity.board.Board;
+import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 
 import io.swagger.v3.oas.annotations.media.Schema;

@@ -11,8 +11,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
-import net.causw.app.main.domain.community.entity.board.Board;
-import net.causw.app.main.domain.community.entity.post.Post;
+import net.causw.app.main.domain.community.board.entity.Board;
+import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.finance.userCouncilFee.entity.userCouncilFee.UserCouncilFee;
 import net.causw.app.main.domain.moving.dto.board.BoardOfCircleResponseDto;
 import net.causw.app.main.domain.moving.dto.circle.CircleBoardsResponseDto;

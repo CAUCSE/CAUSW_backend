@@ -4,10 +4,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.core.aop.annotation.MeasureTime;
-import net.causw.app.main.domain.community.repository.inquiry.InquiryRepository;
 import net.causw.app.main.domain.moving.dto.inquiry.InquiryCreateRequestDto;
 import net.causw.app.main.domain.moving.dto.inquiry.InquiryResponseDto;
 import net.causw.app.main.domain.moving.model.entity.inquiry.Inquiry;
+import net.causw.app.main.domain.moving.repository.inquiry.InquiryRepository;
 import net.causw.app.main.domain.moving.validation.ConstraintValidator;
 import net.causw.app.main.domain.moving.validation.TargetIsDeletedValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;

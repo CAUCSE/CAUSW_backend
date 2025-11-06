@@ -9,11 +9,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.core.aop.annotation.MeasureTime;
-import net.causw.app.main.domain.community.entity.post.Post;
-import net.causw.app.main.domain.community.entity.vote.Vote;
-import net.causw.app.main.domain.community.entity.vote.VoteOption;
-import net.causw.app.main.domain.community.entity.vote.VoteRecord;
-import net.causw.app.main.domain.community.repository.post.PostRepository;
+import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.entity.Vote;
+import net.causw.app.main.domain.community.post.entity.VoteOption;
+import net.causw.app.main.domain.community.post.entity.VoteRecord;
+import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.moving.dto.user.UserResponseDto;
 import net.causw.app.main.domain.moving.dto.util.dtoMapper.UserDtoMapper;
 import net.causw.app.main.domain.moving.dto.util.dtoMapper.VoteDtoMapper;

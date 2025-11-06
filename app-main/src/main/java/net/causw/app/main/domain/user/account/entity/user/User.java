@@ -9,7 +9,7 @@ import java.util.Set;
 
 import org.hibernate.annotations.BatchSize;
 
-import net.causw.app.main.domain.community.entity.vote.VoteRecord;
+import net.causw.app.main.domain.community.post.entity.VoteRecord;
 import net.causw.app.main.domain.moving.dto.user.GraduatedUserCommand;
 import net.causw.app.main.domain.moving.dto.user.UserCreateRequestDto;
 import net.causw.app.main.domain.moving.model.entity.circle.CircleMember;

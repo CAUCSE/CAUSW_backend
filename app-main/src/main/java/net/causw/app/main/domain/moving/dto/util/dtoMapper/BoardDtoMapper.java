@@ -6,9 +6,9 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
-import net.causw.app.main.domain.community.entity.board.Board;
-import net.causw.app.main.domain.community.entity.board.BoardApply;
-import net.causw.app.main.domain.community.entity.post.Post;
+import net.causw.app.main.domain.community.board.entity.Board;
+import net.causw.app.main.domain.community.board.entity.BoardApply;
+import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.moving.dto.board.BoardAppliesResponseDto;
 import net.causw.app.main.domain.moving.dto.board.BoardApplyResponseDto;
 import net.causw.app.main.domain.moving.dto.board.BoardMainResponseDto;

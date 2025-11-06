@@ -9,12 +9,12 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import net.causw.app.main.core.aop.annotation.MeasureTime;
-import net.causw.app.main.domain.community.entity.board.Board;
-import net.causw.app.main.domain.community.entity.post.Post;
-import net.causw.app.main.domain.community.event.board.BoardRepository;
-import net.causw.app.main.domain.community.repository.post.FavoritePostRepository;
-import net.causw.app.main.domain.community.repository.post.LikePostRepository;
-import net.causw.app.main.domain.community.repository.post.PostRepository;
+import net.causw.app.main.domain.community.board.entity.Board;
+import net.causw.app.main.domain.community.board.repository.BoardRepository;
+import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.repository.FavoritePostRepository;
+import net.causw.app.main.domain.community.post.repository.LikePostRepository;
+import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.moving.dto.board.BoardResponseDto;
 import net.causw.app.main.domain.moving.dto.homepage.HomePageResponseDto;
 import net.causw.app.main.domain.moving.dto.util.dtoMapper.BoardDtoMapper;

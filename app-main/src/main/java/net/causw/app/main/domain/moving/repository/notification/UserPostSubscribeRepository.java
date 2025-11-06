@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import net.causw.app.main.domain.community.entity.post.Post;
+import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.moving.model.entity.notification.UserPostSubscribe;
 import net.causw.app.main.domain.user.account.entity.user.User;
 

@@ -2,7 +2,7 @@ package net.causw.app.main.domain.moving.dto.form.request.create;
 
 import java.util.List;
 
-import net.causw.app.main.domain.community.enums.form.RegisteredSemester;
+import net.causw.app.main.domain.community.form.enums.RegisteredSemester;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;

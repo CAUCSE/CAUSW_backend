@@ -9,12 +9,12 @@ import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 import org.springframework.data.domain.Page;
 
-import net.causw.app.main.domain.community.entity.form.Form;
-import net.causw.app.main.domain.community.entity.form.FormQuestion;
-import net.causw.app.main.domain.community.entity.form.FormQuestionOption;
-import net.causw.app.main.domain.community.entity.form.Reply;
-import net.causw.app.main.domain.community.entity.form.ReplyQuestion;
-import net.causw.app.main.domain.community.enums.form.RegisteredSemester;
+import net.causw.app.main.domain.community.form.entity.Form;
+import net.causw.app.main.domain.community.form.entity.FormQuestion;
+import net.causw.app.main.domain.community.form.entity.FormQuestionOption;
+import net.causw.app.main.domain.community.form.entity.Reply;
+import net.causw.app.main.domain.community.form.entity.ReplyQuestion;
+import net.causw.app.main.domain.community.form.enums.RegisteredSemester;
 import net.causw.app.main.domain.finance.userCouncilFee.entity.userCouncilFee.UserCouncilFee;
 import net.causw.app.main.domain.moving.dto.form.response.FormResponseDto;
 import net.causw.app.main.domain.moving.dto.form.response.OptionResponseDto;

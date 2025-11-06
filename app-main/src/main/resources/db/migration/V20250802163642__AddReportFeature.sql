@@ -18,7 +18,7 @@ CREATE TABLE tb_report
 );
 
 -- 조회 성능을 위한 Index 생성
-CREATE INDEX idx_report_target_id ON tb_report(target_id);
-CREATE INDEX idx_report_type ON tb_report(report_type);
-CREATE INDEX idx_report_created_at ON tb_report(created_at);
-CREATE INDEX idx_user_report_count ON tb_user(report_count);
+CREATE INDEX idx_report_target_id ON tb_report (target_id);
+CREATE INDEX idx_report_type ON tb_report (report_type);
+CREATE INDEX idx_report_created_at ON tb_report (created_at);
+CREATE INDEX idx_user_report_count ON tb_user (report_count);
