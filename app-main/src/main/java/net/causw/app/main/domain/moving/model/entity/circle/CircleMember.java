@@ -3,7 +3,7 @@ package net.causw.app.main.domain.moving.model.entity.circle;
 import net.causw.app.main.domain.community.entity.form.Form;
 import net.causw.app.main.domain.community.entity.form.Reply;
 import net.causw.app.main.domain.moving.model.enums.circle.CircleMemberStatus;
-import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.entity.BaseEntity;
 
 import jakarta.persistence.CascadeType;

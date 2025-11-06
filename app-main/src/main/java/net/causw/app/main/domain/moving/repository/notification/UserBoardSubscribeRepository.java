@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import net.causw.app.main.domain.community.entity.board.Board;
 import net.causw.app.main.domain.moving.model.entity.notification.UserBoardSubscribe;
-import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.domain.user.account.entity.user.User;
 
 @Repository
 public interface UserBoardSubscribeRepository extends JpaRepository<UserBoardSubscribe, String> {

@@ -10,7 +10,7 @@ import net.causw.app.main.domain.moving.dto.report.ReportedCommentNativeProjecti
 import net.causw.app.main.domain.moving.dto.report.ReportedPostNativeProjection;
 import net.causw.app.main.domain.moving.model.entity.report.Report;
 import net.causw.app.main.domain.moving.model.enums.report.ReportType;
-import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.domain.user.account.entity.user.User;
 
 public interface ReportRepository extends JpaRepository<Report, String> {
 

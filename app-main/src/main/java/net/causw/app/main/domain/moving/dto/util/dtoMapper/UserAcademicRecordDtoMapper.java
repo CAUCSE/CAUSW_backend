@@ -18,9 +18,9 @@ import net.causw.app.main.domain.moving.dto.userAcademicRecordApplication.UserAc
 import net.causw.app.main.domain.moving.dto.userAcademicRecordApplication.UserAcademicRecordListResponseDto;
 import net.causw.app.main.domain.moving.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 import net.causw.app.main.domain.moving.model.entity.semester.Semester;
-import net.causw.app.main.domain.user.entity.user.User;
-import net.causw.app.main.domain.user.entity.userAcademicRecord.UserAcademicRecordApplication;
-import net.causw.app.main.domain.user.entity.userAcademicRecord.UserAcademicRecordLog;
+import net.causw.app.main.domain.user.academic.entity.userAcademicRecord.UserAcademicRecordApplication;
+import net.causw.app.main.domain.user.academic.entity.userAcademicRecord.UserAcademicRecordLog;
+import net.causw.app.main.domain.user.account.entity.user.User;
 
 @Retention(RetentionPolicy.CLASS)
 @Target({ElementType.METHOD})

@@ -24,16 +24,16 @@ import net.causw.app.main.domain.moving.model.entity.notification.Notification;
 import net.causw.app.main.domain.moving.model.entity.notification.NotificationLog;
 import net.causw.app.main.domain.moving.service.notification.CeremonyNotificationService;
 import net.causw.app.main.domain.moving.service.notification.FirebasePushNotificationService;
-import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.moving.model.enums.ceremony.CeremonyCategory;
-import net.causw.app.main.domain.user.enums.user.Department;
+import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.moving.dto.user.UserCreateRequestDto;
 import net.causw.app.main.shared.infra.firebase.FcmUtils;
 import net.causw.app.main.domain.moving.repository.ceremony.CeremonyRepository;
 import net.causw.app.main.domain.moving.repository.notification.CeremonyNotificationSettingRepository;
 import net.causw.app.main.domain.moving.repository.notification.NotificationLogRepository;
 import net.causw.app.main.domain.moving.repository.notification.NotificationRepository;
-import net.causw.app.main.domain.user.service.UserBlockEntityService;
+import net.causw.app.main.domain.user.relation.service.UserBlockEntityService;
 
 import com.google.firebase.messaging.FirebaseMessagingException;
 

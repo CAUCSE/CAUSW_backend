@@ -13,7 +13,7 @@ import net.causw.app.main.domain.moving.dto.report.ReportedPostResponseDto;
 import net.causw.app.main.domain.moving.dto.report.ReportedUserResponseDto;
 import net.causw.app.main.domain.moving.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 import net.causw.app.main.domain.moving.model.enums.report.ReportReason;
-import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.domain.user.account.entity.user.User;
 
 @Mapper(componentModel = "spring")
 public interface ReportDtoMapper extends UuidFileToUrlDtoMapper {

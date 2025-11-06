@@ -31,14 +31,14 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import net.causw.app.main.domain.user.entity.user.User;
-import net.causw.app.main.domain.user.enums.user.Role;
-import net.causw.app.main.domain.user.enums.user.UserState;
+import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.Role;
+import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.moving.policy.RolePolicy;
-import net.causw.app.main.domain.user.service.UserRoleService;
+import net.causw.app.main.domain.user.account.service.UserRoleService;
 import net.causw.app.main.domain.moving.dto.user.UserResponseDto;
 import net.causw.app.main.domain.moving.dto.user.UserUpdateRoleRequestDto;
-import net.causw.app.main.domain.user.repository.user.UserRepository;
+import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.util.ObjectFixtures;
 
 @ExtendWith(MockitoExtension.class)

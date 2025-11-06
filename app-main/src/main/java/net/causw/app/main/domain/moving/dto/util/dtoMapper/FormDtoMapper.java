@@ -15,6 +15,7 @@ import net.causw.app.main.domain.community.entity.form.FormQuestionOption;
 import net.causw.app.main.domain.community.entity.form.Reply;
 import net.causw.app.main.domain.community.entity.form.ReplyQuestion;
 import net.causw.app.main.domain.community.enums.form.RegisteredSemester;
+import net.causw.app.main.domain.finance.userCouncilFee.entity.userCouncilFee.UserCouncilFee;
 import net.causw.app.main.domain.moving.dto.form.response.FormResponseDto;
 import net.causw.app.main.domain.moving.dto.form.response.OptionResponseDto;
 import net.causw.app.main.domain.moving.dto.form.response.OptionSummaryResponseDto;
@@ -28,8 +29,7 @@ import net.causw.app.main.domain.moving.dto.form.response.reply.UserReplyRespons
 import net.causw.app.main.domain.moving.dto.form.response.reply.excel.ExcelReplyListResponseDto;
 import net.causw.app.main.domain.moving.dto.form.response.reply.excel.ExcelReplyQuestionResponseDto;
 import net.causw.app.main.domain.moving.dto.form.response.reply.excel.ExcelReplyResponseDto;
-import net.causw.app.main.domain.user.entity.user.User;
-import net.causw.app.main.domain.user.entity.userCouncilFee.UserCouncilFee;
+import net.causw.app.main.domain.user.account.entity.user.User;
 
 @Mapper(componentModel = "spring")
 public interface FormDtoMapper {

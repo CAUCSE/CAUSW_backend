@@ -18,12 +18,12 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.causw.app.main.core.security.userdetails.CustomUserDetails;
+import net.causw.app.main.domain.finance.userCouncilFee.service.UserCouncilFeeService;
 import net.causw.app.main.domain.moving.dto.userCouncilFee.CreateUserCouncilFeeWithFakeUserRequestDto;
 import net.causw.app.main.domain.moving.dto.userCouncilFee.CreateUserCouncilFeeWithUserRequestDto;
 import net.causw.app.main.domain.moving.dto.userCouncilFee.CurrentUserCouncilFeeResponseDto;
 import net.causw.app.main.domain.moving.dto.userCouncilFee.UserCouncilFeeListResponseDto;
 import net.causw.app.main.domain.moving.dto.userCouncilFee.UserCouncilFeeResponseDto;
-import net.causw.app.main.domain.user.service.UserCouncilFeeService;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.InternalServerException;

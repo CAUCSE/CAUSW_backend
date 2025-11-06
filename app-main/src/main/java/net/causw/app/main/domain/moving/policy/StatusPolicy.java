@@ -7,8 +7,8 @@ import net.causw.app.main.domain.community.entity.comment.ChildComment;
 import net.causw.app.main.domain.community.entity.comment.Comment;
 import net.causw.app.main.domain.community.entity.post.Post;
 import net.causw.app.main.domain.community.entity.vote.Vote;
-import net.causw.app.main.domain.user.entity.user.User;
-import net.causw.app.main.domain.user.enums.user.Role;
+import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.Role;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

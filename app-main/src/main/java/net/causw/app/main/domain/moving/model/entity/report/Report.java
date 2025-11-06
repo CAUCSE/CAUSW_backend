@@ -2,7 +2,7 @@ package net.causw.app.main.domain.moving.model.entity.report;
 
 import net.causw.app.main.domain.moving.model.enums.report.ReportReason;
 import net.causw.app.main.domain.moving.model.enums.report.ReportType;
-import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.entity.BaseEntity;
 
 import jakarta.persistence.Column;

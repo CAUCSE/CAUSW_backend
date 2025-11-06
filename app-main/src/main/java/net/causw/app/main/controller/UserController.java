@@ -47,10 +47,10 @@ import net.causw.app.main.domain.moving.dto.user.UserUpdatePasswordRequestDto;
 import net.causw.app.main.domain.moving.dto.user.UserUpdateRequestDto;
 import net.causw.app.main.domain.moving.dto.user.UserUpdateRoleRequestDto;
 import net.causw.app.main.domain.moving.dto.user.UserUpdateTokenRequestDto;
-import net.causw.app.main.domain.user.service.UserRoleService;
-import net.causw.app.main.domain.user.service.UserService;
-import net.causw.app.main.domain.user.service.useCase.command.RegisterGraduatedUsersUseCaseService;
-import net.causw.app.main.domain.user.service.useCase.query.FindPrivilegedUsersUseCaseService;
+import net.causw.app.main.domain.user.account.service.FindPrivilegedUsersUseCaseService;
+import net.causw.app.main.domain.user.account.service.RegisterGraduatedUsersUseCaseService;
+import net.causw.app.main.domain.user.account.service.UserRoleService;
+import net.causw.app.main.domain.user.account.service.UserService;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.UnauthorizedException;
 

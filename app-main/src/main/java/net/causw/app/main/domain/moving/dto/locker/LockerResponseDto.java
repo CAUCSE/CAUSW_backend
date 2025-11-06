@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import net.causw.app.main.domain.moving.model.entity.locker.Locker;
-import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.global.constant.StaticValue;
 
 import lombok.Builder;

@@ -4,7 +4,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-import net.causw.app.main.domain.user.enums.user.Role;
+import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.shared.AbstractValidator;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.UnauthorizedException;

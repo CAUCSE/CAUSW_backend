@@ -4,9 +4,9 @@ import static net.causw.app.main.domain.moving.policy.RolePolicy.*;
 
 import java.util.Set;
 
-import net.causw.app.main.domain.user.entity.user.User;
-import net.causw.app.main.domain.user.enums.user.Role;
-import net.causw.app.main.domain.user.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.shared.AbstractValidator;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.ErrorCode;

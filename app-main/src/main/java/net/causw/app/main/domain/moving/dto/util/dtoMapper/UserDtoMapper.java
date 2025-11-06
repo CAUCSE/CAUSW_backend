@@ -31,11 +31,11 @@ import net.causw.app.main.domain.moving.dto.userInfo.UserCareerDto;
 import net.causw.app.main.domain.moving.dto.userInfo.UserInfoResponseDto;
 import net.causw.app.main.domain.moving.dto.userInfo.UserInfoSummaryResponseDto;
 import net.causw.app.main.domain.moving.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
-import net.causw.app.main.domain.user.entity.user.User;
-import net.causw.app.main.domain.user.entity.user.UserAdmission;
-import net.causw.app.main.domain.user.entity.user.UserAdmissionLog;
-import net.causw.app.main.domain.user.entity.userInfo.UserCareer;
-import net.causw.app.main.domain.user.entity.userInfo.UserInfo;
+import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
+import net.causw.app.main.domain.user.account.entity.user.UserAdmissionLog;
+import net.causw.app.main.domain.user.account.entity.userInfo.UserCareer;
+import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.global.constant.StaticValue;
 
 @Mapper(componentModel = "spring")

@@ -11,7 +11,7 @@ import org.springframework.data.repository.query.Param;
 
 import net.causw.app.main.domain.moving.model.entity.notification.NotificationLog;
 import net.causw.app.main.domain.moving.model.enums.notification.NoticeType;
-import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.domain.user.account.entity.user.User;
 
 public interface NotificationLogRepository extends JpaRepository<NotificationLog, String> {
 

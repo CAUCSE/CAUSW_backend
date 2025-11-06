@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.moving.dto.user;
 
-import net.causw.app.main.domain.user.enums.user.Department;
+import net.causw.app.main.domain.user.account.enums.user.Department;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

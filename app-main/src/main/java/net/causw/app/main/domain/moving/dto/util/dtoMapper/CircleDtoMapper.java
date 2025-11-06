@@ -13,6 +13,7 @@ import org.mapstruct.factory.Mappers;
 
 import net.causw.app.main.domain.community.entity.board.Board;
 import net.causw.app.main.domain.community.entity.post.Post;
+import net.causw.app.main.domain.finance.userCouncilFee.entity.userCouncilFee.UserCouncilFee;
 import net.causw.app.main.domain.moving.dto.board.BoardOfCircleResponseDto;
 import net.causw.app.main.domain.moving.dto.circle.CircleBoardsResponseDto;
 import net.causw.app.main.domain.moving.dto.circle.CircleMemberResponseDto;
@@ -24,8 +25,7 @@ import net.causw.app.main.domain.moving.dto.user.UserResponseDto;
 import net.causw.app.main.domain.moving.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 import net.causw.app.main.domain.moving.model.entity.circle.Circle;
 import net.causw.app.main.domain.moving.model.entity.circle.CircleMember;
-import net.causw.app.main.domain.user.entity.user.User;
-import net.causw.app.main.domain.user.entity.userCouncilFee.UserCouncilFee;
+import net.causw.app.main.domain.user.account.entity.user.User;
 
 // Custom Annotation을 사용하여 중복되는 @Mapping을 줄일 수 있습니다.
 @Retention(RetentionPolicy.CLASS)

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import net.causw.app.main.domain.community.entity.form.Form;
 import net.causw.app.main.domain.community.entity.form.Reply;
-import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.domain.user.account.entity.user.User;
 
 @Repository
 public interface ReplyRepository extends JpaRepository<Reply, Long> {

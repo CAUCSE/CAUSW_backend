@@ -6,8 +6,8 @@ import java.util.Set;
 import net.causw.app.main.domain.moving.model.entity.locker.Locker;
 import net.causw.app.main.domain.moving.service.common.CommonService;
 import net.causw.app.main.domain.moving.validation.LockerIsActiveValidator;
-import net.causw.app.main.domain.user.entity.user.User;
-import net.causw.app.main.domain.user.util.UserRoleValidator;
+import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.util.UserRoleValidator;
 import net.causw.app.main.shared.ValidatorBucket;
 
 import lombok.NoArgsConstructor;

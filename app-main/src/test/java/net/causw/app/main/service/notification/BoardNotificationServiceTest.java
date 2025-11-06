@@ -30,12 +30,12 @@ import net.causw.app.main.domain.moving.model.entity.notification.UserBoardSubsc
 import net.causw.app.main.domain.community.entity.post.Post;
 import net.causw.app.main.domain.moving.service.notification.BoardNotificationService;
 import net.causw.app.main.domain.moving.service.notification.FirebasePushNotificationService;
-import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.infra.firebase.FcmUtils;
 import net.causw.app.main.domain.moving.repository.notification.NotificationLogRepository;
 import net.causw.app.main.domain.moving.repository.notification.NotificationRepository;
 import net.causw.app.main.domain.moving.repository.notification.UserBoardSubscribeRepository;
-import net.causw.app.main.domain.user.service.UserBlockEntityService;
+import net.causw.app.main.domain.user.relation.service.UserBlockEntityService;
 import net.causw.app.main.util.ObjectFixtures;
 
 import com.google.firebase.messaging.FirebaseMessagingException;

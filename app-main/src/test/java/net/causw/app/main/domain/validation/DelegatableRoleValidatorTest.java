@@ -17,8 +17,8 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.moving.validation.DelegatableRoleValidator;
-import net.causw.app.main.domain.user.entity.user.User;
-import net.causw.app.main.domain.user.enums.user.Role;
+import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.moving.policy.RolePolicy;
 import net.causw.app.main.util.ObjectFixtures;
 import net.causw.global.constant.MessageUtil;

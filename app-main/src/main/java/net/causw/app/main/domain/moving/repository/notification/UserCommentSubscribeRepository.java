@@ -11,7 +11,7 @@ import org.springframework.data.repository.query.Param;
 
 import net.causw.app.main.domain.community.entity.comment.Comment;
 import net.causw.app.main.domain.moving.model.entity.notification.UserCommentSubscribe;
-import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.domain.user.account.entity.user.User;
 
 public interface UserCommentSubscribeRepository extends JpaRepository<UserCommentSubscribe, String> {
 

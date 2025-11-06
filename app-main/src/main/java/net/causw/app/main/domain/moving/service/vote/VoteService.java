@@ -25,7 +25,7 @@ import net.causw.app.main.domain.moving.policy.StatusPolicy;
 import net.causw.app.main.domain.moving.repository.vote.VoteOptionRepository;
 import net.causw.app.main.domain.moving.repository.vote.VoteRecordRepository;
 import net.causw.app.main.domain.moving.repository.vote.VoteRepository;
-import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;

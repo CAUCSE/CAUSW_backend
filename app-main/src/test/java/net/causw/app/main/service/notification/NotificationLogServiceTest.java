@@ -24,7 +24,7 @@ import org.springframework.data.domain.Pageable;
 import net.causw.app.main.domain.moving.model.entity.notification.Notification;
 import net.causw.app.main.domain.moving.model.entity.notification.NotificationLog;
 import net.causw.app.main.domain.moving.service.notification.NotificationLogService;
-import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.moving.model.enums.notification.NoticeType;
 import net.causw.app.main.domain.moving.dto.notification.NotificationResponseDto;
 import net.causw.app.main.domain.moving.repository.notification.NotificationLogRepository;

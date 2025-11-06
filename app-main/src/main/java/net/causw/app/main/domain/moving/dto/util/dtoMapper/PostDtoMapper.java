@@ -26,8 +26,8 @@ import net.causw.app.main.domain.moving.dto.util.dtoMapper.custom.UuidFileToUrlD
 import net.causw.app.main.domain.moving.dto.vote.VoteResponseDto;
 import net.causw.app.main.domain.moving.model.entity.notification.UserPostSubscribe;
 import net.causw.app.main.domain.moving.model.entity.uuidFile.joinEntity.PostAttachImage;
-import net.causw.app.main.domain.user.enums.user.Role;
-import net.causw.app.main.domain.user.enums.user.UserState;
+import net.causw.app.main.domain.user.account.enums.user.Role;
+import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.global.constant.StaticValue;
 
 // Custom Annotation을 사용하여 중복되는 @Mapping을 줄일 수 있습니다.

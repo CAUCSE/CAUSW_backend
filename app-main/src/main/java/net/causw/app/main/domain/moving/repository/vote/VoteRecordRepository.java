@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import net.causw.app.main.domain.community.entity.vote.Vote;
 import net.causw.app.main.domain.community.entity.vote.VoteOption;
 import net.causw.app.main.domain.community.entity.vote.VoteRecord;
-import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.domain.user.account.entity.user.User;
 
 public interface VoteRecordRepository extends JpaRepository<VoteRecord, String> {
 	List<VoteRecord> findAllByVoteOption(VoteOption voteOption);

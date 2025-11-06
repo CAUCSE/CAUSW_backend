@@ -11,7 +11,7 @@ import org.springframework.data.repository.query.Param;
 
 import net.causw.app.main.domain.community.entity.post.Post;
 import net.causw.app.main.domain.moving.model.entity.notification.UserPostSubscribe;
-import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.domain.user.account.entity.user.User;
 
 public interface UserPostSubscribeRepository extends JpaRepository<UserPostSubscribe, String> {
 

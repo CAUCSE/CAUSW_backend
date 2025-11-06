@@ -9,12 +9,12 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
+import net.causw.app.main.domain.finance.userCouncilFee.entity.userCouncilFee.CouncilFeeFakeUser;
+import net.causw.app.main.domain.finance.userCouncilFee.entity.userCouncilFee.UserCouncilFee;
 import net.causw.app.main.domain.moving.dto.userCouncilFee.CurrentUserCouncilFeeResponseDto;
 import net.causw.app.main.domain.moving.dto.userCouncilFee.UserCouncilFeeListResponseDto;
 import net.causw.app.main.domain.moving.dto.userCouncilFee.UserCouncilFeeResponseDto;
-import net.causw.app.main.domain.user.entity.user.User;
-import net.causw.app.main.domain.user.entity.userCouncilFee.CouncilFeeFakeUser;
-import net.causw.app.main.domain.user.entity.userCouncilFee.UserCouncilFee;
+import net.causw.app.main.domain.user.account.entity.user.User;
 
 @Retention(RetentionPolicy.CLASS)
 @Target({ElementType.METHOD})

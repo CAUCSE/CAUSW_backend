@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import net.causw.app.main.domain.moving.model.entity.notification.CeremonyNotificationSetting;
-import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.domain.user.account.entity.user.User;
 
 @Repository
 public interface CeremonyNotificationSettingRepository extends JpaRepository<CeremonyNotificationSetting, String> {

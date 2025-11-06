@@ -3,7 +3,7 @@ package net.causw.app.main.domain.community.entity.form;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.entity.BaseEntity;
 
 import jakarta.persistence.CascadeType;

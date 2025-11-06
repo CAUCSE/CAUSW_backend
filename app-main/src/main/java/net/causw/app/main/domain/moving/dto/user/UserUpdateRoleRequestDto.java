@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.moving.dto.user;
 
-import net.causw.app.main.domain.user.enums.user.Role;
+import net.causw.app.main.domain.user.account.enums.user.Role;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;

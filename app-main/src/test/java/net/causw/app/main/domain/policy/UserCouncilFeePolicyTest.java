@@ -11,10 +11,10 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import net.causw.app.main.domain.moving.model.entity.semester.Semester;
-import net.causw.app.main.domain.user.entity.user.User;
-import net.causw.app.main.domain.user.entity.userCouncilFee.UserCouncilFee;
+import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.finance.userCouncilFee.entity.userCouncilFee.UserCouncilFee;
 import net.causw.app.main.domain.moving.model.enums.semester.SemesterType;
-import net.causw.app.main.domain.user.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.util.ObjectFixtures;
 
 public class UserCouncilFeePolicyTest {

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import net.causw.app.main.domain.moving.model.entity.notification.Notification;
 import net.causw.app.main.domain.moving.model.enums.notification.NoticeType;
-import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.domain.user.account.entity.user.User;
 
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, String> {

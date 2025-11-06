@@ -1,13 +1,13 @@
 package net.causw.app.main.domain.moving.policy;
 
 import static java.util.Map.*;
-import static net.causw.app.main.domain.user.enums.user.Role.*;
+import static net.causw.app.main.domain.user.account.enums.user.Role.*;
 
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
-import net.causw.app.main.domain.user.enums.user.Role;
+import net.causw.app.main.domain.user.account.enums.user.Role;
 
 public class RolePolicy {
 

@@ -13,7 +13,7 @@ import net.causw.app.main.domain.moving.model.entity.circle.Circle;
 import net.causw.app.main.domain.moving.model.entity.circle.CircleMember;
 import net.causw.app.main.domain.moving.model.enums.circle.CircleMemberStatus;
 import net.causw.app.main.domain.moving.repository.circle.CircleMemberRepository;
-import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.domain.user.account.entity.user.User;
 
 import lombok.RequiredArgsConstructor;
 

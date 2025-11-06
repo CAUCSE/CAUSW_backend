@@ -10,7 +10,7 @@ import net.causw.app.main.domain.community.entity.form.Form;
 import net.causw.app.main.domain.community.entity.vote.Vote;
 import net.causw.app.main.domain.moving.model.entity.uuidFile.UuidFile;
 import net.causw.app.main.domain.moving.model.entity.uuidFile.joinEntity.PostAttachImage;
-import net.causw.app.main.domain.user.entity.user.User;
+import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.entity.BaseEntity;
 
 import jakarta.persistence.CascadeType;

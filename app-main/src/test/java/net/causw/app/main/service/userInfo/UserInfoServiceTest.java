@@ -20,12 +20,12 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import net.causw.app.main.domain.user.entity.user.User;
-import net.causw.app.main.domain.user.entity.userInfo.UserInfo;
-import net.causw.app.main.domain.user.service.UserInfoService;
+import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
+import net.causw.app.main.domain.user.account.service.UserInfoService;
 import net.causw.app.main.domain.moving.dto.userInfo.UserInfoSearchConditionDto;
-import net.causw.app.main.domain.user.repository.userInfo.UserInfoRepository;
-import net.causw.app.main.domain.user.repository.userInfo.query.UserInfoQueryRepository;
+import net.causw.app.main.domain.user.account.repository.userInfo.UserInfoRepository;
+import net.causw.app.main.domain.user.account.repository.userInfo.UserInfoQueryRepository;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.NotFoundException;
 

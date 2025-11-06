@@ -20,9 +20,9 @@ import net.causw.app.main.domain.moving.dto.userInfo.UserInfoResponseDto;
 import net.causw.app.main.domain.moving.dto.userInfo.UserInfoSearchConditionDto;
 import net.causw.app.main.domain.moving.dto.userInfo.UserInfoSummaryResponseDto;
 import net.causw.app.main.domain.moving.dto.userInfo.UserInfoUpdateRequestDto;
-import net.causw.app.main.domain.user.service.useCase.command.UpdateUserInfoUseCaseService;
-import net.causw.app.main.domain.user.service.useCase.query.GetUserInfoUseCaseService;
-import net.causw.app.main.domain.user.service.useCase.query.SearchUserInfoListUseCaseService;
+import net.causw.app.main.domain.user.account.service.GetUserInfoUseCaseService;
+import net.causw.app.main.domain.user.account.service.SearchUserInfoListUseCaseService;
+import net.causw.app.main.domain.user.account.service.UpdateUserInfoUseCaseService;
 import net.causw.global.exception.BadRequestException;
 
 import io.swagger.v3.oas.annotations.Operation;

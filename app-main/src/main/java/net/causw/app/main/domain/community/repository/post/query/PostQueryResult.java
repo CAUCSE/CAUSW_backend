@@ -2,7 +2,7 @@ package net.causw.app.main.domain.community.repository.post.query;
 
 import java.time.LocalDateTime;
 
-import net.causw.app.main.domain.user.enums.user.UserState;
+import net.causw.app.main.domain.user.account.enums.user.UserState;
 
 import com.querydsl.core.annotations.QueryProjection;
 

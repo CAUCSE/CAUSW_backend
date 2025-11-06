@@ -3,7 +3,7 @@ package net.causw.app.main.domain.moving.dto.user;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import net.causw.app.main.domain.user.enums.user.UserState;
+import net.causw.app.main.domain.user.account.enums.user.UserState;
 
 import lombok.Builder;
 import lombok.Getter;

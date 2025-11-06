@@ -2,8 +2,8 @@ package net.causw.app.main.domain.moving.dto.circle;
 
 import java.time.LocalDateTime;
 
-import net.causw.app.main.domain.user.enums.user.GraduationType;
-import net.causw.app.main.domain.user.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.user.account.enums.user.GraduationType;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

@@ -15,7 +15,7 @@ import net.causw.app.main.domain.community.entity.post.QLikePost;
 import net.causw.app.main.domain.community.entity.post.QPost;
 import net.causw.app.main.domain.moving.model.entity.uuidFile.joinEntity.QPostAttachImage;
 import net.causw.app.main.domain.moving.model.enums.uuidFile.FileExtensionType;
-import net.causw.app.main.domain.user.entity.user.QUser;
+import net.causw.app.main.domain.user.account.entity.user.QUser;
 
 import com.querydsl.core.types.SubQueryExpression;
 import com.querydsl.core.types.dsl.BooleanExpression;

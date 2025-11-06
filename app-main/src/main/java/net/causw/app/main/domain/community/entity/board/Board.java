@@ -10,8 +10,8 @@ import org.hibernate.annotations.ColumnDefault;
 
 import net.causw.app.main.domain.community.entity.post.Post;
 import net.causw.app.main.domain.moving.model.entity.circle.Circle;
-import net.causw.app.main.domain.user.enums.user.Role;
-import net.causw.app.main.domain.user.enums.user.RoleGroup;
+import net.causw.app.main.domain.user.account.enums.user.Role;
+import net.causw.app.main.domain.user.account.enums.user.RoleGroup;
 import net.causw.app.main.shared.entity.BaseEntity;
 
 import jakarta.persistence.CascadeType;

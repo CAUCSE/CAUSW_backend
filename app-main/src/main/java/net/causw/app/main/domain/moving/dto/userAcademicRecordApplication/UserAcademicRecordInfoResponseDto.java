@@ -2,7 +2,7 @@ package net.causw.app.main.domain.moving.dto.userAcademicRecordApplication;
 
 import java.util.List;
 
-import net.causw.app.main.domain.user.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
