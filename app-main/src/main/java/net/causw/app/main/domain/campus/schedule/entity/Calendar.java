@@ -1,7 +1,7 @@
 package net.causw.app.main.domain.campus.schedule.entity;
 
-import net.causw.app.main.domain.moving.model.entity.uuidFile.UuidFile;
-import net.causw.app.main.domain.moving.model.entity.uuidFile.joinEntity.CalendarAttachImage;
+import net.causw.app.main.domain.asset.file.entity.UuidFile;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.CalendarAttachImage;
 import net.causw.app.main.shared.entity.BaseEntity;
 
 import jakarta.persistence.CascadeType;

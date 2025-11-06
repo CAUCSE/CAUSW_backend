@@ -3,8 +3,8 @@ package net.causw.app.main.domain.user.account.entity.user;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.causw.app.main.domain.moving.model.entity.uuidFile.UuidFile;
-import net.causw.app.main.domain.moving.model.entity.uuidFile.joinEntity.UserAdmissionAttachImage;
+import net.causw.app.main.domain.asset.file.entity.UuidFile;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserAdmissionAttachImage;
 import net.causw.app.main.shared.entity.BaseEntity;
 
 import jakarta.persistence.CascadeType;

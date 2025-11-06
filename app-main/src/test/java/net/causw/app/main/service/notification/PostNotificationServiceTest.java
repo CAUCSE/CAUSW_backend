@@ -18,17 +18,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.comment.entity.Comment;
-import net.causw.app.main.domain.moving.model.entity.notification.Notification;
-import net.causw.app.main.domain.moving.model.entity.notification.NotificationLog;
-import net.causw.app.main.domain.moving.model.entity.notification.UserPostSubscribe;
+import net.causw.app.main.domain.notification.notification.entity.Notification;
+import net.causw.app.main.domain.notification.notification.entity.NotificationLog;
+import net.causw.app.main.domain.notification.notification.entity.UserPostSubscribe;
 import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.domain.moving.service.notification.FirebasePushNotificationService;
-import net.causw.app.main.domain.moving.service.notification.PostNotificationService;
+import net.causw.app.main.domain.notification.notification.service.FirebasePushNotificationService;
+import net.causw.app.main.domain.notification.notification.service.PostNotificationService;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.infra.firebase.FcmUtils;
-import net.causw.app.main.domain.moving.repository.notification.NotificationLogRepository;
-import net.causw.app.main.domain.moving.repository.notification.NotificationRepository;
-import net.causw.app.main.domain.moving.repository.notification.UserPostSubscribeRepository;
+import net.causw.app.main.domain.notification.notification.repository.NotificationLogRepository;
+import net.causw.app.main.domain.notification.notification.repository.NotificationRepository;
+import net.causw.app.main.domain.notification.notification.repository.UserPostSubscribeRepository;
 import net.causw.app.main.domain.user.relation.service.UserBlockEntityService;
 import net.causw.app.main.util.ObjectFixtures;
 

@@ -7,8 +7,8 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.springframework.stereotype.Service;
 
 import net.causw.app.main.core.aop.annotation.MeasureTime;
-import net.causw.app.main.domain.moving.dto.userAcademicRecordApplication.UserAcademicRecordApplicationResponseDto;
-import net.causw.app.main.domain.moving.dto.userAcademicRecordApplication.UserAcademicRecordInfoResponseDto;
+import net.causw.app.main.api.dto.userAcademicRecordApplication.UserAcademicRecordApplicationResponseDto;
+import net.causw.app.main.api.dto.userAcademicRecordApplication.UserAcademicRecordInfoResponseDto;
 
 @MeasureTime
 @Service

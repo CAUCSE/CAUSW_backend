@@ -1,9 +1,10 @@
 package net.causw.app.main.domain.user.academic.entity.userAcademicRecord;
 
+
 import java.util.ArrayList;
 import java.util.List;
 
-import net.causw.app.main.domain.moving.model.entity.uuidFile.joinEntity.UserAcademicRecordLogAttachImage;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserAcademicRecordLogAttachImage;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicRecordRequestStatus;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;

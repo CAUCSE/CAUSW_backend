@@ -1,7 +1,7 @@
 package net.causw.app.main.domain.validation;
 
 import static java.util.Map.entry;
-import static net.causw.app.main.domain.moving.policy.RolePolicy.*;
+import static net.causw.app.main.domain.user.account.policy.RolePolicy.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 
@@ -17,11 +17,11 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import net.causw.app.main.domain.moving.validation.GrantableRoleValidator;
+import net.causw.app.main.domain.user.account.util.GrantableRoleValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
-import net.causw.app.main.domain.moving.policy.RolePolicy;
+import net.causw.app.main.domain.user.account.policy.RolePolicy;
 import net.causw.app.main.util.ObjectFixtures;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.ErrorCode;

@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import net.causw.app.main.domain.campus.circle.entity.CircleMember;
-import net.causw.app.main.domain.moving.model.enums.circle.CircleMemberStatus;
+import net.causw.app.main.domain.campus.circle.enums.CircleMemberStatus;
 
 @Repository
 public interface CircleMemberRepository extends JpaRepository<CircleMember, String> {

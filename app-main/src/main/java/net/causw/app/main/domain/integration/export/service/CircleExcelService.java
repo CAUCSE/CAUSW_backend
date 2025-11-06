@@ -7,7 +7,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.springframework.stereotype.Service;
 
 import net.causw.app.main.core.aop.annotation.MeasureTime;
-import net.causw.app.main.domain.moving.dto.circle.ExportCircleMemberToExcelResponseDto;
+import net.causw.app.main.api.dto.circle.ExportCircleMemberToExcelResponseDto;
 
 @MeasureTime
 @Service

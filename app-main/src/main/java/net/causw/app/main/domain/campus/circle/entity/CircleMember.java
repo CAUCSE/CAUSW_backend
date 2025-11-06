@@ -2,7 +2,7 @@ package net.causw.app.main.domain.campus.circle.entity;
 
 import net.causw.app.main.domain.community.form.entity.Form;
 import net.causw.app.main.domain.community.form.entity.Reply;
-import net.causw.app.main.domain.moving.model.enums.circle.CircleMemberStatus;
+import net.causw.app.main.domain.campus.circle.enums.CircleMemberStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.entity.BaseEntity;
 

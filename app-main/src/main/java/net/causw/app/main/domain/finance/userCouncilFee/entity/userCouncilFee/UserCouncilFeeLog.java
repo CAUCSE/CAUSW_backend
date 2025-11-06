@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 import net.causw.app.main.domain.finance.userCouncilFee.enums.userCouncilFee.CouncilFeeLogType;
 import net.causw.app.main.domain.campus.semester.entity.Semester;
-import net.causw.app.main.domain.moving.model.enums.semester.SemesterType;
+import net.causw.app.main.domain.campus.semester.enums.SemesterType;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Department;

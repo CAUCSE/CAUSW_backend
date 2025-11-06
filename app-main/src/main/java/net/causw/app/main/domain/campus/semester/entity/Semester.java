@@ -2,7 +2,7 @@ package net.causw.app.main.domain.campus.semester.entity;
 
 import java.time.LocalDate;
 
-import net.causw.app.main.domain.moving.model.enums.semester.SemesterType;
+import net.causw.app.main.domain.campus.semester.enums.SemesterType;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.entity.BaseEntity;
 

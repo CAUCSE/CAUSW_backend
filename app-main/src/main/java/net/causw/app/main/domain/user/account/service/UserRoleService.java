@@ -8,12 +8,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.moving.dto.user.UserResponseDto;
-import net.causw.app.main.domain.moving.dto.user.UserUpdateRoleRequestDto;
-import net.causw.app.main.domain.moving.dto.util.dtoMapper.UserDtoMapper;
-import net.causw.app.main.domain.moving.policy.RolePolicy;
-import net.causw.app.main.domain.moving.validation.DelegatableRoleValidator;
-import net.causw.app.main.domain.moving.validation.GrantableRoleValidator;
+import net.causw.app.main.api.dto.user.UserResponseDto;
+import net.causw.app.main.api.dto.user.UserUpdateRoleRequestDto;
+import net.causw.app.main.api.dto.util.dtoMapper.UserDtoMapper;
+import net.causw.app.main.domain.user.account.policy.RolePolicy;
+import net.causw.app.main.domain.user.account.util.DelegatableRoleValidator;
+import net.causw.app.main.domain.user.account.util.GrantableRoleValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;

@@ -1,7 +1,7 @@
 package net.causw.app.main.service.user;
 
 import static java.util.Map.entry;
-import static net.causw.app.main.domain.moving.policy.RolePolicy.*;
+import static net.causw.app.main.domain.user.account.policy.RolePolicy.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -34,10 +34,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
-import net.causw.app.main.domain.moving.policy.RolePolicy;
+import net.causw.app.main.domain.user.account.policy.RolePolicy;
 import net.causw.app.main.domain.user.account.service.UserRoleService;
-import net.causw.app.main.domain.moving.dto.user.UserResponseDto;
-import net.causw.app.main.domain.moving.dto.user.UserUpdateRoleRequestDto;
+import net.causw.app.main.api.dto.user.UserResponseDto;
+import net.causw.app.main.api.dto.user.UserUpdateRoleRequestDto;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.util.ObjectFixtures;
 

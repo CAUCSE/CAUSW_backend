@@ -17,14 +17,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.community.board.entity.Board;
-import net.causw.app.main.domain.moving.model.entity.notification.UserBoardSubscribe;
+import net.causw.app.main.domain.notification.notification.entity.UserBoardSubscribe;
 import net.causw.app.main.domain.community.board.service.BoardService;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
-import net.causw.app.main.domain.moving.dto.board.BoardCreateRequestDto;
-import net.causw.app.main.domain.moving.dto.board.BoardResponseDto;
+import net.causw.app.main.api.dto.board.BoardCreateRequestDto;
+import net.causw.app.main.api.dto.board.BoardResponseDto;
 import net.causw.app.main.domain.community.board.repository.BoardRepository;
-import net.causw.app.main.domain.moving.repository.notification.UserBoardSubscribeRepository;
+import net.causw.app.main.domain.notification.notification.repository.UserBoardSubscribeRepository;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.util.ObjectFixtures;
 import net.causw.global.constant.StaticValue;

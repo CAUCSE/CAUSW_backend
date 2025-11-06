@@ -15,7 +15,7 @@
 | Variables & Parameters & Methods | **camelCase**                           | `calendarService`, `findCalendar()`               |
 | Classes & Interfaces & Enums | **PascalCase**                          | `CalendarController`, `BoardService`, `AcademicStatus`                |
 | Constants                          | **UPPER_SNAKE_CASE**                    | `public static final String BOARD_NAME_APP_FREE = "자유";`               |
-| Package Names                         | **lowercase with dots** | `net.causw.app.main.controller`         |
+| Package Names                         | **lowercase with dots** | `net.causw.app.main.api`         |
 | DTO Classes                   | **PascalCase with suffix**     | `CalendarResponseDto`, `BoardCreateRequestDto` |
 
 ### **2. Method Writing Principles**

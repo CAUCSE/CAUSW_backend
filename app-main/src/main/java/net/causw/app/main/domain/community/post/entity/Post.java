@@ -5,10 +5,11 @@ import java.util.List;
 
 import org.hibernate.annotations.ColumnDefault;
 
+import net.causw.app.main.domain.asset.file.entity.UuidFile;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.form.entity.Form;
-import net.causw.app.main.domain.moving.model.entity.uuidFile.UuidFile;
-import net.causw.app.main.domain.moving.model.entity.uuidFile.joinEntity.PostAttachImage;
+import net.causw.app.main.domain.community.vote.entity.Vote;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.entity.BaseEntity;
 

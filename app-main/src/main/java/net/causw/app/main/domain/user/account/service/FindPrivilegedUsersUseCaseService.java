@@ -10,9 +10,9 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.moving.dto.user.UserPrivilegedResponseDto;
-import net.causw.app.main.domain.moving.dto.user.UserResponseDto;
-import net.causw.app.main.domain.moving.dto.util.dtoMapper.UserDtoMapper;
+import net.causw.app.main.api.dto.user.UserPrivilegedResponseDto;
+import net.causw.app.main.api.dto.user.UserResponseDto;
+import net.causw.app.main.api.dto.util.dtoMapper.UserDtoMapper;
 import net.causw.app.main.domain.campus.circle.entity.Circle;
 import net.causw.app.main.domain.campus.circle.service.CircleEntityService;
 import net.causw.app.main.domain.user.account.entity.user.User;

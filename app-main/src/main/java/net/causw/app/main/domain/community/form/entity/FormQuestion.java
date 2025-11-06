@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.causw.app.main.domain.community.form.enums.QuestionType;
-import net.causw.app.main.domain.moving.dto.form.request.create.QuestionCreateRequestDto;
+import net.causw.app.main.api.dto.form.request.create.QuestionCreateRequestDto;
 import net.causw.app.main.shared.entity.BaseEntity;
 
 import jakarta.persistence.CascadeType;

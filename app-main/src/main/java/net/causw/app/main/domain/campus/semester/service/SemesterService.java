@@ -10,11 +10,11 @@ import net.causw.app.main.domain.finance.userCouncilFee.entity.userCouncilFee.Co
 import net.causw.app.main.domain.finance.userCouncilFee.entity.userCouncilFee.UserCouncilFee;
 import net.causw.app.main.domain.finance.userCouncilFee.repository.userCouncilFee.CouncilFeeFakeUserRepository;
 import net.causw.app.main.domain.finance.userCouncilFee.repository.userCouncilFee.UserCouncilFeeRepository;
-import net.causw.app.main.domain.moving.dto.semester.CreateSemesterRequestDto;
-import net.causw.app.main.domain.moving.dto.semester.CurrentSemesterResponseDto;
-import net.causw.app.main.domain.moving.dto.util.dtoMapper.SemesterDtoMapper;
+import net.causw.app.main.api.dto.semester.CreateSemesterRequestDto;
+import net.causw.app.main.api.dto.semester.CurrentSemesterResponseDto;
+import net.causw.app.main.api.dto.util.dtoMapper.SemesterDtoMapper;
 import net.causw.app.main.domain.campus.semester.entity.Semester;
-import net.causw.app.main.domain.moving.model.enums.semester.SemesterType;
+import net.causw.app.main.domain.campus.semester.enums.SemesterType;
 import net.causw.app.main.domain.campus.semester.repository.SemesterRepository;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;

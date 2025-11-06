@@ -14,15 +14,15 @@ import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
 import net.causw.app.main.domain.finance.userCouncilFee.entity.userCouncilFee.CouncilFeeFakeUser;
 import net.causw.app.main.domain.finance.userCouncilFee.entity.userCouncilFee.UserCouncilFee;
-import net.causw.app.main.domain.community.post.entity.Vote;
-import net.causw.app.main.domain.community.post.entity.VoteOption;
-import net.causw.app.main.domain.moving.model.enums.semester.SemesterType;
+import net.causw.app.main.domain.community.vote.entity.Vote;
+import net.causw.app.main.domain.community.vote.entity.VoteOption;
+import net.causw.app.main.domain.campus.semester.enums.SemesterType;
 import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.GraduationType;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
-import net.causw.app.main.domain.moving.dto.user.UserCreateRequestDto;
+import net.causw.app.main.api.dto.user.UserCreateRequestDto;
 import net.causw.global.constant.StaticValue;
 
 public class ObjectFixtures {

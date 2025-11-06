@@ -13,7 +13,7 @@ import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledFileLink;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
 import net.causw.app.main.domain.integration.crawled.repository.CrawledNoticeRepository;
-import net.causw.app.main.domain.moving.service.notification.BoardNotificationService;
+import net.causw.app.main.domain.notification.notification.service.BoardNotificationService;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.global.constant.MessageUtil;
