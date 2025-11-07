@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.validation;
 
 import static java.util.Map.entry;
+import static net.causw.app.main.domain.user.account.enums.user.Role.*;
 import static net.causw.app.main.domain.user.account.policy.RolePolicy.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -57,7 +58,7 @@ public class GrantableRoleValidatorTest {
 	);
 
 	private static final Map<Role, Set<Role>> MOCK_GRANTABLE_ROLES = Map.of(
-		Role.ADMIN, Set.of(
+		ADMIN, Set.of(
 			Role.PRESIDENT,
 			LEADER_ALUMNI,
 			Role.COMMON
@@ -69,7 +70,7 @@ public class GrantableRoleValidatorTest {
 	);
 
 	private static final Map<Role, Set<Role>> MOCK_PROXY_DELEGATABLE_ROLES = Map.of(
-		Role.ADMIN, Set.of(
+		ADMIN, Set.of(
 			Role.PRESIDENT
 		),
 
@@ -83,7 +84,7 @@ public class GrantableRoleValidatorTest {
 	@DisplayName("위임자가 없을 때 부여자가 부여할 권한에 대한 부여 가능 권한을 가지고 있을 경우 성공")
 	void whenNoDelegatorAndGrantorCanGrantRole_thenSuccess() {
 		// given
-		grantor.setRoles(Set.of(Role.ADMIN));
+		grantor.setRoles(Set.of(ADMIN));
 		grantee.setRoles(Set.of(Role.LEADER_1));
 
 		// when & then
@@ -95,7 +96,7 @@ public class GrantableRoleValidatorTest {
 	@DisplayName("위임자가 없을 때 부여자가 부여할 권한에 대한 부여 가능 권한을 가지고 있지 않을 경우 실패")
 	void whenNoDelegatorAndGrantorCannotGrantRole_thenFail() {
 		// given
-		grantor.setRoles(Set.of(Role.ADMIN));
+		grantor.setRoles(Set.of(ADMIN));
 		grantee.setRoles(Set.of(Role.LEADER_1));
 
 		// when & then
@@ -137,7 +138,7 @@ public class GrantableRoleValidatorTest {
 	void whenGrantorCanDelegateGrantableRole_thenSuccess() {
 		// given
 		delegator = ObjectFixtures.getUser();
-		grantor.setRoles(Set.of(Role.ADMIN));
+		grantor.setRoles(Set.of(ADMIN));
 		delegator.setRoles(Set.of(Role.PRESIDENT));
 		grantee.setRoles(Set.of(Role.COMMON));
 
@@ -165,7 +166,7 @@ public class GrantableRoleValidatorTest {
 	@DisplayName("부여자가 수혜자 보다 권한 우선순위가 높은 경우 성공")
 	void whenGrantorHasHigherPriorityThanGrantee_thenSuccess() {
 		// given
-		grantor.setRoles(Set.of(Role.ADMIN));
+		grantor.setRoles(Set.of(ADMIN));
 		grantee.setRoles(Set.of(Role.PRESIDENT));
 
 		// when & then
@@ -178,7 +179,7 @@ public class GrantableRoleValidatorTest {
 	void whenGranteeHasHigherPriorityThanGrantor_thenFail() {
 		// given
 		grantor.setRoles(Set.of(Role.PRESIDENT));
-		grantee.setRoles(Set.of(Role.ADMIN));
+		grantee.setRoles(Set.of(ADMIN));
 
 		// when & then
 		assertThat(delegator).isNull();
@@ -189,7 +190,7 @@ public class GrantableRoleValidatorTest {
 	@DisplayName("부여할 권한이 수혜자의 모든 권한에 대한 부여 가능 권한을 가지고 있을 경우 성공")
 	void whenGrantedRoleCoversAllGranteeRoles_thenSuccess() {
 		// given
-		grantor.setRoles(Set.of(Role.ADMIN));
+		grantor.setRoles(Set.of(ADMIN));
 		grantee.setRoles(Set.of(Role.COUNCIL));
 
 		// when & then
@@ -200,7 +201,7 @@ public class GrantableRoleValidatorTest {
 	@DisplayName("부여할 권한이 수혜자의 모든 권한에 대한 부여 가능 권한을 가지고 있지 않을 경우 실패")
 	void whenGrantedRoleDoesNotCoverAllGranteeRoles_thenFail() {
 		// given
-		grantor.setRoles(Set.of(Role.ADMIN));
+		grantor.setRoles(Set.of(ADMIN));
 		grantee.setRoles(Set.of(Role.NONE));
 
 		// when & then
@@ -212,7 +213,7 @@ public class GrantableRoleValidatorTest {
 	@DisplayName("동문회장 부여 시 수혜자가 졸업생일 경우 성공")
 	void whenGrantingAlumniLeaderToGraduate_thenSuccess() {
 		// given
-		grantor.setRoles(Set.of(Role.ADMIN));
+		grantor.setRoles(Set.of(ADMIN));
 		grantee.setRoles(Set.of(Role.COMMON));
 		grantee.setAcademicStatus(AcademicStatus.GRADUATED);
 
@@ -224,7 +225,7 @@ public class GrantableRoleValidatorTest {
 	@DisplayName("동문회장 부여 시 수혜자가 졸업생이 아닐 경우 실패")
 	void whenGrantingAlumniLeaderToNonGraduate_thenFail() {
 		// given
-		grantor.setRoles(Set.of(Role.ADMIN));
+		grantor.setRoles(Set.of(ADMIN));
 		grantee.setRoles(Set.of(Role.COMMON));
 		grantee.setAcademicStatus(AcademicStatus.ENROLLED);
 

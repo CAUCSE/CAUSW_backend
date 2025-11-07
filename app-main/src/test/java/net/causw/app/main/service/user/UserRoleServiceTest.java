@@ -1,6 +1,7 @@
 package net.causw.app.main.service.user;
 
 import static java.util.Map.entry;
+import static net.causw.app.main.domain.user.account.enums.user.Role.*;
 import static net.causw.app.main.domain.user.account.policy.RolePolicy.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -156,7 +157,7 @@ public class UserRoleServiceTest {
 		private final String delegateeId = "dummyDelegateeId";
 
 		private static final Set<Role> MOCK_DELEGATABLE_ROLES = Set.of(
-			Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT, Role.COUNCIL);
+			ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT, Role.COUNCIL);
 
 		@BeforeEach
 		void setUp() {
@@ -229,7 +230,7 @@ public class UserRoleServiceTest {
 		@DisplayName("권한을 위임 후 피위임지가 해당 권한일 경우 성공")
 		void whenDelegateeAlreadyHasRole_thenSuccess() {
 			// given
-			Role delegatedRole = Role.ADMIN;
+			Role delegatedRole = ADMIN;
 			delegator.setRoles(Set.of(delegatedRole));
 			delegatee.setRoles(Set.of(Role.COMMON));
 
@@ -267,7 +268,7 @@ public class UserRoleServiceTest {
 		private User delegator;
 
 		private static final Map<Role, Set<Role>> MOCK_GRANTABLE_ROLES = Map.of(
-			Role.ADMIN, Set.of(
+			ADMIN, Set.of(
 				Role.PRESIDENT,
 				Role.LEADER_1
 			),
@@ -278,7 +279,7 @@ public class UserRoleServiceTest {
 		);
 
 		private static final Map<Role, Set<Role>> MOCK_PROXY_DELEGATABLE_ROLES = Map.of(
-			Role.ADMIN, Set.of(
+			ADMIN, Set.of(
 				Role.COUNCIL
 			)
 		);
@@ -294,7 +295,7 @@ public class UserRoleServiceTest {
 		@DisplayName("학생회장 권한을 부여할 때 학생회장과 부학생회장 그리고 학생회 권한을 가진 사용자가 없을 경우 성공")
 		void whenNoOtherExecutives_thenSuccess() {
 			// given
-			grantor.setRoles(Set.of(Role.ADMIN));
+			grantor.setRoles(Set.of(ADMIN));
 			grantee.setRoles(Set.of(Role.COMMON));
 
 			// when
@@ -339,7 +340,7 @@ public class UserRoleServiceTest {
 			// given
 			Role grantedRole = Role.COUNCIL;
 			delegator = ObjectFixtures.getUser();
-			grantor.setRoles(Set.of(Role.ADMIN));
+			grantor.setRoles(Set.of(ADMIN));
 			delegator.setRoles(Set.of(grantedRole));
 			grantee.setRoles(Set.of(Role.COMMON));
 
@@ -356,7 +357,7 @@ public class UserRoleServiceTest {
 		void whenAssigneeAlreadyHasRole_thenSuccess() {
 			// given
 			Role grantedRole = Role.LEADER_1;
-			grantor.setRoles(Set.of(Role.ADMIN));
+			grantor.setRoles(Set.of(ADMIN));
 			grantee.setRoles(Set.of(Role.COMMON));
 
 			// when

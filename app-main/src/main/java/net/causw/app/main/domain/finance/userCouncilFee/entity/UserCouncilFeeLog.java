@@ -1,8 +1,8 @@
-package net.causw.app.main.domain.finance.userCouncilFee.entity.userCouncilFee;
+package net.causw.app.main.domain.finance.userCouncilFee.entity;
 
 import java.time.LocalDate;
 
-import net.causw.app.main.domain.finance.userCouncilFee.enums.userCouncilFee.CouncilFeeLogType;
+import net.causw.app.main.domain.finance.userCouncilFee.enums.CouncilFeeLogType;
 import net.causw.app.main.domain.campus.semester.entity.Semester;
 import net.causw.app.main.domain.campus.semester.enums.SemesterType;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;

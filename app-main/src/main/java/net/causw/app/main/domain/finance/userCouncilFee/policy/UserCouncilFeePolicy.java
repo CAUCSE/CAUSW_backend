@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.finance.userCouncilFee.policy;
 
-import net.causw.app.main.domain.finance.userCouncilFee.entity.userCouncilFee.UserCouncilFee;
+import net.causw.app.main.domain.finance.userCouncilFee.entity.UserCouncilFee;
 import net.causw.app.main.domain.campus.semester.entity.Semester;
 import net.causw.app.main.domain.campus.semester.enums.SemesterType;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;

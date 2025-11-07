@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.finance.userCouncilFee.entity.userCouncilFee;
+package net.causw.app.main.domain.finance.userCouncilFee.entity;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.entity.BaseEntity;

@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.finance.userCouncilFee.repository.userCouncilFee;
+package net.causw.app.main.domain.finance.userCouncilFee.repository;
 
 import java.util.List;
 import java.util.Optional;
@@ -6,7 +6,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import net.causw.app.main.domain.finance.userCouncilFee.entity.userCouncilFee.UserCouncilFee;
+import net.causw.app.main.domain.finance.userCouncilFee.entity.UserCouncilFee;
 import net.causw.app.main.domain.user.account.entity.user.User;
 
 @Repository

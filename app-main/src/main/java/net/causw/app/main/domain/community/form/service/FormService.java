@@ -33,8 +33,8 @@ import net.causw.app.main.domain.community.form.repository.ReplyQuestionReposito
 import net.causw.app.main.domain.community.form.repository.ReplyRepository;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
-import net.causw.app.main.domain.finance.userCouncilFee.entity.userCouncilFee.UserCouncilFee;
-import net.causw.app.main.domain.finance.userCouncilFee.repository.userCouncilFee.UserCouncilFeeRepository;
+import net.causw.app.main.domain.finance.userCouncilFee.entity.UserCouncilFee;
+import net.causw.app.main.domain.finance.userCouncilFee.repository.UserCouncilFeeRepository;
 import net.causw.app.main.domain.integration.export.service.FormExcelService;
 import net.causw.app.main.api.dto.form.request.FormReplyRequestDto;
 import net.causw.app.main.api.dto.form.request.QuestionReplyRequestDto;

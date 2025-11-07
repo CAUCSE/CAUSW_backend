@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.validation;
 
 import static java.util.Map.entry;
+import static net.causw.app.main.domain.user.account.enums.user.Role.*;
 import static net.causw.app.main.domain.user.account.policy.RolePolicy.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -53,13 +54,13 @@ public class DelegatableRoleValidatorTest {
 		Role.VICE_PRESIDENT, Set.of(Role.PRESIDENT)
 	);
 
-	private static final Set<Role> MOCK_DELEGATABLE_ROLES = Set.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT);
+	private static final Set<Role> MOCK_DELEGATABLE_ROLES = Set.of(ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT);
 
 	@Test
 	@DisplayName("위임 권한이 위임 가능 대상일 경우 성공")
 	void whenDelegatedRoleIsDelegatable_thenSuccess() {
 		// given
-		Role delegatedRole = Role.ADMIN;
+		Role delegatedRole = ADMIN;
 		delegator.setRoles(Set.of(delegatedRole));
 		delegatee.setRoles(Set.of(Role.COMMON));
 

@@ -12,8 +12,8 @@ import org.mapstruct.factory.Mappers;
 import net.causw.app.main.api.dto.userCouncilFee.CurrentUserCouncilFeeResponseDto;
 import net.causw.app.main.api.dto.userCouncilFee.UserCouncilFeeListResponseDto;
 import net.causw.app.main.api.dto.userCouncilFee.UserCouncilFeeResponseDto;
-import net.causw.app.main.domain.finance.userCouncilFee.entity.userCouncilFee.CouncilFeeFakeUser;
-import net.causw.app.main.domain.finance.userCouncilFee.entity.userCouncilFee.UserCouncilFee;
+import net.causw.app.main.domain.finance.userCouncilFee.entity.CouncilFeeFakeUser;
+import net.causw.app.main.domain.finance.userCouncilFee.entity.UserCouncilFee;
 import net.causw.app.main.domain.user.account.entity.user.User;
 
 @Retention(RetentionPolicy.CLASS)
