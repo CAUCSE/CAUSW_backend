@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import net.causw.app.main.core.security.userdetails.CustomUserDetails;
+import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.domain.community.comment.service.ChildCommentService;
 import net.causw.app.main.api.dto.comment.ChildCommentCreateRequestDto;
 import net.causw.app.main.api.dto.comment.ChildCommentResponseDto;

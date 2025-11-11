@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import net.causw.app.main.core.security.userdetails.CustomUserDetails;
+import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.api.dto.circle.CircleResponseDto;
 import net.causw.app.main.api.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.app.main.api.dto.user.BatchRegisterResponseDto;

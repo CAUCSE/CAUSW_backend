@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import net.causw.app.main.core.security.userdetails.CustomUserDetails;
+import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.api.dto.semester.CreateSemesterRequestDto;
 import net.causw.app.main.api.dto.semester.CurrentSemesterResponseDto;
 import net.causw.app.main.domain.campus.semester.service.SemesterService;

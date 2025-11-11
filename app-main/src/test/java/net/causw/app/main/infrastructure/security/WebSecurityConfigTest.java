@@ -34,7 +34,7 @@ import net.causw.app.main.core.security.CustomAuthenticationEntryPoint;
 import net.causw.app.main.core.security.CustomAuthorizationManager;
 import net.causw.app.main.core.security.JwtTokenProvider;
 import net.causw.app.main.core.security.SecurityEndpoints;
-import net.causw.app.main.core.security.SecurityService;
+import net.causw.app.main.domain.user.auth.service.SecurityService;
 import net.causw.app.main.core.security.WebSecurityConfig;
 import net.causw.app.main.util.DummyController;
 import net.causw.app.main.util.WithMockCustomUser;

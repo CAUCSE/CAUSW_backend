@@ -9,7 +9,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithSecurityContextFactory;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.core.security.userdetails.CustomUserDetails;
+import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 
 public class WithMockCustomUserSecurityContextFactory implements WithSecurityContextFactory<WithMockCustomUser> {
 	@Override

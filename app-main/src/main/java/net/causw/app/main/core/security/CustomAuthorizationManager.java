@@ -6,6 +6,8 @@ import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.stereotype.Component;
 
+import net.causw.app.main.domain.user.auth.service.SecurityService;
+
 import lombok.RequiredArgsConstructor;
 
 /**

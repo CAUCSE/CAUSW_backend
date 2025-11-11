@@ -1,4 +1,4 @@
-package net.causw.app.main.core.security.userdetails;
+package net.causw.app.main.domain.user.auth.userdetails;
 
 import java.util.Collection;
 import java.util.stream.Collectors;

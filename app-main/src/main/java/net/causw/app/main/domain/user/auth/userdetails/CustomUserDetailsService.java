@@ -1,4 +1,4 @@
-package net.causw.app.main.core.security.userdetails;
+package net.causw.app.main.domain.user.auth.userdetails;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

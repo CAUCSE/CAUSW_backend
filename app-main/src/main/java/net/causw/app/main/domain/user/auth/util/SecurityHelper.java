@@ -1,10 +1,10 @@
-package net.causw.app.main.core.security;
+package net.causw.app.main.domain.user.auth.util;
 
 import java.util.Collection;
 
 import org.springframework.security.core.GrantedAuthority;
 
-import net.causw.app.main.core.security.userdetails.CustomUserDetails;
+import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.RoleGroup;

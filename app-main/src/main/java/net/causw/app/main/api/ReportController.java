@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import net.causw.app.main.core.security.userdetails.CustomUserDetails;
+import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.api.dto.report.ReportCreateRequestDto;
 import net.causw.app.main.api.dto.report.ReportCreateResponseDto;
 import net.causw.app.main.api.dto.report.ReportedCommentResponseDto;

@@ -3,7 +3,7 @@ package net.causw.app.main.domain.user.relation.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.core.security.userdetails.CustomUserDetails;
+import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.comment.service.CommentEntityService;
 import net.causw.app.main.api.dto.userBlock.response.CreateBlockByCommentResponseDto;
