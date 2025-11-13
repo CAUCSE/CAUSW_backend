@@ -16,15 +16,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-import net.causw.app.main.domain.model.entity.board.Board;
-import net.causw.app.main.domain.model.entity.crawled.CrawledNotice;
-import net.causw.app.main.domain.model.entity.post.Post;
-import net.causw.app.main.domain.model.entity.user.User;
-import net.causw.app.main.repository.board.BoardRepository;
-import net.causw.app.main.repository.crawled.CrawledNoticeRepository;
-import net.causw.app.main.repository.post.PostRepository;
-import net.causw.app.main.repository.user.UserRepository;
-import net.causw.app.main.service.notification.BoardNotificationService;
+import net.causw.app.main.domain.community.board.entity.Board;
+import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
+import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.integration.crawled.service.CrawledToPostTransferService;
+import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.community.board.repository.BoardRepository;
+import net.causw.app.main.domain.integration.crawled.repository.CrawledNoticeRepository;
+import net.causw.app.main.domain.community.post.repository.PostRepository;
+import net.causw.app.main.domain.user.account.repository.user.UserRepository;
+import net.causw.app.main.domain.notification.notification.service.BoardNotificationService;
 import net.causw.global.constant.StaticValue;
 
 @ExtendWith(MockitoExtension.class)
