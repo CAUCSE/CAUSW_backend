@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
-import net.causw.app.main.domain.finance.userCouncilFee.service.UserCouncilFeeService;
+import net.causw.app.main.domain.finance.usercouncilfee.service.UserCouncilFeeService;
 import net.causw.app.main.api.dto.userCouncilFee.CreateUserCouncilFeeWithFakeUserRequestDto;
 import net.causw.app.main.api.dto.userCouncilFee.CreateUserCouncilFeeWithUserRequestDto;
 import net.causw.app.main.api.dto.userCouncilFee.CurrentUserCouncilFeeResponseDto;

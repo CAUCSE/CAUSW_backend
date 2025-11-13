@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.policy;
 
-import static net.causw.app.main.domain.finance.userCouncilFee.policy.UserCouncilFeePolicy.*;
+import static net.causw.app.main.domain.finance.usercouncilfee.policy.UserCouncilFeePolicy.*;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.stream.Stream;
@@ -12,7 +12,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import net.causw.app.main.domain.campus.semester.entity.Semester;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.finance.userCouncilFee.entity.UserCouncilFee;
+import net.causw.app.main.domain.finance.usercouncilfee.entity.UserCouncilFee;
 import net.causw.app.main.domain.campus.semester.enums.SemesterType;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.util.ObjectFixtures;

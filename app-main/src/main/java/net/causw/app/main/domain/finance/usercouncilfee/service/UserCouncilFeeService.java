@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.finance.userCouncilFee.service;
+package net.causw.app.main.domain.finance.usercouncilfee.service;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -9,12 +9,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.core.aop.annotation.MeasureTime;
-import net.causw.app.main.domain.finance.userCouncilFee.entity.CouncilFeeFakeUser;
-import net.causw.app.main.domain.finance.userCouncilFee.entity.UserCouncilFee;
-import net.causw.app.main.domain.finance.userCouncilFee.entity.UserCouncilFeeLog;
-import net.causw.app.main.domain.finance.userCouncilFee.enums.CouncilFeeLogType;
-import net.causw.app.main.domain.finance.userCouncilFee.repository.UserCouncilFeeLogRepository;
-import net.causw.app.main.domain.finance.userCouncilFee.repository.UserCouncilFeeRepository;
+import net.causw.app.main.domain.finance.usercouncilfee.entity.CouncilFeeFakeUser;
+import net.causw.app.main.domain.finance.usercouncilfee.entity.UserCouncilFee;
+import net.causw.app.main.domain.finance.usercouncilfee.entity.UserCouncilFeeLog;
+import net.causw.app.main.domain.finance.usercouncilfee.enums.CouncilFeeLogType;
+import net.causw.app.main.domain.finance.usercouncilfee.repository.UserCouncilFeeLogRepository;
+import net.causw.app.main.domain.finance.usercouncilfee.repository.UserCouncilFeeRepository;
 import net.causw.app.main.domain.integration.export.service.CouncilFeeExcelService;
 import net.causw.app.main.api.dto.userCouncilFee.CreateUserCouncilFeeWithFakeUserRequestDto;
 import net.causw.app.main.api.dto.userCouncilFee.CreateUserCouncilFeeWithUserRequestDto;
@@ -23,7 +23,7 @@ import net.causw.app.main.api.dto.userCouncilFee.UserCouncilFeeListResponseDto;
 import net.causw.app.main.api.dto.userCouncilFee.UserCouncilFeeResponseDto;
 import net.causw.app.main.api.dto.util.dtoMapper.UserCouncilFeeDtoMapper;
 import net.causw.app.main.domain.campus.semester.entity.Semester;
-import net.causw.app.main.domain.finance.userCouncilFee.policy.UserCouncilFeePolicy;
+import net.causw.app.main.domain.finance.usercouncilfee.policy.UserCouncilFeePolicy;
 import net.causw.app.main.domain.campus.semester.service.SemesterService;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;

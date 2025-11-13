@@ -18,10 +18,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.campus.semester.entity.Semester;
-import net.causw.app.main.domain.finance.userCouncilFee.entity.UserCouncilFee;
-import net.causw.app.main.domain.finance.userCouncilFee.service.UserCouncilFeeService;
+import net.causw.app.main.domain.finance.usercouncilfee.entity.UserCouncilFee;
+import net.causw.app.main.domain.finance.usercouncilfee.service.UserCouncilFeeService;
 import net.causw.app.main.api.dto.userCouncilFee.UserCouncilFeeResponseDto;
-import net.causw.app.main.domain.finance.userCouncilFee.repository.UserCouncilFeeRepository;
+import net.causw.app.main.domain.finance.usercouncilfee.repository.UserCouncilFeeRepository;
 import net.causw.app.main.domain.integration.export.service.CouncilFeeExcelService;
 import net.causw.app.main.domain.campus.semester.service.SemesterService;
 import net.causw.app.main.util.ObjectFixtures;

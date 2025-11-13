@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import net.causw.app.main.domain.asset.locker.entity.Locker;
-import net.causw.app.main.domain.etc.textField.service.CommonService;
+import net.causw.app.main.domain.etc.textfield.service.CommonService;
 import net.causw.app.main.domain.asset.locker.util.ExtendLockerExpiredAtValidator;
 import net.causw.app.main.domain.asset.locker.util.LockerExtendAccessValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;

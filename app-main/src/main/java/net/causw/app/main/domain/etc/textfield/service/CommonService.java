@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.etc.textField.service;
+package net.causw.app.main.domain.etc.textfield.service;
 
 import java.util.Optional;
 
@@ -6,9 +6,9 @@ import org.springframework.stereotype.Service;
 
 import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.domain.etc.flag.entity.Flag;
-import net.causw.app.main.domain.etc.textField.entity.TextField;
+import net.causw.app.main.domain.etc.textfield.entity.TextField;
 import net.causw.app.main.domain.etc.flag.repository.FlagRepository;
-import net.causw.app.main.domain.etc.textField.repository.TextFieldRepository;
+import net.causw.app.main.domain.etc.textfield.repository.TextFieldRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

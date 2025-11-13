@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.etc.textField.entity;
+package net.causw.app.main.domain.etc.textfield.entity;
 
 import net.causw.app.main.shared.entity.BaseEntity;
 

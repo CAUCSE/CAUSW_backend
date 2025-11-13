@@ -23,7 +23,7 @@ import net.causw.app.main.domain.community.form.entity.FormQuestionOption;
 import net.causw.app.main.domain.community.form.entity.Reply;
 import net.causw.app.main.domain.community.form.entity.ReplyQuestion;
 import net.causw.app.main.domain.community.form.enums.RegisteredSemester;
-import net.causw.app.main.domain.finance.userCouncilFee.entity.UserCouncilFee;
+import net.causw.app.main.domain.finance.usercouncilfee.entity.UserCouncilFee;
 import net.causw.app.main.api.dto.form.response.FormResponseDto;
 import net.causw.app.main.api.dto.form.response.OptionResponseDto;
 import net.causw.app.main.api.dto.form.response.OptionSummaryResponseDto;

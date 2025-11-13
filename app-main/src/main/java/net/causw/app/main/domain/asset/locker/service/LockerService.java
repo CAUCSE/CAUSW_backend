@@ -33,7 +33,7 @@ import net.causw.app.main.domain.etc.flag.repository.FlagRepository;
 import net.causw.app.main.domain.asset.locker.repository.LockerLocationRepository;
 import net.causw.app.main.domain.asset.locker.repository.LockerLogRepository;
 import net.causw.app.main.domain.asset.locker.repository.LockerRepository;
-import net.causw.app.main.domain.etc.textField.service.CommonService;
+import net.causw.app.main.domain.etc.textfield.service.CommonService;
 import net.causw.app.main.shared.util.ConstraintValidator;
 import net.causw.app.main.domain.asset.locker.util.LockerExpiredAtValidator;
 import net.causw.app.main.domain.asset.locker.util.LockerInUseValidator;

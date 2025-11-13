@@ -21,7 +21,7 @@ import net.causw.app.main.api.dto.duplicate.DuplicatedCheckResponseDto;
 import net.causw.app.main.api.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.domain.finance.userCouncilFee.entity.UserCouncilFee;
+import net.causw.app.main.domain.finance.usercouncilfee.entity.UserCouncilFee;
 import net.causw.app.main.api.dto.user.UserResponseDto;
 import net.causw.app.main.domain.campus.circle.entity.Circle;
 import net.causw.app.main.domain.campus.circle.entity.CircleMember;

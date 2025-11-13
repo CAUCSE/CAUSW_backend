@@ -8,7 +8,7 @@ import java.util.Optional;
 import net.causw.app.main.domain.asset.locker.entity.Locker;
 import net.causw.app.main.domain.asset.locker.entity.LockerLog;
 import net.causw.app.main.domain.asset.locker.enums.LockerLogAction;
-import net.causw.app.main.domain.etc.textField.service.CommonService;
+import net.causw.app.main.domain.etc.textfield.service.CommonService;
 import net.causw.app.main.domain.asset.locker.util.LockerAccessValidator;
 import net.causw.app.main.domain.asset.locker.util.LockerInUseValidator;
 import net.causw.app.main.domain.asset.locker.util.LockerIsDeactivatedValidator;

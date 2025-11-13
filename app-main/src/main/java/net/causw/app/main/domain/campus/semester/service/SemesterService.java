@@ -6,10 +6,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.core.aop.annotation.MeasureTime;
-import net.causw.app.main.domain.finance.userCouncilFee.entity.CouncilFeeFakeUser;
-import net.causw.app.main.domain.finance.userCouncilFee.entity.UserCouncilFee;
-import net.causw.app.main.domain.finance.userCouncilFee.repository.CouncilFeeFakeUserRepository;
-import net.causw.app.main.domain.finance.userCouncilFee.repository.UserCouncilFeeRepository;
+import net.causw.app.main.domain.finance.usercouncilfee.entity.CouncilFeeFakeUser;
+import net.causw.app.main.domain.finance.usercouncilfee.entity.UserCouncilFee;
+import net.causw.app.main.domain.finance.usercouncilfee.repository.CouncilFeeFakeUserRepository;
+import net.causw.app.main.domain.finance.usercouncilfee.repository.UserCouncilFeeRepository;
 import net.causw.app.main.api.dto.semester.CreateSemesterRequestDto;
 import net.causw.app.main.api.dto.semester.CurrentSemesterResponseDto;
 import net.causw.app.main.api.dto.util.dtoMapper.SemesterDtoMapper;
