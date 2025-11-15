@@ -1,13 +1,13 @@
 buildscript {
     dependencies {
-        classpath 'org.flywaydb:flyway-mysql:9.22.3'
-        classpath 'com.mysql:mysql-connector-j:8.1.0'
+        classpath 'org.flywaydb:flyway-mysql:11.15.0'
+        classpath 'com.mysql:mysql-connector-j:8.4.0'
     }
 }
 
 plugins {
     id 'org.springframework.boot' version '3.2.0'
-    id 'org.flywaydb.flyway' version '9.22.3'
+    id 'org.flywaydb.flyway' version '11.15.0'
 }
 
 ext {
@@ -31,7 +31,7 @@ dependencies {
 
     implementation 'org.jsoup:jsoup:1.18.1'
     implementation 'io.jsonwebtoken:jjwt:0.9.1'
-    implementation 'com.mysql:mysql-connector-j:8.1.0'
+    implementation 'com.mysql:mysql-connector-j:8.4.0'
 
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
@@ -85,8 +85,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-admin:9.2.0'
 
     // Flyway
-    implementation 'org.flywaydb:flyway-core:9.22.3'
-    implementation 'org.flywaydb:flyway-mysql:9.22.3'
+    implementation 'org.flywaydb:flyway-core:11.15.0'
+    implementation 'org.flywaydb:flyway-mysql:11.15.0'
 
     // logback json 형식 관련
     implementation 'ch.qos.logback.contrib:logback-json-classic:0.1.5'
