@@ -13,13 +13,23 @@ public class ApiQueryCountListener implements QueryExecutionListener {
 
     @Override
     public void afterQuery(ExecutionInfo execInfo, List<QueryInfo> queryInfoList) {
-        for (QueryInfo queryInfo : queryInfoList) {
-            QueryContext.addQuery(new QueryContext.QueryInfo(
-                queryInfo.getQuery(),
-                execInfo.getElapsedTime(),
-                extractParams(queryInfo)
-            ));
+        if (queryInfoList.isEmpty()) {
+            return;
         }
+
+        String query = queryInfoList.stream()
+            .map(QueryInfo::getQuery)
+            .collect(Collectors.joining(";\n"));
+
+        List<Object> params = queryInfoList.stream()
+            .flatMap(info -> extractParams(info).stream())
+            .collect(Collectors.toList());
+
+        QueryContext.addQuery(new QueryContext.QueryInfo(
+            query,
+            execInfo.getElapsedTime(),
+            params
+        ));
     }
 
     @Override
