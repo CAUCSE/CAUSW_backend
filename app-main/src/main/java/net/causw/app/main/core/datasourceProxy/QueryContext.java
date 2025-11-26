@@ -2,11 +2,13 @@ package net.causw.app.main.core.datasourceProxy;
 
 import java.util.ArrayList;
 import java.util.List;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
-@Component
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class QueryContext {
     private static final ThreadLocal<List<QueryInfo>> queries =
         ThreadLocal.withInitial(ArrayList::new);
