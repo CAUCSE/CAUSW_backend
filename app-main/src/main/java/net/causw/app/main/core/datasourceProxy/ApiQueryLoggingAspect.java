@@ -56,7 +56,7 @@ public class ApiQueryLoggingAspect {
             }
 
             if(queries.size()>10){ // TODO: 하드코딩 제거 필요
-                log.warn("Too Much Queries: {} {} | Count: {}", method, path, queries.size());
+                log.warn("Too Many Queries: {} {} | Count: {}", method, path, queries.size());
             }
 
             // 쿼리별 상세 정보 (선택적)
