@@ -5,24 +5,24 @@ import java.util.Set;
 
 import org.springframework.test.util.ReflectionTestUtils;
 
-import net.causw.app.main.domain.model.entity.board.Board;
-import net.causw.app.main.domain.model.entity.comment.ChildComment;
-import net.causw.app.main.domain.model.entity.comment.Comment;
-import net.causw.app.main.domain.model.entity.post.Post;
-import net.causw.app.main.domain.model.entity.semester.Semester;
-import net.causw.app.main.domain.model.entity.user.User;
-import net.causw.app.main.domain.model.entity.user.UserAdmission;
-import net.causw.app.main.domain.model.entity.userCouncilFee.CouncilFeeFakeUser;
-import net.causw.app.main.domain.model.entity.userCouncilFee.UserCouncilFee;
-import net.causw.app.main.domain.model.entity.vote.Vote;
-import net.causw.app.main.domain.model.entity.vote.VoteOption;
-import net.causw.app.main.domain.model.enums.semester.SemesterType;
-import net.causw.app.main.domain.model.enums.user.Department;
-import net.causw.app.main.domain.model.enums.user.GraduationType;
-import net.causw.app.main.domain.model.enums.user.Role;
-import net.causw.app.main.domain.model.enums.user.UserState;
-import net.causw.app.main.domain.model.enums.userAcademicRecord.AcademicStatus;
-import net.causw.app.main.dto.user.UserCreateRequestDto;
+import net.causw.app.main.domain.community.board.entity.Board;
+import net.causw.app.main.domain.community.comment.entity.ChildComment;
+import net.causw.app.main.domain.community.comment.entity.Comment;
+import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.campus.semester.entity.Semester;
+import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
+import net.causw.app.main.domain.finance.usercouncilfee.entity.CouncilFeeFakeUser;
+import net.causw.app.main.domain.finance.usercouncilfee.entity.UserCouncilFee;
+import net.causw.app.main.domain.community.vote.entity.Vote;
+import net.causw.app.main.domain.community.vote.entity.VoteOption;
+import net.causw.app.main.domain.campus.semester.enums.SemesterType;
+import net.causw.app.main.domain.user.account.enums.user.Department;
+import net.causw.app.main.domain.user.account.enums.user.GraduationType;
+import net.causw.app.main.domain.user.account.enums.user.Role;
+import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.api.dto.user.UserCreateRequestDto;
 import net.causw.global.constant.StaticValue;
 
 public class ObjectFixtures {

@@ -18,20 +18,22 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import net.causw.app.main.domain.model.entity.ceremony.Ceremony;
-import net.causw.app.main.domain.model.entity.notification.CeremonyNotificationSetting;
-import net.causw.app.main.domain.model.entity.notification.Notification;
-import net.causw.app.main.domain.model.entity.notification.NotificationLog;
-import net.causw.app.main.domain.model.entity.user.User;
-import net.causw.app.main.domain.model.enums.ceremony.CeremonyCategory;
-import net.causw.app.main.domain.model.enums.user.Department;
-import net.causw.app.main.dto.user.UserCreateRequestDto;
-import net.causw.app.main.infrastructure.firebase.FcmUtils;
-import net.causw.app.main.repository.ceremony.CeremonyRepository;
-import net.causw.app.main.repository.notification.CeremonyNotificationSettingRepository;
-import net.causw.app.main.repository.notification.NotificationLogRepository;
-import net.causw.app.main.repository.notification.NotificationRepository;
-import net.causw.app.main.service.userBlock.UserBlockEntityService;
+import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
+import net.causw.app.main.domain.notification.notification.entity.CeremonyNotificationSetting;
+import net.causw.app.main.domain.notification.notification.entity.Notification;
+import net.causw.app.main.domain.notification.notification.entity.NotificationLog;
+import net.causw.app.main.domain.notification.notification.service.CeremonyNotificationService;
+import net.causw.app.main.domain.notification.notification.service.FirebasePushNotificationService;
+import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.community.ceremony.enums.CeremonyCategory;
+import net.causw.app.main.domain.user.account.enums.user.Department;
+import net.causw.app.main.api.dto.user.UserCreateRequestDto;
+import net.causw.app.main.shared.infra.firebase.FcmUtils;
+import net.causw.app.main.domain.community.ceremony.repository.CeremonyRepository;
+import net.causw.app.main.domain.notification.notification.repository.CeremonyNotificationSettingRepository;
+import net.causw.app.main.domain.notification.notification.repository.NotificationLogRepository;
+import net.causw.app.main.domain.notification.notification.repository.NotificationRepository;
+import net.causw.app.main.domain.user.relation.service.UserBlockEntityService;
 
 import com.google.firebase.messaging.FirebaseMessagingException;
 
