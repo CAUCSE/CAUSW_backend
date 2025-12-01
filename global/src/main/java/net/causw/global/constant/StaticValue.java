@@ -31,7 +31,7 @@ public class StaticValue {
 
 	// JWT Token
 	public static final Long JWT_ACCESS_TOKEN_VALID_TIME = 1000L * 60 * 30;    // 30min
-	public static final Long JWT_REFRESH_TOKEN_VALID_TIME = 1000L * 60 * 60 * 24 * 7;   // 7day
+	public static final Long JWT_REFRESH_TOKEN_VALID_TIME = 1000L * 60 * 60 * 24 * 15;   // 7day
 	public static final Integer JWT_ACCESS_THRESHOLD = 60 * 60 * 24;  // 1 day
 
 	// Swagger configuration
