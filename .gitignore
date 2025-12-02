@@ -66,3 +66,9 @@ log/
 /app-main/src/main/generated/net/causw/app/main/dto/util/*Impl.java
 /app-main/src/main/generated/net/causw/app/main/dto/util/dtoMapper/*Impl.java
 /app-main/src/main/generated/net/causw/app/main/dto/util/dtoMapper/custom/*Impl.java
+
+### Monitoring Data (Do not commit) ###
+monitoring/prometheus-data/
+monitoring/grafana-data/
+monitoring/loki-data/
+monitoring/mysqld-exporter/.my.cnf
