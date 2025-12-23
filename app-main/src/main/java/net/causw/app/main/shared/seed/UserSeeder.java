@@ -66,7 +66,7 @@ public class UserSeeder {
 				.nickname("seed_" + i)
 				.major("소프트웨어학부")
 				.department(Department.SCHOOL_OF_SW)
-				.phoneNumber("010-9" + String.format("%03d-%04d", i / 10, i % 10000))
+                .phoneNumber(String.format("010-%04d-%04d", 2000 + i / 10000, i % 10000))
 				.build();
 
 			User user = User.from(dto, encodedPassword);
