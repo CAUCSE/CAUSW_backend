@@ -54,6 +54,7 @@ dump.rdb
 **/resources/application-local.yml
 **/resources/application-test.yml
 **/resources/application-qa.yml
+**/resources/application-seed.yml
 **/resources/dongnae_firebase_key.json
 
 Dockerfile
