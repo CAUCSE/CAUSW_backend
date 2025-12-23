@@ -99,6 +99,9 @@ dependencies {
     annotationProcessor "io.github.openfeign.querydsl:querydsl-apt:${queryDslVersion}:jpa"
     annotationProcessor "jakarta.annotation:jakarta.annotation-api"
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+
+    //Datasource-Proxy
+    implementation 'com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.12.1'
 }
 
 bootJar {
