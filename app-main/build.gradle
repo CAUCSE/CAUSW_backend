@@ -18,8 +18,16 @@ ext {
 spotless {
     java {
         target '**/*.java'
+
+        // 네이버 자바 컨벤션 적용
+        importOrder() // import 순서 정리
+        removeUnusedImports()
+
         // 네이버 코딩 컨벤션 XML 파일 사용
         eclipse().configFile('naver-eclipse-formatter.xml')
+
+        trimTrailingWhitespace()
+        endWithNewline()
     }
 }
 
