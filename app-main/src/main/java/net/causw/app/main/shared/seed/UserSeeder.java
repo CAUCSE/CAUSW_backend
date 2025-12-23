@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -58,46 +59,9 @@ public class UserSeeder {
 		String encodedPassword = passwordEncoder.encode("password00!!");
 		for (int i = 1; i <= count; i++) {
 
-			UserCreateRequestDto dto = UserCreateRequestDto.builder()
-				.email("seed" + i + "@cau.ac.kr")
-				.name("시드유저" + i)
-				.password("password00!!") // 정규식 통과
-				.studentId("2020" + String.format("%04d", i))
-				.admissionYear(2020)
-				.nickname("seed_" + i)
-				.major("소프트웨어학부")
-				.department(Department.SCHOOL_OF_SW)
-                .phoneNumber(String.format("010-%04d-%04d", 2000 + i / 10000, i % 10000))
-				.build();
+			User user = createActiveCommonUser(i, encodedPassword);
 
-			User user = User.from(dto, encodedPassword);
-			user.setRoles(Set.of(Role.COMMON));
-			user.setState(UserState.ACTIVE);
-
-			em.persist(user);
-
-			// UUID File (가짜 파일)
-			UuidFile file = UuidFile.of(UUID.randomUUID().toString(), "seed/profile/" + i + ".png",
-				"https://cdn.seed.test/profile/" + i + ".png", "profile_" + i + ".png", "png", FilePath.ETC);
-			em.persist(file);
-
-			// User File 관계 테이블
-			UserProfileImage profile = UserProfileImage.of(user, file);
-
-			em.persist(profile);
-
-			UserAdmissionLog log = UserAdmissionLog.of(
-				user.getEmail(),
-				user.getName(),
-				"admin@seed.test",
-				"시드 관리자",
-				UserAdmissionLogAction.ACCEPT,
-				List.of(),
-				"시드 데이터 - 가입 승인 완료",
-				null
-			);
-			em.persist(log);
-
+			UserAdmissionLog log = createUserAdmissionLog(user);
 			createEnrolledAcademicRecord(user, 2026);
 
 			// batch flush
@@ -110,6 +74,51 @@ public class UserSeeder {
 
 		em.flush();
 		em.clear();
+	}
+
+	private UserAdmissionLog createUserAdmissionLog(User user) {
+		UserAdmissionLog log = UserAdmissionLog.of(
+			user.getEmail(),
+			user.getName(),
+			"admin@seed.test",
+			"시드 관리자",
+			UserAdmissionLogAction.ACCEPT,
+			List.of(),
+			"시드 데이터 - 가입 승인 완료",
+			null
+		);
+		em.persist(log);
+
+		return log;
+	}
+
+	private User createActiveCommonUser(int i, String encodedPassword) {
+		UserCreateRequestDto dto = UserCreateRequestDto.builder()
+			.email("seed" + i + "@cau.ac.kr")
+			.name("시드유저" + i)
+			.password("password00!!") // 정규식 통과
+			.studentId("2020" + String.format("%04d", i))
+			.admissionYear(2020)
+			.nickname("seed_" + i)
+			.major("소프트웨어학부")
+			.department(Department.SCHOOL_OF_SW)
+			.phoneNumber(String.format("010-%04d-%04d", 2000 + i / 10000, i % 10000))
+			.build();
+
+		User user = User.from(dto, encodedPassword);
+		user.setRoles(Set.of(Role.COMMON));
+		user.setState(UserState.ACTIVE);
+		em.persist(user);
+
+		// UUID File (가짜 파일)
+		UuidFile file = UuidFile.of(UUID.randomUUID().toString(), "seed/profile/" + i + ".png",
+			"https://cdn.seed.test/profile/" + i + ".png", "profile_" + i + ".png", "png", FilePath.ETC);
+		em.persist(file);
+		// User File 관계 테이블
+		UserProfileImage profile = UserProfileImage.of(user, file);
+		em.persist(profile);
+
+		return user;
 	}
 
 	private void createEnrolledAcademicRecord(
