@@ -32,4 +32,4 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            core.setFailed('Spotless 포매팅 검사가 실패했습니다.')
+            core.setFailed('Spotless 포매팅 검사가 실패했습니다. ./gradlew spotlessApply 적용이 필요합니다.')
