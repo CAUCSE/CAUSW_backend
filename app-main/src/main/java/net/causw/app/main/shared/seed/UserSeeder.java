@@ -12,14 +12,12 @@ import org.springframework.transaction.annotation.Transactional;
 import net.causw.app.main.api.dto.user.UserCreateRequestDto;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserAcademicRecordApplicationAttachImage;
-import net.causw.app.main.domain.asset.file.entity.joinEntity.UserAdmissionAttachImage;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.user.academic.entity.userAcademicRecord.UserAcademicRecordApplication;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicRecordRequestStatus;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmissionLog;
 import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.Role;
@@ -29,10 +27,12 @@ import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Profile("seed")
 @RequiredArgsConstructor
+@Slf4j
 public class UserSeeder {
 
 	private final EntityManager em;
@@ -45,9 +45,10 @@ public class UserSeeder {
 		boolean exist = userRepository.existsBy();
 
 		if (exist) {
-			System.out.println("🚫 Seed skipped: users already exist");
+			log.warn("🚫 Seed skipped: users already exist");
 			return;
 		}
+		// getOrCreateAdmin();
 		process(count);
 	}
 
