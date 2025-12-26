@@ -1,0 +1,19 @@
+name: Simple Labeler
+
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  simple-labeler:
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Label to PR
+        uses: naver/simple-labeler@latest
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          labels: "D-4"
+          duplicate: "D-*"
