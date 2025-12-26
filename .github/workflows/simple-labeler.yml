@@ -3,6 +3,8 @@ name: Simple Labeler
 on:
   pull_request:
     types: [opened, ready_for_review]
+    branches:
+      - dev
 
 permissions:
   pull-requests: write

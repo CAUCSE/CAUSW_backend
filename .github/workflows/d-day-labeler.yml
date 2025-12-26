@@ -22,7 +22,8 @@ jobs:
             const pulls = await github.rest.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              state: "open"
+              state: "open",
+              base: "dev"
             });
 
             const before = {};
@@ -50,7 +51,8 @@ jobs:
             const pulls = await github.rest.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              state: "open"
+              state: "open",
+              base: "dev"
             });
 
             const notify = [];
