@@ -1,59 +1,66 @@
-# CAUSW Backend 
-
-<!--
-<a href="https://spring.io">
-  <img src="https://img.shields.io/badge/spring-v2.4.1-green">
-</a>
-<a href="https://www.oracle.com/java/technologies/javase/11-0-9-relnotes.html">
-  <img src="https://img.shields.io/badge/jdk-v11.0.9-blue">
-</a>
-<a href="https://github.com/CAUCSE/CAUSW_backend/actions">
-  <img src="https://github.com/CAUCSE/CAUSW_backend/actions/workflows/ci.yml/badge.svg">
-</a>
-
-## Overview
-
-해당 애플리케이션은 [중앙대학교 소프트웨어학부 동문네트워크 커뮤니티](https://causw.net) 서비스의 Backend 서비스를 구동합니다.
-
-서비스 이용 중 불편한 사항 혹은 문의사항이 있으신 경우 개발팀에 연락 부탁드리며, 서비스 개선을 위한 다양한 의견은 언제든 환영입니다.
-
-프로젝트에 참여하시고 싶으시다면, [Contributing Guide](CONTRIBUTING.md)를 참조하시어 issue 혹은 pull request를 생성해주세요!
-
-본 서비스에 많은 관심 부탁드립니다 :)
-
-## Architecture
-
-해당 애플리케이션는 <a href="https://en.wikipedia.org/wiki/Hexagonal_architecture_(software)">Hexagonal Architecture</a>를 따른다.
-
-### Hexagonal Architecture
-
-- 계층 구조(Layered Architecture) 의 대안으로써 사용자 인터페이스나 기반 요소(Infrastructure) 의 변경에 영향을 받지 않는 핵심 코드, 즉 비즈니스 로직을 만들고 이를 견고하게
-  관리하기 위한 구조
-- Ports and Adapters Architecture 라고 불리기도 함
-
-<p align="center">
-    <img src="./img/project_structure.png" width="600" height="266"/>
-</p>
-
-> 육각형 구조의 핵심은 비즈니스 로직이 다른 기술 영역의 영향을 받게 하지 않는 것
-
-- **Adapters**
-    - 외부 영역과 내부 영역을 이어주는 어댑터
-    - `web` : 웹 클라이언트에서의 요청을 처리
-    - `entity` : 데이터베이스 접근하여 데이터 처리
+## 🖥️ 프로젝트 소개
+![alt text](image.png)
+- 실사용자 수: 약 700명
+- 주요 타겟: 중앙대학교 소프트웨어대학 동문(크자회 회원)
+- 핵심 기능: 동문 수첩, 게시판, 학부 공지, 경조사 서비스
+- 서비스 링크: https://causw.co.kr
 
 
-- **Application**
-    - 애플리케이션이 수행할 작업을 정의하고 표현력 있는 도메인 객체가 문제를 해결
-    - 여기에는 도메인 로직이 없고, 오직 도메인의 여러 로직을 조합
-    - `spi` : service provider interface (port interface) 를 관리, `port` 는 영속화 계층이 자신의 외부 영역과 상호 작용하는 방법을 정의
+### ⚙️ 개발 환경
+- **Language** : Java 17
+- **Framework** : SpringBoot 3.2.0
+- **Database** : AWS RDS (MySQL 8.4.7)
+- **ORM** :  Spring Data JPA (QueryDSL)
+- **Build**: Gradle 
+
+## 🖥️ 서버 환경
+![alt text](image-1.png)
+
+## 📌 주요 기능
+- 동문 수첩: 이용자의 프로필을 등록하고 회원들과 공유할 수 있는 동문 수첩 서비스를 운영합니다.<br>
+- 게시판: 회원들이 자유롭게 등록하고, 댓글을 달 수 있는 자유 게시판과 학생회 및 크자회의 공지를 등록하는 게시판등을 운영합니다.<br>
+- 학부 공지: 학부 홈페이지에 등록되는 공지들을 모아서 등록 및 공지해주는 서비스를 운영합니다.<br>
+- 경조사 서비스: 경조사를 등록하고 원하는 그룹에게 공유하는 서비스를 운영합니다.<br>
+
+## 🏗️ 시스템 아키텍처 
+- app-main/
+
+ └─ src/main/java/net.causw.app.main
+    ├─ controller/        
+    ├─ service/           
+    ├─ repository/        
+    ├─ domain/  
+    │   ├─ model/         
+    │   ├─ policy/        
+    │   └─ validation/    
+    ├─ dto/               
+    ├─ infrastructure/    
+    └─ CauswApplication
+  
+  -global/
+
+ └─ src/main/java/net.causw.global
+    ├─ constant/     
+    ├─ exception/    
+    └─ util/         
+
+### 대표 도메인
+- User & Academic 회원, 학적 정보 관리
+
+- Circle & Community 동아리, 게시판, 게시글, 댓글/대댓글 등 커뮤니티 기능
+
+- Event & Schedule 학사 일정, 행사, 학기/학사 관련 스케줄 관리
+
+- Application & Form 폼 처리
+
+- Facility & Resource
+
+- Notification 푸시/알림 발송 및 로그 관리
+
+- Common / Global 공통 API, 전역 예외 처리 등 공용 기능
 
 
-- **Domain**
-    - 도메인에 관한 정보, 비즈니스 로직을 표현하는 일을 책임
-
--->
+## 📂 디렉터리 구조 
 
 ## Contact
-
-**Email** : <a href="mailto:caucsedongne@gmail.com">caucsedongne@gmail.com</a>
+Email : caucsedongne@gmail.com
