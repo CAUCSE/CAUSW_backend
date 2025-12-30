@@ -47,7 +47,6 @@ public class MessageUtil {
 	public static final String BOARD_NOT_FOUND = "게시판을 찾을 수 없습니다.";
 	public static final String CIRCLE_LEADER_NOR_FOUND = "해당 동아리의 동아리장을 찾을 수 없습니다.";
 	public static final String CIRCLE_MEMBER_NOT_FOUND = "동아리를 찾을 수 없습니다.";
-	public static final String INQUIRY_NOT_FOUND = "문의글을 찾을 수 없습니다.";
 	public static final String POST_NOT_FOUND = "게시글을 찾을 수 없습니다.";
 	public static final String COMMENT_NOT_FOUND = "댓글을 찾을 수 없습니다.";
 	public static final String NOTICE_NOT_FOUND = "앱 공지 게시판을 찾을 수 없습니다.";
