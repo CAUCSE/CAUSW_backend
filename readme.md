@@ -1,5 +1,5 @@
 ## 🖥️ 프로젝트 소개
-![alt text](image.png)
+<img width="91" height="96" alt="Image" src="https://github.com/user-attachments/assets/2f02b6dd-38c3-4d00-965f-28d17d4f77a3" />
 - 실사용자 수: 약 700명
 - 주요 타겟: 중앙대학교 소프트웨어대학 동문(크자회 회원)
 - 핵심 기능: 동문 수첩, 게시판, 학부 공지, 경조사 서비스
@@ -14,7 +14,7 @@
 - **Build**: Gradle 
 
 ## 🖥️ 서버 환경
-![alt text](image-1.png)
+<img width="1325" height="823" alt="Image" src="https://github.com/user-attachments/assets/4e182e9d-4c1a-496c-8678-b3a99b394ca5" />
 
 ## 📌 주요 기능
 - 동문 수첩: 이용자의 프로필을 등록하고 회원들과 공유할 수 있는 동문 수첩 서비스를 운영합니다.<br>
