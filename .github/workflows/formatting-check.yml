@@ -32,10 +32,4 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            github.rest.issues.createComment({
-              issue_number: context.payload.pull_request.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '❌ **Spotless Check Failed**\n\n코드 포맷팅이 올바르지 않습니다. 다음 명령어를 실행하여 자동으로 수정하세요:\n\n```bash\n./gradlew spotlessApply\n```\n\n그 후 변경사항을 커밋하고 푸시해주세요.'
-            })
-            core.setFailed('Spotless check failed')
+            core.setFailed('Spotless 포매팅 검사가 실패했습니다. ./gradlew spotlessApply 적용이 필요합니다.')
