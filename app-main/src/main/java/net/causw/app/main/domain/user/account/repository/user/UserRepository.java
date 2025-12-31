@@ -76,5 +76,10 @@ public interface UserRepository extends JpaRepository<User, String> {
 
 	Optional<User> findByEmailAndName(String email, String name);
 
+    boolean existsBy();
+
     Optional<User> findTopBy();
+
+    @Query("SELECT u.id FROM User u")
+    List<String> findAllIds();
 }
