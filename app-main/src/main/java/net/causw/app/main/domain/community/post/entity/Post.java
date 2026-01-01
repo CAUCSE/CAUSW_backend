@@ -90,8 +90,7 @@ public class Post extends BaseEntity {
 		Board board,
 		Form form,
 
-		List<UuidFile> postAttachImageUuidFileList
-	) {
+		List<UuidFile> postAttachImageUuidFileList) {
 		Post post = Post.builder()
 			.title(title)
 			.content(content)

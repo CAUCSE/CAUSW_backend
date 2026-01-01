@@ -50,8 +50,7 @@ public class ChildComment extends BaseEntity {
 		Boolean isDeleted,
 		Boolean isAnonymous,
 		User writer,
-		Comment parentComment
-	) {
+		Comment parentComment) {
 		return ChildComment.builder()
 			.content(content)
 			.isDeleted(isDeleted)

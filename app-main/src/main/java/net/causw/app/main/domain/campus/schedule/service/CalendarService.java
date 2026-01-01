@@ -6,19 +6,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import net.causw.app.main.core.aop.annotation.MeasureTime;
-import net.causw.app.main.domain.asset.file.entity.UuidFile;
-import net.causw.app.main.domain.asset.file.entity.joinEntity.CalendarAttachImage;
 import net.causw.app.main.api.dto.calendar.CalendarCreateRequestDto;
 import net.causw.app.main.api.dto.calendar.CalendarResponseDto;
 import net.causw.app.main.api.dto.calendar.CalendarUpdateRequestDto;
 import net.causw.app.main.api.dto.calendar.CalendarsResponseDto;
 import net.causw.app.main.api.dto.util.dtoMapper.CalendarDtoMapper;
-import net.causw.app.main.domain.campus.schedule.entity.Calendar;
+import net.causw.app.main.core.aop.annotation.MeasureTime;
+import net.causw.app.main.domain.asset.file.entity.UuidFile;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.CalendarAttachImage;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
-import net.causw.app.main.domain.campus.schedule.repository.CalendarRepository;
 import net.causw.app.main.domain.asset.file.repository.CalendarAttachImageRepository;
 import net.causw.app.main.domain.asset.file.service.UuidFileService;
+import net.causw.app.main.domain.campus.schedule.entity.Calendar;
+import net.causw.app.main.domain.campus.schedule.repository.CalendarRepository;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
@@ -41,8 +41,7 @@ public class CalendarService {
 
 		return CalendarDtoMapper.INSTANCE.toCalendarsResponseDto(
 			calendars.size(),
-			calendars
-		);
+			calendars);
 	}
 
 	@Transactional(readOnly = true)
@@ -51,9 +50,7 @@ public class CalendarService {
 			calendarRepository.findById(calendarId).orElseThrow(
 				() -> new BadRequestException(
 					ErrorCode.ROW_DOES_NOT_EXIST,
-					MessageUtil.CALENDAR_NOT_FOUND
-				)
-			));
+					MessageUtil.CALENDAR_NOT_FOUND)));
 	}
 
 	@Transactional(readOnly = true)
@@ -62,8 +59,7 @@ public class CalendarService {
 			.map(CalendarDtoMapper.INSTANCE::toCalendarResponseDto)
 			.orElseThrow(() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.CALENDAR_NOT_FOUND
-			));
+				MessageUtil.CALENDAR_NOT_FOUND));
 	}
 
 	@Transactional
@@ -74,8 +70,7 @@ public class CalendarService {
 			.ifPresent(calendar -> {
 				throw new BadRequestException(
 					ErrorCode.ROW_ALREADY_EXIST,
-					MessageUtil.CALENDAR_ALREADY_EXIST
-				);
+					MessageUtil.CALENDAR_ALREADY_EXIST);
 			});
 
 		return CalendarDtoMapper.INSTANCE.toCalendarResponseDto(
@@ -83,10 +78,7 @@ public class CalendarService {
 				Calendar.of(
 					calendarCreateRequestDto.getYear(),
 					calendarCreateRequestDto.getMonth(),
-					uuidFile
-				)
-			)
-		);
+					uuidFile)));
 	}
 
 	@Transactional
@@ -95,9 +87,7 @@ public class CalendarService {
 		Calendar calendar = calendarRepository.findById(calendarId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.CALENDAR_NOT_FOUND
-			)
-		);
+				MessageUtil.CALENDAR_NOT_FOUND));
 
 		// 이미지가 없을 경우 기존 이미지를 사용하고, 이미지가 있을 경우 새로운 이미지로 교체 (Calendar의 이미지는 not null임)
 		if (!(image == null || image.isEmpty())) {
@@ -105,9 +95,7 @@ public class CalendarService {
 				uuidFileService.updateFile(
 					calendar.getCalendarAttachImage().getUuidFile(),
 					image,
-					FilePath.CALENDAR
-				)
-			);
+					FilePath.CALENDAR));
 		}
 
 		CalendarAttachImage calendarAttachImage = calendar.getCalendarAttachImage();
@@ -115,8 +103,7 @@ public class CalendarService {
 		calendar.update(
 			calendarUpdateRequestDto.getYear(),
 			calendarUpdateRequestDto.getMonth(),
-			calendarAttachImage
-		);
+			calendarAttachImage);
 
 		return CalendarDtoMapper.INSTANCE.toCalendarResponseDto(calendarRepository.save(calendar));
 	}
@@ -130,9 +117,7 @@ public class CalendarService {
 		Calendar calendar = calendarRepository.findById(calendarId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.CALENDAR_NOT_FOUND
-			)
-		);
+				MessageUtil.CALENDAR_NOT_FOUND));
 
 		calendarAttachImageRepository.delete(calendar.getCalendarAttachImage());
 		uuidFileService.deleteFile(calendar.getCalendarAttachImage().uuidFile);

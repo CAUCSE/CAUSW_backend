@@ -23,8 +23,7 @@ public class UserRoleIsNoneValidator extends AbstractValidator {
 		if (this.requestUserRoles.contains(Role.NONE)) {
 			throw new UnauthorizedException(
 				ErrorCode.NEED_SIGN_IN,
-				"접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요."
-			);
+				"접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.");
 		}
 	}
 }

@@ -1,7 +1,20 @@
 package net.causw.app.main.domain.user.account.policy;
 
-import static java.util.Map.*;
-import static net.causw.app.main.domain.user.account.enums.user.Role.*;
+import static java.util.Map.entry;
+import static net.causw.app.main.domain.user.account.enums.user.Role.ADMIN;
+import static net.causw.app.main.domain.user.account.enums.user.Role.ALUMNI_MANAGER;
+import static net.causw.app.main.domain.user.account.enums.user.Role.COMMON;
+import static net.causw.app.main.domain.user.account.enums.user.Role.COUNCIL;
+import static net.causw.app.main.domain.user.account.enums.user.Role.LEADER_1;
+import static net.causw.app.main.domain.user.account.enums.user.Role.LEADER_2;
+import static net.causw.app.main.domain.user.account.enums.user.Role.LEADER_3;
+import static net.causw.app.main.domain.user.account.enums.user.Role.LEADER_4;
+import static net.causw.app.main.domain.user.account.enums.user.Role.LEADER_ALUMNI;
+import static net.causw.app.main.domain.user.account.enums.user.Role.LEADER_CIRCLE;
+import static net.causw.app.main.domain.user.account.enums.user.Role.NONE;
+import static net.causw.app.main.domain.user.account.enums.user.Role.PRESIDENT;
+import static net.causw.app.main.domain.user.account.enums.user.Role.PROFESSOR;
+import static net.causw.app.main.domain.user.account.enums.user.Role.VICE_PRESIDENT;
 
 import java.util.EnumSet;
 import java.util.Map;
@@ -31,8 +44,7 @@ public class RolePolicy {
 		entry(NONE, false),
 
 		entry(LEADER_CIRCLE, false),
-		entry(PROFESSOR, false)
-	);
+		entry(PROFESSOR, false));
 
 	/**
 	 * 권한 우선순위 정책
@@ -54,8 +66,7 @@ public class RolePolicy {
 		entry(NONE, 100),
 
 		entry(LEADER_CIRCLE, 5),
-		entry(PROFESSOR, 6)
-	);
+		entry(PROFESSOR, 6));
 
 	/**
 	 * 권한 설정 가능 대상 정책 (부여 및 위임 공통)
@@ -66,8 +77,7 @@ public class RolePolicy {
 		// 부학생회장과 학생회 권한이 같이 삭제되므로 대상이 일반, 학생회장, 부학생회장 권한까지 설정 가능함.
 		PRESIDENT, Set.of(VICE_PRESIDENT, COUNCIL, COMMON),
 		// 일반 권한의 경우 모두 권한에 설정 가능함.
-		COMMON, EnumSet.allOf(Role.class)
-	);
+		COMMON, EnumSet.allOf(Role.class));
 
 	/**
 	 * 권한 위임 정책
@@ -91,8 +101,7 @@ public class RolePolicy {
 			LEADER_4,
 			LEADER_ALUMNI,
 			ALUMNI_MANAGER,
-			COMMON
-		),
+			COMMON),
 
 		PRESIDENT, Set.of(
 			VICE_PRESIDENT,
@@ -103,9 +112,7 @@ public class RolePolicy {
 			LEADER_4,
 			LEADER_ALUMNI,
 			ALUMNI_MANAGER,
-			COMMON
-		)
-	);
+			COMMON));
 
 	/**
 	 * 대리 위임 정책
@@ -122,8 +129,7 @@ public class RolePolicy {
 			LEADER_3,
 			LEADER_4,
 			LEADER_ALUMNI,
-			ALUMNI_MANAGER
-		),
+			ALUMNI_MANAGER),
 
 		PRESIDENT, Set.of(
 			VICE_PRESIDENT,
@@ -133,9 +139,7 @@ public class RolePolicy {
 			LEADER_3,
 			LEADER_4,
 			LEADER_ALUMNI,
-			ALUMNI_MANAGER
-		)
-	);
+			ALUMNI_MANAGER));
 
 	// --- Getter Methods ---
 

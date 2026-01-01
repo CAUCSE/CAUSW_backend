@@ -29,8 +29,7 @@ public class FormResponseDto {
 	@Schema(description = "재학생 답변 허용 여부", example = "true")
 	private Boolean isAllowedEnrolled;
 
-	@Schema(description = "재학생 답변 허용 시, 답변 가능한 등록 완료 학기(상관없음 시 1차부터 9차 이상까지)",
-		example = "[FIRST_SEMESTER,SECOND_SEMESTER ... EIGHTH_SEMESTER,ABOVE_NIGHT_SEMESTER]")
+	@Schema(description = "재학생 답변 허용 시, 답변 가능한 등록 완료 학기(상관없음 시 1차부터 9차 이상까지)", example = "[FIRST_SEMESTER,SECOND_SEMESTER ... EIGHTH_SEMESTER,ABOVE_NIGHT_SEMESTER]")
 	private List<RegisteredSemester> enrolledRegisteredSemesterList;
 
 	@Schema(description = "재학생 답변 허용 시, 학생회비 납부 필요 여부", example = "ture")
@@ -40,8 +39,7 @@ public class FormResponseDto {
 	@Schema(description = "휴학생 답변 허용 여부", example = "ture")
 	private Boolean isAllowedLeaveOfAbsence;
 
-	@Schema(description = "휴학생 답변 허용 시, 답변 가능한 등록 완료 학기(상관없음 시 1차부터 9차 이상까지)",
-		example = "[FIRST_SEMESTER,SECOND_SEMESTER ... EIGHTH_SEMESTER,ABOVE_NIGHT_SEMESTER]")
+	@Schema(description = "휴학생 답변 허용 시, 답변 가능한 등록 완료 학기(상관없음 시 1차부터 9차 이상까지)", example = "[FIRST_SEMESTER,SECOND_SEMESTER ... EIGHTH_SEMESTER,ABOVE_NIGHT_SEMESTER]")
 	private List<RegisteredSemester> leaveOfAbsenceRegisteredSemesterList;
 
 	@Schema(description = "졸업생 답변 허용 여부", example = "ture")
@@ -56,12 +54,12 @@ public class FormResponseDto {
 			.title("")
 			.isClosed(false)
 			.isAllowedEnrolled(false)
-			.enrolledRegisteredSemesterList(List.of())  // 빈 리스트
-			.isNeedCouncilFeePaid(false)  // 기본값 false
-			.isAllowedLeaveOfAbsence(false)  // 기본값 false
-			.leaveOfAbsenceRegisteredSemesterList(List.of())  // 빈 리스트
-			.isAllowedGraduation(false)  // 기본값 false
-			.questionResponseDtoList(List.of())  // 빈 리스트
+			.enrolledRegisteredSemesterList(List.of()) // 빈 리스트
+			.isNeedCouncilFeePaid(false) // 기본값 false
+			.isAllowedLeaveOfAbsence(false) // 기본값 false
+			.leaveOfAbsenceRegisteredSemesterList(List.of()) // 빈 리스트
+			.isAllowedGraduation(false) // 기본값 false
+			.questionResponseDtoList(List.of()) // 빈 리스트
 			.build();
 	}
 }

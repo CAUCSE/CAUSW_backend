@@ -56,9 +56,10 @@ public class EventController {
 	})
 	@PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES_AND_LEADER_ALUMNI)")
 	public EventResponseDto createEvent(
-		@RequestPart(value = "eventCreateRequestDto") @Valid EventCreateRequestDto eventCreateRequestDto,
-		@RequestPart(value = "eventImage") MultipartFile eventImage
-	) {
+		@RequestPart(value = "eventCreateRequestDto") @Valid
+		EventCreateRequestDto eventCreateRequestDto,
+		@RequestPart(value = "eventImage")
+		MultipartFile eventImage) {
 		return eventService.createEvent(eventCreateRequestDto, eventImage);
 	}
 
@@ -73,10 +74,12 @@ public class EventController {
 	})
 	@PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES_AND_LEADER_ALUMNI)")
 	public EventResponseDto updateEvent(
-		@PathVariable("eventId") String eventId,
-		@RequestPart(value = "eventUpdateRequestDto") @Valid EventUpdateRequestDto eventUpdateRequestDto,
-		@RequestPart(value = "eventImage", required = false) MultipartFile eventImage
-	) {
+		@PathVariable("eventId")
+		String eventId,
+		@RequestPart(value = "eventUpdateRequestDto") @Valid
+		EventUpdateRequestDto eventUpdateRequestDto,
+		@RequestPart(value = "eventImage", required = false)
+		MultipartFile eventImage) {
 		return eventService.updateEvent(eventId, eventUpdateRequestDto, eventImage);
 	}
 
@@ -90,7 +93,8 @@ public class EventController {
 		@ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	@PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES_AND_LEADER_ALUMNI)")
-	public EventResponseDto deleteEvent(@PathVariable("eventId") String eventId) {
+	public EventResponseDto deleteEvent(@PathVariable("eventId")
+	String eventId) {
 		return eventService.deleteEvent(eventId);
 	}
 

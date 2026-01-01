@@ -25,8 +25,7 @@ public record PostQueryResult(
 	UserState writerUserState,
 	LocalDateTime createdAt,
 	LocalDateTime updatedAt,
-	String postAttachImage
-) {
+	String postAttachImage) {
 	@QueryProjection
 	public PostQueryResult {
 	} // canonical constructor

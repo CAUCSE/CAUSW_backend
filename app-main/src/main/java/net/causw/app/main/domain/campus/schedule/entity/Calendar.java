@@ -36,8 +36,7 @@ public class Calendar extends BaseEntity {
 	public static Calendar of(
 		Integer year,
 		Integer month,
-		UuidFile uuidFile
-	) {
+		UuidFile uuidFile) {
 		Calendar calendar = Calendar.builder()
 			.year(year)
 			.month(month)
@@ -45,8 +44,7 @@ public class Calendar extends BaseEntity {
 
 		CalendarAttachImage calendarAttachImage = CalendarAttachImage.of(
 			calendar,
-			uuidFile
-		);
+			uuidFile);
 
 		calendar.setCalendarAttachImage(calendarAttachImage);
 

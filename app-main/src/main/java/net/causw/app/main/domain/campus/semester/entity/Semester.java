@@ -52,8 +52,7 @@ public class Semester extends BaseEntity {
 	public static Semester of(
 		Integer semesterYear,
 		SemesterType semesterType,
-		User updateUser
-	) {
+		User updateUser) {
 		LocalDate startDate, endDate;
 		if (semesterType == SemesterType.FIRST) {
 			startDate = LocalDate.of(semesterYear, 3, 1);

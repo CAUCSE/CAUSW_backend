@@ -18,13 +18,13 @@ import net.causw.app.main.api.dto.circle.CircleResponseDto;
 import net.causw.app.main.api.dto.circle.CirclesResponseDto;
 import net.causw.app.main.api.dto.circle.ExportCircleMemberToExcelResponseDto;
 import net.causw.app.main.api.dto.duplicate.DuplicatedCheckResponseDto;
+import net.causw.app.main.api.dto.user.UserResponseDto;
 import net.causw.app.main.api.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
+import net.causw.app.main.domain.campus.circle.entity.Circle;
+import net.causw.app.main.domain.campus.circle.entity.CircleMember;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.finance.usercouncilfee.entity.UserCouncilFee;
-import net.causw.app.main.api.dto.user.UserResponseDto;
-import net.causw.app.main.domain.campus.circle.entity.Circle;
-import net.causw.app.main.domain.campus.circle.entity.CircleMember;
 import net.causw.app.main.domain.user.account.entity.user.User;
 
 // Custom Annotation을 사용하여 중복되는 @Mapping을 줄일 수 있습니다.
@@ -32,8 +32,7 @@ import net.causw.app.main.domain.user.account.entity.user.User;
 @Target({ElementType.METHOD})
 @Mapping(target = "leaderId", expression = "java(circle.getLeader().map(User::getId).orElse(null))")
 @Mapping(target = "leaderName", expression = "java(circle.getLeader().map(User::getName).orElse(null))")
-@interface CircleCommonWriterMappings {
-}
+@interface CircleCommonWriterMappings{}
 
 @Mapper(componentModel = "spring")
 public interface CircleDtoMapper extends UuidFileToUrlDtoMapper {
@@ -120,7 +119,6 @@ public interface CircleDtoMapper extends UuidFileToUrlDtoMapper {
 		UserCouncilFee userCouncilFee,
 		Integer restOfSemester,
 		Boolean isAppliedThisSemester,
-		Integer appliedSemester
-	);
+		Integer appliedSemester);
 
 }

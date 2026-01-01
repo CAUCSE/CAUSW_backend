@@ -38,5 +38,3 @@ public class FavoritePost extends BaseEntity {
 	}
 
 }
-
-

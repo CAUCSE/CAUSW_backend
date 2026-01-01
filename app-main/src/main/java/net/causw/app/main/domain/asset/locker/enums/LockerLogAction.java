@@ -25,8 +25,6 @@ public enum LockerLogAction {
 			.orElseThrow(
 				() -> new BadRequestException(
 					ErrorCode.INVALID_REQUEST_ROLE,
-					String.format("'%s' is invalid : not supported", value)
-				)
-			);
+					String.format("'%s' is invalid : not supported", value)));
 	}
 }

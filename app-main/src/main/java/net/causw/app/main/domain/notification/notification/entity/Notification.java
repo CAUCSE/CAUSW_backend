@@ -52,8 +52,7 @@ public class Notification extends BaseEntity {
 		String body,
 		NoticeType noticeType,
 		String targetId,
-		String targetParentId
-	) {
+		String targetParentId) {
 		return Notification.builder()
 			.user(user)
 			.title(title)

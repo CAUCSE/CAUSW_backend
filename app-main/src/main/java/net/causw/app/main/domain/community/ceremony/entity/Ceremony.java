@@ -95,8 +95,7 @@ public class Ceremony extends BaseEntity {
 		LocalDate startDate,
 		LocalDate endDate,
 		boolean isSetAll,
-		List<String> targetAdmissionYears
-	) {
+		List<String> targetAdmissionYears) {
 		Set<String> targetYearsSet = targetAdmissionYears != null
 			? new HashSet<>(targetAdmissionYears)
 			: new HashSet<>();
@@ -120,8 +119,7 @@ public class Ceremony extends BaseEntity {
 		LocalDate endDate,
 		boolean isSetAll,
 		List<String> targetAdmissionYears,
-		List<UuidFile> ceremonyAttachImageUuidFileList
-	) {
+		List<UuidFile> ceremonyAttachImageUuidFileList) {
 		Ceremony ceremony = Ceremony.of(
 			user,
 			ceremonyCategory,
@@ -129,8 +127,7 @@ public class Ceremony extends BaseEntity {
 			startDate,
 			endDate,
 			isSetAll,
-			targetAdmissionYears
-		);
+			targetAdmissionYears);
 		List<CeremonyAttachImage> ceremonyAttachImageList = ceremonyAttachImageUuidFileList.stream()
 			.map(uuidFile -> CeremonyAttachImage.of(ceremony, uuidFile))
 			.toList();

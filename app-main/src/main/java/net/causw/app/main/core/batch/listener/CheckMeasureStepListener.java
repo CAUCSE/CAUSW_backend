@@ -27,8 +27,8 @@ public class CheckMeasureStepListener implements StepExecutionListener {
 		long executionTime = endTime - startTime;
 
 		// 실행 시간과 마지막 pageNum을 ExitStatus에 기록
-		String exitDescription =
-			"Completed Step. Last PageNum: " + dataRow + ", Execution Time: " + executionTime + " ms";
+		String exitDescription = "Completed Step. Last PageNum: " + dataRow + ", Execution Time: " + executionTime
+			+ " ms";
 		stepExecution.setExitStatus(new ExitStatus("COMPLETED", exitDescription));
 
 		return ExitStatus.COMPLETED;

@@ -40,8 +40,7 @@ public class UpdateUserInfoUseCaseService {
 	public UserInfoResponseDto execute(
 		String userId,
 		UserInfoUpdateRequestDto request,
-		MultipartFile profileImage
-	) {
+		MultipartFile profileImage) {
 		User user = userEntityService.findUserByUserId(userId);
 
 		// 사용자 정보 갱신(전화번호, 프로필 이미지)
@@ -86,8 +85,7 @@ public class UpdateUserInfoUseCaseService {
 				UserCareer userCareer = userCareerRepository.findById(userCareerDto.getId())
 					.orElseThrow(() -> new BadRequestException(
 						ErrorCode.ROW_DOES_NOT_EXIST,
-						MessageUtil.USER_CAREER_NOT_FOUND
-					));
+						MessageUtil.USER_CAREER_NOT_FOUND));
 
 				userCareer.update(
 					userCareerDto.getStartYear(), userCareerDto.getStartMonth(),
@@ -123,8 +121,7 @@ public class UpdateUserInfoUseCaseService {
 		if (isInvalidStartMonth || isInvalidStartYear) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_PARAMETER,
-				MessageUtil.INVALID_CAREER_DATE
-			);
+				MessageUtil.INVALID_CAREER_DATE);
 		}
 
 		// 종료일이 있는 경우에만 검증 (null은 현재 재직 중으로 판단)
@@ -136,8 +133,7 @@ public class UpdateUserInfoUseCaseService {
 			if (isInvalidEndMonth || isInvalidEndYear || isEndBeforeStart) {
 				throw new BadRequestException(
 					ErrorCode.INVALID_PARAMETER,
-					MessageUtil.INVALID_CAREER_DATE
-				);
+					MessageUtil.INVALID_CAREER_DATE);
 			}
 		}
 	}

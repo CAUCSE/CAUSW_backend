@@ -6,5 +6,4 @@ import org.springframework.stereotype.Repository;
 import net.causw.app.main.domain.finance.usercouncilfee.entity.CouncilFeeFakeUser;
 
 @Repository
-public interface CouncilFeeFakeUserRepository extends JpaRepository<CouncilFeeFakeUser, String> {
-}
+public interface CouncilFeeFakeUserRepository extends JpaRepository<CouncilFeeFakeUser, String> {}

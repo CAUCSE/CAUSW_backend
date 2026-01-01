@@ -20,13 +20,11 @@ public interface UserAcademicRecordApplicationRepository extends JpaRepository<U
 
 	List<UserAcademicRecordApplication> findAllByAcademicRecordRequestStatusAndUser(
 		AcademicRecordRequestStatus academicRecordRequestStatus,
-		User user
-	);
+		User user);
 
 	Optional<UserAcademicRecordApplication> findDistinctTopByAcademicRecordRequestStatusAndUserOrderByCreatedAtDesc(
 		AcademicRecordRequestStatus academicRecordRequestStatus,
-		User user
-	);
+		User user);
 
 	List<UserAcademicRecordApplication> findByUserId(String userId);
 

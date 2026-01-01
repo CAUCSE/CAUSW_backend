@@ -21,12 +21,9 @@ public class PostEntityService {
 
 	public Post findByIdNotDeleted(String postId) {
 
-		return postRepository.findByIdAndIsDeletedFalse(postId).orElseThrow(() ->
-			new NotFoundException(
-				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.POST_NOT_FOUND
-			)
-		);
+		return postRepository.findByIdAndIsDeletedFalse(postId).orElseThrow(() -> new NotFoundException(
+			ErrorCode.ROW_DOES_NOT_EXIST,
+			MessageUtil.POST_NOT_FOUND));
 	}
 
 	/**
@@ -43,8 +40,7 @@ public class PostEntityService {
 		boolean includeDeleted,
 		Set<String> blockedUserIds,
 		String keyword,
-		Pageable pageable
-	) {
+		Pageable pageable) {
 		return postRepository.findPostsByBoardWithFilters(boardId, includeDeleted, blockedUserIds, keyword, pageable);
 	}
 }

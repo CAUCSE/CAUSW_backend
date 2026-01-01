@@ -26,8 +26,7 @@ public class CrawledFileLink extends BaseEntity {
 
 	public static CrawledFileLink of(
 		String fileName,
-		String fileLink
-	) {
+		String fileLink) {
 		return CrawledFileLink.builder()
 			.fileName(fileName)
 			.fileLink(fileLink)

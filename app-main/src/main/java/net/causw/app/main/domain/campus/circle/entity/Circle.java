@@ -77,8 +77,7 @@ public class Circle extends BaseEntity {
 		Integer recruitMembers,
 		User leader,
 		LocalDateTime recruitEndDate,
-		Boolean isRecruit
-	) {
+		Boolean isRecruit) {
 		Circle circle = Circle.builder()
 			.name(name)
 			.description(description)
@@ -96,8 +95,7 @@ public class Circle extends BaseEntity {
 
 		CircleMainImage circleMainImage = CircleMainImage.of(
 			circle,
-			uuidFile
-		);
+			uuidFile);
 
 		circle.setCircleMainImage(circleMainImage);
 

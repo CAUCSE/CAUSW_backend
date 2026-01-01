@@ -24,15 +24,9 @@ import lombok.NoArgsConstructor;
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(
-	name = "tb_report",
-	uniqueConstraints = {
-		@UniqueConstraint(
-			name = "unique_user_content_report",
-			columnNames = {"reporter_id", "report_type", "target_id"}
-		)
-	}
-)
+@Table(name = "tb_report", uniqueConstraints = {
+	@UniqueConstraint(name = "unique_user_content_report", columnNames = {"reporter_id", "report_type", "target_id"})
+})
 public class Report extends BaseEntity {
 
 	@ManyToOne(targetEntity = User.class)
@@ -54,8 +48,7 @@ public class Report extends BaseEntity {
 		User reporter,
 		ReportType reportType,
 		String targetId,
-		ReportReason reportReason
-	) {
+		ReportReason reportReason) {
 		return Report.builder()
 			.reporter(reporter)
 			.reportType(reportType)

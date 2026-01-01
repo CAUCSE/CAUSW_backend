@@ -24,24 +24,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import net.causw.app.main.core.aop.annotation.MeasureTime;
-import net.causw.app.main.core.security.JwtTokenProvider;
-import net.causw.app.main.domain.asset.file.entity.UuidFile;
-import net.causw.app.main.domain.asset.file.entity.joinEntity.UserAcademicRecordApplicationAttachImage;
-import net.causw.app.main.domain.asset.file.entity.joinEntity.UserAdmissionAttachImage;
-import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
-import net.causw.app.main.domain.community.board.entity.Board;
-import net.causw.app.main.domain.community.board.repository.BoardRepository;
-import net.causw.app.main.domain.community.comment.repository.ChildCommentRepository;
-import net.causw.app.main.domain.community.comment.repository.CommentRepository;
-import net.causw.app.main.domain.community.reaction.entity.FavoritePost;
-import net.causw.app.main.domain.community.reaction.entity.LikePost;
-import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.domain.community.reaction.repository.FavoritePostRepository;
-import net.causw.app.main.domain.community.reaction.repository.LikePostRepository;
-import net.causw.app.main.domain.community.post.repository.PostRepository;
-import net.causw.app.main.domain.community.post.service.PostService;
-import net.causw.app.main.domain.integration.export.service.UserExcelService;
 import net.causw.app.main.api.dto.board.BoardResponseDto;
 import net.causw.app.main.api.dto.circle.CircleResponseDto;
 import net.causw.app.main.api.dto.duplicate.DuplicatedCheckResponseDto;
@@ -69,22 +51,38 @@ import net.causw.app.main.api.dto.util.dtoMapper.BoardDtoMapper;
 import net.causw.app.main.api.dto.util.dtoMapper.CircleDtoMapper;
 import net.causw.app.main.api.dto.util.dtoMapper.PostDtoMapper;
 import net.causw.app.main.api.dto.util.dtoMapper.UserDtoMapper;
-import net.causw.app.main.domain.campus.circle.entity.Circle;
-import net.causw.app.main.domain.campus.circle.entity.CircleMember;
-import net.causw.app.main.domain.asset.locker.entity.LockerLog;
-import net.causw.app.main.domain.campus.circle.enums.CircleMemberStatus;
-import net.causw.app.main.domain.asset.locker.enums.LockerLogAction;
+import net.causw.app.main.core.aop.annotation.MeasureTime;
+import net.causw.app.main.core.security.JwtTokenProvider;
+import net.causw.app.main.domain.asset.file.entity.UuidFile;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserAcademicRecordApplicationAttachImage;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserAdmissionAttachImage;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
-import net.causw.app.main.shared.StatusPolicy;
-import net.causw.app.main.domain.campus.circle.repository.CircleMemberRepository;
-import net.causw.app.main.domain.campus.circle.repository.CircleRepository;
-import net.causw.app.main.domain.campus.circle.repository.query.CircleQueryRepository;
-import net.causw.app.main.domain.asset.locker.repository.LockerLogRepository;
-import net.causw.app.main.domain.asset.locker.repository.LockerRepository;
 import net.causw.app.main.domain.asset.file.repository.UserAcademicRecordApplicationAttachImageRepository;
 import net.causw.app.main.domain.asset.file.repository.UserProfileImageRepository;
 import net.causw.app.main.domain.asset.file.service.UuidFileService;
-import net.causw.app.main.shared.util.ConstraintValidator;
+import net.causw.app.main.domain.asset.locker.entity.LockerLog;
+import net.causw.app.main.domain.asset.locker.enums.LockerLogAction;
+import net.causw.app.main.domain.asset.locker.repository.LockerLogRepository;
+import net.causw.app.main.domain.asset.locker.repository.LockerRepository;
+import net.causw.app.main.domain.campus.circle.entity.Circle;
+import net.causw.app.main.domain.campus.circle.entity.CircleMember;
+import net.causw.app.main.domain.campus.circle.enums.CircleMemberStatus;
+import net.causw.app.main.domain.campus.circle.repository.CircleMemberRepository;
+import net.causw.app.main.domain.campus.circle.repository.CircleRepository;
+import net.causw.app.main.domain.campus.circle.repository.query.CircleQueryRepository;
+import net.causw.app.main.domain.community.board.entity.Board;
+import net.causw.app.main.domain.community.board.repository.BoardRepository;
+import net.causw.app.main.domain.community.comment.repository.ChildCommentRepository;
+import net.causw.app.main.domain.community.comment.repository.CommentRepository;
+import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.repository.PostRepository;
+import net.causw.app.main.domain.community.post.service.PostService;
+import net.causw.app.main.domain.community.reaction.entity.FavoritePost;
+import net.causw.app.main.domain.community.reaction.entity.LikePost;
+import net.causw.app.main.domain.community.reaction.repository.FavoritePostRepository;
+import net.causw.app.main.domain.community.reaction.repository.LikePostRepository;
+import net.causw.app.main.domain.integration.export.service.UserExcelService;
 import net.causw.app.main.domain.user.academic.entity.userAcademicRecord.UserAcademicRecordApplication;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.academic.event.CertifiedUserCreatedEvent;
@@ -111,11 +109,13 @@ import net.causw.app.main.domain.user.account.util.UserStateIsDropOrIsInActiveVa
 import net.causw.app.main.domain.user.account.util.UserStateIsNotDropAndActiveValidator;
 import net.causw.app.main.domain.user.account.util.UserStateValidator;
 import net.causw.app.main.domain.user.relation.service.UserBlockEntityService;
+import net.causw.app.main.shared.StatusPolicy;
 import net.causw.app.main.shared.ValidatorBucket;
 import net.causw.app.main.shared.infra.firebase.FcmUtils;
 import net.causw.app.main.shared.infra.mail.GoogleMailSender;
 import net.causw.app.main.shared.infra.redis.RedisUtils;
 import net.causw.app.main.shared.pageable.PageableFactory;
+import net.causw.app.main.shared.util.ConstraintValidator;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;
 import net.causw.global.exception.BadRequestException;
@@ -175,13 +175,11 @@ public class UserService {
 
 	@Transactional
 	public void findPassword(
-		UserFindPasswordRequestDto userFindPasswordRequestDto
-	) {
+		UserFindPasswordRequestDto userFindPasswordRequestDto) {
 		User requestUser = userRepository.findByEmailAndName(
 			userFindPasswordRequestDto.getEmail().trim(),
-			userFindPasswordRequestDto.getName().trim()
-		).orElseThrow(() ->
-			new NotFoundException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND));
+			userFindPasswordRequestDto.getName().trim())
+			.orElseThrow(() -> new NotFoundException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND));
 
 		if (!requestUser.getPhoneNumber().equals(userFindPasswordRequestDto.getPhoneNumber())) {
 			throw new NotFoundException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND);
@@ -215,16 +213,14 @@ public class UserService {
 			if (ownCircles.isEmpty()) {
 				throw new InternalServerException(
 					ErrorCode.INTERNAL_SERVER,
-					MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER
-				);
+					MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER);
 			}
 
 			boolean isMemberOfAnyCircle = ownCircles.stream()
-				.anyMatch(circleEntity ->
-					this.circleMemberRepository.findByUser_IdAndCircle_Id(targetUserId, circleEntity.getId())
-						.map(circleMemberEntity -> circleMemberEntity.getStatus() == CircleMemberStatus.MEMBER)
-						.orElse(false)
-				);
+				.anyMatch(circleEntity -> this.circleMemberRepository
+					.findByUser_IdAndCircle_Id(targetUserId, circleEntity.getId())
+					.map(circleMemberEntity -> circleMemberEntity.getStatus() == CircleMemberStatus.MEMBER)
+					.orElse(false));
 
 			if (!isMemberOfAnyCircle) {
 				throw new BadRequestException(ErrorCode.NOT_MEMBER, MessageUtil.CIRCLE_MEMBER_NOT_FOUND);
@@ -232,11 +228,9 @@ public class UserService {
 		}
 
 		User entity = this.userRepository.findById(targetUserId)
-			.orElseThrow(() ->
-				new BadRequestException(
-					ErrorCode.ROW_DOES_NOT_EXIST,
-					MessageUtil.USER_NOT_FOUND
-				));
+			.orElseThrow(() -> new BadRequestException(
+				ErrorCode.ROW_DOES_NOT_EXIST,
+				MessageUtil.USER_NOT_FOUND));
 		return UserDtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
 	}
 
@@ -253,15 +247,13 @@ public class UserService {
 			if (ownCircles.isEmpty()) {
 				throw new InternalServerException(
 					ErrorCode.INTERNAL_SERVER,
-					MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER
-				);
+					MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER);
 			}
 
 			return UserDtoMapper.INSTANCE.toUserResponseDto(
 				requestUser,
 				ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
-				ownCircles.stream().map(Circle::getName).collect(Collectors.toList())
-			);
+				ownCircles.stream().map(Circle::getName).collect(Collectors.toList()));
 		}
 		return UserDtoMapper.INSTANCE.toUserResponseDto(requestUser, null, null);
 	}
@@ -278,17 +270,15 @@ public class UserService {
 		return UserDtoMapper.INSTANCE.toUserPostsResponseDto(
 			requestUser,
 			this.postRepository.findByUserId(requestUser.getId(),
-				this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE)
-			).map(post -> PostDtoMapper.INSTANCE.toPostsResponseDto(
-				post,
-				getNumOfComment(post),
-				getNumOfPostLikes(post),
-				getNumOfPostFavorites(post),
-				!post.getPostAttachImageList().isEmpty() ? post.getPostAttachImageList().get(0) : null,
-				StatusPolicy.isPostVote(post),
-				StatusPolicy.isPostForm(post)
-			))
-		);
+				this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
+				.map(post -> PostDtoMapper.INSTANCE.toPostsResponseDto(
+					post,
+					getNumOfComment(post),
+					getNumOfPostLikes(post),
+					getNumOfPostFavorites(post),
+					!post.getPostAttachImageList().isEmpty() ? post.getPostAttachImageList().get(0) : null,
+					StatusPolicy.isPostVote(post),
+					StatusPolicy.isPostForm(post))));
 	}
 
 	@Transactional(readOnly = true)
@@ -318,15 +308,13 @@ public class UserService {
 						getNumOfPostFavorites(post),
 						!post.getPostAttachImageList().isEmpty() ? post.getPostAttachImageList().get(0) : null,
 						StatusPolicy.isPostVote(post),
-						StatusPolicy.isPostForm(post)
-					);
+						StatusPolicy.isPostForm(post));
 
 					// 화면에 표시될 작성자 닉네임 설정
 					String displayNickname = postService.getDisplayWriterNickname(
 						post.getWriter(),
 						post.getIsAnonymous(),
-						post.getWriter() != null ? post.getWriter().getNickname() : null
-					);
+						post.getWriter() != null ? post.getWriter().getNickname() : null);
 					dto.setDisplayWriterNickname(displayNickname);
 
 					if (dto.getIsAnonymous()) {
@@ -334,8 +322,7 @@ public class UserService {
 					}
 
 					return dto;
-				})
-		);
+				}));
 	}
 
 	/**
@@ -370,20 +357,17 @@ public class UserService {
 						getNumOfPostFavorites(post),
 						!post.getPostAttachImageList().isEmpty() ? post.getPostAttachImageList().get(0) : null,
 						StatusPolicy.isPostVote(post),
-						StatusPolicy.isPostForm(post)
-					);
+						StatusPolicy.isPostForm(post));
 
 					// 화면에 표시될 작성자 닉네임 설정
 					String displayNickname = postService.getDisplayWriterNickname(
 						post.getWriter(),
 						post.getIsAnonymous(),
-						post.getWriter() != null ? post.getWriter().getNickname() : null
-					);
+						post.getWriter() != null ? post.getWriter().getNickname() : null);
 					dto.setDisplayWriterNickname(displayNickname);
 
 					return dto;
-				})
-		);
+				}));
 	}
 
 	@Transactional(readOnly = true)
@@ -425,20 +409,17 @@ public class UserService {
 					getNumOfPostFavorites(post),
 					!post.getPostAttachImageList().isEmpty() ? post.getPostAttachImageList().get(0) : null,
 					StatusPolicy.isPostVote(post),
-					StatusPolicy.isPostForm(post)
-				);
+					StatusPolicy.isPostForm(post));
 
 				// 화면에 표시될 작성자 닉네임 설정
 				String displayNickname = postService.getDisplayWriterNickname(
 					post.getWriter(),
 					post.getIsAnonymous(),
-					post.getWriter() != null ? post.getWriter().getNickname() : null
-				);
+					post.getWriter() != null ? post.getWriter().getNickname() : null);
 				dto.setDisplayWriterNickname(displayNickname);
 
 				return dto;
-			})
-		);
+			}));
 	}
 
 	@Transactional(readOnly = true)
@@ -453,13 +434,12 @@ public class UserService {
 		return UserDtoMapper.INSTANCE.toUserCommentsResponseDto(
 			requestUser,
 			this.commentRepository.findByUserId(requestUser.getId(),
-					this.pageableFactory.create(pageNum, StaticValue.DEFAULT_COMMENT_PAGE_SIZE))
+				this.pageableFactory.create(pageNum, StaticValue.DEFAULT_COMMENT_PAGE_SIZE))
 				.map(comment -> {
 					Post post = this.postRepository.findById(comment.getPost().getId())
 						.orElseThrow(() -> new BadRequestException(
 							ErrorCode.ROW_DOES_NOT_EXIST,
-							MessageUtil.POST_NOT_FOUND
-						));
+							MessageUtil.POST_NOT_FOUND));
 					return UserDtoMapper.INSTANCE.toCommentsOfUserResponseDto(
 						comment,
 						post.getBoard().getId(),
@@ -467,10 +447,8 @@ public class UserService {
 						post.getId(),
 						post.getTitle(),
 						post.getBoard().getCircle() != null ? post.getBoard().getCircle().getId() : null,
-						post.getBoard().getCircle() != null ? post.getBoard().getCircle().getName() : null
-					);
-				})
-		);
+						post.getBoard().getCircle() != null ? post.getBoard().getCircle().getName() : null);
+				}));
 	}
 
 	@Transactional(readOnly = true)
@@ -481,8 +459,7 @@ public class UserService {
 			.consistOf(UserStateValidator.of(requestUser.getState()))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.consistOf(UserRoleValidator.of(roles,
-				Set.of(Role.LEADER_CIRCLE
-				)))
+				Set.of(Role.LEADER_CIRCLE)))
 			.validate();
 
 		if (roles.contains(Role.LEADER_CIRCLE)) {
@@ -490,19 +467,17 @@ public class UserService {
 			if (ownCircles.isEmpty()) {
 				throw new InternalServerException(
 					ErrorCode.INTERNAL_SERVER,
-					MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER
-				);
+					MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER);
 			}
 
 			return this.userRepository.findByName(name)
 				.stream()
 				.filter(user -> user.getState().equals(UserState.ACTIVE))
-				.filter(user ->
-					ownCircles.stream()
-						.anyMatch(circle ->
-							this.circleMemberRepository.findByUser_IdAndCircle_Id(user.getId(), circle.getId())
-								.map(circleMemberEntity -> circleMemberEntity.getStatus() == CircleMemberStatus.MEMBER)
-								.orElse(false)))
+				.filter(user -> ownCircles.stream()
+					.anyMatch(
+						circle -> this.circleMemberRepository.findByUser_IdAndCircle_Id(user.getId(), circle.getId())
+							.map(circleMemberEntity -> circleMemberEntity.getStatus() == CircleMemberStatus.MEMBER)
+							.orElse(false)))
 				.map(user -> UserDtoMapper.INSTANCE.toUserResponseDto(
 					user,
 					ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
@@ -522,8 +497,7 @@ public class UserService {
 		User user,
 		String state,
 		String name,
-		Integer pageNum
-	) {
+		Integer pageNum) {
 		Set<Role> roles = user.getRoles();
 
 		ValidatorBucket.of()
@@ -539,14 +513,12 @@ public class UserService {
 			usersPage = userRepository.findByStateInAndNameContaining(
 				statesToSearch,
 				name,
-				PageRequest.of(pageNum, StaticValue.USER_LIST_PAGE_SIZE)
-			);
+				PageRequest.of(pageNum, StaticValue.USER_LIST_PAGE_SIZE));
 		} else {
 			usersPage = userRepository.findByStateAndName(
 				state,
 				name,
-				PageRequest.of(pageNum, StaticValue.USER_LIST_PAGE_SIZE)
-			);
+				PageRequest.of(pageNum, StaticValue.USER_LIST_PAGE_SIZE));
 		}
 
 		return usersPage.map(srcUser -> {
@@ -560,8 +532,7 @@ public class UserService {
 				return UserDtoMapper.INSTANCE.toUserResponseDto(
 					srcUser,
 					ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
-					ownCircles.stream().map(Circle::getName).collect(Collectors.toList())
-				);
+					ownCircles.stream().map(Circle::getName).collect(Collectors.toList()));
 			} else {
 				return UserDtoMapper.INSTANCE.toUserResponseDto(srcUser, null, null);
 			}
@@ -621,8 +592,7 @@ public class UserService {
 					dto.getAdmissionYear(),
 					dto.getNickname(),
 					dto.getMajor(),
-					dto.getDepartment()
-				);
+					dto.getDepartment());
 				user.markAsAwait();
 				validateUser(dto, user);
 				userRepository.save(user);
@@ -666,8 +636,7 @@ public class UserService {
 					dto.getAdmissionYear(),
 					dto.getNickname(),
 					dto.getMajor(),
-					dto.getDepartment()
-				);
+					dto.getDepartment());
 				ghostuser.markAsAwait();
 				validateUser(dto, ghostuser);
 				userRepository.save(ghostuser);
@@ -723,8 +692,7 @@ public class UserService {
 						dto.admissionYear(),
 						dto.nickname(),
 						null,
-						dto.department()
-					);
+						dto.department());
 					user.markAsCertifiedGraduate(dto.graduationYear());
 					return user;
 
@@ -735,8 +703,7 @@ public class UserService {
 				} else { // 이미 인증된 계정이 존재하는 경우
 					throw new BadRequestException(
 						ErrorCode.ROW_ALREADY_EXIST,
-						MessageUtil.USER_ALREADY_REGISTERD
-					);
+						MessageUtil.USER_ALREADY_REGISTERD);
 				}
 			})
 			.orElseGet(() -> {
@@ -763,9 +730,7 @@ public class UserService {
 		User user = userRepository.findByEmail(userSignInRequestDto.getEmail()).orElseThrow(
 			() -> new UnauthorizedException(
 				ErrorCode.INVALID_SIGNIN,
-				MessageUtil.EMAIL_INVALID
-			)
-		);
+				MessageUtil.EMAIL_INVALID));
 
 		/* Validate the input password and user state
 		 * The sign-in process is rejected if the user is in BLOCKED, WAIT, or INACTIVE state.
@@ -787,8 +752,7 @@ public class UserService {
 
 		return UserDtoMapper.INSTANCE.toUserSignInResponseDto(
 			jwtTokenProvider.createAccessToken(user.getId(), user.getRoles(), user.getState()),
-			refreshToken
-		);
+			refreshToken);
 	}
 
 	/**
@@ -810,8 +774,7 @@ public class UserService {
 			else if (state == UserState.DROP) {
 				throw new BadRequestException(
 					ErrorCode.ROW_ALREADY_EXIST,
-					MessageUtil.USER_DROPPED_CONTACT_EMAIL
-				);
+					MessageUtil.USER_DROPPED_CONTACT_EMAIL);
 			}
 		}
 		return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(false);
@@ -838,8 +801,7 @@ public class UserService {
 			else if (state == UserState.DROP) {
 				throw new BadRequestException(
 					ErrorCode.ROW_ALREADY_EXIST,
-					MessageUtil.USER_DROPPED_CONTACT_EMAIL
-				);
+					MessageUtil.USER_DROPPED_CONTACT_EMAIL);
 			}
 		}
 		return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(false);
@@ -858,8 +820,7 @@ public class UserService {
 			else if (state == UserState.DROP) {
 				throw new BadRequestException(
 					ErrorCode.ROW_ALREADY_EXIST,
-					MessageUtil.USER_DROPPED_CONTACT_EMAIL
-				);
+					MessageUtil.USER_DROPPED_CONTACT_EMAIL);
 			}
 		}
 		return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(false);
@@ -884,8 +845,7 @@ public class UserService {
 			else if (state == UserState.DROP) {
 				throw new BadRequestException(
 					ErrorCode.ROW_ALREADY_EXIST,
-					MessageUtil.USER_DROPPED_CONTACT_EMAIL
-				);
+					MessageUtil.USER_DROPPED_CONTACT_EMAIL);
 			}
 		}
 		return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(false);
@@ -896,21 +856,17 @@ public class UserService {
 		User srcUser = userRepository.findById(user.getId()).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.USER_NOT_FOUND
-			)
-		);
+				MessageUtil.USER_NOT_FOUND));
 
 		// 닉네임이 변경되었을 때 중복 체크
 		if (srcUser.getNickname() == null
-			|| !srcUser.getNickname().equals(userUpdateRequestDto.getNickname())
-		) {
+			|| !srcUser.getNickname().equals(userUpdateRequestDto.getNickname())) {
 			validateNicknameUniqueness(userUpdateRequestDto.getNickname(), srcUser);
 		}
 
 		// 전화번호가 변경되었을 때 중복 체크
 		if (srcUser.getPhoneNumber() == null
-			|| !srcUser.getPhoneNumber().equals(userUpdateRequestDto.getPhoneNumber())
-		) {
+			|| !srcUser.getPhoneNumber().equals(userUpdateRequestDto.getPhoneNumber())) {
 			validatePhoneNumberUniqueness(userUpdateRequestDto.getPhoneNumber(), srcUser);
 		}
 
@@ -920,16 +876,13 @@ public class UserService {
 			if (srcUser.getUserProfileImage() == null) {
 				userProfileImage = UserProfileImage.of(
 					user,
-					uuidFileService.saveFile(profileImage, FilePath.USER_PROFILE)
-				);
+					uuidFileService.saveFile(profileImage, FilePath.USER_PROFILE));
 			} else {
 				userProfileImage.setUuidFile(
 					uuidFileService.updateFile(
 						srcUser.getUserProfileImage().getUuidFile(),
 						profileImage,
-						FilePath.USER_PROFILE
-					)
-				);
+						FilePath.USER_PROFILE));
 			}
 		}
 
@@ -945,8 +898,7 @@ public class UserService {
 	@Transactional
 	public UserResponseDto updatePassword(
 		User user,
-		UserUpdatePasswordRequestDto userUpdatePasswordRequestDto
-	) {
+		UserUpdatePasswordRequestDto userUpdatePasswordRequestDto) {
 		Set<Role> roles = user.getRoles();
 
 		ValidatorBucket.of()
@@ -955,8 +907,7 @@ public class UserService {
 			.consistOf(PasswordCorrectValidator.of(
 				this.passwordEncoder,
 				user.getPassword(),
-				userUpdatePasswordRequestDto.getOriginPassword())
-			)
+				userUpdatePasswordRequestDto.getOriginPassword()))
 			.consistOf(PasswordFormatValidator.of(userUpdatePasswordRequestDto.getUpdatedPassword()))
 			.validate();
 
@@ -993,8 +944,7 @@ public class UserService {
 					deleteUser.getEmail(),
 					deleteUser.getName(),
 					LockerLogAction.RETURN,
-					"사용자 탈퇴"
-				);
+					"사용자 탈퇴");
 
 				this.lockerLogRepository.save(lockerLog);
 
@@ -1002,13 +952,12 @@ public class UserService {
 
 		// 가입된 동아리가 있다면 탈퇴
 		this.circleMemberRepository.findByUser_Id(deleteUser.getId())
-			.forEach(circleMember ->
-				this.updateStatus(circleMember.getId(), CircleMemberStatus.LEAVE)
-			);
+			.forEach(circleMember -> this.updateStatus(circleMember.getId(), CircleMemberStatus.LEAVE));
 
 		// FIXME: 영구삭제 시 UuidFile, User FK 제약 조건 위반 발생
-		List<UserAcademicRecordApplication> userAcademicRecordApplicationList = userAcademicRecordApplicationRepository.findByUserId(
-			deleteUser.getId());
+		List<UserAcademicRecordApplication> userAcademicRecordApplicationList = userAcademicRecordApplicationRepository
+			.findByUserId(
+				deleteUser.getId());
 
 		if (!userAcademicRecordApplicationList.isEmpty()) {
 			// 재학 인증 신청 이미지 파일이 있다면 삭제
@@ -1016,10 +965,11 @@ public class UserService {
 				userAcademicRecordApplicationList
 					.stream()
 					.flatMap(
-						userAcademicRecordApplication -> userAcademicRecordApplication.getUserAcademicRecordAttachImageList()
+						userAcademicRecordApplication -> userAcademicRecordApplication
+							.getUserAcademicRecordAttachImageList()
 							.stream()
-							.map(UserAcademicRecordApplicationAttachImage::getUuidFile)).toList()
-			);
+							.map(UserAcademicRecordApplicationAttachImage::getUuidFile))
+					.toList());
 
 			// 재학 인증 신청 기록이 있다면 삭제
 			userAcademicRecordApplicationRepository.deleteAll(userAcademicRecordApplicationList);
@@ -1050,8 +1000,7 @@ public class UserService {
 					user.getEmail(),
 					user.getName(),
 					LockerLogAction.RETURN,
-					"사용자 탈퇴"
-				);
+					"사용자 탈퇴");
 
 				this.lockerLogRepository.save(lockerLog);
 
@@ -1062,15 +1011,12 @@ public class UserService {
 
 		// Leave from circle where user joined
 		this.circleMemberRepository.findByUser_Id(user.getId())
-			.forEach(circleMember ->
-				this.updateStatus(circleMember.getId(), CircleMemberStatus.LEAVE)
-			);
+			.forEach(circleMember -> this.updateStatus(circleMember.getId(), CircleMemberStatus.LEAVE));
 
 		User entity = this.updateState(user.getId(), UserState.INACTIVE)
 			.orElseThrow(() -> new InternalServerException(
 				ErrorCode.INTERNAL_SERVER,
-				MessageUtil.INTERNAL_SERVER_ERROR
-			));
+				MessageUtil.INTERNAL_SERVER_ERROR));
 		return UserDtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
 	}
 
@@ -1091,8 +1037,7 @@ public class UserService {
 			circleMember -> {
 				circleMember.setStatus(targetStatus);
 				return this.circleMemberRepository.save(circleMember);
-			}
-		);
+			});
 	}
 
 	private Optional<User> updateState(String id, UserState state) {
@@ -1102,8 +1047,7 @@ public class UserService {
 
 				this.userRepository.save(srcUser);
 				return srcUser;
-			}
-		);
+			});
 	}
 
 	@Transactional
@@ -1113,9 +1057,7 @@ public class UserService {
 		User droppedUser = this.userRepository.findById(userId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.USER_NOT_FOUND
-			)
-		);
+				MessageUtil.USER_NOT_FOUND));
 
 		String droppedUserEmail = droppedUser.getEmail();
 		String droppedUserName = droppedUser.getName();
@@ -1138,8 +1080,7 @@ public class UserService {
 					droppedUserEmail,
 					droppedUserName,
 					LockerLogAction.RETURN,
-					"사용자 추방"
-				);
+					"사용자 추방");
 
 				this.lockerLogRepository.save(lockerLog);
 			});
@@ -1150,8 +1091,7 @@ public class UserService {
 		droppedUser = this.updateState(userId, UserState.DROP)
 			.orElseThrow(() -> new InternalServerException(
 				ErrorCode.INTERNAL_SERVER,
-				MessageUtil.INTERNAL_SERVER_ERROR
-			));
+				MessageUtil.INTERNAL_SERVER_ERROR));
 
 		userRepository.save(droppedUser);
 
@@ -1258,17 +1198,14 @@ public class UserService {
 			this.userAdmissionRepository.findById(admissionId)
 				.orElseThrow(() -> new BadRequestException(
 					ErrorCode.ROW_DOES_NOT_EXIST,
-					MessageUtil.USER_APPLY_NOT_FOUND
-				))
-		);
+					MessageUtil.USER_APPLY_NOT_FOUND)));
 	}
 
 	@Transactional(readOnly = true)
 	public Page<UserAdmissionsResponseDto> findAllAdmissions(
 		User requestUser,
 		String name,
-		Integer pageNum
-	) {
+		Integer pageNum) {
 		Set<Role> roles = requestUser.getRoles();
 
 		ValidatorBucket.of()
@@ -1282,7 +1219,7 @@ public class UserService {
 				.map(UserDtoMapper.INSTANCE::toUserAdmissionsResponseDto);
 		} else {
 			return this.userAdmissionRepository.findAllByUserName(name,
-					this.pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE))
+				this.pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE))
 				.map(UserDtoMapper.INSTANCE::toUserAdmissionsResponseDto);
 		}
 	}
@@ -1293,29 +1230,25 @@ public class UserService {
 		if (!user.getEmail().equals(userAdmissionCreateRequestDto.getEmail())) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_PARAMETER,
-				MessageUtil.EMAIL_INVALID
-			);
+				MessageUtil.EMAIL_INVALID);
 		}
 
 		if (this.userAdmissionRepository.existsByUser_Id(user.getId())) {
 			throw new BadRequestException(
 				ErrorCode.ROW_ALREADY_EXIST,
-				MessageUtil.USER_ALREADY_APPLY
-			);
+				MessageUtil.USER_ALREADY_APPLY);
 		}
 
 		if (!(user.getState().equals(UserState.AWAIT) || user.getState().equals(UserState.REJECT))) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_REQUEST_USER_STATE,
-				MessageUtil.INVALID_USER_APPLICATION_USER_STATE
-			);
+				MessageUtil.INVALID_USER_APPLICATION_USER_STATE);
 		}
 
 		if (userAdmissionAttachImageList.isEmpty()) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_PARAMETER,
-				MessageUtil.USER_ADMISSION_MUST_HAVE_IMAGE
-			);
+				MessageUtil.USER_ADMISSION_MUST_HAVE_IMAGE);
 		}
 
 		List<UuidFile> uuidFileList = uuidFileService.saveFileList(userAdmissionAttachImageList,
@@ -1324,8 +1257,7 @@ public class UserService {
 		UserAdmission userAdmission = UserAdmission.of(
 			user,
 			uuidFileList,
-			userAdmissionCreateRequestDto.getDescription()
-		);
+			userAdmissionCreateRequestDto.getDescription());
 
 		ValidatorBucket.of()
 			.consistOf(UserStateIsNotDropAndActiveValidator.of(user.getState()))
@@ -1335,9 +1267,7 @@ public class UserService {
 		userRepository.save(updateState(user.getId(), UserState.AWAIT)
 			.orElseThrow(() -> new InternalServerException(
 				ErrorCode.INTERNAL_SERVER,
-				MessageUtil.ADMISSION_EXCEPTION
-			))
-		);
+				MessageUtil.ADMISSION_EXCEPTION)));
 
 		return UserDtoMapper.INSTANCE.toUserAdmissionResponseDto(this.userAdmissionRepository.save(userAdmission));
 	}
@@ -1346,9 +1276,7 @@ public class UserService {
 		UserAdmission userAdmission = userAdmissionRepository.findByUser_Id(user.getId()).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.USER_APPLY_NOT_FOUND
-			)
-		);
+				MessageUtil.USER_APPLY_NOT_FOUND));
 
 		return UserDtoMapper.INSTANCE.toUserAdmissionResponseDto(userAdmission);
 	}
@@ -1356,13 +1284,11 @@ public class UserService {
 	@Transactional
 	public UserAdmissionResponseDto accept(
 		User requestUser,
-		String admissionId
-	) {
+		String admissionId) {
 		Set<Role> roles = requestUser.getRoles();
 
 		UserAdmission userAdmission = this.userAdmissionRepository.findById(admissionId).orElseThrow(
-			() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_APPLY_NOT_FOUND)
-		);
+			() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_APPLY_NOT_FOUND));
 
 		ValidatorBucket.of()
 			.consistOf(UserStateValidator.of(requestUser.getState()))
@@ -1388,8 +1314,7 @@ public class UserService {
 				.map(UserAdmissionAttachImage::getUuidFile)
 				.toList(),
 			userAdmission.getDescription(),
-			null
-		);
+			null);
 
 		this.userAdmissionLogRepository.save(userAdmissionLog);
 
@@ -1401,22 +1326,18 @@ public class UserService {
 			this.updateState(userAdmission.getUser().getId(), UserState.ACTIVE)
 				.orElseThrow(() -> new InternalServerException(
 					ErrorCode.INTERNAL_SERVER,
-					MessageUtil.ADMISSION_EXCEPTION
-				))
-		);
+					MessageUtil.ADMISSION_EXCEPTION)));
 	}
 
 	@Transactional
 	public UserAdmissionResponseDto reject(
 		User requestUser,
 		String admissionId,
-		String rejectReason
-	) {
+		String rejectReason) {
 		Set<Role> roles = requestUser.getRoles();
 
 		UserAdmission userAdmission = this.userAdmissionRepository.findById(admissionId).orElseThrow(
-			() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_APPLY_NOT_FOUND)
-		);
+			() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_APPLY_NOT_FOUND));
 
 		User targetUser = userAdmission.getUser();
 
@@ -1438,8 +1359,7 @@ public class UserService {
 				.map(UserAdmissionAttachImage::getUuidFile)
 				.toList(),
 			userAdmission.getDescription(),
-			rejectReason
-		);
+			rejectReason);
 
 		userAdmissionLogRepository.save(userAdmissionLog);
 
@@ -1450,27 +1370,23 @@ public class UserService {
 		targetUser = this.updateState(targetUser.getId(), UserState.REJECT)
 			.orElseThrow(() -> new InternalServerException(
 				ErrorCode.INTERNAL_SERVER,
-				MessageUtil.ADMISSION_EXCEPTION
-			));
+				MessageUtil.ADMISSION_EXCEPTION));
 
 		userRepository.save(targetUser);
 
 		return UserDtoMapper.INSTANCE.toUserAdmissionResponseDto(
 			userAdmissionLog,
-			targetUser
-		);
+			targetUser);
 	}
 
 	@Transactional
 	public UserResponseDto restore(
 		User requestUser,
-		String userId
-	) {
+		String userId) {
 		Set<Role> roles = requestUser.getRoles();
 
 		User restoredUser = this.userRepository.findById(userId).orElseThrow(
-			() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND)
-		);
+			() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND));
 		ValidatorBucket.of()
 			.consistOf(UserRoleValidator.of(roles, Set.of()))
 			.consistOf(UserStateIsDropOrIsInActiveValidator.of(restoredUser.getState()))
@@ -1481,8 +1397,7 @@ public class UserService {
 		User entity = this.updateState(restoredUser.getId(), UserState.ACTIVE)
 			.orElseThrow(() -> new InternalServerException(
 				ErrorCode.INTERNAL_SERVER,
-				MessageUtil.INTERNAL_SERVER_ERROR
-			));
+				MessageUtil.INTERNAL_SERVER_ERROR));
 		return UserDtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
 	}
 
@@ -1490,8 +1405,7 @@ public class UserService {
 	public UserSignInResponseDto updateToken(String refreshToken) {
 		// STEP1 : refreshToken으로 맵핑된 유저 찾기
 		User user = this.userRepository.findById(this.getUserIdFromRefreshToken(refreshToken)).orElseThrow(
-			() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.INVALID_REFRESH_TOKEN)
-		);
+			() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.INVALID_REFRESH_TOKEN));
 
 		this.userRepository.findById(getUserIdFromRefreshToken(refreshToken));
 
@@ -1510,8 +1424,7 @@ public class UserService {
 		return Optional.ofNullable(redisUtils.getRefreshTokenData(refreshToken))
 			.orElseThrow(() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.INVALID_REFRESH_TOKEN
-			));
+				MessageUtil.INVALID_REFRESH_TOKEN));
 	}
 
 	public UserSignOutResponseDto signOut(User user, UserSignOutRequestDto userSignOutRequestDto) {
@@ -1529,11 +1442,10 @@ public class UserService {
 	public UserFindIdResponseDto findUserId(UserFindIdRequestDto userIdFindRequestDto) {
 		User user = this.userRepository.findByPhoneNumberAndName(
 			userIdFindRequestDto.getPhoneNumber().trim(),
-			userIdFindRequestDto.getName().trim()
-		).orElseThrow(() -> new BadRequestException(
-			ErrorCode.ROW_DOES_NOT_EXIST,
-			MessageUtil.USER_NOT_FOUND
-		));
+			userIdFindRequestDto.getName().trim()).orElseThrow(
+				() -> new BadRequestException(
+					ErrorCode.ROW_DOES_NOT_EXIST,
+					MessageUtil.USER_NOT_FOUND));
 
 		return UserDtoMapper.INSTANCE.toUserfindIdResponseDto(user);
 	}
@@ -1546,8 +1458,7 @@ public class UserService {
 		if (userList.isEmpty()) {
 			throw new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.USER_NOT_FOUND
-			);
+				MessageUtil.USER_NOT_FOUND);
 		}
 
 		return userList.stream()
@@ -1584,8 +1495,7 @@ public class UserService {
 			"동아리명 목록(동아리장일 경우)",
 			"가입 거절/추방 사유",
 			"동문네트워크 가입일",
-			"사용자 정보 최종 수정일"
-		);
+			"사용자 정보 최종 수정일");
 
 		LinkedHashMap<String, List<UserResponseDto>> sheetDataMap = new LinkedHashMap<>();
 		for (UserState state : UserState.values()) {
@@ -1614,15 +1524,13 @@ public class UserService {
 			if (ownCircles.isEmpty()) {
 				throw new InternalServerException(
 					ErrorCode.INTERNAL_SERVER,
-					MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER
-				);
+					MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER);
 			}
 
 			return UserDtoMapper.INSTANCE.toUserResponseDto(
 				user,
 				ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
-				ownCircles.stream().map(Circle::getName).collect(Collectors.toList())
-			);
+				ownCircles.stream().map(Circle::getName).collect(Collectors.toList()));
 		}
 
 		userRepository.save(user);
@@ -1641,8 +1549,7 @@ public class UserService {
 		if (!transactionUser.getId().equals(userIdFromRedis)) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_SIGNIN,
-				MessageUtil.INVALID_REFRESH_TOKEN
-			);
+				MessageUtil.INVALID_REFRESH_TOKEN);
 		}
 		// 2. fcmToken 최신화
 		fcmUtils.cleanInvalidFcmTokens(transactionUser);
@@ -1686,26 +1593,21 @@ public class UserService {
 			roles,
 			writable,
 			circleId,
-			circleName
-		);
+			circleName);
 	}
 
 	private User getUser(String userId) {
 		return userRepository.findById(userId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.USER_NOT_FOUND
-			)
-		);
+				MessageUtil.USER_NOT_FOUND));
 	}
 
 	private Board getBoard(String boardId) {
 		return boardRepository.findById(boardId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.BOARD_NOT_FOUND
-			)
-		);
+				MessageUtil.BOARD_NOT_FOUND));
 	}
 
 	private Long getNumOfComment(Post post) {
@@ -1751,8 +1653,7 @@ public class UserService {
 			if (!existingUser.getId().equals(user.getId()) && existingUser.getState() == UserState.ACTIVE) {
 				throw new BadRequestException(
 					ErrorCode.ROW_ALREADY_EXIST,
-					MessageUtil.EMAIL_ALREADY_EXIST
-				);
+					MessageUtil.EMAIL_ALREADY_EXIST);
 			}
 		});
 
@@ -1760,8 +1661,7 @@ public class UserService {
 			if (!existingUser.getId().equals(user.getId()) && existingUser.getState() == UserState.ACTIVE) {
 				throw new BadRequestException(
 					ErrorCode.ROW_ALREADY_EXIST,
-					MessageUtil.NICKNAME_ALREADY_EXIST
-				);
+					MessageUtil.NICKNAME_ALREADY_EXIST);
 			}
 		});
 
@@ -1769,8 +1669,7 @@ public class UserService {
 			if (!existingUser.getId().equals(user.getId()) && existingUser.getState() == UserState.ACTIVE) {
 				throw new BadRequestException(
 					ErrorCode.ROW_ALREADY_EXIST,
-					MessageUtil.PHONE_NUMBER_ALREADY_EXIST
-				);
+					MessageUtil.PHONE_NUMBER_ALREADY_EXIST);
 			}
 		});
 
@@ -1779,8 +1678,7 @@ public class UserService {
 				if (!existingUser.getId().equals(user.getId()) && existingUser.getState() == UserState.ACTIVE) {
 					throw new BadRequestException(
 						ErrorCode.ROW_ALREADY_EXIST,
-						MessageUtil.STUDENT_ID_ALREADY_EXIST
-					);
+						MessageUtil.STUDENT_ID_ALREADY_EXIST);
 				}
 			});
 		}
@@ -1797,16 +1695,13 @@ public class UserService {
 		User user = userRepository.findByEmail(email).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.USER_NOT_FOUND
-			)
-		);
+				MessageUtil.USER_NOT_FOUND));
 
 		// 사용자 상태가 INACTIVE인지 확인
 		if (user.getState() != UserState.INACTIVE) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_PARAMETER,
-				MessageUtil.USER_RECOVER_INVALID_STATE
-			);
+				MessageUtil.USER_RECOVER_INVALID_STATE);
 		}
 
 		// 사용자 상태를 ACTIVE로 변경
@@ -1825,8 +1720,7 @@ public class UserService {
 
 		return UserDtoMapper.INSTANCE.toUserSignInResponseDto(
 			jwtTokenProvider.createAccessToken(user.getId(), user.getRoles(), user.getState()),
-			refreshToken
-		);
+			refreshToken);
 	}
 
 }

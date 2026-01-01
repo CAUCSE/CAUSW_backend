@@ -39,8 +39,7 @@ public class RegisteredSemesterManager {
 	}
 
 	public static RegisteredSemesterManager fromEnumList(
-		List<RegisteredSemester> registeredSemesterList
-	) {
+		List<RegisteredSemester> registeredSemesterList) {
 		if (registeredSemesterList.isEmpty()) {
 			return new RegisteredSemesterManager();
 		}
@@ -48,8 +47,7 @@ public class RegisteredSemesterManager {
 	}
 
 	public static RegisteredSemesterManager fromString(
-		String registeredSemesterString
-	) {
+		String registeredSemesterString) {
 		if (registeredSemesterString == null) {
 			return new RegisteredSemesterManager();
 		}

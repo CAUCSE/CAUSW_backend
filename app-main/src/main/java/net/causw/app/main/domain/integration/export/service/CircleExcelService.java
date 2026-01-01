@@ -6,8 +6,8 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.springframework.stereotype.Service;
 
-import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.api.dto.circle.ExportCircleMemberToExcelResponseDto;
+import net.causw.app.main.core.aop.annotation.MeasureTime;
 
 @MeasureTime
 @Service
@@ -20,79 +20,61 @@ public class CircleExcelService extends ExcelAbstractService<ExportCircleMemberT
 		for (ExportCircleMemberToExcelResponseDto exportCircleMemberToExcelResponseDto : exportCircleMemberToExcelResponseDtoList) {
 			Row row = sheet.createRow(rowNum++);
 			row.createCell(0).setCellValue(
-				exportCircleMemberToExcelResponseDto.getEmail() != null ?
-					exportCircleMemberToExcelResponseDto.getEmail() : ""
-			);
+				exportCircleMemberToExcelResponseDto.getEmail() != null
+					? exportCircleMemberToExcelResponseDto.getEmail() : "");
 			row.createCell(1).setCellValue(
-				exportCircleMemberToExcelResponseDto.getName() != null ?
-					exportCircleMemberToExcelResponseDto.getName() : ""
-			);
+				exportCircleMemberToExcelResponseDto.getName() != null ? exportCircleMemberToExcelResponseDto.getName()
+					: "");
 			row.createCell(2).setCellValue(
-				exportCircleMemberToExcelResponseDto.getNickname() != null ?
-					exportCircleMemberToExcelResponseDto.getNickname() : ""
-			);
+				exportCircleMemberToExcelResponseDto.getNickname() != null
+					? exportCircleMemberToExcelResponseDto.getNickname() : "");
 			row.createCell(3).setCellValue(
-				exportCircleMemberToExcelResponseDto.getAdmissionYear() != null ?
-					exportCircleMemberToExcelResponseDto.getAdmissionYear().toString() : ""
-			);
+				exportCircleMemberToExcelResponseDto.getAdmissionYear() != null
+					? exportCircleMemberToExcelResponseDto.getAdmissionYear().toString() : "");
 			row.createCell(4).setCellValue(
-				exportCircleMemberToExcelResponseDto.getStudentId() != null ?
-					exportCircleMemberToExcelResponseDto.getStudentId() : ""
-			);
+				exportCircleMemberToExcelResponseDto.getStudentId() != null
+					? exportCircleMemberToExcelResponseDto.getStudentId() : "");
 			row.createCell(5).setCellValue(
-				exportCircleMemberToExcelResponseDto.getMajor() != null ?
-					exportCircleMemberToExcelResponseDto.getMajor() : ""
-			);
+				exportCircleMemberToExcelResponseDto.getMajor() != null
+					? exportCircleMemberToExcelResponseDto.getMajor() : "");
 			row.createCell(6).setCellValue(
-				exportCircleMemberToExcelResponseDto.getPhoneNumber() != null ?
-					exportCircleMemberToExcelResponseDto.getPhoneNumber() : ""
-			);
+				exportCircleMemberToExcelResponseDto.getPhoneNumber() != null
+					? exportCircleMemberToExcelResponseDto.getPhoneNumber() : "");
 			row.createCell(7).setCellValue(
-				exportCircleMemberToExcelResponseDto.getAcademicStatus() != null ?
-					exportCircleMemberToExcelResponseDto.getAcademicStatus().getValue() : ""
-			);
+				exportCircleMemberToExcelResponseDto.getAcademicStatus() != null
+					? exportCircleMemberToExcelResponseDto.getAcademicStatus().getValue() : "");
 			row.createCell(8).setCellValue(
-				exportCircleMemberToExcelResponseDto.getCurrentSemester() != null ?
-					exportCircleMemberToExcelResponseDto.getCurrentSemester().toString() : ""
-			);
+				exportCircleMemberToExcelResponseDto.getCurrentSemester() != null
+					? exportCircleMemberToExcelResponseDto.getCurrentSemester().toString() : "");
 			row.createCell(9).setCellValue(
-				exportCircleMemberToExcelResponseDto.getGraduationYear() != null ?
-					exportCircleMemberToExcelResponseDto.getGraduationYear().toString() : ""
-			);
+				exportCircleMemberToExcelResponseDto.getGraduationYear() != null
+					? exportCircleMemberToExcelResponseDto.getGraduationYear().toString() : "");
 			row.createCell(10).setCellValue(
-				exportCircleMemberToExcelResponseDto.getGraduationType() != null ?
-					exportCircleMemberToExcelResponseDto.getGraduationType().getValue() : ""
-			);
+				exportCircleMemberToExcelResponseDto.getGraduationType() != null
+					? exportCircleMemberToExcelResponseDto.getGraduationType().getValue() : "");
 			row.createCell(11).setCellValue(
-				exportCircleMemberToExcelResponseDto.getCreatedAt() != null ?
-					exportCircleMemberToExcelResponseDto.getCreatedAt().toString() : ""
-			);
+				exportCircleMemberToExcelResponseDto.getCreatedAt() != null
+					? exportCircleMemberToExcelResponseDto.getCreatedAt().toString() : "");
 			row.createCell(12).setCellValue(
-				exportCircleMemberToExcelResponseDto.getIsAppliedThisSemester() != null ?
-					exportCircleMemberToExcelResponseDto.getIsAppliedThisSemester() ? "O" : "X"
-					: ""
-			);
+				exportCircleMemberToExcelResponseDto.getIsAppliedThisSemester() != null
+					? exportCircleMemberToExcelResponseDto.getIsAppliedThisSemester() ? "O" : "X"
+					: "");
 			row.createCell(13).setCellValue(
-				exportCircleMemberToExcelResponseDto.getPaidAt() != null ?
-					exportCircleMemberToExcelResponseDto.getPaidAt().toString() : ""
-			);
+				exportCircleMemberToExcelResponseDto.getPaidAt() != null
+					? exportCircleMemberToExcelResponseDto.getPaidAt().toString() : "");
 			row.createCell(14).setCellValue(
-				exportCircleMemberToExcelResponseDto.getPaidSemester() != null ?
-					exportCircleMemberToExcelResponseDto.getPaidSemester().toString() : ""
-			);
+				exportCircleMemberToExcelResponseDto.getPaidSemester() != null
+					? exportCircleMemberToExcelResponseDto.getPaidSemester().toString() : "");
 			row.createCell(15).setCellValue(
-				exportCircleMemberToExcelResponseDto.getAppliedSemester() != null ?
-					exportCircleMemberToExcelResponseDto.getAppliedSemester().toString() : ""
-			);
+				exportCircleMemberToExcelResponseDto.getAppliedSemester() != null
+					? exportCircleMemberToExcelResponseDto.getAppliedSemester().toString() : "");
 			row.createCell(16).setCellValue(
-				exportCircleMemberToExcelResponseDto.getRestOfSemester() != null ?
-					exportCircleMemberToExcelResponseDto.getRestOfSemester().toString() : ""
-			);
+				exportCircleMemberToExcelResponseDto.getRestOfSemester() != null
+					? exportCircleMemberToExcelResponseDto.getRestOfSemester().toString() : "");
 			row.createCell(17).setCellValue(
-				exportCircleMemberToExcelResponseDto.getIsRefunded() != null ?
-					exportCircleMemberToExcelResponseDto.getIsRefunded() ? "O" : "X"
-					: ""
-			);
+				exportCircleMemberToExcelResponseDto.getIsRefunded() != null
+					? exportCircleMemberToExcelResponseDto.getIsRefunded() ? "O" : "X"
+					: "");
 
 		}
 	}

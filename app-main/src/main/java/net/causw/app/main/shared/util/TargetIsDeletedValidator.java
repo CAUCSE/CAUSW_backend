@@ -24,8 +24,7 @@ public class TargetIsDeletedValidator extends AbstractValidator {
 		if (this.isDeleted) {
 			throw new BadRequestException(
 				ErrorCode.TARGET_DELETED,
-				String.format("삭제된 %s 입니다.", this.domain)
-			);
+				String.format("삭제된 %s 입니다.", this.domain));
 		}
 	}
 }

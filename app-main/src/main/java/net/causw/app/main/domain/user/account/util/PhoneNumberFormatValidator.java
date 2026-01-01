@@ -24,8 +24,7 @@ public class PhoneNumberFormatValidator extends AbstractValidator {
 		if (!this.validatePhoneNumber()) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_USER_DATA_REQUEST,
-				"전화번호 형식이 잘못되었습니다."
-			);
+				"전화번호 형식이 잘못되었습니다.");
 		}
 	}
 

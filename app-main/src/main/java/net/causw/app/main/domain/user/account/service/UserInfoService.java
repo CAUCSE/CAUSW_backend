@@ -29,10 +29,8 @@ public class UserInfoService {
 	public UserInfo getUserInfoByUser(User user) {
 		return userInfoRepository.findByUserId(user.getId())
 			.orElseThrow(() -> new NotFoundException(
-					ErrorCode.ROW_DOES_NOT_EXIST,
-					MessageUtil.USER_NOT_FOUND
-				)
-			);
+				ErrorCode.ROW_DOES_NOT_EXIST,
+				MessageUtil.USER_NOT_FOUND));
 	}
 
 	public Page<UserInfo> searchUserInfo(Pageable pageable, UserInfoSearchConditionDto userInfoSearchCondition) {

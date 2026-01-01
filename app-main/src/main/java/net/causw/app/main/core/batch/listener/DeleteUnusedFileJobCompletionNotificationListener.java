@@ -10,7 +10,8 @@ import org.springframework.stereotype.Component;
 public class DeleteUnusedFileJobCompletionNotificationListener implements JobExecutionListener {
 
 	@Override
-	public void beforeJob(@NotNull JobExecution jobExecution) {
+	public void beforeJob(@NotNull
+	JobExecution jobExecution) {
 		// Step 실행 전 로직: Step 시작 시간 기록
 		jobExecution.getExecutionContext().putLong("startTime", System.currentTimeMillis());
 	}

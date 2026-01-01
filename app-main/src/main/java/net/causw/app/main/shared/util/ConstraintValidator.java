@@ -29,9 +29,7 @@ public class ConstraintValidator<T> extends AbstractValidator {
 
 		if (!violations.isEmpty()) {
 			StringBuilder sb = new StringBuilder();
-			violations.forEach(violation ->
-				sb.append(violation.getMessage())
-			);
+			violations.forEach(violation -> sb.append(violation.getMessage()));
 
 			throw new ConstraintViolationException(sb.toString(), violations);
 		}

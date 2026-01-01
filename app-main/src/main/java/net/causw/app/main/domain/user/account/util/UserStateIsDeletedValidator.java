@@ -22,8 +22,7 @@ public class UserStateIsDeletedValidator extends AbstractValidator {
 		if (this.userState.equals(UserState.DELETED)) {
 			throw new UnauthorizedException(
 				ErrorCode.DELETED_USER,
-				"삭제된 사용자 입니다."
-			);
+				"삭제된 사용자 입니다.");
 		}
 	}
 }

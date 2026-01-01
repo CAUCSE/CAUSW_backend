@@ -5,17 +5,17 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.api.dto.semester.CreateSemesterRequestDto;
+import net.causw.app.main.api.dto.semester.CurrentSemesterResponseDto;
+import net.causw.app.main.api.dto.util.dtoMapper.SemesterDtoMapper;
 import net.causw.app.main.core.aop.annotation.MeasureTime;
+import net.causw.app.main.domain.campus.semester.entity.Semester;
+import net.causw.app.main.domain.campus.semester.enums.SemesterType;
+import net.causw.app.main.domain.campus.semester.repository.SemesterRepository;
 import net.causw.app.main.domain.finance.usercouncilfee.entity.CouncilFeeFakeUser;
 import net.causw.app.main.domain.finance.usercouncilfee.entity.UserCouncilFee;
 import net.causw.app.main.domain.finance.usercouncilfee.repository.CouncilFeeFakeUserRepository;
 import net.causw.app.main.domain.finance.usercouncilfee.repository.UserCouncilFeeRepository;
-import net.causw.app.main.api.dto.semester.CreateSemesterRequestDto;
-import net.causw.app.main.api.dto.semester.CurrentSemesterResponseDto;
-import net.causw.app.main.api.dto.util.dtoMapper.SemesterDtoMapper;
-import net.causw.app.main.domain.campus.semester.entity.Semester;
-import net.causw.app.main.domain.campus.semester.enums.SemesterType;
-import net.causw.app.main.domain.campus.semester.repository.SemesterRepository;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
@@ -72,8 +72,7 @@ public class SemesterService {
 		Semester semester = Semester.of(
 			createSemesterRequestDto.getSemesterYear(),
 			createSemesterRequestDto.getSemesterType(),
-			user
-		);
+			user);
 		semesterRepository.save(semester);
 	}
 
@@ -84,23 +83,21 @@ public class SemesterService {
 
 		priorSemester.updateIsCurrent(false);
 
-		Semester newSemester = (priorSemester.getSemesterType().equals(SemesterType.FIRST)) ?
-			Semester.of(priorSemester.getSemesterYear(), SemesterType.SECOND, user) :
-			Semester.of(priorSemester.getSemesterYear() + 1, SemesterType.FIRST, user);
+		Semester newSemester = (priorSemester.getSemesterType().equals(SemesterType.FIRST))
+			? Semester.of(priorSemester.getSemesterYear(), SemesterType.SECOND, user)
+			: Semester.of(priorSemester.getSemesterYear() + 1, SemesterType.FIRST, user);
 
 		semesterRepository.save(priorSemester);
 		semesterRepository.save(newSemester);
 
 		// 신학기 시작으로 학적상태가 재학 또는 휴학인 학생들을 미결정으로 변경
 		List<User> userList = userRepository.findByAcademicStatusInOrAcademicStatusIsNull(
-				List.of(
-					AcademicStatus.ENROLLED,
-					AcademicStatus.LEAVE_OF_ABSENCE
-				))
+			List.of(
+				AcademicStatus.ENROLLED,
+				AcademicStatus.LEAVE_OF_ABSENCE))
 			.stream()
 			.peek(
-				(u) -> u.setAcademicStatus(AcademicStatus.UNDETERMINED)
-			)
+				(u) -> u.setAcademicStatus(AcademicStatus.UNDETERMINED))
 			.toList();
 
 		userRepository.saveAll(userList);
@@ -112,8 +109,7 @@ public class SemesterService {
 			.filter(councilFeeFakeUser -> councilFeeFakeUser.getAcademicStatus().equals(AcademicStatus.ENROLLED))
 			.peek(councilFeeFakeUser -> {
 				validAcademicStatusAndCurrentCompletedSemester(councilFeeFakeUser.getAcademicStatus(),
-					councilFeeFakeUser.getCurrentCompletedSemester() + 1
-				);
+					councilFeeFakeUser.getCurrentCompletedSemester() + 1);
 				councilFeeFakeUser.setCurrentCompletedSemester(
 					councilFeeFakeUser.getCurrentCompletedSemester() + 1);
 			})

@@ -7,7 +7,16 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.api.dto.comment.ChildCommentCreateRequestDto;
+import net.causw.app.main.api.dto.comment.ChildCommentResponseDto;
+import net.causw.app.main.api.dto.comment.ChildCommentUpdateRequestDto;
+import net.causw.app.main.api.dto.util.dtoMapper.CommentDtoMapper;
 import net.causw.app.main.core.aop.annotation.MeasureTime;
+import net.causw.app.main.domain.campus.circle.entity.Circle;
+import net.causw.app.main.domain.campus.circle.entity.CircleMember;
+import net.causw.app.main.domain.campus.circle.enums.CircleMemberStatus;
+import net.causw.app.main.domain.campus.circle.repository.CircleMemberRepository;
+import net.causw.app.main.domain.campus.circle.util.CircleMemberStatusValidator;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.entity.Comment;
@@ -18,26 +27,17 @@ import net.causw.app.main.domain.community.comment.repository.LikeChildCommentRe
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.community.post.service.PostService;
-import net.causw.app.main.api.dto.comment.ChildCommentCreateRequestDto;
-import net.causw.app.main.api.dto.comment.ChildCommentResponseDto;
-import net.causw.app.main.api.dto.comment.ChildCommentUpdateRequestDto;
-import net.causw.app.main.api.dto.util.dtoMapper.CommentDtoMapper;
-import net.causw.app.main.domain.campus.circle.entity.Circle;
-import net.causw.app.main.domain.campus.circle.entity.CircleMember;
-import net.causw.app.main.domain.campus.circle.enums.CircleMemberStatus;
-import net.causw.app.main.shared.StatusPolicy;
-import net.causw.app.main.domain.campus.circle.repository.CircleMemberRepository;
 import net.causw.app.main.domain.notification.notification.service.CommentNotificationService;
-import net.causw.app.main.domain.campus.circle.util.CircleMemberStatusValidator;
-import net.causw.app.main.shared.util.ConstraintValidator;
-import net.causw.app.main.shared.util.ContentsAdminValidator;
-import net.causw.app.main.shared.util.TargetIsDeletedValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.util.UserRoleIsNoneValidator;
 import net.causw.app.main.domain.user.account.util.UserStateIsDeletedValidator;
 import net.causw.app.main.domain.user.account.util.UserStateValidator;
+import net.causw.app.main.shared.StatusPolicy;
 import net.causw.app.main.shared.ValidatorBucket;
+import net.causw.app.main.shared.util.ConstraintValidator;
+import net.causw.app.main.shared.util.ContentsAdminValidator;
+import net.causw.app.main.shared.util.TargetIsDeletedValidator;
 import net.causw.app.main.shared.util.UserEqualValidator;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;
@@ -73,8 +73,7 @@ public class ChildCommentService {
 			false,
 			childCommentCreateRequestDto.getIsAnonymous(),
 			creator,
-			parentComment
-		);
+			parentComment);
 
 		ValidatorBucket validatorBucket = initializeValidator(creator, post);
 		validatorBucket
@@ -85,8 +84,7 @@ public class ChildCommentService {
 		ChildCommentResponseDto childCommentResponseDto = toChildCommentResponseDto(
 			childCommentRepository.save(childComment),
 			creator,
-			post.getBoard()
-		);
+			post.getBoard());
 
 		//1. 여기선 그냥 댓글 달리면 알람을 보내게 하면됨
 		commentNotificationService.sendByCommentIsSubscribed(parentComment, childComment);
@@ -98,8 +96,7 @@ public class ChildCommentService {
 	public ChildCommentResponseDto updateChildComment(
 		User updater,
 		String childCommentId,
-		ChildCommentUpdateRequestDto childCommentUpdateRequestDto
-	) {
+		ChildCommentUpdateRequestDto childCommentUpdateRequestDto) {
 		Set<Role> roles = updater.getRoles();
 		ChildComment childComment = getChildComment(childCommentId);
 		Post post = getPost(childComment.getParentComment().getPost().getId());
@@ -113,15 +110,13 @@ public class ChildCommentService {
 				roles,
 				updater.getId(),
 				childComment.getWriter().getId(),
-				List.of()
-			));
+				List.of()));
 		validatorBucket.validate();
 
 		return toChildCommentResponseDto(
 			childCommentRepository.save(childComment),
 			updater,
-			post.getBoard()
-		);
+			post.getBoard());
 	}
 
 	@Transactional
@@ -145,14 +140,12 @@ public class ChildCommentService {
 						.consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
 						.consistOf(CircleMemberStatusValidator.of(
 							member.getStatus(),
-							List.of(CircleMemberStatus.MEMBER)
-						))
+							List.of(CircleMemberStatus.MEMBER)))
 						.consistOf(ContentsAdminValidator.of(
 							roles,
 							deleter.getId(),
 							childComment.getWriter().getId(),
-							List.of(Role.LEADER_CIRCLE)
-						));
+							List.of(Role.LEADER_CIRCLE)));
 
 					if (roles.contains(Role.LEADER_CIRCLE) && !childComment.getWriter()
 						.getId()
@@ -161,14 +154,12 @@ public class ChildCommentService {
 						if (leader == null) {
 							throw new InternalServerException(
 								ErrorCode.INTERNAL_SERVER,
-								MessageUtil.CIRCLE_WITHOUT_LEADER
-							);
+								MessageUtil.CIRCLE_WITHOUT_LEADER);
 						}
 						validatorBucket
 							.consistOf(UserEqualValidator.of(
 								leader.getId(),
-								deleter.getId()
-							));
+								deleter.getId()));
 					}
 				},
 				() -> validatorBucket
@@ -176,8 +167,7 @@ public class ChildCommentService {
 						roles,
 						deleter.getId(),
 						childComment.getWriter().getId(),
-						List.of()
-					))
+						List.of()))
 
 			);
 		validatorBucket.validate();
@@ -187,8 +177,7 @@ public class ChildCommentService {
 		return toChildCommentResponseDto(
 			childCommentRepository.save(childComment),
 			deleter,
-			post.getBoard()
-		);
+			post.getBoard());
 	}
 
 	@Transactional
@@ -246,8 +235,7 @@ public class ChildCommentService {
 					.consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
 					.consistOf(CircleMemberStatusValidator.of(
 						member.getStatus(),
-						List.of(CircleMemberStatus.MEMBER)
-					));
+						List.of(CircleMemberStatus.MEMBER)));
 			});
 		return validatorBucket;
 	}
@@ -260,8 +248,7 @@ public class ChildCommentService {
 			StatusPolicy.isChildCommentOwner(childComment, user),
 			StatusPolicy.isUpdatable(childComment, user),
 			StatusPolicy.isDeletable(childComment, user, board),
-			false
-		);
+			false);
 
 		// 화면에 표시될 닉네임 설정
 		User writer = childComment.getWriter();
@@ -280,36 +267,28 @@ public class ChildCommentService {
 		return postRepository.findById(postId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.POST_NOT_FOUND
-			)
-		);
+				MessageUtil.POST_NOT_FOUND));
 	}
 
 	private Comment getComment(String commentId) {
 		return commentRepository.findById(commentId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.COMMENT_NOT_FOUND
-			)
-		);
+				MessageUtil.COMMENT_NOT_FOUND));
 	}
 
 	private ChildComment getChildComment(String childCommentId) {
 		return childCommentRepository.findById(childCommentId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.COMMENT_NOT_FOUND
-			)
-		);
+				MessageUtil.COMMENT_NOT_FOUND));
 	}
 
 	private CircleMember getCircleMember(String userId, String circleId) {
 		return circleMemberRepository.findByUser_IdAndCircle_Id(userId, circleId).orElseThrow(
 			() -> new UnauthorizedException(
 				ErrorCode.NOT_MEMBER,
-				MessageUtil.CIRCLE_APPLY_INVALID
-			)
-		);
+				MessageUtil.CIRCLE_APPLY_INVALID));
 	}
 
 	private void validateWriterNotDeleted(final ChildComment childComment) {
@@ -319,4 +298,3 @@ public class ChildCommentService {
 			.validate();
 	}
 }
-

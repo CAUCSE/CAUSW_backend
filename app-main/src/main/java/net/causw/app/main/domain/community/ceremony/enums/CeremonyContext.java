@@ -30,8 +30,7 @@ public enum CeremonyContext {
 		if (context == null || context.isEmpty()) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_PARAMETER,
-				MessageUtil.CEREMONY_INVALID_CONTEXT_VALUE
-			);
+				MessageUtil.CEREMONY_INVALID_CONTEXT_VALUE);
 		}
 
 		for (CeremonyContext ceremonyContext : CeremonyContext.values()) {
@@ -42,7 +41,6 @@ public enum CeremonyContext {
 
 		throw new BadRequestException(
 			ErrorCode.INVALID_PARAMETER,
-			MessageUtil.CEREMONY_INVALID_CONTEXT_VALUE
-		);
+			MessageUtil.CEREMONY_INVALID_CONTEXT_VALUE);
 	}
 }

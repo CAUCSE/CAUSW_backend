@@ -8,11 +8,11 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import net.causw.app.main.core.aop.annotation.MeasureTime;
-import net.causw.app.main.domain.community.form.entity.Reply;
 import net.causw.app.main.domain.campus.circle.entity.Circle;
 import net.causw.app.main.domain.campus.circle.entity.CircleMember;
 import net.causw.app.main.domain.campus.circle.enums.CircleMemberStatus;
 import net.causw.app.main.domain.campus.circle.repository.CircleMemberRepository;
+import net.causw.app.main.domain.community.form.entity.Reply;
 import net.causw.app.main.domain.user.account.entity.user.User;
 
 import lombok.RequiredArgsConstructor;
@@ -38,8 +38,7 @@ public class CircleMemberService {
 			.filter(circleMember -> circleMember.getStatus().equals(CircleMemberStatus.MEMBER))
 			.collect(Collectors.toMap(
 				circleMember -> circleMember.getCircle().getId(),
-				circleMember -> circleMember
-			));
+				circleMember -> circleMember));
 	}
 
 	public List<CircleMember> getCircleListByUserId(String userId) {
@@ -69,8 +68,7 @@ public class CircleMemberService {
 			circle,
 			user,
 			reply.getForm(),
-			reply
-		));
+			reply));
 	}
 
 	public Optional<CircleMember> updateStatus(String applicationId, CircleMemberStatus targetStatus) {
@@ -79,7 +77,6 @@ public class CircleMemberService {
 				circleMember.setStatus(targetStatus);
 
 				return this.circleMemberRepository.save(circleMember);
-			}
-		);
+			});
 	}
 }

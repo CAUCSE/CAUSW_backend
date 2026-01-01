@@ -15,8 +15,7 @@ public class PostNotificationDto {
 	public static PostNotificationDto of(Post post, Comment comment) {
 		return PostNotificationDto.builder()
 			.title(String.format("%s",
-				post.getTitle()
-			))
+				post.getTitle()))
 			.body(String.format("새 댓글 : %s",
 				comment.getContent()))
 			.build();

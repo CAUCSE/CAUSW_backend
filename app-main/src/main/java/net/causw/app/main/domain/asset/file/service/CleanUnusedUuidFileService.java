@@ -61,8 +61,7 @@ public class CleanUnusedUuidFileService {
 
 		stepExecution.getJobExecution().getExecutionContext().putInt(
 			"dataRow",
-			getPriorPageNum("uuidFile") * StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE
-		);
+			getPriorPageNum("uuidFile") * StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE);
 
 		redisUtils.setPageNumData("uuidFile", -1, StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
 	}
@@ -73,8 +72,7 @@ public class CleanUnusedUuidFileService {
 		Page<UuidFile> uuidFilePage = uuidFileRepository.findAll(
 			PageRequest.of(
 				pageNum,
-				StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE)
-		);
+				StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE));
 		uuidFilePage.forEach(uuidFile -> uuidFile.setIsUsed(false));
 		uuidFileRepository.saveAll(uuidFilePage);
 		pageNum++;
@@ -95,8 +93,7 @@ public class CleanUnusedUuidFileService {
 
 		stepExecution.getJobExecution().getExecutionContext().putInt(
 			"dataRow",
-			getPriorPageNum("calendarAttachImage") * StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE
-		);
+			getPriorPageNum("calendarAttachImage") * StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE);
 
 		redisUtils.setPageNumData("calendarAttachImage", -1, StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
 	}
@@ -107,8 +104,7 @@ public class CleanUnusedUuidFileService {
 		Page<CalendarAttachImage> calendarAttachImagePage = calendarAttachImageRepository.findAll(
 			PageRequest.of(
 				pageNum,
-				StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE)
-		);
+				StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE));
 		Set<UuidFile> uuidFileSet = calendarAttachImagePage.stream()
 			.map(CalendarAttachImage::getUuidFile)
 			.collect(Collectors.toSet());
@@ -133,8 +129,7 @@ public class CleanUnusedUuidFileService {
 
 		stepExecution.getJobExecution().getExecutionContext().putInt(
 			"dataRow",
-			getPriorPageNum("circleMainImage") * StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE
-		);
+			getPriorPageNum("circleMainImage") * StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE);
 
 		redisUtils.setPageNumData("circleMainImage", -1, StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
 	}
@@ -145,8 +140,7 @@ public class CleanUnusedUuidFileService {
 		Page<CircleMainImage> circleMainImagePage = circleMainImageRepository.findAll(
 			PageRequest.of(
 				pageNum,
-				StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE)
-		);
+				StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE));
 		Set<UuidFile> uuidFileSet = circleMainImagePage.stream()
 			.map(CircleMainImage::getUuidFile)
 			.collect(Collectors.toSet());
@@ -170,8 +164,7 @@ public class CleanUnusedUuidFileService {
 
 		stepExecution.getJobExecution().getExecutionContext().putInt(
 			"dataRow",
-			getPriorPageNum("eventAttachImage") * StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE
-		);
+			getPriorPageNum("eventAttachImage") * StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE);
 
 		redisUtils.setPageNumData("eventAttachImage", -1, StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
 	}
@@ -182,8 +175,7 @@ public class CleanUnusedUuidFileService {
 		Page<EventAttachImage> eventAttachImagePage = eventAttachImageRepository.findAll(
 			PageRequest.of(
 				pageNum,
-				StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE)
-		);
+				StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE));
 		Set<UuidFile> uuidFileSet = eventAttachImagePage.stream()
 			.map(EventAttachImage::getUuidFile)
 			.collect(Collectors.toSet());
@@ -207,8 +199,7 @@ public class CleanUnusedUuidFileService {
 
 		stepExecution.getJobExecution().getExecutionContext().putInt(
 			"dataRow",
-			getPriorPageNum("postAttachImage") * StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE
-		);
+			getPriorPageNum("postAttachImage") * StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE);
 
 		redisUtils.setPageNumData("postAttachImage", -1, StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
 	}
@@ -219,8 +210,7 @@ public class CleanUnusedUuidFileService {
 		Page<PostAttachImage> postAttachImagePage = postAttachImageRepository.findAll(
 			PageRequest.of(
 				pageNum,
-				StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE)
-		);
+				StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE));
 		Set<UuidFile> uuidFileSet = postAttachImagePage.stream()
 			.map(PostAttachImage::getUuidFile)
 			.collect(Collectors.toSet());
@@ -244,8 +234,8 @@ public class CleanUnusedUuidFileService {
 
 		stepExecution.getJobExecution().getExecutionContext().putInt(
 			"dataRow",
-			getPriorPageNum("userAcademicRecordApplicationAttachImage") * StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE
-		);
+			getPriorPageNum("userAcademicRecordApplicationAttachImage")
+				* StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE);
 
 		redisUtils.setPageNumData("userAcademicRecordApplicationAttachImage", -1,
 			StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
@@ -254,11 +244,11 @@ public class CleanUnusedUuidFileService {
 	@Transactional
 	public Boolean checkIsUsedWithUserAcademicRecordApplicationAttachImage() {
 		Integer pageNum = getPriorPageNum("userAcademicRecordApplicationAttachImage");
-		Page<UserAcademicRecordApplicationAttachImage> userAcademicRecordApplicationAttachImagePage = userAcademicRecordApplicationAttachImageRepository.findAll(
-			PageRequest.of(
-				pageNum,
-				StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE)
-		);
+		Page<UserAcademicRecordApplicationAttachImage> userAcademicRecordApplicationAttachImagePage = userAcademicRecordApplicationAttachImageRepository
+			.findAll(
+				PageRequest.of(
+					pageNum,
+					StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE));
 		Set<UuidFile> uuidFileSet = userAcademicRecordApplicationAttachImagePage.stream()
 			.map(UserAcademicRecordApplicationAttachImage::getUuidFile)
 			.collect(Collectors.toSet());
@@ -283,8 +273,7 @@ public class CleanUnusedUuidFileService {
 
 		stepExecution.getJobExecution().getExecutionContext().putInt(
 			"dataRow",
-			getPriorPageNum("userAdmissionAttachImage") * StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE
-		);
+			getPriorPageNum("userAdmissionAttachImage") * StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE);
 
 		redisUtils.setPageNumData("userAdmissionAttachImage", -1,
 			StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
@@ -296,8 +285,7 @@ public class CleanUnusedUuidFileService {
 		Page<UserAdmissionAttachImage> userAdmissionAttachImagePage = userAdmissionAttachImageRepository.findAll(
 			PageRequest.of(
 				pageNum,
-				StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE)
-		);
+				StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE));
 		Set<UuidFile> uuidFileSet = userAdmissionAttachImagePage.stream()
 			.map(UserAdmissionAttachImage::getUuidFile)
 			.collect(Collectors.toSet());
@@ -322,8 +310,7 @@ public class CleanUnusedUuidFileService {
 
 		stepExecution.getJobExecution().getExecutionContext().putInt(
 			"dataRow",
-			getPriorPageNum("userAdmissionLog") * StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE
-		);
+			getPriorPageNum("userAdmissionLog") * StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE);
 
 		redisUtils.setPageNumData("userAdmissionLog", -1, StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
 	}
@@ -331,11 +318,11 @@ public class CleanUnusedUuidFileService {
 	@Transactional
 	public Boolean checkIsUsedWithUserAdmissionLogAttachImage() {
 		Integer pageNum = getPriorPageNum("userAdmissionLog");
-		Page<UserAdmissionLogAttachImage> userAdmissionLogAttachImagePage = userAdmissionLogAttachImageRepository.findAll(
-			PageRequest.of(
-				pageNum,
-				StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE)
-		);
+		Page<UserAdmissionLogAttachImage> userAdmissionLogAttachImagePage = userAdmissionLogAttachImageRepository
+			.findAll(
+				PageRequest.of(
+					pageNum,
+					StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE));
 		Set<UuidFile> uuidFileSet = userAdmissionLogAttachImagePage.stream()
 			.map(UserAdmissionLogAttachImage::getUuidFile)
 			.collect(Collectors.toSet());
@@ -359,8 +346,7 @@ public class CleanUnusedUuidFileService {
 
 		stepExecution.getJobExecution().getExecutionContext().putInt(
 			"dataRow",
-			getPriorPageNum("userProfileImage") * StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE
-		);
+			getPriorPageNum("userProfileImage") * StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE);
 
 		redisUtils.setPageNumData("userProfileImage", -1, StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
 	}
@@ -371,8 +357,7 @@ public class CleanUnusedUuidFileService {
 		Page<UserProfileImage> userProfileImagePage = userProfileImageRepository.findAll(
 			PageRequest.of(
 				pageNum,
-				StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE)
-		);
+				StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE));
 		Set<UuidFile> uuidFileSet = userProfileImagePage.stream()
 			.map(UserProfileImage::getUuidFile)
 			.collect(Collectors.toSet());

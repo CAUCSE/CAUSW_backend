@@ -64,13 +64,11 @@ public class UserInfo extends BaseEntity {
 		String description,
 		String job,
 		List<String> socialLinks,
-		boolean isPhoneNumberVisible
-	) {
+		boolean isPhoneNumberVisible) {
 		if (socialLinks.size() > 10) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_PARAMETER,
-				MessageUtil.INVALID_SOCIAL_LINK
-			);
+				MessageUtil.INVALID_SOCIAL_LINK);
 		}
 
 		this.description = description;

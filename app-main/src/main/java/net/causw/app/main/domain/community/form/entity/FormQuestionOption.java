@@ -20,10 +20,9 @@ import lombok.NoArgsConstructor;
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "tb_form_question_option",
-	indexes = {
-		@Index(name = "form_question_id_index", columnList = "form_question_id")
-	})
+@Table(name = "tb_form_question_option", indexes = {
+	@Index(name = "form_question_id_index", columnList = "form_question_id")
+})
 public class FormQuestionOption extends BaseEntity {
 
 	@Column(name = "number", nullable = false)

@@ -14,8 +14,7 @@ import net.causw.app.main.domain.campus.semester.entity.Semester;
 
 @Retention(RetentionPolicy.CLASS)
 @Target({ElementType.METHOD})
-@interface SemesterCommonWriterMappings {
-}
+@interface SemesterCommonWriterMappings{}
 
 @Mapper(componentModel = "spring")
 public interface SemesterDtoMapper {

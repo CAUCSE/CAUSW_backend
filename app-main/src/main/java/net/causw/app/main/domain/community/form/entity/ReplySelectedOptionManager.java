@@ -39,8 +39,7 @@ public class ReplySelectedOptionManager {
 	}
 
 	public static ReplySelectedOptionManager fromIntegerList(
-		List<Integer> selectedOptionList
-	) {
+		List<Integer> selectedOptionList) {
 		if (selectedOptionList == null || selectedOptionList.isEmpty()) {
 			return new ReplySelectedOptionManager();
 		}
@@ -49,8 +48,7 @@ public class ReplySelectedOptionManager {
 	}
 
 	public static ReplySelectedOptionManager fromString(
-		String selectedOptionString
-	) {
+		String selectedOptionString) {
 		if (selectedOptionString == null || selectedOptionString.isBlank() || selectedOptionString.isEmpty()) {
 			return new ReplySelectedOptionManager();
 		}

@@ -10,6 +10,5 @@ public record GraduatedUserCommand(
 	Integer graduationYear,
 	String nickname,
 	Department department,
-	String phoneNumber
-) {
+	String phoneNumber) {
 }

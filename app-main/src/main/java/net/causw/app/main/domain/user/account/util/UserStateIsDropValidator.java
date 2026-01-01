@@ -21,8 +21,7 @@ public class UserStateIsDropValidator extends AbstractValidator {
 		if (this.userState != UserState.DROP) {
 			throw new UnauthorizedException(
 				ErrorCode.BLOCKED_USER,
-				"추방된 사용자가 아닙니다."
-			);
+				"추방된 사용자가 아닙니다.");
 		}
 	}
 }

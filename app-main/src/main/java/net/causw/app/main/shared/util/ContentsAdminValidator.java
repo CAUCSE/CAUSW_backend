@@ -28,8 +28,7 @@ public class ContentsAdminValidator extends AbstractValidator {
 		Set<Role> requestUserRoles,
 		String requestUserId,
 		String writerUserId,
-		List<Role> adminRoleList
-	) {
+		List<Role> adminRoleList) {
 		this.requestUserRoles = requestUserRoles;
 		this.requestUserId = requestUserId;
 		this.writerUserId = writerUserId;
@@ -40,14 +39,12 @@ public class ContentsAdminValidator extends AbstractValidator {
 		Set<Role> requestUserRoles,
 		String requestUserId,
 		String writerUserId,
-		List<Role> adminRoleList
-	) {
+		List<Role> adminRoleList) {
 		return new ContentsAdminValidator(
 			requestUserRoles,
 			requestUserId,
 			writerUserId,
-			adminRoleList
-		);
+			adminRoleList);
 	}
 
 	@Override
@@ -69,7 +66,6 @@ public class ContentsAdminValidator extends AbstractValidator {
 
 		throw new UnauthorizedException(
 			ErrorCode.API_NOT_ALLOWED,
-			"접근 권한이 없습니다."
-		);
+			"접근 권한이 없습니다.");
 	}
 }

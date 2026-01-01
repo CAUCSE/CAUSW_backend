@@ -50,8 +50,7 @@ public class Locker extends BaseEntity {
 		Boolean isActive,
 		User user,
 		LockerLocation location,
-		LocalDateTime expireDate
-	) {
+		LocalDateTime expireDate) {
 		return Locker.builder()
 			.lockerNumber(lockerNumber)
 			.isActive(isActive)

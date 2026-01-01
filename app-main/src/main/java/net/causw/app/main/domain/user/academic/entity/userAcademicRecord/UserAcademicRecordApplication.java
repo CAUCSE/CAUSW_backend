@@ -32,11 +32,9 @@ import lombok.Setter;
 @Entity
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(
-	name = "tb_user_academic_record_application",
-	indexes = {
-		@Index(name = "user_id_index", columnList = "user_id")
-	})
+@Table(name = "tb_user_academic_record_application", indexes = {
+	@Index(name = "user_id_index", columnList = "user_id")
+})
 public class UserAcademicRecordApplication extends BaseEntity {
 
 	@ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
@@ -72,8 +70,7 @@ public class UserAcademicRecordApplication extends BaseEntity {
 		AcademicRecordRequestStatus academicRecordRequestStatus,
 		AcademicStatus academicStatus,
 		Integer targetCompletedSemester,
-		String note
-	) {
+		String note) {
 		return UserAcademicRecordApplication.builder()
 			.user(user)
 			.academicRecordRequestStatus(academicRecordRequestStatus)
@@ -89,8 +86,7 @@ public class UserAcademicRecordApplication extends BaseEntity {
 		AcademicStatus academicStatus,
 		Integer targetCompletedSemester,
 		String note,
-		List<UuidFile> userAcademicRecordAttachImageUuidFileList
-	) {
+		List<UuidFile> userAcademicRecordAttachImageUuidFileList) {
 		UserAcademicRecordApplication userAcademicRecordApplication = UserAcademicRecordApplication.builder()
 			.user(user)
 			.academicRecordRequestStatus(academicRecordRequestStatus)
@@ -99,7 +95,8 @@ public class UserAcademicRecordApplication extends BaseEntity {
 			.note(note)
 			.build();
 
-		List<UserAcademicRecordApplicationAttachImage> userAcademicRecordApplicationAttachImageList = userAcademicRecordAttachImageUuidFileList.stream()
+		List<UserAcademicRecordApplicationAttachImage> userAcademicRecordApplicationAttachImageList = userAcademicRecordAttachImageUuidFileList
+			.stream()
 			.map(uuidFile -> UserAcademicRecordApplicationAttachImage.of(userAcademicRecordApplication, uuidFile))
 			.toList();
 

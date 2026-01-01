@@ -1,15 +1,15 @@
 package net.causw.app.main.domain.asset.locker.service;
 
-import static net.causw.global.constant.StaticValue.*;
+import static net.causw.global.constant.StaticValue.LOCKER_EXTEND;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
 
 import net.causw.app.main.domain.asset.locker.entity.Locker;
-import net.causw.app.main.domain.etc.textfield.service.CommonService;
 import net.causw.app.main.domain.asset.locker.util.ExtendLockerExpiredAtValidator;
 import net.causw.app.main.domain.asset.locker.util.LockerExtendAccessValidator;
+import net.causw.app.main.domain.etc.textfield.service.CommonService;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.util.UserRoleValidator;
@@ -29,13 +29,11 @@ public class LockerActionExtend implements LockerAction {
 		Locker locker,
 		User user,
 		LockerService lockerService,
-		CommonService commonService
-	) {
+		CommonService commonService) {
 		if (locker.getUser().isEmpty()) {
 			throw new BadRequestException(
 				ErrorCode.CANNOT_PERFORMED,
-				MessageUtil.LOCKER_UNUSED
-			);
+				MessageUtil.LOCKER_UNUSED);
 		}
 
 		// 사물함 보유자와 신청자가 같은지 확인
@@ -54,16 +52,14 @@ public class LockerActionExtend implements LockerAction {
 			commonService.findByKeyInTextField(StaticValue.NEXT_EXPIRED_AT).orElseThrow(
 				() -> new InternalServerException(
 					ErrorCode.INTERNAL_SERVER,
-					MessageUtil.LOCKER_NEXT_EXPIRE_TIME_NOT_SET
-				)
-			), StaticValue.LOCKER_DATE_TIME_FORMATTER);
+					MessageUtil.LOCKER_NEXT_EXPIRE_TIME_NOT_SET)),
+			StaticValue.LOCKER_DATE_TIME_FORMATTER);
 
-		Optional.ofNullable(locker.getExpireDate()).ifPresent(expiredAt ->
-			ValidatorBucket.of()
-				.consistOf(ExtendLockerExpiredAtValidator.of(
-					expiredAt,
-					expiredAtToExtend))
-				.validate());
+		Optional.ofNullable(locker.getExpireDate()).ifPresent(expiredAt -> ValidatorBucket.of()
+			.consistOf(ExtendLockerExpiredAtValidator.of(
+				expiredAt,
+				expiredAtToExtend))
+			.validate());
 
 		locker.extendExpireDate(expiredAtToExtend);
 		return Optional.of(locker);
