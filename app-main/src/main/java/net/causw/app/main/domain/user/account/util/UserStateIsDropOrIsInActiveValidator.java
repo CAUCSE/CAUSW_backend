@@ -22,8 +22,7 @@ public class UserStateIsDropOrIsInActiveValidator extends AbstractValidator {
 			UserState.INACTIVE) || this.userState.equals(UserState.DELETED))) {
 			throw new UnauthorizedException(
 				ErrorCode.BLOCKED_USER,
-				"등록된 사용자가 아닙니다."
-			);
+				"등록된 사용자가 아닙니다.");
 		}
 	}
 }

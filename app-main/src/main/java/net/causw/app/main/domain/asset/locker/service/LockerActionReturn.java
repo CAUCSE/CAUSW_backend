@@ -1,13 +1,13 @@
 package net.causw.app.main.domain.asset.locker.service;
 
-import static net.causw.global.constant.StaticValue.*;
+import static net.causw.global.constant.StaticValue.LOCKER_ACCESS;
 
 import java.util.Optional;
 import java.util.Set;
 
 import net.causw.app.main.domain.asset.locker.entity.Locker;
-import net.causw.app.main.domain.etc.textfield.service.CommonService;
 import net.causw.app.main.domain.asset.locker.util.LockerAccessValidator;
+import net.causw.app.main.domain.etc.textfield.service.CommonService;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.util.UserRoleValidator;
@@ -25,13 +25,11 @@ public class LockerActionReturn implements LockerAction {
 		Locker locker,
 		User user,
 		LockerService lockerService,
-		CommonService commonService
-	) {
+		CommonService commonService) {
 		if (locker.getUser().isEmpty()) {
 			throw new BadRequestException(
 				ErrorCode.CANNOT_PERFORMED,
-				MessageUtil.LOCKER_UNUSED
-			);
+				MessageUtil.LOCKER_UNUSED);
 		}
 
 		if (!user.getId().equals(locker.getUser().get().getId()))

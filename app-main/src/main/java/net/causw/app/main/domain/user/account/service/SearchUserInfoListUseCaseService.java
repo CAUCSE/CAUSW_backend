@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.user.account.service;
 
-import static net.causw.global.constant.StaticValue.*;
+import static net.causw.global.constant.StaticValue.DEFAULT_PAGE_SIZE;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

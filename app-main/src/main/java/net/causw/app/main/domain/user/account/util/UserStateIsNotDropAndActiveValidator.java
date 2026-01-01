@@ -22,13 +22,11 @@ public class UserStateIsNotDropAndActiveValidator extends AbstractValidator {
 		if (this.userState == UserState.DROP) {
 			throw new UnauthorizedException(
 				ErrorCode.BLOCKED_USER,
-				"추방된 사용자 입니다."
-			);
+				"추방된 사용자 입니다.");
 		} else if (this.userState == UserState.ACTIVE) {
 			throw new UnauthorizedException(
 				ErrorCode.API_NOT_ALLOWED,
-				"이미 등록된 사용자 입니다."
-			);
+				"이미 등록된 사용자 입니다.");
 		}
 	}
 }

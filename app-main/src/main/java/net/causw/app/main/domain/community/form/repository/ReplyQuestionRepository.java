@@ -12,7 +12,8 @@ import net.causw.app.main.domain.community.form.entity.ReplyQuestion;
 public interface ReplyQuestionRepository extends JpaRepository<ReplyQuestion, String> {
 
 	@NotNull
-	Optional<ReplyQuestion> findById(@NotNull String id);
+	Optional<ReplyQuestion> findById(@NotNull
+	String id);
 
 	List<ReplyQuestion> findAllByReplyForm(Form form);
 

@@ -15,7 +15,28 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.api.dto.form.request.FormReplyRequestDto;
+import net.causw.app.main.api.dto.form.request.QuestionReplyRequestDto;
+import net.causw.app.main.api.dto.form.response.FormResponseDto;
+import net.causw.app.main.api.dto.form.response.OptionResponseDto;
+import net.causw.app.main.api.dto.form.response.OptionSummaryResponseDto;
+import net.causw.app.main.api.dto.form.response.QuestionResponseDto;
+import net.causw.app.main.api.dto.form.response.QuestionSummaryResponseDto;
+import net.causw.app.main.api.dto.form.response.reply.ReplyPageResponseDto;
+import net.causw.app.main.api.dto.form.response.reply.ReplyQuestionResponseDto;
+import net.causw.app.main.api.dto.form.response.reply.ReplyResponseDto;
+import net.causw.app.main.api.dto.form.response.reply.ReplyUserResponseDto;
+import net.causw.app.main.api.dto.form.response.reply.UserReplyResponseDto;
+import net.causw.app.main.api.dto.form.response.reply.excel.ExcelReplyListResponseDto;
+import net.causw.app.main.api.dto.form.response.reply.excel.ExcelReplyQuestionResponseDto;
+import net.causw.app.main.api.dto.form.response.reply.excel.ExcelReplyResponseDto;
+import net.causw.app.main.api.dto.util.dtoMapper.FormDtoMapper;
 import net.causw.app.main.core.aop.annotation.MeasureTime;
+import net.causw.app.main.domain.campus.circle.entity.Circle;
+import net.causw.app.main.domain.campus.circle.entity.CircleMember;
+import net.causw.app.main.domain.campus.circle.enums.CircleMemberStatus;
+import net.causw.app.main.domain.campus.circle.repository.CircleMemberRepository;
+import net.causw.app.main.domain.campus.circle.repository.CircleRepository;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.repository.BoardRepository;
 import net.causw.app.main.domain.community.form.entity.Form;
@@ -34,30 +55,9 @@ import net.causw.app.main.domain.community.form.repository.ReplyRepository;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.finance.usercouncilfee.entity.UserCouncilFee;
+import net.causw.app.main.domain.finance.usercouncilfee.policy.UserCouncilFeePolicy;
 import net.causw.app.main.domain.finance.usercouncilfee.repository.UserCouncilFeeRepository;
 import net.causw.app.main.domain.integration.export.service.FormExcelService;
-import net.causw.app.main.api.dto.form.request.FormReplyRequestDto;
-import net.causw.app.main.api.dto.form.request.QuestionReplyRequestDto;
-import net.causw.app.main.api.dto.form.response.FormResponseDto;
-import net.causw.app.main.api.dto.form.response.OptionResponseDto;
-import net.causw.app.main.api.dto.form.response.OptionSummaryResponseDto;
-import net.causw.app.main.api.dto.form.response.QuestionResponseDto;
-import net.causw.app.main.api.dto.form.response.QuestionSummaryResponseDto;
-import net.causw.app.main.api.dto.form.response.reply.ReplyPageResponseDto;
-import net.causw.app.main.api.dto.form.response.reply.ReplyQuestionResponseDto;
-import net.causw.app.main.api.dto.form.response.reply.ReplyResponseDto;
-import net.causw.app.main.api.dto.form.response.reply.ReplyUserResponseDto;
-import net.causw.app.main.api.dto.form.response.reply.UserReplyResponseDto;
-import net.causw.app.main.api.dto.form.response.reply.excel.ExcelReplyListResponseDto;
-import net.causw.app.main.api.dto.form.response.reply.excel.ExcelReplyQuestionResponseDto;
-import net.causw.app.main.api.dto.form.response.reply.excel.ExcelReplyResponseDto;
-import net.causw.app.main.api.dto.util.dtoMapper.FormDtoMapper;
-import net.causw.app.main.domain.campus.circle.entity.Circle;
-import net.causw.app.main.domain.campus.circle.entity.CircleMember;
-import net.causw.app.main.domain.campus.circle.enums.CircleMemberStatus;
-import net.causw.app.main.domain.finance.usercouncilfee.policy.UserCouncilFeePolicy;
-import net.causw.app.main.domain.campus.circle.repository.CircleMemberRepository;
-import net.causw.app.main.domain.campus.circle.repository.CircleRepository;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
@@ -94,8 +94,7 @@ public class FormService {
 	public void setFormIsClosed(
 		String formId,
 		User user,
-		Boolean targetIsClosed
-	) {
+		Boolean targetIsClosed) {
 		Form form = getForm(formId);
 
 		validateCanAccessFormResult(user, form);
@@ -146,24 +145,21 @@ public class FormService {
 	public void replyForm(
 		String formId,
 		FormReplyRequestDto formReplyRequestDto,
-		User writer
-	) {
+		User writer) {
 		Form form = getForm(formId);
 
 		// 동아리 신청서의 경우 본 API 통해서 답변 불가. Circle Controller 사용 필수
 		if (form.getFormType().equals(FormType.CIRCLE_APPLICATION_FORM)) {
 			throw new BadRequestException(
 				ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
-				MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
-			);
+				MessageUtil.NOT_ALLOWED_TO_REPLY_FORM);
 		}
 
 		// 제출 가능한지 검사
 		if (form.getIsClosed()) {
 			throw new BadRequestException(
 				ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
-				MessageUtil.FORM_CLOSED
-			);
+				MessageUtil.FORM_CLOSED);
 		}
 
 		// writer가 해당 form이 있는 post에 접근 가능한지 검사
@@ -186,15 +182,13 @@ public class FormService {
 				if (questionReplyRequestDto.getQuestionReply() != null) {
 					throw new BadRequestException(
 						ErrorCode.INVALID_PARAMETER,
-						MessageUtil.INVALID_REPLY_INFO
-					);
+						MessageUtil.INVALID_REPLY_INFO);
 				}
 
 				if (!formQuestion.getIsMultiple() && questionReplyRequestDto.getSelectedOptionList().size() > 1) {
 					throw new BadRequestException(
 						ErrorCode.INVALID_PARAMETER,
-						MessageUtil.INVALID_REPLY_INFO
-					);
+						MessageUtil.INVALID_REPLY_INFO);
 				}
 
 				// 객관식일 시: 유효한 옵션 번호 선택했는지 검사
@@ -207,8 +201,7 @@ public class FormService {
 					if (!formQuestionOptionNumberList.contains(optionNumber)) {
 						throw new BadRequestException(
 							ErrorCode.INVALID_PARAMETER,
-							MessageUtil.INVALID_REPLY_INFO
-						);
+							MessageUtil.INVALID_REPLY_INFO);
 					}
 				});
 			}
@@ -217,20 +210,18 @@ public class FormService {
 				if (questionReplyRequestDto.getSelectedOptionList() != null) {
 					throw new BadRequestException(
 						ErrorCode.INVALID_PARAMETER,
-						MessageUtil.INVALID_REPLY_INFO
-					);
+						MessageUtil.INVALID_REPLY_INFO);
 				}
 			}
 
 			ReplyQuestion replyQuestion = ReplyQuestion.of(
 				formQuestion,
-				formQuestion.getQuestionType().equals(QuestionType.SUBJECTIVE) ?
-					questionReplyRequestDto.getQuestionReply()
+				formQuestion.getQuestionType().equals(QuestionType.SUBJECTIVE)
+					? questionReplyRequestDto.getQuestionReply()
 					: null,
-				formQuestion.getQuestionType().equals(QuestionType.OBJECTIVE) ?
-					questionReplyRequestDto.getSelectedOptionList()
-					: null
-			);
+				formQuestion.getQuestionType().equals(QuestionType.OBJECTIVE)
+					? questionReplyRequestDto.getSelectedOptionList()
+					: null);
 
 			replyQuestionList.add(replyQuestion);
 		}
@@ -239,8 +230,7 @@ public class FormService {
 		if (replyQuestionList.size() != form.getFormQuestionList().size()) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_PARAMETER,
-				MessageUtil.REPLY_SIZE_INVALID
-			);
+				MessageUtil.REPLY_SIZE_INVALID);
 		}
 
 		// 모든 문항에 대해 답변 정확히 하나 있는지 검사(답변 유효성 검사)
@@ -254,8 +244,7 @@ public class FormService {
 			if (questionReplyCount != 1) {
 				throw new BadRequestException(
 					ErrorCode.INVALID_PARAMETER,
-					MessageUtil.INVALID_REPLY_INFO
-				);
+					MessageUtil.INVALID_REPLY_INFO);
 			}
 		});
 
@@ -292,17 +281,14 @@ public class FormService {
 				formQuestion -> formQuestion,
 				formQuestion -> replyQuestionList.stream()
 					.filter(replyQuestion -> replyQuestion.getFormQuestion().equals(formQuestion))
-					.collect(Collectors.toList())
-			));
+					.collect(Collectors.toList())));
 
 		List<QuestionSummaryResponseDto> questionSummaryResponseDtoList = new ArrayList<>();
 		for (FormQuestion formQuestion : formQuestionList) {
 			questionSummaryResponseDtoList.add(
 				toQuestionSummaryResponseDto(
 					formQuestion,
-					replyQuestionMap.get(formQuestion)
-				)
-			);
+					replyQuestionMap.get(formQuestion)));
 		}
 
 		return questionSummaryResponseDtoList;
@@ -337,15 +323,13 @@ public class FormService {
 			"납부 시점 학기",
 			"납부한 학기 수",
 			"잔여 학생회비 적용 학기",
-			"환불 여부"
-		));
+			"환불 여부"));
 		List<String> questionStringList = excelReplyListResponseDto.getQuestionResponseDtoList()
 			.stream()
-			.map(questionResponseDto -> (
-				questionResponseDto.getQuestionNumber().toString()
-					+ "."
-					+ questionResponseDto.getQuestionText()
-			)).toList();
+			.map(questionResponseDto -> (questionResponseDto.getQuestionNumber().toString()
+				+ "."
+				+ questionResponseDto.getQuestionText()))
+			.toList();
 		headerStringList.addAll(questionStringList);
 
 		LinkedHashMap<String, List<ExcelReplyResponseDto>> sheetNameDataMap = new LinkedHashMap<>();
@@ -355,8 +339,7 @@ public class FormService {
 			response,
 			fileName,
 			headerStringList,
-			sheetNameDataMap
-		);
+			sheetNameDataMap);
 	}
 
 	// private methods
@@ -365,8 +348,7 @@ public class FormService {
 		if (replyRepository.existsByFormAndUser(form, writer)) {
 			throw new BadRequestException(
 				ErrorCode.ROW_ALREADY_EXIST,
-				MessageUtil.ALREADY_REPLIED
-			);
+				MessageUtil.ALREADY_REPLIED);
 		}
 	}
 
@@ -384,23 +366,19 @@ public class FormService {
 		if (!allowedAcademicStatus.contains(writer.getAcademicStatus())) {
 			throw new BadRequestException(
 				ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
-				MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
-			);
+				MessageUtil.NOT_ALLOWED_TO_REPLY_FORM);
 		} else {
 			if (allowedAcademicStatus.contains(AcademicStatus.ENROLLED)
-				&& writer.getAcademicStatus().equals(AcademicStatus.ENROLLED)
-			) {
+				&& writer.getAcademicStatus().equals(AcademicStatus.ENROLLED)) {
 				EnumSet<RegisteredSemester> allowedRegisteredSemester = form.getEnrolledRegisteredSemester();
 				if (!allowedRegisteredSemester
 					.stream()
 					.map(RegisteredSemester::getSemester)
 					.collect(Collectors.toSet())
-					.contains(writer.getCurrentCompletedSemester())
-				) {
+					.contains(writer.getCurrentCompletedSemester())) {
 					throw new BadRequestException(
 						ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
-						MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
-					);
+						MessageUtil.NOT_ALLOWED_TO_REPLY_FORM);
 				}
 
 				if (form.getIsNeedCouncilFeePaid()) {
@@ -408,33 +386,27 @@ public class FormService {
 					UserCouncilFee userCouncilFee = userCouncilFeeRepository.findByUser(writer).orElseThrow(
 						() -> new BadRequestException(
 							ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
-							MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
-						)
-					);
+							MessageUtil.NOT_ALLOWED_TO_REPLY_FORM));
 
 					if (!UserCouncilFeePolicy.isAppliedCurrentSemesterWithUser(userCouncilFee)) {
 						throw new BadRequestException(
 							ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
-							MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
-						);
+							MessageUtil.NOT_ALLOWED_TO_REPLY_FORM);
 					}
 				}
 			}
 
 			if (allowedAcademicStatus.contains(AcademicStatus.LEAVE_OF_ABSENCE)
-				&& writer.getAcademicStatus().equals(AcademicStatus.LEAVE_OF_ABSENCE)
-			) {
+				&& writer.getAcademicStatus().equals(AcademicStatus.LEAVE_OF_ABSENCE)) {
 				EnumSet<RegisteredSemester> allowedRegisteredSemester = form.getLeaveOfAbsenceRegisteredSemester();
 				if (!allowedRegisteredSemester
 					.stream()
 					.map(RegisteredSemester::getSemester)
 					.collect(Collectors.toSet())
-					.contains(writer.getCurrentCompletedSemester())
-				) {
+					.contains(writer.getCurrentCompletedSemester())) {
 					throw new BadRequestException(
 						ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
-						MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
-					);
+						MessageUtil.NOT_ALLOWED_TO_REPLY_FORM);
 				}
 			}
 		}
@@ -446,31 +418,25 @@ public class FormService {
 			if (!post.getWriter().equals(user)) {
 				throw new UnauthorizedException(
 					ErrorCode.API_NOT_ALLOWED,
-					MessageUtil.NOT_ALLOWED_TO_ACCESS_REPLY
-				);
+					MessageUtil.NOT_ALLOWED_TO_ACCESS_REPLY);
 			}
 		} else {
 			Circle circle = form.getCircle();
 			if (circle == null) {
 				throw new InternalServerException(
 					ErrorCode.INTERNAL_SERVER,
-					MessageUtil.INTERNAL_SERVER_ERROR
-				);
+					MessageUtil.INTERNAL_SERVER_ERROR);
 			}
 			CircleMember circleMember = circleMemberRepository.findByUser_IdAndCircle_Id(user.getId(), circle.getId())
 				.orElseThrow(
 					() -> new UnauthorizedException(
 						ErrorCode.NOT_MEMBER,
-						MessageUtil.CIRCLE_APPLY_INVALID
-					)
-				);
+						MessageUtil.CIRCLE_APPLY_INVALID));
 			if (circleMember.getStatus().equals(CircleMemberStatus.MEMBER) ||
-				!user.getRoles().contains(Role.LEADER_CIRCLE)
-			) {
+				!user.getRoles().contains(Role.LEADER_CIRCLE)) {
 				throw new UnauthorizedException(
 					ErrorCode.API_NOT_ALLOWED,
-					MessageUtil.NOT_ALLOWED_TO_ACCESS_REPLY
-				);
+					MessageUtil.NOT_ALLOWED_TO_ACCESS_REPLY);
 			}
 		}
 	}
@@ -479,36 +445,28 @@ public class FormService {
 		return userRepository.findById(userId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.USER_NOT_FOUND
-			)
-		);
+				MessageUtil.USER_NOT_FOUND));
 	}
 
 	private Form getForm(String formId) {
 		return formRepository.findByIdAndIsDeleted(formId, false).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.FORM_NOT_FOUND
-			)
-		);
+				MessageUtil.FORM_NOT_FOUND));
 	}
 
 	private FormQuestion getQuestion(String questionId) {
 		return questionRepository.findById(questionId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.QUESTION_NOT_FOUND
-			)
-		);
+				MessageUtil.QUESTION_NOT_FOUND));
 	}
 
 	private FormQuestionOption getOption(String optionId) {
 		return optionRepository.findById(optionId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.OPTION_NOT_FOUND
-			)
-		);
+				MessageUtil.OPTION_NOT_FOUND));
 
 	}
 
@@ -516,27 +474,21 @@ public class FormService {
 		return circleRepository.findById(circleId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.SMALL_CLUB_NOT_FOUND
-			)
-		);
+				MessageUtil.SMALL_CLUB_NOT_FOUND));
 	}
 
 	private Board getBoard(String boardId) {
 		return boardRepository.findById(boardId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.BOARD_NOT_FOUND
-			)
-		);
+				MessageUtil.BOARD_NOT_FOUND));
 	}
 
 	private CircleMember getCircleMember(String userId, String circleId) {
 		return circleMemberRepository.findByUser_IdAndCircle_Id(userId, circleId).orElseThrow(
 			() -> new UnauthorizedException(
 				ErrorCode.NOT_MEMBER,
-				MessageUtil.CIRCLE_APPLY_INVALID
-			)
-		);
+				MessageUtil.CIRCLE_APPLY_INVALID));
 	}
 
 	private User getCircleLeader(Circle circle) {
@@ -544,8 +496,7 @@ public class FormService {
 		if (leader == null) {
 			throw new InternalServerException(
 				ErrorCode.INTERNAL_SERVER,
-				MessageUtil.CIRCLE_WITHOUT_LEADER
-			);
+				MessageUtil.CIRCLE_WITHOUT_LEADER);
 		}
 		return leader;
 	}
@@ -565,8 +516,7 @@ public class FormService {
 			if (circleMember.getStatus().equals(CircleMemberStatus.MEMBER)) {
 				throw new UnauthorizedException(
 					ErrorCode.API_NOT_ALLOWED,
-					MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
-				);
+					MessageUtil.NOT_ALLOWED_TO_REPLY_FORM);
 			}
 		}
 	}
@@ -575,9 +525,7 @@ public class FormService {
 		return postRepository.findByForm(form).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.FORM_NOT_FOUND
-			)
-		);
+				MessageUtil.FORM_NOT_FOUND));
 	}
 
 	// Dto Mapper
@@ -599,10 +547,8 @@ public class FormService {
 				return this.toReplyResponseDto(
 					replyUser,
 					questionReplyList,
-					reply.getCreatedAt()
-				);
-			})
-		);
+					reply.getCreatedAt());
+			}));
 	}
 
 	private FormResponseDto toFormResponseDto(Form form) {
@@ -610,8 +556,7 @@ public class FormService {
 			form,
 			form.getFormQuestionList().stream()
 				.map(this::toQuestionResponseDto)
-				.collect(Collectors.toList())
-		);
+				.collect(Collectors.toList()));
 	}
 
 	private QuestionResponseDto toQuestionResponseDto(FormQuestion formQuestion) {
@@ -635,8 +580,7 @@ public class FormService {
 		return FormDtoMapper.INSTANCE.toReplyResponseDto(
 			this.toReplyUserResponseDto(user),
 			replyQuestionResponseDtoList,
-			createdAt
-		);
+			createdAt);
 	}
 
 	private ReplyUserResponseDto toReplyUserResponseDto(User user) {
@@ -655,8 +599,7 @@ public class FormService {
 
 	private QuestionSummaryResponseDto toQuestionSummaryResponseDto(
 		FormQuestion formQuestion,
-		List<ReplyQuestion> replyQuestionList
-	) {
+		List<ReplyQuestion> replyQuestionList) {
 		if (formQuestion.getQuestionType().equals(QuestionType.SUBJECTIVE)) {
 			List<String> answerList = replyQuestionList.stream()
 				.map(ReplyQuestion::getQuestionAnswer)
@@ -666,8 +609,7 @@ public class FormService {
 				answerList,
 				null,
 				(long)answerList.size(),
-				findIsMultiple(formQuestion)
-			);
+				findIsMultiple(formQuestion));
 		} else {
 			List<OptionSummaryResponseDto> answerList = formQuestion.getFormQuestionOptionList().stream()
 				.map(formQuestionOption -> {
@@ -684,8 +626,7 @@ public class FormService {
 				null,
 				answerList,
 				findNumOfReply(answerList),
-				findIsMultiple(formQuestion)
-			);
+				findIsMultiple(formQuestion));
 		}
 
 	}
@@ -704,8 +645,7 @@ public class FormService {
 
 	private OptionSummaryResponseDto toOptionSummaryResponseDto(
 		FormQuestionOption formQuestionOption,
-		Long selectedCount
-	) {
+		Long selectedCount) {
 		return FormDtoMapper.INSTANCE.toOptionSummaryResponseDto(formQuestionOption, selectedCount);
 	}
 
@@ -727,11 +667,9 @@ public class FormService {
 					return this.toExcelReplyResponseDto(
 						replyUser,
 						excelReplyQuestionResponseDtoList,
-						reply.getCreatedAt()
-					);
+						reply.getCreatedAt());
 				})
-				.toList()
-		);
+				.toList());
 	}
 
 	private ExcelReplyResponseDto toExcelReplyResponseDto(User replyUser,
@@ -739,8 +677,7 @@ public class FormService {
 		return FormDtoMapper.INSTANCE.toExcelReplyResponseDto(
 			this.toReplyUserResponseDto(replyUser),
 			excelReplyQuestionResponseDtoList,
-			createdAt
-		);
+			createdAt);
 	}
 
 	private ExcelReplyQuestionResponseDto toExcelReplyQuestionResponseDto(ReplyQuestion replyQuestion) {
@@ -754,8 +691,7 @@ public class FormService {
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.USER_NOT_FOUND
-			));
+				MessageUtil.USER_NOT_FOUND));
 
 		List<Reply> userReplyList = circleFormList.stream()
 			.flatMap(form -> replyRepository.findByFormAndUser(form, user).stream())
@@ -764,8 +700,7 @@ public class FormService {
 		if (userReplyList.isEmpty()) {
 			throw new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.USER_APPLY_NOT_FOUND
-			);
+				MessageUtil.USER_APPLY_NOT_FOUND);
 		}
 
 		List<OptionResponseDto> optionResponseDtoList = circleFormList.stream()

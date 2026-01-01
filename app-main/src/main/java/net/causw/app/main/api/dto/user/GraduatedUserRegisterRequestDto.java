@@ -20,22 +20,19 @@ public record GraduatedUserRegisterRequestDto(
 	@NotNull
 	Integer graduationYear,
 
-	@Email
-	@NotBlank
+	@Email @NotBlank
 	String email,
 
 	@NotBlank
 	String password,
 
-	@NotBlank
-	@Pattern(regexp = "^01(?:0|1|[6-9])-(\\d{3}|\\d{4})-\\d{4}$", message = "전화번호 형식에 맞지 않습니다.")
+	@NotBlank @Pattern(regexp = "^01(?:0|1|[6-9])-(\\d{3}|\\d{4})-\\d{4}$", message = "전화번호 형식에 맞지 않습니다.")
 	String phoneNumber,
 
 	@NotNull
 	Department department,
 
-	String studentId
-) {
+	String studentId) {
 	public GraduatedUserCommand toGraduatedUserCommand() {
 		return new GraduatedUserCommand(
 			this.email,
@@ -45,7 +42,6 @@ public record GraduatedUserRegisterRequestDto(
 			this.graduationYear,
 			this.nickname,
 			this.department,
-			this.phoneNumber
-		);
+			this.phoneNumber);
 	}
 }

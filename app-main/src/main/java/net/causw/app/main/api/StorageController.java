@@ -1,6 +1,6 @@
 package net.causw.app.main.api;
 
-import static org.springframework.util.MimeTypeUtils.*;
+import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,9 +27,10 @@ public class StorageController {
 	@PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("@security.hasRole(@Role.ADMIN)")
 	public FileResponseDto post(
-		@RequestPart("file") MultipartFile multipartFile,
-		@RequestParam("type") FilePath filePath
-	) {
+		@RequestPart("file")
+		MultipartFile multipartFile,
+		@RequestParam("type")
+		FilePath filePath) {
 		return FileResponseDto.from(uuidFileService.saveFile(multipartFile, filePath).getFileUrl());
 	}
 

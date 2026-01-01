@@ -1,10 +1,29 @@
 package net.causw.app.main.domain.validation;
 
 import static java.util.Map.entry;
-import static net.causw.app.main.domain.user.account.enums.user.Role.*;
-import static net.causw.app.main.domain.user.account.policy.RolePolicy.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static net.causw.app.main.domain.user.account.enums.user.Role.ADMIN;
+import static net.causw.app.main.domain.user.account.enums.user.Role.COMMON;
+import static net.causw.app.main.domain.user.account.enums.user.Role.COUNCIL;
+import static net.causw.app.main.domain.user.account.enums.user.Role.LEADER_1;
+import static net.causw.app.main.domain.user.account.enums.user.Role.LEADER_2;
+import static net.causw.app.main.domain.user.account.enums.user.Role.LEADER_3;
+import static net.causw.app.main.domain.user.account.enums.user.Role.LEADER_4;
+import static net.causw.app.main.domain.user.account.enums.user.Role.LEADER_ALUMNI;
+import static net.causw.app.main.domain.user.account.enums.user.Role.LEADER_CIRCLE;
+import static net.causw.app.main.domain.user.account.enums.user.Role.NONE;
+import static net.causw.app.main.domain.user.account.enums.user.Role.PRESIDENT;
+import static net.causw.app.main.domain.user.account.enums.user.Role.PROFESSOR;
+import static net.causw.app.main.domain.user.account.enums.user.Role.VICE_PRESIDENT;
+import static net.causw.app.main.domain.user.account.policy.RolePolicy.canAssign;
+import static net.causw.app.main.domain.user.account.policy.RolePolicy.getGrantableRoles;
+import static net.causw.app.main.domain.user.account.policy.RolePolicy.getProxyDelegatableRoles;
+import static net.causw.app.main.domain.user.account.policy.RolePolicy.getRolePriority;
+import static net.causw.app.main.domain.user.account.policy.RolePolicy.getRolesAssignableFor;
+import static net.causw.app.main.domain.user.account.policy.RolePolicy.isPrivilegeInverted;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 
 import java.util.EnumSet;
 import java.util.Map;
@@ -18,11 +37,11 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import net.causw.app.main.domain.user.account.util.GrantableRoleValidator;
+import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
-import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.policy.RolePolicy;
+import net.causw.app.main.domain.user.account.util.GrantableRoleValidator;
 import net.causw.app.main.util.ObjectFixtures;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.ErrorCode;
@@ -49,35 +68,27 @@ public class GrantableRoleValidatorTest {
 		entry(NONE, 100),
 
 		entry(LEADER_CIRCLE, 5),
-		entry(PROFESSOR, 6)
-	);
+		entry(PROFESSOR, 6));
 
 	private static final Map<Role, Set<Role>> MOCK_ROLES_ASSIGNABLE_FOR = Map.of(
 		Role.PRESIDENT, Set.of(Role.VICE_PRESIDENT, Role.COUNCIL, Role.COMMON),
-		Role.COMMON, EnumSet.allOf(Role.class)
-	);
+		Role.COMMON, EnumSet.allOf(Role.class));
 
 	private static final Map<Role, Set<Role>> MOCK_GRANTABLE_ROLES = Map.of(
 		ADMIN, Set.of(
 			Role.PRESIDENT,
 			LEADER_ALUMNI,
-			Role.COMMON
-		),
+			Role.COMMON),
 
 		Role.PRESIDENT, Set.of(
-			Role.COMMON
-		)
-	);
+			Role.COMMON));
 
 	private static final Map<Role, Set<Role>> MOCK_PROXY_DELEGATABLE_ROLES = Map.of(
 		ADMIN, Set.of(
-			Role.PRESIDENT
-		),
+			Role.PRESIDENT),
 
 		Role.PRESIDENT, Set.of(
-			Role.VICE_PRESIDENT
-		)
-	);
+			Role.VICE_PRESIDENT));
 
 	// 부여
 	@Test
@@ -252,8 +263,8 @@ public class GrantableRoleValidatorTest {
 			rolePolicyMockedStatic.when(() -> getRolesAssignableFor(grantedRole))
 				.thenReturn(MOCK_ROLES_ASSIGNABLE_FOR.getOrDefault(grantedRole, Set.of(Role.COMMON)));
 
-			Stream.concat(grantor.getRoles().stream(), grantee.getRoles().stream()).forEach(role ->
-				rolePolicyMockedStatic.when(() -> getRolePriority(role))
+			Stream.concat(grantor.getRoles().stream(), grantee.getRoles().stream())
+				.forEach(role -> rolePolicyMockedStatic.when(() -> getRolePriority(role))
 					.thenReturn(MOCK_ROLE_PRIORITY.get(role)));
 
 			rolePolicyMockedStatic.when(() -> canAssign(any(), any()))
@@ -268,20 +279,16 @@ public class GrantableRoleValidatorTest {
 
 	private void assertValidatorSuccess(Role grantedRole) {
 		GrantableRoleValidator validator = createGrantableValidator(grantedRole);
-		withMockedRolePolicyForGrantable(grantedRole, () ->
-			assertThatCode(validator::validate)
-				.doesNotThrowAnyException()
-		);
+		withMockedRolePolicyForGrantable(grantedRole, () -> assertThatCode(validator::validate)
+			.doesNotThrowAnyException());
 	}
 
 	private void assertValidatorFail(Role grantedRole) {
 		GrantableRoleValidator validator = createGrantableValidator(grantedRole);
-		withMockedRolePolicyForGrantable(grantedRole, () ->
-			assertThatThrownBy(validator::validate)
-				.isInstanceOf(UnauthorizedException.class)
-				.hasMessageContaining(MessageUtil.GRANT_ROLE_NOT_ALLOWED)
-				.extracting("errorCode")
-				.isEqualTo(ErrorCode.ASSIGN_ROLE_NOT_ALLOWED)
-		);
+		withMockedRolePolicyForGrantable(grantedRole, () -> assertThatThrownBy(validator::validate)
+			.isInstanceOf(UnauthorizedException.class)
+			.hasMessageContaining(MessageUtil.GRANT_ROLE_NOT_ALLOWED)
+			.extracting("errorCode")
+			.isEqualTo(ErrorCode.ASSIGN_ROLE_NOT_ALLOWED));
 	}
 }

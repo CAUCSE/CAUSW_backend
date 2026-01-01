@@ -28,8 +28,7 @@ public class GetUserInfoUseCaseService {
 		if (user.getState() != UserState.ACTIVE) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_REQUEST_USER_STATE,
-				MessageUtil.USER_INFO_NOT_ACCESSIBLE
-			);
+				MessageUtil.USER_INFO_NOT_ACCESSIBLE);
 		}
 
 		UserInfo userInfo = userInfoService.getUserInfoByUser(user);

@@ -6,5 +6,4 @@ import org.springframework.stereotype.Repository;
 import net.causw.app.main.domain.finance.usercouncilfee.entity.UserCouncilFeeLog;
 
 @Repository
-public interface UserCouncilFeeLogRepository extends JpaRepository<UserCouncilFeeLog, String> {
-}
+public interface UserCouncilFeeLogRepository extends JpaRepository<UserCouncilFeeLog, String> {}

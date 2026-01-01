@@ -69,10 +69,9 @@ public class WebSecurityConfigProd {
 					"/api/v1/users/user-id/find",
 					"/swagger-ui/**",
 					"/v3/api-docs/**",
-					"/actuator/**"
-				).permitAll()
-				.anyRequest().authenticated()
-			)
+					"/actuator/**")
+				.permitAll()
+				.anyRequest().authenticated())
 			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 			.addFilterBefore(new JwtAuthenticationFilter(this.jwtTokenProvider),
 				UsernamePasswordAuthenticationFilter.class);

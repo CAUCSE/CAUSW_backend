@@ -12,8 +12,18 @@ import org.springframework.data.domain.Page;
 
 import net.causw.app.main.api.dto.comment.CommentsOfUserResponseDto;
 import net.causw.app.main.api.dto.duplicate.DuplicatedCheckResponseDto;
+import net.causw.app.main.api.dto.post.PostsResponseDto;
+import net.causw.app.main.api.dto.user.UserAdmissionResponseDto;
 import net.causw.app.main.api.dto.user.UserAdmissionsResponseDto;
+import net.causw.app.main.api.dto.user.UserCommentsResponseDto;
+import net.causw.app.main.api.dto.user.UserFcmTokenResponseDto;
 import net.causw.app.main.api.dto.user.UserFindIdResponseDto;
+import net.causw.app.main.api.dto.user.UserPostResponseDto;
+import net.causw.app.main.api.dto.user.UserPostsResponseDto;
+import net.causw.app.main.api.dto.user.UserPrivilegedResponseDto;
+import net.causw.app.main.api.dto.user.UserResponseDto;
+import net.causw.app.main.api.dto.user.UserSignInResponseDto;
+import net.causw.app.main.api.dto.user.UserSignOutResponseDto;
 import net.causw.app.main.api.dto.userInfo.UserCareerDto;
 import net.causw.app.main.api.dto.userInfo.UserInfoResponseDto;
 import net.causw.app.main.api.dto.userInfo.UserInfoSummaryResponseDto;
@@ -21,16 +31,6 @@ import net.causw.app.main.api.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.api.dto.post.PostsResponseDto;
-import net.causw.app.main.api.dto.user.UserAdmissionResponseDto;
-import net.causw.app.main.api.dto.user.UserCommentsResponseDto;
-import net.causw.app.main.api.dto.user.UserFcmTokenResponseDto;
-import net.causw.app.main.api.dto.user.UserPostResponseDto;
-import net.causw.app.main.api.dto.user.UserPostsResponseDto;
-import net.causw.app.main.api.dto.user.UserPrivilegedResponseDto;
-import net.causw.app.main.api.dto.user.UserResponseDto;
-import net.causw.app.main.api.dto.user.UserSignInResponseDto;
-import net.causw.app.main.api.dto.user.UserSignOutResponseDto;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmissionLog;
@@ -210,8 +210,8 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 				.endYear(career.getEndYear())
 				.endMonth(career.getEndMonth())
 				.description(career.getDescription())
-				.build()
-		).collect(Collectors.toList());
+				.build())
+			.collect(Collectors.toList());
 	}
 
 	@Mapping(target = "id", source = "userInfo.id")
@@ -224,7 +224,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "department", source = "userInfo.user.department")
 	@Mapping(target = "description", source = "userInfo.description")
 	@Mapping(target = "job", source = "userInfo.job")
-		// @Mapping(target = "userCareer", source = "userInfo.userCareer", qualifiedByName = "mapUserCareerListToResponseDtoList")
+	// @Mapping(target = "userCareer", source = "userInfo.userCareer", qualifiedByName = "mapUserCareerListToResponseDtoList")
 	UserInfoSummaryResponseDto toUserInfoSummaryResponseDto(UserInfo userInfo);
 
 	@Mapping(target = "id", source = "userInfo.id")

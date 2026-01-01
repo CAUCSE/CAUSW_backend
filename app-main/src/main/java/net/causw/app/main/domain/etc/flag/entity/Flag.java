@@ -31,8 +31,7 @@ public class Flag extends BaseEntity {
 
 	public static Flag of(
 		String key,
-		Boolean value
-	) {
+		Boolean value) {
 		return Flag.builder()
 			.key(key)
 			.value(value)

@@ -21,11 +21,10 @@ import lombok.Setter;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "tb_user_profile_uuid_file",
-	indexes = {
-		@Index(name = "idx_user_profile_user_id", columnList = "user_id"),
-		@Index(name = "idx_user_profile_uuid_file_id", columnList = "uuid_file_id")
-	})
+@Table(name = "tb_user_profile_uuid_file", indexes = {
+	@Index(name = "idx_user_profile_user_id", columnList = "user_id"),
+	@Index(name = "idx_user_profile_uuid_file_id", columnList = "uuid_file_id")
+})
 public class UserProfileImage extends JoinEntity {
 
 	@Setter(AccessLevel.PUBLIC)

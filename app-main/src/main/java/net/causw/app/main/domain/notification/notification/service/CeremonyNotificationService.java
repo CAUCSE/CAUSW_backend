@@ -11,11 +11,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.api.dto.notification.CeremonyNotificationDto;
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
+import net.causw.app.main.domain.community.ceremony.repository.CeremonyRepository;
 import net.causw.app.main.domain.notification.notification.entity.CeremonyNotificationSetting;
 import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.entity.NotificationLog;
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;
-import net.causw.app.main.domain.community.ceremony.repository.CeremonyRepository;
 import net.causw.app.main.domain.notification.notification.repository.CeremonyNotificationSettingRepository;
 import net.causw.app.main.domain.notification.notification.repository.NotificationLogRepository;
 import net.causw.app.main.domain.notification.notification.repository.NotificationRepository;
@@ -72,9 +72,7 @@ public class CeremonyNotificationService implements NotificationService {
 		Ceremony ceremony = ceremonyRepository.findById(ceremonyId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.CEREMONY_NOT_FOUND
-			)
-		);
+				MessageUtil.CEREMONY_NOT_FOUND));
 
 		List<CeremonyNotificationSetting> ceremonyNotificationSettings;
 
@@ -86,8 +84,7 @@ public class CeremonyNotificationService implements NotificationService {
 			// 모든 학번에게 알림
 			ceremonyNotificationSettings = ceremonyNotificationSettingRepository.findByAdmissionYearOrSetAll(
 				admissionYear,
-				blockerUserIdsByBlockee
-			);
+				blockerUserIdsByBlockee);
 		} else {
 			// 특정 학번에게만 알림
 			// 1차 필터링
@@ -130,8 +127,7 @@ public class CeremonyNotificationService implements NotificationService {
 			ceremonyNotificationDto.getBody(),
 			NoticeType.CEREMONY,
 			ceremony.getId(),
-			null
-		);
+			null);
 
 		saveNotification(notification);
 

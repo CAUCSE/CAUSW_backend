@@ -5,18 +5,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.community.comment.entity.ChildComment;
-import net.causw.app.main.domain.community.comment.entity.Comment;
-import net.causw.app.main.domain.community.comment.repository.ChildCommentRepository;
-import net.causw.app.main.domain.community.comment.repository.CommentRepository;
-import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.api.dto.report.ReportCreateRequestDto;
 import net.causw.app.main.api.dto.report.ReportCreateResponseDto;
 import net.causw.app.main.api.dto.report.ReportedCommentResponseDto;
 import net.causw.app.main.api.dto.report.ReportedPostResponseDto;
 import net.causw.app.main.api.dto.report.ReportedUserResponseDto;
 import net.causw.app.main.api.dto.util.dtoMapper.ReportDtoMapper;
+import net.causw.app.main.domain.community.comment.entity.ChildComment;
+import net.causw.app.main.domain.community.comment.entity.Comment;
+import net.causw.app.main.domain.community.comment.repository.ChildCommentRepository;
+import net.causw.app.main.domain.community.comment.repository.CommentRepository;
+import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.community.report.entity.Report;
 import net.causw.app.main.domain.community.report.enums.ReportType;
 import net.causw.app.main.domain.community.report.repository.ReportRepository;
@@ -53,8 +53,7 @@ public class ReportService {
 		if (alreadyReported) {
 			throw new BadRequestException(
 				ErrorCode.CANNOT_PERFORMED,
-				MessageUtil.REPORT_ALREADY_REPORTED
-			);
+				MessageUtil.REPORT_ALREADY_REPORTED);
 		}
 
 		// 신고 대상 콘텐츠, 작성자 조회
@@ -64,16 +63,14 @@ public class ReportService {
 		if (reporter.getId().equals(contentWriter.getId())) {
 			throw new BadRequestException(
 				ErrorCode.CANNOT_PERFORMED,
-				MessageUtil.REPORT_CANNOT_SELF
-			);
+				MessageUtil.REPORT_CANNOT_SELF);
 		}
 
 		Report report = Report.of(
 			reporter,
 			request.getReportType(),
 			request.getTargetId(),
-			request.getReportReason()
-		);
+			request.getReportReason());
 		reportRepository.save(report);
 
 		// 신고 대상 사용자의 신고 횟수 증가
@@ -110,14 +107,12 @@ public class ReportService {
 	@Transactional(readOnly = true)
 	public Page<ReportedPostResponseDto> getReportedPostsByUser(
 		String userId,
-		Integer pageNum
-	) {
+		Integer pageNum) {
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_REPORT_PAGE_SIZE);
 		if (!userRepository.existsById(userId)) {
 			throw new NotFoundException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.USER_NOT_FOUND
-			);
+				MessageUtil.USER_NOT_FOUND);
 		}
 
 		return reportRepository.findPostReportsWithDetails("POST", userId, pageable)
@@ -128,14 +123,12 @@ public class ReportService {
 	@Transactional(readOnly = true)
 	public Page<ReportedCommentResponseDto> getReportedCommentsByUser(
 		String userId,
-		Integer pageNum
-	) {
+		Integer pageNum) {
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_REPORT_PAGE_SIZE);
 		if (!userRepository.existsById(userId)) {
 			throw new NotFoundException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.USER_NOT_FOUND
-			);
+				MessageUtil.USER_NOT_FOUND);
 		}
 
 		return reportRepository.findCombinedCommentReports(userId, pageable)
@@ -149,24 +142,21 @@ public class ReportService {
 				Post post = postRepository.findById(targetId)
 					.orElseThrow(() -> new NotFoundException(
 						ErrorCode.ROW_DOES_NOT_EXIST,
-						MessageUtil.POST_NOT_FOUND
-					));
+						MessageUtil.POST_NOT_FOUND));
 				yield post.getWriter();
 			}
 			case COMMENT -> {
 				Comment comment = commentRepository.findById(targetId)
 					.orElseThrow(() -> new NotFoundException(
 						ErrorCode.ROW_DOES_NOT_EXIST,
-						MessageUtil.COMMENT_NOT_FOUND
-					));
+						MessageUtil.COMMENT_NOT_FOUND));
 				yield comment.getWriter();
 			}
 			case CHILD_COMMENT -> {
 				ChildComment childComment = childCommentRepository.findById(targetId)
 					.orElseThrow(() -> new NotFoundException(
 						ErrorCode.ROW_DOES_NOT_EXIST,
-						MessageUtil.CHILD_COMMENT_NOT_FOUND
-					));
+						MessageUtil.CHILD_COMMENT_NOT_FOUND));
 				yield childComment.getWriter();
 			}
 		};

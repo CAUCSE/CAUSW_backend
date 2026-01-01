@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.asset.locker.service;
 
-import static net.causw.global.constant.StaticValue.*;
+import static net.causw.global.constant.StaticValue.LOCKER_ACCESS;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -8,10 +8,10 @@ import java.util.Optional;
 import net.causw.app.main.domain.asset.locker.entity.Locker;
 import net.causw.app.main.domain.asset.locker.entity.LockerLog;
 import net.causw.app.main.domain.asset.locker.enums.LockerLogAction;
-import net.causw.app.main.domain.etc.textfield.service.CommonService;
 import net.causw.app.main.domain.asset.locker.util.LockerAccessValidator;
 import net.causw.app.main.domain.asset.locker.util.LockerInUseValidator;
 import net.causw.app.main.domain.asset.locker.util.LockerIsDeactivatedValidator;
+import net.causw.app.main.domain.etc.textfield.service.CommonService;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.shared.ValidatorBucket;
@@ -29,8 +29,7 @@ public class LockerActionRegister implements LockerAction {
 		Locker locker,
 		User user,
 		LockerService lockerService,
-		CommonService commonService
-	) {
+		CommonService commonService) {
 		ValidatorBucket.of()
 			.consistOf(LockerInUseValidator.of(locker.getUser().isPresent()))
 			.consistOf(LockerIsDeactivatedValidator.of(locker.getIsActive()))
@@ -50,8 +49,7 @@ public class LockerActionRegister implements LockerAction {
 					user.getEmail(),
 					user.getName(),
 					LockerLogAction.RETURN,
-					"사물함 반납"
-				);
+					"사물함 반납");
 			});
 		}
 
@@ -60,10 +58,8 @@ public class LockerActionRegister implements LockerAction {
 			LocalDateTime.parse(commonService.findByKeyInTextField(StaticValue.EXPIRED_AT).orElseThrow(
 				() -> new InternalServerException(
 					ErrorCode.INTERNAL_SERVER,
-					MessageUtil.LOCKER_EXPIRE_TIME_NOT_SET
-				)
-			), StaticValue.LOCKER_DATE_TIME_FORMATTER)
-		);
+					MessageUtil.LOCKER_EXPIRE_TIME_NOT_SET)),
+				StaticValue.LOCKER_DATE_TIME_FORMATTER));
 
 		return Optional.of(locker);
 	}

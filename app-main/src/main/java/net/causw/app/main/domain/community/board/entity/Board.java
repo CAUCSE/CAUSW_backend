@@ -8,8 +8,8 @@ import java.util.stream.Collectors;
 
 import org.hibernate.annotations.ColumnDefault;
 
-import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.campus.circle.entity.Circle;
+import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.RoleGroup;
 import net.causw.app.main.shared.entity.BaseEntity;
@@ -85,8 +85,7 @@ public class Board extends BaseEntity {
 		String description,
 		String category,
 		Boolean isAnonymousAllowed,
-		Circle circle
-	) {
+		Circle circle) {
 		Set<String> roleSet = Arrays.stream(Role.values()) // 일반 게시판 생성시 글쓰기 권한 '모두 허용'
 			.map(Role::getValue)
 			.collect(Collectors.toSet());
@@ -118,8 +117,7 @@ public class Board extends BaseEntity {
 		String category,
 		Boolean isAnonymousAllowed,
 		Boolean isAlumni,
-		Circle circle
-	) {
+		Circle circle) {
 		Set<String> roleSet = RoleGroup.EXECUTIVES.getRoles().stream() // 집행부(관리자, 학생회장, 부학생회장) 글쓰기 권한 보장
 			.map(Role::getValue)
 			.collect(Collectors.toSet());
@@ -129,8 +127,7 @@ public class Board extends BaseEntity {
 				createRoleList.stream() // 공지 게시판 생성시 글쓰기 권한 '선택적 허용'
 					.map(Role::of)
 					.map(Role::getValue)
-					.collect(Collectors.toSet())
-			);
+					.collect(Collectors.toSet()));
 		}
 
 		roleSet.remove(Role.NONE.getValue()); // 비회원 글쓰기 권한 제한

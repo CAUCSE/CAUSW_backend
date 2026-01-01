@@ -18,8 +18,7 @@ public class HomePageResponseDto {
 
 	public static HomePageResponseDto of(
 		BoardResponseDto board,
-		Page<PostsResponseDto> posts
-	) {
+		Page<PostsResponseDto> posts) {
 		return HomePageResponseDto.builder()
 			.board(board)
 			.posts(posts)

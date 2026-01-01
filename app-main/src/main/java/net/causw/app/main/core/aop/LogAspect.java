@@ -18,8 +18,7 @@ public class LogAspect {
 
 	// @MeasureTime 애노테이션이 붙은 클래스의 메서드를 대상으로 설정
 	@Pointcut("@within(net.causw.app.main.core.aop.annotation.MeasureTime)")
-	private void timer() {
-	}
+	private void timer() {}
 
 	// 메서드 실행 전,후로 시간을 측정하고, 실행된 메서드와 실행시간을 로깅
 	@Around("timer()")

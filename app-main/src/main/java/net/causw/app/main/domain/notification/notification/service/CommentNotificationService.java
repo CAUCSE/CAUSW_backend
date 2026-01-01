@@ -11,9 +11,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.api.dto.notification.CommentNotificationDto;
 import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.entity.Comment;
-import net.causw.app.main.api.dto.notification.CommentNotificationDto;
 import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.entity.NotificationLog;
 import net.causw.app.main.domain.notification.notification.entity.UserCommentSubscribe;
@@ -73,8 +73,9 @@ public class CommentNotificationService implements NotificationService {
 
 		Set<String> blockerUserIds = getBlockerUserIds(commentWriter, childCommentWriter);
 
-		List<UserCommentSubscribe> userCommentSubscribeList = userCommentSubscribeRepository.findByCommentAndIsSubscribedTrueExcludingBlockerUsers(
-			comment, blockerUserIds);
+		List<UserCommentSubscribe> userCommentSubscribeList = userCommentSubscribeRepository
+			.findByCommentAndIsSubscribedTrueExcludingBlockerUsers(
+				comment, blockerUserIds);
 		CommentNotificationDto commentNotificationDto = CommentNotificationDto.of(comment, childComment);
 
 		Notification notification = Notification.of(childCommentWriter, commentNotificationDto.getTitle(),
@@ -102,11 +103,10 @@ public class CommentNotificationService implements NotificationService {
 	 * @return 차단한 유저 ids Set
 	 */
 	private Set<String> getBlockerUserIds(User commentWriter, User childCommentWriter) {
-		Set<String> blockeeUserIds =
-			Stream.of(commentWriter, childCommentWriter)
-				.filter(Objects::nonNull)
-				.map(BaseEntity::getId)
-				.collect(Collectors.toSet());
+		Set<String> blockeeUserIds = Stream.of(commentWriter, childCommentWriter)
+			.filter(Objects::nonNull)
+			.map(BaseEntity::getId)
+			.collect(Collectors.toSet());
 
 		return userBlockEntityService.findBlockerUserIdsByUserIds(blockeeUserIds);
 	}

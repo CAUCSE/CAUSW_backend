@@ -21,11 +21,10 @@ import lombok.Setter;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "tb_circle_main_image_uuid_file",
-	indexes = {
-		@Index(name = "idx_circle_main_image_circle_id", columnList = "circle_id"),
-		@Index(name = "idx_circle_main_image_uuid_file_id", columnList = "uuid_file_id")
-	})
+@Table(name = "tb_circle_main_image_uuid_file", indexes = {
+	@Index(name = "idx_circle_main_image_circle_id", columnList = "circle_id"),
+	@Index(name = "idx_circle_main_image_uuid_file_id", columnList = "uuid_file_id")
+})
 public class CircleMainImage extends JoinEntity {
 
 	@Getter

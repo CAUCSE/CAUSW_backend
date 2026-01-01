@@ -15,6 +15,5 @@ public record UserInfoSearchConditionDto(
 	@Schema(description = "입학 년도 검색 구간 상방", example = "2020")
 	Integer admissionYearEnd,
 	@Schema(description = "학적 상태(ENROLLED, LEAVE_OF_ABSENCE, GRADUATED, 그외 등등)", example = "ENROLLED")
-	List<AcademicStatus> academicStatus
-) {
+	List<AcademicStatus> academicStatus) {
 }

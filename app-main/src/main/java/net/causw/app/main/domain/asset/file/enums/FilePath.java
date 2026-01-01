@@ -13,26 +13,22 @@ public enum FilePath {
 		"user/profile",
 		5 * 1024 * 1024L, // 5MB
 		1,
-		List.of(FileExtensionType.IMAGE)
-	),
+		List.of(FileExtensionType.IMAGE)),
 	USER_ADMISSION(
 		"user/admission",
 		5 * 1024 * 1024L, // 5MB
 		5,
-		List.of(FileExtensionType.IMAGE)
-	),
+		List.of(FileExtensionType.IMAGE)),
 	USER_ACADEMIC_RECORD_APPLICATION(
 		"user/academic-record-service",
 		5 * 1024 * 1024L, // 5MB
 		5,
-		List.of(FileExtensionType.IMAGE)
-	),
+		List.of(FileExtensionType.IMAGE)),
 	CIRCLE_PROFILE(
 		"circle/profile",
 		5 * 1024 * 1024L, // 5MB
 		1,
-		List.of(FileExtensionType.IMAGE)
-	),
+		List.of(FileExtensionType.IMAGE)),
 	POST(
 		"post",
 		10 * 1024 * 1024L, // 10MB
@@ -44,20 +40,16 @@ public enum FilePath {
 			FileExtensionType.TEXT,
 			FileExtensionType.DOCUMENT,
 			FileExtensionType.COMPRESS,
-			FileExtensionType.ETC
-		)
-	),
+			FileExtensionType.ETC)),
 	CALENDAR("calendar",
 		50 * 1024 * 1024L, // 50MB
 		1,
-		List.of(FileExtensionType.IMAGE)
-	),
+		List.of(FileExtensionType.IMAGE)),
 	EVENT(
 		"event",
 		50 * 1024 * 1024L, // 50MB
 		1,
-		List.of(FileExtensionType.IMAGE)
-	),
+		List.of(FileExtensionType.IMAGE)),
 	ETC(
 		"etc",
 		100 * 1024 * 1024L, // 100MB
@@ -69,9 +61,7 @@ public enum FilePath {
 			FileExtensionType.TEXT,
 			FileExtensionType.DOCUMENT,
 			FileExtensionType.COMPRESS,
-			FileExtensionType.ETC
-		)
-	);
+			FileExtensionType.ETC));
 
 	private final String directory;
 	private final Long maxFileSize;

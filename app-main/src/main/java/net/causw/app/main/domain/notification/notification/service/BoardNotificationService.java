@@ -8,9 +8,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.api.dto.notification.BoardNotificationDto;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.api.dto.notification.BoardNotificationDto;
 import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.entity.NotificationLog;
 import net.causw.app.main.domain.notification.notification.entity.UserBoardSubscribe;
@@ -75,8 +75,8 @@ public class BoardNotificationService implements NotificationService {
 		List<UserBoardSubscribe> userBoardSubscribeList = userBoardSubscribes
 			.stream()
 			.filter(subscribe -> board.getIsAlumni() // 동문회 허용 게시판인 경우 졸업생에게 게시판 알림
-				|| subscribe.getUser().getAcademicStatus() != AcademicStatus.GRADUATED
-			).toList();
+				|| subscribe.getUser().getAcademicStatus() != AcademicStatus.GRADUATED)
+			.toList();
 
 		BoardNotificationDto boardNotificationDto = BoardNotificationDto.of(board, post);
 
@@ -88,12 +88,11 @@ public class BoardNotificationService implements NotificationService {
 		userBoardSubscribeList.stream()
 			.map(UserBoardSubscribe::getUser)
 			.forEach(user -> {
-					fcmUtils.cleanInvalidFcmTokens(user);
-					Set<String> copy = new HashSet<>(user.getFcmTokens());
-					copy.forEach(
-						token -> send(user, token, boardNotificationDto.getTitle(), boardNotificationDto.getBody()));
-					saveNotificationLog(user, notification);
-				}
-			);
+				fcmUtils.cleanInvalidFcmTokens(user);
+				Set<String> copy = new HashSet<>(user.getFcmTokens());
+				copy.forEach(
+					token -> send(user, token, boardNotificationDto.getTitle(), boardNotificationDto.getBody()));
+				saveNotificationLog(user, notification);
+			});
 	}
 }

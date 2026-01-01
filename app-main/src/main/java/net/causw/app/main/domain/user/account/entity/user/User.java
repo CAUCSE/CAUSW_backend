@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.user.account.entity.user;
 
-import static net.causw.global.constant.StaticValue.*;
+import static net.causw.global.constant.StaticValue.NO_PHONE_NUMBER_MESSAGE;
 
 import java.util.HashSet;
 import java.util.List;
@@ -9,12 +9,12 @@ import java.util.Set;
 
 import org.hibernate.annotations.BatchSize;
 
-import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
-import net.causw.app.main.domain.community.vote.entity.VoteRecord;
 import net.causw.app.main.api.dto.user.GraduatedUserCommand;
 import net.causw.app.main.api.dto.user.UserCreateRequestDto;
-import net.causw.app.main.domain.campus.circle.entity.CircleMember;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.asset.locker.entity.Locker;
+import net.causw.app.main.domain.campus.circle.entity.CircleMember;
+import net.causw.app.main.domain.community.vote.entity.VoteRecord;
 import net.causw.app.main.domain.notification.notification.entity.CeremonyNotificationSetting;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.enums.user.Department;
@@ -132,10 +132,7 @@ public class User extends BaseEntity {
 	private Boolean isV2 = true;
 
 	@ElementCollection(fetch = FetchType.EAGER)
-	@CollectionTable(
-		name = "tb_user_fcm_token",
-		joinColumns = @JoinColumn(name = "user_id")
-	)
+	@CollectionTable(name = "tb_user_fcm_token", joinColumns = @JoinColumn(name = "user_id"))
 	@Column(name = "fcm_token_value")
 	private Set<String> fcmTokens = new HashSet<>();
 
@@ -159,8 +156,7 @@ public class User extends BaseEntity {
 
 	public static User from(
 		UserCreateRequestDto userCreateRequestDto,
-		String encodedPassword
-	) {
+		String encodedPassword) {
 		return User.builder()
 			.email(userCreateRequestDto.getEmail())
 			.name(userCreateRequestDto.getName())
@@ -174,8 +170,7 @@ public class User extends BaseEntity {
 			.department(
 				DepartmentResolver.resolveByAdmissionYearOrDepartment(
 					userCreateRequestDto.getAdmissionYear(),
-					userCreateRequestDto.getDepartment()
-				))
+					userCreateRequestDto.getDepartment()))
 			.academicStatus(AcademicStatus.UNDETERMINED)
 			.phoneNumber(userCreateRequestDto.getPhoneNumber())
 			.isV2(true)
@@ -184,8 +179,7 @@ public class User extends BaseEntity {
 
 	public static User createGraduate(
 		GraduatedUserCommand graduatedUserCommand,
-		String encodedPassword
-	) {
+		String encodedPassword) {
 		return User.builder()
 			.email(graduatedUserCommand.email())
 			.name(graduatedUserCommand.name())
@@ -214,8 +208,7 @@ public class User extends BaseEntity {
 	public void updateDetails(
 		String email, String name, String phoneNumber, String encodedPassword,
 		String studentId, Integer admissionYear, String nickname,
-		String major, Department department
-	) {
+		String major, Department department) {
 		this.email = email;
 		this.name = name;
 		this.phoneNumber = phoneNumber;

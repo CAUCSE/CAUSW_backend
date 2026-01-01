@@ -10,7 +10,8 @@ import org.springframework.stereotype.Component;
 public class DeleteFileStepListener implements StepExecutionListener {
 
 	@Override
-	public void beforeStep(@NotNull StepExecution stepExecution) {
+	public void beforeStep(@NotNull
+	StepExecution stepExecution) {
 		// Step 실행 전 로직: Step 시작 시간 기록
 		stepExecution.getExecutionContext().putLong("startTime", System.currentTimeMillis());
 	}
@@ -26,8 +27,8 @@ public class DeleteFileStepListener implements StepExecutionListener {
 		long executionTime = endTime - startTime;
 
 		// Exit 메시지에 삭제된 파일 수 기록
-		String exitDescription =
-			"Deleted " + deletedFileCount + " unused files. Execution Time: " + executionTime + " ms";
+		String exitDescription = "Deleted " + deletedFileCount + " unused files. Execution Time: " + executionTime
+			+ " ms";
 		stepExecution.setExitStatus(new ExitStatus("COMPLETED", exitDescription));
 		return stepExecution.getExitStatus();
 	}

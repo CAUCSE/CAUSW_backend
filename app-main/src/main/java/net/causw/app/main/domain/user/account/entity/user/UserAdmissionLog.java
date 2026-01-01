@@ -62,8 +62,7 @@ public class UserAdmissionLog extends BaseEntity {
 		UserAdmissionLogAction action,
 		List<UuidFile> userAdmissionLogAttachImageUuidFileList,
 		String description,
-		String rejectReason
-	) {
+		String rejectReason) {
 		UserAdmissionLog userAdmissionLog = UserAdmissionLog.builder()
 			.userEmail(userEmail)
 			.userName(userName)
@@ -74,7 +73,8 @@ public class UserAdmissionLog extends BaseEntity {
 			.rejectReason(rejectReason)
 			.build();
 
-		List<UserAdmissionLogAttachImage> userAdmissionLogAttachImageList = userAdmissionLogAttachImageUuidFileList.stream()
+		List<UserAdmissionLogAttachImage> userAdmissionLogAttachImageList = userAdmissionLogAttachImageUuidFileList
+			.stream()
 			.map(uuidFile -> UserAdmissionLogAttachImage.of(userAdmissionLog, uuidFile))
 			.toList();
 

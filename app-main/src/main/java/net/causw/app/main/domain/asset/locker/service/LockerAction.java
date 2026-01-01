@@ -11,6 +11,5 @@ public interface LockerAction {
 		Locker locker,
 		User user,
 		LockerService lockerService,
-		CommonService commonService
-	);
+		CommonService commonService);
 }

@@ -7,9 +7,9 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import net.causw.app.main.api.dto.userInfo.UserInfoSearchConditionDto;
 import net.causw.app.main.domain.asset.file.entity.QUuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.QUserProfileImage;
-import net.causw.app.main.api.dto.userInfo.UserInfoSearchConditionDto;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.QUser;
 import net.causw.app.main.domain.user.account.entity.userInfo.QUserCareer;
@@ -73,8 +73,7 @@ public class UserInfoQueryRepositoryImpl implements UserInfoQueryRepository {
 	 */
 	private BooleanBuilder buildSearchPredicate(
 		UserInfoSearchConditionDto userInfoSearchCondition,
-		QUserInfo userInfo
-	) {
+		QUserInfo userInfo) {
 		BooleanBuilder predicate = new BooleanBuilder();
 		String keyword = userInfoSearchCondition.keyword();
 
@@ -94,9 +93,7 @@ public class UserInfoQueryRepositoryImpl implements UserInfoQueryRepository {
 		// 입학 년도 검색
 		Integer admissionYearStart = userInfoSearchCondition.admissionYearStart();
 		Integer admissionYearEnd = userInfoSearchCondition.admissionYearEnd();
-		if (
-			admissionYearStart != null && admissionYearEnd != null
-		) {
+		if (admissionYearStart != null && admissionYearEnd != null) {
 			BooleanBuilder admissionYearPredicate = new BooleanBuilder();
 			admissionYearPredicate.and(userInfo.user.admissionYear.between(admissionYearStart, admissionYearEnd));
 

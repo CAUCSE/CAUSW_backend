@@ -38,8 +38,7 @@ public class SocialLinksConverter implements AttributeConverter<List<String>, St
 		}
 
 		try {
-			return objectMapper.readValue(dbData, new TypeReference<List<String>>() {
-			});
+			return objectMapper.readValue(dbData, new TypeReference<List<String>>() {});
 		} catch (JsonProcessingException e) {
 			log.error("socialLink-convert-to-attribute-error", e);
 			return new ArrayList<>();

@@ -54,7 +54,7 @@ public class RedisConfig {
 			.serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
 			.serializeValuesWith(
 				RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()))
-			.entryTtl(Duration.ofMinutes(60));  // 캐시 TTL 설정, (기본값: 1시간, TTL 따로 지정안한 경우만 적용)
+			.entryTtl(Duration.ofMinutes(60)); // 캐시 TTL 설정, (기본값: 1시간, TTL 따로 지정안한 경우만 적용)
 
 		return RedisCacheManager.builder(RedisCacheWriter.nonLockingRedisCacheWriter(connectionFactory))
 			.cacheDefaults(redisCacheConfiguration)

@@ -13,15 +13,13 @@ public enum RoleGroup {
 	EXECUTIVES(Set.of( // 핵심 집행부
 		Role.ADMIN,
 		Role.PRESIDENT,
-		Role.VICE_PRESIDENT
-	)),
+		Role.VICE_PRESIDENT)),
 
 	EXECUTIVES_AND_PROFESSOR(Set.of( // 집행부 + 교수
 		Role.ADMIN,
 		Role.PRESIDENT,
 		Role.VICE_PRESIDENT,
-		Role.PROFESSOR
-	)),
+		Role.PROFESSOR)),
 
 	EXECUTIVES_AND_LEADER_ALUMNI(Set.of( // 집행부 + 동문회장
 		Role.ADMIN,
@@ -36,13 +34,11 @@ public enum RoleGroup {
 		Role.ADMIN,
 		Role.PRESIDENT,
 		Role.VICE_PRESIDENT,
-		Role.LEADER_CIRCLE
-	)),
+		Role.LEADER_CIRCLE)),
 
 	CAN_LEAVE(Set.of( // 탈퇴 가능 권한
 		Role.COMMON,
-		Role.PROFESSOR
-	)),
+		Role.PROFESSOR)),
 
 	OPERATIONS_TEAM(Set.of( // 운영진
 		Role.ADMIN,
@@ -55,8 +51,7 @@ public enum RoleGroup {
 		Role.LEADER_3,
 		Role.LEADER_4,
 		Role.LEADER_ALUMNI,
-		Role.ALUMNI_MANAGER
-	));
+		Role.ALUMNI_MANAGER));
 
 	private final Set<Role> roles;
 

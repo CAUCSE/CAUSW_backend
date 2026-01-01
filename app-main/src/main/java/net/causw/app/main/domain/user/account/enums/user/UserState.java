@@ -28,8 +28,6 @@ public enum UserState {
 			.orElseThrow(
 				() -> new BadRequestException(
 					ErrorCode.INVALID_REQUEST_USER_STATE,
-					String.format("'%s' is invalid : not supported", value)
-				)
-			);
+					String.format("'%s' is invalid : not supported", value)));
 	}
 }

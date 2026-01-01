@@ -37,8 +37,7 @@ public class LockerResponseDto {
 	public static LockerResponseDto of(
 		Locker locker,
 		User user,
-		String locationName
-	) {
+		String locationName) {
 		String location = locationName + " " + locker.getLockerNumber();
 
 		return LockerResponseDto.builder()

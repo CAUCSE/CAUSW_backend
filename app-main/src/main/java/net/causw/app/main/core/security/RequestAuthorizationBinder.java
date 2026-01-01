@@ -74,8 +74,7 @@ public class RequestAuthorizationBinder {
 	public RequestAuthorizationBinder bind(
 		String name,
 		AuthorizationManager<RequestAuthorizationContext> manager,
-		String... patterns
-	) {
+		String... patterns) {
 		List<RequestAuthorizationBinder.DescriptiveRequestMatcher> matchers = Arrays.stream(patterns)
 			.map(pattern -> {
 				String antPath = PatternUtil.toAntPath(pattern);
@@ -83,8 +82,7 @@ public class RequestAuthorizationBinder {
 				return new RequestAuthorizationBinder.DescriptiveRequestMatcher(
 					new AntPathRequestMatcher(antPath),
 					antPath,
-					null
-				);
+					null);
 			})
 			.collect(Collectors.toList());
 
@@ -104,8 +102,7 @@ public class RequestAuthorizationBinder {
 		String name,
 		AuthorizationManager<RequestAuthorizationContext> manager,
 		HttpMethod method,
-		String... patterns
-	) {
+		String... patterns) {
 		List<RequestAuthorizationBinder.DescriptiveRequestMatcher> matchers = Arrays.stream(patterns)
 			.map(pattern -> {
 				String antPath = PatternUtil.toAntPath(pattern);
@@ -113,8 +110,7 @@ public class RequestAuthorizationBinder {
 				return new RequestAuthorizationBinder.DescriptiveRequestMatcher(
 					new AntPathRequestMatcher(antPath, method.name()),
 					antPath,
-					method
-				);
+					method);
 			})
 			.collect(Collectors.toList());
 
@@ -132,14 +128,12 @@ public class RequestAuthorizationBinder {
 	public RequestAuthorizationBinder bind(
 		String name,
 		AuthorizationManager<RequestAuthorizationContext> manager,
-		SecurityEndpoints.SecurityEndpoint... endpoints
-	) {
+		SecurityEndpoints.SecurityEndpoint... endpoints) {
 		List<RequestAuthorizationBinder.DescriptiveRequestMatcher> matchers = Stream.of(endpoints)
 			.map(e -> new RequestAuthorizationBinder.DescriptiveRequestMatcher(
 				e.toRequestMatcher(),
 				PatternUtil.toAntPath(e.pattern()),
-				e.httpMethod()
-			))
+				e.httpMethod()))
 			.collect(Collectors.toList());
 
 		return bind(new RequestAuthorization(name, manager, matchers));
@@ -235,8 +229,7 @@ public class RequestAuthorizationBinder {
 				.map(matcher -> new RequestAuthorization(
 					auth.name,
 					auth.authorizationManager(),
-					Collections.singletonList(matcher)
-				)))
+					Collections.singletonList(matcher))))
 			.collect(Collectors.toCollection(ArrayList::new));
 	}
 
@@ -263,8 +256,7 @@ public class RequestAuthorizationBinder {
 			grouped.set(lastIndex, new RequestAuthorization(
 				last.name(),
 				last.authorizationManager(),
-				mergedMatchers
-			));
+				mergedMatchers));
 		}
 
 		return grouped;
@@ -298,8 +290,7 @@ public class RequestAuthorizationBinder {
 	public record RequestAuthorization(
 		String name,
 		AuthorizationManager<RequestAuthorizationContext> authorizationManager,
-		List<DescriptiveRequestMatcher> matchers
-	) {
+		List<DescriptiveRequestMatcher> matchers) {
 	}
 
 	/**
@@ -312,7 +303,6 @@ public class RequestAuthorizationBinder {
 	private record DescriptiveRequestMatcher(
 		RequestMatcher matcher,
 		String pattern,
-		HttpMethod httpMethod
-	) {
+		HttpMethod httpMethod) {
 	}
 }

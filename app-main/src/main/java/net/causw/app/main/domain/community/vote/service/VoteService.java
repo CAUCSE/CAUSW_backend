@@ -8,12 +8,6 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.core.aop.annotation.MeasureTime;
-import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.domain.community.vote.entity.Vote;
-import net.causw.app.main.domain.community.vote.entity.VoteOption;
-import net.causw.app.main.domain.community.vote.entity.VoteRecord;
-import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.api.dto.user.UserResponseDto;
 import net.causw.app.main.api.dto.util.dtoMapper.UserDtoMapper;
 import net.causw.app.main.api.dto.util.dtoMapper.VoteDtoMapper;
@@ -21,11 +15,17 @@ import net.causw.app.main.api.dto.vote.CastVoteRequestDto;
 import net.causw.app.main.api.dto.vote.CreateVoteRequestDto;
 import net.causw.app.main.api.dto.vote.VoteOptionResponseDto;
 import net.causw.app.main.api.dto.vote.VoteResponseDto;
-import net.causw.app.main.shared.StatusPolicy;
+import net.causw.app.main.core.aop.annotation.MeasureTime;
+import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.repository.PostRepository;
+import net.causw.app.main.domain.community.vote.entity.Vote;
+import net.causw.app.main.domain.community.vote.entity.VoteOption;
+import net.causw.app.main.domain.community.vote.entity.VoteRecord;
 import net.causw.app.main.domain.community.vote.repository.VoteOptionRepository;
 import net.causw.app.main.domain.community.vote.repository.VoteRecordRepository;
 import net.causw.app.main.domain.community.vote.repository.VoteRepository;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.shared.StatusPolicy;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
@@ -59,8 +59,7 @@ public class VoteService {
 			createVoteRequestDTO.getAllowAnonymous(),
 			createVoteRequestDTO.getAllowMultiple(),
 			voteOptions,
-			post
-		);
+			post);
 		Vote savedVote = voteRepository.save(vote);
 		post.updateVote(vote);
 		voteOptions.forEach(voteOption -> voteOption.updateVote(savedVote));
@@ -77,7 +76,7 @@ public class VoteService {
 		}
 		// 첫 번째 VoteOption을 이용해 Vote를 가져옴 (모든 옵션은 동일한 Vote에 속해야 함)
 		VoteOption firstVoteOption = voteOptionRepository.findById(
-				castVoteRequestDto.getVoteOptionIdList().get(0))
+			castVoteRequestDto.getVoteOptionIdList().get(0))
 			.orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST,
 				MessageUtil.VOTE_OPTION_NOT_FOUND));
 		Vote vote = firstVoteOption.getVote();
@@ -155,14 +154,11 @@ public class VoteService {
 		Integer totalUserCount = uniqueUserIds.size();
 		return VoteDtoMapper.INSTANCE.toVoteResponseDto(
 			vote,
-			voteOptionResponseDtoList
-			, StatusPolicy.isVoteOwner(vote, user)
-			, vote.isEnd()
-			, voteRecordRepository.existsByVoteOption_VoteAndUser(vote, user)
-			, voteOptionResponseDtoList.stream()
+			voteOptionResponseDtoList, StatusPolicy.isVoteOwner(vote, user), vote.isEnd(),
+			voteRecordRepository.existsByVoteOption_VoteAndUser(vote, user), voteOptionResponseDtoList.stream()
 				.mapToInt(VoteOptionResponseDto::getVoteCount)
-				.sum()
-			, totalUserCount);
+				.sum(),
+			totalUserCount);
 	}
 
 	private VoteOptionResponseDto tovoteOptionResponseDto(VoteOption voteOption) {

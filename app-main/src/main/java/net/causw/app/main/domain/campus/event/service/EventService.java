@@ -6,18 +6,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import net.causw.app.main.core.aop.annotation.MeasureTime;
-import net.causw.app.main.domain.asset.file.entity.UuidFile;
-import net.causw.app.main.domain.asset.file.entity.joinEntity.EventAttachImage;
 import net.causw.app.main.api.dto.event.EventCreateRequestDto;
 import net.causw.app.main.api.dto.event.EventResponseDto;
 import net.causw.app.main.api.dto.event.EventUpdateRequestDto;
 import net.causw.app.main.api.dto.event.EventsResponseDto;
 import net.causw.app.main.api.dto.util.dtoMapper.EventDtoMapper;
-import net.causw.app.main.domain.campus.event.entity.Event;
+import net.causw.app.main.core.aop.annotation.MeasureTime;
+import net.causw.app.main.domain.asset.file.entity.UuidFile;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.EventAttachImage;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
-import net.causw.app.main.domain.campus.event.repository.EventRepository;
 import net.causw.app.main.domain.asset.file.service.UuidFileService;
+import net.causw.app.main.domain.campus.event.entity.Event;
+import net.causw.app.main.domain.campus.event.repository.EventRepository;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;
 import net.causw.global.exception.BadRequestException;
@@ -40,8 +40,7 @@ public class EventService {
 
 		return EventDtoMapper.INSTANCE.toEventsResponseDto(
 			events.size(),
-			events
-		);
+			events);
 	}
 
 	@Transactional
@@ -49,8 +48,7 @@ public class EventService {
 		if (eventRepository.findByIsDeletedIsFalseOrderByCreatedAtDesc().size() >= StaticValue.MAX_NUM_EVENT) {
 			throw new BadRequestException(
 				ErrorCode.CANNOT_PERFORMED,
-				MessageUtil.EVENT_MAX_CREATED
-			);
+				MessageUtil.EVENT_MAX_CREATED);
 		}
 
 		UuidFile uuidFile = uuidFileService.saveFile(eventImage, FilePath.EVENT);
@@ -60,10 +58,7 @@ public class EventService {
 				Event.of(
 					eventCreateRequestDto.getUrl(),
 					uuidFile,
-					false
-				)
-			)
-		);
+					false)));
 	}
 
 	@Transactional
@@ -77,17 +72,14 @@ public class EventService {
 				uuidFileService.updateFile(
 					event.getEventAttachImage().getUuidFile(),
 					eventImage,
-					FilePath.EVENT
-				)
-			);
+					FilePath.EVENT));
 		}
 
 		EventAttachImage eventAttachImage = event.getEventAttachImage();
 
 		event.update(
 			eventUpdateRequestDto.getUrl(),
-			eventAttachImage
-		);
+			eventAttachImage);
 		return EventDtoMapper.INSTANCE.toEventResponseDto(eventRepository.save(event));
 	}
 
@@ -102,9 +94,7 @@ public class EventService {
 		return eventRepository.findById(eventId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.EVENT_NOT_FOUND
-			)
-		);
+				MessageUtil.EVENT_NOT_FOUND));
 	}
 
 }

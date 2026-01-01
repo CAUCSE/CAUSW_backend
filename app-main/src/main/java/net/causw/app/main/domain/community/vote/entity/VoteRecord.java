@@ -31,8 +31,7 @@ public class VoteRecord extends BaseEntity {
 	private VoteOption voteOption;
 
 	public static VoteRecord of(User user, VoteOption voteOption) {
-		return VoteRecord.builder().
-			user(user)
+		return VoteRecord.builder().user(user)
 			.voteOption(voteOption)
 			.build();
 	}

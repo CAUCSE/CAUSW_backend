@@ -21,8 +21,7 @@ public class LockerAccessValidator extends AbstractValidator {
 		if (!flag) {
 			throw new BadRequestException(
 				ErrorCode.FLAG_NOT_AVAILABLE,
-				MessageUtil.LOCKER_REGISTER_NOT_ALLOWED
-			);
+				MessageUtil.LOCKER_REGISTER_NOT_ALLOWED);
 		}
 	}
 }
