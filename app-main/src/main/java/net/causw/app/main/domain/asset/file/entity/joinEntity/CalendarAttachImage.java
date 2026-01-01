@@ -21,11 +21,10 @@ import lombok.Setter;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "tb_calendar_attach_image_uuid_file",
-	indexes = {
-		@Index(name = "idx_calendar_attach_image_calendar_id", columnList = "calendar_id"),
-		@Index(name = "idx_calendar_attach_image_uuid_file_id", columnList = "uuid_file_id")
-	})
+@Table(name = "tb_calendar_attach_image_uuid_file", indexes = {
+	@Index(name = "idx_calendar_attach_image_calendar_id", columnList = "calendar_id"),
+	@Index(name = "idx_calendar_attach_image_uuid_file_id", columnList = "uuid_file_id")
+})
 public class CalendarAttachImage extends JoinEntity {
 
 	@Getter

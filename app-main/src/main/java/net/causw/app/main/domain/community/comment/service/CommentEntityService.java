@@ -18,11 +18,8 @@ public class CommentEntityService {
 
 	public Comment findByIdNotDeleted(String commentId) {
 
-		return commentRepository.findByIdAndIsDeletedFalse(commentId).orElseThrow(() ->
-			new NotFoundException(
-				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.COMMENT_NOT_FOUND
-			)
-		);
+		return commentRepository.findByIdAndIsDeletedFalse(commentId).orElseThrow(() -> new NotFoundException(
+			ErrorCode.ROW_DOES_NOT_EXIST,
+			MessageUtil.COMMENT_NOT_FOUND));
 	}
 }

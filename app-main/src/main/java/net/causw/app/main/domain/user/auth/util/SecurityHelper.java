@@ -4,11 +4,11 @@ import java.util.Collection;
 
 import org.springframework.security.core.GrantedAuthority;
 
-import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.RoleGroup;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 
 public class SecurityHelper {
 

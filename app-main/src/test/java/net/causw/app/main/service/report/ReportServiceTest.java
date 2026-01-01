@@ -1,7 +1,9 @@
 package net.causw.app.main.service.report;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.BDDMockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.verify;
 
 import java.util.Optional;
 
@@ -19,15 +21,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import net.causw.app.main.domain.community.comment.entity.ChildComment;
-import net.causw.app.main.domain.community.comment.entity.Comment;
-import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.domain.community.report.entity.Report;
-import net.causw.app.main.domain.community.report.service.ReportService;
-import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.community.report.enums.ReportReason;
-import net.causw.app.main.domain.community.report.enums.ReportType;
-import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.api.dto.report.ReportCreateRequestDto;
 import net.causw.app.main.api.dto.report.ReportCreateResponseDto;
 import net.causw.app.main.api.dto.report.ReportedCommentNativeProjection;
@@ -36,10 +29,19 @@ import net.causw.app.main.api.dto.report.ReportedPostNativeProjection;
 import net.causw.app.main.api.dto.report.ReportedPostResponseDto;
 import net.causw.app.main.api.dto.report.ReportedUserResponseDto;
 import net.causw.app.main.api.dto.util.dtoMapper.ReportDtoMapper;
+import net.causw.app.main.domain.community.comment.entity.ChildComment;
+import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.comment.repository.ChildCommentRepository;
 import net.causw.app.main.domain.community.comment.repository.CommentRepository;
+import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
+import net.causw.app.main.domain.community.report.entity.Report;
+import net.causw.app.main.domain.community.report.enums.ReportReason;
+import net.causw.app.main.domain.community.report.enums.ReportType;
 import net.causw.app.main.domain.community.report.repository.ReportRepository;
+import net.causw.app.main.domain.community.report.service.ReportService;
+import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.app.main.util.ObjectFixtures;

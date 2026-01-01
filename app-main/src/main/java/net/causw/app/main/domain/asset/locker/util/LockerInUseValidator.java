@@ -21,8 +21,7 @@ public class LockerInUseValidator extends AbstractValidator {
 		if (isInUse) {
 			throw new BadRequestException(
 				ErrorCode.CANNOT_PERFORMED,
-				MessageUtil.LOCKER_USED
-			);
+				MessageUtil.LOCKER_USED);
 		}
 	}
 }

@@ -27,7 +27,6 @@ public enum Department {
 			.findFirst()
 			.orElseThrow(() -> new BadRequestException(
 				ErrorCode.INVALID_REQUEST_DEPARTMENT,
-				String.format("name '%s' is invalid : not supported", name)
-			));
+				String.format("name '%s' is invalid : not supported", name)));
 	}
 }

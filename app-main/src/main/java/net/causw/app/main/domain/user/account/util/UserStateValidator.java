@@ -23,22 +23,19 @@ public class UserStateValidator extends AbstractValidator {
 		if (this.userState == UserState.DROP) {
 			throw new UnauthorizedException(
 				ErrorCode.BLOCKED_USER,
-				MessageUtil.USER_DROPPED_CONTACT_EMAIL
-			);
+				MessageUtil.USER_DROPPED_CONTACT_EMAIL);
 		}
 
 		if (this.userState == UserState.INACTIVE) {
 			throw new UnauthorizedException(
 				ErrorCode.INACTIVE_USER,
-				MessageUtil.USER_INACTIVE_CAN_REJOIN
-			);
+				MessageUtil.USER_INACTIVE_CAN_REJOIN);
 		}
 
 		if (this.userState == UserState.DELETED) {
 			throw new UnauthorizedException(
 				ErrorCode.DELETED_USER,
-				MessageUtil.USER_DELETED
-			);
+				MessageUtil.USER_DELETED);
 		}
 	}
 }

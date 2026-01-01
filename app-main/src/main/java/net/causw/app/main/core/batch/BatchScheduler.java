@@ -47,7 +47,7 @@ public class BatchScheduler {
 
 			jobLauncher.run(cleanUpUnusedFilesJob, jobParameters);
 		} catch (Exception e) {
-			log.error("Batch job failed: {}", e.getMessage());  // 예외 로깅 추가
+			log.error("Batch job failed: {}", e.getMessage()); // 예외 로깅 추가
 			throw new InternalServerException(ErrorCode.INTERNAL_SERVER, MessageUtil.BATCH_FAIL + e.getMessage());
 		}
 	}

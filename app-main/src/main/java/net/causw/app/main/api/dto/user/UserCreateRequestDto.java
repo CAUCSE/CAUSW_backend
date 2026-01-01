@@ -30,10 +30,7 @@ public class UserCreateRequestDto {
 	private String name;
 
 	@NotBlank(message = "비밀번호를 입력해 주세요.")
-	@Pattern(
-		regexp = "^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*()-_?]).{8,20}$",
-		message = "비밀번호는 8자 이상 20자 이하이며, 영문, 숫자, 특수문자가 각 1개 이상 포함되어야 합니다."
-	)
+	@Pattern(regexp = "^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*()-_?]).{8,20}$", message = "비밀번호는 8자 이상 20자 이하이며, 영문, 숫자, 특수문자가 각 1개 이상 포함되어야 합니다.")
 	@Schema(description = "비밀번호", example = "password00!!")
 	private String password;
 

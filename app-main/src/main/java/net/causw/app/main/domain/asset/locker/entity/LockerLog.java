@@ -46,8 +46,7 @@ public class LockerLog extends BaseEntity {
 		String userEmail,
 		String userName,
 		LockerLogAction action,
-		String message
-	) {
+		String message) {
 		return LockerLog.builder()
 			.lockerNumber(lockerNumber)
 			.lockerLocationName(lockerLocationName)

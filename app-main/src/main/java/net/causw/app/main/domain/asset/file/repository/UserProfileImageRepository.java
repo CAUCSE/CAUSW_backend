@@ -6,5 +6,4 @@ import org.springframework.stereotype.Repository;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 
 @Repository
-public interface UserProfileImageRepository extends JpaRepository<UserProfileImage, Long> {
-}
+public interface UserProfileImageRepository extends JpaRepository<UserProfileImage, Long> {}

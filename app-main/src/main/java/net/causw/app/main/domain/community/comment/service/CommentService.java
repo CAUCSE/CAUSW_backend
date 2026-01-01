@@ -9,7 +9,18 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.api.dto.comment.ChildCommentResponseDto;
+import net.causw.app.main.api.dto.comment.CommentCreateRequestDto;
+import net.causw.app.main.api.dto.comment.CommentResponseDto;
+import net.causw.app.main.api.dto.comment.CommentSubscribeResponseDto;
+import net.causw.app.main.api.dto.comment.CommentUpdateRequestDto;
+import net.causw.app.main.api.dto.util.dtoMapper.CommentDtoMapper;
 import net.causw.app.main.core.aop.annotation.MeasureTime;
+import net.causw.app.main.domain.campus.circle.entity.Circle;
+import net.causw.app.main.domain.campus.circle.entity.CircleMember;
+import net.causw.app.main.domain.campus.circle.enums.CircleMemberStatus;
+import net.causw.app.main.domain.campus.circle.repository.CircleMemberRepository;
+import net.causw.app.main.domain.campus.circle.util.CircleMemberStatusValidator;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.entity.Comment;
@@ -21,32 +32,21 @@ import net.causw.app.main.domain.community.comment.repository.LikeCommentReposit
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.community.post.service.PostService;
-import net.causw.app.main.api.dto.comment.ChildCommentResponseDto;
-import net.causw.app.main.api.dto.comment.CommentCreateRequestDto;
-import net.causw.app.main.api.dto.comment.CommentResponseDto;
-import net.causw.app.main.api.dto.comment.CommentSubscribeResponseDto;
-import net.causw.app.main.api.dto.comment.CommentUpdateRequestDto;
-import net.causw.app.main.api.dto.util.dtoMapper.CommentDtoMapper;
-import net.causw.app.main.domain.campus.circle.entity.Circle;
-import net.causw.app.main.domain.campus.circle.entity.CircleMember;
 import net.causw.app.main.domain.notification.notification.entity.UserCommentSubscribe;
-import net.causw.app.main.domain.campus.circle.enums.CircleMemberStatus;
-import net.causw.app.main.shared.StatusPolicy;
-import net.causw.app.main.domain.campus.circle.repository.CircleMemberRepository;
 import net.causw.app.main.domain.notification.notification.repository.UserCommentSubscribeRepository;
 import net.causw.app.main.domain.notification.notification.service.PostNotificationService;
-import net.causw.app.main.domain.campus.circle.util.CircleMemberStatusValidator;
-import net.causw.app.main.shared.util.ConstraintValidator;
-import net.causw.app.main.shared.util.ContentsAdminValidator;
-import net.causw.app.main.shared.util.TargetIsDeletedValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.util.UserRoleIsNoneValidator;
 import net.causw.app.main.domain.user.account.util.UserStateIsDeletedValidator;
 import net.causw.app.main.domain.user.account.util.UserStateValidator;
 import net.causw.app.main.domain.user.relation.service.UserBlockEntityService;
+import net.causw.app.main.shared.StatusPolicy;
 import net.causw.app.main.shared.ValidatorBucket;
 import net.causw.app.main.shared.pageable.PageableFactory;
+import net.causw.app.main.shared.util.ConstraintValidator;
+import net.causw.app.main.shared.util.ContentsAdminValidator;
+import net.causw.app.main.shared.util.TargetIsDeletedValidator;
 import net.causw.app.main.shared.util.UserEqualValidator;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;
@@ -83,13 +83,11 @@ public class CommentService {
 			post);
 
 		ValidatorBucket validatorBucket = initializeValidator(creator, post);
-		validatorBucket.
-			consistOf(ConstraintValidator.of(comment, this.validator));
+		validatorBucket.consistOf(ConstraintValidator.of(comment, this.validator));
 		validatorBucket.validate();
 		//1. comment의 구독 여부 저장
 		CommentResponseDto commentResponseDto = toCommentResponseDto(
-			commentRepository.save(comment), creator, post.getBoard()
-			, Set.of());
+			commentRepository.save(comment), creator, post.getBoard(), Set.of());
 
 		createCommentSubscribe(creator, comment.getId());
 
@@ -110,8 +108,7 @@ public class CommentService {
 
 		Page<Comment> comments = commentRepository.findByPost_IdOrderByCreatedAt(
 			postId,
-			pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE)
-		);
+			pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE));
 		comments.forEach(
 			comment -> comment.setChildCommentList(childCommentRepository.findByParentComment_Id(comment.getId())));
 
@@ -122,8 +119,7 @@ public class CommentService {
 	public CommentResponseDto updateComment(
 		User updater,
 		String commentId,
-		CommentUpdateRequestDto commentUpdateRequestDto
-	) {
+		CommentUpdateRequestDto commentUpdateRequestDto) {
 		Set<Role> roles = updater.getRoles();
 		Comment comment = getComment(commentId);
 		Post post = getPost(comment.getPost().getId());
@@ -136,8 +132,7 @@ public class CommentService {
 				roles,
 				updater.getId(),
 				comment.getWriter().getId(),
-				List.of()
-			));
+				List.of()));
 		validatorBucket.validate();
 
 		comment.update(commentUpdateRequestDto.getContent());
@@ -169,14 +164,12 @@ public class CommentService {
 						.consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
 						.consistOf(CircleMemberStatusValidator.of(
 							member.getStatus(),
-							List.of(CircleMemberStatus.MEMBER)
-						))
+							List.of(CircleMemberStatus.MEMBER)))
 						.consistOf(ContentsAdminValidator.of(
 							roles,
 							deleter.getId(),
 							comment.getWriter().getId(),
-							List.of(Role.LEADER_CIRCLE)
-						));
+							List.of(Role.LEADER_CIRCLE)));
 
 					if (roles.contains(Role.LEADER_CIRCLE) && !comment.getWriter().getId().equals(deleter.getId())) {
 						validatorBucket
@@ -186,10 +179,8 @@ public class CommentService {
 										ErrorCode.ROW_DOES_NOT_EXIST,
 										MessageUtil.CIRCLE_WITHOUT_LEADER
 
-									)
-								),
-								deleter.getId()
-							));
+									)),
+								deleter.getId()));
 					}
 				},
 				() -> validatorBucket
@@ -197,9 +188,7 @@ public class CommentService {
 						roles,
 						deleter.getId(),
 						comment.getWriter().getId(),
-						List.of()
-					))
-			);
+						List.of())));
 		validatorBucket.validate();
 
 		comment.delete();
@@ -288,15 +277,13 @@ public class CommentService {
 			StatusPolicy.isUpdatable(comment, user),
 			StatusPolicy.isDeletable(comment, user, board),
 			isCommentSubscribed(user, comment),
-			isBlockedContent
-		);
+			isBlockedContent);
 
 		// 화면에 표시될 닉네임 설정
 		User writer = comment.getWriter();
 		commentResponseDto.setDisplayWriterNickname(
 			postService.getDisplayWriterNickname(writer, commentResponseDto.getIsAnonymous(),
-				commentResponseDto.getWriterNickname())
-		);
+				commentResponseDto.getWriterNickname()));
 
 		if (comment.getIsAnonymous()) {
 			commentResponseDto.updateAnonymousUserInfo();
@@ -316,8 +303,7 @@ public class CommentService {
 			StatusPolicy.isChildCommentOwner(childComment, user),
 			StatusPolicy.isUpdatable(childComment, user),
 			StatusPolicy.isDeletable(childComment, user, board),
-			isBlockedContent
-		);
+			isBlockedContent);
 
 		// 화면에 표시될 닉네임 설정
 		User writer = childComment.getWriter();
@@ -360,8 +346,7 @@ public class CommentService {
 					.consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
 					.consistOf(CircleMemberStatusValidator.of(
 						member.getStatus(),
-						List.of(CircleMemberStatus.MEMBER)
-					));
+						List.of(CircleMemberStatus.MEMBER)));
 			});
 		return validatorBucket;
 	}
@@ -370,27 +355,21 @@ public class CommentService {
 		return postRepository.findById(postId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.POST_NOT_FOUND
-			)
-		);
+				MessageUtil.POST_NOT_FOUND));
 	}
 
 	private Comment getComment(String commentId) {
 		return commentRepository.findById(commentId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.COMMENT_NOT_FOUND
-			)
-		);
+				MessageUtil.COMMENT_NOT_FOUND));
 	}
 
 	private CircleMember getCircleMember(String userId, String circleId) {
 		return circleMemberRepository.findByUser_IdAndCircle_Id(userId, circleId).orElseThrow(
 			() -> new UnauthorizedException(
 				ErrorCode.NOT_MEMBER,
-				MessageUtil.CIRCLE_APPLY_INVALID
-			)
-		);
+				MessageUtil.CIRCLE_APPLY_INVALID));
 	}
 
 	private Boolean isCommentSubscribed(User user, Comment comment) {
@@ -407,8 +386,3 @@ public class CommentService {
 	}
 
 }
-
-
-
-
-

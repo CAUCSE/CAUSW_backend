@@ -43,8 +43,7 @@ public class UserBlockEntityService {
 			writer.getId(),
 			post.getId(),
 			post.getIsAnonymous(),
-			post.getTitle() + "\n내용: " + post.getContent()
-		);
+			post.getTitle() + "\n내용: " + post.getContent());
 
 		userBlockRepository.save(userBlock);
 	}
@@ -62,8 +61,7 @@ public class UserBlockEntityService {
 			writer.getId(),
 			comment.getId(),
 			comment.getIsAnonymous(),
-			comment.getContent()
-		);
+			comment.getContent());
 
 		userBlockRepository.save(userBlock);
 	}
@@ -81,8 +79,7 @@ public class UserBlockEntityService {
 			writer.getId(),
 			childComment.getId(),
 			childComment.getIsAnonymous(),
-			childComment.getContent()
-		);
+			childComment.getContent());
 
 		userBlockRepository.save(userBlock);
 	}
@@ -110,7 +107,8 @@ public class UserBlockEntityService {
 	 * @param blockeeUserIds 차단당한 자들의 아이디 Set
 	 * @return 차단자 id Set
 	 */
-	public Set<String> findBlockerUserIdsByUserIds(@NotEmpty Set<String> blockeeUserIds) {
+	public Set<String> findBlockerUserIdsByUserIds(@NotEmpty
+	Set<String> blockeeUserIds) {
 		return userBlockRepository.findBlockerIdsByBlockeeUserIds(blockeeUserIds);
 	}
 }

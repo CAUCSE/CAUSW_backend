@@ -65,4 +65,4 @@ public class CrawlingAndSavingService {
 
 		return noticesToSave;
 	}
-} 
+}

@@ -24,10 +24,7 @@ public class CircleCreateRequestDto {
 	@Schema(description = "동아리 설명", example = "ICT위원회는 동문 네트워크 서비스를 만드는 특별기구이자 동아리입니다.")
 	private String description;
 
-	@Pattern(
-		regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-		message = "id 값은 대시(-)를 포함하고, 32자리의 UUID 형식이어야 합니다."
-	)
+	@Pattern(regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", message = "id 값은 대시(-)를 포함하고, 32자리의 UUID 형식이어야 합니다.")
 	@NotBlank(message = "동아리장 id를 입력해 주세요.")
 	private String leaderId;
 

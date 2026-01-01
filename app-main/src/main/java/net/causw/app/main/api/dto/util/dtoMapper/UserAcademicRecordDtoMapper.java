@@ -27,8 +27,7 @@ import net.causw.app.main.domain.user.account.entity.user.User;
 @Mapping(target = "userId", source = "user.id")
 @Mapping(target = "userName", source = "user.name")
 @Mapping(target = "studentId", source = "user.studentId")
-@interface UserCommonWriterMappings {
-}
+@interface UserCommonWriterMappings{}
 
 @Mapper(componentModel = "spring")
 public interface UserAcademicRecordDtoMapper extends UuidFileToUrlDtoMapper {

@@ -19,8 +19,7 @@ public class DepartmentResolver {
 		new DepartmentPeriod(Department.SCHOOL_OF_SW, 2018, StaticValue.CAU_AI_START_YEAR - 1),
 		new DepartmentPeriod(Department.SCHOOL_OF_CSE, 2003, 2017),
 		new DepartmentPeriod(Department.DEPT_OF_CSE, 1993, 2002),
-		new DepartmentPeriod(Department.DEPT_OF_CS, StaticValue.CAU_SW_START_YEAR, 1992)
-	);
+		new DepartmentPeriod(Department.DEPT_OF_CS, StaticValue.CAU_SW_START_YEAR, 1992));
 
 	public static Department resolveByAdmissionYearOrDepartmentName(Integer admissionYear, String departmentName) {
 		// AI 학과 개설 이전 입학생은 입학년도로 학과/학부 결정
@@ -41,22 +40,19 @@ public class DepartmentResolver {
 		if (request == null) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_REQUEST_DEPARTMENT,
-				MessageUtil.DEPARTMENT_EXPLICITLY_REQUIRED
-			);
+				MessageUtil.DEPARTMENT_EXPLICITLY_REQUIRED);
 		}
 		return request;
 	}
 
 	public static Department resolveByAdmissionYear(int admissionYear) {
 		return departmentPeriods.stream()
-			.filter(period ->
-				admissionYear >= period.startYear() && admissionYear <= period.endYear())
+			.filter(period -> admissionYear >= period.startYear() && admissionYear <= period.endYear())
 			.findFirst()
 			.map(DepartmentPeriod::department)
 			.orElseThrow(() -> new BadRequestException(
 				ErrorCode.INVALID_REQUEST_DEPARTMENT,
-				MessageUtil.INVALID_ADMISSION_YEAR
-			));
+				MessageUtil.INVALID_ADMISSION_YEAR));
 	}
 
 	private record DepartmentPeriod(Department department, Integer startYear, Integer endYear) {

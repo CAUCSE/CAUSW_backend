@@ -1,6 +1,5 @@
 package net.causw.app.main.domain.user.academic.entity.userAcademicRecord;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,8 +78,7 @@ public class UserAcademicRecordLog extends BaseEntity {
 
 	public static UserAcademicRecordLog createWithApplication(
 		User controlledUser,
-		UserAcademicRecordApplication targetUserAcademicRecordApplication
-	) {
+		UserAcademicRecordApplication targetUserAcademicRecordApplication) {
 		User targetUser = targetUserAcademicRecordApplication.getUser();
 
 		UserAcademicRecordLog userAcademicRecordLog = UserAcademicRecordLog.builder()
@@ -96,13 +94,12 @@ public class UserAcademicRecordLog extends BaseEntity {
 			.rejectMessage(targetUserAcademicRecordApplication.getRejectMessage())
 			.build();
 
-		List<UserAcademicRecordLogAttachImage> userAcademicRecordLogAttachImageList =
-			targetUserAcademicRecordApplication.getUserAcademicRecordAttachImageList()
-				.stream()
-				.map(userAcademicRecordApplicationAttachImage ->
-					UserAcademicRecordLogAttachImage.of(
-						userAcademicRecordLog, userAcademicRecordApplicationAttachImage.getUuidFile()))
-				.toList();
+		List<UserAcademicRecordLogAttachImage> userAcademicRecordLogAttachImageList = targetUserAcademicRecordApplication
+			.getUserAcademicRecordAttachImageList()
+			.stream()
+			.map(userAcademicRecordApplicationAttachImage -> UserAcademicRecordLogAttachImage.of(
+				userAcademicRecordLog, userAcademicRecordApplicationAttachImage.getUuidFile()))
+			.toList();
 
 		userAcademicRecordLog.setUserAcademicRecordLogAttachImageList(userAcademicRecordLogAttachImageList);
 
@@ -112,8 +109,7 @@ public class UserAcademicRecordLog extends BaseEntity {
 	public static UserAcademicRecordLog createWithApplication(
 		User controlledUser,
 		UserAcademicRecordApplication targetUserAcademicRecordApplication,
-		String note
-	) {
+		String note) {
 		User targetUser = targetUserAcademicRecordApplication.getUser();
 
 		UserAcademicRecordLog userAcademicRecordLog = UserAcademicRecordLog.builder()
@@ -129,13 +125,12 @@ public class UserAcademicRecordLog extends BaseEntity {
 			.rejectMessage(targetUserAcademicRecordApplication.getRejectMessage())
 			.build();
 
-		List<UserAcademicRecordLogAttachImage> userAcademicRecordLogAttachImageList =
-			targetUserAcademicRecordApplication.getUserAcademicRecordAttachImageList()
-				.stream()
-				.map(userAcademicRecordApplicationAttachImage ->
-					UserAcademicRecordLogAttachImage.of(
-						userAcademicRecordLog, userAcademicRecordApplicationAttachImage.getUuidFile()))
-				.toList();
+		List<UserAcademicRecordLogAttachImage> userAcademicRecordLogAttachImageList = targetUserAcademicRecordApplication
+			.getUserAcademicRecordAttachImageList()
+			.stream()
+			.map(userAcademicRecordApplicationAttachImage -> UserAcademicRecordLogAttachImage.of(
+				userAcademicRecordLog, userAcademicRecordApplicationAttachImage.getUuidFile()))
+			.toList();
 
 		userAcademicRecordLog.setUserAcademicRecordLogAttachImageList(userAcademicRecordLogAttachImageList);
 
@@ -146,8 +141,7 @@ public class UserAcademicRecordLog extends BaseEntity {
 		User controlledUser,
 		User targetUser,
 		AcademicStatus targetAcademicRecordStatus,
-		String note
-	) {
+		String note) {
 		return UserAcademicRecordLog.builder()
 			.controlledUserEmail(controlledUser.getEmail())
 			.controlledUserName(controlledUser.getName())
@@ -166,8 +160,7 @@ public class UserAcademicRecordLog extends BaseEntity {
 		AcademicStatus targetAcademicRecordStatus,
 		Integer graduationYear,
 		GraduationType graduationType,
-		String note
-	) {
+		String note) {
 		return UserAcademicRecordLog.builder()
 			.controlledUserEmail(controlledUser.getEmail())
 			.controlledUserName(controlledUser.getName())

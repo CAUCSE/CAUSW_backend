@@ -14,11 +14,11 @@ import net.causw.app.main.api.dto.board.BoardOfCircleResponseDto;
 import net.causw.app.main.api.dto.board.BoardResponseDto;
 import net.causw.app.main.api.dto.board.BoardSubscribeResponseDto;
 import net.causw.app.main.api.dto.circle.CircleResponseDto;
+import net.causw.app.main.api.dto.post.PostContentDto;
+import net.causw.app.main.api.dto.user.UserResponseDto;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardApply;
 import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.api.dto.post.PostContentDto;
-import net.causw.app.main.api.dto.user.UserResponseDto;
 import net.causw.app.main.domain.notification.notification.entity.UserBoardSubscribe;
 
 @Mapper(componentModel = "spring")

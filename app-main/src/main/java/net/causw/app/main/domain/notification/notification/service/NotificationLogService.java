@@ -35,13 +35,10 @@ public class NotificationLogService {
 		Page<NotificationLog> notificationLogs = notificationLogRepository.findByUserAndNotificationTypes(user, types,
 			pageableFactory.create(pageNum, StaticValue.DEFAULT_NOTIFICATION_PAGE_SIZE));
 
-		return notificationLogs.map(log ->
-			NotificationDtoMapper.INSTANCE.toNotificationResponseDto(
-				log.getId(),
-				log.getNotification(),
-				log.getIsRead()
-			)
-		);
+		return notificationLogs.map(log -> NotificationDtoMapper.INSTANCE.toNotificationResponseDto(
+			log.getId(),
+			log.getNotification(),
+			log.getIsRead()));
 	}
 
 	@Transactional(readOnly = true)
@@ -62,13 +59,10 @@ public class NotificationLogService {
 		Page<NotificationLog> notificationLogs = notificationLogRepository.findByUserAndNotificationTypes(user, types,
 			pageableFactory.create(pageNum, StaticValue.DEFAULT_NOTIFICATION_PAGE_SIZE));
 
-		return notificationLogs.map(log ->
-			NotificationDtoMapper.INSTANCE.toNotificationResponseDto(
-				log.getId(),
-				log.getNotification(),
-				log.getIsRead()
-			)
-		);
+		return notificationLogs.map(log -> NotificationDtoMapper.INSTANCE.toNotificationResponseDto(
+			log.getId(),
+			log.getNotification(),
+			log.getIsRead()));
 	}
 
 	@Transactional(readOnly = true)
@@ -88,9 +82,7 @@ public class NotificationLogService {
 		NotificationLog notificationLog = notificationLogRepository.findByIdAndUser(id, user).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.NOTIFICATION_LOG_NOT_FOUND
-			)
-		);
+				MessageUtil.NOTIFICATION_LOG_NOT_FOUND));
 		notificationLog.setIsRead(true);
 	}
 

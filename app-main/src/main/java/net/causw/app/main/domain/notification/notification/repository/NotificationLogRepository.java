@@ -20,8 +20,10 @@ public interface NotificationLogRepository extends JpaRepository<NotificationLog
 		"WHERE nl.user = :user " +
 		"AND n.noticeType IN :types " +
 		"ORDER BY nl.createdAt DESC")
-	Page<NotificationLog> findByUserAndNotificationTypes(@Param("user") User user,
-		@Param("types") List<NoticeType> types, Pageable pageable);
+	Page<NotificationLog> findByUserAndNotificationTypes(@Param("user")
+	User user,
+		@Param("types")
+		List<NoticeType> types, Pageable pageable);
 
 	@Query("SELECT nl FROM NotificationLog nl " +
 		"JOIN FETCH nl.notification n " +
@@ -29,14 +31,17 @@ public interface NotificationLogRepository extends JpaRepository<NotificationLog
 		"AND nl.isRead = false " +
 		"AND n.noticeType IN :types " +
 		"ORDER BY nl.createdAt DESC")
-	List<NotificationLog> findByUserAndIsReadFalseNotificationTypes(@Param("user") User user,
-		@Param("types") List<NoticeType> types, Pageable pageable);
+	List<NotificationLog> findByUserAndIsReadFalseNotificationTypes(@Param("user")
+	User user,
+		@Param("types")
+		List<NoticeType> types, Pageable pageable);
 
 	Optional<NotificationLog> findByIdAndUser(String id, User user);
 
 	@Query("SELECT nl FROM NotificationLog nl " +
 		"WHERE nl.user = :user " +
 		"AND nl.isRead = false")
-	List<NotificationLog> findUnreadLogsUpToLimit(@Param("user") User user, Pageable pageable);
+	List<NotificationLog> findUnreadLogsUpToLimit(@Param("user")
+	User user, Pageable pageable);
 
 }

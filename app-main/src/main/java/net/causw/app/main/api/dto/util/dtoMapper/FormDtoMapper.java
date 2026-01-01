@@ -9,6 +9,11 @@ import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 import org.springframework.data.domain.Page;
 
+import net.causw.app.main.api.dto.form.response.FormResponseDto;
+import net.causw.app.main.api.dto.form.response.OptionResponseDto;
+import net.causw.app.main.api.dto.form.response.OptionSummaryResponseDto;
+import net.causw.app.main.api.dto.form.response.QuestionResponseDto;
+import net.causw.app.main.api.dto.form.response.QuestionSummaryResponseDto;
 import net.causw.app.main.api.dto.form.response.reply.ReplyPageResponseDto;
 import net.causw.app.main.api.dto.form.response.reply.ReplyQuestionResponseDto;
 import net.causw.app.main.api.dto.form.response.reply.ReplyResponseDto;
@@ -24,11 +29,6 @@ import net.causw.app.main.domain.community.form.entity.Reply;
 import net.causw.app.main.domain.community.form.entity.ReplyQuestion;
 import net.causw.app.main.domain.community.form.enums.RegisteredSemester;
 import net.causw.app.main.domain.finance.usercouncilfee.entity.UserCouncilFee;
-import net.causw.app.main.api.dto.form.response.FormResponseDto;
-import net.causw.app.main.api.dto.form.response.OptionResponseDto;
-import net.causw.app.main.api.dto.form.response.OptionSummaryResponseDto;
-import net.causw.app.main.api.dto.form.response.QuestionResponseDto;
-import net.causw.app.main.api.dto.form.response.QuestionSummaryResponseDto;
 import net.causw.app.main.domain.user.account.entity.user.User;
 
 @Mapper(componentModel = "spring")

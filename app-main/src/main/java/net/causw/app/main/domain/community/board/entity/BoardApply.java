@@ -62,8 +62,7 @@ public class BoardApply extends BaseEntity {
 		String description,
 		String category,
 		Boolean isAnonymousAllowed,
-		Circle circle
-	) {
+		Circle circle) {
 		// description 비어있을 경우 처리
 		if (description == null) {
 			description = "";

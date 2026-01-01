@@ -1,6 +1,9 @@
 package net.causw.app.main.domain.user.account.util;
 
-import static net.causw.app.main.domain.user.account.policy.RolePolicy.*;
+import static net.causw.app.main.domain.user.account.policy.RolePolicy.canAssign;
+import static net.causw.app.main.domain.user.account.policy.RolePolicy.getGrantableRoles;
+import static net.causw.app.main.domain.user.account.policy.RolePolicy.getProxyDelegatableRoles;
+import static net.causw.app.main.domain.user.account.policy.RolePolicy.isPrivilegeInverted;
 
 import java.util.Set;
 
@@ -70,7 +73,6 @@ public class GrantableRoleValidator extends AbstractValidator {
 	private UnauthorizedException customUnauthorizedException() {
 		return new UnauthorizedException(
 			ErrorCode.ASSIGN_ROLE_NOT_ALLOWED,
-			MessageUtil.GRANT_ROLE_NOT_ALLOWED
-		);
+			MessageUtil.GRANT_ROLE_NOT_ALLOWED);
 	}
 }

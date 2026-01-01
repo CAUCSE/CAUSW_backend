@@ -18,29 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import net.causw.app.main.core.aop.annotation.MeasureTime;
-import net.causw.app.main.domain.asset.file.entity.UuidFile;
-import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
-import net.causw.app.main.domain.community.board.entity.Board;
-import net.causw.app.main.domain.community.board.repository.BoardRepository;
-import net.causw.app.main.domain.community.board.repository.FavoriteBoardRepository;
-import net.causw.app.main.domain.community.comment.repository.CommentRepository;
-import net.causw.app.main.domain.community.comment.util.PostNumberOfAttachmentsValidator;
-import net.causw.app.main.domain.community.form.entity.Form;
-import net.causw.app.main.domain.community.form.entity.FormQuestion;
-import net.causw.app.main.domain.community.form.entity.FormQuestionOption;
-import net.causw.app.main.domain.community.form.enums.QuestionType;
-import net.causw.app.main.domain.community.form.repository.FormRepository;
-import net.causw.app.main.domain.community.reaction.entity.FavoritePost;
-import net.causw.app.main.domain.community.reaction.entity.LikePost;
-import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.domain.community.vote.entity.Vote;
-import net.causw.app.main.domain.community.vote.entity.VoteOption;
-import net.causw.app.main.domain.community.vote.entity.VoteRecord;
-import net.causw.app.main.domain.community.reaction.repository.FavoritePostRepository;
-import net.causw.app.main.domain.community.reaction.repository.LikePostRepository;
-import net.causw.app.main.domain.community.post.repository.PostRepository;
-import net.causw.app.main.domain.community.post.repository.query.PostQueryRepository;
 import net.causw.app.main.api.dto.form.request.create.FormCreateRequestDto;
 import net.causw.app.main.api.dto.form.request.create.QuestionCreateRequestDto;
 import net.causw.app.main.api.dto.form.response.FormResponseDto;
@@ -62,25 +39,43 @@ import net.causw.app.main.api.dto.util.dtoMapper.UserDtoMapper;
 import net.causw.app.main.api.dto.util.dtoMapper.VoteDtoMapper;
 import net.causw.app.main.api.dto.vote.VoteOptionResponseDto;
 import net.causw.app.main.api.dto.vote.VoteResponseDto;
+import net.causw.app.main.core.aop.annotation.MeasureTime;
+import net.causw.app.main.domain.asset.file.entity.UuidFile;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
+import net.causw.app.main.domain.asset.file.enums.FilePath;
+import net.causw.app.main.domain.asset.file.repository.PostAttachImageRepository;
+import net.causw.app.main.domain.asset.file.service.UuidFileService;
 import net.causw.app.main.domain.campus.circle.entity.Circle;
 import net.causw.app.main.domain.campus.circle.entity.CircleMember;
+import net.causw.app.main.domain.campus.circle.enums.CircleMemberStatus;
+import net.causw.app.main.domain.campus.circle.repository.CircleMemberRepository;
+import net.causw.app.main.domain.campus.circle.util.CircleMemberStatusValidator;
+import net.causw.app.main.domain.community.board.entity.Board;
+import net.causw.app.main.domain.community.board.repository.BoardRepository;
+import net.causw.app.main.domain.community.board.repository.FavoriteBoardRepository;
+import net.causw.app.main.domain.community.comment.repository.CommentRepository;
+import net.causw.app.main.domain.community.comment.util.PostNumberOfAttachmentsValidator;
+import net.causw.app.main.domain.community.form.entity.Form;
+import net.causw.app.main.domain.community.form.entity.FormQuestion;
+import net.causw.app.main.domain.community.form.entity.FormQuestionOption;
+import net.causw.app.main.domain.community.form.enums.QuestionType;
+import net.causw.app.main.domain.community.form.repository.FormRepository;
+import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.repository.PostRepository;
+import net.causw.app.main.domain.community.post.repository.query.PostQueryRepository;
+import net.causw.app.main.domain.community.reaction.entity.FavoritePost;
+import net.causw.app.main.domain.community.reaction.entity.LikePost;
+import net.causw.app.main.domain.community.reaction.repository.FavoritePostRepository;
+import net.causw.app.main.domain.community.reaction.repository.LikePostRepository;
+import net.causw.app.main.domain.community.vote.entity.Vote;
+import net.causw.app.main.domain.community.vote.entity.VoteOption;
+import net.causw.app.main.domain.community.vote.entity.VoteRecord;
+import net.causw.app.main.domain.community.vote.repository.VoteRecordRepository;
 import net.causw.app.main.domain.notification.notification.entity.UserBoardSubscribe;
 import net.causw.app.main.domain.notification.notification.entity.UserPostSubscribe;
-import net.causw.app.main.domain.campus.circle.enums.CircleMemberStatus;
-import net.causw.app.main.domain.asset.file.enums.FilePath;
-import net.causw.app.main.shared.StatusPolicy;
-import net.causw.app.main.domain.campus.circle.repository.CircleMemberRepository;
 import net.causw.app.main.domain.notification.notification.repository.UserBoardSubscribeRepository;
 import net.causw.app.main.domain.notification.notification.repository.UserPostSubscribeRepository;
-import net.causw.app.main.domain.asset.file.repository.PostAttachImageRepository;
-import net.causw.app.main.domain.community.vote.repository.VoteRecordRepository;
 import net.causw.app.main.domain.notification.notification.service.BoardNotificationService;
-import net.causw.app.main.domain.asset.file.service.UuidFileService;
-import net.causw.app.main.domain.campus.circle.util.CircleMemberStatusValidator;
-import net.causw.app.main.shared.util.ConstraintValidator;
-import net.causw.app.main.shared.util.ContentsAdminValidator;
-import net.causw.app.main.shared.util.TargetIsDeletedValidator;
-import net.causw.app.main.shared.util.TargetIsNotDeletedValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
@@ -89,8 +84,13 @@ import net.causw.app.main.domain.user.account.util.UserRoleValidator;
 import net.causw.app.main.domain.user.account.util.UserStateIsDeletedValidator;
 import net.causw.app.main.domain.user.account.util.UserStateValidator;
 import net.causw.app.main.domain.user.relation.service.UserBlockEntityService;
+import net.causw.app.main.shared.StatusPolicy;
 import net.causw.app.main.shared.ValidatorBucket;
 import net.causw.app.main.shared.pageable.PageableFactory;
+import net.causw.app.main.shared.util.ConstraintValidator;
+import net.causw.app.main.shared.util.ContentsAdminValidator;
+import net.causw.app.main.shared.util.TargetIsDeletedValidator;
+import net.causw.app.main.shared.util.TargetIsNotDeletedValidator;
 import net.causw.app.main.shared.util.UserEqualValidator;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;
@@ -153,10 +153,9 @@ public class PostService {
 		User user,
 		String boardId,
 		String keyword,
-		Integer pageNum
-	) {
-		Set<Role> roles = user.getRoles();  // 사용자의 역할 가져오기
-		Board board = getBoard(boardId);    // 게시판 정보 가져오기
+		Integer pageNum) {
+		Set<Role> roles = user.getRoles(); // 사용자의 역할 가져오기
+		Board board = getBoard(boardId); // 게시판 정보 가져오기
 
 		// 유효성 검사 초기화 및 실행
 		ValidatorBucket validatorBucket = initializeValidator(user, board);
@@ -184,8 +183,7 @@ public class PostService {
 			roles,
 			isFavorite(user.getId(), board.getId()),
 			isBoardSubscribed(user, board),
-			posts
-		);
+			posts);
 	}
 
 	public BoardPostsResponseDto findAllAppNotice(User user, Integer pageNum) {
@@ -193,9 +191,7 @@ public class PostService {
 		Board board = boardRepository.findAppNotice().orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.BOARD_NOT_FOUND
-			)
-		);
+				MessageUtil.BOARD_NOT_FOUND));
 
 		Set<String> blockedUserIds = userBlockEntityService.findBlockeeUserIdsByBlocker(user);
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
@@ -210,8 +206,7 @@ public class PostService {
 			roles,
 			isFavorite(user.getId(), board.getId()),
 			isBoardSubscribed(user, board),
-			posts
-		);
+			posts);
 	}
 
 	//게시글이 생성될 때 발생할 일
@@ -226,9 +221,8 @@ public class PostService {
 		Board board = getBoard(postCreateRequestDto.getBoardId());
 		List<String> createRoles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
 
-		List<UuidFile> uuidFileList = (attachImageList == null || attachImageList.isEmpty()) ?
-			new ArrayList<>() :
-			uuidFileService.saveFileList(attachImageList, FilePath.POST);
+		List<UuidFile> uuidFileList = (attachImageList == null || attachImageList.isEmpty()) ? new ArrayList<>()
+			: uuidFileService.saveFileList(attachImageList, FilePath.POST);
 
 		Post post = Post.of(
 			postCreateRequestDto.getTitle(),
@@ -238,8 +232,7 @@ public class PostService {
 			postCreateRequestDto.getIsQuestion(),
 			board,
 			null,
-			uuidFileList
-		);
+			uuidFileList);
 
 		validateAnonymousAllowed(board, postCreateRequestDto.getIsAnonymous());
 
@@ -252,8 +245,7 @@ public class PostService {
 				roles,
 				createRoles.stream()
 					.map(Role::of)
-					.collect(Collectors.toSet())
-			));
+					.collect(Collectors.toSet())));
 
 		Optional<Circle> circles = Optional.ofNullable(board.getCircle());
 		circles
@@ -267,18 +259,15 @@ public class PostService {
 						.consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
 						.consistOf(CircleMemberStatusValidator.of(
 							member.getStatus(),
-							List.of(CircleMemberStatus.MEMBER)
-						));
+							List.of(CircleMemberStatus.MEMBER)));
 
 					if (roles.contains(Role.LEADER_CIRCLE) && !createRoles.contains("COMMON")) {
 						validatorBucket
 							.consistOf(UserEqualValidator.of(
 								getCircleLeader(circle).getId(),
-								creator.getId()
-							));
+								creator.getId()));
 					}
-				}
-			);
+				});
 		validatorBucket
 			.consistOf(ConstraintValidator.of(post, this.validator))
 			.validate();
@@ -297,16 +286,14 @@ public class PostService {
 	public PostCreateResponseDto createPostWithForm(
 		User creator,
 		PostCreateWithFormRequestDto postCreateWithFormRequestDto,
-		List<MultipartFile> attachImageList
-	) {
+		List<MultipartFile> attachImageList) {
 		Set<Role> roles = creator.getRoles();
 
 		Board board = getBoard(postCreateWithFormRequestDto.getBoardId());
 		List<String> createRoles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
 
-		List<UuidFile> uuidFileList = (attachImageList == null || attachImageList.isEmpty()) ?
-			new ArrayList<>() :
-			attachImageList.stream()
+		List<UuidFile> uuidFileList = (attachImageList == null || attachImageList.isEmpty()) ? new ArrayList<>()
+			: attachImageList.stream()
 				.map(multipartFile -> uuidFileService.saveFile(multipartFile, FilePath.POST))
 				.toList();
 
@@ -320,8 +307,7 @@ public class PostService {
 			postCreateWithFormRequestDto.getIsQuestion(),
 			board,
 			form,
-			uuidFileList
-		);
+			uuidFileList);
 
 		validateAnonymousAllowed(board, postCreateWithFormRequestDto.getIsAnonymous());
 
@@ -330,8 +316,7 @@ public class PostService {
 			validatorBucket
 				.consistOf(UserRoleValidator.of(
 					roles,
-					Set.of()
-				));
+					Set.of()));
 		}
 
 		validatorBucket
@@ -353,8 +338,7 @@ public class PostService {
 						}
 					})
 					.filter(Objects::nonNull) // 유효한 역할만 수집
-					.collect(Collectors.toSet())
-			))
+					.collect(Collectors.toSet())))
 			.validate();
 
 		Optional<Circle> circles = Optional.ofNullable(board.getCircle());
@@ -369,18 +353,15 @@ public class PostService {
 						.consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
 						.consistOf(CircleMemberStatusValidator.of(
 							member.getStatus(),
-							List.of(CircleMemberStatus.MEMBER)
-						));
+							List.of(CircleMemberStatus.MEMBER)));
 
 					if (roles.contains(Role.LEADER_CIRCLE) && !createRoles.contains("COMMON")) {
 						validatorBucket
 							.consistOf(UserEqualValidator.of(
 								getCircleLeader(circle).getId(),
-								creator.getId()
-							));
+								creator.getId()));
 					}
-				}
-			);
+				});
 		validatorBucket
 			.consistOf(ConstraintValidator.of(post, this.validator))
 			.validate();
@@ -401,8 +382,7 @@ public class PostService {
 				&& !post.getWriter().getId().equals(deleter.getId())) {
 				throw new UnauthorizedException(
 					ErrorCode.API_NOT_ALLOWED,
-					"접근 권한이 없습니다."
-				);
+					"접근 권한이 없습니다.");
 			}
 		}
 		validatorBucket
@@ -422,20 +402,18 @@ public class PostService {
 						.consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
 						.consistOf(CircleMemberStatusValidator.of(
 							member.getStatus(),
-							List.of(CircleMemberStatus.MEMBER)
-						)).consistOf(ContentsAdminValidator.of(
+							List.of(CircleMemberStatus.MEMBER)))
+						.consistOf(ContentsAdminValidator.of(
 							roles,
 							deleter.getId(),
 							post.getWriter().getId(),
-							List.of(Role.LEADER_CIRCLE)
-						));
+							List.of(Role.LEADER_CIRCLE)));
 
 					if (roles.contains(Role.LEADER_CIRCLE) && !post.getWriter().getId().equals(deleter.getId())) {
 						validatorBucket
 							.consistOf(UserEqualValidator.of(
 								getCircleLeader(circle).getId(),
-								deleter.getId()
-							));
+								deleter.getId()));
 					}
 				},
 				() -> validatorBucket
@@ -443,9 +421,7 @@ public class PostService {
 						roles,
 						deleter.getId(),
 						post.getWriter().getId(),
-						List.of())
-					)
-			);
+						List.of())));
 		validatorBucket.validate();
 
 		post.setIsDeleted(true);
@@ -456,8 +432,7 @@ public class PostService {
 		User updater,
 		String postId,
 		PostUpdateRequestDto postUpdateRequestDto,
-		List<MultipartFile> attachImageList
-	) {
+		List<MultipartFile> attachImageList) {
 		Set<Role> roles = updater.getRoles();
 		Post post = getPost(postId);
 
@@ -466,8 +441,7 @@ public class PostService {
 			validatorBucket
 				.consistOf(UserRoleValidator.of(
 					roles,
-					Set.of()
-				));
+					Set.of()));
 		}
 		validatorBucket
 			.consistOf(PostNumberOfAttachmentsValidator.of(attachImageList))
@@ -477,8 +451,7 @@ public class PostService {
 				roles,
 				updater.getId(),
 				post.getWriter().getId(),
-				List.of()
-			))
+				List.of()))
 			.consistOf(ConstraintValidator.of(post, this.validator));
 		validatorBucket.validate();
 
@@ -487,9 +460,8 @@ public class PostService {
 
 		if (!attachImageList.isEmpty()) {
 			postAttachImageList = uuidFileService.updateFileList(
-					post.getPostAttachImageList().stream().map(PostAttachImage::getUuidFile).collect(Collectors.toList()),
-					attachImageList, FilePath.POST
-				).stream()
+				post.getPostAttachImageList().stream().map(PostAttachImage::getUuidFile).collect(Collectors.toList()),
+				attachImageList, FilePath.POST).stream()
 				.map(uuidFile -> PostAttachImage.of(post, uuidFile))
 				.toList();
 		} else {
@@ -505,8 +477,7 @@ public class PostService {
 			postUpdateRequestDto.getTitle(),
 			postUpdateRequestDto.getContent(),
 			null,
-			postAttachImageList
-		);
+			postAttachImageList);
 
 		return toPostResponseDtoExtended(post, updater);
 	}
@@ -516,8 +487,7 @@ public class PostService {
 		User updater,
 		String postId,
 		PostUpdateWithFormRequestDto postUpdateWithFormRequestDto,
-		List<MultipartFile> attachImageList
-	) {
+		List<MultipartFile> attachImageList) {
 		Set<Role> roles = updater.getRoles();
 		Post post = getPost(postId);
 
@@ -526,8 +496,7 @@ public class PostService {
 			validatorBucket
 				.consistOf(UserRoleValidator.of(
 					roles,
-					Set.of()
-				));
+					Set.of()));
 		}
 		validatorBucket
 			.consistOf(PostNumberOfAttachmentsValidator.of(attachImageList))
@@ -537,8 +506,7 @@ public class PostService {
 				roles,
 				updater.getId(),
 				post.getWriter().getId(),
-				List.of()
-			))
+				List.of()))
 			.consistOf(ConstraintValidator.of(post, this.validator));
 		validatorBucket.validate();
 
@@ -547,9 +515,8 @@ public class PostService {
 
 		if (!attachImageList.isEmpty()) {
 			postAttachImageList = uuidFileService.updateFileList(
-					post.getPostAttachImageList().stream().map(PostAttachImage::getUuidFile).collect(Collectors.toList()),
-					attachImageList, FilePath.POST
-				).stream()
+				post.getPostAttachImageList().stream().map(PostAttachImage::getUuidFile).collect(Collectors.toList()),
+				attachImageList, FilePath.POST).stream()
 				.map(uuidFile -> PostAttachImage.of(post, uuidFile))
 				.toList();
 		} else {
@@ -567,8 +534,7 @@ public class PostService {
 			postUpdateWithFormRequestDto.getTitle(),
 			postUpdateWithFormRequestDto.getContent(),
 			form,
-			postAttachImageList
-		);
+			postAttachImageList);
 	}
 
 	@Transactional
@@ -581,8 +547,7 @@ public class PostService {
 			validatorBucket
 				.consistOf(UserRoleValidator.of(
 					roles,
-					Set.of()
-				));
+					Set.of()));
 		}
 		validatorBucket
 			.consistOf(UserStateValidator.of(restorer.getState()))
@@ -602,21 +567,18 @@ public class PostService {
 						.consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
 						.consistOf(CircleMemberStatusValidator.of(
 							member.getStatus(),
-							List.of(CircleMemberStatus.MEMBER)
-						))
+							List.of(CircleMemberStatus.MEMBER)))
 						.consistOf(ContentsAdminValidator.of(
 							roles,
 							restorer.getId(),
 							post.getWriter().getId(),
-							List.of(Role.LEADER_CIRCLE)
-						));
+							List.of(Role.LEADER_CIRCLE)));
 
 					if (roles.contains(Role.LEADER_CIRCLE) && !post.getWriter().getId().equals(restorer.getId())) {
 						validatorBucket
 							.consistOf(UserEqualValidator.of(
 								getCircleLeader(circle).getId(),
-								restorer.getId()
-							));
+								restorer.getId()));
 					}
 				},
 				() -> validatorBucket
@@ -624,17 +586,14 @@ public class PostService {
 						roles,
 						restorer.getId(),
 						post.getWriter().getId(),
-						List.of()
-					))
-			);
+						List.of())));
 
 		validatorBucket
 			.consistOf(ContentsAdminValidator.of(
 				roles,
 				restorer.getId(),
 				post.getWriter().getId(),
-				List.of(Role.LEADER_CIRCLE)
-			))
+				List.of(Role.LEADER_CIRCLE)))
 			.validate();
 
 		post.setIsDeleted(false);
@@ -764,10 +723,8 @@ public class PostService {
 						.consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
 						.consistOf(CircleMemberStatusValidator.of(
 							member.getStatus(),
-							List.of(CircleMemberStatus.MEMBER)
-						));
-				}
-			);
+							List.of(CircleMemberStatus.MEMBER)));
+				});
 		return validatorBucket;
 	}
 
@@ -778,8 +735,7 @@ public class PostService {
 
 		Form form = Form.createPostForm(
 			formCreateRequestDto,
-			formQuestionList
-		);
+			formQuestionList);
 
 		formQuestionList.forEach(question -> question.setForm(form));
 
@@ -793,8 +749,7 @@ public class PostService {
 			if (formCreateRequestDto.getIsNeedCouncilFeePaid() == null) {
 				throw new BadRequestException(
 					ErrorCode.INVALID_PARAMETER,
-					MessageUtil.IS_NEED_COUNCIL_FEE_REQUIRED
-				);
+					MessageUtil.IS_NEED_COUNCIL_FEE_REQUIRED);
 			}
 
 			// enrolledRegisteredSemesterList가 null이거나 비어있는 경우 예외 처리
@@ -802,20 +757,17 @@ public class PostService {
 				formCreateRequestDto.getEnrolledRegisteredSemesterList().isEmpty()) {
 				throw new BadRequestException(
 					ErrorCode.INVALID_PARAMETER,
-					MessageUtil.INVALID_REGISTERED_SEMESTER_INFO
-				);
+					MessageUtil.INVALID_REGISTERED_SEMESTER_INFO);
 			}
 		}
 
 		// isAllowedLeaveOfAbsence가 false이고 isAllowedLeaveOfAbsence가 false인 경우 예외 처리
 		if (formCreateRequestDto.getIsAllowedLeaveOfAbsence() &&
 			(formCreateRequestDto.getLeaveOfAbsenceRegisteredSemesterList() == null ||
-				formCreateRequestDto.getLeaveOfAbsenceRegisteredSemesterList().isEmpty())
-		) {
+				formCreateRequestDto.getLeaveOfAbsenceRegisteredSemesterList().isEmpty())) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_PARAMETER,
-				MessageUtil.INVALID_REGISTERED_SEMESTER_INFO
-			);
+				MessageUtil.INVALID_REGISTERED_SEMESTER_INFO);
 		}
 	}
 
@@ -826,8 +778,7 @@ public class PostService {
 			|| formCreateRequestDto.getQuestionCreateRequestDtoList().isEmpty()) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_PARAMETER,
-				MessageUtil.EMPTY_QUESTION_INFO
-			);
+				MessageUtil.EMPTY_QUESTION_INFO);
 		}
 
 		AtomicReference<Integer> questionNumber = new AtomicReference<>(1);
@@ -842,12 +793,10 @@ public class PostService {
 					if (questionCreateRequestDto.getQuestionType().equals(QuestionType.OBJECTIVE)) {
 						if (questionCreateRequestDto.getIsMultiple() == null ||
 							(questionCreateRequestDto.getOptionCreateRequestDtoList() == null ||
-								questionCreateRequestDto.getOptionCreateRequestDtoList().isEmpty())
-						) {
+								questionCreateRequestDto.getOptionCreateRequestDtoList().isEmpty())) {
 							throw new BadRequestException(
 								ErrorCode.INVALID_PARAMETER,
-								MessageUtil.INVALID_QUESTION_INFO
-							);
+								MessageUtil.INVALID_QUESTION_INFO);
 						}
 
 						List<FormQuestionOption> formQuestionOptionList = getFormQuestionOptionList(
@@ -856,20 +805,18 @@ public class PostService {
 						formQuestion = FormQuestion.createObjectiveQuestion(
 							questionNumber.getAndSet(questionNumber.get() + 1),
 							questionCreateRequestDto,
-							formQuestionOptionList
-						);
+							formQuestionOptionList);
 
 						formQuestionOptionList.forEach(option -> option.setFormQuestion(formQuestion));
 					} else { // 주관식일 때
 						formQuestion = FormQuestion.createSubjectQuestion(
 							questionNumber.getAndSet(questionNumber.get() + 1),
-							questionCreateRequestDto
-						);
+							questionCreateRequestDto);
 					}
 
 					return formQuestion;
-				}
-			).toList();
+				})
+			.toList();
 	}
 
 	@NotNull
@@ -880,8 +827,7 @@ public class PostService {
 			|| questionCreateRequestDto.getOptionCreateRequestDtoList().isEmpty()) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_PARAMETER,
-				MessageUtil.EMPTY_OPTION_INFO
-			);
+				MessageUtil.EMPTY_OPTION_INFO);
 		}
 
 		AtomicReference<Integer> optionNumber = new AtomicReference<>(1);
@@ -892,9 +838,8 @@ public class PostService {
 				optionCreateRequestDto -> FormQuestionOption.of(
 					optionNumber.getAndSet(optionNumber.get() + 1),
 					optionCreateRequestDto.getOptionText(),
-					null
-				)
-			).toList();
+					null))
+			.toList();
 	}
 
 	// DtoMapper methods
@@ -914,8 +859,7 @@ public class PostService {
 			writable,
 			isFavorite,
 			isBoardSubscribed,
-			post
-		);
+			post);
 	}
 
 	private PostResponseDto toPostResponseDtoExtended(Post post, User user) {
@@ -933,8 +877,7 @@ public class PostService {
 			StatusPolicy.isPostVote(post) ? toVoteResponseDto(post.getVote(), user) : null,
 			StatusPolicy.isPostVote(post),
 			StatusPolicy.isPostForm(post),
-			isPostSubscribed(user, post)
-		);
+			isPostSubscribed(user, post));
 
 		// 화면에 표시할 작성자 닉네임 설정
 		User writer = post.getWriter();
@@ -983,27 +926,21 @@ public class PostService {
 		return postRepository.findById(postId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.POST_NOT_FOUND
-			)
-		);
+				MessageUtil.POST_NOT_FOUND));
 	}
 
 	private Board getBoard(String boardId) {
 		return boardRepository.findById(boardId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.BOARD_NOT_FOUND
-			)
-		);
+				MessageUtil.BOARD_NOT_FOUND));
 	}
 
 	private CircleMember getCircleMember(String userId, String circleId) {
 		return circleMemberRepository.findByUser_IdAndCircle_Id(userId, circleId).orElseThrow(
 			() -> new UnauthorizedException(
 				ErrorCode.NOT_MEMBER,
-				MessageUtil.CIRCLE_APPLY_INVALID
-			)
-		);
+				MessageUtil.CIRCLE_APPLY_INVALID));
 	}
 
 	private User getCircleLeader(Circle circle) {
@@ -1011,8 +948,7 @@ public class PostService {
 		if (leader == null) {
 			throw new InternalServerException(
 				ErrorCode.INTERNAL_SERVER,
-				MessageUtil.CIRCLE_WITHOUT_LEADER
-			);
+				MessageUtil.CIRCLE_WITHOUT_LEADER);
 		}
 		return leader;
 	}
@@ -1022,8 +958,7 @@ public class PostService {
 			form,
 			form.getFormQuestionList().stream()
 				.map(this::toQuestionResponseDto)
-				.collect(Collectors.toList())
-		);
+				.collect(Collectors.toList()));
 	}
 
 	private QuestionResponseDto toQuestionResponseDto(FormQuestion formQuestion) {
@@ -1031,8 +966,7 @@ public class PostService {
 			formQuestion,
 			formQuestion.getFormQuestionOptionList().stream()
 				.map(this::toOptionResponseDto)
-				.collect(Collectors.toList())
-		);
+				.collect(Collectors.toList()));
 	}
 
 	private OptionResponseDto toOptionResponseDto(FormQuestionOption formQuestionOption) {
@@ -1052,14 +986,11 @@ public class PostService {
 		Integer totalUserCount = uniqueUserIds.size();
 		return VoteDtoMapper.INSTANCE.toVoteResponseDto(
 			vote,
-			voteOptionResponseDtoList
-			, StatusPolicy.isVoteOwner(vote, user)
-			, vote.isEnd()
-			, voteRecordRepository.existsByVoteOption_VoteAndUser(vote, user)
-			, voteOptionResponseDtoList.stream()
+			voteOptionResponseDtoList, StatusPolicy.isVoteOwner(vote, user), vote.isEnd(),
+			voteRecordRepository.existsByVoteOption_VoteAndUser(vote, user), voteOptionResponseDtoList.stream()
 				.mapToInt(VoteOptionResponseDto::getVoteCount)
-				.sum()
-			, totalUserCount);
+				.sum(),
+			totalUserCount);
 	}
 
 	private VoteOptionResponseDto tovoteOptionResponseDto(VoteOption voteOption) {
@@ -1090,8 +1021,7 @@ public class PostService {
 		if (!board.getIsAnonymousAllowed() && isAnonymous) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_PARAMETER,
-				MessageUtil.ANONYMOUS_NOT_ALLOWED
-			);
+				MessageUtil.ANONYMOUS_NOT_ALLOWED);
 		}
 	}
 

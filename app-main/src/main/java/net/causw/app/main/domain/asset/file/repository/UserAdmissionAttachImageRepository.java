@@ -6,5 +6,4 @@ import org.springframework.stereotype.Repository;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserAdmissionAttachImage;
 
 @Repository
-public interface UserAdmissionAttachImageRepository extends JpaRepository<UserAdmissionAttachImage, Long> {
-}
+public interface UserAdmissionAttachImageRepository extends JpaRepository<UserAdmissionAttachImage, Long> {}

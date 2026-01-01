@@ -12,7 +12,3 @@ public class PostCreateResponseDto {
 	private String id;
 
 }
-
-
-
-

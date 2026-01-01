@@ -6,9 +6,9 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.springframework.stereotype.Service;
 
-import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.api.dto.form.response.reply.excel.ExcelReplyQuestionResponseDto;
 import net.causw.app.main.api.dto.form.response.reply.excel.ExcelReplyResponseDto;
+import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.InternalServerException;
@@ -27,148 +27,127 @@ public class FormExcelService extends ExcelAbstractService<ExcelReplyResponseDto
 			int cellNum = 0;
 
 			row.createCell(cellNum++).setCellValue(
-				excelReplyResponseDto.getCreatedAt() != null ? excelReplyResponseDto.getCreatedAt().toString() : ""
-			);
+				excelReplyResponseDto.getCreatedAt() != null ? excelReplyResponseDto.getCreatedAt().toString() : "");
 
 			row.createCell(cellNum++).setCellValue(
-				excelReplyResponseDto.getReplyUserResponseDto() != null ?
-					excelReplyResponseDto.getReplyUserResponseDto().getEmail() != null ?
-						excelReplyResponseDto.getReplyUserResponseDto().getEmail() : ""
-					: ""
-			);
+				excelReplyResponseDto.getReplyUserResponseDto() != null
+					? excelReplyResponseDto.getReplyUserResponseDto().getEmail() != null
+						? excelReplyResponseDto.getReplyUserResponseDto().getEmail() : ""
+					: "");
 
 			row.createCell(cellNum++).setCellValue(
-				excelReplyResponseDto.getReplyUserResponseDto() != null ?
-					excelReplyResponseDto.getReplyUserResponseDto().getName() != null ?
-						excelReplyResponseDto.getReplyUserResponseDto().getName() : ""
-					: ""
-			);
+				excelReplyResponseDto.getReplyUserResponseDto() != null
+					? excelReplyResponseDto.getReplyUserResponseDto().getName() != null
+						? excelReplyResponseDto.getReplyUserResponseDto().getName() : ""
+					: "");
 
 			row.createCell(cellNum++).setCellValue(
-				excelReplyResponseDto.getReplyUserResponseDto() != null ?
-					excelReplyResponseDto.getReplyUserResponseDto().getNickName() != null ?
-						excelReplyResponseDto.getReplyUserResponseDto().getNickName() : ""
-					: ""
-			);
+				excelReplyResponseDto.getReplyUserResponseDto() != null
+					? excelReplyResponseDto.getReplyUserResponseDto().getNickName() != null
+						? excelReplyResponseDto.getReplyUserResponseDto().getNickName() : ""
+					: "");
 
 			row.createCell(cellNum++).setCellValue(
-				excelReplyResponseDto.getReplyUserResponseDto() != null ?
-					excelReplyResponseDto.getReplyUserResponseDto().getAdmissionYear() != null ?
-						excelReplyResponseDto.getReplyUserResponseDto().getAdmissionYear().toString() : ""
-					: ""
-			);
+				excelReplyResponseDto.getReplyUserResponseDto() != null
+					? excelReplyResponseDto.getReplyUserResponseDto().getAdmissionYear() != null
+						? excelReplyResponseDto.getReplyUserResponseDto().getAdmissionYear().toString() : ""
+					: "");
 
 			row.createCell(cellNum++).setCellValue(
-				excelReplyResponseDto.getReplyUserResponseDto() != null ?
-					excelReplyResponseDto.getReplyUserResponseDto().getStudentId() != null ?
-						excelReplyResponseDto.getReplyUserResponseDto().getStudentId() : ""
-					: ""
-			);
+				excelReplyResponseDto.getReplyUserResponseDto() != null
+					? excelReplyResponseDto.getReplyUserResponseDto().getStudentId() != null
+						? excelReplyResponseDto.getReplyUserResponseDto().getStudentId() : ""
+					: "");
 
 			row.createCell(cellNum++).setCellValue(
-				excelReplyResponseDto.getReplyUserResponseDto() != null ?
-					excelReplyResponseDto.getReplyUserResponseDto().getMajor() != null ?
-						excelReplyResponseDto.getReplyUserResponseDto().getMajor() : ""
-					: ""
-			);
+				excelReplyResponseDto.getReplyUserResponseDto() != null
+					? excelReplyResponseDto.getReplyUserResponseDto().getMajor() != null
+						? excelReplyResponseDto.getReplyUserResponseDto().getMajor() : ""
+					: "");
 
 			row.createCell(cellNum++).setCellValue(
-				excelReplyResponseDto.getReplyUserResponseDto() != null ?
-					excelReplyResponseDto.getReplyUserResponseDto().getPhoneNumber() != null ?
-						excelReplyResponseDto.getReplyUserResponseDto().getPhoneNumber() : ""
-					: ""
-			);
+				excelReplyResponseDto.getReplyUserResponseDto() != null
+					? excelReplyResponseDto.getReplyUserResponseDto().getPhoneNumber() != null
+						? excelReplyResponseDto.getReplyUserResponseDto().getPhoneNumber() : ""
+					: "");
 
 			row.createCell(cellNum++).setCellValue(
-				excelReplyResponseDto.getReplyUserResponseDto() != null ?
-					excelReplyResponseDto.getReplyUserResponseDto().getAcademicStatus() != null ?
-						excelReplyResponseDto.getReplyUserResponseDto().getAcademicStatus().getValue() : ""
-					: ""
-			);
+				excelReplyResponseDto.getReplyUserResponseDto() != null
+					? excelReplyResponseDto.getReplyUserResponseDto().getAcademicStatus() != null
+						? excelReplyResponseDto.getReplyUserResponseDto().getAcademicStatus().getValue() : ""
+					: "");
 
 			row.createCell(cellNum++).setCellValue(
-				excelReplyResponseDto.getReplyUserResponseDto() != null ?
-					excelReplyResponseDto.getReplyUserResponseDto().getCurrentCompletedSemester() != null ?
-						excelReplyResponseDto.getReplyUserResponseDto().getCurrentCompletedSemester().toString() : ""
-					: ""
-			);
+				excelReplyResponseDto.getReplyUserResponseDto() != null
+					? excelReplyResponseDto.getReplyUserResponseDto().getCurrentCompletedSemester() != null
+						? excelReplyResponseDto.getReplyUserResponseDto().getCurrentCompletedSemester().toString() : ""
+					: "");
 
 			row.createCell(cellNum++).setCellValue(
-				excelReplyResponseDto.getReplyUserResponseDto() != null ?
-					excelReplyResponseDto.getReplyUserResponseDto().getGraduationYear() != null ?
-						excelReplyResponseDto.getReplyUserResponseDto().getGraduationYear().toString() : ""
-					: ""
-			);
+				excelReplyResponseDto.getReplyUserResponseDto() != null
+					? excelReplyResponseDto.getReplyUserResponseDto().getGraduationYear() != null
+						? excelReplyResponseDto.getReplyUserResponseDto().getGraduationYear().toString() : ""
+					: "");
 
 			row.createCell(cellNum++).setCellValue(
-				excelReplyResponseDto.getReplyUserResponseDto() != null ?
-					excelReplyResponseDto.getReplyUserResponseDto().getGraduationType() != null ?
-						excelReplyResponseDto.getReplyUserResponseDto().getGraduationType().getValue() : ""
-					: ""
-			);
+				excelReplyResponseDto.getReplyUserResponseDto() != null
+					? excelReplyResponseDto.getReplyUserResponseDto().getGraduationType() != null
+						? excelReplyResponseDto.getReplyUserResponseDto().getGraduationType().getValue() : ""
+					: "");
 
 			row.createCell(cellNum++).setCellValue(
-				excelReplyResponseDto.getReplyUserResponseDto() != null ?
-					excelReplyResponseDto.getReplyUserResponseDto().getCreatedAt() != null ?
-						excelReplyResponseDto.getReplyUserResponseDto().getCreatedAt().toString() : ""
-					: ""
-			);
+				excelReplyResponseDto.getReplyUserResponseDto() != null
+					? excelReplyResponseDto.getReplyUserResponseDto().getCreatedAt() != null
+						? excelReplyResponseDto.getReplyUserResponseDto().getCreatedAt().toString() : ""
+					: "");
 
 			row.createCell(cellNum++).setCellValue(
-				excelReplyResponseDto.getReplyUserResponseDto() != null ?
-					excelReplyResponseDto.getReplyUserResponseDto().getIsAppliedThisSemester() != null ?
-						excelReplyResponseDto.getReplyUserResponseDto().getIsAppliedThisSemester() ? "O" : "X"
+				excelReplyResponseDto.getReplyUserResponseDto() != null
+					? excelReplyResponseDto.getReplyUserResponseDto().getIsAppliedThisSemester() != null
+						? excelReplyResponseDto.getReplyUserResponseDto().getIsAppliedThisSemester() ? "O" : "X"
 						: ""
-					: ""
-			);
+					: "");
 
 			row.createCell(cellNum++).setCellValue(
-				excelReplyResponseDto.getReplyUserResponseDto() != null ?
-					excelReplyResponseDto.getReplyUserResponseDto().getPaidAt() != null ?
-						excelReplyResponseDto.getReplyUserResponseDto().getPaidAt().toString() : ""
-					: ""
-			);
+				excelReplyResponseDto.getReplyUserResponseDto() != null
+					? excelReplyResponseDto.getReplyUserResponseDto().getPaidAt() != null
+						? excelReplyResponseDto.getReplyUserResponseDto().getPaidAt().toString() : ""
+					: "");
 
 			row.createCell(cellNum++).setCellValue(
-				excelReplyResponseDto.getReplyUserResponseDto() != null ?
-					excelReplyResponseDto.getReplyUserResponseDto().getNumOfPaidSemester() != null ?
-						excelReplyResponseDto.getReplyUserResponseDto().getNumOfPaidSemester().toString() : ""
-					: ""
-			);
+				excelReplyResponseDto.getReplyUserResponseDto() != null
+					? excelReplyResponseDto.getReplyUserResponseDto().getNumOfPaidSemester() != null
+						? excelReplyResponseDto.getReplyUserResponseDto().getNumOfPaidSemester().toString() : ""
+					: "");
 
 			row.createCell(cellNum++).setCellValue(
-				excelReplyResponseDto.getReplyUserResponseDto() != null ?
-					excelReplyResponseDto.getReplyUserResponseDto().getRestOfSemester() != null ?
-						excelReplyResponseDto.getReplyUserResponseDto().getRestOfSemester().toString() : ""
-					: ""
-			);
+				excelReplyResponseDto.getReplyUserResponseDto() != null
+					? excelReplyResponseDto.getReplyUserResponseDto().getRestOfSemester() != null
+						? excelReplyResponseDto.getReplyUserResponseDto().getRestOfSemester().toString() : ""
+					: "");
 
 			row.createCell(cellNum++).setCellValue(
-				excelReplyResponseDto.getReplyUserResponseDto() != null ?
-					excelReplyResponseDto.getReplyUserResponseDto().getIsRefunded() != null ?
-						excelReplyResponseDto.getReplyUserResponseDto().getIsRefunded() ? "O" : "X"
+				excelReplyResponseDto.getReplyUserResponseDto() != null
+					? excelReplyResponseDto.getReplyUserResponseDto().getIsRefunded() != null
+						? excelReplyResponseDto.getReplyUserResponseDto().getIsRefunded() ? "O" : "X"
 						: ""
-					: ""
-			);
+					: "");
 
-			for (ExcelReplyQuestionResponseDto excelReplyQuestionResponseDto : excelReplyResponseDto.getExcelReplyQuestionResponseDtoList()) {
+			for (ExcelReplyQuestionResponseDto excelReplyQuestionResponseDto : excelReplyResponseDto
+				.getExcelReplyQuestionResponseDtoList()) {
 				if (excelReplyQuestionResponseDto.getQuestionAnswer() != null &&
-					excelReplyQuestionResponseDto.getSelectedOptionTextList().isEmpty()
-				) {
+					excelReplyQuestionResponseDto.getSelectedOptionTextList().isEmpty()) {
 					row.createCell(cellNum++).setCellValue(
-						excelReplyQuestionResponseDto.getQuestionAnswer()
-					);
+						excelReplyQuestionResponseDto.getQuestionAnswer());
 				} else if (excelReplyQuestionResponseDto.getQuestionAnswer() == null &&
-					!excelReplyQuestionResponseDto.getSelectedOptionTextList().isEmpty()
-				) {
+					!excelReplyQuestionResponseDto.getSelectedOptionTextList().isEmpty()) {
 					String selectedOptionTextList = String.join("\n",
 						excelReplyQuestionResponseDto.getSelectedOptionTextList());
 					row.createCell(cellNum++).setCellValue(selectedOptionTextList);
 				} else {
 					throw new InternalServerException(
 						ErrorCode.INTERNAL_SERVER,
-						MessageUtil.INTERNAL_SERVER_ERROR
-					);
+						MessageUtil.INTERNAL_SERVER_ERROR);
 				}
 			}
 		}

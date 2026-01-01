@@ -34,7 +34,6 @@ public class UserEntityService {
 		return userRepository.findById(userId)
 			.orElseThrow(() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.USER_NOT_FOUND
-			));
+				MessageUtil.USER_NOT_FOUND));
 	}
 }

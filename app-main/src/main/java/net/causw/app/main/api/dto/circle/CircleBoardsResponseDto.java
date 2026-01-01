@@ -24,8 +24,7 @@ public class CircleBoardsResponseDto {
 
 	public static CircleBoardsResponseDto from(
 		CircleResponseDto circle,
-		List<BoardOfCircleResponseDto> boardList
-	) {
+		List<BoardOfCircleResponseDto> boardList) {
 		return CircleBoardsResponseDto.builder()
 			.circle(circle)
 			.boardList(boardList)

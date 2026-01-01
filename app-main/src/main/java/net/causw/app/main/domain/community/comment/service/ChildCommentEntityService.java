@@ -19,11 +19,8 @@ public class ChildCommentEntityService {
 	public ChildComment findByIdNotDeleted(String childCommentId) {
 
 		return childCommentRepository.findByIdAndIsDeletedFalse(childCommentId)
-			.orElseThrow(() ->
-				new NotFoundException(
-					ErrorCode.ROW_DOES_NOT_EXIST,
-					MessageUtil.CHILD_COMMENT_NOT_FOUND
-				)
-			);
+			.orElseThrow(() -> new NotFoundException(
+				ErrorCode.ROW_DOES_NOT_EXIST,
+				MessageUtil.CHILD_COMMENT_NOT_FOUND));
 	}
 }

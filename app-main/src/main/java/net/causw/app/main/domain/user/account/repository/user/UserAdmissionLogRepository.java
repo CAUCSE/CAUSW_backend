@@ -6,5 +6,4 @@ import org.springframework.stereotype.Repository;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmissionLog;
 
 @Repository
-public interface UserAdmissionLogRepository extends JpaRepository<UserAdmissionLog, String> {
-}
+public interface UserAdmissionLogRepository extends JpaRepository<UserAdmissionLog, String> {}

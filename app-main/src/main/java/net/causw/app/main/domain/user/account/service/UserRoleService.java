@@ -11,13 +11,13 @@ import org.springframework.transaction.annotation.Transactional;
 import net.causw.app.main.api.dto.user.UserResponseDto;
 import net.causw.app.main.api.dto.user.UserUpdateRoleRequestDto;
 import net.causw.app.main.api.dto.util.dtoMapper.UserDtoMapper;
-import net.causw.app.main.domain.user.account.policy.RolePolicy;
-import net.causw.app.main.domain.user.account.util.DelegatableRoleValidator;
-import net.causw.app.main.domain.user.account.util.GrantableRoleValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.account.policy.RolePolicy;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
+import net.causw.app.main.domain.user.account.util.DelegatableRoleValidator;
+import net.causw.app.main.domain.user.account.util.GrantableRoleValidator;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
@@ -41,15 +41,12 @@ public class UserRoleService {
 	public UserResponseDto delegateRole(
 		User delegator,
 		String delegateeId,
-		UserUpdateRoleRequestDto userUpdateRoleRequestDto
-	) {
+		UserUpdateRoleRequestDto userUpdateRoleRequestDto) {
 		// 피위임자의 Id로 피위임자 조회
 		User delegatee = userRepository.findById(delegateeId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.USER_NOT_FOUND
-			)
-		);
+				MessageUtil.USER_NOT_FOUND));
 
 		// 권한을 모두 조회
 		Set<Role> delegatorRoles = delegator.getRoles();
@@ -60,8 +57,7 @@ public class UserRoleService {
 		DelegatableRoleValidator.of(
 			delegatorRoles,
 			delegatedRole,
-			delegateeRoles
-		).validate();
+			delegateeRoles).validate();
 
 		// 학생회장 권한 위임 시 부학생 및 학생회 권한 삭제
 		if (delegatedRole.equals(Role.PRESIDENT)) {
@@ -98,23 +94,18 @@ public class UserRoleService {
 		User grantor, // 부여자
 		String delegatorId, // 위임자
 		String granteeId, // 수혜자
-		UserUpdateRoleRequestDto userUpdateRoleRequestDto
-	) {
+		UserUpdateRoleRequestDto userUpdateRoleRequestDto) {
 		// 위임자의 Id로 위임자 조회
 		User delegator = StringUtils.isBlank(delegatorId) ? null : userRepository.findById(delegatorId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.USER_NOT_FOUND
-			)
-		);
+				MessageUtil.USER_NOT_FOUND));
 
 		// 수혜자의 Id로 수혜자 조회
 		User grantee = userRepository.findById(granteeId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.USER_NOT_FOUND
-			)
-		);
+				MessageUtil.USER_NOT_FOUND));
 
 		// 권한을 모두 조회
 		Role grantedRole = userUpdateRoleRequestDto.getRole();
@@ -124,8 +115,7 @@ public class UserRoleService {
 			grantor.getRoles(),
 			delegator,
 			grantedRole,
-			grantee
-		).validate();
+			grantee).validate();
 
 		// 학생회장 권한 부여 시 부학생 및 학생회 권한 삭제
 		if (grantedRole.equals(Role.PRESIDENT)) {

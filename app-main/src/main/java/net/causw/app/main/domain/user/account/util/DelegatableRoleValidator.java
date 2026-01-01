@@ -1,6 +1,8 @@
 package net.causw.app.main.domain.user.account.util;
 
-import static net.causw.app.main.domain.user.account.policy.RolePolicy.*;
+import static net.causw.app.main.domain.user.account.policy.RolePolicy.canAssign;
+import static net.causw.app.main.domain.user.account.policy.RolePolicy.getDelegatableRoles;
+import static net.causw.app.main.domain.user.account.policy.RolePolicy.isPrivilegeInverted;
 
 import java.util.Set;
 
@@ -46,7 +48,6 @@ public class DelegatableRoleValidator extends AbstractValidator {
 	private UnauthorizedException customUnauthorizedException() {
 		return new UnauthorizedException(
 			ErrorCode.ASSIGN_ROLE_NOT_ALLOWED,
-			MessageUtil.DELEGATE_ROLE_NOT_ALLOWED
-		);
+			MessageUtil.DELEGATE_ROLE_NOT_ALLOWED);
 	}
 }

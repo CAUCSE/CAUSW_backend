@@ -20,8 +20,7 @@ public class LockerIsActiveValidator extends AbstractValidator {
 		if (this.isActive) {
 			throw new BadRequestException(
 				ErrorCode.CANNOT_PERFORMED,
-				"이미 사용 가능한 사물함입니다."
-			);
+				"이미 사용 가능한 사물함입니다.");
 		}
 	}
 }

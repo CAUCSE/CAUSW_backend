@@ -99,8 +99,7 @@ public class CrawledToPostTransferService {
 				false,
 				board,
 				null,
-				new ArrayList<>()
-			);
+				new ArrayList<>());
 			postRepository.save(newPost);
 
 			// 새 게시글인 경우에만 알림 전송
@@ -167,4 +166,4 @@ public class CrawledToPostTransferService {
 
 		return null;
 	}
-} 
+}

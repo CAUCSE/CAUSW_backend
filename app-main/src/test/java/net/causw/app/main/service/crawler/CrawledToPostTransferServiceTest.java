@@ -1,7 +1,12 @@
 package net.causw.app.main.service.crawler;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.mock;
+import static org.mockito.BDDMockito.never;
+import static org.mockito.BDDMockito.verify;
+import static org.mockito.BDDMockito.when;
 
 import java.util.Collections;
 import java.util.List;
@@ -17,15 +22,15 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 import net.causw.app.main.domain.community.board.entity.Board;
-import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
-import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.domain.integration.crawled.service.CrawledToPostTransferService;
-import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.community.board.repository.BoardRepository;
-import net.causw.app.main.domain.integration.crawled.repository.CrawledNoticeRepository;
+import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
-import net.causw.app.main.domain.user.account.repository.user.UserRepository;
+import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
+import net.causw.app.main.domain.integration.crawled.repository.CrawledNoticeRepository;
+import net.causw.app.main.domain.integration.crawled.service.CrawledToPostTransferService;
 import net.causw.app.main.domain.notification.notification.service.BoardNotificationService;
+import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.global.constant.StaticValue;
 
 @ExtendWith(MockitoExtension.class)
@@ -142,4 +147,4 @@ public class CrawledToPostTransferServiceTest {
 		when(post.getTitle()).thenReturn(title);
 		return post;
 	}
-} 
+}

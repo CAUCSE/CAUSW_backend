@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.api.dto.ceremony.CeremonyNotificationSettingResponseDto;
 import net.causw.app.main.api.dto.ceremony.CeremonyResponseDto;
 import net.causw.app.main.api.dto.ceremony.CreateCeremonyNotificationSettingDto;
@@ -20,15 +19,16 @@ import net.causw.app.main.api.dto.ceremony.UpdateCeremonyStateRequestDto;
 import net.causw.app.main.api.dto.notification.CeremonyListNotificationDto;
 import net.causw.app.main.api.dto.util.dtoMapper.CeremonyDtoMapper;
 import net.causw.app.main.api.dto.util.dtoMapper.NotificationDtoMapper;
+import net.causw.app.main.domain.asset.file.entity.UuidFile;
+import net.causw.app.main.domain.asset.file.enums.FilePath;
+import net.causw.app.main.domain.asset.file.service.UuidFileService;
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
-import net.causw.app.main.domain.notification.notification.entity.CeremonyNotificationSetting;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyContext;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
-import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.community.ceremony.repository.CeremonyRepository;
+import net.causw.app.main.domain.notification.notification.entity.CeremonyNotificationSetting;
 import net.causw.app.main.domain.notification.notification.repository.CeremonyNotificationSettingRepository;
 import net.causw.app.main.domain.notification.notification.service.CeremonyNotificationService;
-import net.causw.app.main.domain.asset.file.service.UuidFileService;
 import net.causw.app.main.domain.user.academic.event.CertifiedUserCreatedEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
@@ -55,17 +55,16 @@ public class CeremonyService {
 	@Transactional
 	public CeremonyResponseDto createCeremony(
 		User user,
-		@Valid CreateCeremonyRequestDto createCeremonyRequestDTO,
-		List<MultipartFile> imageFileList
-	) {
+		@Valid
+		CreateCeremonyRequestDto createCeremonyRequestDTO,
+		List<MultipartFile> imageFileList) {
 		// 전체 알림 전송이 false인 경우, 대상 학번이 입력되었는지 검증
 		if (!createCeremonyRequestDTO.getIsSetAll()) {
 			if (createCeremonyRequestDTO.getTargetAdmissionYears() == null
 				|| createCeremonyRequestDTO.getTargetAdmissionYears().isEmpty()) {
 				throw new BadRequestException(
 					ErrorCode.INVALID_PARAMETER,
-					MessageUtil.CEREMONY_TARGET_ADMISSION_YEARS_REQUIRED
-				);
+					MessageUtil.CEREMONY_TARGET_ADMISSION_YEARS_REQUIRED);
 			}
 
 			// 학번 형식 (숫자 2자리) 검증
@@ -73,8 +72,7 @@ public class CeremonyService {
 				if (!admissionYear.matches("^[0-9]{2}$")) {
 					throw new BadRequestException(
 						ErrorCode.INVALID_PARAMETER,
-						MessageUtil.CEREMONY_INVALID_ADMISSION_YEAR_FORMAT
-					);
+						MessageUtil.CEREMONY_INVALID_ADMISSION_YEAR_FORMAT);
 				}
 			}
 		}
@@ -96,8 +94,7 @@ public class CeremonyService {
 			createCeremonyRequestDTO.getEndDate(),
 			createCeremonyRequestDTO.getIsSetAll(),
 			targetAdmissionYears,
-			uuidFileList
-		);
+			uuidFileList);
 		ceremonyRepository.save(ceremony);
 
 		return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
@@ -124,26 +121,22 @@ public class CeremonyService {
 		Ceremony ceremony = ceremonyRepository.findById(ceremonyId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.CEREMONY_NOT_FOUND
-			)
-		);
+				MessageUtil.CEREMONY_NOT_FOUND));
 
 		// context에 따라 다르게 처리
 		switch (context) {
-			case MY:      // 내 경조사 목록
+			case MY: // 내 경조사 목록
 				if (!ceremony.getUser().getId().equals(user.getId())) {
 					throw new BadRequestException(
 						ErrorCode.API_NOT_ACCESSIBLE,
-						MessageUtil.CEREMONY_ACCESS_MY_ONLY
-					);
+						MessageUtil.CEREMONY_ACCESS_MY_ONLY);
 				}
 				return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
-			case ADMIN:       // 관리자용 경조사 관리 페이지
+			case ADMIN: // 관리자용 경조사 관리 페이지
 				if (!user.getRoles().contains(Role.ADMIN)) {
 					throw new BadRequestException(
 						ErrorCode.API_NOT_ACCESSIBLE,
-						MessageUtil.CEREMONY_ACCESS_ADMIN_ONLY
-					);
+						MessageUtil.CEREMONY_ACCESS_ADMIN_ONLY);
 				}
 				return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
 			case GENERAL:
@@ -157,9 +150,7 @@ public class CeremonyService {
 		Ceremony ceremony = ceremonyRepository.findById(updateDto.getCeremonyId()).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.CEREMONY_NOT_FOUND
-			)
-		);
+				MessageUtil.CEREMONY_NOT_FOUND));
 		ceremony.updateCeremonyState(updateDto.getTargetCeremonyState());
 
 		if (updateDto.getTargetCeremonyState() == CeremonyState.ACCEPT) {
@@ -181,9 +172,7 @@ public class CeremonyService {
 		Ceremony ceremony = ceremonyRepository.findByIdAndUser(ceremonyId, user).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.CEREMONY_NOT_FOUND
-			)
-		);
+				MessageUtil.CEREMONY_NOT_FOUND));
 
 		ceremony.updateCeremonyState(CeremonyState.CLOSE);
 
@@ -197,13 +186,11 @@ public class CeremonyService {
 		CreateCeremonyNotificationSettingDto createCeremonyNotificationSettingDTO) {
 		Set<String> admissionYears = validateAdmissionYears(createCeremonyNotificationSettingDTO);
 
-		CeremonyNotificationSetting ceremonyNotificationSetting =
-			CeremonyNotificationSetting.of(
-				admissionYears,
-				createCeremonyNotificationSettingDTO.isSetAll(),
-				createCeremonyNotificationSettingDTO.isNotificationActive(),
-				user
-			);
+		CeremonyNotificationSetting ceremonyNotificationSetting = CeremonyNotificationSetting.of(
+			admissionYears,
+			createCeremonyNotificationSettingDTO.isSetAll(),
+			createCeremonyNotificationSettingDTO.isNotificationActive(),
+			user);
 		ceremonyNotificationSettingRepository.save(ceremonyNotificationSetting);
 
 		return CeremonyDtoMapper.INSTANCE.toCeremonyNotificationSettingResponseDto(ceremonyNotificationSetting);
@@ -214,8 +201,7 @@ public class CeremonyService {
 		User user = userRepository.findById(event.userId())
 			.orElseThrow(() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.USER_NOT_FOUND
-			));
+				MessageUtil.USER_NOT_FOUND));
 
 		ceremonyNotificationSettingRepository.findByUser(user)
 			.orElseGet(() -> ceremonyNotificationSettingRepository.save(
@@ -223,8 +209,7 @@ public class CeremonyService {
 					new HashSet<>(),
 					true,
 					true,
-					user
-				)));
+					user)));
 	}
 
 	@Transactional(readOnly = true)
@@ -233,9 +218,7 @@ public class CeremonyService {
 			.orElseThrow(
 				() -> new BadRequestException(
 					ErrorCode.ROW_DOES_NOT_EXIST,
-					MessageUtil.CEREMONY_NOTIFICATION_SETTING_NOT_FOUND
-				)
-			);
+					MessageUtil.CEREMONY_NOTIFICATION_SETTING_NOT_FOUND));
 		return CeremonyDtoMapper.INSTANCE.toCeremonyNotificationSettingResponseDto(ceremonyNotificationSetting);
 	}
 
@@ -246,9 +229,7 @@ public class CeremonyService {
 			.orElseThrow(
 				() -> new BadRequestException(
 					ErrorCode.ROW_DOES_NOT_EXIST,
-					MessageUtil.CEREMONY_NOTIFICATION_SETTING_NOT_FOUND
-				)
-			);
+					MessageUtil.CEREMONY_NOTIFICATION_SETTING_NOT_FOUND));
 
 		Set<String> admissionYears = validateAdmissionYears(createCeremonyNotificationSettingDTO);
 
@@ -275,8 +256,7 @@ public class CeremonyService {
 		if (dto.getSubscribedAdmissionYears() == null || dto.getSubscribedAdmissionYears().isEmpty()) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_PARAMETER,
-				MessageUtil.CEREMONY_NOTIFICATION_SUBSCRIPTION_REQUIRED
-			);
+				MessageUtil.CEREMONY_NOTIFICATION_SUBSCRIPTION_REQUIRED);
 		}
 
 		// 학번 형식 (2자리) 검증
@@ -284,8 +264,7 @@ public class CeremonyService {
 			if (!year.matches("^[0-9]{2}$")) {
 				throw new BadRequestException(
 					ErrorCode.INVALID_PARAMETER,
-					MessageUtil.CEREMONY_INVALID_ADMISSION_YEAR_FORMAT
-				);
+					MessageUtil.CEREMONY_INVALID_ADMISSION_YEAR_FORMAT);
 			}
 		}
 

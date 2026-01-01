@@ -9,8 +9,8 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.springframework.stereotype.Service;
 
-import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.api.dto.userCouncilFee.UserCouncilFeeResponseDto;
+import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.enums.user.GraduationType;
 
@@ -18,8 +18,8 @@ import net.causw.app.main.domain.user.account.enums.user.GraduationType;
 @Service
 public class CouncilFeeExcelService extends ExcelAbstractService<UserCouncilFeeResponseDto> {
 
-	private static final Function<UserCouncilFeeResponseDto, List<String>> cellMappingFunction =
-		userCouncilFee -> List.of(
+	private static final Function<UserCouncilFeeResponseDto, List<String>> cellMappingFunction = userCouncilFee -> List
+		.of(
 			Optional.ofNullable(userCouncilFee.getIsJoinedService())
 				.map(isRefunded -> isRefunded ? "O" : "X")
 				.orElse(""),
@@ -58,18 +58,16 @@ public class CouncilFeeExcelService extends ExcelAbstractService<UserCouncilFeeR
 				.orElse(""),
 			Optional.ofNullable(userCouncilFee.getIsRefunded())
 				.filter(isRefunded -> isRefunded)
-				.map(isRefunded ->
-					Optional.ofNullable(userCouncilFee.getRefundedAt())
-						.map(String::valueOf)
-						.orElse(""))
+				.map(isRefunded -> Optional.ofNullable(userCouncilFee.getRefundedAt())
+					.map(String::valueOf)
+					.orElse(""))
 				.orElse(""),
 			Optional.ofNullable(userCouncilFee.getRestOfSemester())
 				.map(String::valueOf)
 				.orElse(""),
 			Optional.ofNullable(userCouncilFee.getIsAppliedThisSemester())
 				.map(isRefunded -> isRefunded ? "O" : "X")
-				.orElse("")
-		);
+				.orElse(""));
 
 	@Override
 	public void createDataRows(Sheet sheet, List<UserCouncilFeeResponseDto> dataList) {

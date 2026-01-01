@@ -23,8 +23,8 @@ public class ConstraintExceptionDto {
 	public static ConstraintExceptionDto of(ErrorCode errorCode, String message,
 		ConstraintViolationException exception) {
 		List<String> errors = new ArrayList<>();
-		exception.getConstraintViolations().forEach(violation ->
-			errors.add(violation.getRootBeanClass().getName() + " " +
+		exception.getConstraintViolations()
+			.forEach(violation -> errors.add(violation.getRootBeanClass().getName() + " " +
 				violation.getPropertyPath() + ": " + violation.getMessage()));
 
 		return ConstraintExceptionDto.builder()

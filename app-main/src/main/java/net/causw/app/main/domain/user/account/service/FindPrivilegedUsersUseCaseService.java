@@ -103,8 +103,7 @@ public class FindPrivilegedUsersUseCaseService {
 			usersByRole.getOrDefault(Role.LEADER_4, List.of()),
 			usersByRole.getOrDefault(Role.LEADER_CIRCLE, List.of()),
 			usersByRole.getOrDefault(Role.LEADER_ALUMNI, List.of()),
-			usersByRole.getOrDefault(Role.ALUMNI_MANAGER, List.of())
-		);
+			usersByRole.getOrDefault(Role.ALUMNI_MANAGER, List.of()));
 	}
 
 	private void validateRequestUser(User requester) {
@@ -122,8 +121,7 @@ public class FindPrivilegedUsersUseCaseService {
 	 */
 	private void validateCircleLeaderUsersWithOutCircle(
 		List<String> leaderUserIds,
-		Map<String, List<Circle>> circlesByLeaderId
-	) {
+		Map<String, List<Circle>> circlesByLeaderId) {
 		List<String> leadersWithoutCircle = leaderUserIds.stream()
 			.filter(leaderId -> !circlesByLeaderId.containsKey(leaderId) || circlesByLeaderId.get(leaderId).isEmpty())
 			.toList();
@@ -131,8 +129,7 @@ public class FindPrivilegedUsersUseCaseService {
 		if (!leadersWithoutCircle.isEmpty()) {
 			throw new InternalServerException(
 				ErrorCode.INTERNAL_SERVER,
-				MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER
-			);
+				MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER);
 		}
 	}
 
