@@ -2,7 +2,7 @@ name: Update D-n Labels
 
 on:
   schedule:
-    - cron: '0 0 * * *' # KST 09:00
+    - cron: '0 0 * * *' # UTC 00:00 = KST 09:00
 
 permissions:
   contents: read
@@ -83,7 +83,7 @@ jobs:
       - name: Send Discord notification
         if: ${{ steps.detect.outputs.result != '[]' }}
         env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_BACKEND_GIT_WEBHOOK_URL }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_PR_REMINDER_WEBHOOK_URL }}
         run: |
           content=$(echo '${{ steps.detect.outputs.result }}' | jq -r '
             .[] |
