@@ -14,6 +14,7 @@ public class PostSeedRunner implements CommandLineRunner {
 
     private final BoardSeeder boardSeeder;
     private final PostSeeder postSeeder;
+    private final CommentSeeder commentSeeder;
 
     @Override
     public void run(String... args) {
@@ -21,6 +22,7 @@ public class PostSeedRunner implements CommandLineRunner {
         // NOTE: 유저 시딩 필수
         boardSeeder.seed();
         postSeeder.seed();
+        commentSeeder.seed();
         log.info("🌳 Seeding data finished.");
     }
 }
