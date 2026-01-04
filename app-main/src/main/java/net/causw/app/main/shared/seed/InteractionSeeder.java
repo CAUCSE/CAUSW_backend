@@ -28,7 +28,7 @@ public class InteractionSeeder extends BasePostSeeder<InteractionSeeder.LikeItem
 
 	@Override
 	protected ActionType getActionType() {
-		return ActionType.COMMENT;
+		return ActionType.LIKE;
 	}
 
 	@Override

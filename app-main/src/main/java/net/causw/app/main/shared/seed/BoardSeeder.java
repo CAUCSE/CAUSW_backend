@@ -50,9 +50,8 @@ public class BoardSeeder {
 			"유머게시판", "건의사항", "컴공게시판", "학사공지", "장학공지",
 			"학생회 공지 게시판", "크자회 공지 게시판", "서비스 공지", "졸업생게시판", "새내기게시판");
 
-		int count = 0;
 		for (String name : boardNames) {
-			createActiveBoard(user, name, count++);
+			createActiveBoard(user, name);
 		}
 
 		em.flush();
@@ -61,7 +60,7 @@ public class BoardSeeder {
 		log.info("✅ Seeded {} boards completed.", boardNames.size());
 	}
 
-	private void createActiveBoard(User user, String name, int index) {
+	private void createActiveBoard(User user, String name) {
 		BoardApply boardApply = BoardApply.of( // 일반 게시판 신청
 			user,
 			name,
