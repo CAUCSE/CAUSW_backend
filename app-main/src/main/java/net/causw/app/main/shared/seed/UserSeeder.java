@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -85,8 +84,7 @@ public class UserSeeder {
 			UserAdmissionLogAction.ACCEPT,
 			List.of(),
 			"시드 데이터 - 가입 승인 완료",
-			null
-		);
+			null);
 		em.persist(log);
 
 		return log;
@@ -123,22 +121,19 @@ public class UserSeeder {
 
 	private void createEnrolledAcademicRecord(
 		User user,
-		int completedSemester
-	) {
+		int completedSemester) {
 		// 1. User 상태 확정
 		user.setAcademicStatus(AcademicStatus.ENROLLED);
 		user.setCurrentCompletedSemester(completedSemester);
 		user.setState(UserState.ACTIVE);
 
 		// 2. 학적 증빙 신청서 (이미 ACCEPT 된 상태)
-		UserAcademicRecordApplication application =
-			UserAcademicRecordApplication.create(
-				user,
-				AcademicRecordRequestStatus.ACCEPT,
-				AcademicStatus.ENROLLED,
-				completedSemester,
-				"시드 데이터 - 재학 인증 완료"
-			);
+		UserAcademicRecordApplication application = UserAcademicRecordApplication.create(
+			user,
+			AcademicRecordRequestStatus.ACCEPT,
+			AcademicStatus.ENROLLED,
+			completedSemester,
+			"시드 데이터 - 재학 인증 완료");
 
 		em.persist(application);
 
@@ -149,12 +144,11 @@ public class UserSeeder {
 			"https://cdn.seed.test/academic-record/" + user.getId() + ".png",
 			"academic_record.png",
 			"png",
-			FilePath.ETC
-		);
+			FilePath.ETC);
 		em.persist(recordFile);
 
-		UserAcademicRecordApplicationAttachImage attach =
-			UserAcademicRecordApplicationAttachImage.of(application, recordFile);
+		UserAcademicRecordApplicationAttachImage attach = UserAcademicRecordApplicationAttachImage.of(application,
+			recordFile);
 		em.persist(attach);
 	}
 }
