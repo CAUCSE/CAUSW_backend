@@ -36,12 +36,15 @@ public interface PostRepository extends JpaRepository<Post, String> {
 		    ORDER BY p.createdAt DESC
 		""")
 	Page<Post> findPostsByBoardWithFilters(
-		@Param("boardId") String boardId,
-		@Param("includeDeleted") boolean includeDeleted,
-		@Param("blockedUserIds") Set<String> blockedUserIds,
-		@Param("keyword") String keyword,
-		Pageable pageable
-	);
+		@Param("boardId")
+		String boardId,
+		@Param("includeDeleted")
+		boolean includeDeleted,
+		@Param("blockedUserIds")
+		Set<String> blockedUserIds,
+		@Param("keyword")
+		String keyword,
+		Pageable pageable);
 
 	// 특정 사용자가 작성한 게시글 검색
 	@Query("SELECT p " +
@@ -53,17 +56,21 @@ public interface PostRepository extends JpaRepository<Post, String> {
 		"AND (c.id IS NULL " +
 		"OR (cm.status = 'MEMBER' AND c.isDeleted = false)) " +
 		"ORDER BY p.createdAt DESC")
-	Page<Post> findByUserId(@Param("user_id") String userId, Pageable pageable);
+	Page<Post> findByUserId(@Param("user_id")
+	String userId, Pageable pageable);
 
 	// fetch join으로 Board까지 가져오기
 	@Query(value = "SELECT DISTINCT p FROM Post p JOIN FETCH p.board WHERE p.id = :id")
-	Optional<Post> findById(@Param("id") String id);
+	Optional<Post> findById(@Param("id")
+	String id);
 
 	@Query("SELECT COUNT(c) FROM Comment c WHERE c.post.id = :postId AND c.isDeleted = false")
-	Long countCommentsByPostId(@Param("postId") String postId);
+	Long countCommentsByPostId(@Param("postId")
+	String postId);
 
 	@Query("SELECT COUNT(cc) FROM ChildComment cc WHERE cc.parentComment.post.id = :postId AND cc.isDeleted = false")
-	Long countChildCommentsByPostId(@Param("postId") String postId);
+	Long countChildCommentsByPostId(@Param("postId")
+	String postId);
 
 	// 게시글에 작성된 모든댓글(댓글 + 대댓글)의 수 반환
 	default Long countAllCommentByPost_Id(String postId) {
@@ -81,7 +88,8 @@ public interface PostRepository extends JpaRepository<Post, String> {
 	@Query("UPDATE Post p SET p.isDeleted = true " +
 		"WHERE p.board.id = :boardId AND p.isDeleted = false")
 	@Modifying
-	int deleteAllPostsByBoardId(@Param("boardId") String boardId);
+	int deleteAllPostsByBoardId(@Param("boardId")
+	String boardId);
 
 	Optional<Post> findByIdAndIsDeletedFalse(String postId);
 }

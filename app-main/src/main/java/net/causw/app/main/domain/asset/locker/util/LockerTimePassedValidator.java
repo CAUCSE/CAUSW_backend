@@ -26,20 +26,18 @@ public class LockerTimePassedValidator extends AbstractValidator {
 		if (duration.getSeconds() < StaticValue.JWT_ACCESS_THRESHOLD) {
 			LocalDateTime allowedTime = this.updatedAt.plusSeconds(StaticValue.JWT_ACCESS_THRESHOLD);
 
-			String message =
-				"24시간 이내에 사물함 신청 내역이 있습니다." +
-					allowedTime.getYear() + "-" +
-					allowedTime.getMonthValue() + "-" +
-					allowedTime.getDayOfMonth() + " " +
-					allowedTime.getHour() + ":" +
-					allowedTime.getMinute() + ":" +
-					allowedTime.getSecond() +
-					" 이후에 다시 시도해주세요.";
+			String message = "24시간 이내에 사물함 신청 내역이 있습니다." +
+				allowedTime.getYear() + "-" +
+				allowedTime.getMonthValue() + "-" +
+				allowedTime.getDayOfMonth() + " " +
+				allowedTime.getHour() + ":" +
+				allowedTime.getMinute() + ":" +
+				allowedTime.getSecond() +
+				" 이후에 다시 시도해주세요.";
 
 			throw new BadRequestException(
 				ErrorCode.TIME_NOT_PASSED,
-				message
-			);
+				message);
 		}
 	}
 }

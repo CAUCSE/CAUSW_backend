@@ -42,8 +42,7 @@ public class UserCommentSubscribe extends BaseEntity {
 	public static UserCommentSubscribe of(
 		User user,
 		Comment comment,
-		Boolean isSubscribed
-	) {
+		Boolean isSubscribed) {
 		return UserCommentSubscribe.builder()
 			.user(user)
 			.comment(comment)

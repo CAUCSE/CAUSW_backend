@@ -19,26 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import net.causw.app.main.core.aop.annotation.MeasureTime;
-import net.causw.app.main.domain.asset.file.entity.UuidFile;
-import net.causw.app.main.domain.asset.file.entity.joinEntity.CircleMainImage;
-import net.causw.app.main.domain.community.board.entity.Board;
-import net.causw.app.main.domain.community.board.repository.BoardRepository;
-import net.causw.app.main.domain.community.form.entity.Form;
-import net.causw.app.main.domain.community.form.entity.FormQuestion;
-import net.causw.app.main.domain.community.form.entity.FormQuestionOption;
-import net.causw.app.main.domain.community.form.entity.Reply;
-import net.causw.app.main.domain.community.form.entity.ReplyQuestion;
-import net.causw.app.main.domain.community.form.enums.QuestionType;
-import net.causw.app.main.domain.community.form.enums.RegisteredSemester;
-import net.causw.app.main.domain.community.form.repository.FormRepository;
-import net.causw.app.main.domain.community.form.repository.QuestionRepository;
-import net.causw.app.main.domain.community.form.repository.ReplyRepository;
-import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.domain.community.post.repository.PostRepository;
-import net.causw.app.main.domain.finance.usercouncilfee.entity.UserCouncilFee;
-import net.causw.app.main.domain.finance.usercouncilfee.repository.UserCouncilFeeRepository;
-import net.causw.app.main.domain.integration.export.service.CircleExcelService;
 import net.causw.app.main.api.dto.board.BoardOfCircleResponseDto;
 import net.causw.app.main.api.dto.circle.CircleBoardsResponseDto;
 import net.causw.app.main.api.dto.circle.CircleCreateRequestDto;
@@ -58,19 +38,36 @@ import net.causw.app.main.api.dto.form.response.QuestionResponseDto;
 import net.causw.app.main.api.dto.user.UserResponseDto;
 import net.causw.app.main.api.dto.util.dtoMapper.CircleDtoMapper;
 import net.causw.app.main.api.dto.util.dtoMapper.FormDtoMapper;
+import net.causw.app.main.core.aop.annotation.MeasureTime;
+import net.causw.app.main.domain.asset.file.entity.UuidFile;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.CircleMainImage;
+import net.causw.app.main.domain.asset.file.enums.FilePath;
+import net.causw.app.main.domain.asset.file.repository.CircleMainImageRepository;
+import net.causw.app.main.domain.asset.file.service.UuidFileService;
 import net.causw.app.main.domain.campus.circle.entity.Circle;
 import net.causw.app.main.domain.campus.circle.entity.CircleMember;
 import net.causw.app.main.domain.campus.circle.enums.CircleMemberStatus;
-import net.causw.app.main.domain.asset.file.enums.FilePath;
-import net.causw.app.main.shared.StatusPolicy;
-import net.causw.app.main.domain.finance.usercouncilfee.policy.UserCouncilFeePolicy;
 import net.causw.app.main.domain.campus.circle.repository.CircleMemberRepository;
 import net.causw.app.main.domain.campus.circle.repository.CircleRepository;
-import net.causw.app.main.domain.asset.file.repository.CircleMainImageRepository;
-import net.causw.app.main.domain.asset.file.service.UuidFileService;
 import net.causw.app.main.domain.campus.circle.util.CircleMemberStatusValidator;
-import net.causw.app.main.shared.util.ConstraintValidator;
-import net.causw.app.main.shared.util.TargetIsDeletedValidator;
+import net.causw.app.main.domain.community.board.entity.Board;
+import net.causw.app.main.domain.community.board.repository.BoardRepository;
+import net.causw.app.main.domain.community.form.entity.Form;
+import net.causw.app.main.domain.community.form.entity.FormQuestion;
+import net.causw.app.main.domain.community.form.entity.FormQuestionOption;
+import net.causw.app.main.domain.community.form.entity.Reply;
+import net.causw.app.main.domain.community.form.entity.ReplyQuestion;
+import net.causw.app.main.domain.community.form.enums.QuestionType;
+import net.causw.app.main.domain.community.form.enums.RegisteredSemester;
+import net.causw.app.main.domain.community.form.repository.FormRepository;
+import net.causw.app.main.domain.community.form.repository.QuestionRepository;
+import net.causw.app.main.domain.community.form.repository.ReplyRepository;
+import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.repository.PostRepository;
+import net.causw.app.main.domain.finance.usercouncilfee.entity.UserCouncilFee;
+import net.causw.app.main.domain.finance.usercouncilfee.policy.UserCouncilFeePolicy;
+import net.causw.app.main.domain.finance.usercouncilfee.repository.UserCouncilFeeRepository;
+import net.causw.app.main.domain.integration.export.service.CircleExcelService;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
@@ -81,7 +78,10 @@ import net.causw.app.main.domain.user.account.util.UserNotEqualValidator;
 import net.causw.app.main.domain.user.account.util.UserRoleIsNoneValidator;
 import net.causw.app.main.domain.user.account.util.UserRoleValidator;
 import net.causw.app.main.domain.user.account.util.UserStateValidator;
+import net.causw.app.main.shared.StatusPolicy;
 import net.causw.app.main.shared.ValidatorBucket;
+import net.causw.app.main.shared.util.ConstraintValidator;
+import net.causw.app.main.shared.util.TargetIsDeletedValidator;
 import net.causw.app.main.shared.util.UserEqualValidator;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;
@@ -131,8 +131,7 @@ public class CircleService {
 			.filter(circleMember -> circleMember.getStatus().equals(CircleMemberStatus.MEMBER))
 			.collect(Collectors.toMap(
 				circleMember -> circleMember.getCircle().getId(),
-				circleMember -> circleMember
-			));
+				circleMember -> circleMember));
 
 		return circleRepository.findAll()
 			.stream()
@@ -141,20 +140,17 @@ public class CircleService {
 					return this.toCirclesResponseDtoExtended(
 						circle,
 						getCircleNumMember(circle.getId()),
-						LocalDateTime.now()
-					);
+						LocalDateTime.now());
 				} else {
 					if (joinedCircleMap.containsKey(circle.getId())) {
 						return this.toCirclesResponseDtoExtended(
 							circle,
 							getCircleNumMember(circle.getId()),
-							joinedCircleMap.get(circle.getId()).getUpdatedAt()
-						);
+							joinedCircleMap.get(circle.getId()).getUpdatedAt());
 					} else {
 						return this.toCirclesResponseDto(
 							circle,
-							getCircleNumMember(circle.getId())
-						);
+							getCircleNumMember(circle.getId()));
 					}
 				}
 			}).collect(Collectors.toList());
@@ -163,8 +159,7 @@ public class CircleService {
 	@Transactional(readOnly = true)
 	public CircleBoardsResponseDto findBoards(
 		User user,
-		String circleId
-	) {
+		String circleId) {
 		Set<Role> roles = user.getRoles();
 		Circle circle = getCircle(circleId);
 
@@ -179,15 +174,12 @@ public class CircleService {
 				.orElseThrow(
 					() -> new BadRequestException(
 						ErrorCode.ROW_DOES_NOT_EXIST,
-						MessageUtil.CIRCLE_APPLY_INVALID
-					)
-				);
+						MessageUtil.CIRCLE_APPLY_INVALID));
 
 			ValidatorBucket.of()
 				.consistOf(CircleMemberStatusValidator.of(
 					circleMember.getStatus(),
-					List.of(CircleMemberStatus.MEMBER)
-				))
+					List.of(CircleMemberStatus.MEMBER)))
 				.validate();
 		}
 
@@ -201,14 +193,12 @@ public class CircleService {
 						board,
 						roles,
 						post,
-						postRepository.countAllCommentByPost_Id(post.getId())
-					)).orElse(
+						postRepository.countAllCommentByPost_Id(post.getId())))
+					.orElse(
 						this.toBoardOfCircleResponseDto(
 							board,
-							roles
-						))
-				).collect(Collectors.toList())
-		);
+							roles)))
+				.collect(Collectors.toList()));
 	}
 
 	@Transactional(readOnly = true)
@@ -220,8 +210,7 @@ public class CircleService {
 	public List<CircleMemberResponseDto> getUserList(
 		User user,
 		String circleId,
-		CircleMemberStatus status
-	) {
+		CircleMemberStatus status) {
 		Set<Role> roles = user.getRoles();
 
 		Circle circle = getCircle(circleId);
@@ -246,10 +235,8 @@ public class CircleService {
 				userRepository.findById(circleMember.getUser().getId()).orElseThrow(
 					() -> new BadRequestException(
 						ErrorCode.ROW_DOES_NOT_EXIST,
-						MessageUtil.USER_NOT_FOUND
-					)
-				)
-			)).collect(Collectors.toList());
+						MessageUtil.USER_NOT_FOUND))))
+			.collect(Collectors.toList());
 	}
 
 	@Transactional(readOnly = true)
@@ -265,10 +252,8 @@ public class CircleService {
 				userRepository.findById(circleMember.getUser().getId()).orElseThrow(
 					() -> new BadRequestException(
 						ErrorCode.ROW_DOES_NOT_EXIST,
-						MessageUtil.USER_NOT_FOUND
-					)
-				)
-			)).collect(Collectors.toList());
+						MessageUtil.USER_NOT_FOUND))))
+			.collect(Collectors.toList());
 	}
 
 	@Transactional
@@ -276,12 +261,9 @@ public class CircleService {
 		User leader = userRepository.findById(circleCreateRequestDto.getLeaderId())
 			.orElseThrow(() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.NEW_CIRCLE_LEADER_NOT_FOUND)
-			);
+				MessageUtil.NEW_CIRCLE_LEADER_NOT_FOUND));
 
-		UuidFile uuidFile = (mainImage == null) ?
-			null :
-			uuidFileService.saveFile(mainImage, FilePath.CIRCLE_PROFILE);
+		UuidFile uuidFile = (mainImage == null) ? null : uuidFileService.saveFile(mainImage, FilePath.CIRCLE_PROFILE);
 
 		Circle circle = Circle.of(
 			circleCreateRequestDto.getName(),
@@ -292,8 +274,7 @@ public class CircleService {
 			circleCreateRequestDto.getRecruitMembers(),
 			leader,
 			circleCreateRequestDto.getRecruitEndDate(),
-			circleCreateRequestDto.getIsRecruit()
-		);
+			circleCreateRequestDto.getIsRecruit());
 
 		/* Check if the request user is president or admin
 		 * Then, validate the circle name whether it is duplicated or not
@@ -302,10 +283,8 @@ public class CircleService {
 			name -> {
 				throw new BadRequestException(
 					ErrorCode.ROW_ALREADY_EXIST,
-					MessageUtil.CIRCLE_DUPLICATE_NAME
-				);
-			}
-		);
+					MessageUtil.CIRCLE_DUPLICATE_NAME);
+			});
 
 		// Grant role to the LEADER
 		leader = updateRole(leader, Role.LEADER_CIRCLE);
@@ -326,8 +305,7 @@ public class CircleService {
 			"동아리 공지 게시판",
 			false,
 			false,
-			circle
-		);
+			circle);
 		boardRepository.save(noticeBoard);
 
 		// Apply the leader automatically to the circle
@@ -335,8 +313,7 @@ public class CircleService {
 			circle,
 			leader,
 			null,
-			null
-		));
+			null));
 
 		updateCircleMemberStatus(circleMember.getId(), CircleMemberStatus.MEMBER);
 	}
@@ -346,8 +323,7 @@ public class CircleService {
 		User user,
 		String circleId,
 		CircleUpdateRequestDto circleUpdateRequestDto,
-		MultipartFile mainImage
-	) {
+		MultipartFile mainImage) {
 		Circle circle = getCircle(circleId);
 		Set<Role> roles = user.getRoles();
 
@@ -356,10 +332,8 @@ public class CircleService {
 				name -> {
 					throw new BadRequestException(
 						ErrorCode.ROW_ALREADY_EXIST,
-						MessageUtil.CIRCLE_DUPLICATE_NAME
-					);
-				}
-			);
+						MessageUtil.CIRCLE_DUPLICATE_NAME);
+				});
 		}
 
 		ValidatorBucket validatorBucket = ValidatorBucket.of();
@@ -371,15 +345,13 @@ public class CircleService {
 			.consistOf(ConstraintValidator.of(circle, this.validator))
 			.consistOf(UserRoleValidator.of(
 				roles,
-				Set.of(Role.LEADER_CIRCLE)
-			));
+				Set.of(Role.LEADER_CIRCLE)));
 
 		if (roles.contains(Role.LEADER_CIRCLE)) {
 			validatorBucket
 				.consistOf(UserEqualValidator.of(
 					getCircleLeader(circle).getId(),
-					user.getId()
-				));
+					user.getId()));
 		}
 
 		validatorBucket
@@ -396,16 +368,13 @@ public class CircleService {
 			if (circleMainImage == null) {
 				circleMainImage = CircleMainImage.of(
 					circle,
-					uuidFileService.saveFile(mainImage, FilePath.CIRCLE_PROFILE)
-				);
+					uuidFileService.saveFile(mainImage, FilePath.CIRCLE_PROFILE));
 			} else {
 				circleMainImage.setUuidFile(
 					uuidFileService.updateFile(
 						circle.getCircleMainImage().getUuidFile(),
 						mainImage,
-						FilePath.CIRCLE_PROFILE
-					)
-				);
+						FilePath.CIRCLE_PROFILE));
 			}
 		}
 
@@ -416,8 +385,7 @@ public class CircleService {
 			circleUpdateRequestDto.getCircleTax(),
 			circleUpdateRequestDto.getRecruitMembers(),
 			circleUpdateRequestDto.getRecruitEndDate(),
-			circleUpdateRequestDto.getIsRecruit()
-		);
+			circleUpdateRequestDto.getIsRecruit());
 
 		return this.toCircleResponseDto(circleRepository.save(circle));
 	}
@@ -425,8 +393,7 @@ public class CircleService {
 	@Transactional
 	public CircleResponseDto delete(
 		User user,
-		String circleId
-	) {
+		String circleId) {
 		Circle circle = getCircle(circleId);
 
 		Set<Role> roles = user.getRoles();
@@ -438,22 +405,19 @@ public class CircleService {
 			.consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
 			.consistOf(UserRoleValidator.of(
 				roles,
-				Set.of(Role.LEADER_CIRCLE)
-			));
+				Set.of(Role.LEADER_CIRCLE)));
 
 		if (roles.contains(Role.LEADER_CIRCLE)) {
 			User leader = circle.getLeader().orElse(null);
 			if (leader == null) {
 				throw new InternalServerException(
 					ErrorCode.INTERNAL_SERVER,
-					MessageUtil.CIRCLE_WITHOUT_LEADER
-				);
+					MessageUtil.CIRCLE_WITHOUT_LEADER);
 			}
 			validatorBucket
 				.consistOf(UserEqualValidator.of(
 					leader.getId(),
-					user.getId()
-				));
+					user.getId()));
 		}
 
 		validatorBucket
@@ -471,9 +435,7 @@ public class CircleService {
 		CircleResponseDto circleResponseDto = this.toCircleResponseDto(deleteCircle(circleId).orElseThrow(
 			() -> new InternalServerException(
 				ErrorCode.INTERNAL_SERVER,
-				MessageUtil.INTERNAL_SERVER_ERROR
-			)
-		));
+				MessageUtil.INTERNAL_SERVER_ERROR)));
 
 		deleteAllCircleBoard(circleId);
 
@@ -505,8 +467,7 @@ public class CircleService {
 				circle,
 				user,
 				null,
-				null
-			));
+				null));
 
 		if (circleMember.getStatus().equals(CircleMemberStatus.REJECT)) {
 			circleMember.setStatus(CircleMemberStatus.AWAIT);
@@ -515,8 +476,7 @@ public class CircleService {
 		Reply reply = this.replyForm(
 			this.getForm(circle),
 			formReplyRequestDto,
-			user
-		);
+			user);
 
 		circleMember.setAppliedForm(reply.getForm());
 		circleMember.setAppliedReply(reply);
@@ -541,9 +501,7 @@ public class CircleService {
 			.orElseThrow(
 				() -> new BadRequestException(
 					ErrorCode.ROW_DOES_NOT_EXIST,
-					MessageUtil.CIRCLE_APPLY_INVALID
-				)
-			);
+					MessageUtil.CIRCLE_APPLY_INVALID));
 
 		ValidatorBucket.of()
 			.consistOf(UserStateValidator.of(user.getState()))
@@ -551,27 +509,23 @@ public class CircleService {
 			.consistOf(TargetIsDeletedValidator.of(circleMember.getCircle().getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
 			.consistOf(CircleMemberStatusValidator.of(
 				circleMember.getStatus(),
-				List.of(CircleMemberStatus.MEMBER)
-			))
+				List.of(CircleMemberStatus.MEMBER)))
 			.consistOf(UserNotEqualValidator.of(
 				getCircleLeader(circle).getId(),
-				user.getId())
-			)
+				user.getId()))
 			.validate();
 
 		return this.toCircleMemberResponseDto(
 			updateCircleMemberStatus(circleMember.getId(), CircleMemberStatus.LEAVE),
 			circle,
-			user
-		);
+			user);
 	}
 
 	@Transactional
 	public CircleMemberResponseDto dropUser(
 		User requestUser,
 		String userId,
-		String circleId
-	) {
+		String circleId) {
 		Set<Role> roles = requestUser.getRoles();
 
 		User user = getUser(userId);
@@ -581,9 +535,7 @@ public class CircleService {
 		CircleMember circleMember = circleMemberRepository.findByUser_IdAndCircle_Id(userId, circleId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.CIRCLE_APPLY_INVALID
-			)
-		);
+				MessageUtil.CIRCLE_APPLY_INVALID));
 
 		ValidatorBucket validatorBucket = ValidatorBucket.of();
 		validatorBucket
@@ -597,15 +549,13 @@ public class CircleService {
 			validatorBucket
 				.consistOf(UserEqualValidator.of(
 					getCircleLeader(circle).getId(),
-					requestUser.getId()
-				));
+					requestUser.getId()));
 		}
 
 		validatorBucket
 			.consistOf(CircleMemberStatusValidator.of(
 				circleMember.getStatus(),
-				List.of(CircleMemberStatus.MEMBER)
-			))
+				List.of(CircleMemberStatus.MEMBER)))
 			.consistOf(UserNotEqualValidator.of(
 				getCircleLeader(circle).getId(),
 				userId))
@@ -614,8 +564,7 @@ public class CircleService {
 		return this.toCircleMemberResponseDto(
 			updateCircleMemberStatus(circleMember.getId(), CircleMemberStatus.DROP),
 			circle,
-			user
-		);
+			user);
 	}
 
 	@Transactional
@@ -623,8 +572,7 @@ public class CircleService {
 		return this.updateUserApplication(
 			requestUser,
 			applicationId,
-			CircleMemberStatus.MEMBER
-		);
+			CircleMemberStatus.MEMBER);
 	}
 
 	@Transactional
@@ -632,23 +580,19 @@ public class CircleService {
 		return updateUserApplication(
 			requestUser,
 			applicationId,
-			CircleMemberStatus.REJECT
-		);
+			CircleMemberStatus.REJECT);
 	}
 
 	private CircleMemberResponseDto updateUserApplication(
 		User requestUser,
 		String applicationId,
-		CircleMemberStatus targetStatus
-	) {
+		CircleMemberStatus targetStatus) {
 		Set<Role> roles = requestUser.getRoles();
 
 		CircleMember circleMember = circleMemberRepository.findById(applicationId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.USER_APPLY_NOT_FOUND
-			)
-		);
+				MessageUtil.USER_APPLY_NOT_FOUND));
 
 		User user = getUser(circleMember.getUser().getId());
 
@@ -670,15 +614,13 @@ public class CircleService {
 		validatorBucket
 			.consistOf(CircleMemberStatusValidator.of(
 				circleMember.getStatus(),
-				List.of(CircleMemberStatus.AWAIT)
-			))
+				List.of(CircleMemberStatus.AWAIT)))
 			.validate();
 
 		return this.toCircleMemberResponseDto(
 			updateCircleMemberStatus(applicationId, targetStatus),
 			circleMember.getCircle(),
-			user
-		);
+			user);
 	}
 
 	@Transactional
@@ -693,9 +635,7 @@ public class CircleService {
 			.orElseThrow(
 				() -> new BadRequestException(
 					ErrorCode.ROW_DOES_NOT_EXIST,
-					MessageUtil.CIRCLE_APPLY_INVALID
-				)
-			);
+					MessageUtil.CIRCLE_APPLY_INVALID));
 
 		ValidatorBucket validatorBucket = ValidatorBucket.of();
 		validatorBucket
@@ -706,19 +646,17 @@ public class CircleService {
 				Set.of(Role.LEADER_CIRCLE)))
 			.consistOf(UserEqualValidator.of(
 				loginUser.getId(),
-				getCircleLeader(circle).getId()
-			));
+				getCircleLeader(circle).getId()));
 		validatorBucket
 			.consistOf(CircleMemberStatusValidator.of(
 				restoreTargetMember.getStatus(),
-				List.of(CircleMemberStatus.DROP)
-			)).validate();
+				List.of(CircleMemberStatus.DROP)))
+			.validate();
 
 		return this.toCircleMemberResponseDto(
 			updateCircleMemberStatus(restoreTargetMember.getId(), CircleMemberStatus.MEMBER),
 			circle,
-			targetUser
-		);
+			targetUser);
 	}
 
 	@Transactional(readOnly = true)
@@ -729,24 +667,19 @@ public class CircleService {
 		LinkedHashMap<String, List<ExportCircleMemberToExcelResponseDto>> sheetNameDataMap = new LinkedHashMap<>();
 		sheetNameDataMap.put(
 			"활성 동아리원",
-			getExportCircleMemberToExcelResponseDtoListByMemberStatus(circleId, CircleMemberStatus.MEMBER)
-		);
+			getExportCircleMemberToExcelResponseDtoListByMemberStatus(circleId, CircleMemberStatus.MEMBER));
 		sheetNameDataMap.put(
 			"가입 대기 동아리원",
-			getExportCircleMemberToExcelResponseDtoListByMemberStatus(circleId, CircleMemberStatus.AWAIT)
-		);
+			getExportCircleMemberToExcelResponseDtoListByMemberStatus(circleId, CircleMemberStatus.AWAIT));
 		sheetNameDataMap.put(
 			"거절 동아리원",
-			getExportCircleMemberToExcelResponseDtoListByMemberStatus(circleId, CircleMemberStatus.REJECT)
-		);
+			getExportCircleMemberToExcelResponseDtoListByMemberStatus(circleId, CircleMemberStatus.REJECT));
 		sheetNameDataMap.put(
 			"탈퇴 동아리원",
-			getExportCircleMemberToExcelResponseDtoListByMemberStatus(circleId, CircleMemberStatus.LEAVE)
-		);
+			getExportCircleMemberToExcelResponseDtoListByMemberStatus(circleId, CircleMemberStatus.LEAVE));
 		sheetNameDataMap.put(
 			"추방 동아리원",
-			getExportCircleMemberToExcelResponseDtoListByMemberStatus(circleId, CircleMemberStatus.DROP)
-		);
+			getExportCircleMemberToExcelResponseDtoListByMemberStatus(circleId, CircleMemberStatus.DROP));
 
 		String fileName = circleName + "_부원명단";
 
@@ -768,8 +701,7 @@ public class CircleService {
 			"학생회비 납부 차수",
 			"적용 학생회비 학기",
 			"잔여 학생회비 적용 학기",
-			"학생회비 환불 여부"
-		);
+			"학생회비 환불 여부");
 
 		circleExcelService.generateExcel(response, fileName, headerStringList, sheetNameDataMap);
 	}
@@ -781,9 +713,7 @@ public class CircleService {
 			.orElseThrow(
 				() -> new BadRequestException(
 					ErrorCode.ROW_DOES_NOT_EXIST,
-					MessageUtil.CIRCLE_APPLY_INVALID
-				)
-			);
+					MessageUtil.CIRCLE_APPLY_INVALID));
 
 		ValidatorBucket.of()
 			.consistOf(UserEqualValidator.of(
@@ -791,18 +721,16 @@ public class CircleService {
 				writer.getId()))
 			.consistOf(CircleMemberStatusValidator.of(
 				circleMember.getStatus(),
-				List.of(CircleMemberStatus.MEMBER)
-			))
+				List.of(CircleMemberStatus.MEMBER)))
 			.validate();
 
 		List<Form> priorFormList = formRepository.findAllByCircleAndIsDeleted(circle, false);
 
 		if (!priorFormList.isEmpty()) {
 			priorFormList.forEach(form -> {
-					form.setIsClosed(true);
-					form.setIsDeleted(true);
-				}
-			);
+				form.setIsClosed(true);
+				form.setIsDeleted(true);
+			});
 
 			formRepository.saveAll(priorFormList);
 		}
@@ -823,9 +751,7 @@ public class CircleService {
 	public FormResponseDto getCircleApplicationForm(String circleId) {
 		return this.toFormResponseDto(
 			this.getForm(
-				getCircle(circleId)
-			)
-		);
+				getCircle(circleId)));
 	}
 
 	public Page<FormResponseDto> getAllCircleApplicationFormList(User user, String circleId, Pageable pageable) {
@@ -839,8 +765,7 @@ public class CircleService {
 			.consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
 			.consistOf(UserEqualValidator.of(
 				getCircleLeader(circle).getId(),
-				user.getId()
-			))
+				user.getId()))
 			.validate();
 
 		return formRepository.findAllByCircle(circle, pageable)
@@ -852,9 +777,7 @@ public class CircleService {
 		return circleRepository.findById(circleId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.SMALL_CLUB_NOT_FOUND
-			)
-		);
+				MessageUtil.SMALL_CLUB_NOT_FOUND));
 	}
 
 	private Optional<Circle> deleteCircle(String id) {
@@ -862,8 +785,7 @@ public class CircleService {
 			srcCircle -> {
 				srcCircle.delete();
 				return circleRepository.save(srcCircle);
-			}
-		);
+			});
 	}
 
 	private Long getCircleNumMember(String circleId) {
@@ -876,13 +798,10 @@ public class CircleService {
 			circleMember -> {
 				circleMember.setStatus(targetStatus);
 				return circleMemberRepository.save(circleMember);
-			}
-		).orElseThrow(
-			() -> new BadRequestException(
-				ErrorCode.INTERNAL_SERVER,
-				MessageUtil.INTERNAL_SERVER_ERROR
-			)
-		);
+			}).orElseThrow(
+				() -> new BadRequestException(
+					ErrorCode.INTERNAL_SERVER,
+					MessageUtil.INTERNAL_SERVER_ERROR));
 	}
 
 	// Entity or Entity Information CRUD - User
@@ -890,9 +809,7 @@ public class CircleService {
 		return userRepository.findById(userId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.USER_NOT_FOUND
-			)
-		);
+				MessageUtil.USER_NOT_FOUND));
 	}
 
 	private User getCircleLeader(Circle circle) {
@@ -901,16 +818,13 @@ public class CircleService {
 		if (leader == null) {
 			throw new InternalServerException(
 				ErrorCode.INTERNAL_SERVER,
-				MessageUtil.CIRCLE_WITHOUT_LEADER
-			);
+				MessageUtil.CIRCLE_WITHOUT_LEADER);
 		}
 
 		return userRepository.findById(leader.getId()).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.USER_NOT_FOUND
-			)
-		);
+				MessageUtil.USER_NOT_FOUND));
 	}
 
 	private User updateRole(User targetUser, Role newRole) {
@@ -941,8 +855,7 @@ public class CircleService {
 		if (formList.size() != 1) {
 			throw new InternalServerException(
 				ErrorCode.INTERNAL_SERVER,
-				MessageUtil.INTERNAL_SERVER_ERROR
-			);
+				MessageUtil.INTERNAL_SERVER_ERROR);
 		}
 
 		return formList.get(0);
@@ -958,10 +871,9 @@ public class CircleService {
 
 					return boardRepository.save(srcBoard);
 				}).orElseThrow(
-				() -> new InternalServerException(
-					ErrorCode.INTERNAL_SERVER,
-					MessageUtil.INTERNAL_SERVER_ERROR
-				));
+					() -> new InternalServerException(
+						ErrorCode.INTERNAL_SERVER,
+						MessageUtil.INTERNAL_SERVER_ERROR));
 		}
 		return boardList;
 	}
@@ -974,8 +886,7 @@ public class CircleService {
 		Form form = Form.createCircleApplicationForm(
 			formCreateRequestDto,
 			formQuestionList,
-			circle
-		);
+			circle);
 
 		formQuestionList.forEach(question -> question.setForm(form));
 
@@ -989,8 +900,7 @@ public class CircleService {
 			if (formCreateRequestDto.getIsNeedCouncilFeePaid() == null) {
 				throw new BadRequestException(
 					ErrorCode.INVALID_PARAMETER,
-					MessageUtil.IS_NEED_COUNCIL_FEE_REQUIRED
-				);
+					MessageUtil.IS_NEED_COUNCIL_FEE_REQUIRED);
 			}
 
 			// enrolledRegisteredSemesterList가 null이거나 비어있는 경우 예외 처리
@@ -998,20 +908,17 @@ public class CircleService {
 				formCreateRequestDto.getEnrolledRegisteredSemesterList().isEmpty()) {
 				throw new BadRequestException(
 					ErrorCode.INVALID_PARAMETER,
-					MessageUtil.INVALID_REGISTERED_SEMESTER_INFO
-				);
+					MessageUtil.INVALID_REGISTERED_SEMESTER_INFO);
 			}
 		}
 
 		// isAllowedLeaveOfAbsence가 false이고 isAllowedLeaveOfAbsence가 false인 경우 예외 처리
 		if (formCreateRequestDto.getIsAllowedLeaveOfAbsence() &&
 			(formCreateRequestDto.getLeaveOfAbsenceRegisteredSemesterList() == null ||
-				formCreateRequestDto.getLeaveOfAbsenceRegisteredSemesterList().isEmpty())
-		) {
+				formCreateRequestDto.getLeaveOfAbsenceRegisteredSemesterList().isEmpty())) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_PARAMETER,
-				MessageUtil.INVALID_REGISTERED_SEMESTER_INFO
-			);
+				MessageUtil.INVALID_REGISTERED_SEMESTER_INFO);
 		}
 	}
 
@@ -1022,8 +929,7 @@ public class CircleService {
 			|| formCreateRequestDto.getQuestionCreateRequestDtoList().isEmpty()) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_PARAMETER,
-				MessageUtil.EMPTY_QUESTION_INFO
-			);
+				MessageUtil.EMPTY_QUESTION_INFO);
 		}
 
 		AtomicReference<Integer> questionNumber = new AtomicReference<>(1);
@@ -1038,12 +944,10 @@ public class CircleService {
 					if (questionCreateRequestDto.getQuestionType().equals(QuestionType.OBJECTIVE)) {
 						if (questionCreateRequestDto.getIsMultiple() == null ||
 							(questionCreateRequestDto.getOptionCreateRequestDtoList() == null ||
-								questionCreateRequestDto.getOptionCreateRequestDtoList().isEmpty())
-						) {
+								questionCreateRequestDto.getOptionCreateRequestDtoList().isEmpty())) {
 							throw new BadRequestException(
 								ErrorCode.INVALID_PARAMETER,
-								MessageUtil.INVALID_QUESTION_INFO
-							);
+								MessageUtil.INVALID_QUESTION_INFO);
 						}
 
 						List<FormQuestionOption> formQuestionOptionList = getFormQuestionOptionList(
@@ -1052,20 +956,18 @@ public class CircleService {
 						formQuestion = FormQuestion.createObjectiveQuestion(
 							questionNumber.getAndSet(questionNumber.get() + 1),
 							questionCreateRequestDto,
-							formQuestionOptionList
-						);
+							formQuestionOptionList);
 
 						formQuestionOptionList.forEach(option -> option.setFormQuestion(formQuestion));
 					} else { // 주관식일 때
 						formQuestion = FormQuestion.createSubjectQuestion(
 							questionNumber.getAndSet(questionNumber.get() + 1),
-							questionCreateRequestDto
-						);
+							questionCreateRequestDto);
 					}
 
 					return formQuestion;
-				}
-			).toList();
+				})
+			.toList();
 	}
 
 	@NotNull
@@ -1076,8 +978,7 @@ public class CircleService {
 			|| questionCreateRequestDto.getOptionCreateRequestDtoList().isEmpty()) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_PARAMETER,
-				MessageUtil.EMPTY_OPTION_INFO
-			);
+				MessageUtil.EMPTY_OPTION_INFO);
 		}
 
 		AtomicReference<Integer> optionNumber = new AtomicReference<>(1);
@@ -1088,21 +989,18 @@ public class CircleService {
 				optionCreateRequestDto -> FormQuestionOption.of(
 					optionNumber.getAndSet(optionNumber.get() + 1),
 					optionCreateRequestDto.getOptionText(),
-					null
-				)
-			).toList();
+					null))
+			.toList();
 	}
 
 	private Reply replyForm(
 		Form form,
 		FormReplyRequestDto formReplyRequestDto,
-		User writer
-	) {
+		User writer) {
 		if (form.getIsClosed()) {
 			throw new BadRequestException(
 				ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
-				MessageUtil.FORM_CLOSED
-			);
+				MessageUtil.FORM_CLOSED);
 		}
 
 		this.validateToReply(writer, form);
@@ -1118,15 +1016,13 @@ public class CircleService {
 				if (questionReplyRequestDto.getQuestionReply() != null) {
 					throw new BadRequestException(
 						ErrorCode.INVALID_PARAMETER,
-						MessageUtil.INVALID_REPLY_INFO
-					);
+						MessageUtil.INVALID_REPLY_INFO);
 				}
 
 				if (!formQuestion.getIsMultiple() && questionReplyRequestDto.getSelectedOptionList().size() > 1) {
 					throw new BadRequestException(
 						ErrorCode.INVALID_PARAMETER,
-						MessageUtil.INVALID_REPLY_INFO
-					);
+						MessageUtil.INVALID_REPLY_INFO);
 				}
 
 				// 객관식일 시: 유효한 옵션 번호 선택했는지 검사
@@ -1139,8 +1035,7 @@ public class CircleService {
 					if (!formQuestionOptionNumberList.contains(optionNumber)) {
 						throw new BadRequestException(
 							ErrorCode.INVALID_PARAMETER,
-							MessageUtil.INVALID_REPLY_INFO
-						);
+							MessageUtil.INVALID_REPLY_INFO);
 					}
 				});
 			}
@@ -1149,20 +1044,18 @@ public class CircleService {
 				if (questionReplyRequestDto.getSelectedOptionList() != null) {
 					throw new BadRequestException(
 						ErrorCode.INVALID_PARAMETER,
-						MessageUtil.INVALID_REPLY_INFO
-					);
+						MessageUtil.INVALID_REPLY_INFO);
 				}
 			}
 
 			ReplyQuestion replyQuestion = ReplyQuestion.of(
 				formQuestion,
-				formQuestion.getQuestionType().equals(QuestionType.SUBJECTIVE) ?
-					questionReplyRequestDto.getQuestionReply()
+				formQuestion.getQuestionType().equals(QuestionType.SUBJECTIVE)
+					? questionReplyRequestDto.getQuestionReply()
 					: null,
-				formQuestion.getQuestionType().equals(QuestionType.OBJECTIVE) ?
-					questionReplyRequestDto.getSelectedOptionList()
-					: null
-			);
+				formQuestion.getQuestionType().equals(QuestionType.OBJECTIVE)
+					? questionReplyRequestDto.getSelectedOptionList()
+					: null);
 
 			replyQuestionList.add(replyQuestion);
 		}
@@ -1171,8 +1064,7 @@ public class CircleService {
 		if (replyQuestionList.size() != form.getFormQuestionList().size()) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_PARAMETER,
-				MessageUtil.REPLY_SIZE_INVALID
-			);
+				MessageUtil.REPLY_SIZE_INVALID);
 		}
 
 		// 모든 문항에 대해 답변 정확히 하나 있는지 검사(답변 유효성 검사)
@@ -1186,8 +1078,7 @@ public class CircleService {
 			if (questionReplyCount != 1) {
 				throw new BadRequestException(
 					ErrorCode.INVALID_PARAMETER,
-					MessageUtil.INVALID_REPLY_INFO
-				);
+					MessageUtil.INVALID_REPLY_INFO);
 			}
 		});
 
@@ -1212,23 +1103,19 @@ public class CircleService {
 		if (!allowedAcademicStatus.contains(writer.getAcademicStatus())) {
 			throw new BadRequestException(
 				ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
-				MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
-			);
+				MessageUtil.NOT_ALLOWED_TO_REPLY_FORM);
 		} else {
 			if (allowedAcademicStatus.contains(AcademicStatus.ENROLLED)
-				&& writer.getAcademicStatus().equals(AcademicStatus.ENROLLED)
-			) {
+				&& writer.getAcademicStatus().equals(AcademicStatus.ENROLLED)) {
 				EnumSet<RegisteredSemester> allowedRegisteredSemester = form.getEnrolledRegisteredSemester();
 				if (!allowedRegisteredSemester
 					.stream()
 					.map(RegisteredSemester::getSemester)
 					.collect(Collectors.toSet())
-					.contains(writer.getCurrentCompletedSemester())
-				) {
+					.contains(writer.getCurrentCompletedSemester())) {
 					throw new BadRequestException(
 						ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
-						MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
-					);
+						MessageUtil.NOT_ALLOWED_TO_REPLY_FORM);
 				}
 
 				if (form.getIsNeedCouncilFeePaid()) {
@@ -1236,33 +1123,27 @@ public class CircleService {
 					UserCouncilFee userCouncilFee = userCouncilFeeRepository.findByUser(writer).orElseThrow(
 						() -> new BadRequestException(
 							ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
-							MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
-						)
-					);
+							MessageUtil.NOT_ALLOWED_TO_REPLY_FORM));
 
 					if (!UserCouncilFeePolicy.isAppliedCurrentSemesterWithUser(userCouncilFee)) {
 						throw new BadRequestException(
 							ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
-							MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
-						);
+							MessageUtil.NOT_ALLOWED_TO_REPLY_FORM);
 					}
 				}
 			}
 
 			if (allowedAcademicStatus.contains(AcademicStatus.LEAVE_OF_ABSENCE)
-				&& writer.getAcademicStatus().equals(AcademicStatus.LEAVE_OF_ABSENCE)
-			) {
+				&& writer.getAcademicStatus().equals(AcademicStatus.LEAVE_OF_ABSENCE)) {
 				EnumSet<RegisteredSemester> allowedRegisteredSemester = form.getLeaveOfAbsenceRegisteredSemester();
 				if (!allowedRegisteredSemester
 					.stream()
 					.map(RegisteredSemester::getSemester)
 					.collect(Collectors.toSet())
-					.contains(writer.getCurrentCompletedSemester())
-				) {
+					.contains(writer.getCurrentCompletedSemester())) {
 					throw new BadRequestException(
 						ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
-						MessageUtil.NOT_ALLOWED_TO_REPLY_FORM
-					);
+						MessageUtil.NOT_ALLOWED_TO_REPLY_FORM);
 				}
 			}
 		}
@@ -1272,9 +1153,7 @@ public class CircleService {
 		return questionRepository.findById(questionId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.QUESTION_NOT_FOUND
-			)
-		);
+				MessageUtil.QUESTION_NOT_FOUND));
 	}
 
 	// ValidatorBucket Constructor
@@ -1301,22 +1180,20 @@ public class CircleService {
 		return circleMemberRepository.findByCircle_IdAndStatus(circleId, circleMemberStatus)
 			.stream()
 			.map(circleMember -> {
-					User srcUser = circleMember.getUser();
-					UserCouncilFee userCouncilFee = userCouncilFeeRepository.findByUser(srcUser)
-						.orElse(null);
+				User srcUser = circleMember.getUser();
+				UserCouncilFee userCouncilFee = userCouncilFeeRepository.findByUser(srcUser)
+					.orElse(null);
 
-					if (userCouncilFee == null) {
-						return this.toExportCircleMemberToExcelResponseDtoReduced(srcUser);
-					}
-
-					return this.toExportCircleMemberToExcelResponseDto(
-						srcUser,
-						userCouncilFee,
-						UserCouncilFeePolicy.getRemainingAppliedSemestersWithUser(userCouncilFee),
-						UserCouncilFeePolicy.isAppliedCurrentSemesterWithUser(userCouncilFee)
-					);
+				if (userCouncilFee == null) {
+					return this.toExportCircleMemberToExcelResponseDtoReduced(srcUser);
 				}
-			).toList();
+
+				return this.toExportCircleMemberToExcelResponseDto(
+					srcUser,
+					userCouncilFee,
+					UserCouncilFeePolicy.getRemainingAppliedSemestersWithUser(userCouncilFee),
+					UserCouncilFeePolicy.isAppliedCurrentSemesterWithUser(userCouncilFee));
+			}).toList();
 	}
 
 	// Dto Mapper
@@ -1344,8 +1221,7 @@ public class CircleService {
 	private BoardOfCircleResponseDto toBoardOfCircleResponseDto(Board board, Set<Role> userRoles) {
 		return CircleDtoMapper.INSTANCE.toBoardOfCircleResponseDto(
 			board,
-			BoardOfCircleResponseDto.isWriteable(board, userRoles)
-		);
+			BoardOfCircleResponseDto.isWriteable(board, userRoles));
 	}
 
 	private BoardOfCircleResponseDto toBoardOfCircleResponseDtoExtended(Board board, Set<Role> userRoles, Post post,
@@ -1354,8 +1230,7 @@ public class CircleService {
 			board,
 			BoardOfCircleResponseDto.isWriteable(board, userRoles),
 			post,
-			numComment
-		);
+			numComment);
 	}
 
 	private CircleBoardsResponseDto toCircleBoardsResponseDto(Circle circle, Long numMember,
@@ -1373,8 +1248,7 @@ public class CircleService {
 		return this.toCircleMemberResponseDto(
 			circleMember,
 			this.toCircleResponseDto(circle),
-			this.toUserResponseDto(user)
-		);
+			this.toUserResponseDto(user));
 	}
 
 	private DuplicatedCheckResponseDto toDuplicatedCheckResponseDto(Boolean isDuplicated) {
@@ -1385,8 +1259,7 @@ public class CircleService {
 		User user,
 		UserCouncilFee userCouncilFee,
 		Integer restOfSemester,
-		Boolean isAppliedThisSemester
-	) {
+		Boolean isAppliedThisSemester) {
 		return CircleDtoMapper.INSTANCE.toExportCircleMemberToExcelResponseDto(user, userCouncilFee, restOfSemester,
 			isAppliedThisSemester, userCouncilFee.getNumOfPaidSemester() - restOfSemester);
 	}
@@ -1400,8 +1273,7 @@ public class CircleService {
 			form,
 			form.getFormQuestionList().stream()
 				.map(this::toQuestionResponseDto)
-				.collect(Collectors.toList())
-		);
+				.collect(Collectors.toList()));
 	}
 
 	private QuestionResponseDto toQuestionResponseDto(FormQuestion formQuestion) {
@@ -1409,8 +1281,7 @@ public class CircleService {
 			formQuestion,
 			formQuestion.getFormQuestionOptionList().stream()
 				.map(this::toOptionResponseDto)
-				.collect(Collectors.toList())
-		);
+				.collect(Collectors.toList()));
 	}
 
 	private OptionResponseDto toOptionResponseDto(FormQuestionOption formQuestionOption) {

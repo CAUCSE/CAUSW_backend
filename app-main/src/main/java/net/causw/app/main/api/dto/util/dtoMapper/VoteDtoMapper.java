@@ -6,11 +6,11 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
+import net.causw.app.main.api.dto.user.UserResponseDto;
 import net.causw.app.main.api.dto.vote.VoteOptionResponseDto;
 import net.causw.app.main.api.dto.vote.VoteResponseDto;
 import net.causw.app.main.domain.community.vote.entity.Vote;
 import net.causw.app.main.domain.community.vote.entity.VoteOption;
-import net.causw.app.main.api.dto.user.UserResponseDto;
 
 @Mapper(componentModel = "spring")
 public interface VoteDtoMapper {

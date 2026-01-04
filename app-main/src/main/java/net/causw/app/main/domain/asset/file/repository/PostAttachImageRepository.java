@@ -6,5 +6,4 @@ import org.springframework.stereotype.Repository;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
 
 @Repository
-public interface PostAttachImageRepository extends JpaRepository<PostAttachImage, Long> {
-}
+public interface PostAttachImageRepository extends JpaRepository<PostAttachImage, Long> {}

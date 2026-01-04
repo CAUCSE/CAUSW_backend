@@ -24,8 +24,7 @@ public class ChildCommentNotEqualValidator extends AbstractValidator {
 		if (this.srcChildCommentId.equals(this.targetChildCommentId)) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_PARAMETER,
-				"해당 답장에 답할 수 없습니다."
-			);
+				"해당 답장에 답할 수 없습니다.");
 		}
 	}
 }

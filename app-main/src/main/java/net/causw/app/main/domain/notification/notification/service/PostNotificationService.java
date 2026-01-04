@@ -11,9 +11,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.api.dto.notification.PostNotificationDto;
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.api.dto.notification.PostNotificationDto;
 import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.entity.NotificationLog;
 import net.causw.app.main.domain.notification.notification.entity.UserPostSubscribe;
@@ -71,8 +71,9 @@ public class PostNotificationService implements NotificationService {
 		User postWriter = post.getWriter();
 		User commentWriter = comment.getWriter();
 		Set<String> blockerUserIds = getBlockerUserIds(postWriter, commentWriter);
-		List<UserPostSubscribe> userPostSubscribeList = userPostSubscribeRepository.findByPostAndIsSubscribedTrueExcludingBlockers(
-			post, blockerUserIds);
+		List<UserPostSubscribe> userPostSubscribeList = userPostSubscribeRepository
+			.findByPostAndIsSubscribedTrueExcludingBlockers(
+				post, blockerUserIds);
 
 		PostNotificationDto postNotificationDto = PostNotificationDto.of(post, comment);
 
@@ -92,11 +93,10 @@ public class PostNotificationService implements NotificationService {
 	}
 
 	private Set<String> getBlockerUserIds(User postWriter, User commentWriter) {
-		Set<String> blockeeUserIds =
-			Stream.of(postWriter, commentWriter)
-				.filter(Objects::nonNull)
-				.map(BaseEntity::getId)
-				.collect(Collectors.toSet());
+		Set<String> blockeeUserIds = Stream.of(postWriter, commentWriter)
+			.filter(Objects::nonNull)
+			.map(BaseEntity::getId)
+			.collect(Collectors.toSet());
 
 		return userBlockEntityService.findBlockerUserIdsByUserIds(blockeeUserIds);
 	}

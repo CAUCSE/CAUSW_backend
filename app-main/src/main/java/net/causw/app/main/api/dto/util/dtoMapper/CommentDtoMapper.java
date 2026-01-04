@@ -40,8 +40,7 @@ public interface CommentDtoMapper extends UuidFileToUrlDtoMapper {
 		Boolean updatable,
 		Boolean deletable,
 		Boolean isCommentSubscribed,
-		Boolean isBlocked
-	);
+		Boolean isBlocked);
 
 	@Mapping(target = "writerName", source = "childComment.writer.name")
 	@Mapping(target = "writerNickname", source = "childComment.writer.nickname")
@@ -58,8 +57,7 @@ public interface CommentDtoMapper extends UuidFileToUrlDtoMapper {
 		Boolean isOwner,
 		Boolean updatable,
 		Boolean deletable,
-		Boolean isBlocked
-	);
+		Boolean isBlocked);
 
 	@Mapping(target = "commentId", source = "comment.id")
 	@Mapping(target = "userId", source = "user.id")

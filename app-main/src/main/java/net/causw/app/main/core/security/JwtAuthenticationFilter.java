@@ -24,9 +24,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	private final JwtTokenProvider jwtTokenProvider;
 
 	@Override
-	protected void doFilterInternal(@NotNull HttpServletRequest request,
-		@NotNull HttpServletResponse response,
-		@NotNull FilterChain chain) throws ServletException, IOException {
+	protected void doFilterInternal(@NotNull
+	HttpServletRequest request,
+		@NotNull
+		HttpServletResponse response,
+		@NotNull
+		FilterChain chain) throws ServletException, IOException {
 		String token = jwtTokenProvider.resolveToken(request);
 
 		if (StringUtils.hasText(token)) {

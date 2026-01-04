@@ -22,9 +22,10 @@ public interface UserCommentSubscribeRepository extends JpaRepository<UserCommen
 		AND (:#{#blockerUserIds.size()} = 0 OR ucs.user.id NOT IN :blockerUserIds)
 		""")
 	List<UserCommentSubscribe> findByCommentAndIsSubscribedTrueExcludingBlockerUsers(
-		@Param("comment") Comment comment,
-		@Param("blockerUserIds") Set<String> blockerUserIds
-	);
+		@Param("comment")
+		Comment comment,
+		@Param("blockerUserIds")
+		Set<String> blockerUserIds);
 
 	Optional<UserCommentSubscribe> findByUserAndComment(User user, Comment comment);
 }

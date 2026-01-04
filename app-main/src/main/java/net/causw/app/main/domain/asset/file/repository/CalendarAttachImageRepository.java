@@ -12,6 +12,7 @@ import net.causw.app.main.domain.asset.file.entity.joinEntity.CalendarAttachImag
 public interface CalendarAttachImageRepository extends JpaRepository<CalendarAttachImage, Long> {
 
 	@NotNull
-	Page<CalendarAttachImage> findAll(@NotNull Pageable pageable);
+	Page<CalendarAttachImage> findAll(@NotNull
+	Pageable pageable);
 
 }

@@ -1,7 +1,11 @@
 package net.causw.app.main.infrastructure.security;
 
-import static net.causw.app.main.core.security.SecurityEndpoints.*;
-import static org.assertj.core.api.Assertions.*;
+import static net.causw.app.main.core.security.SecurityEndpoints.ACTIVE_USER_ENDPOINTS;
+import static net.causw.app.main.core.security.SecurityEndpoints.AUTHENTICATED_ENDPOINTS;
+import static net.causw.app.main.core.security.SecurityEndpoints.CERTIFIED_USER_ENDPOINTS;
+import static net.causw.app.main.core.security.SecurityEndpoints.PUBLIC_ENDPOINTS;
+import static net.causw.app.main.core.security.SecurityEndpoints.SecurityEndpoint;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,8 +24,7 @@ public class SecurityEndpointsTest {
 		"PUBLIC", PUBLIC_ENDPOINTS,
 		"AUTHENTICATED", AUTHENTICATED_ENDPOINTS,
 		"ACTIVE_USER", ACTIVE_USER_ENDPOINTS,
-		"CERTIFIED_USER", CERTIFIED_USER_ENDPOINTS
-	);
+		"CERTIFIED_USER", CERTIFIED_USER_ENDPOINTS);
 
 	@ParameterizedTest
 	@MethodSource("getEndpointGroups")

@@ -38,7 +38,6 @@ public class UserRoleValidator extends AbstractValidator {
 
 		throw new UnauthorizedException(
 			ErrorCode.API_NOT_ALLOWED,
-			MessageUtil.API_NOT_ACCESSIBLE
-		);
+			MessageUtil.API_NOT_ACCESSIBLE);
 	}
 }

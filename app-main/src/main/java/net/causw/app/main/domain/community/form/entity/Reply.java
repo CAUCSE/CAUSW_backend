@@ -42,8 +42,7 @@ public class Reply extends BaseEntity {
 	public static Reply of(
 		Form form,
 		User user,
-		List<ReplyQuestion> replyQuestionList
-	) {
+		List<ReplyQuestion> replyQuestionList) {
 		return Reply.builder()
 			.form(form)
 			.user(user)

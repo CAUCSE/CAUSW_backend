@@ -13,16 +13,14 @@ public class ExtendLockerExpiredAtValidator extends AbstractValidator {
 
 	private ExtendLockerExpiredAtValidator(
 		LocalDateTime src,
-		LocalDateTime dst
-	) {
+		LocalDateTime dst) {
 		this.src = src;
 		this.dst = dst;
 	}
 
 	public static ExtendLockerExpiredAtValidator of(
 		LocalDateTime src,
-		LocalDateTime dst
-	) {
+		LocalDateTime dst) {
 		return new ExtendLockerExpiredAtValidator(src, dst);
 	}
 
@@ -31,8 +29,7 @@ public class ExtendLockerExpiredAtValidator extends AbstractValidator {
 		if (src.isEqual(dst)) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_EXPIRE_DATE,
-				MessageUtil.LOCKER_ALREADY_EXTENDED
-			);
+				MessageUtil.LOCKER_ALREADY_EXTENDED);
 		}
 	}
 }

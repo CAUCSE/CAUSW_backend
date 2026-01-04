@@ -65,8 +65,7 @@ public class CouncilFeeFakeUser extends BaseEntity {
 		AcademicStatus academicStatus,
 		Integer currentCompletedSemester,
 		Integer graduationYear,
-		GraduationType graduationType
-	) {
+		GraduationType graduationType) {
 		this.name = name;
 		this.studentId = studentId;
 		this.phoneNumber = phoneNumber;
@@ -87,8 +86,7 @@ public class CouncilFeeFakeUser extends BaseEntity {
 		AcademicStatus academicStatus,
 		Integer currentCompletedSemester,
 		Integer graduationYear,
-		GraduationType graduationType
-	) {
+		GraduationType graduationType) {
 		return CouncilFeeFakeUser.builder()
 			.name(name)
 			.studentId(studentId)

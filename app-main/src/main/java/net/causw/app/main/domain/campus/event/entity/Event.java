@@ -41,8 +41,7 @@ public class Event extends BaseEntity {
 	public static Event of(
 		String url,
 		UuidFile eventImageUuidFile,
-		Boolean isDeleted
-	) {
+		Boolean isDeleted) {
 		Event event = Event.builder()
 			.url(url)
 			.isDeleted(isDeleted)
@@ -50,8 +49,7 @@ public class Event extends BaseEntity {
 
 		EventAttachImage eventAttachImage = EventAttachImage.of(
 			event,
-			eventImageUuidFile
-		);
+			eventImageUuidFile);
 
 		event.setEventImageUuidFile(eventAttachImage);
 

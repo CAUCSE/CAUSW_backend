@@ -42,8 +42,7 @@ public class UserBoardSubscribe extends BaseEntity {
 	public static UserBoardSubscribe of(
 		User user,
 		Board board,
-		Boolean isSubscribed
-	) {
+		Boolean isSubscribed) {
 		return UserBoardSubscribe.builder()
 			.user(user)
 			.board(board)

@@ -12,12 +12,6 @@ import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 import org.springframework.data.domain.Page;
 
-import net.causw.app.main.api.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
-import net.causw.app.main.api.dto.vote.VoteResponseDto;
-import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
-import net.causw.app.main.domain.community.board.entity.Board;
-import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.domain.community.post.repository.query.PostQueryResult;
 import net.causw.app.main.api.dto.form.response.FormResponseDto;
 import net.causw.app.main.api.dto.post.BoardPostsResponseDto;
 import net.causw.app.main.api.dto.post.PostContentDto;
@@ -25,6 +19,12 @@ import net.causw.app.main.api.dto.post.PostCreateResponseDto;
 import net.causw.app.main.api.dto.post.PostResponseDto;
 import net.causw.app.main.api.dto.post.PostSubscribeResponseDto;
 import net.causw.app.main.api.dto.post.PostsResponseDto;
+import net.causw.app.main.api.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
+import net.causw.app.main.api.dto.vote.VoteResponseDto;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
+import net.causw.app.main.domain.community.board.entity.Board;
+import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.repository.query.PostQueryResult;
 import net.causw.app.main.domain.notification.notification.entity.UserPostSubscribe;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
@@ -36,8 +36,7 @@ import net.causw.global.constant.StaticValue;
 @Mapping(target = "writerName", source = "post.writer.name")
 @Mapping(target = "writerAdmissionYear", source = "post.writer.admissionYear")
 @Mapping(target = "writerProfileImage", source = "post.writer.profileImage")
-@interface CommonPostWriterMappings {
-}
+@interface CommonPostWriterMappings{}
 
 @Mapper(componentModel = "spring")
 public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
@@ -78,8 +77,7 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "postAttachImage", source = "queryResult.postAttachImage")
 	@Mapping(target = "isPostVote", source = "queryResult.isPostVote")
 	@Mapping(target = "isPostForm", source = "queryResult.isPostForm")
-	@Mapping(target = "displayWriterNickname",
-		expression = "java(getDisplayWriterNickname(queryResult.hasWriter(), queryResult.writerUserState(), queryResult.isAnonymous(), queryResult.writerNickname()))")
+	@Mapping(target = "displayWriterNickname", expression = "java(getDisplayWriterNickname(queryResult.hasWriter(), queryResult.writerUserState(), queryResult.isAnonymous(), queryResult.writerNickname()))")
 	PostsResponseDto toPostsResponseDto(PostQueryResult queryResult);
 
 	default String getDisplayWriterNickname(boolean hasWriter, UserState state, boolean isAnonymous, String nickname) {
@@ -131,8 +129,7 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
 		VoteResponseDto voteResponseDto,
 		Boolean isPostVote,
 		Boolean isPostForm,
-		Boolean isPostSubscribed
-	);
+		Boolean isPostSubscribed);
 
 	@Mapping(target = "title", source = "post.title")
 	@Mapping(target = "contentId", source = "post.id")

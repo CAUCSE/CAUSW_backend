@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.api.dto.locker.LockerCreateRequestDto;
 import net.causw.app.main.api.dto.locker.LockerExpiredAtRequestDto;
 import net.causw.app.main.api.dto.locker.LockerExtendPeriodRequestDto;
@@ -23,20 +22,20 @@ import net.causw.app.main.api.dto.locker.LockerRegisterPeriodRequestDto;
 import net.causw.app.main.api.dto.locker.LockerResponseDto;
 import net.causw.app.main.api.dto.locker.LockerUpdateRequestDto;
 import net.causw.app.main.api.dto.locker.LockersResponseDto;
-import net.causw.app.main.domain.etc.flag.entity.Flag;
+import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.domain.asset.locker.entity.Locker;
 import net.causw.app.main.domain.asset.locker.entity.LockerLocation;
 import net.causw.app.main.domain.asset.locker.entity.LockerLog;
 import net.causw.app.main.domain.asset.locker.entity.LockerName;
 import net.causw.app.main.domain.asset.locker.enums.LockerLogAction;
-import net.causw.app.main.domain.etc.flag.repository.FlagRepository;
 import net.causw.app.main.domain.asset.locker.repository.LockerLocationRepository;
 import net.causw.app.main.domain.asset.locker.repository.LockerLogRepository;
 import net.causw.app.main.domain.asset.locker.repository.LockerRepository;
-import net.causw.app.main.domain.etc.textfield.service.CommonService;
-import net.causw.app.main.shared.util.ConstraintValidator;
 import net.causw.app.main.domain.asset.locker.util.LockerExpiredAtValidator;
 import net.causw.app.main.domain.asset.locker.util.LockerInUseValidator;
+import net.causw.app.main.domain.etc.flag.entity.Flag;
+import net.causw.app.main.domain.etc.flag.repository.FlagRepository;
+import net.causw.app.main.domain.etc.textfield.service.CommonService;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
@@ -44,6 +43,7 @@ import net.causw.app.main.domain.user.account.util.UserRoleIsNoneValidator;
 import net.causw.app.main.domain.user.account.util.UserRoleValidator;
 import net.causw.app.main.domain.user.account.util.UserStateValidator;
 import net.causw.app.main.shared.ValidatorBucket;
+import net.causw.app.main.shared.util.ConstraintValidator;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;
 import net.causw.global.exception.BadRequestException;
@@ -70,19 +70,16 @@ public class LockerService {
 
 	public LockerResponseDto findById(String id, User user) {
 		return LockerResponseDto.of(lockerRepository.findByIdForRead(id).orElseThrow(
-				() -> new BadRequestException(
-					ErrorCode.ROW_DOES_NOT_EXIST,
-					MessageUtil.LOCKER_NOT_FOUND
-				)),
-			user
-		);
+			() -> new BadRequestException(
+				ErrorCode.ROW_DOES_NOT_EXIST,
+				MessageUtil.LOCKER_NOT_FOUND)),
+			user);
 	}
 
 	@Transactional
 	public LockerResponseDto create(
 		User user,
-		LockerCreateRequestDto lockerCreateRequestDto
-	) {
+		LockerCreateRequestDto lockerCreateRequestDto) {
 		ValidatorBucket validatorBucket = ValidatorBucket.of();
 		Set<Role> roles = user.getRoles();
 
@@ -90,15 +87,12 @@ public class LockerService {
 			.orElseThrow(
 				() -> new BadRequestException(
 					ErrorCode.ROW_DOES_NOT_EXIST,
-					MessageUtil.LOCKER_WRONG_POSITION
-				)
-			);
+					MessageUtil.LOCKER_WRONG_POSITION));
 
 		if (lockerRepository.findByLockerNumber(lockerCreateRequestDto.getLockerNumber()).isPresent()) {
 			throw new BadRequestException(
 				ErrorCode.ROW_ALREADY_EXIST,
-				MessageUtil.LOCKER_DUPLICATE_NUMBER
-			);
+				MessageUtil.LOCKER_DUPLICATE_NUMBER);
 		}
 		Locker locker = Locker.of(lockerCreateRequestDto.getLockerNumber(), true, user, lockerLocation, null);
 		validatorBucket
@@ -120,14 +114,12 @@ public class LockerService {
 	public LockerResponseDto update(
 		User user,
 		String lockerId,
-		LockerUpdateRequestDto lockerUpdateRequestDto
-	) {
+		LockerUpdateRequestDto lockerUpdateRequestDto) {
 		Set<Role> roles = user.getRoles();
 
 		Locker locker = lockerRepository.findById(lockerId).orElseThrow(() -> new BadRequestException(
 			ErrorCode.ROW_DOES_NOT_EXIST,
-			MessageUtil.LOCKER_NOT_FOUND
-		));
+			MessageUtil.LOCKER_NOT_FOUND));
 
 		ValidatorBucket.of()
 			.consistOf(UserStateValidator.of(user.getState()))
@@ -136,14 +128,12 @@ public class LockerService {
 
 		locker = this.lockerActionFactory
 			.getLockerAction(LockerLogAction.of(
-				lockerUpdateRequestDto.getAction()
-			))
+				lockerUpdateRequestDto.getAction()))
 			.updateLockerDomainModel(
 				locker,
 				user,
 				this,
-				commonService
-			)
+				commonService)
 			.orElseThrow(
 				() -> new InternalServerException(ErrorCode.LOCKER_ACTION_ERROR, MessageUtil.LOCKER_ACTION_ERROR));
 
@@ -153,11 +143,9 @@ public class LockerService {
 			user.getEmail(),
 			user.getName(),
 			LockerLogAction.of(
-				lockerUpdateRequestDto.getAction()
-			),
+				lockerUpdateRequestDto.getAction()),
 			lockerUpdateRequestDto.getMessage()
-				.orElse(lockerUpdateRequestDto.getAction())
-		);
+				.orElse(lockerUpdateRequestDto.getAction()));
 
 		lockerRepository.save(locker);
 		lockerLogRepository.save(lockerLog);
@@ -168,22 +156,18 @@ public class LockerService {
 	public LockerResponseDto move(
 		User user,
 		String lockerId,
-		LockerMoveRequestDto lockerMoveRequestDto
-	) {
+		LockerMoveRequestDto lockerMoveRequestDto) {
 		Set<Role> roles = user.getRoles();
 
 		Locker locker = lockerRepository.findById(lockerId).orElseThrow(() -> new BadRequestException(
 			ErrorCode.ROW_DOES_NOT_EXIST,
-			MessageUtil.LOCKER_NOT_FOUND
-		));
+			MessageUtil.LOCKER_NOT_FOUND));
 
 		LockerLocation lockerLocation = lockerLocationRepository.findById(lockerMoveRequestDto.getLockerLocationId())
 			.orElseThrow(
 				() -> new BadRequestException(
 					ErrorCode.ROW_DOES_NOT_EXIST,
-					MessageUtil.LOCKER_WRONG_POSITION
-				)
-			);
+					MessageUtil.LOCKER_WRONG_POSITION));
 
 		locker.move(lockerLocation);
 
@@ -209,8 +193,7 @@ public class LockerService {
 
 		Locker locker = lockerRepository.findById(lockerId).orElseThrow(() -> new BadRequestException(
 			ErrorCode.ROW_DOES_NOT_EXIST,
-			MessageUtil.LOCKER_NOT_FOUND
-		));
+			MessageUtil.LOCKER_NOT_FOUND));
 
 		ValidatorBucket.of()
 			.consistOf(LockerInUseValidator.of(locker.getUser().isPresent()))
@@ -233,9 +216,7 @@ public class LockerService {
 			.orElseThrow(
 				() -> new BadRequestException(
 					ErrorCode.ROW_DOES_NOT_EXIST,
-					MessageUtil.LOCKER_WRONG_POSITION
-				)
-			);
+					MessageUtil.LOCKER_WRONG_POSITION));
 
 		String lockerPeriod = flagRepository.findByValue(true)
 			.map(Flag::getKey)
@@ -247,8 +228,7 @@ public class LockerService {
 			lockerRepository.findByLocation_IdOrderByLockerNumberAsc(lockerLocation.getId())
 				.stream()
 				.map(locker -> LockerResponseDto.of(locker, user))
-				.collect(Collectors.toList())
-		);
+				.collect(Collectors.toList()));
 	}
 
 	public LockerLocationsResponseDto findAllLocation(User user) {
@@ -258,8 +238,7 @@ public class LockerService {
 				.map(locker -> LockerResponseDto.of(
 					locker,
 					user,
-					locker.getLocation().getName()
-				))
+					locker.getLocation().getName()))
 				.orElse(null);
 
 		return LockerLocationsResponseDto.of(
@@ -268,30 +247,25 @@ public class LockerService {
 				.map(lockerLocation -> LockerLocationResponseDto.of(
 					lockerLocation,
 					lockerRepository.countByLocationIdAndIsActiveIsTrueAndUserIdIsNull(lockerLocation.getId()),
-					lockerRepository.countByLocationId(lockerLocation.getId())
-				))
+					lockerRepository.countByLocationId(lockerLocation.getId())))
 				.collect(Collectors.toList()),
-			myLocker
-		);
+			myLocker);
 	}
 
 	@Transactional
 	public LockerLocationResponseDto createLocation(
 		User user,
-		LockerLocationCreateRequestDto lockerLocationCreateRequestDto
-	) {
+		LockerLocationCreateRequestDto lockerLocationCreateRequestDto) {
 		Set<Role> roles = user.getRoles();
 
 		if (lockerLocationRepository.findByName(lockerLocationCreateRequestDto.getName()).isPresent()) {
 			throw new BadRequestException(
 				ErrorCode.ROW_ALREADY_EXIST,
-				MessageUtil.LOCKER_ALREADY_REGISTERED
-			);
+				MessageUtil.LOCKER_ALREADY_REGISTERED);
 		}
 
 		LockerLocation lockerLocation = LockerLocation.of(
-			LockerName.valueOf(lockerLocationCreateRequestDto.getName())
-		);
+			LockerName.valueOf(lockerLocationCreateRequestDto.getName()));
 
 		ValidatorBucket.of()
 			.consistOf(UserStateValidator.of(user.getState()))
@@ -304,36 +278,30 @@ public class LockerService {
 		return LockerLocationResponseDto.of(
 			location,
 			0L,
-			0L
-		);
+			0L);
 	}
 
 	@Transactional
 	public LockerLocationResponseDto updateLocation(
 		User user,
 		String locationId,
-		LockerLocationUpdateRequestDto lockerLocationRequestDto
-	) {
+		LockerLocationUpdateRequestDto lockerLocationRequestDto) {
 		Set<Role> roles = user.getRoles();
 		LockerLocation lockerLocation = lockerLocationRepository.findById(locationId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.LOCKER_WRONG_POSITION
-			)
-		);
+				MessageUtil.LOCKER_WRONG_POSITION));
 
 		if (!lockerLocation.getName().equals(lockerLocationRequestDto.getName())) {
 			if (lockerLocationRepository.findByName(lockerLocationRequestDto.getName()).isPresent()) {
 				throw new BadRequestException(
 					ErrorCode.ROW_ALREADY_EXIST,
-					MessageUtil.LOCKER_ALREADY_REGISTERED
-				);
+					MessageUtil.LOCKER_ALREADY_REGISTERED);
 			}
 		}
 
 		lockerLocation.update(
-			LockerName.valueOf(lockerLocationRequestDto.getName())
-		);
+			LockerName.valueOf(lockerLocationRequestDto.getName()));
 
 		ValidatorBucket.of()
 			.consistOf(UserStateValidator.of(user.getState()))
@@ -345,8 +313,7 @@ public class LockerService {
 		return LockerLocationResponseDto.of(
 			lockerLocation,
 			lockerRepository.countByLocationIdAndIsActiveIsTrueAndUserIdIsNull(lockerLocation.getId()),
-			lockerRepository.countByLocationId(lockerLocation.getId())
-		);
+			lockerRepository.countByLocationId(lockerLocation.getId()));
 	}
 
 	@Transactional
@@ -355,15 +322,12 @@ public class LockerService {
 		LockerLocation lockerLocation = lockerLocationRepository.findById(lockerLocationId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.LOCKER_WRONG_POSITION
-			)
-		);
+				MessageUtil.LOCKER_WRONG_POSITION));
 
 		if (lockerRepository.countByLocationId(lockerLocation.getId()) != 0L) {
 			throw new BadRequestException(
 				ErrorCode.CANNOT_PERFORMED,
-				MessageUtil.LOCKER_ALREADY_EXIST
-			);
+				MessageUtil.LOCKER_ALREADY_EXIST);
 		}
 
 		ValidatorBucket.of()
@@ -381,9 +345,7 @@ public class LockerService {
 		Locker locker = lockerRepository.findByIdForRead(id).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.LOCKER_NOT_FOUND
-			)
-		);
+				MessageUtil.LOCKER_NOT_FOUND));
 		return lockerLogRepository.findByLockerNumber(locker.getLockerNumber())
 			.stream()
 			.map(LockerLogResponseDto::from)
@@ -393,8 +355,7 @@ public class LockerService {
 	@Transactional
 	public void setExpireAt(
 		User user,
-		LockerExpiredAtRequestDto lockerExpiredAtRequestDto
-	) {
+		LockerExpiredAtRequestDto lockerExpiredAtRequestDto) {
 		Set<Role> roles = user.getRoles();
 
 		ValidatorBucket.of()
@@ -405,29 +366,26 @@ public class LockerService {
 
 		commonService.findByKeyInTextField(StaticValue.EXPIRED_AT)
 			.ifPresentOrElse(textField -> {
-					ValidatorBucket.of()
-						// FIXME : LockerExpiredAtValidator에서 기존값보다 이전 날짜로 변경하는 것을 막을 필요가 있는지 검토 필요 (만료일, 반납에 대한 정책 정리 필요)
-						.consistOf(LockerExpiredAtValidator.of(
-							LocalDateTime.parse(textField, StaticValue.LOCKER_DATE_TIME_FORMATTER),
-							lockerExpiredAtRequestDto.getExpiredAt()))
-						.validate();
+				ValidatorBucket.of()
+					// FIXME : LockerExpiredAtValidator에서 기존값보다 이전 날짜로 변경하는 것을 막을 필요가 있는지 검토 필요 (만료일, 반납에 대한 정책 정리 필요)
+					.consistOf(LockerExpiredAtValidator.of(
+						LocalDateTime.parse(textField, StaticValue.LOCKER_DATE_TIME_FORMATTER),
+						lockerExpiredAtRequestDto.getExpiredAt()))
+					.validate();
 
-					commonService.updateTextField(
-						StaticValue.EXPIRED_AT,
-						lockerExpiredAtRequestDto.getExpiredAt().toString()
-					);
-				},
+				commonService.updateTextField(
+					StaticValue.EXPIRED_AT,
+					lockerExpiredAtRequestDto.getExpiredAt().toString());
+			},
 				() -> commonService.createTextField(
 					StaticValue.EXPIRED_AT,
-					lockerExpiredAtRequestDto.getExpiredAt().toString())
-			);
+					lockerExpiredAtRequestDto.getExpiredAt().toString()));
 	}
 
 	@Transactional
 	public void setExtendPeriod(
 		User user,
-		LockerExtendPeriodRequestDto lockerExtendPeriodRequestDto
-	) {
+		LockerExtendPeriodRequestDto lockerExtendPeriodRequestDto) {
 		Set<Role> roles = user.getRoles();
 
 		ValidatorBucket.of()
@@ -442,8 +400,7 @@ public class LockerService {
 		if (!lockerExtendPeriodRequestDto.getExtendStartAt().isBefore(lockerExtendPeriodRequestDto.getExtendEndAt())) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_PERIOD,
-				MessageUtil.LOCKER_INVALID_EXTEND_PERIOD
-			);
+				MessageUtil.LOCKER_INVALID_EXTEND_PERIOD);
 		}
 
 		// 현재 만료일 < 다음 만료일 체크
@@ -451,13 +408,11 @@ public class LockerService {
 			.map(dateString -> LocalDateTime.parse(dateString, StaticValue.LOCKER_DATE_TIME_FORMATTER))
 			.orElseThrow(() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.LOCKER_EXPIRE_DATE_NOT_FOUND
-			));
+				MessageUtil.LOCKER_EXPIRE_DATE_NOT_FOUND));
 		if (!currentExpiredAt.isBefore(lockerExtendPeriodRequestDto.getNextExpiredAt())) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_EXPIRE_DATE,
-				MessageUtil.LOCKER_INVALID_NEXT_EXPIRE_DATE
-			);
+				MessageUtil.LOCKER_INVALID_NEXT_EXPIRE_DATE);
 		}
 
 		// 연장 시작일 설정
@@ -473,8 +428,7 @@ public class LockerService {
 	@Transactional
 	public void setRegisterPeriod(
 		User user,
-		LockerRegisterPeriodRequestDto lockerRegisterPeriodRequestDto
-	) {
+		LockerRegisterPeriodRequestDto lockerRegisterPeriodRequestDto) {
 		Set<Role> roles = user.getRoles();
 
 		ValidatorBucket.of()
@@ -488,8 +442,7 @@ public class LockerService {
 			.isBefore(lockerRegisterPeriodRequestDto.getRegisterEndAt())) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_PERIOD,
-				MessageUtil.LOCKER_INVALID_REGISTER_PERIOD
-			);
+				MessageUtil.LOCKER_INVALID_REGISTER_PERIOD);
 		}
 
 		// 신청 시작일 설정
@@ -542,8 +495,7 @@ public class LockerService {
 				user.getEmail(),
 				user.getName(),
 				LockerLogAction.RETURN,
-				MessageUtil.LOCKER_EXPIRED_ALL_RETURNED
-			);
+				MessageUtil.LOCKER_EXPIRED_ALL_RETURNED);
 			lockerLogRepository.save(lockerLog);
 		}
 	}
@@ -566,8 +518,7 @@ public class LockerService {
 				true,
 				null,
 				lockerLocationSecondFloor,
-				null
-			);
+				null);
 			Set<Role> roles = user.getRoles();
 
 			validatorBucket
@@ -585,8 +536,7 @@ public class LockerService {
 				user.getEmail(),
 				user.getName(),
 				LockerLogAction.ENABLE,
-				MessageUtil.LOCKER_FIRST_CREATED
-			);
+				MessageUtil.LOCKER_FIRST_CREATED);
 			lockerLogRepository.save(lockerLog);
 		}
 	}
@@ -595,8 +545,7 @@ public class LockerService {
 		commonService.findByKeyInTextField(key)
 			.ifPresentOrElse(
 				textField -> commonService.updateTextField(key, value),
-				() -> commonService.createTextField(key, value)
-			);
+				() -> commonService.createTextField(key, value));
 	}
 
 }

@@ -15,8 +15,7 @@ public class BoardNotificationDto {
 	public static BoardNotificationDto of(Board board, Post post) {
 		return BoardNotificationDto.builder()
 			.title(String.format("%s",
-				board.getName()
-			))
+				board.getName()))
 			.body(String.format("새 게시글 : %s",
 				post.getTitle()))
 			.build();

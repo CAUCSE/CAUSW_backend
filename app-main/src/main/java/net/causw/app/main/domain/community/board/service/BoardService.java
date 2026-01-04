@@ -13,15 +13,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-import net.causw.app.main.core.aop.annotation.MeasureTime;
-import net.causw.app.main.domain.community.board.entity.Board;
-import net.causw.app.main.domain.community.board.entity.BoardApply;
-import net.causw.app.main.domain.community.board.entity.BoardApplyStatus;
-import net.causw.app.main.domain.community.board.repository.BoardApplyRepository;
-import net.causw.app.main.domain.community.board.repository.BoardRepository;
-import net.causw.app.main.domain.community.post.repository.PostRepository;
-import net.causw.app.main.domain.community.post.service.PostEntityService;
-import net.causw.app.main.domain.community.post.service.PostService;
 import net.causw.app.main.api.dto.board.BoardAppliesResponseDto;
 import net.causw.app.main.api.dto.board.BoardApplyRequestDto;
 import net.causw.app.main.api.dto.board.BoardApplyResponseDto;
@@ -39,16 +30,22 @@ import net.causw.app.main.api.dto.util.dtoMapper.BoardDtoMapper;
 import net.causw.app.main.api.dto.util.dtoMapper.CircleDtoMapper;
 import net.causw.app.main.api.dto.util.dtoMapper.PostDtoMapper;
 import net.causw.app.main.api.dto.util.dtoMapper.UserDtoMapper;
+import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.domain.campus.circle.entity.Circle;
 import net.causw.app.main.domain.campus.circle.entity.CircleMember;
-import net.causw.app.main.domain.notification.notification.entity.UserBoardSubscribe;
 import net.causw.app.main.domain.campus.circle.enums.CircleMemberStatus;
 import net.causw.app.main.domain.campus.circle.repository.CircleMemberRepository;
 import net.causw.app.main.domain.campus.circle.repository.CircleRepository;
+import net.causw.app.main.domain.community.board.entity.Board;
+import net.causw.app.main.domain.community.board.entity.BoardApply;
+import net.causw.app.main.domain.community.board.entity.BoardApplyStatus;
+import net.causw.app.main.domain.community.board.repository.BoardApplyRepository;
+import net.causw.app.main.domain.community.board.repository.BoardRepository;
+import net.causw.app.main.domain.community.post.repository.PostRepository;
+import net.causw.app.main.domain.community.post.service.PostEntityService;
+import net.causw.app.main.domain.community.post.service.PostService;
+import net.causw.app.main.domain.notification.notification.entity.UserBoardSubscribe;
 import net.causw.app.main.domain.notification.notification.repository.UserBoardSubscribeRepository;
-import net.causw.app.main.shared.util.ConstraintValidator;
-import net.causw.app.main.shared.util.TargetIsDeletedValidator;
-import net.causw.app.main.shared.util.TargetIsNotDeletedValidator;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.academic.event.AcademicStatusChangeEvent;
 import net.causw.app.main.domain.user.academic.event.CertifiedUserCreatedEvent;
@@ -62,6 +59,9 @@ import net.causw.app.main.domain.user.account.util.UserRoleValidator;
 import net.causw.app.main.domain.user.account.util.UserStateValidator;
 import net.causw.app.main.domain.user.relation.service.UserBlockEntityService;
 import net.causw.app.main.shared.ValidatorBucket;
+import net.causw.app.main.shared.util.ConstraintValidator;
+import net.causw.app.main.shared.util.TargetIsDeletedValidator;
+import net.causw.app.main.shared.util.TargetIsNotDeletedValidator;
 import net.causw.app.main.shared.util.UserEqualValidator;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;
@@ -90,8 +90,7 @@ public class BoardService {
 
 	@Transactional(readOnly = true)
 	public List<BoardResponseDto> findAllBoard(
-		User user
-	) {
+		User user) {
 		Set<Role> roles = user.getRoles();
 		AcademicStatus academicStatus = user.getAcademicStatus();
 
@@ -123,8 +122,8 @@ public class BoardService {
 					.collect(Collectors.toList());
 
 				return Stream.concat(
-						this.boardRepository.findByCircle_IdIsNullAndIsDeletedOrderByCreatedAtAsc(false).stream(),
-						this.boardRepository.findByCircle_IdInAndIsDeletedFalseOrderByCreatedAtAsc(circleIdList).stream())
+					this.boardRepository.findByCircle_IdIsNullAndIsDeletedOrderByCreatedAtAsc(false).stream(),
+					this.boardRepository.findByCircle_IdInAndIsDeletedFalseOrderByCreatedAtAsc(circleIdList).stream())
 					.map(board -> toBoardResponseDto(board, roles))
 					.collect(Collectors.toList());
 			}
@@ -133,8 +132,7 @@ public class BoardService {
 
 	@Transactional(readOnly = true)
 	public List<BoardMainResponseDto> mainBoard(
-		User user
-	) {
+		User user) {
 		Set<Role> roles = user.getRoles();
 		AcademicStatus academicStatus = user.getAcademicStatus();
 
@@ -163,9 +161,8 @@ public class BoardService {
 					.collect(Collectors.toList());
 
 				boards = Stream.concat(
-						boardRepository.findByCircle_IdIsNullAndIsDeletedOrderByCreatedAtAsc(false).stream(),
-						boardRepository.findByCircle_IdInAndIsDeletedFalseOrderByCreatedAtAsc(circleIdList).stream()
-					)
+					boardRepository.findByCircle_IdIsNullAndIsDeletedOrderByCreatedAtAsc(false).stream(),
+					boardRepository.findByCircle_IdInAndIsDeletedFalseOrderByCreatedAtAsc(circleIdList).stream())
 					.collect(Collectors.toList());
 			}
 		}
@@ -175,12 +172,11 @@ public class BoardService {
 		return boards.stream()
 			.map(board -> {
 				List<PostContentDto> recentPosts = postEntityService.findPostsByBoardWithFilters(
-						board.getId(),
-						false,
-						blockedUserIds,
-						null,
-						PageRequest.of(0, 2)
-					)
+					board.getId(),
+					false,
+					blockedUserIds,
+					null,
+					PageRequest.of(0, 2))
 					.getContent()
 					.stream()
 					.map(post -> {
@@ -203,8 +199,7 @@ public class BoardService {
 
 	@Transactional(readOnly = true)
 	public BoardNameCheckResponseDto checkBoardName(
-		BoardNameCheckRequestDto boardNameCheckRequestDto
-	) {
+		BoardNameCheckRequestDto boardNameCheckRequestDto) {
 		String boardName = boardNameCheckRequestDto.getName();
 
 		return BoardDtoMapper.INSTANCE.toBoardNameCheckResponseDto(boardRepository.existsByName(boardName));
@@ -213,13 +208,11 @@ public class BoardService {
 	@Transactional
 	public void applyBoard(
 		User creator,
-		BoardApplyRequestDto boardApplyRequestDto
-	) {
+		BoardApplyRequestDto boardApplyRequestDto) {
 		if (boardRepository.existsByName(boardApplyRequestDto.getBoardName())) {
 			throw new BadRequestException(
 				ErrorCode.ROW_ALREADY_EXIST,
-				MessageUtil.BOARD_NAME_ALREADY_EXISTS
-			);
+				MessageUtil.BOARD_NAME_ALREADY_EXISTS);
 		}
 
 		BoardApply newBoardApply = BoardApply.of(
@@ -228,8 +221,7 @@ public class BoardService {
 			boardApplyRequestDto.getDescription(),
 			StaticValue.BOARD_NAME_APP_FREE,
 			boardApplyRequestDto.getIsAnonymousAllowed(),
-			getCircle(boardApplyRequestDto.getCircleId())
-		);
+			getCircle(boardApplyRequestDto.getCircleId()));
 
 		boardApplyRepository.save(newBoardApply);
 	}
@@ -237,20 +229,17 @@ public class BoardService {
 	@Transactional
 	public BoardResponseDto createNoticeBoard(
 		User creator,
-		BoardCreateRequestDto boardCreateRequestDto
-	) {
+		BoardCreateRequestDto boardCreateRequestDto) {
 		if (boardRepository.existsByName(boardCreateRequestDto.getBoardName())) {
 			throw new BadRequestException(
 				ErrorCode.ROW_ALREADY_EXIST,
-				MessageUtil.BOARD_NAME_ALREADY_EXISTS
-			);
+				MessageUtil.BOARD_NAME_ALREADY_EXISTS);
 		}
 
 		if (!StaticValue.BOARD_NAME_APP_NOTICE.equals(boardCreateRequestDto.getBoardCategory())) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_PARAMETER,
-				MessageUtil.INVALID_BOARD_CATEGORY
-			);
+				MessageUtil.INVALID_BOARD_CATEGORY);
 		}
 
 		Board newBoard = boardRepository.save(
@@ -261,8 +250,7 @@ public class BoardService {
 				boardCreateRequestDto.getBoardCategory(),
 				boardCreateRequestDto.getIsAnonymousAllowed(),
 				boardCreateRequestDto.getIsAlumni(),
-				getCircle(boardCreateRequestDto.getCircleId())
-			));
+				getCircle(boardCreateRequestDto.getCircleId())));
 
 		createBoardSubscribe(newBoard.getId());
 
@@ -284,8 +272,7 @@ public class BoardService {
 		BoardApply boardApply = this.boardApplyRepository.findById(applyId)
 			.orElseThrow(() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.APPLY_NOT_FOUND
-			));
+				MessageUtil.APPLY_NOT_FOUND));
 
 		return toBoardApplyResponseDto(boardApply);
 	}
@@ -295,29 +282,25 @@ public class BoardService {
 		BoardApply boardApply = this.boardApplyRepository.findById(boardApplyId)
 			.orElseThrow(() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.APPLY_NOT_FOUND
-			));
+				MessageUtil.APPLY_NOT_FOUND));
 
 		if (boardApply.getAcceptStatus() == BoardApplyStatus.ACCEPTED) { // 해당 신청이 이미 승인된 경우
 			throw new BadRequestException(
 				ErrorCode.CANNOT_PERFORMED,
-				MessageUtil.APPLY_ALREADY_ACCEPTED
-			);
+				MessageUtil.APPLY_ALREADY_ACCEPTED);
 		}
 
 		if (boardApply.getAcceptStatus() == BoardApplyStatus.REJECT) { // 해당 신청이 이미 거부된 경우
 			throw new BadRequestException(
 				ErrorCode.CANNOT_PERFORMED,
-				MessageUtil.APPLY_ALREADY_REJECTED
-			);
+				MessageUtil.APPLY_ALREADY_REJECTED);
 		}
 
 		// 게시판명 중복 체크
 		if (boardRepository.existsByName(boardApply.getBoardName())) {
 			throw new BadRequestException(
 				ErrorCode.ROW_ALREADY_EXIST,
-				MessageUtil.BOARD_NAME_ALREADY_EXISTS
-			);
+				MessageUtil.BOARD_NAME_ALREADY_EXISTS);
 		}
 
 		boardApply.updateAcceptStatus(BoardApplyStatus.ACCEPTED); // 해당 boardApply의 상태를 ACCEPTED로 변경
@@ -330,8 +313,7 @@ public class BoardService {
 			boardApply.getIsAnonymousAllowed(),
 			Optional.ofNullable(boardApply.getCircle())
 				.map(circle -> getCircle(circle.getId()))
-				.orElse(null)
-		);
+				.orElse(null));
 
 		this.boardRepository.save(newBoard);
 
@@ -343,21 +325,18 @@ public class BoardService {
 		BoardApply boardApply = this.boardApplyRepository.findById(boardApplyId)
 			.orElseThrow(() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.APPLY_NOT_FOUND
-			));
+				MessageUtil.APPLY_NOT_FOUND));
 
 		if (boardApply.getAcceptStatus() == BoardApplyStatus.ACCEPTED) { // 해당 신청이 이미 승인된 경우
 			throw new BadRequestException(
 				ErrorCode.CANNOT_PERFORMED,
-				MessageUtil.APPLY_ALREADY_ACCEPTED
-			);
+				MessageUtil.APPLY_ALREADY_ACCEPTED);
 		}
 
 		if (boardApply.getAcceptStatus() == BoardApplyStatus.REJECT) { // 해당 신청이 이미 거부된 경우
 			throw new BadRequestException(
 				ErrorCode.CANNOT_PERFORMED,
-				MessageUtil.APPLY_ALREADY_REJECTED
-			);
+				MessageUtil.APPLY_ALREADY_REJECTED);
 		}
 
 		boardApply.updateAcceptStatus(BoardApplyStatus.REJECT); // 해당 boardApply의 상태를 REJECT로 변경
@@ -370,8 +349,7 @@ public class BoardService {
 	public BoardResponseDto updateBoard(
 		User updater,
 		String boardId,
-		BoardUpdateRequestDto boardUpdateRequestDto
-	) {
+		BoardUpdateRequestDto boardUpdateRequestDto) {
 		Set<Role> roles = updater.getRoles();
 		Board board = getBoard(boardId);
 
@@ -381,8 +359,7 @@ public class BoardService {
 			boardUpdateRequestDto.getName(),
 			boardUpdateRequestDto.getDescription(),
 			String.join(",", boardUpdateRequestDto.getCreateRoleList()),
-			boardUpdateRequestDto.getCategory()
-		);
+			boardUpdateRequestDto.getCategory());
 
 		validatorBucket
 			.consistOf(ConstraintValidator.of(board, this.validator))
@@ -394,8 +371,7 @@ public class BoardService {
 	@Transactional
 	public BoardResponseDto deleteBoard(
 		User deleter,
-		String boardId
-	) {
+		String boardId) {
 		Set<Role> roles = deleter.getRoles();
 		Board board = getBoard(boardId);
 
@@ -404,8 +380,7 @@ public class BoardService {
 			validatorBucket
 				.consistOf(UserRoleValidator.of(
 					roles,
-					Set.of()
-				));
+					Set.of()));
 		}
 		validatorBucket.validate();
 
@@ -420,8 +395,7 @@ public class BoardService {
 	@Transactional
 	public BoardResponseDto restoreBoard(
 		User restorer,
-		String boardId
-	) {
+		String boardId) {
 		Set<Role> roles = restorer.getRoles();
 		Board board = getBoard(boardId);
 
@@ -446,23 +420,18 @@ public class BoardService {
 							circle.getLeader().map(User::getId).orElseThrow(
 								() -> new UnauthorizedException(
 									ErrorCode.API_NOT_ALLOWED,
-									MessageUtil.NOT_CIRCLE_LEADER
-								)
-							),
-							restorer.getId()
-						));
+									MessageUtil.NOT_CIRCLE_LEADER)),
+							restorer.getId()));
 				}
 			},
 			() -> validatorBucket
-				.consistOf(UserRoleValidator.of(roles, Set.of()))
-		);
+				.consistOf(UserRoleValidator.of(roles, Set.of())));
 
 		if (board.getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
 			validatorBucket
 				.consistOf(UserRoleValidator.of(
 					roles,
-					Set.of()
-				));
+					Set.of()));
 		}
 		validatorBucket.validate();
 
@@ -493,16 +462,12 @@ public class BoardService {
 							circle.getLeader().map(User::getId).orElseThrow(
 								() -> new UnauthorizedException(
 									ErrorCode.API_NOT_ALLOWED,
-									MessageUtil.NOT_CIRCLE_LEADER
-								)
-							),
-							user.getId()
-						));
+									MessageUtil.NOT_CIRCLE_LEADER)),
+							user.getId()));
 				}
 			},
 			() -> validatorBucket
-				.consistOf(UserRoleValidator.of(roles, Set.of()))
-		);
+				.consistOf(UserRoleValidator.of(roles, Set.of())));
 		return validatorBucket;
 	}
 
@@ -518,8 +483,7 @@ public class BoardService {
 			roles,
 			writable,
 			circleId,
-			circleName
-		);
+			circleName);
 	}
 
 	private BoardApplyResponseDto toBoardApplyResponseDto(BoardApply boardApply) {
@@ -531,26 +495,21 @@ public class BoardService {
 		return BoardDtoMapper.INSTANCE.toBoardApplyResponseDto(
 			boardApply,
 			userResponseDto,
-			circleResponseDto
-		);
+			circleResponseDto);
 	}
 
 	private User getUser(String userId) {
 		return userRepository.findById(userId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.USER_NOT_FOUND
-			)
-		);
+				MessageUtil.USER_NOT_FOUND));
 	}
 
 	private Board getBoard(String boardId) {
 		return boardRepository.findById(boardId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.BOARD_NOT_FOUND
-			)
-		);
+				MessageUtil.BOARD_NOT_FOUND));
 	}
 
 	private Circle getCircle(String circleId) {
@@ -561,9 +520,7 @@ public class BoardService {
 		return circleRepository.findById(circleId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.SMALL_CLUB_NOT_FOUND
-			)
-		);
+				MessageUtil.SMALL_CLUB_NOT_FOUND));
 	}
 
 	@Transactional
@@ -574,7 +531,7 @@ public class BoardService {
 		List<User> certifiedUsers = userRepository.findAllByState(UserState.ACTIVE).stream()
 			.filter(user -> !AcademicStatus.UNDETERMINED.equals(user.getAcademicStatus()) // 학적 인증이 완료된 일반 사용자
 				|| RoleGroup.EXECUTIVES_AND_PROFESSOR.getRoles().stream() // 집행부/교수 역할의 사용자
-				.anyMatch(user.getRoles()::contains))
+					.anyMatch(user.getRoles()::contains))
 			.toList();
 
 		// 구독 생성

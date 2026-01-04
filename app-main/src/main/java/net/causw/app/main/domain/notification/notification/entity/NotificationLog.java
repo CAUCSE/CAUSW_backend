@@ -36,8 +36,7 @@ public class NotificationLog extends BaseEntity {
 
 	public static NotificationLog of(
 		User user,
-		Notification notification
-	) {
+		Notification notification) {
 		return NotificationLog.builder()
 			.user(user)
 			.notification(notification)

@@ -11,11 +11,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
-import net.causw.app.main.domain.community.comment.service.ChildCommentService;
 import net.causw.app.main.api.dto.comment.ChildCommentCreateRequestDto;
 import net.causw.app.main.api.dto.comment.ChildCommentResponseDto;
 import net.causw.app.main.api.dto.comment.ChildCommentUpdateRequestDto;
+import net.causw.app.main.domain.community.comment.service.ChildCommentService;
+import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.UnauthorizedException;
 
@@ -59,9 +59,10 @@ public class ChildCommentController {
 		@ApiResponse(responseCode = "4004", description = "삭제된 동아리입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	public ChildCommentResponseDto createChildComment(
-		@Valid @RequestBody ChildCommentCreateRequestDto childCommentCreateRequestDto,
-		@AuthenticationPrincipal CustomUserDetails userDetails
-	) {
+		@Valid @RequestBody
+		ChildCommentCreateRequestDto childCommentCreateRequestDto,
+		@AuthenticationPrincipal
+		CustomUserDetails userDetails) {
 
 		return this.childCommentService.createChildComment(userDetails.getUser(), childCommentCreateRequestDto);
 	}
@@ -93,10 +94,12 @@ public class ChildCommentController {
 		@ApiResponse(responseCode = "5000", description = "Comment id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	public ChildCommentResponseDto updateChildComment(
-		@PathVariable("id") String id,
-		@Valid @RequestBody ChildCommentUpdateRequestDto childCommentUpdateRequestDto,
-		@AuthenticationPrincipal CustomUserDetails userDetails
-	) {
+		@PathVariable("id")
+		String id,
+		@Valid @RequestBody
+		ChildCommentUpdateRequestDto childCommentUpdateRequestDto,
+		@AuthenticationPrincipal
+		CustomUserDetails userDetails) {
 		return this.childCommentService.updateChildComment(userDetails.getUser(), id, childCommentUpdateRequestDto);
 	}
 
@@ -127,9 +130,10 @@ public class ChildCommentController {
 		@ApiResponse(responseCode = "5000", description = "Comment id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	public ChildCommentResponseDto deleteChildComment(
-		@PathVariable("id") String id,
-		@AuthenticationPrincipal CustomUserDetails userDetails
-	) {
+		@PathVariable("id")
+		String id,
+		@AuthenticationPrincipal
+		CustomUserDetails userDetails) {
 		return this.childCommentService.deleteChildComment(userDetails.getUser(), id);
 	}
 
@@ -148,16 +152,16 @@ public class ChildCommentController {
 		@ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
 	})
 	public void likeChildComment(
-		@PathVariable("id") String id,
-		@AuthenticationPrincipal CustomUserDetails userDetails
-	) {
+		@PathVariable("id")
+		String id,
+		@AuthenticationPrincipal
+		CustomUserDetails userDetails) {
 		this.childCommentService.likeChildComment(userDetails.getUser(), id);
 	}
 
 	@DeleteMapping(value = "/{id}/like")
 	@ResponseStatus(value = HttpStatus.OK)
-	@Operation(summary = "대댓글 좋아요 취소 API(완료)",
-		description = "특정 유저가 특정 대댓글에 좋아요를 누른 걸 취소하는 Api 입니다.")
+	@Operation(summary = "대댓글 좋아요 취소 API(완료)", description = "특정 유저가 특정 대댓글에 좋아요를 누른 걸 취소하는 Api 입니다.")
 	@ApiResponses({
 		@ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
 		@ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
@@ -170,9 +174,10 @@ public class ChildCommentController {
 		@ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
 	})
 	public void cancelLikeChildComment(
-		@PathVariable("id") String id,
-		@AuthenticationPrincipal CustomUserDetails userDetails
-	) {
+		@PathVariable("id")
+		String id,
+		@AuthenticationPrincipal
+		CustomUserDetails userDetails) {
 		this.childCommentService.cancelLikeChildComment(userDetails.getUser(), id);
 	}
 }

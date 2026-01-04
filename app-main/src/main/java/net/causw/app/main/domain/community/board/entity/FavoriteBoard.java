@@ -30,8 +30,7 @@ public class FavoriteBoard extends BaseEntity {
 
 	public static FavoriteBoard of(
 		User user,
-		Board board
-	) {
+		Board board) {
 		return FavoriteBoard.builder()
 			.user(user)
 			.board(board)

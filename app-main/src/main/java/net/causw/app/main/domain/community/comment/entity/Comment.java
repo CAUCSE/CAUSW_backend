@@ -58,8 +58,7 @@ public class Comment extends BaseEntity {
 		Boolean isDeleted,
 		Boolean isAnonymous,
 		User writer,
-		Post post
-	) {
+		Post post) {
 		return Comment.builder()
 			.content(content)
 			.isDeleted(isDeleted)

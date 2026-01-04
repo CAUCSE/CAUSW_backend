@@ -28,8 +28,10 @@ public enum Role {
 	NONE("NONE", "없음"),
 
 	// Deprecated Roles
-	@Deprecated LEADER_CIRCLE("LEADER_CIRCLE", "동아리장"),
-	@Deprecated PROFESSOR("PROFESSOR", "교수");
+	@Deprecated
+	LEADER_CIRCLE("LEADER_CIRCLE", "동아리장"),
+	@Deprecated
+	PROFESSOR("PROFESSOR", "교수");
 
 	private final String value;
 	private final String description;
@@ -41,9 +43,7 @@ public enum Role {
 			.orElseThrow(
 				() -> new BadRequestException(
 					ErrorCode.INVALID_REQUEST_ROLE,
-					String.format("'%s' is invalid : not supported", value)
-				)
-			);
+					String.format("'%s' is invalid : not supported", value)));
 	}
 
 	public String authority() {
@@ -61,8 +61,7 @@ public enum Role {
 			LEADER_3,
 			LEADER_4,
 			LEADER_ALUMNI,
-			ALUMNI_MANAGER
-		);
+			ALUMNI_MANAGER);
 	}
 
 	@Component("Role")

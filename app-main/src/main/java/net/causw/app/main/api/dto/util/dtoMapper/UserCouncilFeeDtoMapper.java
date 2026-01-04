@@ -18,8 +18,7 @@ import net.causw.app.main.domain.user.account.entity.user.User;
 
 @Retention(RetentionPolicy.CLASS)
 @Target({ElementType.METHOD})
-@interface UserCouncilFeeWriterMappings {
-}
+@interface UserCouncilFeeWriterMappings{}
 
 @Mapper(componentModel = "spring")
 public interface UserCouncilFeeDtoMapper {

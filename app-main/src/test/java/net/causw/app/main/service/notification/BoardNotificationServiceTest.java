@@ -1,13 +1,13 @@
 package net.causw.app.main.service.notification;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.doAnswer;
 import static org.mockito.BDDMockito.doThrow;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.mock;
 import static org.mockito.BDDMockito.never;
 import static org.mockito.BDDMockito.verify;
-import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.eq;
 
@@ -24,18 +24,18 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.community.board.entity.Board;
+import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.entity.NotificationLog;
 import net.causw.app.main.domain.notification.notification.entity.UserBoardSubscribe;
-import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.domain.notification.notification.service.BoardNotificationService;
-import net.causw.app.main.domain.notification.notification.service.FirebasePushNotificationService;
-import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.shared.infra.firebase.FcmUtils;
 import net.causw.app.main.domain.notification.notification.repository.NotificationLogRepository;
 import net.causw.app.main.domain.notification.notification.repository.NotificationRepository;
 import net.causw.app.main.domain.notification.notification.repository.UserBoardSubscribeRepository;
+import net.causw.app.main.domain.notification.notification.service.BoardNotificationService;
+import net.causw.app.main.domain.notification.notification.service.FirebasePushNotificationService;
+import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.relation.service.UserBlockEntityService;
+import net.causw.app.main.shared.infra.firebase.FcmUtils;
 import net.causw.app.main.util.ObjectFixtures;
 
 import com.google.firebase.messaging.FirebaseMessagingException;

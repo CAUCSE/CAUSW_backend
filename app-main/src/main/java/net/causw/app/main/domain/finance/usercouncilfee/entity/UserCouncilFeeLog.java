@@ -2,9 +2,9 @@ package net.causw.app.main.domain.finance.usercouncilfee.entity;
 
 import java.time.LocalDate;
 
-import net.causw.app.main.domain.finance.usercouncilfee.enums.CouncilFeeLogType;
 import net.causw.app.main.domain.campus.semester.entity.Semester;
 import net.causw.app.main.domain.campus.semester.enums.SemesterType;
+import net.causw.app.main.domain.finance.usercouncilfee.enums.CouncilFeeLogType;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Department;
@@ -119,8 +119,7 @@ public class UserCouncilFeeLog extends BaseEntity {
 		Semester semester,
 		User targetUser,
 		Integer restOfSemester,
-		Boolean isAppliedThisSemester
-	) {
+		Boolean isAppliedThisSemester) {
 		return UserCouncilFeeLog.builder()
 			.controlledUserEmail(controlledUser.getEmail())
 			.controlledUserName(controlledUser.getName())
@@ -157,8 +156,7 @@ public class UserCouncilFeeLog extends BaseEntity {
 		Semester semester,
 		CouncilFeeFakeUser targetCouncilFeeFakeUser,
 		Integer restOfSemester,
-		Boolean isAppliedThisSemester
-	) {
+		Boolean isAppliedThisSemester) {
 		return UserCouncilFeeLog.builder()
 			.controlledUserEmail(controlledUser.getEmail())
 			.controlledUserName(controlledUser.getName())

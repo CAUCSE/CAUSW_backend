@@ -6,8 +6,8 @@ import org.springframework.stereotype.Service;
 
 import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.domain.etc.flag.entity.Flag;
-import net.causw.app.main.domain.etc.textfield.entity.TextField;
 import net.causw.app.main.domain.etc.flag.repository.FlagRepository;
+import net.causw.app.main.domain.etc.textfield.entity.TextField;
 import net.causw.app.main.domain.etc.textfield.repository.TextFieldRepository;
 
 import jakarta.transaction.Transactional;
@@ -33,8 +33,7 @@ public class CommonService {
 				flag.setValue(value);
 
 				return this.textFieldRepository.save(flag).getValue();
-			}
-		);
+			});
 	}
 
 	public Boolean createFlag(String key, Boolean value) {
@@ -48,8 +47,7 @@ public class CommonService {
 				flag.setValue(value);
 
 				return this.flagRepository.save(flag).getValue();
-			}
-		).orElse(false);
+			}).orElse(false);
 	}
 
 	public Optional<String> findByKeyInTextField(String key) {

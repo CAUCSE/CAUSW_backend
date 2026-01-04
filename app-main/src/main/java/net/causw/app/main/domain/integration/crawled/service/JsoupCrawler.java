@@ -130,8 +130,7 @@ public class JsoupCrawler implements Crawler {
 			author,
 			announceDate,
 			imageLink,
-			fileLinks.isEmpty() ? null : fileLinks
-		);
+			fileLinks.isEmpty() ? null : fileLinks);
 	}
 
 	private List<CrawledFileLink> extractDownloadLink(Document detailDoc) {

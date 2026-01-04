@@ -24,8 +24,7 @@ public class AdmissionYearValidator extends AbstractValidator {
 		if (!this.validateAdmissionYear()) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_USER_DATA_REQUEST,
-				"입학년도를 다시 확인해주세요."
-			);
+				"입학년도를 다시 확인해주세요.");
 		}
 	}
 

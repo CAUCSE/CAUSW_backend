@@ -8,23 +8,23 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.core.aop.annotation.MeasureTime;
-import net.causw.app.main.domain.finance.usercouncilfee.entity.CouncilFeeFakeUser;
-import net.causw.app.main.domain.finance.usercouncilfee.entity.UserCouncilFee;
-import net.causw.app.main.domain.finance.usercouncilfee.entity.UserCouncilFeeLog;
-import net.causw.app.main.domain.finance.usercouncilfee.enums.CouncilFeeLogType;
-import net.causw.app.main.domain.finance.usercouncilfee.repository.UserCouncilFeeLogRepository;
-import net.causw.app.main.domain.finance.usercouncilfee.repository.UserCouncilFeeRepository;
-import net.causw.app.main.domain.integration.export.service.CouncilFeeExcelService;
 import net.causw.app.main.api.dto.userCouncilFee.CreateUserCouncilFeeWithFakeUserRequestDto;
 import net.causw.app.main.api.dto.userCouncilFee.CreateUserCouncilFeeWithUserRequestDto;
 import net.causw.app.main.api.dto.userCouncilFee.CurrentUserCouncilFeeResponseDto;
 import net.causw.app.main.api.dto.userCouncilFee.UserCouncilFeeListResponseDto;
 import net.causw.app.main.api.dto.userCouncilFee.UserCouncilFeeResponseDto;
 import net.causw.app.main.api.dto.util.dtoMapper.UserCouncilFeeDtoMapper;
+import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.domain.campus.semester.entity.Semester;
-import net.causw.app.main.domain.finance.usercouncilfee.policy.UserCouncilFeePolicy;
 import net.causw.app.main.domain.campus.semester.service.SemesterService;
+import net.causw.app.main.domain.finance.usercouncilfee.entity.CouncilFeeFakeUser;
+import net.causw.app.main.domain.finance.usercouncilfee.entity.UserCouncilFee;
+import net.causw.app.main.domain.finance.usercouncilfee.entity.UserCouncilFeeLog;
+import net.causw.app.main.domain.finance.usercouncilfee.enums.CouncilFeeLogType;
+import net.causw.app.main.domain.finance.usercouncilfee.policy.UserCouncilFeePolicy;
+import net.causw.app.main.domain.finance.usercouncilfee.repository.UserCouncilFeeLogRepository;
+import net.causw.app.main.domain.finance.usercouncilfee.repository.UserCouncilFeeRepository;
+import net.causw.app.main.domain.integration.export.service.CouncilFeeExcelService;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.global.constant.MessageUtil;
@@ -49,8 +49,8 @@ public class UserCouncilFeeService {
 	public void exportUserCouncilFeeToExcel(HttpServletResponse response) {
 		Semester semester = semesterService.getCurrentSemesterEntity();
 
-		String fileName =
-			semester.getSemesterYear().toString() + "-" + semester.getSemesterType().getValue() + "_학생회비_납부자_현황";
+		String fileName = semester.getSemesterYear().toString() + "-" + semester.getSemesterType().getValue()
+			+ "_학생회비_납부자_현황";
 
 		List<String> headerStringList = List.of(
 			"동문네트워크 서비스 가입 여부",
@@ -71,8 +71,7 @@ public class UserCouncilFeeService {
 			"학생회비 환불 여부",
 			"학생회비 환불 시점",
 			"잔여 학생회비 적용 학기",
-			"본 학기 학생회비 적용 여부"
-		);
+			"본 학기 학생회비 적용 여부");
 
 		List<UserCouncilFeeResponseDto> userCouncilFeeResponseDtoList = userCouncilFeeRepository.findAll()
 			.stream().map(this::toUserCouncilFeeResponseDto).toList();
@@ -84,16 +83,14 @@ public class UserCouncilFeeService {
 			response,
 			fileName,
 			headerStringList,
-			sheetNameDataMap
-		);
+			sheetNameDataMap);
 	}
 
 	public Page<UserCouncilFeeListResponseDto> getUserCouncilFeeList(Pageable pageable) {
 		return userCouncilFeeRepository.findAll(pageable)
-			.map(userCouncilFee -> (userCouncilFee.getIsJoinedService()) ?
-				toUserCouncilFeeListResponseDto(userCouncilFee, userCouncilFee.getUser()) :
-				toUserCouncilFeeListResponseDtoReduced(userCouncilFee, userCouncilFee.getCouncilFeeFakeUser())
-			);
+			.map(userCouncilFee -> (userCouncilFee.getIsJoinedService())
+				? toUserCouncilFeeListResponseDto(userCouncilFee, userCouncilFee.getUser())
+				: toUserCouncilFeeListResponseDtoReduced(userCouncilFee, userCouncilFee.getCouncilFeeFakeUser()));
 	}
 
 	public UserCouncilFeeResponseDto getUserCouncilFeeInfo(String userCouncilFeeId) {
@@ -131,8 +128,7 @@ public class UserCouncilFeeService {
 		int paidAt = UserCouncilFeePolicy.getStartSemesterToApply(
 			currentSemester,
 			targetUser.getCurrentCompletedSemester(),
-			targetUser.getAcademicStatus()
-		);
+			targetUser.getAcademicStatus());
 		UserCouncilFee userCouncilFee = UserCouncilFee.of(
 			true,
 			targetUser,
@@ -140,9 +136,8 @@ public class UserCouncilFeeService {
 			paidAt,
 			createUserCouncilFeeWithUserRequestDto.getNumOfPaidSemester(),
 			createUserCouncilFeeWithUserRequestDto.getIsRefunded(),
-			createUserCouncilFeeWithUserRequestDto.getRefundedAt() == null ? null :
-				createUserCouncilFeeWithUserRequestDto.getRefundedAt()
-		);
+			createUserCouncilFeeWithUserRequestDto.getRefundedAt() == null ? null
+				: createUserCouncilFeeWithUserRequestDto.getRefundedAt());
 		userCouncilFeeRepository.save(userCouncilFee);
 
 		createUserCouncilFeeLog(controlledUser, CouncilFeeLogType.CREATE, userCouncilFee, currentSemester);
@@ -170,15 +165,13 @@ public class UserCouncilFeeService {
 			createUserCouncilFeeRequestDto.getAcademicStatus(),
 			createUserCouncilFeeRequestDto.getCurrentCompletedSemester(),
 			createUserCouncilFeeRequestDto.getGraduationYear(),
-			createUserCouncilFeeRequestDto.getGraduationType()
-		);
+			createUserCouncilFeeRequestDto.getGraduationType());
 
 		Semester currentSemester = semesterService.getCurrentSemesterEntity();
 		int paidAt = UserCouncilFeePolicy.getStartSemesterToApply(
 			currentSemester,
 			councilFeeFakeUser.getCurrentCompletedSemester(),
-			councilFeeFakeUser.getAcademicStatus()
-		);
+			councilFeeFakeUser.getAcademicStatus());
 		UserCouncilFee userCouncilFee = UserCouncilFee.of(
 			false,
 			null,
@@ -186,8 +179,7 @@ public class UserCouncilFeeService {
 			paidAt,
 			createUserCouncilFeeRequestDto.getNumOfPaidSemester(),
 			createUserCouncilFeeRequestDto.getIsRefunded(),
-			createUserCouncilFeeRequestDto.getRefundedAt()
-		);
+			createUserCouncilFeeRequestDto.getRefundedAt());
 		userCouncilFeeRepository.save(userCouncilFee);
 
 		createUserCouncilFeeLog(controlledUser, CouncilFeeLogType.CREATE, userCouncilFee, currentSemester);
@@ -218,8 +210,7 @@ public class UserCouncilFeeService {
 			createUserCouncilFeeWithUserRequestDto.getPaidAt(),
 			createUserCouncilFeeWithUserRequestDto.getNumOfPaidSemester(),
 			createUserCouncilFeeWithUserRequestDto.getIsRefunded(),
-			createUserCouncilFeeWithUserRequestDto.getRefundedAt()
-		);
+			createUserCouncilFeeWithUserRequestDto.getRefundedAt());
 		userCouncilFeeRepository.save(userCouncilFee);
 
 		createUserCouncilFeeLog(
@@ -248,8 +239,7 @@ public class UserCouncilFeeService {
 			createUserCouncilFeeWithFakeUserRequestDto.getAcademicStatus(),
 			createUserCouncilFeeWithFakeUserRequestDto.getCurrentCompletedSemester(),
 			createUserCouncilFeeWithFakeUserRequestDto.getGraduationYear(),
-			createUserCouncilFeeWithFakeUserRequestDto.getGraduationType()
-		);
+			createUserCouncilFeeWithFakeUserRequestDto.getGraduationType());
 		userCouncilFee.update(
 			false,
 			null,
@@ -257,8 +247,7 @@ public class UserCouncilFeeService {
 			createUserCouncilFeeWithFakeUserRequestDto.getPaidAt(),
 			createUserCouncilFeeWithFakeUserRequestDto.getNumOfPaidSemester(),
 			createUserCouncilFeeWithFakeUserRequestDto.getIsRefunded(),
-			createUserCouncilFeeWithFakeUserRequestDto.getRefundedAt()
-		);
+			createUserCouncilFeeWithFakeUserRequestDto.getRefundedAt());
 		userCouncilFeeRepository.save(userCouncilFee);
 
 		createUserCouncilFeeLog(
@@ -291,8 +280,7 @@ public class UserCouncilFeeService {
 	public Boolean isCurrentSemesterApplied(String userId) {
 		return isCurrentSemesterAppliedBySelf(
 			userRepository.findById(userId)
-				.orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND))
-		);
+				.orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND)));
 	}
 
 	public Boolean isCurrentSemesterAppliedBySelf(User user) {
@@ -323,8 +311,7 @@ public class UserCouncilFeeService {
 
 	private void createUserCouncilFeeLog(
 		User controlledUser, CouncilFeeLogType councilFeeLogType,
-		UserCouncilFee userCouncilFee, Semester currentSemester
-	) {
+		UserCouncilFee userCouncilFee, Semester currentSemester) {
 		UserCouncilFeeLog userCouncilFeeLog;
 
 		if (userCouncilFee.getUser() != null) {
@@ -335,8 +322,7 @@ public class UserCouncilFeeService {
 				currentSemester,
 				userCouncilFee.getUser(),
 				UserCouncilFeePolicy.getRemainingAppliedSemestersWithUser(userCouncilFee),
-				UserCouncilFeePolicy.isAppliedCurrentSemesterWithUser(userCouncilFee)
-			);
+				UserCouncilFeePolicy.isAppliedCurrentSemesterWithUser(userCouncilFee));
 		} else {
 			userCouncilFeeLog = UserCouncilFeeLog.fromCouncilFeeFakeUser(
 				controlledUser,
@@ -345,8 +331,7 @@ public class UserCouncilFeeService {
 				currentSemester,
 				userCouncilFee.getCouncilFeeFakeUser(),
 				UserCouncilFeePolicy.getRemainingAppliedSemestersWithFakeUser(userCouncilFee),
-				UserCouncilFeePolicy.isAppliedCurrentSemesterWithFakeUser(userCouncilFee)
-			);
+				UserCouncilFeePolicy.isAppliedCurrentSemesterWithFakeUser(userCouncilFee));
 		}
 
 		userCouncilFeeLogRepository.save(userCouncilFeeLog);
@@ -379,15 +364,13 @@ public class UserCouncilFeeService {
 				userCouncilFee,
 				userCouncilFee.getUser(),
 				UserCouncilFeePolicy.getRemainingAppliedSemestersWithUser(userCouncilFee),
-				UserCouncilFeePolicy.isAppliedCurrentSemesterWithUser(userCouncilFee)
-			);
+				UserCouncilFeePolicy.isAppliedCurrentSemesterWithUser(userCouncilFee));
 		} else {
 			return UserCouncilFeeDtoMapper.INSTANCE.toUserCouncilFeeResponseDtoReduced(
 				userCouncilFee,
 				userCouncilFee.getCouncilFeeFakeUser(),
 				UserCouncilFeePolicy.getRemainingAppliedSemestersWithFakeUser(userCouncilFee),
-				UserCouncilFeePolicy.isAppliedCurrentSemesterWithFakeUser(userCouncilFee)
-			);
+				UserCouncilFeePolicy.isAppliedCurrentSemesterWithFakeUser(userCouncilFee));
 		}
 	}
 

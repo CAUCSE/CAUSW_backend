@@ -1,11 +1,27 @@
 package net.causw.app.main.service.user;
 
 import static java.util.Map.entry;
-import static net.causw.app.main.domain.user.account.enums.user.Role.*;
-import static net.causw.app.main.domain.user.account.policy.RolePolicy.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static net.causw.app.main.domain.user.account.enums.user.Role.ADMIN;
+import static net.causw.app.main.domain.user.account.enums.user.Role.COMMON;
+import static net.causw.app.main.domain.user.account.enums.user.Role.COUNCIL;
+import static net.causw.app.main.domain.user.account.enums.user.Role.LEADER_1;
+import static net.causw.app.main.domain.user.account.enums.user.Role.LEADER_2;
+import static net.causw.app.main.domain.user.account.enums.user.Role.LEADER_3;
+import static net.causw.app.main.domain.user.account.enums.user.Role.LEADER_4;
+import static net.causw.app.main.domain.user.account.enums.user.Role.LEADER_ALUMNI;
+import static net.causw.app.main.domain.user.account.enums.user.Role.LEADER_CIRCLE;
+import static net.causw.app.main.domain.user.account.enums.user.Role.NONE;
+import static net.causw.app.main.domain.user.account.enums.user.Role.PRESIDENT;
+import static net.causw.app.main.domain.user.account.enums.user.Role.PROFESSOR;
+import static net.causw.app.main.domain.user.account.enums.user.Role.VICE_PRESIDENT;
+import static net.causw.app.main.domain.user.account.policy.RolePolicy.canAssign;
+import static net.causw.app.main.domain.user.account.policy.RolePolicy.getRolePriority;
+import static net.causw.app.main.domain.user.account.policy.RolePolicy.getRoleUnique;
+import static net.causw.app.main.domain.user.account.policy.RolePolicy.getRolesAssignableFor;
+import static net.causw.app.main.domain.user.account.policy.RolePolicy.isPrivilegeInverted;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,14 +48,14 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import net.causw.app.main.api.dto.user.UserResponseDto;
+import net.causw.app.main.api.dto.user.UserUpdateRoleRequestDto;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.policy.RolePolicy;
-import net.causw.app.main.domain.user.account.service.UserRoleService;
-import net.causw.app.main.api.dto.user.UserResponseDto;
-import net.causw.app.main.api.dto.user.UserUpdateRoleRequestDto;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
+import net.causw.app.main.domain.user.account.service.UserRoleService;
 import net.causw.app.main.util.ObjectFixtures;
 
 @ExtendWith(MockitoExtension.class)
@@ -65,8 +81,7 @@ public class UserRoleServiceTest {
 		entry(NONE, false),
 
 		entry(LEADER_CIRCLE, false),
-		entry(PROFESSOR, false)
-	);
+		entry(PROFESSOR, false));
 
 	private static final Map<Role, Integer> MOCK_ROLE_PRIORITY = Map.ofEntries(
 		entry(ADMIN, 0),
@@ -82,15 +97,13 @@ public class UserRoleServiceTest {
 		entry(NONE, 100),
 
 		entry(LEADER_CIRCLE, 5),
-		entry(PROFESSOR, 6)
-	);
+		entry(PROFESSOR, 6));
 
 	private static final Map<Role, Set<Role>> MOCK_ROLES_ASSIGNABLE_FOR = Map.of(
 		// 부학생회장과 학생회 권한이 같이 삭제되므로 대상이 일반, 학생회장, 부학생회장 권한까지 설정 가능함.
 		PRESIDENT, Set.of(VICE_PRESIDENT, COUNCIL, COMMON),
 		// 일반 권한의 경우 모두 권한에 설정 가능함.
-		COMMON, EnumSet.allOf(Role.class)
-	);
+		COMMON, EnumSet.allOf(Role.class));
 
 	@Nested
 	class UpdateRoleTest {
@@ -270,19 +283,14 @@ public class UserRoleServiceTest {
 		private static final Map<Role, Set<Role>> MOCK_GRANTABLE_ROLES = Map.of(
 			ADMIN, Set.of(
 				Role.PRESIDENT,
-				Role.LEADER_1
-			),
+				Role.LEADER_1),
 
 			Role.PRESIDENT, Set.of(
-				Role.VICE_PRESIDENT
-			)
-		);
+				Role.VICE_PRESIDENT));
 
 		private static final Map<Role, Set<Role>> MOCK_PROXY_DELEGATABLE_ROLES = Map.of(
 			ADMIN, Set.of(
-				Role.COUNCIL
-			)
-		);
+				Role.COUNCIL));
 
 		@BeforeEach
 		void setUp() {
@@ -417,8 +425,8 @@ public class UserRoleServiceTest {
 		rolePolicyMockedStatic.when(() -> getRoleUnique(assignedRole))
 			.thenReturn(MOCK_ROLE_UNIQUE.get(assignedRole));
 
-		Stream.concat(assignerRoles.stream(), assigneeRoles.stream()).forEach(role ->
-			rolePolicyMockedStatic.when(() -> getRolePriority(role))
+		Stream.concat(assignerRoles.stream(), assigneeRoles.stream())
+			.forEach(role -> rolePolicyMockedStatic.when(() -> getRolePriority(role))
 				.thenReturn(MOCK_ROLE_PRIORITY.get(role)));
 
 		rolePolicyMockedStatic.when(() -> canAssign(any(), any()))

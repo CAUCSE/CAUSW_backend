@@ -31,7 +31,7 @@ public interface CeremonyDtoMapper {
 	@Mapping(target = "applicantStudentId", source = "user.studentId")
 	@Mapping(target = "applicantName", source = "user.name")
 	@Mapping(target = "title", source = ".", qualifiedByName = "mapTitle")
-	@Mapping(target = "isSetAll", ignore = true)    // general에서는 숨김
+	@Mapping(target = "isSetAll", ignore = true) // general에서는 숨김
 	@Mapping(target = "targetAdmissionYears", ignore = true)
 	// general에서는 숨김
 	CeremonyResponseDto toCeremonyResponseDto(Ceremony ceremony);
@@ -48,7 +48,7 @@ public interface CeremonyDtoMapper {
 	@Mapping(target = "applicantStudentId", source = "user.studentId")
 	@Mapping(target = "applicantName", source = "user.name")
 	@Mapping(target = "title", source = ".", qualifiedByName = "mapTitle")
-	@Mapping(target = "isSetAll", source = "ceremony.setAll")  // 상세 조회에서는 표시
+	@Mapping(target = "isSetAll", source = "ceremony.setAll") // 상세 조회에서는 표시
 	@Mapping(target = "targetAdmissionYears", source = "targetAdmissionYears")
 	// 상세 조회에서는 표시
 	CeremonyResponseDto toDetailedCeremonyResponseDto(Ceremony ceremony);

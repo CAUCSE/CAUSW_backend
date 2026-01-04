@@ -15,8 +15,7 @@ public class LockerLocationsResponseDto {
 
 	public static LockerLocationsResponseDto of(
 		List<LockerLocationResponseDto> lockerLocations,
-		LockerResponseDto myLocker
-	) {
+		LockerResponseDto myLocker) {
 		return LockerLocationsResponseDto.builder()
 			.lockerLocations(lockerLocations)
 			.myLocker(myLocker)

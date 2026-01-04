@@ -18,8 +18,7 @@ public class LockerLocationResponseDto {
 	public static LockerLocationResponseDto of(
 		LockerLocation lockerLocation,
 		Long enableLockerCount,
-		Long totalLockerCount
-	) {
+		Long totalLockerCount) {
 		return LockerLocationResponseDto.builder()
 			.id(lockerLocation.getId())
 			.name(lockerLocation.getName())

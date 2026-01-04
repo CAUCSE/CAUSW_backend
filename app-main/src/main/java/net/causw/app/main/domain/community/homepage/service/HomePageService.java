@@ -8,24 +8,24 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import net.causw.app.main.core.aop.annotation.MeasureTime;
-import net.causw.app.main.domain.community.board.entity.Board;
-import net.causw.app.main.domain.community.board.repository.BoardRepository;
-import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.domain.community.reaction.repository.FavoritePostRepository;
-import net.causw.app.main.domain.community.reaction.repository.LikePostRepository;
-import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.api.dto.board.BoardResponseDto;
 import net.causw.app.main.api.dto.homepage.HomePageResponseDto;
 import net.causw.app.main.api.dto.util.dtoMapper.BoardDtoMapper;
 import net.causw.app.main.api.dto.util.dtoMapper.PostDtoMapper;
+import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.domain.campus.circle.entity.Circle;
-import net.causw.app.main.shared.StatusPolicy;
+import net.causw.app.main.domain.community.board.entity.Board;
+import net.causw.app.main.domain.community.board.repository.BoardRepository;
+import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.repository.PostRepository;
+import net.causw.app.main.domain.community.reaction.repository.FavoritePostRepository;
+import net.causw.app.main.domain.community.reaction.repository.LikePostRepository;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.domain.user.account.util.UserRoleIsNoneValidator;
 import net.causw.app.main.domain.user.account.util.UserStateValidator;
+import net.causw.app.main.shared.StatusPolicy;
 import net.causw.app.main.shared.ValidatorBucket;
 import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.global.constant.MessageUtil;
@@ -59,8 +59,7 @@ public class HomePageService {
 		if (boards.isEmpty()) {
 			throw new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.BOARD_NOT_FOUND
-			);
+				MessageUtil.BOARD_NOT_FOUND);
 		}
 
 		return boards
@@ -68,7 +67,7 @@ public class HomePageService {
 			.map(board -> HomePageResponseDto.of(
 				toBoardResponseDto(board, roles),
 				postRepository.findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(board.getId(),
-						pageableFactory.create(0, StaticValue.HOME_POST_PAGE_SIZE))
+					pageableFactory.create(0, StaticValue.HOME_POST_PAGE_SIZE))
 					.map(post -> PostDtoMapper.INSTANCE.toPostsResponseDto(
 						post,
 						postRepository.countAllCommentByPost_Id(post.getId()),
@@ -76,9 +75,7 @@ public class HomePageService {
 						getNumOfPostFavorites(post),
 						!post.getPostAttachImageList().isEmpty() ? post.getPostAttachImageList().get(0) : null,
 						StatusPolicy.isPostVote(post),
-						post.getForm() != null
-					)))
-			)
+						post.getForm() != null))))
 			.collect(Collectors.toList());
 	}
 
@@ -89,8 +86,7 @@ public class HomePageService {
 		if (boards.isEmpty()) {
 			throw new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.BOARD_NOT_FOUND
-			);
+				MessageUtil.BOARD_NOT_FOUND);
 		}
 
 		return boards
@@ -98,7 +94,7 @@ public class HomePageService {
 			.map(board -> HomePageResponseDto.of(
 				toBoardResponseDto(board, roles),
 				postRepository.findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(board.getId(),
-						pageableFactory.create(0, StaticValue.ALUMNI_HOME_POST_PAGE_SIZE))
+					pageableFactory.create(0, StaticValue.ALUMNI_HOME_POST_PAGE_SIZE))
 					.map(post -> PostDtoMapper.INSTANCE.toPostsResponseDto(
 						post,
 						postRepository.countAllCommentByPost_Id(post.getId()),
@@ -106,9 +102,7 @@ public class HomePageService {
 						getNumOfPostFavorites(post),
 						!post.getPostAttachImageList().isEmpty() ? post.getPostAttachImageList().get(0) : null,
 						StatusPolicy.isPostVote(post),
-						post.getForm() != null
-					)))
-			)
+						post.getForm() != null))))
 			.collect(Collectors.toList());
 	}
 
@@ -124,8 +118,7 @@ public class HomePageService {
 			roles,
 			writable,
 			circleId,
-			circleName
-		);
+			circleName);
 	}
 
 	private Long getNumOfPostLikes(Post post) {

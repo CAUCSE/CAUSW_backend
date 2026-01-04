@@ -10,11 +10,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.QPostAttachImage;
+import net.causw.app.main.domain.asset.file.enums.FileExtensionType;
 import net.causw.app.main.domain.community.comment.entity.QComment;
 import net.causw.app.main.domain.community.post.entity.QPost;
 import net.causw.app.main.domain.community.reaction.entity.QFavoritePost;
 import net.causw.app.main.domain.community.reaction.entity.QLikePost;
-import net.causw.app.main.domain.asset.file.enums.FileExtensionType;
 import net.causw.app.main.domain.user.account.entity.user.QUser;
 
 import com.querydsl.core.types.SubQueryExpression;
@@ -37,8 +37,7 @@ public class PostQueryRepository {
 		boolean includeDeleted,
 		Set<String> blockedUserIds,
 		String keyword,
-		Pageable pageable
-	) {
+		Pageable pageable) {
 		QPost post = QPost.post;
 		QUser writer = new QUser("writer");
 
@@ -120,8 +119,7 @@ public class PostQueryRepository {
 				.and(postAttachImage.uuidFile.createdAt.eq(
 					JPAExpressions.select(postAttachImage.uuidFile.createdAt.min())
 						.from(postAttachImage)
-						.where(postAttachImage.post.eq(post))
-				)));
+						.where(postAttachImage.post.eq(post)))));
 
 		return new QPostQueryResult(
 			post.id, post.title, post.content,
@@ -129,7 +127,6 @@ public class PostQueryRepository {
 			post.isAnonymous, post.isQuestion, post.vote.isNotNull(), post.form.isNotNull(), post.isDeleted,
 			writer.isNotNull(), writer.name, writer.nickname, writer.admissionYear, writer.state,
 			post.createdAt, post.updatedAt,
-			thumbnailUrl
-		);
+			thumbnailUrl);
 	}
 }

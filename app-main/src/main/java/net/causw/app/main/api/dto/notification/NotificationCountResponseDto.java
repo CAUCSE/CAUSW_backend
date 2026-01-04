@@ -14,4 +14,3 @@ public class NotificationCountResponseDto {
 	@Schema(description = "읽지 않은 알림 개수", example = "1, 2, 3,...")
 	private Integer notificationLogCount;
 }
-

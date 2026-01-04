@@ -1,8 +1,8 @@
 package net.causw.app.main.infrastructure.security;
 
-import static net.causw.app.main.core.security.SecurityEndpoints.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static net.causw.app.main.core.security.SecurityEndpoints.SecurityEndpoint;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -27,15 +27,15 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import net.causw.app.main.domain.user.account.enums.user.Role;
-import net.causw.app.main.domain.user.account.enums.user.UserState;
-import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.core.security.CustomAuthenticationEntryPoint;
 import net.causw.app.main.core.security.CustomAuthorizationManager;
 import net.causw.app.main.core.security.JwtTokenProvider;
 import net.causw.app.main.core.security.SecurityEndpoints;
-import net.causw.app.main.domain.user.auth.service.SecurityService;
 import net.causw.app.main.core.security.WebSecurityConfig;
+import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.user.account.enums.user.Role;
+import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.auth.service.SecurityService;
 import net.causw.app.main.util.DummyController;
 import net.causw.app.main.util.WithMockCustomUser;
 
@@ -152,11 +152,10 @@ public class WebSecurityConfigTest {
 
 		private HttpMethod[] getAllHttpMethodsWithoutRegistered(String pattern) {
 			Set<HttpMethod> registeredMethods = Stream.of(
-					SecurityEndpoints.PUBLIC_ENDPOINTS,
-					SecurityEndpoints.AUTHENTICATED_ENDPOINTS,
-					SecurityEndpoints.ACTIVE_USER_ENDPOINTS,
-					SecurityEndpoints.CERTIFIED_USER_ENDPOINTS
-				)
+				SecurityEndpoints.PUBLIC_ENDPOINTS,
+				SecurityEndpoints.AUTHENTICATED_ENDPOINTS,
+				SecurityEndpoints.ACTIVE_USER_ENDPOINTS,
+				SecurityEndpoints.CERTIFIED_USER_ENDPOINTS)
 				.flatMap(Stream::of)
 				.filter(endpoint -> pattern.equals(endpoint.pattern()))
 				.map(SecurityEndpoint::httpMethod)

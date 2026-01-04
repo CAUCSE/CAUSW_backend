@@ -72,8 +72,7 @@ public class CrawledNotice extends BaseEntity {
 		String author,
 		String announceDate,
 		String imageLink,
-		List<CrawledFileLink> crawledFileLinks
-	) {
+		List<CrawledFileLink> crawledFileLinks) {
 		// String -> LocalDate
 		LocalDate parsedDate = LocalDate.parse(announceDate, DateTimeFormatter.ISO_LOCAL_DATE);
 		// 새로운 공지에 대한 처리

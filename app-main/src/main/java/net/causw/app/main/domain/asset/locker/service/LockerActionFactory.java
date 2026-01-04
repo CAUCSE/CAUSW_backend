@@ -30,8 +30,7 @@ public class LockerActionFactory {
 		if (updateAction == null) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_PARAMETER,
-				MessageUtil.INVALID_PARAMETER
-			);
+				MessageUtil.INVALID_PARAMETER);
 		}
 		return updateAction.get();
 	}

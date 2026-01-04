@@ -80,8 +80,7 @@ public class RegisterGraduatedUsersUseCaseService {
 		if (csvFile.getSize() > StaticValue.CSV_FILE_SIZE) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_PARAMETER,
-				"CSV " + MessageUtil.FILE_SIZE_EXCEEDED
-			);
+				"CSV " + MessageUtil.FILE_SIZE_EXCEEDED);
 		}
 	}
 
@@ -102,32 +101,28 @@ public class RegisterGraduatedUsersUseCaseService {
 			if (!email.isEmpty() && !emailSet.add(email)) {
 				throw new BadRequestException(
 					ErrorCode.INVALID_PARAMETER,
-					rowLabel + MessageUtil.EMAIL_ALREADY_EXIST
-				);
+					rowLabel + MessageUtil.EMAIL_ALREADY_EXIST);
 			}
 
 			String phoneNumber = record.get(PHONE_NUMBER_COLUMN).trim();
 			if (!phoneNumber.isEmpty() && !phoneNumberSet.add(phoneNumber)) {
 				throw new BadRequestException(
 					ErrorCode.INVALID_PARAMETER,
-					rowLabel + MessageUtil.PHONE_NUMBER_ALREADY_EXIST
-				);
+					rowLabel + MessageUtil.PHONE_NUMBER_ALREADY_EXIST);
 			}
 
 			String studentId = record.get(STUDENT_ID_COLUMN).trim();
 			if (!studentId.isEmpty() && !studentIdSet.add(studentId)) {
 				throw new BadRequestException(
 					ErrorCode.INVALID_PARAMETER,
-					rowLabel + MessageUtil.STUDENT_ID_ALREADY_EXIST
-				);
+					rowLabel + MessageUtil.STUDENT_ID_ALREADY_EXIST);
 			}
 		}
 	}
 
 	private List<CSVRecord> parse(MultipartFile csvFile) {
 		try (Reader reader = new InputStreamReader(csvFile.getInputStream());
-			 CSVParser csvParser = CSVParser.parse(reader, CSVFormat.DEFAULT)
-		) {
+			CSVParser csvParser = CSVParser.parse(reader, CSVFormat.DEFAULT)) {
 			return StreamSupport.stream(csvParser.spliterator(), false)
 				.skip(1) // 헤더 제외
 				.toList();
@@ -135,8 +130,7 @@ public class RegisterGraduatedUsersUseCaseService {
 		} catch (IOException e) {
 			throw new InternalServerException(
 				ErrorCode.INTERNAL_SERVER,
-				"CSV " + MessageUtil.FILE_READ_FAIL
-			);
+				"CSV " + MessageUtil.FILE_READ_FAIL);
 		}
 	}
 
@@ -145,8 +139,7 @@ public class RegisterGraduatedUsersUseCaseService {
 		if (!isPrivacyPolicyAccepted) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_PARAMETER,
-				MessageUtil.PRIVACY_POLICY_REQUIRED
-			);
+				MessageUtil.PRIVACY_POLICY_REQUIRED);
 		}
 
 		String name = record.get(NAME_COLUMN).trim();
@@ -156,8 +149,7 @@ public class RegisterGraduatedUsersUseCaseService {
 		Integer graduationYear = Integer.parseInt(record.get(GRADUATION_YEAR_COLUMN).trim());
 		Department department = DepartmentResolver.resolveByAdmissionYearOrDepartmentName(
 			admissionYear,
-			record.get(DEPARTMENT_COLUMN).trim()
-		);
+			record.get(DEPARTMENT_COLUMN).trim());
 		String phoneNumber = record.get(PHONE_NUMBER_COLUMN).trim();
 		String studentId = record.get(STUDENT_ID_COLUMN).trim();
 
