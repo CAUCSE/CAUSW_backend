@@ -17,5 +17,5 @@ jobs:
         uses: naver/simple-labeler@latest
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          labels: "D-4"
+          labels: "D-3"
           duplicate: "D-*"
