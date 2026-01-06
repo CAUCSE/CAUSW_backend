@@ -63,7 +63,7 @@ public class PostSeeder extends BasePostSeeder<PostSeeder.PostItem> {
 					postId,
 					fileKey,
 					fileUrl, // 확장자 png로 고정
-					createdAt));
+					createdAt.plusSeconds(i)));
 			}
 		}
 
