@@ -1,8 +1,10 @@
 package net.causw.app.main.service.notification;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.lenient;
+import static org.mockito.BDDMockito.verify;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -21,13 +23,13 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import net.causw.app.main.domain.moving.model.entity.notification.Notification;
-import net.causw.app.main.domain.moving.model.entity.notification.NotificationLog;
-import net.causw.app.main.domain.moving.service.notification.NotificationLogService;
-import net.causw.app.main.domain.user.entity.user.User;
-import net.causw.app.main.domain.moving.model.enums.notification.NoticeType;
-import net.causw.app.main.domain.moving.dto.notification.NotificationResponseDto;
-import net.causw.app.main.domain.moving.repository.notification.NotificationLogRepository;
+import net.causw.app.main.api.dto.notification.NotificationResponseDto;
+import net.causw.app.main.domain.notification.notification.entity.Notification;
+import net.causw.app.main.domain.notification.notification.entity.NotificationLog;
+import net.causw.app.main.domain.notification.notification.enums.NoticeType;
+import net.causw.app.main.domain.notification.notification.repository.NotificationLogRepository;
+import net.causw.app.main.domain.notification.notification.service.NotificationLogService;
+import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.app.main.util.ObjectFixtures;
 import net.causw.global.constant.MessageUtil;
@@ -197,8 +199,8 @@ public class NotificationLogServiceTest {
 			given(notificationLogRepository.findByIdAndUser("non-existent-id", mockUser))
 				.willReturn(java.util.Optional.empty());
 
-			org.assertj.core.api.Assertions.assertThatThrownBy(() ->
-					notificationLogService.readNotification(mockUser, "non-existent-id"))
+			org.assertj.core.api.Assertions
+				.assertThatThrownBy(() -> notificationLogService.readNotification(mockUser, "non-existent-id"))
 				.isInstanceOf(BadRequestException.class)
 				.hasMessageContaining(MessageUtil.NOTIFICATION_LOG_NOT_FOUND);
 

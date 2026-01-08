@@ -1,9 +1,20 @@
 package net.causw.app.main.service.user;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.lenient;
+import static org.mockito.BDDMockito.mock;
+import static org.mockito.BDDMockito.never;
+import static org.mockito.BDDMockito.times;
+import static org.mockito.BDDMockito.verify;
+import static org.mockito.BDDMockito.when;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -26,31 +37,31 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import net.causw.app.main.domain.moving.model.entity.post.LikePost;
-import net.causw.app.main.domain.moving.model.entity.post.Post;
-import net.causw.app.main.domain.user.entity.user.User;
-import net.causw.app.main.domain.user.entity.user.UserAdmission;
-import net.causw.app.main.domain.moving.model.enums.user.Role;
-import net.causw.app.main.domain.moving.model.enums.user.UserState;
-import net.causw.app.main.domain.user.service.UserService;
-import net.causw.app.main.domain.moving.dto.post.PostsResponseDto;
-import net.causw.app.main.domain.moving.dto.user.UserCreateRequestDto;
-import net.causw.app.main.domain.moving.dto.user.UserPostsResponseDto;
-import net.causw.app.main.domain.moving.dto.user.UserResponseDto;
-import net.causw.app.main.domain.moving.dto.user.UserSignInResponseDto;
-import net.causw.app.main.domain.moving.dto.util.dtoMapper.PostDtoMapper;
-import net.causw.app.main.domain.moving.dto.util.dtoMapper.UserDtoMapper;
-import net.causw.app.main.shared.infra.redis.RedisUtils;
+import net.causw.app.main.api.dto.post.PostsResponseDto;
+import net.causw.app.main.api.dto.user.UserCreateRequestDto;
+import net.causw.app.main.api.dto.user.UserPostsResponseDto;
+import net.causw.app.main.api.dto.user.UserResponseDto;
+import net.causw.app.main.api.dto.user.UserSignInResponseDto;
+import net.causw.app.main.api.dto.util.dtoMapper.PostDtoMapper;
+import net.causw.app.main.api.dto.util.dtoMapper.UserDtoMapper;
 import net.causw.app.main.core.security.JwtTokenProvider;
-import net.causw.app.main.domain.moving.repository.post.FavoritePostRepository;
-import net.causw.app.main.domain.moving.repository.post.LikePostRepository;
-import net.causw.app.main.domain.moving.repository.post.PostRepository;
-import net.causw.app.main.domain.user.repository.user.UserAdmissionRepository;
-import net.causw.app.main.domain.user.repository.user.UserRepository;
-import net.causw.app.main.domain.moving.service.excel.UserExcelService;
+import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.repository.PostRepository;
+import net.causw.app.main.domain.community.post.service.PostService;
+import net.causw.app.main.domain.community.reaction.entity.LikePost;
+import net.causw.app.main.domain.community.reaction.repository.FavoritePostRepository;
+import net.causw.app.main.domain.community.reaction.repository.LikePostRepository;
+import net.causw.app.main.domain.integration.export.service.UserExcelService;
+import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
+import net.causw.app.main.domain.user.account.enums.user.Role;
+import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.account.repository.user.UserAdmissionRepository;
+import net.causw.app.main.domain.user.account.repository.user.UserRepository;
+import net.causw.app.main.domain.user.account.service.UserService;
+import net.causw.app.main.domain.user.relation.service.UserBlockEntityService;
+import net.causw.app.main.shared.infra.redis.RedisUtils;
 import net.causw.app.main.shared.pageable.PageableFactory;
-import net.causw.app.main.domain.moving.service.post.PostService;
-import net.causw.app.main.domain.user.service.UserBlockEntityService;
 import net.causw.app.main.util.ObjectFixtures;
 import net.causw.global.constant.StaticValue;
 import net.causw.global.exception.BadRequestException;
@@ -151,8 +162,8 @@ class UserServiceTest {
 		}
 
 		private LinkedHashMap<String, List<UserResponseDto>> captureGeneratedExcelData() {
-			ArgumentCaptor<LinkedHashMap<String, List<UserResponseDto>>> captor =
-				ArgumentCaptor.forClass(LinkedHashMap.class);
+			ArgumentCaptor<LinkedHashMap<String, List<UserResponseDto>>> captor = ArgumentCaptor
+				.forClass(LinkedHashMap.class);
 			verify(userExcelService, times(1))
 				.generateExcel(eq(response), anyString(), anyList(), captor.capture());
 
@@ -161,8 +172,7 @@ class UserServiceTest {
 
 		private void verifyUserResponseDto(
 			List<UserResponseDto> exportedUserList,
-			UserState userState
-		) {
+			UserState userState) {
 			for (UserResponseDto userResponseDto : exportedUserList) {
 				assertThat(userResponseDto).isNotNull();
 				assertThat(userResponseDto.getState())
@@ -223,8 +233,7 @@ class UserServiceTest {
 				anyLong(),
 				any(),
 				anyBoolean(),
-				anyBoolean()
-			)).willReturn(mockPostDto);
+				anyBoolean())).willReturn(mockPostDto);
 
 			given(userDtoMapper.toUserPostsResponseDto(eq(user), any()))
 				.willReturn(expectedResponseDto);
@@ -398,8 +407,7 @@ class UserServiceTest {
 			given(jwtTokenProvider.createAccessToken(
 				eq("test-user-id"),
 				eq(Set.of(Role.COMMON)),
-				eq(UserState.ACTIVE)
-			)).willReturn("access-token");
+				eq(UserState.ACTIVE))).willReturn("access-token");
 
 			// when
 			UserSignInResponseDto result = userService.recoverUser("test@cau.ac.kr");

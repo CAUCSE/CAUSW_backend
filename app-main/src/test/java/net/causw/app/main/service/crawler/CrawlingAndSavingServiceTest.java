@@ -1,8 +1,10 @@
 package net.causw.app.main.service.crawler;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.never;
+import static org.mockito.BDDMockito.verify;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,10 +18,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-import net.causw.app.main.domain.moving.model.entity.crawled.CrawledNotice;
-import net.causw.app.main.domain.moving.repository.crawled.CrawledNoticeRepository;
-import net.causw.app.main.domain.moving.service.crawler.Crawler;
-import net.causw.app.main.domain.moving.service.crawler.CrawlingAndSavingService;
+import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
+import net.causw.app.main.domain.integration.crawled.repository.CrawledNoticeRepository;
+import net.causw.app.main.domain.integration.crawled.service.Crawler;
+import net.causw.app.main.domain.integration.crawled.service.CrawlingAndSavingService;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -82,7 +84,7 @@ public class CrawlingAndSavingServiceTest {
 		existingNotice.updateContent(
 			crawledNotice.getTitle(),
 			crawledNotice.getContent(),
-			crawledNotice.getContentHash()  // 크롤링된 것과 같은 해시
+			crawledNotice.getContentHash() // 크롤링된 것과 같은 해시
 		);
 		existingNotice.setIsUpdated(false);
 
@@ -97,4 +99,4 @@ public class CrawlingAndSavingServiceTest {
 		verify(crawledNoticeRepository, never()).saveAll(any());
 		assertThat(existingNotice.getIsUpdated()).isFalse();
 	}
-} 
+}

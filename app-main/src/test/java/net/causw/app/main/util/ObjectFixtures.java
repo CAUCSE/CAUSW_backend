@@ -5,24 +5,24 @@ import java.util.Set;
 
 import org.springframework.test.util.ReflectionTestUtils;
 
-import net.causw.app.main.domain.moving.model.entity.board.Board;
-import net.causw.app.main.domain.moving.model.entity.comment.ChildComment;
-import net.causw.app.main.domain.moving.model.entity.comment.Comment;
-import net.causw.app.main.domain.moving.model.entity.post.Post;
-import net.causw.app.main.domain.moving.model.entity.semester.Semester;
-import net.causw.app.main.domain.user.entity.user.User;
-import net.causw.app.main.domain.user.entity.user.UserAdmission;
-import net.causw.app.main.domain.user.entity.userCouncilFee.CouncilFeeFakeUser;
-import net.causw.app.main.domain.user.entity.userCouncilFee.UserCouncilFee;
-import net.causw.app.main.domain.moving.model.entity.vote.Vote;
-import net.causw.app.main.domain.moving.model.entity.vote.VoteOption;
-import net.causw.app.main.domain.moving.model.enums.semester.SemesterType;
-import net.causw.app.main.domain.moving.model.enums.user.Department;
-import net.causw.app.main.domain.moving.model.enums.user.GraduationType;
-import net.causw.app.main.domain.moving.model.enums.user.Role;
-import net.causw.app.main.domain.moving.model.enums.user.UserState;
-import net.causw.app.main.domain.moving.model.enums.userAcademicRecord.AcademicStatus;
-import net.causw.app.main.domain.moving.dto.user.UserCreateRequestDto;
+import net.causw.app.main.api.dto.user.UserCreateRequestDto;
+import net.causw.app.main.domain.campus.semester.entity.Semester;
+import net.causw.app.main.domain.campus.semester.enums.SemesterType;
+import net.causw.app.main.domain.community.board.entity.Board;
+import net.causw.app.main.domain.community.comment.entity.ChildComment;
+import net.causw.app.main.domain.community.comment.entity.Comment;
+import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.vote.entity.Vote;
+import net.causw.app.main.domain.community.vote.entity.VoteOption;
+import net.causw.app.main.domain.finance.usercouncilfee.entity.CouncilFeeFakeUser;
+import net.causw.app.main.domain.finance.usercouncilfee.entity.UserCouncilFee;
+import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
+import net.causw.app.main.domain.user.account.enums.user.Department;
+import net.causw.app.main.domain.user.account.enums.user.GraduationType;
+import net.causw.app.main.domain.user.account.enums.user.Role;
+import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.global.constant.StaticValue;
 
 public class ObjectFixtures {
@@ -60,8 +60,7 @@ public class ObjectFixtures {
 			"nickName",
 			"major",
 			Department.SCHOOL_OF_SW,
-			"010-2000-2000"
-		);
+			"010-2000-2000");
 	}
 
 	public static CouncilFeeFakeUser getCouncilFeeFakeUser() {
@@ -74,8 +73,7 @@ public class ObjectFixtures {
 			AcademicStatus.UNDETERMINED,
 			4,
 			2004,
-			GraduationType.FEBRUARY
-		);
+			GraduationType.FEBRUARY);
 	}
 
 	public static UserCouncilFee getUserCouncilFee(boolean isJoinedService) {
@@ -87,8 +85,7 @@ public class ObjectFixtures {
 				1,
 				8,
 				false,
-				0
-			);
+				0);
 		} else {
 			return UserCouncilFee.of(
 				false,
@@ -97,8 +94,7 @@ public class ObjectFixtures {
 				1,
 				8,
 				false,
-				0
-			);
+				0);
 		}
 	}
 
@@ -106,16 +102,14 @@ public class ObjectFixtures {
 		return UserAdmission.of(
 			getUser(),
 			List.of(),
-			"description"
-		);
+			"description");
 	}
 
 	public static Semester getSemester() {
 		return Semester.of(
 			2000,
 			SemesterType.FIRST,
-			getUser()
-		);
+			getUser());
 	}
 
 	public static Board getBoard() {
@@ -124,8 +118,7 @@ public class ObjectFixtures {
 			"boardDescription",
 			"category",
 			true,
-			null
-		);
+			null);
 	}
 
 	public static Board getNoticeBoard(boolean isAlumni) {
@@ -136,8 +129,7 @@ public class ObjectFixtures {
 			StaticValue.BOARD_NAME_APP_NOTICE,
 			false,
 			isAlumni,
-			null
-		);
+			null);
 	}
 
 	public static Post getPost(User user, Board board) {
@@ -149,8 +141,7 @@ public class ObjectFixtures {
 			false,
 			board,
 			null,
-			List.of()
-		);
+			List.of());
 	}
 
 	public static Comment getComment(User user, Post post) {
@@ -169,8 +160,7 @@ public class ObjectFixtures {
 			false,
 			false,
 			user,
-			parentComment
-		);
+			parentComment);
 	}
 
 	public static List<VoteOption> getVoteOptions() {
@@ -183,7 +173,6 @@ public class ObjectFixtures {
 			false,
 			false,
 			voteOptions,
-			post
-		);
+			post);
 	}
 }

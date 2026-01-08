@@ -1,8 +1,15 @@
 package net.causw.app.main.service.notification;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.doAnswer;
+import static org.mockito.BDDMockito.doThrow;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.mock;
+import static org.mockito.BDDMockito.never;
+import static org.mockito.BDDMockito.verify;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -18,22 +25,22 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import net.causw.app.main.domain.moving.model.entity.ceremony.Ceremony;
-import net.causw.app.main.domain.moving.model.entity.notification.CeremonyNotificationSetting;
-import net.causw.app.main.domain.moving.model.entity.notification.Notification;
-import net.causw.app.main.domain.moving.model.entity.notification.NotificationLog;
-import net.causw.app.main.domain.moving.service.notification.CeremonyNotificationService;
-import net.causw.app.main.domain.moving.service.notification.FirebasePushNotificationService;
-import net.causw.app.main.domain.user.entity.user.User;
-import net.causw.app.main.domain.moving.model.enums.ceremony.CeremonyCategory;
-import net.causw.app.main.domain.moving.model.enums.user.Department;
-import net.causw.app.main.domain.moving.dto.user.UserCreateRequestDto;
+import net.causw.app.main.api.dto.user.UserCreateRequestDto;
+import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
+import net.causw.app.main.domain.community.ceremony.enums.CeremonyCategory;
+import net.causw.app.main.domain.community.ceremony.repository.CeremonyRepository;
+import net.causw.app.main.domain.notification.notification.entity.CeremonyNotificationSetting;
+import net.causw.app.main.domain.notification.notification.entity.Notification;
+import net.causw.app.main.domain.notification.notification.entity.NotificationLog;
+import net.causw.app.main.domain.notification.notification.repository.CeremonyNotificationSettingRepository;
+import net.causw.app.main.domain.notification.notification.repository.NotificationLogRepository;
+import net.causw.app.main.domain.notification.notification.repository.NotificationRepository;
+import net.causw.app.main.domain.notification.notification.service.CeremonyNotificationService;
+import net.causw.app.main.domain.notification.notification.service.FirebasePushNotificationService;
+import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.Department;
+import net.causw.app.main.domain.user.relation.service.UserBlockEntityService;
 import net.causw.app.main.shared.infra.firebase.FcmUtils;
-import net.causw.app.main.domain.moving.repository.ceremony.CeremonyRepository;
-import net.causw.app.main.domain.moving.repository.notification.CeremonyNotificationSettingRepository;
-import net.causw.app.main.domain.moving.repository.notification.NotificationLogRepository;
-import net.causw.app.main.domain.moving.repository.notification.NotificationRepository;
-import net.causw.app.main.domain.user.service.UserBlockEntityService;
 
 import com.google.firebase.messaging.FirebaseMessagingException;
 

@@ -1,8 +1,13 @@
 package net.causw.app.main.service.userInfo;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.mock;
+import static org.mockito.BDDMockito.never;
+import static org.mockito.BDDMockito.times;
+import static org.mockito.BDDMockito.verify;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,12 +25,12 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import net.causw.app.main.domain.user.entity.user.User;
-import net.causw.app.main.domain.user.entity.userInfo.UserInfo;
-import net.causw.app.main.domain.user.service.UserInfoService;
-import net.causw.app.main.domain.moving.dto.userInfo.UserInfoSearchConditionDto;
-import net.causw.app.main.domain.user.repository.userInfo.UserInfoRepository;
-import net.causw.app.main.domain.user.repository.userInfo.query.UserInfoQueryRepository;
+import net.causw.app.main.api.dto.userInfo.UserInfoSearchConditionDto;
+import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
+import net.causw.app.main.domain.user.account.repository.userInfo.UserInfoQueryRepository;
+import net.causw.app.main.domain.user.account.repository.userInfo.UserInfoRepository;
+import net.causw.app.main.domain.user.account.service.UserInfoService;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.NotFoundException;
 
@@ -98,8 +103,7 @@ class UserInfoServiceTest {
 			// given
 			Pageable pageable = PageRequest.of(0, 10);
 			UserInfoSearchConditionDto condition = new UserInfoSearchConditionDto(
-				"keyword", 2000, 2020, null
-			);
+				"keyword", 2000, 2020, null);
 
 			UserInfo testUserInfo = mock(UserInfo.class);
 			Page<UserInfo> expectedPage = new PageImpl<>(List.of(testUserInfo), pageable, 1);

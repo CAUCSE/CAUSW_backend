@@ -1,7 +1,12 @@
 package net.causw.app.main.service.calendar;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.BDDMockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.BDDMockito.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.never;
+import static org.mockito.BDDMockito.times;
+import static org.mockito.BDDMockito.verify;
 
 import java.util.Optional;
 
@@ -14,15 +19,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import net.causw.app.main.domain.moving.model.entity.calendar.Calendar;
-import net.causw.app.main.domain.moving.model.entity.uuidFile.UuidFile;
-import net.causw.app.main.domain.moving.model.entity.uuidFile.joinEntity.CalendarAttachImage;
-import net.causw.app.main.domain.moving.model.enums.uuidFile.FilePath;
-import net.causw.app.main.domain.moving.dto.calendar.CalendarResponseDto;
-import net.causw.app.main.domain.moving.repository.calendar.CalendarRepository;
-import net.causw.app.main.domain.moving.repository.uuidFile.CalendarAttachImageRepository;
-import net.causw.app.main.domain.moving.service.calendar.CalendarService;
-import net.causw.app.main.domain.moving.service.uuidFile.UuidFileService;
+import net.causw.app.main.api.dto.calendar.CalendarResponseDto;
+import net.causw.app.main.domain.asset.file.entity.UuidFile;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.CalendarAttachImage;
+import net.causw.app.main.domain.asset.file.enums.FilePath;
+import net.causw.app.main.domain.asset.file.repository.CalendarAttachImageRepository;
+import net.causw.app.main.domain.asset.file.service.UuidFileService;
+import net.causw.app.main.domain.campus.schedule.entity.Calendar;
+import net.causw.app.main.domain.campus.schedule.repository.CalendarRepository;
+import net.causw.app.main.domain.campus.schedule.service.CalendarService;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 
@@ -56,8 +61,7 @@ public class CalendarServiceTest {
 				"fileUrl",
 				"rawFileName",
 				"png",
-				FilePath.CALENDAR
-			);
+				FilePath.CALENDAR);
 			mockCalendar = Calendar.of(2025, 3, mockUuidFile);
 			mockAttachImage = mockCalendar.getCalendarAttachImage();
 

@@ -69,11 +69,9 @@ public class WebSecurityConfigProd {
 					"/api/v1/users/user-id/find",
 					"/swagger-ui/**",
 					"/v3/api-docs/**",
-					"/actuator/**",
-					"/api/v1/test-fcm/**"
-				).permitAll()
-				.anyRequest().authenticated()
-			)
+					"/actuator/**")
+				.permitAll()
+				.anyRequest().authenticated())
 			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 			.addFilterBefore(new JwtAuthenticationFilter(this.jwtTokenProvider),
 				UsernamePasswordAuthenticationFilter.class);
@@ -96,6 +94,6 @@ public class WebSecurityConfigProd {
 
 	@Bean
 	public WebSecurityCustomizer webSecurityCustomizer() {
-		return (web) -> web.ignoring().requestMatchers("/webjars/**","/api/v1/test-fcm/**");
+		return (web) -> web.ignoring().requestMatchers("/webjars/**");
 	}
 }

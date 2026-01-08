@@ -1,8 +1,12 @@
 package net.causw.app.main.service.userCouncilFee;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.times;
+import static org.mockito.BDDMockito.verify;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -17,13 +21,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import net.causw.app.main.domain.moving.model.entity.semester.Semester;
-import net.causw.app.main.domain.user.entity.userCouncilFee.UserCouncilFee;
-import net.causw.app.main.domain.user.service.UserCouncilFeeService;
-import net.causw.app.main.domain.moving.dto.userCouncilFee.UserCouncilFeeResponseDto;
-import net.causw.app.main.domain.user.repository.userCouncilFee.UserCouncilFeeRepository;
-import net.causw.app.main.domain.moving.service.excel.CouncilFeeExcelService;
-import net.causw.app.main.domain.moving.service.semester.SemesterService;
+import net.causw.app.main.api.dto.userCouncilFee.UserCouncilFeeResponseDto;
+import net.causw.app.main.domain.campus.semester.entity.Semester;
+import net.causw.app.main.domain.campus.semester.service.SemesterService;
+import net.causw.app.main.domain.finance.usercouncilfee.entity.UserCouncilFee;
+import net.causw.app.main.domain.finance.usercouncilfee.repository.UserCouncilFeeRepository;
+import net.causw.app.main.domain.finance.usercouncilfee.service.UserCouncilFeeService;
+import net.causw.app.main.domain.integration.export.service.CouncilFeeExcelService;
 import net.causw.app.main.util.ObjectFixtures;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -68,10 +72,8 @@ public class UserCouncilFeeServiceTest {
 			userCouncilFeeService.exportUserCouncilFeeToExcel(response);
 
 			//then
-			LinkedHashMap<String, List<UserCouncilFeeResponseDto>> exportedUserCouncilFeeDataMap
-				= captureGeneratedExcelData();
-			List<UserCouncilFeeResponseDto> exportedUserCouncilFeeList
-				= exportedUserCouncilFeeDataMap.get(sheetName);
+			LinkedHashMap<String, List<UserCouncilFeeResponseDto>> exportedUserCouncilFeeDataMap = captureGeneratedExcelData();
+			List<UserCouncilFeeResponseDto> exportedUserCouncilFeeList = exportedUserCouncilFeeDataMap.get(sheetName);
 
 			verifyUserCouncilFeeResponseDto(
 				exportedUserCouncilFeeList, userCouncilFee.getUser().getStudentId());
@@ -88,18 +90,16 @@ public class UserCouncilFeeServiceTest {
 			userCouncilFeeService.exportUserCouncilFeeToExcel(response);
 
 			//then
-			LinkedHashMap<String, List<UserCouncilFeeResponseDto>> exportedUserCouncilFeeDataMap
-				= captureGeneratedExcelData();
-			List<UserCouncilFeeResponseDto> exportedUserCouncilFeeList
-				= exportedUserCouncilFeeDataMap.get(sheetName);
+			LinkedHashMap<String, List<UserCouncilFeeResponseDto>> exportedUserCouncilFeeDataMap = captureGeneratedExcelData();
+			List<UserCouncilFeeResponseDto> exportedUserCouncilFeeList = exportedUserCouncilFeeDataMap.get(sheetName);
 
 			verifyUserCouncilFeeResponseDto(
 				exportedUserCouncilFeeList, userCouncilFee.getCouncilFeeFakeUser().getStudentId());
 		}
 
 		private LinkedHashMap<String, List<UserCouncilFeeResponseDto>> captureGeneratedExcelData() {
-			ArgumentCaptor<LinkedHashMap<String, List<UserCouncilFeeResponseDto>>> captor =
-				ArgumentCaptor.forClass(LinkedHashMap.class);
+			ArgumentCaptor<LinkedHashMap<String, List<UserCouncilFeeResponseDto>>> captor = ArgumentCaptor
+				.forClass(LinkedHashMap.class);
 			verify(councilFeeExcelService, times(1))
 				.generateExcel(eq(response), anyString(), anyList(), captor.capture());
 
@@ -108,8 +108,7 @@ public class UserCouncilFeeServiceTest {
 
 		private void verifyUserCouncilFeeResponseDto(
 			List<UserCouncilFeeResponseDto> exportedUserCouncilFeeList,
-			String studentId
-		) {
+			String studentId) {
 			for (UserCouncilFeeResponseDto actual : exportedUserCouncilFeeList) {
 				assertThat(actual).isNotNull();
 				assertThat(actual.getStudentId())

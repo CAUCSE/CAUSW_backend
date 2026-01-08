@@ -1,9 +1,16 @@
 package net.causw.app.main.service.post;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.mock;
+import static org.mockito.BDDMockito.times;
+import static org.mockito.BDDMockito.verify;
+import static org.mockito.BDDMockito.when;
 
 import java.util.Collections;
 import java.util.List;
@@ -27,26 +34,26 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import net.causw.app.main.domain.moving.model.entity.board.Board;
-import net.causw.app.main.domain.moving.model.entity.post.LikePost;
-import net.causw.app.main.domain.moving.model.entity.post.Post;
-import net.causw.app.main.domain.moving.service.post.PostEntityService;
-import net.causw.app.main.domain.moving.service.post.PostService;
-import net.causw.app.main.domain.user.entity.user.User;
-import net.causw.app.main.domain.moving.model.enums.user.Role;
-import net.causw.app.main.domain.moving.model.enums.user.UserState;
-import net.causw.app.main.domain.moving.dto.post.BoardPostsResponseDto;
-import net.causw.app.main.domain.moving.dto.post.PostsResponseDto;
-import net.causw.app.main.domain.moving.repository.board.BoardRepository;
-import net.causw.app.main.domain.moving.repository.board.FavoriteBoardRepository;
-import net.causw.app.main.domain.moving.repository.notification.UserBoardSubscribeRepository;
-import net.causw.app.main.domain.moving.repository.post.FavoritePostRepository;
-import net.causw.app.main.domain.moving.repository.post.LikePostRepository;
-import net.causw.app.main.domain.moving.repository.post.PostRepository;
-import net.causw.app.main.domain.moving.repository.post.query.PostQueryRepository;
-import net.causw.app.main.domain.moving.repository.post.query.PostQueryResult;
+import net.causw.app.main.api.dto.post.BoardPostsResponseDto;
+import net.causw.app.main.api.dto.post.PostsResponseDto;
+import net.causw.app.main.domain.community.board.entity.Board;
+import net.causw.app.main.domain.community.board.repository.BoardRepository;
+import net.causw.app.main.domain.community.board.repository.FavoriteBoardRepository;
+import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.repository.PostRepository;
+import net.causw.app.main.domain.community.post.repository.query.PostQueryRepository;
+import net.causw.app.main.domain.community.post.repository.query.PostQueryResult;
+import net.causw.app.main.domain.community.post.service.PostEntityService;
+import net.causw.app.main.domain.community.post.service.PostService;
+import net.causw.app.main.domain.community.reaction.entity.LikePost;
+import net.causw.app.main.domain.community.reaction.repository.FavoritePostRepository;
+import net.causw.app.main.domain.community.reaction.repository.LikePostRepository;
+import net.causw.app.main.domain.notification.notification.repository.UserBoardSubscribeRepository;
+import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.Role;
+import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.relation.service.UserBlockEntityService;
 import net.causw.app.main.shared.pageable.PageableFactory;
-import net.causw.app.main.domain.user.service.UserBlockEntityService;
 import net.causw.app.main.util.ObjectFixtures;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;
@@ -299,16 +306,14 @@ public class PostServiceTest {
 				Arguments.of(Role.NONE, UserState.ACTIVE),
 				Arguments.of(Role.COMMON, UserState.INACTIVE),
 				Arguments.of(Role.COMMON, UserState.DROP),
-				Arguments.of(Role.COMMON, UserState.DELETED)
-			);
+				Arguments.of(Role.COMMON, UserState.DELETED));
 		}
 
 		private static Stream<Arguments> provideSearchByKeywordSuccessCases() {
 			return Stream.of(
 				Arguments.of("제목에 키워드 포함", null),
 				Arguments.of(null, "내용에 키워드 포함"),
-				Arguments.of("제목에 키워드 포함", "내용에 키워드 포함")
-			);
+				Arguments.of("제목에 키워드 포함", "내용에 키워드 포함"));
 		}
 
 		@DisplayName("인증되지 않은 사용자는 게시글 조회 불가")
@@ -332,8 +337,7 @@ public class PostServiceTest {
 			board.setIsDeleted(true);
 
 			//when & then
-			assertThatThrownBy(() ->
-				postService.findAllPost(user, boardId, keyword, pageNum))
+			assertThatThrownBy(() -> postService.findAllPost(user, boardId, keyword, pageNum))
 				.isInstanceOf(BadRequestException.class)
 				.extracting("errorCode")
 				.isEqualTo(ErrorCode.TARGET_DELETED);
@@ -393,8 +397,7 @@ public class PostServiceTest {
 
 			given(pageableFactory.create(anyInt(), anyInt())).willReturn(pageable);
 			given(postQueryRepository.findPostsByBoardWithFilters(
-				eq(boardId), eq(false), eq(Set.of()), eq(keyword), eq(pageable)
-			)).willReturn(emptyPage);
+				eq(boardId), eq(false), eq(Set.of()), eq(keyword), eq(pageable))).willReturn(emptyPage);
 
 			// when
 			BoardPostsResponseDto result = postService.findAllPost(user, boardId, keyword, pageNum);
@@ -463,8 +466,7 @@ public class PostServiceTest {
 
 		private void verifyPost(
 			Page<PostsResponseDto> searchedPagedPost,
-			boolean isDeleted, String title, String content
-		) {
+			boolean isDeleted, String title, String content) {
 			assertThat(searchedPagedPost).isNotNull();
 			assertThat(searchedPagedPost.getTotalElements()).isEqualTo(1);
 			assertThat(searchedPagedPost.getTotalPages()).isEqualTo(1);
@@ -476,8 +478,7 @@ public class PostServiceTest {
 						() -> assertThat(postResponseDto.getIsDeleted()).isEqualTo(isDeleted),
 						() -> assertThat(postResponseDto.getTitle()).isEqualTo(title),
 						() -> assertThat(postResponseDto.getContent()).isEqualTo(content),
-						() -> assertThat(postResponseDto.getWriterNickname()).isEqualTo(user.getNickname())
-					);
+						() -> assertThat(postResponseDto.getWriterNickname()).isEqualTo(user.getNickname()));
 				});
 		}
 	}

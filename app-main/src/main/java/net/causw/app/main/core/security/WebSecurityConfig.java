@@ -47,20 +47,19 @@ public class WebSecurityConfig {
 			.sessionManagement(
 				sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.authorizeHttpRequests(registry -> {
-					registry.requestMatchers(CorsUtils::isPreFlightRequest).permitAll();
-					RequestAuthorizationBinder.with(registry)
-						.bind("Public", authorizationManager.permitAll(), SecurityEndpoints.PUBLIC_ENDPOINTS)
-						.bind("Authenticated", authorizationManager.authenticated(),
-							SecurityEndpoints.AUTHENTICATED_ENDPOINTS)
-						.bind("Active", authorizationManager.isActiveUser(), SecurityEndpoints.ACTIVE_USER_ENDPOINTS)
-						.bind("Certified", authorizationManager.isCertifiedUser(),
-							SecurityEndpoints.CERTIFIED_USER_ENDPOINTS)
-						.sort(true)
-						.log(true)
-						.apply();
-					registry.anyRequest().authenticated();
-				}
-			)
+				registry.requestMatchers(CorsUtils::isPreFlightRequest).permitAll();
+				RequestAuthorizationBinder.with(registry)
+					.bind("Public", authorizationManager.permitAll(), SecurityEndpoints.PUBLIC_ENDPOINTS)
+					.bind("Authenticated", authorizationManager.authenticated(),
+						SecurityEndpoints.AUTHENTICATED_ENDPOINTS)
+					.bind("Active", authorizationManager.isActiveUser(), SecurityEndpoints.ACTIVE_USER_ENDPOINTS)
+					.bind("Certified", authorizationManager.isCertifiedUser(),
+						SecurityEndpoints.CERTIFIED_USER_ENDPOINTS)
+					.sort(true)
+					.log(true)
+					.apply();
+				registry.anyRequest().authenticated();
+			})
 			.exceptionHandling(exceptionHandling -> exceptionHandling
 				.authenticationEntryPoint(customAuthenticationEntryPoint))
 			.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);

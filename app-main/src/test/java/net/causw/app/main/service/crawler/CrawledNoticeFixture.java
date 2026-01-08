@@ -3,7 +3,7 @@ package net.causw.app.main.service.crawler;
 import java.time.LocalDate;
 import java.util.Collections;
 
-import net.causw.app.main.domain.moving.model.entity.crawled.CrawledNotice;
+import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
 
 public class CrawledNoticeFixture {
 
@@ -17,8 +17,7 @@ public class CrawledNoticeFixture {
 			"관리자",
 			LocalDate.now().toString(),
 			null,
-			Collections.emptyList()
-		);
+			Collections.emptyList());
 		notice.setIsUpdated(true);
 		return notice;
 	}
@@ -33,8 +32,7 @@ public class CrawledNoticeFixture {
 			"관리자",
 			LocalDate.now().toString(),
 			null,
-			Collections.emptyList()
-		);
+			Collections.emptyList());
 	}
 
 	// 기존 공지사항 (DB에 저장된 버전)
@@ -47,11 +45,10 @@ public class CrawledNoticeFixture {
 			"관리자",
 			LocalDate.now().toString(),
 			null,
-			Collections.emptyList()
-		);
+			Collections.emptyList());
 		notice.setIsUpdated(false);
 		// 기존 해시 설정 (다른 해시로 설정하여 변경 감지)
 		notice.updateContent("기존 공지사항", "기존 내용입니다.", "oldContentHash");
 		return notice;
 	}
-} 
+}

@@ -11,9 +11,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Page;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.shared.infra.firebase.FcmUtils;
-import net.causw.app.main.domain.user.entity.user.User;
-import net.causw.app.main.domain.user.repository.user.UserRepository;
 import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;
@@ -47,7 +47,7 @@ public class BatchScheduler {
 
 			jobLauncher.run(cleanUpUnusedFilesJob, jobParameters);
 		} catch (Exception e) {
-			log.error("Batch job failed: {}", e.getMessage());  // 예외 로깅 추가
+			log.error("Batch job failed: {}", e.getMessage()); // 예외 로깅 추가
 			throw new InternalServerException(ErrorCode.INTERNAL_SERVER, MessageUtil.BATCH_FAIL + e.getMessage());
 		}
 	}

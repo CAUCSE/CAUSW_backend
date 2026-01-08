@@ -17,7 +17,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import net.causw.app.main.core.batch.listener.CheckMeasureStepListener;
 import net.causw.app.main.core.batch.listener.DeleteFileStepListener;
 import net.causw.app.main.core.batch.listener.DeleteUnusedFileJobCompletionNotificationListener;
-import net.causw.app.main.domain.moving.service.uuidFile.CleanUnusedUuidFileService;
+import net.causw.app.main.domain.asset.file.service.CleanUnusedUuidFileService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -47,17 +47,26 @@ public class CleanUnusedUuidFilesBatchConfig {
 	@Bean
 	public Job cleanUpUnusedFilesJob(JobRepository jobRepository,
 		DeleteUnusedFileJobCompletionNotificationListener deleteUnusedFileJobCompletionNotificationListener,
-		@Qualifier("initIsUsedUuidFileIntegrationStep") Step initIsUsedUuidFileIntegrationStep,
-		@Qualifier("checkIsUsedWithCalendarAttachImageIntegrationStep") Step checkIsUsedWithCalendarAttachImageIntegrationStep,
-		@Qualifier("checkIsUsedWithCircleMainImageIntegrationStep") Step checkIsUsedWithCircleMainImageIntegrationStep,
-		@Qualifier("checkIsUsedWithEventAttachImageIntegrationStep") Step checkIsUsedWithEventAttachImageIntegrationStep,
-		@Qualifier("checkIsUsedWithPostAttachImageIntegrationStep") Step checkIsUsedWithPostAttachImageIntegrationStep,
-		@Qualifier("checkIsUsedWithUserAcademicRecordApplicationAttachImageIntegrationStep") Step checkIsUsedWithUserAcademicRecordApplicationAttachImageIntegrationStep,
-		@Qualifier("checkIsUsedWithUserAdmissionAttachImageIntegrationStep") Step checkIsUsedWithUserAdmissionAttachImageIntegrationStep,
-		@Qualifier("checkIsUsedWithUserAdmissionLogAttachImageIntegrationStep") Step checkIsUsedWithUserAdmissionLogAttachImageIntegrationStep,
-		@Qualifier("checkIsUsedWithUserProfileImageIntegrationStep") Step checkIsUsedWithUserProfileImageIntegrationStep,
-		@Qualifier("deleteFileNotUsedStep") Step deleteFileNotUsedStep
-	) {
+		@Qualifier("initIsUsedUuidFileIntegrationStep")
+		Step initIsUsedUuidFileIntegrationStep,
+		@Qualifier("checkIsUsedWithCalendarAttachImageIntegrationStep")
+		Step checkIsUsedWithCalendarAttachImageIntegrationStep,
+		@Qualifier("checkIsUsedWithCircleMainImageIntegrationStep")
+		Step checkIsUsedWithCircleMainImageIntegrationStep,
+		@Qualifier("checkIsUsedWithEventAttachImageIntegrationStep")
+		Step checkIsUsedWithEventAttachImageIntegrationStep,
+		@Qualifier("checkIsUsedWithPostAttachImageIntegrationStep")
+		Step checkIsUsedWithPostAttachImageIntegrationStep,
+		@Qualifier("checkIsUsedWithUserAcademicRecordApplicationAttachImageIntegrationStep")
+		Step checkIsUsedWithUserAcademicRecordApplicationAttachImageIntegrationStep,
+		@Qualifier("checkIsUsedWithUserAdmissionAttachImageIntegrationStep")
+		Step checkIsUsedWithUserAdmissionAttachImageIntegrationStep,
+		@Qualifier("checkIsUsedWithUserAdmissionLogAttachImageIntegrationStep")
+		Step checkIsUsedWithUserAdmissionLogAttachImageIntegrationStep,
+		@Qualifier("checkIsUsedWithUserProfileImageIntegrationStep")
+		Step checkIsUsedWithUserProfileImageIntegrationStep,
+		@Qualifier("deleteFileNotUsedStep")
+		Step deleteFileNotUsedStep) {
 		return new JobBuilder("cleanUpUnusedFilesJob", jobRepository)
 			.listener(deleteUnusedFileJobCompletionNotificationListener)
 			.start(initIsUsedUuidFileIntegrationStep)

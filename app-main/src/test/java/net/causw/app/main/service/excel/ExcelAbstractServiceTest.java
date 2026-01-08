@@ -1,7 +1,8 @@
 package net.causw.app.main.service.excel;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -21,11 +22,11 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-import net.causw.app.main.domain.moving.dto.user.UserResponseDto;
-import net.causw.app.main.domain.moving.dto.userCouncilFee.UserCouncilFeeResponseDto;
-import net.causw.app.main.domain.moving.service.excel.CouncilFeeExcelService;
-import net.causw.app.main.domain.moving.service.excel.ExcelAbstractService;
-import net.causw.app.main.domain.moving.service.excel.UserExcelService;
+import net.causw.app.main.api.dto.user.UserResponseDto;
+import net.causw.app.main.api.dto.userCouncilFee.UserCouncilFeeResponseDto;
+import net.causw.app.main.domain.integration.export.service.CouncilFeeExcelService;
+import net.causw.app.main.domain.integration.export.service.ExcelAbstractService;
+import net.causw.app.main.domain.integration.export.service.UserExcelService;
 import net.causw.global.exception.InternalServerException;
 
 public class ExcelAbstractServiceTest {
@@ -89,8 +90,7 @@ public class ExcelAbstractServiceTest {
 		sheetDataMap.put(sheetName, dataList);
 
 		// when & then
-		assertThatThrownBy(() ->
-			service.generateExcel(response, fileName, headerStringList, sheetDataMap))
+		assertThatThrownBy(() -> service.generateExcel(response, fileName, headerStringList, sheetDataMap))
 			.as("헤더가 비어 있으면 예외가 발생해야 합니다.")
 			.isInstanceOf(InternalServerException.class);
 	}
@@ -106,8 +106,7 @@ public class ExcelAbstractServiceTest {
 		sheetDataMap.put(sheetName, dataList);
 
 		// when & then
-		assertThatThrownBy(() ->
-			service.generateExcel(response, fileName, headerStringList, sheetDataMap))
+		assertThatThrownBy(() -> service.generateExcel(response, fileName, headerStringList, sheetDataMap))
 			.as("헤더가 null이면 예외가 발생해야 합니다.")
 			.isInstanceOf(InternalServerException.class);
 	}
@@ -159,8 +158,7 @@ public class ExcelAbstractServiceTest {
 		sheet.iterator().forEachRemaining(
 			row -> assertThat(row)
 				.as("모든 행은 null이 아니어야 합니다.")
-				.isNotNull()
-		);
+				.isNotNull());
 	}
 
 	private void verifyHeaderRow(Row row, int expectedColNum) {
@@ -180,8 +178,7 @@ public class ExcelAbstractServiceTest {
 				assertThat(cell.getStringCellValue())
 					.as("실제 엑셀의 헤더와 headerStringList의 내용이 일치해야 합니다.")
 					.isNotNull().isEqualTo(headerStringList.get(cell.getColumnIndex()));
-			}
-		);
+			});
 	}
 
 	private void verifyDataRow(Row row) {
@@ -195,7 +192,6 @@ public class ExcelAbstractServiceTest {
 				assertThat(cell.getCellType())
 					.as("모든 셀은 STRING 타입이어야 합니다.")
 					.isNotNull().isEqualTo(CellType.STRING);
-			}
-		);
+			});
 	}
 }

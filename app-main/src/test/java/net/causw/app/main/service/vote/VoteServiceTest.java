@@ -1,8 +1,16 @@
 package net.causw.app.main.service.vote;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.BDDMockito.doAnswer;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.mock;
+import static org.mockito.BDDMockito.never;
+import static org.mockito.BDDMockito.spy;
+import static org.mockito.BDDMockito.times;
+import static org.mockito.BDDMockito.verify;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,21 +27,21 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import net.causw.app.main.domain.moving.model.entity.board.Board;
-import net.causw.app.main.domain.moving.model.entity.post.Post;
-import net.causw.app.main.domain.moving.service.vote.VoteService;
-import net.causw.app.main.domain.user.entity.user.User;
-import net.causw.app.main.domain.moving.model.entity.vote.Vote;
-import net.causw.app.main.domain.moving.model.entity.vote.VoteOption;
-import net.causw.app.main.domain.moving.model.entity.vote.VoteRecord;
-import net.causw.app.main.domain.moving.dto.vote.CastVoteRequestDto;
-import net.causw.app.main.domain.moving.dto.vote.CreateVoteRequestDto;
-import net.causw.app.main.domain.moving.dto.vote.VoteOptionResponseDto;
-import net.causw.app.main.domain.moving.dto.vote.VoteResponseDto;
-import net.causw.app.main.domain.moving.repository.post.PostRepository;
-import net.causw.app.main.domain.moving.repository.vote.VoteOptionRepository;
-import net.causw.app.main.domain.moving.repository.vote.VoteRecordRepository;
-import net.causw.app.main.domain.moving.repository.vote.VoteRepository;
+import net.causw.app.main.api.dto.vote.CastVoteRequestDto;
+import net.causw.app.main.api.dto.vote.CreateVoteRequestDto;
+import net.causw.app.main.api.dto.vote.VoteOptionResponseDto;
+import net.causw.app.main.api.dto.vote.VoteResponseDto;
+import net.causw.app.main.domain.community.board.entity.Board;
+import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.repository.PostRepository;
+import net.causw.app.main.domain.community.vote.entity.Vote;
+import net.causw.app.main.domain.community.vote.entity.VoteOption;
+import net.causw.app.main.domain.community.vote.entity.VoteRecord;
+import net.causw.app.main.domain.community.vote.repository.VoteOptionRepository;
+import net.causw.app.main.domain.community.vote.repository.VoteRecordRepository;
+import net.causw.app.main.domain.community.vote.repository.VoteRepository;
+import net.causw.app.main.domain.community.vote.service.VoteService;
+import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.util.ObjectFixtures;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
@@ -203,7 +211,7 @@ public class VoteServiceTest {
 
 			// when & then
 			assertThatThrownBy(() -> voteService.castVote(castVoteRequestDto, writerUser)).isInstanceOf(
-					BadRequestException.class).hasMessageContaining("존재하지 않는 투표 옵션입니다.")
+				BadRequestException.class).hasMessageContaining("존재하지 않는 투표 옵션입니다.")
 				.extracting("errorCode")
 				.isEqualTo(ErrorCode.ROW_DOES_NOT_EXIST);
 
@@ -220,7 +228,7 @@ public class VoteServiceTest {
 
 			// when & then
 			assertThatThrownBy(() -> voteService.castVote(castVoteRequestDto, writerUser)).isInstanceOf(
-					BadRequestException.class).hasMessageContaining("이 투표는 여러 항목을 선택할 수 없습니다.")
+				BadRequestException.class).hasMessageContaining("이 투표는 여러 항목을 선택할 수 없습니다.")
 				.extracting("errorCode")
 				.isEqualTo(ErrorCode.INVALID_PARAMETER);
 
@@ -238,7 +246,7 @@ public class VoteServiceTest {
 
 			// when & then
 			assertThatThrownBy(() -> voteService.castVote(castVoteRequestDto, writerUser)).isInstanceOf(
-					BadRequestException.class).hasMessageContaining("해당 투표에 이미 참여한 이력이 있습니다.")
+				BadRequestException.class).hasMessageContaining("해당 투표에 이미 참여한 이력이 있습니다.")
 				.extracting("errorCode")
 				.isEqualTo(ErrorCode.INVALID_PARAMETER);
 

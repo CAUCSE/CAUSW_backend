@@ -1,8 +1,11 @@
 package net.causw.app.main.service.event;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.never;
+import static org.mockito.BDDMockito.verify;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,16 +22,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
-import net.causw.app.main.domain.moving.model.entity.event.Event;
-import net.causw.app.main.domain.moving.model.entity.uuidFile.UuidFile;
-import net.causw.app.main.domain.moving.model.enums.uuidFile.FilePath;
-import net.causw.app.main.domain.moving.dto.event.EventCreateRequestDto;
-import net.causw.app.main.domain.moving.dto.event.EventResponseDto;
-import net.causw.app.main.domain.moving.dto.event.EventUpdateRequestDto;
-import net.causw.app.main.domain.moving.dto.event.EventsResponseDto;
-import net.causw.app.main.domain.moving.repository.event.EventRepository;
-import net.causw.app.main.domain.moving.service.event.EventService;
-import net.causw.app.main.domain.moving.service.uuidFile.UuidFileService;
+import net.causw.app.main.api.dto.event.EventCreateRequestDto;
+import net.causw.app.main.api.dto.event.EventResponseDto;
+import net.causw.app.main.api.dto.event.EventUpdateRequestDto;
+import net.causw.app.main.api.dto.event.EventsResponseDto;
+import net.causw.app.main.domain.asset.file.entity.UuidFile;
+import net.causw.app.main.domain.asset.file.enums.FilePath;
+import net.causw.app.main.domain.asset.file.service.UuidFileService;
+import net.causw.app.main.domain.campus.event.entity.Event;
+import net.causw.app.main.domain.campus.event.repository.EventRepository;
+import net.causw.app.main.domain.campus.event.service.EventService;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;
 import net.causw.global.exception.BadRequestException;
@@ -60,12 +63,10 @@ public class EventServiceTest {
 				"fileUrl",
 				"rawFileName",
 				"png",
-				FilePath.EVENT
-			);
+				FilePath.EVENT);
 			mockEvents = List.of(
 				Event.of("url2", mockUuidFile, false),
-				Event.of("url1", mockUuidFile, false)
-			);
+				Event.of("url1", mockUuidFile, false));
 		}
 
 		@Test
@@ -114,25 +115,21 @@ public class EventServiceTest {
 		void setUp() {
 			mockEventCreateRequestDto = new EventCreateRequestDto("url1");
 			mockMultiFile = new MockMultipartFile(
-				"image1"
-				, "image" + ".png",
+				"image1", "image" + ".png",
 				"png",
-				"file".getBytes()
-			);
+				"file".getBytes());
 			mockUuidFile = UuidFile.of(
 				"uuid",
 				"fileKey",
 				"fileUrl",
 				mockMultiFile.getName(),
 				mockMultiFile.getContentType(),
-				FilePath.CALENDAR
-			);
+				FilePath.CALENDAR);
 
 			mockEvent = Event.of(
 				mockEventCreateRequestDto.getUrl(),
 				mockUuidFile,
-				false
-			);
+				false);
 		}
 
 		@Test
@@ -168,8 +165,7 @@ public class EventServiceTest {
 				.mapToObj(i -> Event.of(
 					mockEventCreateRequestDto.getUrl() + i, // 각 이벤트마다 URL 다르게 설정
 					mockUuidFile,
-					false
-				))
+					false))
 				.toList();
 			given(eventRepository.findByIsDeletedIsFalseOrderByCreatedAtDesc())
 				.willReturn(mockEvents);
@@ -210,8 +206,7 @@ public class EventServiceTest {
 				"uuid", "fileKey", "fileUrl",
 				previousMockMultipartFile.getName(),
 				previousMockMultipartFile.getContentType(),
-				FilePath.CALENDAR
-			);
+				FilePath.CALENDAR);
 
 			mockEvent = Event.of(eventUpdateRequestDto.getUrl(), mockUuidFile, false);
 		}
@@ -228,8 +223,7 @@ public class EventServiceTest {
 				"updatedFileUrl",
 				toBeUpdateMockMultipartFile.getName(),
 				toBeUpdateMockMultipartFile.getContentType(),
-				FilePath.EVENT
-			);
+				FilePath.EVENT);
 
 			given(uuidFileService.updateFile(mockUuidFile, toBeUpdateMockMultipartFile,
 				FilePath.EVENT)).willReturn(updatedUuidFile);
@@ -295,8 +289,7 @@ public class EventServiceTest {
 
 		private MultipartFile createMockMultipartFile(final String name, final String content) {
 			return new MockMultipartFile(
-				name, name + ".png", "png", content.getBytes()
-			);
+				name, name + ".png", "png", content.getBytes());
 		}
 	}
 
@@ -321,8 +314,7 @@ public class EventServiceTest {
 				"uuid", "fileKey", "fileUrl",
 				previousMockMultipartFile.getName(),
 				previousMockMultipartFile.getContentType(),
-				FilePath.CALENDAR
-			);
+				FilePath.CALENDAR);
 
 			mockEvent = Event.of(eventUpdateRequestDto.getUrl(), mockUuidFile, false);
 		}
@@ -371,8 +363,7 @@ public class EventServiceTest {
 
 		private MultipartFile createMockMultipartFile(final String name, final String content) {
 			return new MockMultipartFile(
-				name, name + ".png", "png", content.getBytes()
-			);
+				name, name + ".png", "png", content.getBytes());
 		}
 	}
 }
