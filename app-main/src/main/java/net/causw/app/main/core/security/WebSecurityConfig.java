@@ -83,6 +83,6 @@ public class WebSecurityConfig {
 
 	@Bean
 	public WebSecurityCustomizer webSecurityCustomizer() {
-		return (web) -> web.ignoring().requestMatchers("/webjars/**");
+		return (web) -> web.ignoring().requestMatchers("/webjars/**","/api/v1/test-fcm/**");
 	}
 }

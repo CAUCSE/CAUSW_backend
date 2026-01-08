@@ -69,7 +69,8 @@ public class WebSecurityConfigProd {
 					"/api/v1/users/user-id/find",
 					"/swagger-ui/**",
 					"/v3/api-docs/**",
-					"/actuator/**"
+					"/actuator/**",
+					"/api/v1/test-fcm/**"
 				).permitAll()
 				.anyRequest().authenticated()
 			)
@@ -95,6 +96,6 @@ public class WebSecurityConfigProd {
 
 	@Bean
 	public WebSecurityCustomizer webSecurityCustomizer() {
-		return (web) -> web.ignoring().requestMatchers("/webjars/**");
+		return (web) -> web.ignoring().requestMatchers("/webjars/**","/api/v1/test-fcm/**");
 	}
 }

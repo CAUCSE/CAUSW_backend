@@ -63,8 +63,14 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
 		String uri = request.getRequestURI();
 		String method = request.getMethod();
 
+		log.info("Filter check - URI: {}, Method: {}", uri, method);
+
 		// HTTP 메서드로 제외
 		if ("OPTIONS".equals(method)) {
+			return true;
+		}
+
+		if (uri.startsWith("/api/v1/test-fcm")) {
 			return true;
 		}
 
