@@ -1,19 +1,20 @@
-package net.causw.app.main.controller;
-
-import org.springframework.http.HttpStatus;
+package net.causw.app.main.api;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import net.causw.app.main.domain.moving.dto.user.UserFcmCreateRequestDto;
-import net.causw.app.main.domain.moving.dto.user.UserFcmTokenResponseDto;
-import net.causw.app.main.domain.moving.service.notification.FirebasePushNotificationService;
+
+import net.causw.app.main.api.dto.user.UserFcmCreateRequestDto;
+import net.causw.app.main.api.dto.user.UserFcmTokenResponseDto;
+import net.causw.app.main.domain.notification.notification.service.FirebasePushNotificationService;
 
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
@@ -78,3 +79,4 @@ public class TestFcmController {
 		return userId + "에게 푸시 발송 시도함 (Token: " + token + ")";
 	}
 }
+
