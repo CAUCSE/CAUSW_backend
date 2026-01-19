@@ -34,11 +34,11 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import net.causw.app.main.api.dto.post.BoardPostsResponseDto;
-import net.causw.app.main.api.dto.post.PostsResponseDto;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.repository.BoardRepository;
 import net.causw.app.main.domain.community.board.repository.FavoriteBoardRepository;
+import net.causw.app.main.domain.community.post.api.v1.dto.BoardPostsResponseDto;
+import net.causw.app.main.domain.community.post.api.v1.dto.PostsResponseDto;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.community.post.repository.query.PostQueryRepository;

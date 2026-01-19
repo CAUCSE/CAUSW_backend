@@ -25,7 +25,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import net.causw.app.main.api.dto.userInfo.UserInfoSearchConditionDto;
+import net.causw.app.main.domain.user.account.api.v1.dto.UserInfoSearchConditionDto;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.domain.user.account.repository.userInfo.UserInfoQueryRepository;

@@ -23,7 +23,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import net.causw.app.main.api.dto.notification.NotificationResponseDto;
+import net.causw.app.main.domain.notification.notification.api.v1.dto.NotificationResponseDto;
 import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.entity.NotificationLog;
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;

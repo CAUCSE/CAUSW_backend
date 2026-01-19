@@ -27,13 +27,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import net.causw.app.main.api.dto.vote.CastVoteRequestDto;
-import net.causw.app.main.api.dto.vote.CreateVoteRequestDto;
-import net.causw.app.main.api.dto.vote.VoteOptionResponseDto;
-import net.causw.app.main.api.dto.vote.VoteResponseDto;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
+import net.causw.app.main.domain.community.vote.api.v1.dto.CastVoteRequestDto;
+import net.causw.app.main.domain.community.vote.api.v1.dto.CreateVoteRequestDto;
+import net.causw.app.main.domain.community.vote.api.v1.dto.VoteOptionResponseDto;
+import net.causw.app.main.domain.community.vote.api.v1.dto.VoteResponseDto;
 import net.causw.app.main.domain.community.vote.entity.Vote;
 import net.causw.app.main.domain.community.vote.entity.VoteOption;
 import net.causw.app.main.domain.community.vote.entity.VoteRecord;

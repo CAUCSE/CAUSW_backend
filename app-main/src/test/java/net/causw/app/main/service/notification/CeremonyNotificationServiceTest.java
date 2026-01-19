@@ -25,7 +25,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import net.causw.app.main.api.dto.user.UserCreateRequestDto;
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyCategory;
 import net.causw.app.main.domain.community.ceremony.repository.CeremonyRepository;
@@ -37,6 +36,7 @@ import net.causw.app.main.domain.notification.notification.repository.Notificati
 import net.causw.app.main.domain.notification.notification.repository.NotificationRepository;
 import net.causw.app.main.domain.notification.notification.service.CeremonyNotificationService;
 import net.causw.app.main.domain.notification.notification.service.FirebasePushNotificationService;
+import net.causw.app.main.domain.user.account.api.v1.dto.UserCreateRequestDto;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.relation.service.UserBlockEntityService;

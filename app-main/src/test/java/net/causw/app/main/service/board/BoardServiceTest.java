@@ -19,8 +19,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import net.causw.app.main.api.dto.board.BoardCreateRequestDto;
-import net.causw.app.main.api.dto.board.BoardResponseDto;
+import net.causw.app.main.domain.community.board.api.v1.dto.BoardCreateRequestDto;
+import net.causw.app.main.domain.community.board.api.v1.dto.BoardResponseDto;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.repository.BoardRepository;
 import net.causw.app.main.domain.community.board.service.BoardService;

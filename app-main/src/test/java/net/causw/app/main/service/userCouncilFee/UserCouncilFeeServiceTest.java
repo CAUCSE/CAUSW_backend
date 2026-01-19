@@ -21,9 +21,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import net.causw.app.main.api.dto.userCouncilFee.UserCouncilFeeResponseDto;
 import net.causw.app.main.domain.campus.semester.entity.Semester;
 import net.causw.app.main.domain.campus.semester.service.SemesterService;
+import net.causw.app.main.domain.finance.usercouncilfee.api.v1.dto.UserCouncilFeeResponseDto;
 import net.causw.app.main.domain.finance.usercouncilfee.entity.UserCouncilFee;
 import net.causw.app.main.domain.finance.usercouncilfee.repository.UserCouncilFeeRepository;
 import net.causw.app.main.domain.finance.usercouncilfee.service.UserCouncilFeeService;
