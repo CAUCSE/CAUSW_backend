@@ -1,4 +1,4 @@
-package net.causw.app.main.shared.dto.util.dtoMapper;
+package net.causw.app.main.domain.community.ceremony.api.v1.mapper;
 
 import java.util.List;
 import java.util.stream.Collectors;

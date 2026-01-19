@@ -26,10 +26,10 @@ import net.causw.app.main.domain.community.board.api.v1.dto.BoardUpdateRequestDt
 import net.causw.app.main.domain.campus.circle.api.v1.dto.CircleResponseDto;
 import net.causw.app.main.domain.community.post.api.v1.dto.PostContentDto;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserResponseDto;
-import net.causw.app.main.shared.dto.util.dtoMapper.BoardDtoMapper;
-import net.causw.app.main.shared.dto.util.dtoMapper.CircleDtoMapper;
-import net.causw.app.main.shared.dto.util.dtoMapper.PostDtoMapper;
-import net.causw.app.main.shared.dto.util.dtoMapper.UserDtoMapper;
+import net.causw.app.main.domain.community.board.api.v1.mapper.BoardDtoMapper;
+import net.causw.app.main.domain.campus.circle.api.v1.mapper.CircleDtoMapper;
+import net.causw.app.main.domain.community.post.api.v1.mapper.PostDtoMapper;
+import net.causw.app.main.domain.user.account.api.v1.mapper.UserDtoMapper;
 import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.domain.campus.circle.entity.Circle;
 import net.causw.app.main.domain.campus.circle.entity.CircleMember;

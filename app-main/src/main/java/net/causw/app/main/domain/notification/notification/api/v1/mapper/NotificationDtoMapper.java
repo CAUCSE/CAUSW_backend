@@ -1,4 +1,4 @@
-package net.causw.app.main.shared.dto.util.dtoMapper;
+package net.causw.app.main.domain.notification.notification.api.v1.mapper;
 
 import java.time.format.DateTimeFormatter;
 

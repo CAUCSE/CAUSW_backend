@@ -22,8 +22,8 @@ import net.causw.app.main.domain.user.academic.api.v1.dto.UserAcademicRecordAppl
 import net.causw.app.main.domain.user.academic.api.v1.dto.UserAcademicRecordInfoResponseDto;
 import net.causw.app.main.domain.user.academic.api.v1.dto.UserAcademicRecordListResponseDto;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserAcademicStatusNoteUpdateDto;
-import net.causw.app.main.shared.dto.util.dtoMapper.SemesterDtoMapper;
-import net.causw.app.main.shared.dto.util.dtoMapper.UserAcademicRecordDtoMapper;
+import net.causw.app.main.domain.campus.semester.api.v1.mapper.SemesterDtoMapper;
+import net.causw.app.main.domain.user.academic.api.v1.mapper.UserAcademicRecordDtoMapper;
 import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;

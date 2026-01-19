@@ -30,7 +30,7 @@ import net.causw.app.main.domain.community.form.api.v1.dto.response.reply.UserRe
 import net.causw.app.main.domain.community.form.api.v1.dto.response.reply.excel.ExcelReplyListResponseDto;
 import net.causw.app.main.domain.community.form.api.v1.dto.response.reply.excel.ExcelReplyQuestionResponseDto;
 import net.causw.app.main.domain.community.form.api.v1.dto.response.reply.excel.ExcelReplyResponseDto;
-import net.causw.app.main.shared.dto.util.dtoMapper.FormDtoMapper;
+import net.causw.app.main.domain.community.form.api.v1.mapper.FormDtoMapper;
 import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.domain.campus.circle.entity.Circle;
 import net.causw.app.main.domain.campus.circle.entity.CircleMember;

@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.user.account.api.v1.dto.UserPrivilegedResponseDto;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserResponseDto;
-import net.causw.app.main.shared.dto.util.dtoMapper.UserDtoMapper;
+import net.causw.app.main.domain.user.account.api.v1.mapper.UserDtoMapper;
 import net.causw.app.main.domain.campus.circle.entity.Circle;
 import net.causw.app.main.domain.campus.circle.service.CircleEntityService;
 import net.causw.app.main.domain.user.account.entity.user.User;

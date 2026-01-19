@@ -10,7 +10,7 @@ import net.causw.app.main.domain.campus.event.api.v1.dto.EventCreateRequestDto;
 import net.causw.app.main.domain.campus.event.api.v1.dto.EventResponseDto;
 import net.causw.app.main.domain.campus.event.api.v1.dto.EventUpdateRequestDto;
 import net.causw.app.main.domain.campus.event.api.v1.dto.EventsResponseDto;
-import net.causw.app.main.shared.dto.util.dtoMapper.EventDtoMapper;
+import net.causw.app.main.domain.campus.event.api.v1.mapper.EventDtoMapper;
 import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.EventAttachImage;

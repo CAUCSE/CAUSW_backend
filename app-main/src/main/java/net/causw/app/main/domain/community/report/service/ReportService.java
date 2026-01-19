@@ -10,7 +10,7 @@ import net.causw.app.main.domain.community.report.api.v1.dto.ReportCreateRespons
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportedCommentResponseDto;
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportedPostResponseDto;
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportedUserResponseDto;
-import net.causw.app.main.shared.dto.util.dtoMapper.ReportDtoMapper;
+import net.causw.app.main.domain.community.report.api.v1.mapper.ReportDtoMapper;
 import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.comment.repository.ChildCommentRepository;

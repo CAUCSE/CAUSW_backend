@@ -36,8 +36,8 @@ import net.causw.app.main.domain.community.form.api.v1.dto.response.FormResponse
 import net.causw.app.main.domain.community.form.api.v1.dto.response.OptionResponseDto;
 import net.causw.app.main.domain.community.form.api.v1.dto.response.QuestionResponseDto;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserResponseDto;
-import net.causw.app.main.shared.dto.util.dtoMapper.CircleDtoMapper;
-import net.causw.app.main.shared.dto.util.dtoMapper.FormDtoMapper;
+import net.causw.app.main.domain.campus.circle.api.v1.mapper.CircleDtoMapper;
+import net.causw.app.main.domain.community.form.api.v1.mapper.FormDtoMapper;
 import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.CircleMainImage;

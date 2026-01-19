@@ -10,7 +10,7 @@ import net.causw.app.main.domain.campus.schedule.api.v1.dto.CalendarCreateReques
 import net.causw.app.main.domain.campus.schedule.api.v1.dto.CalendarResponseDto;
 import net.causw.app.main.domain.campus.schedule.api.v1.dto.CalendarUpdateRequestDto;
 import net.causw.app.main.domain.campus.schedule.api.v1.dto.CalendarsResponseDto;
-import net.causw.app.main.shared.dto.util.dtoMapper.CalendarDtoMapper;
+import net.causw.app.main.domain.campus.schedule.api.v1.mapper.CalendarDtoMapper;
 import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.CalendarAttachImage;

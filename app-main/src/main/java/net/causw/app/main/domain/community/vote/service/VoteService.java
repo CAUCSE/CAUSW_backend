@@ -9,8 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.user.account.api.v1.dto.UserResponseDto;
-import net.causw.app.main.shared.dto.util.dtoMapper.UserDtoMapper;
-import net.causw.app.main.shared.dto.util.dtoMapper.VoteDtoMapper;
+import net.causw.app.main.domain.user.account.api.v1.mapper.UserDtoMapper;
+import net.causw.app.main.domain.community.vote.api.v1.mapper.VoteDtoMapper;
 import net.causw.app.main.domain.community.vote.api.v1.dto.CastVoteRequestDto;
 import net.causw.app.main.domain.community.vote.api.v1.dto.CreateVoteRequestDto;
 import net.causw.app.main.domain.community.vote.api.v1.dto.VoteOptionResponseDto;

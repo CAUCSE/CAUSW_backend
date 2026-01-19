@@ -1,4 +1,4 @@
-package net.causw.app.main.shared.dto.util.dtoMapper;
+package net.causw.app.main.domain.community.form.api.v1.mapper;
 
 import java.time.LocalDateTime;
 import java.util.List;

@@ -17,8 +17,8 @@ import net.causw.app.main.domain.community.ceremony.api.v1.dto.CreateCeremonyNot
 import net.causw.app.main.domain.community.ceremony.api.v1.dto.CreateCeremonyRequestDto;
 import net.causw.app.main.domain.community.ceremony.api.v1.dto.UpdateCeremonyStateRequestDto;
 import net.causw.app.main.domain.notification.notification.api.v1.dto.CeremonyListNotificationDto;
-import net.causw.app.main.shared.dto.util.dtoMapper.CeremonyDtoMapper;
-import net.causw.app.main.shared.dto.util.dtoMapper.NotificationDtoMapper;
+import net.causw.app.main.domain.community.ceremony.api.v1.mapper.CeremonyDtoMapper;
+import net.causw.app.main.domain.notification.notification.api.v1.mapper.NotificationDtoMapper;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.service.UuidFileService;

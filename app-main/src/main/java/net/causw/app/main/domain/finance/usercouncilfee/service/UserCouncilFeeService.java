@@ -13,7 +13,7 @@ import net.causw.app.main.domain.finance.usercouncilfee.api.v1.dto.CreateUserCou
 import net.causw.app.main.domain.finance.usercouncilfee.api.v1.dto.CurrentUserCouncilFeeResponseDto;
 import net.causw.app.main.domain.finance.usercouncilfee.api.v1.dto.UserCouncilFeeListResponseDto;
 import net.causw.app.main.domain.finance.usercouncilfee.api.v1.dto.UserCouncilFeeResponseDto;
-import net.causw.app.main.shared.dto.util.dtoMapper.UserCouncilFeeDtoMapper;
+import net.causw.app.main.domain.finance.usercouncilfee.api.v1.mapper.UserCouncilFeeDtoMapper;
 import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.domain.campus.semester.entity.Semester;
 import net.causw.app.main.domain.campus.semester.service.SemesterService;

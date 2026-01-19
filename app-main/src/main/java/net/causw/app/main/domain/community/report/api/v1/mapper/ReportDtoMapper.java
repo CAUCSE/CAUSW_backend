@@ -1,4 +1,4 @@
-package net.causw.app.main.shared.dto.util.dtoMapper;
+package net.causw.app.main.domain.community.report.api.v1.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
