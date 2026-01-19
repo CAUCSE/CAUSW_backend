@@ -9,11 +9,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import net.causw.app.main.api.dto.user.UserUpdateRequestDto;
-import net.causw.app.main.api.dto.userInfo.UserCareerDto;
-import net.causw.app.main.api.dto.userInfo.UserInfoResponseDto;
-import net.causw.app.main.api.dto.userInfo.UserInfoUpdateRequestDto;
-import net.causw.app.main.api.dto.util.dtoMapper.UserDtoMapper;
+import net.causw.app.main.domain.user.account.api.v1.dto.UserCareerDto;
+import net.causw.app.main.domain.user.account.api.v1.dto.UserInfoResponseDto;
+import net.causw.app.main.domain.user.account.api.v1.dto.UserInfoUpdateRequestDto;
+import net.causw.app.main.domain.user.account.api.v1.dto.UserUpdateRequestDto;
+import net.causw.app.main.shared.dto.util.dtoMapper.UserDtoMapper;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserCareer;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;

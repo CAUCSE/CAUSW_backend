@@ -17,8 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import net.causw.app.main.api.dto.user.BatchRegisterResponseDto;
-import net.causw.app.main.api.dto.user.GraduatedUserRegisterRequestDto;
+import net.causw.app.main.domain.user.account.api.v1.dto.BatchRegisterResponseDto;
+import net.causw.app.main.domain.user.account.api.v1.dto.GraduatedUserRegisterRequestDto;
 import net.causw.app.main.domain.user.account.entity.user.DepartmentResolver;
 import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.global.constant.MessageUtil;

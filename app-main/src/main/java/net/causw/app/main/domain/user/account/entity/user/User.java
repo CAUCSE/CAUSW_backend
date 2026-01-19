@@ -9,8 +9,8 @@ import java.util.Set;
 
 import org.hibernate.annotations.BatchSize;
 
-import net.causw.app.main.api.dto.user.GraduatedUserCommand;
-import net.causw.app.main.api.dto.user.UserCreateRequestDto;
+import net.causw.app.main.domain.user.account.api.v1.dto.GraduatedUserCommand;
+import net.causw.app.main.domain.user.account.api.v1.dto.UserCreateRequestDto;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.asset.locker.entity.Locker;
 import net.causw.app.main.domain.campus.circle.entity.CircleMember;

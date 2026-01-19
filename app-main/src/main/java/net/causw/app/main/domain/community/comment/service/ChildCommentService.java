@@ -7,10 +7,10 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.api.dto.comment.ChildCommentCreateRequestDto;
-import net.causw.app.main.api.dto.comment.ChildCommentResponseDto;
-import net.causw.app.main.api.dto.comment.ChildCommentUpdateRequestDto;
-import net.causw.app.main.api.dto.util.dtoMapper.CommentDtoMapper;
+import net.causw.app.main.domain.community.comment.api.v1.dto.ChildCommentCreateRequestDto;
+import net.causw.app.main.domain.community.comment.api.v1.dto.ChildCommentResponseDto;
+import net.causw.app.main.domain.community.comment.api.v1.dto.ChildCommentUpdateRequestDto;
+import net.causw.app.main.shared.dto.util.dtoMapper.CommentDtoMapper;
 import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.domain.campus.circle.entity.Circle;
 import net.causw.app.main.domain.campus.circle.entity.CircleMember;

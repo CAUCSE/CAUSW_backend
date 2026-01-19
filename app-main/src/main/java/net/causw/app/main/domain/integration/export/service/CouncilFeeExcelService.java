@@ -9,8 +9,8 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.springframework.stereotype.Service;
 
-import net.causw.app.main.api.dto.userCouncilFee.UserCouncilFeeResponseDto;
 import net.causw.app.main.core.aop.annotation.MeasureTime;
+import net.causw.app.main.domain.finance.usercouncilfee.api.v1.dto.UserCouncilFeeResponseDto;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.enums.user.GraduationType;
 

@@ -6,8 +6,8 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.springframework.stereotype.Service;
 
-import net.causw.app.main.api.dto.form.response.reply.excel.ExcelReplyQuestionResponseDto;
-import net.causw.app.main.api.dto.form.response.reply.excel.ExcelReplyResponseDto;
+import net.causw.app.main.domain.community.form.api.v1.dto.response.reply.excel.ExcelReplyQuestionResponseDto;
+import net.causw.app.main.domain.community.form.api.v1.dto.response.reply.excel.ExcelReplyResponseDto;
 import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.ErrorCode;

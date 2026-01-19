@@ -5,12 +5,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.api.dto.report.ReportCreateRequestDto;
-import net.causw.app.main.api.dto.report.ReportCreateResponseDto;
-import net.causw.app.main.api.dto.report.ReportedCommentResponseDto;
-import net.causw.app.main.api.dto.report.ReportedPostResponseDto;
-import net.causw.app.main.api.dto.report.ReportedUserResponseDto;
-import net.causw.app.main.api.dto.util.dtoMapper.ReportDtoMapper;
+import net.causw.app.main.domain.community.report.api.v1.dto.ReportCreateRequestDto;
+import net.causw.app.main.domain.community.report.api.v1.dto.ReportCreateResponseDto;
+import net.causw.app.main.domain.community.report.api.v1.dto.ReportedCommentResponseDto;
+import net.causw.app.main.domain.community.report.api.v1.dto.ReportedPostResponseDto;
+import net.causw.app.main.domain.community.report.api.v1.dto.ReportedUserResponseDto;
+import net.causw.app.main.shared.dto.util.dtoMapper.ReportDtoMapper;
 import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.comment.repository.ChildCommentRepository;

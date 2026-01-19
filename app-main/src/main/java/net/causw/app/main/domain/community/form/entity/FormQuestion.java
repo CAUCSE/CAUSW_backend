@@ -3,7 +3,7 @@ package net.causw.app.main.domain.community.form.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.causw.app.main.api.dto.form.request.create.QuestionCreateRequestDto;
+import net.causw.app.main.domain.community.form.api.v1.dto.request.create.QuestionCreateRequestDto;
 import net.causw.app.main.domain.community.form.enums.QuestionType;
 import net.causw.app.main.shared.entity.BaseEntity;
 

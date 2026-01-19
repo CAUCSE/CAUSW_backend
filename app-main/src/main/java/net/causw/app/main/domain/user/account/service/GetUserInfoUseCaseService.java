@@ -3,8 +3,8 @@ package net.causw.app.main.domain.user.account.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.api.dto.userInfo.UserInfoResponseDto;
-import net.causw.app.main.api.dto.util.dtoMapper.UserDtoMapper;
+import net.causw.app.main.domain.user.account.api.v1.dto.UserInfoResponseDto;
+import net.causw.app.main.shared.dto.util.dtoMapper.UserDtoMapper;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.domain.user.account.enums.user.UserState;

@@ -8,9 +8,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.api.dto.notification.NotificationCountResponseDto;
-import net.causw.app.main.api.dto.notification.NotificationResponseDto;
-import net.causw.app.main.api.dto.util.dtoMapper.NotificationDtoMapper;
+import net.causw.app.main.domain.notification.notification.api.v1.dto.NotificationCountResponseDto;
+import net.causw.app.main.domain.notification.notification.api.v1.dto.NotificationResponseDto;
+import net.causw.app.main.shared.dto.util.dtoMapper.NotificationDtoMapper;
 import net.causw.app.main.domain.notification.notification.entity.NotificationLog;
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;
 import net.causw.app.main.domain.notification.notification.repository.NotificationLogRepository;

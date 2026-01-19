@@ -11,7 +11,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.api.dto.notification.CommentNotificationDto;
+import net.causw.app.main.domain.notification.notification.api.v1.dto.CommentNotificationDto;
 import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.notification.notification.entity.Notification;

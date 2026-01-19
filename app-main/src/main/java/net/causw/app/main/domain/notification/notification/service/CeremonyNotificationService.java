@@ -9,7 +9,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.api.dto.notification.CeremonyNotificationDto;
+import net.causw.app.main.domain.notification.notification.api.v1.dto.CeremonyNotificationDto;
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.repository.CeremonyRepository;
 import net.causw.app.main.domain.notification.notification.entity.CeremonyNotificationSetting;

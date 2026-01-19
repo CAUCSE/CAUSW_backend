@@ -7,9 +7,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.api.dto.userInfo.UserInfoSearchConditionDto;
-import net.causw.app.main.api.dto.userInfo.UserInfoSummaryResponseDto;
-import net.causw.app.main.api.dto.util.dtoMapper.UserDtoMapper;
+import net.causw.app.main.domain.user.account.api.v1.dto.UserInfoSearchConditionDto;
+import net.causw.app.main.domain.user.account.api.v1.dto.UserInfoSummaryResponseDto;
+import net.causw.app.main.shared.dto.util.dtoMapper.UserDtoMapper;
 import net.causw.app.main.shared.pageable.PageableFactory;
 
 import lombok.RequiredArgsConstructor;

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
-import net.causw.app.main.api.dto.form.request.create.FormCreateRequestDto;
+import net.causw.app.main.domain.community.form.api.v1.dto.request.create.FormCreateRequestDto;
 import net.causw.app.main.domain.campus.circle.entity.Circle;
 import net.causw.app.main.domain.community.form.enums.FormType;
 import net.causw.app.main.domain.community.form.enums.RegisteredSemester;

@@ -8,12 +8,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.api.dto.userCouncilFee.CreateUserCouncilFeeWithFakeUserRequestDto;
-import net.causw.app.main.api.dto.userCouncilFee.CreateUserCouncilFeeWithUserRequestDto;
-import net.causw.app.main.api.dto.userCouncilFee.CurrentUserCouncilFeeResponseDto;
-import net.causw.app.main.api.dto.userCouncilFee.UserCouncilFeeListResponseDto;
-import net.causw.app.main.api.dto.userCouncilFee.UserCouncilFeeResponseDto;
-import net.causw.app.main.api.dto.util.dtoMapper.UserCouncilFeeDtoMapper;
+import net.causw.app.main.domain.finance.usercouncilfee.api.v1.dto.CreateUserCouncilFeeWithFakeUserRequestDto;
+import net.causw.app.main.domain.finance.usercouncilfee.api.v1.dto.CreateUserCouncilFeeWithUserRequestDto;
+import net.causw.app.main.domain.finance.usercouncilfee.api.v1.dto.CurrentUserCouncilFeeResponseDto;
+import net.causw.app.main.domain.finance.usercouncilfee.api.v1.dto.UserCouncilFeeListResponseDto;
+import net.causw.app.main.domain.finance.usercouncilfee.api.v1.dto.UserCouncilFeeResponseDto;
+import net.causw.app.main.shared.dto.util.dtoMapper.UserCouncilFeeDtoMapper;
 import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.domain.campus.semester.entity.Semester;
 import net.causw.app.main.domain.campus.semester.service.SemesterService;
