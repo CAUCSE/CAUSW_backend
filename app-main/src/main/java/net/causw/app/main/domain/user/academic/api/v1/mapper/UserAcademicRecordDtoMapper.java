@@ -10,17 +10,17 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
+import net.causw.app.main.domain.campus.semester.entity.Semester;
 import net.causw.app.main.domain.user.academic.api.v1.dto.CurrentUserAcademicRecordApplicationResponseDto;
 import net.causw.app.main.domain.user.academic.api.v1.dto.UserAcademicRecordApplicationInfoResponseDto;
 import net.causw.app.main.domain.user.academic.api.v1.dto.UserAcademicRecordApplicationListResponseDto;
 import net.causw.app.main.domain.user.academic.api.v1.dto.UserAcademicRecordApplicationResponseDto;
 import net.causw.app.main.domain.user.academic.api.v1.dto.UserAcademicRecordInfoResponseDto;
 import net.causw.app.main.domain.user.academic.api.v1.dto.UserAcademicRecordListResponseDto;
-import net.causw.app.main.shared.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
-import net.causw.app.main.domain.campus.semester.entity.Semester;
 import net.causw.app.main.domain.user.academic.entity.userAcademicRecord.UserAcademicRecordApplication;
 import net.causw.app.main.domain.user.academic.entity.userAcademicRecord.UserAcademicRecordLog;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.shared.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 
 @Retention(RetentionPolicy.CLASS)
 @Target({ElementType.METHOD})

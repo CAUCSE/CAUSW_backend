@@ -11,21 +11,21 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
-import net.causw.app.main.domain.community.board.api.v1.dto.BoardOfCircleResponseDto;
 import net.causw.app.main.domain.campus.circle.api.v1.dto.CircleBoardsResponseDto;
 import net.causw.app.main.domain.campus.circle.api.v1.dto.CircleMemberResponseDto;
 import net.causw.app.main.domain.campus.circle.api.v1.dto.CircleResponseDto;
 import net.causw.app.main.domain.campus.circle.api.v1.dto.CirclesResponseDto;
 import net.causw.app.main.domain.campus.circle.api.v1.dto.ExportCircleMemberToExcelResponseDto;
-import net.causw.app.main.domain.etc.api.v1.dto.DuplicatedCheckResponseDto;
-import net.causw.app.main.domain.user.account.api.v1.dto.UserResponseDto;
-import net.causw.app.main.shared.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 import net.causw.app.main.domain.campus.circle.entity.Circle;
 import net.causw.app.main.domain.campus.circle.entity.CircleMember;
+import net.causw.app.main.domain.community.board.api.v1.dto.BoardOfCircleResponseDto;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.etc.api.v1.dto.DuplicatedCheckResponseDto;
 import net.causw.app.main.domain.finance.usercouncilfee.entity.UserCouncilFee;
+import net.causw.app.main.domain.user.account.api.v1.dto.UserResponseDto;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.shared.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 
 // Custom Annotation을 사용하여 중복되는 @Mapping을 줄일 수 있습니다.
 @Retention(RetentionPolicy.CLASS)

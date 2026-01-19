@@ -28,12 +28,12 @@ import net.causw.app.main.domain.campus.circle.api.v1.dto.CircleMemberResponseDt
 import net.causw.app.main.domain.campus.circle.api.v1.dto.CircleResponseDto;
 import net.causw.app.main.domain.campus.circle.api.v1.dto.CircleUpdateRequestDto;
 import net.causw.app.main.domain.campus.circle.api.v1.dto.CirclesResponseDto;
-import net.causw.app.main.domain.etc.api.v1.dto.DuplicatedCheckResponseDto;
+import net.causw.app.main.domain.campus.circle.enums.CircleMemberStatus;
+import net.causw.app.main.domain.campus.circle.service.CircleService;
 import net.causw.app.main.domain.community.form.api.v1.dto.request.FormReplyRequestDto;
 import net.causw.app.main.domain.community.form.api.v1.dto.request.create.FormCreateRequestDto;
 import net.causw.app.main.domain.community.form.api.v1.dto.response.FormResponseDto;
-import net.causw.app.main.domain.campus.circle.enums.CircleMemberStatus;
-import net.causw.app.main.domain.campus.circle.service.CircleService;
+import net.causw.app.main.domain.etc.api.v1.dto.DuplicatedCheckResponseDto;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.util.ConstraintValidator;
 import net.causw.global.exception.BadRequestException;

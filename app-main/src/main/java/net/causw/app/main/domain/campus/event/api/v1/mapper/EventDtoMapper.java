@@ -8,9 +8,9 @@ import org.mapstruct.factory.Mappers;
 
 import net.causw.app.main.domain.campus.event.api.v1.dto.EventResponseDto;
 import net.causw.app.main.domain.campus.event.api.v1.dto.EventsResponseDto;
+import net.causw.app.main.domain.campus.event.entity.Event;
 import net.causw.app.main.shared.dto.util.dtoMapper.custom.FormatDateTimeDtoMapper;
 import net.causw.app.main.shared.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
-import net.causw.app.main.domain.campus.event.entity.Event;
 
 @Mapper(componentModel = "spring")
 public interface EventDtoMapper extends FormatDateTimeDtoMapper, UuidFileToUrlDtoMapper {

@@ -12,6 +12,8 @@ import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 import org.springframework.data.domain.Page;
 
+import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
+import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.form.api.v1.dto.response.FormResponseDto;
 import net.causw.app.main.domain.community.post.api.v1.dto.BoardPostsResponseDto;
 import net.causw.app.main.domain.community.post.api.v1.dto.PostContentDto;
@@ -19,15 +21,13 @@ import net.causw.app.main.domain.community.post.api.v1.dto.PostCreateResponseDto
 import net.causw.app.main.domain.community.post.api.v1.dto.PostResponseDto;
 import net.causw.app.main.domain.community.post.api.v1.dto.PostSubscribeResponseDto;
 import net.causw.app.main.domain.community.post.api.v1.dto.PostsResponseDto;
-import net.causw.app.main.shared.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
-import net.causw.app.main.domain.community.vote.api.v1.dto.VoteResponseDto;
-import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
-import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.query.PostQueryResult;
+import net.causw.app.main.domain.community.vote.api.v1.dto.VoteResponseDto;
 import net.causw.app.main.domain.notification.notification.entity.UserPostSubscribe;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.shared.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 import net.causw.global.constant.StaticValue;
 
 // Custom Annotation을 사용하여 중복되는 @Mapping을 줄일 수 있습니다.

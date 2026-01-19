@@ -8,14 +8,14 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import net.causw.app.main.domain.community.board.api.v1.dto.BoardResponseDto;
-import net.causw.app.main.domain.community.homepage.api.v1.dto.HomePageResponseDto;
-import net.causw.app.main.domain.community.board.api.v1.mapper.BoardDtoMapper;
-import net.causw.app.main.domain.community.post.api.v1.mapper.PostDtoMapper;
 import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.domain.campus.circle.entity.Circle;
+import net.causw.app.main.domain.community.board.api.v1.dto.BoardResponseDto;
+import net.causw.app.main.domain.community.board.api.v1.mapper.BoardDtoMapper;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.repository.BoardRepository;
+import net.causw.app.main.domain.community.homepage.api.v1.dto.HomePageResponseDto;
+import net.causw.app.main.domain.community.post.api.v1.mapper.PostDtoMapper;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.community.reaction.repository.FavoritePostRepository;

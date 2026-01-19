@@ -10,9 +10,12 @@ import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 import org.springframework.data.domain.Page;
 
+import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.comment.api.v1.dto.CommentsOfUserResponseDto;
-import net.causw.app.main.domain.etc.api.v1.dto.DuplicatedCheckResponseDto;
+import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.post.api.v1.dto.PostsResponseDto;
+import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.etc.api.v1.dto.DuplicatedCheckResponseDto;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserAdmissionResponseDto;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserAdmissionsResponseDto;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserCareerDto;
@@ -27,15 +30,12 @@ import net.causw.app.main.domain.user.account.api.v1.dto.UserPrivilegedResponseD
 import net.causw.app.main.domain.user.account.api.v1.dto.UserResponseDto;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserSignInResponseDto;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserSignOutResponseDto;
-import net.causw.app.main.shared.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
-import net.causw.app.main.domain.community.board.entity.Board;
-import net.causw.app.main.domain.community.comment.entity.Comment;
-import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmissionLog;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserCareer;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
+import net.causw.app.main.shared.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 import net.causw.global.constant.StaticValue;
 
 @Mapper(componentModel = "spring")

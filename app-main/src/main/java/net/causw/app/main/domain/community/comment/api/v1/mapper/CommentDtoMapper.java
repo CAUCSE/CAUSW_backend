@@ -9,10 +9,10 @@ import org.mapstruct.factory.Mappers;
 import net.causw.app.main.domain.community.comment.api.v1.dto.ChildCommentResponseDto;
 import net.causw.app.main.domain.community.comment.api.v1.dto.CommentResponseDto;
 import net.causw.app.main.domain.community.comment.api.v1.dto.CommentSubscribeResponseDto;
-import net.causw.app.main.shared.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.notification.notification.entity.UserCommentSubscribe;
+import net.causw.app.main.shared.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 
 @Mapper(componentModel = "spring")
 public interface CommentDtoMapper extends UuidFileToUrlDtoMapper {

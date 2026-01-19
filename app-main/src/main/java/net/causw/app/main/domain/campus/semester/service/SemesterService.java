@@ -5,10 +5,10 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.domain.campus.semester.api.v1.dto.CreateSemesterRequestDto;
 import net.causw.app.main.domain.campus.semester.api.v1.dto.CurrentSemesterResponseDto;
 import net.causw.app.main.domain.campus.semester.api.v1.mapper.SemesterDtoMapper;
-import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.domain.campus.semester.entity.Semester;
 import net.causw.app.main.domain.campus.semester.enums.SemesterType;
 import net.causw.app.main.domain.campus.semester.repository.SemesterRepository;

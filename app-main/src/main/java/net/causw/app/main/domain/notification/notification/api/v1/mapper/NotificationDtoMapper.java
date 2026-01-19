@@ -6,9 +6,9 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
+import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.notification.notification.api.v1.dto.CeremonyListNotificationDto;
 import net.causw.app.main.domain.notification.notification.api.v1.dto.NotificationResponseDto;
-import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.notification.notification.entity.Notification;
 
 @Mapper(componentModel = "spring")

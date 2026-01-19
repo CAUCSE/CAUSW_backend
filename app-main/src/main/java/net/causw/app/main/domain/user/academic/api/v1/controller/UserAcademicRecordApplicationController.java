@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.campus.semester.api.v1.dto.CurrentSemesterResponseDto;
-import net.causw.app.main.domain.user.account.api.v1.dto.UserAcademicStatusNoteUpdateDto;
+import net.causw.app.main.domain.campus.semester.service.SemesterService;
 import net.causw.app.main.domain.user.academic.api.v1.dto.CreateUserAcademicRecordApplicationRequestDto;
 import net.causw.app.main.domain.user.academic.api.v1.dto.CurrentUserAcademicRecordApplicationResponseDto;
 import net.causw.app.main.domain.user.academic.api.v1.dto.UpdateUserAcademicRecordApplicationStateRequestDto;
@@ -31,9 +31,9 @@ import net.causw.app.main.domain.user.academic.api.v1.dto.UserAcademicRecordAppl
 import net.causw.app.main.domain.user.academic.api.v1.dto.UserAcademicRecordApplicationResponseDto;
 import net.causw.app.main.domain.user.academic.api.v1.dto.UserAcademicRecordInfoResponseDto;
 import net.causw.app.main.domain.user.academic.api.v1.dto.UserAcademicRecordListResponseDto;
-import net.causw.app.main.domain.campus.semester.service.SemesterService;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.academic.service.UserAcademicRecordApplicationService;
+import net.causw.app.main.domain.user.account.api.v1.dto.UserAcademicStatusNoteUpdateDto;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;

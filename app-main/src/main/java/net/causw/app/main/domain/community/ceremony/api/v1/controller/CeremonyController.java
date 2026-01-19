@@ -24,10 +24,10 @@ import net.causw.app.main.domain.community.ceremony.api.v1.dto.CeremonyResponseD
 import net.causw.app.main.domain.community.ceremony.api.v1.dto.CreateCeremonyNotificationSettingDto;
 import net.causw.app.main.domain.community.ceremony.api.v1.dto.CreateCeremonyRequestDto;
 import net.causw.app.main.domain.community.ceremony.api.v1.dto.UpdateCeremonyStateRequestDto;
-import net.causw.app.main.domain.notification.notification.api.v1.dto.CeremonyListNotificationDto;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyContext;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
 import net.causw.app.main.domain.community.ceremony.service.CeremonyService;
+import net.causw.app.main.domain.notification.notification.api.v1.dto.CeremonyListNotificationDto;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;

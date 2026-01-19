@@ -11,9 +11,9 @@ import net.causw.app.main.domain.community.report.api.v1.dto.ReportedCommentResp
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportedPostNativeProjection;
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportedPostResponseDto;
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportedUserResponseDto;
-import net.causw.app.main.shared.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 import net.causw.app.main.domain.community.report.enums.ReportReason;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.shared.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 
 @Mapper(componentModel = "spring")
 public interface ReportDtoMapper extends UuidFileToUrlDtoMapper {

@@ -8,9 +8,9 @@ import org.mapstruct.factory.Mappers;
 
 import net.causw.app.main.domain.campus.schedule.api.v1.dto.CalendarResponseDto;
 import net.causw.app.main.domain.campus.schedule.api.v1.dto.CalendarsResponseDto;
+import net.causw.app.main.domain.campus.schedule.entity.Calendar;
 import net.causw.app.main.shared.dto.util.dtoMapper.custom.FormatDateTimeDtoMapper;
 import net.causw.app.main.shared.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
-import net.causw.app.main.domain.campus.schedule.entity.Calendar;
 
 @Mapper(componentModel = "spring")
 public interface CalendarDtoMapper extends FormatDateTimeDtoMapper, UuidFileToUrlDtoMapper {

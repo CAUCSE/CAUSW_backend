@@ -6,6 +6,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
+import net.causw.app.main.domain.campus.circle.api.v1.dto.CircleResponseDto;
 import net.causw.app.main.domain.community.board.api.v1.dto.BoardAppliesResponseDto;
 import net.causw.app.main.domain.community.board.api.v1.dto.BoardApplyResponseDto;
 import net.causw.app.main.domain.community.board.api.v1.dto.BoardMainResponseDto;
@@ -13,13 +14,12 @@ import net.causw.app.main.domain.community.board.api.v1.dto.BoardNameCheckRespon
 import net.causw.app.main.domain.community.board.api.v1.dto.BoardOfCircleResponseDto;
 import net.causw.app.main.domain.community.board.api.v1.dto.BoardResponseDto;
 import net.causw.app.main.domain.community.board.api.v1.dto.BoardSubscribeResponseDto;
-import net.causw.app.main.domain.campus.circle.api.v1.dto.CircleResponseDto;
-import net.causw.app.main.domain.community.post.api.v1.dto.PostContentDto;
-import net.causw.app.main.domain.user.account.api.v1.dto.UserResponseDto;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardApply;
+import net.causw.app.main.domain.community.post.api.v1.dto.PostContentDto;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.notification.notification.entity.UserBoardSubscribe;
+import net.causw.app.main.domain.user.account.api.v1.dto.UserResponseDto;
 
 @Mapper(componentModel = "spring")
 public interface BoardDtoMapper {

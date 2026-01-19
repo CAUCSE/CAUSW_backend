@@ -1,7 +1,7 @@
 package net.causw.app.main.domain.campus.circle.api.v1.dto;
 
-import net.causw.app.main.domain.user.account.api.v1.dto.UserResponseDto;
 import net.causw.app.main.domain.campus.circle.enums.CircleMemberStatus;
+import net.causw.app.main.domain.user.account.api.v1.dto.UserResponseDto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
