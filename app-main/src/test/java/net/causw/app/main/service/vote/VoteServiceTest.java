@@ -40,7 +40,7 @@ import net.causw.app.main.domain.community.vote.entity.VoteRecord;
 import net.causw.app.main.domain.community.vote.repository.VoteOptionRepository;
 import net.causw.app.main.domain.community.vote.repository.VoteRecordRepository;
 import net.causw.app.main.domain.community.vote.repository.VoteRepository;
-import net.causw.app.main.domain.community.vote.service.VoteService;
+import net.causw.app.main.domain.community.vote.service.v1.VoteService;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.util.ObjectFixtures;
 import net.causw.global.exception.BadRequestException;

@@ -18,7 +18,7 @@ import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.Academic
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.RoleGroup;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
-import net.causw.app.main.domain.user.auth.service.SecurityService;
+import net.causw.app.main.domain.user.auth.service.v1.SecurityService;
 import net.causw.app.main.domain.user.auth.util.SecurityHelper;
 import net.causw.app.main.util.WithMockCustomUser;
 

@@ -34,10 +34,10 @@ import net.causw.app.main.domain.notification.notification.entity.UserCommentSub
 import net.causw.app.main.domain.notification.notification.repository.NotificationLogRepository;
 import net.causw.app.main.domain.notification.notification.repository.NotificationRepository;
 import net.causw.app.main.domain.notification.notification.repository.UserCommentSubscribeRepository;
-import net.causw.app.main.domain.notification.notification.service.CommentNotificationService;
-import net.causw.app.main.domain.notification.notification.service.FirebasePushNotificationService;
+import net.causw.app.main.domain.notification.notification.service.v1.CommentNotificationService;
+import net.causw.app.main.domain.notification.notification.service.v1.FirebasePushNotificationService;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.relation.service.UserBlockEntityService;
+import net.causw.app.main.domain.user.relation.service.v1.UserBlockEntityService;
 import net.causw.app.main.shared.infra.firebase.FcmUtils;
 import net.causw.app.main.util.ObjectFixtures;
 

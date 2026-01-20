@@ -22,12 +22,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.campus.semester.entity.Semester;
-import net.causw.app.main.domain.campus.semester.service.SemesterService;
+import net.causw.app.main.domain.campus.semester.service.v1.SemesterService;
 import net.causw.app.main.domain.finance.usercouncilfee.api.v1.dto.UserCouncilFeeResponseDto;
 import net.causw.app.main.domain.finance.usercouncilfee.entity.UserCouncilFee;
 import net.causw.app.main.domain.finance.usercouncilfee.repository.UserCouncilFeeRepository;
-import net.causw.app.main.domain.finance.usercouncilfee.service.UserCouncilFeeService;
-import net.causw.app.main.domain.integration.export.service.CouncilFeeExcelService;
+import net.causw.app.main.domain.finance.usercouncilfee.service.v1.UserCouncilFeeService;
+import net.causw.app.main.domain.integration.export.service.v1.CouncilFeeExcelService;
 import net.causw.app.main.util.ObjectFixtures;
 
 import jakarta.servlet.http.HttpServletResponse;

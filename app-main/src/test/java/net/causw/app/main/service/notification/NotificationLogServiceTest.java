@@ -28,7 +28,7 @@ import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.entity.NotificationLog;
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;
 import net.causw.app.main.domain.notification.notification.repository.NotificationLogRepository;
-import net.causw.app.main.domain.notification.notification.service.NotificationLogService;
+import net.causw.app.main.domain.notification.notification.service.v1.NotificationLogService;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.app.main.util.ObjectFixtures;

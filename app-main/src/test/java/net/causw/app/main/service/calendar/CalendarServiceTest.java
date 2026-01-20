@@ -23,11 +23,11 @@ import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.CalendarAttachImage;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.repository.CalendarAttachImageRepository;
-import net.causw.app.main.domain.asset.file.service.UuidFileService;
+import net.causw.app.main.domain.asset.file.service.v1.UuidFileService;
 import net.causw.app.main.domain.campus.schedule.api.v1.dto.CalendarResponseDto;
 import net.causw.app.main.domain.campus.schedule.entity.Calendar;
 import net.causw.app.main.domain.campus.schedule.repository.CalendarRepository;
-import net.causw.app.main.domain.campus.schedule.service.CalendarService;
+import net.causw.app.main.domain.campus.schedule.service.v1.CalendarService;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 

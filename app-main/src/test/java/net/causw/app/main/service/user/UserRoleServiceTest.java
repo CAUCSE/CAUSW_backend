@@ -55,7 +55,7 @@ import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.policy.RolePolicy;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
-import net.causw.app.main.domain.user.account.service.UserRoleService;
+import net.causw.app.main.domain.user.account.service.v1.UserRoleService;
 import net.causw.app.main.util.ObjectFixtures;
 
 @ExtendWith(MockitoExtension.class)

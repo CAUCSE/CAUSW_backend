@@ -23,9 +23,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 import net.causw.app.main.domain.finance.usercouncilfee.api.v1.dto.UserCouncilFeeResponseDto;
-import net.causw.app.main.domain.integration.export.service.CouncilFeeExcelService;
-import net.causw.app.main.domain.integration.export.service.ExcelAbstractService;
-import net.causw.app.main.domain.integration.export.service.UserExcelService;
+import net.causw.app.main.domain.integration.export.service.v1.CouncilFeeExcelService;
+import net.causw.app.main.domain.integration.export.service.v1.ExcelAbstractService;
+import net.causw.app.main.domain.integration.export.service.v1.UserExcelService;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserResponseDto;
 import net.causw.global.exception.InternalServerException;
 
