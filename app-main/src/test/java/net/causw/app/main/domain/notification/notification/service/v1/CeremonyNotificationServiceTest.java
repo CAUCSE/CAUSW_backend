@@ -34,8 +34,6 @@ import net.causw.app.main.domain.notification.notification.entity.NotificationLo
 import net.causw.app.main.domain.notification.notification.repository.CeremonyNotificationSettingRepository;
 import net.causw.app.main.domain.notification.notification.repository.NotificationLogRepository;
 import net.causw.app.main.domain.notification.notification.repository.NotificationRepository;
-import net.causw.app.main.domain.notification.notification.service.v1.CeremonyNotificationService;
-import net.causw.app.main.domain.notification.notification.service.v1.FirebasePushNotificationService;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserCreateRequestDto;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Department;

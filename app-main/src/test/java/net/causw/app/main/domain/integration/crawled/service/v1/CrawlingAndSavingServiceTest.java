@@ -20,8 +20,6 @@ import org.mockito.quality.Strictness;
 
 import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
 import net.causw.app.main.domain.integration.crawled.repository.CrawledNoticeRepository;
-import net.causw.app.main.domain.integration.crawled.service.v1.Crawler;
-import net.causw.app.main.domain.integration.crawled.service.v1.CrawlingAndSavingService;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)

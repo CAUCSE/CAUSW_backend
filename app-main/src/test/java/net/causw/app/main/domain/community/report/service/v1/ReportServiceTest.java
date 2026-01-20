@@ -39,7 +39,6 @@ import net.causw.app.main.domain.community.report.entity.Report;
 import net.causw.app.main.domain.community.report.enums.ReportReason;
 import net.causw.app.main.domain.community.report.enums.ReportType;
 import net.causw.app.main.domain.community.report.repository.ReportRepository;
-import net.causw.app.main.domain.community.report.service.v1.ReportService;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;

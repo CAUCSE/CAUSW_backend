@@ -58,7 +58,6 @@ import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.repository.user.UserAdmissionRepository;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
-import net.causw.app.main.domain.user.account.service.v1.UserService;
 import net.causw.app.main.domain.user.relation.service.v1.UserBlockEntityService;
 import net.causw.app.main.shared.infra.redis.RedisUtils;
 import net.causw.app.main.shared.pageable.PageableFactory;

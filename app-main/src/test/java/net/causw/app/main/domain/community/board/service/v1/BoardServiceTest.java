@@ -23,7 +23,6 @@ import net.causw.app.main.domain.community.board.api.v1.dto.BoardCreateRequestDt
 import net.causw.app.main.domain.community.board.api.v1.dto.BoardResponseDto;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.repository.BoardRepository;
-import net.causw.app.main.domain.community.board.service.v1.BoardService;
 import net.causw.app.main.domain.notification.notification.entity.UserBoardSubscribe;
 import net.causw.app.main.domain.notification.notification.repository.UserBoardSubscribeRepository;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;

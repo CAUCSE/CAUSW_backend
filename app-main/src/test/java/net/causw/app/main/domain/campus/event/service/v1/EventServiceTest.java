@@ -31,7 +31,6 @@ import net.causw.app.main.domain.campus.event.api.v1.dto.EventUpdateRequestDto;
 import net.causw.app.main.domain.campus.event.api.v1.dto.EventsResponseDto;
 import net.causw.app.main.domain.campus.event.entity.Event;
 import net.causw.app.main.domain.campus.event.repository.EventRepository;
-import net.causw.app.main.domain.campus.event.service.v1.EventService;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;
 import net.causw.global.exception.BadRequestException;
