@@ -28,7 +28,7 @@ import net.causw.app.main.domain.asset.locker.api.v1.dto.LockerRegisterPeriodReq
 import net.causw.app.main.domain.asset.locker.api.v1.dto.LockerResponseDto;
 import net.causw.app.main.domain.asset.locker.api.v1.dto.LockerUpdateRequestDto;
 import net.causw.app.main.domain.asset.locker.api.v1.dto.LockersResponseDto;
-import net.causw.app.main.domain.asset.locker.service.LockerService;
+import net.causw.app.main.domain.asset.locker.service.v1.LockerService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;

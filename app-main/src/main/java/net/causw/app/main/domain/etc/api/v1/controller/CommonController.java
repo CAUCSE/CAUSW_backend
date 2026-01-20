@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.causw.app.main.domain.community.homepage.api.v1.dto.HomePageResponseDto;
-import net.causw.app.main.domain.community.homepage.service.HomePageService;
-import net.causw.app.main.domain.etc.textfield.service.CommonService;
+import net.causw.app.main.domain.community.homepage.service.v1.HomePageService;
+import net.causw.app.main.domain.etc.textfield.service.v1.CommonService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import net.causw.app.main.domain.notification.notification.api.v1.dto.NotificationCountResponseDto;
 import net.causw.app.main.domain.notification.notification.api.v1.dto.NotificationResponseDto;
-import net.causw.app.main.domain.notification.notification.service.NotificationLogService;
+import net.causw.app.main.domain.notification.notification.service.v1.NotificationLogService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;

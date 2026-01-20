@@ -19,9 +19,9 @@ import net.causw.app.main.domain.user.account.api.v1.dto.UserInfoResponseDto;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserInfoSearchConditionDto;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserInfoSummaryResponseDto;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserInfoUpdateRequestDto;
-import net.causw.app.main.domain.user.account.service.GetUserInfoUseCaseService;
-import net.causw.app.main.domain.user.account.service.SearchUserInfoListUseCaseService;
-import net.causw.app.main.domain.user.account.service.UpdateUserInfoUseCaseService;
+import net.causw.app.main.domain.user.account.service.v1.GetUserInfoUseCaseService;
+import net.causw.app.main.domain.user.account.service.v1.SearchUserInfoListUseCaseService;
+import net.causw.app.main.domain.user.account.service.v1.UpdateUserInfoUseCaseService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.global.exception.BadRequestException;
 

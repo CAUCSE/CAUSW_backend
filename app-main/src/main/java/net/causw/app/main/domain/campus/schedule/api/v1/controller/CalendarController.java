@@ -19,7 +19,7 @@ import net.causw.app.main.domain.campus.schedule.api.v1.dto.CalendarCreateReques
 import net.causw.app.main.domain.campus.schedule.api.v1.dto.CalendarResponseDto;
 import net.causw.app.main.domain.campus.schedule.api.v1.dto.CalendarUpdateRequestDto;
 import net.causw.app.main.domain.campus.schedule.api.v1.dto.CalendarsResponseDto;
-import net.causw.app.main.domain.campus.schedule.service.CalendarService;
+import net.causw.app.main.domain.campus.schedule.service.v1.CalendarService;
 import net.causw.global.exception.BadRequestException;
 
 import io.swagger.v3.oas.annotations.Operation;

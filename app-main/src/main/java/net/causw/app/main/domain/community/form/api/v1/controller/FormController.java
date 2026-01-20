@@ -22,7 +22,7 @@ import net.causw.app.main.domain.community.form.api.v1.dto.response.FormResponse
 import net.causw.app.main.domain.community.form.api.v1.dto.response.QuestionSummaryResponseDto;
 import net.causw.app.main.domain.community.form.api.v1.dto.response.reply.ReplyPageResponseDto;
 import net.causw.app.main.domain.community.form.api.v1.dto.response.reply.UserReplyResponseDto;
-import net.causw.app.main.domain.community.form.service.FormService;
+import net.causw.app.main.domain.community.form.service.v1.FormService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;

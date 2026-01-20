@@ -29,7 +29,7 @@ import net.causw.app.main.domain.campus.circle.api.v1.dto.CircleResponseDto;
 import net.causw.app.main.domain.campus.circle.api.v1.dto.CircleUpdateRequestDto;
 import net.causw.app.main.domain.campus.circle.api.v1.dto.CirclesResponseDto;
 import net.causw.app.main.domain.campus.circle.enums.CircleMemberStatus;
-import net.causw.app.main.domain.campus.circle.service.CircleService;
+import net.causw.app.main.domain.campus.circle.service.v1.CircleService;
 import net.causw.app.main.domain.community.form.api.v1.dto.request.FormReplyRequestDto;
 import net.causw.app.main.domain.community.form.api.v1.dto.request.create.FormCreateRequestDto;
 import net.causw.app.main.domain.community.form.api.v1.dto.response.FormResponseDto;

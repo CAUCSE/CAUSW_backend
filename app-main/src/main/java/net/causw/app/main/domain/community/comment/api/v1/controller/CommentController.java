@@ -18,7 +18,7 @@ import net.causw.app.main.domain.community.comment.api.v1.dto.CommentCreateReque
 import net.causw.app.main.domain.community.comment.api.v1.dto.CommentResponseDto;
 import net.causw.app.main.domain.community.comment.api.v1.dto.CommentSubscribeResponseDto;
 import net.causw.app.main.domain.community.comment.api.v1.dto.CommentUpdateRequestDto;
-import net.causw.app.main.domain.community.comment.service.CommentService;
+import net.causw.app.main.domain.community.comment.service.v1.CommentService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.UnauthorizedException;

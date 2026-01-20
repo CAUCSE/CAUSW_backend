@@ -46,10 +46,10 @@ import net.causw.app.main.domain.user.account.api.v1.dto.UserUpdatePasswordReque
 import net.causw.app.main.domain.user.account.api.v1.dto.UserUpdateRequestDto;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserUpdateRoleRequestDto;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserUpdateTokenRequestDto;
-import net.causw.app.main.domain.user.account.service.FindPrivilegedUsersUseCaseService;
-import net.causw.app.main.domain.user.account.service.RegisterGraduatedUsersUseCaseService;
-import net.causw.app.main.domain.user.account.service.UserRoleService;
-import net.causw.app.main.domain.user.account.service.UserService;
+import net.causw.app.main.domain.user.account.service.v1.FindPrivilegedUsersUseCaseService;
+import net.causw.app.main.domain.user.account.service.v1.RegisterGraduatedUsersUseCaseService;
+import net.causw.app.main.domain.user.account.service.v1.UserRoleService;
+import net.causw.app.main.domain.user.account.service.v1.UserService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.UnauthorizedException;

@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import net.causw.app.main.domain.community.comment.api.v1.dto.ChildCommentCreateRequestDto;
 import net.causw.app.main.domain.community.comment.api.v1.dto.ChildCommentResponseDto;
 import net.causw.app.main.domain.community.comment.api.v1.dto.ChildCommentUpdateRequestDto;
-import net.causw.app.main.domain.community.comment.service.ChildCommentService;
+import net.causw.app.main.domain.community.comment.service.v1.ChildCommentService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.UnauthorizedException;

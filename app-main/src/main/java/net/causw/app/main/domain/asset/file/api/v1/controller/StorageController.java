@@ -13,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.asset.file.api.v1.dto.FileResponseDto;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
-import net.causw.app.main.domain.asset.file.service.UuidFileService;
+import net.causw.app.main.domain.asset.file.service.v1.UuidFileService;
 
 import lombok.RequiredArgsConstructor;
 

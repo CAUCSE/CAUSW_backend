@@ -18,7 +18,7 @@ import net.causw.app.main.domain.community.report.api.v1.dto.ReportCreateRespons
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportedCommentResponseDto;
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportedPostResponseDto;
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportedUserResponseDto;
-import net.causw.app.main.domain.community.report.service.ReportService;
+import net.causw.app.main.domain.community.report.service.v1.ReportService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.UnauthorizedException;

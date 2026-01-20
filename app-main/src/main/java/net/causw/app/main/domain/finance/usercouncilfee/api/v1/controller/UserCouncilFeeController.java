@@ -22,7 +22,7 @@ import net.causw.app.main.domain.finance.usercouncilfee.api.v1.dto.CreateUserCou
 import net.causw.app.main.domain.finance.usercouncilfee.api.v1.dto.CurrentUserCouncilFeeResponseDto;
 import net.causw.app.main.domain.finance.usercouncilfee.api.v1.dto.UserCouncilFeeListResponseDto;
 import net.causw.app.main.domain.finance.usercouncilfee.api.v1.dto.UserCouncilFeeResponseDto;
-import net.causw.app.main.domain.finance.usercouncilfee.service.UserCouncilFeeService;
+import net.causw.app.main.domain.finance.usercouncilfee.service.v1.UserCouncilFeeService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
