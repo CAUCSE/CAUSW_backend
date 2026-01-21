@@ -71,8 +71,7 @@ public class SwaggerConfig {
 				"/api/v1/users/academic-record/**",
 				"/api/v1/users/**",
 				"/api/v1/lockers/**",
-				"/api/v1/circles/**"
-			)
+				"/api/v1/circles/**")
 			.build();
 	}
 
