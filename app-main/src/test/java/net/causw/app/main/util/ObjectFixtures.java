@@ -5,7 +5,6 @@ import java.util.Set;
 
 import org.springframework.test.util.ReflectionTestUtils;
 
-import net.causw.app.main.api.dto.user.UserCreateRequestDto;
 import net.causw.app.main.domain.campus.semester.entity.Semester;
 import net.causw.app.main.domain.campus.semester.enums.SemesterType;
 import net.causw.app.main.domain.community.board.entity.Board;
@@ -17,6 +16,7 @@ import net.causw.app.main.domain.community.vote.entity.VoteOption;
 import net.causw.app.main.domain.finance.usercouncilfee.entity.CouncilFeeFakeUser;
 import net.causw.app.main.domain.finance.usercouncilfee.entity.UserCouncilFee;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.user.account.api.v1.dto.UserCreateRequestDto;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
 import net.causw.app.main.domain.user.account.enums.user.Department;
