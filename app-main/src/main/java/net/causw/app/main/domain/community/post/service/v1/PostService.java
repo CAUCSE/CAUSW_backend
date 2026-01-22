@@ -23,7 +23,7 @@ import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.repository.PostAttachImageRepository;
-import net.causw.app.main.domain.asset.file.service.v1.UuidFileService;
+import net.causw.app.main.domain.asset.file.service.v1.UuidFileServiceV1;
 import net.causw.app.main.domain.campus.circle.entity.Circle;
 import net.causw.app.main.domain.campus.circle.entity.CircleMember;
 import net.causw.app.main.domain.campus.circle.enums.CircleMemberStatus;
@@ -120,7 +120,7 @@ public class PostService {
 	private final FavoritePostRepository favoritePostRepository;
 	private final PageableFactory pageableFactory;
 	private final Validator validator;
-	private final UuidFileService uuidFileService;
+	private final UuidFileServiceV1 uuidFileService;
 	private final PostAttachImageRepository postAttachImageRepository;
 	private final FormRepository formRepository;
 	private final BoardNotificationService boardNotificationService;

@@ -24,7 +24,7 @@ import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.CircleMainImage;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.repository.CircleMainImageRepository;
-import net.causw.app.main.domain.asset.file.service.v1.UuidFileService;
+import net.causw.app.main.domain.asset.file.service.v1.UuidFileServiceV1;
 import net.causw.app.main.domain.campus.circle.api.v1.dto.CircleBoardsResponseDto;
 import net.causw.app.main.domain.campus.circle.api.v1.dto.CircleCreateRequestDto;
 import net.causw.app.main.domain.campus.circle.api.v1.dto.CircleMemberResponseDto;
@@ -104,7 +104,7 @@ public class CircleService {
 	private final UserRepository userRepository;
 	private final BoardRepository boardRepository;
 	private final PostRepository postRepository;
-	private final UuidFileService uuidFileService;
+	private final UuidFileServiceV1 uuidFileService;
 	private final CircleMainImageRepository circleMainImageRepository;
 	private final UserCouncilFeeRepository userCouncilFeeRepository;
 	private final FormRepository formRepository;

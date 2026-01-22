@@ -14,7 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
-import net.causw.app.main.domain.asset.file.service.v1.UuidFileService;
+import net.causw.app.main.domain.asset.file.service.v1.UuidFileServiceV1;
 import net.causw.app.main.domain.campus.semester.api.v1.dto.CurrentSemesterResponseDto;
 import net.causw.app.main.domain.campus.semester.api.v1.mapper.SemesterDtoMapper;
 import net.causw.app.main.domain.campus.semester.entity.Semester;
@@ -59,7 +59,7 @@ public class UserAcademicRecordApplicationService {
 	private final UserRepository userRepository;
 	private final UserAcademicRecordApplicationRepository userAcademicRecordApplicationRepository;
 	private final UserAcademicRecordLogRepository userAcademicRecordLogRepository;
-	private final UuidFileService uuidFileService;
+	private final UuidFileServiceV1 uuidFileService;
 	private final SemesterService semesterService;
 	private final UserAcademicRecordExcelService userAcademicRecordExcelService;
 	private final ApplicationEventPublisher eventPublisher;

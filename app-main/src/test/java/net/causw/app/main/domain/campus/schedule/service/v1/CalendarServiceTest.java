@@ -23,7 +23,7 @@ import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.CalendarAttachImage;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.repository.CalendarAttachImageRepository;
-import net.causw.app.main.domain.asset.file.service.v1.UuidFileService;
+import net.causw.app.main.domain.asset.file.service.v1.UuidFileServiceV1;
 import net.causw.app.main.domain.campus.schedule.api.v1.dto.CalendarResponseDto;
 import net.causw.app.main.domain.campus.schedule.entity.Calendar;
 import net.causw.app.main.domain.campus.schedule.repository.CalendarRepository;
@@ -39,7 +39,7 @@ public class CalendarServiceTest {
 	@Mock
 	private CalendarRepository calendarRepository;
 	@Mock
-	private UuidFileService uuidFileService;
+	private UuidFileServiceV1 uuidFileService;
 	@Mock
 	private CalendarAttachImageRepository calendarAttachImageRepository;
 

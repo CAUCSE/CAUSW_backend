@@ -11,7 +11,7 @@ import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.CalendarAttachImage;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.repository.CalendarAttachImageRepository;
-import net.causw.app.main.domain.asset.file.service.v1.UuidFileService;
+import net.causw.app.main.domain.asset.file.service.v1.UuidFileServiceV1;
 import net.causw.app.main.domain.campus.schedule.api.v1.dto.CalendarCreateRequestDto;
 import net.causw.app.main.domain.campus.schedule.api.v1.dto.CalendarResponseDto;
 import net.causw.app.main.domain.campus.schedule.api.v1.dto.CalendarUpdateRequestDto;
@@ -30,7 +30,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CalendarService {
 	private final CalendarRepository calendarRepository;
-	private final UuidFileService uuidFileService;
+	private final UuidFileServiceV1 uuidFileService;
 	private final CalendarAttachImageRepository calendarAttachImageRepository;
 
 	@Transactional(readOnly = true)

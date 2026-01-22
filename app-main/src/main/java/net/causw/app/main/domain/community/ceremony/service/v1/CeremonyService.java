@@ -13,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
-import net.causw.app.main.domain.asset.file.service.v1.UuidFileService;
+import net.causw.app.main.domain.asset.file.service.v1.UuidFileServiceV1;
 import net.causw.app.main.domain.community.ceremony.api.v1.dto.CeremonyNotificationSettingResponseDto;
 import net.causw.app.main.domain.community.ceremony.api.v1.dto.CeremonyResponseDto;
 import net.causw.app.main.domain.community.ceremony.api.v1.dto.CreateCeremonyNotificationSettingDto;
@@ -48,15 +48,14 @@ public class CeremonyService {
 	private final CeremonyRepository ceremonyRepository;
 	private final UserRepository userRepository;
 	private final CeremonyNotificationService ceremonyNotificationService;
-	private final UuidFileService uuidFileService;
+	private final UuidFileServiceV1 uuidFileService;
 	private final CeremonyNotificationSettingRepository ceremonyNotificationSettingRepository;
 	private final PageableFactory pageableFactory;
 
 	@Transactional
 	public CeremonyResponseDto createCeremony(
 		User user,
-		@Valid
-		CreateCeremonyRequestDto createCeremonyRequestDTO,
+		@Valid CreateCeremonyRequestDto createCeremonyRequestDTO,
 		List<MultipartFile> imageFileList) {
 		// 전체 알림 전송이 false인 경우, 대상 학번이 입력되었는지 검증
 		if (!createCeremonyRequestDTO.getIsSetAll()) {
