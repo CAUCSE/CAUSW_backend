@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * 로컬 파일 시스템 스토리지 업로더 (테스트용)
+ * 홈디렉토리/causwfile 에 저장됨
  * 운영 환경에서는 사용하지 않음
  */
 @Slf4j
@@ -30,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @Profile("local")
 public class LocalStorageUploader implements StorageUploader {
 
-	private static final String BASE_DIRECTORY = "uploads";
+	private static final String BASE_DIRECTORY = System.getProperty("user.home") + File.separator + "causwfile";
 
 	@Override
 	public StorageResult upload(MultipartFile file, FileMetadata metadata) {
