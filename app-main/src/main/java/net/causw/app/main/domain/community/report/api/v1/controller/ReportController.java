@@ -48,10 +48,8 @@ public class ReportController {
 		@ApiResponse(responseCode = "401", description = "권한이 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
 	})
 	public ReportCreateResponseDto createReport(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@RequestBody @Valid
-		ReportCreateRequestDto request) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody @Valid ReportCreateRequestDto request) {
 		return reportService.createReport(userDetails.getUser(), request);
 	}
 
@@ -64,8 +62,7 @@ public class ReportController {
 		@ApiResponse(responseCode = "401", description = "권한이 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
 	})
 	public Page<ReportedPostResponseDto> getReportedPosts(
-		@RequestParam(name = "pageNum", defaultValue = "0")
-		Integer pageNum) {
+		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum) {
 		return reportService.getReportedPosts(pageNum);
 	}
 
@@ -78,8 +75,7 @@ public class ReportController {
 		@ApiResponse(responseCode = "401", description = "권한이 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
 	})
 	public Page<ReportedCommentResponseDto> getReportedComments(
-		@RequestParam(name = "pageNum", defaultValue = "0")
-		Integer pageNum) {
+		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum) {
 		return reportService.getReportedComments(pageNum);
 	}
 
@@ -92,8 +88,7 @@ public class ReportController {
 		@ApiResponse(responseCode = "401", description = "권한이 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
 	})
 	public Page<ReportedUserResponseDto> getReportedUsers(
-		@RequestParam(name = "pageNum", defaultValue = "0")
-		Integer pageNum) {
+		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum) {
 		return reportService.getReportedUsers(pageNum);
 	}
 
@@ -106,10 +101,8 @@ public class ReportController {
 		@ApiResponse(responseCode = "401", description = "권한이 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
 	})
 	public Page<ReportedPostResponseDto> getReportedPostsByUser(
-		@Parameter(description = "사용자 ID", example = "user-uuid") @PathVariable
-		String userId,
-		@RequestParam(name = "pageNum", defaultValue = "0")
-		Integer pageNum) {
+		@Parameter(description = "사용자 ID", example = "user-uuid") @PathVariable String userId,
+		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum) {
 		return reportService.getReportedPostsByUser(userId, pageNum);
 	}
 
@@ -122,10 +115,8 @@ public class ReportController {
 		@ApiResponse(responseCode = "401", description = "권한이 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
 	})
 	public Page<ReportedCommentResponseDto> getReportedCommentsByUser(
-		@Parameter(description = "사용자 ID", example = "user-uuid") @PathVariable
-		String userId,
-		@RequestParam(name = "pageNum", defaultValue = "0")
-		Integer pageNum) {
+		@Parameter(description = "사용자 ID", example = "user-uuid") @PathVariable String userId,
+		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum) {
 		return reportService.getReportedCommentsByUser(userId, pageNum);
 	}
 }

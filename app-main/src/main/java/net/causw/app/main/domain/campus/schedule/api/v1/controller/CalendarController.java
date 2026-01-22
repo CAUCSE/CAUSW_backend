@@ -45,8 +45,7 @@ public class CalendarController {
 		@ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
 		@ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
-	public CalendarsResponseDto findCalendars(@RequestParam("year")
-	Integer year) {
+	public CalendarsResponseDto findCalendars(@RequestParam("year") Integer year) {
 		return calendarService.findCalendarByYear(year);
 	}
 
@@ -60,8 +59,7 @@ public class CalendarController {
 		@ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
 		@ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
-	public CalendarResponseDto findCalendars(@PathVariable("calendarId")
-	String calendarId) {
+	public CalendarResponseDto findCalendars(@PathVariable("calendarId") String calendarId) {
 		return calendarService.findCalendar(calendarId);
 	}
 
@@ -90,10 +88,8 @@ public class CalendarController {
 		@ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	public CalendarResponseDto createCalendar(
-		@RequestPart(value = "calendarCreateRequestDto") @Valid
-		CalendarCreateRequestDto calendarCreateRequestDto,
-		@RequestPart(value = "image")
-		MultipartFile image) {
+		@RequestPart(value = "calendarCreateRequestDto") @Valid CalendarCreateRequestDto calendarCreateRequestDto,
+		@RequestPart(value = "image") MultipartFile image) {
 		return calendarService.createCalendar(calendarCreateRequestDto, image);
 	}
 
@@ -108,12 +104,9 @@ public class CalendarController {
 		@ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	public CalendarResponseDto updateCalendar(
-		@PathVariable("calendarId")
-		String calendarId,
-		@RequestPart(value = "calendarUpdateRequestDto") @Valid
-		CalendarUpdateRequestDto calendarUpdateRequestDto,
-		@RequestPart(value = "image")
-		MultipartFile image) {
+		@PathVariable("calendarId") String calendarId,
+		@RequestPart(value = "calendarUpdateRequestDto") @Valid CalendarUpdateRequestDto calendarUpdateRequestDto,
+		@RequestPart(value = "image") MultipartFile image) {
 		return calendarService.updateCalendar(calendarId, calendarUpdateRequestDto, image);
 	}
 
@@ -128,8 +121,7 @@ public class CalendarController {
 		@ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	public CalendarResponseDto deleteCalendar(
-		@PathVariable("calendarId")
-		String calendarId) {
+		@PathVariable("calendarId") String calendarId) {
 		return calendarService.deleteCalendar(calendarId);
 	}
 }

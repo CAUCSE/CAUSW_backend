@@ -71,8 +71,7 @@ public class CircleController {
 		@ApiResponse(responseCode = "4004", description = "삭제된 {동아리명} 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	public CircleResponseDto findById(
-		@PathVariable(name = "circleId")
-		String circleId) {
+		@PathVariable(name = "circleId") String circleId) {
 		return this.circleService.findById(circleId);
 	}
 
@@ -93,8 +92,7 @@ public class CircleController {
 		@ApiResponse(responseCode = "4109", description = "가입이 거절된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
 	})
 	public List<CirclesResponseDto> findAll(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.circleService.findAll(userDetails.getUser());
 	}
 
@@ -118,10 +116,8 @@ public class CircleController {
 		@ApiResponse(responseCode = "4108", description = "로그인된 사용자가 가입 신청한 소모임이 아닙니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
 	})
 	public CircleBoardsResponseDto findBoards(
-		@PathVariable(name = "circleId")
-		String circleId,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable(name = "circleId") String circleId,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.circleService.findBoards(userDetails.getUser(), circleId);
 	}
 
@@ -139,8 +135,7 @@ public class CircleController {
 		@ApiResponse(responseCode = "4000", description = "소모임을 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	public Long getNumMember(
-		@PathVariable(name = "circleId")
-		String circleId) {
+		@PathVariable(name = "circleId") String circleId) {
 		return this.circleService.getNumMember(circleId);
 	}
 
@@ -168,12 +163,9 @@ public class CircleController {
 		@ApiResponse(responseCode = "4000", description = "소모임원을 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	public List<CircleMemberResponseDto> getUserList(
-		@PathVariable("circleId")
-		String circleId,
-		@RequestParam("circleMemberStatus") @NotNull(message = "동아리원 상태는 null이 아니어야 합니다.")
-		CircleMemberStatus circleMemberStatus,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable("circleId") String circleId,
+		@RequestParam("circleMemberStatus") @NotNull(message = "동아리원 상태는 null이 아니어야 합니다.") CircleMemberStatus circleMemberStatus,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
 		return this.circleService.getUserList(
 			userDetails.getUser(),
@@ -198,8 +190,7 @@ public class CircleController {
 		@ApiResponse(responseCode = "4000", description = "소모임원을 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	public List<CircleMemberResponseDto> findCircleMemberList(
-		@PathVariable("circleId")
-		String circleId) {
+		@PathVariable("circleId") String circleId) {
 		return this.circleService.getMemberList(
 			circleId);
 	}
@@ -230,10 +221,8 @@ public class CircleController {
 		@ApiResponse(responseCode = "5000", description = "Circle id immediately can be used, but exception occured", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
 	})
 	public void create(
-		@RequestPart(value = "circleCreateRequestDto") @Valid
-		CircleCreateRequestDto circleCreateRequestDto,
-		@RequestPart(value = "mainImage", required = false)
-		MultipartFile mainImage
+		@RequestPart(value = "circleCreateRequestDto") @Valid CircleCreateRequestDto circleCreateRequestDto,
+		@RequestPart(value = "mainImage", required = false) MultipartFile mainImage
 
 	) {
 		circleService.create(circleCreateRequestDto, mainImage);
@@ -269,14 +258,10 @@ public class CircleController {
 		@ApiResponse(responseCode = "5000", description = "Circle id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
 	})
 	public CircleResponseDto update(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@PathVariable(name = "circleId")
-		String circleId,
-		@RequestPart(value = "circleUpdateRequestDto") @Valid
-		CircleUpdateRequestDto circleUpdateRequestDto,
-		@RequestPart(value = "mainImage", required = false)
-		MultipartFile mainImage
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable(name = "circleId") String circleId,
+		@RequestPart(value = "circleUpdateRequestDto") @Valid CircleUpdateRequestDto circleUpdateRequestDto,
+		@RequestPart(value = "mainImage", required = false) MultipartFile mainImage
 
 	) {
 		return this.circleService.update(userDetails.getUser(), circleId, circleUpdateRequestDto, mainImage);
@@ -310,10 +295,8 @@ public class CircleController {
 		@ApiResponse(responseCode = "5000", description = "Circle id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
 	})
 	public CircleResponseDto delete(
-		@PathVariable(name = "circleId")
-		String circleId,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable(name = "circleId") String circleId,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.circleService.delete(userDetails.getUser(), circleId);
 	}
 
@@ -340,12 +323,9 @@ public class CircleController {
 		@ApiResponse(responseCode = "5000", description = "Application id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
 	})
 	public void userApply(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@PathVariable(name = "circleId")
-		String circleId,
-		@RequestBody @Valid
-		FormReplyRequestDto formReplyRequestDto) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable(name = "circleId") String circleId,
+		@RequestBody @Valid FormReplyRequestDto formReplyRequestDto) {
 		circleService.userApply(userDetails.getUser(), circleId, formReplyRequestDto);
 	}
 
@@ -359,8 +339,7 @@ public class CircleController {
 	@Operation(summary = "동아리 이름 중복 검사 API", description = "동아리 이름 중복 검사 API 입니다. 이름 기준으로 검사하면 String 형식으로 동아리 이름을 넣어주세요.")
 	@ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = DuplicatedCheckResponseDto.class)))
 	public DuplicatedCheckResponseDto isDuplicatedName(
-		@PathVariable(name = "circleName") @NotBlank(message = "동아리명은 공백이 아니어야 합니다.")
-		String circleName) {
+		@PathVariable(name = "circleName") @NotBlank(message = "동아리명은 공백이 아니어야 합니다.") String circleName) {
 		return this.circleService.isDuplicatedName(circleName);
 	}
 
@@ -381,10 +360,8 @@ public class CircleController {
 	@ApiResponse(responseCode = "4102", description = "추방된 사용자이거나 다른 권한 관련 오류가 발생했습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
 	@ApiResponse(responseCode = "5000", description = "동아리에 대한 특정 예외가 발생했습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
 	public CircleMemberResponseDto leaveUser(
-		@PathVariable(name = "circleId")
-		String circleId,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable(name = "circleId") String circleId,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.circleService.leaveUser(userDetails.getUser(), circleId);
 	}
 
@@ -415,12 +392,9 @@ public class CircleController {
 		@ApiResponse(responseCode = "5000", description = "Application id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
 	})
 	public CircleMemberResponseDto dropUser(
-		@PathVariable(name = "userId")
-		String userId,
-		@PathVariable(name = "circleId")
-		String circleId,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable(name = "userId") String userId,
+		@PathVariable(name = "circleId") String circleId,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.circleService.dropUser(
 			userDetails.getUser(),
 			userId,
@@ -451,10 +425,8 @@ public class CircleController {
 		@ApiResponse(responseCode = "5000", description = "This circle has not circle leader or Application id checked, but exception occurred", content = @Content(schema = @Schema(implementation = InternalServerException.class)))
 	})
 	public CircleMemberResponseDto acceptUser(
-		@PathVariable(name = "applicationId")
-		String applicationId,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable(name = "applicationId") String applicationId,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.circleService.acceptUser(userDetails.getUser(), applicationId);
 	}
 
@@ -482,10 +454,8 @@ public class CircleController {
 		@ApiResponse(responseCode = "5000", description = "This circle has not circle leader or Application id checked, but exception occurred", content = @Content(schema = @Schema(implementation = InternalServerException.class)))
 	})
 	public CircleMemberResponseDto rejectUser(
-		@PathVariable(name = "applicationId")
-		String applicationId,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable(name = "applicationId") String applicationId,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.circleService.rejectUser(userDetails.getUser(), applicationId);
 	}
 
@@ -516,12 +486,9 @@ public class CircleController {
 		@ApiResponse(responseCode = "5000", description = "This circle has not circle leader or Application id checked, but exception occurred", content = @Content(schema = @Schema(implementation = InternalServerException.class)))
 	})
 	public CircleMemberResponseDto restoreUser(
-		@PathVariable(name = "circleId")
-		String circleId,
-		@PathVariable(name = "userId")
-		String userId,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable(name = "circleId") String circleId,
+		@PathVariable(name = "userId") String userId,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.circleService.restoreUser(userDetails.getUser(), circleId, userId);
 	}
 
@@ -532,8 +499,7 @@ public class CircleController {
 		"동아리 고유 ID 값(PK)을 입력해주세요.\n" +
 		"엑셀 다운로드 시 해당 동아리의 동아리원 정보가 엑셀로 다운로드 됩니다.")
 	public void exportExcel(
-		@PathVariable(name = "circleId")
-		String circleId,
+		@PathVariable(name = "circleId") String circleId,
 		HttpServletResponse response) {
 		circleService.exportCircleMembersToExcel(circleId, response);
 	}
@@ -545,12 +511,9 @@ public class CircleController {
 		"동아리 고유 ID 값(PK)을 입력해주세요.\n" +
 		"동아리 가입 신청서를 수정하면 해당 동아리에 가입 신청서가 생성/수정됩니다. (기존에 있던 신청서 모두 비활성화)")
 	public void createApplicationForm(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@PathVariable(name = "circleId")
-		String circleId,
-		@RequestBody @Valid
-		FormCreateRequestDto formCreateRequestDto) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable(name = "circleId") String circleId,
+		@RequestBody @Valid FormCreateRequestDto formCreateRequestDto) {
 		circleService.createApplicationForm(userDetails.getUser(), circleId, formCreateRequestDto);
 	}
 
@@ -560,8 +523,7 @@ public class CircleController {
 		"동아리 고유 ID 값(PK)을 입력해주세요.\n" +
 		"동아리 가입 신청서가 존재하면 true, 존재하지 않으면 false 를 반환합니다.")
 	public Boolean isCircleApplicationFormExist(
-		@PathVariable(name = "circleId")
-		String circleId) {
+		@PathVariable(name = "circleId") String circleId) {
 		return circleService.isCircleApplicationFormExist(circleId);
 	}
 
@@ -571,8 +533,7 @@ public class CircleController {
 		"동아리 고유 ID 값(PK)을 입력해주세요.\n" +
 		"동아리 가입 신청서를 조회하면 해당 동아리에 가입 신청서가 반환됩니다.")
 	public FormResponseDto getCircleApplicationForm(
-		@PathVariable(name = "circleId")
-		String circleId) {
+		@PathVariable(name = "circleId") String circleId) {
 		return circleService.getCircleApplicationForm(circleId);
 	}
 
@@ -583,12 +544,9 @@ public class CircleController {
 		"동아리 고유 ID 값(PK)을 입력해주세요.\n" +
 		"모든 동아리 가입 신청서를 조회하면 해당 동아리에 마감되었거나 삭제된 가입 신청서를 포함해 모든 가입 신청서가가 반환됩니다. (동아리장 및 관리자/학생회장 포함)")
 	public Page<FormResponseDto> getAllCircleApplicationFormList(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@PathVariable(name = "circleId")
-		String circleId,
-		@ParameterObject
-		Pageable pageable) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable(name = "circleId") String circleId,
+		@ParameterObject Pageable pageable) {
 		return circleService.getAllCircleApplicationFormList(userDetails.getUser(), circleId, pageable);
 	}
 

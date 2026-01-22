@@ -107,8 +107,7 @@ public class UserBlockEntityService {
 	 * @param blockeeUserIds 차단당한 자들의 아이디 Set
 	 * @return 차단자 id Set
 	 */
-	public Set<String> findBlockerUserIdsByUserIds(@NotEmpty
-	Set<String> blockeeUserIds) {
+	public Set<String> findBlockerUserIdsByUserIds(@NotEmpty Set<String> blockeeUserIds) {
 		return userBlockRepository.findBlockerIdsByBlockeeUserIds(blockeeUserIds);
 	}
 }

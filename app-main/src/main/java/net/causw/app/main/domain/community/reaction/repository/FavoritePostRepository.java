@@ -25,8 +25,6 @@ public interface FavoritePostRepository extends JpaRepository<FavoritePost, Stri
 		    AND (:#{#blockedUserIds.size()} = 0 OR p.writer.id NOT IN :blockedUserIds)
 		    ORDER BY p.createdAt DESC
 		""")
-	Page<FavoritePost> findByUserId(@Param("userId")
-	String userId, @Param("blockedUserIds")
-	Set<String> blockedUserIds,
+	Page<FavoritePost> findByUserId(@Param("userId") String userId, @Param("blockedUserIds") Set<String> blockedUserIds,
 		Pageable pageable);
 }

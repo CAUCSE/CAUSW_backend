@@ -31,10 +31,8 @@ public class NotificationLogController {
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "유저에게 온 일반 알람 조회", description = "유저의 일반 알림을 조회합니다.")
 	public Page<NotificationResponseDto> getGeneralNotification(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@RequestParam(name = "pageNum", defaultValue = "0")
-		Integer pageNum) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum) {
 		return notificationLogService.getGeneralNotification(userDetails.getUser(), pageNum);
 	}
 
@@ -42,10 +40,8 @@ public class NotificationLogController {
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "유저에게 온 경조사 알람 조회", description = "유저의 경조사 알람을 조회합니다.")
 	public Page<NotificationResponseDto> getCeremonyNotification(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@RequestParam(name = "pageNum", defaultValue = "0")
-		Integer pageNum) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum) {
 		return notificationLogService.getCeremonyNotification(userDetails.getUser(), pageNum);
 	}
 
@@ -54,8 +50,7 @@ public class NotificationLogController {
 	@Operation(summary = "유저에게 온 일반 알람 조회", description = "유저의 일반 알림을 조회합니다. <br>" +
 		"해당 api는 웹상의 사이드 바 형태의 읽지 않은 알람 4개를 표시할 때 사용됩니다.")
 	public List<NotificationResponseDto> getGeneralNotificationTop4(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return notificationLogService.getGeneralNotificationTop4(userDetails.getUser());
 	}
 
@@ -64,8 +59,7 @@ public class NotificationLogController {
 	@Operation(summary = "유저에게 온 경조사 알람 조회", description = "유저의 경조사 알림을 조회합니다. <br>" +
 		"해당 api는 웹상의 사이드 바 형태의 읽지 않은 알람 4개를 표시할 때 사용됩니다.")
 	public List<NotificationResponseDto> getCeremonyNotificationTop4(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return notificationLogService.getCeremonyNotificationTop4(userDetails.getUser());
 	}
 
@@ -74,10 +68,8 @@ public class NotificationLogController {
 	@Operation(summary = "유저에게 온 알람 읽음 여부 변경", description = "유저의 알람 조회 여부를 참으로 변경합니다<br> " +
 		"id에는 notification_log id를 넣어주세요")
 	public void readNotification(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@PathVariable("id")
-		String id) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable("id") String id) {
 		notificationLogService.readNotification(userDetails.getUser(), id);
 	}
 
@@ -86,8 +78,7 @@ public class NotificationLogController {
 	@Operation(summary = "유저에게 온 일반, 경조사 알림 중 읽지 않은 알림 총 개수 반환", description = "유저의 읽지 않은 알림 개수를 반환합니다.<br>" +
 		"UI 상에서 10개 이상은 9+로 표기되기 때문에 10개까지 카운팅 되도록 하였습니다.")
 	public NotificationCountResponseDto getNotificationLogCount(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return notificationLogService.getNotificationLogCount(userDetails.getUser());
 	}
 

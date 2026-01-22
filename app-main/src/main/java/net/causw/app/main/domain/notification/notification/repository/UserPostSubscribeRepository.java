@@ -22,10 +22,8 @@ public interface UserPostSubscribeRepository extends JpaRepository<UserPostSubsc
 		AND (:#{#blockerUserIds.size()} = 0 OR ups.user.id NOT IN :blockerUserIds)
 		""")
 	List<UserPostSubscribe> findByPostAndIsSubscribedTrueExcludingBlockers(
-		@Param("post")
-		Post post,
-		@Param("blockerUserIds")
-		Set<String> blockerUserIds);
+		@Param("post") Post post,
+		@Param("blockerUserIds") Set<String> blockerUserIds);
 
 	Optional<UserPostSubscribe> findByUserAndPost(User user, Post post);
 
