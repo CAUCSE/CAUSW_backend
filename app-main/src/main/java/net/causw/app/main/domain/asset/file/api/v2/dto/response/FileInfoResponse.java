@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.asset.file.api.v2.dto;
+package net.causw.app.main.domain.asset.file.api.v2.dto.response;
 
 import java.time.LocalDateTime;
 
@@ -8,7 +8,7 @@ import net.causw.app.main.domain.asset.file.enums.FilePath;
 import lombok.Builder;
 
 @Builder
-public record FileInfoResponseDto(
+public record FileInfoResponse(
 	String fileId,
 	String fileUrl,
 	String originalFileName,
@@ -17,8 +17,8 @@ public record FileInfoResponseDto(
 	Boolean isUsed,
 	LocalDateTime createdAt,
 	LocalDateTime updatedAt) {
-	public static FileInfoResponseDto from(UuidFile uuidFile) {
-		return FileInfoResponseDto.builder()
+	public static FileInfoResponse from(UuidFile uuidFile) {
+		return FileInfoResponse.builder()
 			.fileId(uuidFile.getId())
 			.fileUrl(uuidFile.getFileUrl())
 			.originalFileName(uuidFile.getRawFileName())

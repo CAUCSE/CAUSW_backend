@@ -17,9 +17,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import net.causw.app.main.domain.asset.file.api.v2.dto.FileInfoResponseDto;
-import net.causw.app.main.domain.asset.file.api.v2.dto.FileUploadResponseDto;
-import net.causw.app.main.domain.asset.file.api.v2.dto.MultipleFilesUploadResponseDto;
+import net.causw.app.main.domain.asset.file.api.v2.dto.response.FileInfoResponse;
+import net.causw.app.main.domain.asset.file.api.v2.dto.response.FileUploadResponse;
+import net.causw.app.main.domain.asset.file.api.v2.dto.response.MultipleFilesUploadResponse;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.service.v2.UuidFileService;
@@ -41,44 +41,44 @@ public class FileController {
 	@Operation(summary = "파일 업로드", description = "단일 파일을 업로드합니다.")
 	@PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@PreAuthorize("@security.hasRole(@Role.ADMIN)")
-	public ResponseEntity<FileUploadResponseDto> uploadFile(
+	public ResponseEntity<FileUploadResponse> uploadFile(
 		@RequestParam("file") MultipartFile file,
 		@RequestParam("type") FilePath filePath) {
 		log.info("File upload requested. FilePath: {}", filePath);
 
 		UuidFile savedFile = uuidFileService.saveFile(file, filePath);
 
-		return ResponseEntity.ok(FileUploadResponseDto.from(savedFile));
+		return ResponseEntity.ok(FileUploadResponse.from(savedFile));
 	}
 
 	@Operation(summary = "다중 파일 업로드", description = "여러 파일을 한 번에 업로드합니다.")
 	@PostMapping(value = "/upload/multiple", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@PreAuthorize("@security.hasRole(@Role.ADMIN)")
-	public ResponseEntity<MultipleFilesUploadResponseDto> uploadMultipleFiles(
+	public ResponseEntity<MultipleFilesUploadResponse> uploadMultipleFiles(
 		@RequestParam("files") List<MultipartFile> files,
 		@RequestParam("type") FilePath filePath) {
 		log.info("Multiple files upload requested. Count: {}, FilePath: {}", files.size(), filePath);
 
 		List<UuidFile> savedFiles = uuidFileService.saveFileList(files, filePath);
 
-		return ResponseEntity.ok(MultipleFilesUploadResponseDto.from(savedFiles));
+		return ResponseEntity.ok(MultipleFilesUploadResponse.from(savedFiles));
 	}
 
 	@Operation(summary = "파일 조회", description = "파일 ID로 파일 정보를 조회합니다.")
 	@GetMapping("/{fileId}")
 	@PreAuthorize("@security.hasRole(@Role.ADMIN)")
-	public ResponseEntity<FileInfoResponseDto> getFile(@PathVariable String fileId) {
+	public ResponseEntity<FileInfoResponse> getFile(@PathVariable String fileId) {
 		log.info("File info requested. FileId: {}", fileId);
 
 		UuidFile file = uuidFileService.findUuidFileById(fileId);
 
-		return ResponseEntity.ok(FileInfoResponseDto.from(file));
+		return ResponseEntity.ok(FileInfoResponse.from(file));
 	}
 
 	@Operation(summary = "파일 수정", description = "기존 파일을 삭제하고 새 파일로 교체합니다.")
 	@PutMapping(value = "/{fileId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@PreAuthorize("@security.hasRole(@Role.ADMIN)")
-	public ResponseEntity<FileUploadResponseDto> updateFile(
+	public ResponseEntity<FileUploadResponse> updateFile(
 		@PathVariable String fileId,
 		@RequestParam("file") MultipartFile file,
 		@RequestParam("type") FilePath filePath) {
@@ -87,7 +87,7 @@ public class FileController {
 		UuidFile existingFile = uuidFileService.findUuidFileById(fileId);
 		UuidFile updatedFile = uuidFileService.updateFile(existingFile, file, filePath);
 
-		return ResponseEntity.ok(FileUploadResponseDto.from(updatedFile));
+		return ResponseEntity.ok(FileUploadResponse.from(updatedFile));
 	}
 
 	@Operation(summary = "파일 삭제", description = "파일을 삭제합니다.")

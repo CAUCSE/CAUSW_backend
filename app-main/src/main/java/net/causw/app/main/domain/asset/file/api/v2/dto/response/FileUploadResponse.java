@@ -1,17 +1,17 @@
-package net.causw.app.main.domain.asset.file.api.v2.dto;
+package net.causw.app.main.domain.asset.file.api.v2.dto.response;
 
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 
 import lombok.Builder;
 
 @Builder
-public record FileUploadResponseDto(
+public record FileUploadResponse(
 	String fileId,
 	String fileUrl,
 	String originalFileName,
 	String extension) {
-	public static FileUploadResponseDto from(UuidFile uuidFile) {
-		return FileUploadResponseDto.builder()
+	public static FileUploadResponse from(UuidFile uuidFile) {
+		return FileUploadResponse.builder()
 			.fileId(uuidFile.getId())
 			.fileUrl(uuidFile.getFileUrl())
 			.originalFileName(uuidFile.getRawFileName())
