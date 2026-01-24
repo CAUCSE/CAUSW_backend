@@ -84,8 +84,7 @@ public class FileController {
 		@RequestParam("type") FilePath filePath) {
 		log.info("File update requested. FileId: {}, FilePath: {}", fileId, filePath);
 
-		UuidFile existingFile = uuidFileService.findUuidFileById(fileId);
-		UuidFile updatedFile = uuidFileService.updateFile(existingFile, file, filePath);
+		UuidFile updatedFile = uuidFileService.updateFile(fileId, file, filePath);
 
 		return ResponseEntity.ok(FileUploadResponse.from(updatedFile));
 	}
@@ -96,8 +95,7 @@ public class FileController {
 	public ResponseEntity<Void> deleteFile(@PathVariable String fileId) {
 		log.info("File delete requested. FileId: {}", fileId);
 
-		UuidFile file = uuidFileService.findUuidFileById(fileId);
-		uuidFileService.deleteFile(file);
+		uuidFileService.deleteFile(fileId);
 
 		return ResponseEntity.noContent().build();
 	}

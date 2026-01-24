@@ -100,13 +100,14 @@ public class UuidFileService {
 	 * 파일 수정
 	 * 기존 파일 삭제 후 새 파일 업로드
 	 *
-	 * @param priorUuidFile 기존 파일 (null 가능)
+	 * @param fileId 기존 파일Id (null 가능)
 	 * @param file          새 파일
 	 * @param filePath      파일 경로 타입
 	 * @return 저장된 파일 엔티티
 	 */
 	@Transactional
-	public UuidFile updateFile(UuidFile priorUuidFile, @NotNull MultipartFile file, @NotNull FilePath filePath) {
+	public UuidFile updateFile(String fileId, @NotNull MultipartFile file, @NotNull FilePath filePath) {
+		UuidFile priorUuidFile = findUuidFileById(fileId);
 		log.debug("Starting file update process. PriorFileId: {}, FilePath: {}",
 			priorUuidFile != null ? priorUuidFile.getId() : "null", filePath);
 
@@ -121,16 +122,17 @@ public class UuidFileService {
 	 * 파일 목록 수정
 	 * 기존 파일들 삭제 후 새 파일들 업로드
 	 *
-	 * @param priorUuidFileList 기존 파일 목록
+	 * @param fileIdList 기존 파일 목록
 	 * @param fileList          새 파일 목록
 	 * @param filePath          파일 경로 타입
 	 * @return 저장된 파일 엔티티 목록
 	 */
 	@Transactional
 	public List<UuidFile> updateFileList(
-		List<UuidFile> priorUuidFileList,
+		List<String> fileIdList,
 		List<MultipartFile> fileList,
 		FilePath filePath) {
+		List<UuidFile> priorUuidFileList = fileReader.findByIds(fileIdList);
 		log.debug("Starting file list update process. PriorCount: {}, NewCount: {}, FilePath: {}",
 			priorUuidFileList != null ? priorUuidFileList.size() : 0,
 			fileList.size(),
@@ -146,10 +148,11 @@ public class UuidFileService {
 	/**
 	 * 파일 삭제
 	 *
-	 * @param uuidFile 삭제할 파일 엔티티
+	 * @param fileId 삭제할 파일 Id
 	 */
 	@Transactional
-	public void deleteFile(@NotNull UuidFile uuidFile) {
+	public void deleteFile(String fileId) {
+		UuidFile uuidFile = findUuidFileById(fileId);
 		log.debug("Starting file delete process. FileId: {}", uuidFile.getId());
 		fileWriter.delete(uuidFile);
 	}
@@ -160,7 +163,8 @@ public class UuidFileService {
 	 * @param uuidFileList 삭제할 파일 엔티티 목록
 	 */
 	@Transactional
-	public void deleteFileList(@NotNull List<UuidFile> uuidFileList) {
+	public void deleteFileList(@NotNull List<String> fileIdList) {
+		List<UuidFile> uuidFileList = fileReader.findByIds(fileIdList);
 		log.debug("Starting file list delete process. Count: {}", uuidFileList.size());
 		fileWriter.deleteList(uuidFileList);
 	}
