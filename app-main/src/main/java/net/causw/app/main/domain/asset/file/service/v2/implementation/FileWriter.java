@@ -200,23 +200,23 @@ public class FileWriter {
 	 *
 	 * @param file 삭제할 파일 엔티티
 	 */
-	@Transactional
-	public void deleteSoft(@NotNull UuidFile file) {
-		if (file == null) {
-			log.error("Attempted to soft delete null file");
-			throw new InternalServerException(ErrorCode.INTERNAL_SERVER, MessageUtil.FILE_NOT_FOUND);
-		}
-
-		try {
-			uuidFileRepository.delete(file);
-			log.info("File soft deleted. FileId: {}, FileKey: {}", file.getId(), file.getFileKey());
-
-		} catch (Exception e) {
-			log.error("Failed to soft delete file. FileId: {}, FileKey: {}",
-				file.getId(), file.getFileKey(), e);
-			throw e;
-		}
-	}
+	//	@Transactional
+	//	public void deleteSoft(@NotNull UuidFile file) {
+	//		if (file == null) {
+	//			log.error("Attempted to soft delete null file");
+	//			throw new InternalServerException(ErrorCode.INTERNAL_SERVER, MessageUtil.FILE_NOT_FOUND);
+	//		}
+	//
+	//		try {
+	//			uuidFileRepository.delete(file);
+	//			log.info("File soft deleted. FileId: {}, FileKey: {}", file.getId(), file.getFileKey());
+	//
+	//		} catch (Exception e) {
+	//			log.error("Failed to soft delete file. FileId: {}, FileKey: {}",
+	//				file.getId(), file.getFileKey(), e);
+	//			throw e;
+	//		}
+	//	}
 
 	private StorageResult uploadToStorage(MultipartFile file, FileMetadata metadata) {
 		log.debug("Uploading file to storage. FileKey: {}", metadata.fileKey());
