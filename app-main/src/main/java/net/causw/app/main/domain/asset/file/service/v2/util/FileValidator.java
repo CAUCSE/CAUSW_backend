@@ -10,7 +10,6 @@ import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
-import net.causw.global.exception.InternalServerException;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -148,7 +147,7 @@ public final class FileValidator {
 	private static void validateFileListNotEmpty(List<MultipartFile> fileList) {
 		if (fileList == null || fileList.isEmpty()) {
 			log.warn("File list is null or empty");
-			throw new InternalServerException(ErrorCode.INTERNAL_SERVER, MessageUtil.FILE_IS_NULL);
+			throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.FILE_IS_NULL);
 		}
 	}
 }
