@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ContentDisposition;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @MeasureTime
 @Component("s3Uploader")
+@Profile("!local")
 @RequiredArgsConstructor
 public class S3StorageUploader implements StorageUploader {
 

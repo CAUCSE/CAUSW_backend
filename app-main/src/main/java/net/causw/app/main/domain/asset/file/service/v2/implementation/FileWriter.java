@@ -3,7 +3,6 @@ package net.causw.app.main.domain.asset.file.service.v2.implementation;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,6 +18,7 @@ import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.InternalServerException;
 
 import jakarta.validation.constraints.NotNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -28,17 +28,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @MeasureTime
 @Component
+@RequiredArgsConstructor
 public class FileWriter {
 
 	private final StorageUploader storageUploader;
 	private final UuidFileRepository uuidFileRepository;
-
-	public FileWriter(
-		@Qualifier("s3Uploader") StorageUploader storageUploader,
-		UuidFileRepository uuidFileRepository) {
-		this.storageUploader = storageUploader;
-		this.uuidFileRepository = uuidFileRepository;
-	}
 
 	/**
 	 * 파일 업로드 및 저장
