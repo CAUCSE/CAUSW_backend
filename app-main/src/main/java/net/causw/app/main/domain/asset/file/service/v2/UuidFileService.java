@@ -160,7 +160,7 @@ public class UuidFileService {
 	/**
 	 * 파일 목록 삭제
 	 *
-	 * @param uuidFileList 삭제할 파일 엔티티 목록
+	 * @param fileIdList 삭제할 파일 엔티티 목록
 	 */
 	@Transactional
 	public void deleteFileList(@NotNull List<String> fileIdList) {

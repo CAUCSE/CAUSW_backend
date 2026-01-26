@@ -13,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.asset.file.api.v1.dto.FileResponseDto;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
-import net.causw.app.main.domain.asset.file.service.v1.UuidFileServiceV1;
+import net.causw.app.main.domain.asset.file.service.v1.UuidFileV1Service;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping(value = "/api/v1/storage", produces = APPLICATION_JSON_VALUE)
 public class StorageController {
 
-	private final UuidFileServiceV1 uuidFileService;
+	private final UuidFileV1Service uuidFileService;
 
 	@PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("@security.hasRole(@Role.ADMIN)")

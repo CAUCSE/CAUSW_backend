@@ -10,7 +10,7 @@ import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.EventAttachImage;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
-import net.causw.app.main.domain.asset.file.service.v1.UuidFileServiceV1;
+import net.causw.app.main.domain.asset.file.service.v1.UuidFileV1Service;
 import net.causw.app.main.domain.campus.event.api.v1.dto.EventCreateRequestDto;
 import net.causw.app.main.domain.campus.event.api.v1.dto.EventResponseDto;
 import net.causw.app.main.domain.campus.event.api.v1.dto.EventUpdateRequestDto;
@@ -30,7 +30,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class EventService {
 	private final EventRepository eventRepository;
-	private final UuidFileServiceV1 uuidFileService;
+	private final UuidFileV1Service uuidFileService;
 
 	@Transactional(readOnly = true)
 	public EventsResponseDto findEvents() {

@@ -28,11 +28,11 @@ import jakarta.validation.constraints.NotNull;
 @MeasureTime
 @Service
 @Transactional(readOnly = true)
-public class UuidFileServiceV1 extends StorageManager {
+public class UuidFileV1Service extends StorageManager {
 
 	private final UuidFileRepository uuidFileRepository;
 
-	public UuidFileServiceV1(AmazonS3Client amazonS3Client, UuidFileRepository uuidFileRepository) {
+	public UuidFileV1Service(AmazonS3Client amazonS3Client, UuidFileRepository uuidFileRepository) {
 		super(amazonS3Client);
 		this.uuidFileRepository = uuidFileRepository;
 	}
