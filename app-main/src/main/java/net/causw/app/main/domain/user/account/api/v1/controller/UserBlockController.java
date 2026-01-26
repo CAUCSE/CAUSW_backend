@@ -34,10 +34,8 @@ public class UserBlockController {
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "게시물을 통한 차단 api", description = "게시물을 통해 유저를 차단할 수 있습니다.")
 	public CreateBlockByPostResponseDto createBlockByPost(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@PathVariable("postId")
-		String postId
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable("postId") String postId
 
 	) {
 		return blockByPostUseCaseService.execute(userDetails, postId);
@@ -47,10 +45,8 @@ public class UserBlockController {
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "댓글을 통한 차단 api", description = "댓글을 통해 유저를 차단할 수 있습니다.")
 	public CreateBlockByCommentResponseDto createBlockByComment(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@PathVariable("commentId")
-		String commentId
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable("commentId") String commentId
 
 	) {
 		return blockByCommentUseCaseService.execute(userDetails, commentId);
@@ -60,10 +56,8 @@ public class UserBlockController {
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "대댓글을 통한 차단 api", description = "대댓글을 통해 유저를 차단할 수 있습니다.")
 	public CreateBlockByChildCommentResponseDto createBlockByChildComment(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@PathVariable("childCommentId")
-		String childCommentId
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable("childCommentId") String childCommentId
 
 	) {
 		return blockByChildCommentUseCaseService.execute(userDetails, childCommentId);

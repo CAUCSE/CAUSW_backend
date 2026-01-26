@@ -24,8 +24,7 @@ public interface ChildCommentRepository extends JpaRepository<ChildComment, Stri
 		"LEFT JOIN FETCH c.writer w " +
 		"WHERE c.parentComment.id = :parentCommentId " +
 		"ORDER BY c.createdAt ASC")
-	List<ChildComment> findByParentComment_Id(@Param("parentCommentId")
-	String parentCommentId);
+	List<ChildComment> findByParentComment_Id(@Param("parentCommentId") String parentCommentId);
 
 	@Query("""
 		SELECT DISTINCT p
@@ -36,9 +35,7 @@ public interface ChildCommentRepository extends JpaRepository<ChildComment, Stri
 		AND (:#{#blockedUserIds.size()} = 0 OR p.writer.id NOT IN :blockedUserIds)
 		ORDER BY p.createdAt DESC
 		""")
-	Page<Post> findPostsByUserId(@Param("userId")
-	String userId, @Param("blockedUserIds")
-	Set<String> blockedUserIds,
+	Page<Post> findPostsByUserId(@Param("userId") String userId, @Param("blockedUserIds") Set<String> blockedUserIds,
 		Pageable pageable);
 
 	Optional<ChildComment> findByIdAndIsDeletedFalse(String id);

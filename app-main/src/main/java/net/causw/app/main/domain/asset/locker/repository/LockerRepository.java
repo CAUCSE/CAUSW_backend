@@ -19,13 +19,11 @@ public interface LockerRepository extends JpaRepository<Locker, String> {
 
 	@Query("SELECT l FROM Locker l WHERE l.id = :id")
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
-	Optional<Locker> findByIdForWrite(@Param("id")
-	String id);
+	Optional<Locker> findByIdForWrite(@Param("id") String id);
 
 	@Query("SELECT l FROM Locker l WHERE l.id = :id")
 	@Lock(LockModeType.PESSIMISTIC_READ)
-	Optional<Locker> findByIdForRead(@Param("id")
-	String id);
+	Optional<Locker> findByIdForRead(@Param("id") String id);
 
 	Optional<Locker> findByLockerNumber(Long lockerNumber);
 

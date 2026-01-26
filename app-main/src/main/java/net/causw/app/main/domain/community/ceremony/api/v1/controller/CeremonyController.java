@@ -52,12 +52,9 @@ public class CeremonyController {
 	@ResponseStatus(value = HttpStatus.CREATED)
 	@Operation(summary = "사용자 본인의 경조사 생성", description = "사용자 본인의 경조사 생성합니다.")
 	public CeremonyResponseDto createCeremony(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@RequestPart(value = "createCeremonyRequestDTO") @Valid
-		CreateCeremonyRequestDto createCeremonyRequestDTO,
-		@RequestPart(value = "imageFileList", required = false)
-		List<MultipartFile> imageFileList) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestPart(value = "createCeremonyRequestDTO") @Valid CreateCeremonyRequestDto createCeremonyRequestDTO,
+		@RequestPart(value = "imageFileList", required = false) List<MultipartFile> imageFileList) {
 		return ceremonyService.createCeremony(userDetails.getUser(), createCeremonyRequestDTO, imageFileList);
 	}
 
@@ -65,12 +62,9 @@ public class CeremonyController {
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "사용자 본인의 경조사 신청 내역 조회", description = "사용자 본인의 경조사 신청 내역을 조회합니다.")
 	public Page<CeremonyListNotificationDto> getCeremonies(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@RequestParam(name = "ceremonyState", defaultValue = "ACCEPT")
-		CeremonyState state,
-		@RequestParam(name = "pageNum", defaultValue = "0")
-		Integer pageNum) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestParam(name = "ceremonyState", defaultValue = "ACCEPT") CeremonyState state,
+		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum) {
 		return ceremonyService.getUserCeremonyResponses(userDetails.getUser(), state, pageNum);
 	}
 
@@ -79,8 +73,7 @@ public class CeremonyController {
 	@PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES_AND_LEADER_ALUMNI)")
 	@Operation(summary = "전체 경조사 승인 대기 목록 조회(관리자용)", description = "전체 경조사 승인 대기 목록을 조회합니다.")
 	public Page<CeremonyListNotificationDto> getAllUserAwaitingCeremonyPage(
-		@RequestParam(name = "pageNum", defaultValue = "0")
-		Integer pageNum) {
+		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum) {
 		return ceremonyService.getAllUserAwaitingCeremonyPage(pageNum);
 	}
 
@@ -92,12 +85,9 @@ public class CeremonyController {
 		"my : 내 경조사 목록에서 접근</br>" +
 		"admin : 관리자용 경조사 관리 페이지에서 접근</br>")
 	public CeremonyResponseDto getUserCeremonyInfo(
-		@PathVariable("ceremonyId")
-		String ceremonyId,
-		@RequestParam(name = "context")
-		String contextParam,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable("ceremonyId") String ceremonyId,
+		@RequestParam(name = "context") String contextParam,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		CeremonyContext context = CeremonyContext.fromString(contextParam);
 		return ceremonyService.getCeremony(ceremonyId, context, userDetails.getUser());
 	}
@@ -107,8 +97,7 @@ public class CeremonyController {
 	@PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES_AND_LEADER_ALUMNI)")
 	@Operation(summary = "유저 경조사 승인 상태 변경(승인/거부)(관리자용)", description = "유저 경조사 승인 상태를 변경합니다.")
 	public CeremonyResponseDto updateUserCeremonyStatus(
-		@RequestBody @Valid
-		UpdateCeremonyStateRequestDto updateCeremonyStateRequestDto) {
+		@RequestBody @Valid UpdateCeremonyStateRequestDto updateCeremonyStateRequestDto) {
 		return ceremonyService.updateUserCeremonyStatus(updateCeremonyStateRequestDto);
 	}
 
@@ -116,10 +105,8 @@ public class CeremonyController {
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "유저 경조사 신청 취소(사용자용)", description = "유저가 본인의 경조사 승인 상태를 close로 변경합니다.")
 	public CeremonyResponseDto closeUserCeremonyStatus(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@PathVariable(name = "ceremonyId")
-		String ceremonyId) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable(name = "ceremonyId") String ceremonyId) {
 		return ceremonyService.closeUserCeremonyStatus(userDetails.getUser(), ceremonyId);
 	}
 
@@ -127,10 +114,8 @@ public class CeremonyController {
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "유저 경조사 알람 설정 생성", description = "유저 경조사 알람 설정을 생성합니다. 학번은 2자리로 입력해주세요. (ex. 19)")
 	public CeremonyNotificationSettingResponseDto createCeremonyNotificationSetting(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@RequestBody @Valid
-		CreateCeremonyNotificationSettingDto ceremonyNotificationSettingDTO) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody @Valid CreateCeremonyNotificationSettingDto ceremonyNotificationSettingDTO) {
 		return ceremonyService.createCeremonyNotificationSettings(userDetails.getUser(),
 			ceremonyNotificationSettingDTO);
 	}
@@ -139,8 +124,7 @@ public class CeremonyController {
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "유저 경조사 알람 설정 조회", description = "유저의 경조사 알람 설정을 조회합니다.")
 	public CeremonyNotificationSettingResponseDto getCeremonyNotificationSetting(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return ceremonyService.getCeremonyNotificationSetting(userDetails.getUser());
 	}
 
@@ -148,10 +132,8 @@ public class CeremonyController {
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "유저 경조사 알람 설정 수정", description = "유저의 경조사 알람 설정을 수정합니다. 학번은 2자리로 입력해주세요. (ex. 19)")
 	public CeremonyNotificationSettingResponseDto updateCeremonyNotificationSetting(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@RequestBody @Valid
-		CreateCeremonyNotificationSettingDto createCeremonyNotificationSettingDTO) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody @Valid CreateCeremonyNotificationSettingDto createCeremonyNotificationSettingDTO) {
 		return ceremonyService.updateUserSettings(userDetails.getUser(), createCeremonyNotificationSettingDTO);
 	}
 

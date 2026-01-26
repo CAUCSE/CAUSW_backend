@@ -55,8 +55,7 @@ public class CeremonyService {
 	@Transactional
 	public CeremonyResponseDto createCeremony(
 		User user,
-		@Valid
-		CreateCeremonyRequestDto createCeremonyRequestDTO,
+		@Valid CreateCeremonyRequestDto createCeremonyRequestDTO,
 		List<MultipartFile> imageFileList) {
 		// 전체 알림 전송이 false인 경우, 대상 학번이 입력되었는지 검증
 		if (!createCeremonyRequestDTO.getIsSetAll()) {

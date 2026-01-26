@@ -93,10 +93,8 @@ public class UserController {
 		@ApiResponse(responseCode = "4108", description = "해당 유저는 소모임 회원이 아닙니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	public UserResponseDto findByUserId(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@PathVariable("userId")
-		String userId) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable("userId") String userId) {
 		return this.userService.findByUserId(userId, userDetails.getUser());
 	}
 
@@ -115,8 +113,7 @@ public class UserController {
 		@ApiResponse(responseCode = "5000", description = "소모임장이 아닙니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	public UserResponseDto findCurrentUser(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.userService.findCurrentUser(userDetails.getUser());
 	}
 
@@ -125,10 +122,8 @@ public class UserController {
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "(구)로그인한 사용자의 게시글 조회 API(삭제 예정 -> posts/written으로 변경)")
 	public UserPostsResponseDto findPosts(
-		@RequestParam(name = "pageNum", defaultValue = "0")
-		Integer pageNum,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.userService.findPosts(userDetails.getUser(), pageNum);
 	}
 
@@ -145,10 +140,8 @@ public class UserController {
 		@ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
 	})
 	public UserPostsResponseDto findMyWrittenPosts(
-		@RequestParam(name = "pageNum", defaultValue = "0")
-		Integer pageNum,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.userService.findPosts(userDetails.getUser(), pageNum);
 	}
 
@@ -165,10 +158,8 @@ public class UserController {
 		@ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
 	})
 	public UserPostsResponseDto findMyFavoritePosts(
-		@RequestParam(name = "pageNum", defaultValue = "0")
-		Integer pageNum,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.userService.findFavoritePosts(userDetails.getUser(), pageNum);
 	}
 
@@ -185,10 +176,8 @@ public class UserController {
 		@ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
 	})
 	public UserPostsResponseDto findMyLikePosts(
-		@RequestParam(name = "pageNum", defaultValue = "0")
-		Integer pageNum,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.userService.findLikePosts(userDetails.getUser(), pageNum);
 	}
 
@@ -205,10 +194,8 @@ public class UserController {
 		@ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
 	})
 	public UserPostsResponseDto findMyCommentedPosts(
-		@RequestParam(name = "pageNum", defaultValue = "0")
-		Integer pageNum,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.userService.findCommentedPosts(userDetails.getUser(), pageNum);
 	}
 
@@ -216,10 +203,8 @@ public class UserController {
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "로그인한 사용자의 댓글 조회 API(완료)")
 	public UserCommentsResponseDto findComments(
-		@RequestParam(name = "pageNum", defaultValue = "0")
-		Integer pageNum,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.userService.findComments(userDetails.getUser(), pageNum);
 	}
 
@@ -228,10 +213,8 @@ public class UserController {
 	@PreAuthorize("@security.hasRoleGroup(@RoleGroup.OPERATIONS_TEAM)")
 	@Operation(summary = "유저 관리 시 사용자 이름으로 검색 API(완료)")
 	public List<UserResponseDto> findByName(
-		@PathVariable("name")
-		String name,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable("name") String name,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.userService.findByName(userDetails.getUser(), name);
 	}
 
@@ -240,8 +223,7 @@ public class UserController {
 	@PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
 	@Operation(summary = "특별한 권한을 가진 사용자 목록 확인 API(완료)", description = "학생회장, 부학생회장, 학생회, 학년대표, 동문회장 역할을 가지는 사용자를 반환합니다. \n 권한 역임을 할 수 있기 때문에 중복되는 사용자가 존재합니다.(ex. PRESIDENT_N_LEADER_CIRCLE)")
 	public UserPrivilegedResponseDto findPrivilegedUsers(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return findPrivilegedUsersUseCaseService.execute(userDetails.getUser());
 	}
 
@@ -250,14 +232,10 @@ public class UserController {
 	@PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
 	@Operation(summary = "유저 관리 시 사용자의 상태(ACTIVE, INACTIVE 등) 에 따라 검색하는 API(완료)", description = "유저를 관리할 때 사용자가 활성, 비활성 상태인지에 따라서 분류하여 검색할 수 있습니다. \n state 는 ACTIVE, INACTIVE, AWAIT, REJECT, DROP 으로 검색가능합니다.")
 	public Page<UserResponseDto> findByState(
-		@PathVariable("state")
-		String state,
-		@RequestParam(name = "user name", required = false)
-		String name,
-		@RequestParam(name = "pageNum", defaultValue = "0")
-		Integer pageNum,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable("state") String state,
+		@RequestParam(name = "user name", required = false) String name,
+		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
 		return this.userService.findByState(userDetails.getUser(), state, name, pageNum);
 	}
@@ -279,8 +257,7 @@ public class UserController {
 		@ApiResponse(responseCode = "4001", description = "이미 존재하는 전화번호입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	public UserResponseDto signUp(
-		@Valid @RequestBody
-		UserCreateRequestDto userCreateDto) {
+		@Valid @RequestBody UserCreateRequestDto userCreateDto) {
 		return this.userService.signUp(userCreateDto);
 	}
 
@@ -303,8 +280,7 @@ public class UserController {
 		@ApiResponse(responseCode = "4109", description = "가입이 거절된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	public UserSignInResponseDto signIn(
-		@RequestBody
-		UserSignInRequestDto userSignInRequestDto,
+		@RequestBody UserSignInRequestDto userSignInRequestDto,
 		HttpServletRequest request) {
 		String userAgent = request.getHeader("User-Agent");
 		String ipAddress = extractClientIp(request);
@@ -336,8 +312,7 @@ public class UserController {
 		@ApiResponse(responseCode = "4001", description = "이미 존재하는 전화번호입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
 		@ApiResponse(responseCode = "4001", description = "이미 존재하는 학번입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
-	public BatchRegisterResponseDto registerAlumni(@RequestParam("csvFile")
-	MultipartFile csvFile) {
+	public BatchRegisterResponseDto registerAlumni(@RequestParam("csvFile") MultipartFile csvFile) {
 		return registerGraduatedUsersUseCaseService.execute(csvFile);
 	}
 
@@ -354,8 +329,7 @@ public class UserController {
 		@ApiResponse(responseCode = "4000", description = "해당 사용자를 찾을 수 없습니다", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
 		@ApiResponse(responseCode = "4002", description = "복구할 수 없는 계정 상태입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
-	public UserSignInResponseDto recoverUser(@Valid @RequestBody
-	UserRecoverRequestDto userRecoverRequestDto) {
+	public UserSignInResponseDto recoverUser(@Valid @RequestBody UserRecoverRequestDto userRecoverRequestDto) {
 		return this.userService.recoverUser(userRecoverRequestDto.getEmail());
 	}
 
@@ -371,8 +345,7 @@ public class UserController {
 		@ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
 		@ApiResponse(responseCode = "4001", description = "탈퇴한 계정의 재가입은 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
-	public DuplicatedCheckResponseDto isDuplicatedEmail(@PathVariable("email")
-	String email) {
+	public DuplicatedCheckResponseDto isDuplicatedEmail(@PathVariable("email") String email) {
 		return this.userService.isDuplicatedEmail(email);
 	}
 
@@ -388,8 +361,7 @@ public class UserController {
 		@ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
 		@ApiResponse(responseCode = "4001", description = "탈퇴한 계정의 재가입은 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
-	public DuplicatedCheckResponseDto isDuplicatedNickname(@PathVariable("nickname")
-	String nickname) {
+	public DuplicatedCheckResponseDto isDuplicatedNickname(@PathVariable("nickname") String nickname) {
 		return this.userService.isDuplicatedNickname(nickname);
 	}
 
@@ -406,8 +378,7 @@ public class UserController {
 		@ApiResponse(responseCode = "4001", description = "탈퇴한 계정의 재가입은 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
 		@ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
-	public DuplicatedCheckResponseDto isDuplicatedStudentId(@PathVariable("studentId")
-	String studentId) {
+	public DuplicatedCheckResponseDto isDuplicatedStudentId(@PathVariable("studentId") String studentId) {
 		return this.userService.isDuplicatedStudentId(studentId);
 	}
 
@@ -423,8 +394,7 @@ public class UserController {
 		@ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
 		@ApiResponse(responseCode = "4001", description = "탈퇴한 계정의 재가입은 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
-	public DuplicatedCheckResponseDto isDuplicatedPhoneNumber(@PathVariable("phoneNumber")
-	String phoneNumber) {
+	public DuplicatedCheckResponseDto isDuplicatedPhoneNumber(@PathVariable("phoneNumber") String phoneNumber) {
 		return this.userService.isDuplicatedPhoneNumber(phoneNumber);
 	}
 
@@ -451,12 +421,9 @@ public class UserController {
 		@ApiResponse(responseCode = "4001", description = "이미 존재하는 전화번호입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	public UserResponseDto update(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@RequestPart(value = "userUpdateDto") @Valid
-		UserUpdateRequestDto userUpdateDto,
-		@RequestPart(value = "profileImage", required = false)
-		MultipartFile profileImage) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestPart(value = "userUpdateDto") @Valid UserUpdateRequestDto userUpdateDto,
+		@RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
 
 		return this.userService.update(userDetails.getUser(), userUpdateDto, profileImage);
 	}
@@ -470,12 +437,9 @@ public class UserController {
 		- 학생회장 권한 위임 시, 학생회 전체 권한(부회장, 학생회 등)이 초기화됩니다.
 		""")
 	public UserResponseDto delegateRole(
-		@PathVariable("delegateeId")
-		String delegateeId,
-		@Valid @RequestBody
-		UserUpdateRoleRequestDto userUpdateRoleRequestDto,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable("delegateeId") String delegateeId,
+		@Valid @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.userRoleService.delegateRole(userDetails.getUser(), delegateeId, userUpdateRoleRequestDto);
 	}
 
@@ -489,22 +453,17 @@ public class UserController {
 		- 학생회장 권한 부여 시, 학생회 전체 권한(부회장, 학생회 등)이 초기화됩니다.
 		""")
 	public UserResponseDto grantRole(
-		@RequestParam(value = "delegatorId", required = false)
-		String delegatorId,
-		@PathVariable("granteeId")
-		String granteeId,
-		@Valid @RequestBody
-		UserUpdateRoleRequestDto userUpdateRoleRequestDto,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@RequestParam(value = "delegatorId", required = false) String delegatorId,
+		@PathVariable("granteeId") String granteeId,
+		@Valid @RequestBody UserUpdateRoleRequestDto userUpdateRoleRequestDto,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.userRoleService.grantRole(userDetails.getUser(), delegatorId, granteeId, userUpdateRoleRequestDto);
 	}
 
 	@PutMapping(value = "/password/find")
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "비밀번호 찾기 API (완료)", description = "비밀번호 재설정 이메일 전송 API입니다.")
-	public void findPassword(@Valid @RequestBody
-	UserFindPasswordRequestDto userFindPasswordRequestDto) {
+	public void findPassword(@Valid @RequestBody UserFindPasswordRequestDto userFindPasswordRequestDto) {
 		this.userService.findPassword(userFindPasswordRequestDto);
 	}
 
@@ -512,10 +471,8 @@ public class UserController {
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "비밀번호 업데이트 API (완료)")
 	public UserResponseDto updatePassword(
-		@Valid @RequestBody
-		UserUpdatePasswordRequestDto userUpdatePasswordRequestDto,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@Valid @RequestBody UserUpdatePasswordRequestDto userUpdatePasswordRequestDto,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.userService.updatePassword(userDetails.getUser(), userUpdatePasswordRequestDto);
 	}
 
@@ -539,8 +496,7 @@ public class UserController {
 		@ApiResponse(responseCode = "4107", description = "접근 권한이 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
 		@ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
-	public UserResponseDto leave(@AuthenticationPrincipal
-	CustomUserDetails userDetails) {
+	public UserResponseDto leave(@AuthenticationPrincipal CustomUserDetails userDetails) {
 
 		return this.userService.leave(userDetails.getUser());
 	}
@@ -561,10 +517,8 @@ public class UserController {
 		@ApiResponse(responseCode = "4107", description = "접근 권한이 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
 		@ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
-	public UserResponseDto delete(@PathVariable("id")
-	String id,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+	public UserResponseDto delete(@PathVariable("id") String id,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
 		return this.userService.eraseUserData(userDetails.getUser(), id);
 	}
@@ -574,12 +528,9 @@ public class UserController {
 	@PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
 	@Operation(summary = "사용자 추방 및 사물함 반환 API (완료)")
 	public UserResponseDto drop(
-		@PathVariable("id")
-		String id,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@RequestBody
-		String dropReason) {
+		@PathVariable("id") String id,
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody String dropReason) {
 		return this.userService.dropUser(userDetails.getUser(), id, dropReason);
 	}
 
@@ -587,8 +538,7 @@ public class UserController {
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "사용자가 속한 동아리 목록 불러오기 API(완료)", description = "관리자, 학생회장인 경우 모든 동아리 불러오기")
 	public List<CircleResponseDto> getCircleList(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.userService.getCircleList(userDetails.getUser());
 	}
 
@@ -597,10 +547,8 @@ public class UserController {
 	@PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
 	@Operation(summary = "가입 대기 사용자 정보 확인 API (완료)")
 	public UserAdmissionResponseDto findAdmissionById(
-		@PathVariable("id")
-		String id,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable("id") String id,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.userService.findAdmissionById(userDetails.getUser(), id);
 	}
 
@@ -609,12 +557,9 @@ public class UserController {
 	@PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
 	@Operation(summary = "모든 가입 대기 사용자 목록 확인 API (완료)")
 	public Page<UserAdmissionsResponseDto> findAllAdmissions(
-		@RequestParam(name = "pageNum", defaultValue = "0")
-		Integer pageNum,
-		@RequestParam(name = "name", required = false)
-		String name,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
+		@RequestParam(name = "name", required = false) String name,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.userService.findAllAdmissions(userDetails.getUser(), name, pageNum);
 	}
 
@@ -629,12 +574,9 @@ public class UserController {
 		@ApiResponse(responseCode = "4107", description = "이미 등록된 사용자 입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	public UserAdmissionResponseDto createAdmission(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@RequestPart(value = "userAdmissionCreateRequestDto") @Valid
-		UserAdmissionCreateRequestDto userAdmissionCreateRequestDto,
-		@RequestPart(value = "userAdmissionAttachImageList")
-		List<MultipartFile> userAdmissionAttachImageList) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestPart(value = "userAdmissionCreateRequestDto") @Valid UserAdmissionCreateRequestDto userAdmissionCreateRequestDto,
+		@RequestPart(value = "userAdmissionAttachImageList") List<MultipartFile> userAdmissionAttachImageList) {
 		return this.userService.createAdmission(userDetails.getUser(), userAdmissionCreateRequestDto,
 			userAdmissionAttachImageList);
 	}
@@ -643,8 +585,7 @@ public class UserController {
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "현재 사용자의 가입 신청 정보 확인 API")
 	public UserAdmissionResponseDto getCurrentUserAdmission(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.userService.getCurrentUserAdmission(userDetails.getUser());
 	}
 
@@ -663,10 +604,8 @@ public class UserController {
 		@ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "application/json", schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = BadRequestException.class)))
 	})
 	public UserAdmissionResponseDto acceptAdmission(
-		@PathVariable("id")
-		String id,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable("id") String id,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.userService.accept(userDetails.getUser(), id);
 	}
 
@@ -691,12 +630,9 @@ public class UserController {
 		@ApiResponse(responseCode = "5000", description = "User id checked, but exception occurred", content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "application/json", schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = BadRequestException.class)))
 	})
 	public UserAdmissionResponseDto rejectAdmission(
-		@PathVariable("id")
-		String id,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@RequestBody
-		String rejectReason) {
+		@PathVariable("id") String id,
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody String rejectReason) {
 
 		return this.userService.reject(userDetails.getUser(), id, rejectReason);
 	}
@@ -706,10 +642,8 @@ public class UserController {
 	@PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
 	@Operation(summary = "사용자 복구 API(완료)", description = "복구할 사용자의 id를 넣어주세요")
 	public UserResponseDto restore(
-		@PathVariable("id")
-		String id,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable("id") String id,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.userService.restore(userDetails.getUser(), id);
 	}
 
@@ -721,8 +655,7 @@ public class UserController {
 		@ApiResponse(responseCode = "4000", description = "로그인된 사용자를 찾을 수 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	public UserSignInResponseDto updateToken(
-		@Valid @RequestBody
-		UserUpdateTokenRequestDto userUpdateTokenRequestDto) {
+		@Valid @RequestBody UserUpdateTokenRequestDto userUpdateTokenRequestDto) {
 		return this.userService.updateToken(userUpdateTokenRequestDto.getRefreshToken());
 	}
 
@@ -733,10 +666,8 @@ public class UserController {
 		@ApiResponse(responseCode = "200", description = "OK", content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "application/json", schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = UserSignInResponseDto.class)))
 	})
 	public UserSignOutResponseDto signOut(
-		@Valid @RequestBody
-		UserSignOutRequestDto userSignOutRequestDto,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@Valid @RequestBody UserSignOutRequestDto userSignOutRequestDto,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return userService.signOut(userDetails.getUser(), userSignOutRequestDto);
 	}
 
@@ -752,8 +683,7 @@ public class UserController {
 		@ApiResponse(responseCode = "4000", description = "해당 사용자를 찾을 수 없습니다", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	public UserFindIdResponseDto findUserId(
-		@Valid @RequestBody
-		UserFindIdRequestDto userFindIdRequestDto) {
+		@Valid @RequestBody UserFindIdRequestDto userFindIdRequestDto) {
 		return userService.findUserId(userFindIdRequestDto);
 	}
 
@@ -768,8 +698,7 @@ public class UserController {
 		@ApiResponse(responseCode = "4107", description = "접근 권한이 없습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
 	})
 	public List<UserResponseDto> findByStudentId(
-		@PathVariable("studentId")
-		String studentId) {
+		@PathVariable("studentId") String studentId) {
 		return userService.findByStudentId(studentId);
 	}
 
@@ -794,8 +723,7 @@ public class UserController {
 		@ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	public UserResponseDto updateUserIsV2(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return userService.updateUserIsV2(userDetails.getUser());
 	}
 
@@ -808,10 +736,8 @@ public class UserController {
 		@ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	public UserFcmTokenResponseDto registerFcmToken(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@Valid @RequestBody
-		UserFcmCreateRequestDto userFcmCreateRequestDto) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@Valid @RequestBody UserFcmCreateRequestDto userFcmCreateRequestDto) {
 		return userService.registerFcmToken(userDetails.getUser(), userFcmCreateRequestDto);
 	}
 
@@ -824,8 +750,7 @@ public class UserController {
 		@ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	public UserFcmTokenResponseDto getFcmToken(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return userService.getUserFcmToken(userDetails.getUser());
 	}
 

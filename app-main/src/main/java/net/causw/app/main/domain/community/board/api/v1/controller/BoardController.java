@@ -59,8 +59,7 @@ public class BoardController {
 		@ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	public List<BoardResponseDto> findAllBoard(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.boardService.findAllBoard(userDetails.getUser());
 	}
 
@@ -77,8 +76,7 @@ public class BoardController {
 		@ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	public List<BoardMainResponseDto> mainBoard(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.boardService.mainBoard(userDetails.getUser());
 	}
 
@@ -90,8 +88,7 @@ public class BoardController {
 		@ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
 	})
 	public BoardNameCheckResponseDto checkBoardName(
-		@RequestBody @Valid
-		BoardNameCheckRequestDto boardNameCheckRequestDto) {
+		@RequestBody @Valid BoardNameCheckRequestDto boardNameCheckRequestDto) {
 		return this.boardService.checkBoardName(boardNameCheckRequestDto);
 	}
 
@@ -107,10 +104,8 @@ public class BoardController {
 		@ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
 	})
 	public void applyBoard(
-		@RequestBody @Valid
-		BoardApplyRequestDto boardApplyRequestDto,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@RequestBody @Valid BoardApplyRequestDto boardApplyRequestDto,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		this.boardService.applyBoard(userDetails.getUser(), boardApplyRequestDto);
 	}
 
@@ -127,10 +122,8 @@ public class BoardController {
 		@ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
 	})
 	public BoardResponseDto createBoard(
-		@Valid @RequestBody
-		BoardCreateRequestDto boardCreateRequestDto,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@Valid @RequestBody BoardCreateRequestDto boardCreateRequestDto,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.boardService.createNoticeBoard(userDetails.getUser(), boardCreateRequestDto);
 	}
 
@@ -163,8 +156,7 @@ public class BoardController {
 		@ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
 	})
 	public BoardApplyResponseDto findBoardApplyById(
-		@PathVariable("id")
-		String id) {
+		@PathVariable("id") String id) {
 		return this.boardService.findBoardApplyByApplyId(id);
 	}
 
@@ -182,8 +174,7 @@ public class BoardController {
 		@ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
 	})
 	public BoardApplyResponseDto acceptApply(
-		@PathVariable("applyId")
-		String applyId) {
+		@PathVariable("applyId") String applyId) {
 		return this.boardService.accept(applyId);
 	}
 
@@ -202,8 +193,7 @@ public class BoardController {
 		@ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
 	})
 	public BoardApplyResponseDto rejectApply(
-		@PathVariable("applyId")
-		String applyId) {
+		@PathVariable("applyId") String applyId) {
 		return this.boardService.reject(applyId);
 	}
 
@@ -224,12 +214,9 @@ public class BoardController {
 		@ApiResponse(responseCode = "5001", description = "Board id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
 	})
 	public BoardResponseDto updateBoard(
-		@PathVariable("id")
-		String id,
-		@Valid @RequestBody
-		BoardUpdateRequestDto boardUpdateRequestDto,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable("id") String id,
+		@Valid @RequestBody BoardUpdateRequestDto boardUpdateRequestDto,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.boardService.updateBoard(userDetails.getUser(), id, boardUpdateRequestDto);
 	}
 
@@ -249,10 +236,8 @@ public class BoardController {
 		@ApiResponse(responseCode = "5000", description = "Board id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
 	})
 	public BoardResponseDto deleteBoard(
-		@PathVariable("id")
-		String id,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable("id") String id,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
 		return this.boardService.deleteBoard(userDetails.getUser(), id);
 	}
@@ -273,10 +258,8 @@ public class BoardController {
 		@ApiResponse(responseCode = "5000", description = "Board id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
 	})
 	public BoardResponseDto restoreBoard(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@PathVariable("id")
-		String id) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable("id") String id) {
 		return this.boardService.restoreBoard(userDetails.getUser(), id);
 	}
 
@@ -284,10 +267,8 @@ public class BoardController {
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "로그인한 사용자의 게시판 알람 설정 켜기", description = "id에는 board id 값을 넣어주세요")
 	public BoardSubscribeResponseDto subscribeBoard(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@PathVariable("id")
-		String id) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable("id") String id) {
 		return boardService.setBoardSubscribe(userDetails.getUser(), id, true);
 	}
 
@@ -295,10 +276,8 @@ public class BoardController {
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "로그인한 사용자의 게시판 알람 설정 끄기", description = "id에는 board id 값을 넣어주세요")
 	public BoardSubscribeResponseDto unsubscribeBoard(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@PathVariable("id")
-		String id) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable("id") String id) {
 		return boardService.setBoardSubscribe(userDetails.getUser(), id, false);
 	}
 
@@ -308,8 +287,7 @@ public class BoardController {
 	@Operation(summary = "게시판 구독 데이터 생성 API(관리자용/임시)", description = "id에는 board id 값을 넣어주세요 <br>" +
 		"기존 게시판들의 구독 여부 저장을 위한 임시 api 입니다. 설정후 삭제 예정이고, 추후에는 공지게시판 생성과 동시에 구독여부도 저장될 예정입니다.")
 	public void createBoardSubscribe(
-		@RequestParam("id")
-		String id) {
+		@RequestParam("id") String id) {
 		this.boardService.createBoardSubscribe(id);
 	}
 

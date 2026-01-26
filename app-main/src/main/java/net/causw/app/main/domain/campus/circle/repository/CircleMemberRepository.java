@@ -24,6 +24,5 @@ public interface CircleMemberRepository extends JpaRepository<CircleMember, Stri
 	@Query("SELECT COUNT(cm) " +
 		"FROM CircleMember cm " +
 		"WHERE cm.circle.id = :id AND cm.status = 'MEMBER'")
-	long getNumMember(@Param("id")
-	String id);
+	long getNumMember(@Param("id") String id);
 }

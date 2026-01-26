@@ -25,10 +25,8 @@ public interface CeremonyNotificationSettingRepository extends JpaRepository<Cer
 		AND (:#{#blockerUserIds.size()} = 0 OR c.user.id NOT IN :blockerUserIds)
 		""")
 	List<CeremonyNotificationSetting> findByAdmissionYearOrSetAll(
-		@Param("admissionYear")
-		Integer admissionYear,
-		@Param("blockerUserIds")
-		Set<String> blockerUserIds);
+		@Param("admissionYear") Integer admissionYear,
+		@Param("blockerUserIds") Set<String> blockerUserIds);
 
 	@Query("""
 		SELECT DISTINCT c FROM CeremonyNotificationSetting c
@@ -36,8 +34,6 @@ public interface CeremonyNotificationSettingRepository extends JpaRepository<Cer
 		AND (:#{#blockerUserIds.size()} = 0 OR c.user.id NOT IN :blockerUserIds)
 		""")
 	List<CeremonyNotificationSetting> findByAdmissionYearsIn(
-		@Param("admissionYears")
-		List<Integer> admissionYears,
-		@Param("blockerUserIds")
-		Set<String> blockerUserIds);
+		@Param("admissionYears") List<Integer> admissionYears,
+		@Param("blockerUserIds") Set<String> blockerUserIds);
 }

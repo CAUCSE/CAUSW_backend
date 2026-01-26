@@ -59,10 +59,8 @@ public class ChildCommentController {
 		@ApiResponse(responseCode = "4004", description = "삭제된 동아리입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	public ChildCommentResponseDto createChildComment(
-		@Valid @RequestBody
-		ChildCommentCreateRequestDto childCommentCreateRequestDto,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@Valid @RequestBody ChildCommentCreateRequestDto childCommentCreateRequestDto,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
 		return this.childCommentService.createChildComment(userDetails.getUser(), childCommentCreateRequestDto);
 	}
@@ -94,12 +92,9 @@ public class ChildCommentController {
 		@ApiResponse(responseCode = "5000", description = "Comment id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	public ChildCommentResponseDto updateChildComment(
-		@PathVariable("id")
-		String id,
-		@Valid @RequestBody
-		ChildCommentUpdateRequestDto childCommentUpdateRequestDto,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable("id") String id,
+		@Valid @RequestBody ChildCommentUpdateRequestDto childCommentUpdateRequestDto,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.childCommentService.updateChildComment(userDetails.getUser(), id, childCommentUpdateRequestDto);
 	}
 
@@ -130,10 +125,8 @@ public class ChildCommentController {
 		@ApiResponse(responseCode = "5000", description = "Comment id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	public ChildCommentResponseDto deleteChildComment(
-		@PathVariable("id")
-		String id,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable("id") String id,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.childCommentService.deleteChildComment(userDetails.getUser(), id);
 	}
 
@@ -152,10 +145,8 @@ public class ChildCommentController {
 		@ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
 	})
 	public void likeChildComment(
-		@PathVariable("id")
-		String id,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable("id") String id,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		this.childCommentService.likeChildComment(userDetails.getUser(), id);
 	}
 
@@ -174,10 +165,8 @@ public class ChildCommentController {
 		@ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
 	})
 	public void cancelLikeChildComment(
-		@PathVariable("id")
-		String id,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable("id") String id,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		this.childCommentService.cancelLikeChildComment(userDetails.getUser(), id);
 	}
 }
