@@ -51,8 +51,7 @@ public class UserInfoController {
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "사용자 id로 사용자 세부정보 조회 API")
 	public UserInfoResponseDto getUserInfoByUserId(
-		@PathVariable("userId")
-		String userId) {
+		@PathVariable("userId") String userId) {
 		return getUserInfoUseCaseService.execute(userId);
 	}
 
@@ -60,10 +59,8 @@ public class UserInfoController {
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "전체 사용자 리스트 검색 및 조회 API", description = "최근 수정된 순서대로 정렬")
 	public Page<UserInfoSummaryResponseDto> searchUserInfos(
-		@RequestParam(name = "pageNum", defaultValue = "0")
-		Integer pageNum,
-		@ModelAttribute
-		UserInfoSearchConditionDto userInfoSearchCondition) {
+		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
+		@ModelAttribute UserInfoSearchConditionDto userInfoSearchCondition) {
 		return searchUserInfoListUseCaseService.execute(userInfoSearchCondition, pageNum);
 	}
 
@@ -71,8 +68,7 @@ public class UserInfoController {
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "자신의 세부정보 조회 API")
 	public UserInfoResponseDto getCurrentUser(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return getUserInfoUseCaseService.execute(userDetails.getUserId());
 	}
 
@@ -86,12 +82,9 @@ public class UserInfoController {
 	})
 
 	public UserInfoResponseDto updateCurrentUser(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@RequestPart(value = "userInfoUpdateDto") @Valid
-		UserInfoUpdateRequestDto userInfoUpdateDto,
-		@RequestPart(value = "profileImage", required = false)
-		MultipartFile profileImage) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestPart(value = "userInfoUpdateDto") @Valid UserInfoUpdateRequestDto userInfoUpdateDto,
+		@RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
 		return updateUserInfoUseCaseService.execute(userDetails.getUserId(), userInfoUpdateDto, profileImage);
 	}
 }

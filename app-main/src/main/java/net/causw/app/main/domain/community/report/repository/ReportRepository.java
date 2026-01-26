@@ -45,10 +45,8 @@ public interface ReportRepository extends JpaRepository<Report, String> {
 		AND (:userId IS NULL OR u.id = :userId)
 		""", nativeQuery = true)
 	Page<ReportedPostNativeProjection> findPostReportsWithDetails(
-		@Param("reportType")
-		String reportType,
-		@Param("userId")
-		String userId,
+		@Param("reportType") String reportType,
+		@Param("userId") String userId,
 		Pageable pageable);
 
 	// 신고된 사용자 목록 조회
@@ -126,7 +124,6 @@ public interface ReportRepository extends JpaRepository<Report, String> {
 		) AS T
 		""", nativeQuery = true)
 	Page<ReportedCommentNativeProjection> findCombinedCommentReports(
-		@Param("userId")
-		String userId,
+		@Param("userId") String userId,
 		Pageable pageable);
 }

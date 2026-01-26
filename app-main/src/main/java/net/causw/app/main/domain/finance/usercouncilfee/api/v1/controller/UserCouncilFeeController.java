@@ -70,8 +70,7 @@ public class UserCouncilFeeController {
 		@ApiResponse(responseCode = "5000", description = MessageUtil.INTERNAL_SERVER_ERROR, content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
 	})
 	public Page<UserCouncilFeeListResponseDto> getUserCouncilFeeList(
-		@ParameterObject
-		Pageable pageable) {
+		@ParameterObject Pageable pageable) {
 		return userCouncilFeeService.getUserCouncilFeeList(pageable);
 	}
 
@@ -85,8 +84,7 @@ public class UserCouncilFeeController {
 		@ApiResponse(responseCode = "5000", description = MessageUtil.INTERNAL_SERVER_ERROR, content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
 	})
 	public UserCouncilFeeResponseDto getUserCouncilFeeInfo(
-		@PathVariable(value = "userCouncilFeeId")
-		String userCouncilFeeId) {
+		@PathVariable(value = "userCouncilFeeId") String userCouncilFeeId) {
 		return userCouncilFeeService.getUserCouncilFeeInfo(userCouncilFeeId);
 	}
 
@@ -103,10 +101,8 @@ public class UserCouncilFeeController {
 		@ApiResponse(responseCode = "5000", description = MessageUtil.INTERNAL_SERVER_ERROR, content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
 	})
 	public void createUserCouncilFeeWithUser(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@RequestBody @Valid
-		CreateUserCouncilFeeWithUserRequestDto createUserCouncilFeeWithUserRequestDto) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody @Valid CreateUserCouncilFeeWithUserRequestDto createUserCouncilFeeWithUserRequestDto) {
 		userCouncilFeeService.createUserCouncilFeeWithUser(userDetails.getUser(),
 			createUserCouncilFeeWithUserRequestDto);
 	}
@@ -124,10 +120,8 @@ public class UserCouncilFeeController {
 		@ApiResponse(responseCode = "5000", description = MessageUtil.INTERNAL_SERVER_ERROR, content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
 	})
 	public void createUserCouncilFeeWithFakeUser(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@RequestBody @Valid
-		CreateUserCouncilFeeWithFakeUserRequestDto createUserCouncilFeeRequestDto) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody @Valid CreateUserCouncilFeeWithFakeUserRequestDto createUserCouncilFeeRequestDto) {
 		userCouncilFeeService.creatUserCouncilFeeWithFakeUser(userDetails.getUser(), createUserCouncilFeeRequestDto);
 	}
 
@@ -144,12 +138,9 @@ public class UserCouncilFeeController {
 		@ApiResponse(responseCode = "5000", description = MessageUtil.INTERNAL_SERVER_ERROR, content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
 	})
 	public void updateUserCouncilFeeWithUser(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@RequestHeader @Pattern(regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", message = "id 값은 대시(-)를 포함하고, 32자리의 UUID 형식이어야 합니다.") @NotBlank(message = "대상 사용자 고유 id 값은 필수 입력 값입니다.")
-		String userCouncilFeeId,
-		@RequestBody @Valid
-		CreateUserCouncilFeeWithUserRequestDto createUserCouncilFeeWithUserRequestDto) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestHeader @Pattern(regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", message = "id 값은 대시(-)를 포함하고, 32자리의 UUID 형식이어야 합니다.") @NotBlank(message = "대상 사용자 고유 id 값은 필수 입력 값입니다.") String userCouncilFeeId,
+		@RequestBody @Valid CreateUserCouncilFeeWithUserRequestDto createUserCouncilFeeWithUserRequestDto) {
 		userCouncilFeeService.updateUserCouncilFeeWithUser(userDetails.getUser(), userCouncilFeeId,
 			createUserCouncilFeeWithUserRequestDto);
 	}
@@ -167,12 +158,9 @@ public class UserCouncilFeeController {
 		@ApiResponse(responseCode = "5000", description = MessageUtil.INTERNAL_SERVER_ERROR, content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
 	})
 	public void updateUserCouncilFeeWithFakeUser(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@RequestHeader @Pattern(regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", message = "id 값은 대시(-)를 포함하고, 32자리의 UUID 형식이어야 합니다.") @NotBlank(message = "대상 사용자 고유 id 값은 필수 입력 값입니다.")
-		String userCouncilFeeId,
-		@RequestBody @Valid
-		CreateUserCouncilFeeWithFakeUserRequestDto createUserCouncilFeeRequestDto) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestHeader @Pattern(regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", message = "id 값은 대시(-)를 포함하고, 32자리의 UUID 형식이어야 합니다.") @NotBlank(message = "대상 사용자 고유 id 값은 필수 입력 값입니다.") String userCouncilFeeId,
+		@RequestBody @Valid CreateUserCouncilFeeWithFakeUserRequestDto createUserCouncilFeeRequestDto) {
 		userCouncilFeeService.updateUserCouncilFeeWithFakeUser(userDetails.getUser(), userCouncilFeeId,
 			createUserCouncilFeeRequestDto);
 	}
@@ -187,10 +175,8 @@ public class UserCouncilFeeController {
 		@ApiResponse(responseCode = "5000", description = MessageUtil.INTERNAL_SERVER_ERROR, content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
 	})
 	public void deleteUserCouncilFee(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@RequestHeader
-		String userCouncilFeeId) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestHeader String userCouncilFeeId) {
 		userCouncilFeeService.deleteUserCouncilFee(userDetails.getUser(), userCouncilFeeId);
 	}
 
@@ -204,8 +190,7 @@ public class UserCouncilFeeController {
 		@ApiResponse(responseCode = "5000", description = MessageUtil.INTERNAL_SERVER_ERROR, content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
 	})
 	public String getUserIdByStudentId(
-		@RequestHeader
-		String studentId) {
+		@RequestHeader String studentId) {
 		return userCouncilFeeService.getUserIdByStudentId(studentId);
 	}
 
@@ -219,8 +204,7 @@ public class UserCouncilFeeController {
 		@ApiResponse(responseCode = "5000", description = MessageUtil.INTERNAL_SERVER_ERROR, content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
 	})
 	public Boolean isCurrentSemesterApplied(
-		@RequestHeader
-		String userId) {
+		@RequestHeader String userId) {
 		return userCouncilFeeService.isCurrentSemesterApplied(userId);
 	}
 
@@ -233,8 +217,7 @@ public class UserCouncilFeeController {
 		@ApiResponse(responseCode = "5000", description = MessageUtil.INTERNAL_SERVER_ERROR, content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
 	})
 	public Boolean isCurrentSemesterAppliedBySelf(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return userCouncilFeeService.isCurrentSemesterAppliedBySelf(userDetails.getUser());
 	}
 
@@ -247,8 +230,7 @@ public class UserCouncilFeeController {
 		@ApiResponse(responseCode = "5000", description = MessageUtil.INTERNAL_SERVER_ERROR, content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
 	})
 	public CurrentUserCouncilFeeResponseDto isCurrentSemesterAppliedBySelfInfo(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return userCouncilFeeService.isCurrentSemesterAppliedBySelfInfo(userDetails.getUser());
 	}
 

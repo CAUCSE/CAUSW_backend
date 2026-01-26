@@ -50,10 +50,8 @@ public class SemesterController {
 	@PreAuthorize("@security.hasRole(@Role.ADMIN)")
 	@Operation(summary = "학기 생성(개발 테스트 및 관리자용)", description = "새로운 학기를 생성합니다.")
 	public void createSemester(
-		@RequestBody
-		CreateSemesterRequestDto createSemesterRequestDto,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@RequestBody CreateSemesterRequestDto createSemesterRequestDto,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		semesterService.createSemester(createSemesterRequestDto, userDetails.getUser());
 	}
 
@@ -66,8 +64,7 @@ public class SemesterController {
 	@PreAuthorize("@security.hasRoleGroup(RoleGroup.EXECUTIVES)")
 	@Operation(summary = "다음 학기 생성(재학 인증 일괄 요청)", description = "다음 학기를 생성합니다. 자동으로 재학 인증도 일괄 요청 됩니다.")
 	public void createNextSemester(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		semesterService.createNextSemester(userDetails.getUser());
 	}
 
@@ -76,8 +73,7 @@ public class SemesterController {
 	@PreAuthorize("@security.hasRole(@Role.ADMIN)")
 	@Operation(summary = "학기 삭제(개발 테스트 및 관리자용)", description = "특정 학기를 삭제합니다.")
 	public void deleteSemester(
-		@PathVariable(value = "semesterId")
-		String semesterId) {
+		@PathVariable(value = "semesterId") String semesterId) {
 		semesterService.deleteSemester(semesterId);
 	}
 }

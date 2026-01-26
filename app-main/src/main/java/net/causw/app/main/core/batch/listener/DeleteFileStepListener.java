@@ -10,8 +10,7 @@ import org.springframework.stereotype.Component;
 public class DeleteFileStepListener implements StepExecutionListener {
 
 	@Override
-	public void beforeStep(@NotNull
-	StepExecution stepExecution) {
+	public void beforeStep(@NotNull StepExecution stepExecution) {
 		// Step 실행 전 로직: Step 시작 시간 기록
 		stepExecution.getExecutionContext().putLong("startTime", System.currentTimeMillis());
 	}
