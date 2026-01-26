@@ -8,7 +8,7 @@ import net.causw.app.main.shared.storage.v2.dto.StorageResult;
 /**
  * 파일 스토리지 업로드/삭제 인터페이스
  */
-public interface StorageUploader {
+public interface StorageClient {
 
 	/**
 	 * 파일을 스토리지에 업로드

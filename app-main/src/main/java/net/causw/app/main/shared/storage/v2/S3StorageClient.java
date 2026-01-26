@@ -34,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component("s3Uploader")
 @Profile("!local")
 @RequiredArgsConstructor
-public class S3StorageUploader implements StorageUploader {
+public class S3StorageClient implements StorageClient {
 
 	private final AmazonS3Client amazonS3Client;
 

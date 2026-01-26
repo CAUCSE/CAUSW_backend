@@ -29,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @MeasureTime
 @Component("localUploader")
 @Profile("local")
-public class LocalStorageUploader implements StorageUploader {
+public class LocalStorageClient implements StorageClient {
 
 	private static final String BASE_DIRECTORY = System.getProperty("user.home") + File.separator + "causwfile";
 

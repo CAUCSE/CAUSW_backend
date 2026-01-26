@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.repository.UuidFileRepository;
-import net.causw.app.main.shared.storage.v2.StorageUploader;
+import net.causw.app.main.shared.storage.v2.StorageClient;
 import net.causw.app.main.shared.storage.v2.dto.FileMetadata;
 import net.causw.app.main.shared.storage.v2.dto.StorageResult;
 import net.causw.global.constant.MessageUtil;
@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class FileWriter {
 
-	private final StorageUploader storageUploader;
+	private final StorageClient storageClient;
 	private final UuidFileRepository uuidFileRepository;
 
 	/**
@@ -60,7 +60,7 @@ public class FileWriter {
 			if (storageResult != null) {
 				log.warn("DB save failed. Rolling back storage upload. FileKey: {}", storageResult.fileKey());
 				try {
-					storageUploader.delete(storageResult.fileKey());
+					storageClient.delete(storageResult.fileKey());
 				} catch (Exception deleteException) {
 					log.error("Failed to delete file during rollback. FileKey: {}",
 						storageResult.fileKey(), deleteException);
@@ -146,7 +146,7 @@ public class FileWriter {
 
 		try {
 			// 1. 스토리지에서 삭제
-			storageUploader.delete(fileKey);
+			storageClient.delete(fileKey);
 			log.debug("File deleted from storage. FileKey: {}", fileKey);
 
 			// 2. DB에서 삭제
@@ -220,7 +220,7 @@ public class FileWriter {
 
 	private StorageResult uploadToStorage(MultipartFile file, FileMetadata metadata) {
 		log.debug("Uploading file to storage. FileKey: {}", metadata.fileKey());
-		return storageUploader.upload(file, metadata);
+		return storageClient.upload(file, metadata);
 	}
 
 	private UuidFile saveToDatabase(StorageResult result, FileMetadata metadata) {
@@ -241,7 +241,7 @@ public class FileWriter {
 	private void rollbackUploadedFiles(List<String> fileKeys) {
 		for (String fileKey : fileKeys) {
 			try {
-				storageUploader.delete(fileKey);
+				storageClient.delete(fileKey);
 				log.debug("Rollback: Deleted file from storage. FileKey: {}", fileKey);
 			} catch (Exception e) {
 				log.error("Failed to delete file during rollback. FileKey: {}", fileKey, e);

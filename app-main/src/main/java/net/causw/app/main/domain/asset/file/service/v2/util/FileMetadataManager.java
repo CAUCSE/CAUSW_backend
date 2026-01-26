@@ -51,15 +51,6 @@ public final class FileMetadataManager {
 	}
 
 	/**
-	 * UUID 생성
-	 *
-	 * @return UUID 문자열
-	 */
-	public static String generateUuid() {
-		return UUID.randomUUID().toString();
-	}
-
-	/**
 	 * 원본 파일명에서 확장자를 제외한 파일명 추출
 	 *
 	 * @param originalFileName 원본 파일명
@@ -106,5 +97,9 @@ public final class FileMetadataManager {
 		@NotBlank String extension,
 		@NotNull FilePath filePath) {
 		return filePath.getDirectory() + "/" + rawFileName + "_" + uuid + "." + extension;
+	}
+
+	private static String generateUuid() {
+		return UUID.randomUUID().toString();
 	}
 }
