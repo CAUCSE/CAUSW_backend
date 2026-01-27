@@ -76,7 +76,7 @@ public class GlobalV2ExceptionHandler {
 	}
 
 	@ExceptionHandler(value = {BaseRuntimeException.class})
-	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public ApiResponse<String> handleBaseRuntimeException(BaseRuntimeException exception) {
 		ErrorCode errorCode = exception.getErrorCode();
 
@@ -94,7 +94,7 @@ public class GlobalV2ExceptionHandler {
 			log.error("Invalid HTTP status code {} for ErrorCode {}",
 				errorCode.getHttpStatusCode(), errorCode, e);
 
-			return ApiResponse.error(GlobalErrorCode.INTERNAL_SERVER_ERROR);
+			return ApiResponse.error(GlobalErrorCode.BAD_REQUEST.getCode(), exception.getMessage());
 		}
 	}
 
