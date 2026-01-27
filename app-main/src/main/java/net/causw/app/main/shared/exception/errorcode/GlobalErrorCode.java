@@ -1,6 +1,8 @@
-package net.causw.app.main.shared.exception;
+package net.causw.app.main.shared.exception.errorcode;
 
 import org.springframework.http.HttpStatus;
+
+import net.causw.app.main.shared.exception.BaseResponseCode;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

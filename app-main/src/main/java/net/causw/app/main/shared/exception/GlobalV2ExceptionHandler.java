@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import net.causw.app.main.shared.dto.ApiResponse;
+import net.causw.app.main.shared.exception.errorcode.GlobalErrorCode;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.BaseRuntimeException;
 import net.causw.global.exception.ErrorCode;
