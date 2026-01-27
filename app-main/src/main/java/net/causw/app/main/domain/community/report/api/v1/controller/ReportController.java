@@ -13,11 +13,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportCreateRequestDto;
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportCreateResponseDto;
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportedCommentResponseDto;
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportedPostResponseDto;
-import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportedUserResponseDto;
 import net.causw.app.main.domain.community.report.service.v1.ReportService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;

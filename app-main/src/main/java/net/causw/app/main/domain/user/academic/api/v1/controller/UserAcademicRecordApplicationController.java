@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.campus.semester.api.v1.dto.CurrentSemesterResponseDto;
 import net.causw.app.main.domain.campus.semester.service.v1.SemesterService;
 import net.causw.app.main.domain.user.academic.api.v1.dto.CreateUserAcademicRecordApplicationRequestDto;
@@ -32,7 +33,6 @@ import net.causw.app.main.domain.user.academic.api.v1.dto.UserAcademicRecordAppl
 import net.causw.app.main.domain.user.academic.api.v1.dto.UserAcademicRecordInfoResponseDto;
 import net.causw.app.main.domain.user.academic.api.v1.dto.UserAcademicRecordListResponseDto;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
-import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.user.academic.service.v1.UserAcademicRecordApplicationService;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserAcademicStatusNoteUpdateDto;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;

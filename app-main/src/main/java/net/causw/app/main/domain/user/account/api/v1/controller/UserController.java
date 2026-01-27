@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.campus.circle.api.v1.dto.CircleResponseDto;
 import net.causw.app.main.domain.etc.api.v1.dto.DuplicatedCheckResponseDto;
 import net.causw.app.main.domain.user.account.api.v1.dto.BatchRegisterResponseDto;
@@ -48,7 +49,6 @@ import net.causw.app.main.domain.user.account.api.v1.dto.UserUpdateRoleRequestDt
 import net.causw.app.main.domain.user.account.api.v1.dto.UserUpdateTokenRequestDto;
 import net.causw.app.main.domain.user.account.service.v1.FindPrivilegedUsersUseCaseService;
 import net.causw.app.main.domain.user.account.service.v1.RegisterGraduatedUsersUseCaseService;
-import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.user.account.service.v1.UserRoleService;
 import net.causw.app.main.domain.user.account.service.v1.UserService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;

@@ -1,8 +1,7 @@
 package net.causw.app.main.shared.dto;
 
-import net.causw.app.main.shared.exception.ResponseCode;
 import net.causw.app.main.shared.exception.BaseResponseCode;
-import net.causw.app.main.shared.exception.GlobalErrorCode;
+import net.causw.app.main.shared.exception.ResponseCode;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -33,8 +32,7 @@ public class ApiResponse<T> {
 		return new ApiResponse<>(
 			ResponseCode.SUCCESS.getCode(),
 			ResponseCode.SUCCESS.getMessage(),
-			data
-		);
+			data);
 	}
 
 	/**
@@ -56,8 +54,7 @@ public class ApiResponse<T> {
 		return new ApiResponse<>(
 			errorCode.getCode(),
 			errorCode.getMessage(),
-			null
-		);
+			null);
 	}
 
 	/**

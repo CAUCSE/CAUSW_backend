@@ -12,4 +12,3 @@ public class BaseRunTimeV2Exception extends RuntimeException {
 		this.errorCode = errorCode;
 	}
 }
-

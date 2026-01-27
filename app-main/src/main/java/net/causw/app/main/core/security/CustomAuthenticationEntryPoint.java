@@ -7,14 +7,13 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import net.causw.app.main.shared.dto.ApiResponse;
-import net.causw.app.main.shared.exception.GlobalErrorCode;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.UnauthorizedException;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -71,8 +70,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 	}
 
 	private void setV2Response(
-		HttpServletResponse response
-	) throws IOException {
+		HttpServletResponse response) throws IOException {
 		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 		response.setContentType("application/json;charset=UTF-8");
 
