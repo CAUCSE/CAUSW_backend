@@ -43,7 +43,7 @@ public class GlobalV2ExceptionHandler {
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public ApiResponse<String> handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
 		log.warn("Validation failed: {}", exception.getBindingResult().getAllErrors().get(0).getDefaultMessage());
-		return ApiResponse.error(GlobalErrorCode.INTERNAL_SERVER_ERROR.getCode(),
+		return ApiResponse.error(GlobalErrorCode.BAD_REQUEST.getCode(),
 			exception.getBindingResult().getAllErrors().get(0).getDefaultMessage());
 	}
 
@@ -72,7 +72,7 @@ public class GlobalV2ExceptionHandler {
 	@ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
 	public ApiResponse<String> handleServiceUnavailableException(ServiceUnavailableException exception) {
 		log.error("Service unavailable: {} - {}", exception.getErrorCode(), exception.getMessage(), exception);
-		return ApiResponse.error(GlobalErrorCode.INTERNAL_SERVER_ERROR);
+		return ApiResponse.error(GlobalErrorCode.SERVICE_UNAVAILABLE);
 	}
 
 	@ExceptionHandler(value = {BaseRuntimeException.class})
