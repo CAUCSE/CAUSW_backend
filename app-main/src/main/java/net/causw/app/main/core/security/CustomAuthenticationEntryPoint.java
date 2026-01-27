@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import net.causw.app.main.shared.dto.ApiResponse;
+import net.causw.app.main.shared.exception.GlobalErrorCode;
+import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.UnauthorizedException;
@@ -74,7 +76,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 		response.setContentType("application/json;charset=UTF-8");
 
-		ApiResponse<String> apiResponse = ApiResponse.failure(message);
+		ApiResponse<String> apiResponse = ApiResponse.error(AuthErrorCode.INVALID_TOKEN);
 		String body = objectMapper.writeValueAsString(apiResponse);
 
 		response.getWriter().println(body);

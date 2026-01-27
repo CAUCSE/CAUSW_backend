@@ -1,4 +1,4 @@
-package net.causw.app.main.core.global;
+package net.causw.app.main.shared.exception;
 
 import java.time.format.DateTimeParseException;
 
