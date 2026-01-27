@@ -33,6 +33,8 @@ public class GlobalV2ExceptionHandler {
 	public ResponseEntity<ApiResponse<?>> handleBaseRunTimeV2Exception(BaseRunTimeV2Exception exception) {
 		BaseResponseCode errorCode = exception.getErrorCode();
 		HttpStatus status = errorCode.getStatus();
+
+		logException(errorCode.getStatus(),errorCode,exception);
 		// 로깅
 		log.warn("Error occurred - Code: {}, Message: {}", errorCode.getCode(), exception.getMessage());
 
@@ -139,6 +141,21 @@ public class GlobalV2ExceptionHandler {
 		} else {
 			log.warn("Unexpected status code {} - Code: {}, Message: {}",
 				httpStatus, errorCode, exception.getMessage());
+		}
+	}
+
+	private void logException(HttpStatus httpStatus, BaseResponseCode errorCode, BaseRunTimeV2Exception exception) {
+		if (httpStatus.is4xxClientError()) {
+			// 4xx 에러는 클라이언트 실수이므로 WARN 레벨
+			log.warn("Client error - Code: {}, Message: {}",
+				errorCode.getCode(), exception.getMessage());
+		} else if (httpStatus.is5xxServerError()) {
+			// 5xx 에러는 서버 문제이므로 ERROR 레벨 + 스택트레이스
+			log.error("Server error - Code: {}, Message: {}",
+				errorCode.getCode(), exception.getMessage(), exception);
+		} else {
+			log.warn("Unexpected status code {} - Code: {}, Message: {}",
+				httpStatus, errorCode.getCode(), exception.getMessage());
 		}
 	}
 }
