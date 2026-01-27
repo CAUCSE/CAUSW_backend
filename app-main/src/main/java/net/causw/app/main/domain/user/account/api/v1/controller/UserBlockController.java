@@ -14,6 +14,7 @@ import net.causw.app.main.domain.user.account.api.v1.dto.response.CreateBlockByC
 import net.causw.app.main.domain.user.account.api.v1.dto.response.CreateBlockByCommentResponseDto;
 import net.causw.app.main.domain.user.account.api.v1.dto.response.CreateBlockByPostResponseDto;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.user.relation.service.v1.BlockByChildCommentUseCaseService;
 import net.causw.app.main.domain.user.relation.service.v1.BlockByCommentUseCaseService;
 import net.causw.app.main.domain.user.relation.service.v1.BlockByPostUseCaseService;
@@ -21,6 +22,7 @@ import net.causw.app.main.domain.user.relation.service.v1.BlockByPostUseCaseServ
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 
+@V1Api
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = "/api/v1/blocks", produces = APPLICATION_JSON_VALUE)

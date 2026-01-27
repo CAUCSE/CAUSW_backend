@@ -48,6 +48,7 @@ import net.causw.app.main.domain.user.account.api.v1.dto.UserUpdateRoleRequestDt
 import net.causw.app.main.domain.user.account.api.v1.dto.UserUpdateTokenRequestDto;
 import net.causw.app.main.domain.user.account.service.v1.FindPrivilegedUsersUseCaseService;
 import net.causw.app.main.domain.user.account.service.v1.RegisterGraduatedUsersUseCaseService;
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.user.account.service.v1.UserRoleService;
 import net.causw.app.main.domain.user.account.service.v1.UserService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
@@ -64,6 +65,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@V1Api
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor

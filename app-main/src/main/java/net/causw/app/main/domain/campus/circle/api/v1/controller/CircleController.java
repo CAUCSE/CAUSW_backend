@@ -34,6 +34,7 @@ import net.causw.app.main.domain.community.form.api.v1.dto.request.FormReplyRequ
 import net.causw.app.main.domain.community.form.api.v1.dto.request.create.FormCreateRequestDto;
 import net.causw.app.main.domain.community.form.api.v1.dto.response.FormResponseDto;
 import net.causw.app.main.domain.etc.api.v1.dto.DuplicatedCheckResponseDto;
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.util.ConstraintValidator;
 import net.causw.global.exception.BadRequestException;
@@ -51,6 +52,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 
+@V1Api
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/circles")

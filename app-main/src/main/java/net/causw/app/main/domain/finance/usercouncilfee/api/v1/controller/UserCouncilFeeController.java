@@ -21,6 +21,7 @@ import net.causw.app.main.domain.finance.usercouncilfee.api.v1.dto.CreateUserCou
 import net.causw.app.main.domain.finance.usercouncilfee.api.v1.dto.CreateUserCouncilFeeWithUserRequestDto;
 import net.causw.app.main.domain.finance.usercouncilfee.api.v1.dto.CurrentUserCouncilFeeResponseDto;
 import net.causw.app.main.domain.finance.usercouncilfee.api.v1.dto.UserCouncilFeeListResponseDto;
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.finance.usercouncilfee.api.v1.dto.UserCouncilFeeResponseDto;
 import net.causw.app.main.domain.finance.usercouncilfee.service.v1.UserCouncilFeeService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
@@ -39,6 +40,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 
+@V1Api
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/user-council-fee")

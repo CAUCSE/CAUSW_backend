@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.etc.api.v1.controller;
+package net.causw.app.main.core.global;
 
 import java.time.format.DateTimeParseException;
 
@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.etc.api.v1.dto.ConstraintExceptionDto;
 import net.causw.app.main.domain.etc.api.v1.dto.ExceptionDto;
 import net.causw.global.exception.BadRequestException;
@@ -29,8 +30,8 @@ import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
-@RestControllerAdvice
-public class GlobalExceptionHandler {
+@RestControllerAdvice(annotations = V1Api.class)
+public class GlobalV1ExceptionHandler {
 
 	@ExceptionHandler(value = {MethodArgumentNotValidException.class})
 	@ResponseStatus(HttpStatus.BAD_REQUEST)

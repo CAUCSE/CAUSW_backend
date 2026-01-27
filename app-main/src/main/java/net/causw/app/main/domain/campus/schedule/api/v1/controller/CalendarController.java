@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.campus.schedule.api.v1.dto.CalendarCreateRequestDto;
 import net.causw.app.main.domain.campus.schedule.api.v1.dto.CalendarResponseDto;
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.campus.schedule.api.v1.dto.CalendarUpdateRequestDto;
 import net.causw.app.main.domain.campus.schedule.api.v1.dto.CalendarsResponseDto;
 import net.causw.app.main.domain.campus.schedule.service.v1.CalendarService;
@@ -30,6 +31,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@V1Api
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/calendars")

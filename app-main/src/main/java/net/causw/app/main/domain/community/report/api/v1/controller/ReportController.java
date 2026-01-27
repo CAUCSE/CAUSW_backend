@@ -17,6 +17,7 @@ import net.causw.app.main.domain.community.report.api.v1.dto.ReportCreateRequest
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportCreateResponseDto;
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportedCommentResponseDto;
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportedPostResponseDto;
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportedUserResponseDto;
 import net.causw.app.main.domain.community.report.service.v1.ReportService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
@@ -32,6 +33,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@V1Api
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/reports")

@@ -24,6 +24,7 @@ import net.causw.app.main.domain.community.post.api.v1.dto.PostCreateWithFormReq
 import net.causw.app.main.domain.community.post.api.v1.dto.PostResponseDto;
 import net.causw.app.main.domain.community.post.api.v1.dto.PostSubscribeResponseDto;
 import net.causw.app.main.domain.community.post.api.v1.dto.PostUpdateRequestDto;
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.community.post.api.v1.dto.PostUpdateWithFormRequestDto;
 import net.causw.app.main.domain.community.post.service.v1.PostService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
@@ -39,6 +40,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@V1Api
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/posts")

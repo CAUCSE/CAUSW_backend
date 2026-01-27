@@ -27,6 +27,7 @@ import net.causw.app.main.domain.asset.locker.api.v1.dto.LockerMoveRequestDto;
 import net.causw.app.main.domain.asset.locker.api.v1.dto.LockerRegisterPeriodRequestDto;
 import net.causw.app.main.domain.asset.locker.api.v1.dto.LockerResponseDto;
 import net.causw.app.main.domain.asset.locker.api.v1.dto.LockerUpdateRequestDto;
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.asset.locker.api.v1.dto.LockersResponseDto;
 import net.causw.app.main.domain.asset.locker.service.v1.LockerService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
@@ -35,6 +36,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@V1Api
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/lockers")

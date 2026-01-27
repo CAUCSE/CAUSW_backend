@@ -32,6 +32,7 @@ import net.causw.app.main.domain.user.academic.api.v1.dto.UserAcademicRecordAppl
 import net.causw.app.main.domain.user.academic.api.v1.dto.UserAcademicRecordInfoResponseDto;
 import net.causw.app.main.domain.user.academic.api.v1.dto.UserAcademicRecordListResponseDto;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.user.academic.service.v1.UserAcademicRecordApplicationService;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserAcademicStatusNoteUpdateDto;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
@@ -41,6 +42,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@V1Api
 @RestController
 @RequestMapping("/api/v1/users/academic-record")
 @RequiredArgsConstructor

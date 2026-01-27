@@ -19,6 +19,7 @@ import net.causw.app.main.domain.user.account.api.v1.dto.UserInfoResponseDto;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserInfoSearchConditionDto;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserInfoSummaryResponseDto;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserInfoUpdateRequestDto;
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.user.account.service.v1.GetUserInfoUseCaseService;
 import net.causw.app.main.domain.user.account.service.v1.SearchUserInfoListUseCaseService;
 import net.causw.app.main.domain.user.account.service.v1.UpdateUserInfoUseCaseService;
@@ -33,6 +34,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@V1Api
 @RestController
 @RequestMapping("/api/v1/users-info")
 @RequiredArgsConstructor
