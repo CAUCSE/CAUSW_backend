@@ -77,8 +77,7 @@ public class GlobalV2ExceptionHandler {
 	}
 
 	@ExceptionHandler(value = {BaseRuntimeException.class})
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	public ApiResponse<String> handleBaseRuntimeException(BaseRuntimeException exception) {
+	public ResponseEntity<ApiResponse<Void>> handleBaseRuntimeException(BaseRuntimeException exception) {
 		ErrorCode errorCode = exception.getErrorCode();
 
 		try {
@@ -89,13 +88,14 @@ public class GlobalV2ExceptionHandler {
 			// 로깅
 			logException(httpStatus, errorCode, exception);
 
-			return ApiResponse.error(GlobalErrorCode.BAD_REQUEST);
+			return ResponseEntity.status(httpStatus).body(ApiResponse.error(GlobalErrorCode.BAD_REQUEST));
 
 		} catch (IllegalArgumentException e) {
 			log.error("Invalid HTTP status code {} for ErrorCode {}",
 				errorCode.getHttpStatusCode(), errorCode, e);
 
-			return ApiResponse.error(GlobalErrorCode.BAD_REQUEST.getCode(), exception.getMessage());
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(ApiResponse.error(GlobalErrorCode.BAD_REQUEST.getCode(), exception.getMessage()));
 		}
 	}
 
