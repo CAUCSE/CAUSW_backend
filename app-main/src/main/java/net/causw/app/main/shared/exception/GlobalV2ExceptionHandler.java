@@ -34,7 +34,7 @@ public class GlobalV2ExceptionHandler {
 		BaseResponseCode errorCode = exception.getErrorCode();
 		HttpStatus status = errorCode.getStatus();
 
-		logException(errorCode.getStatus(),errorCode,exception);
+		logException(errorCode.getStatus(), errorCode, exception);
 		// 로깅
 		log.warn("Error occurred - Code: {}, Message: {}", errorCode.getCode(), exception.getMessage());
 
