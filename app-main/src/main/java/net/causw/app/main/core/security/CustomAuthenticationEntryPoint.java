@@ -46,7 +46,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 		// v2 API인지 확인
 		String requestPath = request.getRequestURI();
 		if (requestPath != null && requestPath.startsWith("/api/v2/")) {
-			setV2Response(response, message);
+			setV2Response(response);
 		} else {
 			setV1Response(response, errorCode, message);
 		}
@@ -71,8 +71,8 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 	}
 
 	private void setV2Response(
-		HttpServletResponse response,
-		String message) throws IOException {
+		HttpServletResponse response
+	) throws IOException {
 		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 		response.setContentType("application/json;charset=UTF-8");
 

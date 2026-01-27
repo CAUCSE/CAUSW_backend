@@ -70,18 +70,4 @@ public class ApiResponse<T> {
 	public static <T> ApiResponse<T> error(String code, String message) {
 		return new ApiResponse<>(code, message, null);
 	}
-
-	/**
-	 * 내부 서버 에러 응답 생성
-	 * @param message
-	 * @return
-	 * @param <T>
-	 */
-	public static <T> ApiResponse<T> error(String message) {
-		return new ApiResponse<>(
-			GlobalErrorCode.INTERNAL_SERVER_ERROR.getCode(),
-			message,
-			null
-		);
-	}
 }

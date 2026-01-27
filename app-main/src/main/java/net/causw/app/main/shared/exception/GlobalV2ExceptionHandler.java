@@ -38,42 +38,45 @@ public class GlobalV2ExceptionHandler {
 		return ResponseEntity.status(status)
 			.body(ApiResponse.error(errorCode.getCode(), exception.getMessage()));
 	}
+
 	@ExceptionHandler(value = {MethodArgumentNotValidException.class})
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public ApiResponse<String> handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
 		log.warn("Validation failed: {}", exception.getBindingResult().getAllErrors().get(0).getDefaultMessage());
-		return ApiResponse.error(exception.getBindingResult().getAllErrors().get(0).getDefaultMessage());
+		return ApiResponse.error(GlobalErrorCode.INTERNAL_SERVER_ERROR.getCode(),
+			exception.getBindingResult().getAllErrors().get(0).getDefaultMessage());
 	}
 
 	@ExceptionHandler(value = {BadRequestException.class})
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public ApiResponse<String> handleBadRequestException(BadRequestException exception) {
 		log.warn("Bad request: {} - {}", exception.getErrorCode(), exception.getMessage());
-		return ApiResponse.error(exception.getMessage());
+		return ApiResponse.error(GlobalErrorCode.BAD_REQUEST);
 	}
 
 	@ExceptionHandler(value = {UnauthorizedException.class})
 	@ResponseStatus(HttpStatus.UNAUTHORIZED)
 	public ApiResponse<String> handleUnauthorizedException(UnauthorizedException exception) {
 		log.warn("Unauthorized access: {} - {}", exception.getErrorCode(), exception.getMessage());
-		return ApiResponse.error(exception.getMessage());
+		return ApiResponse.error(GlobalErrorCode.UNAUTHORIZED);
 	}
 
 	@ExceptionHandler(value = {ForbiddenException.class})
 	@ResponseStatus(HttpStatus.FORBIDDEN)
 	public ApiResponse<String> handleForbiddenException(ForbiddenException exception) {
 		log.warn("Access forbidden: {} - {}", exception.getErrorCode(), exception.getMessage());
-		return ApiResponse.error(exception.getMessage());
+		return ApiResponse.error(GlobalErrorCode.FORBIDDEN);
 	}
 
 	@ExceptionHandler(value = {ServiceUnavailableException.class})
 	@ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
 	public ApiResponse<String> handleServiceUnavailableException(ServiceUnavailableException exception) {
 		log.error("Service unavailable: {} - {}", exception.getErrorCode(), exception.getMessage(), exception);
-		return ApiResponse.error(exception.getMessage());
+		return ApiResponse.error(GlobalErrorCode.INTERNAL_SERVER_ERROR);
 	}
 
 	@ExceptionHandler(value = {BaseRuntimeException.class})
+	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	public ApiResponse<String> handleBaseRuntimeException(BaseRuntimeException exception) {
 		ErrorCode errorCode = exception.getErrorCode();
 
@@ -85,13 +88,13 @@ public class GlobalV2ExceptionHandler {
 			// 로깅
 			logException(httpStatus, errorCode, exception);
 
-			return ApiResponse.error(exception.getMessage());
+			return ApiResponse.error(GlobalErrorCode.BAD_REQUEST);
 
 		} catch (IllegalArgumentException e) {
 			log.error("Invalid HTTP status code {} for ErrorCode {}",
 				errorCode.getHttpStatusCode(), errorCode, e);
 
-			return ApiResponse.error("Internal server error");
+			return ApiResponse.error(GlobalErrorCode.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -99,7 +102,7 @@ public class GlobalV2ExceptionHandler {
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	public ApiResponse<String> unknownException(Exception exception) {
 		log.error("Internal server error", exception);
-		return ApiResponse.error("Internal server error");
+		return ApiResponse.error(GlobalErrorCode.INTERNAL_SERVER_ERROR);
 	}
 
 	@ExceptionHandler(HttpMessageNotReadableException.class)
@@ -119,7 +122,7 @@ public class GlobalV2ExceptionHandler {
 			log.warn("HTTP message not readable: {}", ex.getMessage(), ex);
 		}
 
-		return ApiResponse.error(message);
+		return ApiResponse.error(GlobalErrorCode.BAD_REQUEST.getCode(), message);
 	}
 
 	// ErrorCode를 기반으로 HTTP 상태 코드 결정하는 헬퍼 메서드
