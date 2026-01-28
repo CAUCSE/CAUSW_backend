@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,7 +23,8 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * 로컬 파일 시스템 스토리지 업로더 (테스트용)
- * 홈디렉토리/causwfile 에 저장됨
+ * 기본값: 홈디렉토리/causwfile 에 저장됨
+ * application.yml의 storage.local.base-directory 설정으로 경로 변경 가능
  * 운영 환경에서는 사용하지 않음
  */
 @Slf4j
@@ -31,12 +33,18 @@ import lombok.extern.slf4j.Slf4j;
 @Profile("local")
 public class LocalStorageClient implements StorageClient {
 
-	private static final String BASE_DIRECTORY = System.getProperty("user.home") + File.separator + "causwfile";
+	private final String baseDirectory;
+
+	public LocalStorageClient(
+		@Value("${storage.local.base-directory:#{systemProperties['user.home']}/causwfile}") String baseDirectory) {
+		this.baseDirectory = baseDirectory.replace("/", File.separator);
+		log.info("LocalStorageClient initialized with base directory: {}", this.baseDirectory);
+	}
 
 	@Override
 	public StorageResult upload(MultipartFile file, FileMetadata metadata) {
 		String fileKey = metadata.fileKey();
-		Path filePath = Paths.get(BASE_DIRECTORY, fileKey);
+		Path filePath = Paths.get(baseDirectory, fileKey);
 
 		try {
 			Files.createDirectories(filePath.getParent());
@@ -63,7 +71,7 @@ public class LocalStorageClient implements StorageClient {
 
 	@Override
 	public void delete(String fileKey) {
-		Path filePath = Paths.get(BASE_DIRECTORY, fileKey);
+		Path filePath = Paths.get(baseDirectory, fileKey);
 
 		try {
 			File file = filePath.toFile();
