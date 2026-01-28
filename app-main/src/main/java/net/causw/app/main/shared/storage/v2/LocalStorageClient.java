@@ -29,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @MeasureTime
-@Component("localUploader")
+@Component("localClient")
 @Profile("local")
 public class LocalStorageClient implements StorageClient {
 

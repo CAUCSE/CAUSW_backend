@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @MeasureTime
-@Component("s3Uploader")
+@Component("s3Client")
 @Profile("!local")
 @RequiredArgsConstructor
 public class S3StorageClient implements StorageClient {
