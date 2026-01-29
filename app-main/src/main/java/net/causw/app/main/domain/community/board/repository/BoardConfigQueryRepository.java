@@ -4,9 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
-import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
-import net.causw.app.main.domain.community.board.entity.QBoard;
 import net.causw.app.main.domain.community.board.entity.QBoardConfig;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;

@@ -24,19 +24,16 @@ public class BoardService {
 	public BoardListResult getAllBoardList(BoardQueryCondition boardQueryCondition) {
 		List<Board> allBoardList = boardReader.searchBoardList(boardQueryCondition);
 		List<BoardConfig> boardConfigs = boardConfigReader.getAllBoardConfigInBoardIds(
-			allBoardList.stream().map(Board::getId).toList()
-		);
+			allBoardList.stream().map(Board::getId).toList());
 		var boardIdBoardConfigMap = getCollectedMap(boardConfigs);
 
 		return BoardListResult.from(
 			allBoardList,
-			boardIdBoardConfigMap
-		);
+			boardIdBoardConfigMap);
 	}
 
 	private static @NotNull Map<String, BoardConfig> getCollectedMap(List<BoardConfig> boardConfigs) {
 		return boardConfigs.stream().collect(
-			java.util.stream.Collectors.toMap(BoardConfig::getBoardId, boardConfig -> boardConfig)
-		);
+			java.util.stream.Collectors.toMap(BoardConfig::getBoardId, boardConfig -> boardConfig));
 	}
 }

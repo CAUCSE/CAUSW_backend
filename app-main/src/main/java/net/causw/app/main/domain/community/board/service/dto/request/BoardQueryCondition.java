@@ -8,6 +8,5 @@ public record BoardQueryCondition(
 	Boolean isAnonymous,
 	BoardWriteScope writeScope,
 	BoardReadScope readScope,
-	Boolean isNotice
-) {
+	Boolean isNotice) {
 }

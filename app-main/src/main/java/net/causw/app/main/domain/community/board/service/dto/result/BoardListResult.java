@@ -41,14 +41,12 @@ public record BoardListResult(List<BoardAdminResult> boards) {
 
 	public static BoardListResult from(
 		List<Board> boards,
-		Map<String, BoardConfig> boardIdBoardConfigMap
-	) {
+		Map<String, BoardConfig> boardIdBoardConfigMap) {
 		var boardAdminResults = boards.stream()
 			.map(board -> BoardAdminResult.from(
 				boards.indexOf(board) + 1L,
 				board,
-				boardIdBoardConfigMap.get(board.getId())
-			))
+				boardIdBoardConfigMap.get(board.getId())))
 			.toList();
 
 		return BoardListResult.builder()

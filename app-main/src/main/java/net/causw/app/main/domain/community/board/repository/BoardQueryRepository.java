@@ -46,8 +46,7 @@ public class BoardQueryRepository {
 					: null,
 				boardQueryCondition.isNotice() != null
 					? boardConfig.isNotice.eq(boardQueryCondition.isNotice())
-					: null
-			)
+					: null)
 			.orderBy(boardConfig.displayOrder.asc())
 			.fetch();
 	}
