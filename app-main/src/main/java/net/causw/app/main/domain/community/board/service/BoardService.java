@@ -2,6 +2,7 @@ package net.causw.app.main.domain.community.board.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,6 @@ public class BoardService {
 
 	private static @NotNull Map<String, BoardConfig> getCollectedMap(List<BoardConfig> boardConfigs) {
 		return boardConfigs.stream().collect(
-			java.util.stream.Collectors.toMap(BoardConfig::getBoardId, boardConfig -> boardConfig));
+			Collectors.toMap(BoardConfig::getBoardId, boardConfig -> boardConfig));
 	}
 }
