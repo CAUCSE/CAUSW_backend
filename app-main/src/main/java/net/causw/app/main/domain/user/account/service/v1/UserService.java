@@ -33,7 +33,7 @@ import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.repository.UserAcademicRecordApplicationAttachImageRepository;
 import net.causw.app.main.domain.asset.file.repository.UserProfileImageRepository;
-import net.causw.app.main.domain.asset.file.service.v1.UuidFileService;
+import net.causw.app.main.domain.asset.file.service.v1.UuidFileV1Service;
 import net.causw.app.main.domain.asset.locker.entity.LockerLog;
 import net.causw.app.main.domain.asset.locker.enums.LockerLogAction;
 import net.causw.app.main.domain.asset.locker.repository.LockerLogRepository;
@@ -133,7 +133,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserService {
 	private final JwtTokenProvider jwtTokenProvider;
-	private final UuidFileService uuidFileService;
+	private final UuidFileV1Service uuidFileService;
 	private final GoogleMailSender googleMailSender;
 	private final PasswordGenerator passwordGenerator;
 	private final PasswordEncoder passwordEncoder;

@@ -24,7 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
-import net.causw.app.main.domain.asset.file.service.v1.UuidFileService;
+import net.causw.app.main.domain.asset.file.service.v1.UuidFileV1Service;
 import net.causw.app.main.domain.campus.event.api.v1.dto.EventCreateRequestDto;
 import net.causw.app.main.domain.campus.event.api.v1.dto.EventResponseDto;
 import net.causw.app.main.domain.campus.event.api.v1.dto.EventUpdateRequestDto;
@@ -46,7 +46,7 @@ public class EventServiceTest {
 	private EventRepository eventRepository;
 
 	@Mock
-	private UuidFileService uuidFileService;
+	private UuidFileV1Service uuidFileService;
 
 	@Nested
 	@DisplayName("이벤트 리스트 테스트")

@@ -23,7 +23,7 @@ import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.repository.PostAttachImageRepository;
-import net.causw.app.main.domain.asset.file.service.v1.UuidFileService;
+import net.causw.app.main.domain.asset.file.service.v1.UuidFileV1Service;
 import net.causw.app.main.domain.campus.circle.entity.Circle;
 import net.causw.app.main.domain.campus.circle.entity.CircleMember;
 import net.causw.app.main.domain.campus.circle.enums.CircleMemberStatus;
@@ -120,7 +120,7 @@ public class PostService {
 	private final FavoritePostRepository favoritePostRepository;
 	private final PageableFactory pageableFactory;
 	private final Validator validator;
-	private final UuidFileService uuidFileService;
+	private final UuidFileV1Service uuidFileService;
 	private final PostAttachImageRepository postAttachImageRepository;
 	private final FormRepository formRepository;
 	private final BoardNotificationService boardNotificationService;
@@ -149,6 +149,14 @@ public class PostService {
 		return postResponseDto;
 	}
 
+	/**
+	 * 특정 게시판의 게시글 목록 조회 (페이징, 검색 지원)
+	 * @param user 조회하는 사용자
+	 * @param boardId 게시판 ID
+	 * @param keyword 검색 키워드 (제목, 내용 검색)
+	 * @param pageNum 페이지 번호
+	 * @return 게시판 정보와 게시글 목록
+	 */
 	public BoardPostsResponseDto findAllPost(
 		User user,
 		String boardId,
@@ -163,26 +171,33 @@ public class PostService {
 			.consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD)).validate();
 
 		// 동아리 리더 여부 확인
+		// 동아리 리더는 삭제된 게시글도 볼 수 있음
 		boolean isCircleLeader = false;
 		if (roles.contains(Role.LEADER_CIRCLE)) {
 			isCircleLeader = getCircleLeader(board.getCircle()).getId().equals(user.getId());
 		}
 
+		// 차단한 사용자 목록 조회 (차단한 사용자의 게시글 제외)
 		Set<String> blockedUserIds = userBlockEntityService.findBlockeeUserIdsByBlocker(user);
 
+		// 페이징 객체 생성
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
 
+		// 삭제된 게시글 포함 여부 결정
+		// 관리자, 학생회장, 동아리 리더는 삭제된 게시글도 볼 수 있음
 		boolean includeDeleted = isCircleLeader || roles.contains(Role.ADMIN) || roles.contains(Role.PRESIDENT);
 
+		// 게시글 목록 조회 (필터링 및 페이징 적용)
 		Page<PostsResponseDto> posts = postQueryRepository
 			.findPostsByBoardWithFilters(boardId, includeDeleted, blockedUserIds, keyword, pageable)
 			.map(PostDtoMapper.INSTANCE::toPostsResponseDto);
 
+		// 게시판 정보와 게시글 목록을 DTO로 변환
 		return toBoardPostsResponseDto(
 			board,
 			roles,
-			isFavorite(user.getId(), board.getId()),
-			isBoardSubscribed(user, board),
+			isFavorite(user.getId(), board.getId()), // 즐겨찾기 여부
+			isBoardSubscribed(user, board), // 게시판 구독 여부
 			posts);
 	}
 
@@ -209,6 +224,20 @@ public class PostService {
 			posts);
 	}
 
+	/**
+	 * 게시글 생성
+	 *
+	 * 처리 과정:
+	 * 1. 게시글 작성 권한 검증 (역할, 동아리 멤버 여부 등)
+	 * 2. 게시글 저장
+	 * 3. 작성자를 게시글 구독자로 등록
+	 * 4. 게시판 구독자들에게 알림 전송 (비동기)
+	 *
+	 * @param creator 게시글 작성자
+	 * @param postCreateRequestDto 게시글 생성 요청 정보 (제목, 내용, 익명 여부 등)
+	 * @param attachImageList 첨부 이미지 목록
+	 * @return 생성된 게시글 정보
+	 */
 	//게시글이 생성될 때 발생할 일
 	//1. 게시글과 작성자의 구독 매핑 만들기
 	//2. 이 게시글이 작성된 게시판의 구독자 확인하기
@@ -218,12 +247,16 @@ public class PostService {
 		List<MultipartFile> attachImageList) {
 		Set<Role> roles = creator.getRoles();
 
+		// 게시판 조회
 		Board board = getBoard(postCreateRequestDto.getBoardId());
+		// 게시글 작성 가능한 역할 목록 파싱
 		List<String> createRoles = new ArrayList<>(Arrays.asList(board.getCreateRoles().split(",")));
 
+		// 첨부 이미지 저장
 		List<UuidFile> uuidFileList = (attachImageList == null || attachImageList.isEmpty()) ? new ArrayList<>()
 			: uuidFileService.saveFileList(attachImageList, FilePath.POST);
 
+		// 게시글 엔티티 생성
 		Post post = Post.of(
 			postCreateRequestDto.getTitle(),
 			postCreateRequestDto.getContent(),
@@ -234,49 +267,56 @@ public class PostService {
 			null,
 			uuidFileList);
 
+		// 익명 게시글 허용 여부 검증
 		validateAnonymousAllowed(board, postCreateRequestDto.getIsAnonymous());
 
+		// 유효성 검사 버킷 초기화
 		ValidatorBucket validatorBucket = ValidatorBucket.of();
 		validatorBucket
-			.consistOf(UserStateValidator.of(creator.getState()))
-			.consistOf(UserRoleIsNoneValidator.of(roles))
-			.consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD))
-			.consistOf(UserRoleValidator.of(
+			.consistOf(UserStateValidator.of(creator.getState())) // 사용자 상태 검증
+			.consistOf(UserRoleIsNoneValidator.of(roles)) // 역할이 NONE인지 검증
+			.consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD)) // 게시판 삭제 여부 검증
+			.consistOf(UserRoleValidator.of( // 게시글 작성 권한 검증
 				roles,
 				createRoles.stream()
 					.map(Role::of)
 					.collect(Collectors.toSet())));
 
+		// 동아리 게시판인 경우 추가 검증
 		Optional<Circle> circles = Optional.ofNullable(board.getCircle());
 		circles
 			.filter(circle -> !roles.contains(Role.ADMIN) && !roles.contains(Role.PRESIDENT) && !roles.contains(
 				Role.VICE_PRESIDENT))
 			.ifPresent(
 				circle -> {
+					// 동아리 멤버 조회
 					CircleMember member = getCircleMember(creator.getId(), circle.getId());
 
 					validatorBucket
-						.consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-						.consistOf(CircleMemberStatusValidator.of(
+						.consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE)) // 동아리 삭제 여부
+						.consistOf(CircleMemberStatusValidator.of( // 동아리 멤버 상태 검증
 							member.getStatus(),
 							List.of(CircleMemberStatus.MEMBER)));
 
+					// 동아리장이 COMMON 역할이 아닌 게시판에 작성하는 경우
 					if (roles.contains(Role.LEADER_CIRCLE) && !createRoles.contains("COMMON")) {
 						validatorBucket
-							.consistOf(UserEqualValidator.of(
+							.consistOf(UserEqualValidator.of( // 동아리장 본인 확인
 								getCircleLeader(circle).getId(),
 								creator.getId()));
 					}
 				});
 		validatorBucket
-			.consistOf(ConstraintValidator.of(post, this.validator))
+			.consistOf(ConstraintValidator.of(post, this.validator)) // Bean Validation 검증
 			.validate();
 
+		// 게시글 저장
 		PostCreateResponseDto postCreateResponseDto = toPostCreateResponseDto(postRepository.save(post));
 
+		// 1. 작성자를 게시글 구독자로 등록 (댓글 알림 받기 위함)
 		createPostSubscribe(creator, post.getId());
 
-		//2. 작성된 게시판의 구독자에게 알람 보내기
+		// 2. 게시판 구독자들에게 알림 전송 (비동기 처리)
 		boardNotificationService.sendByBoardIsSubscribed(board, post);
 
 		return postCreateResponseDto;
@@ -369,12 +409,19 @@ public class PostService {
 		return toPostCreateResponseDto(postRepository.save(post));
 	}
 
+	/**
+	 * 게시글 삭제 (소프트 삭제)
+	 * 실제로 데이터를 삭제하지 않고 isDeleted 플래그를 true로 설정
+	 * @param deleter 삭제하는 사용자
+	 * @param postId 삭제할 게시글 ID
+	 */
 	@Transactional
 	public void deletePost(User deleter, String postId) {
 		Post post = getPost(postId);
 		Set<Role> roles = deleter.getRoles();
 
 		ValidatorBucket validatorBucket = ValidatorBucket.of();
+		// 앱 공지사항 게시판은 특별 권한 검증
 		if (post.getBoard().getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
 			// 관리자 역할이 없고, 게시글의 작성자가 아니면 오류 발생
 			if (roles.stream()
@@ -386,10 +433,11 @@ public class PostService {
 			}
 		}
 		validatorBucket
-			.consistOf(UserStateValidator.of(deleter.getState()))
-			.consistOf(UserRoleIsNoneValidator.of(roles))
-			.consistOf(TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST));
+			.consistOf(UserStateValidator.of(deleter.getState())) // 사용자 상태 검증
+			.consistOf(UserRoleIsNoneValidator.of(roles)) // 역할이 NONE인지 검증
+			.consistOf(TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST)); // 이미 삭제되지 않았는지 검증
 
+		// 동아리 게시판인 경우 추가 검증
 		Optional<Circle> circles = Optional.ofNullable(post.getBoard().getCircle());
 		circles
 			.filter(circle -> !roles.contains(Role.ADMIN) && !roles.contains(Role.PRESIDENT) && !roles.contains(
@@ -403,12 +451,13 @@ public class PostService {
 						.consistOf(CircleMemberStatusValidator.of(
 							member.getStatus(),
 							List.of(CircleMemberStatus.MEMBER)))
-						.consistOf(ContentsAdminValidator.of(
+						.consistOf(ContentsAdminValidator.of( // 작성자 또는 동아리장인지 검증
 							roles,
 							deleter.getId(),
 							post.getWriter().getId(),
 							List.of(Role.LEADER_CIRCLE)));
 
+					// 동아리장이 다른 사람의 글을 삭제하는 경우
 					if (roles.contains(Role.LEADER_CIRCLE) && !post.getWriter().getId().equals(deleter.getId())) {
 						validatorBucket
 							.consistOf(UserEqualValidator.of(
@@ -424,9 +473,18 @@ public class PostService {
 						List.of())));
 		validatorBucket.validate();
 
+		// 소프트 삭제 처리
 		post.setIsDeleted(true);
 	}
 
+	/**
+	 * 게시글 수정 (일반 게시글)
+	 * @param updater 수정하는 사용자
+	 * @param postId 수정할 게시글 ID
+	 * @param postUpdateRequestDto 수정할 내용
+	 * @param attachImageList 첨부 이미지 목록
+	 * @return 수정된 게시글 정보
+	 */
 	@Transactional
 	public PostResponseDto updatePost(
 		User updater,
@@ -436,6 +494,7 @@ public class PostService {
 		Set<Role> roles = updater.getRoles();
 		Post post = getPost(postId);
 
+		// 권한 검증
 		ValidatorBucket validatorBucket = initializeValidator(updater, post.getBoard());
 		if (post.getBoard().getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
 			validatorBucket
@@ -444,10 +503,10 @@ public class PostService {
 					Set.of()));
 		}
 		validatorBucket
-			.consistOf(PostNumberOfAttachmentsValidator.of(attachImageList))
+			.consistOf(PostNumberOfAttachmentsValidator.of(attachImageList)) // 첨부파일 개수 검증
 			.consistOf(TargetIsDeletedValidator.of(post.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
 			.consistOf(TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST))
-			.consistOf(ContentsAdminValidator.of(
+			.consistOf(ContentsAdminValidator.of( // 작성자 본인인지 검증
 				roles,
 				updater.getId(),
 				post.getWriter().getId(),
@@ -455,24 +514,29 @@ public class PostService {
 			.consistOf(ConstraintValidator.of(post, this.validator));
 		validatorBucket.validate();
 
-		// post는 이미지가 nullable임 -> 이미지 null로 요청 시 기존 이미지 삭제
+		// 첨부 이미지 처리 (이미지 null로 요청 시 기존 이미지 삭제)
 		List<PostAttachImage> postAttachImageList = new ArrayList<>();
 
 		if (!attachImageList.isEmpty()) {
+			// 기존 이미지 삭제 후 새 이미지 저장
 			postAttachImageList = uuidFileService.updateFileList(
 				post.getPostAttachImageList().stream().map(PostAttachImage::getUuidFile).collect(Collectors.toList()),
 				attachImageList, FilePath.POST).stream()
 				.map(uuidFile -> PostAttachImage.of(post, uuidFile))
 				.toList();
 		} else {
+			// 기존 이미지 모두 삭제
 			uuidFileService.deleteFileList(
 				post.getPostAttachImageList().stream().map(PostAttachImage::getUuidFile).collect(Collectors.toList()));
 		}
 
+		// 기존 첨부 이미지 연결 삭제
 		postAttachImageRepository.deleteAll(post.getPostAttachImageList());
 
+		// 기존 폼 삭제
 		formRepository.delete(post.getForm());
 
+		// 게시글 업데이트
 		post.update(
 			postUpdateRequestDto.getTitle(),
 			postUpdateRequestDto.getContent(),
@@ -693,35 +757,52 @@ public class PostService {
 		return PostDtoMapper.INSTANCE.toPostSubscribeResponseDto(subscription);
 	}
 
+	/**
+	 * 사용자가 게시글에 좋아요를 눌렀는지 확인
+	 */
 	private Boolean isPostLiked(User user, String postId) {
 		return likePostRepository.existsByPostIdAndUserId(postId, user.getId());
 	}
 
+	/**
+	 * 사용자가 게시글을 즐겨찾기했는지 확인
+	 */
 	private Boolean isPostAlreadyFavorite(User user, String postId) {
 		return favoritePostRepository.existsByPostIdAndUserId(postId, user.getId());
 	}
 
+	/**
+	 * 게시글이 삭제되었는지 확인
+	 */
 	private Boolean isPostDeleted(Post post) {
 		return post.getIsDeleted();
 	}
 
+	/**
+	 * 사용자 권한 및 게시판 접근 권한을 검증하는 ValidatorBucket 초기화
+	 * @param user 검증할 사용자
+	 * @param board 접근하려는 게시판
+	 * @return 초기화된 ValidatorBucket
+	 */
 	private ValidatorBucket initializeValidator(User user, Board board) {
 		Set<Role> roles = user.getRoles();
 		ValidatorBucket validatorBucket = ValidatorBucket.of();
 		validatorBucket
-			.consistOf(UserStateValidator.of(user.getState()))
-			.consistOf(UserRoleIsNoneValidator.of(roles));
+			.consistOf(UserStateValidator.of(user.getState())) // 사용자 상태 검증
+			.consistOf(UserRoleIsNoneValidator.of(roles)); // 역할이 NONE인지 검증
 
+		// 동아리 게시판인 경우 추가 검증
 		Optional<Circle> circles = Optional.ofNullable(board.getCircle());
 		circles
 			.filter(circle -> !roles.contains(Role.ADMIN) && !roles.contains(Role.PRESIDENT) && !roles.contains(
 				Role.VICE_PRESIDENT))
 			.ifPresent(
 				circle -> {
+					// 동아리 멤버인지 확인
 					CircleMember member = getCircleMember(user.getId(), circle.getId());
 					validatorBucket
 						.consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-						.consistOf(CircleMemberStatusValidator.of(
+						.consistOf(CircleMemberStatusValidator.of( // 동아리 멤버 상태 검증
 							member.getStatus(),
 							List.of(CircleMemberStatus.MEMBER)));
 				});
@@ -1004,6 +1085,7 @@ public class PostService {
 	/**
 	 * 게시글의 글쓴이가 삭제된 사용자인지 유효성 검사
 	 * @param post 게시글
+	 * @throws BadRequestException 작성자가 삭제된 사용자인 경우
 	 */
 	private void validateWriterNotDeleted(final Post post) {
 		ValidatorBucket validatorBucket = ValidatorBucket.of();
@@ -1016,6 +1098,7 @@ public class PostService {
 	 * 익명 글이 허용되지 않는 게시판에서 익명 글 작성 시 예외 처리
 	 * @param board  글이 작성될 게시판
 	 * @param isAnonymous 익명 글 여부
+	 * @throws BadRequestException 익명 글이 허용되지 않는 게시판에서 익명 글 작성 시도 시
 	 */
 	private void validateAnonymousAllowed(Board board, boolean isAnonymous) {
 		if (!board.getIsAnonymousAllowed() && isAnonymous) {
@@ -1025,11 +1108,24 @@ public class PostService {
 		}
 	}
 
+	/**
+	 * 게시글이 즐겨찾기 되어있는지 확인
+	 */
 	// 게시글이 즐겨찾기 되어있는지 확인
 	private Boolean isPostFavorited(User user, String postId) {
 		return favoritePostRepository.existsByPostIdAndUserId(postId, user.getId());
 	}
 
+	/**
+	 * 화면에 표시할 작성자 닉네임 설정
+	 * - 비활성/탈퇴/삭제 유저: "비활성 유저"
+	 * - 익명 게시글: "익명"
+	 * - 일반 게시글: 원래 닉네임
+	 * @param writer 작성자
+	 * @param isAnonymous 익명 여부
+	 * @param originalNickname 원래 닉네임
+	 * @return 화면에 표시할 닉네임
+	 */
 	// 화면에 표시할 작성자 닉네임 설정 (닉네임 / 비활성 유저 / 익명)
 	public String getDisplayWriterNickname(User writer, Boolean isAnonymous, String originalNickname) {
 		if (writer != null && List.of(UserState.INACTIVE, UserState.DROP, UserState.DELETED)
