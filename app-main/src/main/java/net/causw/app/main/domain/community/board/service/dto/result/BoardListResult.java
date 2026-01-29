@@ -2,6 +2,7 @@ package net.causw.app.main.domain.community.board.service.dto.result;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
@@ -42,11 +43,12 @@ public record BoardListResult(List<BoardAdminResult> boards) {
 	public static BoardListResult from(
 		List<Board> boards,
 		Map<String, BoardConfig> boardIdBoardConfigMap) {
-		var boardAdminResults = boards.stream()
-			.map(board -> BoardAdminResult.from(
-				boards.indexOf(board) + 1L,
-				board,
-				boardIdBoardConfigMap.get(board.getId())))
+		var boardAdminResults = IntStream.range(0, boards.size())
+			.mapToObj(i -> BoardAdminResult.from(
+				(long)i + 1,
+				boards.get(i),
+				boardIdBoardConfigMap.get(boards.get(i).getId())
+			))
 			.toList();
 
 		return BoardListResult.builder()
