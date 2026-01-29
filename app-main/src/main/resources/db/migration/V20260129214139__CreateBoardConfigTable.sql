@@ -1,5 +1,5 @@
 CREATE TABLE tb_board_config (
-    id varchar(255) NOT NULL,
+    id varchar(36) NOT NULL PRIMARY KEY,
     board_id VARCHAR(255) NOT NULL,
     is_anonymous BOOLEAN NOT NULL,
     read_scope VARCHAR(50) NOT NULL,
