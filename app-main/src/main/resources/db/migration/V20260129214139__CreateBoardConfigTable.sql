@@ -12,3 +12,15 @@ CREATE TABLE tb_board_config (
 
 ALTER TABLE tb_board_config
 ADD CONSTRAINT uq_board_id UNIQUE (board_id);
+
+ALTER TABLE tb_board_config
+    ADD CONSTRAINT chk_read_scope
+        CHECK (read_scope IN ('ENROLLED', 'GRADUATED', 'BOTH'));
+
+ALTER TABLE tb_board_config
+    ADD CONSTRAINT chk_write_scope
+        CHECK (write_scope IN ('ONLY_ADMIN', 'ALL_USER'));
+
+ALTER TABLE tb_board_config
+    ADD CONSTRAINT chk_visibility
+        CHECK (visibility IN ('VISIBLE', 'HIDDEN'));

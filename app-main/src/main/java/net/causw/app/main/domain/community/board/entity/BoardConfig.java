@@ -4,6 +4,8 @@ import net.causw.app.main.shared.entity.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -25,14 +27,17 @@ public class BoardConfig extends BaseEntity {
 	private boolean isAnonymous;
 
 	@Column(name = "read_scope", nullable = false)
+	@Enumerated(EnumType.STRING)
 	private BoardReadScope readScope;
 
 	@Column(name = "write_scope", nullable = false)
+	@Enumerated(EnumType.STRING)
 	private BoardWriteScope writeScope;
 
 	@Column(name = "is_notice", nullable = false)
 	private boolean isNotice;
 
 	@Column(name = "visibility", nullable = false)
+	@Enumerated(EnumType.STRING)
 	private BoardVisibility visibility;
 }
