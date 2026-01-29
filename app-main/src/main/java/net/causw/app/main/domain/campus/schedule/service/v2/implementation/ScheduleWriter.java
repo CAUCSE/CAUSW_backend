@@ -5,7 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.campus.schedule.entity.Schedule;
 import net.causw.app.main.domain.campus.schedule.repository.ScheduleRepository;
-import net.causw.app.main.domain.campus.schedule.service.v2.dto.ScheduleCreateDto;
+import net.causw.app.main.domain.campus.schedule.service.v2.dto.ScheduleDto;
 import net.causw.app.main.domain.campus.schedule.util.ScheduleMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -22,8 +22,8 @@ public class ScheduleWriter {
 	 * @param dto 일정 생성 DTO
 	 * @return 생성된 Schedule Entity
 	 */
-	public Schedule create(ScheduleCreateDto dto) {
-		Schedule schedule = ScheduleMapper.fromCreateDto(dto);
+	public Schedule create(ScheduleDto dto) {
+		Schedule schedule = ScheduleMapper.from(dto);
 		return scheduleRepository.save(schedule);
 	}
 

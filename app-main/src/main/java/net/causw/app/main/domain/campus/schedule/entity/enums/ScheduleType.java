@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.campus.schedule.enums;
+package net.causw.app.main.domain.campus.schedule.entity.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

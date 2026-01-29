@@ -2,12 +2,14 @@ package net.causw.app.main.domain.campus.schedule.entity;
 
 import java.time.LocalDateTime;
 
-import net.causw.app.main.domain.campus.schedule.enums.ScheduleType;
+import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.entity.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
@@ -29,6 +31,7 @@ public class Schedule extends BaseEntity {
 	private String title;
 
 	@Column(name = "type", nullable = false)
+	@Enumerated(EnumType.STRING)
 	private ScheduleType type;
 
 	@Column(name = "start", nullable = false)
