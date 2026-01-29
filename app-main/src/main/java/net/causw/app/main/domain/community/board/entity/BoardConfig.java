@@ -21,6 +21,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "tb_board_config")
 public class BoardConfig extends BaseEntity {
 
+	@Column(name = "board_id", nullable = false, unique = true)
 	private String boardId;
 
 	@Column(name = "is_anonymous", nullable = false)
