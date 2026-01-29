@@ -47,8 +47,7 @@ public record BoardListResult(List<BoardAdminResult> boards) {
 			.mapToObj(i -> BoardAdminResult.from(
 				(long)i + 1,
 				boards.get(i),
-				boardIdBoardConfigMap.get(boards.get(i).getId())
-			))
+				boardIdBoardConfigMap.get(boards.get(i).getId())))
 			.toList();
 
 		return BoardListResult.builder()
