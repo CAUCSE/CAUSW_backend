@@ -36,7 +36,7 @@ import net.causw.global.exception.BadRequestException;
 public class BoardServiceTest {
 
 	@InjectMocks
-	private BoardService boardService;
+	private BoardV1Service boardService;
 
 	@Mock
 	private BoardRepository boardRepository;
