@@ -1,6 +1,6 @@
 CREATE TABLE tb_board_config (
     id varchar(36) NOT NULL PRIMARY KEY,
-    board_id VARCHAR(255) NOT NULL,
+    board_id VARCHAR(36) NOT NULL,
     is_anonymous BOOLEAN NOT NULL,
     read_scope VARCHAR(50) NOT NULL,
     write_scope VARCHAR(50) NOT NULL,
