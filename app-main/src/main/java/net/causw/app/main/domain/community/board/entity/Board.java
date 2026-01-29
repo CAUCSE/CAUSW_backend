@@ -43,6 +43,9 @@ public class Board extends BaseEntity {
 	private String description;
 
 	@Column(name = "create_role_list", nullable = false)
+	/**
+	 * @deprecated v1 게시판 관리 권한 목록 필드, v2에서는 사용되지 않음
+	 */
 	private String createRoles;
 
 	@Column(name = "category", nullable = false)
@@ -55,25 +58,43 @@ public class Board extends BaseEntity {
 
 	@Column(name = "is_default", nullable = false)
 	@ColumnDefault("false")
+	/**
+	 * @deprecated v1 게시판 기본홈 노출 여부 필드, v2에서는 사용되지 않음
+	 */
 	private Boolean isDefault;
 
 	@Column(name = "is_alumni", nullable = false)
 	@ColumnDefault("false")
+	/**
+	 * @deprecated v1 졸업생 기본홈 노출 여부 필드, v2에서는 사용되지 않음
+	 */
 	private Boolean isAlumni;
 
 	@Column(name = "is_home", nullable = false)
 	@ColumnDefault("false")
+	/**
+	 * @deprecated v1 게시판 홈 노출 여부 필드, v2에서는 사용되지 않음
+	 */
 	private Boolean isHome;
 
 	@Column(name = "is_anonymous_allowed", nullable = false)
 	@ColumnDefault("false")
+	/**
+	 * @deprecated v1 게시판 기본홈 노출 여부 필드, v2에서는 사용되지 않음
+	 */
 	private Boolean isAnonymousAllowed;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "circle_id", nullable = true)
+	/**
+	 * @deprecated v1 동아리 연동 게시판 필드, v2에서는 사용되지 않음
+	 */
 	private Circle circle;
 
 	@OneToMany(mappedBy = "board", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+	/**
+	 * @deprecated v1에서 사용되는 post set, v2에서는 사용되지 않음
+	 */
 	private Set<Post> postSet;
 
 	@Column(name = "is_default_notice", nullable = false)
