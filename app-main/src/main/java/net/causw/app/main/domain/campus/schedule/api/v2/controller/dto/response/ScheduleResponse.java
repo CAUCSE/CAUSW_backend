@@ -8,6 +8,7 @@ import lombok.Builder;
 
 @Builder
 public record ScheduleResponse(
+	String id,
 	String title,
 	ScheduleType type,
 	LocalDateTime start,

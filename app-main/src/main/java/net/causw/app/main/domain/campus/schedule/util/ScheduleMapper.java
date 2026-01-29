@@ -19,6 +19,7 @@ public class ScheduleMapper {
 
 	public static ScheduleDto to(Schedule schedule) {
 		return ScheduleDto.builder()
+			.id(schedule.getId())
 			.title(schedule.getTitle())
 			.type(schedule.getType())
 			.start(schedule.getStart())

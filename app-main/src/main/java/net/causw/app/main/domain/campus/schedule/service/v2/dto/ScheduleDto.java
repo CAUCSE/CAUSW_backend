@@ -9,6 +9,7 @@ import lombok.Builder;
 
 @Builder
 public record ScheduleDto(
+	String id,
 	String title,
 	ScheduleType type,
 	LocalDateTime start,
