@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.notification.notification.api.v1.dto.NotificationCountResponseDto;
 import net.causw.app.main.domain.notification.notification.api.v1.dto.NotificationResponseDto;
 import net.causw.app.main.domain.notification.notification.service.v1.NotificationLogService;
@@ -21,6 +22,7 @@ import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 
+@V1Api
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/notifications/log")

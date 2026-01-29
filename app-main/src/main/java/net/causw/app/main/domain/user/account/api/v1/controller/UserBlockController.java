@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.user.account.api.v1.dto.response.CreateBlockByChildCommentResponseDto;
 import net.causw.app.main.domain.user.account.api.v1.dto.response.CreateBlockByCommentResponseDto;
 import net.causw.app.main.domain.user.account.api.v1.dto.response.CreateBlockByPostResponseDto;
@@ -21,6 +22,7 @@ import net.causw.app.main.domain.user.relation.service.v1.BlockByPostUseCaseServ
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 
+@V1Api
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = "/api/v1/blocks", produces = APPLICATION_JSON_VALUE)

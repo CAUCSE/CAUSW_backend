@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.finance.usercouncilfee.api.v1.dto.CreateUserCouncilFeeWithFakeUserRequestDto;
 import net.causw.app.main.domain.finance.usercouncilfee.api.v1.dto.CreateUserCouncilFeeWithUserRequestDto;
 import net.causw.app.main.domain.finance.usercouncilfee.api.v1.dto.CurrentUserCouncilFeeResponseDto;
@@ -39,6 +40,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 
+@V1Api
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/user-council-fee")
