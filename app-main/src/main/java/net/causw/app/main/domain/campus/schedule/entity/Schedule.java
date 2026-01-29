@@ -51,4 +51,12 @@ public class Schedule extends BaseEntity {
 			.build();
 	}
 
+	public void update(String title, ScheduleType type, LocalDateTime start, LocalDateTime end, User creator) {
+		this.title = title;
+		this.type = type;
+		this.start = start;
+		this.end = end;
+		this.creator = creator;
+	}
+
 }
