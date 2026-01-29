@@ -6,6 +6,7 @@ CREATE TABLE tb_board_config (
     write_scope VARCHAR(50) NOT NULL,
     is_notice BOOLEAN NOT NULL,
     visibility VARCHAR(50) NOT NULL,
+    display_order INT DEFAULT 0,
     created_at datetime(6) DEFAULT NULL,
     updated_at datetime(6) DEFAULT NULL
 );

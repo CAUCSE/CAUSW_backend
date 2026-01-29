@@ -1,5 +1,7 @@
 package net.causw.app.main.domain.community.board.entity;
 
+import org.checkerframework.checker.units.qual.C;
+
 import net.causw.app.main.shared.entity.BaseEntity;
 
 import jakarta.persistence.Column;
@@ -40,4 +42,7 @@ public class BoardConfig extends BaseEntity {
 	@Column(name = "visibility", nullable = false)
 	@Enumerated(EnumType.STRING)
 	private BoardVisibility visibility;
+
+	@Column(name = "display_order", nullable = false)
+	private Integer displayOrder;
 }

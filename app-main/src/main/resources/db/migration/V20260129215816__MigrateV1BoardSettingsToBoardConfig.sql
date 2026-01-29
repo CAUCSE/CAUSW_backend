@@ -7,6 +7,7 @@ INSERT INTO tb_board_config (
     write_scope,
     is_notice,
     visibility,
+    display_order,
     created_at,
     updated_at
 )
@@ -31,6 +32,8 @@ SELECT
         WHEN b.is_deleted = true THEN 'HIDDEN'
         ELSE 'VISIBLE'
         END AS visibility,
+
+    ROW_NUMBER() OVER (ORDER BY b.created_at) * 10 AS display_order,
 
     NOW(6),
     NOW(6)
