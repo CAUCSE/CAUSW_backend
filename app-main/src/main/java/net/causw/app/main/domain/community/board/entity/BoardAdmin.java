@@ -32,4 +32,11 @@ public class BoardAdmin extends BaseEntityWithoutId {
 
 	@Column(name = "user_id", nullable = false)
 	private String userId;
+
+	public static BoardAdmin of(String boardId, String userId) {
+		return BoardAdmin.builder()
+			.boardId(boardId)
+			.userId(userId)
+			.build();
+	}
 }

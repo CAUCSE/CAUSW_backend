@@ -6,14 +6,18 @@ import java.util.stream.Collectors;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
+import net.causw.app.main.domain.community.board.service.dto.request.BoardConfigUpdateCommand;
 import net.causw.app.main.domain.community.board.service.dto.request.BoardQueryCondition;
 import net.causw.app.main.domain.community.board.service.dto.result.BoardConfigEditResult;
 import net.causw.app.main.domain.community.board.service.dto.result.BoardConfigListResult;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
+import net.causw.app.main.domain.community.board.service.implementation.BoardConfigWriter;
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
+import net.causw.app.main.domain.community.board.service.implementation.BoardWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 
@@ -24,6 +28,8 @@ import lombok.RequiredArgsConstructor;
 public class BoardService {
 	private final BoardReader boardReader;
 	private final BoardConfigReader boardConfigReader;
+	private final BoardWriter boardWriter;
+	private final BoardConfigWriter boardConfigWriter;
 	private final UserReader userReader;
 
 	/**
@@ -55,6 +61,21 @@ public class BoardService {
 		List<User> adminUsers = userReader.getUsersByIds(adminIds);
 
 		return BoardConfigEditResult.from(board, boardConfig, adminUsers);
+	}
+
+	/**
+	 * 게시판 설정 수정
+	 * @param boardId 경로의 게시판 아이디
+	 * @param command 수정할 게시판 설정
+	 */
+	@Transactional
+	public void updateBoard(String boardId, BoardConfigUpdateCommand command) {
+		Board board = boardReader.getById(boardId);
+		BoardConfig boardConfig = boardConfigReader.getByBoardId(boardId);
+
+		boardWriter.updateBoard(board, command);
+		boardConfigWriter.updateBoardConfig(boardConfig, command);
+		boardConfigWriter.replaceAdmins(boardId, command.adminUserIds());
 	}
 
 	private static @NotNull Map<String, BoardConfig> getCollectedMap(List<BoardConfig> boardConfigs) {
