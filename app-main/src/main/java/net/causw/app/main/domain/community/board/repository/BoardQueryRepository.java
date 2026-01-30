@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.community.board.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
@@ -48,6 +49,20 @@ public class BoardQueryRepository {
 					? boardConfig.isNotice.eq(boardQueryCondition.isNotice())
 					: null)
 			.orderBy(boardConfig.displayOrder.asc())
+			.where(board.isDeleted.eq(false))
 			.fetch();
+	}
+
+	/**
+	 * 게시판 아이디로 게시판을 조회합니다.
+	 * @param boardId 게시판 아이디
+	 * @return 게시판 엔티티 (optional)
+	 */
+	public Optional<Board> findById(String boardId) {
+
+		return Optional.ofNullable(jpaQueryFactory
+			.selectFrom(QBoard.board)
+			.where(QBoard.board.id.eq(boardId))
+			.fetchOne());
 	}
 }
