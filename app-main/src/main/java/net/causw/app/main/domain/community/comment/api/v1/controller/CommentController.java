@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.community.comment.api.v1.dto.CommentCreateRequestDto;
 import net.causw.app.main.domain.community.comment.api.v1.dto.CommentResponseDto;
 import net.causw.app.main.domain.community.comment.api.v1.dto.CommentSubscribeResponseDto;
@@ -31,6 +32,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@V1Api
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/comments")

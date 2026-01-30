@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserInfoResponseDto;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserInfoSearchConditionDto;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserInfoSummaryResponseDto;
@@ -33,6 +34,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@V1Api
 @RestController
 @RequestMapping("/api/v1/users-info")
 @RequiredArgsConstructor

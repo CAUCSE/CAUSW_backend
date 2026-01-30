@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.campus.circle.api.v1.dto.CircleResponseDto;
 import net.causw.app.main.domain.etc.api.v1.dto.DuplicatedCheckResponseDto;
 import net.causw.app.main.domain.user.account.api.v1.dto.BatchRegisterResponseDto;
@@ -64,6 +65,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@V1Api
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor

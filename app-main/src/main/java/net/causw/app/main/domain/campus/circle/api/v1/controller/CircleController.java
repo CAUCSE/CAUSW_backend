@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.campus.circle.api.v1.dto.CircleBoardsResponseDto;
 import net.causw.app.main.domain.campus.circle.api.v1.dto.CircleCreateRequestDto;
 import net.causw.app.main.domain.campus.circle.api.v1.dto.CircleMemberResponseDto;
@@ -51,6 +52,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 
+@V1Api
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/circles")

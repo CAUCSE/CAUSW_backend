@@ -13,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
-import net.causw.app.main.domain.asset.file.service.v1.UuidFileService;
+import net.causw.app.main.domain.asset.file.service.v1.UuidFileV1Service;
 import net.causw.app.main.domain.community.ceremony.api.v1.dto.CeremonyNotificationSettingResponseDto;
 import net.causw.app.main.domain.community.ceremony.api.v1.dto.CeremonyResponseDto;
 import net.causw.app.main.domain.community.ceremony.api.v1.dto.CreateCeremonyNotificationSettingDto;
@@ -48,7 +48,7 @@ public class CeremonyService {
 	private final CeremonyRepository ceremonyRepository;
 	private final UserRepository userRepository;
 	private final CeremonyNotificationService ceremonyNotificationService;
-	private final UuidFileService uuidFileService;
+	private final UuidFileV1Service uuidFileService;
 	private final CeremonyNotificationSettingRepository ceremonyNotificationSettingRepository;
 	private final PageableFactory pageableFactory;
 

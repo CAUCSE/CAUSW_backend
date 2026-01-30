@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.community.post.api.v1.dto.BoardPostsResponseDto;
 import net.causw.app.main.domain.community.post.api.v1.dto.PostCreateRequestDto;
 import net.causw.app.main.domain.community.post.api.v1.dto.PostCreateResponseDto;
@@ -39,6 +40,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@V1Api
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/posts")

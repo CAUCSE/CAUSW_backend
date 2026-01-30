@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.community.comment.api.v1.dto.ChildCommentCreateRequestDto;
 import net.causw.app.main.domain.community.comment.api.v1.dto.ChildCommentResponseDto;
 import net.causw.app.main.domain.community.comment.api.v1.dto.ChildCommentUpdateRequestDto;
@@ -27,6 +28,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@V1Api
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/child-comments")

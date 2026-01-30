@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.campus.semester.api.v1.dto.CreateSemesterRequestDto;
 import net.causw.app.main.domain.campus.semester.api.v1.dto.CurrentSemesterResponseDto;
 import net.causw.app.main.domain.campus.semester.service.v1.SemesterService;
@@ -22,6 +23,7 @@ import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 
+@V1Api
 @RestController
 @RequestMapping("/api/v1/semesters")
 @RequiredArgsConstructor

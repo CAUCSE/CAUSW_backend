@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.campus.semester.api.v1.dto.CurrentSemesterResponseDto;
 import net.causw.app.main.domain.campus.semester.service.v1.SemesterService;
 import net.causw.app.main.domain.user.academic.api.v1.dto.CreateUserAcademicRecordApplicationRequestDto;
@@ -41,6 +42,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@V1Api
 @RestController
 @RequestMapping("/api/v1/users/academic-record")
 @RequiredArgsConstructor

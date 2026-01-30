@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.campus.event.api.v1.dto.EventCreateRequestDto;
 import net.causw.app.main.domain.campus.event.api.v1.dto.EventResponseDto;
 import net.causw.app.main.domain.campus.event.api.v1.dto.EventUpdateRequestDto;
@@ -27,6 +28,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@V1Api
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/events")

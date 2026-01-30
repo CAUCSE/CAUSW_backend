@@ -1,4 +1,4 @@
-package net.causw.app.main.shared.storage;
+package net.causw.app.main.shared.storage.v1;
 
 import java.io.IOException;
 import java.io.InputStream;
