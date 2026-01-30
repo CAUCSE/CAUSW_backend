@@ -15,7 +15,13 @@ import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
 public interface ScheduleRepository extends JpaRepository<Schedule, String> {
 
 	// 기간에 걸치는 Schedule 조회 (여러 타입 지원)
-	@Query("SELECT s FROM Schedule s WHERE s.start <= :to AND s.end >= :from AND (:types IS NULL OR s.type IN :types)")
+	@Query("""
+		SELECT s FROM Schedule s
+		WHERE s.start <= :to
+		AND s.end >= :from
+		AND (:types IS NULL OR s.type IN :types)
+		ORDER BY s.start, s.end
+		""")
 	List<Schedule> findAllByCondition(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to,
 		@Param("types") List<ScheduleType> types);
 }
