@@ -79,6 +79,17 @@ public class BoardService {
 		boardConfigWriter.replaceAdmins(boardId, new HashSet<>(command.adminUserIds()));
 	}
 
+	/**
+	 * 게시판 삭제 (소프트 삭제 - isDeleted true)
+	 * @param boardId 게시판 아이디
+	 */
+	@Transactional
+	public void deleteBoard(String boardId) {
+		Board board = boardReader.getById(boardId);
+		board.setIsDeleted(true);
+		boardWriter.save(board);
+	}
+
 	private static @NotNull Map<String, BoardConfig> getCollectedMap(List<BoardConfig> boardConfigs) {
 		return boardConfigs.stream().collect(
 			Collectors.toMap(BoardConfig::getBoardId, boardConfig -> boardConfig));

@@ -2,6 +2,7 @@ package net.causw.app.main.domain.community.board.api.v2.controller;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -68,6 +69,16 @@ public class BoardAdminController {
 		@Valid @RequestBody BoardConfigUpdateRequest request) {
 
 		boardService.updateBoard(boardId, boardConfigUpdateRequestMapper.toCommand(request));
+
+		return ApiResponse.success();
+	}
+
+	@DeleteMapping("/{boardId}")
+	public ApiResponse<Void> deleteBoard(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable String boardId) {
+
+		boardService.deleteBoard(boardId);
 
 		return ApiResponse.success();
 	}
