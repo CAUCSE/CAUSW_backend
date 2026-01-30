@@ -13,17 +13,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.validation.Valid;
-import net.causw.app.main.domain.community.board.api.v2.dto.request.BoardCreateRequest;
 import net.causw.app.main.domain.community.board.api.v2.dto.request.BoardConfigUpdateRequest;
+import net.causw.app.main.domain.community.board.api.v2.dto.request.BoardCreateRequest;
 import net.causw.app.main.domain.community.board.api.v2.dto.request.BoardOrderUpdateRequest;
 import net.causw.app.main.domain.community.board.api.v2.dto.request.BoardSearchCondition;
 import net.causw.app.main.domain.community.board.api.v2.dto.response.BoardConfigEditResponse;
 import net.causw.app.main.domain.community.board.api.v2.dto.response.BoardConfigListResponse;
 import net.causw.app.main.domain.community.board.api.v2.mapper.BoardAdminListMapper;
-import net.causw.app.main.domain.community.board.api.v2.mapper.BoardCreateRequestMapper;
 import net.causw.app.main.domain.community.board.api.v2.mapper.BoardConfigEditResponseMapper;
 import net.causw.app.main.domain.community.board.api.v2.mapper.BoardConfigUpdateRequestMapper;
+import net.causw.app.main.domain.community.board.api.v2.mapper.BoardCreateRequestMapper;
 import net.causw.app.main.domain.community.board.api.v2.mapper.BoardOrderUpdateRequestMapper;
 import net.causw.app.main.domain.community.board.api.v2.mapper.BoardSearchConditionMapper;
 import net.causw.app.main.domain.community.board.service.BoardService;
@@ -32,6 +31,7 @@ import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController

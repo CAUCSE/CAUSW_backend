@@ -23,8 +23,7 @@ public class BoardWriter {
 			command.name(),
 			command.description(),
 			board.getCreateRoles(),
-			board.getCategory()
-		);
+			board.getCategory());
 
 		boardRepository.save(board);
 	}

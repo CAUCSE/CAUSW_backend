@@ -12,8 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
-import net.causw.app.main.domain.community.board.service.dto.request.BoardCreateCommand;
 import net.causw.app.main.domain.community.board.service.dto.request.BoardConfigUpdateCommand;
+import net.causw.app.main.domain.community.board.service.dto.request.BoardCreateCommand;
 import net.causw.app.main.domain.community.board.service.dto.request.BoardOrderUpdateCommand;
 import net.causw.app.main.domain.community.board.service.dto.request.BoardQueryCondition;
 import net.causw.app.main.domain.community.board.service.dto.result.BoardConfigEditResult;
@@ -88,8 +88,7 @@ public class BoardService {
 			command.writeScope(),
 			command.isNotice(),
 			command.visibility(),
-			displayOrder
-		);
+			displayOrder);
 		boardConfigWriter.save(boardConfig);
 		boardConfigWriter.replaceAdmins(boardId, new HashSet<>(command.adminUserIds()));
 	}

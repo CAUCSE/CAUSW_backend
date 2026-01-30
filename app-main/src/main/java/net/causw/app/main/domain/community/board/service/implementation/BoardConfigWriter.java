@@ -39,8 +39,7 @@ public class BoardConfigWriter {
 			command.readScope(),
 			command.writeScope(),
 			command.isNotice(),
-			command.visibility()
-		);
+			command.visibility());
 
 		boardConfigRepository.save(boardConfig);
 	}
