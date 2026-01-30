@@ -48,4 +48,8 @@ public class BoardConfigWriter {
 	public BoardConfig save(BoardConfig boardConfig) {
 		return boardConfigRepository.save(boardConfig);
 	}
+
+	public void saveAll(List<BoardConfig> boardConfigs) {
+		boardConfigRepository.saveAll(boardConfigs);
+	}
 }

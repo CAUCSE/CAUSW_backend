@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.community.board.service;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
 import net.causw.app.main.domain.community.board.service.dto.request.BoardCreateCommand;
 import net.causw.app.main.domain.community.board.service.dto.request.BoardConfigUpdateCommand;
+import net.causw.app.main.domain.community.board.service.dto.request.BoardOrderUpdateCommand;
 import net.causw.app.main.domain.community.board.service.dto.request.BoardQueryCondition;
 import net.causw.app.main.domain.community.board.service.dto.result.BoardConfigEditResult;
 import net.causw.app.main.domain.community.board.service.dto.result.BoardConfigListResult;
@@ -28,6 +30,9 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class BoardService {
+
+	private static final int DISPLAY_ORDER_INTERVAL = 10;
+
 	private final BoardReader boardReader;
 	private final BoardConfigReader boardConfigReader;
 	private final BoardWriter boardWriter;
@@ -113,6 +118,29 @@ public class BoardService {
 		Board board = boardReader.getById(boardId);
 		board.setIsDeleted(true);
 		boardWriter.save(board);
+	}
+
+	/**
+	 * 게시판 정렬 순서 수정
+	 * @param command 게시판 아이디 목록 (정렬 순서대로)
+	 */
+	@Transactional
+	public void updateBoardOrder(BoardOrderUpdateCommand command) {
+		List<String> boardIds = command.boardIds();
+		if (boardIds == null || boardIds.isEmpty()) {
+			return;
+		}
+		List<BoardConfig> configs = boardConfigReader.getAllBoardConfigInBoardIds(boardIds);
+		Map<String, BoardConfig> boardIdToConfig = configs.stream()
+			.collect(Collectors.toMap(BoardConfig::getBoardId, config -> config));
+
+		for (int i = 0; i < boardIds.size(); i++) {
+			BoardConfig config = boardIdToConfig.get(boardIds.get(i));
+			if (config != null) {
+				config.updateDisplayOrder((i + 1) * DISPLAY_ORDER_INTERVAL);
+			}
+		}
+		boardConfigWriter.saveAll(new ArrayList<>(boardIdToConfig.values()));
 	}
 
 	private static @NotNull Map<String, BoardConfig> getCollectedMap(List<BoardConfig> boardConfigs) {

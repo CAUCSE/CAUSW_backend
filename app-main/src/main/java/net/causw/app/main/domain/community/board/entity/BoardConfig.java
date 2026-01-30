@@ -74,4 +74,8 @@ public class BoardConfig extends BaseEntityWithoutId {
 		this.isNotice = isNotice;
 		this.visibility = visibility;
 	}
+
+	public void updateDisplayOrder(int displayOrder) {
+		this.displayOrder = displayOrder;
+	}
 }
