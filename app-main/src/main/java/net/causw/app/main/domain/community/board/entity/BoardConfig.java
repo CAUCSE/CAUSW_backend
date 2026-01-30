@@ -1,6 +1,5 @@
 package net.causw.app.main.domain.community.board.entity;
 
-import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.app.main.shared.entity.BaseEntityWithoutId;
 
 import jakarta.persistence.Column;

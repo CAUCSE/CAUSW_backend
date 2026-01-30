@@ -21,17 +21,16 @@ public record BoardConfigEditResult(
 	Boolean isNotice,
 	String visibility,
 	Integer displayOrder,
-	List<AdminResponse> admins
-) {
+	List<AdminResponse> admins) {
 	public record AdminResponse(
 		String id,
 		String adminEmail,
-		String adminName
-	) {
+		String adminName) {
 		public static AdminResponse from(User user) {
 			return new AdminResponse(user.getId(), user.getEmail(), user.getName());
 		}
 	}
+
 	public static BoardConfigEditResult from(Board board, BoardConfig boardConfig, List<User> admins) {
 
 		List<AdminResponse> adminResponses = admins.stream()

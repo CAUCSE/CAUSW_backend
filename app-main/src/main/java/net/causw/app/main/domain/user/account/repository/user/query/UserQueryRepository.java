@@ -9,6 +9,7 @@ import net.causw.app.main.domain.user.account.entity.user.QUser;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.account.service.dto.request.UserQueryCondition;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -80,6 +81,29 @@ public class UserQueryRepository {
 			.leftJoin(user.locker).fetchJoin()
 			.leftJoin(user.userProfileImage).fetchJoin()
 			.leftJoin(user.userProfileImage.uuidFile).fetchJoin()
+			.distinct()
+			.fetch();
+	}
+
+	public List<User> searchByCondition(UserQueryCondition condition) {
+		QUser user = QUser.user;
+		BooleanBuilder predicate = new BooleanBuilder();
+
+		if (condition.userState() != null) {
+			predicate.and(user.state.eq(condition.userState()));
+		}
+		if (condition.userRole() != null) {
+			predicate.and(user.roles.contains(condition.userRole()));
+		}
+		if (condition.keyword() != null && !condition.keyword().isBlank()) {
+			String keyword = condition.keyword().trim();
+			predicate.and(
+				user.email.containsIgnoreCase(keyword)
+					.or(user.name.containsIgnoreCase(keyword)));
+		}
+
+		return jpaQueryFactory.selectFrom(user)
+			.where(predicate)
 			.distinct()
 			.fetch();
 	}

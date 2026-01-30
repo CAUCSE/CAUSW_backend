@@ -57,7 +57,6 @@ public class BoardService {
 		return BoardConfigEditResult.from(board, boardConfig, adminUsers);
 	}
 
-
 	private static @NotNull Map<String, BoardConfig> getCollectedMap(List<BoardConfig> boardConfigs) {
 		return boardConfigs.stream().collect(
 			Collectors.toMap(BoardConfig::getBoardId, boardConfig -> boardConfig));

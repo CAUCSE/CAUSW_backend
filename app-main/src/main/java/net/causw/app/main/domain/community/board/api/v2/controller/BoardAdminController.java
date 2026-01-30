@@ -19,12 +19,14 @@ import net.causw.app.main.domain.community.board.service.dto.result.BoardConfigL
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/admin/boards")
 @PreAuthorize("@security.hasRole(@Role.ADMIN)")
+@Tag(name = "관리자 게시판 api", description = "관리자 게시판 조회 API")
 public class BoardAdminController {
 
 	private final BoardService boardService;
@@ -46,11 +48,9 @@ public class BoardAdminController {
 	@GetMapping("/{boardId}")
 	public ApiResponse<BoardConfigEditResponse> editBoardAdmin(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@PathVariable String boardId
-		) {
+		@PathVariable String boardId) {
 		BoardConfigEditResponse response = boardConfigEditResponseMapper.toResponse(
-			boardService.getBoardConfigEditInfo(boardId)
-		);
+			boardService.getBoardConfigEditInfo(boardId));
 
 		return ApiResponse.success(response);
 	}

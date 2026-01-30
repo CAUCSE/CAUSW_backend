@@ -24,8 +24,7 @@ public class BoardConfigReader {
 
 	public BoardConfig getByBoardId(String boardId) {
 		return boardConfigQueryRepository.findByBoardId(boardId).orElseThrow(
-			() -> new BaseRunTimeV2Exception(BoardConfigErrorCode.BOARD_CONFIG_NOT_FOUND)
-		);
+			() -> new BaseRunTimeV2Exception(BoardConfigErrorCode.BOARD_CONFIG_NOT_FOUND));
 	}
 
 	public List<String> getAdminIdsByBoardId(String boardId) {

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.repository.user.query.UserQueryRepository;
+import net.causw.app.main.domain.user.account.service.dto.request.UserQueryCondition;
 
 import lombok.RequiredArgsConstructor;
 
@@ -16,5 +17,9 @@ public class UserReader {
 
 	public List<User> getUsersByIds(List<String> userIds) {
 		return userQueryRepository.findByIds(userIds);
+	}
+
+	public List<User> searchByCondition(UserQueryCondition condition) {
+		return userQueryRepository.searchByCondition(condition);
 	}
 }
