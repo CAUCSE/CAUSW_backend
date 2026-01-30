@@ -60,9 +60,12 @@ public class BoardQueryRepository {
 	 */
 	public Optional<Board> findById(String boardId) {
 
+		QBoard board = QBoard.board;
+
 		return Optional.ofNullable(jpaQueryFactory
-			.selectFrom(QBoard.board)
-			.where(QBoard.board.id.eq(boardId))
+			.selectFrom(board)
+			.where(board.id.eq(boardId))
+			.where(board.isDeleted.eq(false))
 			.fetchOne());
 	}
 }

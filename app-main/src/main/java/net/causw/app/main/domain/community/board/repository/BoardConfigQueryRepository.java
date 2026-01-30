@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.community.board.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
@@ -24,5 +25,14 @@ public class BoardConfigQueryRepository {
 			.selectFrom(boardConfig)
 			.where(boardConfig.boardId.in(boardIds))
 			.fetch();
+	}
+
+	public Optional<BoardConfig> findByBoardId(String boardId) {
+		QBoardConfig boardConfig = QBoardConfig.boardConfig;
+
+		return Optional.ofNullable(jpaQueryFactory
+			.selectFrom(boardConfig)
+			.where(boardConfig.boardId.eq(boardId))
+			.fetchOne());
 	}
 }

@@ -10,7 +10,7 @@ import net.causw.app.main.domain.community.board.entity.BoardConfig;
 import lombok.Builder;
 
 @Builder
-public record BoardListResult(List<BoardAdminResult> boards) {
+public record BoardConfigListResult(List<BoardAdminResult> boards) {
 	@Builder
 	public record BoardAdminResult(
 		Long no,
@@ -40,7 +40,7 @@ public record BoardListResult(List<BoardAdminResult> boards) {
 		}
 	}
 
-	public static BoardListResult from(
+	public static BoardConfigListResult from(
 		List<Board> boards,
 		Map<String, BoardConfig> boardIdBoardConfigMap) {
 		var boardAdminResults = IntStream.range(0, boards.size())
@@ -50,7 +50,7 @@ public record BoardListResult(List<BoardAdminResult> boards) {
 				boardIdBoardConfigMap.get(boards.get(i).getId())))
 			.toList();
 
-		return BoardListResult.builder()
+		return BoardConfigListResult.builder()
 			.boards(boardAdminResults)
 			.build();
 	}

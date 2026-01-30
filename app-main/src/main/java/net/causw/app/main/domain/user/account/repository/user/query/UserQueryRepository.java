@@ -69,4 +69,18 @@ public class UserQueryRepository {
 
 		return Optional.ofNullable(result);
 	}
+
+	public List<User> findByIds(List<String> userIds) {
+		QUser user = QUser.user;
+
+		return jpaQueryFactory.selectFrom(user)
+			.where(user.id.in(userIds))
+			.leftJoin(user.roles).fetchJoin()
+			.leftJoin(user.ceremonyNotificationSetting).fetchJoin()
+			.leftJoin(user.locker).fetchJoin()
+			.leftJoin(user.userProfileImage).fetchJoin()
+			.leftJoin(user.userProfileImage.uuidFile).fetchJoin()
+			.distinct()
+			.fetch();
+	}
 }
