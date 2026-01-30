@@ -172,6 +172,35 @@ public class Board extends BaseEntity {
 			.build();
 	}
 
+	/**
+	 * v2 게시판 생성 (BoardConfig와 별도 관리)
+	 * @param name 게시판 이름
+	 * @param description 게시판 설명
+	 * @return Board 엔티티
+	 */
+	public static Board createForV2(String name, String description) {
+		Set<String> roleSet = Arrays.stream(Role.values())
+			.map(Role::getValue)
+			.collect(Collectors.toSet());
+		roleSet.remove(Role.NONE.getValue());
+		String createRoles = String.join(",", roleSet);
+
+		return Board.builder()
+			.name(name)
+			.description(description)
+			.createRoles(createRoles)
+			.category("COMMUNITY")
+			.isDeleted(false)
+			.isDefault(false)
+			.isAnonymousAllowed(false)
+			.circle(null)
+			.postSet(new HashSet<>())
+			.isDefaultNotice(false)
+			.isAlumni(false)
+			.isHome(false)
+			.build();
+	}
+
 	public void update(String name, String description, String createRoles, String category) {
 		this.name = name;
 		this.description = description;

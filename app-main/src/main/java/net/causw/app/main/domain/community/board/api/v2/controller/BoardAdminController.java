@@ -6,17 +6,20 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
+import net.causw.app.main.domain.community.board.api.v2.dto.request.BoardCreateRequest;
 import net.causw.app.main.domain.community.board.api.v2.dto.request.BoardConfigUpdateRequest;
 import net.causw.app.main.domain.community.board.api.v2.dto.request.BoardSearchCondition;
 import net.causw.app.main.domain.community.board.api.v2.dto.response.BoardConfigEditResponse;
 import net.causw.app.main.domain.community.board.api.v2.dto.response.BoardConfigListResponse;
 import net.causw.app.main.domain.community.board.api.v2.mapper.BoardAdminListMapper;
+import net.causw.app.main.domain.community.board.api.v2.mapper.BoardCreateRequestMapper;
 import net.causw.app.main.domain.community.board.api.v2.mapper.BoardConfigEditResponseMapper;
 import net.causw.app.main.domain.community.board.api.v2.mapper.BoardConfigUpdateRequestMapper;
 import net.causw.app.main.domain.community.board.api.v2.mapper.BoardSearchConditionMapper;
@@ -40,6 +43,7 @@ public class BoardAdminController {
 	private final BoardSearchConditionMapper boardSearchConditionMapper;
 	private final BoardConfigEditResponseMapper boardConfigEditResponseMapper;
 	private final BoardConfigUpdateRequestMapper boardConfigUpdateRequestMapper;
+	private final BoardCreateRequestMapper boardCreateRequestMapper;
 
 	@GetMapping
 	public ApiResponse<BoardConfigListResponse> getBoardAdminList(
@@ -60,6 +64,15 @@ public class BoardAdminController {
 			boardService.getBoardConfigEditInfo(boardId));
 
 		return ApiResponse.success(response);
+	}
+
+	@PostMapping
+	public ApiResponse<Void> createBoard(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@Valid @RequestBody BoardCreateRequest request) {
+		boardService.createBoard(boardCreateRequestMapper.toCommand(request));
+
+		return ApiResponse.success();
 	}
 
 	@PutMapping("/{boardId}")

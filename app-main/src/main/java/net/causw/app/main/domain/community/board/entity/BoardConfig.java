@@ -53,6 +53,19 @@ public class BoardConfig extends BaseEntityWithoutId {
 	@Column(name = "display_order", nullable = false)
 	private Integer displayOrder;
 
+	public static BoardConfig of(String boardId, boolean isAnonymous, BoardReadScope readScope,
+		BoardWriteScope writeScope, boolean isNotice, BoardVisibility visibility, int displayOrder) {
+		return BoardConfig.builder()
+			.boardId(boardId)
+			.isAnonymous(isAnonymous)
+			.readScope(readScope)
+			.writeScope(writeScope)
+			.isNotice(isNotice)
+			.visibility(visibility)
+			.displayOrder(displayOrder)
+			.build();
+	}
+
 	public void update(boolean isAnonymous, BoardReadScope readScope, BoardWriteScope writeScope,
 		boolean isNotice, BoardVisibility visibility) {
 		this.isAnonymous = isAnonymous;

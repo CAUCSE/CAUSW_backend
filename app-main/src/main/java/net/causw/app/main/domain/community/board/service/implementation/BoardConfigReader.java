@@ -30,4 +30,8 @@ public class BoardConfigReader {
 	public List<String> getAdminIdsByBoardId(String boardId) {
 		return boardAdminQueryRepository.findAdminIdsByBoardId(boardId);
 	}
+
+	public int getNextDisplayOrder() {
+		return boardConfigQueryRepository.findMaxDisplayOrder() + 10;
+	}
 }

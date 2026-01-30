@@ -35,4 +35,13 @@ public class BoardConfigQueryRepository {
 			.where(boardConfig.boardId.eq(boardId))
 			.fetchOne());
 	}
+
+	public Integer findMaxDisplayOrder() {
+		QBoardConfig boardConfig = QBoardConfig.boardConfig;
+		Integer max = jpaQueryFactory
+			.select(boardConfig.displayOrder.max())
+			.from(boardConfig)
+			.fetchOne();
+		return max != null ? max : 0;
+	}
 }

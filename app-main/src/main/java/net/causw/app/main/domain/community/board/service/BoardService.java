@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
+import net.causw.app.main.domain.community.board.service.dto.request.BoardCreateCommand;
 import net.causw.app.main.domain.community.board.service.dto.request.BoardConfigUpdateCommand;
 import net.causw.app.main.domain.community.board.service.dto.request.BoardQueryCondition;
 import net.causw.app.main.domain.community.board.service.dto.result.BoardConfigEditResult;
@@ -62,6 +63,30 @@ public class BoardService {
 		List<User> adminUsers = userReader.getUsersByIds(adminIds);
 
 		return BoardConfigEditResult.from(board, boardConfig, adminUsers);
+	}
+
+	/**
+	 * 게시판 생성
+	 * @param command 생성할 게시판 설정
+	 */
+	@Transactional
+	public void createBoard(BoardCreateCommand command) {
+		Board board = Board.createForV2(command.name(), command.description());
+		Board savedBoard = boardWriter.save(board);
+		String boardId = savedBoard.getId();
+
+		int displayOrder = boardConfigReader.getNextDisplayOrder();
+		BoardConfig boardConfig = BoardConfig.of(
+			boardId,
+			command.isAnonymous(),
+			command.readScope(),
+			command.writeScope(),
+			command.isNotice(),
+			command.visibility(),
+			displayOrder
+		);
+		boardConfigWriter.save(boardConfig);
+		boardConfigWriter.replaceAdmins(boardId, new HashSet<>(command.adminUserIds()));
 	}
 
 	/**
