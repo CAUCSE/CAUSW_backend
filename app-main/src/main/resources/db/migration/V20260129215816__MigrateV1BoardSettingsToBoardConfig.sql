@@ -1,6 +1,5 @@
 -- Migration: MigrateV1BoardSettingsToBoardConfig
 INSERT INTO tb_board_config (
-    id,
     board_id,
     is_anonymous,
     read_scope,
@@ -12,7 +11,6 @@ INSERT INTO tb_board_config (
     updated_at
 )
 SELECT
-    b.id AS id,
     b.id,
     b.is_anonymous_allowed,
     CASE

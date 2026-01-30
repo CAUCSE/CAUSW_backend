@@ -1,11 +1,15 @@
 package net.causw.app.main.domain.community.board.entity;
 
 import net.causw.app.main.shared.entity.BaseEntity;
+import net.causw.app.main.shared.entity.BaseEntityWithoutId;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -19,7 +23,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_board_config")
-public class BoardConfig extends BaseEntity {
+public class BoardConfig extends BaseEntityWithoutId {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id", nullable = false, unique = true)
+	private Long id;
 
 	@Column(name = "board_id", nullable = false, unique = true)
 	private String boardId;
