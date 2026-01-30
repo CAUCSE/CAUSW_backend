@@ -3,6 +3,7 @@ package net.causw.app.main.domain.campus.schedule.service.v2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.campus.schedule.entity.Schedule;
 import net.causw.app.main.domain.campus.schedule.service.v2.dto.ScheduleDto;
 import net.causw.app.main.domain.campus.schedule.service.v2.implementation.ScheduleReader;
 import net.causw.app.main.domain.campus.schedule.service.v2.implementation.ScheduleWriter;
@@ -19,5 +20,16 @@ public class ScheduleService {
 	@Transactional
 	public ScheduleDto save(ScheduleDto dto) {
 		return ScheduleMapper.to(scheduleWriter.create(dto));
+	}
+
+	@Transactional
+	public ScheduleDto update(String scheduleId, ScheduleDto dto) {
+		Schedule schedule = scheduleReader.findById(scheduleId);
+		return ScheduleMapper.to(scheduleWriter.update(schedule, dto));
+	}
+
+	@Transactional
+	public void delete(String scheduleId) {
+		scheduleWriter.deleteById(scheduleId);
 	}
 }

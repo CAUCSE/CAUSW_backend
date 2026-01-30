@@ -44,4 +44,18 @@ public class ScheduleWriter {
 	public void deleteById(String scheduleId) {
 		scheduleRepository.deleteById(scheduleId);
 	}
+
+	/**
+	 * Schedule을 update (PUT) 합니다.
+	 * @param schedule 수정할 Schedule
+	 * @param dto 업데이트될 정보
+	 */
+	public Schedule update(Schedule schedule, ScheduleDto dto) {
+		schedule.update(dto.title(),
+			dto.type(),
+			dto.start(),
+			dto.end(),
+			dto.creator());
+		return scheduleRepository.save(schedule);
+	}
 }
