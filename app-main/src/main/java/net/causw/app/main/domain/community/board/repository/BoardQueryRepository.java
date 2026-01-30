@@ -10,6 +10,7 @@ import net.causw.app.main.domain.community.board.entity.QBoard;
 import net.causw.app.main.domain.community.board.entity.QBoardConfig;
 import net.causw.app.main.domain.community.board.service.dto.request.BoardQueryCondition;
 
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ public class BoardQueryRepository {
 			.selectFrom(board)
 			.join(boardConfig).on(board.id.eq(boardConfig.boardId))
 			.where(
+				deleted(),
 				boardQueryCondition.keyword() != null
 					? board.name.containsIgnoreCase(boardQueryCondition.keyword())
 					: null,
@@ -49,7 +51,6 @@ public class BoardQueryRepository {
 					? boardConfig.isNotice.eq(boardQueryCondition.isNotice())
 					: null)
 			.orderBy(boardConfig.displayOrder.asc())
-			.where(board.isDeleted.eq(false))
 			.fetch();
 	}
 
@@ -65,7 +66,12 @@ public class BoardQueryRepository {
 		return Optional.ofNullable(jpaQueryFactory
 			.selectFrom(board)
 			.where(board.id.eq(boardId))
-			.where(board.isDeleted.eq(false))
+			.where(deleted())
 			.fetchOne());
+	}
+
+	public BooleanExpression deleted() {
+		QBoard board = QBoard.board;
+		return board.isDeleted.eq(false);
 	}
 }
