@@ -4,7 +4,7 @@ CREATE TABLE `tb_schedule` (
                                `created_at` datetime(6) DEFAULT NULL,
                                `updated_at` datetime(6) DEFAULT NULL,
                                `title` varchar(255) NOT NULL,
-                               `type` enum('ACADEMIC','DEPARTMENT','CCSSAA','STUDENT_COUNCIL','COMPETITION') NOT NULL,
+                               `type` enum('ACADEMIC','DEPARTMENT','CCSSAA','STUDENT_COUNCIL','COMPETITION','HOLIDAY') NOT NULL,
                                `start` datetime(6) NOT NULL,
                                `end` datetime(6) NOT NULL,
                                `creator` varchar(255) DEFAULT NULL,
