@@ -44,11 +44,11 @@ public class BoardService {
 	}
 
 	/**
-	 * 게시판 설정 조회
+	 * 게시판 설정 편집 화면에 필요한 정보를 조회
 	 * @param boardId 게시판 아이디
 	 * @return 게시판 설정 상세 조회 결과 DTO
 	 */
-	public BoardConfigEditResult getBoardConfigByBoardId(String boardId) {
+	public BoardConfigEditResult getBoardConfigEditInfo(String boardId) {
 		Board board = boardReader.getById(boardId);
 		BoardConfig boardConfig = boardConfigReader.getByBoardId(boardId);
 		List<String> adminIds = boardConfigReader.getAdminIdsByBoardId(boardId);

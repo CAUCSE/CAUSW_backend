@@ -49,7 +49,7 @@ public class BoardAdminController {
 		@PathVariable String boardId
 		) {
 		BoardConfigEditResponse response = boardConfigEditResponseMapper.toResponse(
-			boardService.getBoardConfigByBoardId(boardId)
+			boardService.getBoardConfigEditInfo(boardId)
 		);
 
 		return ApiResponse.success(response);
