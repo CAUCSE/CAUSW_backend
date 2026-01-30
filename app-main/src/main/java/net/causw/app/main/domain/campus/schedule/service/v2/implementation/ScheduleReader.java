@@ -41,10 +41,10 @@ public class ScheduleReader {
 	 *
 	 * @param from 시작 날짜
 	 * @param to 종료 날짜
-	 * @param type Schedule 타입 (null일 경우 모든 타입 조회)
+	 * @param types Schedule 타입 리스트 (null 또는 빈 리스트일 경우 모든 타입 조회)
 	 * @return Schedule 목록
 	 */
-	public List<Schedule> findByCondition(LocalDateTime from, LocalDateTime to, ScheduleType type) {
-		return scheduleRepository.findAllByCondition(from, to, type);
+	public List<Schedule> findByCondition(LocalDateTime from, LocalDateTime to, List<ScheduleType> types) {
+		return scheduleRepository.findAllByCondition(from, to, types);
 	}
 }

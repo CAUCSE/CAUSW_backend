@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.campus.schedule.api.v2.controller;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,11 +13,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.causw.app.main.domain.campus.schedule.api.v2.controller.dto.request.ScheduleRequest;
-import net.causw.app.main.domain.campus.schedule.api.v2.controller.dto.request.ScheduleSearchCondition;
 import net.causw.app.main.domain.campus.schedule.api.v2.controller.dto.response.ScheduleListResponse;
 import net.causw.app.main.domain.campus.schedule.api.v2.controller.dto.response.ScheduleResponse;
 import net.causw.app.main.domain.campus.schedule.api.v2.controller.mapper.ScheduleDtoMapper;
@@ -82,20 +83,28 @@ public class ScheduleController {
 
 	@Operation(summary = "일정 조회", description = "조건에 따라 일정을 조회합니다. <br>" +
 		"from과 to가 지정되지 않으면 현재 월의 일정을 조회합니다. <br>" +
-		"type으로 일정 유형을 필터링할 수 있습니다.")
+		"types로 일정 유형을 필터링할 수 있습니다. <br><br>" +
+		"types 사용 예시: <br>" +
+		"1) 쉼표 구분: ?types=ACADEMIC,CLUB,EXAM <br>" +
+		"2) 반복: ?types=ACADEMIC&types=CLUB&types=EXAM <br>" +
+		"3) 생략: 모든 타입 조회")
 	@GetMapping
 	public ApiResponse<ScheduleListResponse> readSchedules(
-		@Valid ScheduleSearchCondition searchCondition) {
-		LocalDateTime from = searchCondition.from();
-		LocalDateTime to = searchCondition.to();
-		ScheduleType type = searchCondition.type();
-		if (searchCondition.from() == null || searchCondition.to() == null) {
-			from = LocalDateTime.now().toLocalDate().withDayOfMonth(1).atStartOfDay();
-			to = LocalDateTime.now().toLocalDate().plusMonths(1).withDayOfMonth(1).atStartOfDay().minusSeconds(1);
+		@RequestParam(required = false) LocalDateTime from,
+		@RequestParam(required = false) LocalDateTime to,
+		@RequestParam(required = false) List<ScheduleType> types) {
+
+		LocalDateTime startDate = from;
+		LocalDateTime endDate = to;
+
+		if (from == null || to == null) {
+			startDate = LocalDateTime.now().toLocalDate().withDayOfMonth(1).atStartOfDay();
+			endDate = LocalDateTime.now().toLocalDate().plusMonths(1).withDayOfMonth(1).atStartOfDay().minusSeconds(1);
 		}
 
 		return ApiResponse.success(
 			scheduleDtoMapper.toScheduleListResponse(
-				scheduleService.findByCondition(from, to, type)));
+				scheduleService.findByCondition(startDate, endDate, types)));
 	}
+
 }
