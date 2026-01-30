@@ -8,5 +8,5 @@ import net.causw.app.main.domain.community.board.entity.BoardAdmin;
 @Repository
 public interface BoardAdminRepository extends JpaRepository<BoardAdmin, Long> {
 
-	void deleteByBoardId(String boardId);
+	void deleteAllByBoardId(String boardId);
 }

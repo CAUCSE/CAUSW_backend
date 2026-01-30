@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.community.board.service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -75,7 +76,7 @@ public class BoardService {
 
 		boardWriter.updateBoard(board, command);
 		boardConfigWriter.updateBoardConfig(boardConfig, command);
-		boardConfigWriter.replaceAdmins(boardId, command.adminUserIds());
+		boardConfigWriter.replaceAdmins(boardId, new HashSet<>(command.adminUserIds()));
 	}
 
 	private static @NotNull Map<String, BoardConfig> getCollectedMap(List<BoardConfig> boardConfigs) {
