@@ -41,4 +41,9 @@ public class ScheduleService {
 	public List<ScheduleDto> findByCondition(LocalDateTime from, LocalDateTime to, List<ScheduleType> types) {
 		return scheduleReader.findByCondition(from, to, types).stream().map(ScheduleMapper::to).toList();
 	}
+
+	@Transactional(readOnly = true)
+	public ScheduleDto findById(String scheduleId) {
+		return ScheduleMapper.to(scheduleReader.findById(scheduleId));
+	}
 }

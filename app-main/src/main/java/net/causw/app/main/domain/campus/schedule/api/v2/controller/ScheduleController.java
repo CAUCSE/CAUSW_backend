@@ -107,4 +107,11 @@ public class ScheduleController {
 				scheduleService.findByCondition(startDate, endDate, types)));
 	}
 
+	@Operation(summary = "일정 단건 조회", description = "특정 ID의 일정을 조회합니다.")
+	@GetMapping("/{scheduleId}")
+	public ApiResponse<ScheduleResponse> readSchedule(@PathVariable String scheduleId) {
+		ScheduleDto result = scheduleService.findById(scheduleId);
+		return ApiResponse.success(scheduleDtoMapper.toScheduleResponse(result));
+	}
+
 }
