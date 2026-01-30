@@ -1,9 +1,13 @@
 package net.causw.app.main.domain.campus.schedule.service.v2;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.campus.schedule.entity.Schedule;
+import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
 import net.causw.app.main.domain.campus.schedule.service.v2.dto.ScheduleDto;
 import net.causw.app.main.domain.campus.schedule.service.v2.implementation.ScheduleReader;
 import net.causw.app.main.domain.campus.schedule.service.v2.implementation.ScheduleWriter;
@@ -31,5 +35,10 @@ public class ScheduleService {
 	@Transactional
 	public void delete(String scheduleId) {
 		scheduleWriter.deleteById(scheduleId);
+	}
+
+	@Transactional(readOnly = true)
+	public List<ScheduleDto> findByCondition(LocalDateTime from, LocalDateTime to, ScheduleType type) {
+		return scheduleReader.findByCondition(from, to, type).stream().map(ScheduleMapper::to).toList();
 	}
 }

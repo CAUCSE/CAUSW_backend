@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.campus.schedule.entity.Schedule;
+import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
 import net.causw.app.main.domain.campus.schedule.repository.ScheduleRepository;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
@@ -38,11 +39,12 @@ public class ScheduleReader {
 	 * 특정 기간 내의 Schedule을 조회합니다.
 	 * 일정이 기간과 겹치기만 하면 조회됩니다 (완전히 포함될 필요 없음).
 	 *
-	 * @param start 시작 날짜
-	 * @param end 종료 날짜
+	 * @param from 시작 날짜
+	 * @param to 종료 날짜
+	 * @param type Schedule 타입 (null일 경우 모든 타입 조회)
 	 * @return Schedule 목록
 	 */
-	public List<Schedule> findByPeriod(LocalDateTime start, LocalDateTime end) {
-		return scheduleRepository.findAllByPeriod(start, end);
+	public List<Schedule> findByCondition(LocalDateTime from, LocalDateTime to, ScheduleType type) {
+		return scheduleRepository.findAllByCondition(from, to, type);
 	}
 }
