@@ -14,7 +14,7 @@ import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FileExtensionType;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.repository.UuidFileRepository;
-import net.causw.app.main.shared.storage.StorageManager;
+import net.causw.app.main.shared.storage.v1.StorageManager;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
@@ -28,31 +28,27 @@ import jakarta.validation.constraints.NotNull;
 @MeasureTime
 @Service
 @Transactional(readOnly = true)
-public class UuidFileService extends StorageManager {
+public class UuidFileV1Service extends StorageManager {
 
 	private final UuidFileRepository uuidFileRepository;
 
-	public UuidFileService(AmazonS3Client amazonS3Client, UuidFileRepository uuidFileRepository) {
+	public UuidFileV1Service(AmazonS3Client amazonS3Client, UuidFileRepository uuidFileRepository) {
 		super(amazonS3Client);
 		this.uuidFileRepository = uuidFileRepository;
 	}
 
-	public UuidFile findUuidFileById(@NotBlank
-	String id) {
+	public UuidFile findUuidFileById(@NotBlank String id) {
 		return uuidFileRepository.findById(id).orElseThrow(
 			() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.FILE_NOT_FOUND));
 	}
 
-	public UuidFile findUuidFileByFileUrl(@NotBlank
-	String fileUrl) {
+	public UuidFile findUuidFileByFileUrl(@NotBlank String fileUrl) {
 		return uuidFileRepository.findByFileUrl(fileUrl).orElseThrow(
 			() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.FILE_NOT_FOUND));
 	}
 
 	@Transactional
-	public UuidFile saveFile(@NotNull
-	MultipartFile file, @NotNull
-	FilePath filePath) {
+	public UuidFile saveFile(@NotNull MultipartFile file, @NotNull FilePath filePath) {
 		this.validateFile(file, filePath);
 
 		String uuid = UUID.randomUUID().toString();
@@ -77,9 +73,7 @@ public class UuidFileService extends StorageManager {
 	}
 
 	@Transactional
-	public List<UuidFile> saveFileList(@NotNull
-	List<MultipartFile> fileList, @NotNull
-	FilePath filePath) {
+	public List<UuidFile> saveFileList(@NotNull List<MultipartFile> fileList, @NotNull FilePath filePath) {
 		this.validateFileListSize(fileList, filePath);
 		return fileList.stream()
 			.map(file -> this.saveFile(file, filePath))
@@ -87,9 +81,7 @@ public class UuidFileService extends StorageManager {
 	}
 
 	@Transactional
-	public UuidFile updateFile(UuidFile priorUuidFile, @NotNull
-	MultipartFile file, @NotNull
-	FilePath filePath) {
+	public UuidFile updateFile(UuidFile priorUuidFile, @NotNull MultipartFile file, @NotNull FilePath filePath) {
 		if (priorUuidFile != null) {
 			this.deleteFile(priorUuidFile);
 		}
@@ -107,8 +99,7 @@ public class UuidFileService extends StorageManager {
 	}
 
 	@Transactional
-	public void deleteFile(@NotNull
-	UuidFile uuidFile) {
+	public void deleteFile(@NotNull UuidFile uuidFile) {
 		if (uuidFile == null) {
 			throw new InternalServerException(ErrorCode.INTERNAL_SERVER, MessageUtil.FILE_NOT_FOUND);
 		}
@@ -118,8 +109,7 @@ public class UuidFileService extends StorageManager {
 	}
 
 	@Transactional
-	public void deleteFileList(@NotNull
-	List<UuidFile> uuidFileList) {
+	public void deleteFileList(@NotNull List<UuidFile> uuidFileList) {
 		for (UuidFile uuidFile : uuidFileList) {
 			this.deleteFile(uuidFile);
 		}

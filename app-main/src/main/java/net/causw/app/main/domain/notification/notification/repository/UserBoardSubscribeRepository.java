@@ -29,10 +29,8 @@ public interface UserBoardSubscribeRepository extends JpaRepository<UserBoardSub
 		AND (:#{#blockerUserIds.size()} = 0 OR ubs.user.id NOT IN :blockerUserIds)
 		""")
 	List<UserBoardSubscribe> findByBoardAndIsSubscribedTrueExcludingBlockerUsers(
-		@Param("board")
-		Board board,
-		@Param("blockerUserIds")
-		Set<String> blockerUserIds);
+		@Param("board") Board board,
+		@Param("blockerUserIds") Set<String> blockerUserIds);
 
 	@EntityGraph(attributePaths = {"board"})
 	List<UserBoardSubscribe> findByUserAndIsSubscribedTrue(User user);

@@ -27,8 +27,7 @@ public interface UserRepository extends JpaRepository<User, String> {
 		String phoneNumber);
 
 	@NotNull
-	Page<User> findAll(@NotNull
-	Pageable pageable);
+	Page<User> findAll(@NotNull Pageable pageable);
 
 	Optional<User> findByEmailAndNameAndStudentId(String email, String name, String studentId);
 
@@ -50,36 +49,28 @@ public interface UserRepository extends JpaRepository<User, String> {
 		AcademicStatus academicStatus);
 
 	@Query("SELECT u FROM User u WHERE :role MEMBER OF u.roles AND u.state = :state")
-	List<User> findByRoleAndState(@Param("role")
-	Role role, @Param("state")
-	UserState state);
+	List<User> findByRoleAndState(@Param("role") Role role, @Param("state") UserState state);
 
 	@Query(value = "SELECT * " +
 		"FROM tb_user AS u " +
 		"WHERE u.state = :state AND (:name IS NULL OR u.name LIKE %:name%) ORDER BY u.created_at DESC", nativeQuery = true)
-	Page<User> findByStateAndName(@Param("state")
-	String state, @Param("name")
-	String name, Pageable pageable);
+	Page<User> findByStateAndName(@Param("state") String state, @Param("name") String name, Pageable pageable);
 
 	@Query(value = "SELECT * " +
 		"FROM tb_user AS u " +
 		"WHERE u.state IN :state AND (COALESCE(:name, '') = '' OR u.name LIKE CONCAT('%', :name, '%')) ORDER BY u.created_at DESC", nativeQuery = true)
-	Page<User> findByStateInAndNameContaining(@Param("state")
-	List<String> states, @Param("name")
-	String name,
+	Page<User> findByStateInAndNameContaining(@Param("state") List<String> states, @Param("name") String name,
 		Pageable pageable);
 
 	@Query(value = "SELECT * FROM" +
 		" tb_user AS u " +
 		"WHERE u.academic_status IN :statuses OR u.academic_status IS NULL", nativeQuery = true)
-	List<User> findByAcademicStatusInOrAcademicStatusIsNull(@Param("statuses")
-	List<AcademicStatus> statuses);
+	List<User> findByAcademicStatusInOrAcademicStatusIsNull(@Param("statuses") List<AcademicStatus> statuses);
 
 	Optional<User> findByStudentId(String studentId);
 
 	Optional<User> findByPhoneNumber(
-		@Pattern(regexp = "^01(?:0|1|[6-9])(\\d{3}|\\d{4})\\d{4}$", message = "전화번호 형식에 맞지 않습니다.")
-		String phoneNumber);
+		@Pattern(regexp = "^01(?:0|1|[6-9])(\\d{3}|\\d{4})\\d{4}$", message = "전화번호 형식에 맞지 않습니다.") String phoneNumber);
 
 	Boolean existsByStudentId(String studentId);
 

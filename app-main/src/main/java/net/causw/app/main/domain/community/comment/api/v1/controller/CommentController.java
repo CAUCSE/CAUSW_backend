@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.community.comment.api.v1.dto.CommentCreateRequestDto;
 import net.causw.app.main.domain.community.comment.api.v1.dto.CommentResponseDto;
 import net.causw.app.main.domain.community.comment.api.v1.dto.CommentSubscribeResponseDto;
@@ -31,6 +32,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@V1Api
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/comments")
@@ -60,12 +62,9 @@ public class CommentController {
 		@ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	public Page<CommentResponseDto> findAllComments(
-		@RequestParam("postId")
-		String postId,
-		@RequestParam(name = "pageNum", defaultValue = "0")
-		Integer pageNum,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@RequestParam("postId") String postId,
+		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
 		return this.commentService.findAllComments(userDetails.getUser(), postId, pageNum);
 	}
@@ -93,10 +92,8 @@ public class CommentController {
 		@ApiResponse(responseCode = "4004", description = "삭제된 동아리입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	public CommentResponseDto createComment(
-		@Valid @RequestBody
-		CommentCreateRequestDto commentCreateRequestDto,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@Valid @RequestBody CommentCreateRequestDto commentCreateRequestDto,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.commentService.createComment(userDetails.getUser(), commentCreateRequestDto);
 	}
 
@@ -126,12 +123,9 @@ public class CommentController {
 		@ApiResponse(responseCode = "5000", description = "Comment id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	public CommentResponseDto updateComment(
-		@PathVariable("id")
-		String id,
-		@Valid @RequestBody
-		CommentUpdateRequestDto commentUpdateRequestDto,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable("id") String id,
+		@Valid @RequestBody CommentUpdateRequestDto commentUpdateRequestDto,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.commentService.updateComment(
 			userDetails.getUser(),
 			id,
@@ -165,10 +159,8 @@ public class CommentController {
 		@ApiResponse(responseCode = "5000", description = "Comment id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class)))
 	})
 	public CommentResponseDto deleteComment(
-		@PathVariable("id")
-		String id,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable("id") String id,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.commentService.deleteComment(userDetails.getUser(), id);
 	}
 
@@ -187,10 +179,8 @@ public class CommentController {
 		@ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
 	})
 	public void likeComment(
-		@PathVariable("id")
-		String id,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable("id") String id,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		this.commentService.likeComment(userDetails.getUser(), id);
 	}
 
@@ -198,10 +188,8 @@ public class CommentController {
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "로그인한 사용자의 댓글 알람 설정 켜기", description = "id에는 comment id 값을 넣어주세요")
 	public CommentSubscribeResponseDto subscribeComment(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@PathVariable("id")
-		String id) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable("id") String id) {
 		return commentService.setCommentSubscribe(userDetails.getUser(), id, true);
 	}
 
@@ -209,10 +197,8 @@ public class CommentController {
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "로그인한 사용자의 댓글 알람 설정 끄기", description = "id에는 comment id 값을 넣어주세요")
 	public CommentSubscribeResponseDto unsubscribeComment(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@PathVariable("id")
-		String id) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable("id") String id) {
 		return commentService.setCommentSubscribe(userDetails.getUser(), id, false);
 	}
 
@@ -231,10 +217,8 @@ public class CommentController {
 		@ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
 	})
 	public void cancelLikeComment(
-		@PathVariable("id")
-		String id,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable("id") String id,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		this.commentService.cancelLikeComment(userDetails.getUser(), id);
 	}
 }

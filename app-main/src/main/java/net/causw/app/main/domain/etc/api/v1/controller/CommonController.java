@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.community.homepage.api.v1.dto.HomePageResponseDto;
 import net.causw.app.main.domain.community.homepage.service.v1.HomePageService;
 import net.causw.app.main.domain.etc.textfield.service.v1.CommonService;
@@ -23,6 +24,7 @@ import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 
+@V1Api
 @RestController
 @RequiredArgsConstructor
 @RequestMapping
@@ -36,8 +38,7 @@ public class CommonController {
 	@Operation(summary = "홈페이지 불러오기 API(완료)", description = "동아리에 속하지 않고 삭제되지 않은 게시판과 해당 게시판의 최신 글 3개의 정보를 반환합니다.\n" +
 		"개발 db상에는 동아리에 속하지 않은 많은 더미 데이터가 있지만 실제 운영될 때는 동아리에 속하지 않는 게시판은 학생회 공지게시판 뿐입니다.\n" +
 		"졸업생은 해당 api에 접근이 불가합니다.")
-	public List<HomePageResponseDto> getHomePage(@AuthenticationPrincipal
-	CustomUserDetails userDetails) {
+	public List<HomePageResponseDto> getHomePage(@AuthenticationPrincipal CustomUserDetails userDetails) {
 
 		return this.homePageService.getHomePage(userDetails.getUser());
 	}
@@ -48,8 +49,7 @@ public class CommonController {
 	@Operation(summary = "크자회 전용 홈페이지 불러오기 API(완료)", description = "크자회 전용 홈페이지에 보여질 크자회 공지 게시판, 소통 게시판을 반환하기 위한 api 입니다.\n"
 		+
 		"db상에 isAlumni, isHome 값이 모두 true 인 경우를 반환합니다.")
-	public List<HomePageResponseDto> getAlumniHomePage(@AuthenticationPrincipal
-	CustomUserDetails userDetails) {
+	public List<HomePageResponseDto> getAlumniHomePage(@AuthenticationPrincipal CustomUserDetails userDetails) {
 
 		return this.homePageService.getAlumniHomePage(userDetails.getUser());
 	}
@@ -69,10 +69,8 @@ public class CommonController {
 	@ResponseStatus(value = HttpStatus.OK)
 	@PreAuthorize("@security.hasRole(@Role.ADMIN)")
 	public Boolean createFlag(
-		@RequestParam("key")
-		String key,
-		@RequestParam("value")
-		Boolean value) {
+		@RequestParam("key") String key,
+		@RequestParam("value") Boolean value) {
 		return commonService.createFlag(
 			key,
 			value);
@@ -82,10 +80,8 @@ public class CommonController {
 	@ResponseStatus(value = HttpStatus.OK)
 	@PreAuthorize("@security.hasRole(@Role.ADMIN)")
 	public Boolean updateFlag(
-		@RequestParam("key")
-		String key,
-		@RequestParam("value")
-		Boolean value) {
+		@RequestParam("key") String key,
+		@RequestParam("value") Boolean value) {
 
 		return this.commonService.updateFlag(
 			key,

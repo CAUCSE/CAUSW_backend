@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.community.vote.api.v1.dto.CastVoteRequestDto;
 import net.causw.app.main.domain.community.vote.api.v1.dto.CreateVoteRequestDto;
 import net.causw.app.main.domain.community.vote.api.v1.dto.VoteResponseDto;
@@ -21,6 +22,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@V1Api
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/votes")
@@ -32,10 +34,8 @@ public class VoteController {
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "투표 생성", description = "새로운 투표를 생성합니다.")
 	public ResponseEntity<VoteResponseDto> createVote(
-		@Valid @RequestBody
-		CreateVoteRequestDto createVoteRequestDto,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@Valid @RequestBody CreateVoteRequestDto createVoteRequestDto,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		VoteResponseDto voteResponse = voteService.createVote(createVoteRequestDto, userDetails.getUser());
 		return ResponseEntity.status(HttpStatus.CREATED).body(voteResponse);
 	}
@@ -44,10 +44,8 @@ public class VoteController {
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "투표 참여", description = "해당 투표에 참여합니다.")
 	public ResponseEntity<String> castVote(
-		@Valid @RequestBody
-		CastVoteRequestDto castVoteRequestDto,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@Valid @RequestBody CastVoteRequestDto castVoteRequestDto,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		String result = voteService.castVote(castVoteRequestDto, userDetails.getUser());
 		return ResponseEntity.ok(result);
 	}
@@ -56,10 +54,8 @@ public class VoteController {
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "투표 종료", description = "특정 투표를 종료합니다.")
 	public ResponseEntity<VoteResponseDto> endVote(
-		@PathVariable("voteId")
-		String voteId, // 파라미터 이름 명시
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable("voteId") String voteId, // 파라미터 이름 명시
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return ResponseEntity.ok(voteService.endVote(voteId, userDetails.getUser()));
 	}
 
@@ -67,10 +63,8 @@ public class VoteController {
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "투표 재시작", description = "특정 투표를 재시작합니다.")
 	public ResponseEntity<VoteResponseDto> restartVote(
-		@PathVariable("voteId")
-		String voteId, // 파라미터 이름 명시
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable("voteId") String voteId, // 파라미터 이름 명시
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return ResponseEntity.ok(voteService.restartVote(voteId, userDetails.getUser()));
 	}
 
@@ -78,10 +72,8 @@ public class VoteController {
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "투표 조회", description = "특정 투표에 대한 정보를 조회합니다.")
 	public ResponseEntity<VoteResponseDto> getVoteById(
-		@PathVariable("voteId")
-		String voteId, // 파라미터 이름 명시
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable("voteId") String voteId, // 파라미터 이름 명시
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		VoteResponseDto voteResponse = voteService.getVoteById(voteId, userDetails.getUser());
 		return ResponseEntity.ok(voteResponse);
 	}

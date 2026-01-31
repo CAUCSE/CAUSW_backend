@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.community.post.api.v1.dto.BoardPostsResponseDto;
 import net.causw.app.main.domain.community.post.api.v1.dto.PostCreateRequestDto;
 import net.causw.app.main.domain.community.post.api.v1.dto.PostCreateResponseDto;
@@ -39,6 +40,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@V1Api
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/posts")
@@ -67,10 +69,8 @@ public class PostController {
 		@ApiResponse(responseCode = "4102", description = "동아리에서 추방된 사용자입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
 	})
 	public PostResponseDto findPostById(
-		@PathVariable("id")
-		String id,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable("id") String id,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.postService.findPostById(userDetails.getUser(), id);
 	}
 
@@ -95,14 +95,10 @@ public class PostController {
 		@ApiResponse(responseCode = "4102", description = "동아리에서 추방된 사용자입니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
 	})
 	public BoardPostsResponseDto findAllPost(
-		@RequestParam("boardId")
-		String boardId, // 게시판 id
-		@RequestParam(name = "keyword", defaultValue = "")
-		String keyword,
-		@RequestParam(name = "pageNum", defaultValue = "0")
-		Integer pageNum, // PageNation
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@RequestParam("boardId") String boardId, // 게시판 id
+		@RequestParam(name = "keyword", defaultValue = "") String keyword,
+		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum, // PageNation
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.postService.findAllPost(userDetails.getUser(), boardId, keyword, pageNum);
 	}
 
@@ -110,10 +106,8 @@ public class PostController {
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "앱 자체 공지사항 확인 API(프론트에 없음)", description = "현재 프론트단에 코드가 존재하지 않습니다")
 	public BoardPostsResponseDto findAllAppNotice(
-		@RequestParam(name = "pageNum", defaultValue = "0")
-		Integer pageNum,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return this.postService.findAllAppNotice(userDetails.getUser(), pageNum);
 	}
 
@@ -139,12 +133,9 @@ public class PostController {
 		@ApiResponse(responseCode = "4107", description = "사용자가 해당 동아리의 동아리장이 아닙니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
 	})
 	public PostCreateResponseDto createPost(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@RequestPart(value = "postCreateRequestDto") @Valid
-		PostCreateRequestDto postCreateRequestDto,
-		@RequestPart(value = "attachImageList", required = false)
-		List<MultipartFile> attachImageList) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestPart(value = "postCreateRequestDto") @Valid PostCreateRequestDto postCreateRequestDto,
+		@RequestPart(value = "attachImageList", required = false) List<MultipartFile> attachImageList) {
 		return this.postService.createPost(userDetails.getUser(), postCreateRequestDto, attachImageList);
 	}
 
@@ -170,12 +161,9 @@ public class PostController {
 		@ApiResponse(responseCode = "4107", description = "사용자가 해당 동아리의 동아리장이 아닙니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnauthorizedException.class)))
 	})
 	public PostCreateResponseDto createPostWithForm(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@RequestPart(value = "postCreateWithFormRequestDto") @Valid
-		PostCreateWithFormRequestDto postCreateWithFormRequestDto,
-		@RequestPart(value = "attachImageList", required = false)
-		List<MultipartFile> attachImageList) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestPart(value = "postCreateWithFormRequestDto") @Valid PostCreateWithFormRequestDto postCreateWithFormRequestDto,
+		@RequestPart(value = "attachImageList", required = false) List<MultipartFile> attachImageList) {
 		return this.postService.createPostWithForm(userDetails.getUser(), postCreateWithFormRequestDto,
 			attachImageList);
 	}
@@ -204,10 +192,8 @@ public class PostController {
 		@ApiResponse(responseCode = "5000", description = "Post id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
 	})
 	public void deletePost(
-		@PathVariable("id")
-		String id,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable("id") String id,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		postService.deletePost(userDetails.getUser(), id);
 	}
 
@@ -246,14 +232,10 @@ public class PostController {
 		@ApiResponse(responseCode = "5000", description = "Post id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
 	})
 	public void updatePost(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@PathVariable("id")
-		String id,
-		@RequestPart(value = "postUpdateRequestDto") @Valid
-		PostUpdateRequestDto postUpdateRequestDto,
-		@RequestPart(value = "attachImageList", required = false)
-		List<MultipartFile> attachImageList) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable("id") String id,
+		@RequestPart(value = "postUpdateRequestDto") @Valid PostUpdateRequestDto postUpdateRequestDto,
+		@RequestPart(value = "attachImageList", required = false) List<MultipartFile> attachImageList) {
 
 		postService.updatePost(
 			userDetails.getUser(),
@@ -289,14 +271,10 @@ public class PostController {
 		@ApiResponse(responseCode = "5000", description = "Post id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
 	})
 	public void updatePostWithForm(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@PathVariable("id")
-		String id,
-		@RequestPart(value = "postUpdateWithFormRequestDto") @Valid
-		PostUpdateWithFormRequestDto postUpdateWithFormRequestDto,
-		@RequestPart(value = "attachImageList", required = false)
-		List<MultipartFile> attachImageList) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable("id") String id,
+		@RequestPart(value = "postUpdateWithFormRequestDto") @Valid PostUpdateWithFormRequestDto postUpdateWithFormRequestDto,
+		@RequestPart(value = "attachImageList", required = false) List<MultipartFile> attachImageList) {
 		postService.updatePostWithForm(userDetails.getUser(), id, postUpdateWithFormRequestDto, attachImageList);
 	}
 
@@ -327,10 +305,8 @@ public class PostController {
 		@ApiResponse(responseCode = "5000", description = "Post id checked, but exception occurred", content = @Content(mediaType = "application/json", schema = @Schema(implementation = InternalServerException.class)))
 	})
 	public void restorePost(
-		@PathVariable("id")
-		String id,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable("id") String id,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		postService.restorePost(
 			userDetails.getUser(),
 			id);
@@ -351,10 +327,8 @@ public class PostController {
 		@ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
 	})
 	public void likePost(
-		@PathVariable("id")
-		String id,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable("id") String id,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		this.postService.likePost(userDetails.getUser(), id);
 	}
 
@@ -373,10 +347,8 @@ public class PostController {
 		@ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
 	})
 	public void cancelLikePost(
-		@PathVariable("id")
-		String id,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable("id") String id,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		this.postService.cancelLikePost(userDetails.getUser(), id);
 	}
 
@@ -396,10 +368,8 @@ public class PostController {
 		@ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
 	})
 	public void favoritePost(
-		@PathVariable("id")
-		String id,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable("id") String id,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		this.postService.favoritePost(userDetails.getUser(), id);
 	}
 
@@ -420,10 +390,8 @@ public class PostController {
 		@ApiResponse(responseCode = "4012", description = "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestException.class))),
 	})
 	public void cancelFavoritePost(
-		@PathVariable("id")
-		String id,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable("id") String id,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		this.postService.cancelFavoritePost(userDetails.getUser(), id);
 	}
 
@@ -431,10 +399,8 @@ public class PostController {
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "로그인한 사용자의 게시글 알람 설정 켜기", description = "id에는 post id 값을 넣어주세요")
 	public PostSubscribeResponseDto subscribePost(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@PathVariable("id")
-		String id) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable("id") String id) {
 		return postService.setPostSubscribe(userDetails.getUser(), id, true);
 	}
 
@@ -442,10 +408,8 @@ public class PostController {
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "로그인한 사용자의 게시글 알람 설정 끄기", description = "id에는 post id 값을 넣어주세요")
 	public PostSubscribeResponseDto unsubscribePost(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@PathVariable("id")
-		String id) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable("id") String id) {
 		return postService.setPostSubscribe(userDetails.getUser(), id, false);
 	}
 

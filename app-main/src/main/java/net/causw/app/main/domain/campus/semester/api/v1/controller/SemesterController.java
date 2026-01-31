@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.campus.semester.api.v1.dto.CreateSemesterRequestDto;
 import net.causw.app.main.domain.campus.semester.api.v1.dto.CurrentSemesterResponseDto;
 import net.causw.app.main.domain.campus.semester.service.v1.SemesterService;
@@ -22,6 +23,7 @@ import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 
+@V1Api
 @RestController
 @RequestMapping("/api/v1/semesters")
 @RequiredArgsConstructor
@@ -50,10 +52,8 @@ public class SemesterController {
 	@PreAuthorize("@security.hasRole(@Role.ADMIN)")
 	@Operation(summary = "학기 생성(개발 테스트 및 관리자용)", description = "새로운 학기를 생성합니다.")
 	public void createSemester(
-		@RequestBody
-		CreateSemesterRequestDto createSemesterRequestDto,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@RequestBody CreateSemesterRequestDto createSemesterRequestDto,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		semesterService.createSemester(createSemesterRequestDto, userDetails.getUser());
 	}
 
@@ -66,8 +66,7 @@ public class SemesterController {
 	@PreAuthorize("@security.hasRoleGroup(RoleGroup.EXECUTIVES)")
 	@Operation(summary = "다음 학기 생성(재학 인증 일괄 요청)", description = "다음 학기를 생성합니다. 자동으로 재학 인증도 일괄 요청 됩니다.")
 	public void createNextSemester(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		semesterService.createNextSemester(userDetails.getUser());
 	}
 
@@ -76,8 +75,7 @@ public class SemesterController {
 	@PreAuthorize("@security.hasRole(@Role.ADMIN)")
 	@Operation(summary = "학기 삭제(개발 테스트 및 관리자용)", description = "특정 학기를 삭제합니다.")
 	public void deleteSemester(
-		@PathVariable(value = "semesterId")
-		String semesterId) {
+		@PathVariable(value = "semesterId") String semesterId) {
 		semesterService.deleteSemester(semesterId);
 	}
 }

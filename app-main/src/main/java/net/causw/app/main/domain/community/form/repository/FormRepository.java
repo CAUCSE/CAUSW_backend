@@ -15,8 +15,7 @@ import net.causw.app.main.domain.community.form.entity.Form;
 @Repository
 public interface FormRepository extends JpaRepository<Form, String> {
 	@NotNull
-	Optional<Form> findByIdAndIsDeleted(@NotNull
-	String id, Boolean isDeleted);
+	Optional<Form> findByIdAndIsDeleted(@NotNull String id, Boolean isDeleted);
 
 	List<Form> findAllByCircleAndIsDeletedAndIsClosed(Circle circle, Boolean isDeleted, Boolean isClosed);
 

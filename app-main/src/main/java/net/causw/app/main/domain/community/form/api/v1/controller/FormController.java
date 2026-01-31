@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.community.form.api.v1.dto.request.FormReplyRequestDto;
 import net.causw.app.main.domain.community.form.api.v1.dto.response.FormResponseDto;
 import net.causw.app.main.domain.community.form.api.v1.dto.response.QuestionSummaryResponseDto;
@@ -31,6 +32,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 
+@V1Api
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/forms")
@@ -42,12 +44,9 @@ public class FormController {
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "신청서 마감 여부 설정", description = "신청서의 마감 여부를 설정합니다.")
 	public void setFormIsClosed(
-		@PathVariable(name = "formId")
-		String formId,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@RequestHeader @NotNull
-		Boolean targetIsClosed) {
+		@PathVariable(name = "formId") String formId,
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestHeader @NotNull Boolean targetIsClosed) {
 		formService.setFormIsClosed(formId, userDetails.getUser(), targetIsClosed);
 	}
 
@@ -55,10 +54,8 @@ public class FormController {
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "신청서 응답 가능 여부 조회", description = "신청서 응답이 가능한지 여부를 조회합니다.")
 	public Boolean getCanReplyToPostForm(
-		@PathVariable(name = "formId")
-		String formId,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable(name = "formId") String formId,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return formService.getCanReplyToPostForm(userDetails.getUser(), formId);
 	}
 
@@ -66,10 +63,8 @@ public class FormController {
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "신청서 조회", description = "신청서를 조회합니다.")
 	public FormResponseDto getForm(
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
-		@PathVariable(name = "formId")
-		String formId) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable(name = "formId") String formId) {
 		return formService.getFormById(userDetails.getUser(), formId);
 	}
 
@@ -77,12 +72,9 @@ public class FormController {
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "신청서 응답 작성", description = "신청서 응답을 작성합니다.")
 	public void replyForm(
-		@PathVariable(name = "formId")
-		String formId,
-		@Valid @RequestBody
-		FormReplyRequestDto formReplyRequestDto,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable(name = "formId") String formId,
+		@Valid @RequestBody FormReplyRequestDto formReplyRequestDto,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		formService.replyForm(formId, formReplyRequestDto, userDetails.getUser());
 	}
 
@@ -90,12 +82,9 @@ public class FormController {
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "신청서 결과 전체 페이징 조회", description = "신청서 결과 전체를 페이징으로 조회합니다. 게시글의 신청서는 게시글 작성자만, 동아리 신청서는 동아리장만 조회가 가능합니다.")
 	public ReplyPageResponseDto findAllReplyPageByForm(
-		@PathVariable(name = "formId")
-		String formId,
-		@ParameterObject
-		Pageable pageable,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable(name = "formId") String formId,
+		@ParameterObject Pageable pageable,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return formService.findAllReplyPageByForm(formId, pageable, userDetails.getUser());
 	}
 
@@ -103,10 +92,8 @@ public class FormController {
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "신청서 결과 요약 조회", description = "신청서 결과를 요약 조회합니다.")
 	public List<QuestionSummaryResponseDto> findSummaryReply(
-		@PathVariable(name = "formId")
-		String formId,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails) {
+		@PathVariable(name = "formId") String formId,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return formService.findSummaryReply(formId, userDetails.getUser());
 	}
 
@@ -115,10 +102,8 @@ public class FormController {
 	@Operation(summary = "동아리 신청서 답변 유저별 조회", description = "각 유저의 동아리 신청서에 대한 답변을 조회합니다.")
 	@PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES_AND_CIRCLE_LEADER)")
 	public List<UserReplyResponseDto> findReplyByUserAndCircle(
-		@PathVariable(name = "userId")
-		String userId,
-		@PathVariable(name = "circleId")
-		String circleId) {
+		@PathVariable(name = "userId") String userId,
+		@PathVariable(name = "circleId") String circleId) {
 		return formService.getReplyByUserAndCircle(userId, circleId);
 	}
 
@@ -126,10 +111,8 @@ public class FormController {
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "신청서 결과 엑셀 다운로드", description = "신청서 결과를 엑셀로 다운로드합니다.")
 	public void exportFormResult(
-		@PathVariable(name = "formId")
-		String formId,
-		@AuthenticationPrincipal
-		CustomUserDetails userDetails,
+		@PathVariable(name = "formId") String formId,
+		@AuthenticationPrincipal CustomUserDetails userDetails,
 		HttpServletResponse response) {
 		formService.exportFormResult(formId, userDetails.getUser(), response);
 	}
