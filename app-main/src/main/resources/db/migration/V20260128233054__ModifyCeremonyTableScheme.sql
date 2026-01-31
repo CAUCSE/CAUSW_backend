@@ -19,14 +19,18 @@ WHERE ceremony_type IS NULL;
 ALTER TABLE tb_ceremony
     MODIFY ceremony_type ENUM('CELEBRATION', 'CONDOLENCE') NOT NULL;
 
--- 4. start_time, end_time,
+-- 4. ceremony_category ENUM에서 String으로 변경
+ALTER TABLE tb_ceremony
+    MODIFY ceremony_category VARCHAR(50) NOT NULL;
+
+-- 5. start_time, end_time,
 --    relation_type, family_relation, alumni_relation, alumni_name, alumni_admission_year,
 --    address, post_address, detailed_address, contact, link 칼럼 추가
 ALTER TABLE tb_ceremony
     ADD COLUMN start_time TIME NULL,
     ADD COLUMN end_time TIME NULL,
     ADD COLUMN relation_type ENUM('ME', 'FAMILY', 'ALUMNI') NULL,
-    ADD COLUMN family_relation ENUM('SPOUSE', 'FATHER', 'MOTHER', 'FATHER_IN_LAW', 'MOTHER_IN_LAW', 'SON', 'DAUGHTER', 'BROTHERS', 'SISTERS', 'SIBLINGS', 'GRANDFATHER', ' GRANDMOTHER') NULL,
+    ADD COLUMN family_relation ENUM('SPOUSE', 'FATHER', 'MOTHER', 'FATHER_IN_LAW', 'MOTHER_IN_LAW', 'SON', 'DAUGHTER', 'BROTHERS', 'SISTERS', 'SIBLINGS', 'GRANDFATHER', 'GRANDMOTHER') NULL,
     ADD COLUMN alumni_relation ENUM('ALUMNI', 'SPOUSE', 'FATHER', 'MOTHER', 'FATHER_IN_LAW', 'MOTHER_IN_LAW', 'SON', 'DAUGHTER') NULL,
     ADD COLUMN alumni_name VARCHAR(20) NULL,
     ADD COLUMN alumni_admission_year VARCHAR(5) NULL,
@@ -35,3 +39,7 @@ ALTER TABLE tb_ceremony
     ADD COLUMN detailed_address VARCHAR(80) NULL,
     ADD COLUMN contact VARCHAR(20) NULL,
     ADD COLUMN link VARCHAR(255) NULL;
+
+-- 6. relation_type 기존 데이터 임의로 채우기
+UPDATE tb_ceremony SET relation_type = 'ME' WHERE relation_type IS NULL;
+ALTER TABLE tb_ceremony MODIFY relation_type ENUM('ME', 'FAMILY', 'ALUMNI') NOT NULL;
