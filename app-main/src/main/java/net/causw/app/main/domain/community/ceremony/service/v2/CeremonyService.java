@@ -86,6 +86,12 @@ public class CeremonyService {
 			}
 		}
 
+		if (createCeremonyRequestDTO.getEndDate() == null && createCeremonyRequestDTO.getEndTime() != null) {
+			throw new BadRequestException(
+				ErrorCode.INVALID_USER_DATA_REQUEST,
+				MessageUtil.CEREMONY_ENDDATE_REQUIRED);
+		}
+
 		Ceremony ceremony = Ceremony.createWithImages(
 			user,
 			createCeremonyRequestDTO.getCeremonyType(),

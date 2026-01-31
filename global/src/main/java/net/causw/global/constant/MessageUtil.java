@@ -189,6 +189,7 @@ public class MessageUtil {
 	public static final String CEREMONY_FAMILY_RELATION_REQUIRED = "관계가 가족인 경우, 상세 관계는 필수 입력 값입니다.";
 	public static final String CEREMONY_ALUMNI_NAME_REQUIRED = "동문소식 대신 전달인 경우, 동문 이름은 필수 입력 값입니다.";
 	public static final String CEREMONY_ALUMNI_ADMISSION_YEAR_REQUIRED = "동문소식 대신 전달인 경우, 동문 입학년도는 필수 입력 값입니다.";
+	public static final String CEREMONY_ENDDATE_REQUIRED = "경조사 종료 시간을 입력할 경우 경조사 종료일을 입력해야 합니다.";
 
 	// Notification
 	public static final String NOTIFICATION_NOT_FOUND = "존재하지 않는 알람입니다.";
