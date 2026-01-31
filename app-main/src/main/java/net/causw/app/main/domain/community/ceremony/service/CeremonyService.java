@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.community.ceremony.service.v2;
+package net.causw.app.main.domain.community.ceremony.service;
 
 import java.util.ArrayList;
 import java.util.List;
