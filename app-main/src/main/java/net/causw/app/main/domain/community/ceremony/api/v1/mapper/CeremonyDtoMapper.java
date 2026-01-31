@@ -9,9 +9,10 @@ import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.CeremonyAttachImage;
+import net.causw.app.main.domain.community.ceremony.api.v1.dto.CeremonyDetailResponseDto;
 import net.causw.app.main.domain.community.ceremony.api.v1.dto.CeremonyNotificationSettingResponseDto;
-import net.causw.app.main.domain.community.ceremony.api.v1.dto.CeremonyResponseDto;
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
+import net.causw.app.main.domain.community.ceremony.enums.AlumniRelation;
 import net.causw.app.main.domain.notification.notification.entity.CeremonyNotificationSetting;
 
 @Mapper(componentModel = "spring")
@@ -19,46 +20,108 @@ public interface CeremonyDtoMapper {
 
 	CeremonyDtoMapper INSTANCE = Mappers.getMapper(CeremonyDtoMapper.class);
 
-	// general
+	// 경조사 상세 보기
 	@Mapping(target = "id", source = "id")
-	@Mapping(target = "description", source = "description")
+	@Mapping(target = "title", source = ".", qualifiedByName = "mapTitle")
+	@Mapping(target = "type", source = "ceremonyType")
+	@Mapping(target = "category", source = "ceremonyCategory")
 	@Mapping(target = "startDate", source = "startDate")
 	@Mapping(target = "endDate", source = "endDate")
-	@Mapping(target = "category", source = "ceremonyCategory")
-	@Mapping(target = "ceremonyState", source = "ceremonyState")
+	@Mapping(target = "startTime", source = "startTime")
+	@Mapping(target = "endTime", source = "endTime")
+	@Mapping(target = "applicant", source = "user.name")
+	@Mapping(target = "subject", source = ".", qualifiedByName = "mapSubject")
+	@Mapping(target = "content", source = "description")
 	@Mapping(target = "attachedImageUrlList", source = "ceremonyAttachImageList", qualifiedByName = "mapAttachedImages")
-	@Mapping(target = "note", source = "note")
-	@Mapping(target = "applicantStudentId", source = "user.studentId")
-	@Mapping(target = "applicantName", source = "user.name")
-	@Mapping(target = "title", source = ".", qualifiedByName = "mapTitle")
-	@Mapping(target = "isSetAll", ignore = true) // general에서는 숨김
-	@Mapping(target = "targetAdmissionYears", ignore = true)
-	// general에서는 숨김
-	CeremonyResponseDto toCeremonyResponseDto(Ceremony ceremony);
-
-	// admin, my
-	@Mapping(target = "id", source = "id")
-	@Mapping(target = "description", source = "description")
-	@Mapping(target = "startDate", source = "startDate")
-	@Mapping(target = "endDate", source = "endDate")
-	@Mapping(target = "category", source = "ceremonyCategory")
-	@Mapping(target = "ceremonyState", source = "ceremonyState")
-	@Mapping(target = "attachedImageUrlList", source = "ceremonyAttachImageList", qualifiedByName = "mapAttachedImages")
-	@Mapping(target = "note", source = "note")
-	@Mapping(target = "applicantStudentId", source = "user.studentId")
-	@Mapping(target = "applicantName", source = "user.name")
-	@Mapping(target = "title", source = ".", qualifiedByName = "mapTitle")
-	@Mapping(target = "isSetAll", source = "ceremony.setAll") // 상세 조회에서는 표시
+	@Mapping(target = "address", source = "address")
+	@Mapping(target = "postalAddress", source = "postalAddress")
+	@Mapping(target = "detailedAddress", source = "detailedAddress")
+	@Mapping(target = "contact", source = "contact")
+	@Mapping(target = "link", source = "link")
+	@Mapping(target = "isSetAll", source = "ceremony.setAll")
 	@Mapping(target = "targetAdmissionYears", source = "targetAdmissionYears")
-	// 상세 조회에서는 표시
-	CeremonyResponseDto toDetailedCeremonyResponseDto(Ceremony ceremony);
+	@Mapping(target = "state", ignore = true)
+	@Mapping(target = "note", ignore = true)
+	CeremonyDetailResponseDto toDetailedCeremonyResponseDto(Ceremony ceremony);
+
+	// 내 경조사 상세 보기
+	@Mapping(target = "id", source = "id")
+	@Mapping(target = "title", source = ".", qualifiedByName = "mapTitle")
+	@Mapping(target = "type", source = "ceremonyType")
+	@Mapping(target = "category", source = "ceremonyCategory")
+	@Mapping(target = "startDate", source = "startDate")
+	@Mapping(target = "endDate", source = "endDate")
+	@Mapping(target = "startTime", source = "startTime")
+	@Mapping(target = "endTime", source = "endTime")
+	@Mapping(target = "applicant", source = "user.name")
+	@Mapping(target = "subject", source = ".", qualifiedByName = "mapSubject")
+	@Mapping(target = "content", source = "description")
+	@Mapping(target = "attachedImageUrlList", source = "ceremonyAttachImageList", qualifiedByName = "mapAttachedImages")
+	@Mapping(target = "address", source = "address")
+	@Mapping(target = "postalAddress", source = "postalAddress")
+	@Mapping(target = "detailedAddress", source = "detailedAddress")
+	@Mapping(target = "contact", source = "contact")
+	@Mapping(target = "link", source = "link")
+	@Mapping(target = "isSetAll", source = "ceremony.setAll")
+	@Mapping(target = "targetAdmissionYears", source = "targetAdmissionYears")
+	@Mapping(target = "state", source = "ceremonyState")
+	@Mapping(target = "note", source = "note")
+	CeremonyDetailResponseDto toMyCeremonyDetailResponseDto(Ceremony ceremony);
 
 	@Named("mapTitle")
 	static String mapTitle(Ceremony ceremony) {
-		return String.format("%s(%s) - %s",
-			ceremony.getUser().getName(),
-			ceremony.getUser().getAdmissionYear().toString(),
-			ceremony.getCeremonyCategory().getLabel());
+		switch (ceremony.getRelationType()) {
+			case FAMILY -> {
+				return String.format("%s(%s학번) %s %s",
+					ceremony.getUser().getName(),
+					ceremony.getUser().getAdmissionYear().toString().substring(2, 4),
+					ceremony.getFamilyRelation().getLabel(),
+					ceremony.getCeremonyCategory());
+			}
+			case ALUMNI -> {
+				if (ceremony.getAlumniRelation() == AlumniRelation.ALUMNI) {
+					return String.format("%s(%s학번) %s",
+						ceremony.getAlumniName(),
+						ceremony.getAlumniAdmissionYear().substring(2, 4),
+						ceremony.getCeremonyCategory());
+				} else {
+					return String.format("%s(%s학번) %s %s",
+						ceremony.getAlumniName(),
+						ceremony.getAlumniAdmissionYear().substring(2, 4),
+						ceremony.getAlumniRelation().getLabel(),
+						ceremony.getCeremonyCategory());
+				}
+			}
+			default -> {
+				return String.format("%s(%s학번) %s",
+					ceremony.getUser().getName(),
+					ceremony.getUser().getAdmissionYear().toString().substring(2, 4),
+					ceremony.getCeremonyCategory());
+			}
+		}
+	}
+
+	@Named("mapSubject")
+	static String mapSubject(Ceremony ceremony) {
+		switch (ceremony.getRelationType()) {
+			case FAMILY -> {
+				return String.format("%s %s",
+					ceremony.getUser().getName(),
+					ceremony.getFamilyRelation().getLabel());
+			}
+			case ALUMNI -> {
+				if (ceremony.getAlumniRelation() == AlumniRelation.ALUMNI) {
+					return ceremony.getAlumniName();
+				} else {
+					return String.format("%s %s",
+						ceremony.getAlumniName(),
+						ceremony.getAlumniRelation().getLabel());
+				}
+			}
+			default -> {
+				return ceremony.getUser().getName();
+			}
+		}
 	}
 
 	@Mapping(target = "isNotificationActive", source = "notificationActive")

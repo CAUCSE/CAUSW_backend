@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.community.ceremony.entity;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -8,8 +9,11 @@ import java.util.Set;
 
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.CeremonyAttachImage;
-import net.causw.app.main.domain.community.ceremony.enums.CeremonyCategory;
+import net.causw.app.main.domain.community.ceremony.enums.AlumniRelation;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
+import net.causw.app.main.domain.community.ceremony.enums.CeremonyType;
+import net.causw.app.main.domain.community.ceremony.enums.FamilyRelation;
+import net.causw.app.main.domain.community.ceremony.enums.RelationType;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.entity.BaseEntity;
 
@@ -45,25 +49,59 @@ public class Ceremony extends BaseEntity {
 	private User user;
 
 	@Enumerated(EnumType.STRING)
+	@Column(name = "ceremony_type", nullable = false)
+	private CeremonyType ceremonyType;
+
 	@Column(name = "ceremony_category", nullable = false)
-	private CeremonyCategory ceremonyCategory;
-
-	@Enumerated(EnumType.STRING)
-	@Column(name = "ceremony_state", nullable = false)
-	@Builder.Default
-	private CeremonyState ceremonyState = CeremonyState.AWAIT;
-
-	@Column(name = "description", nullable = false)
-	private String description;
+	private String ceremonyCategory;
 
 	@Column(name = "start_date", nullable = false)
 	private LocalDate startDate;
 
-	@Column(name = "end_date", nullable = false)
+	@Column(name = "end_date")
 	private LocalDate endDate;
 
-	@Column(name = "note", nullable = true)
-	private String note = "";
+	@Column(name = "start_time")
+	private LocalTime startTime;
+
+	@Column(name = "end_time")
+	private LocalTime endTime;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "relation_type", nullable = false)
+	private RelationType relationType;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "family_relation")
+	private FamilyRelation familyRelation;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "alumni_relation")
+	private AlumniRelation alumniRelation;
+
+	@Column(name = "alumni_name")
+	private String alumniName;
+
+	@Column(name = "alumni_admission_year")
+	private String alumniAdmissionYear;
+
+	@Column(name = "description")
+	private String description;
+
+	@Column(name = "address")
+	private String address;
+
+	@Column(name = "postal_address")
+	private String postalAddress;
+
+	@Column(name = "detailed_address")
+	private String detailedAddress;
+
+	@Column(name = "contact")
+	private String contact;
+
+	@Column(name = "link")
+	private String link;
 
 	@Column(name = "is_set_all", nullable = false)
 	@Builder.Default
@@ -80,6 +118,14 @@ public class Ceremony extends BaseEntity {
 	@Builder.Default
 	private List<CeremonyAttachImage> ceremonyAttachImageList = new ArrayList<>();
 
+	@Enumerated(EnumType.STRING)
+	@Column(name = "ceremony_state", nullable = false)
+	@Builder.Default
+	private CeremonyState ceremonyState = CeremonyState.AWAIT;
+
+	@Column(name = "note", nullable = true)
+	private String note;
+
 	public void approve() {
 		this.ceremonyState = CeremonyState.ACCEPT;
 	}
@@ -90,10 +136,23 @@ public class Ceremony extends BaseEntity {
 
 	public static Ceremony of(
 		User user,
-		CeremonyCategory ceremonyCategory,
-		String description,
+		CeremonyType ceremonyType,
+		String ceremonyCategory,
 		LocalDate startDate,
 		LocalDate endDate,
+		LocalTime startTime,
+		LocalTime endTime,
+		RelationType relationType,
+		FamilyRelation familyRelation,
+		AlumniRelation alumniRelation,
+		String alumniName,
+		String alumniAdmissionYear,
+		String description,
+		String address,
+		String postalAddress,
+		String detailedAddress,
+		String contact,
+		String link,
 		boolean isSetAll,
 		List<String> targetAdmissionYears) {
 		Set<String> targetYearsSet = targetAdmissionYears != null
@@ -102,10 +161,23 @@ public class Ceremony extends BaseEntity {
 
 		return Ceremony.builder()
 			.user(user)
+			.ceremonyType(ceremonyType)
 			.ceremonyCategory(ceremonyCategory)
-			.description(description)
 			.startDate(startDate)
 			.endDate(endDate)
+			.startTime(startTime)
+			.endTime(endTime)
+			.relationType(relationType)
+			.familyRelation(familyRelation)
+			.alumniRelation(alumniRelation)
+			.alumniName(alumniName)
+			.alumniAdmissionYear(alumniAdmissionYear)
+			.description(description)
+			.address(address)
+			.postalAddress(postalAddress)
+			.detailedAddress(detailedAddress)
+			.contact(contact)
+			.link(link)
 			.isSetAll(isSetAll)
 			.targetAdmissionYears(targetYearsSet)
 			.build();
@@ -113,19 +185,45 @@ public class Ceremony extends BaseEntity {
 
 	public static Ceremony createWithImages(
 		User user,
-		CeremonyCategory ceremonyCategory,
-		String description,
+		CeremonyType ceremonyType,
+		String ceremonyCategory,
 		LocalDate startDate,
 		LocalDate endDate,
+		LocalTime startTime,
+		LocalTime endTime,
+		RelationType relationType,
+		FamilyRelation familyRelation,
+		AlumniRelation alumniRelation,
+		String alumniName,
+		String alumniAdmissionYear,
+		String description,
+		String address,
+		String postalAddress,
+		String detailedAddress,
+		String contact,
+		String link,
 		boolean isSetAll,
 		List<String> targetAdmissionYears,
 		List<UuidFile> ceremonyAttachImageUuidFileList) {
 		Ceremony ceremony = Ceremony.of(
 			user,
+			ceremonyType,
 			ceremonyCategory,
-			description,
 			startDate,
 			endDate,
+			startTime,
+			endTime,
+			relationType,
+			familyRelation,
+			alumniRelation,
+			alumniName,
+			alumniAdmissionYear,
+			description,
+			address,
+			postalAddress,
+			detailedAddress,
+			contact,
+			link,
 			isSetAll,
 			targetAdmissionYears);
 		List<CeremonyAttachImage> ceremonyAttachImageList = ceremonyAttachImageUuidFileList.stream()

@@ -14,8 +14,8 @@ import org.springframework.web.multipart.MultipartFile;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.service.v1.UuidFileV1Service;
+import net.causw.app.main.domain.community.ceremony.api.v1.dto.CeremonyDetailResponseDto;
 import net.causw.app.main.domain.community.ceremony.api.v1.dto.CeremonyNotificationSettingResponseDto;
-import net.causw.app.main.domain.community.ceremony.api.v1.dto.CeremonyResponseDto;
 import net.causw.app.main.domain.community.ceremony.api.v1.dto.CreateCeremonyNotificationSettingDto;
 import net.causw.app.main.domain.community.ceremony.api.v1.dto.CreateCeremonyRequestDto;
 import net.causw.app.main.domain.community.ceremony.api.v1.dto.UpdateCeremonyStateRequestDto;
@@ -44,7 +44,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class CeremonyService {
+public class CeremonyV1Service {
 	private final CeremonyRepository ceremonyRepository;
 	private final UserRepository userRepository;
 	private final CeremonyNotificationService ceremonyNotificationService;
@@ -52,8 +52,9 @@ public class CeremonyService {
 	private final CeremonyNotificationSettingRepository ceremonyNotificationSettingRepository;
 	private final PageableFactory pageableFactory;
 
+	@Deprecated
 	@Transactional
-	public CeremonyResponseDto createCeremony(
+	public CeremonyDetailResponseDto createCeremony(
 		User user,
 		@Valid CreateCeremonyRequestDto createCeremonyRequestDTO,
 		List<MultipartFile> imageFileList) {
@@ -87,16 +88,29 @@ public class CeremonyService {
 
 		Ceremony ceremony = Ceremony.createWithImages(
 			user,
-			createCeremonyRequestDTO.getCategory(),
-			createCeremonyRequestDTO.getDescription(),
+			createCeremonyRequestDTO.getCeremonyType(),
+			createCeremonyRequestDTO.getCeremonyCategory(),
 			createCeremonyRequestDTO.getStartDate(),
 			createCeremonyRequestDTO.getEndDate(),
+			createCeremonyRequestDTO.getStartTime(),
+			createCeremonyRequestDTO.getEndTime(),
+			createCeremonyRequestDTO.getRelationType(),
+			createCeremonyRequestDTO.getFamilyRelation(),
+			createCeremonyRequestDTO.getAlumniRelation(),
+			createCeremonyRequestDTO.getAlumniName(),
+			createCeremonyRequestDTO.getAlumniAdmissionYear(),
+			createCeremonyRequestDTO.getContent(),
+			createCeremonyRequestDTO.getAddress(),
+			createCeremonyRequestDTO.getPostalAddress(),
+			createCeremonyRequestDTO.getDetailedAddress(),
+			createCeremonyRequestDTO.getContact(),
+			createCeremonyRequestDTO.getLink(),
 			createCeremonyRequestDTO.getIsSetAll(),
 			targetAdmissionYears,
 			uuidFileList);
 		ceremonyRepository.save(ceremony);
 
-		return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
+		return CeremonyDtoMapper.INSTANCE.toMyCeremonyDetailResponseDto(ceremony);
 	}
 
 	@Transactional(readOnly = true)
@@ -115,8 +129,9 @@ public class CeremonyService {
 		return ceremonies.map(NotificationDtoMapper.INSTANCE::toCeremonyListNotificationDto);
 	}
 
+	@Deprecated
 	@Transactional(readOnly = true)
-	public CeremonyResponseDto getCeremony(String ceremonyId, CeremonyContext context, User user) {
+	public CeremonyDetailResponseDto getCeremony(String ceremonyId, CeremonyContext context, User user) {
 		Ceremony ceremony = ceremonyRepository.findById(ceremonyId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
@@ -138,14 +153,13 @@ public class CeremonyService {
 						MessageUtil.CEREMONY_ACCESS_ADMIN_ONLY);
 				}
 				return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
-			case GENERAL:
 			default:
-				return CeremonyDtoMapper.INSTANCE.toCeremonyResponseDto(ceremony);
+				return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
 		}
 	}
 
 	@Transactional
-	public CeremonyResponseDto updateUserCeremonyStatus(UpdateCeremonyStateRequestDto updateDto) {
+	public CeremonyDetailResponseDto updateUserCeremonyStatus(UpdateCeremonyStateRequestDto updateDto) {
 		Ceremony ceremony = ceremonyRepository.findById(updateDto.getCeremonyId()).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
@@ -167,7 +181,7 @@ public class CeremonyService {
 	}
 
 	@Transactional
-	public CeremonyResponseDto closeUserCeremonyStatus(User user, String ceremonyId) {
+	public CeremonyDetailResponseDto closeUserCeremonyStatus(User user, String ceremonyId) {
 		Ceremony ceremony = ceremonyRepository.findByIdAndUser(ceremonyId, user).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
