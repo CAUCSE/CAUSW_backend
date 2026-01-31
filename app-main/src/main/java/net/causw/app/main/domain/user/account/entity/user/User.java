@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import jakarta.persistence.*;
 import org.hibernate.annotations.BatchSize;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
@@ -23,18 +24,6 @@ import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.shared.entity.BaseEntity;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -111,6 +100,9 @@ public class User extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private UserState state;
 
+    @Embedded
+    private TermAgreements agreements;
+
 	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
 	private Locker locker;
 
@@ -173,6 +165,7 @@ public class User extends BaseEntity {
 					userCreateRequestDto.getDepartment()))
 			.academicStatus(AcademicStatus.UNDETERMINED)
 			.phoneNumber(userCreateRequestDto.getPhoneNumber())
+                .agreements(TermAgreements.createRequiredAgreements())
 			.isV2(true)
 			.build();
 	}
@@ -193,6 +186,7 @@ public class User extends BaseEntity {
 			.department(graduatedUserCommand.department())
 			.academicStatus(AcademicStatus.GRADUATED)
 			.phoneNumber(graduatedUserCommand.phoneNumber())
+                .agreements(TermAgreements.createRequiredAgreements())
 			.isV2(true)
 			.build();
 	}
@@ -218,6 +212,7 @@ public class User extends BaseEntity {
 		this.nickname = nickname;
 		this.major = major;
 		this.department = department;
+        this.agreements = TermAgreements.createRequiredAgreements();
 	}
 
 	public void updateRejectionOrDropReason(String reason) {
