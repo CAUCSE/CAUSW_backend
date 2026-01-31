@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/notifications/log")
-public class NotificationLogController {
+public class NotificationLogV1Controller {
 	private final NotificationLogV1Service notificationLogV1Service;
 
 	@GetMapping("/general")

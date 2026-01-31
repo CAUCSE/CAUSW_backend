@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.notification.notification.api.v1.dto.NotificationCountResponseDto;
 import net.causw.app.main.domain.notification.notification.api.v1.dto.NotificationResponseDto;
-import net.causw.app.main.domain.notification.notification.api.v1.mapper.NotificationDtoMapper;
+import net.causw.app.main.domain.notification.notification.api.v1.mapper.NotificationDtoV1Mapper;
 import net.causw.app.main.domain.notification.notification.entity.NotificationLog;
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;
 import net.causw.app.main.domain.notification.notification.repository.NotificationLogRepository;
@@ -35,7 +35,7 @@ public class NotificationLogV1Service {
 		Page<NotificationLog> notificationLogs = notificationLogRepository.findByUserAndNotificationTypes(user, types,
 			pageableFactory.create(pageNum, StaticValue.DEFAULT_NOTIFICATION_PAGE_SIZE));
 
-		return notificationLogs.map(log -> NotificationDtoMapper.INSTANCE.toNotificationResponseDto(
+		return notificationLogs.map(log -> NotificationDtoV1Mapper.INSTANCE.toNotificationResponseDto(
 			log.getId(),
 			log.getNotification(),
 			log.getIsRead()));
@@ -48,7 +48,7 @@ public class NotificationLogV1Service {
 			user, types, pageableFactory.create(0, StaticValue.SIDE_NOTIFICATION_PAGE_SIZE));
 
 		return notificationLogs.stream()
-			.map(log -> NotificationDtoMapper.INSTANCE.toNotificationResponseDto(log.getId(), log.getNotification(),
+			.map(log -> NotificationDtoV1Mapper.INSTANCE.toNotificationResponseDto(log.getId(), log.getNotification(),
 				log.getIsRead()))
 			.collect(Collectors.toList());
 	}
@@ -59,7 +59,7 @@ public class NotificationLogV1Service {
 		Page<NotificationLog> notificationLogs = notificationLogRepository.findByUserAndNotificationTypes(user, types,
 			pageableFactory.create(pageNum, StaticValue.DEFAULT_NOTIFICATION_PAGE_SIZE));
 
-		return notificationLogs.map(log -> NotificationDtoMapper.INSTANCE.toNotificationResponseDto(
+		return notificationLogs.map(log -> NotificationDtoV1Mapper.INSTANCE.toNotificationResponseDto(
 			log.getId(),
 			log.getNotification(),
 			log.getIsRead()));
@@ -72,7 +72,7 @@ public class NotificationLogV1Service {
 			user, types, pageableFactory.create(0, StaticValue.SIDE_NOTIFICATION_PAGE_SIZE));
 
 		return notificationLogs.stream()
-			.map(log -> NotificationDtoMapper.INSTANCE.toNotificationResponseDto(log.getId(), log.getNotification(),
+			.map(log -> NotificationDtoV1Mapper.INSTANCE.toNotificationResponseDto(log.getId(), log.getNotification(),
 				log.getIsRead()))
 			.collect(Collectors.toList());
 	}
