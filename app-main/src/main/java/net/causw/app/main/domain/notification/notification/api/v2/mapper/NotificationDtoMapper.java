@@ -4,7 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
-import net.causw.app.main.domain.notification.notification.api.v2.dto.NotificationResponseDto;
+import net.causw.app.main.domain.notification.notification.api.v2.dto.response.NotificationResponseDto;
 import net.causw.app.main.domain.notification.notification.entity.Notification;
 
 @Mapper(componentModel = "spring")

@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.notification.notification.api.v2.dto;
+package net.causw.app.main.domain.notification.notification.api.v2.dto.response;
 
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;
 

@@ -1,14 +1,12 @@
 package net.causw.app.main.domain.notification.notification.service;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.notification.notification.api.v2.dto.NotificationCountResponseDto;
-import net.causw.app.main.domain.notification.notification.api.v2.dto.NotificationResponseDto;
+import net.causw.app.main.domain.notification.notification.api.v2.dto.response.NotificationCountResponseDto;
+import net.causw.app.main.domain.notification.notification.api.v2.dto.response.NotificationResponseDto;
 import net.causw.app.main.domain.notification.notification.api.v2.mapper.NotificationDtoMapper;
 import net.causw.app.main.domain.notification.notification.entity.NotificationLog;
 import net.causw.app.main.domain.notification.notification.repository.NotificationLogRepository;
