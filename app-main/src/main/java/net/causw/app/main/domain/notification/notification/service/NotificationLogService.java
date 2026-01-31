@@ -1,7 +1,7 @@
 package net.causw.app.main.domain.notification.notification.service;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -9,9 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.notification.notification.api.v2.dto.NotificationCountResponseDto;
 import net.causw.app.main.domain.notification.notification.api.v2.dto.NotificationResponseDto;
-import net.causw.app.main.domain.notification.notification.api.v1.mapper.NotificationDtoMapper;
+import net.causw.app.main.domain.notification.notification.api.v2.mapper.NotificationDtoMapper;
 import net.causw.app.main.domain.notification.notification.entity.NotificationLog;
-import net.causw.app.main.domain.notification.notification.enums.NoticeType;
 import net.causw.app.main.domain.notification.notification.repository.NotificationLogRepository;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.pageable.PageableFactory;
@@ -29,15 +28,15 @@ public class NotificationLogService {
 	private final PageableFactory pageableFactory;
 
 	@Transactional(readOnly = true)
-	public NotificationResponseDto getGeneralNotificationTop4(User user) {
-		List<NoticeType> types = Arrays.asList(NoticeType.BOARD, NoticeType.POST, NoticeType.COMMENT);
-		List<NotificationLog> notificationLogs = notificationLogRepository.findByUserAndIsReadFalseNotificationTypes(
-			user, types, pageableFactory.create(0, StaticValue.SIDE_NOTIFICATION_PAGE_SIZE));
+	public NotificationResponseDto getNotificationTop1(User user) {
+		List<NotificationLog> notificationLogs = notificationLogRepository.findByUserAndIsReadFalseNotification(
+			user, pageableFactory.create(0, StaticValue.HOME_NOTIFICATION_PAGE_SIZE));
 
 		return notificationLogs.stream()
+			.findFirst()
 			.map(log -> NotificationDtoMapper.INSTANCE.toNotificationResponseDto(log.getId(), log.getNotification(),
 				log.getIsRead()))
-			.collect(Collectors.toList());
+			.orElse(null);
 	}
 
 	@Transactional
