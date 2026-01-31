@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import net.causw.app.main.domain.notification.notification.api.v1.dto.NotificationCountResponseDto;
 import net.causw.app.main.domain.notification.notification.api.v1.dto.NotificationResponseDto;
-import net.causw.app.main.domain.notification.notification.service.v1.NotificationLogService;
+import net.causw.app.main.domain.notification.notification.service.v1.NotificationLogV1Service;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/notifications/log")
 public class NotificationLogController {
-	private final NotificationLogService notificationLogService;
+	private final NotificationLogV1Service notificationLogV1Service;
 
 	@GetMapping("/general")
 	@ResponseStatus(HttpStatus.OK)
@@ -35,7 +35,7 @@ public class NotificationLogController {
 		CustomUserDetails userDetails,
 		@RequestParam(name = "pageNum", defaultValue = "0")
 		Integer pageNum) {
-		return notificationLogService.getGeneralNotification(userDetails.getUser(), pageNum);
+		return notificationLogV1Service.getGeneralNotification(userDetails.getUser(), pageNum);
 	}
 
 	@GetMapping("/ceremony")
@@ -46,7 +46,7 @@ public class NotificationLogController {
 		CustomUserDetails userDetails,
 		@RequestParam(name = "pageNum", defaultValue = "0")
 		Integer pageNum) {
-		return notificationLogService.getCeremonyNotification(userDetails.getUser(), pageNum);
+		return notificationLogV1Service.getCeremonyNotification(userDetails.getUser(), pageNum);
 	}
 
 	@GetMapping("/general/top4")
@@ -56,7 +56,7 @@ public class NotificationLogController {
 	public List<NotificationResponseDto> getGeneralNotificationTop4(
 		@AuthenticationPrincipal
 		CustomUserDetails userDetails) {
-		return notificationLogService.getGeneralNotificationTop4(userDetails.getUser());
+		return notificationLogV1Service.getGeneralNotificationTop4(userDetails.getUser());
 	}
 
 	@GetMapping("/ceremony/top4")
@@ -66,7 +66,7 @@ public class NotificationLogController {
 	public List<NotificationResponseDto> getCeremonyNotificationTop4(
 		@AuthenticationPrincipal
 		CustomUserDetails userDetails) {
-		return notificationLogService.getCeremonyNotificationTop4(userDetails.getUser());
+		return notificationLogV1Service.getCeremonyNotificationTop4(userDetails.getUser());
 	}
 
 	@PostMapping("/isRead/{id}")
@@ -78,7 +78,7 @@ public class NotificationLogController {
 		CustomUserDetails userDetails,
 		@PathVariable("id")
 		String id) {
-		notificationLogService.readNotification(userDetails.getUser(), id);
+		notificationLogV1Service.readNotification(userDetails.getUser(), id);
 	}
 
 	@GetMapping("/count")
@@ -88,7 +88,7 @@ public class NotificationLogController {
 	public NotificationCountResponseDto getNotificationLogCount(
 		@AuthenticationPrincipal
 		CustomUserDetails userDetails) {
-		return notificationLogService.getNotificationLogCount(userDetails.getUser());
+		return notificationLogV1Service.getNotificationLogCount(userDetails.getUser());
 	}
 
 }

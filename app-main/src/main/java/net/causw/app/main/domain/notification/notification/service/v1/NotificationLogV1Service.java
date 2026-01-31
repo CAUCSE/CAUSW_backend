@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class NotificationLogService {
+public class NotificationLogV1Service {
 	private final NotificationLogRepository notificationLogRepository;
 	private final PageableFactory pageableFactory;
 
