@@ -30,6 +30,7 @@ public class CeremonyService {
 	private final UuidFileService uuidFileService;
 	private final CeremonyRepository ceremonyRepository;
 
+	@Transactional
 	public CeremonyDetailResponseDto createCeremony(
 		User user,
 		@Valid CreateCeremonyRequestDto createCeremonyRequestDTO,
@@ -66,19 +67,19 @@ public class CeremonyService {
 		// 관계 - 상세 관계 검증
 		switch (createCeremonyRequestDTO.getRelationType()) {
 			case FAMILY -> {
-				if (createCeremonyRequestDTO.getFamilyRelation() != null) {
+				if (createCeremonyRequestDTO.getFamilyRelation() == null) {
 					throw new BadRequestException(
 						ErrorCode.INVALID_USER_DATA_REQUEST,
 						MessageUtil.CEREMONY_FAMILY_RELATION_REQUIRED);
 				}
 			}
 			case ALUMNI -> {
-				if (createCeremonyRequestDTO.getAlumniRelation() != null) {
+				if (createCeremonyRequestDTO.getAlumniRelation() == null) {
 					throw new BadRequestException(
 						ErrorCode.INVALID_USER_DATA_REQUEST,
 						MessageUtil.CEREMONY_ALUMNI_NAME_REQUIRED);
 				}
-				if (createCeremonyRequestDTO.getAlumniAdmissionYear() != null) {
+				if (createCeremonyRequestDTO.getAlumniAdmissionYear() == null) {
 					throw new BadRequestException(
 						ErrorCode.INVALID_USER_DATA_REQUEST,
 						MessageUtil.CEREMONY_ALUMNI_ADMISSION_YEAR_REQUIRED);
@@ -127,7 +128,7 @@ public class CeremonyService {
 				MessageUtil.CEREMONY_NOT_FOUND));
 
 		if (context == CeremonyContext.MY) {
-			if (!ceremony.getUser().equals(user)) {
+			if (!ceremony.getUser().getId().equals(user.getId())) {
 				throw new BadRequestException(
 					ErrorCode.INVALID_PARAMETER,
 					MessageUtil.CEREMONY_ACCESS_MY_ONLY);
