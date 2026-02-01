@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @MappedSuperclass
 @EntityListeners(value = {AuditingEntityListener.class})
-public class BaseEntityWithoutId {
+public class AuditableEntity {
 
 	@CreatedDate
 	@Column(name = "created_at", updatable = false)

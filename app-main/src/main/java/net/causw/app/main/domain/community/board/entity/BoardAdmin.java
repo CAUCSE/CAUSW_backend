@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.community.board.entity;
 
-import net.causw.app.main.shared.entity.BaseEntityWithoutId;
+import net.causw.app.main.shared.entity.AuditableEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_board_admin")
-public class BoardAdmin extends BaseEntityWithoutId {
+public class BoardAdmin extends AuditableEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
