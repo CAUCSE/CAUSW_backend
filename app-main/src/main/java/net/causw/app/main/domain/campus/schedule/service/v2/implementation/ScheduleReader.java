@@ -9,9 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 import net.causw.app.main.domain.campus.schedule.entity.Schedule;
 import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
 import net.causw.app.main.domain.campus.schedule.repository.ScheduleRepository;
-import net.causw.global.constant.MessageUtil;
+import net.causw.app.main.shared.exception.errorcode.ScheduleErrorCode;
 import net.causw.global.exception.BadRequestException;
-import net.causw.global.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,9 +29,7 @@ public class ScheduleReader {
 	 */
 	public Schedule findById(String scheduleId) {
 		return scheduleRepository.findById(scheduleId)
-			.orElseThrow(() -> new BadRequestException(
-				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.SCHEDULE_NOT_FOUND));
+			.orElseThrow(ScheduleErrorCode.SCHEDULE_NOT_FOUND::toBaseException);
 	}
 
 	/**
