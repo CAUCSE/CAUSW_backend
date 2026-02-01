@@ -1,0 +1,4 @@
+-- Migration: ModifyAdmissionYearColumnInUserNullable
+
+ALTER TABLE tb_user
+MODIFY COLUMN admission_year VARCHAR(255) NULL;

@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import jakarta.persistence.*;
 import org.hibernate.annotations.BatchSize;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
@@ -22,8 +21,10 @@ import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.GraduationType;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.auth.service.v2.dto.UserRegisterCommand;
 import net.causw.app.main.shared.entity.BaseEntity;
 
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -54,7 +55,7 @@ public class User extends BaseEntity {
 	@Column(name = "student_id", unique = true, nullable = true)
 	private String studentId;
 
-	@Column(name = "admission_year", nullable = false)
+	@Column(name = "admission_year", nullable = true)
 	private Integer admissionYear;
 
 	// 새로 추가한 필드들
@@ -100,8 +101,8 @@ public class User extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private UserState state;
 
-    @Embedded
-    private TermAgreements agreements;
+	@Embedded
+	private TermAgreements agreements;
 
 	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
 	private Locker locker;
@@ -165,7 +166,22 @@ public class User extends BaseEntity {
 					userCreateRequestDto.getDepartment()))
 			.academicStatus(AcademicStatus.UNDETERMINED)
 			.phoneNumber(userCreateRequestDto.getPhoneNumber())
-                .agreements(TermAgreements.createRequiredAgreements())
+			.agreements(TermAgreements.createRequiredAgreements())
+			.isV2(true)
+			.build();
+	}
+
+	public static User from(UserRegisterCommand command, String encodedPassword) {
+		return User.builder()
+			.email(command.email())
+			.name(command.name())
+			.roles(Set.of(Role.NONE))
+			.state(UserState.AWAIT)
+			.password(encodedPassword)
+			.nickname(command.nickname())
+			.academicStatus(AcademicStatus.UNDETERMINED)
+			.phoneNumber(command.phoneNumber())
+			.agreements(TermAgreements.createRequiredAgreements())
 			.isV2(true)
 			.build();
 	}
@@ -186,7 +202,7 @@ public class User extends BaseEntity {
 			.department(graduatedUserCommand.department())
 			.academicStatus(AcademicStatus.GRADUATED)
 			.phoneNumber(graduatedUserCommand.phoneNumber())
-                .agreements(TermAgreements.createRequiredAgreements())
+			.agreements(TermAgreements.createRequiredAgreements())
 			.isV2(true)
 			.build();
 	}
@@ -212,7 +228,7 @@ public class User extends BaseEntity {
 		this.nickname = nickname;
 		this.major = major;
 		this.department = department;
-        this.agreements = TermAgreements.createRequiredAgreements();
+		this.agreements = TermAgreements.createRequiredAgreements();
 	}
 
 	public void updateRejectionOrDropReason(String reason) {
@@ -234,6 +250,10 @@ public class User extends BaseEntity {
 
 	public void removeFcmToken(String targetToken) {
 		this.fcmTokens.remove(targetToken);
+	}
+
+	public void validateSignUpPossible() {
+		this.state.validateSignupPossible();
 	}
 
 	// 신고 관련 메소드

@@ -1,8 +1,12 @@
 package net.causw.app.main.core.security;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -31,15 +35,43 @@ public class WebSecurityConfig {
 	private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 	private final CustomAuthorizationManager authorizationManager;
 
+	@Value("${app.cors.allowed-origins:http://localhost:3000}")
+	private String corsAllowedOrigins;
+
 	@Bean
 	public PasswordEncoder getPasswordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
 
 	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+	@Order(2)
+	public SecurityFilterChain securityFilterChainV2(HttpSecurity http) throws Exception {
 		http
-			.cors(Customizer.withDefaults())
+			.securityMatcher("/api/v2/**")
+			.cors(cors -> cors.configurationSource(corsConfigurationSourceV2()))
+			.formLogin(AbstractHttpConfigurer::disable)
+			.httpBasic(AbstractHttpConfigurer::disable)
+			.csrf(AbstractHttpConfigurer::disable)
+			.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
+			.sessionManagement(
+				sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+			.authorizeHttpRequests(auth -> auth
+				.requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
+				.requestMatchers("/api/v2/auth/**").permitAll()
+				.requestMatchers("/api/v2/admin/**").hasRole("ADMIN")
+				.anyRequest().authenticated())
+			.exceptionHandling(exceptionHandling -> exceptionHandling
+				.authenticationEntryPoint(customAuthenticationEntryPoint))
+			.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+
+		return http.build();
+	}
+
+	@Bean
+	@Order(2)
+	public SecurityFilterChain securityFilterChainV1(HttpSecurity http) throws Exception {
+		http
+			.cors(cors -> cors.configurationSource(corsConfigurationSourceV1()))
 			.formLogin(AbstractHttpConfigurer::disable)
 			.httpBasic(AbstractHttpConfigurer::disable)
 			.csrf(AbstractHttpConfigurer::disable)
@@ -68,7 +100,21 @@ public class WebSecurityConfig {
 	}
 
 	@Bean
-	public CorsConfigurationSource corsConfigurationSource() {
+	public CorsConfigurationSource corsConfigurationSourceV2() {
+		CorsConfiguration configuration = new CorsConfiguration();
+		List<String> origins = Arrays.asList(corsAllowedOrigins.split(","));
+		configuration.setAllowedOriginPatterns(origins);
+		configuration.addAllowedMethod("*");
+		configuration.addAllowedHeader("*");
+		configuration.setAllowCredentials(true);
+		configuration.setMaxAge(3600L);
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", configuration);
+		return source;
+	}
+
+	@Bean
+	public CorsConfigurationSource corsConfigurationSourceV1() {
 		CorsConfiguration configuration = new CorsConfiguration();
 		configuration.addAllowedOriginPattern("*");
 		configuration.addAllowedMethod("*");
