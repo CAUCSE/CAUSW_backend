@@ -93,10 +93,10 @@ class BoardServiceTest {
 				.name("boardName")
 				.description("boardDescription")
 				.isAnonymous(false)
-				.readScope("BOTH")
-				.writeScope("ALL_USER")
+				.readScope(BoardReadScope.BOTH)
+				.writeScope(BoardWriteScope.ALL_USER)
 				.isNotice(false)
-				.visibility("VISIBLE")
+				.visibility(BoardVisibility.VISIBLE)
 				.displayOrder(10)
 				.build();
 			List<BoardConfigSummary> summaries = List.of(summary);
