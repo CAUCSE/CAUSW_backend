@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.repository.BoardRepository;
-import net.causw.app.main.domain.community.board.service.dto.request.BoardConfigUpdateCommand;
+import net.causw.app.main.domain.community.board.service.dto.request.BoardPart;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,10 +18,10 @@ public class BoardWriter {
 		return boardRepository.save(board);
 	}
 
-	public void updateBoard(Board board, BoardConfigUpdateCommand command) {
+	public void updateBoard(Board board, BoardPart boardPart) {
 		board.update(
-			command.name(),
-			command.description(),
+			boardPart.name(),
+			boardPart.description(),
 			board.getCreateRoles(),
 			board.getCategory());
 

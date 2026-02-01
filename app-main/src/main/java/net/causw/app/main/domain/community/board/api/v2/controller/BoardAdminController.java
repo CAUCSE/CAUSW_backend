@@ -74,7 +74,10 @@ public class BoardAdminController {
 	public ApiResponse<Void> createBoard(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@Valid @RequestBody BoardCreateRequest request) {
-		boardService.createBoard(boardCreateRequestMapper.toCommand(request));
+		boardService.createBoard(
+			boardCreateRequestMapper.toBoardPart(request),
+			boardCreateRequestMapper.toBoardConfigPart(request),
+			request.adminUserIds());
 
 		return ApiResponse.success();
 	}
@@ -84,8 +87,15 @@ public class BoardAdminController {
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable String boardId,
 		@Valid @RequestBody BoardConfigUpdateRequest request) {
-
-		boardService.updateBoard(boardId, boardConfigUpdateRequestMapper.toCommand(request));
+		if (!boardId.equals(request.boardId())) {
+			throw new net.causw.app.main.shared.exception.BaseRunTimeV2Exception(
+				net.causw.app.main.shared.exception.errorcode.BoardErrorCode.BOARD_NOT_FOUND);
+		}
+		boardService.updateBoard(
+			boardId,
+			boardConfigUpdateRequestMapper.toBoardPart(request),
+			boardConfigUpdateRequestMapper.toBoardConfigPart(request),
+			request.adminUserIds());
 
 		return ApiResponse.success();
 	}
