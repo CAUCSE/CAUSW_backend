@@ -1,5 +1,9 @@
 package net.causw.app.main.domain.community.board.service.dto.mapper;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.IntStream;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -21,4 +25,18 @@ public interface BoardConfigSummaryMapper {
 	@Mapping(target = "visibility", expression = "java(boardConfig != null && boardConfig.getVisibility() != null ? boardConfig.getVisibility().name() : null)")
 	@Mapping(source = "boardConfig.displayOrder", target = "displayOrder")
 	BoardConfigSummary fromEntity(Long no, Board board, BoardConfig boardConfig);
+
+	/**
+	 * 게시판 목록과 설정 Map을 BoardConfigSummary 목록으로 변환.
+	 * 순서(no)는 1부터 부여한다.
+	 */
+	default List<BoardConfigSummary> toSummaries(List<Board> boards, Map<String, BoardConfig> configMap) {
+		return IntStream.range(0, boards.size())
+			.mapToObj(i -> {
+				Board board = boards.get(i);
+				BoardConfig config = configMap.get(board.getId());
+				return fromEntity((long)i + 1, board, config);
+			})
+			.toList();
+	}
 }

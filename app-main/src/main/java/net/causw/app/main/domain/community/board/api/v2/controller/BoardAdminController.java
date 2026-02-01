@@ -53,9 +53,9 @@ public class BoardAdminController {
 	public ApiResponse<BoardConfigListResponse> getBoardAdminList(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@ModelAttribute BoardSearchCondition boardSearchCondition) {
-		BoardConfigListResult allBoardList = boardService
-			.getAllBoardList(boardSearchConditionMapper.toServiceDto(boardSearchCondition));
-		BoardConfigListResponse response = boardAdminListMapper.toResponse(allBoardList);
+		BoardConfigListResponse response = boardAdminListMapper.toResponse(
+			boardService.getAllBoardList(boardSearchConditionMapper.toServiceDto(boardSearchCondition))
+		);
 
 		return ApiResponse.success(response);
 	}

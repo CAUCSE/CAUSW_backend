@@ -29,6 +29,11 @@ public class BoardConfigWriter {
 	private final BoardAdminRepository boardAdminRepository;
 	private final BoardConfigReader boardConfigReader;
 
+	/**
+	 * 게시판 관리자 교체
+	 * @param boardId 게시판 ID
+	 * @param adminUserIds 새로운 관리자 유저 ID 집합
+	 */
 	@Transactional
 	public void replaceAdmins(String boardId, Set<String> adminUserIds) {
 		boardAdminRepository.deleteAllByBoardId(boardId);
@@ -39,6 +44,11 @@ public class BoardConfigWriter {
 		boardAdminRepository.saveAll(newAdmins);
 	}
 
+	/**
+	 * 게시판 설정 수정
+	 * @param boardConfig 게시판 설정 Entity
+	 * @param config 수정할 설정 DTO
+	 */
 	public void updateBoardConfig(BoardConfig boardConfig, BoardConfigPart config) {
 		boardConfig.update(
 			config.isAnonymous(),
@@ -50,10 +60,19 @@ public class BoardConfigWriter {
 		boardConfigRepository.save(boardConfig);
 	}
 
+	/**
+	 * 게시판 설정 저장
+	 * @param boardConfig 게시판 설정 Entity
+	 * @return 저장된 게시판 설정 Entity
+	 */
 	public BoardConfig save(BoardConfig boardConfig) {
 		return boardConfigRepository.save(boardConfig);
 	}
 
+	/**
+	 * 여러 게시판 설정 저장
+	 * @param boardConfigs 게시판 설정 Entity 목록
+	 */
 	public void saveAll(List<BoardConfig> boardConfigs) {
 		boardConfigRepository.saveAll(boardConfigs);
 	}
@@ -61,6 +80,7 @@ public class BoardConfigWriter {
 	/**
 	 * 게시판 정렬 순서를 주어진 boardIds 순서대로 갱신한다.
 	 * display_order 간격은 {@value #DISPLAY_ORDER_INTERVAL}이다.
+	 * @param boardIdsInOrder 게시판 ID 목록
 	 */
 	@Transactional
 	public void updateDisplayOrders(List<String> boardIdsInOrder) {

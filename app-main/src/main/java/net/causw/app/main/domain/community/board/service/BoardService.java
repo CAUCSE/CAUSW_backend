@@ -3,10 +3,7 @@ package net.causw.app.main.domain.community.board.service;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,23 +51,12 @@ public class BoardService {
 	 * @return 게시판 설정 목록 조회 결과 DTO
 	 */
 	public BoardConfigListResult getAllBoardList(BoardQueryCondition boardQueryCondition) {
+		List<Board> boards = boardReader.searchBoardList(boardQueryCondition);
+		Map<String, BoardConfig> configMap = boardConfigReader.getBoardConfigMapByBoardIds(
+			boards.stream().map(Board::getId).toList());
+		List<BoardConfigSummary> summaries = boardConfigSummaryMapper.toSummaries(boards, configMap);
 
-		List<Board> allBoardList = boardReader.searchBoardList(boardQueryCondition);
-		List<BoardConfig> boardConfigs = boardConfigReader.getAllBoardConfigInBoardIds(
-			allBoardList.stream().map(Board::getId).toList());
-		var boardIdBoardConfigMap = getCollectedMap(boardConfigs);
-
-		List<BoardConfigSummary> summaries = IntStream.range(0, allBoardList.size())
-			.mapToObj(i -> {
-				Board board = allBoardList.get(i);
-				BoardConfig config = boardIdBoardConfigMap.get(board.getId());
-				return boardConfigSummaryMapper.fromEntity((long)i + 1, board, config);
-			})
-			.toList();
-
-		return BoardConfigListResult.builder()
-			.boards(summaries)
-			.build();
+		return new BoardConfigListResult(summaries);
 	}
 
 	/**
@@ -144,8 +130,4 @@ public class BoardService {
 		boardConfigWriter.updateDisplayOrders(command.boardIds());
 	}
 
-	private static @NotNull Map<String, BoardConfig> getCollectedMap(List<BoardConfig> boardConfigs) {
-		return boardConfigs.stream().collect(
-			Collectors.toMap(BoardConfig::getBoardId, boardConfig -> boardConfig));
-	}
 }
