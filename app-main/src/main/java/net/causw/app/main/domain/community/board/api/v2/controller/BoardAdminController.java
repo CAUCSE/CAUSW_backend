@@ -26,7 +26,6 @@ import net.causw.app.main.domain.community.board.api.v2.mapper.BoardCreateReques
 import net.causw.app.main.domain.community.board.api.v2.mapper.BoardOrderUpdateRequestMapper;
 import net.causw.app.main.domain.community.board.api.v2.mapper.BoardSearchConditionMapper;
 import net.causw.app.main.domain.community.board.service.BoardService;
-import net.causw.app.main.domain.community.board.service.dto.result.BoardConfigListResult;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 
@@ -54,8 +53,7 @@ public class BoardAdminController {
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@ModelAttribute BoardSearchCondition boardSearchCondition) {
 		BoardConfigListResponse response = boardAdminListMapper.toResponse(
-			boardService.getAllBoardList(boardSearchConditionMapper.toServiceDto(boardSearchCondition))
-		);
+			boardService.getAllBoardList(boardSearchConditionMapper.toServiceDto(boardSearchCondition)));
 
 		return ApiResponse.success(response);
 	}
