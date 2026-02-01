@@ -3,6 +3,11 @@ package net.causw.app.main.domain.user.account.repository.user.query;
 import java.util.List;
 import java.util.Optional;
 
+import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.user.account.enums.user.Department;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import net.causw.app.main.domain.user.account.entity.user.QUser;
@@ -69,4 +74,54 @@ public class UserQueryRepository {
 
 		return Optional.ofNullable(result);
 	}
+
+	public Page<User> findUserList(
+			String keyword,
+			UserState state,
+			AcademicStatus academicStatus,
+			Department department,
+			Pageable pageable
+	) {
+		QUser user = QUser.user;
+
+		BooleanBuilder where = new BooleanBuilder();
+
+		if (keyword != null && !keyword.isBlank()) {
+			where.and(
+					user.name.containsIgnoreCase(keyword)
+							.or(user.studentId.containsIgnoreCase(keyword))
+			);
+		}
+
+		if (state != null) {
+			where.and(user.state.eq(state));
+		}
+
+		if (academicStatus != null) {
+			where.and(user.academicStatus.eq(academicStatus));
+		}
+
+		if (department != null) {
+			where.and(user.department.eq(department));
+		}
+
+		List<User> content =
+				jpaQueryFactory
+						.selectFrom(user)
+						.where(where)
+						.offset(pageable.getOffset())
+						.limit(pageable.getPageSize())
+						.orderBy(user.createdAt.desc())
+						.fetch();
+
+		Long total =
+				jpaQueryFactory
+						.select(user.count())
+						.from(user)
+						.where(where)
+						.fetchOne();
+
+		return new PageImpl<>(content, pageable, total == null ? 0 : total);
+	}
+
 }
